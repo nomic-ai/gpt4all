@@ -1,3 +1,6 @@
 [submodule "transformers"]
 	path = transformers
 	url = https://github.com/huggingface/transformers.git
+[submodule "peft"]
+	path = peft
+	url = https://github.com/huggingface/peft.git
