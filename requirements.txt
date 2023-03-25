@@ -1,0 +1,12 @@
+accelerate
+datasets
+torchmetrics
+evaluate
+transformers
+wandb
+pip
+peft
+nodelist-inflator
+deepspeed
+sentencepiece
+jsonlines
