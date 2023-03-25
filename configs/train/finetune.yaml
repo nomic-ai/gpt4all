@@ -1,0 +1,28 @@
+# model/tokenizer
+model_name: "zpn/llama-7b"
+tokenizer_name: "zpn/llama-7b"
+gradient_checkpointing: true
+
+# dataset
+streaming: false
+num_proc: 64
+dataset_path: "data.jsonl"
+max_length: 512
+batch_size: 32
+
+# train dynamics
+lr: 5.0e-5
+eval_every: 2000
+eval_steps: 100
+save_every: 2000
+output_dir: "ckpts/llama-7b"
+checkpoint: null
+lora: false
+warmup_steps: 100
+
+# logging
+wandb: false
+wandb_entity: zanussbaum
+wandb_project: llama
+seed: 42
+
