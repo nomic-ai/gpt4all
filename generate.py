@@ -11,7 +11,6 @@ def generate(tokenizer, prompt, model, config):
 
     outputs = model.generate(input_ids=input_ids, max_new_tokens=config["max_new_tokens"], temperature=config["temperature"])
 
-    print(outputs)
     decoded = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
 
     return decoded[len(prompt):]
