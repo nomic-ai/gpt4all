@@ -47,11 +47,10 @@ def train(accelerator, config):
     accelerator.print(f"Using {accelerator.num_processes} GPUs")
 
     tokenizer = AutoTokenizer.from_pretrained(config['tokenizer_name'])
-    # llama has no pad token, set it to eos
+    # llama has no pad token, set it to new token
     if tokenizer.pad_token is None:
         # these tokens are already in the vocab, just not mapped correctly
-        tokenizer.add_special_tokens({"bos_token": "<s>", "eos_token": "</s>"})
-        tokenizer.pad_token = tokenizer.eos_token
+        added_tokens = tokenizer.add_special_tokens({"bos_token": "<s>", "eos_token": "</s>", "pad_token": "<pad>"})
 
         
     with accelerator.main_process_first():
@@ -62,6 +61,9 @@ def train(accelerator, config):
     model = AutoModelForCausalLM.from_pretrained(config["model_name"], 
                                                     use_cache=False if checkpoint else True,
                                                     trust_remote_code=True) 
+
+    if added_tokens > 0:
+        model.resize_token_embeddings(len(tokenizer))
     
     if checkpoint:
         model.gradient_checkpointing_enable()
@@ -108,21 +110,28 @@ def train(accelerator, config):
 
     train_loss = MeanMetric().to(model.device)
 
+    if accelerator.state.deepspeed_plugin is not None:
+        gradient_accumulation_steps = accelerator.state.deepspeed_plugin.deepspeed_config[
+            "gradient_accumulation_steps"
+        ]
+
     for step, batch in enumerate(tqdm(train_dataloader)):
         model.train()
         outputs = model(**batch)
         loss = outputs.loss
+        loss = loss / gradient_accumulation_steps
 
         accelerator.backward(loss)
-        optimizer.step()
 
         # log LR in case something weird happens 
-        if step % (config["eval_every"] // 10) == 0:
+        if step > 0 and step % (config["eval_every"] // 10) == 0:
             if config["wandb"]:
                 accelerator.log({"lr": scheduler.get_last_lr()[0]}, step=step)
 
-        scheduler.step()
-        optimizer.zero_grad()
+        if (step + 1) % gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
 
         loss_values = accelerator.gather_for_metrics({"loss": loss.detach()})
         train_loss.update(loss_values["loss"])

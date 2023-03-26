@@ -8,8 +8,8 @@ save_name: "zpn/vicuna-lora"
 streaming: false
 num_proc: 64
 dataset_path: "data"
-max_length: 512
-batch_size: 8
+max_length: 1024
+batch_size: 4
 
 # train dynamics
 lr: 5.0e-5
@@ -22,8 +22,7 @@ lora: true
 warmup_steps: 100
 
 # logging
-wandb: false
-wandb_entity: zanussbaum
-wandb_project: llama
+wandb: true
+wandb_entity: vicuna
+wandb_project_name: vicuna
 seed: 42
-
