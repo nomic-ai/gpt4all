@@ -6,8 +6,10 @@ import jsonlines
 import pandas as pd
 
 
-prompt_generation_dir = "prompts-reponses"
+prompt_generation_dir = "raw_data_sanity_cleaned_delobotomized"
 for file in glob.glob(os.path.join(prompt_generation_dir, "*.jsonl")):
+    if "clean" in file:
+        continue
     data = []
     print(file)
     with open(file) as f:
