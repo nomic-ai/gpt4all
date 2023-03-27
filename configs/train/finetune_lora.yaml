@@ -2,12 +2,12 @@
 model_name: "zpn/llama-7b"
 tokenizer_name: "zpn/llama-7b"
 gradient_checkpointing: false
-save_name: "zpn/vicuna-lora"
+save_name: "nomic-ai/vicuna-lora-multi-turn"
 
 # dataset
 streaming: false
 num_proc: 64
-dataset_path: "data"
+dataset_path: "data_multiturn"
 max_length: 1024
 batch_size: 4
 
@@ -16,10 +16,11 @@ lr: 5.0e-5
 eval_every: 2000
 eval_steps: 100
 save_every: 2000
-output_dir: "ckpts/llama-7b"
+output_dir: "ckpts/llama-7b-lora-multi"
 checkpoint: null
 lora: true
 warmup_steps: 100
+num_epochs: 2
 
 # logging
 wandb: true
