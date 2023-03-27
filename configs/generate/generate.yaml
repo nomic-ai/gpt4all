@@ -2,7 +2,14 @@
 model_name: "zpn/llama-7b"
 tokenizer_name: "zpn/llama-7b"
 lora: true
-lora_path: "nomic-ai/vicuna-lora-512"
+lora_path: "zpn/vicuna-lora"
 
 max_new_tokens: 512
 temperature: 0
+prompt: | 
+  #this code prints a string reversed
+  my_string = "hello how are you"
+  print(len(my_string))
+
+
+  My code above does not work. Can you help me?
