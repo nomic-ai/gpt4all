@@ -6,8 +6,10 @@ import jsonlines
 import pandas as pd
 
 
-prompt_generation_dir = "prompts-reponses"
+prompt_generation_dir = "raw_data_sanity_cleaned_without_p3/"
 for file in glob.glob(os.path.join(prompt_generation_dir, "*.jsonl")):
+    if "clean.jsonl" in file:
+        continue
     data = []
     print(file)
     with open(file) as f:
@@ -67,5 +69,5 @@ for file in glob.glob(os.path.join(prompt_generation_dir, "*.jsonl")):
     print(f"Removed {prev_len - curr_len} rows")
 
     clean_name = file.split(".jsonl")[0] + "_clean.jsonl"
-    print(f"writing to {clean_name}")
+    print(f"writing to {curr_len} rows to {clean_name}")
     df.to_json(clean_name, orient="records", lines=True)
