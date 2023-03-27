@@ -2,7 +2,7 @@
 model_name: "zpn/llama-7b"
 tokenizer_name: "zpn/llama-7b"
 lora: true
-lora_path: "zpn/vicuna-lora"
+lora_path: "nomic-ai/vicuna-lora-1024"
 
 max_new_tokens: 512
 temperature: 0
