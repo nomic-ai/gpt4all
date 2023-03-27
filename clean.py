@@ -6,7 +6,7 @@ import jsonlines
 import pandas as pd
 
 
-prompt_generation_dir = "raw_data_sanity_cleaned_delobotomized"
+prompt_generation_dir = "raw_data_sanity_cleaned_without_p3/"
 for file in glob.glob(os.path.join(prompt_generation_dir, "*.jsonl")):
     if "clean.jsonl" in file:
         continue
