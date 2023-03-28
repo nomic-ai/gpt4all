@@ -2,7 +2,7 @@
 <p align="center">Demo, data and code to train an assistant-style large language model</p>
 
 <p align="center">
-<a target="_blank" href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
+<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
 </p>
 
 
