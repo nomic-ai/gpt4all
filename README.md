@@ -14,7 +14,7 @@ You can find trained LoRa model weights at:
 
 We are not distributing LLaMa 7B checkpoint.
 
-To reproduce our LoRA training run, do the following:
+You can reproduce our trained model by doing the following:
 
 ## Setup
 
