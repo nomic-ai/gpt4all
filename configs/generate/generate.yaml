@@ -1,8 +1,8 @@
 # model/tokenizer
-model_name: "zpn/llama-7b"
-tokenizer_name: "zpn/llama-7b"
+model_name: # REPLACE HERE with the base llama model 
+tokenizer_name: # REPLACE HERE with the llama tokenizer
 lora: true
-lora_path: "nomic-ai/vicuna-lora-1024"
+lora_path: "nomic-ai/gpt4all-lora"
 
 max_new_tokens: 512
 temperature: 0
