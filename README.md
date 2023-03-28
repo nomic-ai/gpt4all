@@ -11,14 +11,14 @@
 
 
 # Try it yourself
-You can download pre-compiled GPT4ALL Interactive Chat binaries here:
-- [OSX](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized-OSX-m1)
-- [Intel/Windows]()
 
-and the model
+Clone this repository down, go the `chat` directory and download the CPU quantized gpt4all model.
 - [gpt4all-quantized](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized.bin)
 
-Place the binary and quantized model in the same directory and start chatting!
+Place the quantized model in the `chat` directory and start chatting by running:
+
+- `./gpt4all-lora-quantized-OSX-m1` on Mac/OSX
+- `./gpt4all-lora-quantized-linux-x86` on Windows/Linux
 
 To compile for custom hardware, see our fork of the [Alpaca C++](https://github.com/zanussbaum/gpt4all.cpp) repo.
 
