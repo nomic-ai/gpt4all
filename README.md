@@ -11,7 +11,7 @@
 
 
 # Try it yourself
-You can download pre-compiled LLaMa C++ Interactive Chat binaries here:
+You can download pre-compiled GPT4ALL Interactive Chat binaries here:
 - [OSX](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized-OSX-m1)
 - [Intel/Windows]()
 
@@ -20,7 +20,7 @@ and the model
 
 Place the binary and quantized model in the same directory and start chatting!
 
-To compile for custom hardware, see our fork of the [Alpaca C++](https://github.com/zanussbaum/alpaca.cpp) repo.
+To compile for custom hardware, see our fork of the [Alpaca C++](https://github.com/zanussbaum/gpt4all.cpp) repo.
 
 
 # Reproducibility
