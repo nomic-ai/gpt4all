@@ -1,5 +1,5 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Data and code to train an assistant-style large language model</p>
+<p align="center">Demo, data and code to train an assistant-style large language model</p>
 
 # Try it yourself
 
