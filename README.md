@@ -101,6 +101,48 @@ python generate.py --config configs/generate/generate.yaml --prompt "Write a scr
 
 >1. The title of your movie plot should be "The Last Stand". 2. The summary of your movie plot should be: A group of mercenaries are hired to protect a small town from a dangerous criminal who is on the run. However, the town's sheriff is not willing to let them take over and decides to take matters into his own hands.
 
+### Reverse a string in python.
+> In Python, you can reverse a list or tuple by using the reversed() function on it. Here's an example of how to use this method with strings: 
+>    ```python
+>   my_string = "Hello World" # Define your original string here
+>   reversed_str = my_string[::-1]   # Use a slice and negative index for reverse order
+>   print(reversed_str)     # Output will be reversed version of the inputted string.
+
+### List 10 dogs.
+>1. Labrador Retriever
+>2. Golden Retriever
+>3. Beagle
+>4. Poodle
+>5. German Shepherd
+>6. Bulldog
+>7. Rottweiler
+>8. Boxer
+>9. Shih Tzu
+>10. Pug
+
+### Write me a poem about the fall of Julius Ceasar into a ceasar salad in iambic pentameter. 
+>The fall of Julius Ceasar into a ceasar salad
+>In iambic pentameter,
+>The mighty Roman emperor
+>Fell into a salad of lettuce and croutons,
+>His empire crumbling around him,
+>As he was devoured by the hungry diners.
+>The once mighty emperor
+>Was now just a salad topping,
+>His legacy reduced to a mere garnish,
+>As he was consumed by the masses.
+>The fall of Julius Ceasar into a ceasar salad,
+>In iambic pentameter,
+>Was a tragic end to a great man,
+>Who had once ruled the world with an iron fist.
+>But now, he was just a salad topping,
+>His legacy reduced to a mere garnish,
+>As he was consumed by the masses.
+    
+### What is a three word topic describing the following keywords: baseball, football, soccer: 
+>Sports, athletics, games
+    
+
 
 If you utilize this reposistory, models or data in a downstream project, please consider citing it with:
 ```
