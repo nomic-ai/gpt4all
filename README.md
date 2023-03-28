@@ -22,6 +22,7 @@ Place the quantized model in the `chat` directory and start chatting by running:
 
 To compile for custom hardware, see our fork of the [Alpaca C++](https://github.com/zanussbaum/gpt4all.cpp) repo.
 
+Note: the full model on GPU (16GB of RAM required) perform much better in our qualitative evaluations.
 
 # Reproducibility
 
