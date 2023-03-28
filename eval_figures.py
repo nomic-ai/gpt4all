@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 plt.figure()
-for fpath in glob.glob('./eval_data/*multi*.pkl'):
+for fpath in glob.glob('./eval_data/*.pkl'):
     parts = fpath.split('__')
     model_name = parts[1].replace('model-', '').replace('.pkl', '')
     lora_name = parts[2].replace('lora-', '').replace('.pkl', '')
@@ -13,7 +13,11 @@ for fpath in glob.glob('./eval_data/*multi*.pkl'):
         perplexities = data['perplexities']
         perplexities = np.nan_to_num(perplexities, 100)
         perplexities = np.clip(perplexities, 0, 100)
-        plt.hist(perplexities, label='{}-{}'.format(model_name, lora_name), alpha=.5)
+        if 'nomic' in fpath:
+            label = 'GPT4all-lora'
+        else:
+            label = 'alpaca-lora'
+        plt.hist(perplexities, label=label, alpha=.5)
 
 plt.xlabel('Perplexity')
 plt.ylabel('Frequency')
