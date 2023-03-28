@@ -12,7 +12,7 @@
 You can find trained LoRa model weights at:
 - gpt4all-lora https://huggingface.co/nomic-ai/gpt4all-lora
 
-We are not distributing LLaMa 7B checkpoint.
+We are not distributing a LLaMa 7B checkpoint.
 
 You can reproduce our trained model by doing the following:
 
