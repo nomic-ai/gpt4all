@@ -1,4 +1,4 @@
-# Intro
+# Training Trials and Tribulations of gpt4all
 
 This is a training log for both the LoRa and full model training we underwent
 
