@@ -1,5 +1,9 @@
-# gpt4all
+<h1 align="center">GPT4All</h1>
+<p align="center">Data and code to train an assistant-style LLM</p>
 
+# Try it yourself
+
+-- TODO LLAMA C++ code
 
 
 # Setup
