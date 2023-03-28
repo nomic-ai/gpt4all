@@ -6,7 +6,11 @@
 -- TODO LLAMA C++ code
 
 
-# Setup
+
+# Reproducibility
+To reproduce our trained LoRa model, do the following:
+
+## Setup
 
 Clone the repo
 
