@@ -12,7 +12,7 @@
 
 # Try it yourself
 You can download pre-compiled LLaMa C++ Interactive Chat binaries here:
-- [OSX Executable](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized-OSX-m1)
+- [OSX](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized-OSX-m1)
 - [Intel/Windows]()
 
 and the model
