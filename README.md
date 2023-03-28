@@ -32,7 +32,9 @@ Trained LoRa Weights:
 
 Raw Data:
 - [Training Data Without P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_without_p3_2022_03_27.tar.gz)
+  - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean_without_p3
 - [Full Dataset with P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_full_2022_03_27.tar.gz)
+  - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean
 
 We are not distributing a LLaMa 7B checkpoint.
 
@@ -70,7 +72,8 @@ accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 -
 python generate.py --config configs/generate/generate.yaml --prompt "Write a script to reverse a string in Python
 ```
 
-## Sample Generations
+# Sample Generations
+
 ### Provide instructions for the given exercise. Leg Raises
 >Leg Raises
 >1. Stand with your feet shoulder-width apart and your knees slightly bent.
