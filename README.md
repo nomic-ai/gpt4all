@@ -1,6 +1,11 @@
 <h1 align="center">GPT4All</h1>
 <p align="center">Demo, data and code to train an assistant-style large language model</p>
-<p align="center">:green_book: [Technical Report]()</p>
+
+<p align="center">
+<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
+</p>
+
+
 
 ![gpt4all-lora-demo](https://user-images.githubusercontent.com/13879686/228352356-de66ca7a-df70-474e-b929-2e3656165051.gif)
 
