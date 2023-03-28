@@ -12,7 +12,7 @@
 
 # Try it yourself
 
-Clone this repository down, go the `chat` directory and download the CPU quantized gpt4all model.
+Clone this repository down and download the CPU quantized gpt4all model.
 - [gpt4all-quantized](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized.bin)
 
 Place the quantized model in the `chat` directory and start chatting by running:
