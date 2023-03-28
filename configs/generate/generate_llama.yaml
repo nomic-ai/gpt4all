@@ -1,6 +1,6 @@
 # model/tokenizer
-model_name: "zpn/llama-7b"
-tokenizer_name: "zpn/llama-7b"
+model_name: # REPLACE WITH LLAMA MODEL NAME
+tokenizer_name: # REPLACE WITH LLAMA MODEL NAME
 
 
 max_new_tokens: 512
