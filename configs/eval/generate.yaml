@@ -5,7 +5,7 @@ lora: true
 lora_path: "nomic-ai/vicuna-lora-1024"
 
 max_new_tokens: 512
-temperature: .25 
+temperature: 0.001
 prompt: | 
   #this code prints a string reversed
   my_string = "hello how are you"
