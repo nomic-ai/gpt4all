@@ -8,6 +8,11 @@ from argparse import ArgumentParser
 from peft import PeftModelForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+'''
+Evaluates perplexity on the outputs of:
+https://github.com/yizhongw/self-instruct/blob/main/human_eval/user_oriented_instructions.jsonl
+'''
+
 def read_jsonl_file(file_path):
     data = []
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -47,7 +52,7 @@ def eval_example(model, tokenizer, example, config):
     continuations = []
     tokenized_continuations = []
     trajectories = []
-    for i in range(3):
+    for i in range(1):
         with torch.no_grad():
             outputs = model.generate(input_ids=input['input_ids'],
                                      max_new_tokens=config["max_new_tokens"],
