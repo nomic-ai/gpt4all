@@ -231,3 +231,7 @@ We additionally train a full model
 | Warmup Steps   | 100   |
 
 Taking inspiration from [the Alpaca Repo](https://github.com/tatsu-lab/stanford_alpaca), we roughly scale the learning rate by `sqrt(k)`, where `k` is the increase in batch size, where Alpaca used a batch size of 128 and learning rate of 2e-5.
+
+Comparing our model LoRa to the [Alpaca LoRa](https://huggingface.co/tloen/alpaca-lora-7b), our model has lower perplexity. Qualitatively, training on 3 epochs performed the best on perplexity as well as qualitative examples. 
+
+We tried training a full model using the parameters above, but found that during the second epoch the model overfit. 
