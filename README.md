@@ -16,15 +16,20 @@ You can download pre-compiled LLaMa C++ Interactive Chat binaries here:
 - [Intel/Windows]()
 
 and the model
-- [gpt4all-quantized]()
+- [gpt4all-quantized](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized.bin)
 
 
 
 
 # Reproducibility
 
-You can find trained LoRa model weights at:
-- gpt4all-lora https://huggingface.co/nomic-ai/gpt4all-lora
+Trained LoRa Weights:
+- gpt4all-lora:  https://huggingface.co/nomic-ai/gpt4all-lora
+- gpt4all-lora-epoch-2 https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2
+
+Raw Data:
+- [Training Data Without P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_without_p3_2022_03_27.tar.gz)
+- [Full Dataset with P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_full_2022_03_27.tar.gz)
 
 We are not distributing a LLaMa 7B checkpoint.
 
