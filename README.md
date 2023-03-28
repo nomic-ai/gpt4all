@@ -1,9 +1,18 @@
 <h1 align="center">GPT4All</h1>
 <p align="center">Demo, data and code to train an assistant-style large language model</p>
+<p align="center">:green_book: [Technical Report]()</p>
+
+![gpt4all-lora-demo](https://user-images.githubusercontent.com/13879686/228352356-de66ca7a-df70-474e-b929-2e3656165051.gif)
+
 
 # Try it yourself
+You can download pre-compiled LLaMa C++ Interactive Chat binaries here:
+- [OSX Executable](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized-OSX-m1)
+- [Intel/Windows]()
 
--- TODO LLAMA C++ code
+and the model
+- [gpt4all-quantized]()
+
 
 
 
