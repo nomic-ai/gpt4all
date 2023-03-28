@@ -50,18 +50,16 @@ cd ../peft
 pip install -e .
 ```
 
+## Training
+
+```bash
+accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 --machine_rank=0 --deepspeed_multinode_launcher standard --mixed_precision=bf16  --use_deepspeed --deepspeed_config_file=configs/deepspeed/ds_config.json train.py --config configs/train/finetune-7b.yaml
+```
 
 ## Generate
 
 ```bash
 python generate.py --config configs/generate/generate.yaml --prompt "Write a script to reverse a string in Python
-```
-
-
-## Train
-
-```bash
-accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 --machine_rank=0 --deepspeed_multinode_launcher standard --mixed_precision=bf16  --use_deepspeed --deepspeed_config_file=configs/deepspeed/ds_config.json train.py --config configs/train/finetune-7b.yaml
 ```
 
 
