@@ -1,5 +1,5 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Data and code to train an assistant-style LLM</p>
+<p align="center">Data and code to train an assistant-style large language model</p>
 
 # Try it yourself
 
@@ -8,7 +8,7 @@
 
 
 # Reproducibility
-To reproduce our trained LoRa model, do the following:
+To reproduce our trained assistant model with LoRA, do the following:
 
 ## Setup
 
@@ -39,3 +39,18 @@ pip install -e .
 ## Train
 
 `accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 --machine_rank=0 --deepspeed_multinode_launcher standard --mixed_precision=bf16  --use_deepspeed --deepspeed_config_file=configs/deepspeed/ds_config.json train.py --config configs/train/finetune-7b.yaml`
+
+
+
+If you utilize this reposistory, models or data in a downstream project, please consider citing it with:
+```
+@misc{gpt4all,
+  author = {Yuvanesh Anand and Zachary Nussbaum and Brandon Duderstadt and Benjamin Schmidt and Andriy Mulyar},
+  title = {GPT4All: Training an Assistant-style Chatbot with Large Scale Data Distillation from GPT-3.5-Turbo},
+  year = {2023},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/nomic-ai/gpt4all}},
+}
+```
+
