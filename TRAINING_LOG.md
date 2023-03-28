@@ -234,4 +234,4 @@ Taking inspiration from [the Alpaca Repo](https://github.com/tatsu-lab/stanford_
 
 Comparing our model LoRa to the [Alpaca LoRa](https://huggingface.co/tloen/alpaca-lora-7b), our model has lower perplexity. Qualitatively, training on 3 epochs performed the best on perplexity as well as qualitative examples. 
 
-We tried training a full model using the parameters above, but found that during the second epoch the model overfit. 
+We tried training a full model using the parameters above, but found that during the second epoch the model diverged and samples generated post training were worse than the first epoch. 
