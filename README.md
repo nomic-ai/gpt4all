@@ -13,6 +13,7 @@ Clone the repo
 `git clone --recurse-submodules git@github.com:nomic-ai/gpt4all.git`
 
 `git submodule configure && git submodule update`
+
 Setup the environment
 
 ```
