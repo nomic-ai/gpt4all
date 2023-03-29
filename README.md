@@ -16,10 +16,9 @@ Run on M1 Mac (not sped up!)
 
 # Try it yourself
 
-Clone this repository down and download the CPU quantized gpt4all model.
-- [gpt4all-quantized](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized.bin)
+Download the CPU quantized gpt4all model checkpoint: [gpt4all-lora-quantized.bin](https://s3.amazonaws.com/static.nomic.ai/gpt4all/models/gpt4all-lora-quantized.bin)
 
-Place the quantized model in the `chat` directory and start chatting by running:
+Clone this repository down and place the quantized model in the `chat` directory and start chatting by running:
 
 - `cd chat;./gpt4all-lora-quantized-OSX-m1` on M1 Mac/OSX
 - `cd chat;./gpt4all-lora-quantized-linux-x86` on Windows/Linux
