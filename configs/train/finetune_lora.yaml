@@ -1,8 +1,8 @@
 # model/tokenizer
-model_name: "zpn/llama-7b"
-tokenizer_name: "zpn/llama-7b"
+model_name: # update
+tokenizer_name: # update
 gradient_checkpointing: false
-save_name: "nomic-ai/vicuna-lora-multi-turn"
+save_name: "nomic-ai/gpt4all-lora-multi-turn"
 
 # dataset
 streaming: false
@@ -16,7 +16,7 @@ lr: 5.0e-5
 eval_every: 2000
 eval_steps: 100
 save_every: 2000
-output_dir: "ckpts/llama-7b-lora-multi"
+output_dir: "ckpts/gpt4all-lora-multi"
 checkpoint: null
 lora: true
 warmup_steps: 100
@@ -24,6 +24,6 @@ num_epochs: 2
 
 # logging
 wandb: true
-wandb_entity: vicuna
-wandb_project_name: vicuna
+wandb_entity: # update
+wandb_project_name: # update
 seed: 42
