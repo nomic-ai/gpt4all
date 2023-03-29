@@ -1,6 +1,6 @@
 # model/tokenizer
-model_name: "nomic-ai/vicuna-full-multi-turn_epoch_0"
-tokenizer_name: "zpn/llama-7b"
+model_name: # update
+tokenizer_name: # update
 lora_path: "no-lora"
 
 max_new_tokens: 512
