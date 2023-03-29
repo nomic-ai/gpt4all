@@ -20,8 +20,17 @@ Download the CPU quantized gpt4all model checkpoint: [gpt4all-lora-quantized.bin
 
 Clone this repository down and place the quantized model in the `chat` directory and start chatting by running:
 
-- `cd chat;./gpt4all-lora-quantized-OSX-m1` on M1 Mac/OSX
-- `cd chat;./gpt4all-lora-quantized-linux-x86` on Windows/Linux
+- On M1 Mac/OSX  
+
+````console
+cd chat;./gpt4all-lora-quantized-OSX-m1
+````
+
+- On Windows/Linux
+
+````console
+cd chat;./gpt4all-lora-quantized-linux-x86
+````
 
 To compile for custom hardware, see our fork of the [Alpaca C++](https://github.com/zanussbaum/gpt4all.cpp) repo.
 
@@ -30,8 +39,8 @@ Note: the full model on GPU (16GB of RAM required) performs much better in our q
 # Reproducibility
 
 Trained LoRa Weights:
-- gpt4all-lora:  https://huggingface.co/nomic-ai/gpt4all-lora
-- gpt4all-lora-epoch-2 https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2
+- [gpt4all-lora](https://huggingface.co/nomic-ai/gpt4all-lora)
+- [gpt4all-lora-epoch-2](https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2)
 
 Raw Data:
 - [Training Data Without P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_without_p3_2022_03_27.tar.gz)
@@ -47,13 +56,14 @@ You can reproduce our trained model by doing the following:
 
 Clone the repo
 
-`git clone --recurse-submodules git@github.com:nomic-ai/gpt4all.git`
-
-`git submodule configure && git submodule update`
+````console
+git clone --recurse-submodules git@github.com:nomic-ai/gpt4all.git
+git submodule configure && git submodule update
+````
 
 Setup the environment
 
-```
+````console
 python -m pip install -r requirements.txt
 
 cd transformers
@@ -61,7 +71,7 @@ pip install -e .
 
 cd ../peft
 pip install -e .
-```
+````
 
 ## Training
 
@@ -71,9 +81,9 @@ accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 -
 
 ## Generate
 
-```bash
+````console
 python generate.py --config configs/generate/generate.yaml --prompt "Write a script to reverse a string in Python"
-```
+````
 
 # Sample Generations
 
