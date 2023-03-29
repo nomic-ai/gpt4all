@@ -70,7 +70,7 @@ accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 -
 ## Generate
 
 ```bash
-python generate.py --config configs/generate/generate.yaml --prompt "Write a script to reverse a string in Python
+python generate.py --config configs/generate/generate.yaml --prompt "Write a script to reverse a string in Python"
 ```
 
 # Sample Generations
