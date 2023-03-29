@@ -4,6 +4,9 @@
 <p align="center">
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
 </p>
+<p align="center">
+<a href="https://discord.gg/kvmy6dQB">Discord</a>
+</p>
 
 
 
