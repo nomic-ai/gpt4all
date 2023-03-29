@@ -1,6 +1,6 @@
 # model/tokenizer
-model_name: "zpn/llama-7b"
-tokenizer_name: "zpn/llama-7b"
+model_name: # update with llama model name
+tokenizer_name: # update with llama model name
 lora: true
 lora_path: "tloen/alpaca-lora-7b"
 
