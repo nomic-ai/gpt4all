@@ -33,8 +33,8 @@ Note: the full model on GPU (16GB of RAM required) performs much better in our q
 # Reproducibility
 
 Trained LoRa Weights:
-- gpt4all-lora:  https://huggingface.co/nomic-ai/gpt4all-lora
-- gpt4all-lora-epoch-2 https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2
+- gpt4all-lora (four full epochs of training):  https://huggingface.co/nomic-ai/gpt4all-lora
+- gpt4all-lora-epoch-2 (three full epochs of training) https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2
 
 Raw Data:
 - [Training Data Without P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_without_p3_2022_03_27.tar.gz)
