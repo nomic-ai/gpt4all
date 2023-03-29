@@ -170,8 +170,8 @@ If you utilize this reposistory, models or data in a downstream project, please 
 ```
 
 ### Alternative Download Locations
-#### gpt4all-lora-quantized.bin Backup Torrent Link
+#### gpt4all-lora-quantized.bin Torrent Link
 magnet:?xt=urn:btih:1F11A9691EE06C18F0040E359361DCA0479BCB5A&dn=gpt4all-lora-quantized.bin&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Fopentracker.i2p.rocks%3A6969%2Fannounce
 
-#### Unfiltered Checkpoint Torrent Link
+#### gpt4all-lora-unfiltered-quantized.bin Torrent Link
 https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.torrent
