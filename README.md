@@ -21,6 +21,7 @@ Download the CPU quantized gpt4all model checkpoint: [gpt4all-lora-quantized.bin
 Clone this repository down and place the quantized model in the `chat` directory and start chatting by running:
 
 - `cd chat;./gpt4all-lora-quantized-OSX-m1` on M1 Mac/OSX
+- `cd chat;./gpt4all-lora-quantized-OSX-intel` on Intel Mac/OSX
 - `cd chat;./gpt4all-lora-quantized-linux-x86` on Windows/Linux
 
 To compile for custom hardware, see our fork of the [Alpaca C++](https://github.com/zanussbaum/gpt4all.cpp) repo.
