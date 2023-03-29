@@ -70,13 +70,9 @@ def load_data(config, tokenizer):
     else:
         dataset = load_dataset(dataset_path)
 
-    uuids = load_dataset("json", data_files="watermark.jsonl", split="train")
     dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
 
     train_dataset, val_dataset = dataset["train"], dataset["test"]
-
-    train_dataset = concatenate_datasets([train_dataset, uuids])
-    train_dataset = train_dataset.shuffle(seed=config["seed"])
 
     if config["streaming"] is False:
         kwargs = {"num_proc": config["num_proc"]}
