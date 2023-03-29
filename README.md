@@ -28,6 +28,14 @@ Clone this repository down and place the quantized model in the `chat` directory
 
 To compile for custom hardware, see our fork of the [Alpaca C++](https://github.com/zanussbaum/gpt4all.cpp) repo.
 
+-----------
+
+[Secret Unfiltered Checkpoint](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin)
+
+This model had all refusal to answer responses removed from training. Try it with:
+- `cd chat;./gpt4all-lora-quantized-OSX-m1 -m gpt4all-lora-unfiltered-quantized.bin`
+
+-----------
 Note: the full model on GPU (16GB of RAM required) performs much better in our qualitative evaluations.
 
 # Reproducibility
