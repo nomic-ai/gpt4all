@@ -16,7 +16,7 @@ Run on M1 Mac (not sped up!)
 
 # Try it yourself
 
-Download the CPU quantized gpt4all model checkpoint: [gpt4all-lora-quantized.bin](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) - [[Torrent-Magnet]](https://tinyurl.com/gpt4all-lora-quantized) 
+Download the CPU quantized gpt4all model checkpoint: [gpt4all-lora-quantized.bin](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) - [[Torrent-Magnet]](magnet:?xt=urn:btih:EE5150157050CB5D1979669A1EA14FC2C4C3692E&dn=gpt4all-lora-quantized.bin&tr=udp%3a%2f%2ftracker.openbittorrent.com%3a80%2fannounce&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce) 
 
 
 Clone this repository down and place the quantized model in the `chat` directory and start chatting by running:
