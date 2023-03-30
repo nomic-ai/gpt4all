@@ -45,7 +45,7 @@ Trained LoRa Weights:
 - gpt4all-lora-epoch-2 (three full epochs of training) https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2
 
 Raw Data:
-- [Training Data Without P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_without_p3_2022_03_27.tar.gz)
+- [Training Data Without P3](https://huggingface.co/datasets/nomic-ai/gpt4all_prompt_generations)
   - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean_without_p3
 - [Full Dataset with P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_full_2022_03_27.tar.gz)
   - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean
