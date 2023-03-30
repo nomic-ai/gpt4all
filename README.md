@@ -138,6 +138,10 @@ accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 -
 python generate.py --config configs/generate/generate.yaml --prompt "Write a script to reverse a string in Python"
 ```
 
+## Need Help?
+
+Join the <a href="https://discord.gg/kvmy6dQB"> Discord </a> and ask for help in `#gpt4all-help`
+
 # Sample Generations
 
 ### Provide instructions for the given exercise. Leg Raises
