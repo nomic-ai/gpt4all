@@ -160,7 +160,7 @@ We realized that we had two bugs however:
 - We accidentally duplicated data and effectively trained for 2 epochs instead of 1
 - We added an eos token to every sequence, even those that we truncated (e.g. long code that exceeds the 1024).
 
-## Conditonal EOS and 1 Epoch
+## Conditional EOS and 1 Epoch
 
 Using the same parameters, we then trained a model using a "conditional" eos token where we only add an `eos` when the inputs are less than the maximum sequence length for one epoch.
 
