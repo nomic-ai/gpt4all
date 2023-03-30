@@ -41,7 +41,7 @@ Note: the full model on GPU (16GB of RAM required) performs much better in our q
 # Python Client
 ## CPU Interface
 To get running using the python client with the CPU interface, first install the [nomic client](https://github.com/nomic-ai/nomic) using `pip install nomic`
-Then, you can use the following script to interact with GPU4All:
+Then, you can use the following script to interact with GPT4All:
 ```
 from nomic.gpt4all import GPT4All
 m = GPT4All()
