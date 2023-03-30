@@ -38,6 +38,58 @@ This model had all refusal to answer responses removed from training. Try it wit
 -----------
 Note: the full model on GPU (16GB of RAM required) performs much better in our qualitative evaluations.
 
+# Python Client
+## CPU Interface
+To get running using the python client with the CPU interface, first install the [nomic client](https://github.com/nomic-ai/nomic) using `pip install nomic`
+Then, you can use the following script to interact with GPU4All:
+```
+from nomic import GPT4All
+m = GPT4All()
+m.connect()
+m.prompt('write me a story about a lonely computer')
+```
+
+## GPU Interface
+There are two ways to get up and running with this model on GPU.
+The setup here is slightly more involved than the CPU model.
+1. clone the nomic client [repo](https://github.com/nomic-ai/nomic) and run `pip install .[GPT4All]` in the home dir.
+2. run `pip install nomic` and install the additional deps from the wheels built [here](https://github.com/nomic-ai/nomic/tree/main/bin)
+
+Once this is done, you can run the model on GPU with a script like the following:
+```
+from nomic import GPT4AllGPU
+m = GPT4AllGPU(LLAMA_PATH)
+config = {'num_beams': 2,
+          'min_new_tokens': 10,
+          'max_length': 100,
+          'repetition_penalty': 2.0}
+out = m.generate('write me a story about a lonely computer', config)
+print(out)
+```
+Where LLAMA_PATH is the path to a Huggingface Automodel compliant LLAMA model.
+Nomic is unable to distribute this file at this time.
+We are working on a GPT4All that does not have this limitation right now.
+
+You can pass any of the [huggingface generation config params](https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig) in the config.
+
+# Roadmap
+## Short Term
+ - <span style="color:green">(IN PROGRESS)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
+ - <span style="color:green">(IN PROGRESS)</span> Create improved CPU and GPU interfaces for this model.
+ - <span style="color:red">(NOT STARTED)</span> Integrate llama.cpp bindings
+ - <span style="color:red">(NOT STARTED)</span> Create a good conversational chat interface for the model.
+ - <span style="color:red">(NOT STARTED)</span> Allow users to opt in and submit their chats for subsequent training runs
+
+## Medium Term
+ - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with [Atlas](https://atlas.nomic.ai) to allow for document retrieval.
+   - BLOCKED by GPT4All based on GPTJ
+ - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with Langchain.
+ - <span style="color:red">(NOT STARTED)</span> Build easy custom training scripts to allow users to fine tune models.
+
+## Long Term
+ - <span style="color:red">(NOT STARTED)</span> Allow anyone to curate training data for subsequent GPT4All releases using Atlas.
+ - <span style="color:green">(IN PROGRESS)</span> Democratize AI. 
+
 # Reproducibility
 
 Trained LoRa Weights:
@@ -155,23 +207,7 @@ python generate.py --config configs/generate/generate.yaml --prompt "Write a scr
 ### What is a three word topic describing the following keywords: baseball, football, soccer: 
 >Sports, athletics, games
     
-### GPU Interface
-There are two ways to get up and running with this model on GPU.
-1. clone the nomic client [repo](https://github.com/nomic-ai/nomic) and run `pip install .[GPT4All]` in the home dir.
-2. run `pip install nomic` and install the additional deps from the wheels built [here](https://github.com/nomic-ai/nomic/tree/main/bin)
-
-Once this is done, you can run the model on GPU with a script like the following:
-```
-from nomic import GPT4AllGPU
-m = GPT4AllGPU(LLAMA_PATH)
-config = {'num_beams': 2,
-          'min_new_tokens': 10,
-          'max_length': 100,
-          'repetition_penalty': 2.0}
-out = m.generate('write me a story about a lonely computer', config)
-print(out)
-```
-You can pass any of the [huggingface generation config params](https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig) in the config.
+## Citation
 
 If you utilize this reposistory, models or data in a downstream project, please consider citing it with:
 ```
