@@ -43,7 +43,7 @@ Note: the full model on GPU (16GB of RAM required) performs much better in our q
 To get running using the python client with the CPU interface, first install the [nomic client](https://github.com/nomic-ai/nomic) using `pip install nomic`
 Then, you can use the following script to interact with GPU4All:
 ```
-from nomic import GPT4All
+from nomic.gpt4all import GPT4All
 m = GPT4All()
 m.connect()
 m.prompt('write me a story about a lonely computer')
@@ -57,7 +57,7 @@ The setup here is slightly more involved than the CPU model.
 
 Once this is done, you can run the model on GPU with a script like the following:
 ```
-from nomic import GPT4AllGPU
+from nomic.gpt4all import GPT4AllGPU
 m = GPT4AllGPU(LLAMA_PATH)
 config = {'num_beams': 2,
           'min_new_tokens': 10,
