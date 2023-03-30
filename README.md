@@ -84,7 +84,7 @@ You can pass any of the [huggingface generation config params](https://huggingfa
  - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with [Atlas](https://atlas.nomic.ai) to allow for document retrieval.
    - BLOCKED by GPT4All based on GPTJ
  - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with Langchain.
- - <span style="color:red">(NOT STARTED)</span> Build easy custom training scripts to allow users to fine tune models.
+ - <span style="color:green">(IN PROGRESS)</span> Build easy custom training scripts to allow users to fine tune models.
 
 ## Long Term
  - <span style="color:red">(NOT STARTED)</span> Allow anyone to curate training data for subsequent GPT4All releases using Atlas.
