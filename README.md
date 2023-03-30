@@ -155,7 +155,23 @@ python generate.py --config configs/generate/generate.yaml --prompt "Write a scr
 ### What is a three word topic describing the following keywords: baseball, football, soccer: 
 >Sports, athletics, games
     
+### GPU Interface
+There are two ways to get up and running with this model on GPU.
+1. clone the nomic client [repo](https://github.com/nomic-ai/nomic) and run `pip install .[GPT4All]` in the home dir.
+2. run `pip install nomic` and install the additional deps from the wheels built [here](https://github.com/nomic-ai/nomic/tree/main/bin)
 
+Once this is done, you can run the model on GPU with a script like the following:
+```
+from nomic import GPT4AllGPU
+m = GPT4AllGPU(LLAMA_PATH)
+config = {'num_beams': 2,
+          'min_new_tokens': 10,
+          'max_length': 100,
+          'repetition_penalty': 2.0}
+out = m.generate('write me a story about a lonely computer', config)
+print(out)
+```
+You can pass any of the [huggingface generation config params](https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig) in the config.
 
 If you utilize this reposistory, models or data in a downstream project, please consider citing it with:
 ```
