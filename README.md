@@ -19,8 +19,9 @@ Run on M1 Mac (not sped up!)
 Here's how to get started with the CPU quantized gpt4all model checkpoint:
 
 1. Download the `gpt4all-lora-quantized.bin` file from [Direct Link](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) or [[Torrent-Magnet]](https://tinyurl.com/gpt4all-lora-quantized).
-2. Clone this repository, navigate to `chat`, and place the downloaded file there.
-3. Run the appropriate command for your OS:
+2. Verify its sha512sum: `echo "fd79a62e2c4568e66dbc19bbfab3399c72557cf50f73b854c9f53e6179931e41d9f9815055565fc89474ccc77f596da1c878868397e93726427805abd132c885 gpt4all-lora-quantized.bin" | sha5sum -c -`
+3. Clone this repository, navigate to `chat`, and place the downloaded file there.
+4. Run the appropriate command for your OS:
    - M1 Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-m1`
    - Linux: `cd chat;./gpt4all-lora-quantized-linux-x86`
    - Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe`
@@ -35,6 +36,8 @@ For custom hardware compilation, see our [Alpaca C++](https://github.com/zanussb
 This model had all refusal to answer responses removed from training. Try it with:
 - `cd chat;./gpt4all-lora-quantized-OSX-m1 -m gpt4all-lora-unfiltered-quantized.bin`
 
+Make sure to verify its sha512sum: 
+- `echo "807831a85e2e2234c20bbe45b7c90b6680eb3e0d2c2f932f74aa61a516bb0bea245a7149c6fb02a312be3e1f5cf35288d790d269f83eb167c397c039f99cef7d  gpt4all-lora-unfiltered-quantized.bin" | sha512sum -c -`
 -----------
 Note: the full model on GPU (16GB of RAM required) performs much better in our qualitative evaluations.
 
