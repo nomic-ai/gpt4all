@@ -33,8 +33,11 @@ For custom hardware compilation, see our [Alpaca C++](https://github.com/zanussb
 [Secret Unfiltered Checkpoint](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin) - [[Torrent]](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.torrent)
 
 This model had all refusal to answer responses removed from training. Try it with:
-- `cd chat;./gpt4all-lora-quantized-OSX-m1 -m gpt4all-lora-unfiltered-quantized.bin`
-
+- ``
+- M1 Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-m1 -m gpt4all-lora-unfiltered-quantized.bin`
+- Linux: `cd chat;./gpt4all-lora-quantized-linux-x86 -m gpt4all-lora-unfiltered-quantized.bin`
+- Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe -m gpt4all-lora-unfiltered-quantized.bin`
+- Intel Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-intel -m gpt4all-lora-unfiltered-quantized.bin`
 -----------
 Note: the full model on GPU (16GB of RAM required) performs much better in our qualitative evaluations.
 
