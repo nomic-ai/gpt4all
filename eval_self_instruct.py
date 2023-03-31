@@ -22,21 +22,22 @@ def read_jsonl_file(file_path):
     return data
 
 def setup_model(config):
-    model = AutoModelForCausalLM.from_pretrained(config["model_name"], device_map="auto", torch_dtype=torch.float16, output_hidden_states=True)
+    model = AutoModelForCausalLM.from_pretrained(config["model_name"], device_map="auto", torch_dtype=torch.float16, output_hidden_states=True, use_auth_token=True)
     tokenizer = AutoTokenizer.from_pretrained(config["tokenizer_name"])
-    added_tokens = tokenizer.add_special_tokens({"bos_token": "<s>", "eos_token": "</s>", "pad_token": "<pad>"})
+    if "gptj" in config["model_name"]:
+        tokenizer.pad_token = tokenizer.eos_token
+    else:
+        added_tokens = tokenizer.add_special_tokens({"bos_token": "<s>", "eos_token": "</s>", "pad_token": "<pad>"})
 
-    if added_tokens > 0:
-        model.resize_token_embeddings(len(tokenizer))
+        if added_tokens > 0:
+            model.resize_token_embeddings(len(tokenizer))
 
-    if 'lora' in config and config['lora']:
-        model = PeftModelForCausalLM.from_pretrained(model, config["lora_path"], device_map="auto", torch_dtype=torch.float16, return_hidden_states=True)
-        model.to(dtype=torch.float16)
+    if config["lora"]:
+        model = PeftModelForCausalLM.from_pretrained(model, config["lora_path"], device_map="auto", torch_dtype=torch.float16)
 
+    model.to(dtype=torch.float16)
     print(f"Mem needed: {model.get_memory_footprint() / 1024 / 1024 / 1024:.2f} GB")
-        
     return model, tokenizer
-
 
 
 
