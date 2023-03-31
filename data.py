@@ -15,6 +15,13 @@ def tokenize_inputs(config, tokenizer, examples):
 
     out = {"labels": [], "attention_mask": []}
     for i, (prompt, response) in enumerate(zip(examples["prompt"], examples["response"])):
+        # check if prompt and response combined are too long
+        total_length = len(prompt) + len(response)
+        if total_length > max_length - 3: # account for special tokens added later
+            excess_length = total_length - (max_length - 3)
+            prompt = prompt[:-excess_length]
+            response = response[:-excess_length]
+
         input_tokens = tokenizer(prompt, truncation=True, max_length=max_length // 2, return_tensors="pt")["input_ids"].squeeze()
         input_len = len(input_tokens)
 
