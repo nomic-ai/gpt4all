@@ -26,7 +26,7 @@ Here's how to get started with the CPU quantized gpt4all model checkpoint:
    - Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe`
    - Intel Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-intel`
 
-For custom hardware compilation, see our [Alpaca C++](https://github.com/zanussbaum/gpt4all.cpp) repository.
+For custom hardware compilation, see our [llama.cpp](https://github.com/zanussbaum/gpt4all.cpp) fork.
 
 -----------
 
