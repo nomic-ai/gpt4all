@@ -166,3 +166,4 @@ cython_debug/
 
 # vs code
 .vscode
+*.bin
