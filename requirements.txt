@@ -1,12 +1,12 @@
+torch
 accelerate
 datasets
 torchmetrics
 evaluate
 transformers
 wandb
-pip
 peft
 nodelist-inflator
-deepspeed
 sentencepiece
 jsonlines
+#deepspeed # Needs torch to be installed so we need to install it after executing pip install -e requirementx.txt
