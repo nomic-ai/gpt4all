@@ -19,7 +19,7 @@ Run on M1 Mac (not sped up!)
 Here's how to get started with the CPU quantized gpt4all model checkpoint:
 
 1. Download the `gpt4all-lora-quantized.bin` file from [Direct Link](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) or [[Torrent-Magnet]](https://tinyurl.com/gpt4all-lora-quantized).
-2. Verify its sha512sum: `echo "fd79a62e2c4568e66dbc19bbfab3399c72557cf50f73b854c9f53e6179931e41d9f9815055565fc89474ccc77f596da1c878868397e93726427805abd132c885 gpt4all-lora-quantized.bin" | sha5sum -c -`
+2. Verify its sha512sum: `echo "fd79a62e2c4568e66dbc19bbfab3399c72557cf50f73b854c9f53e6179931e41d9f9815055565fc89474ccc77f596da1c878868397e93726427805abd132c885 gpt4all-lora-quantized.bin" | sha512sum -c -`
 
 Or on Windows:
 - `certutil -hashfile gpt4all-lora-quantized.bin SHA512`
