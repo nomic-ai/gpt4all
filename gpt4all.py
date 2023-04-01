@@ -1,8 +1,16 @@
+
+# to call the c runtime
 import subprocess
+
+# to check the os for correct runtime binary 
 import platform
+
+# TODO to determine resources available for c runtime
 import threading
 
-#model binary needs to be in chat folder, unless we have a better place
+# to prevent remote code execution through prompt input
+import shlex
+
 
 model_file = "chat/gpt4all-lora-quantized.bin"
 
@@ -38,10 +46,11 @@ def gpt4all_prompt(p, t, m):
 
 def ask_question():
     if __name__ == "__main__":
-        question = input("What is your question? ")
+    	# sanitize input with shlex to prevent code injection
+        sanitized_prompt = shlex.quote(input(">"))
+        
         # Convert special characters to Unicode escape sequences, hopefully
-        question = question.encode('unicode_escape').decode('utf-8')
-        return question
+        return sanitized_prompt.encode('unicode_escape').decode('utf-8')
     else:
         return "hello I am testing"
 
