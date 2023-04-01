@@ -2,7 +2,9 @@ import subprocess
 import platform
 import threading
 
-model_file = "../gpt4all-lora-quantized.bin"
+#model binary needs to be in chat folder, unless we have a better place
+
+model_file = "chat/gpt4all-lora-quantized.bin"
 
 def gpt4all_prompt(p, t, m):
     def load_correct_runtime():
@@ -22,7 +24,7 @@ def gpt4all_prompt(p, t, m):
 
     # Define the command and its arguments as a list of strings
     # would be good for me to locate the file a better way
-    command = ["../gpt4all/chat/gpt4all-lora-quantized-" + load_correct_runtime()
+    command = ["chat/gpt4all-lora-quantized-" + load_correct_runtime()
         , "-p", p
         , "-t", str(t)
         , "-m", m
