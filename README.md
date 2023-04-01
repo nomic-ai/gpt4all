@@ -1,11 +1,11 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Demo, data and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations based on LLaMa</p>
+<p align="center">Demo, data and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations.<br>Based on LLaMa</p>
 
 <p align="center">
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
 </p>
 <p align="center">
-<a href="https://discord.gg/kvmy6dQB">Discord</a>
+<a href="https://discord.gg/kvmy6dQB">💬 Discord</a>
 </p>
 
 
@@ -18,9 +18,22 @@ Run on M1 Mac (not sped up!)
 
 Here's how to get started with the CPU quantized gpt4all model checkpoint:
 
-1. Download the `gpt4all-lora-quantized.bin` file from [Direct Link](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) or [[Torrent-Magnet]](https://tinyurl.com/gpt4all-lora-quantized).
-2. Clone this repository, navigate to `chat`, and place the downloaded file there.
-3. Run the appropriate command for your OS:
+1. Clone this repository, navigate to the folder.
+
+```
+git clone https://github.com/nomic-ai/gpt4all
+cd nomic-ai/gpt4all
+```
+
+2. Download the `gpt4all-lora-quantized.bin` file from [Direct Link](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) or [[Torrent-Magnet]](https://tinyurl.com/gpt4all-lora-quantized) and place the downloaded file into `chat` folder
+
+```
+cd chat
+wget https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin
+cd ..
+```
+
+4. Run the appropriate command for your OS:
    - M1 Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-m1`
    - Linux: `cd chat;./gpt4all-lora-quantized-linux-x86`
    - Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe`
@@ -33,7 +46,9 @@ For custom hardware compilation, see our [llama.cpp](https://github.com/zanussba
 [Secret Unfiltered Checkpoint](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin) - [[Torrent]](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.torrent)
 
 This model had all refusal to answer responses removed from training. Try it with:
-- `cd chat;./gpt4all-lora-quantized-OSX-m1 -m gpt4all-lora-unfiltered-quantized.bin`
+```
+cd chat;./gpt4all-lora-quantized-OSX-m1 -m gpt4all-lora-unfiltered-quantized.bin
+```
 
 -----------
 Note: the full model on GPU (16GB of RAM required) performs much better in our qualitative evaluations.
