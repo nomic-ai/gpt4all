@@ -110,9 +110,10 @@ You can reproduce our trained model by doing the following:
 
 Clone the repo
 
-`git clone --recurse-submodules https://github.com/nomic-ai/gpt4all.git`
-
-`git submodule configure && git submodule update`
+```
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all.git
+git submodule update --init
+```
 
 Setup the environment
 
