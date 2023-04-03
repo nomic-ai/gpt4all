@@ -22,7 +22,7 @@ Run on M1 Mac (not sped up!)
 
 # Try it yourself
 
-Here's how to get started with the CPU quantized gpt4all model checkpoint:
+Here's how to get started with the CPU quantized GPT4All model checkpoint:
 
 1. Download the `gpt4all-lora-quantized.bin` file from [Direct Link](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) or [[Torrent-Magnet]](https://tinyurl.com/gpt4all-lora-quantized).
 2. Clone this repository, navigate to `chat`, and place the downloaded file there.
