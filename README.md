@@ -4,6 +4,12 @@
 <p align="center">
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
 </p>
+
+
+<p align="center">
+<a href="https://github.com/nomic-ai/pyllamacpp">:snake: Official Python Bindings</a>
+</p>
+
 <p align="center">
 <a href="https://discord.gg/kvmy6dQB">Discord</a>
 </p>
@@ -40,6 +46,9 @@ Note: the full model on GPU (16GB of RAM required) performs much better in our q
 
 # Python Client
 ## CPU Interface
+To run GPT4all in python, see the new [official Python bindings](https://github.com/nomic-ai/pyllamacpp).
+
+The old bindings are still available but now deprecated. They will not work in a notebook environment.
 To get running using the python client with the CPU interface, first install the [nomic client](https://github.com/nomic-ai/nomic) using `pip install nomic`
 Then, you can use the following script to interact with GPT4All:
 ```
