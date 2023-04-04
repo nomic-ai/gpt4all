@@ -68,7 +68,7 @@ def load_data(config, tokenizer):
         dataset = load_dataset("json", data_files=files, split="train")
 
     else:
-        dataset = load_dataset(dataset_path)
+        dataset = load_dataset(dataset_path,split='train')
 
     dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
 

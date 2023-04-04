@@ -4,6 +4,12 @@
 <p align="center">
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
 </p>
+
+
+<p align="center">
+<a href="https://github.com/nomic-ai/pyllamacpp">:snake: Official Python Bindings</a>
+</p>
+
 <p align="center">
 <a href="https://discord.gg/kvmy6dQB">Discord</a>
 </p>
@@ -18,7 +24,7 @@ Run on M1 Mac (not sped up!)
 
 # Try it yourself
 
-Here's how to get started with the CPU quantized gpt4all model checkpoint:
+Here's how to get started with the CPU quantized GPT4All model checkpoint:
 
 1. Download the `gpt4all-lora-quantized.bin` file from [Direct Link](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) or [[Torrent-Magnet]](https://tinyurl.com/gpt4all-lora-quantized).
 2. Clone this repository, navigate to `chat`, and place the downloaded file there.
@@ -28,7 +34,7 @@ Here's how to get started with the CPU quantized gpt4all model checkpoint:
    - Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe`
    - Intel Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-intel`
 
-For custom hardware compilation, see our [Alpaca C++](https://github.com/zanussbaum/gpt4all.cpp) repository.
+For custom hardware compilation, see our [llama.cpp](https://github.com/zanussbaum/gpt4all.cpp) fork.
 
 -----------
 
@@ -42,8 +48,11 @@ Note: the full model on GPU (16GB of RAM required) performs much better in our q
 
 # Python Client
 ## CPU Interface
+To run GPT4all in python, see the new [official Python bindings](https://github.com/nomic-ai/pyllamacpp).
+
+The old bindings are still available but now deprecated. They will not work in a notebook environment.
 To get running using the python client with the CPU interface, first install the [nomic client](https://github.com/nomic-ai/nomic) using `pip install nomic`
-Then, you can use the following script to interact with GPU4All:
+Then, you can use the following script to interact with GPT4All:
 ```
 from nomic.gpt4all import GPT4All
 m = GPT4All()
@@ -112,9 +121,10 @@ You can reproduce our trained model by doing the following:
 
 Clone the repo
 
-`git clone --recurse-submodules https://github.com/nomic-ai/gpt4all.git`
-
-`git submodule configure && git submodule update`
+```
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all.git
+git submodule update --init
+```
 
 Setup the environment
 
