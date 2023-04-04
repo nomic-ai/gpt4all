@@ -1,5 +1,5 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Demo, data and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations based on LLaMa</p>
+<p align="center">Demo, data, and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations based on LLaMa</p>
 
 <p align="center">
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
@@ -46,7 +46,7 @@ Note: the full model on GPU (16GB of RAM required) performs much better in our q
 
 # Python Client
 ## CPU Interface
-To run GPT4all in python, see the new [official Python bindings](https://github.com/nomic-ai/pyllamacpp).
+To run GPT4All in python, see the new [official Python bindings](https://github.com/nomic-ai/pyllamacpp).
 
 The old bindings are still available but now deprecated. They will not work in a notebook environment.
 To get running using the python client with the CPU interface, first install the [nomic client](https://github.com/nomic-ai/nomic) using `pip install nomic`
