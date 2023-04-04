@@ -1,3 +1,4 @@
+ckpts*
 *.jsonl
 *tar.gz
 ckpts**
