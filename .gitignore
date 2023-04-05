@@ -1,4 +1,5 @@
 ckpts*
+.deepspeed_env
 *.jsonl
 *tar.gz
 ckpts**
