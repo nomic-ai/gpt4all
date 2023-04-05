@@ -19,7 +19,7 @@
 		"device": "none"
 	  },
 	  "offload_optimizer": {
-		"device": "cpu"
+		"device": "none"
 	  },
 	  "allgather_partitions": true,
 	  "allgather_bucket_size": 5e8,
