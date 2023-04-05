@@ -11,8 +11,13 @@
 </p>
 
 <p align="center">
+<a href="https://github.com/nomic-ai/gpt4all-ts">:computer: Official Typescript Bindings</a>
+</p>
+
+<p align="center">
 <a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
+
 
 
 
