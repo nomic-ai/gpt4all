@@ -1,6 +1,6 @@
 {
 	"train_batch_size": "auto",
-	"gradient_accumulation_steps": 4,
+	"gradient_accumulation_steps": "auto",
 	"train_micro_batch_size_per_gpu": "auto",
 	"fp16": {
 	  "enabled": "auto",
@@ -19,7 +19,7 @@
 		"device": "none"
 	  },
 	  "offload_optimizer": {
-		"device": "none"
+		"device": "cpu"
 	  },
 	  "allgather_partitions": true,
 	  "allgather_bucket_size": 5e8,
