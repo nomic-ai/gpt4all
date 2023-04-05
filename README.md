@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-<a href="https://discord.gg/kvmy6dQB">Discord</a>
+<a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
 
 
