@@ -81,6 +81,17 @@ We are working on a GPT4All that does not have this limitation right now.
 
 You can pass any of the [huggingface generation config params](https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig) in the config.
 
+# GPT4All Compatibility Ecosystem
+Edge models in the GPT4All Ecosystem. Please PR as the [community grows](https://huggingface.co/models?sort=modified&search=4bit).
+Feel free to convert this to a more structured table.
+
+- [gpt4all](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin)
+- [gpt4all-unfiltered](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin)
+- [ggml-vicuna-7b-4bit](https://huggingface.co/eachadea/ggml-vicuna-7b-4bit)
+- [vicuna-13b-GPTQ-4bit-128g](https://huggingface.co/anon8231489123/vicuna-13b-GPTQ-4bit-128g)
+- [LLaMa-Storytelling-4Bit](https://huggingface.co/GamerUntouch/LLaMa-Storytelling-4Bit)
+
+
 # Roadmap
 ## Short Term
  - <span style="color:green">(IN PROGRESS)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
