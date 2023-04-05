@@ -2,7 +2,7 @@
 model_name: "EleutherAI/gpt-j-6B"
 tokenizer_name: "EleutherAI/gpt-j-6B"
 gradient_checkpointing: true
-save_name: "nomic-ai/gpt4all-gptj-multinode"
+save_name: "nomic-ai/gpt4all-gptj-multinode-deepspeed"
 
 # dataset
 streaming: false
@@ -12,13 +12,13 @@ max_length: 1024
 batch_size: 32
 
 # train dynamics
-lr: 4.0e-5
+lr: 2.0e-5
 min_lr: 0 
 weight_decay: 0.0
-eval_every: 100
+eval_every: 500
 eval_steps: 105
-save_every: 100
-log_grads_every: 100
+save_every: 500
+log_grads_every: 500
 output_dir: "ckpts/gpt4all-gptj-multinode"
 checkpoint: null
 lora: false
