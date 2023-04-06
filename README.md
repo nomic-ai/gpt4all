@@ -77,7 +77,7 @@ The setup here is slightly more involved than the CPU model.
 
 Once this is done, you can run the model on GPU with a script like the following:
 ```
-from nomic.gpt4all import GPT4AllGPU
+from nomic.gpt4all.gpt4all import GPT4AllGPU
 m = GPT4AllGPU(LLAMA_PATH)
 config = {'num_beams': 2,
           'min_new_tokens': 10,
