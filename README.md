@@ -14,6 +14,10 @@
 </p>
 
 <p align="center">
+<a href="https://github.com/nomic-ai/gpt4all-ui">:speech_balloon: Official Chat Interface</a>
+</p>
+
+<p align="center">
 <a href="https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html">🦜️🔗 Official Langchain Backend</a> 
 </p>
 
@@ -98,21 +102,22 @@ You can pass any of the [huggingface generation config params](https://huggingfa
 Edge models in the GPT4All Ecosystem. Please PR as the [community grows](https://huggingface.co/models?sort=modified&search=4bit).
 Feel free to convert this to a more structured table.
 
-- [gpt4all](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized-ggml.bin.md5)]
+- [gpt4all](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin.md5)]
    - [gpt4all-ggml-converted](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized-ggml.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized-ggml.bin.md5)]
 - [gpt4all-unfiltered](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.md5)]
 - [ggml-vicuna-7b-4bit](https://huggingface.co/eachadea/ggml-vicuna-7b-4bit)
 - [vicuna-13b-GPTQ-4bit-128g](https://huggingface.co/anon8231489123/vicuna-13b-GPTQ-4bit-128g)
 - [LLaMa-Storytelling-4Bit](https://huggingface.co/GamerUntouch/LLaMa-Storytelling-4Bit)
+- [Alpaca Native 4bit](https://huggingface.co/Sosaka/Alpaca-native-4bit-ggml/tree/main)
 
 
 # Roadmap
 ## Short Term
  - <span style="color:green">(IN PROGRESS)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
  - <span style="color:green">(IN PROGRESS)</span> Create improved CPU and GPU interfaces for this model.
- - <span style="color:red">(NOT STARTED)</span> Integrate llama.cpp bindings
- - <span style="color:red">(NOT STARTED)</span> Create a good conversational chat interface for the model.
- - <span style="color:red">(NOT STARTED)</span> Allow users to opt in and submit their chats for subsequent training runs
+ - <span style="color:green">(Done)</span> [Integrate llama.cpp bindings](https://github.com/nomic-ai/pyllamacpp)
+ - <span style="color:green">(Done)</span> [Create a good conversational chat interface for the model.](https://github.com/nomic-ai/gpt4all-ui)
+ - <span style="color:green">(Done)</span> [Allow users to opt in and submit their chats for subsequent training runs](https://github.com/nomic-ai/gpt4all-ui)
 
 ## Medium Term
  - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with [Atlas](https://atlas.nomic.ai) to allow for document retrieval.
