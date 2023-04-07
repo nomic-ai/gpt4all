@@ -1,6 +1,7 @@
 FROM ubuntu:22.04
 
-COPY ./chat/gpt4all-* /opt/gpt4all/
+COPY ./chat/gpt4all-* /opt/gpt4all/chat/
+COPY ./launcher.sh /opt/gpt4all/
 
 # If gpt4all-lora-quantized.bin exists in chat dir, comment out below
 RUN apt update \
@@ -10,4 +11,4 @@ RUN apt update \
 
 WORKDIR /opt/gpt4all
 
-CMD ["./gpt4all-lora-quantized-linux-x86", "-m", "./gpt4all-lora-quantized.bin"]
+CMD ["/bin/sh", "-c", "./launcher.sh"]
