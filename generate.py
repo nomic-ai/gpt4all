@@ -15,7 +15,7 @@ def generate(tokenizer, prompt, model, config):
 
     return decoded[len(prompt):]
 
-    
+
 def setup_model(config):
     model = AutoModelForCausalLM.from_pretrained(config["model_name"], device_map="auto", torch_dtype=torch.float16)
     tokenizer = AutoTokenizer.from_pretrained(config["tokenizer_name"])
@@ -29,11 +29,10 @@ def setup_model(config):
         model.to(dtype=torch.float16)
 
     print(f"Mem needed: {model.get_memory_footprint() / 1024 / 1024 / 1024:.2f} GB")
-        
+
     return model, tokenizer
 
-    
-    
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, required=True)

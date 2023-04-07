@@ -34,7 +34,7 @@ def setup_model(config):
         model.to(dtype=torch.float16)
 
     print(f"Mem needed: {model.get_memory_footprint() / 1024 / 1024 / 1024:.2f} GB")
-        
+
     return model, tokenizer
 
 
@@ -45,7 +45,7 @@ def eval_example(model, tokenizer, example, config):
     prompt = example['instruction'] + ' ' + example['instances'][0]['input']
     gt = prompt + ' ' + example['instances'][0]['output']
 
-    #decode several continuations and compute their page trajectories
+    # decode several continuations and compute their page trajectories
     input = tokenizer(prompt, return_tensors="pt")
     input = {k: v.to(model.device) for k, v in input.items()}
 
@@ -71,7 +71,7 @@ def eval_example(model, tokenizer, example, config):
         continuations.append(decoded)
         tokenized_continuations.append(tokenizer.tokenize(decoded))
 
-    #compute the ground truth perplexity
+    # compute the ground truth perplexity
     gt_input = tokenizer(gt, return_tensors="pt")
     gt_input = {k: v.to(model.device) for k, v in gt_input.items()}
 
