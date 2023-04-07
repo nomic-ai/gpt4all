@@ -82,7 +82,7 @@ get_valid_user_input() {
 }
 
 if [[ ${#bin_files[@]} -eq 0 ]]; then
-  echo "No .bin files found. Please run the 'train.sh' script first."
+  echo "No .bin files found."
   exit 1
 elif [[ ${#bin_files[@]} -eq 1 ]]; then
   echo "Only one .bin file found. Using it."
