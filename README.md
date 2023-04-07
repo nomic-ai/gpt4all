@@ -142,14 +142,14 @@ You can reproduce our trained model by doing the following:
 
 ## Setup
 
-Clone the repo
+### Clone the repo
 
 ```
 git clone --recurse-submodules https://github.com/nomic-ai/gpt4all.git
 git submodule update --init
 ```
 
-Setup the environment
+### Setup the environment
 
 ```
 python -m pip install -r requirements.txt
@@ -261,3 +261,7 @@ If you utilize this repository, models or data in a downstream project, please c
   howpublished = {\url{https://github.com/nomic-ai/gpt4all}},
 }
 ```
+
+## License
+
+This project is licensed under the MIT License.
