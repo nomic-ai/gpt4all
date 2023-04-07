@@ -1,5 +1,5 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Demo, data, and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations based on LLaMa</p>
+<p align="center">Demo, data, and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations based on LLaMA</p>
 
 <p align="center">
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
@@ -88,7 +88,7 @@ config = {'num_beams': 2,
 out = m.generate('write me a story about a lonely computer', config)
 print(out)
 ```
-Where LLAMA_PATH is the path to a Huggingface Automodel compliant LLAMA model.
+Where LLAMA_PATH is the path to a Huggingface Automodel compliant LLaMA model.
 Nomic is unable to distribute this file at this time.
 We are working on a GPT4All that does not have this limitation right now.
 
@@ -103,12 +103,12 @@ Feel free to convert this to a more structured table.
 - [gpt4all-unfiltered](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.md5)]
 - [ggml-vicuna-7b-4bit](https://huggingface.co/eachadea/ggml-vicuna-7b-4bit)
 - [vicuna-13b-GPTQ-4bit-128g](https://huggingface.co/anon8231489123/vicuna-13b-GPTQ-4bit-128g)
-- [LLaMa-Storytelling-4Bit](https://huggingface.co/GamerUntouch/LLaMa-Storytelling-4Bit)
+- [LLaMA-Storytelling-4Bit](https://huggingface.co/GamerUntouch/LLaMa-Storytelling-4Bit)
 
 
 # Roadmap
 ## Short Term
- - <span style="color:green">(IN PROGRESS)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
+ - <span style="color:green">(IN PROGRESS)</span> Train a GPT4All model based on GPTJ to alleviate LLaMA distribution issues.
  - <span style="color:green">(IN PROGRESS)</span> Create improved CPU and GPU interfaces for this model.
  - <span style="color:red">(NOT STARTED)</span> Integrate llama.cpp bindings
  - <span style="color:red">(NOT STARTED)</span> Create a good conversational chat interface for the model.
@@ -136,7 +136,7 @@ Raw Data:
 - [Full Dataset with P3](https://huggingface.co/datasets/nomic-ai/gpt4all_prompt_generations_with_p3)
   - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean
 
-We are not distributing a LLaMa 7B checkpoint.
+We are not distributing a LLaMA 7B checkpoint.
 
 You can reproduce our trained model by doing the following:
 
