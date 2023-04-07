@@ -14,6 +14,10 @@
 </p>
 
 <p align="center">
+<a href="https://github.com/nomic-ai/gpt4all-ui">:speech_balloon: Official Chat Interface</a>
+</p>
+
+<p align="center">
 <a href="https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html">🦜️🔗 Official Langchain Backend</a> 
 </p>
 
@@ -111,9 +115,9 @@ Feel free to convert this to a more structured table.
 ## Short Term
  - <span style="color:green">(IN PROGRESS)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
  - <span style="color:green">(IN PROGRESS)</span> Create improved CPU and GPU interfaces for this model.
- - <span style="color:red">(NOT STARTED)</span> Integrate llama.cpp bindings
- - <span style="color:red">(NOT STARTED)</span> Create a good conversational chat interface for the model.
- - <span style="color:red">(NOT STARTED)</span> Allow users to opt in and submit their chats for subsequent training runs
+ - <span style="color:green">(Done)</span> [Integrate llama.cpp bindings](https://github.com/nomic-ai/pyllamacpp)
+ - <span style="color:green">(Done)</span> [Create a good conversational chat interface for the model.](https://github.com/nomic-ai/gpt4all-ui)
+ - <span style="color:green">(Done)</span> [Allow users to opt in and submit their chats for subsequent training runs](https://github.com/nomic-ai/gpt4all-ui)
 
 ## Medium Term
  - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with [Atlas](https://atlas.nomic.ai) to allow for document retrieval.
