@@ -10,3 +10,4 @@ nodelist-inflator
 deepspeed
 sentencepiece
 jsonlines
+nomic
