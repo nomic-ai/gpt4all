@@ -142,7 +142,11 @@ def load_data_for_inference(config, tokenizer):
     train_dataset, val_dataset = dataset["train"], dataset["test"]
 
     train_dataset = train_dataset.add_column("index", list(range(len(train_dataset))))
+    # select first N batches that are divisible by batch_size
+    # gather is a bit annoying (or the way I'm using it) to get uneven batches as it duplicates data
+    train_dataset = train_dataset.select(range((len(train_dataset) // config["batch_size"]) * config["batch_size"]))
     val_dataset = val_dataset.add_column("index", list(range(len(val_dataset))))
+    val_dataset = val_dataset.select(range((len(val_dataset) // config["batch_size"]) * config["batch_size"]))
 
     if config["streaming"] is False:
         kwargs = {"num_proc": config["num_proc"]}

@@ -46,20 +46,22 @@ def inference(config):
     num_processes = dist.get_world_size()
     local_rank = dist.get_rank()
 
-    train_sampler = ShardSampler(train_dataset, config["batch_size"], num_processes=num_processes, process_index=local_rank)
+    train_sampler = ShardSampler(train_dataset, config["batch_size"], drop_last=True, num_processes=num_processes, process_index=local_rank)
     train_dataloader = DataLoader(
         train_dataset,
         collate_fn=DefaultDataCollator(),
         batch_size=config["batch_size"],
-        sampler=train_sampler
+        sampler=train_sampler,
+        drop_last=True
     )
 
-    val_sampler = ShardSampler(val_dataset, config["batch_size"], num_processes=num_processes, process_index=local_rank)
+    val_sampler = ShardSampler(val_dataset, config["batch_size"], drop_last=True, num_processes=num_processes, process_index=local_rank)
     val_dataloader = DataLoader(
         val_dataset,
         collate_fn=DefaultDataCollator(),
         batch_size=config["batch_size"],
-        sampler=val_sampler
+        sampler=val_sampler,
+        drop_last=True
     )
 
 
@@ -113,7 +115,6 @@ def inference(config):
 
         df_train = Dataset.from_dict(gathered_train)
         df_train = df_train.sort("index")
-
         train_dataset = train_dataset.add_column("embeddings", df_train["embeddings"])
         train_dataset = train_dataset.add_column("loss", df_train["loss"])
         train_dataset = train_dataset.add_column("is_train", [True] * len(train_dataset))
