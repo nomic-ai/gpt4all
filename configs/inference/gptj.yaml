@@ -1,0 +1,14 @@
+# model/tokenizer
+model_name: "nomic-ai/gpt4all-gptj-multinode-deepspeed-finetuned-epoch_0"
+tokenizer_name: "EleutherAI/gpt-j-6B"
+
+# dataset
+streaming: false
+num_proc: 64
+dataset_path: "data_multiplus" 
+max_length: 1024
+batch_size: 32 
+
+# logging
+seed: 42
+
