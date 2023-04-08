@@ -11,3 +11,4 @@ deepspeed
 sentencepiece
 jsonlines
 nomic
+scikit-learn
