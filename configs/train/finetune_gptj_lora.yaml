@@ -1,6 +1,6 @@
 # model/tokenizer
-model_name: "EleutherAI/gpt-j-6B"
-tokenizer_name: "EleutherAI/gpt-j-6B"
+model_name: "EleutherAI/gpt-j-6b"
+tokenizer_name: "EleutherAI/gpt-j-6b"
 gradient_checkpointing: false
 save_name: "nomic-ai/gpt4all-mosaic"
 
