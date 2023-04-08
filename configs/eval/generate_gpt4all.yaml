@@ -1,0 +1,9 @@
+# model/tokenizer
+model_name: "nomic-ai/gpt4all-gptj-multinode-deepspeed-epoch_0"
+tokenizer_name: "EleutherAI/gpt-j-6B"
+lora: false
+lora_path: null
+
+stride: 512
+num_proc: 64
+batch_size: 1

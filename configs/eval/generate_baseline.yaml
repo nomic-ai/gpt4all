@@ -1,11 +1,13 @@
 # model/tokenizer
-model_name: # update with llama model name
-tokenizer_name: # update with llama model name
+model_name: "zpn/llama-7b"
+tokenizer_name: "zpn/llama-7b"
 lora: true
 lora_path: "tloen/alpaca-lora-7b"
 
 
-
+stride: 512
+num_proc: 64
+batch_size: 1
 max_new_tokens: 512
 temperature: 0.001
 prompt: | 
