@@ -203,5 +203,6 @@ if __name__ == "__main__":
         )
     else:
         accelerator = Accelerator()
+        accelerator.init_trackers("no_project")
 
     train(accelerator, config=config)
