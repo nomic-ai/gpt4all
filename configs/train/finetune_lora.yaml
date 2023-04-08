@@ -7,12 +7,14 @@ save_name: "nomic-ai/gpt4all-lora-multi-turn"
 # dataset
 streaming: false
 num_proc: 64
-dataset_path: "data_multiturn"
+dataset_path: "nomic-ai/turbo-500k-multi"
 max_length: 1024
 batch_size: 4
 
 # train dynamics
 lr: 5.0e-5
+min_lr: 0
+weight_decay: 0.0
 eval_every: 2000
 eval_steps: 100
 save_every: 2000
