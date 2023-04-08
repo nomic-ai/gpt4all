@@ -59,7 +59,7 @@ This model had all refusal to answer responses removed from training. Try it wit
 - Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe -m gpt4all-lora-unfiltered-quantized.bin`
 - Intel Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-intel -m gpt4all-lora-unfiltered-quantized.bin`
 -----------
-Note: the full model on GPU (16GB of RAM required) performs much better in our qualitative evaluations.
+Note: the full model on GPU (16GB of VRAM required) performs much better in our qualitative evaluations.
 
 # Python Client
 ## CPU Interface
