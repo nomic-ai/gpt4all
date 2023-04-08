@@ -9,7 +9,7 @@ streaming: false
 num_proc: 64
 dataset_path: "nomic-ai/turbo-500k-multi"
 max_length: 1024
-batch_size: 4
+batch_size: 2 
 
 # train dynamics
 lr: 2.0e-5
