@@ -700,6 +700,7 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
     n_predict = std::min(n_predict, d_ptr->model.hparams.n_ctx - (int) embd_inp.size());
 
     std::vector<gpt_vocab::id> embd;
+    std::vector<gpt_vocab::id> resp;
 
     // determine the required inference memory per token:
     size_t mem_per_token = 0;
@@ -720,6 +721,7 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
 
         n_past += embd.size();
         embd.clear();
+        resp.clear();
 
         if (i >= embd_inp.size()) {
             // sample next token
@@ -738,6 +740,7 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
 
             // add it to the context
             embd.push_back(id);
+            resp.push_back(id);
         } else {
             // if here, it means we are still processing the input prompt
             for (int k = i; k < embd_inp.size(); k++) {
@@ -750,7 +753,7 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
         }
 
         // display text
-        for (auto id : embd) {
+        for (auto id : resp) {
             if (!response(d_ptr->vocab.id_to_token[id]))
                 goto stop_generating;
         }
@@ -762,7 +765,7 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
     }
 
 stop_generating:
-#if 1
+#if 0
     // report timing
     {
         const int64_t t_main_end_us = ggml_time_us();
