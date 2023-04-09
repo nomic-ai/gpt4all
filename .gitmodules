@@ -1,0 +1,3 @@
+[submodule "ggml"]
+	path = ggml
+	url = https://github.com/manyoso/ggml.git
