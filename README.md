@@ -17,12 +17,15 @@ GPT-J model.
 
 * Install Qt 6.x for your platform https://doc.qt.io/qt-6/get-and-install-qt.html
 * Install cmake for your platform https://cmake.org/install/
-* Clone this repo ```git clone --recurse-submodules https://github.com/manyoso/gpt4all-chat.git```
-* ```cd gpt4all-chat
-     mkdir build
-     cd build
-     cmake ..
-     cmake --build . --parallel```
+* Clone this repo and build
+```
+git clone --recurse-submodules https://github.com/manyoso/gpt4all-chat.git
+cd gpt4all-chat
+mkdir build
+cd build
+cmake ..
+cmake --build . --parallel
+```
 
 ## Running
 
