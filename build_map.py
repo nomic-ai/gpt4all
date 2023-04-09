@@ -49,4 +49,6 @@ atlas.map_embeddings(embeddings,
                      id_field="index",
                      name="Post Epoch 1 Embeddings",
                      colorable_fields=["source", "loss", "trained_on"],
+                     build_topic_model=True,
+                     topic_label_field="inputs",
                      reset_project_if_exists=True,)
