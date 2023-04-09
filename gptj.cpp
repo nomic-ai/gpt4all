@@ -740,7 +740,8 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
 
             // add it to the context
             embd.push_back(id);
-            resp.push_back(id);
+            if (id != 50256)
+                resp.push_back(id);
         } else {
             // if here, it means we are still processing the input prompt
             for (int k = i; k < embd_inp.size(); k++) {
