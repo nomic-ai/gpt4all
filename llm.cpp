@@ -75,7 +75,8 @@ bool GPTJObject::prompt(const QString &prompt)
     m_stopGenerating = false;
     auto func = std::bind(&GPTJObject::handleResponse, this, std::placeholders::_1);
     emit responseStarted();
-    m_gptj->prompt(prompt.toStdString(), func);
+    static GPTJ::PromptContext ctx;
+    m_gptj->prompt(prompt.toStdString(), func, ctx, 4096 /*number of chars to predict*/);
     emit responseStopped();
     return true;
 }
