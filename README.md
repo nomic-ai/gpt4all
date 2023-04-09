@@ -2,7 +2,10 @@
 
 Cross platform Qt based GUI for GPT4All versions with GPT-J as the base
 model. NOTE: The model seen in the screenshot is actually the original
-GPT-J model.
+GPT-J model. The GPT4All project is busy at work training a new version
+with GPT-J as the base, but it isn't ready yet. In the meantime, you can
+try this UI out with the original GPT-J model. Full instructions for how
+are included below.
 
 ![image](https://user-images.githubusercontent.com/50458173/230752927-d3e8a37f-dff4-4172-a657-714478400cd5.png)
 
