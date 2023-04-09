@@ -69,7 +69,7 @@ Window {
                         color: "#d1d5db"
                         padding: 20
                         font.pixelSize: 24
-                        text: "Model: GPT-J-6B-4bit"
+                        text: "Model: GPT4ALL-J-6B-4bit"
                         background: Rectangle {
                             color: "#444654"
                         }
@@ -152,7 +152,8 @@ Window {
                 anchors.leftMargin: 15
                 source: LLM.responseInProgress ? "qrc:/gpt4all-chat/icons/stop_generating.svg" : "qrc:/gpt4all-chat/icons/regenerate.svg"
             }
-            text: LLM.responseInProgress ? qsTr("      Stop generating") : qsTr("      Regenerate response")
+            leftPadding: 50
+            text: LLM.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
             onClicked: {
                 if (LLM.responseInProgress)
                     LLM.stopGenerating()
