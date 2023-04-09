@@ -424,7 +424,7 @@ bool gptj_eval(
 
     if (mem_per_token > 0 && mem_per_token*N > buf_size) {
         const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
-        //printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, buf_size, buf_size_new);
+        printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, buf_size, buf_size_new);
 
         // reallocate
         buf_size = buf_size_new;
@@ -634,8 +634,6 @@ struct GPTJPrivate {
     bool modelLoaded;
     gpt_vocab vocab;
     gptj_model model;
-    int64_t t_main_start_us = 0;
-    int64_t t_load_us = 0;
     int64_t n_threads = 0;
     std::mt19937 rng;
 };
@@ -647,20 +645,13 @@ GPTJ::GPTJ()
 }
 
 bool GPTJ::loadModel(const std::string &modelPath, std::istream &fin) {
-    d_ptr->t_main_start_us = ggml_time_us();
     std::mt19937 rng(time(NULL));
     d_ptr->rng = rng;
 
     // load the model
-    {
-        const int64_t t_start_us = ggml_time_us();
-
-        if (!gptj_model_load(modelPath, fin, d_ptr->model, d_ptr->vocab)) {
-            std::cerr << "GPT-J ERROR: failed to load model from" <<  modelPath;
-            return false;
-        }
-
-        d_ptr->t_load_us = ggml_time_us() - t_start_us;
+    if (!gptj_model_load(modelPath, fin, d_ptr->model, d_ptr->vocab)) {
+        std::cerr << "GPT-J ERROR: failed to load model from" <<  modelPath;
+        return false;
     }
 
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
@@ -687,10 +678,12 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
         return;
     }
 
+    const int64_t t_main_start_us = ggml_time_us();
     int n_past = 0;
 
     int64_t t_sample_us  = 0;
     int64_t t_predict_us = 0;
+    int64_t t_prompt_us = 0;
 
     std::vector<float> logits;
 
@@ -724,6 +717,8 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
         resp.clear();
 
         if (i >= embd_inp.size()) {
+            t_prompt_us += ggml_time_us() - t_main_start_us;
+
             // sample next token
 
             const int n_vocab = d_ptr->model.hparams.n_vocab;
@@ -772,12 +767,11 @@ stop_generating:
         const int64_t t_main_end_us = ggml_time_us();
 
         std::cout << "GPT-J INFO: mem per token = " << mem_per_token << " bytes\n";
-        std::cout << "GPT-J INFO:     load time = " << d_ptr->t_load_us/1000.0f << " ms\n";
         std::cout << "GPT-J INFO:   sample time = " << t_sample_us/1000.0f << " ms\n";
+        std::cout << "GPT-J INFO:   prompt time = " << t_prompt_us/1000.0f << " ms\n";
         std::cout << "GPT-J INFO:  predict time = " << t_predict_us/1000.0f << " ms / " << t_predict_us/1000.0f/n_past << " ms per token\n";
-        std::cout << "GPT-J INFO:    total time = " << (t_main_end_us - d_ptr->t_main_start_us)/1000.0f << " ms\n";
+        std::cout << "GPT-J INFO:    total time = " << (t_main_end_us - t_main_start_us)/1000.0f << " ms\n";
         fflush(stdout);
-        fflush(stderr);
     }
 #endif
 
