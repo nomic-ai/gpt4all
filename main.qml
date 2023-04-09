@@ -210,11 +210,9 @@ Window {
                 chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false, "value": textInput.text})
                 chatModel.append({"name": qsTr("Response: "), "currentResponse": true, "value": "", "prompt": prompt})
 
-//                var contextPrompt = ""
-//                for (var i = 0; i < chatModel.count; ++i) {
-//                    var listElement = chatModel.get(i)
-//                    contextPrompt += listElement.value + "\n";
-//                }
+//                var contextPrompt;
+//                for (var i = 0; i < chatModel.count; ++i)
+//                    contextPrompt += chatModel.get(i).value + "\n";
 //                prompt = contextPrompt + textInput.text + "\n"
 
                 LLM.resetResponse()
