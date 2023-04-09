@@ -80,7 +80,7 @@ Window {
                     model: chatModel
                     delegate: TextArea {
                         text: currentResponse ? LLM.response : value
-                        width: parent.width
+                        width: listView.width
                         color: "#d1d5db"
                         wrapMode: Text.WordWrap
                         focus: false
@@ -204,11 +204,12 @@ Window {
                     listElement.currentResponse = false
                     listElement.value = LLM.response
                 }
+                var prompt = textInput.text + "\n"
                 chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false, "value": textInput.text})
-                chatModel.append({"name": qsTr("Response: "), "currentResponse": true, "value": "", "prompt": textInput.text})
+                chatModel.append({"name": qsTr("Response: "), "currentResponse": true, "value": "", "prompt": prompt})
 
                 LLM.resetResponse()
-                LLM.prompt(textInput.text)
+                LLM.prompt(prompt)
                 textInput.text = ""
             }
 
