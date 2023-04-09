@@ -1,11 +1,11 @@
 # gpt4all-chat
 
 Cross platform Qt based GUI for GPT4All versions with GPT-J as the base
-model. NOTE: The model seen in the screenshot is actually the original
-a preview of a new training run for GPT4All based on GPT-J. The GPT4All 
-project is busy at work training a new version with GPT-J as the base, 
-but it isn't ready yet. In the meantime, you can try this UI out with the
-original GPT-J model. Full instructions for how are included below.
+model. NOTE: The model seen in the screenshot is actually a preview of a
+new training run for GPT4All based on GPT-J. The GPT4All project is busy
+at work training a new version with GPT-J as the base, but it isn't read
+just yet. In the meantime, you can try this UI out with the original GPT-J
+model. Full instructions for how are included below.
 
 ![image](https://user-images.githubusercontent.com/50458173/230756282-31b43d63-3c98-4f5d-b2dc-8c1ec2e0c8a9.png)
 
