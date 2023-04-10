@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <functional>
+#include <vector>
 
 class GPTJPrivate;
 class GPTJ {
