@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFile>
 #include <QResource>
+#include <fstream>
 
 class MyLLM: public LLM { };
 Q_GLOBAL_STATIC(MyLLM, llmInstance)
@@ -28,13 +29,12 @@ bool GPTJObject::loadModel()
         return true;
 
     QString modelName("ggml-model-q4_0.bin");
-    QFile file(QCoreApplication::applicationDirPath() + QDir::separator() + modelName);
-    if (file.open(QIODevice::ReadOnly)) {
+    QString fileName = QCoreApplication::applicationDirPath() + QDir::separator() + modelName;
+    QFile file(fileName);
+    if (file.exists()) {
 
-        QByteArray data = file.readAll();
-        std::istringstream iss(data.toStdString());
-
-        m_gptj->loadModel(modelName.toStdString(), iss);
+        auto fin = std::ifstream(fileName.toStdString(), std::ios::binary);
+        m_gptj->loadModel(modelName.toStdString(), fin);
         emit isModelLoadedChanged();
     }
 
