@@ -650,7 +650,7 @@ bool GPTJ::loadModel(const std::string &modelPath, std::istream &fin) {
 
     // load the model
     if (!gptj_model_load(modelPath, fin, d_ptr->model, d_ptr->vocab)) {
-        std::cerr << "GPT-J ERROR: failed to load model from" <<  modelPath;
+        std::cerr << "GPT-J ERROR: failed to load model from " <<  modelPath;
         return false;
     }
 
