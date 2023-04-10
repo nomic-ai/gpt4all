@@ -49,28 +49,6 @@ def eval_example(model, tokenizer, example, config):
     input = tokenizer(prompt, return_tensors="pt")
     input = {k: v.to(model.device) for k, v in input.items()}
 
-    continuations = []
-    tokenized_continuations = []
-    trajectories = []
-    for i in range(1):
-        with torch.no_grad():
-            outputs = model.generate(input_ids=input['input_ids'],
-                                     max_new_tokens=config["max_new_tokens"],
-                                     min_new_tokens=5,
-                                     temperature=config["temperature"],
-                                     repetition_penalty=1.0,
-                                     do_sample=True)
-            decoded = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
-
-            y = model(input_ids=outputs)
-        trajectory = y.hidden_states[0].detach().cpu().numpy()[0]
-        trajectory = trajectory / np.linalg.norm(trajectory, axis=1, keepdims=True)
-        trajectory = np.cumsum(trajectory, axis=0) / np.arange(1, trajectory.shape[0]+1).reshape(-1, 1)
-
-        trajectories.append(trajectory)
-        continuations.append(decoded)
-        tokenized_continuations.append(tokenizer.tokenize(decoded))
-
     #compute the ground truth perplexity
     gt_input = tokenizer(gt, return_tensors="pt")
     gt_input = {k: v.to(model.device) for k, v in gt_input.items()}
@@ -101,30 +79,23 @@ def eval_example(model, tokenizer, example, config):
 
     print(prompt)
     print(80*'-')
-    for continuation in continuations:
-        print(continuation)
-        print(80*'-')
+   
 
-    return ppl, trajectories, continuations, tokenized_continuations
+    return ppl
 
 def do_eval(config):
     eval_data = read_jsonl_file('eval_data/user_oriented_instructions.jsonl')
     model, tokenizer = setup_model(config)
-    all_trajectories = []
     all_perplexities = []
-    all_continuations = []
-    all_tokenized_continuations = []
     for example in tqdm(eval_data):
-        gt_perplexity, trajectories, continuations, tokenized_continuations = eval_example(model, tokenizer, example, config)
-        all_trajectories.append(trajectories)
+        gt_perplexity = eval_example(model, tokenizer, example, config)
         all_perplexities.append(gt_perplexity)
-        all_continuations.append(continuations)
 
-    with open('eval_data/eval__model-{}__lora-{}.pkl'.format(config['model_name'].replace('/', '_'), config['lora_path'].replace('/', '_')), 'wb') as f:
-        r = {'trajectories': all_trajectories,
-             'perplexities': all_perplexities,
-             'continuations': all_continuations,
-             'tokenized_continuations': all_tokenized_continuations}
+        
+    name = f"eval_data/eval__model-{config['model_name'].replace('/', '_')}{'__lora-' + config['lora_path'].replace('/', '_') if config['lora'] else ''}.pkl"
+
+    with open(name, 'wb') as f:
+        r = {'perplexities': all_perplexities}
         pickle.dump(r, f)
 
 
