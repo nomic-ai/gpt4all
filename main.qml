@@ -9,36 +9,37 @@ Window {
     visible: true
     title: qsTr("GPT4All Chat")
 
-    Rectangle {
-        id: conversationList
-        width: 300
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        color: "#202123"
+//    Rectangle {
+//        id: conversationList
+//        width: 300
+//        anchors.left: parent.left
+//        anchors.top: parent.top
+//        anchors.bottom: parent.bottom
+//        color: "#202123"
 
-        Button {
-            id: newChat
-            text: qsTr("New chat")
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: 15
-            padding: 15
-            background: Rectangle {
-                opacity: .5
-                border.color: "#7d7d8e"
-                border.width: 1
-                radius: 10
-                color: "#343541"
-            }
-        }
-    }
+//        Button {
+//            id: newChat
+//            text: qsTr("New chat")
+//            anchors.top: parent.top
+//            anchors.left: parent.left
+//            anchors.right: parent.right
+//            anchors.margins: 15
+//            padding: 15
+//            background: Rectangle {
+//                opacity: .5
+//                border.color: "#7d7d8e"
+//                border.width: 1
+//                radius: 10
+//                color: "#343541"
+//            }
+//        }
+//    }
 
     Rectangle {
         id: conversation
         color: "#343541"
-        anchors.left: conversationList.right
+//        anchors.left: conversationList.right
+        anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.top: parent.top

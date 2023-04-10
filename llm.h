@@ -36,7 +36,6 @@ private:
 
 private:
     GPTJ *m_gptj;
-    std::stringstream m_debug;
     std::string m_response;
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;

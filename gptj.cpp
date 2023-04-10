@@ -740,7 +740,7 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
             break;
     }
 
-#if 1
+#if 0
     // report timing
     {
         const int64_t t_main_end_us = ggml_time_us();
