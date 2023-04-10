@@ -13,6 +13,8 @@ LLM *LLM::globalInstance()
     return llmInstance();
 }
 
+static GPTJ::PromptContext s_ctx;
+
 GPTJObject::GPTJObject()
     : QObject{nullptr}
     , m_gptj(new GPTJ)
@@ -51,6 +53,11 @@ void GPTJObject::resetResponse()
     m_response = std::string();
 }
 
+void GPTJObject::resetContext()
+{
+    s_ctx = GPTJ::PromptContext();
+}
+
 QString GPTJObject::response() const
 {
     return QString::fromStdString(m_response);
@@ -75,8 +82,7 @@ bool GPTJObject::prompt(const QString &prompt)
     m_stopGenerating = false;
     auto func = std::bind(&GPTJObject::handleResponse, this, std::placeholders::_1);
     emit responseStarted();
-    static GPTJ::PromptContext ctx;
-    m_gptj->prompt(prompt.toStdString(), func, ctx, 4096 /*number of chars to predict*/);
+    m_gptj->prompt(prompt.toStdString(), func, s_ctx, 4096 /*number of chars to predict*/);
     emit responseStopped();
     return true;
 }
@@ -93,6 +99,7 @@ LLM::LLM()
 
     connect(this, &LLM::promptRequested, m_gptj, &GPTJObject::prompt, Qt::QueuedConnection);
     connect(this, &LLM::resetResponseRequested, m_gptj, &GPTJObject::resetResponse, Qt::BlockingQueuedConnection);
+    connect(this, &LLM::resetContextRequested, m_gptj, &GPTJObject::resetContext, Qt::BlockingQueuedConnection);
 }
 
 bool LLM::isModelLoaded() const
@@ -108,6 +115,11 @@ void LLM::prompt(const QString &prompt)
 void LLM::resetResponse()
 {
     emit resetResponseRequested(); // blocking queued connection
+}
+
+void LLM::resetContext()
+{
+    emit resetContextRequested(); // blocking queued connection
 }
 
 void LLM::stopGenerating()
