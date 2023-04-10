@@ -45,6 +45,41 @@ Window {
         anchors.bottom: parent.bottom
         anchors.top: parent.top
 
+        Button {
+            id: resetContextButton
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.topMargin: 30
+            anchors.rightMargin: 30
+            width: 60
+            height: 60
+            z: 200
+            padding: 15
+
+            background: Item {
+                anchors.fill: parent
+                Rectangle {
+                    anchors.fill: parent
+                    color: "#343541"
+                    border.color: "#7d7d8e"
+                    border.width: 1
+                    opacity: 0.5
+                    radius: 10
+                }
+                Image {
+                    anchors.fill: parent
+                    anchors.margins: 15
+                    source: "qrc:/gpt4all-chat/icons/regenerate.svg"
+                }
+            }
+
+            onClicked: {
+                LLM.stopGenerating()
+                LLM.resetContext()
+                chatModel.clear()
+            }
+        }
+
         ScrollView {
             id: scrollView
             anchors.left: parent.left
@@ -187,7 +222,7 @@ Window {
         TextField {
             id: textInput
             anchors.left: parent.left
-            anchors.right: resetContextButton.left
+            anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.margins: 30
             color: "#dadadc"
@@ -237,26 +272,6 @@ Window {
                 onClicked: {
                     textInput.accepted()
                 }
-            }
-        }
-
-        Button {
-            id: resetContextButton
-            anchors.right: parent.right
-            anchors.rightMargin: 30
-            anchors.verticalCenter: textInput.verticalCenter
-            width: 40
-            height: 40
-
-            background: Image {
-                anchors.fill: parent
-                source: "qrc:/gpt4all-chat/icons/regenerate.svg"
-            }
-
-            onClicked: {
-                LLM.stopGenerating()
-                LLM.resetContext()
-                chatModel.clear()
             }
         }
     }
