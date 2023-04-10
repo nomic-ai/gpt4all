@@ -3,15 +3,3 @@ model_name: # update with llama model name
 tokenizer_name: # update with llama model name
 lora: true
 lora_path: "tloen/alpaca-lora-7b"
-
-
-
-max_new_tokens: 512
-temperature: 0.001
-prompt: | 
-  #this code prints a string reversed
-  my_string = "hello how are you"
-  print(len(my_string))
-
-
-  My code above does not work. Can you help me?
