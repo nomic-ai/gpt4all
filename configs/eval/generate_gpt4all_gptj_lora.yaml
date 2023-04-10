@@ -1,0 +1,5 @@
+# model/tokenizer
+model_name: "EleutherAI/gpt-j-6b"
+tokenizer_name: "EleutherAI/gpt-j-6B"
+lora: true
+lora_path: "nomic-ai/gpt4all-gptj-lora-epoch_1"
