@@ -38,3 +38,37 @@ target_link_libraries(chat
     PRIVATE Qt6::Quick Qt6::Svg)
 target_link_libraries(chat
     PRIVATE ggml ggml_utils)
+
+set(COMPONENT_NAME_MAIN "gpt4all-chat")
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
+
+set(CPACK_GENERATOR "IFW")
+
+if (WIN32)
+    find_program(WINDEPLOYQT windeployqt HINTS ${_qt_bin_dir})
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-windows.cmake.in"
+                   "${CMAKE_BINARY_DIR}/cmake/deploy-qt-windows.cmake" @ONLY)
+    set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-windows.cmake)
+    set(CPACK_IFW_ROOT "C:/Qt/Tools/QtInstallerFramework/4.5")
+endif (WIN32)
+
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_IFW_PACKAGE_NAME "GPT4All Chat")
+set(CPACK_IFW_PACKAGE_TITLE "GPT4All Chat Installer")
+set(CPACK_IFW_PACKAGE_PUBLISHER "Adam Treat")
+set(CPACK_IFW_PRODUCT_URL "https://github.com/manyoso/gpt4all-chat")
+set(CPACK_IFW_PACKAGE_WIZARD_STYLE "Aero")
+set(CPACK_IFW_PACKAGE_WIZARD_SHOW_PAGE_LIST OFF)
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
+include(CPack)
+include(CPackIFW)
+cpack_add_component(${COMPONENT_NAME_MAIN} DOWNLOADED)
+cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} ESSENTIAL FORCED_INSTALLATION)
+cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "GPL-3.0 LICENSE" ${CPACK_RESOURCE_FILE_LICENSE})
+
+if (WIN32)
+cpack_ifw_add_repository("GPT4AllRepository" URL "/path/to/repo/gpt4all-chat/install/windows/")
+endif (WIN32)

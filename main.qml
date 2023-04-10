@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Fusion
+import QtQuick.Controls.Basic
 import llm
 
 Window {
@@ -235,7 +235,7 @@ Window {
                 }
 
                 onClicked: {
-                    textInput.onAccepted()
+                    textInput.accepted()
                 }
             }
         }
