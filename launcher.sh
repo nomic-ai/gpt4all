@@ -81,7 +81,12 @@ get_valid_user_input() {
   done
 }
 
-get_valid_user_input
+case ${#bin_files[@]} in
+  (0) echo "To get started, see https://github.com/nomic-ai/gpt4all#try-it-yourself"; exit 1 ;;
+  (1) user_selection=1 ;;
+  (*) get_valid_user_input ;;
+esac
+
 selected_bin_file="${bin_files[$((user_selection-1))]}"
 
 # Run the selected .bin file with the appropriate command
