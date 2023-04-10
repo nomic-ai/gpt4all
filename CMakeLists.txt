@@ -6,7 +6,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.2 COMPONENTS Quick REQUIRED)
+find_package(Qt6 6.2 COMPONENTS Quick Svg REQUIRED)
 
 set(GGML_BUILD_EXAMPLES ON CACHE BOOL "ggml: build examples" FORCE)
 add_subdirectory(ggml)
