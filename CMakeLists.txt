@@ -47,7 +47,6 @@ set(CPACK_GENERATOR "IFW")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     find_program(LINUXDEPLOYQT linuxdeployqt HINTS ${_qt_bin_dir})
-    message(AUTHOR_WARNING "heeeeeee   ${LINUXDEPLOYQT}")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-linux.cmake.in"
                    "${CMAKE_BINARY_DIR}/cmake/deploy-qt-linux.cmake" @ONLY)
     set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-linux.cmake)
@@ -59,6 +58,11 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
     set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-windows.cmake)
     set(CPACK_IFW_ROOT "C:/Qt/Tools/QtInstallerFramework/4.5")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+    find_program(MACDEPLOYQT macdeployqt HINTS ${_qt_bin_dir})
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-mac.cmake.in"
+                   "${CMAKE_BINARY_DIR}/cmake/deploy-qt-mac.cmake" @ONLY)
+    set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-mac.cmake)
+    set(CPACK_IFW_ROOT "~/Qt/Tools/QtInstallerFramework/4.5")
 endif()
 
 set(CPACK_PACKAGE_VERSION_MAJOR "0")

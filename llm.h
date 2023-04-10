@@ -18,6 +18,7 @@ public:
     bool loadModel();
     bool isModelLoaded() const;
     void resetResponse();
+    void resetContext();
     void stopGenerating() { m_stopGenerating = true; }
 
     QString response() const;
@@ -53,6 +54,7 @@ public:
 
     Q_INVOKABLE bool isModelLoaded() const;
     Q_INVOKABLE void prompt(const QString &prompt);
+    Q_INVOKABLE void resetContext();
     Q_INVOKABLE void resetResponse();
     Q_INVOKABLE void stopGenerating();
 
@@ -65,6 +67,7 @@ Q_SIGNALS:
     void responseInProgressChanged();
     void promptRequested(const QString &prompt);
     void resetResponseRequested();
+    void resetContextRequested();
 
 private Q_SLOTS:
     void responseStarted();

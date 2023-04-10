@@ -187,7 +187,7 @@ Window {
         TextField {
             id: textInput
             anchors.left: parent.left
-            anchors.right: parent.right
+            anchors.right: resetContextButton.left
             anchors.bottom: parent.bottom
             anchors.margins: 30
             color: "#dadadc"
@@ -237,6 +237,26 @@ Window {
                 onClicked: {
                     textInput.accepted()
                 }
+            }
+        }
+
+        Button {
+            id: resetContextButton
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            anchors.verticalCenter: textInput.verticalCenter
+            width: 40
+            height: 40
+
+            background: Image {
+                anchors.fill: parent
+                source: "qrc:/gpt4all-chat/icons/regenerate.svg"
+            }
+
+            onClicked: {
+                LLM.stopGenerating()
+                LLM.resetContext()
+                chatModel.clear()
             }
         }
     }
