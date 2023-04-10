@@ -5,6 +5,8 @@
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
 </p>
 
+// I want to contribute in your project 
+
 <p align="center">
 <a href="https://github.com/nomic-ai/pyllamacpp">:snake: Official Python Bindings</a>
 </p>
