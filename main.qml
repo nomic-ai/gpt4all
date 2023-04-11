@@ -186,7 +186,7 @@ Window {
                 anchors.top: discordLink.bottom
                 anchors.topMargin: 20
                 wrapMode: Text.WordWrap
-                text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">nomic.ai</a> and the community for contributing such great work!")
+                text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">nomic.ai</a> and the community for contributing so much great data and energy!")
                 onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
             }
 
