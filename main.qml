@@ -9,76 +9,221 @@ Window {
     height: 720
     visible: true
     title: qsTr("GPT4All Chat")
+    color: "#d1d5db"
 
-//    Rectangle {
-//        id: conversationList
-//        width: 300
-//        anchors.left: parent.left
-//        anchors.top: parent.top
-//        anchors.bottom: parent.bottom
-//        color: "#202123"
+    TextField {
+        id: header
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: 100
+        color: "#d1d5db"
+        padding: 20
+        font.pixelSize: 24
+        text: "GPT4ALL Model: gpt4all-j"
+        background: Rectangle {
+            color: "#202123"
+        }
+        focus: false
+        horizontalAlignment: TextInput.AlignHCenter
+    }
 
-//        Button {
-//            id: newChat
-//            text: qsTr("New chat")
-//            anchors.top: parent.top
-//            anchors.left: parent.left
-//            anchors.right: parent.right
-//            anchors.margins: 15
-//            padding: 15
-//            background: Rectangle {
-//                opacity: .5
-//                border.color: "#7d7d8e"
-//                border.width: 1
-//                radius: 10
-//                color: "#343541"
-//            }
-//        }
-//    }
+    Image {
+        anchors.verticalCenter: header.baseline
+        x: parent.width / 2 + 163
+        width: 50
+        height: 65
+        source: "qrc:/gpt4all-chat/icons/logo.svg"
+        z: 300
+    }
+
+    Button {
+        id: drawerButton
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.topMargin: 30
+        anchors.leftMargin: 30
+        width: 60
+        height: 40
+        z: 200
+        padding: 15
+
+        background: Item {
+            anchors.fill: parent
+
+            Rectangle {
+                id: bar1
+                color: "#7d7d8e"
+                width: parent.width
+                height: 8
+                radius: 2
+                antialiasing: true
+            }
+
+            Rectangle {
+                id: bar2
+                anchors.centerIn: parent
+                color: "#7d7d8e"
+                width: parent.width
+                height: 8
+                radius: 2
+                antialiasing: true
+            }
+
+            Rectangle {
+                id: bar3
+                anchors.bottom: parent.bottom
+                color: "#7d7d8e"
+                width: parent.width
+                height: 8
+                radius: 2
+                antialiasing: true
+            }
+
+
+        }
+        onClicked: {
+            drawer.visible = !drawer.visible
+        }
+    }
+
+    Button {
+        id: resetContextButton
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 30
+        anchors.rightMargin: 30
+        width: 60
+        height: 40
+        z: 200
+        padding: 15
+
+        background: Item {
+            anchors.fill: parent
+            Image {
+                anchors.centerIn: parent
+                width: 40
+                height: 40
+                source: "qrc:/gpt4all-chat/icons/regenerate.svg"
+            }
+        }
+
+        onClicked: {
+            LLM.stopGenerating()
+            LLM.resetContext()
+            chatModel.clear()
+        }
+    }
+
+    Dialog {
+        id: checkForUpdatesError
+        anchors.centerIn: parent
+        modal: false
+        opacity: 0.9
+        Text {
+            horizontalAlignment: Text.AlignJustify
+            text: qsTr("ERROR: Update system could not find the MaintenanceTool used<br>
+                   to check for updates!<br><br>
+                   Did you install this application using the online installer? If so,<br>
+                   the MaintenanceTool executable should be located one directory<br>
+                   above where this application resides on your filesystem.<br><br>
+                   If you can't start it manually, then I'm afraid you'll have to<br>
+                   reinstall.")
+            color: "#d1d5db"
+        }
+        background: Rectangle {
+            anchors.fill: parent
+            color: "#202123"
+            border.width: 1
+            border.color: "white"
+            radius: 10
+        }
+    }
+
+    Drawer {
+        id: drawer
+        y: header.height
+        width: 0.3 * window.width
+        height: window.height - y
+        modal: false
+        opacity: 0.9
+
+        background: Rectangle {
+            height: parent.height
+            color: "#202123"
+        }
+
+        Item {
+            anchors.fill: parent
+            anchors.margins: 30
+
+            Label {
+                id: conversationList
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                wrapMode: Text.WordWrap
+                text: qsTr("Chat lists of specific conversations coming soon! Check back often for new features :)")
+            }
+
+            Label {
+                id: discordLink
+                textFormat: Text.RichText
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: conversationList.bottom
+                anchors.topMargin: 20
+                wrapMode: Text.WordWrap
+                text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
+                onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
+            }
+
+            Label {
+                id: nomicProps
+                textFormat: Text.RichText
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: discordLink.bottom
+                anchors.topMargin: 20
+                wrapMode: Text.WordWrap
+                text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">nomic.ai</a> and the community for contributing such great work!")
+                onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
+            }
+
+            Button {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                padding: 15
+                contentItem: Text {
+                    text: qsTr("Check for updates...")
+                    horizontalAlignment: Text.AlignHCenter
+                    color: "#d1d5db"
+                }
+
+                background: Rectangle {
+                    opacity: .5
+                    border.color: "#7d7d8e"
+                    border.width: 1
+                    radius: 10
+                    color: "#343541"
+                }
+
+                onClicked: {
+                    if (!LLM.checkForUpdates())
+                        checkForUpdatesError.open()
+                }
+            }
+        }
+    }
 
     Rectangle {
         id: conversation
         color: "#343541"
-//        anchors.left: conversationList.right
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.top: parent.top
-
-        Button {
-            id: resetContextButton
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.topMargin: 30
-            anchors.rightMargin: 30
-            width: 60
-            height: 60
-            z: 200
-            padding: 15
-
-            background: Item {
-                anchors.fill: parent
-                Rectangle {
-                    anchors.fill: parent
-                    color: "#343541"
-                    border.color: "#7d7d8e"
-                    border.width: 1
-                    opacity: 0.5
-                    radius: 10
-                }
-                Image {
-                    anchors.fill: parent
-                    anchors.margins: 15
-                    source: "qrc:/gpt4all-chat/icons/regenerate.svg"
-                }
-            }
-
-            onClicked: {
-                LLM.stopGenerating()
-                LLM.resetContext()
-                chatModel.clear()
-            }
-        }
+        anchors.top: header.bottom
 
         ScrollView {
             id: scrollView
@@ -100,20 +245,6 @@ Window {
                 ListView {
                     id: listView
                     anchors.fill: parent
-                    header: TextField {
-                        id: modelName
-                        width: parent.width
-                        color: "#d1d5db"
-                        padding: 20
-                        font.pixelSize: 24
-                        text: "Model: GPT4ALL-J-6B-4bit"
-                        background: Rectangle {
-                            color: "#444654"
-                        }
-                        focus: false
-                        horizontalAlignment: TextInput.AlignHCenter
-                    }
-
                     model: chatModel
                     delegate: TextArea {
                         text: currentResponse ? LLM.response : value
@@ -190,7 +321,6 @@ Window {
                 source: LLM.responseInProgress ? "qrc:/gpt4all-chat/icons/stop_generating.svg" : "qrc:/gpt4all-chat/icons/regenerate.svg"
             }
             leftPadding: 50
-            text: LLM.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
             onClicked: {
                 if (LLM.responseInProgress)
                     LLM.stopGenerating()
@@ -210,6 +340,10 @@ Window {
             anchors.horizontalCenter: textInput.horizontalCenter
             anchors.bottomMargin: 40
             padding: 15
+            contentItem: Text {
+                text: LLM.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
+                color: "#d1d5db"
+            }
             background: Rectangle {
                 opacity: .5
                 border.color: "#7d7d8e"
@@ -247,10 +381,10 @@ Window {
                 chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false, "value": textInput.text})
                 chatModel.append({"name": qsTr("Response: "), "currentResponse": true, "value": "", "prompt": prompt})
 
-//                var contextPrompt;
-//                for (var i = 0; i < chatModel.count; ++i)
-//                    contextPrompt += chatModel.get(i).value + "\n";
-//                prompt = contextPrompt + textInput.text + "\n"
+                //                var contextPrompt;
+                //                for (var i = 0; i < chatModel.count; ++i)
+                //                    contextPrompt += chatModel.get(i).value + "\n";
+                //                prompt = contextPrompt + textInput.text + "\n"
 
                 LLM.resetResponse()
                 LLM.prompt(prompt)

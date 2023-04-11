@@ -3,6 +3,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QProcess>
 #include <QResource>
 #include <fstream>
 
@@ -143,3 +144,24 @@ void LLM::responseStopped()
     m_responseInProgress = false;
     emit responseInProgressChanged();
 }
+
+bool LLM::checkForUpdates() const
+{
+#if defined(Q_OS_LINUX)
+    QString tool("MaintenanceTool");
+#elif defined(Q_OS_WINDOWS)
+    QString tool("MaintenanceTool.exe");
+#elif defined(Q_OS_DARWIN)
+    QString tool("MaintenanceTool.app/Contents/MacOS/MaintenanceTool");
+#endif
+
+    QString fileName = QCoreApplication::applicationDirPath()
+        + QDir::separator() + ".." + QDir::separator() + tool;
+    if (!QFileInfo::exists(fileName)) {
+        qDebug() << "Couldn't find tool at" << fileName << "so cannot check for updates!";
+        return false;
+    }
+
+    return QProcess::startDetached(fileName);
+}
+

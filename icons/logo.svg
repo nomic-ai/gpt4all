@@ -1,0 +1,17 @@
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130" width="200" height="260">
+        <!-- Smaller Cool Robot Ears (behind the head, thinner stroke) -->
+        <path d="M14,35 Q10,45 14,55 L6,55 Q2,45 6,35 Z" fill="#e0d6ff" stroke="#9171c1" stroke-width="1"/>
+        <path d="M96,35 Q100,45 96,55 L86,55 Q90,45 86,35 Z" fill="#e0d6ff" stroke="#9171c1" stroke-width="1"/>
+        <!-- Head with a very thin stroke -->
+        <path d="M20,10 L76,10 Q80,10 84,20 L94,80 Q90,90 86,90 L14,90 Q10,90 6,80 L16,20 Q20,10 24,10 Z" fill="#e0d6ff" stroke="#9171c1" stroke-width="0.5"/>
+        <!-- Eyes -->
+        <circle cx="35" cy="40" r="8" fill="#ffffff"/>
+        <circle cx="65" cy="40" r="8" fill="#ffffff"/>
+        <circle cx="35" cy="40" r="5" fill="#9171c1"/>
+        <circle cx="65" cy="40" r="5" fill="#9171c1"/>
+        <!-- Wider Smile -->
+        <path d="M25,60 Q50,70 75,60" stroke="#9171c1" stroke-width="2" fill="none"/>
+        <!-- Wider and More Prominent Antenna -->
+        <line x1="50" y1="10" x2="50" y2="-5" stroke="#9171c1" stroke-width="6"/>
+        <circle cx="50" cy="-5" r="8" fill="#e0d6ff" stroke="#9171c1" stroke-width="2"/>
+    </svg>

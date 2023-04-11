@@ -61,6 +61,8 @@ public:
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
 
+    Q_INVOKABLE bool checkForUpdates() const;
+
 Q_SIGNALS:
     void isModelLoadedChanged();
     void responseChanged();
