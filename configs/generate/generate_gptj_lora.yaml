@@ -1,0 +1,15 @@
+# model/tokenizer
+model_name: "EleutherAI/gpt-j-6b"
+tokenizer_name: "EleutherAI/gpt-j-6b"
+lora: true
+lora_path: "nomic-ai/gpt4all-gptj-lora-epoch_0"
+
+max_new_tokens: 512
+temperature: 0
+prompt: | 
+  #this code prints a string reversed
+  my_string = "hello how are you"
+  print(len(my_string))
+
+
+  My code above does not work. Can you help me?
