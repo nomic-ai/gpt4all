@@ -672,3 +672,12 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+ADDENDUM:
+
+Any LLM models that are loaded and used by the application are not themselves
+subject to the GPLv3 if indeed they are even copyrightable. The terms of
+this license apply only to the application software (chat userface and features)
+and its accompanying documentation and do not extend to any LLM models,
+whether created by the author of the application or obtained from third-party
+sources.

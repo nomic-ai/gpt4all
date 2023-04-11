@@ -1,17 +1,20 @@
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130" width="200" height="260">
-        <!-- Smaller Cool Robot Ears (behind the head, thinner stroke) -->
-        <path d="M14,35 Q10,45 14,55 L6,55 Q2,45 6,35 Z" fill="#e0d6ff" stroke="#9171c1" stroke-width="1"/>
-        <path d="M96,35 Q100,45 96,55 L86,55 Q90,45 86,35 Z" fill="#e0d6ff" stroke="#9171c1" stroke-width="1"/>
-        <!-- Head with a very thin stroke -->
-        <path d="M20,10 L76,10 Q80,10 84,20 L94,80 Q90,90 86,90 L14,90 Q10,90 6,80 L16,20 Q20,10 24,10 Z" fill="#e0d6ff" stroke="#9171c1" stroke-width="0.5"/>
-        <!-- Eyes -->
-        <circle cx="35" cy="40" r="8" fill="#ffffff"/>
-        <circle cx="65" cy="40" r="8" fill="#ffffff"/>
-        <circle cx="35" cy="40" r="5" fill="#9171c1"/>
-        <circle cx="65" cy="40" r="5" fill="#9171c1"/>
-        <!-- Wider Smile -->
-        <path d="M25,60 Q50,70 75,60" stroke="#9171c1" stroke-width="2" fill="none"/>
-        <!-- Wider and More Prominent Antenna -->
-        <line x1="50" y1="10" x2="50" y2="-5" stroke="#9171c1" stroke-width="6"/>
-        <circle cx="50" cy="-5" r="8" fill="#e0d6ff" stroke="#9171c1" stroke-width="2"/>
-    </svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="200" height="200">
+    <!-- Smaller Cool Robot Ears (behind the head, thicker stroke) -->
+    <path d="M14,51 Q10,61 14,71 L6,71 Q2,61 6,51 Z" fill="#b392f0" stroke="#5f248b" stroke-width="1"/>
+    <path d="M96,51 Q100,61 96,71 L86,71 Q90,61 86,51 Z" fill="#b392f0" stroke="#5f248b" stroke-width="1"/>
+    <!-- Head with a thicker stroke -->
+    <path d="M22,28 L76,28 Q80,28 84,38 L94,106 Q90,116 86,116 L14,116 Q10,116 6,106 L16,38 Q20,28 24,28 Z" fill="#b392f0" stroke="#5f248b" stroke-width="1"/>
+    <!-- Bigger Eyes -->
+    <circle cx="32" cy="66" r="12.4" fill="#ffffff"/>
+    <circle cx="68" cy="66" r="12.4" fill="#ffffff"/>
+    <circle cx="33" cy="66" r="8.5" fill="#5f248b"/>
+    <circle cx="67" cy="66" r="8.5" fill="#5f248b"/>
+    <!-- Wider Smile -->
+    <path d="M23,92 Q50,102 77,92" stroke="#5f248b" stroke-width="3" fill="none"/>
+    <!-- Antenna with tower of circles separated by a small vertical line -->
+    <line x1="50" y1="0" x2="50" y2="4" stroke="#5f248b" stroke-width="2"/>
+    <circle cx="50" cy="8" r="4" fill="#b392f0" stroke="#5f248b" stroke-width="2"/>
+    <line x1="50" y1="11" x2="50" y2="16" stroke="#5f248b" stroke-width="2"/>
+    <circle cx="50" cy="20" r="4" fill="#b392f0" stroke="#5f248b" stroke-width="2"/>
+    <line x1="50" y1="24" x2="50" y2="28" stroke="#5f248b" stroke-width="2"/>
+</svg>
