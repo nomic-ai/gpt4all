@@ -10,6 +10,7 @@ class GPTJObject : public QObject
     Q_OBJECT
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
+    Q_PROPERTY(QString modelName READ modelName NOTIFY modelNameChanged)
 
 public:
 
@@ -22,6 +23,7 @@ public:
     void stopGenerating() { m_stopGenerating = true; }
 
     QString response() const;
+    QString modelName() const;
 
 public Q_SLOTS:
     bool prompt(const QString &prompt);
@@ -31,6 +33,7 @@ Q_SIGNALS:
     void responseChanged();
     void responseStarted();
     void responseStopped();
+    void modelNameChanged();
 
 private:
     bool handleResponse(const std::string &response);
@@ -38,6 +41,7 @@ private:
 private:
     GPTJ *m_gptj;
     std::string m_response;
+    QString m_modelName;
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
 };
@@ -47,6 +51,7 @@ class LLM : public QObject
     Q_OBJECT
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
+    Q_PROPERTY(QString modelName READ modelName NOTIFY modelNameChanged)
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
 public:
 
@@ -61,6 +66,8 @@ public:
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
 
+    QString modelName() const;
+
     Q_INVOKABLE bool checkForUpdates() const;
 
 Q_SIGNALS:
@@ -70,6 +77,7 @@ Q_SIGNALS:
     void promptRequested(const QString &prompt);
     void resetResponseRequested();
     void resetContextRequested();
+    void modelNameChanged();
 
 private Q_SLOTS:
     void responseStarted();
