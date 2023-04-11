@@ -172,11 +172,11 @@ QString LLM::modelName() const
 bool LLM::checkForUpdates() const
 {
 #if defined(Q_OS_LINUX)
-    QString tool("MaintenanceTool");
+    QString tool("maintenancetool");
 #elif defined(Q_OS_WINDOWS)
-    QString tool("MaintenanceTool.exe");
+    QString tool("maintenancetool.exe");
 #elif defined(Q_OS_DARWIN)
-    QString tool("MaintenanceTool.app/Contents/MacOS/MaintenanceTool");
+    QString tool("maintenancetool.app/Contents/MacOS/maintenancetool");
 #endif
 
     QString fileName = QCoreApplication::applicationDirPath()
