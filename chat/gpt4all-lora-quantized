@@ -1,0 +1,23 @@
+#!/bin/bash
+
+chmod +x gpt4all-lora-quantized-linux-x86
+
+# Determine the current platform
+platform=$(uname)
+
+# Choose the appropriate executable
+if [ "$platform" == "Linux" ]; then
+    executable="./gpt4all-lora-quantized-linux-x86"
+elif [ "$platform" == "Darwin" ]; then
+    if [[ $(uname -m) == 'arm64' ]]; then
+        executable="./gpt4all-lora-quantized-OSX-m1"
+    else
+        executable="./gpt4all-lora-quantized-OSX-intel"
+    fi
+else
+    echo "Unsupported platform: $platform"
+    exit 1
+fi
+
+# Execute the chosen executable with any arguments passed to this script
+"$executable" "$@"
