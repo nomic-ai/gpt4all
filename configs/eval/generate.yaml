@@ -1,5 +1,0 @@
-# model/tokenizer
-model_name: # update with llama model name
-tokenizer_name: # update with llama model name
-lora: true
-lora_path: "nomic-ai/gpt4all-lora"
