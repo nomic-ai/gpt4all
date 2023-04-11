@@ -106,8 +106,52 @@ Window {
     }
 
     Button {
-        id: resetContextButton
+        id: copyButton
         anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 30
+        anchors.rightMargin: 30
+        width: 60
+        height: 40
+        z: 200
+        padding: 15
+
+        background: Item {
+            anchors.fill: parent
+            Image {
+                anchors.centerIn: parent
+                width: 40
+                height: 40
+                source: "qrc:/gpt4all-chat/icons/copy.svg"
+            }
+        }
+
+        TextEdit{
+            id: copyEdit
+            visible: false
+        }
+
+        onClicked: {
+            var conversation = "";
+            for (var i = 0; i < chatModel.count; i++) {
+                var item = chatModel.get(i)
+                var string = item.name;
+                if (item.currentResponse)
+                    string += LLM.response
+                else
+                    string += chatModel.get(i).value
+                string += "\n"
+                conversation += string
+            }
+            copyEdit.text = conversation
+            copyEdit.selectAll()
+            copyEdit.copy()
+        }
+    }
+
+    Button {
+        id: resetContextButton
+        anchors.right: copyButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
         anchors.rightMargin: 30

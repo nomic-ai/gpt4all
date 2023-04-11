@@ -26,6 +26,7 @@ qt_add_qml_module(chat
       icons/stop_generating.svg
       icons/regenerate.svg
       icons/logo.svg
+      icons/copy.svg
 )
 
 set_target_properties(chat PROPERTIES
