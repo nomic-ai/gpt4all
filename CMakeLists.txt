@@ -21,7 +21,11 @@ qt_add_qml_module(chat
     URI gpt4all-chat
     VERSION 1.0
     QML_FILES main.qml
-    RESOURCES icons/send_message.svg icons/stop_generating.svg icons/regenerate.svg
+    RESOURCES
+      icons/send_message.svg
+      icons/stop_generating.svg
+      icons/regenerate.svg
+      icons/logo.svg
 )
 
 set_target_properties(chat PROPERTIES
@@ -46,7 +50,7 @@ install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 set(CPACK_GENERATOR "IFW")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
-    find_program(LINUXDEPLOYQT linuxdeployqt HINTS ${_qt_bin_dir})
+    set(LINUXDEPLOYQT "/home/atreat/dev/linuxdeployqt/build/tools/linuxdeployqt/linuxdeployqt")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-linux.cmake.in"
                    "${CMAKE_BINARY_DIR}/cmake/deploy-qt-linux.cmake" @ONLY)
     set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-linux.cmake)
@@ -81,6 +85,10 @@ cpack_add_component(${COMPONENT_NAME_MAIN} DOWNLOADED)
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} ESSENTIAL FORCED_INSTALLATION)
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "GPL-3.0 LICENSE" ${CPACK_RESOURCE_FILE_LICENSE})
 
-if (WIN32)
-cpack_ifw_add_repository("GPT4AllRepository" URL "/path/to/repo/gpt4all-chat/install/windows/")
-endif (WIN32)
+if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+cpack_ifw_add_repository("GPT4AllRepository" URL "http://localhost/linux/repository")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
+cpack_ifw_add_repository("GPT4AllRepository" URL "http://localhost/windows/repository")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+cpack_ifw_add_repository("GPT4AllRepository" URL "http://localhost/mac/repository")
+endif()
