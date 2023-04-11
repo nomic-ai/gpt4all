@@ -379,6 +379,7 @@ Window {
             anchors.margins: 30
             color: "#dadadc"
             padding: 20
+            enabled: LLM.isModelLoaded
             font.pixelSize: 24
             placeholderText: qsTr("Send a message...")
             placeholderTextColor: "#7d7d8e"
@@ -398,12 +399,6 @@ Window {
                 var prompt = textInput.text + "\n"
                 chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false, "value": textInput.text})
                 chatModel.append({"name": qsTr("Response: "), "currentResponse": true, "value": "", "prompt": prompt})
-
-                //                var contextPrompt;
-                //                for (var i = 0; i < chatModel.count; ++i)
-                //                    contextPrompt += chatModel.get(i).value + "\n";
-                //                prompt = contextPrompt + textInput.text + "\n"
-
                 LLM.resetResponse()
                 LLM.prompt(prompt)
                 textInput.text = ""
