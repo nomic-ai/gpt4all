@@ -11,30 +11,48 @@ Window {
     title: qsTr("GPT4All Chat")
     color: "#d1d5db"
 
-    TextField {
+    Rectangle {
         id: header
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
         height: 100
-        color: "#d1d5db"
-        padding: 20
-        font.pixelSize: 24
-        text: "GPT4ALL Model: gpt4all-j"
-        background: Rectangle {
-            color: "#202123"
-        }
-        focus: false
-        horizontalAlignment: TextInput.AlignHCenter
-    }
+        color: "#202123"
 
-    Image {
-        anchors.verticalCenter: header.baseline
-        x: parent.width / 2 + 163
-        width: 50
-        height: 65
-        source: "qrc:/gpt4all-chat/icons/logo.svg"
-        z: 300
+        Item {
+            anchors.centerIn: parent
+            width: childrenRect.width
+            height: childrenRect.height
+            visible: LLM.isModelLoaded
+
+            TextField {
+                id: modelNameField
+                color: "#d1d5db"
+                padding: 20
+                font.pixelSize: 24
+                text: "GPT4ALL Model: " + LLM.modelName
+                background: Rectangle {
+                    color: "#202123"
+                }
+                focus: false
+                horizontalAlignment: TextInput.AlignHCenter
+            }
+
+            Image {
+                anchors.left: modelNameField.right
+                anchors.verticalCenter: modelNameField.baseline
+                width: 50
+                height: 65
+                source: "qrc:/gpt4all-chat/icons/logo.svg"
+                z: 300
+            }
+        }
+
+        BusyIndicator {
+            anchors.centerIn: parent
+            visible: !LLM.isModelLoaded
+            running: !LLM.isModelLoaded
+        }
     }
 
     Button {

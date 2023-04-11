@@ -31,14 +31,27 @@ bool GPTJObject::loadModel()
     if (isModelLoaded())
         return true;
 
-    QString modelName("ggml-model-q4_0.bin");
-    QString fileName = QCoreApplication::applicationDirPath() + QDir::separator() + modelName;
-    QFile file(fileName);
-    if (file.exists()) {
+    QDir dir(QCoreApplication::applicationDirPath());
+    dir.setNameFilters(QStringList() << "ggml-*.bin");
+    QStringList fileNames = dir.entryList();
+    if (fileNames.isEmpty()) {
+        qDebug() << "ERROR: Could not find any applicable models in directory"
+            << QCoreApplication::applicationDirPath();
+    }
 
-        auto fin = std::ifstream(fileName.toStdString(), std::ios::binary);
+    QString modelName = fileNames.first();
+    QString filePath = QCoreApplication::applicationDirPath() + QDir::separator() + modelName;
+    QFileInfo info(filePath);
+    if (info.exists()) {
+
+        auto fin = std::ifstream(filePath.toStdString(), std::ios::binary);
         m_gptj->loadModel(modelName.toStdString(), fin);
         emit isModelLoadedChanged();
+    }
+
+    if (m_gptj) {
+        m_modelName = info.baseName().remove(0, 5); // remove the ggml- prefix
+        emit modelNameChanged();
     }
 
     return m_gptj;
@@ -62,6 +75,11 @@ void GPTJObject::resetContext()
 QString GPTJObject::response() const
 {
     return QString::fromStdString(m_response);
+}
+
+QString GPTJObject::modelName() const
+{
+    return m_modelName;
 }
 
 bool GPTJObject::handleResponse(const std::string &response)
@@ -97,6 +115,7 @@ LLM::LLM()
     connect(m_gptj, &GPTJObject::responseChanged, this, &LLM::responseChanged, Qt::QueuedConnection);
     connect(m_gptj, &GPTJObject::responseStarted, this, &LLM::responseStarted, Qt::QueuedConnection);
     connect(m_gptj, &GPTJObject::responseStopped, this, &LLM::responseStopped, Qt::QueuedConnection);
+    connect(m_gptj, &GPTJObject::modelNameChanged, this, &LLM::modelNameChanged, Qt::QueuedConnection);
 
     connect(this, &LLM::promptRequested, m_gptj, &GPTJObject::prompt, Qt::QueuedConnection);
     connect(this, &LLM::resetResponseRequested, m_gptj, &GPTJObject::resetResponse, Qt::BlockingQueuedConnection);
@@ -143,6 +162,11 @@ void LLM::responseStopped()
 {
     m_responseInProgress = false;
     emit responseInProgressChanged();
+}
+
+QString LLM::modelName() const
+{
+    return m_gptj->modelName();
 }
 
 bool LLM::checkForUpdates() const
