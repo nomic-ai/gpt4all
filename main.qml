@@ -37,15 +37,6 @@ Window {
                 focus: false
                 horizontalAlignment: TextInput.AlignHCenter
             }
-
-            Image {
-                anchors.left: modelNameField.right
-                anchors.verticalCenter: modelNameField.baseline
-                width: 50
-                height: 65
-                source: "qrc:/gpt4all-chat/icons/logo.svg"
-                z: 300
-            }
         }
 
         BusyIndicator {
@@ -226,6 +217,7 @@ Window {
                 anchors.top: parent.top
                 wrapMode: Text.WordWrap
                 text: qsTr("Chat lists of specific conversations coming soon! Check back often for new features :)")
+                color: "#d1d5db"
             }
 
             Label {
@@ -238,6 +230,7 @@ Window {
                 wrapMode: Text.WordWrap
                 text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
                 onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
+                color: "#d1d5db"
             }
 
             Label {
@@ -250,6 +243,7 @@ Window {
                 wrapMode: Text.WordWrap
                 text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">nomic.ai</a> and the community for contributing so much great data and energy!")
                 onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
+                color: "#d1d5db"
             }
 
             Button {
