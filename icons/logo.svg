@@ -1,20 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="200" height="200">
-    <!-- Smaller Cool Robot Ears (behind the head, thicker stroke) -->
-    <path d="M14,51 Q10,61 14,71 L6,71 Q2,61 6,51 Z" fill="#b392f0" stroke="#5f248b" stroke-width="1"/>
-    <path d="M96,51 Q100,61 96,71 L86,71 Q90,61 86,51 Z" fill="#b392f0" stroke="#5f248b" stroke-width="1"/>
-    <!-- Head with a thicker stroke -->
-    <path d="M22,28 L76,28 Q80,28 84,38 L94,106 Q90,116 86,116 L14,116 Q10,116 6,106 L16,38 Q20,28 24,28 Z" fill="#b392f0" stroke="#5f248b" stroke-width="1"/>
-    <!-- Bigger Eyes -->
-    <circle cx="32" cy="66" r="12.4" fill="#ffffff"/>
-    <circle cx="68" cy="66" r="12.4" fill="#ffffff"/>
-    <circle cx="33" cy="66" r="8.5" fill="#5f248b"/>
-    <circle cx="67" cy="66" r="8.5" fill="#5f248b"/>
-    <!-- Wider Smile -->
-    <path d="M23,92 Q50,102 77,92" stroke="#5f248b" stroke-width="3" fill="none"/>
-    <!-- Antenna with tower of circles separated by a small vertical line -->
-    <line x1="50" y1="0" x2="50" y2="4" stroke="#5f248b" stroke-width="2"/>
-    <circle cx="50" cy="8" r="4" fill="#b392f0" stroke="#5f248b" stroke-width="2"/>
-    <line x1="50" y1="11" x2="50" y2="16" stroke="#5f248b" stroke-width="2"/>
-    <circle cx="50" cy="20" r="4" fill="#b392f0" stroke="#5f248b" stroke-width="2"/>
-    <line x1="50" y1="24" x2="50" y2="28" stroke="#5f248b" stroke-width="2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Robot's body -->
+  <rect x="50" y="60" width="100" height="80" fill="#E0E0E0" rx="10" ry="10" />
+
+  <!-- Robot's head -->
+  <rect x="65" y="30" width="70" height="70" fill="#D0D0D0" rx="15" ry="15" />
+
+
+  <!-- Robot's eyes -->
+  <rect x="75" y="45" width="20" height="20" fill="#FFFFFF" rx="5" ry="5" />
+  <rect x="105" y="45" width="20" height="20" fill="#FFFFFF" rx="5" ry="5" />
+
+  <!-- Robot's mouth -->
+  <path d="M75 80 Q100 95, 125 80" fill="none" stroke="#000000" stroke-width="5" />
+
+  <!-- Robot's antenna -->
+  <rect x="80" y="10" width="10" height="20" fill="#000000" />
+  <rect x="110" y="10" width="10" height="20" fill="#000000" />
+
+
+  <!-- Atlas book -->
+  <rect x="65" y="100" width="70" height="70" fill="#32CD32" rx="10" ry="10" />
+  <g transform="translate(68,130)">
+  <!-- Atlas book details -->
+  <text x="5" y="0" font-size="28" fill="#FFFFFF">GPT</text>
+  <text x="0" y="28" font-size="28" fill="#FFFFFF">4ALL</text>
+  </g>
 </svg>
