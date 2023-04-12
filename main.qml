@@ -310,13 +310,22 @@ Window {
                         focus: false
                         padding: 20
                         font.pixelSize: 24
-                        cursorVisible: currentResponse ? LLM.responseInProgress : false
+                        cursorVisible: currentResponse ? (LLM.response !== "" ? LLM.responseInProgress : false) : false
                         cursorPosition: text.length
                         background: Rectangle {
                             color: name === qsTr("Response: ") ? "#444654" : "#343541"
                         }
 
                         leftPadding: 100
+
+                        BusyIndicator {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 90
+                            anchors.top: parent.top
+                            anchors.topMargin: 5
+                            visible: currentResponse && LLM.response === "" && LLM.responseInProgress
+                            running: currentResponse && LLM.response === "" && LLM.responseInProgress
+                        }
 
                         Rectangle {
                             anchors.left: parent.left

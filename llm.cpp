@@ -65,6 +65,7 @@ bool GPTJObject::isModelLoaded() const
 void GPTJObject::resetResponse()
 {
     m_response = std::string();
+    emit responseChanged();
 }
 
 void GPTJObject::resetContext()
@@ -88,8 +89,10 @@ bool GPTJObject::handleResponse(const std::string &response)
     printf("%s", response.c_str());
     fflush(stdout);
 #endif
-    m_response.append(response);
-    emit responseChanged();
+    if (!response.empty()) {
+        m_response.append(response);
+        emit responseChanged();
+    }
     return !m_stopGenerating;
 }
 
