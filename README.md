@@ -3,18 +3,18 @@
 Cross platform Qt based GUI for GPT4All versions with GPT-J as the base
 model. NOTE: The model seen in the screenshot is actually a preview of a
 new training run for GPT4All based on GPT-J. The GPT4All project is busy
-at work training a new version with GPT-J as the base, but it isn't read
-just yet. In the meantime, you can try this UI out with the original GPT-J
-model. Full instructions for how are included below.
+at work getting ready to release this model including installers for all
+three major OS's. In the meantime, you can try this UI out with the original
+GPT-J model by following build instructions below.
 
 ![image](https://user-images.githubusercontent.com/50458173/231464085-da9edff6-a593-410e-8f38-7513f75c8aab.png)
 
 ## Features
 
-* Cross-platform (Linux, Windows, MacOSX, iOS, Android, Embedded Linux, QNX)
+* Cross-platform (Linux, Windows, MacOSX)
 * Fast CPU based inference using ggml for GPT-J based models
 * The UI is made to look and feel like you've come to expect from a chatty gpt
-* Easy to install... The plan is to create precompiled binaries for major platforms with easy installer including model
+* Easy to install... The plan is to create precompiled binaries for major platforms with easy installers which include the model
 * WORK IN PROGRESS!!
 
 ## Building and running
