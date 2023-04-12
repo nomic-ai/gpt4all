@@ -2,7 +2,7 @@
 model_name: # update
 tokenizer_name: # update
 gradient_checkpointing: false
-save_name: "nomic-ai/gpt4all-lora-multi-turn"
+save_name: # CHANGE
 
 # dataset
 streaming: false
