@@ -7,7 +7,7 @@ at work training a new version with GPT-J as the base, but it isn't read
 just yet. In the meantime, you can try this UI out with the original GPT-J
 model. Full instructions for how are included below.
 
-![image](https://user-images.githubusercontent.com/50458173/230756282-31b43d63-3c98-4f5d-b2dc-8c1ec2e0c8a9.png)
+![image](https://user-images.githubusercontent.com/50458173/231464085-da9edff6-a593-410e-8f38-7513f75c8aab.png)
 
 ## Features
 
