@@ -56,7 +56,7 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 ## GPT4All-J: An Apache-2 Licensed GPT4All Model
 ![gpt4all-j-demo](https://user-images.githubusercontent.com/13879686/231876409-e3de1934-93bb-4b4b-9013-b491a969ebbc.gif)
 
-Run runs on an M1 Mac (not sped up!)
+Run on an M1 Mac (not sped up!)
 
 
 ### GPT4All-J Chat UI Installers
