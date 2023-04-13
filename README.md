@@ -1,6 +1,5 @@
 <h1 align="center">GPT4All</h1>
 <p align="center">Demo, data, and code to train open-source assistant-style large language model based on GPT-J and LLaMa</p>
-
 <p align="center">
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 2: GPT4All-J </a>
 </p>
@@ -11,6 +10,23 @@
 
 <p align="center">
 <a href="https://github.com/nomic-ai/pyllamacpp">:snake: Official Python Bindings</a>
+</p>
+
+<p align="center">
+<a href="https://github.com/nomic-ai/gpt4all-ts">:computer: Official Typescript Bindings</a>
+</p>
+
+<p align="center">
+<a href="https://github.com/nomic-ai/gpt4all-ui">:speech_balloon: Official Chat Interface</a>
+</p>
+
+<p align="center">
+<a href="https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html">🦜️🔗 Official Langchain Backend</a> 
+</p>
+
+
+<p align="center">
+<a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
 
 <p align="center">
@@ -81,6 +97,8 @@ accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 -
 
 
 # Original GPT4All Model (based on GPL Licensed LLaMa)
+
+
 
 ![gpt4all-lora-demo](https://user-images.githubusercontent.com/13879686/228352356-de66ca7a-df70-474e-b929-2e3656165051.gif)
 
@@ -165,8 +183,8 @@ Feel free to convert this to a more structured table.
 
 # Roadmap
 ## Short Term
- - <span style="color:green">(IN PROGRESS)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
- - <span style="color:green">(IN PROGRESS)</span> Create improved CPU and GPU interfaces for this model.
+ - <span style="color:green">(Done)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
+ - <span style="color:green">(Done)</span> Create improved CPU and GPU interfaces for this model.
  - <span style="color:green">(Done)</span> [Integrate llama.cpp bindings](https://github.com/nomic-ai/pyllamacpp)
  - <span style="color:green">(Done)</span> [Create a good conversational chat interface for the model.](https://github.com/nomic-ai/gpt4all-ui)
  - <span style="color:green">(Done)</span> [Allow users to opt in and submit their chats for subsequent training runs](https://github.com/nomic-ai/gpt4all-ui)
@@ -174,7 +192,7 @@ Feel free to convert this to a more structured table.
 ## Medium Term
  - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with [Atlas](https://atlas.nomic.ai) to allow for document retrieval.
    - BLOCKED by GPT4All based on GPTJ
- - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with Langchain.
+ - <span style="color:red">(Done)</span> Integrate GPT4All with Langchain.
  - <span style="color:green">(IN PROGRESS)</span> Build easy custom training scripts to allow users to fine tune models.
 
 ## Long Term
