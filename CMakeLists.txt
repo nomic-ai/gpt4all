@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(gpt4all-chat VERSION 0.1 LANGUAGES CXX)
+project(gpt4all VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -27,6 +27,9 @@ qt_add_qml_module(chat
       icons/regenerate.svg
       icons/logo.svg
       icons/copy.svg
+      icons/logo-16.png
+      icons/logo-32.png
+      icons/logo-48.png
 )
 
 set_target_properties(chat PROPERTIES
@@ -44,7 +47,7 @@ target_link_libraries(chat
 target_link_libraries(chat
     PRIVATE ggml ggml_utils)
 
-set(COMPONENT_NAME_MAIN "gpt4all-chat")
+set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 
@@ -86,7 +89,7 @@ set(CPACK_IFW_PACKAGE_TITLE "GPT4All Chat Installer")
 set(CPACK_IFW_PACKAGE_PUBLISHER "Adam Treat")
 set(CPACK_IFW_PRODUCT_URL "https://github.com/manyoso/gpt4all-chat")
 set(CPACK_IFW_PACKAGE_WIZARD_STYLE "Aero")
-set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-32.png")
+set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-48.png")
 set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-32.png")
 set(CPACK_IFW_PACKAGE_WIZARD_SHOW_PAGE_LIST OFF)
 
