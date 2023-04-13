@@ -17,7 +17,7 @@ Component.prototype.createOperations = function()
                     "@TargetDir@/bin/chat.exe",
                     "@UserProfile@/Desktop/chat.lnk",
                     "workingDirectory=@TargetDir@/bin",
-                    "iconPath=@TargetDir@/logo-48.png",
+                    "iconPath=@TargetDir@/favicon.ico",
                     "iconId=2", "description=Open GPT4All Chat");
             } catch (e) {
                 print("ERROR: creating desktop shortcut" + e);
@@ -26,7 +26,7 @@ Component.prototype.createOperations = function()
                 "@TargetDir@/bin/chat.exe",
                 "@StartMenuDir@/chat.lnk",
                 "workingDirectory=@TargetDir@/bin",
-                "iconPath=@TargetDir@/logo-48.png",
+                "iconPath=@TargetDir@/favicon.ico",
                 "iconId=2", "description=Open GPT4All Chat");
         } else if (systemInfo.productType === "osx") {
         } else { // linux
