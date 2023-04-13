@@ -62,7 +62,6 @@ def load_data(config, tokenizer):
     dataset_path = config["dataset_path"]
 
     if os.path.exists(dataset_path):
-        # check if path is a directory
         if os.path.isdir(dataset_path):
             files = glob.glob(os.path.join(dataset_path, "*_clean.jsonl"))
         else:
@@ -92,7 +91,7 @@ def load_data(config, tokenizer):
         **kwargs
     )
     val_dataset = val_dataset.map(
-        lambda ele: tokenize_inputs(config, tokenizer, ele), 
+        lambda ele: tokenize_inputs(config, tokenizer, ele),
         batched=True,
         remove_columns=["source", "prompt"],
         **kwargs
