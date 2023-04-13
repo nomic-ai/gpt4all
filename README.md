@@ -44,9 +44,9 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 ### GPT4All-J Chat UI Installers
 Installs a native chat-client with auto-update functionality that runs on your desktop with the GPT4All-J model baked into it.
 
-[Mac/OSX]()
+[Mac/OSX](https://gtp4all.io/installers/gpt4all-0.1.0-Darwin.dmg)
 
-[Windows]()
+[Windows](https://gpt4all.io/installers/gpt4all-0.1.0-win64.exe)
 
 [Ubuntu](https://gpt4all.io/installers/gpt4all-0.1.0-Linux.run)
 
