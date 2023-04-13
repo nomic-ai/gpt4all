@@ -52,3 +52,6 @@ python3 ../ggml/examples/gpt-j/convert-h5-to-ggml.py /path/to/your/local/copy/of
 
 * Pull requests welcome. See the feature wish list for ideas :)
 
+
+## License
+The source code of this chat interface is currently under a GPL license. The underlying GPT4All-j model is released under non-restrictive open-source Apache 2 License.
