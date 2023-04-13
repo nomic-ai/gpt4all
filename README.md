@@ -81,7 +81,7 @@ Python bindings are imminent and will be integrated into this [repository](https
 
 ## Training GPT4All-J
 
-Please see [GPT4All-J Technical Report]() for details.
+Please see [GPT4All-J Technical Report](https://static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf) for details.
 
 ### GPT4All-J Training Data
 
