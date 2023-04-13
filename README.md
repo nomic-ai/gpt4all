@@ -52,7 +52,7 @@ Installs a native chat-client with auto-update functionality that runs on your d
 
 These files are not yet cert signed by Windows/Apple so you will see security warnings on initial installation. We did not want to delay release while waiting for their process to complete.
 
-Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/index.html)
+Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/)
 
 ### Raw Model
 [ggml Model Download Link](https://pub-7382deb27b3e46cd959cc60ce3efaa5a.r2.dev/ggml-gpt4all-j.bin)
