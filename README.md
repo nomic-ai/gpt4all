@@ -62,8 +62,8 @@ Please see [GPT4All-J Technical Report]() for details.
 ### GPT4All-J Training Data
 
 - We are releasing the curated training data for anyone to replicate GPT4All-J here: [GPT4All-J Training Data](https://huggingface.co/datasets/nomic-ai/gpt4all-j-prompt-generations)
-   - [Atlas Map of Prompts](https://atlas.nomic.ai/map/gpt4all-j-prompts)
-   - [Atlas Map of Responses](https://atlas.nomic.ai/map/gpt4all-j-responses)
+   - [Atlas Map of Prompts](https://atlas.nomic.ai/map/gpt4all-j-prompts-curated)
+   - [Atlas Map of Responses](https://atlas.nomic.ai/map/gpt4all-j-response-curated)
 
 ### GPT4All-J Training Instructions
 
