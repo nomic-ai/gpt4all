@@ -34,7 +34,7 @@
 </p>
 
 <p align="center">
-<a href="https://gpt4all.io">:speech_balloon: Official Chat Interface</a>
+<a href="https://github.com/nomic-ai/gpt4all-chat">:speech_balloon: Official Chat Interface</a>
 </p>
 
 <p align="center">
