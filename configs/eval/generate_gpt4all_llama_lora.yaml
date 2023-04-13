@@ -3,7 +3,3 @@ model_name: "zpn/llama-7b"
 tokenizer_name: "zpn/llama-7b"
 lora: true
 lora_path: "nomic-ai/gpt4all-lora"
-
-max_new_tokens: 512
-temperature: 0
-prompt: null
