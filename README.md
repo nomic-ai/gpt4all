@@ -1,7 +1,7 @@
 <h1 align="center">GPT4All</h1>
 <p align="center">Demo, data, and code to train open-source assistant-style large language model based on GPT-J and LLaMa</p>
 <p align="center">
-<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf">:green_book: Technical Report 2: GPT4All-J </a>
+<a href="https://static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf">:green_book: Technical Report 2: GPT4All-J </a>
 </p>
 
 <p align="center">
