@@ -103,7 +103,9 @@ cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOU
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/linux/repository")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
+#To sign the target on windows have to create a batch script add it as a custom target and then use CPACK_IFW_EXTRA_TARGETS to set this extra target
 cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows/repository")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+#Use this in future https://cmake.org/cmake/help/latest/cpack_gen/ifw.html#variable:CPACK_IFW_PACKAGE_SIGNING_IDENTITY
 cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/mac/repository")
 endif()
