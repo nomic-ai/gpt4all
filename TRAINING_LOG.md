@@ -23,7 +23,7 @@ We used the initial parameters:
 | Weight decay   | 0     |
 | Warmup Steps   | 100   |
 
-We randomly shuffle and set aside %5 of the data for validation.
+We randomly shuffle and set aside 5% of the data for validation.
 
 We had an initial bug in logging the training loss but we noticed a decrease in validation loss.
 
