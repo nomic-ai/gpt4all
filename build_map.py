@@ -27,7 +27,7 @@ text = df.remove_columns(["labels", "input_ids", "embeddings"])
 text_df = [text[i] for i in range(len(text))]
 
 atlas.map_text(text_df, indexed_field="inputs",
-               name="Post Epoch 1 Inputs",
+               name="CHANGE ME!",
                colorable_fields=["source", "loss", "trained_on"],
                reset_project_if_exists=True,
                )
@@ -47,7 +47,7 @@ columns = data.to_pandas().to_dict("records")
 atlas.map_embeddings(embeddings,
                      data=columns,
                      id_field="index",
-                     name="Post Epoch 1 Embeddings",
+                     name="CHANGE ME!",
                      colorable_fields=["source", "loss", "trained_on"],
                      build_topic_model=True,
                      topic_label_field="inputs",
