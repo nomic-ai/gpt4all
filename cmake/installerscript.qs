@@ -15,19 +15,19 @@ Component.prototype.createOperations = function()
                 installer.setValue("UserProfile", userProfile);
                 component.addOperation("CreateShortcut",
                     "@TargetDir@/bin/chat.exe",
-                    "@UserProfile@/Desktop/chat.lnk",
+                    "@UserProfile@/Desktop/GPT4All.lnk",
                     "workingDirectory=@TargetDir@/bin",
                     "iconPath=@TargetDir@/favicon.ico",
-                    "iconId=2", "description=Open GPT4All Chat");
+                    "iconId=0", "description=Open GPT4All Chat");
             } catch (e) {
                 print("ERROR: creating desktop shortcut" + e);
             }
             component.addOperation("CreateShortcut",
                 "@TargetDir@/bin/chat.exe",
-                "@StartMenuDir@/chat.lnk",
+                "@StartMenuDir@/GPT4All.lnk",
                 "workingDirectory=@TargetDir@/bin",
                 "iconPath=@TargetDir@/favicon.ico",
-                "iconId=2", "description=Open GPT4All Chat");
+                "iconId=0", "description=Open GPT4All Chat");
         } else if (systemInfo.productType === "osx") {
         } else { // linux
             component.addOperation("CreateDesktopEntry",
