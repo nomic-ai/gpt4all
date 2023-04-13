@@ -1,7 +1,7 @@
 <h1 align="center">GPT4All</h1>
 <p align="center">Demo, data, and code to train open-source assistant-style large language model based on GPT-J and LLaMa</p>
 <p align="center">
-<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 2: GPT4All-J </a>
+<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf">:green_book: Technical Report 2: GPT4All-J </a>
 </p>
 
 <p align="center">
@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/nomic-ai/gpt4all-ui">:speech_balloon: Official Chat Interface</a>
+<a href="https://github.com/nomic-ai/gpt4all-ui">:speech_balloon: Official Web Chat Interface</a>
 </p>
 
 <p align="center">
@@ -204,6 +204,8 @@ Feel free to convert this to a more structured table.
 Trained LoRa Weights:
 - gpt4all-lora (four full epochs of training):  https://huggingface.co/nomic-ai/gpt4all-lora
 - gpt4all-lora-epoch-2 (three full epochs of training) https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2
+- gpt4all-j (one full epoch of training) (https://huggingface.co/nomic-ai/gpt4all-j)
+- gpt4all-j-lora (one full epoch of training) (https://huggingface.co/nomic-ai/gpt4all-j-lora)
 
 Raw Data:
 - [Training Data Without P3](https://huggingface.co/datasets/nomic-ai/gpt4all_prompt_generations)
@@ -228,9 +230,6 @@ Setup the environment
 
 ```
 python -m pip install -r requirements.txt
-
-cd transformers
-pip install -e . 
 
 cd ../peft
 pip install -e .
