@@ -201,7 +201,7 @@ Feel free to convert this to a more structured table.
 
 # Reproducibility
 
-Trained LoRa Weights:
+Trained Model Weights:
 - gpt4all-lora (four full epochs of training):  https://huggingface.co/nomic-ai/gpt4all-lora
 - gpt4all-lora-epoch-2 (three full epochs of training) https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2
 - gpt4all-j (one full epoch of training) (https://huggingface.co/nomic-ai/gpt4all-j)
