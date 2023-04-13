@@ -14,6 +14,7 @@ GPT-J model by following build instructions below.
 * Cross-platform (Linux, Windows, MacOSX)
 * Fast CPU based inference using ggml for GPT-J based models
 * The UI is made to look and feel like you've come to expect from a chatty gpt
+* Check for updates so you can alway stay fresh with latest models
 * Easy to install with precompiled binaries available for all three major desktop platforms
 
 ## Feature wishlist
