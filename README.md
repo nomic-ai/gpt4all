@@ -56,10 +56,13 @@ Note this model is only compatible with the C++ bindings found [here](https://gi
 Python bindings are imminent and will be integrated into this [repository](https://github.com/nomic-ai/pyllamacpp). Stay tuned on the [GPT4All discord](https://discord.gg/mGZE39AS3e) for updates.
 
 ## Training GPT4All-J
-Please see [GPT4All-J Technical Report]() for details.
--- Zach this is for you.
--- Please upload our cleaned training data to huggingface and link it below.
---
+
+<!-- 
+Zach this is for you.
+Please upload our cleaned training data to huggingface and link it below. Once the technical report is done we need to update the link.
+ -->
+ 
+ Please see [GPT4All-J Technical Report]() for details.
 
 ### GPT4All-J Training Data
 
