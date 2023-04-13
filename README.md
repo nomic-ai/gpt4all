@@ -31,6 +31,12 @@
 </p>
 
 
+<p align="center">
+GPT4All is made possible by our compute partner <a href="https://www.paperspace.com/">Paperspace</a>.
+</p>
+
+
+
 ## GPT4All-J: An Apache-2 Licensed GPT4All Model
 
 
