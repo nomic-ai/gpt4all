@@ -180,7 +180,7 @@ python generate.py --config configs/generate/generate.yaml --prompt "Write a scr
 
 ## Need Help?
 
-Join the <a href="https://discord.gg/kvmy6dQB"> Discord </a> and ask for help in `#gpt4all-help`
+Join the <a href="https://discord.gg/E7q6fp9bmx"> Discord </a> and ask for help in `#gpt4all-help`
 
 # Sample Generations
 
