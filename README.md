@@ -14,8 +14,20 @@ GPT-J model by following build instructions below.
 * Cross-platform (Linux, Windows, MacOSX)
 * Fast CPU based inference using ggml for GPT-J based models
 * The UI is made to look and feel like you've come to expect from a chatty gpt
-* Easy to install... The plan is to create precompiled binaries for major platforms with easy installers which include the model
-* WORK IN PROGRESS!!
+* Easy to install with precompiled binaries available for all three major desktop platforms
+
+## Feature wishlist
+
+* Multi-chat - a list of current and past chats and the ability to save/delete/export and switch between
+* Text to speech - have the AI response with voice
+* Speech to text - give the prompt with your voice
+* Multi-modal - Ability to load more than one model and switch between them
+* Python bindings
+* Typescript bindings
+* Plugin support for langchain other developer tools
+* Save your prompt/responses to disk
+* Upload prompt/respones manually/automatically to nomic.ai to aid future training runs
+* YOUR IDEA HERE
 
 ## Building and running
 
@@ -37,5 +49,5 @@ python3 ../ggml/examples/gpt-j/convert-h5-to-ggml.py /path/to/your/local/copy/of
 
 ## Contributing
 
-* Pull requests welcome :)
+* Pull requests welcome. See the feature wish list for ideas :)
 
