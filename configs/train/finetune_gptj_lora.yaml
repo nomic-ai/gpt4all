@@ -1,0 +1,33 @@
+# model/tokenizer
+model_name: "EleutherAI/gpt-j-6b"
+tokenizer_name: "EleutherAI/gpt-j-6b"
+gradient_checkpointing: false
+save_name: # CHANGE
+
+# dataset
+streaming: false
+num_proc: 64
+dataset_path: # CHANGE
+max_length: 1024
+batch_size: 1 
+
+# train dynamics
+lr: 2.0e-5
+min_lr: 0 
+weight_decay: 0.0
+eval_every: 500
+eval_steps: 105
+save_every: 500
+log_grads_every: 500
+output_dir: # CHANGE
+checkpoint: null
+lora: true
+warmup_steps: 500
+num_epochs: 2 
+
+# logging
+wandb: true
+wandb_entity: # CHANGE
+wandb_project_name: # CHANGE
+seed: 42
+

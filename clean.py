@@ -64,6 +64,7 @@ for file in glob.glob(os.path.join(prompt_generation_dir, "*.jsonl")):
     df = df.dropna(subset=['prompt', 'response'])
     df = df[df['prompt'] != '']
     df = df[df['response'] != '']
+    df = df[df["prompt"].str.len() > 1]
     curr_len = len(df)
 
     print(f"Removed {prev_len - curr_len} rows")

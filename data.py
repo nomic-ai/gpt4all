@@ -9,44 +9,49 @@ from transformers import DefaultDataCollator
 
 def tokenize_inputs(config, tokenizer, examples):
     max_length = config["max_length"]
-    input_ids = torch.full((len(examples["prompt"]), max_length), tokenizer.pad_token_id)
-    # ignore bos
-    newline_tokens = tokenizer("\n", return_tensors="pt")["input_ids"][0, 1:]
 
-    out = {"labels": [], "attention_mask": []}
-    for i, (prompt, response) in enumerate(zip(examples["prompt"], examples["response"])):
-        input_tokens = tokenizer(prompt, truncation=True, max_length=max_length // 2, return_tensors="pt")["input_ids"].squeeze()
-        input_len = len(input_tokens)
+    # hacky backward compatible
+    different_eos = tokenizer.eos_token != "</s>"
+    out = {"labels": [], "input_ids": []}
+    for prompt, response in zip(examples["prompt"], examples["response"]):
+        if different_eos:
+            if response.count("</s> \n") > 0:
+                response = response.replace("</s> \n", f"{tokenizer.eos_token} \n") 
 
-        # plus one since we remove bos from response
-        # but we subtract one since we want to add eos token
-        remaining_tokens = max_length - input_len - len(newline_tokens) + 1
-        # remove bos
-        target_tokens = tokenizer(response, truncation=True, max_length=remaining_tokens, return_tensors="pt")["input_ids"].squeeze()[1:]
+        prompt_len = len(tokenizer(prompt + "\n", return_tensors="pt")["input_ids"][0])
 
-        input_ids[i, :input_len] = input_tokens
-        # add newline between prompt and response
-        newline_plus_inputs = input_len + len(newline_tokens)
-        input_ids[i, input_len: newline_plus_inputs] = newline_tokens
+        # hack if our prompt is super long
+        # we need to include some labels so we arbitrarily trunacate at max_length // 2
+        # if the length is too long
+        if prompt_len >= max_length // 2:
+            # if prompt is too long, truncate
+            # but make sure to truncate to at max 1024 tokens
+            new_len = min(max_length // 2, len(prompt) // 2)
+            prompt = prompt[:new_len]
+            # get new prompt length
+            prompt_len = tokenizer(prompt + "\n", return_tensors="pt", max_length=max_length // 2, truncation=True).input_ids.ne(tokenizer.pad_token_id).sum().item()
 
-        # add target tokens, remove bos
-        input_ids[i, newline_plus_inputs: newline_plus_inputs + len(target_tokens)] = target_tokens
-        # add eos token; ensure generation stops if inputs aren't truncated
-        # we don't want long code to stop generating if truncated during training
-        if newline_plus_inputs + len(target_tokens) < max_length:
-            input_ids[i, newline_plus_inputs + len(target_tokens)] = tokenizer.eos_token_id
+        assert prompt_len <= max_length // 2, f"prompt length {prompt_len} exceeds max length {max_length}"
 
-        labels = input_ids[i].clone()
-        labels[: newline_plus_inputs] = -100
-        labels[labels == tokenizer.pad_token_id] = -100
-        # to debug this, can set all values == -100 to the pad token, then assert that tokenizer.decode(labels, skip_special_tokens=True).strip() == response
+        input_tokens = tokenizer(prompt + "\n" + response + tokenizer.eos_token,
+                                 truncation=True, max_length=max_length, return_tensors="pt")["input_ids"].squeeze()
 
-        attention_mask = input_ids[i].ne(tokenizer.pad_token_id).int()
+        labels = input_tokens.clone()
+        labels[:prompt_len] = -100
+        if len(labels) < max_length:
+            # pad to max_length with -100
+            labels = torch.cat([labels, torch.full((max_length - len(labels),), -100)])
 
+        assert (labels == -100).sum() < len(labels), f"Labels are all -100, something wrong. prompt length {prompt_len} exceeds max length {max_length}" 
+        
+        if (labels == -100).sum() == len(labels) - 1:
+            print(prompt)
+            print(response)
+            raise
+
+        input_tokens = tokenizer.pad({"input_ids": input_tokens}, padding="max_length", max_length=max_length)["input_ids"]
         out["labels"].append(labels)
-        out["attention_mask"].append(attention_mask)
-
-    out["input_ids"] = input_ids
+        out["input_ids"].append(input_tokens)
 
     out = {k: torch.stack(v) if isinstance(v, list) else v for k, v in out.items()}
 
@@ -110,3 +115,53 @@ def load_data(config, tokenizer):
     )
 
     return train_dataloader, val_dataloader
+
+    
+def load_data_for_inference(config, tokenizer):
+    dataset_path = config["dataset_path"]
+
+    if os.path.exists(dataset_path):
+        # check if path is a directory
+        if os.path.isdir(dataset_path):
+            files = glob.glob(os.path.join(dataset_path, "*_clean.jsonl"))
+        else:
+            files = [dataset_path]
+
+        print(f"Reading files {files}")
+
+        dataset = load_dataset("json", data_files=files, split="train")
+
+    else:
+        dataset = load_dataset(dataset_path, split="train")
+
+    dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
+
+    train_dataset, val_dataset = dataset["train"], dataset["test"]
+
+    train_dataset = train_dataset.add_column("index", list(range(len(train_dataset))))
+    # select first N batches that are divisible by batch_size
+    # gather is a bit annoying (or the way I'm using it) to get uneven batches as it duplicates data
+    train_dataset = train_dataset.select(range((len(train_dataset) // config["batch_size"]) * config["batch_size"]))
+    val_dataset = val_dataset.add_column("index", list(range(len(val_dataset))))
+    val_dataset = val_dataset.select(range((len(val_dataset) // config["batch_size"]) * config["batch_size"]))
+
+    if config["streaming"] is False:
+        kwargs = {"num_proc": config["num_proc"]}
+    else:
+        kwargs = {}
+
+    # tokenize inputs and return labels and attention mask
+    train_dataset = train_dataset.map(
+        lambda ele: tokenize_inputs(config, tokenizer, ele),
+        batched=True,
+        **kwargs
+    )
+    val_dataset = val_dataset.map(
+        lambda ele: tokenize_inputs(config, tokenizer, ele), 
+        batched=True,
+        **kwargs
+    )
+    train_dataset = train_dataset.with_format("torch")
+    val_dataset = val_dataset.with_format("torch")
+
+    return train_dataset, val_dataset

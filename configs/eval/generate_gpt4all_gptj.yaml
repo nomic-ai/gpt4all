@@ -1,0 +1,4 @@
+# model/tokenizer
+model_name: "nomic-ai/gpt4all-warmup-lr-epoch_0"
+tokenizer_name: "EleutherAI/gpt-j-6b"
+lora: false
