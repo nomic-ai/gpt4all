@@ -1,8 +1,12 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Demo, data, and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations based on LLaMa</p>
+<p align="center">Demo, data, and code to train open-source assistant-style large language model based on GPT-J and LLaMa</p>
 
 <p align="center">
-<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
+<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 2: GPT4All-J </a>
+</p>
+
+<p align="center">
+<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 1: GPT4All</a>
 </p>
 
 <p align="center">
@@ -27,8 +31,48 @@
 </p>
 
 
+## GPT4All-J: An Apache-2 Licensed GPT4All Model
 
 
+
+### GPT4All-J Chat UI Installers
+Installs a native chat-client with auto-update functionality that runs on your desktop with the GPT4All-J model baked into it.
+
+[Mac/OSX]()
+
+[Windows]()
+
+[Ubuntu](https://gpt4all.io/installers/gpt4all-0.1.0-Linux.run)
+
+These files are not yet cert signed by Windows/Apple so you will see security warnings on initial installation. We did not want to delay release while waiting for their process to complete.
+
+Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/index.html)
+
+### Raw Model
+[ggml Model Download Link](https://pub-7382deb27b3e46cd959cc60ce3efaa5a.r2.dev/ggml-gpt4all-j.bin)
+
+Note this model is only compatible with the C++ bindings found [here](https://github.com/nomic-ai/gpt4all-chat). It will not work with any existing llama.cpp bindings as we had to do a large fork of llama.cpp. GPT4All will support the ecosystem around this new C++ backend going forward.
+
+Python bindings are imminent and will be integrated into this [repository](https://github.com/nomic-ai/pyllamacpp). Stay tuned on the [GPT4All discord](https://discord.gg/mGZE39AS3e) for updates.
+
+## Training GPT4All-J
+Please see [GPT4All-J Technical Report]() for details.
+-- Zach this is for you.
+-- Please upload our cleaned training data to huggingface and link it below.
+--
+
+### GPT4All-J Training Data
+
+- We are releasing the curated training data for anyone to replicate GPT4All-J here: [GPT4All-J Training Data]()
+   - [Atlas Map of Prompts](https://atlas.nomic.ai/map/gpt4all-j-prompts)
+   - [Atlas Map of Responses](https://atlas.nomic.ai/map/gpt4all-j-responses)
+
+### GPT4All-J Training Instructions
+
+
+
+
+# Original GPT4All Model (based on GPL Licensed LLaMa)
 
 ![gpt4all-lora-demo](https://user-images.githubusercontent.com/13879686/228352356-de66ca7a-df70-474e-b929-2e3656165051.gif)
 
