@@ -1,12 +1,32 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Demo, data and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations based on LLaMa</p>
+<p align="center">Demo, data, and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations based on LLaMa</p>
 
 <p align="center">
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
 </p>
+
 <p align="center">
-<a href="https://discord.gg/kvmy6dQB">Discord</a>
+<a href="https://github.com/nomic-ai/pyllamacpp">:snake: Official Python Bindings</a>
 </p>
+
+<p align="center">
+<a href="https://github.com/nomic-ai/gpt4all-ts">:computer: Official Typescript Bindings</a>
+</p>
+
+<p align="center">
+<a href="https://github.com/nomic-ai/gpt4all-ui">:speech_balloon: Official Chat Interface</a>
+</p>
+
+<p align="center">
+<a href="https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html">🦜️🔗 Official Langchain Backend</a> 
+</p>
+
+
+<p align="center">
+<a href="https://discord.gg/mGZE39AS3e">Discord</a>
+</p>
+
+
 
 
 
@@ -16,19 +36,98 @@ Run on M1 Mac (not sped up!)
 
 # Try it yourself
 
-Download the CPU quantized gpt4all model checkpoint: [gpt4all-lora-quantized.bin](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin).
+Here's how to get started with the CPU quantized GPT4All model checkpoint:
 
+1. Download the `gpt4all-lora-quantized.bin` file from [Direct Link](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) or [[Torrent-Magnet]](https://tinyurl.com/gpt4all-lora-quantized).
+2. Clone this repository, navigate to `chat`, and place the downloaded file there.
+3. Run the appropriate command for your OS:
+   - M1 Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-m1`
+   - Linux: `cd chat;./gpt4all-lora-quantized-linux-x86`
+   - Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe`
+   - Intel Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-intel`
 
-Clone this repository down and place the quantized model in the `chat` directory and start chatting by running:
+For custom hardware compilation, see our [llama.cpp](https://github.com/zanussbaum/gpt4all.cpp) fork.
 
-- `cd chat;./gpt4all-lora-quantized-OSX-m1` on M1 Mac/OSX
-- `cd chat;./gpt4all-lora-quantized-linux-x86` on Linux
-- `cd chat;./gpt4all-lora-quantized-win64.exe` on Windows (PowerShell)
-- `cd chat;./gpt4all-lora-quantized-OSX-intel` on Intel Mac/OSX
+-----------
+Find all compatible models in the GPT4All Ecosystem section.
 
-To compile for custom hardware, see our fork of the [Alpaca C++](https://github.com/zanussbaum/gpt4all.cpp) repo.
+[Secret Unfiltered Checkpoint](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin) - [[Torrent]](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.torrent)
 
+This model had all refusal to answer responses removed from training. Try it with:
+- M1 Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-m1 -m gpt4all-lora-unfiltered-quantized.bin`
+- Linux: `cd chat;./gpt4all-lora-quantized-linux-x86 -m gpt4all-lora-unfiltered-quantized.bin`
+- Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe -m gpt4all-lora-unfiltered-quantized.bin`
+- Intel Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-intel -m gpt4all-lora-unfiltered-quantized.bin`
+-----------
 Note: the full model on GPU (16GB of RAM required) performs much better in our qualitative evaluations.
+
+# Python Client
+## CPU Interface
+To run GPT4All in python, see the new [official Python bindings](https://github.com/nomic-ai/pyllamacpp).
+
+The old bindings are still available but now deprecated. They will not work in a notebook environment.
+To get running using the python client with the CPU interface, first install the [nomic client](https://github.com/nomic-ai/nomic) using `pip install nomic`
+Then, you can use the following script to interact with GPT4All:
+```
+from nomic.gpt4all import GPT4All
+m = GPT4All()
+m.open()
+m.prompt('write me a story about a lonely computer')
+```
+
+## GPU Interface
+There are two ways to get up and running with this model on GPU.
+The setup here is slightly more involved than the CPU model.
+1. clone the nomic client [repo](https://github.com/nomic-ai/nomic) and run `pip install .[GPT4All]` in the home dir.
+2. run `pip install nomic` and install the additional deps from the wheels built [here](https://github.com/nomic-ai/nomic/tree/main/bin)
+
+Once this is done, you can run the model on GPU with a script like the following:
+```
+from nomic.gpt4all import GPT4AllGPU
+m = GPT4AllGPU(LLAMA_PATH)
+config = {'num_beams': 2,
+          'min_new_tokens': 10,
+          'max_length': 100,
+          'repetition_penalty': 2.0}
+out = m.generate('write me a story about a lonely computer', config)
+print(out)
+```
+Where LLAMA_PATH is the path to a Huggingface Automodel compliant LLAMA model.
+Nomic is unable to distribute this file at this time.
+We are working on a GPT4All that does not have this limitation right now.
+
+You can pass any of the [huggingface generation config params](https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig) in the config.
+
+# GPT4All Compatibility Ecosystem
+Edge models in the GPT4All Ecosystem. Please PR as the [community grows](https://huggingface.co/models?sort=modified&search=4bit).
+Feel free to convert this to a more structured table.
+
+- [gpt4all](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin.md5)]
+   - [gpt4all-ggml-converted](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized-ggml.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized-ggml.bin.md5)]
+- [gpt4all-unfiltered](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.md5)]
+- [ggml-vicuna-7b-4bit](https://huggingface.co/eachadea/ggml-vicuna-7b-4bit)
+- [vicuna-13b-GPTQ-4bit-128g](https://huggingface.co/anon8231489123/vicuna-13b-GPTQ-4bit-128g)
+- [LLaMa-Storytelling-4Bit](https://huggingface.co/GamerUntouch/LLaMa-Storytelling-4Bit)
+- [Alpaca Native 4bit](https://huggingface.co/Sosaka/Alpaca-native-4bit-ggml/tree/main)
+
+
+# Roadmap
+## Short Term
+ - <span style="color:green">(IN PROGRESS)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
+ - <span style="color:green">(IN PROGRESS)</span> Create improved CPU and GPU interfaces for this model.
+ - <span style="color:green">(Done)</span> [Integrate llama.cpp bindings](https://github.com/nomic-ai/pyllamacpp)
+ - <span style="color:green">(Done)</span> [Create a good conversational chat interface for the model.](https://github.com/nomic-ai/gpt4all-ui)
+ - <span style="color:green">(Done)</span> [Allow users to opt in and submit their chats for subsequent training runs](https://github.com/nomic-ai/gpt4all-ui)
+
+## Medium Term
+ - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with [Atlas](https://atlas.nomic.ai) to allow for document retrieval.
+   - BLOCKED by GPT4All based on GPTJ
+ - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with Langchain.
+ - <span style="color:green">(IN PROGRESS)</span> Build easy custom training scripts to allow users to fine tune models.
+
+## Long Term
+ - <span style="color:red">(NOT STARTED)</span> Allow anyone to curate training data for subsequent GPT4All releases using Atlas.
+ - <span style="color:green">(IN PROGRESS)</span> Democratize AI. 
 
 # Reproducibility
 
@@ -37,9 +136,9 @@ Trained LoRa Weights:
 - gpt4all-lora-epoch-2 (three full epochs of training) https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2
 
 Raw Data:
-- [Training Data Without P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_without_p3_2022_03_27.tar.gz)
+- [Training Data Without P3](https://huggingface.co/datasets/nomic-ai/gpt4all_prompt_generations)
   - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean_without_p3
-- [Full Dataset with P3](https://s3.amazonaws.com/static.nomic.ai/gpt4all/2022_03_27/gpt4all_curated_data_full_2022_03_27.tar.gz)
+- [Full Dataset with P3](https://huggingface.co/datasets/nomic-ai/gpt4all_prompt_generations_with_p3)
   - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean
 
 We are not distributing a LLaMa 7B checkpoint.
@@ -50,9 +149,10 @@ You can reproduce our trained model by doing the following:
 
 Clone the repo
 
-`git clone --recurse-submodules https://github.com/nomic-ai/gpt4all.git`
-
-`git submodule configure && git submodule update`
+```
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all.git
+git submodule update --init
+```
 
 Setup the environment
 
@@ -77,6 +177,10 @@ accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 -
 ```bash
 python generate.py --config configs/generate/generate.yaml --prompt "Write a script to reverse a string in Python"
 ```
+
+## Need Help?
+
+Join the <a href="https://discord.gg/kvmy6dQB"> Discord </a> and ask for help in `#gpt4all-help`
 
 # Sample Generations
 
@@ -104,7 +208,8 @@ python generate.py --config configs/generate/generate.yaml --prompt "Write a scr
 
 ### Come up with an interesting idea for a new movie plot. Your plot should be described with a title and a summary.
 
->1. The title of your movie plot should be "The Last Stand". 2. The summary of your movie plot should be: A group of mercenaries are hired to protect a small town from a dangerous criminal who is on the run. However, the town's sheriff is not willing to let them take over and decides to take matters into his own hands.
+> 1. The title of your movie plot should be "The Last Stand". 
+> 2. The summary of your movie plot should be: A group of mercenaries are hired to protect a small town from a dangerous criminal who is on the run. However, the town's sheriff is not willing to let them take over and decides to take matters into his own hands.
 
 ### Reverse a string in python.
 > In Python, you can reverse a list or tuple by using the reversed() function on it. Here's an example of how to use this method with strings: 
@@ -114,42 +219,43 @@ python generate.py --config configs/generate/generate.yaml --prompt "Write a scr
 >   print(reversed_str)     # Output will be reversed version of the inputted string.
 
 ### List 10 dogs.
->1. Labrador Retriever
->2. Golden Retriever
->3. Beagle
->4. Poodle
->5. German Shepherd
->6. Bulldog
->7. Rottweiler
->8. Boxer
->9. Shih Tzu
->10. Pug
+> 1. Labrador Retriever
+> 2. Golden Retriever
+> 3. Beagle
+> 4. Poodle
+> 5. German Shepherd
+> 6. Bulldog
+> 7. Rottweiler
+> 8. Boxer
+> 9. Shih Tzu
+> 10. Pug
 
-### Write me a poem about the fall of Julius Ceasar into a ceasar salad in iambic pentameter. 
->The fall of Julius Ceasar into a ceasar salad
->In iambic pentameter,
->The mighty Roman emperor
->Fell into a salad of lettuce and croutons,
->His empire crumbling around him,
->As he was devoured by the hungry diners.
->The once mighty emperor
->Was now just a salad topping,
->His legacy reduced to a mere garnish,
->As he was consumed by the masses.
->The fall of Julius Ceasar into a ceasar salad,
->In iambic pentameter,
->Was a tragic end to a great man,
->Who had once ruled the world with an iron fist.
->But now, he was just a salad topping,
->His legacy reduced to a mere garnish,
->As he was consumed by the masses.
+### Write me a poem about the fall of Julius Caesar into a caesar salad in iambic pentameter. 
+
+> The fall of Julius Caesar into a caesar salad<br>
+> In iambic pentameter,<br>
+> The mighty Roman emperor<br>
+> Fell into a salad of lettuce and croutons,<br>
+> His empire crumbling around him,<br>
+> As he was devoured by the hungry diners.<br>
+> The once mighty emperor<br>
+> Was now just a salad topping,<br>
+> His legacy reduced to a mere garnish,<br>
+> As he was consumed by the masses.<br>
+> The fall of Julius Caesar into a caesar salad,<br>
+> In iambic pentameter,<br>
+> Was a tragic end to a great man,<br>
+> Who had once ruled the world with an iron fist.<br>
+> But now, he was just a salad topping,<br>
+> His legacy reduced to a mere garnish,<br>
+> As he was consumed by the masses.
     
 ### What is a three word topic describing the following keywords: baseball, football, soccer: 
->Sports, athletics, games
+> Sports, athletics, games
     
+## Citation
 
-
-If you utilize this reposistory, models or data in a downstream project, please consider citing it with:
+If you utilize this repository, models or data in a downstream project, please consider citing it with:
 ```
 @misc{gpt4all,
   author = {Yuvanesh Anand and Zach Nussbaum and Brandon Duderstadt and Benjamin Schmidt and Andriy Mulyar},
@@ -160,7 +266,3 @@ If you utilize this reposistory, models or data in a downstream project, please 
   howpublished = {\url{https://github.com/nomic-ai/gpt4all}},
 }
 ```
-
-### Alternative Download Locations
-#### gpt4all-lora-quantized.bin Backup Torrent Link
-magnet:?xt=urn:btih:1F11A9691EE06C18F0040E359361DCA0479BCB5A&dn=gpt4all-lora-quantized.bin&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Fopentracker.i2p.rocks%3A6969%2Fannounce
