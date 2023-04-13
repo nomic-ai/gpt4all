@@ -28,6 +28,7 @@ GPT-J model by following build instructions below.
 * Plugin support for langchain other developer tools
 * Save your prompt/responses to disk
 * Upload prompt/respones manually/automatically to nomic.ai to aid future training runs
+* Syntax highlighting support for programming languages, etc.
 * YOUR IDEA HERE
 
 ## Building and running
