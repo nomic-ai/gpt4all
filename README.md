@@ -67,7 +67,9 @@ Please see [GPT4All-J Technical Report]() for details.
 
 ### GPT4All-J Training Instructions
 
-
+```bash
+accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 --machine_rank=0 --deepspeed_multinode_launcher standard --mixed_precision=bf16  --use_deepspeed --deepspeed_config_file=configs/deepspeed/ds_config_gptj.json train.py --config configs/train/finetune_gptj.yaml
+```
 
 
 # Original GPT4All Model (based on GPL Licensed LLaMa)
