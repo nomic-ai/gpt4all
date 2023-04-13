@@ -30,6 +30,10 @@ qt_add_qml_module(chat
       icons/logo-16.png
       icons/logo-32.png
       icons/logo-48.png
+      icons/logo-64.png
+      icons/logo-256.png
+      icons/favicon.ico
+      icons/favicon.icns
 )
 
 set_target_properties(chat PROPERTIES
