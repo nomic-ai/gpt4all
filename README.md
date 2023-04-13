@@ -29,6 +29,8 @@ GPT-J model by following build instructions below.
 * Save your prompt/responses to disk
 * Upload prompt/respones manually/automatically to nomic.ai to aid future training runs
 * Syntax highlighting support for programming languages, etc.
+* REST API with a built-in webserver in the chat gui itself with a headless operation mode as well
+* Advanced settings for changing temperature, topk, etc.
 * YOUR IDEA HERE
 
 ## Building and running
