@@ -92,18 +92,21 @@ set(CPACK_IFW_PACKAGE_WIZARD_STYLE "Aero")
 set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-48.png")
 set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-32.png")
 set(CPACK_IFW_PACKAGE_WIZARD_SHOW_PAGE_LIST OFF)
+set(CHAT_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
 include(CPack)
 include(CPackIFW)
 cpack_add_component(${COMPONENT_NAME_MAIN} DOWNLOADED)
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} ESSENTIAL FORCED_INSTALLATION)
+cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} VERSION ${CHAT_VERSION})
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "GPL-3.0 LICENSE" ${CPACK_RESOURCE_FILE_LICENSE})
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installerscript.qs")
+cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} REPLACES "gpt4all-chat") #Was used in very earliest prototypes
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/linux/repository")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
-#To sign the target on windows have to create a batch script add it as a custom target and then use CPACK_IFW_EXTRA_TARGETS to set this extra target
+#To sign the target on windows have to create a batch script add use it as a custom target and then use CPACK_IFW_EXTRA_TARGETS to set this extra target
 cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows/repository")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
 #Use this in future https://cmake.org/cmake/help/latest/cpack_gen/ifw.html#variable:CPACK_IFW_PACKAGE_SIGNING_IDENTITY
