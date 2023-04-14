@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import llm
+import network
 
 Window {
     id: window
@@ -438,9 +439,60 @@ Window {
         }
     }
 
+    NetworkDialog {
+        id: networkDialog
+        anchors.centerIn: parent
+        Item {
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTr("Network dialog")
+            Accessible.description: qsTr("Dialog for opt-in to sharing feedback/conversations")
+        }
+    }
+
+    Button {
+        id: networkButton
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 20
+        anchors.rightMargin: 30
+        width: 60
+        height: 60
+        z: 200
+        padding: 15
+
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("Network button")
+        Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
+
+        background: Item {
+            anchors.fill: parent
+            Rectangle {
+                anchors.fill: parent
+                color: "transparent"
+                visible: Network.isActive
+                border.color: "#7d7d8e"
+                border.width: 1
+                radius: 10
+            }
+            Image {
+                anchors.centerIn: parent
+                width: 50
+                height: 50
+                source: "qrc:/gpt4all-chat/icons/network.svg"
+            }
+        }
+
+        onClicked: {
+            if (Network.isActive)
+                Network.isActive = false
+            else
+                networkDialog.open();
+        }
+    }
+
     Button {
         id: settingsButton
-        anchors.right: parent.right
+        anchors.right: networkButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
         anchors.rightMargin: 30
@@ -525,17 +577,7 @@ Window {
         }
 
         onClicked: {
-            var conversation = "";
-            for (var i = 0; i < chatModel.count; i++) {
-                var item = chatModel.get(i)
-                var string = item.name;
-                if (item.currentResponse)
-                    string += LLM.response
-                else
-                    string += chatModel.get(i).value
-                string += "\n"
-                conversation += string
-            }
+            var conversation = getConversation()
             copyEdit.text = conversation
             copyEdit.selectAll()
             copyEdit.copy()
@@ -547,6 +589,49 @@ Window {
             interval: 500; running: false; repeat: false
             onTriggered: copyMessage.close()
         }
+    }
+
+    function getConversation() {
+        var conversation = "";
+        for (var i = 0; i < chatModel.count; i++) {
+            var item = chatModel.get(i)
+            var string = item.name;
+            var isResponse = item.name === qsTr("Response: ")
+            if (item.currentResponse)
+                string += LLM.response
+            else
+                string += chatModel.get(i).value
+            if (isResponse && item.stopped)
+                string += " <stopped>"
+            string += "\n"
+            conversation += string
+        }
+        return conversation
+    }
+
+    function getConversationJson() {
+        var str = "{\"conversation\": [";
+        for (var i = 0; i < chatModel.count; i++) {
+            var item = chatModel.get(i)
+            var isResponse = item.name === qsTr("Response: ")
+            str += "{\"content\": \"";
+            if (item.currentResponse)
+                str += LLM.response + "\""
+            else
+                str += item.value + "\""
+            str += ", \"role\": \"" + (isResponse ? "assistant" : "user") + "\"";
+            if (isResponse && item.thumbsUpState !== item.thumbsDownState)
+                str += ", \"rating\": \"" + (item.thumbsUpState ? "positive" : "negative") + "\"";
+            if (isResponse && item.newResponse !== "")
+                str += ", \"edited_content\": \"" + item.newResponse + "\"";
+            if (isResponse && item.stopped)
+                str += ", \"stopped\": \"true\""
+            if (!isResponse)
+                str += "},"
+            else
+                str += ((i < chatModel.count - 1) ? "}," : "}")
+        }
+        return str + "]}"
     }
 
     Button {
@@ -586,6 +671,7 @@ Window {
         anchors.centerIn: parent
         modal: false
         opacity: 0.9
+        padding: 20
         Text {
             horizontalAlignment: Text.AlignJustify
             text: qsTr("ERROR: Update system could not find the MaintenanceTool used<br>
@@ -602,7 +688,6 @@ Window {
         }
         background: Rectangle {
             anchors.fill: parent
-            anchors.margins: -20
             color: "#202123"
             border.width: 1
             border.color: "white"
@@ -793,7 +878,6 @@ Window {
                         wrapMode: Text.WordWrap
                         focus: false
                         readOnly: true
-                        padding: 20
                         font.pixelSize: 24
                         cursorVisible: currentResponse ? (LLM.response !== "" ? LLM.responseInProgress : false) : false
                         cursorPosition: text.length
@@ -805,7 +889,10 @@ Window {
                         Accessible.name: name
                         Accessible.description: name === qsTr("Response: ") ? "The response by the model" : "The prompt by the user"
 
+                        topPadding: 20
+                        bottomPadding: 20
                         leftPadding: 100
+                        rightPadding: 100
 
                         BusyIndicator {
                             anchors.left: parent.left
@@ -834,6 +921,88 @@ Window {
                                 anchors.centerIn: parent
                                 text: name === qsTr("Response: ") ? "R" : "P"
                                 color: "white"
+                            }
+                        }
+
+                        ThumbsDownDialog {
+                            id: thumbsDownDialog
+                            property point globalPoint: mapFromItem(window,
+                                window.width / 2 - width / 2,
+                                window.height / 2 - height / 2)
+                            x: globalPoint.x
+                            y: globalPoint.y
+                            property string text: currentResponse ? LLM.response : (value ? value : "")
+                            response: newResponse === "" ? text : newResponse
+                            onAccepted: {
+                                var responseHasChanged = response !== text && response !== newResponse
+                                if (thumbsDownState && !thumbsUpState && !responseHasChanged)
+                                    return
+
+                                newResponse = response
+                                thumbsDownState = true
+                                thumbsUpState = false
+                                Network.sendConversation(getConversationJson());
+                            }
+                        }
+
+                        Column {
+                            visible: name === qsTr("Response: ") &&
+                                (!currentResponse || !LLM.responseInProgress) && Network.isActive
+                            anchors.right: parent.right
+                            anchors.rightMargin: 20
+                            anchors.top: parent.top
+                            anchors.topMargin: 20
+                            spacing: 10
+
+                            Item {
+                                width: childrenRect.width
+                                height: childrenRect.height
+                                Button {
+                                    id: thumbsUp
+                                    width: 30
+                                    height: 30
+                                    opacity: thumbsUpState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
+                                    background: Image {
+                                        anchors.fill: parent
+                                        source: "qrc:/gpt4all-chat/icons/thumbs_up.svg"
+                                    }
+                                    onClicked: {
+                                        if (thumbsUpState && !thumbsDownState)
+                                            return
+
+                                        newResponse = ""
+                                        thumbsUpState = true
+                                        thumbsDownState = false
+                                        Network.sendConversation(getConversationJson());
+                                    }
+                                }
+
+                                Button {
+                                    id: thumbsDown
+                                    anchors.top: thumbsUp.top
+                                    anchors.topMargin: 10
+                                    anchors.left: thumbsUp.right
+                                    anchors.leftMargin: 2
+                                    width: 30
+                                    height: 30
+                                    checked: thumbsDownState
+                                    opacity: thumbsDownState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
+                                    transform: [
+                                      Matrix4x4 {
+                                        matrix: Qt.matrix4x4(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+                                      },
+                                      Translate {
+                                        x: thumbsDown.width
+                                      }
+                                    ]
+                                    background: Image {
+                                        anchors.fill: parent
+                                        source: "qrc:/gpt4all-chat/icons/thumbs_down.svg"
+                                    }
+                                    onClicked: {
+                                        thumbsDownDialog.open()
+                                    }
+                                }
                             }
                         }
                     }
@@ -880,15 +1049,22 @@ Window {
             }
             leftPadding: 50
             onClicked: {
-                if (LLM.responseInProgress)
+                if (chatModel.count)
+                    var listElement = chatModel.get(chatModel.count - 1)
+
+                if (LLM.responseInProgress) {
+                    listElement.stopped = true
                     LLM.stopGenerating()
-                else {
+                } else {
                     LLM.regenerateResponse()
                     if (chatModel.count) {
-                        var listElement = chatModel.get(chatModel.count - 1)
                         if (listElement.name === qsTr("Response: ")) {
                             listElement.currentResponse = true
+                            listElement.stopped = false
                             listElement.value = LLM.response
+                            listElement.thumbsUpState = false
+                            listElement.thumbsDownState = false
+                            listElement.newResponse = ""
                             LLM.prompt(listElement.prompt, settings.promptTemplate, settings.maxLength,
                                        settings.topK, settings.topP, settings.temperature,
                                        settings.promptBatchSize)
@@ -956,10 +1132,14 @@ Window {
                         listElement.currentResponse = false
                         listElement.value = LLM.response
                     }
-
                     var prompt = textInput.text + "\n"
-                    chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false, "value": textInput.text})
-                    chatModel.append({"name": qsTr("Response: "), "currentResponse": true, "value": "", "prompt": prompt})
+                    chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false,
+                        "value": textInput.text})
+                    chatModel.append({"id": chatModel.count, "name": qsTr("Response: "),
+                        "currentResponse": true, "value": "", "stopped": false,
+                        "thumbsUpState": false, "thumbsDownState": false,
+                        "newResponse": "",
+                        "prompt": prompt})
                     LLM.resetResponse()
                     LLM.prompt(prompt, settings.promptTemplate, settings.maxLength, settings.topK,
                                settings.topP, settings.temperature, settings.promptBatchSize)

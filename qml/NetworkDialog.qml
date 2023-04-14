@@ -1,0 +1,158 @@
+import QtCore
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import download
+import network
+import llm
+
+Dialog {
+    id: networkDialog
+    anchors.centerIn: parent
+    modal: true
+    opacity: 0.9
+    padding: 20
+    width: 1024
+    height: column.height + dialogBox.height + 20
+
+    Settings {
+        id: settings
+        property string attribution: ""
+    }
+
+    Component.onDestruction: {
+        settings.sync()
+    }
+
+    Column {
+        id: column
+        spacing: 20
+        Item {
+            width: childrenRect.width
+            height: childrenRect.height
+            Image {
+                id: img
+                anchors.top: parent.top
+                anchors.left: parent.left
+                width: 60
+                height: 60
+                source: "qrc:/gpt4all-chat/icons/logo.svg"
+            }
+            Text {
+                anchors.left: img.right
+                anchors.leftMargin: 30
+                anchors.verticalCenter: img.verticalCenter
+                text: qsTr("Contribute data to the GPT4All Opensource Datalake.")
+                color: "#d1d5db"
+            }
+        }
+
+        ScrollView {
+            clip: true
+            height: 300
+            width: 1024 - 40
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+            TextArea {
+                id: textOptIn
+                wrapMode: Text.Wrap
+                width: 1024 - 40
+                padding: 20
+                text: qsTr("By enabling this feature, you will be able to participate in the democratic process of training a large language model by contributing data for future model improvements.
+
+When a GPT4All model responds to you and you have opted-in, you can like/dislike its response. If you dislike a response, you can suggest an alternative response. This data will be collected and aggregated in the GPT4All Datalake.
+
+NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!")
+                color: "#d1d5db"
+                focus: false
+                readOnly: true
+                Accessible.role: Accessible.Paragraph
+                Accessible.name: qsTr("Terms for opt-in")
+                Accessible.description: qsTr("Describes what will happen when you opt-in")
+                background: Rectangle {
+                    color: "#343541"
+                    radius: 10
+                }
+            }
+        }
+
+        TextField {
+            id: attribution
+            color: "#dadadc"
+            padding: 20
+            width: parent.width
+            text: settings.attribution
+            font.pixelSize: 24
+            placeholderText: qsTr("Please provide a name for attribution (optional)")
+            placeholderTextColor: "#7d7d8e"
+            background: Rectangle {
+                color: "#40414f"
+                radius: 10
+            }
+            Accessible.role: Accessible.EditableText
+            Accessible.name: qsTr("Attribution (optional)")
+            Accessible.description: qsTr("Textfield for providing attribution")
+            onEditingFinished: {
+                settings.attribution = attribution.text;
+                settings.sync();
+            }
+        }
+    }
+
+    background: Rectangle {
+        anchors.fill: parent
+        color: "#202123"
+        border.width: 1
+        border.color: "white"
+        radius: 10
+    }
+
+    footer: DialogButtonBox {
+        id: dialogBox
+        padding: 20
+        alignment: Qt.AlignRight
+        spacing: 10
+        Button {
+            text: qsTr("Enable")
+            background: Rectangle {
+                border.color: "#7d7d8e"
+                border.width: 1
+                radius: 10
+                color: "#343541"
+            }
+            Accessible.role: Accessible.Button
+            Accessible.name: text
+            Accessible.description: qsTr("Enable opt-in button")
+
+            padding: 15
+            DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+        }
+        Button {
+            text: qsTr("Cancel")
+            background: Rectangle {
+                border.color: "#7d7d8e"
+                border.width: 1
+                radius: 10
+                color: "#343541"
+            }
+            Accessible.role: Accessible.Button
+            Accessible.name: text
+            Accessible.description: qsTr("Cancel opt-in button")
+
+            padding: 15
+            DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+        }
+        background: Rectangle {
+            color: "transparent"
+        }
+    }
+
+    onAccepted: {
+        Network.isActive = true;
+    }
+
+    onRejected: {
+        Network.isActive = false;
+    }
+}

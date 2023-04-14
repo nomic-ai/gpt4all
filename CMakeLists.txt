@@ -55,6 +55,7 @@ add_subdirectory(llama.cpp)
 qt_add_executable(chat
     main.cpp
     download.h download.cpp
+    network.h network.cpp
     gptj.h gptj.cpp
     llamamodel.h llamamodel.cpp
     llama.cpp/examples/common.cpp
@@ -66,14 +67,22 @@ qt_add_executable(chat
 qt_add_qml_module(chat
     URI gpt4all-chat
     VERSION 1.0
-    QML_FILES main.qml qml/ModelDownloaderDialog.qml
+    QML_FILES
+      main.qml
+      qml/NetworkDialog.qml
+      qml/ModelDownloaderDialog.qml
+      qml/ThumbsDownDialog.qml
     RESOURCES
       icons/send_message.svg
       icons/stop_generating.svg
       icons/regenerate.svg
-      icons/logo.svg
       icons/copy.svg
       icons/settings.svg
+      icons/edit.svg
+      icons/network.svg
+      icons/thumbs_up.svg
+      icons/thumbs_down.svg
+      icons/logo.svg
       icons/logo-16.png
       icons/logo-32.png
       icons/logo-48.png
