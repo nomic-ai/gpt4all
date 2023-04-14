@@ -58,3 +58,5 @@ python3 ../ggml/examples/gpt-j/convert-h5-to-ggml.py /path/to/your/local/copy/of
 
 ## License
 The source code of this chat interface is currently under a GPL license. The underlying GPT4All-j model is released under non-restrictive open-source Apache 2 License.
+
+The GPT4All-J license allows for users to use generated outputs as they see fit. Users take responsibility for ensuring their content meets applicable requirements for publication in a given context or region.
