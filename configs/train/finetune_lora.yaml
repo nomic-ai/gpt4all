@@ -7,7 +7,7 @@ save_name: # CHANGE
 # dataset
 streaming: false
 num_proc: 64
-dataset_path: "nomic-ai/turbo-500k-multi"
+dataset_path: # CHANGE
 max_length: 1024
 batch_size: 4
 
@@ -18,7 +18,7 @@ weight_decay: 0.0
 eval_every: 2000
 eval_steps: 100
 save_every: 2000
-output_dir: "ckpts/gpt4all-lora-multi"
+output_dir: # CHANGE
 checkpoint: null
 lora: true
 warmup_steps: 100
