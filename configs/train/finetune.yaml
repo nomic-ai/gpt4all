@@ -2,7 +2,7 @@
 model_name: # add model here
 tokenizer_name: # add model here
 gradient_checkpointing: true
-save_name: "nomic-ai/gpt4all-full-multi-turn"
+save_name: # CHANGE 
 
 # dataset
 streaming: false
@@ -16,7 +16,7 @@ lr: 5.0e-5
 eval_every: 800
 eval_steps: 100
 save_every: 800
-output_dir: "ckpts/gpt4all-full-multi"
+output_dir: # CHANGE
 checkpoint: null
 lora: false
 warmup_steps: 100
