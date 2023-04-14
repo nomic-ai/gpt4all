@@ -14,19 +14,19 @@ LLM *LLM::globalInstance()
     return llmInstance();
 }
 
-static GPTJ::PromptContext s_ctx;
+static LLModel::PromptContext s_ctx;
 
-GPTJObject::GPTJObject()
+LLMObject::LLMObject()
     : QObject{nullptr}
-    , m_gptj(new GPTJ)
+    , m_llmodel(new GPTJ)
 {
     moveToThread(&m_llmThread);
-    connect(&m_llmThread, &QThread::started, this, &GPTJObject::loadModel);
+    connect(&m_llmThread, &QThread::started, this, &LLMObject::loadModel);
     m_llmThread.setObjectName("llm thread");
     m_llmThread.start();
 }
 
-bool GPTJObject::loadModel()
+bool LLMObject::loadModel()
 {
     if (isModelLoaded())
         return true;
@@ -45,45 +45,45 @@ bool GPTJObject::loadModel()
     if (info.exists()) {
 
         auto fin = std::ifstream(filePath.toStdString(), std::ios::binary);
-        m_gptj->loadModel(modelName.toStdString(), fin);
+        m_llmodel->loadModel(modelName.toStdString(), fin);
         emit isModelLoadedChanged();
     }
 
-    if (m_gptj) {
+    if (m_llmodel) {
         m_modelName = info.baseName().remove(0, 5); // remove the ggml- prefix
         emit modelNameChanged();
     }
 
-    return m_gptj;
+    return m_llmodel;
 }
 
-bool GPTJObject::isModelLoaded() const
+bool LLMObject::isModelLoaded() const
 {
-    return m_gptj->isModelLoaded();
+    return m_llmodel->isModelLoaded();
 }
 
-void GPTJObject::resetResponse()
+void LLMObject::resetResponse()
 {
     m_response = std::string();
     emit responseChanged();
 }
 
-void GPTJObject::resetContext()
+void LLMObject::resetContext()
 {
-    s_ctx = GPTJ::PromptContext();
+    s_ctx = LLModel::PromptContext();
 }
 
-QString GPTJObject::response() const
+QString LLMObject::response() const
 {
     return QString::fromStdString(m_response);
 }
 
-QString GPTJObject::modelName() const
+QString LLMObject::modelName() const
 {
     return m_modelName;
 }
 
-bool GPTJObject::handleResponse(const std::string &response)
+bool LLMObject::handleResponse(const std::string &response)
 {
 #if 0
     printf("%s", response.c_str());
@@ -96,38 +96,38 @@ bool GPTJObject::handleResponse(const std::string &response)
     return !m_stopGenerating;
 }
 
-bool GPTJObject::prompt(const QString &prompt)
+bool LLMObject::prompt(const QString &prompt)
 {
     if (!isModelLoaded())
         return false;
 
     m_stopGenerating = false;
-    auto func = std::bind(&GPTJObject::handleResponse, this, std::placeholders::_1);
+    auto func = std::bind(&LLMObject::handleResponse, this, std::placeholders::_1);
     emit responseStarted();
-    m_gptj->prompt(prompt.toStdString(), func, s_ctx, 4096 /*number of chars to predict*/);
+    m_llmodel->prompt(prompt.toStdString(), func, s_ctx, 4096 /*number of chars to predict*/);
     emit responseStopped();
     return true;
 }
 
 LLM::LLM()
     : QObject{nullptr}
-    , m_gptj(new GPTJObject)
+    , m_llmodel(new LLMObject)
     , m_responseInProgress(false)
 {
-    connect(m_gptj, &GPTJObject::isModelLoadedChanged, this, &LLM::isModelLoadedChanged, Qt::QueuedConnection);
-    connect(m_gptj, &GPTJObject::responseChanged, this, &LLM::responseChanged, Qt::QueuedConnection);
-    connect(m_gptj, &GPTJObject::responseStarted, this, &LLM::responseStarted, Qt::QueuedConnection);
-    connect(m_gptj, &GPTJObject::responseStopped, this, &LLM::responseStopped, Qt::QueuedConnection);
-    connect(m_gptj, &GPTJObject::modelNameChanged, this, &LLM::modelNameChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLMObject::isModelLoadedChanged, this, &LLM::isModelLoadedChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLMObject::responseChanged, this, &LLM::responseChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLMObject::responseStarted, this, &LLM::responseStarted, Qt::QueuedConnection);
+    connect(m_llmodel, &LLMObject::responseStopped, this, &LLM::responseStopped, Qt::QueuedConnection);
+    connect(m_llmodel, &LLMObject::modelNameChanged, this, &LLM::modelNameChanged, Qt::QueuedConnection);
 
-    connect(this, &LLM::promptRequested, m_gptj, &GPTJObject::prompt, Qt::QueuedConnection);
-    connect(this, &LLM::resetResponseRequested, m_gptj, &GPTJObject::resetResponse, Qt::BlockingQueuedConnection);
-    connect(this, &LLM::resetContextRequested, m_gptj, &GPTJObject::resetContext, Qt::BlockingQueuedConnection);
+    connect(this, &LLM::promptRequested, m_llmodel, &LLMObject::prompt, Qt::QueuedConnection);
+    connect(this, &LLM::resetResponseRequested, m_llmodel, &LLMObject::resetResponse, Qt::BlockingQueuedConnection);
+    connect(this, &LLM::resetContextRequested, m_llmodel, &LLMObject::resetContext, Qt::BlockingQueuedConnection);
 }
 
 bool LLM::isModelLoaded() const
 {
-    return m_gptj->isModelLoaded();
+    return m_llmodel->isModelLoaded();
 }
 
 void LLM::prompt(const QString &prompt)
@@ -147,12 +147,12 @@ void LLM::resetContext()
 
 void LLM::stopGenerating()
 {
-    m_gptj->stopGenerating();
+    m_llmodel->stopGenerating();
 }
 
 QString LLM::response() const
 {
-    return m_gptj->response();
+    return m_llmodel->response();
 }
 
 void LLM::responseStarted()
@@ -169,7 +169,7 @@ void LLM::responseStopped()
 
 QString LLM::modelName() const
 {
-    return m_gptj->modelName();
+    return m_llmodel->modelName();
 }
 
 bool LLM::checkForUpdates() const

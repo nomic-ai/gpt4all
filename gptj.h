@@ -2,25 +2,21 @@
 #define GPTJ_H
 
 #include <string>
-#include <sstream>
 #include <functional>
 #include <vector>
+#include "llmodel.h"
 
 class GPTJPrivate;
-class GPTJ {
+class GPTJ : public LLModel {
 public:
     GPTJ();
     ~GPTJ();
 
-    bool loadModel(const std::string &modelPath, std::istream &fin);
-    bool isModelLoaded() const;
-    struct PromptContext {
-        std::vector<float> logits;
-        int32_t n_past = 0; // number of tokens in past conversation
-    };
+    bool loadModel(const std::string &modelPath, std::istream &fin) override;
+    bool isModelLoaded() const override;
     void prompt(const std::string &prompt, std::function<bool(const std::string&)> response,
         PromptContext &ctx, int32_t n_predict = 200, int32_t top_k = 40, float top_p = 0.9f,
-        float temp = 0.9f, int32_t n_batch = 9);
+        float temp = 0.9f, int32_t n_batch = 9) override;
 
 private:
     GPTJPrivate *d_ptr;
