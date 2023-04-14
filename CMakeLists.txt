@@ -65,7 +65,6 @@ install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
 
-message("Before if")
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     set(LINUXDEPLOYQT "/home/atreat/dev/linuxdeployqt/build/tools/linuxdeployqt/linuxdeployqt")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-linux.cmake.in"
@@ -80,7 +79,6 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
     set(CPACK_IFW_ROOT "C:/Qt/Tools/QtInstallerFramework/4.5")
     set(CPACK_IFW_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/favicon.ico")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-    message("Yes Darwin")
     find_program(MACDEPLOYQT macdeployqt HINTS ${_qt_bin_dir})
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-mac.cmake.in"
                    "${CMAKE_BINARY_DIR}/cmake/deploy-qt-mac.cmake" @ONLY)
