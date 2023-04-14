@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
+if(APPLE)
+  # Build a Universal binary on macOS
+  # This requires that the found Qt library is compiled as Universal binaries.
+  set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
+endif()
+
 project(gpt4all VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
