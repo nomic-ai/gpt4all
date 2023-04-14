@@ -25,7 +25,7 @@ Window {
             height: childrenRect.height
             visible: LLM.isModelLoaded
 
-            TextField {
+            Label {
                 id: modelNameField
                 color: "#d1d5db"
                 padding: 20
@@ -34,7 +34,6 @@ Window {
                 background: Rectangle {
                     color: "#202123"
                 }
-                focus: false
                 horizontalAlignment: TextInput.AlignHCenter
             }
         }
@@ -308,6 +307,7 @@ Window {
                         color: "#d1d5db"
                         wrapMode: Text.WordWrap
                         focus: false
+                        readOnly: true
                         padding: 20
                         font.pixelSize: 24
                         cursorVisible: currentResponse ? (LLM.response !== "" ? LLM.responseInProgress : false) : false
