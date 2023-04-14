@@ -15,6 +15,7 @@ qt_add_executable(chat
     main.cpp
     gptj.h gptj.cpp
     llm.h llm.cpp
+    llmodel.h
 )
 
 qt_add_qml_module(chat

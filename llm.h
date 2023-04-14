@@ -5,7 +5,7 @@
 #include <QThread>
 #include "gptj.h"
 
-class GPTJObject : public QObject
+class LLMObject : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
@@ -14,7 +14,7 @@ class GPTJObject : public QObject
 
 public:
 
-    GPTJObject();
+    LLMObject();
 
     bool loadModel();
     bool isModelLoaded() const;
@@ -39,7 +39,7 @@ private:
     bool handleResponse(const std::string &response);
 
 private:
-    GPTJ *m_gptj;
+    LLModel *m_llmodel;
     std::string m_response;
     QString m_modelName;
     QThread m_llmThread;
@@ -84,7 +84,7 @@ private Q_SLOTS:
     void responseStopped();
 
 private:
-    GPTJObject *m_gptj;
+    LLMObject *m_llmodel;
     bool m_responseInProgress;
 
 private:
