@@ -6,6 +6,25 @@ from torch.utils.data import DataLoader
 from transformers import DefaultDataCollator
 
 
+def load_train_test(config):
+    dataset_path = config["dataset_path"]
+    if os.path.exists(dataset_path):
+        if os.path.isdir(dataset_path):
+            files = glob.glob(os.path.join(dataset_path, "*_clean.jsonl"))
+        else:
+            files = [dataset_path]
+
+        print(f"Reading files {files}")
+
+        dataset = load_dataset("json", data_files=files, split="train")
+
+    else:
+        dataset = load_dataset(dataset_path, split="train")
+    dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
+    train_dataset, val_dataset = dataset["train"], dataset["test"]
+    return train_dataset, val_dataset
+
+
 def tokenize_inputs(config, tokenizer, examples):
     max_length = config["max_length"]
 
@@ -61,24 +80,7 @@ def tokenize_inputs(config, tokenizer, examples):
 
 
 def load_data(config, tokenizer):
-    dataset_path = config["dataset_path"]
-
-    if os.path.exists(dataset_path):
-        if os.path.isdir(dataset_path):
-            files = glob.glob(os.path.join(dataset_path, "*_clean.jsonl"))
-        else:
-            files = [dataset_path]
-
-        print(f"Reading files {files}")
-
-        dataset = load_dataset("json", data_files=files, split="train")
-
-    else:
-        dataset = load_dataset(dataset_path, split="train")
-
-    dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
-
-    train_dataset, val_dataset = dataset["train"], dataset["test"]
+    train_dataset, val_dataset = load_train_test(config)
 
     if config["streaming"] is False:
         kwargs = {"num_proc": config["num_proc"]}
@@ -120,25 +122,7 @@ def load_data(config, tokenizer):
 
 
 def load_data_for_inference(config, tokenizer):
-    dataset_path = config["dataset_path"]
-
-    if os.path.exists(dataset_path):
-        # check if path is a directory
-        if os.path.isdir(dataset_path):
-            files = glob.glob(os.path.join(dataset_path, "*_clean.jsonl"))
-        else:
-            files = [dataset_path]
-
-        print(f"Reading files {files}")
-
-        dataset = load_dataset("json", data_files=files, split="train")
-
-    else:
-        dataset = load_dataset(dataset_path, split="train")
-
-    dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
-
-    train_dataset, val_dataset = dataset["train"], dataset["test"]
+    train_dataset, val_dataset = load_train_test(config)
 
     train_dataset = train_dataset.add_column("index", list(range(len(train_dataset))))
     # select first N batches that are divisible by batch_size
