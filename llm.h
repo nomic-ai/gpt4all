@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QThread>
 #include "gptj.h"
+#include "llamamodel.h"
 
 class LLMObject : public QObject
 {

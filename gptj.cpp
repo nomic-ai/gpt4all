@@ -1,5 +1,5 @@
 #include "gptj.h"
-#include "ggml/ggml.h"
+#include "llama.cpp/ggml.h"
 
 #include "utils.h"
 
@@ -642,6 +642,12 @@ GPTJ::GPTJ()
     : d_ptr(new GPTJPrivate) {
 
     d_ptr->modelLoaded = false;
+}
+
+bool GPTJ::loadModel(const std::string &modelPath)
+{
+    std::cerr << "GPTJ ERROR: loading gpt model from file unsupported!\n";
+    return false;
 }
 
 bool GPTJ::loadModel(const std::string &modelPath, std::istream &fin) {

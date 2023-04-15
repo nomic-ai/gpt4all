@@ -28,15 +28,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 6.2 COMPONENTS Quick Svg REQUIRED)
 
-set(GGML_BUILD_EXAMPLES ON CACHE BOOL "ggml: build examples" FORCE)
-add_subdirectory(ggml)
+set(LLAMA_BUILD_EXAMPLES ON CACHE BOOL "llama: build examples" FORCE)
+set(BUILD_SHARED_LIBS ON FORCE)
+add_subdirectory(llama.cpp)
 
 qt_add_executable(chat
     main.cpp
     download.h download.cpp
     gptj.h gptj.cpp
+    llamamodel.h llamamodel.cpp
+    llama.cpp/examples/common.cpp
     llm.h llm.cpp
     llmodel.h
+    utils.h utils.cpp
 )
 
 qt_add_qml_module(chat
@@ -72,7 +76,7 @@ target_compile_definitions(chat
 target_link_libraries(chat
     PRIVATE Qt6::Quick Qt6::Svg)
 target_link_libraries(chat
-    PRIVATE ggml ggml_utils)
+    PRIVATE llama)
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
