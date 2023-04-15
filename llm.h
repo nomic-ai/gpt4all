@@ -42,6 +42,7 @@ private:
     LLModel *m_llmodel;
     std::string m_response;
     quint32 m_responseTokens;
+    quint32 m_responseLogits;
     QString m_modelName;
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;

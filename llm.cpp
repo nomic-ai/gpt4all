@@ -20,6 +20,7 @@ LLMObject::LLMObject()
     : QObject{nullptr}
     , m_llmodel(new GPTJ)
     , m_responseTokens(0)
+    , m_responseLogits(0)
 {
     moveToThread(&m_llmThread);
     connect(&m_llmThread, &QThread::started, this, &LLMObject::loadModel);
@@ -66,8 +67,9 @@ bool LLMObject::isModelLoaded() const
 void LLMObject::resetResponse()
 {
     s_ctx.n_past -= m_responseTokens;
-    s_ctx.logits.erase(s_ctx.logits.end() -= m_responseTokens, s_ctx.logits.end());
+    s_ctx.logits.erase(s_ctx.logits.end() -= m_responseLogits, s_ctx.logits.end());
     m_responseTokens = 0;
+    m_responseLogits = 0;
     m_response = std::string();
     emit responseChanged();
 }
@@ -110,7 +112,9 @@ bool LLMObject::prompt(const QString &prompt)
     m_stopGenerating = false;
     auto func = std::bind(&LLMObject::handleResponse, this, std::placeholders::_1);
     emit responseStarted();
+    qint32 logitsBefore = s_ctx.logits.size();
     m_llmodel->prompt(prompt.toStdString(), func, s_ctx, 4096 /*number of chars to predict*/);
+    m_responseLogits += s_ctx.logits.size() - logitsBefore;
     emit responseStopped();
     return true;
 }
