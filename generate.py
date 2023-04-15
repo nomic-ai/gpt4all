@@ -35,25 +35,23 @@ def setup_model(config):
     return model, tokenizer
 
 
-if __name__ == "__main__":
+def main():
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--prompt", type=str)
-
     args = parser.parse_args()
-
     config = read_config(args.config)
-
     if config["prompt"] is None and args.prompt is None:
         raise ValueError("Prompt is required either in config or as argument")
-
     prompt = config["prompt"] if args.prompt is None else args.prompt
-
     print("Setting up model")
     model, tokenizer = setup_model(config)
-
     print("Generating")
     start = time.time()
     generation = generate(tokenizer, prompt, model, config)
     print(f"Done in {time.time() - start:.2f}s")
     print(generation)
+
+
+if __name__ == "__main__":
+    main()
