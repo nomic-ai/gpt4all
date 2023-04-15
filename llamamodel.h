@@ -1,16 +1,16 @@
-#ifndef GPTJ_H
-#define GPTJ_H
+#ifndef LLAMAMODEL_H
+#define LLAMAMODEL_H
 
 #include <string>
 #include <functional>
 #include <vector>
 #include "llmodel.h"
 
-class GPTJPrivate;
-class GPTJ : public LLModel {
+class LLamaPrivate;
+class LLamaModel : public LLModel {
 public:
-    GPTJ();
-    ~GPTJ();
+    LLamaModel();
+    ~LLamaModel();
 
     bool loadModel(const std::string &modelPath) override;
     bool loadModel(const std::string &modelPath, std::istream &fin) override;
@@ -22,7 +22,7 @@ public:
     int32_t threadCount() override;
 
 private:
-    GPTJPrivate *d_ptr;
+    LLamaPrivate *d_ptr;
 };
 
-#endif // GPTJ_H
+#endif // LLAMAMODEL_H

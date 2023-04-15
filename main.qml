@@ -70,7 +70,9 @@ Window {
                 }
 
                 onActivated: {
+                    LLM.stopGenerating()
                     LLM.modelName = comboBox.currentText
+                    chatModel.clear()
                 }
             }
         }
@@ -775,7 +777,7 @@ Window {
                     Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
 
                     delegate: TextArea {
-                        text: currentResponse ? LLM.response : value
+                        text: currentResponse ? LLM.response : (value ? value : "")
                         width: listView.width
                         color: "#d1d5db"
                         wrapMode: Text.WordWrap
@@ -800,8 +802,8 @@ Window {
                             anchors.leftMargin: 90
                             anchors.top: parent.top
                             anchors.topMargin: 5
-                            visible: currentResponse && LLM.response === "" && LLM.responseInProgress
-                            running: currentResponse && LLM.response === "" && LLM.responseInProgress
+                            visible: (currentResponse ? true : false) && LLM.response === "" && LLM.responseInProgress
+                            running: (currentResponse ? true : false) && LLM.response === "" && LLM.responseInProgress
 
                             Accessible.role: Accessible.Animation
                             Accessible.name: qsTr("Busy indicator")

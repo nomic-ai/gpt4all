@@ -47,20 +47,32 @@ bool LLMObject::loadModelPrivate(const QString &modelName)
         return true;
 
     if (isModelLoaded()) {
+        resetContext();
         delete m_llmodel;
         m_llmodel = nullptr;
         emit isModelLoadedChanged();
     }
 
-    m_llmodel = new GPTJ;
-
+    bool isGPTJ = false;
     QString filePath = QCoreApplication::applicationDirPath() + QDir::separator() +
          "ggml-" + modelName + ".bin";
     QFileInfo info(filePath);
     if (info.exists()) {
 
         auto fin = std::ifstream(filePath.toStdString(), std::ios::binary);
-        m_llmodel->loadModel(modelName.toStdString(), fin);
+
+        uint32_t magic;
+        fin.read((char *) &magic, sizeof(magic));
+        fin.seekg(0);
+        isGPTJ = magic == 0x67676d6c;
+        if (isGPTJ) {
+            m_llmodel = new GPTJ;
+            m_llmodel->loadModel(modelName.toStdString(), fin);
+        } else {
+            m_llmodel = new LLamaModel;
+            m_llmodel->loadModel(filePath.toStdString());
+        }
+
         emit isModelLoadedChanged();
         emit threadCountChanged();
     }
