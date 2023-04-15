@@ -19,6 +19,7 @@ static LLModel::PromptContext s_ctx;
 LLMObject::LLMObject()
     : QObject{nullptr}
     , m_llmodel(new GPTJ)
+    , m_responseTokens(0)
 {
     moveToThread(&m_llmThread);
     connect(&m_llmThread, &QThread::started, this, &LLMObject::loadModel);
@@ -64,6 +65,9 @@ bool LLMObject::isModelLoaded() const
 
 void LLMObject::resetResponse()
 {
+    s_ctx.n_past -= m_responseTokens;
+    s_ctx.logits.erase(s_ctx.logits.end() -= m_responseTokens, s_ctx.logits.end());
+    m_responseTokens = 0;
     m_response = std::string();
     emit responseChanged();
 }
@@ -89,6 +93,7 @@ bool LLMObject::handleResponse(const std::string &response)
     printf("%s", response.c_str());
     fflush(stdout);
 #endif
+    ++m_responseTokens;
     if (!response.empty()) {
         m_response.append(response);
         emit responseChanged();
