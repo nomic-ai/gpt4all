@@ -46,8 +46,8 @@ def eval_example(model, tokenizer, example, config):
     gt = prompt + ' ' + example['instances'][0]['output']
 
     # decode several continuations and compute their page trajectories
-    input = tokenizer(prompt, return_tensors="pt")
-    input = {k: v.to(model.device) for k, v in input.items()}
+    inp = tokenizer(prompt, return_tensors="pt")
+    inp = {k: v.to(model.device) for k, v in inp.items()}
 
     # compute the ground truth perplexity
     gt_input = tokenizer(gt, return_tensors="pt")
@@ -58,7 +58,7 @@ def eval_example(model, tokenizer, example, config):
     stride = 512
     seq_len = gt_input['input_ids'].size(1)
 
-    for begin_loc in tqdm(range(input['input_ids'].size(1), gt_input['input_ids'].size(1), stride)):
+    for begin_loc in tqdm(range(inp['input_ids'].size(1), gt_input['input_ids'].size(1), stride)):
         end_loc = min(begin_loc + stride, seq_len)
         trg_len = end_loc - prev_end_loc  # may be different from stride on last loop
         input_ids = gt_input['input_ids'][:, begin_loc:end_loc].to(model.device)
