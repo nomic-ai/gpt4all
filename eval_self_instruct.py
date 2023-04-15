@@ -98,10 +98,13 @@ def do_eval(config):
         pickle.dump(r, f)
 
 
-if __name__ == '__main__':
+def main():
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, required=True)
     args = parser.parse_args()
-
     config = read_config(args.config)
     do_eval(config)
+
+
+if __name__ == '__main__':
+    main()
