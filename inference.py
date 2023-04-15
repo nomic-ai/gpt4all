@@ -3,12 +3,12 @@ import torch
 import torch.nn as nn
 from argparse import ArgumentParser
 from read import read_config
-from accelerate.utils import  set_seed
+from accelerate.utils import set_seed
 from data import load_data_for_inference
 from tqdm import tqdm
-from datasets import  Dataset
+from datasets import Dataset
 import torch.distributed as dist
-from transformers.trainer_pt_utils import  nested_numpify
+from transformers.trainer_pt_utils import nested_numpify
 from transformers import DefaultDataCollator
 from torch.utils.data import DataLoader, DistributedSampler
 import numpy as np
@@ -30,7 +30,7 @@ def calc_cross_entropy_no_reduction(lm_logits, labels):
 def rank0_print(msg):
     if dist.get_rank() == 0:
         print(msg)
-        
+
 
 def inference(config):
     set_seed(config['seed'])
@@ -42,13 +42,13 @@ def inference(config):
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-        
-    train_dataset, val_dataset = load_data_for_inference(config, tokenizer) 
+    train_dataset, val_dataset = load_data_for_inference(config, tokenizer)
 
     num_processes = dist.get_world_size()
     local_rank = dist.get_rank()
 
-    train_sampler = DistributedSampler(train_dataset, shuffle=False, drop_last=True, num_replicas=num_processes, rank=local_rank)
+    train_sampler = DistributedSampler(train_dataset, shuffle=False, drop_last=True, num_replicas=num_processes,
+                                       rank=local_rank)
     train_dataloader = DataLoader(
         train_dataset,
         collate_fn=DefaultDataCollator(),
@@ -57,7 +57,8 @@ def inference(config):
         drop_last=True
     )
 
-    val_sampler = DistributedSampler(val_dataset, shuffle=False, drop_last=True, num_replicas=num_processes, rank=local_rank)
+    val_sampler = DistributedSampler(val_dataset, shuffle=False, drop_last=True, num_replicas=num_processes,
+                                     rank=local_rank)
     val_dataloader = DataLoader(
         val_dataset,
         collate_fn=DefaultDataCollator(),
@@ -66,11 +67,10 @@ def inference(config):
         drop_last=True
     )
 
-
-    model = AutoModelForCausalLM.from_pretrained(config["model_name"], 
-                                                    trust_remote_code=True,
-                                                    torch_dtype=torch.bfloat16,
-                                                    ) 
+    model = AutoModelForCausalLM.from_pretrained(config["model_name"],
+                                                 trust_remote_code=True,
+                                                 torch_dtype=torch.bfloat16,
+                                                 )
     model.to(f"cuda:{local_rank}")
 
     with torch.no_grad():
@@ -129,7 +129,8 @@ def inference(config):
         filtered_train = filtered_train.add_column("loss", df_train["loss"])
         filtered_train = filtered_train.add_column("is_train", [True] * len(filtered_train))
 
-        filtered_train.to_json(f"inference/epoch_2_embeddings_train_shard_{local_rank}.jsonl", lines=True, orient="records", num_proc=64)
+        filtered_train.to_json(f"inference/epoch_2_embeddings_train_shard_{local_rank}.jsonl", lines=True,
+                               orient="records", num_proc=64)
 
         val_outputs = {"loss": [], "embeddings": [], "index": []}
         for batch in tqdm(val_dataloader, disable=local_rank != 0):
@@ -184,8 +185,9 @@ def inference(config):
         filtered_val = filtered_val.add_column("loss", df_val["loss"])
         filtered_val = filtered_val.add_column("is_train", [False] * len(filtered_val))
 
-        filtered_val.to_json(f"inference/epoch_2_embeddings_val_shard_{local_rank}.jsonl", lines=True, orient="records", num_proc=64)
-    
+        filtered_val.to_json(f"inference/epoch_2_embeddings_val_shard_{local_rank}.jsonl", lines=True, orient="records",
+                             num_proc=64)
+
 
 def main():
     dist.init_process_group("nccl")
@@ -201,4 +203,3 @@ def main():
 if __name__ == "__main__":
     # parse arguments by reading in a config
     main()
-    

@@ -14,6 +14,7 @@ import wandb
 
 torch.backends.cuda.matmul.allow_tf32 = True
 
+
 def format_metrics(metrics, split, prefix=""):
     log = f"[{split}]" + prefix
     log += " ".join([f"{key}: {value:.4f}" for key, value in metrics.items()])
@@ -47,15 +48,13 @@ def train(accelerator, config):
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-        
     with accelerator.main_process_first():
-        train_dataloader, val_dataloader = load_data(config, tokenizer) 
-
+        train_dataloader, val_dataloader = load_data(config, tokenizer)
 
     checkpoint = config["gradient_checkpointing"]
-    model = AutoModelForCausalLM.from_pretrained(config["model_name"], 
-                                                    use_cache=False if checkpoint else True,
-                                                    trust_remote_code=True) 
+    model = AutoModelForCausalLM.from_pretrained(config["model_name"],
+                                                 use_cache=False if checkpoint else True,
+                                                 trust_remote_code=True)
     if checkpoint:
         model.gradient_checkpointing_enable()
 
@@ -70,7 +69,7 @@ def train(accelerator, config):
     optimizer_cls = (
         AdamW
         if accelerator.state.deepspeed_plugin is None
-        or "optimizer" not in accelerator.state.deepspeed_plugin.deepspeed_config
+           or "optimizer" not in accelerator.state.deepspeed_plugin.deepspeed_config
         else DummyOptim
     )
 
@@ -93,8 +92,8 @@ def train(accelerator, config):
 
     # Creates Dummy Scheduler if `scheduler` was spcified in the config file else creates `args.lr_scheduler_type` Scheduler
     if (
-        accelerator.state.deepspeed_plugin is None
-        or "scheduler" not in accelerator.state.deepspeed_plugin.deepspeed_config
+            accelerator.state.deepspeed_plugin is None
+            or "scheduler" not in accelerator.state.deepspeed_plugin.deepspeed_config
     ):
         scheduler = get_scheduler(
             name="cosine",
@@ -108,7 +107,7 @@ def train(accelerator, config):
         )
 
     model, optimizer, train_dataloader, val_dataloader, scheduler = accelerator.prepare(
-            model, optimizer, train_dataloader, val_dataloader, scheduler
+        model, optimizer, train_dataloader, val_dataloader, scheduler
     )
 
     # setup for saving training states in case preemption
@@ -122,7 +121,6 @@ def train(accelerator, config):
         resume_step = int(training_difference.replace("step_", ""))
         accelerator.skip_first_batches(train_dataloader, resume_step)
         accelerator.print(f"Resuming from step {resume_step}")
-
 
     # log gradients
     if accelerator.is_main_process and config["wandb"]:
@@ -154,7 +152,6 @@ def train(accelerator, config):
                 scheduler.step()
                 optimizer.zero_grad()
 
-
             if step > 0 and step % config["save_every"] == 0:
                 curr_step = step + epoch * len(train_dataloader)
                 accelerator.save_state(f"{config['output_dir']}/step_{curr_step}")
@@ -163,8 +160,8 @@ def train(accelerator, config):
                 val_loss = evaluate(model, val_dataloader)
 
                 log_train = {
-                        "train_loss": train_loss.compute()
-                    }
+                    "train_loss": train_loss.compute()
+                }
                 log_val = {
                     "val_loss": val_loss.compute()
                 }
@@ -197,7 +194,7 @@ def train(accelerator, config):
             save_function=accelerator.save,
             state_dict=accelerator.get_state_dict(model),
         )
-            
+
     accelerator.wait_for_everyone()
     unwrapped_model = accelerator.unwrap_model(model)
     unwrapped_model.save_pretrained(
@@ -209,7 +206,6 @@ def train(accelerator, config):
 
     accelerator.end_training()
 
-    
 
 if __name__ == "__main__":
     # parse arguments by reading in a config

@@ -6,7 +6,6 @@ from torch.utils.data import DataLoader
 from transformers import DefaultDataCollator
 
 
-
 def tokenize_inputs(config, tokenizer, examples):
     max_length = config["max_length"]
 
@@ -16,7 +15,7 @@ def tokenize_inputs(config, tokenizer, examples):
     for prompt, response in zip(examples["prompt"], examples["response"]):
         if different_eos:
             if response.count("</s> \n") > 0:
-                response = response.replace("</s> \n", f"{tokenizer.eos_token} \n") 
+                response = response.replace("</s> \n", f"{tokenizer.eos_token} \n")
 
         prompt_len = len(tokenizer(prompt + "\n", return_tensors="pt")["input_ids"][0])
 
@@ -29,7 +28,8 @@ def tokenize_inputs(config, tokenizer, examples):
             new_len = min(max_length // 2, len(prompt) // 2)
             prompt = prompt[:new_len]
             # get new prompt length
-            prompt_len = tokenizer(prompt + "\n", return_tensors="pt", max_length=max_length // 2, truncation=True).input_ids.ne(tokenizer.pad_token_id).sum().item()
+            prompt_len = tokenizer(prompt + "\n", return_tensors="pt", max_length=max_length // 2,
+                                   truncation=True).input_ids.ne(tokenizer.pad_token_id).sum().item()
 
         assert prompt_len <= max_length // 2, f"prompt length {prompt_len} exceeds max length {max_length}"
 
@@ -42,14 +42,16 @@ def tokenize_inputs(config, tokenizer, examples):
             # pad to max_length with -100
             labels = torch.cat([labels, torch.full((max_length - len(labels),), -100)])
 
-        assert (labels == -100).sum() < len(labels), f"Labels are all -100, something wrong. prompt length {prompt_len} exceeds max length {max_length}" 
-        
+        assert (labels == -100).sum() < len(
+            labels), f"Labels are all -100, something wrong. prompt length {prompt_len} exceeds max length {max_length}"
+
         if (labels == -100).sum() == len(labels) - 1:
             print(prompt)
             print(response)
             raise
 
-        input_tokens = tokenizer.pad({"input_ids": input_tokens}, padding="max_length", max_length=max_length)["input_ids"]
+        input_tokens = tokenizer.pad({"input_ids": input_tokens}, padding="max_length", max_length=max_length)[
+            "input_ids"]
         out["labels"].append(labels)
         out["input_ids"].append(input_tokens)
 
@@ -116,7 +118,7 @@ def load_data(config, tokenizer):
 
     return train_dataloader, val_dataloader
 
-    
+
 def load_data_for_inference(config, tokenizer):
     dataset_path = config["dataset_path"]
 
@@ -157,7 +159,7 @@ def load_data_for_inference(config, tokenizer):
         **kwargs
     )
     val_dataset = val_dataset.map(
-        lambda ele: tokenize_inputs(config, tokenizer, ele), 
+        lambda ele: tokenize_inputs(config, tokenizer, ele),
         batched=True,
         **kwargs
     )

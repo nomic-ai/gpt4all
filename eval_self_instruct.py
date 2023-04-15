@@ -13,6 +13,7 @@ Evaluates perplexity on the outputs of:
 https://github.com/yizhongw/self-instruct/blob/main/human_eval/user_oriented_instructions.jsonl
 '''
 
+
 def read_jsonl_file(file_path):
     data = []
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -21,8 +22,10 @@ def read_jsonl_file(file_path):
             data.append(json_object)
     return data
 
+
 def setup_model(config):
-    model = AutoModelForCausalLM.from_pretrained(config["model_name"], device_map="auto", torch_dtype=torch.float16, output_hidden_states=True)
+    model = AutoModelForCausalLM.from_pretrained(config["model_name"], device_map="auto", torch_dtype=torch.float16,
+                                                 output_hidden_states=True)
     tokenizer = AutoTokenizer.from_pretrained(config["tokenizer_name"])
     added_tokens = tokenizer.add_special_tokens({"bos_token": "<s>", "eos_token": "</s>", "pad_token": "<pad>"})
 
@@ -30,26 +33,24 @@ def setup_model(config):
         model.resize_token_embeddings(len(tokenizer))
 
     if 'lora' in config and config['lora']:
-        model = PeftModelForCausalLM.from_pretrained(model, config["lora_path"], device_map="auto", torch_dtype=torch.float16, return_hidden_states=True)
+        model = PeftModelForCausalLM.from_pretrained(model, config["lora_path"], device_map="auto",
+                                                     torch_dtype=torch.float16, return_hidden_states=True)
         model.to(dtype=torch.float16)
 
     print(f"Mem needed: {model.get_memory_footprint() / 1024 / 1024 / 1024:.2f} GB")
-        
+
     return model, tokenizer
 
 
-
-
 def eval_example(model, tokenizer, example, config):
-
     prompt = example['instruction'] + ' ' + example['instances'][0]['input']
     gt = prompt + ' ' + example['instances'][0]['output']
 
-    #decode several continuations and compute their page trajectories
+    # decode several continuations and compute their page trajectories
     input = tokenizer(prompt, return_tensors="pt")
     input = {k: v.to(model.device) for k, v in input.items()}
 
-    #compute the ground truth perplexity
+    # compute the ground truth perplexity
     gt_input = tokenizer(gt, return_tensors="pt")
     gt_input = {k: v.to(model.device) for k, v in gt_input.items()}
 
@@ -78,10 +79,10 @@ def eval_example(model, tokenizer, example, config):
     print('ppl: ', ppl)
 
     print(prompt)
-    print(80*'-')
-   
+    print(80 * '-')
 
     return ppl
+
 
 def do_eval(config):
     eval_data = read_jsonl_file('eval_data/user_oriented_instructions.jsonl')
@@ -91,7 +92,6 @@ def do_eval(config):
         gt_perplexity = eval_example(model, tokenizer, example, config)
         all_perplexities.append(gt_perplexity)
 
-        
     name = f"eval_data/eval__model-{config['model_name'].replace('/', '_')}{'__lora-' + config['lora_path'].replace('/', '_') if config['lora'] else ''}.pkl"
 
     with open(name, 'wb') as f:
