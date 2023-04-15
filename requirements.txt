@@ -2,7 +2,7 @@ accelerate
 datasets
 torchmetrics
 evaluate
-transformers>=4.28.0
+transformers
 wandb
 pip
 peft
@@ -13,3 +13,12 @@ jsonlines
 nomic
 scikit-learn
 matplotlib
+torch
+numpy
+psutil
+Pillow
+tqdm
+setuptools
+PyYAML
+pandas
+pyarrow
