@@ -74,6 +74,7 @@ void LLMObject::resetResponse()
 
 void LLMObject::resetContext()
 {
+    resetResponse();
     s_ctx = LLModel::PromptContext();
 }
 
