@@ -62,7 +62,7 @@ These files are not yet cert signed by Windows/Apple so you will see security wa
 Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/)
 
 ### Raw Model
-[ggml Model Download Link](https://gpt4all.io/ggml-gpt4all-j.bin)
+[ggml Model Download Link](https://gpt4all.io/models/ggml-gpt4all-j.bin)
 
 Note this model is only compatible with the C++ bindings found [here](https://github.com/nomic-ai/gpt4all-chat). It will not work with any existing llama.cpp bindings as we had to do a large fork of llama.cpp. GPT4All will support the ecosystem around this new C++ backend going forward.
 
