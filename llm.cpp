@@ -101,6 +101,11 @@ bool LLMObject::handleResponse(const std::string &response)
         m_response.append(response);
         emit responseChanged();
     }
+
+    // Stop generation if we encounter prompt or response tokens
+    QString r = QString::fromStdString(m_response);
+    if (r.contains("### Prompt:") || r.contains("### Response:"))
+        return false;
     return !m_stopGenerating;
 }
 
@@ -109,11 +114,18 @@ bool LLMObject::prompt(const QString &prompt)
     if (!isModelLoaded())
         return false;
 
+    QString instructPrompt = QString("Below is a prompt for either a task to complete "
+        "or a piece of conversation."
+        "Decide which and write an appropriate response to the prompt.\n"
+        "### Prompt:\n"
+        "%1"
+        "### Response:\n").arg(prompt);
+
     m_stopGenerating = false;
     auto func = std::bind(&LLMObject::handleResponse, this, std::placeholders::_1);
     emit responseStarted();
     qint32 logitsBefore = s_ctx.logits.size();
-    m_llmodel->prompt(prompt.toStdString(), func, s_ctx, 4096 /*number of chars to predict*/);
+    m_llmodel->prompt(instructPrompt.toStdString(), func, s_ctx, 4096 /*number of chars to predict*/);
     m_responseLogits += s_ctx.logits.size() - logitsBefore;
     emit responseStopped();
     return true;
