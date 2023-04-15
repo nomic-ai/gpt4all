@@ -217,7 +217,7 @@ if __name__ == "__main__":
     config = read_config(args.config)
 
     if config["wandb"]:
-        accelerator = Accelerator(log_with="wandb")
+        accelerator = Accelerator(log_with=["wandb"])
         accelerator.init_trackers(
             project_name=config["wandb_project_name"],
             config=config,
