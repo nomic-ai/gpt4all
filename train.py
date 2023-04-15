@@ -207,15 +207,13 @@ def train(accelerator, config):
     accelerator.end_training()
 
 
-if __name__ == "__main__":
+def main():
+    global config, accelerator
     # parse arguments by reading in a config
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, default="config.yaml")
-
     args = parser.parse_args()
-
     config = read_config(args.config)
-
     if config["wandb"]:
         accelerator = Accelerator(log_with=["wandb"])
         accelerator.init_trackers(
@@ -225,5 +223,8 @@ if __name__ == "__main__":
         )
     else:
         accelerator = Accelerator()
-
     train(accelerator, config=config)
+
+
+if __name__ == "__main__":
+    main()
