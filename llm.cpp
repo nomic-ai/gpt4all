@@ -52,7 +52,7 @@ bool LLMObject::loadModel()
     }
 
     if (m_llmodel) {
-        m_modelName = info.baseName().remove(0, 5); // remove the ggml- prefix
+        m_modelName = info.completeBaseName().remove(0, 5); // remove the ggml- prefix
         emit modelNameChanged();
     }
 
