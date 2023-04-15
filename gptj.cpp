@@ -707,9 +707,11 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
             std::cerr << "GPT-J ERROR: Failed to process prompt\n";
             return;
         }
-        // We pass a null string to see if the user has asked us to stop...
-        if (!response(""))
-            return;
+        // We pass a null string for each token to see if the user has asked us to stop...
+        size_t tokens = batch_end - i;
+        for (size_t t = 0; t < tokens; ++t)
+            if (!response(""))
+                return;
         ctx.n_past += batch.size();
         i = batch_end;
     }
