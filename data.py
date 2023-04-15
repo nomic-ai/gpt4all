@@ -50,7 +50,8 @@ def tokenize_inputs(config, tokenizer, examples):
             prompt_len = tokenizer(prompt + "\n", return_tensors="pt", max_length=max_length // 2,
                                    truncation=True).input_ids.ne(tokenizer.pad_token_id).sum().item()
 
-        assert prompt_len <= max_length // 2, f"prompt length {prompt_len} exceeds max length {max_length}"
+        if prompt_len > max_length // 2:
+            raise ValueError(f"prompt length {prompt_len} exceeds max length {max_length}")
 
         input_tokens = tokenizer(prompt + "\n" + response + tokenizer.eos_token,
                                  truncation=True, max_length=max_length, return_tensors="pt")["input_ids"].squeeze()
@@ -61,13 +62,10 @@ def tokenize_inputs(config, tokenizer, examples):
             # pad to max_length with -100
             labels = torch.cat([labels, torch.full((max_length - len(labels),), -100)])
 
-        assert (labels == -100).sum() < len(
-            labels), f"Labels are all -100, something wrong. prompt length {prompt_len} exceeds max length {max_length}"
-
         if (labels == -100).sum() == len(labels) - 1:
             print(prompt)
             print(response)
-            raise
+            raise AssertionError(f"Labels are all -100, something wrong. prompt length {prompt_len} exceeds max length {max_length}")
 
         input_tokens = tokenizer.pad({"input_ids": input_tokens}, padding="max_length", max_length=max_length)[
             "input_ids"]
