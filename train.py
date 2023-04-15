@@ -1,5 +1,5 @@
 import os
-from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler, LlamaForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler
 import torch
 from torch.optim import AdamW
 from argparse import ArgumentParser
