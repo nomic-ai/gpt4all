@@ -177,7 +177,7 @@ def train(accelerator, config):
                 train_loss.reset()
 
         accelerator.print(f"Epoch {epoch} finished")
-        accelerator.print(f"Pushing to HF hub")
+        accelerator.print("Pushing to HF hub")
         accelerator.wait_for_everyone()
         unwrapped_model = accelerator.unwrap_model(model)
         try:
@@ -186,7 +186,7 @@ def train(accelerator, config):
 
         except Exception as e:
             accelerator.print(e)
-            accelerator.print(f"Failed to push to hub")
+            accelerator.print("Failed to push to hub")
 
         unwrapped_model.save_pretrained(
             f"{config['output_dir']}/epoch_{epoch}",
