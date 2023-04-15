@@ -41,7 +41,7 @@ def setup_model(config):
     return model, tokenizer
 
 
-def eval_example(model, tokenizer, example, config):
+def eval_example(model, tokenizer, example):
     prompt = example['instruction'] + ' ' + example['instances'][0]['input']
     gt = prompt + ' ' + example['instances'][0]['output']
 
@@ -88,7 +88,7 @@ def do_eval(config):
     model, tokenizer = setup_model(config)
     all_perplexities = []
     for example in tqdm(eval_data):
-        gt_perplexity = eval_example(model, tokenizer, example, config)
+        gt_perplexity = eval_example(model, tokenizer, example)
         all_perplexities.append(gt_perplexity)
 
     name = f"eval_data/eval__model-{config['model_name'].replace('/', '_')}{'__lora-' + config['lora_path'].replace('/', '_') if config['lora'] else ''}.pkl"
