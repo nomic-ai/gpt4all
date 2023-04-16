@@ -311,8 +311,57 @@ Window {
     }
 
     Button {
-        id: copyButton
+        id: settingsButton
         anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 30
+        anchors.rightMargin: 30
+        width: 60
+        height: 40
+        z: 200
+        padding: 15
+
+        background: Item {
+            anchors.fill: parent
+            Image {
+                anchors.centerIn: parent
+                width: 40
+                height: 40
+                source: "qrc:/gpt4all-chat/icons/settings.svg"
+            }
+        }
+
+        onClicked: {
+            settingsDialog.open()
+        }
+    }
+
+    Dialog {
+        id: copyMessage
+        anchors.centerIn: parent
+        modal: false
+        opacity: 0.9
+        Text {
+            horizontalAlignment: Text.AlignJustify
+            text: qsTr("Conversation copied to clipboard.")
+            color: "#d1d5db"
+        }
+        background: Rectangle {
+            anchors.fill: parent
+            color: "#202123"
+            border.width: 1
+            border.color: "white"
+            radius: 10
+        }
+
+        exit: Transition {
+            NumberAnimation { duration: 500; property: "opacity"; from: 1.0; to: 0.0 }
+        }
+    }
+
+    Button {
+        id: copyButton
+        anchors.right: settingsButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
         anchors.rightMargin: 30
@@ -351,6 +400,13 @@ Window {
             copyEdit.text = conversation
             copyEdit.selectAll()
             copyEdit.copy()
+            copyMessage.open()
+            timer.start()
+        }
+        Timer {
+            id: timer
+            interval: 500; running: false; repeat: false
+            onTriggered: copyMessage.close()
         }
     }
 
@@ -379,33 +435,6 @@ Window {
             LLM.stopGenerating()
             LLM.resetContext()
             chatModel.clear()
-        }
-    }
-
-    Button {
-        id: settingsButton
-        anchors.right: resetContextButton.left
-        anchors.top: parent.top
-
-        anchors.topMargin: 30
-        anchors.rightMargin: 30
-        width: 60
-        height: 40
-        z: 200
-        padding: 15
-
-        background: Item {
-            anchors.fill: parent
-            Image {
-                anchors.centerIn: parent
-                width: 40
-                height: 40
-                source: "qrc:/gpt4all-chat/icons/settings.svg"
-            }
-        }
-
-        onClicked: {
-            settingsDialog.open()
         }
     }
 
