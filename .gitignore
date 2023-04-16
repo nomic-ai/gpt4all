@@ -1,2 +1,3 @@
 CMakeLists.txt.user
 models/*
+build/*
