@@ -96,6 +96,8 @@ Window {
             }
             TextField {
                 text: settingsDialog.temperature.toString()
+                ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens - higher temperature gives more creative but less predictable outputs")
+                ToolTip.visible: hovered
                 Layout.row: 0
                 Layout.column: 1
                 validator: DoubleValidator { }
@@ -116,6 +118,8 @@ Window {
             }
             TextField {
                 text: settingsDialog.topP.toString()
+                ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen, prevents choosing highly unlikely tokens, aka Nucleus Sampling")
+                ToolTip.visible: hovered
                 Layout.row: 1
                 Layout.column: 1
                 validator: DoubleValidator {}
@@ -136,6 +140,8 @@ Window {
              }
              TextField {
                  text: settingsDialog.topK.toString()
+                 ToolTip.text: qsTr("Only the top K most likely tokens will be chosen from")
+                 ToolTip.visible: hovered
                  Layout.row: 2
                  Layout.column: 1
                  validator: IntValidator { bottom: 1 }
@@ -156,6 +162,8 @@ Window {
              }
              TextField {
                  text: settingsDialog.maxLength.toString()
+                 ToolTip.text: qsTr("Maximum length of response in tokens")
+                 ToolTip.visible: hovered
                  Layout.row: 3
                  Layout.column: 1
                  validator: IntValidator { bottom: 1 }
@@ -177,6 +185,8 @@ Window {
              }
              TextField {
                  text: settingsDialog.promptBatchSize.toString()
+                 ToolTip.text: qsTr("Amount of prompt tokens to process at once, higher values can speed up reading prompts but will use more RAM")
+                 ToolTip.visible: hovered
                  Layout.row: 4
                  Layout.column: 1
                  validator: IntValidator { bottom: 1 }
