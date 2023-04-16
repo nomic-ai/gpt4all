@@ -80,9 +80,17 @@ void LLMObject::resetContext()
     s_ctx = LLModel::PromptContext();
 }
 
+std::string remove_leading_whitespace(const std::string& input) {
+    auto first_non_whitespace = std::find_if(input.begin(), input.end(), [](unsigned char c) {
+        return !std::isspace(c) || c == '\n';
+    });
+
+    return std::string(first_non_whitespace, input.end());
+}
+
 QString LLMObject::response() const
 {
-    return QString::fromStdString(m_response);
+    return QString::fromStdString(remove_leading_whitespace(m_response));
 }
 
 QString LLMObject::modelName() const

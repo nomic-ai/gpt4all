@@ -54,11 +54,11 @@ Window {
         title: qsTr("Settings")
         height: 600
         width: 600
-        property real temperature: 0.9
-        property real topP: 0.9
-        property int topK: 40
-        property int maxLength: 4096
-        property int promptBatchSize: 9
+        property real defaultTemperature: 0.7
+        property real defaultTopP: 0.95
+        property int defaultTopK: 40
+        property int defaultMaxLength: 4096
+        property int defaultPromptBatchSize: 9
 
         property string defaultPromptTemplate: "The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.
 ### Prompt:
@@ -66,18 +66,23 @@ Window {
 ### Response:\n"
 
         property string promptTemplate: ""
+        property real temperature: 0.0
+        property real topP: 0.0
+        property int topK: 0
+        property int maxLength: 0
+        property int promptBatchSize: 0
 
         function restoreDefaults() {
-            temperature = 0.9;
-            topP = 0.9;
-            topK = 40;
-            maxLength = 4096;
-            promptBatchSize = 9;
+            temperature = defaultTemperature;
+            topP = defaultTopP;
+            topK = defaultTopK;
+            maxLength = defaultMaxLength;
+            promptBatchSize = defaultPromptBatchSize;
             promptTemplate = defaultPromptTemplate;
         }
 
         Component.onCompleted: {
-            promptTemplate = defaultPromptTemplate;
+            restoreDefaults();
         }
 
         GridLayout {
