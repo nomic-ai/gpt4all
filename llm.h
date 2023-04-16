@@ -26,7 +26,8 @@ public:
     QString modelName() const;
 
 public Q_SLOTS:
-    bool prompt(const QString &prompt);
+    bool prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
+                float temp, int32_t n_batch);
 
 Q_SIGNALS:
     void isModelLoadedChanged();
@@ -60,7 +61,8 @@ public:
     static LLM *globalInstance();
 
     Q_INVOKABLE bool isModelLoaded() const;
-    Q_INVOKABLE void prompt(const QString &prompt);
+    Q_INVOKABLE void prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
+                            float temp, int32_t n_batch);
     Q_INVOKABLE void resetContext();
     Q_INVOKABLE void resetResponse();
     Q_INVOKABLE void stopGenerating();
@@ -76,7 +78,8 @@ Q_SIGNALS:
     void isModelLoadedChanged();
     void responseChanged();
     void responseInProgressChanged();
-    void promptRequested(const QString &prompt);
+    void promptRequested(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
+                         float temp, int32_t n_batch);
     void resetResponseRequested();
     void resetContextRequested();
     void modelNameChanged();

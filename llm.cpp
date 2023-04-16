@@ -109,23 +109,20 @@ bool LLMObject::handleResponse(const std::string &response)
     return !m_stopGenerating;
 }
 
-bool LLMObject::prompt(const QString &prompt)
+bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
+                       float temp, int32_t n_batch)
 {
     if (!isModelLoaded())
         return false;
 
-    QString instructPrompt = QString("Below is a prompt for either a task to complete "
-        "or a piece of conversation."
-        "Decide which and write an appropriate response to the prompt.\n"
-        "### Prompt:\n"
-        "%1"
-        "### Response:\n").arg(prompt);
+    QString instructPrompt = prompt_template.arg(prompt);
 
     m_stopGenerating = false;
     auto func = std::bind(&LLMObject::handleResponse, this, std::placeholders::_1);
     emit responseStarted();
     qint32 logitsBefore = s_ctx.logits.size();
-    m_llmodel->prompt(instructPrompt.toStdString(), func, s_ctx, 4096 /*number of chars to predict*/);
+    qInfo() << instructPrompt << "\n";
+    m_llmodel->prompt(instructPrompt.toStdString(), func, s_ctx, n_predict, top_k, top_p, temp, n_batch);
     m_responseLogits += s_ctx.logits.size() - logitsBefore;
     emit responseStopped();
     return true;
@@ -152,9 +149,10 @@ bool LLM::isModelLoaded() const
     return m_llmodel->isModelLoaded();
 }
 
-void LLM::prompt(const QString &prompt)
+void LLM::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
+                 float temp, int32_t n_batch)
 {
-    emit promptRequested(prompt);
+    emit promptRequested(prompt, prompt_template, n_predict, top_k, top_p, temp, n_batch);
 }
 
 void LLM::resetResponse()
