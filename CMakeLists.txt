@@ -34,6 +34,7 @@ qt_add_qml_module(chat
       icons/regenerate.svg
       icons/logo.svg
       icons/copy.svg
+      icons/settings.svg
       icons/logo-16.png
       icons/logo-32.png
       icons/logo-48.png
