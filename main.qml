@@ -59,12 +59,13 @@ Window {
         property int topK: 40
         property int maxLength: 4096
         property int promptBatchSize: 9
-        property string promptTemplate: "Below is a prompt for either a task to complete or a piece of conversation. Decide which and write an appropriate response to the prompt.
 
+        property string defaultPromptTemplate: "The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.
 ### Prompt:
 %1
-### Response:
-"
+### Response:\n"
+
+        property string promptTemplate: ""
 
         function restoreDefaults() {
             temperature = 0.9;
@@ -72,12 +73,11 @@ Window {
             topK = 40;
             maxLength = 4096;
             promptBatchSize = 9;
-            promptTemplate = "Below is a prompt for either a task to complete or a piece of conversation. Decide which and write an appropriate response to the prompt.
+            promptTemplate = defaultPromptTemplate;
+        }
 
-### Prompt:
-%1
-### Response:
-";
+        Component.onCompleted: {
+            promptTemplate = defaultPromptTemplate;
         }
 
         GridLayout {
