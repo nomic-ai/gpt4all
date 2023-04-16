@@ -40,7 +40,7 @@ GPT-J model by following build instructions below.
 * Download https://huggingface.co/EleutherAI/gpt-j-6b
 * Clone this repo and build
 ```
-git clone --recurse-submodules https://github.com/manyoso/gpt4all-chat.git
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
 cd gpt4all-chat
 mkdir build
 cd build
