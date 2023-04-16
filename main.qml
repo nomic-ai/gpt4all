@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
+import QtQuick.Layouts
 import llm
 
 Window {
@@ -42,6 +43,173 @@ Window {
             anchors.centerIn: parent
             visible: !LLM.isModelLoaded
             running: !LLM.isModelLoaded
+        }
+    }
+
+
+    Dialog {
+        id: settingsDialog
+        modal: true
+        anchors.centerIn: parent
+        title: qsTr("Settings")
+        height: 600
+        width: 600
+        property real temperature: 0.9
+        property real topP: 0.9
+        property int topK: 40
+        property int maxLength: 4096
+        property int promptBatchSize: 9
+        property string promptTemplate: "Below is a prompt for either a task to complete or a piece of conversation. Decide which and write an appropriate response to the prompt.
+
+### Prompt:
+%1
+### Response:
+"
+        GridLayout {
+            columns: 2
+            rowSpacing: 10
+            columnSpacing: 10
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+
+            Label {
+                text: qsTr("Temperature:")
+                Layout.row: 0
+                Layout.column: 0
+            }
+            TextField {
+                text: settingsDialog.temperature.toString()
+                Layout.row: 0
+                Layout.column: 1
+                validator: DoubleValidator { }
+                onAccepted: {
+                    var val = parseFloat(text)
+                    if (!isNaN(val)) {
+                        settingsDialog.temperature = val
+                        focus = false
+                    } else {
+                        text = settingsDialog.temperature.toString()
+                    }
+                }
+            }
+            Label {
+                text: qsTr("Top P:")
+                Layout.row: 1
+                Layout.column: 0
+            }
+            TextField {
+                text: settingsDialog.topP.toString()
+                Layout.row: 1
+                Layout.column: 1
+                validator: DoubleValidator {}
+                onAccepted: {
+                    var val = parseFloat(text)
+                    if (!isNaN(val)) {
+                        settingsDialog.topP = val
+                        focus = false
+                    } else {
+                        text = settingsDialog.topP.toString()
+                    }
+                }
+            }
+            Label {
+                 text: qsTr("Top K:")
+                 Layout.row: 2
+                 Layout.column: 0
+             }
+             TextField {
+                 text: settingsDialog.topK.toString()
+                 Layout.row: 2
+                 Layout.column: 1
+                 validator: IntValidator { bottom: 1 }
+                 onAccepted: {
+                     var val = parseInt(text)
+                     if (!isNaN(val)) {
+                         settingsDialog.topK = val
+                         focus = false
+                     } else {
+                         text = settingsDialog.topK.toString()
+                     }
+                 }
+             }
+             Label {
+                 text: qsTr("Max Length:")
+                 Layout.row: 3
+                 Layout.column: 0
+             }
+             TextField {
+                 text: settingsDialog.maxLength.toString()
+                 Layout.row: 3
+                 Layout.column: 1
+                 validator: IntValidator { bottom: 1 }
+                 onAccepted: {
+                     var val = parseInt(text)
+                     if (!isNaN(val)) {
+                         settingsDialog.maxLength = val
+                         focus = false
+                     } else {
+                         text = settingsDialog.maxLength.toString()
+                     }
+                 }
+             }
+
+             Label {
+                 text: qsTr("Prompt Batch Size:")
+                 Layout.row: 4
+                 Layout.column: 0
+             }
+             TextField {
+                 text: settingsDialog.promptBatchSize.toString()
+                 Layout.row: 4
+                 Layout.column: 1
+                 validator: IntValidator { bottom: 1 }
+                 onAccepted: {
+                     var val = parseInt(text)
+                     if (!isNaN(val)) {
+                         settingsDialog.promptBatchSize = val
+                         focus = false
+                     } else {
+                         text = settingsDialog.promptBatchSize.toString()
+                     }
+                 }
+             }
+
+             Label {
+                 text: qsTr("Prompt Template:")
+                 Layout.row: 5
+                 Layout.column: 0
+             }
+             Rectangle {
+                 Layout.row: 5
+                 Layout.column: 1
+                 Layout.fillWidth: true
+                 height: 200
+                 color: "#222"
+                 border.width: 1
+                 border.color: "#ccc"
+                 radius: 5
+                 Label {
+                    visible: settingsDialog.promptTemplate.indexOf("%1") == -1
+                    font.bold: true
+                    color: "red"
+                    text: qsTr("Prompt template must contain %1 to be replaced with the user's input.")
+                    anchors.bottom: templateScrollView.top
+                 }
+                 ScrollView {
+                     id: templateScrollView
+                     anchors.fill: parent
+                     TextArea {
+                         text: settingsDialog.promptTemplate
+                         wrapMode: TextArea.Wrap
+                         onTextChanged: {
+                             settingsDialog.promptTemplate = text
+                         }
+                         bottomPadding: 10
+                     }
+                 }
+             }
         }
     }
 
@@ -164,6 +332,33 @@ Window {
             LLM.stopGenerating()
             LLM.resetContext()
             chatModel.clear()
+        }
+    }
+
+    Button {
+        id: settingsButton
+        anchors.right: resetContextButton.left
+        anchors.top: parent.top
+
+        anchors.topMargin: 30
+        anchors.rightMargin: 30
+        width: 60
+        height: 40
+        z: 200
+        padding: 15
+
+        background: Item {
+            anchors.fill: parent
+            Image {
+                anchors.centerIn: parent
+                width: 40
+                height: 40
+                source: "qrc:/gpt4all-chat/icons/settings.svg"
+            }
+        }
+
+        onClicked: {
+            settingsDialog.open()
         }
     }
 
