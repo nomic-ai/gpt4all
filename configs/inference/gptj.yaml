@@ -1,0 +1,14 @@
+# model/tokenizer
+model_name: "nomic-ai/gpt4all-warmup-lr-epoch_1"
+tokenizer_name: "EleutherAI/gpt-j-6B"
+
+# dataset
+streaming: false
+num_proc: 64
+dataset_path: "nomic-ai/turbo-500k-multi" 
+max_length: 1024
+batch_size: 32 
+
+# logging
+seed: 42
+

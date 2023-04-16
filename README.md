@@ -1,18 +1,91 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Demo, data and code to train an assistant-style large language model with ~800k GPT-3.5-Turbo Generations based on LLaMa</p>
-
+<p align="center">Demo, data, and code to train open-source assistant-style large language model based on GPT-J and LLaMa</p>
 <p align="center">
-<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report</a>
+<a href="https://static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf">:green_book: Technical Report 2: GPT4All-J </a>
 </p>
 
+<p align="center">
+<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 1: GPT4All</a>
+</p>
 
 <p align="center">
 <a href="https://github.com/nomic-ai/pyllamacpp">:snake: Official Python Bindings</a>
 </p>
 
 <p align="center">
-<a href="https://discord.gg/kvmy6dQB">Discord</a>
+<a href="https://github.com/nomic-ai/gpt4all-ts">:computer: Official Typescript Bindings</a>
 </p>
+
+<p align="center">
+<a href="https://github.com/nomic-ai/gpt4all-ui">:speech_balloon: Official Web Chat Interface</a>
+</p>
+
+<p align="center">
+<a href="https://github.com/nomic-ai/gpt4all-chat">:speech_balloon: Official Chat Interface</a>
+</p>
+
+<p align="center">
+<a href="https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html">🦜️🔗 Official Langchain Backend</a> 
+</p>
+
+
+<p align="center">
+<a href="https://discord.gg/mGZE39AS3e">Discord</a>
+</p>
+
+
+
+
+<p align="center">
+GPT4All is made possible by our compute partner <a href="https://www.paperspace.com/">Paperspace</a>.
+</p>
+
+
+
+## GPT4All-J: An Apache-2 Licensed GPT4All Model
+![gpt4all-j-demo](https://user-images.githubusercontent.com/13879686/231876409-e3de1934-93bb-4b4b-9013-b491a969ebbc.gif)
+
+Run on an M1 Mac (not sped up!)
+
+
+### GPT4All-J Chat UI Installers
+Installs a native chat-client with auto-update functionality that runs on your desktop with the GPT4All-J model baked into it.
+
+[Mac/OSX](https://gpt4all.io/installers/gpt4all-0.1.0-Darwin.dmg)
+
+[Windows](https://gpt4all.io/installers/gpt4all-0.1.0-win64.exe)
+
+[Ubuntu](https://gpt4all.io/installers/gpt4all-0.1.0-Linux.run)
+
+These files are not yet cert signed by Windows/Apple so you will see security warnings on initial installation. We did not want to delay release while waiting for their process to complete.
+
+Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/)
+
+### Raw Model
+[ggml Model Download Link](https://gpt4all.io/models/ggml-gpt4all-j.bin)
+
+Note this model is only compatible with the C++ bindings found [here](https://github.com/nomic-ai/gpt4all-chat). It will not work with any existing llama.cpp bindings as we had to do a large fork of llama.cpp. GPT4All will support the ecosystem around this new C++ backend going forward.
+
+Python bindings are imminent and will be integrated into this [repository](https://github.com/nomic-ai/pyllamacpp). Stay tuned on the [GPT4All discord](https://discord.gg/mGZE39AS3e) for updates.
+
+## Training GPT4All-J
+
+Please see [GPT4All-J Technical Report](https://static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf) for details.
+
+### GPT4All-J Training Data
+
+- We are releasing the curated training data for anyone to replicate GPT4All-J here: [GPT4All-J Training Data](https://huggingface.co/datasets/nomic-ai/gpt4all-j-prompt-generations)
+   - [Atlas Map of Prompts](https://atlas.nomic.ai/map/gpt4all-j-prompts-curated)
+   - [Atlas Map of Responses](https://atlas.nomic.ai/map/gpt4all-j-response-curated)
+
+### GPT4All-J Training Instructions
+
+```bash
+accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 --machine_rank=0 --deepspeed_multinode_launcher standard --mixed_precision=bf16  --use_deepspeed --deepspeed_config_file=configs/deepspeed/ds_config_gptj.json train.py --config configs/train/finetune_gptj.yaml
+```
+
+
+# Original GPT4All Model (based on GPL Licensed LLaMa)
 
 
 
@@ -35,18 +108,21 @@ Here's how to get started with the CPU quantized GPT4All model checkpoint:
 For custom hardware compilation, see our [llama.cpp](https://github.com/zanussbaum/gpt4all.cpp) fork.
 
 -----------
+Find all compatible models in the GPT4All Ecosystem section.
 
 [Secret Unfiltered Checkpoint](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin) - [[Torrent]](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.torrent)
 
 This model had all refusal to answer responses removed from training. Try it with:
-- `cd chat;./gpt4all-lora-quantized-OSX-m1 -m gpt4all-lora-unfiltered-quantized.bin`
-
+- M1 Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-m1 -m gpt4all-lora-unfiltered-quantized.bin`
+- Linux: `cd chat;./gpt4all-lora-quantized-linux-x86 -m gpt4all-lora-unfiltered-quantized.bin`
+- Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe -m gpt4all-lora-unfiltered-quantized.bin`
+- Intel Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-intel -m gpt4all-lora-unfiltered-quantized.bin`
 -----------
 Note: the full model on GPU (16GB of RAM required) performs much better in our qualitative evaluations.
 
 # Python Client
 ## CPU Interface
-To run GPT4all in python, see the new [official Python bindings](https://github.com/nomic-ai/pyllamacpp).
+To run GPT4All in python, see the new [official Python bindings](https://github.com/nomic-ai/pyllamacpp).
 
 The old bindings are still available but now deprecated. They will not work in a notebook environment.
 To get running using the python client with the CPU interface, first install the [nomic client](https://github.com/nomic-ai/nomic) using `pip install nomic`
@@ -81,18 +157,31 @@ We are working on a GPT4All that does not have this limitation right now.
 
 You can pass any of the [huggingface generation config params](https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig) in the config.
 
+# GPT4All Compatibility Ecosystem
+Edge models in the GPT4All Ecosystem. Please PR as the [community grows](https://huggingface.co/models?sort=modified&search=4bit).
+Feel free to convert this to a more structured table.
+
+- [gpt4all](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin.md5)]
+   - [gpt4all-ggml-converted](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized-ggml.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized-ggml.bin.md5)]
+- [gpt4all-unfiltered](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.md5)]
+- [ggml-vicuna-7b-4bit](https://huggingface.co/eachadea/ggml-vicuna-7b-4bit)
+- [vicuna-13b-GPTQ-4bit-128g](https://huggingface.co/anon8231489123/vicuna-13b-GPTQ-4bit-128g)
+- [LLaMa-Storytelling-4Bit](https://huggingface.co/GamerUntouch/LLaMa-Storytelling-4Bit)
+- [Alpaca Native 4bit](https://huggingface.co/Sosaka/Alpaca-native-4bit-ggml/tree/main)
+
+
 # Roadmap
 ## Short Term
- - <span style="color:green">(IN PROGRESS)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
- - <span style="color:green">(IN PROGRESS)</span> Create improved CPU and GPU interfaces for this model.
- - <span style="color:red">(NOT STARTED)</span> Integrate llama.cpp bindings
- - <span style="color:red">(NOT STARTED)</span> Create a good conversational chat interface for the model.
- - <span style="color:red">(NOT STARTED)</span> Allow users to opt in and submit their chats for subsequent training runs
+ - <span style="color:green">(Done)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
+ - <span style="color:green">(Done)</span> Create improved CPU and GPU interfaces for this model.
+ - <span style="color:green">(Done)</span> [Integrate llama.cpp bindings](https://github.com/nomic-ai/pyllamacpp)
+ - <span style="color:green">(Done)</span> [Create a good conversational chat interface for the model.](https://github.com/nomic-ai/gpt4all-ui)
+ - <span style="color:green">(Done)</span> [Allow users to opt in and submit their chats for subsequent training runs](https://github.com/nomic-ai/gpt4all-ui)
 
 ## Medium Term
  - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with [Atlas](https://atlas.nomic.ai) to allow for document retrieval.
    - BLOCKED by GPT4All based on GPTJ
- - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with Langchain.
+ - <span style="color:red">(Done)</span> Integrate GPT4All with Langchain.
  - <span style="color:green">(IN PROGRESS)</span> Build easy custom training scripts to allow users to fine tune models.
 
 ## Long Term
@@ -101,15 +190,20 @@ You can pass any of the [huggingface generation config params](https://huggingfa
 
 # Reproducibility
 
-Trained LoRa Weights:
+Trained Model Weights:
 - gpt4all-lora (four full epochs of training):  https://huggingface.co/nomic-ai/gpt4all-lora
 - gpt4all-lora-epoch-2 (three full epochs of training) https://huggingface.co/nomic-ai/gpt4all-lora-epoch-2
+- gpt4all-j (one full epoch of training) (https://huggingface.co/nomic-ai/gpt4all-j)
+- gpt4all-j-lora (one full epoch of training) (https://huggingface.co/nomic-ai/gpt4all-j-lora)
 
 Raw Data:
 - [Training Data Without P3](https://huggingface.co/datasets/nomic-ai/gpt4all_prompt_generations)
   - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean_without_p3
 - [Full Dataset with P3](https://huggingface.co/datasets/nomic-ai/gpt4all_prompt_generations_with_p3)
   - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean
+- [GPT4All-J Dataset](https://huggingface.co/datasets/nomic-ai/gpt4all-j-prompt-generations)
+   -  Explorer Indexed on Prompts: https://atlas.nomic.ai/map/gpt4all-j-prompts-curated
+   -  Exporer Indexed on Responses: https://atlas.nomic.ai/map/gpt4all-j-response-curated
 
 We are not distributing a LLaMa 7B checkpoint.
 
@@ -129,9 +223,6 @@ Setup the environment
 ```
 python -m pip install -r requirements.txt
 
-cd transformers
-pip install -e . 
-
 cd ../peft
 pip install -e .
 ```
@@ -150,7 +241,7 @@ python generate.py --config configs/generate/generate.yaml --prompt "Write a scr
 
 ## Need Help?
 
-Join the <a href="https://discord.gg/kvmy6dQB"> Discord </a> and ask for help in `#gpt4all-help`
+Join the <a href="https://discord.gg/E7q6fp9bmx"> Discord </a> and ask for help in `#gpt4all-help`
 
 # Sample Generations
 
@@ -178,7 +269,8 @@ Join the <a href="https://discord.gg/kvmy6dQB"> Discord </a> and ask for help in
 
 ### Come up with an interesting idea for a new movie plot. Your plot should be described with a title and a summary.
 
->1. The title of your movie plot should be "The Last Stand". 2. The summary of your movie plot should be: A group of mercenaries are hired to protect a small town from a dangerous criminal who is on the run. However, the town's sheriff is not willing to let them take over and decides to take matters into his own hands.
+> 1. The title of your movie plot should be "The Last Stand". 
+> 2. The summary of your movie plot should be: A group of mercenaries are hired to protect a small town from a dangerous criminal who is on the run. However, the town's sheriff is not willing to let them take over and decides to take matters into his own hands.
 
 ### Reverse a string in python.
 > In Python, you can reverse a list or tuple by using the reversed() function on it. Here's an example of how to use this method with strings: 
@@ -188,42 +280,43 @@ Join the <a href="https://discord.gg/kvmy6dQB"> Discord </a> and ask for help in
 >   print(reversed_str)     # Output will be reversed version of the inputted string.
 
 ### List 10 dogs.
->1. Labrador Retriever
->2. Golden Retriever
->3. Beagle
->4. Poodle
->5. German Shepherd
->6. Bulldog
->7. Rottweiler
->8. Boxer
->9. Shih Tzu
->10. Pug
+> 1. Labrador Retriever
+> 2. Golden Retriever
+> 3. Beagle
+> 4. Poodle
+> 5. German Shepherd
+> 6. Bulldog
+> 7. Rottweiler
+> 8. Boxer
+> 9. Shih Tzu
+> 10. Pug
 
-### Write me a poem about the fall of Julius Ceasar into a ceasar salad in iambic pentameter. 
->The fall of Julius Ceasar into a ceasar salad
->In iambic pentameter,
->The mighty Roman emperor
->Fell into a salad of lettuce and croutons,
->His empire crumbling around him,
->As he was devoured by the hungry diners.
->The once mighty emperor
->Was now just a salad topping,
->His legacy reduced to a mere garnish,
->As he was consumed by the masses.
->The fall of Julius Ceasar into a ceasar salad,
->In iambic pentameter,
->Was a tragic end to a great man,
->Who had once ruled the world with an iron fist.
->But now, he was just a salad topping,
->His legacy reduced to a mere garnish,
->As he was consumed by the masses.
+### Write me a poem about the fall of Julius Caesar into a caesar salad in iambic pentameter. 
+
+> The fall of Julius Caesar into a caesar salad<br>
+> In iambic pentameter,<br>
+> The mighty Roman emperor<br>
+> Fell into a salad of lettuce and croutons,<br>
+> His empire crumbling around him,<br>
+> As he was devoured by the hungry diners.<br>
+> The once mighty emperor<br>
+> Was now just a salad topping,<br>
+> His legacy reduced to a mere garnish,<br>
+> As he was consumed by the masses.<br>
+> The fall of Julius Caesar into a caesar salad,<br>
+> In iambic pentameter,<br>
+> Was a tragic end to a great man,<br>
+> Who had once ruled the world with an iron fist.<br>
+> But now, he was just a salad topping,<br>
+> His legacy reduced to a mere garnish,<br>
+> As he was consumed by the masses.
     
 ### What is a three word topic describing the following keywords: baseball, football, soccer: 
->Sports, athletics, games
+> Sports, athletics, games
     
 ## Citation
 
-If you utilize this reposistory, models or data in a downstream project, please consider citing it with:
+If you utilize this repository, models or data in a downstream project, please consider citing it with:
 ```
 @misc{gpt4all,
   author = {Yuvanesh Anand and Zach Nussbaum and Brandon Duderstadt and Benjamin Schmidt and Andriy Mulyar},
