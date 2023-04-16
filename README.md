@@ -40,7 +40,7 @@ GPT-J model by following build instructions below.
 * Download https://huggingface.co/EleutherAI/gpt-j-6b
 * Clone this repo and build
 ```
-git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all-chat
 cd gpt4all-chat
 mkdir build
 cd build
@@ -56,7 +56,7 @@ python3 ../ggml/examples/gpt-j/convert-h5-to-ggml.py /path/to/your/local/copy/of
 * Install cmake for your platform https://cmake.org/install/
 * Clone this repo and build the `ggml` subfolder
 ```
-git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all-chat
 cd gpt4all-chat/ggml
 mkdir build
 cd build
