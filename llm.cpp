@@ -88,6 +88,18 @@ std::string remove_leading_whitespace(const std::string& input) {
     return std::string(first_non_whitespace, input.end());
 }
 
+std::string trim_whitespace(const std::string& input) {
+    auto first_non_whitespace = std::find_if(input.begin(), input.end(), [](unsigned char c) {
+        return !std::isspace(c);
+    });
+
+    auto last_non_whitespace = std::find_if(input.rbegin(), input.rend(), [](unsigned char c) {
+        return !std::isspace(c);
+    }).base();
+
+    return std::string(first_non_whitespace, last_non_whitespace);
+}
+
 QString LLMObject::response() const
 {
     return QString::fromStdString(remove_leading_whitespace(m_response));
@@ -132,7 +144,13 @@ bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, in
     qInfo() << instructPrompt << "\n";
     m_llmodel->prompt(instructPrompt.toStdString(), func, s_ctx, n_predict, top_k, top_p, temp, n_batch);
     m_responseLogits += s_ctx.logits.size() - logitsBefore;
+    std::string trimmed = trim_whitespace(m_response);
+    if (trimmed != m_response) {
+        m_response = trimmed;
+        emit responseChanged();
+    }
     emit responseStopped();
+
     return true;
 }
 
