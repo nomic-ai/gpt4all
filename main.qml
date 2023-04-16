@@ -65,6 +65,21 @@ Window {
 %1
 ### Response:
 "
+
+        function restoreDefaults() {
+            temperature = 0.9;
+            topP = 0.9;
+            topK = 40;
+            maxLength = 4096;
+            promptBatchSize = 9;
+            promptTemplate = "Below is a prompt for either a task to complete or a piece of conversation. Decide which and write an appropriate response to the prompt.
+
+### Prompt:
+%1
+### Response:
+";
+        }
+
         GridLayout {
             columns: 2
             rowSpacing: 10
@@ -209,6 +224,28 @@ Window {
                          bottomPadding: 10
                      }
                  }
+             }
+             Button {
+                 Layout.row: 6
+                 Layout.column: 1
+                 Layout.fillWidth: true
+                 padding: 15
+                 contentItem: Text {
+                     text: qsTr("Restore Defaults")
+                     horizontalAlignment: Text.AlignHCenter
+                     color: "#d1d5db"
+                 }
+
+                 background: Rectangle {
+                     opacity: .5
+                     border.color: "#7d7d8e"
+                     border.width: 1
+                     radius: 10
+                     color: "#343541"
+                 }
+                onClicked: {
+                    settingsDialog.restoreDefaults()
+                }
              }
         }
     }
