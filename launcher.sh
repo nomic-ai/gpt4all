@@ -83,6 +83,8 @@ get_valid_user_input() {
 
 if [[ ${#bin_files[@]} -eq 0 ]]; then
   echo "No .bin files found."
+  echo "you should download from https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin"
+  ehco "and specify which model to use when running by using a local bind mount or named volume. --volume or --mount"
   exit 1
 elif [[ ${#bin_files[@]} -eq 1 ]]; then
   echo "Only one .bin file found. Using it."
