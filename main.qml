@@ -713,6 +713,9 @@ Window {
                 radius: 10
             }
             onAccepted: {
+                if (textInput.text === "")
+                    return
+
                 LLM.stopGenerating()
 
                 if (chatModel.count) {
