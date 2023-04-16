@@ -82,7 +82,7 @@ void LLMObject::resetContext()
 
 std::string remove_leading_whitespace(const std::string& input) {
     auto first_non_whitespace = std::find_if(input.begin(), input.end(), [](unsigned char c) {
-        return !std::isspace(c) || c == '\n';
+        return !std::isspace(c);
     });
 
     return std::string(first_non_whitespace, input.end());
