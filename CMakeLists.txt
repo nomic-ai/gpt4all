@@ -6,7 +6,21 @@ if(APPLE)
   set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
 endif()
 
-project(gpt4all VERSION 0.1.0 LANGUAGES CXX)
+set(APP_VERSION_MAJOR 0)
+set(APP_VERSION_MINOR 1)
+set(APP_VERSION_PATCH 1)
+set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
+
+# Generate a header file with the version number
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+)
+
+# Include the binary directory for the generated header file
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+
+project(gpt4all VERSION ${APP_VERSION} LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -98,19 +112,18 @@ set(CPACK_PACKAGE_EXECUTABLES "GPT4All Chat")
 set(CPACK_CREATE_DESKTOP_LINKS "GPT4All Chat")
 set(CPACK_IFW_PACKAGE_NAME "GPT4All Chat")
 set(CPACK_IFW_PACKAGE_TITLE "GPT4All Chat Installer")
-set(CPACK_IFW_PACKAGE_PUBLISHER "Adam Treat")
-set(CPACK_IFW_PRODUCT_URL "https://github.com/manyoso/gpt4all-chat")
+set(CPACK_IFW_PACKAGE_PUBLISHER "Nomic, Inc.")
+set(CPACK_IFW_PRODUCT_URL "https://gpt4all.io")
 set(CPACK_IFW_PACKAGE_WIZARD_STYLE "Aero")
 set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-48.png")
 set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-32.png")
 set(CPACK_IFW_PACKAGE_WIZARD_SHOW_PAGE_LIST OFF)
-set(CHAT_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
 include(CPack)
 include(CPackIFW)
 cpack_add_component(${COMPONENT_NAME_MAIN} DOWNLOADED)
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} ESSENTIAL FORCED_INSTALLATION)
-cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} VERSION ${CHAT_VERSION})
+cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} VERSION ${APP_VERSION})
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "GPL-3.0 LICENSE" ${CPACK_RESOURCE_FILE_LICENSE})
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installerscript.qs")
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} REPLACES "gpt4all-chat") #Was used in very earliest prototypes
