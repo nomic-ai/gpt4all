@@ -51,6 +51,24 @@ python3 ../ggml/examples/gpt-j/convert-h5-to-ggml.py /path/to/your/local/copy/of
 ./chat
 ```
 
+## Building and running CLI tools only (no Qt required)
+
+* Install cmake for your platform https://cmake.org/install/
+* Clone this repo and build the `ggml` subfolder
+```
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
+cd gpt4all-chat/ggml
+mkdir build
+cd build
+cmake ..
+cmake --build . --parallel
+wget https://gpt4all.io/models/ggml-gpt4all-j.bin # Download GGML model if required
+./bin/gpt-j -m ggml-gpt4all-j.bin -n 200 --top_k 40 --top_p 0.9 -b 9 --temp 0.9 -p "Below is an instruction that describes a task. Write a response that appropriately completes the request.
+### Instruction:
+Write a story about llamas
+### Response:"
+```
+
 ## Contributing
 
 * Pull requests welcome. See the feature wish list for ideas :)
