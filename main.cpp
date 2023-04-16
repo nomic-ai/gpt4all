@@ -5,9 +5,12 @@
 #include <QDirIterator>
 
 #include "llm.h"
+#include "config.h"
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setApplicationVersion(APP_VERSION);
+
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
     qmlRegisterSingletonInstance("llm", 1, 0, "LLM", LLM::globalInstance());
