@@ -9,7 +9,7 @@ Window {
     width: 1280
     height: 720
     visible: true
-    title: qsTr("GPT4All Chat")
+    title: qsTr("GPT4All v") + Qt.application.version
     color: "#d1d5db"
 
     Rectangle {
