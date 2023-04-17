@@ -54,7 +54,7 @@ Window {
         title: qsTr("Settings")
         height: 600
         width: 600
-        property real defaultTemperature: 0.7
+        property real defaultTemperature: 0.28
         property real defaultTopP: 0.95
         property int defaultTopK: 40
         property int defaultMaxLength: 4096
