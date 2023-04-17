@@ -69,6 +69,15 @@ Tell me about artifical intelligence
 ### Response:"
 ```
 
+## To get Qt installed for your system
+
+* Highly advise using the official Qt online open source installer.
+* You can obtain this by creating an account on qt.io and downloading the installer. 
+* You should get latest Qt {Qt 6.5.x} for your system and the developer tools including QtCreator, cmake, ninja.
+* WINDOWS NOTE: you need to use the mingw64 toolchain and not msvc
+* ALL PLATFORMS NOTE: the installer has options for lots of different targets which will add a lot
+of download overhead. You can deselect webassembly target, android, sources, etc to save space on your disk.
+
 ## Contributing
 
 * Pull requests welcome. See the feature wish list for ideas :)
