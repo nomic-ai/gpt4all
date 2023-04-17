@@ -79,6 +79,8 @@ install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
 
+set(BUNDLED_MODEL_NAME "ggml-gpt4all-j-v1.2-jazzy.bin")
+
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     set(LINUXDEPLOYQT "/home/atreat/dev/linuxdeployqt/build/tools/linuxdeployqt/linuxdeployqt")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-linux.cmake.in"
