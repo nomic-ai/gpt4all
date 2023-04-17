@@ -64,7 +64,7 @@ bool LLMObject::isModelLoaded() const
     return m_llmodel->isModelLoaded();
 }
 
-void LLMObject::resetResponse()
+void LLMObject::regenerateResponse()
 {
     s_ctx.n_past -= m_responseTokens;
     s_ctx.n_past = std::max(0, s_ctx.n_past);
@@ -75,9 +75,17 @@ void LLMObject::resetResponse()
     emit responseChanged();
 }
 
+void LLMObject::resetResponse()
+{
+    m_responseTokens = 0;
+    m_responseLogits = 0;
+    m_response = std::string();
+    emit responseChanged();
+}
+
 void LLMObject::resetContext()
 {
-    resetResponse();
+    regenerateResponse();
     s_ctx = LLModel::PromptContext();
 }
 
@@ -142,7 +150,6 @@ bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, in
     auto func = std::bind(&LLMObject::handleResponse, this, std::placeholders::_1);
     emit responseStarted();
     qint32 logitsBefore = s_ctx.logits.size();
-    qInfo() << instructPrompt << "\n";
     m_llmodel->prompt(instructPrompt.toStdString(), func, s_ctx, n_predict, top_k, top_p, temp, n_batch);
     m_responseLogits += s_ctx.logits.size() - logitsBefore;
     std::string trimmed = trim_whitespace(m_response);
@@ -167,6 +174,7 @@ LLM::LLM()
     connect(m_llmodel, &LLMObject::modelNameChanged, this, &LLM::modelNameChanged, Qt::QueuedConnection);
 
     connect(this, &LLM::promptRequested, m_llmodel, &LLMObject::prompt, Qt::QueuedConnection);
+    connect(this, &LLM::regenerateResponseRequested, m_llmodel, &LLMObject::regenerateResponse, Qt::BlockingQueuedConnection);
     connect(this, &LLM::resetResponseRequested, m_llmodel, &LLMObject::resetResponse, Qt::BlockingQueuedConnection);
     connect(this, &LLM::resetContextRequested, m_llmodel, &LLMObject::resetContext, Qt::BlockingQueuedConnection);
 }
@@ -180,6 +188,11 @@ void LLM::prompt(const QString &prompt, const QString &prompt_template, int32_t 
                  float temp, int32_t n_batch)
 {
     emit promptRequested(prompt, prompt_template, n_predict, top_k, top_p, temp, n_batch);
+}
+
+void LLM::regenerateResponse()
+{
+    emit regenerateResponseRequested(); // blocking queued connection
 }
 
 void LLM::resetResponse()
