@@ -18,6 +18,7 @@ public:
 
     bool loadModel();
     bool isModelLoaded() const;
+    void regenerateResponse();
     void resetResponse();
     void resetContext();
     void stopGenerating() { m_stopGenerating = true; }
@@ -63,8 +64,9 @@ public:
     Q_INVOKABLE bool isModelLoaded() const;
     Q_INVOKABLE void prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
                             float temp, int32_t n_batch);
-    Q_INVOKABLE void resetContext();
+    Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void resetResponse();
+    Q_INVOKABLE void resetContext();
     Q_INVOKABLE void stopGenerating();
 
     QString response() const;
@@ -80,6 +82,7 @@ Q_SIGNALS:
     void responseInProgressChanged();
     void promptRequested(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
                          float temp, int32_t n_batch);
+    void regenerateResponseRequested();
     void resetResponseRequested();
     void resetContextRequested();
     void modelNameChanged();

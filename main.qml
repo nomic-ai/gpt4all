@@ -666,7 +666,7 @@ Window {
                 if (LLM.responseInProgress)
                     LLM.stopGenerating()
                 else {
-                    LLM.resetResponse()
+                    LLM.regenerateResponse()
                     if (chatModel.count) {
                         var listElement = chatModel.get(chatModel.count - 1)
                         if (listElement.name === qsTr("Response: ")) {
