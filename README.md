@@ -51,11 +51,11 @@ Run on an M1 Mac (not sped up!)
 ### GPT4All-J Chat UI Installers
 Installs a native chat-client with auto-update functionality that runs on your desktop with the GPT4All-J model baked into it.
 
-[Mac/OSX](https://gpt4all.io/installers/gpt4all-0.1.0-Darwin.dmg)
+[Mac/OSX](https://gpt4all.io/installers/gpt4all-installer-darwin.dmg)
 
-[Windows](https://gpt4all.io/installers/gpt4all-0.1.0-win64.exe)
+[Windows](https://gpt4all.io/installers/gpt4all-installer-win64.exe)
 
-[Ubuntu](https://gpt4all.io/installers/gpt4all-0.1.0-Linux.run)
+[Ubuntu](https://gpt4all.io/installers/gpt4all-installer-linux.run)
 
 These files are not yet cert signed by Windows/Apple so you will see security warnings on initial installation. We did not want to delay release while waiting for their process to complete.
 
