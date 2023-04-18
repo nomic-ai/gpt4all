@@ -659,6 +659,14 @@ bool GPTJ::loadModel(const std::string &modelPath, std::istream &fin) {
     return true;
 }
 
+void GPTJ::setThreadCount(int32_t n_threads) {
+    d_ptr->n_threads = n_threads;
+}
+
+int32_t GPTJ::threadCount() {
+    return d_ptr->n_threads;
+}
+
 GPTJ::~GPTJ()
 {
     ggml_free(d_ptr->model.ctx);

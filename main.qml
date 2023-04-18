@@ -107,7 +107,6 @@ Window {
         property int defaultTopK: 40
         property int defaultMaxLength: 4096
         property int defaultPromptBatchSize: 9
-
         property string defaultPromptTemplate: "The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.
 ### Prompt:
 %1
@@ -141,7 +140,7 @@ Window {
 
         GridLayout {
             columns: 2
-            rowSpacing: 10
+            rowSpacing: 2
             columnSpacing: 10
             anchors.fill: parent
 
@@ -278,13 +277,40 @@ Window {
              }
 
              Label {
-                 id: promptTemplateLabel
-                 text: qsTr("Prompt Template:")
+                 id: nThreadsLabel
+                 text: qsTr("CPU Threads")
                  Layout.row: 5
                  Layout.column: 0
              }
-             Rectangle {
+             TextField {
+                 text: LLM.threadCount.toString()
+                 ToolTip.text: qsTr("Amount of processing threads to use")
+                 ToolTip.visible: hovered
                  Layout.row: 5
+                 Layout.column: 1
+                 validator: IntValidator { bottom: 1 }
+                 onAccepted: {
+                     var val = parseInt(text)
+                     if (!isNaN(val)) {
+                         LLM.threadCount = val
+                         focus = false
+                     } else {
+                         text = settingsDialog.nThreads.toString()
+                     }
+                 }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: nThreadsLabel.text
+                Accessible.description: ToolTip.text
+             }
+
+             Label {
+                 id: promptTemplateLabel
+                 text: qsTr("Prompt Template:")
+                 Layout.row: 6
+                 Layout.column: 0
+             }
+             Rectangle {
+                 Layout.row: 6
                  Layout.column: 1
                  Layout.fillWidth: true
                  height: 200
@@ -319,7 +345,7 @@ Window {
                  }
              }
              Button {
-                 Layout.row: 6
+                 Layout.row: 7
                  Layout.column: 1
                  Layout.fillWidth: true
                  padding: 15
