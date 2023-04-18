@@ -12,6 +12,11 @@ Window {
     title: qsTr("GPT4All v") + Qt.application.version
     color: "#d1d5db"
 
+    Item {
+        Accessible.role: Accessible.Window
+        Accessible.name: title
+    }
+
     Rectangle {
         id: header
         anchors.left: parent.left
@@ -36,6 +41,9 @@ Window {
                     color: "#202123"
                 }
                 horizontalAlignment: TextInput.AlignHCenter
+                Accessible.role: Accessible.Heading
+                Accessible.name: text
+                Accessible.description: qsTr("Displays the model name that is currently loaded")
             }
         }
 
@@ -43,9 +51,11 @@ Window {
             anchors.centerIn: parent
             visible: !LLM.isModelLoaded
             running: !LLM.isModelLoaded
+            Accessible.role: Accessible.Animation
+            Accessible.name: qsTr("Busy indicator")
+            Accessible.description: qsTr("Displayed when the model is loading")
         }
     }
-
 
     Dialog {
         id: settingsDialog
@@ -85,6 +95,12 @@ Window {
             restoreDefaults();
         }
 
+        Item {
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTr("Settings dialog")
+            Accessible.description: qsTr("Dialog containing various settings for model text generation")
+        }
+
         GridLayout {
             columns: 2
             rowSpacing: 10
@@ -95,6 +111,7 @@ Window {
             anchors.bottom: parent.bottom
 
             Label {
+                id: tempLabel
                 text: qsTr("Temperature:")
                 Layout.row: 0
                 Layout.column: 0
@@ -115,8 +132,12 @@ Window {
                         text = settingsDialog.temperature.toString()
                     }
                 }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: tempLabel.text
+                Accessible.description: ToolTip.text
             }
             Label {
+                id: topPLabel
                 text: qsTr("Top P:")
                 Layout.row: 1
                 Layout.column: 0
@@ -137,8 +158,12 @@ Window {
                         text = settingsDialog.topP.toString()
                     }
                 }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: topPLabel.text
+                Accessible.description: ToolTip.text
             }
             Label {
+                 id: topKLabel
                  text: qsTr("Top K:")
                  Layout.row: 2
                  Layout.column: 0
@@ -159,8 +184,12 @@ Window {
                          text = settingsDialog.topK.toString()
                      }
                  }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: topKLabel.text
+                Accessible.description: ToolTip.text
              }
              Label {
+                 id: maxLengthLabel
                  text: qsTr("Max Length:")
                  Layout.row: 3
                  Layout.column: 0
@@ -181,9 +210,13 @@ Window {
                          text = settingsDialog.maxLength.toString()
                      }
                  }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: maxLengthLabel.text
+                Accessible.description: ToolTip.text
              }
 
              Label {
+                 id: batchSizeLabel
                  text: qsTr("Prompt Batch Size:")
                  Layout.row: 4
                  Layout.column: 0
@@ -204,9 +237,13 @@ Window {
                          text = settingsDialog.promptBatchSize.toString()
                      }
                  }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: batchSizeLabel.text
+                Accessible.description: ToolTip.text
              }
 
              Label {
+                 id: promptTemplateLabel
                  text: qsTr("Prompt Template:")
                  Layout.row: 5
                  Layout.column: 0
@@ -221,11 +258,14 @@ Window {
                  border.color: "#ccc"
                  radius: 5
                  Label {
+                    id: promptTemplateLabelHelp
                     visible: settingsDialog.promptTemplate.indexOf("%1") == -1
                     font.bold: true
                     color: "red"
                     text: qsTr("Prompt template must contain %1 to be replaced with the user's input.")
                     anchors.bottom: templateScrollView.top
+                    Accessible.role: Accessible.EditableText
+                    Accessible.name: text
                  }
                  ScrollView {
                      id: templateScrollView
@@ -237,6 +277,9 @@ Window {
                              settingsDialog.promptTemplate = text
                          }
                          bottomPadding: 10
+                         Accessible.role: Accessible.EditableText
+                         Accessible.name: promptTemplateLabel.text
+                         Accessible.description: promptTemplateLabelHelp.text
                      }
                  }
              }
@@ -249,6 +292,9 @@ Window {
                      text: qsTr("Restore Defaults")
                      horizontalAlignment: Text.AlignHCenter
                      color: "#d1d5db"
+                     Accessible.role: Accessible.Button
+                     Accessible.name: text
+                     Accessible.description: qsTr("Restores the settings dialog to a default state")
                  }
 
                  background: Rectangle {
@@ -275,6 +321,10 @@ Window {
         height: 40
         z: 200
         padding: 15
+
+        Accessible.role: Accessible.ButtonMenu
+        Accessible.name: qsTr("Hamburger button")
+        Accessible.description: qsTr("Hamburger button that reveals a drawer on the left of the application")
 
         background: Item {
             anchors.fill: parent
@@ -336,6 +386,10 @@ Window {
             }
         }
 
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("Settings button")
+        Accessible.description: qsTr("Reveals a dialogue where you can change various settings")
+
         onClicked: {
             settingsDialog.open()
         }
@@ -350,6 +404,9 @@ Window {
             horizontalAlignment: Text.AlignJustify
             text: qsTr("Conversation copied to clipboard.")
             color: "#d1d5db"
+            Accessible.role: Accessible.HelpBalloon
+            Accessible.name: text
+            Accessible.description: qsTr("Reveals a shortlived help balloon")
         }
         background: Rectangle {
             anchors.fill: parent
@@ -374,6 +431,10 @@ Window {
         height: 40
         z: 200
         padding: 15
+
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("Copy button")
+        Accessible.description: qsTr("Copy the conversation to the clipboard")
 
         background: Item {
             anchors.fill: parent
@@ -426,6 +487,10 @@ Window {
         z: 200
         padding: 15
 
+        Accessible.role: Accessible.Button
+        Accessible.name: text
+        Accessible.description: qsTr("Reset the context which erases current conversation")
+
         background: Item {
             anchors.fill: parent
             Image {
@@ -458,6 +523,9 @@ Window {
                    If you can't start it manually, then I'm afraid you'll have to<br>
                    reinstall.")
             color: "#d1d5db"
+            Accessible.role: Accessible.Dialog
+            Accessible.name: text
+            Accessible.description: qsTr("Dialog indicating an error")
         }
         background: Rectangle {
             anchors.fill: parent
@@ -485,6 +553,10 @@ Window {
             anchors.fill: parent
             anchors.margins: 30
 
+            Accessible.role: Accessible.Pane
+            Accessible.name: qsTr("Drawer on the left of the application")
+            Accessible.description: qsTr("Drawer that is revealed by pressing the hamburger button")
+
             Label {
                 id: conversationList
                 anchors.left: parent.left
@@ -493,6 +565,10 @@ Window {
                 wrapMode: Text.WordWrap
                 text: qsTr("Chat lists of specific conversations coming soon! Check back often for new features :)")
                 color: "#d1d5db"
+
+                Accessible.role: Accessible.Paragraph
+                Accessible.name: qsTr("Coming soon")
+                Accessible.description: text
             }
 
             Label {
@@ -506,6 +582,9 @@ Window {
                 text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
                 onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
                 color: "#d1d5db"
+
+                Accessible.role: Accessible.Link
+                Accessible.name: qsTr("Discord link")
             }
 
             Label {
@@ -519,6 +598,10 @@ Window {
                 text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">nomic.ai</a> and the community for contributing so much great data and energy!")
                 onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
                 color: "#d1d5db"
+
+                Accessible.role: Accessible.Paragraph
+                Accessible.name: qsTr("Thank you blurb")
+                Accessible.description: qsTr("Contains embedded link to https://home.nomic.ai")
             }
 
             Button {
@@ -530,6 +613,10 @@ Window {
                     text: qsTr("Check for updates...")
                     horizontalAlignment: Text.AlignHCenter
                     color: "#d1d5db"
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: text
+                    Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
                 }
 
                 background: Rectangle {
@@ -577,6 +664,11 @@ Window {
                     id: listView
                     anchors.fill: parent
                     model: chatModel
+
+                    Accessible.role: Accessible.List
+                    Accessible.name: qsTr("List of prompt/response pairs")
+                    Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
+
                     delegate: TextArea {
                         text: currentResponse ? LLM.response : value
                         width: listView.width
@@ -592,6 +684,10 @@ Window {
                             color: name === qsTr("Response: ") ? "#444654" : "#343541"
                         }
 
+                        Accessible.role: Accessible.Paragraph
+                        Accessible.name: name
+                        Accessible.description: name === qsTr("Response: ") ? "The response by the model" : "The prompt by the user"
+
                         leftPadding: 100
 
                         BusyIndicator {
@@ -601,6 +697,10 @@ Window {
                             anchors.topMargin: 5
                             visible: currentResponse && LLM.response === "" && LLM.responseInProgress
                             running: currentResponse && LLM.response === "" && LLM.responseInProgress
+
+                            Accessible.role: Accessible.Animation
+                            Accessible.name: qsTr("Busy indicator")
+                            Accessible.description: qsTr("Displayed when the model is thinking")
                         }
 
                         Rectangle {
@@ -686,6 +786,9 @@ Window {
             contentItem: Text {
                 text: LLM.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
                 color: "#d1d5db"
+                Accessible.role: Accessible.Button
+                Accessible.name: text
+                Accessible.description: qsTr("Controls generation of the response")
             }
             background: Rectangle {
                 opacity: .5
@@ -712,6 +815,9 @@ Window {
                 color: "#40414f"
                 radius: 10
             }
+            Accessible.role: Accessible.EditableText
+            Accessible.name: placeholderText
+            Accessible.description: qsTr("Textfield for sending messages/prompts to the model")
             onAccepted: {
                 if (textInput.text === "")
                     return
@@ -744,6 +850,10 @@ Window {
                     anchors.centerIn: parent
                     source: "qrc:/gpt4all-chat/icons/send_message.svg"
                 }
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("Send the message button")
+                Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
 
                 onClicked: {
                     textInput.accepted()
