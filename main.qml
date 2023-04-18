@@ -32,18 +32,47 @@ Window {
             visible: LLM.isModelLoaded
 
             Label {
-                id: modelNameField
+                id: modelLabel
                 color: "#d1d5db"
                 padding: 20
                 font.pixelSize: 24
-                text: "GPT4ALL Model: " + LLM.modelName
+                text: ""
                 background: Rectangle {
                     color: "#202123"
                 }
-                horizontalAlignment: TextInput.AlignHCenter
-                Accessible.role: Accessible.Heading
-                Accessible.name: text
-                Accessible.description: qsTr("Displays the model name that is currently loaded")
+                horizontalAlignment: TextInput.AlignRight
+            }
+
+            ComboBox {
+                id: comboBox
+                width: 400
+                anchors.top: modelLabel.top
+                anchors.bottom: modelLabel.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: 24
+                spacing: 0
+                model: LLM.modelList
+                Accessible.role: Accessible.ComboBox
+                Accessible.name: qsTr("ComboBox for displaying/picking the current model")
+                Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
+                contentItem: Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    leftPadding: 10
+                    rightPadding: 10
+                    text: comboBox.displayText
+                    font: comboBox.font
+                    color: "#d1d5db"
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                }
+                background: Rectangle {
+                    color: "#242528"
+                }
+
+                onActivated: {
+                    LLM.modelName = comboBox.currentText
+                }
             }
         }
 
