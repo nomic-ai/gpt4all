@@ -8,15 +8,15 @@
 class LLMObject : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QList<QString> modelList READ modelList NOTIFY modelListChanged)
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
-    Q_PROPERTY(QString modelName READ modelName NOTIFY modelNameChanged)
+    Q_PROPERTY(QString modelName READ modelName WRITE setModelName NOTIFY modelNameChanged)
 
 public:
 
     LLMObject();
 
-    bool loadModel();
     bool isModelLoaded() const;
     void regenerateResponse();
     void resetResponse();
@@ -26,9 +26,14 @@ public:
     QString response() const;
     QString modelName() const;
 
+    QList<QString> modelList() const;
+    void setModelName(const QString &modelName);
+
 public Q_SLOTS:
     bool prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
                 float temp, int32_t n_batch);
+    bool loadModel();
+    void modelNameChangeRequested(const QString &modelName);
 
 Q_SIGNALS:
     void isModelLoadedChanged();
@@ -36,8 +41,10 @@ Q_SIGNALS:
     void responseStarted();
     void responseStopped();
     void modelNameChanged();
+    void modelListChanged();
 
 private:
+    bool loadModelPrivate(const QString &modelName);
     bool handleResponse(const std::string &response);
 
 private:
@@ -53,9 +60,10 @@ private:
 class LLM : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QList<QString> modelList READ modelList NOTIFY modelListChanged)
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
-    Q_PROPERTY(QString modelName READ modelName NOTIFY modelNameChanged)
+    Q_PROPERTY(QString modelName READ modelName WRITE setModelName NOTIFY modelNameChanged)
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
 public:
 
@@ -72,7 +80,10 @@ public:
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
 
+    QList<QString> modelList() const;
+
     QString modelName() const;
+    void setModelName(const QString &modelName);
 
     Q_INVOKABLE bool checkForUpdates() const;
 
@@ -85,7 +96,9 @@ Q_SIGNALS:
     void regenerateResponseRequested();
     void resetResponseRequested();
     void resetContextRequested();
+    void modelNameChangeRequested(const QString &modelName);
     void modelNameChanged();
+    void modelListChanged();
 
 private Q_SLOTS:
     void responseStarted();

@@ -18,7 +18,7 @@ static LLModel::PromptContext s_ctx;
 
 LLMObject::LLMObject()
     : QObject{nullptr}
-    , m_llmodel(new GPTJ)
+    , m_llmodel(nullptr)
     , m_responseTokens(0)
     , m_responseLogits(0)
 {
@@ -30,19 +30,24 @@ LLMObject::LLMObject()
 
 bool LLMObject::loadModel()
 {
-    if (isModelLoaded())
+    return loadModelPrivate(modelList().first());
+}
+
+bool LLMObject::loadModelPrivate(const QString &modelName)
+{
+    if (isModelLoaded() && m_modelName == modelName)
         return true;
 
-    QDir dir(QCoreApplication::applicationDirPath());
-    dir.setNameFilters(QStringList() << "ggml-*.bin");
-    QStringList fileNames = dir.entryList();
-    if (fileNames.isEmpty()) {
-        qDebug() << "ERROR: Could not find any applicable models in directory"
-            << QCoreApplication::applicationDirPath();
+    if (isModelLoaded()) {
+        delete m_llmodel;
+        m_llmodel = nullptr;
+        emit isModelLoadedChanged();
     }
 
-    QString modelName = fileNames.first();
-    QString filePath = QCoreApplication::applicationDirPath() + QDir::separator() + modelName;
+    m_llmodel = new GPTJ;
+
+    QString filePath = QCoreApplication::applicationDirPath() + QDir::separator() +
+         "ggml-" + modelName + ".bin";
     QFileInfo info(filePath);
     if (info.exists()) {
 
@@ -51,17 +56,15 @@ bool LLMObject::loadModel()
         emit isModelLoadedChanged();
     }
 
-    if (m_llmodel) {
-        m_modelName = info.completeBaseName().remove(0, 5); // remove the ggml- prefix
-        emit modelNameChanged();
-    }
+    if (m_llmodel)
+        setModelName(info.completeBaseName().remove(0, 5)); // remove the ggml- prefix
 
     return m_llmodel;
 }
 
 bool LLMObject::isModelLoaded() const
 {
-    return m_llmodel->isModelLoaded();
+    return m_llmodel && m_llmodel->isModelLoaded();
 }
 
 void LLMObject::regenerateResponse()
@@ -119,6 +122,46 @@ QString LLMObject::modelName() const
     return m_modelName;
 }
 
+void LLMObject::setModelName(const QString &modelName)
+{
+    m_modelName = modelName;
+    emit modelNameChanged();
+    emit modelListChanged();
+}
+
+void LLMObject::modelNameChangeRequested(const QString &modelName)
+{
+    if (!loadModelPrivate(modelName))
+        qWarning() << "ERROR: Could not load model" << modelName;
+}
+
+QList<QString> LLMObject::modelList() const
+{
+    QDir dir(QCoreApplication::applicationDirPath());
+    dir.setNameFilters(QStringList() << "ggml-*.bin");
+    QStringList fileNames = dir.entryList();
+    if (fileNames.isEmpty()) {
+        qWarning() << "ERROR: Could not find any applicable models in directory"
+            << QCoreApplication::applicationDirPath();
+        return QList<QString>();
+    }
+
+    QList<QString> list;
+    for (QString f : fileNames) {
+        QString filePath = QCoreApplication::applicationDirPath() + QDir::separator() + f;
+        QFileInfo info(filePath);
+        QString name = info.completeBaseName().remove(0, 5);
+        if (info.exists()) {
+            if (name == m_modelName)
+                list.prepend(name);
+            else
+                list.append(name);
+        }
+    }
+
+    return list;
+}
+
 bool LLMObject::handleResponse(const std::string &response)
 {
 #if 0
@@ -172,8 +215,12 @@ LLM::LLM()
     connect(m_llmodel, &LLMObject::responseStarted, this, &LLM::responseStarted, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::responseStopped, this, &LLM::responseStopped, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::modelNameChanged, this, &LLM::modelNameChanged, Qt::QueuedConnection);
-
+    connect(m_llmodel, &LLMObject::modelListChanged, this, &LLM::modelListChanged, Qt::QueuedConnection);
     connect(this, &LLM::promptRequested, m_llmodel, &LLMObject::prompt, Qt::QueuedConnection);
+    connect(this, &LLM::modelNameChangeRequested, m_llmodel, &LLMObject::modelNameChangeRequested, Qt::QueuedConnection);
+
+    // The following are blocking operations and will block the gui thread, therefore must be fast
+    // to respond to
     connect(this, &LLM::regenerateResponseRequested, m_llmodel, &LLMObject::regenerateResponse, Qt::BlockingQueuedConnection);
     connect(this, &LLM::resetResponseRequested, m_llmodel, &LLMObject::resetResponse, Qt::BlockingQueuedConnection);
     connect(this, &LLM::resetContextRequested, m_llmodel, &LLMObject::resetContext, Qt::BlockingQueuedConnection);
@@ -230,6 +277,18 @@ void LLM::responseStopped()
 QString LLM::modelName() const
 {
     return m_llmodel->modelName();
+}
+
+void LLM::setModelName(const QString &modelName)
+{
+    // doesn't block but will unload old model and load new one which the gui can see through changes
+    // to the isModelLoaded property
+    emit modelNameChangeRequested(modelName);
+}
+
+QList<QString> LLM::modelList() const
+{
+    return m_llmodel->modelList();
 }
 
 bool LLM::checkForUpdates() const
