@@ -12,6 +12,8 @@ class LLMObject : public QObject
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
     Q_PROPERTY(QString modelName READ modelName WRITE setModelName NOTIFY modelNameChanged)
+    Q_PROPERTY(QString modelName READ modelName NOTIFY modelNameChanged)
+    Q_PROPERTY(int32_t threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
 
 public:
 
@@ -22,6 +24,8 @@ public:
     void resetResponse();
     void resetContext();
     void stopGenerating() { m_stopGenerating = true; }
+    void setThreadCount(int32_t n_threads);
+    int32_t threadCount();
 
     QString response() const;
     QString modelName() const;
@@ -42,6 +46,7 @@ Q_SIGNALS:
     void responseStopped();
     void modelNameChanged();
     void modelListChanged();
+    void threadCountChanged();
 
 private:
     bool loadModelPrivate(const QString &modelName);
@@ -65,6 +70,7 @@ class LLM : public QObject
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
     Q_PROPERTY(QString modelName READ modelName WRITE setModelName NOTIFY modelNameChanged)
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
+    Q_PROPERTY(int32_t threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
 public:
 
     static LLM *globalInstance();
@@ -76,6 +82,8 @@ public:
     Q_INVOKABLE void resetResponse();
     Q_INVOKABLE void resetContext();
     Q_INVOKABLE void stopGenerating();
+    Q_INVOKABLE void setThreadCount(int32_t n_threads);
+    Q_INVOKABLE int32_t threadCount();
 
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
@@ -99,6 +107,8 @@ Q_SIGNALS:
     void modelNameChangeRequested(const QString &modelName);
     void modelNameChanged();
     void modelListChanged();
+    void threadCountChanged();
+    void setThreadCountRequested(int32_t threadCount);
 
 private Q_SLOTS:
     void responseStarted();

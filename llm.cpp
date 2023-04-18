@@ -62,12 +62,22 @@ bool LLMObject::loadModelPrivate(const QString &modelName)
         auto fin = std::ifstream(filePath.toStdString(), std::ios::binary);
         m_llmodel->loadModel(modelName.toStdString(), fin);
         emit isModelLoadedChanged();
+        emit threadCountChanged();
     }
 
     if (m_llmodel)
         setModelName(info.completeBaseName().remove(0, 5)); // remove the ggml- prefix
 
     return m_llmodel;
+}
+
+void LLMObject::setThreadCount(int32_t n_threads) {
+    m_llmodel->setThreadCount(n_threads);
+    emit threadCountChanged();
+}
+
+int32_t LLMObject::threadCount() {
+    return m_llmodel->threadCount();
 }
 
 bool LLMObject::isModelLoaded() const
@@ -225,6 +235,9 @@ LLM::LLM()
     connect(m_llmodel, &LLMObject::responseStopped, this, &LLM::responseStopped, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::modelNameChanged, this, &LLM::modelNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::modelListChanged, this, &LLM::modelListChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLMObject::threadCountChanged, this, &LLM::threadCountChanged, Qt::QueuedConnection);
+
+
     connect(this, &LLM::promptRequested, m_llmodel, &LLMObject::prompt, Qt::QueuedConnection);
     connect(this, &LLM::modelNameChangeRequested, m_llmodel, &LLMObject::modelNameChangeRequested, Qt::QueuedConnection);
 
@@ -233,6 +246,7 @@ LLM::LLM()
     connect(this, &LLM::regenerateResponseRequested, m_llmodel, &LLMObject::regenerateResponse, Qt::BlockingQueuedConnection);
     connect(this, &LLM::resetResponseRequested, m_llmodel, &LLMObject::resetResponse, Qt::BlockingQueuedConnection);
     connect(this, &LLM::resetContextRequested, m_llmodel, &LLMObject::resetContext, Qt::BlockingQueuedConnection);
+    connect(this, &LLM::setThreadCountRequested, m_llmodel, &LLMObject::setThreadCount, Qt::QueuedConnection);
 }
 
 bool LLM::isModelLoaded() const
@@ -298,6 +312,14 @@ void LLM::setModelName(const QString &modelName)
 QList<QString> LLM::modelList() const
 {
     return m_llmodel->modelList();
+}
+
+void LLM::setThreadCount(int32_t n_threads) {
+    emit setThreadCountRequested(n_threads);
+}
+
+int32_t LLM::threadCount() {
+    return m_llmodel->threadCount();
 }
 
 bool LLM::checkForUpdates() const
