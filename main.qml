@@ -253,7 +253,7 @@ Window {
                  Layout.column: 1
                  Layout.fillWidth: true
                  height: 200
-                 color: "#222"
+                 color: "transparent"
                  border.width: 1
                  border.color: "#ccc"
                  radius: 5
