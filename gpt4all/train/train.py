@@ -3,11 +3,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler, Lla
 import torch
 from torch.optim import AdamW
 from argparse import ArgumentParser
-from read import read_config
+from gpt4all.utils.read import read_config
 from accelerate import Accelerator
 from accelerate.utils import DummyScheduler, DummyOptim, set_seed
 from peft import get_peft_model, LoraConfig, TaskType
-from data import load_data
+from gpt4all.utils.data import load_data
 from torchmetrics import MeanMetric
 from tqdm import tqdm
 import wandb
