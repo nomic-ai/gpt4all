@@ -33,6 +33,7 @@ add_subdirectory(ggml)
 
 qt_add_executable(chat
     main.cpp
+    download.h download.cpp
     gptj.h gptj.cpp
     llm.h llm.cpp
     llmodel.h
@@ -41,7 +42,7 @@ qt_add_executable(chat
 qt_add_qml_module(chat
     URI gpt4all-chat
     VERSION 1.0
-    QML_FILES main.qml
+    QML_FILES main.qml qml/ModelDownloaderDialog.qml
     RESOURCES
       icons/send_message.svg
       icons/stop_generating.svg
