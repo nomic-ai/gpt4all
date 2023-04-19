@@ -5,15 +5,21 @@
 #include <QDirIterator>
 
 #include "llm.h"
+#include "download.h"
 #include "config.h"
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setOrganizationName("nomic.ai");
+    QCoreApplication::setOrganizationDomain("gpt4all.io");
+    QCoreApplication::setApplicationName("GPT4All");
     QCoreApplication::setApplicationVersion(APP_VERSION);
 
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
     qmlRegisterSingletonInstance("llm", 1, 0, "LLM", LLM::globalInstance());
+    qmlRegisterSingletonInstance("download", 1, 0, "Download", Download::globalInstance());
+
     const QUrl url(u"qrc:/gpt4all-chat/main.qml"_qs);
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
@@ -23,7 +29,7 @@ int main(int argc, char *argv[])
         }, Qt::QueuedConnection);
     engine.load(url);
 
-#if 1
+#if 0
     QDirIterator it("qrc:", QDirIterator::Subdirectories);
     while (it.hasNext()) {
         qDebug() << it.next();

@@ -1,4 +1,5 @@
 #include "llm.h"
+#include "download.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -30,6 +31,13 @@ LLMObject::LLMObject()
 
 bool LLMObject::loadModel()
 {
+    if (modelList().isEmpty()) {
+        // try again when we get a list of models
+        connect(Download::globalInstance(), &Download::modelListChanged, this,
+            &LLMObject::loadModel, Qt::SingleShotConnection);
+        return false;
+    }
+
     return loadModelPrivate(modelList().first());
 }
 
@@ -210,6 +218,7 @@ LLM::LLM()
     , m_llmodel(new LLMObject)
     , m_responseInProgress(false)
 {
+    connect(Download::globalInstance(), &Download::modelListChanged, this, &LLM::modelListChanged, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::isModelLoadedChanged, this, &LLM::isModelLoadedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::responseChanged, this, &LLM::responseChanged, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::responseStarted, this, &LLM::responseStarted, Qt::QueuedConnection);

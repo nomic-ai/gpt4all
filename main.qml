@@ -27,7 +27,6 @@ Window {
 
         Item {
             anchors.centerIn: parent
-            width: childrenRect.width
             height: childrenRect.height
             visible: LLM.isModelLoaded
 
@@ -93,6 +92,16 @@ Window {
         title: qsTr("Settings")
         height: 600
         width: 600
+        opacity: 0.9
+        background: Rectangle {
+            anchors.fill: parent
+            anchors.margins: -20
+            color: "#202123"
+            border.width: 1
+            border.color: "white"
+            radius: 10
+        }
+
         property real defaultTemperature: 0.28
         property real defaultTopP: 0.95
         property int defaultTopK: 40
@@ -134,10 +143,7 @@ Window {
             columns: 2
             rowSpacing: 10
             columnSpacing: 10
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
+            anchors.fill: parent
 
             Label {
                 id: tempLabel
@@ -558,10 +564,21 @@ Window {
         }
         background: Rectangle {
             anchors.fill: parent
+            anchors.margins: -20
             color: "#202123"
             border.width: 1
             border.color: "white"
             radius: 10
+        }
+    }
+
+    ModelDownloaderDialog {
+        id: downloadNewModels
+        anchors.centerIn: parent
+        Item {
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTr("Download new models dialog")
+            Accessible.description: qsTr("Dialog for downloading new models")
         }
     }
 
@@ -638,7 +655,8 @@ Window {
             Button {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.bottom: parent.bottom
+                anchors.bottom: downloadButton.top
+                anchors.bottomMargin: 20
                 padding: 15
                 contentItem: Text {
                     text: qsTr("Check for updates...")
@@ -663,6 +681,36 @@ Window {
                         checkForUpdatesError.open()
                 }
             }
+
+            Button {
+                id: downloadButton
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                padding: 15
+                contentItem: Text {
+                    text: qsTr("Download new models...")
+                    horizontalAlignment: Text.AlignHCenter
+                    color: "#d1d5db"
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: text
+                    Accessible.description: qsTr("Use this to launch a dialog to download new models")
+                }
+
+                background: Rectangle {
+                    opacity: .5
+                    border.color: "#7d7d8e"
+                    border.width: 1
+                    radius: 10
+                    color: "#343541"
+                }
+
+                onClicked: {
+                    downloadNewModels.open()
+                }
+            }
+
         }
     }
 
