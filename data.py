@@ -90,7 +90,7 @@ def load_data(config, tokenizer):
     
     # read from huggingface
     else:
-        revison = config["revision"] 
+        revision = config["revision"] 
         dataset = load_dataset(dataset_path, split="train", revision=revision)
 
     dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
