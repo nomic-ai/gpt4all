@@ -77,6 +77,7 @@ def load_data(config, tokenizer):
 
         dataset = concatenate_datasets(all_datasets)
 
+    # load local json dataset
     elif os.path.exists(dataset_path):
         if os.path.isdir(dataset_path):
             files = glob.glob(os.path.join(dataset_path, "*_clean.jsonl"))
@@ -87,8 +88,10 @@ def load_data(config, tokenizer):
 
         dataset = load_dataset("json", data_files=files, split="train")
     
+    # read from huggingface
     else:
-        dataset = load_dataset(dataset_path, split="train")
+        revison = config["revision"] 
+        dataset = load_dataset(dataset_path, split="train", revision=revision)
 
     dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
 
