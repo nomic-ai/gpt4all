@@ -62,7 +62,7 @@ mkdir build
 cd build
 cmake ..
 cmake --build . --parallel
-wget https://gpt4all.io/models/ggml-gpt4all-j.bin # Download GGML model if required
+wget https://gpt4all.io/models/ggml-gpt4all-j-v1.2-jazzy.bin # Download GGML model if you don't already have it.
 ./bin/gpt-j -m ggml-gpt4all-j.bin -n 200 --top_k 40 --top_p 0.9 -b 9 --temp 0.9 -p "Below is an instruction that describes a task. Write a response that appropriately completes the request.
 ### Instruction:
 Tell me about artifical intelligence
