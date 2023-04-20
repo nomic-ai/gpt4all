@@ -6,7 +6,7 @@ import llm
 
 Dialog {
     id: modelDownloaderDialog
-    width: 900
+    width: 1024
     height: 400
     title: "Model Downloader"
     modal: true
@@ -74,16 +74,29 @@ Dialog {
                 }
 
                 Text {
+                    id: isDefault
                     text: qsTr("(default)")
                     visible: modelData.isDefault
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: modelName.right
                     anchors.leftMargin: 10
-                    font.pixelSize: 24
+                    font.pixelSize: 18
                     color: "#d1d5db"
                     Accessible.role: Accessible.Paragraph
                     Accessible.name: qsTr("Default file")
                     Accessible.description: qsTr("Whether the file is the default model")
+                }
+
+                Text {
+                    text: modelData.filesize
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: isDefault.visible ? isDefault.right : modelName.right
+                    anchors.leftMargin: 10
+                    font.pixelSize: 18
+                    color: "#d1d5db"
+                    Accessible.role: Accessible.Paragraph
+                    Accessible.name: qsTr("File size")
+                    Accessible.description: qsTr("The size of the file")
                 }
 
                 Label {
@@ -92,6 +105,7 @@ Dialog {
                     anchors.right: itemProgressBar.left
                     anchors.rightMargin: 10
                     objectName: "speedLabel"
+                    font.pixelSize: 18
                     color: "#d1d5db"
                     text: ""
                     visible: downloading
