@@ -755,7 +755,7 @@ Window {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.bottom: textInput.top
+            anchors.bottom: textInputView.top
             anchors.bottomMargin: 30
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
@@ -886,8 +886,8 @@ Window {
                     }
                 }
             }
-            anchors.bottom: textInput.top
-            anchors.horizontalCenter: textInput.horizontalCenter
+            anchors.bottom: textInputView.top
+            anchors.horizontalCenter: textInputView.horizontalCenter
             anchors.bottomMargin: 40
             padding: 15
             contentItem: Text {
@@ -906,65 +906,76 @@ Window {
             }
         }
 
-        TextField {
-            id: textInput
+        ScrollView {
+            id: textInputView
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.margins: 30
-            color: "#dadadc"
-            padding: 20
-            enabled: LLM.isModelLoaded
-            font.pixelSize: 24
-            placeholderText: qsTr("Send a message...")
-            placeholderTextColor: "#7d7d8e"
-            background: Rectangle {
-                color: "#40414f"
-                radius: 10
+            height: Math.min(contentHeight, 200)
+
+            TextArea {
+                id: textInput
+                color: "#dadadc"
+                padding: 20
+                enabled: LLM.isModelLoaded
+                font.pixelSize: 24
+                placeholderText: qsTr("Send a message...")
+                placeholderTextColor: "#7d7d8e"
+                background: Rectangle {
+                    color: "#40414f"
+                    radius: 10
+                }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: placeholderText
+                Accessible.description: qsTr("Textfield for sending messages/prompts to the model")
+                Keys.onReturnPressed: {
+                    if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
+                        event.accepted = false;
+                    else
+                        editingFinished();
+                }
+                onEditingFinished: {
+                    if (textInput.text === "")
+                        return
+
+                    LLM.stopGenerating()
+
+                    if (chatModel.count) {
+                        var listElement = chatModel.get(chatModel.count - 1)
+                        listElement.currentResponse = false
+                        listElement.value = LLM.response
+                    }
+
+                    var prompt = textInput.text + "\n"
+                    chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false, "value": textInput.text})
+                    chatModel.append({"name": qsTr("Response: "), "currentResponse": true, "value": "", "prompt": prompt})
+                    LLM.resetResponse()
+                    LLM.prompt(prompt, settingsDialog.promptTemplate, settingsDialog.maxLength, settingsDialog.topK,
+                               settingsDialog.topP, settingsDialog.temperature, settingsDialog.promptBatchSize)
+                    textInput.text = ""
+                }
             }
-            Accessible.role: Accessible.EditableText
-            Accessible.name: placeholderText
-            Accessible.description: qsTr("Textfield for sending messages/prompts to the model")
-            onAccepted: {
-                if (textInput.text === "")
-                    return
+        }
 
-                LLM.stopGenerating()
+        Button {
+            anchors.right: textInputView.right
+            anchors.verticalCenter: textInputView.verticalCenter
+            anchors.rightMargin: 15
+            width: 30
+            height: 30
 
-                if (chatModel.count) {
-                    var listElement = chatModel.get(chatModel.count - 1)
-                    listElement.currentResponse = false
-                    listElement.value = LLM.response
-                }
-
-                var prompt = textInput.text + "\n"
-                chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false, "value": textInput.text})
-                chatModel.append({"name": qsTr("Response: "), "currentResponse": true, "value": "", "prompt": prompt})
-                LLM.resetResponse()
-                LLM.prompt(prompt, settingsDialog.promptTemplate, settingsDialog.maxLength, settingsDialog.topK,
-                           settingsDialog.topP, settingsDialog.temperature, settingsDialog.promptBatchSize)
-                textInput.text = ""
+            background: Image {
+                anchors.centerIn: parent
+                source: "qrc:/gpt4all-chat/icons/send_message.svg"
             }
 
-            Button {
-                anchors.right: textInput.right
-                anchors.verticalCenter: textInput.verticalCenter
-                anchors.rightMargin: 15
-                width: 30
-                height: 30
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("Send the message button")
+            Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
 
-                background: Image {
-                    anchors.centerIn: parent
-                    source: "qrc:/gpt4all-chat/icons/send_message.svg"
-                }
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("Send the message button")
-                Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
-
-                onClicked: {
-                    textInput.accepted()
-                }
+            onClicked: {
+                textInput.accepted()
             }
         }
     }
