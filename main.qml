@@ -929,7 +929,7 @@ Window {
                 Accessible.role: Accessible.EditableText
                 Accessible.name: placeholderText
                 Accessible.description: qsTr("Textfield for sending messages/prompts to the model")
-                Keys.onReturnPressed: {
+                Keys.onReturnPressed: (event)=> {
                     if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
                         event.accepted = false;
                     else
