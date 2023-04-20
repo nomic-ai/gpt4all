@@ -43,7 +43,7 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->params = llama_context_default_params();
 
     gpt_params params;
-    d_ptr->params.n_ctx      = params.n_ctx;
+    d_ptr->params.n_ctx      = 2048;
     d_ptr->params.n_parts    = params.n_parts;
     d_ptr->params.seed       = params.seed;
     d_ptr->params.f16_kv     = params.memory_f16;
@@ -114,16 +114,18 @@ void LLamaModel::prompt(const std::string &prompt, std::function<bool(const std:
         size_t batch_end = std::min(i + n_batch, embd_inp.size());
         std::vector<llama_token> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
 
+        // Check if the context has run out...
         if (promptCtx.n_past + batch.size() > n_ctx) {
-            std::cerr << "eval n_ctx " << n_ctx << " n_past " << promptCtx.n_past << std::endl;
+            // FIXME: will produce gibberish after this
             promptCtx.n_past = std::min(promptCtx.n_past, int(n_ctx - batch.size()));
-            std::cerr << "after n_ctx " << n_ctx << " n_past " << promptCtx.n_past << std::endl;
+            std::cerr << "LLAMA WARNING: reached the end of the context window!\n";
         }
 
         if (llama_eval(d_ptr->ctx, batch.data(), batch.size(), promptCtx.n_past, d_ptr->n_threads)) {
             std::cerr << "LLAMA ERROR: Failed to process prompt\n";
             return;
         }
+
         // We pass a null string for each token to see if the user has asked us to stop...
         size_t tokens = batch_end - i;
         for (size_t t = 0; t < tokens; ++t)
@@ -133,37 +135,28 @@ void LLamaModel::prompt(const std::string &prompt, std::function<bool(const std:
         i = batch_end;
     }
 
-    std::vector<llama_token> cachedTokens;
-
     // predict next tokens
     int32_t totalPredictions = 0;
     for (int i = 0; i < n_predict; i++) {
         // sample next token
         llama_token id = llama_sample_top_p_top_k(d_ptr->ctx, {}, 0, top_k, top_p, temp, 1.0f);
 
+        // Check if the context has run out...
         if (promptCtx.n_past + 1 > n_ctx) {
-            std::cerr << "eval 2 n_ctx " << n_ctx << " n_past " << promptCtx.n_past << std::endl;
+            // FIXME: will produce gibberish after this
             promptCtx.n_past = std::min(promptCtx.n_past, n_ctx - 1);
-            std::cerr << "after 2 n_ctx " << n_ctx << " n_past " << promptCtx.n_past << std::endl;
+            std::cerr << "LLAMA WARNING: reached the end of the context window!\n";
         }
 
         if (llama_eval(d_ptr->ctx, &id, 1, promptCtx.n_past, d_ptr->n_threads)) {
             std::cerr << "LLAMA ERROR: Failed to predict next token\n";
             return;
         }
-        cachedTokens.emplace_back(id);
 
-        for (int j = 0; j < cachedTokens.size(); ++j) {
-            llama_token cachedToken = cachedTokens.at(j);
-            promptCtx.n_past += 1;
-            // display text
-            ++totalPredictions;
-            if (id == llama_token_eos() || !response(llama_token_to_str(d_ptr->ctx, cachedToken)))
-                goto stop_generating;
-        }
-        cachedTokens.clear();
+        promptCtx.n_past += 1;
+        // display text
+        ++totalPredictions;
+        if (id == llama_token_eos() || !response(llama_token_to_str(d_ptr->ctx, id)))
+            return;
     }
-
-stop_generating:
-    return;
 }

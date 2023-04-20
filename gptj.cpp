@@ -684,7 +684,7 @@ bool GPTJ::isModelLoaded() const
 }
 
 void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::string&)> response,
-        PromptContext &ctx, int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch) {
+        PromptContext &promptCtx, int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch) {
 
     if (!isModelLoaded()) {
         std::cerr << "GPT-J ERROR: prompt won't work with an unloaded model!\n";
@@ -700,8 +700,10 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
     // tokenize the prompt
     std::vector<gpt_vocab::id> embd_inp = ::gpt_tokenize(d_ptr->vocab, prompt);
 
-    n_predict = std::min(n_predict, d_ptr->model.hparams.n_ctx - (int) embd_inp.size());
-    ctx.n_past = std::min(ctx.n_past, d_ptr->model.hparams.n_ctx);
+    const int n_ctx = d_ptr->model.hparams.n_ctx;
+
+    n_predict = std::min(n_predict, n_ctx - (int) embd_inp.size());
+    promptCtx.n_past = std::min(promptCtx.n_past, n_ctx);
 
     // determine the required inference memory per token:
     static bool initialized = false;
@@ -709,9 +711,7 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
     static std::vector<gpt_vocab::id> r_instruct;
     size_t mem_per_token = 0;
     if (!initialized) {
-        gptj_eval(d_ptr->model, d_ptr->n_threads, 0, { 0, 1, 2, 3 }, ctx.logits, mem_per_token);
-        p_instruct = ::gpt_tokenize(d_ptr->vocab, "### Prompt:");
-        r_instruct = ::gpt_tokenize(d_ptr->vocab, "### Response:");
+        gptj_eval(d_ptr->model, d_ptr->n_threads, 0, { 0, 1, 2, 3 }, promptCtx.logits, mem_per_token);
         initialized = true;
     }
 
@@ -721,7 +721,15 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
     while (i < embd_inp.size()) {
         size_t batch_end = std::min(i + n_batch, embd_inp.size());
         std::vector<gpt_vocab::id> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
-        if (!gptj_eval(d_ptr->model, d_ptr->n_threads, ctx.n_past, batch, ctx.logits, mem_per_token)) {
+
+        // Check if the context has run out...
+        if (promptCtx.n_past + batch.size() > n_ctx) {
+            // FIXME: will produce gibberish after this
+            promptCtx.n_past = std::min(promptCtx.n_past, int(n_ctx - batch.size()));
+            std::cerr << "GPT-J WARNING: reached the end of the context window!\n";
+        }
+
+        if (!gptj_eval(d_ptr->model, d_ptr->n_threads, promptCtx.n_past, batch, promptCtx.logits, mem_per_token)) {
             std::cerr << "GPT-J ERROR: Failed to process prompt\n";
             return;
         }
@@ -730,15 +738,13 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
         for (size_t t = 0; t < tokens; ++t)
             if (!response(""))
                 return;
-        ctx.n_past += batch.size();
+        promptCtx.n_past += batch.size();
         i = batch_end;
     }
     t_prompt_us += ggml_time_us() - t_start_prompt_us;
 
     int p_instructFound = 0;
     int r_instructFound = 0;
-
-    std::vector<gpt_vocab::id> cachedTokens;
 
     // predict next tokens
     int32_t totalPredictions = 0;
@@ -749,52 +755,30 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
         gpt_vocab::id id = 0;
         {
             const int64_t t_start_sample_us = ggml_time_us();
-            id = gpt_sample_top_k_top_p(d_ptr->vocab, ctx.logits.data() + (ctx.logits.size() - n_vocab),
+            id = gpt_sample_top_k_top_p(d_ptr->vocab, promptCtx.logits.data() + (promptCtx.logits.size() - n_vocab),
                 top_k, top_p, temp, d_ptr->rng);
             t_sample_us += ggml_time_us() - t_start_sample_us;
         }
 
+        // Check if the context has run out...
+        if (promptCtx.n_past + 1 > n_ctx) {
+            // FIXME: will produce gibberish after this
+            promptCtx.n_past = std::min(promptCtx.n_past, n_ctx - 1);
+            std::cerr << "GPT-J WARNING: reached the end of the context window!\n";
+        }
+
         const int64_t t_start_predict_us = ggml_time_us();
-        if (!gptj_eval(d_ptr->model, d_ptr->n_threads, ctx.n_past, { id }, ctx.logits, mem_per_token)) {
+        if (!gptj_eval(d_ptr->model, d_ptr->n_threads, promptCtx.n_past, { id }, promptCtx.logits, mem_per_token)) {
             std::cerr << "GPT-J ERROR: Failed to predict next token\n";
             return;
         }
-
-        cachedTokens.emplace_back(id);
-
-        // Check if this token is next token for p_instruct or r_instruct
-        if (p_instruct.at(p_instructFound) == id) {
-            ++p_instructFound;
-            if (p_instructFound == p_instruct.size()) {
-                fprintf(stderr, "Warning: Tried to generate \"### Prompt:\" stopping.\n");
-                fflush(stderr);
-                goto stop_generating;
-            }
-            continue;
-        } else
-            p_instructFound = 0;
-
-        if (r_instruct.at(r_instructFound) == id) {
-            ++r_instructFound;
-            if (r_instructFound == r_instruct.size()) {
-                fprintf(stderr, "Warning: Tried to generate \"### Response:\" stopping.\n");
-                fflush(stderr);
-                goto stop_generating;
-            }
-            continue;
-        } else
-            r_instructFound = 0;
-
         t_predict_us += ggml_time_us() - t_start_predict_us;
-        for (int j = 0; j < cachedTokens.size(); ++j) {
-            gpt_vocab::id cachedToken = cachedTokens.at(j);
-            ctx.n_past += 1;
-            // display text
-            ++totalPredictions;
-            if (id == 50256 /*end of text*/ || !response(d_ptr->vocab.id_to_token[cachedToken]))
-                goto stop_generating;
-        }
-        cachedTokens.clear();
+
+        promptCtx.n_past += 1;
+        // display text
+        ++totalPredictions;
+        if (id == 50256 /*end of text*/ || !response(d_ptr->vocab.id_to_token[id]))
+            goto stop_generating;
     }
 
 stop_generating:
