@@ -40,14 +40,24 @@ GPT-J model by following build instructions below.
 * Download https://huggingface.co/EleutherAI/gpt-j-6b
 * Clone this repo and build
 ```
-git clone --recurse-submodules https://github.com/nomic-ai/gpt4all-chat
-cd gpt4all-chat
+git clone https://github.com/ggerganov/ggml.git
+cd ggml
 mkdir build
 cd build
 cmake ..
 cmake --build . --parallel
 python3 ../ggml/examples/gpt-j/convert-h5-to-ggml.py /path/to/your/local/copy/of/EleutherAI/gpt-j-6B 0
 ./bin/gpt-j-quantize /path/to/your/local/copy/of/EleutherAI/gpt-j-6B/ggml-model-f32.bin ./ggml-model-q4_0.bin 2
+```
+and then
+```
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all-chat
+cd gpt4all-chat
+mkdir build
+cd build
+cmake ..
+cmake --build . --parallel
+mv /path/to/ggml-model-q4_0.bin .
 ./chat
 ```
 
