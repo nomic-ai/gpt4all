@@ -45,7 +45,7 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 ## GPT4All-J: An Apache-2 Licensed GPT4All Model
 ![gpt4all-j-demo](https://user-images.githubusercontent.com/13879686/231876409-e3de1934-93bb-4b4b-9013-b491a969ebbc.gif)
 
-Run on a M1 Mac (not speed up!)
+Run on M1 Mac (not speed up!)
 
 
 ### GPT4All-J Chat UI Installers
@@ -81,7 +81,7 @@ Please see [GPT4All-J Technical Report](https://static.nomic.ai/gpt4all/2023_GPT
 We have released updated versions of our `GPT4All-J` model and training data. 
 
 - `v1.0`: The original model trained on the v1.0 dataset
-- `v1.1-breezy`: Trained on afiltered dataset where we removed all instances of AI language model
+- `v1.1-breezy`: Trained on a filtered dataset where we removed all instances of AI language model
 - `v1.2-jazzy`: Trained on a filtered dataset where we also removed instances like I'm sorry, I can't answer... and AI language model
 
 The [models](https://huggingface.co/nomic-ai/gpt4all-j) and [data](https://huggingface.co/datasets/nomic-ai/gpt4all-j-prompt-generations) versions can be specified by passing a `revision` argument.
@@ -103,13 +103,13 @@ accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 -
 ```
 
 
-# Original GPT4All Model (based on GPL Licensed LLaMa)
+## Original GPT4All Model (based on GPL Licensed LLaMa)
 
 
 
 ![gpt4all-lora-demo](https://user-images.githubusercontent.com/13879686/228352356-de66ca7a-df70-474e-b929-2e3656165051.gif)
 
-Run on M1 Mac (not sped up!)
+Run on M1 Mac (not speed up!)
 
 # Try it yourself
 
@@ -190,7 +190,7 @@ Feel free to convert this to a more structured table.
 
 # Roadmap
 ## Short Term
- - <span style="color:green">(Done)</span> Train a GPT4All model based on GPTJ to alleviate llama distribution issues.
+ - <span style="color:green">(Done)</span> Train a GPT4All model based on GPT-J to alleviate llama distribution issues.
  - <span style="color:green">(Done)</span> Create improved CPU and GPU interfaces for this model.
  - <span style="color:green">(Done)</span> [Integrate llama.cpp bindings](https://github.com/nomic-ai/pyllamacpp)
  - <span style="color:green">(Done)</span> [Create a good conversational chat interface for the model.](https://github.com/nomic-ai/gpt4all-ui)
@@ -198,7 +198,7 @@ Feel free to convert this to a more structured table.
 
 ## Medium Term
  - <span style="color:red">(NOT STARTED)</span> Integrate GPT4All with [Atlas](https://atlas.nomic.ai) to allow for document retrieval.
-   - BLOCKED by GPT4All based on GPTJ
+   - BLOCKED by GPT4All based on GPT-J
  - <span style="color:red">(Done)</span> Integrate GPT4All with Langchain.
  - <span style="color:green">(IN PROGRESS)</span> Build easy custom training scripts to allow users to fine tune models.
 
@@ -221,7 +221,7 @@ Raw Data:
   - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean
 - [GPT4All-J Dataset](https://huggingface.co/datasets/nomic-ai/gpt4all-j-prompt-generations)
    -  Explorer Indexed on Prompts: https://atlas.nomic.ai/map/gpt4all-j-prompts-curated
-   -  Exporer Indexed on Responses: https://atlas.nomic.ai/map/gpt4all-j-response-curated
+   -  Explorer Indexed on Responses: https://atlas.nomic.ai/map/gpt4all-j-response-curated
 
 We are not distributing a LLaMa 7B checkpoint.
 
