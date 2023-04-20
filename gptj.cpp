@@ -327,7 +327,7 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
             }
 
             if (tensor->ne[0] != ne[0] || tensor->ne[1] != ne[1]) {
-                fprintf(stderr, "%s: tensor '%s' has wrong shape in model file: got [%d, %d], expected [%d, %d]\n",
+                fprintf(stderr, "%s: tensor '%s' has wrong shape in model file: got [%lu, %lu], expected [%d, %d]\n",
                         __func__, name.data(), tensor->ne[0], tensor->ne[1], ne[0], ne[1]);
                 return false;
             }
