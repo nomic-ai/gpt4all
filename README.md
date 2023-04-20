@@ -16,13 +16,18 @@ GPT-J model by following build instructions below.
 * The UI is made to look and feel like you've come to expect from a chatty gpt
 * Check for updates so you can alway stay fresh with latest models
 * Easy to install with precompiled binaries available for all three major desktop platforms
+* Multi-modal - Ability to load more than one model and switch between them
+* Supports both llama.cpp and gptj.cpp style models
+* Model downloader in GUI featuring many popular open source models
+* Settings dialog to change temp, top_p, top_k, threads, etc
+* Copy your conversation to clipboard
+* Check for updates to get the very latest GUI
 
 ## Feature wishlist
 
 * Multi-chat - a list of current and past chats and the ability to save/delete/export and switch between
 * Text to speech - have the AI response with voice
 * Speech to text - give the prompt with your voice
-* Multi-modal - Ability to load more than one model and switch between them
 * Python bindings
 * Typescript bindings
 * Plugin support for langchain other developer tools
