@@ -11,12 +11,14 @@
 struct ModelInfo {
     Q_GADGET
     Q_PROPERTY(QString filename MEMBER filename)
+    Q_PROPERTY(QString filesize MEMBER filesize)
     Q_PROPERTY(QByteArray md5sum MEMBER md5sum)
     Q_PROPERTY(bool installed MEMBER installed)
     Q_PROPERTY(bool isDefault MEMBER isDefault)
 
 public:
     QString filename;
+    QString filesize;
     QByteArray md5sum;
     bool installed = false;
     bool isDefault = false;

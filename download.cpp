@@ -84,14 +84,17 @@ void Download::handleJsonDownloadFinished()
     "  {"
     "    \"md5sum\": \"61d48a82cb188cceb14ebb8082bfec37\","
     "    \"filename\": \"ggml-gpt4all-j-v1.1-breezy.bin\""
+    "    \"filesize\": \"3785248281\""
     "  },"
     "  {"
     "    \"md5sum\": \"879344aaa9d62fdccbda0be7a09e7976\","
     "    \"filename\": \"ggml-gpt4all-j-v1.2-jazzy.bin\","
+    "    \"filesize\": \"3785248281\""
     "    \"isDefault\": \"true\""
     "  },"
     "  {"
     "    \"md5sum\": \"5b5a3f9b858d33b29b52b89692415595\","
+    "    \"filesize\": \"3785248281\""
     "    \"filename\": \"ggml-gpt4all-j.bin\""
     "  }"
     "]"
@@ -125,13 +128,26 @@ void Download::parseJsonFile(const QByteArray &jsonData)
         QJsonObject obj = value.toObject();
 
         QString modelFilename = obj["filename"].toString();
+        QString modelFilesize = obj["filesize"].toString();
         QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
         bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
+
+        quint64 sz = modelFilesize.toULongLong();
+        if (sz < 1024) {
+            modelFilesize = QString("%1 bytes").arg(sz);
+        } else if (sz < 1024 * 1024) {
+            modelFilesize = QString("%1 KB").arg(qreal(sz) / 1024, 0, 'g', 3);
+        } else if (sz < 1024 * 1024 * 1024) {
+            modelFilesize = QString("%1 MB").arg(qreal(sz) / (1024 * 1024), 0, 'g', 3);
+        } else {
+            modelFilesize = QString("%1 GB").arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
+        }
 
         QString filePath = QCoreApplication::applicationDirPath() + QDir::separator() + modelFilename;
         QFileInfo info(filePath);
         ModelInfo modelInfo;
         modelInfo.filename = modelFilename;
+        modelInfo.filesize = modelFilesize;
         modelInfo.md5sum = modelMd5sum;
         modelInfo.installed = info.exists();
         modelInfo.isDefault = isDefault;
