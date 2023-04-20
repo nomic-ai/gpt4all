@@ -51,18 +51,18 @@ Run on an M1 Mac (not sped up!)
 ### GPT4All-J Chat UI Installers
 Installs a native chat-client with auto-update functionality that runs on your desktop with the GPT4All-J model baked into it.
 
-[Mac/OSX](https://gpt4all.io/installers/gpt4all-0.1.0-Darwin.dmg)
+[Mac/OSX](https://gpt4all.io/installers/gpt4all-installer-darwin.dmg)
 
-[Windows](https://gpt4all.io/installers/gpt4all-0.1.0-win64.exe)
+[Windows](https://gpt4all.io/installers/gpt4all-installer-win64.exe)
 
-[Ubuntu](https://gpt4all.io/installers/gpt4all-0.1.0-Linux.run)
+[Ubuntu](https://gpt4all.io/installers/gpt4all-installer-linux.run)
 
 These files are not yet cert signed by Windows/Apple so you will see security warnings on initial installation. We did not want to delay release while waiting for their process to complete.
 
 Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/)
 
 ### Raw Model
-[ggml Model Download Link](https://gpt4all.io/ggml-gpt4all-j.bin)
+[ggml Model Download Link](https://gpt4all.io/models/ggml-gpt4all-j.bin)
 
 Note this model is only compatible with the C++ bindings found [here](https://github.com/nomic-ai/gpt4all-chat). It will not work with any existing llama.cpp bindings as we had to do a large fork of llama.cpp. GPT4All will support the ecosystem around this new C++ backend going forward.
 
@@ -77,6 +77,24 @@ Please see [GPT4All-J Technical Report](https://static.nomic.ai/gpt4all/2023_GPT
 - We are releasing the curated training data for anyone to replicate GPT4All-J here: [GPT4All-J Training Data](https://huggingface.co/datasets/nomic-ai/gpt4all-j-prompt-generations)
    - [Atlas Map of Prompts](https://atlas.nomic.ai/map/gpt4all-j-prompts-curated)
    - [Atlas Map of Responses](https://atlas.nomic.ai/map/gpt4all-j-response-curated)
+   
+We have released updated versions of our `GPT4All-J` model and training data. 
+
+- `v1.0`: The original model trained on the v1.0 dataset
+- `v1.1-breezy`: Trained on afiltered dataset where we removed all instances of AI language model
+- `v1.2-jazzy`: Trained on a filtered dataset where we also removed instances like I'm sorry, I can't answer... and AI language model
+
+The [models](https://huggingface.co/nomic-ai/gpt4all-j) and [data](https://huggingface.co/datasets/nomic-ai/gpt4all-j-prompt-generations) versions can be specified by passing a `revision` argument.
+
+For example, to load the `v1.2-jazzy` model and dataset, run:
+
+```python
+from datasets import load_dataset
+from transformers import AutoModelForCausalLM
+
+dataset = load_dataset("nomic-ai/gpt4all-j-prompt-generations", revision="v1.2-jazzy")
+model = AutoModelForCausalLM.from_pretrained("nomic-ai/gpt4all-j-prompt-generations", revision="v1.2-jazzy")
+```
 
 ### GPT4All-J Training Instructions
 
