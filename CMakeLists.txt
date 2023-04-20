@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
 
 if(APPLE)
-  # Build a Universal binary on macOS
-  # This requires that the found Qt library is compiled as Universal binaries.
-  set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
+  option(BUILD_UNIVERSAL "Build a Universal binary on macOS" OFF)
+  if(BUILD_UNIVERSAL)
+    # Build a Universal binary on macOS
+    # This requires that the found Qt library is compiled as Universal binaries.
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
+  else()
+    # Build for the host architecture on macOS
+    set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}" CACHE STRING "" FORCE)
+  endif()
 endif()
 
 set(APP_VERSION_MAJOR 2)
