@@ -41,6 +41,15 @@ bool LLamaModel::loadModel(const std::string &modelPath)
 {
     // load the model
     d_ptr->params = llama_context_default_params();
+
+    gpt_params params;
+    d_ptr->params.n_ctx      = params.n_ctx;
+    d_ptr->params.n_parts    = params.n_parts;
+    d_ptr->params.seed       = params.seed;
+    d_ptr->params.f16_kv     = params.memory_f16;
+    d_ptr->params.use_mmap   = params.use_mmap;
+    d_ptr->params.use_mlock  = params.use_mlock;
+
     d_ptr->ctx = llama_init_from_file(modelPath.c_str(), d_ptr->params);
     if (!d_ptr->ctx) {
         std::cerr << "LLAMA ERROR: failed to load model from " <<  modelPath << std::endl;
