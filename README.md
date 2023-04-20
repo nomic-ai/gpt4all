@@ -348,7 +348,7 @@ Join the <a href="https://discord.gg/E7q6fp9bmx"> Discord </a> and ask for help 
 
 If you utilize this repository, models or data in a downstream project, please consider citing it with:
 
-```
+```bibtex
 @misc{gpt4all,
   author = {Yuvanesh Anand and Zach Nussbaum and Brandon Duderstadt and Benjamin Schmidt and Andriy Mulyar},
   title = {GPT4All: Training an Assistant-style Chatbot with Large Scale Data Distillation from GPT-3.5-Turbo},
