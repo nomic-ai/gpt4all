@@ -89,6 +89,8 @@ void LLMObject::setThreadCount(int32_t n_threads) {
 }
 
 int32_t LLMObject::threadCount() {
+    if (!m_llmodel)
+        return 1;
     return m_llmodel->threadCount();
 }
 
