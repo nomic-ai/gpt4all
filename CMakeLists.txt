@@ -26,7 +26,7 @@ configure_file(
 # Include the binary directory for the generated header file
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-project(gpt4all VERSION ${APP_VERSION} LANGUAGES CXX)
+project(gpt4all VERSION ${APP_VERSION} LANGUAGES CXX C)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -83,6 +83,8 @@ target_link_libraries(chat
     PRIVATE Qt6::Quick Qt6::Svg)
 target_link_libraries(chat
     PRIVATE llama)
+
+add_executable(test_hw test_hw.cpp)
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
