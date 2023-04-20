@@ -62,11 +62,11 @@ Dialog {
                 Text {
                     id: modelName
                     objectName: "modelName"
-                    text: modelData.filename
+                    property string filename: modelData.filename
+                    text: filename.slice(5, filename.length - 4)
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: 10
-                    font.pixelSize: 24
                     color: "#d1d5db"
                     Accessible.role: Accessible.Paragraph
                     Accessible.name: qsTr("Model file")
@@ -80,7 +80,6 @@ Dialog {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: modelName.right
                     anchors.leftMargin: 10
-                    font.pixelSize: 18
                     color: "#d1d5db"
                     Accessible.role: Accessible.Paragraph
                     Accessible.name: qsTr("Default file")
@@ -92,7 +91,6 @@ Dialog {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: isDefault.visible ? isDefault.right : modelName.right
                     anchors.leftMargin: 10
-                    font.pixelSize: 18
                     color: "#d1d5db"
                     Accessible.role: Accessible.Paragraph
                     Accessible.name: qsTr("File size")
@@ -105,7 +103,6 @@ Dialog {
                     anchors.right: itemProgressBar.left
                     anchors.rightMargin: 10
                     objectName: "speedLabel"
-                    font.pixelSize: 18
                     color: "#d1d5db"
                     text: ""
                     visible: downloading
@@ -177,7 +174,7 @@ Dialog {
                 for (let i = 0; i < modelList.contentItem.children.length; i++) {
                     let delegateItem = modelList.contentItem.children[i];
                     if (delegateItem.objectName === "delegateItem") {
-                        let modelNameText = delegateItem.children.find(child => child.objectName === "modelName").text;
+                        let modelNameText = delegateItem.children.find(child => child.objectName === "modelName").filename;
                         if (modelNameText === modelName) {
                             let progressBar = delegateItem.children.find(child => child.objectName === "itemProgressBar");
                             progressBar.value = bytesReceived / bytesTotal;
@@ -211,7 +208,7 @@ Dialog {
                 for (let i = 0; i < modelList.contentItem.children.length; i++) {
                     let delegateItem = modelList.contentItem.children[i];
                     if (delegateItem.objectName === "delegateItem") {
-                        let modelNameText = delegateItem.children.find(child => child.objectName === "modelName").text;
+                        let modelNameText = delegateItem.children.find(child => child.objectName === "modelName").filename;
                         if (modelNameText === modelName) {
                             let progressBar = delegateItem.children.find(child => child.objectName === "itemProgressBar");
                             progressBar.value = 0;
