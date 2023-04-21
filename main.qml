@@ -889,9 +889,9 @@ Window {
                         if (listElement.name === qsTr("Response: ")) {
                             listElement.currentResponse = true
                             listElement.value = LLM.response
-                            LLM.prompt(listElement.prompt, settingsDialog.promptTemplate, settingsDialog.maxLength,
-                                       settingsDialog.topK, settingsDialog.topP, settingsDialog.temperature,
-                                       settingsDialog.promptBatchSize)
+                            LLM.prompt(listElement.prompt, settings.promptTemplate, settings.maxLength,
+                                       settings.topK, settings.topP, settings.temperature,
+                                       settings.promptBatchSize)
                         }
                     }
                 }
@@ -961,8 +961,8 @@ Window {
                     chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false, "value": textInput.text})
                     chatModel.append({"name": qsTr("Response: "), "currentResponse": true, "value": "", "prompt": prompt})
                     LLM.resetResponse()
-                    LLM.prompt(prompt, settingsDialog.promptTemplate, settingsDialog.maxLength, settingsDialog.topK,
-                               settingsDialog.topP, settingsDialog.temperature, settingsDialog.promptBatchSize)
+                    LLM.prompt(prompt, settings.promptTemplate, settings.maxLength, settings.topK,
+                               settings.topP, settings.temperature, settings.promptBatchSize)
                     textInput.text = ""
                 }
             }
