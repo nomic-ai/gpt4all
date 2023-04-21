@@ -84,7 +84,11 @@ target_link_libraries(chat
 target_link_libraries(chat
     PRIVATE llama)
 
-add_executable(test_hw test_hw.cpp)
+if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+    if(NOT CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
+        add_executable(test_hw test_hw.cpp)
+    endif()
+endif()
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
