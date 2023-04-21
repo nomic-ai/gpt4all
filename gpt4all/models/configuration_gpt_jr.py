@@ -115,8 +115,7 @@ class GPTJRConfig(PretrainedConfig):
         bos_token_id=50256,
         eos_token_id=50256,
         tie_word_embeddings=False,
-        encoder_ndim=4096,
-        alpha=.5,
+        encoder_dim=4096,
         encoder_path=None,
         **kwargs
     ):
@@ -139,8 +138,7 @@ class GPTJRConfig(PretrainedConfig):
         self.bos_token_id = bos_token_id
         self.eos_token_id = eos_token_id
 
-        self.encoder_ndim = encoder_ndim
-        self.alpha = alpha
+        self.encoder_dim = encoder_dim
         self.encoder_path = encoder_path
 
         super().__init__(
