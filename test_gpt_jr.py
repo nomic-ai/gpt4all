@@ -2,6 +2,10 @@ import torch
 from gpt4all.models import GPTJRForCausalLM, GPTJRConfig
 from transformers import AutoTokenizer, AutoModel
 
+# seed torch 
+
+torch.manual_seed(0)
+
 config = GPTJRConfig(encoder_dim=384, n_layer=4)
 print("loaded config")
 
