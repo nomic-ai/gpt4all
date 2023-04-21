@@ -84,10 +84,8 @@ target_link_libraries(chat
 target_link_libraries(chat
     PRIVATE llama)
 
-if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
-    if(NOT CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
-        add_executable(test_hw test_hw.cpp)
-    endif()
+if(NOT (CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64"))
+    add_executable(test_hw test_hw.cpp)
 endif()
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
