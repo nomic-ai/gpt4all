@@ -1,3 +1,4 @@
+import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
@@ -114,24 +115,27 @@ Window {
 %1
 ### Response:\n"
 
-        property string promptTemplate: ""
-        property real temperature: 0.0
-        property real topP: 0.0
-        property int topK: 0
-        property int maxLength: 0
-        property int promptBatchSize: 0
-
-        function restoreDefaults() {
-            temperature = defaultTemperature;
-            topP = defaultTopP;
-            topK = defaultTopK;
-            maxLength = defaultMaxLength;
-            promptBatchSize = defaultPromptBatchSize;
-            promptTemplate = defaultPromptTemplate;
+        Settings {
+            id: settings
+            property string promptTemplate: settingsDialog.defaultPromptTemplate
+            property real temperature: settingsDialog.defaultTemperature
+            property real topP: settingsDialog.defaultTopP
+            property int topK: settingsDialog.defaultTopK
+            property int maxLength: settingsDialog.defaultMaxLength
+            property int promptBatchSize: settingsDialog.defaultPromptBatchSize
         }
 
-        Component.onCompleted: {
-            restoreDefaults();
+        function restoreDefaults() {
+            settings.temperature = defaultTemperature;
+            settings.topP = defaultTopP;
+            settings.topK = defaultTopK;
+            settings.maxLength = defaultMaxLength;
+            settings.promptBatchSize = defaultPromptBatchSize;
+            settings.promptTemplate = defaultPromptTemplate;
+        }
+
+        Component.onDestruction: {
+            settings.sync()
         }
 
         Item {
@@ -153,7 +157,7 @@ Window {
                 Layout.column: 0
             }
             TextField {
-                text: settingsDialog.temperature.toString()
+                text: settings.temperature.toString()
                 ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens - higher temperature gives more creative but less predictable outputs")
                 ToolTip.visible: hovered
                 Layout.row: 0
@@ -162,10 +166,11 @@ Window {
                 onAccepted: {
                     var val = parseFloat(text)
                     if (!isNaN(val)) {
-                        settingsDialog.temperature = val
+                        settings.temperature = val
+                        settings.sync()
                         focus = false
                     } else {
-                        text = settingsDialog.temperature.toString()
+                        text = settings.temperature.toString()
                     }
                 }
                 Accessible.role: Accessible.EditableText
@@ -179,7 +184,7 @@ Window {
                 Layout.column: 0
             }
             TextField {
-                text: settingsDialog.topP.toString()
+                text: settings.topP.toString()
                 ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen, prevents choosing highly unlikely tokens, aka Nucleus Sampling")
                 ToolTip.visible: hovered
                 Layout.row: 1
@@ -188,10 +193,11 @@ Window {
                 onAccepted: {
                     var val = parseFloat(text)
                     if (!isNaN(val)) {
-                        settingsDialog.topP = val
+                        settings.topP = val
+                        settings.sync()
                         focus = false
                     } else {
-                        text = settingsDialog.topP.toString()
+                        text = settings.topP.toString()
                     }
                 }
                 Accessible.role: Accessible.EditableText
@@ -205,7 +211,7 @@ Window {
                  Layout.column: 0
              }
              TextField {
-                 text: settingsDialog.topK.toString()
+                 text: settings.topK.toString()
                  ToolTip.text: qsTr("Only the top K most likely tokens will be chosen from")
                  ToolTip.visible: hovered
                  Layout.row: 2
@@ -214,10 +220,11 @@ Window {
                  onAccepted: {
                      var val = parseInt(text)
                      if (!isNaN(val)) {
-                         settingsDialog.topK = val
+                         settings.topK = val
+                         settings.sync()
                          focus = false
                      } else {
-                         text = settingsDialog.topK.toString()
+                         text = settings.topK.toString()
                      }
                  }
                 Accessible.role: Accessible.EditableText
@@ -231,7 +238,7 @@ Window {
                  Layout.column: 0
              }
              TextField {
-                 text: settingsDialog.maxLength.toString()
+                 text: settings.maxLength.toString()
                  ToolTip.text: qsTr("Maximum length of response in tokens")
                  ToolTip.visible: hovered
                  Layout.row: 3
@@ -240,10 +247,11 @@ Window {
                  onAccepted: {
                      var val = parseInt(text)
                      if (!isNaN(val)) {
-                         settingsDialog.maxLength = val
+                         settings.maxLength = val
+                         settings.sync()
                          focus = false
                      } else {
-                         text = settingsDialog.maxLength.toString()
+                         text = settings.maxLength.toString()
                      }
                  }
                 Accessible.role: Accessible.EditableText
@@ -258,7 +266,7 @@ Window {
                  Layout.column: 0
              }
              TextField {
-                 text: settingsDialog.promptBatchSize.toString()
+                 text: settings.promptBatchSize.toString()
                  ToolTip.text: qsTr("Amount of prompt tokens to process at once, higher values can speed up reading prompts but will use more RAM")
                  ToolTip.visible: hovered
                  Layout.row: 4
@@ -267,10 +275,11 @@ Window {
                  onAccepted: {
                      var val = parseInt(text)
                      if (!isNaN(val)) {
-                         settingsDialog.promptBatchSize = val
+                         settings.promptBatchSize = val
+                         settings.sync()
                          focus = false
                      } else {
-                         text = settingsDialog.promptBatchSize.toString()
+                         text = settings.promptBatchSize.toString()
                      }
                  }
                 Accessible.role: Accessible.EditableText
@@ -322,7 +331,7 @@ Window {
                  radius: 5
                  Label {
                     id: promptTemplateLabelHelp
-                    visible: settingsDialog.promptTemplate.indexOf("%1") == -1
+                    visible: settings.promptTemplate.indexOf("%1") === -1
                     font.bold: true
                     color: "red"
                     text: qsTr("Prompt template must contain %1 to be replaced with the user's input.")
@@ -334,10 +343,11 @@ Window {
                      id: templateScrollView
                      anchors.fill: parent
                      TextArea {
-                         text: settingsDialog.promptTemplate
+                         text: settings.promptTemplate
                          wrapMode: TextArea.Wrap
                          onTextChanged: {
-                             settingsDialog.promptTemplate = text
+                             settings.promptTemplate = text
+                             settings.sync()
                          }
                          bottomPadding: 10
                          Accessible.role: Accessible.EditableText
