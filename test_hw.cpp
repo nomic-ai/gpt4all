@@ -9,7 +9,6 @@ int main(int argc, char *argv[])
     static bool avx512vbmi = __builtin_cpu_supports("avx512vbmi");
     static bool avx512vnni = __builtin_cpu_supports("avx512vnni");
     static bool fma = __builtin_cpu_supports("fma");
-    static bool f16c = __builtin_cpu_supports("f16c");
     static bool sse3 = __builtin_cpu_supports("sse3");
     static std::string s;
     s  = "My hardware supports:\n";
@@ -19,7 +18,6 @@ int main(int argc, char *argv[])
     s += "AVX512_VBMI = " + std::to_string(avx512vbmi)  + "\n";
     s += "AVX512_VNNI = " + std::to_string(avx512vnni)  + "\n";
     s += "FMA = "         + std::to_string(fma)         + "\n";
-    s += "F16C = "        + std::to_string(f16c)        + "\n";
     s += "SSE3 = "        + std::to_string(sse3)        + "\n";
     printf("%s", s.c_str());
     fflush(stdout);
