@@ -2,7 +2,6 @@
 #define DOWNLOAD_H
 
 #include <QObject>
-#include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QFile>
@@ -38,7 +37,7 @@ public:
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
 
-public Q_SLOTS:
+private Q_SLOTS:
     void handleJsonDownloadFinished();
     void handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void handleModelDownloadFinished();
