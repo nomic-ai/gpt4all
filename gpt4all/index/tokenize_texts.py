@@ -5,7 +5,12 @@ from gpt4all.index.embed import Embedder
 
 def parse_args():
     parser = ArgumentParser()
+    # fmt: off
     parser.add_argument("--tokenized_save_path", type=str, default="tokenized")
+    parser.add_argument("--ds_name", type=str, default="wikipedia")
+    parser.add_argument("--ds_version", type=str, default="20220301.simple")
+    parser.add_argument("--sbert_model", type=str, default="sentence-transformers/all-MiniLM-L6-v2")
+    # fmt: on
 
     return parser.parse_args()
 
@@ -59,4 +64,9 @@ def chunk_dataset(
 
 if __name__ == "__main__":
     args = parse_args()
-    chunked_dataset = chunk_dataset(save_path=args.tokenized_save_path)
+    chunked_dataset = chunk_dataset(
+        ds_name=args.ds_name,
+        version=args.ds_version,
+        sbert_model=args.sbert_model,
+        save_path=args.tokenized_save_path,
+    )
