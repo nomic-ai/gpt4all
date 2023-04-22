@@ -13,8 +13,8 @@ if(APPLE)
 endif()
 
 set(APP_VERSION_MAJOR 2)
-set(APP_VERSION_MINOR 1)
-set(APP_VERSION_PATCH 1)
+set(APP_VERSION_MINOR 2)
+set(APP_VERSION_PATCH 0)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Generate a header file with the version number
@@ -32,7 +32,21 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.2 COMPONENTS Quick Svg REQUIRED)
+find_package(Qt6 6.2 COMPONENTS Core Quick Svg REQUIRED)
+
+# Get the Qt6Core target properties
+get_target_property(Qt6Core_INCLUDE_DIRS Qt6::Core INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(Qt6Core_LIBRARY_RELEASE Qt6::Core LOCATION_RELEASE)
+
+# Find the qmake binary
+find_program(QMAKE_EXECUTABLE NAMES qmake qmake6 PATHS ${Qt6Core_INCLUDE_DIRS}/../.. NO_DEFAULT_PATH)
+
+# Get the Qt 6 root directory
+get_filename_component(Qt6_ROOT_DIR "${Qt6Core_LIBRARY_RELEASE}" DIRECTORY)
+get_filename_component(Qt6_ROOT_DIR "${Qt6_ROOT_DIR}/.." ABSOLUTE)
+
+message(STATUS "qmake binary: ${QMAKE_EXECUTABLE}")
+message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
 set(LLAMA_BUILD_EXAMPLES ON CACHE BOOL "llama: build examples" FORCE)
 set(BUILD_SHARED_LIBS ON FORCE)
@@ -84,25 +98,28 @@ target_link_libraries(chat
 target_link_libraries(chat
     PRIVATE llama)
 
-if(NOT (CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64"))
-    add_executable(test_hw test_hw.cpp)
-endif()
-
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+
+if(NOT (CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64"))
+    add_executable(test_hw test_hw.cpp)
+    install(TARGETS test_hw DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
+endif()
+
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
-
-set(BUNDLED_MODEL_NAME "ggml-gpt4all-j-v1.2-jazzy.bin")
+set(CPACK_VERBATIM_VARIABLES YES)
+set(CPACK_IFW_VERBOSE ON)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
-    set(LINUXDEPLOYQT "/home/atreat/dev/linuxdeployqt/build/tools/linuxdeployqt/linuxdeployqt")
+    set(LINUXDEPLOYQT "$ENV{HOME}/dev/linuxdeployqt/build/tools/linuxdeployqt/linuxdeployqt")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-linux.cmake.in"
                    "${CMAKE_BINARY_DIR}/cmake/deploy-qt-linux.cmake" @ONLY)
     set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/cmake/deploy-qt-linux.cmake)
     set(CPACK_IFW_ROOT "~/Qt/Tools/QtInstallerFramework/4.5")
     set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-linux")
+    set(CPACK_IFW_TARGET_DIRECTORY "@HomeDir@/${COMPONENT_NAME_MAIN}")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
     find_program(WINDEPLOYQT windeployqt HINTS ${_qt_bin_dir})
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-windows.cmake.in"
@@ -111,6 +128,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
     set(CPACK_IFW_ROOT "C:/Qt/Tools/QtInstallerFramework/4.5")
     set(CPACK_IFW_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/favicon.ico")
     set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-win64")
+    set(CPACK_IFW_TARGET_DIRECTORY "@HomeDir@\\${COMPONENT_NAME_MAIN}")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     find_program(MACDEPLOYQT macdeployqt HINTS ${_qt_bin_dir})
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy-qt-mac.cmake.in"
@@ -119,6 +137,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     set(CPACK_IFW_ROOT "~/Qt/Tools/QtInstallerFramework/4.5")
     set(CPACK_IFW_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/favicon.icns")
     set(CPACK_PACKAGE_FILE_NAME "${COMPONENT_NAME_MAIN}-installer-darwin")
+    set(CPACK_IFW_TARGET_DIRECTORY "@HomeDir@/Applications/${COMPONENT_NAME_MAIN}")
 endif()
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${COMPONENT_NAME_MAIN})
@@ -145,7 +164,7 @@ include(CPackIFW)
 cpack_add_component(${COMPONENT_NAME_MAIN} DOWNLOADED)
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} ESSENTIAL FORCED_INSTALLATION)
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} VERSION ${APP_VERSION})
-cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "GPL-3.0 LICENSE" ${CPACK_RESOURCE_FILE_LICENSE})
+cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "MIT LICENSE" ${CPACK_RESOURCE_FILE_LICENSE})
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installerscript.qs")
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} REPLACES "gpt4all-chat") #Was used in very earliest prototypes
 
