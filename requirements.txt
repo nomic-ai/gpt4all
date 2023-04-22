@@ -13,3 +13,6 @@ jsonlines
 nomic
 scikit-learn
 matplotlib
+apache_beam 
+mwparserfromhell
+hnswlib
