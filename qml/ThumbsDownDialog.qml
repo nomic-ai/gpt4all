@@ -12,6 +12,11 @@ Dialog {
     opacity: 0.9
     padding: 20
     width: 900
+
+    Theme {
+        id: theme
+    }
+
     property alias response: thumbsDownNewResponse.text
     Column {
         anchors.fill: parent
@@ -25,14 +30,14 @@ Dialog {
                 anchors.left: parent.left
                 width: 60
                 height: 60
-                source: "qrc:/gpt4all-chat/icons/thumbs_down.svg"
+                source: "qrc:/gpt4all/icons/thumbs_down.svg"
             }
             Text {
                 anchors.left: img.right
                 anchors.leftMargin: 30
                 anchors.verticalCenter: img.verticalCenter
                 text: qsTr("Provide feedback for negative rating")
-                color: "#d1d5db"
+                color: theme.textColor
             }
         }
 
@@ -45,16 +50,16 @@ Dialog {
 
             TextArea {
                 id: thumbsDownNewResponse
-                color: "#dadadc"
+                color: theme.textColor
                 padding: 20
                 width: parent.width
                 height: 300
                 wrapMode: Text.Wrap
                 font.pixelSize: 24
                 placeholderText: qsTr("Please provide a better response...")
-                placeholderTextColor: "#7d7d8e"
+                placeholderTextColor: theme.backgroundLightest
                 background: Rectangle {
-                    color: "#40414f"
+                    color: theme.backgroundLighter
                     radius: 10
                 }
             }
@@ -63,9 +68,9 @@ Dialog {
 
     background: Rectangle {
         anchors.fill: parent
-        color: "#202123"
+        color: theme.backgroundDarkest
         border.width: 1
-        border.color: "white"
+        border.color: theme.dialogBorder
         radius: 10
     }
 
@@ -76,10 +81,10 @@ Dialog {
         Button {
             text: qsTr("Submit")
             background: Rectangle {
-                border.color: "#7d7d8e"
+                border.color: theme.backgroundLightest
                 border.width: 1
                 radius: 10
-                color: "#343541"
+                color: theme.backgroundLight
             }
             padding: 15
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
@@ -87,10 +92,10 @@ Dialog {
         Button {
             text: qsTr("Cancel")
             background: Rectangle {
-                border.color: "#7d7d8e"
+                border.color: theme.backgroundLightest
                 border.width: 1
                 radius: 10
-                color: "#343541"
+                color: theme.backgroundLight
             }
             padding: 15
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole

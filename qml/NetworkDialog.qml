@@ -15,6 +15,10 @@ Dialog {
     width: 1024
     height: column.height + dialogBox.height + 20
 
+    Theme {
+        id: theme
+    }
+
     Settings {
         id: settings
         property string attribution: ""
@@ -36,14 +40,14 @@ Dialog {
                 anchors.left: parent.left
                 width: 60
                 height: 60
-                source: "qrc:/gpt4all-chat/icons/logo.svg"
+                source: "qrc:/gpt4all/icons/logo.svg"
             }
             Text {
                 anchors.left: img.right
                 anchors.leftMargin: 30
                 anchors.verticalCenter: img.verticalCenter
                 text: qsTr("Contribute data to the GPT4All Opensource Datalake.")
-                color: "#d1d5db"
+                color: theme.textColor
             }
         }
 
@@ -64,14 +68,14 @@ Dialog {
 When a GPT4All model responds to you and you have opted-in, you can like/dislike its response. If you dislike a response, you can suggest an alternative response. This data will be collected and aggregated in the GPT4All Datalake.
 
 NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!")
-                color: "#d1d5db"
+                color: theme.textColor
                 focus: false
                 readOnly: true
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Terms for opt-in")
                 Accessible.description: qsTr("Describes what will happen when you opt-in")
                 background: Rectangle {
-                    color: "#343541"
+                    color: theme.backgroundLight
                     radius: 10
                 }
             }
@@ -79,15 +83,15 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
 
         TextField {
             id: attribution
-            color: "#dadadc"
+            color: theme.textColor
             padding: 20
             width: parent.width
             text: settings.attribution
             font.pixelSize: 24
             placeholderText: qsTr("Please provide a name for attribution (optional)")
-            placeholderTextColor: "#7d7d8e"
+            placeholderTextColor: theme.backgroundLightest
             background: Rectangle {
-                color: "#40414f"
+                color: theme.backgroundLighter
                 radius: 10
             }
             Accessible.role: Accessible.EditableText
@@ -102,9 +106,9 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
 
     background: Rectangle {
         anchors.fill: parent
-        color: "#202123"
+        color: theme.backgroundDarkest
         border.width: 1
-        border.color: "white"
+        border.color: theme.dialogBorder
         radius: 10
     }
 
@@ -116,10 +120,10 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         Button {
             text: qsTr("Enable")
             background: Rectangle {
-                border.color: "#7d7d8e"
+                border.color: theme.backgroundLightest
                 border.width: 1
                 radius: 10
-                color: "#343541"
+                color: theme.backgroundLight
             }
             Accessible.role: Accessible.Button
             Accessible.name: text
@@ -131,10 +135,10 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         Button {
             text: qsTr("Cancel")
             background: Rectangle {
-                border.color: "#7d7d8e"
+                border.color: theme.backgroundLightest
                 border.width: 1
                 radius: 10
-                color: "#343541"
+                color: theme.backgroundLight
             }
             Accessible.role: Accessible.Button
             Accessible.name: text
