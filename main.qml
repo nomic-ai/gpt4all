@@ -192,11 +192,17 @@ Window {
         }
 
         onClicked: {
-            featureComingSoon.open()
-//            if (Network.isActive)
-//                Network.isActive = false
-//            else
-//                networkDialog.open()
+            if (Network.isActive)
+                Network.isActive = false
+            else
+                networkDialog.open()
+        }
+    }
+
+    Connections {
+        target: Network
+        function onHealthCheckFailed(code) {
+            healthCheckFailed.open();
         }
     }
 
@@ -237,9 +243,9 @@ Window {
     }
 
     PopupDialog {
-        id: featureComingSoon
+        id: healthCheckFailed
         anchors.centerIn: parent
-        text: qsTr("Feature coming soon!")
+        text: qsTr("Connection to datalake failed.")
     }
 
     Button {
@@ -278,12 +284,6 @@ Window {
             copyEdit.selectAll()
             copyEdit.copy()
             copyMessage.open()
-            timer.start()
-        }
-        Timer {
-            id: timer
-            interval: 500; running: false; repeat: false
-            onTriggered: copyMessage.close()
         }
     }
 

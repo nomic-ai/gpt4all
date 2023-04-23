@@ -24,11 +24,10 @@ Network::Network()
 {
     QSettings settings;
     settings.sync();
-    m_isActive = settings.value("network/isActive", false).toBool();
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
     settings.sync();
-    emit activeChanged();
+    setActive(settings.value("network/isActive", false).toBool());
 }
 
 void Network::setActive(bool b)
@@ -38,6 +37,8 @@ void Network::setActive(bool b)
     settings.sync();
     m_isActive = b;
     emit activeChanged();
+    if (m_isActive)
+        sendHealth();
 }
 
 QString Network::generateUniqueId() const
@@ -101,8 +102,10 @@ void Network::handleJsonUploadFinished()
     int code = response.toInt(&ok);
     if (!ok)
         qWarning() << "ERROR: Invalid response.";
-    if (code != 200)
+    if (code != 200) {
         qWarning() << "ERROR: response != 200 code:" << code;
+        sendHealth();
+    }
 
     QByteArray jsonData = jsonReply->readAll();
     QJsonParseError err;
@@ -123,4 +126,32 @@ void Network::handleJsonUploadFinished()
 bool Network::sendConversation(const QString &conversation)
 {
     return packageAndSendJson(conversation);
+}
+
+void Network::sendHealth()
+{
+    QUrl healthUrl("http://localhost/v1/health");
+    QNetworkRequest request(healthUrl);
+    QNetworkReply *healthReply = m_networkManager.get(request);
+    connect(healthReply, &QNetworkReply::finished, this, &Network::handleHealthFinished);
+}
+
+void Network::handleHealthFinished()
+{
+    QNetworkReply *healthReply = qobject_cast<QNetworkReply *>(sender());
+    if (!healthReply)
+        return;
+
+    QVariant response = healthReply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+    Q_ASSERT(response.isValid());
+    bool ok;
+    int code = response.toInt(&ok);
+    if (!ok)
+        qWarning() << "ERROR: Invalid response.";
+    if (code != 200) {
+        qWarning() << "ERROR: response != 200 code:" << code;
+        emit healthCheckFailed(code);
+        setActive(false);
+    }
+    healthReply->deleteLater();
 }

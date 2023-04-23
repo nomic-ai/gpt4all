@@ -4,7 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Dialog {
-    id: copyMessage
+    id: popupDialog
     anchors.centerIn: parent
     modal: false
     opacity: 0.9
@@ -28,5 +28,15 @@ Dialog {
 
     exit: Transition {
         NumberAnimation { duration: 500; property: "opacity"; from: 1.0; to: 0.0 }
+    }
+
+    onOpened: {
+        timer.start()
+    }
+
+    Timer {
+        id: timer
+        interval: 500; running: false; repeat: false
+        onTriggered: popupDialog.close()
     }
 }
