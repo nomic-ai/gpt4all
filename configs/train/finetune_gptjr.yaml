@@ -14,7 +14,7 @@ batch_size: 32
 
 #index
 index_path: "/home/paperspace/gpt4all/gpt4all/index/wiki-sample-index.bin"
-index_database: "/home/paperspace/gpt4all/gpt4all/index/wiki-full-tokenized_embedded_with_text"
+index_database: "/home/paperspace/gpt4all/gpt4all/index/wiki_sample_tokenized_embedded_with_text"
 index_space: "cosine"
 index_dim: 384
 query_embedding_field: 'question'
