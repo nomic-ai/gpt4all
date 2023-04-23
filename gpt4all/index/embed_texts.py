@@ -30,9 +30,9 @@ class PadCollateInputs:
         return padded_inputs
 
 
-def embed_texts(ds_path, batch_size, embed_on='text', save_to_disk=False):
+def embed_texts(ds_path, batch_size, embed_on='text', save_to_disk=False, split='train'):
     rank0_print(f"World size: {dist.get_world_size()}")
-    dataset = load_dataset(f"{ds_path}", split="train")
+    dataset = load_dataset(f"{ds_path}", split=split)
     rank0_print(f"Dataset size: {len(dataset)}")
 
     model = Embedder()
