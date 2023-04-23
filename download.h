@@ -36,6 +36,7 @@ public:
     Q_INVOKABLE void updateModelList();
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
+    Q_INVOKABLE QString downloadLocalModelsPath() const;
 
 private Q_SLOTS:
     void handleJsonDownloadFinished();

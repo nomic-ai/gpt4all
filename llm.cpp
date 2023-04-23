@@ -17,6 +17,23 @@ LLM *LLM::globalInstance()
 
 static LLModel::PromptContext s_ctx;
 
+static QString modelFilePath(const QString &modelName)
+{
+    QString appPath = QCoreApplication::applicationDirPath()
+        + QDir::separator() + "ggml-" + modelName + ".bin";
+    QFileInfo infoAppPath(appPath);
+    if (infoAppPath.exists())
+        return appPath;
+
+    QString downloadPath = Download::globalInstance()->downloadLocalModelsPath()
+        + QDir::separator() + "ggml-" + modelName + ".bin";
+
+    QFileInfo infoLocalPath(downloadPath);
+    if (infoLocalPath.exists())
+        return downloadPath;
+    return QString();
+}
+
 LLMObject::LLMObject()
     : QObject{nullptr}
     , m_llmodel(nullptr)
@@ -31,14 +48,15 @@ LLMObject::LLMObject()
 
 bool LLMObject::loadModel()
 {
-    if (modelList().isEmpty()) {
+    const QList<QString> models = modelList();
+    if (models.isEmpty()) {
         // try again when we get a list of models
         connect(Download::globalInstance(), &Download::modelListChanged, this,
             &LLMObject::loadModel, Qt::SingleShotConnection);
         return false;
     }
 
-    return loadModelPrivate(modelList().first());
+    return loadModelPrivate(models.first());
 }
 
 bool LLMObject::loadModelPrivate(const QString &modelName)
@@ -54,8 +72,7 @@ bool LLMObject::loadModelPrivate(const QString &modelName)
     }
 
     bool isGPTJ = false;
-    QString filePath = QCoreApplication::applicationDirPath() + QDir::separator() +
-         "ggml-" + modelName + ".bin";
+    QString filePath = modelFilePath(modelName);
     QFileInfo info(filePath);
     if (info.exists()) {
 
@@ -169,26 +186,55 @@ void LLMObject::modelNameChangeRequested(const QString &modelName)
 
 QList<QString> LLMObject::modelList() const
 {
-    QDir dir(QCoreApplication::applicationDirPath());
-    dir.setNameFilters(QStringList() << "ggml-*.bin");
-    QStringList fileNames = dir.entryList();
-    if (fileNames.isEmpty()) {
-        qWarning() << "ERROR: Could not find any applicable models in directory"
-            << QCoreApplication::applicationDirPath();
-        return QList<QString>();
+    // Build a model list from exepath and from the localpath
+    QList<QString> list;
+
+    QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
+    QString localPath = Download::globalInstance()->downloadLocalModelsPath();
+
+    {
+        QDir dir(exePath);
+        dir.setNameFilters(QStringList() << "ggml-*.bin");
+        QStringList fileNames = dir.entryList();
+        for (QString f : fileNames) {
+            QString filePath = exePath + f;
+            QFileInfo info(filePath);
+            QString name = info.completeBaseName().remove(0, 5);
+            if (info.exists()) {
+                if (name == m_modelName)
+                    list.prepend(name);
+                else
+                    list.append(name);
+            }
+        }
     }
 
-    QList<QString> list;
-    for (QString f : fileNames) {
-        QString filePath = QCoreApplication::applicationDirPath() + QDir::separator() + f;
-        QFileInfo info(filePath);
-        QString name = info.completeBaseName().remove(0, 5);
-        if (info.exists()) {
-            if (name == m_modelName)
-                list.prepend(name);
-            else
-                list.append(name);
+    if (localPath != exePath) {
+        QDir dir(localPath);
+        dir.setNameFilters(QStringList() << "ggml-*.bin");
+        QStringList fileNames = dir.entryList();
+        for (QString f : fileNames) {
+            QString filePath = localPath + f;
+            QFileInfo info(filePath);
+            QString name = info.completeBaseName().remove(0, 5);
+            if (info.exists() && !list.contains(name)) { // don't allow duplicates
+                if (name == m_modelName)
+                    list.prepend(name);
+                else
+                    list.append(name);
+            }
         }
+    }
+
+    if (list.isEmpty()) {
+        if (exePath != localPath) {
+            qWarning() << "ERROR: Could not find any applicable models in"
+                       << exePath << "nor" << localPath;
+        } else {
+            qWarning() << "ERROR: Could not find any applicable models in"
+                       << exePath;
+        }
+        return QList<QString>();
     }
 
     return list;

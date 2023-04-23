@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QUrl>
 #include <QDir>
+#include <QStandardPaths>
 
 class MyDownload: public Download { };
 Q_GLOBAL_STATIC(MyDownload, downloadInstance)
@@ -36,6 +37,26 @@ QList<ModelInfo> Download::modelList() const
     values.removeAll(defaultInfo);
     values.prepend(defaultInfo);
     return values;
+}
+
+QString Download::downloadLocalModelsPath() const
+{
+    QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
+    QFileInfo infoExe(exePath);
+    if (infoExe.isWritable())
+        return exePath;
+
+    QString localPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QDir localDir(localPath);
+    if (!localDir.exists())
+        localDir.mkpath(localPath);
+    QString localDownloadPath = localPath
+        + QDir::separator();
+    QFileInfo infoLocal(localDownloadPath);
+    if (infoLocal.isWritable())
+        return localDownloadPath;
+    qWarning() << "ERROR: Local download path appears not writeable:" << localDownloadPath;
+    return localDownloadPath;
 }
 
 void Download::updateModelList()
@@ -143,7 +164,7 @@ void Download::parseJsonFile(const QByteArray &jsonData)
             modelFilesize = QString("%1 GB").arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
         }
 
-        QString filePath = QCoreApplication::applicationDirPath() + QDir::separator() + modelFilename;
+        QString filePath = downloadLocalModelsPath() + modelFilename;
         QFileInfo info(filePath);
         ModelInfo modelInfo;
         modelInfo.filename = modelFilename;
@@ -164,7 +185,6 @@ void Download::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
         return;
 
     QString modelFilename = modelReply->url().fileName();
-//    qDebug() << "handleDownloadProgress" << bytesReceived << bytesTotal << modelFilename;
     emit downloadProgress(bytesReceived, bytesTotal, modelFilename);
 }
 
@@ -179,7 +199,6 @@ void Download::handleModelDownloadFinished()
         return;
 
     QString modelFilename = modelReply->url().fileName();
-//    qDebug() << "handleModelDownloadFinished" << modelFilename;
     m_activeDownloads.removeAll(modelReply);
 
     if (modelReply->error()) {
@@ -210,10 +229,18 @@ void Download::handleModelDownloadFinished()
     }
 
     // Save the model file to disk
-    QFile file(QCoreApplication::applicationDirPath() + QDir::separator() + modelFilename);
+    QFile file(downloadLocalModelsPath() + modelFilename);
     if (file.open(QIODevice::WriteOnly)) {
         file.write(modelData);
         file.close();
+    } else {
+        QFile::FileError error = file.error();
+        qWarning() << "ERROR: Could not save model to location:"
+            << downloadLocalModelsPath() + modelFilename
+            << "failed with code" << error;
+        modelReply->deleteLater();
+        emit downloadFinished(modelFilename);
+        return;
     }
 
     modelReply->deleteLater();
