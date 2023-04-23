@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 import hnswlib
 import pyarrow as pa
 import pyarrow.compute as pc
+from tqdm import tqdm
 
 
 def parse_args():
@@ -42,6 +43,7 @@ def join(original_ds, embedded_ds):
     mask = pc.is_in(embed_table["index"], value_set=pa.array(indices, pa.int32()))
     filtered_table = embed_table.filter(mask)
 
+    import pdb; pdb.set_trace()
     # sort to make sure we're adding in right order
     filtered_table = filtered_table.sort_by("id")
 
@@ -60,6 +62,8 @@ def join(original_ds, embedded_ds):
 
 def build_index(orig_path, embed_folder_path, index_path):
     if not os.path.exists(orig_path + "_embedded_with_text"):
+        # TODO: this doesn't work for large datasets!
+        # just convert to pandas and do this manually
         ds = Dataset.load_from_disk(orig_path)
         embed_ds = concat_embedded(embed_folder_path)
         print("Concatenated embeddings")
@@ -79,7 +83,15 @@ def build_index(orig_path, embed_folder_path, index_path):
     # not sure what we should set M and ef_construction to
     index.init_index(max_elements=len(ds), M=64, ef_construction=200)
     print("Adding items")
-    index.add_items(ds["embedding"], ds["index"])
+    chunk_size = 50_000
+    num_chunks = len(ds) // chunk_size
+    progbar = tqdm(total=num_chunks)
+    start = 0
+    while start < len(ds):
+        chunk = ds[start:start + chunk_size]
+        index.add_items(chunk["embedding"], chunk["index"], num_threads=64)
+        progbar.update(1)
+        start += chunk_size
 
     print("Saving index")
     index.save_index(index_path + ".bin")

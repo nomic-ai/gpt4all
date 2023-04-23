@@ -45,16 +45,11 @@ class Embedder:
 
         return tokenized_text
 
+    def tokenize(self, text):
+        return self.tokenizer(text, return_tensors="pt", truncation=True, padding="max_length")
+
     def __call__(self, batch):
-        if isinstance(batch, dict):
-            outputs = self.embedder(
-                input_ids=batch["input_ids"], attention_mask=batch["attention_mask"]
-            )
-            embedding = self._mean_pool(outputs, batch["attention_mask"])
-
-            return {"id": batch["id"], "embedding": embedding}
-
-        elif isinstance(batch, str):
+        if isinstance(batch, str):
             tokenized = self.tokenizer(batch, return_tensors="pt", truncation=True)
             return self._mean_pool(
                 self.embedder(
@@ -63,6 +58,13 @@ class Embedder:
                 ),
                 tokenized["attention_mask"],
             )
+        else:
+            outputs = self.embedder(
+                input_ids=batch["input_ids"], attention_mask=batch["attention_mask"]
+            )
+            embedding = self._mean_pool(outputs, batch["attention_mask"])
+
+            return {"id": batch["id"], "embedding": embedding}
 
     def to(self, device):
         self.embedder.to(device)

@@ -9,6 +9,7 @@ from transformers import BatchEncoding
 from tqdm import tqdm
 import numpy as np
 import torch
+from datasets import load_dataset
 
 
 class PadCollateInputs:
@@ -29,20 +30,29 @@ class PadCollateInputs:
         return padded_inputs
 
 
-def embed_texts(ds_path, batch_size):
+def embed_texts(ds_path, batch_size, embed_on='text', save_to_disk=False):
     rank0_print(f"World size: {dist.get_world_size()}")
-
-    dataset = Dataset.load_from_disk(ds_path)
+    dataset = load_dataset(f"{ds_path}", split="train")
     rank0_print(f"Dataset size: {len(dataset)}")
-    dataset = dataset.remove_columns(["url", "title", "text"])
+
+    model = Embedder()
+
+    dataset = dataset.map(lambda x: model.tokenize(x[embed_on]), batched=True, num_proc=64)
+
+    columns_to_keep = ["input_ids", "attention_mask"]
+    #to_remove = [e for e in dataset.column_names if not e in columns_to_keep]
+    print('cols: ', dataset.column_names)
+    #dataset = dataset.remove_columns(to_remove)
+
+    #dataset = Dataset.load_from_disk(ds_path)
+    #dataset = dataset.remove_columns(["url", "title", "text"])
     dataset = dataset.with_format("torch")
 
     num_processes = dist.get_world_size()
     local_rank = dist.get_rank()
 
-    model = Embedder()
 
-    collator = PadCollateInputs(model.tokenizer)
+    #collator = PadCollateInputs(model.tokenizer)
 
     sampler = DistributedSampler(
         dataset,
@@ -53,7 +63,7 @@ def embed_texts(ds_path, batch_size):
     )
     dataloader = DataLoader(
         dataset,
-        collate_fn=collator,
+    #    collate_fn=collator,
         batch_size=batch_size,
         sampler=sampler,
         drop_last=False,
@@ -77,7 +87,9 @@ def embed_texts(ds_path, batch_size):
 
     # feeling lazy, don't want to wait for all_gather to finish
     # will load and concat in a single process in another script
-    ds.save_to_disk(f"embedded/{ds_path}_embedded_rank_{local_rank}")
+    if save_to_disk:
+        ds.save_to_disk(f"{ds_path}_embedded/{ds_path}_embedded_rank_{local_rank}")
+    return ds
 
 
 def main():
