@@ -10,7 +10,6 @@ class Network : public QObject
     Q_OBJECT
     Q_PROPERTY(bool isActive READ isActive WRITE setActive NOTIFY activeChanged)
 public:
-
     static Network *globalInstance();
 
     bool isActive() const { return m_isActive; }
@@ -21,11 +20,14 @@ public:
 
 Q_SIGNALS:
     void activeChanged();
+    void healthCheckFailed(int code);
 
 private Q_SLOTS:
+    void handleHealthFinished();
     void handleJsonUploadFinished();
 
 private:
+    void sendHealth();
     bool packageAndSendJson(const QString &json);
 
 private:
