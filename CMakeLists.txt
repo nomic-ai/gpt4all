@@ -73,6 +73,7 @@ qt_add_qml_module(chat
       qml/ModelDownloaderDialog.qml
       qml/ThumbsDownDialog.qml
       qml/SettingsDialog.qml
+      qml/PopupDialog.qml
     RESOURCES
       icons/send_message.svg
       icons/stop_generating.svg
