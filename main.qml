@@ -55,7 +55,7 @@ Window {
                 anchors.top: modelLabel.top
                 anchors.bottom: modelLabel.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                font.pixelSize: 24
+                font.pixelSize: theme.fontSizeLarge
                 spacing: 0
                 model: LLM.modelList
                 Accessible.role: Accessible.ComboBox
@@ -77,7 +77,7 @@ Window {
                     contentItem: Text {
                         text: modelData
                         color: theme.textColor
-                        font: control.font
+                        font: comboBox.font
                         elide: Text.ElideRight
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -612,7 +612,7 @@ Window {
                         wrapMode: Text.WordWrap
                         focus: false
                         readOnly: true
-                        font.pixelSize: 24
+                        font.pixelSize: theme.fontSizeLarge
                         cursorVisible: currentResponse ? (LLM.response !== "" ? LLM.responseInProgress : false) : false
                         cursorPosition: text.length
                         background: Rectangle {
@@ -841,7 +841,7 @@ Window {
                 color: theme.textColor
                 padding: 20
                 enabled: LLM.isModelLoaded
-                font.pixelSize: 24
+                font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Send a message...")
                 placeholderTextColor: theme.backgroundLightest
                 background: Rectangle {
