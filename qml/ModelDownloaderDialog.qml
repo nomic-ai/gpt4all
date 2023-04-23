@@ -126,6 +126,36 @@ Dialog {
                         Accessible.description: qsTr("Shows the progress made in the download")
                     }
 
+                    Item {
+                        visible: modelData.calcHash
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+
+                        Label {
+                            id: calcHashLabel
+                            anchors.right: busyCalcHash.left
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            objectName: "calcHashLabel"
+                            color: theme.textColor
+                            text: qsTr("Calculating MD5...")
+                            Accessible.role: Accessible.Paragraph
+                            Accessible.name: text
+                            Accessible.description: qsTr("Whether the file hash is being calculated")
+                        }
+
+                        BusyIndicator {
+                            id: busyCalcHash
+                            anchors.right: parent.right
+                            anchors.verticalCenter: calcHashLabel.verticalCenter
+                            running: modelData.calcHash
+                            Accessible.role: Accessible.Animation
+                            Accessible.name: qsTr("Busy indicator")
+                            Accessible.description: qsTr("Displayed when the file hash is being calculated")
+                        }
+                    }
+
                     Label {
                         id: installedLabel
                         anchors.verticalCenter: parent.verticalCenter
@@ -146,7 +176,7 @@ Dialog {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: parent.right
                         anchors.rightMargin: 10
-                        visible: !modelData.installed
+                        visible: !modelData.installed && !modelData.calcHash
                         padding: 10
                         onClicked: {
                             if (!downloading) {

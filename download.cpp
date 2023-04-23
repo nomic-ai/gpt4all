@@ -19,7 +19,12 @@ Download *Download::globalInstance()
 
 Download::Download()
     : QObject(nullptr)
+    , m_hashAndSave(new HashAndSaveFile)
 {
+    connect(this, &Download::requestHashAndSave, m_hashAndSave,
+        &HashAndSaveFile::hashAndSave, Qt::QueuedConnection);
+    connect(m_hashAndSave, &HashAndSaveFile::hashAndSaveFinished, this,
+        &Download::handleHashAndSaveFinished, Qt::QueuedConnection);
     updateModelList();
 }
 
@@ -69,17 +74,27 @@ void Download::updateModelList()
 
 void Download::downloadModel(const QString &modelFile)
 {
+    QTemporaryFile *tempFile = new QTemporaryFile;
+    bool success = tempFile->open();
+    qWarning() << "Opening temp file for writing:" << tempFile->fileName();
+    if (!success) {
+        qWarning() << "ERROR: Could not open temp file:"
+            << tempFile->fileName() << modelFile;
+        return;
+    }
+
     QNetworkRequest request("http://gpt4all.io/models/" + modelFile);
     QNetworkReply *modelReply = m_networkManager.get(request);
     connect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
     connect(modelReply, &QNetworkReply::finished, this, &Download::handleModelDownloadFinished);
-    m_activeDownloads.append(modelReply);
+    connect(modelReply, &QNetworkReply::readyRead, this, &Download::handleReadyRead);
+    m_activeDownloads.insert(modelReply, tempFile);
 }
 
 void Download::cancelDownload(const QString &modelFile)
 {
     for (int i = 0; i < m_activeDownloads.size(); ++i) {
-        QNetworkReply *modelReply = m_activeDownloads.at(i);
+        QNetworkReply *modelReply = m_activeDownloads.keys().at(i);
         QUrl url = modelReply->request().url();
         if (url.toString().endsWith(modelFile)) {
             // Disconnect the signals
@@ -88,7 +103,10 @@ void Download::cancelDownload(const QString &modelFile)
 
             modelReply->abort(); // Abort the download
             modelReply->deleteLater(); // Schedule the reply for deletion
-            m_activeDownloads.removeAll(modelReply);
+
+            QTemporaryFile *tempFile = m_activeDownloads.value(modelReply);
+            tempFile->deleteLater();
+            m_activeDownloads.remove(modelReply);
 
             // Emit downloadFinished signal for cleanup
             emit downloadFinished(modelFile);
@@ -192,6 +210,74 @@ bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
     return lhs.filename == rhs.filename && lhs.md5sum == rhs.md5sum;
 }
 
+HashAndSaveFile::HashAndSaveFile()
+    : QObject(nullptr)
+{
+    moveToThread(&m_hashAndSaveThread);
+    m_hashAndSaveThread.setObjectName("hashandsave thread");
+    m_hashAndSaveThread.start();
+}
+
+void HashAndSaveFile::hashAndSave(const QString &expectedHash, const QString &saveFilePath,
+        QTemporaryFile *tempFile, QNetworkReply *modelReply)
+{
+    Q_ASSERT(!tempFile->isOpen());
+    QString modelFilename = modelReply->url().fileName();
+
+    // Reopen the tempFile for hashing
+    if (!tempFile->open()) {
+        qWarning() << "ERROR: Could not open temp file for hashing:"
+            << tempFile->fileName() << modelFilename;
+        emit hashAndSaveFinished(false, tempFile, modelReply);
+        return;
+    }
+
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.addData(tempFile->readAll());
+    while(!tempFile->atEnd())
+        hash.addData(tempFile->read(16384));
+    if (hash.result().toHex() != expectedHash) {
+        tempFile->close();
+        qWarning() << "ERROR: Download error MD5SUM did not match:"
+            << hash.result().toHex()
+            << "!=" << expectedHash << "for" << modelFilename;
+        emit hashAndSaveFinished(false, tempFile, modelReply);
+        return;
+    }
+
+    // The file save needs the tempFile closed
+    tempFile->close();
+
+    // Reopen the tempFile for copying
+    if (!tempFile->open()) {
+        qWarning() << "ERROR: Could not open temp file at finish:"
+            << tempFile->fileName() << modelFilename;
+        emit hashAndSaveFinished(false, tempFile, modelReply);
+        return;
+    }
+
+    // Save the model file to disk
+    QFile file(saveFilePath);
+    if (file.open(QIODevice::WriteOnly)) {
+        QByteArray buffer;
+        while (!tempFile->atEnd()) {
+            buffer = tempFile->read(16384);
+            file.write(buffer);
+        }
+        file.close();
+        tempFile->close();
+        emit hashAndSaveFinished(true, tempFile, modelReply);
+    } else {
+        QFile::FileError error = file.error();
+        qWarning() << "ERROR: Could not save model to location:"
+            << saveFilePath
+            << "failed with code" << error;
+        tempFile->close();
+        emit hashAndSaveFinished(false, tempFile, modelReply);
+        return;
+    }
+}
+
 void Download::handleModelDownloadFinished()
 {
     QNetworkReply *modelReply = qobject_cast<QNetworkReply *>(sender());
@@ -199,54 +285,59 @@ void Download::handleModelDownloadFinished()
         return;
 
     QString modelFilename = modelReply->url().fileName();
-    m_activeDownloads.removeAll(modelReply);
+    QTemporaryFile *tempFile = m_activeDownloads.value(modelReply);
+    m_activeDownloads.remove(modelReply);
 
     if (modelReply->error()) {
         qWarning() << "ERROR: downloading:" << modelReply->errorString();
         modelReply->deleteLater();
+        tempFile->deleteLater();
         emit downloadFinished(modelFilename);
         return;
     }
 
-    QByteArray modelData = modelReply->readAll();
-    if (!m_modelMap.contains(modelFilename)) {
-        qWarning() << "ERROR: Cannot find in download map:" << modelFilename;
-        modelReply->deleteLater();
-        emit downloadFinished(modelFilename);
-        return;
-    }
+    // The hash and save needs the tempFile closed
+    tempFile->close();
 
+    // Notify that we are calculating hash
     ModelInfo info = m_modelMap.value(modelFilename);
-    QCryptographicHash hash(QCryptographicHash::Md5);
-    hash.addData(modelData);
-    if (hash.result().toHex() != info.md5sum) {
-        qWarning() << "ERROR: Download error MD5SUM did not match:"
-            << hash.result().toHex()
-            << "!=" << info.md5sum << "for" << modelFilename;
-        modelReply->deleteLater();
-        emit downloadFinished(modelFilename);
-        return;
-    }
-
-    // Save the model file to disk
-    QFile file(downloadLocalModelsPath() + modelFilename);
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(modelData);
-        file.close();
-    } else {
-        QFile::FileError error = file.error();
-        qWarning() << "ERROR: Could not save model to location:"
-            << downloadLocalModelsPath() + modelFilename
-            << "failed with code" << error;
-        modelReply->deleteLater();
-        emit downloadFinished(modelFilename);
-        return;
-    }
-
-    modelReply->deleteLater();
-    emit downloadFinished(modelFilename);
-
-    info.installed = true;
+    info.calcHash = true;
     m_modelMap.insert(modelFilename, info);
     emit modelListChanged();
+
+    const QString saveFilePath = downloadLocalModelsPath() + modelFilename;
+    emit requestHashAndSave(info.md5sum, saveFilePath, tempFile, modelReply);
+}
+
+void Download::handleHashAndSaveFinished(bool success,
+        QTemporaryFile *tempFile, QNetworkReply *modelReply)
+{
+    // The hash and save should send back with tempfile closed
+    Q_ASSERT(!tempFile->isOpen());
+    QString modelFilename = modelReply->url().fileName();
+
+    ModelInfo info = m_modelMap.value(modelFilename);
+    info.calcHash = false;
+    info.installed = success;
+    m_modelMap.insert(modelFilename, info);
+    emit modelListChanged();
+
+    modelReply->deleteLater();
+    tempFile->deleteLater();
+    emit downloadFinished(modelFilename);
+}
+
+void Download::handleReadyRead()
+{
+    QNetworkReply *modelReply = qobject_cast<QNetworkReply *>(sender());
+    if (!modelReply)
+        return;
+
+    QString modelFilename = modelReply->url().fileName();
+    QTemporaryFile *tempFile = m_activeDownloads.value(modelReply);
+    QByteArray buffer;
+    while (!modelReply->atEnd()) {
+        buffer = modelReply->read(16384);
+        tempFile->write(buffer);
+    }
 }
