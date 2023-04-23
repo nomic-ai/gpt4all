@@ -55,7 +55,7 @@ Dialog {
                 width: parent.width
                 height: 300
                 wrapMode: Text.Wrap
-                font.pixelSize: 24
+                font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Please provide a better response...")
                 placeholderTextColor: theme.backgroundLightest
                 background: Rectangle {

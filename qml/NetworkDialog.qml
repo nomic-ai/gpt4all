@@ -87,7 +87,7 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
             padding: 20
             width: parent.width
             text: settings.attribution
-            font.pixelSize: 24
+            font.pixelSize: theme.fontSizeLarge
             placeholderText: qsTr("Please provide a name for attribution (optional)")
             placeholderTextColor: theme.backgroundLightest
             background: Rectangle {
