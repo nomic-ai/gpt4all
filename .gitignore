@@ -1,3 +1,4 @@
+*.swp
 # ignore knn index
 gpt4all/index/**/
 .DS_Store
