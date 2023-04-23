@@ -67,6 +67,39 @@ Window {
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
                 }
+                delegate: ItemDelegate {
+                    width: comboBox.width
+                    contentItem: Text {
+                        text: modelData
+                        color: "#d1d5db"
+                        font: control.font
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        color: highlighted ? "#343541" : "#242528"
+                    }
+                    highlighted: comboBox.highlightedIndex === index
+                }
+                popup: Popup {
+                    y: comboBox.height - 1
+                    width: comboBox.width
+                    implicitHeight: contentItem.implicitHeight
+                    padding: 0
+
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: contentHeight
+                        model: comboBox.popup.visible ? comboBox.delegateModel : null
+                        currentIndex: comboBox.highlightedIndex
+                        ScrollIndicator.vertical: ScrollIndicator { }
+                    }
+
+                    background: Rectangle {
+                        color: "#242528"
+                    }
+                }
+
                 background: Rectangle {
                     color: "#242528"
                 }
