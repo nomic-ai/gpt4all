@@ -8,7 +8,6 @@ Dialog {
     id: modelDownloaderDialog
     width: 1024
     height: 400
-    title: "Model Downloader"
     modal: true
     opacity: 0.9
     closePolicy: LLM.modelList.length === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
@@ -50,10 +49,9 @@ Dialog {
             delegate: Item {
                 id: delegateItem
                 width: modelList.width
-                height: 50
+                height: 70
                 objectName: "delegateItem"
                 property bool downloading: false
-
                 Rectangle {
                     anchors.fill: parent
                     color: index % 2 === 0 ? "#2c2f33" : "#1e2125"
@@ -145,6 +143,7 @@ Dialog {
                     anchors.right: parent.right
                     anchors.rightMargin: 10
                     visible: !modelData.installed
+                    padding: 10
                     onClicked: {
                         if (!downloading) {
                             downloading = true;
@@ -153,6 +152,13 @@ Dialog {
                             downloading = false;
                             Download.cancelDownload(modelData.filename);
                         }
+                    }
+                    background: Rectangle {
+                        opacity: .5
+                        border.color: "#7d7d8e"
+                        border.width: 1
+                        radius: 10
+                        color: "#343541"
                     }
                     Accessible.role: Accessible.Button
                     Accessible.name: text
