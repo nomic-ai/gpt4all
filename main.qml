@@ -192,10 +192,11 @@ Window {
         }
 
         onClicked: {
-            if (Network.isActive)
-                Network.isActive = false
-            else
-                networkDialog.open();
+            featureComingSoon.open()
+//            if (Network.isActive)
+//                Network.isActive = false
+//            else
+//                networkDialog.open()
         }
     }
 
@@ -229,30 +230,16 @@ Window {
         }
     }
 
-    Dialog {
+    PopupDialog {
         id: copyMessage
         anchors.centerIn: parent
-        modal: false
-        opacity: 0.9
-        Text {
-            horizontalAlignment: Text.AlignJustify
-            text: qsTr("Conversation copied to clipboard.")
-            color: "#d1d5db"
-            Accessible.role: Accessible.HelpBalloon
-            Accessible.name: text
-            Accessible.description: qsTr("Reveals a shortlived help balloon")
-        }
-        background: Rectangle {
-            anchors.fill: parent
-            color: "#202123"
-            border.width: 1
-            border.color: "white"
-            radius: 10
-        }
+        text: qsTr("Conversation copied to clipboard.")
+    }
 
-        exit: Transition {
-            NumberAnimation { duration: 500; property: "opacity"; from: 1.0; to: 0.0 }
-        }
+    PopupDialog {
+        id: featureComingSoon
+        anchors.centerIn: parent
+        text: qsTr("Feature coming soon!")
     }
 
     Button {
