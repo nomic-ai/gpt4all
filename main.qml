@@ -12,7 +12,12 @@ Window {
     height: 720
     visible: true
     title: qsTr("GPT4All v") + Qt.application.version
-    color: "#d1d5db"
+
+    Theme {
+        id: theme
+    }
+
+    color: theme.textColor
 
     Item {
         Accessible.role: Accessible.Window
@@ -25,7 +30,7 @@ Window {
         anchors.right: parent.right
         anchors.top: parent.top
         height: 100
-        color: "#202123"
+        color: theme.backgroundDarkest
 
         Item {
             anchors.centerIn: parent
@@ -34,12 +39,12 @@ Window {
 
             Label {
                 id: modelLabel
-                color: "#d1d5db"
+                color: theme.textColor
                 padding: 20
                 font.pixelSize: 24
                 text: ""
                 background: Rectangle {
-                    color: "#202123"
+                    color: theme.backgroundDarkest
                 }
                 horizontalAlignment: TextInput.AlignRight
             }
@@ -62,7 +67,7 @@ Window {
                     rightPadding: 10
                     text: comboBox.displayText
                     font: comboBox.font
-                    color: "#d1d5db"
+                    color: theme.textColor
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
@@ -71,13 +76,13 @@ Window {
                     width: comboBox.width
                     contentItem: Text {
                         text: modelData
-                        color: "#d1d5db"
+                        color: theme.textColor
                         font: control.font
                         elide: Text.ElideRight
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: highlighted ? "#343541" : "#242528"
+                        color: highlighted ? theme.backgroundLight : theme.backgroundDark
                     }
                     highlighted: comboBox.highlightedIndex === index
                 }
@@ -96,12 +101,12 @@ Window {
                     }
 
                     background: Rectangle {
-                        color: "#242528"
+                        color: theme.backgroundDark
                     }
                 }
 
                 background: Rectangle {
-                    color: "#242528"
+                    color: theme.backgroundDark
                 }
 
                 onActivated: {
@@ -147,7 +152,7 @@ Window {
 
             Rectangle {
                 id: bar1
-                color: "#7d7d8e"
+                color: theme.backgroundLightest
                 width: parent.width
                 height: 8
                 radius: 2
@@ -157,7 +162,7 @@ Window {
             Rectangle {
                 id: bar2
                 anchors.centerIn: parent
-                color: "#7d7d8e"
+                color: theme.backgroundLightest
                 width: parent.width
                 height: 8
                 radius: 2
@@ -167,7 +172,7 @@ Window {
             Rectangle {
                 id: bar3
                 anchors.bottom: parent.bottom
-                color: "#7d7d8e"
+                color: theme.backgroundLightest
                 width: parent.width
                 height: 8
                 radius: 2
@@ -212,7 +217,7 @@ Window {
                 anchors.fill: parent
                 color: "transparent"
                 visible: Network.isActive
-                border.color: "#7d7d8e"
+                border.color: theme.backgroundLightest
                 border.width: 1
                 radius: 10
             }
@@ -220,7 +225,7 @@ Window {
                 anchors.centerIn: parent
                 width: 50
                 height: 50
-                source: "qrc:/gpt4all-chat/icons/network.svg"
+                source: "qrc:/gpt4all/icons/network.svg"
             }
         }
 
@@ -256,7 +261,7 @@ Window {
                 anchors.centerIn: parent
                 width: 40
                 height: 40
-                source: "qrc:/gpt4all-chat/icons/settings.svg"
+                source: "qrc:/gpt4all/icons/settings.svg"
             }
         }
 
@@ -302,7 +307,7 @@ Window {
                 anchors.centerIn: parent
                 width: 40
                 height: 40
-                source: "qrc:/gpt4all-chat/icons/copy.svg"
+                source: "qrc:/gpt4all/icons/copy.svg"
             }
         }
 
@@ -384,7 +389,7 @@ Window {
                 anchors.centerIn: parent
                 width: 40
                 height: 40
-                source: "qrc:/gpt4all-chat/icons/regenerate.svg"
+                source: "qrc:/gpt4all/icons/regenerate.svg"
             }
         }
 
@@ -410,16 +415,16 @@ Window {
                    above where this application resides on your filesystem.<br><br>
                    If you can't start it manually, then I'm afraid you'll have to<br>
                    reinstall.")
-            color: "#d1d5db"
+            color: theme.textColor
             Accessible.role: Accessible.Dialog
             Accessible.name: text
             Accessible.description: qsTr("Dialog indicating an error")
         }
         background: Rectangle {
             anchors.fill: parent
-            color: "#202123"
+            color: theme.backgroundDarkest
             border.width: 1
-            border.color: "white"
+            border.color: theme.dialogBorder
             radius: 10
         }
     }
@@ -444,7 +449,7 @@ Window {
 
         background: Rectangle {
             height: parent.height
-            color: "#202123"
+            color: theme.backgroundDarkest
         }
 
         Item {
@@ -462,7 +467,7 @@ Window {
                 anchors.top: parent.top
                 wrapMode: Text.WordWrap
                 text: qsTr("Chat lists of specific conversations coming soon! Check back often for new features :)")
-                color: "#d1d5db"
+                color: theme.textColor
 
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Coming soon")
@@ -479,7 +484,7 @@ Window {
                 wrapMode: Text.WordWrap
                 text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
                 onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
-                color: "#d1d5db"
+                color: theme.textColor
                 linkColor: "#1e8cda"
 
                 Accessible.role: Accessible.Link
@@ -496,7 +501,7 @@ Window {
                 wrapMode: Text.WordWrap
                 text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">nomic.ai</a> and the community for contributing so much great data and energy!")
                 onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
-                color: "#d1d5db"
+                color: theme.textColor
                 linkColor: "#1e8cda"
 
                 Accessible.role: Accessible.Paragraph
@@ -513,7 +518,7 @@ Window {
                 contentItem: Text {
                     text: qsTr("Check for updates...")
                     horizontalAlignment: Text.AlignHCenter
-                    color: "#d1d5db"
+                    color: theme.textColor
 
                     Accessible.role: Accessible.Button
                     Accessible.name: text
@@ -522,10 +527,10 @@ Window {
 
                 background: Rectangle {
                     opacity: .5
-                    border.color: "#7d7d8e"
+                    border.color: theme.backgroundLightest
                     border.width: 1
                     radius: 10
-                    color: "#343541"
+                    color: theme.backgroundLight
                 }
 
                 onClicked: {
@@ -543,7 +548,7 @@ Window {
                 contentItem: Text {
                     text: qsTr("Download new models...")
                     horizontalAlignment: Text.AlignHCenter
-                    color: "#d1d5db"
+                    color: theme.textColor
 
                     Accessible.role: Accessible.Button
                     Accessible.name: text
@@ -552,10 +557,10 @@ Window {
 
                 background: Rectangle {
                     opacity: .5
-                    border.color: "#7d7d8e"
+                    border.color: theme.backgroundLightest
                     border.width: 1
                     radius: 10
-                    color: "#343541"
+                    color: theme.backgroundLight
                 }
 
                 onClicked: {
@@ -568,7 +573,7 @@ Window {
 
     Rectangle {
         id: conversation
-        color: "#343541"
+        color: theme.backgroundLight
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -589,7 +594,7 @@ Window {
 
             Rectangle {
                 anchors.fill: parent
-                color: "#444654"
+                color: theme.backgroundLighter
 
                 ListView {
                     id: listView
@@ -603,7 +608,7 @@ Window {
                     delegate: TextArea {
                         text: currentResponse ? LLM.response : (value ? value : "")
                         width: listView.width
-                        color: "#d1d5db"
+                        color: theme.textColor
                         wrapMode: Text.WordWrap
                         focus: false
                         readOnly: true
@@ -611,7 +616,7 @@ Window {
                         cursorVisible: currentResponse ? (LLM.response !== "" ? LLM.responseInProgress : false) : false
                         cursorPosition: text.length
                         background: Rectangle {
-                            color: name === qsTr("Response: ") ? "#444654" : "#343541"
+                            color: name === qsTr("Response: ") ? theme.backgroundLighter : theme.backgroundLight
                         }
 
                         Accessible.role: Accessible.Paragraph
@@ -644,7 +649,7 @@ Window {
                             width: 30
                             height: 30
                             radius: 5
-                            color: name === qsTr("Response: ") ? "#10a37f" : "#ec86bf"
+                            color: name === qsTr("Response: ") ? theme.assistantColor : theme.userColor
 
                             Text {
                                 anchors.centerIn: parent
@@ -693,7 +698,7 @@ Window {
                                     opacity: thumbsUpState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
                                     background: Image {
                                         anchors.fill: parent
-                                        source: "qrc:/gpt4all-chat/icons/thumbs_up.svg"
+                                        source: "qrc:/gpt4all/icons/thumbs_up.svg"
                                     }
                                     onClicked: {
                                         if (thumbsUpState && !thumbsDownState)
@@ -726,7 +731,7 @@ Window {
                                     ]
                                     background: Image {
                                         anchors.fill: parent
-                                        source: "qrc:/gpt4all-chat/icons/thumbs_down.svg"
+                                        source: "qrc:/gpt4all/icons/thumbs_down.svg"
                                     }
                                     onClicked: {
                                         thumbsDownDialog.open()
@@ -774,7 +779,7 @@ Window {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: 15
-                source: LLM.responseInProgress ? "qrc:/gpt4all-chat/icons/stop_generating.svg" : "qrc:/gpt4all-chat/icons/regenerate.svg"
+                source: LLM.responseInProgress ? "qrc:/gpt4all/icons/stop_generating.svg" : "qrc:/gpt4all/icons/regenerate.svg"
             }
             leftPadding: 50
             onClicked: {
@@ -809,17 +814,17 @@ Window {
             padding: 15
             contentItem: Text {
                 text: LLM.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
-                color: "#d1d5db"
+                color: theme.textColor
                 Accessible.role: Accessible.Button
                 Accessible.name: text
                 Accessible.description: qsTr("Controls generation of the response")
             }
             background: Rectangle {
                 opacity: .5
-                border.color: "#7d7d8e"
+                border.color: theme.backgroundLightest
                 border.width: 1
                 radius: 10
-                color: "#343541"
+                color: theme.backgroundLight
             }
         }
 
@@ -833,14 +838,14 @@ Window {
 
             TextArea {
                 id: textInput
-                color: "#dadadc"
+                color: theme.textColor
                 padding: 20
                 enabled: LLM.isModelLoaded
                 font.pixelSize: 24
                 placeholderText: qsTr("Send a message...")
-                placeholderTextColor: "#7d7d8e"
+                placeholderTextColor: theme.backgroundLightest
                 background: Rectangle {
-                    color: "#40414f"
+                    color: theme.backgroundLighter
                     radius: 10
                 }
                 Accessible.role: Accessible.EditableText
@@ -892,7 +897,7 @@ Window {
 
             background: Image {
                 anchors.centerIn: parent
-                source: "qrc:/gpt4all-chat/icons/send_message.svg"
+                source: "qrc:/gpt4all/icons/send_message.svg"
             }
 
             Accessible.role: Accessible.Button

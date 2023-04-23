@@ -14,9 +14,9 @@ Dialog {
     background: Rectangle {
         anchors.fill: parent
         anchors.margins: -20
-        color: "#202123"
+        color: theme.backgroundDarkest
         border.width: 1
-        border.color: "white"
+        border.color: theme.dialogBorder
         radius: 10
     }
 
@@ -35,7 +35,7 @@ Dialog {
             text: "Available Models:"
             Layout.alignment: Qt.AlignLeft
             Layout.fillWidth: true
-            color: "#d1d5db"
+            color: theme.textColor
         }
 
         ListView {
@@ -54,7 +54,7 @@ Dialog {
                 property bool downloading: false
                 Rectangle {
                     anchors.fill: parent
-                    color: index % 2 === 0 ? "#2c2f33" : "#1e2125"
+                    color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
                 }
 
                 Text {
@@ -65,7 +65,7 @@ Dialog {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: 10
-                    color: "#d1d5db"
+                    color: theme.textColor
                     Accessible.role: Accessible.Paragraph
                     Accessible.name: qsTr("Model file")
                     Accessible.description: qsTr("Model file to be downloaded")
@@ -78,7 +78,7 @@ Dialog {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: modelName.right
                     anchors.leftMargin: 10
-                    color: "#d1d5db"
+                    color: theme.textColor
                     Accessible.role: Accessible.Paragraph
                     Accessible.name: qsTr("Default file")
                     Accessible.description: qsTr("Whether the file is the default model")
@@ -89,7 +89,7 @@ Dialog {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: isDefault.visible ? isDefault.right : modelName.right
                     anchors.leftMargin: 10
-                    color: "#d1d5db"
+                    color: theme.textColor
                     Accessible.role: Accessible.Paragraph
                     Accessible.name: qsTr("File size")
                     Accessible.description: qsTr("The size of the file")
@@ -101,7 +101,7 @@ Dialog {
                     anchors.right: itemProgressBar.left
                     anchors.rightMargin: 10
                     objectName: "speedLabel"
-                    color: "#d1d5db"
+                    color: theme.textColor
                     text: ""
                     visible: downloading
                     Accessible.role: Accessible.Paragraph
@@ -128,7 +128,7 @@ Dialog {
                     anchors.right: parent.right
                     anchors.rightMargin: 15
                     objectName: "installedLabel"
-                    color: "#d1d5db"
+                    color: theme.textColor
                     text: qsTr("Already installed")
                     visible: modelData.installed
                     Accessible.role: Accessible.Paragraph
@@ -155,10 +155,10 @@ Dialog {
                     }
                     background: Rectangle {
                         opacity: .5
-                        border.color: "#7d7d8e"
+                        border.color: theme.backgroundLightest
                         border.width: 1
                         radius: 10
-                        color: "#343541"
+                        color: theme.backgroundLight
                     }
                     Accessible.role: Accessible.Button
                     Accessible.name: text

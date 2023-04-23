@@ -65,7 +65,7 @@ qt_add_executable(chat
 )
 
 qt_add_qml_module(chat
-    URI gpt4all-chat
+    URI gpt4all
     VERSION 1.0
     QML_FILES
       main.qml
@@ -74,6 +74,7 @@ qt_add_qml_module(chat
       qml/ThumbsDownDialog.qml
       qml/SettingsDialog.qml
       qml/PopupDialog.qml
+      qml/Theme.qml
     RESOURCES
       icons/send_message.svg
       icons/stop_generating.svg

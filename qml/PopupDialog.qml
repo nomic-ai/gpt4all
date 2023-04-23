@@ -10,19 +10,24 @@ Dialog {
     opacity: 0.9
     padding: 20
     property alias text: textField.text
+
+    Theme {
+        id: theme
+    }
+
     Text {
         id: textField
         horizontalAlignment: Text.AlignJustify
-        color: "#d1d5db"
+        color: theme.textColor
         Accessible.role: Accessible.HelpBalloon
         Accessible.name: text
         Accessible.description: qsTr("Reveals a shortlived help balloon")
     }
     background: Rectangle {
         anchors.fill: parent
-        color: "#202123"
+        color: theme.backgroundDarkest
         border.width: 1
-        border.color: "white"
+        border.color: theme.dialogBorder
         radius: 10
     }
 

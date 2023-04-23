@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("llm", 1, 0, "LLM", LLM::globalInstance());
     qmlRegisterSingletonInstance("download", 1, 0, "Download", Download::globalInstance());
     qmlRegisterSingletonInstance("network", 1, 0, "Network", Network::globalInstance());
-    const QUrl url(u"qrc:/gpt4all-chat/main.qml"_qs);
+    const QUrl url(u"qrc:/gpt4all/main.qml"_qs);
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
         &app, [url](QObject *obj, const QUrl &objUrl) {

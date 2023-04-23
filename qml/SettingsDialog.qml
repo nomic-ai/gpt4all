@@ -15,10 +15,14 @@ Dialog {
     background: Rectangle {
         anchors.fill: parent
         anchors.margins: -20
-        color: "#202123"
+        color: theme.backgroundDarkest
         border.width: 1
-        border.color: "white"
+        border.color: theme.dialogBorder
         radius: 10
+    }
+
+    Theme {
+        id: theme
     }
 
     property real defaultTemperature: 0.28
@@ -77,18 +81,19 @@ Dialog {
         Label {
             id: tempLabel
             text: qsTr("Temperature:")
-            color: "#d1d5db"
+            color: theme.textColor
             Layout.row: 0
             Layout.column: 0
         }
         TextField {
             text: settings.temperature.toString()
-            color: "#d1d5db"
+            color: theme.textColor
             background: Rectangle {
                 implicitWidth: 150
-                color: "#40414f"
+                color: theme.backgroundLighter
                 radius: 10
             }
+            padding: 10
             ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens - higher temperature gives more creative but less predictable outputs")
             ToolTip.visible: hovered
             Layout.row: 0
@@ -111,18 +116,19 @@ Dialog {
         Label {
             id: topPLabel
             text: qsTr("Top P:")
-             color: "#d1d5db"
+             color: theme.textColor
             Layout.row: 1
             Layout.column: 0
         }
         TextField {
             text: settings.topP.toString()
-            color: "#d1d5db"
+            color: theme.textColor
             background: Rectangle {
                 implicitWidth: 150
-                color: "#40414f"
+                color: theme.backgroundLighter
                 radius: 10
             }
+            padding: 10
             ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen, prevents choosing highly unlikely tokens, aka Nucleus Sampling")
             ToolTip.visible: hovered
             Layout.row: 1
@@ -145,18 +151,19 @@ Dialog {
         Label {
              id: topKLabel
              text: qsTr("Top K:")
-             color: "#d1d5db"
+             color: theme.textColor
              Layout.row: 2
              Layout.column: 0
          }
          TextField {
              text: settings.topK.toString()
-             color: "#d1d5db"
+             color: theme.textColor
              background: Rectangle {
                 implicitWidth: 150
-                color: "#40414f"
+                color: theme.backgroundLighter
                 radius: 10
              }
+             padding: 10
              ToolTip.text: qsTr("Only the top K most likely tokens will be chosen from")
              ToolTip.visible: hovered
              Layout.row: 2
@@ -179,18 +186,19 @@ Dialog {
          Label {
              id: maxLengthLabel
              text: qsTr("Max Length:")
-             color: "#d1d5db"
+             color: theme.textColor
              Layout.row: 3
              Layout.column: 0
          }
          TextField {
              text: settings.maxLength.toString()
-             color: "#d1d5db"
+             color: theme.textColor
              background: Rectangle {
                 implicitWidth: 150
-                color: "#40414f"
+                color: theme.backgroundLighter
                 radius: 10
              }
+             padding: 10
              ToolTip.text: qsTr("Maximum length of response in tokens")
              ToolTip.visible: hovered
              Layout.row: 3
@@ -214,18 +222,19 @@ Dialog {
          Label {
              id: batchSizeLabel
              text: qsTr("Prompt Batch Size:")
-             color: "#d1d5db"
+             color: theme.textColor
              Layout.row: 4
              Layout.column: 0
          }
          TextField {
              text: settings.promptBatchSize.toString()
-             color: "#d1d5db"
+             color: theme.textColor
              background: Rectangle {
                 implicitWidth: 150
-                color: "#40414f"
+                color: theme.backgroundLighter
                 radius: 10
              }
+             padding: 10
              ToolTip.text: qsTr("Amount of prompt tokens to process at once, higher values can speed up reading prompts but will use more RAM")
              ToolTip.visible: hovered
              Layout.row: 4
@@ -249,18 +258,19 @@ Dialog {
          Label {
              id: nThreadsLabel
              text: qsTr("CPU Threads")
-             color: "#d1d5db"
+             color: theme.textColor
              Layout.row: 5
              Layout.column: 0
          }
          TextField {
              text: LLM.threadCount.toString()
-             color: "#d1d5db"
+             color: theme.textColor
              background: Rectangle {
                 implicitWidth: 150
-                color: "#40414f"
+                color: theme.backgroundLighter
                 radius: 10
              }
+             padding: 10
              ToolTip.text: qsTr("Amount of processing threads to use")
              ToolTip.visible: hovered
              Layout.row: 5
@@ -283,7 +293,7 @@ Dialog {
          Label {
              id: promptTemplateLabel
              text: qsTr("Prompt Template:")
-             color: "#d1d5db"
+             color: theme.textColor
              Layout.row: 6
              Layout.column: 0
          }
@@ -293,16 +303,17 @@ Dialog {
              Layout.fillWidth: true
              height: 200
              color: "transparent"
-             border.width: 1
-             border.color: "#ccc"
-             radius: 5
+             clip: true
              Label {
                 id: promptTemplateLabelHelp
                 visible: settings.promptTemplate.indexOf("%1") === -1
                 font.bold: true
-                color: "red"
+                color: theme.textErrorColor
                 text: qsTr("Prompt template must contain %1 to be replaced with the user's input.")
-                anchors.bottom: templateScrollView.top
+                anchors.fill: templateScrollView
+                z: 200
+                padding: 10
+                wrapMode: TextArea.Wrap
                 Accessible.role: Accessible.EditableText
                 Accessible.name: text
              }
@@ -311,12 +322,13 @@ Dialog {
                  anchors.fill: parent
                  TextArea {
                      text: settings.promptTemplate
-                     color: "#d1d5db"
+                     color: theme.textColor
                      background: Rectangle {
                         implicitWidth: 150
-                        color: "#40414f"
+                        color: theme.backgroundLighter
                         radius: 10
                      }
+                     padding: 10
                      wrapMode: TextArea.Wrap
                      onTextChanged: {
                          settings.promptTemplate = text
@@ -337,7 +349,7 @@ Dialog {
              contentItem: Text {
                  text: qsTr("Restore Defaults")
                  horizontalAlignment: Text.AlignHCenter
-                 color: "#d1d5db"
+                 color: theme.textColor
                  Accessible.role: Accessible.Button
                  Accessible.name: text
                  Accessible.description: qsTr("Restores the settings dialog to a default state")
@@ -345,10 +357,10 @@ Dialog {
 
              background: Rectangle {
                  opacity: .5
-                 border.color: "#7d7d8e"
+                 border.color: theme.backgroundLightest
                  border.width: 1
                  radius: 10
-                 color: "#343541"
+                 color: theme.backgroundLight
              }
              onClicked: {
                  settingsDialog.restoreDefaults()
