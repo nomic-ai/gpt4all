@@ -16,7 +16,7 @@ Component.prototype.createOperations = function()
                 var userProfile = installer.environmentVariable("USERPROFILE");
                 installer.setValue("UserProfile", userProfile);
                 component.addOperation("CreateShortcut",
-                    targetDirectory + "/bin/gpt4all.exe",
+                    targetDirectory + "/bin/chat.exe",
                     "@UserProfile@/Desktop/GPT4All.lnk",
                     "workingDirectory=" + targetDirectory + "/bin",
                     "iconPath=" + targetDirectory + "/favicon.ico",
@@ -25,7 +25,7 @@ Component.prototype.createOperations = function()
                 print("ERROR: creating desktop shortcut" + e);
             }
             component.addOperation("CreateShortcut",
-                targetDirectory + "/bin/gpt4all.exe",
+                targetDirectory + "/bin/chat.exe",
                 "@StartMenuDir@/GPT4All.lnk",
                 "workingDirectory=" + targetDirectory + "/bin",
                 "iconPath=" + targetDirectory + "/favicon.ico",
@@ -38,7 +38,7 @@ Component.prototype.createOperations = function()
                 component.addOperation("CreateDesktopEntry",
                     homeDir + "/Desktop/GPT4All.desktop",
                     "Type=Application\nTerminal=false\nExec=\"" + targetDirectory +
-                    "/bin/gpt4all\"\nName=GPT4All\nIcon=" + targetDirectory +
+                    "/bin/chat\"\nName=GPT4All\nIcon=" + targetDirectory +
                     "/logo-48.png\nName[en_US]=GPT4All");
             }
         }

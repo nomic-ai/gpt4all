@@ -98,13 +98,18 @@ qt_add_qml_module(chat
 )
 
 set_target_properties(chat PROPERTIES
-    OUTPUT_NAME gpt4all
     MACOSX_BUNDLE_GUI_IDENTIFIER gpt4all
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
+
+if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+    set_target_properties(chat PROPERTIES
+        OUTPUT_NAME gpt4all
+    )
+endif()
 
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
