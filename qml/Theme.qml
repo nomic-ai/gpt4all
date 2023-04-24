@@ -12,5 +12,5 @@ QtObject {
     property color dialogBorder: "#d1d5db"
     property color userColor: "#ec86bf"
     property color assistantColor: "#10a37f"
-    property real  fontSizeLarge: Font.pixelSize
+    property real  fontSizeLarge: Qt.application.font.pixelSize
 }
