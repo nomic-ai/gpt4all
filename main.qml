@@ -204,7 +204,7 @@ Window {
         anchors.top: parent.top
         anchors.topMargin: 20
         anchors.rightMargin: 30
-        width: 60
+        width: 40
         height: 60
         z: 200
         padding: 15
@@ -252,7 +252,7 @@ Window {
         anchors.top: parent.top
         anchors.topMargin: 30
         anchors.rightMargin: 30
-        width: 60
+        width: 40
         height: 40
         z: 200
         padding: 15
@@ -294,7 +294,7 @@ Window {
         anchors.top: parent.top
         anchors.topMargin: 30
         anchors.rightMargin: 30
-        width: 60
+        width: 40
         height: 40
         z: 200
         padding: 15
@@ -376,7 +376,7 @@ Window {
         anchors.top: parent.top
         anchors.topMargin: 30
         anchors.rightMargin: 30
-        width: 60
+        width: 40
         height: 40
         z: 200
         padding: 15
