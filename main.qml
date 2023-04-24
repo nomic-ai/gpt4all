@@ -140,7 +140,7 @@ Window {
         anchors.top: parent.top
         anchors.topMargin: 30
         anchors.leftMargin: 30
-        width: 60
+        width: 40
         height: 40
         z: 200
         padding: 15
@@ -150,13 +150,15 @@ Window {
         Accessible.description: qsTr("Hamburger button that reveals a drawer on the left of the application")
 
         background: Item {
-            anchors.fill: parent
+            anchors.centerIn: parent
+            width: 30
+            height: 30
 
             Rectangle {
                 id: bar1
                 color: theme.backgroundLightest
                 width: parent.width
-                height: 8
+                height: 6
                 radius: 2
                 antialiasing: true
             }
@@ -166,7 +168,7 @@ Window {
                 anchors.centerIn: parent
                 color: theme.backgroundLightest
                 width: parent.width
-                height: 8
+                height: 6
                 radius: 2
                 antialiasing: true
             }
@@ -176,7 +178,7 @@ Window {
                 anchors.bottom: parent.bottom
                 color: theme.backgroundLightest
                 width: parent.width
-                height: 8
+                height: 6
                 radius: 2
                 antialiasing: true
             }
