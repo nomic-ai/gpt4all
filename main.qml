@@ -804,7 +804,7 @@ Window {
                             listElement.newResponse = ""
                             LLM.prompt(listElement.prompt, settingsDialog.promptTemplate,
                                        settingsDialog.maxLength,
-                                       settingsDialog.topK, settings.topP,
+                                       settingsDialog.topK, settingsDialog.topP,
                                        settingsDialog.temperature,
                                        settingsDialog.promptBatchSize)
                         }
