@@ -46,22 +46,45 @@ QList<ModelInfo> Download::modelList() const
 
 QString Download::downloadLocalModelsPath() const
 {
-    QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
-    QFileInfo infoExe(exePath);
-    if (infoExe.isWritable())
-        return exePath;
+    {
+        QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
+        QString testWritePath = exePath + QString("test_write.txt");
+        QString canonicalExePath = QFileInfo(exePath).canonicalFilePath() + QDir::separator();
+        if (QFileInfo::exists(testWritePath))
+            return canonicalExePath;
 
-    QString localPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-    QDir localDir(localPath);
-    if (!localDir.exists())
-        localDir.mkpath(localPath);
-    QString localDownloadPath = localPath
-        + QDir::separator();
-    QFileInfo infoLocal(localDownloadPath);
-    if (infoLocal.isWritable())
-        return localDownloadPath;
-    qWarning() << "ERROR: Local download path appears not writeable:" << localDownloadPath;
-    return localDownloadPath;
+        QFile testWriteFile(testWritePath);
+        if (testWriteFile.open(QIODeviceBase::ReadWrite)) {
+            testWriteFile.close();
+            return canonicalExePath;
+        }
+    }
+
+    {
+        QString localPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
+            + QDir::separator();
+        QString testWritePath = localPath + QString("test_write.txt");
+        QString canonicalLocalPath = QFileInfo(localPath).canonicalFilePath() + QDir::separator();
+        QDir localDir(localPath);
+        if (!localDir.exists()) {
+            if (!localDir.mkpath(localPath)) {
+                qWarning() << "ERROR: Local download directory can't be created:" << canonicalLocalPath;
+                return canonicalLocalPath;
+            }
+        }
+
+        if (QFileInfo::exists(testWritePath))
+            return canonicalLocalPath;
+
+        QFile testWriteFile(testWritePath);
+        if (testWriteFile.open(QIODeviceBase::ReadWrite)) {
+            testWriteFile.close();
+            return canonicalLocalPath;
+        }
+
+        qWarning() << "ERROR: Local download path appears not writeable:" << canonicalLocalPath;
+        return canonicalLocalPath;
+    }
 }
 
 void Download::updateModelList()
