@@ -103,11 +103,18 @@ set_target_properties(chat PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE_ICON_FILE "favicon.icns"
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     set_target_properties(chat PROPERTIES
         OUTPUT_NAME gpt4all
+    )
+    set(MACOSX_ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/icons/favicon.icns")
+    set(MACOSX_ICON_FILE_DEST "${CMAKE_BINARY_DIR}/chat.app/Contents/Resources/favicon.icns")
+    add_custom_command(TARGET chat POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${MACOSX_ICON_FILE} ${MACOSX_ICON_FILE_DEST}
+        COMMENT "Copying icon file to bundle"
     )
 endif()
 
