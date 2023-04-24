@@ -37,7 +37,7 @@ Dialog {
                 anchors.left: img.right
                 anchors.leftMargin: 30
                 anchors.verticalCenter: img.verticalCenter
-                text: qsTr("Please edit the text below to provide a better response...")
+                text: qsTr("Please edit the text below to provide a better response. (optional)")
                 color: theme.textColor
             }
         }
