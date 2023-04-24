@@ -46,7 +46,7 @@ QString Network::generateUniqueId() const
     return QUuid::createUuid().toString(QUuid::WithoutBraces);
 }
 
-bool Network::packageAndSendJson(const QString &json)
+bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
 {
     if (!m_isActive)
         return false;
@@ -63,6 +63,7 @@ bool Network::packageAndSendJson(const QString &json)
     object.insert("source", "gpt4all-chat");
     object.insert("agent_id", LLM::globalInstance()->modelName());
     object.insert("submitter_id", m_uniqueId);
+    object.insert("ingest_id", ingestId);
 
     QSettings settings;
     settings.sync();
@@ -77,8 +78,7 @@ bool Network::packageAndSendJson(const QString &json)
     printf("%s", qPrintable(newDoc.toJson(QJsonDocument::Indented)));
     fflush(stdout);
 #endif
-
-    QUrl jsonUrl("http://localhost/v1/ingest/chat");
+    QUrl jsonUrl("https://api.gpt4all.io/v1/ingest/chat");
     QNetworkRequest request(jsonUrl);
     QByteArray body(newDoc.toJson());
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -101,9 +101,9 @@ void Network::handleJsonUploadFinished()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok)
-        qWarning() << "ERROR: Invalid response.";
+        qWarning() << "ERROR: ingest invalid response.";
     if (code != 200) {
-        qWarning() << "ERROR: response != 200 code:" << code;
+        qWarning() << "ERROR: ingest response != 200 code:" << code;
         sendHealth();
     }
 
@@ -123,14 +123,14 @@ void Network::handleJsonUploadFinished()
     jsonReply->deleteLater();
 }
 
-bool Network::sendConversation(const QString &conversation)
+bool Network::sendConversation(const QString &ingestId, const QString &conversation)
 {
-    return packageAndSendJson(conversation);
+    return packageAndSendJson(ingestId, conversation);
 }
 
 void Network::sendHealth()
 {
-    QUrl healthUrl("http://localhost/v1/health");
+    QUrl healthUrl("https://api.gpt4all.io/v1/health");
     QNetworkRequest request(healthUrl);
     QNetworkReply *healthReply = m_networkManager.get(request);
     connect(healthReply, &QNetworkReply::finished, this, &Network::handleHealthFinished);
@@ -147,9 +147,9 @@ void Network::handleHealthFinished()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok)
-        qWarning() << "ERROR: Invalid response.";
+        qWarning() << "ERROR: health invalid response.";
     if (code != 200) {
-        qWarning() << "ERROR: response != 200 code:" << code;
+        qWarning() << "ERROR: health response != 200 code:" << code;
         emit healthCheckFailed(code);
         setActive(false);
     }

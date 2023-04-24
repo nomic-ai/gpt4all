@@ -17,6 +17,8 @@ Window {
         id: theme
     }
 
+    property string chatId: Network.generateUniqueId()
+
     color: theme.textColor
 
     Item {
@@ -396,6 +398,7 @@ Window {
         onClicked: {
             LLM.stopGenerating()
             LLM.resetContext()
+            chatId = Network.generateUniqueId()
             chatModel.clear()
         }
     }
@@ -675,7 +678,7 @@ Window {
                                 newResponse = response
                                 thumbsDownState = true
                                 thumbsUpState = false
-                                Network.sendConversation(getConversationJson());
+                                Network.sendConversation(chatId, getConversationJson());
                             }
                         }
 
@@ -707,7 +710,7 @@ Window {
                                         newResponse = ""
                                         thumbsUpState = true
                                         thumbsDownState = false
-                                        Network.sendConversation(getConversationJson());
+                                        Network.sendConversation(chatId, getConversationJson());
                                     }
                                 }
 
