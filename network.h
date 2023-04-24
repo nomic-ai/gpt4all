@@ -25,6 +25,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void handleHealthFinished();
     void handleJsonUploadFinished();
+    void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
     void sendHealth();

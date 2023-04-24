@@ -25,6 +25,8 @@ Download::Download()
         &HashAndSaveFile::hashAndSave, Qt::QueuedConnection);
     connect(m_hashAndSave, &HashAndSaveFile::hashAndSaveFinished, this,
         &Download::handleHashAndSaveFinished, Qt::QueuedConnection);
+    connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
+        &Download::handleSslErrors);
     updateModelList();
 }
 
@@ -126,6 +128,13 @@ void Download::cancelDownload(const QString &modelFile)
             break;
         }
     }
+}
+
+void Download::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+{
+    QUrl url = reply->request().url();
+    for (auto e : errors)
+        qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
 }
 
 void Download::handleJsonDownloadFinished()
