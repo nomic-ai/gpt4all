@@ -18,8 +18,8 @@ from peft import get_peft_model, LoraConfig, TaskType
 from torchmetrics import MeanMetric
 from tqdm import tqdm
 import wandb
-from data import load_data
 
+from gpt4all.data import load_data
 from gpt4all.exceptions import GPT4AllTrainingException
 
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -106,6 +106,7 @@ def train(accelerator, config):
 
     accelerator.print(config)
     accelerator.print(f"Using {accelerator.num_processes} GPUs")
+    accelerator.print(f"Loading tokenizer: {config['tokenizer_name']}")
 
     tokenizer = AutoTokenizer.from_pretrained(
         config["tokenizer_name"], model_max_length=config["max_length"]
@@ -117,6 +118,7 @@ def train(accelerator, config):
     with accelerator.main_process_first():
         train_dataloader, val_dataloader = load_data(config, tokenizer)
 
+    accelerator.print(f"Loading pretrained model: {config['model_name']}")
     checkpoint = config["gradient_checkpointing"]
     model = AutoModelForCausalLM.from_pretrained(
         config["model_name"],
