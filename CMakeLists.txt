@@ -50,7 +50,12 @@ message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
 set(LLAMA_BUILD_EXAMPLES ON CACHE BOOL "llama: build examples" FORCE)
 set(BUILD_SHARED_LIBS ON FORCE)
-#set(LLAMA_AVX2 OFF "llama: enable AVX2" FORCE)
+
+option(GPT4ALL_AVX_ONLY OFF "Build for avx only")
+option(GPT4ALL_LOCALHOST OFF "Build for local install repo")
+if (GPT4ALL_AVX_ONLY)
+    set(LLAMA_AVX2 OFF "llama: enable AVX2" FORCE)
+endif()
 
 add_subdirectory(llama.cpp)
 
@@ -192,12 +197,28 @@ cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} LICENSES "MIT LICENSE" ${CP
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/installerscript.qs")
 cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} REPLACES "gpt4all-chat") #Was used in very earliest prototypes
 
-if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
-cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/linux/repository")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
-#To sign the target on windows have to create a batch script add use it as a custom target and then use CPACK_IFW_EXTRA_TARGETS to set this extra target
-cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows/repository")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-#Use this in future https://cmake.org/cmake/help/latest/cpack_gen/ifw.html#variable:CPACK_IFW_PACKAGE_SIGNING_IDENTITY
-cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/mac/repository")
+if (GPT4ALL_LOCALHOST)
+    cpack_ifw_add_repository("GPT4AllRepository" URL "http://localhost/repository")
+else()
+  if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+    if (GPT4ALL_AVX_ONLY)
+      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/avx_only/linux/repository")
+    else()
+      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/linux/repository")
+    endif()
+  elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
+    #To sign the target on windows have to create a batch script add use it as a custom target and then use CPACK_IFW_EXTRA_TARGETS to set this extra target
+    if (GPT4ALL_AVX_ONLY)
+      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/avx_only/windows/repository")
+    else()
+      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows/repository")
+    endif()
+  elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+    #Use this in future https://cmake.org/cmake/help/latest/cpack_gen/ifw.html#variable:CPACK_IFW_PACKAGE_SIGNING_IDENTITY
+    if (GPT4ALL_AVX_ONLY)
+      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/avx_only/mac/repository")
+    else()
+      cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/mac/repository")
+    endif()
+  endif()
 endif()
