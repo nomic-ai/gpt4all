@@ -16,7 +16,7 @@ public:
     void setActive(bool b);
 
     Q_INVOKABLE QString generateUniqueId() const;
-    Q_INVOKABLE bool sendConversation(const QString &conversation);
+    Q_INVOKABLE bool sendConversation(const QString &ingestId, const QString &conversation);
 
 Q_SIGNALS:
     void activeChanged();
@@ -28,7 +28,7 @@ private Q_SLOTS:
 
 private:
     void sendHealth();
-    bool packageAndSendJson(const QString &json);
+    bool packageAndSendJson(const QString &ingestId, const QString &json);
 
 private:
     bool m_isActive;
