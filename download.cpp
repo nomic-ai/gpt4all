@@ -68,6 +68,9 @@ void Download::updateModelList()
 {
     QUrl jsonUrl("http://gpt4all.io/models/models.json");
     QNetworkRequest request(jsonUrl);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
     connect(jsonReply, &QNetworkReply::finished, this, &Download::handleJsonDownloadFinished);
 }
