@@ -61,6 +61,7 @@ public:
     Q_INVOKABLE QString downloadLocalModelsPath() const;
 
 private Q_SLOTS:
+    void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void handleJsonDownloadFinished();
     void handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void handleModelDownloadFinished();

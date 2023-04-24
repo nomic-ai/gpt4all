@@ -28,6 +28,8 @@ Network::Network()
     settings.setValue("uniqueId", m_uniqueId);
     settings.sync();
     setActive(settings.value("network/isActive", false).toBool());
+    connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
+        &Network::handleSslErrors);
 }
 
 void Network::setActive(bool b)
@@ -124,6 +126,13 @@ void Network::handleJsonUploadFinished()
 #endif
 
     jsonReply->deleteLater();
+}
+
+void Network::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+{
+    QUrl url = reply->request().url();
+    for (auto e : errors)
+        qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
 }
 
 bool Network::sendConversation(const QString &ingestId, const QString &conversation)
