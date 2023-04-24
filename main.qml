@@ -225,8 +225,8 @@ Window {
             }
             Image {
                 anchors.centerIn: parent
-                width: 50
-                height: 50
+                width: 30
+                height: 30
                 source: "qrc:/gpt4all/icons/network.svg"
             }
         }
@@ -261,8 +261,8 @@ Window {
             anchors.fill: parent
             Image {
                 anchors.centerIn: parent
-                width: 40
-                height: 40
+                width: 30
+                height: 30
                 source: "qrc:/gpt4all/icons/settings.svg"
             }
         }
@@ -307,8 +307,8 @@ Window {
             anchors.fill: parent
             Image {
                 anchors.centerIn: parent
-                width: 40
-                height: 40
+                width: 30
+                height: 30
                 source: "qrc:/gpt4all/icons/copy.svg"
             }
         }
@@ -389,8 +389,8 @@ Window {
             anchors.fill: parent
             Image {
                 anchors.centerIn: parent
-                width: 40
-                height: 40
+                width: 30
+                height: 30
                 source: "qrc:/gpt4all/icons/regenerate.svg"
             }
         }
