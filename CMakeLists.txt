@@ -51,10 +51,11 @@ message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 set(LLAMA_BUILD_EXAMPLES ON CACHE BOOL "llama: build examples" FORCE)
 set(BUILD_SHARED_LIBS ON FORCE)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
 option(GPT4ALL_AVX_ONLY OFF "Build for avx only")
 option(GPT4ALL_LOCALHOST OFF "Build for local install repo")
 if (GPT4ALL_AVX_ONLY)
-    set(LLAMA_AVX2 OFF "llama: enable AVX2" FORCE)
+    set(LLAMA_AVX2 OFF CACHE BOOL "llama: enable AVX2" FORCE)
 endif()
 
 add_subdirectory(llama.cpp)
