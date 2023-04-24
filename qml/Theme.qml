@@ -1,5 +1,6 @@
 import QtCore
 import QtQuick
+import QtQuick.Controls.Basic
 
 QtObject {
     property color textColor: "#d1d5db"
