@@ -488,7 +488,7 @@ Window {
                 text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
                 onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
                 color: theme.textColor
-                linkColor: "#1e8cda"
+                linkColor: theme.linkColor
 
                 Accessible.role: Accessible.Link
                 Accessible.name: qsTr("Discord link")
@@ -502,10 +502,10 @@ Window {
                 anchors.top: discordLink.bottom
                 anchors.topMargin: 20
                 wrapMode: Text.WordWrap
-                text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">nomic.ai</a> and the community for contributing so much great data and energy!")
+                text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">Nomic AI</a> and the community for contributing so much great data and energy!")
                 onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
                 color: theme.textColor
-                linkColor: "#1e8cda"
+                linkColor: theme.linkColor
 
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Thank you blurb")
