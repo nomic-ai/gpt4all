@@ -80,7 +80,10 @@ Dialog {
         alignment: Qt.AlignRight
         spacing: 10
         Button {
-            text: qsTr("Submit")
+            contentItem: Text {
+                color: theme.textColor
+                text: qsTr("Submit")
+            }
             background: Rectangle {
                 border.color: theme.backgroundLightest
                 border.width: 1
@@ -91,7 +94,10 @@ Dialog {
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
         Button {
-            text: qsTr("Cancel")
+            contentItem: Text {
+                color: theme.textColor
+                text: qsTr("Cancel")
+            }
             background: Rectangle {
                 border.color: theme.backgroundLightest
                 border.width: 1

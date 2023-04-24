@@ -119,7 +119,10 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         alignment: Qt.AlignRight
         spacing: 10
         Button {
-            text: qsTr("Enable")
+            contentItem: Text {
+                color: theme.textColor
+                text: qsTr("Enable")
+            }
             background: Rectangle {
                 border.color: theme.backgroundLightest
                 border.width: 1
@@ -134,7 +137,10 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
         Button {
-            text: qsTr("Cancel")
+            contentItem: Text {
+                color: theme.textColor
+                text: qsTr("Cancel")
+            }
             background: Rectangle {
                 border.color: theme.backgroundLightest
                 border.width: 1
