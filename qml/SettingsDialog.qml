@@ -31,6 +31,7 @@ Dialog {
     property int defaultTopK: 40
     property int defaultMaxLength: 4096
     property int defaultPromptBatchSize: 9
+    property int defaultThreadCount: 0
     property string defaultPromptTemplate: "The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.
 ### Prompt:
 %1
@@ -42,6 +43,7 @@ Dialog {
     property alias maxLength: settings.maxLength
     property alias promptBatchSize: settings.promptBatchSize
     property alias promptTemplate: settings.promptTemplate
+    property alias threadCount: settings.threadCount
 
     Settings {
         id: settings
@@ -50,6 +52,7 @@ Dialog {
         property int topK: settingsDialog.defaultTopK
         property int maxLength: settingsDialog.defaultMaxLength
         property int promptBatchSize: settingsDialog.defaultPromptBatchSize
+        property int threadCount: settingsDialog.defaultThreadCount
         property string promptTemplate: settingsDialog.defaultPromptTemplate
     }
 
@@ -60,7 +63,13 @@ Dialog {
         settings.maxLength = defaultMaxLength;
         settings.promptBatchSize = defaultPromptBatchSize;
         settings.promptTemplate = defaultPromptTemplate;
+        settings.threadCount = defaultThreadCount
         settings.sync()
+        LLM.threadCount = settings.threadCount;
+    }
+
+    Component.onCompleted: {
+        LLM.threadCount = settings.threadCount;
     }
 
     Component.onDestruction: {
@@ -264,7 +273,7 @@ Dialog {
              Layout.column: 0
          }
          TextField {
-             text: LLM.threadCount.toString()
+             text: settingsDialog.threadCount.toString()
              color: theme.textColor
              background: Rectangle {
                 implicitWidth: 150
@@ -272,7 +281,7 @@ Dialog {
                 radius: 10
              }
              padding: 10
-             ToolTip.text: qsTr("Amount of processing threads to use")
+             ToolTip.text: qsTr("Amount of processing threads to use, a setting of 0 will use the lesser of 4 or your number of CPU threads")
              ToolTip.visible: hovered
              Layout.row: 5
              Layout.column: 1
@@ -280,10 +289,11 @@ Dialog {
              onAccepted: {
                  var val = parseInt(text)
                  if (!isNaN(val)) {
+                     settingsDialog.threadCount = val
                      LLM.threadCount = val
                      focus = false
                  } else {
-                     text = settingsDialog.nThreads.toString()
+                     text = settingsDialog.threadCount.toString()
                  }
              }
             Accessible.role: Accessible.EditableText

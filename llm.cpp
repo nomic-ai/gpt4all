@@ -101,8 +101,10 @@ bool LLMObject::loadModelPrivate(const QString &modelName)
 }
 
 void LLMObject::setThreadCount(int32_t n_threads) {
-    m_llmodel->setThreadCount(n_threads);
-    emit threadCountChanged();
+    if (m_llmodel->threadCount() != n_threads) {
+        m_llmodel->setThreadCount(n_threads);
+        emit threadCountChanged();
+    }
 }
 
 int32_t LLMObject::threadCount() {
@@ -297,6 +299,7 @@ LLM::LLM()
     connect(m_llmodel, &LLMObject::modelNameChanged, this, &LLM::modelNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::modelListChanged, this, &LLM::modelListChanged, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::threadCountChanged, this, &LLM::threadCountChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLMObject::threadCountChanged, this, &LLM::syncThreadCount, Qt::QueuedConnection);
 
 
     connect(this, &LLM::promptRequested, m_llmodel, &LLMObject::prompt, Qt::QueuedConnection);
@@ -375,8 +378,16 @@ QList<QString> LLM::modelList() const
     return m_llmodel->modelList();
 }
 
+void LLM::syncThreadCount() {
+    emit setThreadCountRequested(m_desiredThreadCount);
+}
+
 void LLM::setThreadCount(int32_t n_threads) {
-    emit setThreadCountRequested(n_threads);
+    if (n_threads <= 0) {
+        n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
+    }
+    m_desiredThreadCount = n_threads;
+    syncThreadCount();
 }
 
 int32_t LLM::threadCount() {

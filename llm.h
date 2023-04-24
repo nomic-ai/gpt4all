@@ -82,6 +82,7 @@ public:
     Q_INVOKABLE void resetResponse();
     Q_INVOKABLE void resetContext();
     Q_INVOKABLE void stopGenerating();
+    Q_INVOKABLE void syncThreadCount();
     Q_INVOKABLE void setThreadCount(int32_t n_threads);
     Q_INVOKABLE int32_t threadCount();
 
@@ -116,6 +117,7 @@ private Q_SLOTS:
 
 private:
     LLMObject *m_llmodel;
+    int32_t m_desiredThreadCount;
     bool m_responseInProgress;
 
 private:
