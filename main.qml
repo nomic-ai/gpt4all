@@ -202,10 +202,10 @@ Window {
         id: networkButton
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.topMargin: 20
+        anchors.topMargin: 30
         anchors.rightMargin: 30
         width: 40
-        height: 60
+        height: 40
         z: 200
         padding: 15
 
