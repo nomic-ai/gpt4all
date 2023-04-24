@@ -182,8 +182,6 @@ Window {
                 radius: 2
                 antialiasing: true
             }
-
-
         }
         onClicked: {
             drawer.visible = !drawer.visible
