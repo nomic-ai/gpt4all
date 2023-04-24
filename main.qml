@@ -53,7 +53,7 @@ Window {
 
             ComboBox {
                 id: comboBox
-                width: 400
+                width: 350
                 anchors.top: modelLabel.top
                 anchors.bottom: modelLabel.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
