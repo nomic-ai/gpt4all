@@ -173,7 +173,10 @@ Dialog {
 
                     Button {
                         id: downloadButton
-                        text: downloading ? "Cancel" : "Download"
+                        contentItem: Text {
+                            color: theme.textColor
+                            text: downloading ? "Cancel" : "Download"
+                        }
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: parent.right
                         anchors.rightMargin: 10
