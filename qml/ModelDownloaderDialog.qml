@@ -122,6 +122,24 @@ Dialog {
                         anchors.rightMargin: 10
                         width: 100
                         visible: downloading
+                        background: Rectangle {
+                            implicitWidth: 200
+                            implicitHeight: 30
+                            color: theme.backgroundDarkest
+                            radius: 3
+                        }
+
+                        contentItem: Item {
+                            implicitWidth: 200
+                            implicitHeight: 25
+
+                            Rectangle {
+                                width: itemProgressBar.visualPosition * parent.width
+                                height: parent.height
+                                radius: 2
+                                color: theme.backgroundLightest
+                            }
+                        }
                         Accessible.role: Accessible.ProgressBar
                         Accessible.name: qsTr("Download progressBar")
                         Accessible.description: qsTr("Shows the progress made in the download")
