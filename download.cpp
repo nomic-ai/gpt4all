@@ -87,6 +87,9 @@ void Download::downloadModel(const QString &modelFile)
     }
 
     QNetworkRequest request("http://gpt4all.io/models/" + modelFile);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
     QNetworkReply *modelReply = m_networkManager.get(request);
     connect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
     connect(modelReply, &QNetworkReply::finished, this, &Download::handleModelDownloadFinished);

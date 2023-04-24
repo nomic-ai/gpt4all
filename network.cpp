@@ -80,6 +80,9 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
 #endif
     QUrl jsonUrl("https://api.gpt4all.io/v1/ingest/chat");
     QNetworkRequest request(jsonUrl);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
     QByteArray body(newDoc.toJson());
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *jsonReply = m_networkManager.post(request, body);
@@ -132,6 +135,9 @@ void Network::sendHealth()
 {
     QUrl healthUrl("https://api.gpt4all.io/v1/health");
     QNetworkRequest request(healthUrl);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
     QNetworkReply *healthReply = m_networkManager.get(request);
     connect(healthReply, &QNetworkReply::finished, this, &Network::handleHealthFinished);
 }
