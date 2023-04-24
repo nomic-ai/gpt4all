@@ -120,6 +120,7 @@ void LLMObject::regenerateResponse()
 {
     s_ctx.n_past -= m_responseTokens;
     s_ctx.n_past = std::max(0, s_ctx.n_past);
+    // FIXME: This does not seem to be needed in my testing and llama models don't to it. Remove?
     s_ctx.logits.erase(s_ctx.logits.end() -= m_responseLogits, s_ctx.logits.end());
     m_responseTokens = 0;
     m_responseLogits = 0;
