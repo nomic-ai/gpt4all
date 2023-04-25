@@ -282,7 +282,7 @@ bool LLMObject::handleRecalculate(bool isRecalc)
 }
 
 bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
-                       float temp, int32_t n_batch)
+                       float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens)
 {
     if (!isModelLoaded())
         return false;
@@ -300,6 +300,8 @@ bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, in
     s_ctx.top_p = top_p;
     s_ctx.temp = temp;
     s_ctx.n_batch = n_batch;
+    s_ctx.repeat_penalty = repeat_penalty;
+    s_ctx.repeat_last_n = repeat_penalty_tokens;
     m_llmodel->prompt(instructPrompt.toStdString(), responseFunc, recalcFunc, s_ctx);
     m_responseLogits += s_ctx.logits.size() - logitsBefore;
     std::string trimmed = trim_whitespace(m_response);
@@ -345,9 +347,9 @@ bool LLM::isModelLoaded() const
 }
 
 void LLM::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
-                 float temp, int32_t n_batch)
+                 float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens)
 {
-    emit promptRequested(prompt, prompt_template, n_predict, top_k, top_p, temp, n_batch);
+    emit promptRequested(prompt, prompt_template, n_predict, top_k, top_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens);
 }
 
 void LLM::regenerateResponse()

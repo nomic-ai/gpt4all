@@ -27,7 +27,9 @@ Download::Download()
         &Download::handleHashAndSaveFinished, Qt::QueuedConnection);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Download::handleSslErrors);
+    connect(this, &Download::downloadLocalModelsPathChanged, this, &Download::updateModelList);
     updateModelList();
+    m_downloadLocalModelsPath = defaultLocalModelsPath();
 }
 
 QList<ModelInfo> Download::modelList() const
@@ -46,7 +48,22 @@ QList<ModelInfo> Download::modelList() const
     return values;
 }
 
-QString Download::downloadLocalModelsPath() const
+QString Download::downloadLocalModelsPath() const {
+    return m_downloadLocalModelsPath;
+}
+
+void Download::setDownloadLocalModelsPath(const QString &modelPath) {
+    QString filePath = (modelPath.startsWith("file://") ?
+                        QUrl(modelPath).toLocalFile() : modelPath);
+    QString canonical = QFileInfo(filePath).canonicalFilePath() + QDir::separator();
+    qDebug() << "Set model path: " << canonical;
+    if (m_downloadLocalModelsPath != canonical) {
+        m_downloadLocalModelsPath = canonical;
+        emit downloadLocalModelsPathChanged();
+    }
+}
+
+QString Download::defaultLocalModelsPath() const
 {
     QString localPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
         + QDir::separator();

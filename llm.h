@@ -38,7 +38,7 @@ public:
 
 public Q_SLOTS:
     bool prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
-                float temp, int32_t n_batch);
+                float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
     bool loadModel();
     void modelNameChangeRequested(const QString &modelName);
 
@@ -85,7 +85,7 @@ public:
 
     Q_INVOKABLE bool isModelLoaded() const;
     Q_INVOKABLE void prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
-                            float temp, int32_t n_batch);
+                            float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void resetResponse();
     Q_INVOKABLE void resetContext();
@@ -111,7 +111,7 @@ Q_SIGNALS:
     void responseChanged();
     void responseInProgressChanged();
     void promptRequested(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
-                         float temp, int32_t n_batch);
+                         float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
     void regenerateResponseRequested();
     void resetResponseRequested();
     void resetContextRequested();
