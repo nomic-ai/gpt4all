@@ -59,11 +59,11 @@ Installs a native chat-client with auto-update functionality that runs on your d
 
 If you have older hardware that only supports avx and not avx2 you can use these.
 
-[Mac/OSX](https://gpt4all.io/installers/gpt4all-installer-darwin-avx-only.dmg)
+[Mac/OSX - avx-only](https://gpt4all.io/installers/gpt4all-installer-darwin-avx-only.dmg)
 
-[Windows](https://gpt4all.io/installers/gpt4all-installer-win64-avx-only.exe)
+[Windows - avx-only](https://gpt4all.io/installers/gpt4all-installer-win64-avx-only.exe)
 
-[Ubuntu](https://gpt4all.io/installers/gpt4all-installer-linux-avx-only.run)
+[Ubuntu - avx-only](https://gpt4all.io/installers/gpt4all-installer-linux-avx-only.run)
 
 For the full details of these installers and how to use them and requirements you can look here:
 
