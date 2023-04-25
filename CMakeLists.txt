@@ -32,6 +32,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(GPT4ALL_AVX_ONLY OFF "Build for avx only")
+
 find_package(Qt6 6.2 COMPONENTS Core Quick QuickDialogs2 Svg REQUIRED)
 
 # Get the Qt6Core target properties
@@ -48,28 +50,13 @@ get_filename_component(Qt6_ROOT_DIR "${Qt6_ROOT_DIR}/.." ABSOLUTE)
 message(STATUS "qmake binary: ${QMAKE_EXECUTABLE}")
 message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
-set(LLAMA_BUILD_EXAMPLES ON CACHE BOOL "llama: build examples" FORCE)
-set(BUILD_SHARED_LIBS ON FORCE)
-
-set(CMAKE_VERBOSE_MAKEFILE ON)
-option(GPT4ALL_AVX_ONLY OFF "Build for avx only")
-option(GPT4ALL_LOCALHOST OFF "Build for local install repo")
-if (GPT4ALL_AVX_ONLY)
-    set(LLAMA_AVX2 OFF CACHE BOOL "llama: enable AVX2" FORCE)
-endif()
-
-add_subdirectory(llama.cpp)
+add_subdirectory(llmodel)
 
 qt_add_executable(chat
     main.cpp
     download.h download.cpp
     network.h network.cpp
-    gptj.h gptj.cpp
-    llamamodel.h llamamodel.cpp
-    llama.cpp/examples/common.cpp
     llm.h llm.cpp
-    llmodel.h
-    utils.h utils.cpp
 )
 
 qt_add_qml_module(chat
@@ -123,7 +110,7 @@ target_compile_definitions(chat
 target_link_libraries(chat
     PRIVATE Qt6::Quick Qt6::Svg)
 target_link_libraries(chat
-    PRIVATE llama)
+    PRIVATE llmodel)
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
@@ -134,6 +121,7 @@ if(NOT (CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_HOST_SYSTEM_PROCESSOR
 endif()
 
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS llmodel DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llama DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
