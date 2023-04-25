@@ -56,7 +56,6 @@ void Download::setDownloadLocalModelsPath(const QString &modelPath) {
     QString filePath = (modelPath.startsWith("file://") ?
                         QUrl(modelPath).toLocalFile() : modelPath);
     QString canonical = QFileInfo(filePath).canonicalFilePath() + QDir::separator();
-    qDebug() << "Set model path: " << canonical;
     if (m_downloadLocalModelsPath != canonical) {
         m_downloadLocalModelsPath = canonical;
         emit downloadLocalModelsPathChanged();
