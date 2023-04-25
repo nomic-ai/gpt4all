@@ -875,10 +875,12 @@ Window {
                 Keys.onReturnPressed: (event)=> {
                     if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
                         event.accepted = false;
-                    else
+                    else {
                         editingFinished();
+                        sendMessage()
+                    }
                 }
-                onEditingFinished: {
+                function sendMessage() {
                     if (textInput.text === "")
                         return
 
@@ -926,7 +928,7 @@ Window {
             Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
 
             onClicked: {
-                textInput.accepted()
+                textInput.sendMessage()
             }
         }
     }
