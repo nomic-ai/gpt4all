@@ -288,6 +288,24 @@ Window {
         text: qsTr("Connection to datalake failed.")
     }
 
+    PopupDialog {
+        id: recalcPopup
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: true
+        text: qsTr("Recalculating context.")
+
+        Connections {
+            target: LLM
+            function onRecalcChanged() {
+                if (LLM.isRecalc)
+                    recalcPopup.open()
+                else
+                    recalcPopup.close()
+            }
+        }
+    }
+
     Button {
         id: copyButton
         anchors.right: settingsButton.left

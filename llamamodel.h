@@ -17,9 +17,14 @@ public:
     bool isModelLoaded() const override;
     void prompt(const std::string &prompt,
         std::function<bool(int32_t, const std::string&)> response,
+        std::function<bool(bool)> recalculate,
         PromptContext &ctx) override;
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() override;
+
+protected:
+    void recalculateContext(PromptContext &promptCtx,
+        std::function<bool(bool)> recalculate) override;
 
 private:
     LLamaPrivate *d_ptr;

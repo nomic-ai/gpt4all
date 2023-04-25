@@ -14,6 +14,7 @@ class LLMObject : public QObject
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
     Q_PROPERTY(QString modelName READ modelName WRITE setModelName NOTIFY modelNameChanged)
     Q_PROPERTY(int32_t threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
+    Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
 
 public:
 
@@ -33,6 +34,8 @@ public:
     QList<QString> modelList() const;
     void setModelName(const QString &modelName);
 
+    bool isRecalc() const { return m_isRecalc; }
+
 public Q_SLOTS:
     bool prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
                 float temp, int32_t n_batch);
@@ -47,10 +50,12 @@ Q_SIGNALS:
     void modelNameChanged();
     void modelListChanged();
     void threadCountChanged();
+    void recalcChanged();
 
 private:
     bool loadModelPrivate(const QString &modelName);
     bool handleResponse(int32_t token, const std::string &response);
+    bool handleRecalculate(bool isRecalc);
 
 private:
     LLModel *m_llmodel;
@@ -60,6 +65,7 @@ private:
     QString m_modelName;
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
+    bool m_isRecalc;
 };
 
 class LLM : public QObject
@@ -71,6 +77,8 @@ class LLM : public QObject
     Q_PROPERTY(QString modelName READ modelName WRITE setModelName NOTIFY modelNameChanged)
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
     Q_PROPERTY(int32_t threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
+    Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
+
 public:
 
     static LLM *globalInstance();
@@ -96,6 +104,8 @@ public:
 
     Q_INVOKABLE bool checkForUpdates() const;
 
+    bool isRecalc() const;
+
 Q_SIGNALS:
     void isModelLoadedChanged();
     void responseChanged();
@@ -110,6 +120,7 @@ Q_SIGNALS:
     void modelListChanged();
     void threadCountChanged();
     void setThreadCountRequested(int32_t threadCount);
+    void recalcChanged();
 
 private Q_SLOTS:
     void responseStarted();

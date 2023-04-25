@@ -39,6 +39,7 @@ LLMObject::LLMObject()
     , m_llmodel(nullptr)
     , m_responseTokens(0)
     , m_responseLogits(0)
+    , m_isRecalc(false)
 {
     moveToThread(&m_llmThread);
     connect(&m_llmThread, &QThread::started, this, &LLMObject::loadModel);
@@ -271,6 +272,15 @@ bool LLMObject::handleResponse(int32_t token, const std::string &response)
     return !m_stopGenerating;
 }
 
+bool LLMObject::handleRecalculate(bool isRecalc)
+{
+    if (m_isRecalc != isRecalc) {
+        m_isRecalc = isRecalc;
+        emit recalcChanged();
+    }
+    return !m_stopGenerating;
+}
+
 bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
                        float temp, int32_t n_batch)
 {
@@ -280,7 +290,9 @@ bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, in
     QString instructPrompt = prompt_template.arg(prompt);
 
     m_stopGenerating = false;
-    auto func = std::bind(&LLMObject::handleResponse, this, std::placeholders::_1, std::placeholders::_2);
+    auto responseFunc = std::bind(&LLMObject::handleResponse, this, std::placeholders::_1,
+        std::placeholders::_2);
+    auto recalcFunc = std::bind(&LLMObject::handleRecalculate, this, std::placeholders::_1);
     emit responseStarted();
     qint32 logitsBefore = s_ctx.logits.size();
     s_ctx.n_predict = n_predict;
@@ -288,7 +300,7 @@ bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, in
     s_ctx.top_p = top_p;
     s_ctx.temp = temp;
     s_ctx.n_batch = n_batch;
-    m_llmodel->prompt(instructPrompt.toStdString(), func, s_ctx);
+    m_llmodel->prompt(instructPrompt.toStdString(), responseFunc, recalcFunc, s_ctx);
     m_responseLogits += s_ctx.logits.size() - logitsBefore;
     std::string trimmed = trim_whitespace(m_response);
     if (trimmed != m_response) {
@@ -314,7 +326,7 @@ LLM::LLM()
     connect(m_llmodel, &LLMObject::modelListChanged, this, &LLM::modelListChanged, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::threadCountChanged, this, &LLM::threadCountChanged, Qt::QueuedConnection);
     connect(m_llmodel, &LLMObject::threadCountChanged, this, &LLM::syncThreadCount, Qt::QueuedConnection);
-
+    connect(m_llmodel, &LLMObject::recalcChanged, this, &LLM::recalcChanged, Qt::QueuedConnection);
 
     connect(this, &LLM::promptRequested, m_llmodel, &LLMObject::prompt, Qt::QueuedConnection);
     connect(this, &LLM::modelNameChangeRequested, m_llmodel, &LLMObject::modelNameChangeRequested, Qt::QueuedConnection);
@@ -428,3 +440,7 @@ bool LLM::checkForUpdates() const
     return QProcess::startDetached(fileName);
 }
 
+bool LLM::isRecalc() const
+{
+    return m_llmodel->isRecalc();
+}
