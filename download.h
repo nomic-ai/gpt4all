@@ -50,6 +50,9 @@ class Download : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QList<ModelInfo> modelList READ modelList NOTIFY modelListChanged)
+    Q_PROPERTY(QString downloadLocalModelsPath READ downloadLocalModelsPath
+                   WRITE setDownloadLocalModelsPath
+                   NOTIFY downloadLocalModelsPathChanged)
 
 public:
     static Download *globalInstance();
@@ -58,7 +61,9 @@ public:
     Q_INVOKABLE void updateModelList();
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
+    Q_INVOKABLE QString defaultLocalModelsPath() const;
     Q_INVOKABLE QString downloadLocalModelsPath() const;
+    Q_INVOKABLE void setDownloadLocalModelsPath(const QString &modelPath);
 
 private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
@@ -73,6 +78,7 @@ Q_SIGNALS:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal, const QString &modelFile);
     void downloadFinished(const QString &modelFile);
     void modelListChanged();
+    void downloadLocalModelsPathChanged();
     void requestHashAndSave(const QString &hash, const QString &saveFilePath,
         QTemporaryFile *tempFile, QNetworkReply *modelReply);
 
@@ -83,6 +89,7 @@ private:
     QMap<QString, ModelInfo> m_modelMap;
     QNetworkAccessManager m_networkManager;
     QMap<QNetworkReply*, QTemporaryFile*> m_activeDownloads;
+    QString m_downloadLocalModelsPath;
 
 private:
     explicit Download();

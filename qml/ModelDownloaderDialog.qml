@@ -293,7 +293,7 @@ Dialog {
         Label {
             Layout.alignment: Qt.AlignLeft
             Layout.fillWidth: true
-            text: qsTr("NOTE: models will be downloaded to\n") + Download.downloadLocalModelsPath()
+            text: qsTr("NOTE: models will be downloaded to\n") + Download.downloadLocalModelsPath
             wrapMode: Text.WrapAnywhere
             horizontalAlignment: Text.AlignHCenter
             color: theme.textColor
