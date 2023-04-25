@@ -50,7 +50,7 @@ Q_SIGNALS:
 
 private:
     bool loadModelPrivate(const QString &modelName);
-    bool handleResponse(const std::string &response);
+    bool handleResponse(int32_t token, const std::string &response);
 
 private:
     LLModel *m_llmodel;
