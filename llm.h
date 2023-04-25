@@ -3,8 +3,8 @@
 
 #include <QObject>
 #include <QThread>
-#include "gptj.h"
-#include "llamamodel.h"
+#include "llmodel/gptj.h"
+#include "llmodel/llamamodel.h"
 
 class LLMObject : public QObject
 {

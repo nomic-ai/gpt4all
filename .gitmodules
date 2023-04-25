@@ -1,3 +1,3 @@
 [submodule "llama.cpp"]
-	path = llama.cpp
+	path = llmodel/llama.cpp
 	url = https://github.com/manyoso/llama.cpp.git
