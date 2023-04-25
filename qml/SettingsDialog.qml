@@ -152,7 +152,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                     Layout.row: 0
                     Layout.column: 1
                     validator: DoubleValidator { }
-                    onAccepted: {
+                    onEditingFinished: {
                         var val = parseFloat(text)
                         if (!isNaN(val)) {
                             settings.temperature = val
@@ -187,7 +187,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                     Layout.row: 1
                     Layout.column: 1
                     validator: DoubleValidator {}
-                    onAccepted: {
+                    onEditingFinished: {
                         var val = parseFloat(text)
                         if (!isNaN(val)) {
                             settings.topP = val
@@ -222,7 +222,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                      Layout.row: 2
                      Layout.column: 1
                      validator: IntValidator { bottom: 1 }
-                     onAccepted: {
+                     onEditingFinished: {
                          var val = parseInt(text)
                          if (!isNaN(val)) {
                              settings.topK = val
@@ -257,7 +257,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                      Layout.row: 3
                      Layout.column: 1
                      validator: IntValidator { bottom: 1 }
-                     onAccepted: {
+                     onEditingFinished: {
                          var val = parseInt(text)
                          if (!isNaN(val)) {
                              settings.maxLength = val
@@ -293,7 +293,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                      Layout.row: 4
                      Layout.column: 1
                      validator: IntValidator { bottom: 1 }
-                     onAccepted: {
+                     onEditingFinished: {
                          var val = parseInt(text)
                          if (!isNaN(val)) {
                              settings.promptBatchSize = val
@@ -328,7 +328,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                      Layout.row: 5
                      Layout.column: 1
                      validator: DoubleValidator {}
-                     onAccepted: {
+                     onEditingFinished: {
                          var val = parseFloat(text)
                          if (!isNaN(val)) {
                              settings.repeatPenalty = val
@@ -363,7 +363,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                       Layout.row: 6
                       Layout.column: 1
                       validator: IntValidator { bottom: 1 }
-                      onAccepted: {
+                      onEditingFinished: {
                           var val = parseInt(text)
                           if (!isNaN(val)) {
                               settings.repeatPenaltyTokens = val
@@ -515,7 +515,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                     Layout.row: 2
                     Layout.column: 1
                     validator: IntValidator { bottom: 1 }
-                    onAccepted: {
+                    onEditingFinished: {
                         var val = parseInt(text)
                         if (!isNaN(val)) {
                             settingsDialog.threadCount = val
