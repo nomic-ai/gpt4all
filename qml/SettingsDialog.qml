@@ -32,7 +32,8 @@ Dialog {
     property int defaultMaxLength: 4096
     property int defaultPromptBatchSize: 9
     property int defaultThreadCount: 0
-    property string defaultPromptTemplate: "The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.
+    property string defaultPromptTemplate: "### Instruction:
+The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.
 ### Prompt:
 %1
 ### Response:\n"
