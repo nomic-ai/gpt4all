@@ -32,7 +32,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.2 COMPONENTS Core Quick Svg REQUIRED)
+find_package(Qt6 6.2 COMPONENTS Core Quick QuickDialogs2 Svg REQUIRED)
 
 # Get the Qt6Core target properties
 get_target_property(Qt6Core_INCLUDE_DIRS Qt6::Core INTERFACE_INCLUDE_DIRECTORIES)
