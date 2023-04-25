@@ -78,8 +78,9 @@ bool LLamaModel::isModelLoaded() const
     return d_ptr->modelLoaded;
 }
 
-void LLamaModel::prompt(const std::string &prompt, std::function<bool(const std::string&)> response,
-        PromptContext &promptCtx, int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch) {
+void LLamaModel::prompt(const std::string &prompt,
+        std::function<bool(int32_t, const std::string&)> response,
+        PromptContext &promptCtx) {
 
     if (!isModelLoaded()) {
         std::cerr << "LLAMA ERROR: prompt won't work with an unloaded model!\n";
@@ -94,15 +95,17 @@ void LLamaModel::prompt(const std::string &prompt, std::function<bool(const std:
 
     // tokenize the prompt
     auto embd_inp = ::llama_tokenize(d_ptr->ctx, params.prompt, false);
-    const int n_ctx = llama_n_ctx(d_ptr->ctx);
 
-    if ((int) embd_inp.size() > n_ctx - 4) {
+    // save the context size
+    promptCtx.n_ctx = llama_n_ctx(d_ptr->ctx);
+
+    if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         std::cerr << "LLAMA ERROR: prompt is too long\n";
         return;
     }
 
-    n_predict = std::min(n_predict, n_ctx - (int) embd_inp.size());
-    promptCtx.n_past = std::min(promptCtx.n_past, n_ctx);
+    promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
+    promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
 
     // number of tokens to keep when resetting context
     params.n_keep = (int)embd_inp.size();
@@ -111,13 +114,13 @@ void LLamaModel::prompt(const std::string &prompt, std::function<bool(const std:
     size_t i = 0;
     const int64_t t_start_prompt_us = ggml_time_us();
     while (i < embd_inp.size()) {
-        size_t batch_end = std::min(i + n_batch, embd_inp.size());
+        size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
         std::vector<llama_token> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
 
         // Check if the context has run out...
-        if (promptCtx.n_past + batch.size() > n_ctx) {
+        if (promptCtx.n_past + batch.size() > promptCtx.n_ctx) {
             // FIXME: will produce gibberish after this
-            promptCtx.n_past = std::min(promptCtx.n_past, int(n_ctx - batch.size()));
+            promptCtx.n_past = std::min(promptCtx.n_past, int(promptCtx.n_ctx - batch.size()));
             std::cerr << "LLAMA WARNING: reached the end of the context window!\n";
         }
 
@@ -129,7 +132,7 @@ void LLamaModel::prompt(const std::string &prompt, std::function<bool(const std:
         // We pass a null string for each token to see if the user has asked us to stop...
         size_t tokens = batch_end - i;
         for (size_t t = 0; t < tokens; ++t)
-            if (!response(""))
+            if (!response(batch.at(t), ""))
                 return;
         promptCtx.n_past += batch.size();
         i = batch_end;
@@ -137,14 +140,17 @@ void LLamaModel::prompt(const std::string &prompt, std::function<bool(const std:
 
     // predict next tokens
     int32_t totalPredictions = 0;
-    for (int i = 0; i < n_predict; i++) {
+    for (int i = 0; i < promptCtx.n_predict; i++) {
         // sample next token
-        llama_token id = llama_sample_top_p_top_k(d_ptr->ctx, {}, 0, top_k, top_p, temp, 1.0f);
+        llama_token id = llama_sample_top_p_top_k(d_ptr->ctx,
+            promptCtx.tokens.data() + promptCtx.n_ctx - promptCtx.repeat_last_n,
+            promptCtx.repeat_last_n, promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
+            promptCtx.repeat_penalty);
 
         // Check if the context has run out...
-        if (promptCtx.n_past + 1 > n_ctx) {
+        if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
             // FIXME: will produce gibberish after this
-            promptCtx.n_past = std::min(promptCtx.n_past, n_ctx - 1);
+            promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx - 1);
             std::cerr << "LLAMA WARNING: reached the end of the context window!\n";
         }
 
@@ -156,7 +162,7 @@ void LLamaModel::prompt(const std::string &prompt, std::function<bool(const std:
         promptCtx.n_past += 1;
         // display text
         ++totalPredictions;
-        if (id == llama_token_eos() || !response(llama_token_to_str(d_ptr->ctx, id)))
+        if (id == llama_token_eos() || !response(id, llama_token_to_str(d_ptr->ctx, id)))
             return;
     }
 }

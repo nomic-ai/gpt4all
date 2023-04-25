@@ -72,12 +72,14 @@ bool gpt_vocab_init(const std::string & fname, gpt_vocab & vocab);
 //   - from them, consider only the top tokens with cumulative probability > P
 //
 // TODO: not sure if this implementation is correct
-// TODO: temperature is not implemented
 //
 gpt_vocab::id gpt_sample_top_k_top_p(
         const gpt_vocab & vocab,
-        const float * logits,
+        const int32_t * last_n_tokens_data,
+        int   last_n_tokens_size,
+        const std::vector<float> logits,
         int    top_k,
         double top_p,
         double temp,
+        float repeat_penalty,
         std::mt19937 & rng);

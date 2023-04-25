@@ -683,8 +683,9 @@ bool GPTJ::isModelLoaded() const
     return d_ptr->modelLoaded;
 }
 
-void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::string&)> response,
-        PromptContext &promptCtx, int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch) {
+void GPTJ::prompt(const std::string &prompt,
+        std::function<bool(int32_t, const std::string&)> response,
+        PromptContext &promptCtx) {
 
     if (!isModelLoaded()) {
         std::cerr << "GPT-J ERROR: prompt won't work with an unloaded model!\n";
@@ -700,10 +701,11 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
     // tokenize the prompt
     std::vector<gpt_vocab::id> embd_inp = ::gpt_tokenize(d_ptr->vocab, prompt);
 
-    const int n_ctx = d_ptr->model.hparams.n_ctx;
+    // save the context size
+    promptCtx.n_ctx = d_ptr->model.hparams.n_ctx;
 
-    n_predict = std::min(n_predict, n_ctx - (int) embd_inp.size());
-    promptCtx.n_past = std::min(promptCtx.n_past, n_ctx);
+    promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
+    promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
 
     // determine the required inference memory per token:
     static bool initialized = false;
@@ -719,13 +721,13 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
     size_t i = 0;
     const int64_t t_start_prompt_us = ggml_time_us();
     while (i < embd_inp.size()) {
-        size_t batch_end = std::min(i + n_batch, embd_inp.size());
+        size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
         std::vector<gpt_vocab::id> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
 
         // Check if the context has run out...
-        if (promptCtx.n_past + batch.size() > n_ctx) {
+        if (promptCtx.n_past + batch.size() > promptCtx.n_ctx) {
             // FIXME: will produce gibberish after this
-            promptCtx.n_past = std::min(promptCtx.n_past, int(n_ctx - batch.size()));
+            promptCtx.n_past = std::min(promptCtx.n_past, int(promptCtx.n_ctx - batch.size()));
             std::cerr << "GPT-J WARNING: reached the end of the context window!\n";
         }
 
@@ -736,7 +738,7 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
         // We pass a null string for each token to see if the user has asked us to stop...
         size_t tokens = batch_end - i;
         for (size_t t = 0; t < tokens; ++t)
-            if (!response(""))
+            if (!response(batch.at(t), ""))
                 return;
         promptCtx.n_past += batch.size();
         i = batch_end;
@@ -748,22 +750,28 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
 
     // predict next tokens
     int32_t totalPredictions = 0;
-    for (int i = 0; i < n_predict; i++) {
+    for (int i = 0; i < promptCtx.n_predict; i++) {
 
         // sample next token
         const int n_vocab = d_ptr->model.hparams.n_vocab;
         gpt_vocab::id id = 0;
         {
             const int64_t t_start_sample_us = ggml_time_us();
-            id = gpt_sample_top_k_top_p(d_ptr->vocab, promptCtx.logits.data() + (promptCtx.logits.size() - n_vocab),
-                top_k, top_p, temp, d_ptr->rng);
+            id = gpt_sample_top_k_top_p(d_ptr->vocab,
+                promptCtx.tokens.data() + promptCtx.n_ctx - promptCtx.n_ctx,
+                promptCtx.n_ctx,
+                promptCtx.logits,
+                promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
+                promptCtx.repeat_penalty,
+                d_ptr->rng);
+
             t_sample_us += ggml_time_us() - t_start_sample_us;
         }
 
         // Check if the context has run out...
-        if (promptCtx.n_past + 1 > n_ctx) {
+        if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
             // FIXME: will produce gibberish after this
-            promptCtx.n_past = std::min(promptCtx.n_past, n_ctx - 1);
+            promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx - 1);
             std::cerr << "GPT-J WARNING: reached the end of the context window!\n";
         }
 
@@ -777,7 +785,7 @@ void GPTJ::prompt(const std::string &prompt, std::function<bool(const std::strin
         promptCtx.n_past += 1;
         // display text
         ++totalPredictions;
-        if (id == 50256 /*end of text*/ || !response(d_ptr->vocab.id_to_token[id]))
+        if (id == 50256 /*end of text*/ || !response(id, d_ptr->vocab.id_to_token[id]))
             goto stop_generating;
     }
 

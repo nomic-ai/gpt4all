@@ -14,12 +14,22 @@ public:
     virtual bool loadModel(const std::string &modelPath, std::istream &fin) = 0;
     virtual bool isModelLoaded() const = 0;
     struct PromptContext {
-        std::vector<float> logits;
-        int32_t n_past = 0; // number of tokens in past conversation
+        std::vector<float> logits;      // logits of current context
+        std::vector<int32_t> tokens;    // current tokens in the context window
+        int32_t n_past = 0;             // number of tokens in past conversation
+        int32_t n_ctx = 0;              // number of tokens possible in context window
+        int32_t n_predict = 200;
+        int32_t top_k = 40;
+        float   top_p = 0.9f;
+        float   temp = 0.9f;
+        int32_t n_batch = 9;
+        float   repeat_penalty = 1.10f;
+        int32_t repeat_last_n = 64;     // last n tokens to penalize
+
     };
-    virtual void prompt(const std::string &prompt, std::function<bool(const std::string&)> response,
-        PromptContext &ctx, int32_t n_predict = 200, int32_t top_k = 40, float top_p = 0.9f,
-        float temp = 0.9f, int32_t n_batch = 9) = 0;
+    virtual void prompt(const std::string &prompt,
+        std::function<bool(int32_t, const std::string&)> response,
+        PromptContext &ctx) = 0;
     virtual void setThreadCount(int32_t n_threads) {}
     virtual int32_t threadCount() { return 1; }
 };
