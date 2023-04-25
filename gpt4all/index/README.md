@@ -25,3 +25,10 @@ import hnswlib
 index = hnswlib.Index(space='l2', dim=384)
 index.load_index(<path to index>)
 ```
+
+
+Prep index for train
+
+```
+CUDA_VISIBLE_DEVICES=7 torchrun --master_port=29086 --nproc-per-node 1 prep_index_for_train.py --config=../../configs/train/finetune_gptjr.yaml
+```
