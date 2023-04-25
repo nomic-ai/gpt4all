@@ -101,7 +101,7 @@ bool LLMObject::loadModelPrivate(const QString &modelName)
 }
 
 void LLMObject::setThreadCount(int32_t n_threads) {
-    if (m_llmodel->threadCount() != n_threads) {
+    if (m_llmodel && m_llmodel->threadCount() != n_threads) {
         m_llmodel->setThreadCount(n_threads);
         emit threadCountChanged();
     }
