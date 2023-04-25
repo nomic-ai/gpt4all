@@ -14,5 +14,7 @@ QtObject {
     property color userColor: "#ec86bf"
     property color assistantColor: "#10a37f"
     property color linkColor: "white"
+    property color tabBorder: "#ddd"
     property real  fontSizeLarge: Qt.application.font.pixelSize
+    property real  fontSizeLarger: Qt.application.font.pixelSize + 2
 }
