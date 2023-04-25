@@ -368,7 +368,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                             radius: 10
                         }
                         padding: 10
-                        ToolTip.text: qsTr("Amount to penalize reptetitiveness of the output")
+                        ToolTip.text: qsTr("Amount to penalize repetitiveness of the output")
                         ToolTip.visible: hovered
                         Layout.row: 5
                         Layout.column: 1
