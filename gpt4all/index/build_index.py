@@ -89,7 +89,7 @@ def build_index(orig_path, embed_folder_path, index_path):
     start = 0
     while start < len(ds):
         chunk = ds[start:start + chunk_size]
-        index.add_items(chunk["embedding"], chunk["index"], num_threads=64)
+        index.add_items(chunk["embedding"], chunk["id"], num_threads=64)
         progbar.update(1)
         start += chunk_size
 
