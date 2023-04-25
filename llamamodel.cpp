@@ -58,6 +58,7 @@ bool LLamaModel::loadModel(const std::string &modelPath)
 
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
+    fflush(stderr);
     return true;
 }
 
@@ -80,6 +81,7 @@ bool LLamaModel::isModelLoaded() const
 
 void LLamaModel::prompt(const std::string &prompt,
         std::function<bool(int32_t, const std::string&)> response,
+        std::function<bool(bool)> recalculate,
         PromptContext &promptCtx) {
 
     if (!isModelLoaded()) {
@@ -119,9 +121,13 @@ void LLamaModel::prompt(const std::string &prompt,
 
         // Check if the context has run out...
         if (promptCtx.n_past + batch.size() > promptCtx.n_ctx) {
-            // FIXME: will produce gibberish after this
-            promptCtx.n_past = std::min(promptCtx.n_past, int(promptCtx.n_ctx - batch.size()));
-            std::cerr << "LLAMA WARNING: reached the end of the context window!\n";
+            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
+            // Erase the first percentage of context from the tokens...
+            std::cerr << "LLAMA: reached the end of the context window so resizing\n";
+            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
+            promptCtx.n_past = promptCtx.tokens.size();
+            recalculateContext(promptCtx, recalculate);
+            assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
         }
 
         if (llama_eval(d_ptr->ctx, batch.data(), batch.size(), promptCtx.n_past, d_ptr->n_threads)) {
@@ -149,9 +155,13 @@ void LLamaModel::prompt(const std::string &prompt,
 
         // Check if the context has run out...
         if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
-            // FIXME: will produce gibberish after this
-            promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx - 1);
-            std::cerr << "LLAMA WARNING: reached the end of the context window!\n";
+            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
+            // Erase the first percentage of context from the tokens...
+            std::cerr << "LLAMA: reached the end of the context window so resizing\n";
+            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
+            promptCtx.n_past = promptCtx.tokens.size();
+            recalculateContext(promptCtx, recalculate);
+            assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
         }
 
         if (llama_eval(d_ptr->ctx, &id, 1, promptCtx.n_past, d_ptr->n_threads)) {
@@ -165,4 +175,29 @@ void LLamaModel::prompt(const std::string &prompt,
         if (id == llama_token_eos() || !response(id, llama_token_to_str(d_ptr->ctx, id)))
             return;
     }
+}
+
+void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
+{
+    size_t i = 0;
+    promptCtx.n_past = 0;
+    while (i < promptCtx.tokens.size()) {
+        size_t batch_end = std::min(i + promptCtx.n_batch, promptCtx.tokens.size());
+        std::vector<llama_token> batch(promptCtx.tokens.begin() + i, promptCtx.tokens.begin() + batch_end);
+
+        assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
+
+        if (llama_eval(d_ptr->ctx, batch.data(), batch.size(), promptCtx.n_past, d_ptr->n_threads)) {
+            std::cerr << "LLAMA ERROR: Failed to process prompt\n";
+            goto stop_generating;
+        }
+        promptCtx.n_past += batch.size();
+        if (!recalculate(true))
+            goto stop_generating;
+        i = batch_end;
+    }
+    assert(promptCtx.n_past == promptCtx.tokens.size());
+
+stop_generating:
+    recalculate(false);
 }
