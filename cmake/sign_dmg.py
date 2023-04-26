@@ -16,8 +16,9 @@ import click
 @click.command()
 @click.option('--input-dmg', required=True, help='Path to the input DMG file.')
 @click.option('--output-dmg', required=True, help='Path to the output signed DMG file.')
-@click.option('--signing-identity', required=True, help='Signing identity (Developer ID Installer).')
-def sign_dmg(input_dmg, output_dmg, signing_identity):
+@click.option('--sha1-hash', help='SHA-1 hash of the Developer ID Installer certificate')
+@click.option('--signing-identity', help='Signing identity (Developer ID Installer).')
+def sign_dmg(input_dmg: str, output_dmg: str, signing_identity: str, sha1_hash: Optional[str]) -> None:
     # Mount the input DMG
     mount_point = tempfile.mkdtemp()
     subprocess.run(['hdiutil', 'attach', input_dmg, '-mountpoint', mount_point])
@@ -47,7 +48,7 @@ def sign_dmg(input_dmg, output_dmg, signing_identity):
             '--verbose',
             '--options', 'runtime',
             '--timestamp',
-            '--sign', signing_identity,
+            '--sign', sha1_hash or signing_identity,
             app_bundle
         ], check=True)
     except subprocess.CalledProcessError as e:
