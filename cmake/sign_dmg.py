@@ -39,16 +39,23 @@ def sign_dmg(input_dmg, output_dmg, signing_identity):
         exit(1)
 
     # Sign the .app bundle
-    subprocess.run([
-        'codesign',
-        '--deep',
-        '--force',
-        '--verbose',
-        '--options', 'runtime',
-        '--timestamp',
-        '--sign', signing_identity,
-        app_bundle
-    ])
+    try:
+        subprocess.run([
+            'codesign',
+            '--deep',
+            '--force',
+            '--verbose',
+            '--options', 'runtime',
+            '--timestamp',
+            '--sign', signing_identity,
+            app_bundle
+        ], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error during codesign: {e}")
+        # Clean up temporary directories
+        shutil.rmtree(temp_dir)
+        shutil.rmtree(mount_point)
+        exit(1)
 
     # Create a new DMG containing the signed .app bundle
     subprocess.run([
