@@ -252,6 +252,13 @@ bool LLMObject::handleResponse(int32_t token, const std::string &response)
     fflush(stdout);
 #endif
 
+    // check for error
+    if (token < 0) {
+        m_response.append(response);
+        emit responseChanged();
+        return false;
+    }
+
     // Save the token to our prompt ctxt
     if (s_ctx.tokens.size() == s_ctx.n_ctx)
         s_ctx.tokens.erase(s_ctx.tokens.begin());
