@@ -72,26 +72,26 @@ void llmodel_llama_destroy(llmodel_model llama);
 
 /**
  * Load a model from a file.
- * @param model A pointer to the LLMODEL_C instance.
- * @param modelPath A string representing the path to the model file.
+ * @param model A pointer to the llmodel_model instance.
+ * @param model_path A string representing the path to the model file.
  * @return true if the model was loaded successfully, false otherwise.
  */
 bool llmodel_loadModel(llmodel_model model, const char *model_path);
 
 /**
  * Check if a model is loaded.
- * @param model A pointer to the LLMODEL_C instance.
+ * @param model A pointer to the llmodel_model instance.
  * @return true if the model is loaded, false otherwise.
  */
 bool llmodel_isModelLoaded(llmodel_model model);
 
 /**
  * Generate a response using the model.
- * @param model A pointer to the LLMODEL_C instance.
+ * @param model A pointer to the llmodel_model instance.
  * @param prompt A string representing the input prompt.
  * @param response A callback function for handling the generated response.
  * @param recalculate A callback function for handling recalculation requests.
- * @param ctx A pointer to the PromptContext_C structure.
+ * @param ctx A pointer to the llmodel_prompt_context structure.
  */
 void llmodel_prompt(llmodel_model model, const char *prompt,
                     llmodel_response_callback response,
@@ -100,14 +100,14 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
 
 /**
  * Set the number of threads to be used by the model.
- * @param model A pointer to the LLMODEL_C instance.
+ * @param model A pointer to the llmodel_model instance.
  * @param n_threads The number of threads to be used.
  */
 void llmodel_setThreadCount(llmodel_model model, int32_t n_threads);
 
 /**
  * Get the number of threads currently being used by the model.
- * @param model A pointer to the LLMODEL_C instance.
+ * @param model A pointer to the llmodel_model instance.
  * @return The number of threads currently being used.
  */
 int32_t llmodel_threadCount(llmodel_model model);
