@@ -368,11 +368,11 @@ Window {
         for (var i = 0; i < chatModel.count; i++) {
             var item = chatModel.get(i)
             var isResponse = item.name === qsTr("Response: ")
-            str += "{\"content\": \"";
+            str += "{\"content\": ";
             if (item.currentResponse)
-                str += LLM.response + "\""
+                str += JSON.stringify(LLM.response)
             else
-                str += item.value + "\""
+                str += JSON.stringify(item.value)
             str += ", \"role\": \"" + (isResponse ? "assistant" : "user") + "\"";
             if (isResponse && item.thumbsUpState !== item.thumbsDownState)
                 str += ", \"rating\": \"" + (item.thumbsUpState ? "positive" : "negative") + "\"";
