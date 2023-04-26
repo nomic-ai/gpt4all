@@ -32,6 +32,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(GPT4ALL_LOCALHOST OFF "Build installer for localhost repo")
 option(GPT4ALL_AVX_ONLY OFF "Build for avx only")
 
 find_package(Qt6 6.2 COMPONENTS Core Quick QuickDialogs2 Svg REQUIRED)
