@@ -204,7 +204,7 @@ else()
       cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/windows/repository")
     endif()
   elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-    #Use this in future https://cmake.org/cmake/help/latest/cpack_gen/ifw.html#variable:CPACK_IFW_PACKAGE_SIGNING_IDENTITY
+    CPACK_IFW_PACKAGE_SIGNING_IDENTITY("Developer ID Application: Nomic, Inc (PA) (6P9A8WD2QJ)")
     if (GPT4ALL_AVX_ONLY)
       cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/avx_only/mac/repository")
     else()

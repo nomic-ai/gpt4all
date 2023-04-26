@@ -9,16 +9,16 @@ from typing import Optional
 # pip install click
 
 # Example usage
-# python sign_dmg.py --input-dmg /path/to/your/input.dmg --output-dmg /path/to/your/output.dmg --signing-identity "Developer ID Installer: YOUR_NAME (TEAM_ID)"
+# python sign_dmg.py --input-dmg /path/to/your/input.dmg --output-dmg /path/to/your/output.dmg --signing-identity "Developer ID Application: YOUR_NAME (TEAM_ID)"
 
-# NOTE: This script assumes that you have the necessary Developer ID Installer certificate in your
+# NOTE: This script assumes that you have the necessary Developer ID Application certificate in your
 # Keychain Access and that the codesign and hdiutil command-line tools are available on your system.
 
 @click.command()
 @click.option('--input-dmg', required=True, help='Path to the input DMG file.')
 @click.option('--output-dmg', required=True, help='Path to the output signed DMG file.')
-@click.option('--sha1-hash', help='SHA-1 hash of the Developer ID Installer certificate')
-@click.option('--signing-identity', default=None, help='Common name of the Developer ID Installer certificate')
+@click.option('--sha1-hash', help='SHA-1 hash of the Developer ID Application certificate')
+@click.option('--signing-identity', default=None, help='Common name of the Developer ID Application certificate')
 def sign_dmg(input_dmg: str, output_dmg: str, signing_identity: Optional[str] = None, sha1_hash: Optional[str] = None) -> None:
     if not signing_identity and not sha1_hash:
         print("Error: Either --signing-identity or --sha1-hash must be provided.")
