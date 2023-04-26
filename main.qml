@@ -377,7 +377,7 @@ Window {
             if (isResponse && item.thumbsUpState !== item.thumbsDownState)
                 str += ", \"rating\": \"" + (item.thumbsUpState ? "positive" : "negative") + "\"";
             if (isResponse && item.newResponse !== "")
-                str += ", \"edited_content\": \"" + JSON.stringify(item.newResponse) + "\"";
+                str += ", \"edited_content\": " + JSON.stringify(item.newResponse);
             if (isResponse && item.stopped)
                 str += ", \"stopped\": \"true\""
             if (!isResponse)
