@@ -14,7 +14,7 @@ extern "C" {
 typedef void *llmodel_model;
 
 /**
- * PromptContext_C structure for holding the prompt context.
+ * llmodel_prompt_context structure for holding the prompt context.
  */
 typedef struct {
     float *logits;          // logits of current context
