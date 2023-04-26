@@ -53,8 +53,6 @@ Dialog {
                 id: thumbsDownNewResponse
                 color: theme.textColor
                 padding: 20
-                width: parent.width
-                height: 300
                 wrapMode: Text.Wrap
                 font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Please provide a better response...")
