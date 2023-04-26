@@ -8,15 +8,15 @@ import click
 # pip install click
 
 # Example usage
-# python sign_dmg.py --input-dmg /path/to/your/input.dmg --output-dmg /path/to/your/output.dmg --signing-identity "Developer ID Application: YOUR_NAME (TEAM_ID)"
+# python sign_dmg.py --input-dmg /path/to/your/input.dmg --output-dmg /path/to/your/output.dmg --signing-identity "Developer ID Installer: YOUR_NAME (TEAM_ID)"
 
-# NOTE: This script assumes that you have the necessary Developer ID Application certificate in your
+# NOTE: This script assumes that you have the necessary Developer ID Installer certificate in your
 # Keychain Access and that the codesign and hdiutil command-line tools are available on your system.
 
 @click.command()
 @click.option('--input-dmg', required=True, help='Path to the input DMG file.')
 @click.option('--output-dmg', required=True, help='Path to the output signed DMG file.')
-@click.option('--signing-identity', required=True, help='Signing identity (Developer ID Application).')
+@click.option('--signing-identity', required=True, help='Signing identity (Developer ID Installer).')
 def sign_dmg(input_dmg, output_dmg, signing_identity):
     # Mount the input DMG
     mount_point = tempfile.mkdtemp()
