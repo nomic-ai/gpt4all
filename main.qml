@@ -796,6 +796,7 @@ Window {
         }
 
         Button {
+            visible: chatModel.count
             Image {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
