@@ -9,11 +9,9 @@ extern "C" {
 #endif
 
 /**
- * Opaque pointers to the underlying C++ classes.
+ * Opaque pointer to the underlying model.
  */
 typedef void *llmodel_model;
-typedef void *llmodel_gptj;
-typedef void *llmodel_llama;
 
 /**
  * PromptContext_C structure for holding the prompt context.
@@ -52,25 +50,25 @@ typedef bool (*llmodel_recalculate_callback)(bool is_recalculating);
  * Create a GPTJ instance.
  * @return A pointer to the GPTJ instance.
  */
-llmodel_gptj llmodel_gptj_create();
+llmodel_model llmodel_gptj_create();
 
 /**
  * Destroy a GPTJ instance.
  * @param gptj A pointer to the GPTJ instance.
  */
-void llmodel_gptj_destroy(llmodel_gptj gptj);
+void llmodel_gptj_destroy(llmodel_model gptj);
 
 /**
  * Create a LLAMA instance.
  * @return A pointer to the LLAMA instance.
  */
-llmodel_llama llmodel_llama_create();
+llmodel_model llmodel_llama_create();
 
 /**
  * Destroy a LLAMA instance.
  * @param llama A pointer to the LLAMA instance.
  */
-void llmodel_llama_destroy(llmodel_llama llama);
+void llmodel_llama_destroy(llmodel_model llama);
 
 /**
  * Load a model from a file.
