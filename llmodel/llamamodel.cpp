@@ -102,7 +102,9 @@ void LLamaModel::prompt(const std::string &prompt,
     promptCtx.n_ctx = llama_n_ctx(d_ptr->ctx);
 
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
-        std::cerr << "LLAMA ERROR: prompt is too long\n";
+        response(-1, "The prompt size exceeds the context window size and cannot be processed.");
+        std::cerr << "LLAMA ERROR: The prompt is" << embd_inp.size() <<
+            "tokens and the context window is" << promptCtx.n_ctx << "!\n";
         return;
     }
 

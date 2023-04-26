@@ -707,6 +707,13 @@ void GPTJ::prompt(const std::string &prompt,
     // save the context size
     promptCtx.n_ctx = d_ptr->model.hparams.n_ctx;
 
+    if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
+        response(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
+        std::cerr << "GPT-J ERROR: The prompt is" << embd_inp.size() <<
+            "tokens and the context window is" << promptCtx.n_ctx << "!\n";
+        return;
+    }
+
     promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
     promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
 
