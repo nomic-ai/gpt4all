@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 import shutil
 import click
+from typing import Optional
 
 # Requires click
 # pip install click
@@ -17,8 +18,12 @@ import click
 @click.option('--input-dmg', required=True, help='Path to the input DMG file.')
 @click.option('--output-dmg', required=True, help='Path to the output signed DMG file.')
 @click.option('--sha1-hash', help='SHA-1 hash of the Developer ID Installer certificate')
-@click.option('--signing-identity', help='Signing identity (Developer ID Installer).')
-def sign_dmg(input_dmg: str, output_dmg: str, signing_identity: str, sha1_hash: Optional[str]) -> None:
+@click.option('--signing-identity', default=None, help='Common name of the Developer ID Installer certificate')
+def sign_dmg(input_dmg: str, output_dmg: str, signing_identity: Optional[str] = None, sha1_hash: Optional[str] = None) -> None:
+    if not signing_identity and not sha1_hash:
+        print("Error: Either --signing-identity or --sha1-hash must be provided.")
+        exit(1)
+
     # Mount the input DMG
     mount_point = tempfile.mkdtemp()
     subprocess.run(['hdiutil', 'attach', input_dmg, '-mountpoint', mount_point])
