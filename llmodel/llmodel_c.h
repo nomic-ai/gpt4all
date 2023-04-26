@@ -28,7 +28,7 @@ typedef struct {
     int32_t n_batch;        // number of predictions to generate in parallel
     float repeat_penalty;   // penalty factor for repeated tokens
     int32_t repeat_last_n;  // last n tokens to penalize
-    float contextErase;     // percent of context to erase if we exceed the context window
+    float context_erase;    // percent of context to erase if we exceed the context window
 } llmodel_prompt_context;
 
 /**
