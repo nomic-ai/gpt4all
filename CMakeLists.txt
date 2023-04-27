@@ -53,6 +53,8 @@ message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
 add_subdirectory(llmodel)
 
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 qt_add_executable(chat
     main.cpp
     download.h download.cpp
