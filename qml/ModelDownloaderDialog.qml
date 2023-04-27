@@ -1,6 +1,8 @@
+import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import download
 import llm
@@ -82,6 +84,7 @@ Dialog {
                         id: description
                         text: "    - " + modelData.description
                         leftPadding: 20
+                        rightPadding: 20
                         anchors.top: modelName.bottom
                         anchors.left: modelName.left
                         anchors.right: parent.right
@@ -135,7 +138,8 @@ Dialog {
                         objectName: "itemProgressBar"
                         anchors.top: modelName.top
                         anchors.right: downloadButton.left
-                        padding: 20
+                        anchors.topMargin: 20
+                        anchors.rightMargin: 20
                         width: 100
                         visible: downloading
                         background: Rectangle {
@@ -153,7 +157,7 @@ Dialog {
                                 width: itemProgressBar.visualPosition * parent.width
                                 height: parent.height
                                 radius: 2
-                                color: theme.backgroundLightest
+                                color: theme.assistantColor
                             }
                         }
                         Accessible.role: Accessible.ProgressBar
@@ -211,7 +215,8 @@ Dialog {
                         }
                         anchors.top: modelName.top
                         anchors.right: parent.right
-                        padding: 20
+                        anchors.topMargin: 15
+                        anchors.rightMargin: 20
                         visible: !modelData.installed && !modelData.calcHash
                         onClicked: {
                             if (!downloading) {
@@ -303,16 +308,72 @@ Dialog {
             }
         }
 
-        Label {
-            Layout.alignment: Qt.AlignLeft
+        property string defaultModelPath: Download.defaultLocalModelsPath()
+        property alias modelPath: settings.modelPath
+        Settings {
+            id: settings
+            property string modelPath: settingsDialog.defaultModelPath
+        }
+
+        Component.onCompleted: {
+            Download.downloadLocalModelsPath = settings.modelPath
+        }
+
+        Component.onDestruction: {
+            settings.sync()
+        }
+
+        RowLayout {
+            Layout.alignment: Qt.AlignCenter
             Layout.fillWidth: true
-            text: qsTr("NOTE: models will be downloaded to\n") + Download.downloadLocalModelsPath
-            wrapMode: Text.WrapAnywhere
-            horizontalAlignment: Text.AlignHCenter
-            color: theme.textColor
-            Accessible.role: Accessible.Paragraph
-            Accessible.name: qsTr("Model download path")
-            Accessible.description: qsTr("The path where downloaded models will be saved.")
+            spacing: 20
+            FolderDialog {
+                id: modelPathDialog
+                title: "Please choose a directory"
+                onAccepted: {
+                    Download.downloadLocalModelsPath = selectedFolder
+                    settings.modelPath = Download.downloadLocalModelsPath
+                    settings.sync()
+                }
+            }
+            Label {
+                id: modelPathLabel
+                text: qsTr("Download path:")
+                color: theme.textColor
+                Layout.row: 1
+                Layout.column: 0
+            }
+            TextField {
+                id: modelPathDisplayLabel
+                text: Download.downloadLocalModelsPath
+                readOnly: true
+                color: theme.textColor
+                Layout.fillWidth: true
+                ToolTip.text: qsTr("Path where model files will be downloaded to")
+                ToolTip.visible: hovered
+                Accessible.role: Accessible.ToolTip
+                Accessible.name: modelPathDisplayLabel.text
+                Accessible.description: ToolTip.text
+            }
+            Button {
+                text: qsTr("Browse")
+                contentItem: Text {
+                    text: qsTr("Browse")
+                    horizontalAlignment: Text.AlignHCenter
+                    color: theme.textColor
+                    Accessible.role: Accessible.Button
+                    Accessible.name: text
+                    Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
+                }
+                background: Rectangle {
+                    opacity: .5
+                    border.color: theme.backgroundLightest
+                    border.width: 1
+                    radius: 10
+                    color: theme.backgroundLight
+                }
+                onClicked: modelPathDialog.open()
+            }
         }
     }
 }

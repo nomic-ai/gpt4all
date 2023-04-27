@@ -11,8 +11,8 @@ import llm
 Dialog {
     id: settingsDialog
     modal: true
+    width: 1024
     height: 600
-    width: 600
     opacity: 0.9
     background: Rectangle {
         anchors.fill: parent
@@ -537,7 +537,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                     }
                     Label {
                         id: modelPathLabel
-                        text: qsTr("Model file path:")
+                        text: qsTr("Download path:")
                         color: theme.textColor
                         Layout.row: 1
                         Layout.column: 0
@@ -550,10 +550,11 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                         implicitWidth: 300
                         Layout.row: 1
                         Layout.column: 1
+                        Layout.fillWidth: true
                         ToolTip.text: qsTr("Path where model files will be downloaded to")
                         ToolTip.visible: hovered
                         Accessible.role: Accessible.ToolTip
-                        Accessible.name: topKLabel.text
+                        Accessible.name: modelPathDisplayLabel.text
                         Accessible.description: ToolTip.text
                     }
                     Button {
