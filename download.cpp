@@ -33,19 +33,35 @@ Download::Download()
     m_downloadLocalModelsPath = defaultLocalModelsPath();
 }
 
+bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
+    return lhs.filename == rhs.filename && lhs.md5sum == rhs.md5sum;
+}
+
 QList<ModelInfo> Download::modelList() const
 {
     // We make sure the default model is listed first
     QList<ModelInfo> values = m_modelMap.values();
+
     ModelInfo defaultInfo;
+    ModelInfo bestGPTJInfo;
+    ModelInfo bestLlamaInfo;
     for (ModelInfo v : values) {
-        if (v.isDefault) {
+        if (v.isDefault)
             defaultInfo = v;
-            break;
-        }
+        if (v.bestGPTJ)
+            bestGPTJInfo = v;
+        if (v.bestLlama)
+            bestLlamaInfo = v;
     }
-    values.removeAll(defaultInfo);
-    values.prepend(defaultInfo);
+
+    Q_ASSERT(defaultInfo == bestGPTJInfo || defaultInfo == bestLlamaInfo);
+
+    values.removeAll(bestLlamaInfo);
+    values.prepend(bestLlamaInfo);
+
+    values.removeAll(bestGPTJInfo);
+    values.prepend(bestGPTJInfo);
+
     return values;
 }
 
@@ -210,6 +226,10 @@ void Download::parseJsonFile(const QByteArray &jsonData)
         QString modelFilesize = obj["filesize"].toString();
         QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
         bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
+        bool bestGPTJ = obj.contains("bestGPTJ") && obj["bestGPTJ"] == QString("true");
+        bool bestLlama = obj.contains("bestLlama") && obj["bestLlama"] == QString("true");
+        QString description = obj["description"].toString();
+
         if (isDefault)
             defaultModel = modelFilename;
         quint64 sz = modelFilesize.toULongLong();
@@ -231,6 +251,9 @@ void Download::parseJsonFile(const QByteArray &jsonData)
         modelInfo.md5sum = modelMd5sum;
         modelInfo.installed = info.exists();
         modelInfo.isDefault = isDefault;
+        modelInfo.bestGPTJ = bestGPTJ;
+        modelInfo.bestLlama = bestLlama;
+        modelInfo.description = description;
         m_modelMap.insert(modelInfo.filename, modelInfo);
     }
 
@@ -255,10 +278,6 @@ void Download::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 
     QString modelFilename = modelReply->url().fileName();
     emit downloadProgress(bytesReceived, bytesTotal, modelFilename);
-}
-
-bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
-    return lhs.filename == rhs.filename && lhs.md5sum == rhs.md5sum;
 }
 
 HashAndSaveFile::HashAndSaveFile()

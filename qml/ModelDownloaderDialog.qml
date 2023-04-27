@@ -8,7 +8,7 @@ import llm
 Dialog {
     id: modelDownloaderDialog
     width: 1024
-    height: 435
+    height: 600
     modal: true
     opacity: 0.9
     closePolicy: LLM.modelList.length === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
@@ -54,7 +54,8 @@ Dialog {
                 delegate: Item {
                     id: delegateItem
                     width: modelList.width
-                    height: 70
+                    height: modelName.height + modelName.padding
+                        + description.height + description.padding
                     objectName: "delegateItem"
                     property bool downloading: false
                     Rectangle {
@@ -67,22 +68,37 @@ Dialog {
                         objectName: "modelName"
                         property string filename: modelData.filename
                         text: filename.slice(5, filename.length - 4)
-                        anchors.verticalCenter: parent.verticalCenter
+                        padding: 20
+                        anchors.top: parent.top
                         anchors.left: parent.left
-                        anchors.leftMargin: 10
-                        color: theme.textColor
+                        font.bold: modelData.isDefault || modelData.bestGPTJ || modelData.bestLlama
+                        color: theme.assistantColor
                         Accessible.role: Accessible.Paragraph
                         Accessible.name: qsTr("Model file")
                         Accessible.description: qsTr("Model file to be downloaded")
                     }
 
                     Text {
+                        id: description
+                        text: "    - " + modelData.description
+                        leftPadding: 20
+                        anchors.top: modelName.bottom
+                        anchors.left: modelName.left
+                        anchors.right: parent.right
+                        wrapMode: Text.WordWrap
+                        color: theme.textColor
+                        Accessible.role: Accessible.Paragraph
+                        Accessible.name: qsTr("Description")
+                        Accessible.description: qsTr("The description of the file")
+                    }
+
+                    Text {
                         id: isDefault
                         text: qsTr("(default)")
                         visible: modelData.isDefault
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: modelName.top
                         anchors.left: modelName.right
-                        anchors.leftMargin: 10
+                        padding: 20
                         color: theme.textColor
                         Accessible.role: Accessible.Paragraph
                         Accessible.name: qsTr("Default file")
@@ -91,9 +107,9 @@ Dialog {
 
                     Text {
                         text: modelData.filesize
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: modelName.top
                         anchors.left: isDefault.visible ? isDefault.right : modelName.right
-                        anchors.leftMargin: 10
+                        padding: 20
                         color: theme.textColor
                         Accessible.role: Accessible.Paragraph
                         Accessible.name: qsTr("File size")
@@ -102,9 +118,9 @@ Dialog {
 
                     Label {
                         id: speedLabel
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: modelName.top
                         anchors.right: itemProgressBar.left
-                        anchors.rightMargin: 10
+                        padding: 20
                         objectName: "speedLabel"
                         color: theme.textColor
                         text: ""
@@ -117,9 +133,9 @@ Dialog {
                     ProgressBar {
                         id: itemProgressBar
                         objectName: "itemProgressBar"
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: modelName.top
                         anchors.right: downloadButton.left
-                        anchors.rightMargin: 10
+                        padding: 20
                         width: 100
                         visible: downloading
                         background: Rectangle {
@@ -147,15 +163,13 @@ Dialog {
 
                     Item {
                         visible: modelData.calcHash
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: modelName.top
                         anchors.right: parent.right
-                        anchors.rightMargin: 10
 
                         Label {
                             id: calcHashLabel
                             anchors.right: busyCalcHash.left
-                            anchors.rightMargin: 10
-                            anchors.verticalCenter: parent.verticalCenter
+                            padding: 20
                             objectName: "calcHashLabel"
                             color: theme.textColor
                             text: qsTr("Calculating MD5...")
@@ -167,7 +181,7 @@ Dialog {
                         BusyIndicator {
                             id: busyCalcHash
                             anchors.right: parent.right
-                            anchors.verticalCenter: calcHashLabel.verticalCenter
+                            padding: 20
                             running: modelData.calcHash
                             Accessible.role: Accessible.Animation
                             Accessible.name: qsTr("Busy indicator")
@@ -177,9 +191,9 @@ Dialog {
 
                     Label {
                         id: installedLabel
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: modelName.top
                         anchors.right: parent.right
-                        anchors.rightMargin: 15
+                        padding: 20
                         objectName: "installedLabel"
                         color: theme.textColor
                         text: qsTr("Already installed")
@@ -195,11 +209,10 @@ Dialog {
                             color: theme.textColor
                             text: downloading ? "Cancel" : "Download"
                         }
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: modelName.top
                         anchors.right: parent.right
-                        anchors.rightMargin: 10
+                        padding: 20
                         visible: !modelData.installed && !modelData.calcHash
-                        padding: 10
                         onClicked: {
                             if (!downloading) {
                                 downloading = true;

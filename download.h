@@ -17,6 +17,9 @@ struct ModelInfo {
     Q_PROPERTY(bool calcHash MEMBER calcHash)
     Q_PROPERTY(bool installed MEMBER installed)
     Q_PROPERTY(bool isDefault MEMBER isDefault)
+    Q_PROPERTY(bool bestGPTJ MEMBER bestGPTJ)
+    Q_PROPERTY(bool bestLlama MEMBER bestLlama)
+    Q_PROPERTY(QString description MEMBER description)
 
 public:
     QString filename;
@@ -25,6 +28,9 @@ public:
     bool calcHash = false;
     bool installed = false;
     bool isDefault = false;
+    bool bestGPTJ = false;
+    bool bestLlama = false;
+    QString description;
 };
 Q_DECLARE_METATYPE(ModelInfo)
 
