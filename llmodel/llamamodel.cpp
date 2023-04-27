@@ -139,9 +139,13 @@ void LLamaModel::prompt(const std::string &prompt,
         }
 
         size_t tokens = batch_end - i;
-        for (size_t t = 0; t < tokens; ++t)
+        for (size_t t = 0; t < tokens; ++t) {
+            if (promptCtx.tokens.size() == promptCtx.n_ctx)
+                promptCtx.tokens.erase(promptCtx.tokens.begin());
+            promptCtx.tokens.push_back(batch.at(t));
             if (!promptCallback(batch.at(t)))
                 return;
+        }
         promptCtx.n_past += batch.size();
         i = batch_end;
     }
@@ -174,7 +178,13 @@ void LLamaModel::prompt(const std::string &prompt,
         promptCtx.n_past += 1;
         // display text
         ++totalPredictions;
-        if (id == llama_token_eos() || !responseCallback(id, llama_token_to_str(d_ptr->ctx, id)))
+        if (id == llama_token_eos())
+            return;
+
+        if (promptCtx.tokens.size() == promptCtx.n_ctx)
+            promptCtx.tokens.erase(promptCtx.tokens.begin());
+        promptCtx.tokens.push_back(id);
+        if (!responseCallback(id, llama_token_to_str(d_ptr->ctx, id)))
             return;
     }
 }

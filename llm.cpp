@@ -265,10 +265,6 @@ QList<QString> LLMObject::modelList() const
 
 bool LLMObject::handlePrompt(int32_t token)
 {
-    if (s_ctx.tokens.size() == s_ctx.n_ctx)
-        s_ctx.tokens.erase(s_ctx.tokens.begin());
-    s_ctx.tokens.push_back(token);
-
     // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
     ++m_promptResponseTokens;
@@ -288,11 +284,6 @@ bool LLMObject::handleResponse(int32_t token, const std::string &response)
         emit responseChanged();
         return false;
     }
-
-    // Save the token to our prompt ctxt
-    if (s_ctx.tokens.size() == s_ctx.n_ctx)
-        s_ctx.tokens.erase(s_ctx.tokens.begin());
-    s_ctx.tokens.push_back(token);
 
     // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
