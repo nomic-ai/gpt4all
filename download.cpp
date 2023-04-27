@@ -271,7 +271,6 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, const QString &sa
     }
 
     QCryptographicHash hash(QCryptographicHash::Md5);
-    hash.addData(tempFile->readAll());
     while(!tempFile->atEnd())
         hash.addData(tempFile->read(16384));
     if (hash.result().toHex() != expectedHash) {
