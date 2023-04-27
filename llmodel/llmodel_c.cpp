@@ -49,6 +49,11 @@ bool llmodel_isModelLoaded(llmodel_model model)
 }
 
 // Wrapper functions for the C callbacks
+bool prompt_wrapper(int32_t token_id, void *user_data) {
+    llmodel_prompt_callback callback = reinterpret_cast<llmodel_prompt_callback>(user_data);
+    return callback(token_id);
+}
+
 bool response_wrapper(int32_t token_id, const std::string &response, void *user_data) {
     llmodel_response_callback callback = reinterpret_cast<llmodel_response_callback>(user_data);
     return callback(token_id, response.c_str());
@@ -60,17 +65,20 @@ bool recalculate_wrapper(bool is_recalculating, void *user_data) {
 }
 
 void llmodel_prompt(llmodel_model model, const char *prompt,
-                    llmodel_response_callback response,
-                    llmodel_recalculate_callback recalculate,
+                    llmodel_response_callback prompt_callback,
+                    llmodel_response_callback response_callback,
+                    llmodel_recalculate_callback recalculate_callback,
                     llmodel_prompt_context *ctx)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
 
     // Create std::function wrappers that call the C function pointers
+    std::function<bool(int32_t)> prompt_func =
+        std::bind(&prompt_wrapper, std::placeholders::_1, reinterpret_cast<void*>(prompt_callback));
     std::function<bool(int32_t, const std::string&)> response_func =
-        std::bind(&response_wrapper, std::placeholders::_1, std::placeholders::_2, reinterpret_cast<void*>(response));
+        std::bind(&response_wrapper, std::placeholders::_1, std::placeholders::_2, reinterpret_cast<void*>(response_callback));
     std::function<bool(bool)> recalc_func =
-        std::bind(&recalculate_wrapper, std::placeholders::_1, reinterpret_cast<void*>(recalculate));
+        std::bind(&recalculate_wrapper, std::placeholders::_1, reinterpret_cast<void*>(recalculate_callback));
 
     // Copy the C prompt context
     wrapper->promptContext.n_past = ctx->n_past;
@@ -85,7 +93,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     wrapper->promptContext.contextErase = ctx->context_erase;
 
     // Call the C++ prompt method
-    wrapper->llModel->prompt(prompt, response_func, recalc_func, wrapper->promptContext);
+    wrapper->llModel->prompt(prompt, prompt_func, response_func, recalc_func, wrapper->promptContext);
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data
     // which involves no copies

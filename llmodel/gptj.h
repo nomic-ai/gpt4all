@@ -16,8 +16,9 @@ public:
     bool loadModel(const std::string &modelPath, std::istream &fin) override;
     bool isModelLoaded() const override;
     void prompt(const std::string &prompt,
-        std::function<bool(int32_t, const std::string&)> response,
-        std::function<bool(bool)> recalculate,
+        std::function<bool(int32_t)> promptCallback,
+        std::function<bool(int32_t, const std::string&)> responseCallback,
+        std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx) override;
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() override;

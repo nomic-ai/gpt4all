@@ -38,9 +38,16 @@ typedef struct {
 } llmodel_prompt_context;
 
 /**
+ * Callback type for prompt processing.
+ * @param token_id The token id of the prompt.
+ * @return a bool indicating whether the model should keep processing.
+ */
+typedef bool (*llmodel_prompt_callback)(int32_t token_id);
+
+/**
  * Callback type for response.
  * @param token_id The token id of the response.
- * @param response The response string.
+ * @param response The response string. NOTE: a token_id of -1 indicates the string is an error string.
  * @return a bool indicating whether the model should keep generating.
  */
 typedef bool (*llmodel_response_callback)(int32_t token_id, const char *response);
@@ -95,13 +102,15 @@ bool llmodel_isModelLoaded(llmodel_model model);
  * Generate a response using the model.
  * @param model A pointer to the llmodel_model instance.
  * @param prompt A string representing the input prompt.
- * @param response A callback function for handling the generated response.
- * @param recalculate A callback function for handling recalculation requests.
+ * @param prompt_callback A callback function for handling the processing of prompt.
+ * @param response_callback A callback function for handling the generated response.
+ * @param recalculate_callback A callback function for handling recalculation requests.
  * @param ctx A pointer to the llmodel_prompt_context structure.
  */
 void llmodel_prompt(llmodel_model model, const char *prompt,
-                    llmodel_response_callback response,
-                    llmodel_recalculate_callback recalculate,
+                    llmodel_response_callback prompt_callback,
+                    llmodel_response_callback response_callback,
+                    llmodel_recalculate_callback recalculate_callback,
                     llmodel_prompt_context *ctx);
 
 /**
