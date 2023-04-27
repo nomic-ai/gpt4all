@@ -544,7 +544,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                     }
                     TextField {
                         id: modelPathDisplayLabel
-                        text: settings.modelPath
+                        text: Download.downloadLocalModelsPath
                         readOnly: true
                         color: theme.textColor
                         implicitWidth: 300
