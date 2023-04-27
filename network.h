@@ -22,17 +22,31 @@ Q_SIGNALS:
     void activeChanged();
     void healthCheckFailed(int code);
 
+public Q_SLOTS:
+    void sendModelLoaded();
+    void sendResetContext();
+    void sendStartup();
+    void sendShutdown();
+
 private Q_SLOTS:
+    void handleIpifyFinished();
     void handleHealthFinished();
     void handleJsonUploadFinished();
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
+    void handleMixpanelFinished();
 
 private:
     void sendHealth();
+    void sendIpify();
+    void sendMixpanelEvent(const QString &event);
+    void sendMixpanel(const QByteArray &json);
     bool packageAndSendJson(const QString &ingestId, const QString &json);
 
 private:
+    bool m_isOptIn;
+    bool m_shouldSendStartup;
     bool m_isActive;
+    QString m_ipify;
     QString m_uniqueId;
     QNetworkAccessManager m_networkManager;
     QVector<QNetworkReply*> m_activeUploads;

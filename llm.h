@@ -51,8 +51,12 @@ Q_SIGNALS:
     void modelListChanged();
     void threadCountChanged();
     void recalcChanged();
+    void sendStartup();
+    void sendModelLoaded();
+    void sendResetContext();
 
 private:
+    void resetContextPrivate();
     bool loadModelPrivate(const QString &modelName);
     bool handleResponse(int32_t token, const std::string &response);
     bool handleRecalculate(bool isRecalc);

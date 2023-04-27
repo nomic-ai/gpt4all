@@ -1,5 +1,6 @@
 #include "llm.h"
 #include "download.h"
+#include "network.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -43,6 +44,9 @@ LLMObject::LLMObject()
 {
     moveToThread(&m_llmThread);
     connect(&m_llmThread, &QThread::started, this, &LLMObject::loadModel);
+    connect(this, &LLMObject::sendStartup, Network::globalInstance(), &Network::sendStartup);
+    connect(this, &LLMObject::sendModelLoaded, Network::globalInstance(), &Network::sendModelLoaded);
+    connect(this, &LLMObject::sendResetContext, Network::globalInstance(), &Network::sendResetContext);
     m_llmThread.setObjectName("llm thread");
     m_llmThread.start();
 }
@@ -65,11 +69,14 @@ bool LLMObject::loadModelPrivate(const QString &modelName)
     if (isModelLoaded() && m_modelName == modelName)
         return true;
 
+    bool isFirstLoad = false;
     if (isModelLoaded()) {
-        resetContext();
+        resetContextPrivate();
         delete m_llmodel;
         m_llmodel = nullptr;
         emit isModelLoadedChanged();
+    } else {
+        isFirstLoad = true;
     }
 
     bool isGPTJ = false;
@@ -93,6 +100,11 @@ bool LLMObject::loadModelPrivate(const QString &modelName)
 
         emit isModelLoadedChanged();
         emit threadCountChanged();
+
+        if (isFirstLoad)
+            emit sendStartup();
+        else
+            emit sendModelLoaded();
     }
 
     if (m_llmodel)
@@ -141,6 +153,12 @@ void LLMObject::resetResponse()
 }
 
 void LLMObject::resetContext()
+{
+    resetContextPrivate();
+    emit sendResetContext();
+}
+
+void LLMObject::resetContextPrivate()
 {
     regenerateResponse();
     s_ctx = LLModel::PromptContext();

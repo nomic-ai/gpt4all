@@ -44,7 +44,7 @@ add_library(llmodel
     gptj.h gptj.cpp
     llamamodel.h llamamodel.cpp
     llama.cpp/examples/common.cpp
-    llmodel.h llmodel_c.h
+    llmodel.h llmodel_c.h llmodel_c.cpp
     utils.h utils.cpp
 )
 
