@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QProcess>
 #include <QResource>
+#include <QSettings>
 #include <fstream>
 
 class MyLLM: public LLM { };
@@ -61,7 +62,12 @@ bool LLMObject::loadModel()
         return false;
     }
 
-    return loadModelPrivate(models.first());
+    QSettings settings;
+    settings.sync();
+    QString defaultModel = settings.value("defaultModel", "gpt4all-j-v1.3-groovy").toString();
+    if (defaultModel.isEmpty() || !models.contains(defaultModel))
+        defaultModel = models.first();
+    return loadModelPrivate(defaultModel);
 }
 
 bool LLMObject::loadModelPrivate(const QString &modelName)

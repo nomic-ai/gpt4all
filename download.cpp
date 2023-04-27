@@ -9,6 +9,7 @@
 #include <QUrl>
 #include <QDir>
 #include <QStandardPaths>
+#include <QSettings>
 
 class MyDownload: public Download { };
 Q_GLOBAL_STATIC(MyDownload, downloadInstance)
@@ -198,6 +199,7 @@ void Download::parseJsonFile(const QByteArray &jsonData)
         return;
     }
 
+    QString defaultModel;
     QJsonArray jsonArray = document.array();
 
     m_modelMap.clear();
@@ -208,7 +210,8 @@ void Download::parseJsonFile(const QByteArray &jsonData)
         QString modelFilesize = obj["filesize"].toString();
         QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
         bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
-
+        if (isDefault)
+            defaultModel = modelFilename;
         quint64 sz = modelFilesize.toULongLong();
         if (sz < 1024) {
             modelFilesize = QString("%1 bytes").arg(sz);
@@ -231,6 +234,16 @@ void Download::parseJsonFile(const QByteArray &jsonData)
         m_modelMap.insert(modelInfo.filename, modelInfo);
     }
 
+    // remove ggml- prefix and .bin suffix
+    Q_ASSERT(defaultModel.startsWith("ggml-"));
+    defaultModel = defaultModel.remove(0, 5);
+    Q_ASSERT(defaultModel.endsWith(".bin"));
+    defaultModel.chop(4);
+
+    QSettings settings;
+    settings.sync();
+    settings.setValue("defaultModel", defaultModel);
+    settings.sync();
     emit modelListChanged();
 }
 
