@@ -21,15 +21,22 @@ Network *Network::globalInstance()
 Network::Network()
     : QObject{nullptr}
     , m_isActive(false)
+    , m_isOptIn(false)
+    , m_shouldSendStartup(false)
 {
     QSettings settings;
     settings.sync();
+    m_isOptIn = settings.value("track", false).toBool();
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
     settings.sync();
     setActive(settings.value("network/isActive", false).toBool());
+    if (m_isOptIn)
+        sendIpify();
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Network::handleSslErrors);
+    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
+        &Network::sendShutdown);
 }
 
 void Network::setActive(bool b)
@@ -77,9 +84,10 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     newDoc.setObject(object);
 
 #if defined(DEBUG)
-    printf("%s", qPrintable(newDoc.toJson(QJsonDocument::Indented)));
+    printf("%s\n", qPrintable(newDoc.toJson(QJsonDocument::Indented)));
     fflush(stdout);
 #endif
+
     QUrl jsonUrl("https://api.gpt4all.io/v1/ingest/chat");
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
@@ -121,7 +129,7 @@ void Network::handleJsonUploadFinished()
     }
 
 #if defined(DEBUG)
-    printf("%s", qPrintable(document.toJson(QJsonDocument::Indented)));
+    printf("%s\n", qPrintable(document.toJson(QJsonDocument::Indented)));
     fflush(stdout);
 #endif
 
@@ -133,6 +141,148 @@ void Network::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &erro
     QUrl url = reply->request().url();
     for (auto e : errors)
         qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
+}
+
+void Network::sendModelLoaded()
+{
+    if (!m_isOptIn)
+        return;
+    sendMixpanelEvent("model_load");
+}
+
+void Network::sendResetContext()
+{
+    if (!m_isOptIn)
+        return;
+    sendMixpanelEvent("reset_context");
+}
+
+void Network::sendStartup()
+{
+    if (!m_isOptIn)
+        return;
+    m_shouldSendStartup = true;
+    if (m_ipify.isEmpty())
+        return; // when it completes it will send
+    sendMixpanelEvent("startup");
+}
+
+void Network::sendShutdown()
+{
+    if (!m_isOptIn)
+        return;
+    sendMixpanelEvent("shutdown");
+}
+
+void Network::sendMixpanelEvent(const QString &ev)
+{
+    if (!m_isOptIn)
+        return;
+
+    QJsonObject properties;
+    properties.insert("token", "ce362e568ddaee16ed243eaffb5860a2");
+    properties.insert("time", QDateTime::currentSecsSinceEpoch());
+    properties.insert("distinct_id", m_uniqueId);
+    properties.insert("$insert_id", generateUniqueId());
+    properties.insert("$os", QSysInfo::prettyProductName());
+    if (!m_ipify.isEmpty())
+        properties.insert("ip", m_ipify);
+    properties.insert("name", QCoreApplication::applicationName() + " v"
+        + QCoreApplication::applicationVersion());
+    properties.insert("model", LLM::globalInstance()->modelName());
+
+    QJsonObject event;
+    event.insert("event", ev);
+    event.insert("properties", properties);
+
+    QJsonArray array;
+    array.append(event);
+
+    QJsonDocument doc;
+    doc.setArray(array);
+    sendMixpanel(doc.toJson());
+
+#if defined(DEBUG)
+    printf("%s %s\n", qPrintable(ev), qPrintable(doc.toJson(QJsonDocument::Indented)));
+    fflush(stdout);
+#endif
+}
+
+void Network::sendIpify()
+{
+    if (!m_isOptIn)
+        return;
+
+    QUrl ipifyUrl("https://api.ipify.org");
+    QNetworkRequest request(ipifyUrl);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+    QNetworkReply *reply = m_networkManager.get(request);
+    connect(reply, &QNetworkReply::finished, this, &Network::handleIpifyFinished);
+}
+
+void Network::sendMixpanel(const QByteArray &json)
+{
+    if (!m_isOptIn)
+        return;
+
+    QUrl trackUrl("https://api.mixpanel.com/track");
+    QNetworkRequest request(trackUrl);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QNetworkReply *trackReply = m_networkManager.post(request, json);
+    connect(trackReply, &QNetworkReply::finished, this, &Network::handleMixpanelFinished);
+}
+
+void Network::handleIpifyFinished()
+{
+    Q_ASSERT(m_isOptIn);
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply)
+        return;
+
+    QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+    Q_ASSERT(response.isValid());
+    bool ok;
+    int code = response.toInt(&ok);
+    if (!ok)
+        qWarning() << "ERROR: ipify invalid response.";
+    if (code != 200)
+        qWarning() << "ERROR: ipify response != 200 code:" << code;
+    m_ipify = qPrintable(reply->readAll());
+#if defined(DEBUG)
+    printf("ipify finished %s\n", m_ipify.toLatin1().constData());
+    fflush(stdout);
+#endif
+    reply->deleteLater();
+
+    if (m_shouldSendStartup)
+        sendStartup();
+}
+
+void Network::handleMixpanelFinished()
+{
+    Q_ASSERT(m_isOptIn);
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply)
+        return;
+
+    QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+    Q_ASSERT(response.isValid());
+    bool ok;
+    int code = response.toInt(&ok);
+    if (!ok)
+        qWarning() << "ERROR: track invalid response.";
+    if (code != 200)
+        qWarning() << "ERROR: track response != 200 code:" << code;
+#if defined(DEBUG)
+    printf("mixpanel finished %s\n", qPrintable(reply->readAll()));
+    fflush(stdout);
+#endif
+    reply->deleteLater();
 }
 
 bool Network::sendConversation(const QString &ingestId, const QString &conversation)
