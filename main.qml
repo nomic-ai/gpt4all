@@ -687,7 +687,7 @@ Window {
                             x: globalPoint.x
                             y: globalPoint.y
                             property string text: currentResponse ? LLM.response : (value ? value : "")
-                            response: newResponse === "" ? text : newResponse
+                            response: newResponse === undefined || newResponse === "" ? text : newResponse
                             onAccepted: {
                                 var responseHasChanged = response !== text && response !== newResponse
                                 if (thumbsDownState && !thumbsUpState && !responseHasChanged)
