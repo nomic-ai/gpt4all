@@ -23,9 +23,21 @@ Dialog {
         radius: 10
     }
 
+    property string defaultModelPath: Download.defaultLocalModelsPath()
+    property alias modelPath: settings.modelPath
+    Settings {
+        id: settings
+        property string modelPath: modelDownloaderDialog.defaultModelPath
+    }
+
     Component.onCompleted: {
+        Download.downloadLocalModelsPath = settings.modelPath
         if (LLM.modelList.length === 0)
             open();
+    }
+
+    Component.onDestruction: {
+        settings.sync()
     }
 
     ColumnLayout {
@@ -306,21 +318,6 @@ Dialog {
                     }
                 }
             }
-        }
-
-        property string defaultModelPath: Download.defaultLocalModelsPath()
-        property alias modelPath: settings.modelPath
-        Settings {
-            id: settings
-            property string modelPath: settingsDialog.defaultModelPath
-        }
-
-        Component.onCompleted: {
-            Download.downloadLocalModelsPath = settings.modelPath
-        }
-
-        Component.onDestruction: {
-            settings.sync()
         }
 
         RowLayout {
