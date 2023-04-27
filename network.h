@@ -27,6 +27,7 @@ public Q_SLOTS:
     void sendResetContext();
     void sendStartup();
     void sendShutdown();
+    void sendCheckForUpdates();
 
 private Q_SLOTS:
     void handleIpifyFinished();

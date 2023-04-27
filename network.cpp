@@ -174,6 +174,13 @@ void Network::sendShutdown()
     sendMixpanelEvent("shutdown");
 }
 
+void Network::sendCheckForUpdates()
+{
+    if (!m_isOptIn)
+        return;
+    sendMixpanelEvent("check_for_updates");
+}
+
 void Network::sendMixpanelEvent(const QString &ev)
 {
     if (!m_isOptIn)
