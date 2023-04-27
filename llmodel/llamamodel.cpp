@@ -80,8 +80,9 @@ bool LLamaModel::isModelLoaded() const
 }
 
 void LLamaModel::prompt(const std::string &prompt,
-        std::function<bool(int32_t, const std::string&)> response,
-        std::function<bool(bool)> recalculate,
+        std::function<bool(int32_t)> promptCallback,
+        std::function<bool(int32_t, const std::string&)> responseCallback,
+        std::function<bool(bool)> recalculateCallback,
         PromptContext &promptCtx) {
 
     if (!isModelLoaded()) {
@@ -102,7 +103,7 @@ void LLamaModel::prompt(const std::string &prompt,
     promptCtx.n_ctx = llama_n_ctx(d_ptr->ctx);
 
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
-        response(-1, "The prompt size exceeds the context window size and cannot be processed.");
+        responseCallback(-1, "The prompt size exceeds the context window size and cannot be processed.");
         std::cerr << "LLAMA ERROR: The prompt is" << embd_inp.size() <<
             "tokens and the context window is" << promptCtx.n_ctx << "!\n";
         return;
@@ -128,7 +129,7 @@ void LLamaModel::prompt(const std::string &prompt,
             std::cerr << "LLAMA: reached the end of the context window so resizing\n";
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculate);
+            recalculateContext(promptCtx, recalculateCallback);
             assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
         }
 
@@ -137,10 +138,9 @@ void LLamaModel::prompt(const std::string &prompt,
             return;
         }
 
-        // We pass a null string for each token to see if the user has asked us to stop...
         size_t tokens = batch_end - i;
         for (size_t t = 0; t < tokens; ++t)
-            if (!response(batch.at(t), ""))
+            if (!promptCallback(batch.at(t)))
                 return;
         promptCtx.n_past += batch.size();
         i = batch_end;
@@ -162,8 +162,8 @@ void LLamaModel::prompt(const std::string &prompt,
             std::cerr << "LLAMA: reached the end of the context window so resizing\n";
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculate);
-            assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
+            recalculateContext(promptCtx, recalculateCallback);
+            assert(promptCtx.n_past + 1 <= promptCtx.n_ctx);
         }
 
         if (llama_eval(d_ptr->ctx, &id, 1, promptCtx.n_past, d_ptr->n_threads)) {
@@ -174,7 +174,7 @@ void LLamaModel::prompt(const std::string &prompt,
         promptCtx.n_past += 1;
         // display text
         ++totalPredictions;
-        if (id == llama_token_eos() || !response(id, llama_token_to_str(d_ptr->ctx, id)))
+        if (id == llama_token_eos() || !responseCallback(id, llama_token_to_str(d_ptr->ctx, id)))
             return;
     }
 }

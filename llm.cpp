@@ -38,7 +38,7 @@ static QString modelFilePath(const QString &modelName)
 LLMObject::LLMObject()
     : QObject{nullptr}
     , m_llmodel(nullptr)
-    , m_responseTokens(0)
+    , m_promptResponseTokens(0)
     , m_responseLogits(0)
     , m_isRecalc(false)
 {
@@ -133,12 +133,12 @@ bool LLMObject::isModelLoaded() const
 
 void LLMObject::regenerateResponse()
 {
-    s_ctx.n_past -= m_responseTokens;
+    s_ctx.n_past -= m_promptResponseTokens;
     s_ctx.n_past = std::max(0, s_ctx.n_past);
     // FIXME: This does not seem to be needed in my testing and llama models don't to it. Remove?
     s_ctx.logits.erase(s_ctx.logits.end() -= m_responseLogits, s_ctx.logits.end());
-    s_ctx.tokens.erase(s_ctx.tokens.end() -= m_responseTokens, s_ctx.tokens.end());
-    m_responseTokens = 0;
+    s_ctx.tokens.erase(s_ctx.tokens.end() -= m_promptResponseTokens, s_ctx.tokens.end());
+    m_promptResponseTokens = 0;
     m_responseLogits = 0;
     m_response = std::string();
     emit responseChanged();
@@ -146,7 +146,7 @@ void LLMObject::regenerateResponse()
 
 void LLMObject::resetResponse()
 {
-    m_responseTokens = 0;
+    m_promptResponseTokens = 0;
     m_responseLogits = 0;
     m_response = std::string();
     emit responseChanged();
@@ -263,6 +263,18 @@ QList<QString> LLMObject::modelList() const
     return list;
 }
 
+bool LLMObject::handlePrompt(int32_t token)
+{
+    if (s_ctx.tokens.size() == s_ctx.n_ctx)
+        s_ctx.tokens.erase(s_ctx.tokens.begin());
+    s_ctx.tokens.push_back(token);
+
+    // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
+    // the entire context window which we can reset on regenerate prompt
+    ++m_promptResponseTokens;
+    return !m_stopGenerating;
+}
+
 bool LLMObject::handleResponse(int32_t token, const std::string &response)
 {
 #if 0
@@ -282,13 +294,12 @@ bool LLMObject::handleResponse(int32_t token, const std::string &response)
         s_ctx.tokens.erase(s_ctx.tokens.begin());
     s_ctx.tokens.push_back(token);
 
-    // m_responseTokens and m_responseLogits are related to last prompt/response not
+    // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
-    ++m_responseTokens;
-    if (!response.empty()) {
-        m_response.append(response);
-        emit responseChanged();
-    }
+    ++m_promptResponseTokens;
+    Q_ASSERT(!response.empty());
+    m_response.append(response);
+    emit responseChanged();
 
     // Stop generation if we encounter prompt or response tokens
     QString r = QString::fromStdString(m_response);
@@ -315,6 +326,7 @@ bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, in
     QString instructPrompt = prompt_template.arg(prompt);
 
     m_stopGenerating = false;
+    auto promptFunc = std::bind(&LLMObject::handlePrompt, this, std::placeholders::_1);
     auto responseFunc = std::bind(&LLMObject::handleResponse, this, std::placeholders::_1,
         std::placeholders::_2);
     auto recalcFunc = std::bind(&LLMObject::handleRecalculate, this, std::placeholders::_1);
@@ -327,7 +339,7 @@ bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, in
     s_ctx.n_batch = n_batch;
     s_ctx.repeat_penalty = repeat_penalty;
     s_ctx.repeat_last_n = repeat_penalty_tokens;
-    m_llmodel->prompt(instructPrompt.toStdString(), responseFunc, recalcFunc, s_ctx);
+    m_llmodel->prompt(instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, s_ctx);
     m_responseLogits += s_ctx.logits.size() - logitsBefore;
     std::string trimmed = trim_whitespace(m_response);
     if (trimmed != m_response) {
