@@ -286,6 +286,14 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, const QString &sa
     // The file save needs the tempFile closed
     tempFile->close();
 
+    // Attempt to *move* the verified tempfile into place - this should be atomic
+    // but will only work if the destination is on the same filesystem
+    if (tempFile->rename(saveFilePath)) {
+        tempFile->setAutoRemove(false);
+        emit hashAndSaveFinished(true, tempFile, modelReply);
+        return;
+    }
+
     // Reopen the tempFile for copying
     if (!tempFile->open()) {
         qWarning() << "ERROR: Could not open temp file at finish:"
