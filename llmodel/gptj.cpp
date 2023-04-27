@@ -753,9 +753,13 @@ void GPTJ::prompt(const std::string &prompt,
         }
 
         size_t tokens = batch_end - i;
-        for (size_t t = 0; t < tokens; ++t)
+        for (size_t t = 0; t < tokens; ++t) {
+            if (promptCtx.tokens.size() == promptCtx.n_ctx)
+                promptCtx.tokens.erase(promptCtx.tokens.begin());
+            promptCtx.tokens.push_back(batch.at(t));
             if (!promptCallback(batch.at(t)))
                 return;
+        }
         promptCtx.n_past += batch.size();
         i = batch_end;
     }
@@ -806,7 +810,14 @@ void GPTJ::prompt(const std::string &prompt,
         promptCtx.n_past += 1;
         // display text
         ++totalPredictions;
-        if (id == 50256 /*end of text*/ || !responseCallback(id, d_ptr->vocab.id_to_token[id]))
+
+        if (id == 50256 /*end of text*/)
+            goto stop_generating;
+
+        if (promptCtx.tokens.size() == promptCtx.n_ctx)
+            promptCtx.tokens.erase(promptCtx.tokens.begin());
+        promptCtx.tokens.push_back(id);
+        if (!responseCallback(id, d_ptr->vocab.id_to_token[id]))
             goto stop_generating;
     }
 
