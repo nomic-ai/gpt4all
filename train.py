@@ -1,5 +1,6 @@
 import os
-from os.path import join, basename, isdir
+import sys
+from os.path import join, basename, isdir, abspath
 from glob import glob
 from typing import Optional, Dict, Union
 
@@ -11,7 +12,6 @@ from transformers import (
 import torch
 from torch.optim import AdamW
 from argparse import ArgumentParser
-from read import read_config
 from accelerate import Accelerator
 from accelerate.utils import DummyScheduler, DummyOptim, set_seed
 from peft import get_peft_model, LoraConfig, TaskType
@@ -19,64 +19,12 @@ from torchmetrics import MeanMetric
 from tqdm import tqdm
 import wandb
 
-from gpt4all.data import load_data
-from gpt4all.exceptions import GPT4AllTrainingException
+from read import read_config
+from data import load_data
+from checkpoint_mgr import CheckpointManager
+
 
 torch.backends.cuda.matmul.allow_tf32 = True
-
-
-def get_last_checkpoint(
-    base_path: str, checkpoint_prefix: str
-) -> Optional[Dict[str, Union[int, str]]]:
-    """Determines the last checkpoint under the base path. Assumes the checkpoint directories
-    can be sorted ascending where the latest checkpoint is last.
-
-    Parameters
-    ----------
-    base_path : str
-        Base path where the function will search for checkpoints
-    checkpoint_prefix : str
-        Checkpoint directory prefix
-
-    Returns
-    -------
-    Optional[Dict]
-        Dictionary containing the path to the checkpoint and the step number
-
-    Raises
-    ------
-    GPT4AllTrainingException
-        Raised when the step value cannot be parsed from the checkpoint directory name
-    """
-
-    checkpoints_unsorted = []
-    for checkpoint_path in glob(join(base_path, f"{checkpoint_prefix}*")):
-        if isdir(checkpoint_path):
-            try:
-                checkpoint_base_name = basename(checkpoint_path)
-
-                checkpoints_unsorted.append(
-                    {
-                        "next_step": int(
-                            checkpoint_base_name.replace(checkpoint_prefix, "")
-                        )
-                        + 1,
-                        "path": checkpoint_path,
-                    }
-                )
-            except ValueError as ex:
-                raise GPT4AllTrainingException(
-                    f"Unable to derive checkpoint step from [{checkpoint_base_name}], make sure "
-                    "that 'checkpoint_prefix' is set correctly in the configuration file."
-                ) from ex
-
-        # Implied else, skip if the filesystem object found was not a directory
-
-    checkpoint_candidate = sorted(checkpoints_unsorted, key=lambda x: x["next_step"])
-
-    # Since checkpoint_candidate is sorted ASC, return the last element if we found any checkpoint
-    # directories, otherwise None
-    return checkpoint_candidate[-1] if len(checkpoint_candidate) > 0 else None
 
 
 def format_metrics(metrics, split, prefix=""):
@@ -195,60 +143,34 @@ def train(accelerator, config):
     # setup for saving training states in case preemption
     accelerator.register_for_checkpointing(scheduler)
 
-    # For backwards compatibility, default to "step_" if "checkpoint_prefix" isn't specified in the configuration
-    checkpoint_prefix = (
-        config["checkpoint_prefix"] if "checkpoint_prefix" in config else "step_"
+    # Initialize checkpoint manager
+    checkpoint_manager = CheckpointManager(
+        base_dir=config["output_dir"],
+        accelerator=accelerator,
+        epochs=config["num_epochs"],
+        max_steps_between_checkpoints=config["save_every"],
     )
 
-    # Determine which checkpoint to resume from
-    if config["checkpoint"]:
-        # If an explicit checkpoint is provided in the configuration file use it. This helps
-        # to maintain backwards compatibility
-        path = os.path.basename(config["train_args"]["resume_from_checkpoint"])
-        training_difference = os.path.splitext(path)[0]
-
-        last_checkpoint = {
-            "next_step": int(training_difference.replace(checkpoint_prefix, "")) + 1,
-            "path": config["checkpoint"],
-        }
-    elif "auto_resume" in config and config["auto_resume"]:
-        # Else, if the auto-resume setting is enabled in the configuration then look for the most
-        # recent checkpoint in the configured output directory
-        accelerator.print(f"Determining auto-resume checkpoint")
-        last_checkpoint = get_last_checkpoint(
-            base_path=config["output_dir"],
-            checkpoint_prefix=checkpoint_prefix,
-        )
-
-    else:
-        # Else, no previous checkpoint to load
-        last_checkpoint = None
-
-    # If it was determined that a checkpoint needs to be loaded from the previous block, configure
-    # Accelerate accordingly
-    if last_checkpoint:
-        accelerator.load_state(last_checkpoint["path"])
-        accelerator.print(f"Resumed from checkpoint: {last_checkpoint['path']}")
-        accelerator.skip_first_batches(train_dataloader, last_checkpoint["next_step"])
-        accelerator.print(f"Resuming from step {last_checkpoint['next_step']}")
-
-        step_offset = last_checkpoint["next_step"]
-    else:
-        # When we are not resuming from a checkpoint, set the step offset to 0
-        step_offset = 0
+    epoch_start, epoch_end, step_offset = checkpoint_manager.start(
+        train_dataloader=train_dataloader,
+        force_checkpoint_path=config["checkpoint"] if "checkpoint" in config else None,
+    )
 
     # log gradients
     if accelerator.is_main_process and config["wandb"]:
         wandb.watch(model, log_freq=config["log_grads_every"], log="all")
 
-    for epoch in range(config["num_epochs"]):
+    for epoch in range(epoch_start, epoch_end):
         train_loss = MeanMetric(nan_strategy="error").to(model.device)
 
         with tqdm(
-            initial=step_offset, total=len(train_dataloader), desc=f"Epoch {epoch}"
+            initial=step_offset,
+            total=len(train_dataloader),
+            desc=f"Epoch {epoch} of {config['num_epochs']}",
         ) as pbar:
             for iteration, batch in enumerate(train_dataloader):
-                step = iteration + step_offset
+                # Only offset step on first epoch
+                step = iteration + step_offset if epoch == epoch_start else iteration
 
                 model.train()
                 outputs = model(**batch)
@@ -279,9 +201,8 @@ def train(accelerator, config):
                     scheduler.step()
                     optimizer.zero_grad()
 
-                if step > 0 and step % config["save_every"] == 0:
-                    curr_step = step + epoch * len(train_dataloader)
-                    accelerator.save_state(f"{config['output_dir']}/step_{curr_step}")
+                # Invoke checkpoint manager step complete hook
+                checkpoint_manager.step_complete(epoch=epoch, step=step)
 
                 if step > 0 and (
                     step % config["eval_every"] == 0
@@ -311,6 +232,10 @@ def train(accelerator, config):
                 )
 
         accelerator.print(f"Epoch {epoch} finished")
+
+        # Invoke checkpoint manager epoch complete hook
+        checkpoint_manager.epoch_complete(epoch=epoch, step=step)
+
         accelerator.print(f"Pushing to HF hub")
         accelerator.wait_for_everyone()
         unwrapped_model = accelerator.unwrap_model(model)
@@ -339,6 +264,8 @@ def train(accelerator, config):
         save_function=accelerator.save,
         state_dict=accelerator.get_state_dict(model),
     )
+
+    checkpoint_manager.end()
 
     accelerator.end_training()
 
