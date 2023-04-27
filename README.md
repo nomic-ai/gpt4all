@@ -57,6 +57,14 @@ Installs a native chat-client with auto-update functionality that runs on your d
 
 [Ubuntu](https://gpt4all.io/installers/gpt4all-installer-linux.run)
 
+If you have older hardware that only supports avx and not avx2 you can use these.
+
+[Mac/OSX - avx-only](https://gpt4all.io/installers/gpt4all-installer-darwin-avx-only.dmg)
+
+[Windows - avx-only](https://gpt4all.io/installers/gpt4all-installer-win64-avx-only.exe)
+
+[Ubuntu - avx-only](https://gpt4all.io/installers/gpt4all-installer-linux-avx-only.run)
+
 These files are not yet cert signed by Windows/Apple so you will see security warnings on initial installation. We did not want to delay release while waiting for their process to complete.
 
 Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/)
