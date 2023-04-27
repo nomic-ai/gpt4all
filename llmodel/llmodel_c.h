@@ -2,6 +2,7 @@
 #define LLMODEL_C_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 #ifdef __cplusplus
@@ -15,10 +16,15 @@ typedef void *llmodel_model;
 
 /**
  * llmodel_prompt_context structure for holding the prompt context.
+ * NOTE: The implementation takes care of all the memory handling of the raw logits pointer and the
+ * raw tokens pointer. Attempting to resize them or modify them in any way can lead to undefined
+ * behavior.
  */
 typedef struct {
     float *logits;          // logits of current context
+    size_t logits_size;     // the size of the raw logits vector
     int32_t *tokens;        // current tokens in the context window
+    size_t tokens_size;     // the size of the raw tokens vector
     int32_t n_past;         // number of tokens in past conversation
     int32_t n_ctx;          // number of tokens possible in context window
     int32_t n_predict;      // number of tokens to predict
