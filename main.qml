@@ -864,7 +864,9 @@ Window {
                 id: textInput
                 color: theme.textColor
                 padding: 20
+                rightPadding: 40
                 enabled: LLM.isModelLoaded
+                wrapMode: Text.WordWrap
                 font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Send a message...")
                 placeholderTextColor: theme.backgroundLightest
