@@ -449,6 +449,8 @@ int32_t LLM::threadCount() {
 
 bool LLM::checkForUpdates() const
 {
+    Network::globalInstance()->sendCheckForUpdates();
+
 #if defined(Q_OS_LINUX)
     QString tool("maintenancetool");
 #elif defined(Q_OS_WINDOWS)
