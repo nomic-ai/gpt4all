@@ -19,6 +19,7 @@ Dialog {
     }
 
     property alias response: thumbsDownNewResponse.text
+
     Column {
         anchors.fill: parent
         spacing: 20

@@ -30,7 +30,10 @@ Download::Download()
         &Download::handleSslErrors);
     connect(this, &Download::downloadLocalModelsPathChanged, this, &Download::updateModelList);
     updateModelList();
-    m_downloadLocalModelsPath = defaultLocalModelsPath();
+    QSettings settings;
+    settings.sync();
+    m_downloadLocalModelsPath = settings.value("modelPath",
+        defaultLocalModelsPath()).toString();
 }
 
 bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
