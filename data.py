@@ -21,7 +21,7 @@ def tokenize_inputs(config, tokenizer, examples):
         prompt_len = len(tokenizer(prompt + "\n", return_tensors="pt")["input_ids"][0])
 
         # hack if our prompt is super long
-        # we need to include some labels so we arbitrarily trunacate at max_length // 2
+        # we need to include some labels so we arbitrarily truncate at max_length // 2
         # if the length is too long
         if prompt_len >= max_length // 2:
             # if prompt is too long, truncate
@@ -39,8 +39,12 @@ def tokenize_inputs(config, tokenizer, examples):
         labels = input_tokens.clone()
         labels[:prompt_len] = -100
         if len(labels) < max_length:
+
             # pad to max_length with -100
-            labels = torch.cat([labels, torch.full((max_length - len(labels),), -100)])
+            if tokenizer.padding_side == "right":
+                labels = torch.cat([labels, torch.full((max_length - len(labels),), -100)])
+            else:
+                labels = torch.cat([torch.full((max_length - len(labels),), -100), labels])
 
         assert (labels == -100).sum() < len(labels), f"Labels are all -100, something wrong. prompt length {prompt_len} exceeds max length {max_length}" 
         
