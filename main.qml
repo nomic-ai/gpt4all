@@ -56,13 +56,13 @@ Window {
         }
 
         // check for any current models and if not, open download dialog
-        if (LLM.modelList.length === 0) {
+        if (LLM.modelList.length === 0 && !firstStartDialog.opened) {
             downloadNewModels.open();
             return;
         }
 
         // check for new version
-        if (Download.hasNewerRelease) {
+        if (Download.hasNewerRelease && !firstStartDialog.opened && !downloadNewModels.opened) {
             newVersionDialog.open();
             return;
         }
