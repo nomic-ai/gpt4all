@@ -241,6 +241,7 @@ Clone the repo
 
 ```
 git clone --recurse-submodules https://github.com/nomic-ai/gpt4all.git
+cd gpt4all
 git submodule update --init
 ```
 
@@ -249,7 +250,7 @@ Setup the environment
 ```
 python -m pip install -r requirements.txt
 
-cd ../peft
+cd ./peft
 pip install -e .
 ```
 
