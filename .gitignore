@@ -1,3 +1,4 @@
 CMakeLists.txt.user
+meta/*
 models/*
 build/*
