@@ -34,6 +34,18 @@ public:
 };
 Q_DECLARE_METATYPE(ModelInfo)
 
+struct ReleaseInfo {
+    Q_GADGET
+    Q_PROPERTY(QString version MEMBER version)
+    Q_PROPERTY(QString notes MEMBER notes)
+    Q_PROPERTY(QString contributors MEMBER contributors)
+
+public:
+    QString version;
+    QString notes;
+    QString contributors;
+};
+
 class HashAndSaveFile : public QObject
 {
     Q_OBJECT
@@ -56,6 +68,8 @@ class Download : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QList<ModelInfo> modelList READ modelList NOTIFY modelListChanged)
+    Q_PROPERTY(bool hasNewerRelease READ hasNewerRelease NOTIFY hasNewerReleaseChanged)
+    Q_PROPERTY(ReleaseInfo releaseInfo READ releaseInfo NOTIFY releaseInfoChanged)
     Q_PROPERTY(QString downloadLocalModelsPath READ downloadLocalModelsPath
                    WRITE setDownloadLocalModelsPath
                    NOTIFY downloadLocalModelsPathChanged)
@@ -64,16 +78,21 @@ public:
     static Download *globalInstance();
 
     QList<ModelInfo> modelList() const;
+    ReleaseInfo releaseInfo() const;
+    bool hasNewerRelease() const;
     Q_INVOKABLE void updateModelList();
+    Q_INVOKABLE void updateReleaseNotes();
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
     Q_INVOKABLE QString defaultLocalModelsPath() const;
     Q_INVOKABLE QString downloadLocalModelsPath() const;
     Q_INVOKABLE void setDownloadLocalModelsPath(const QString &modelPath);
+    Q_INVOKABLE bool isFirstStart() const;
 
 private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
-    void handleJsonDownloadFinished();
+    void handleModelsJsonDownloadFinished();
+    void handleReleaseJsonDownloadFinished();
     void handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void handleModelDownloadFinished();
     void handleHashAndSaveFinished(bool success,
@@ -84,15 +103,19 @@ Q_SIGNALS:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal, const QString &modelFile);
     void downloadFinished(const QString &modelFile);
     void modelListChanged();
+    void releaseInfoChanged();
+    void hasNewerReleaseChanged();
     void downloadLocalModelsPathChanged();
     void requestHashAndSave(const QString &hash, const QString &saveFilePath,
         QTemporaryFile *tempFile, QNetworkReply *modelReply);
 
 private:
-    void parseJsonFile(const QByteArray &jsonData);
+    void parseModelsJsonFile(const QByteArray &jsonData);
+    void parseReleaseJsonFile(const QByteArray &jsonData);
 
     HashAndSaveFile *m_hashAndSave;
     QMap<QString, ModelInfo> m_modelMap;
+    QMap<QString, ReleaseInfo> m_releaseMap;
     QNetworkAccessManager m_networkManager;
     QMap<QNetworkReply*, QTemporaryFile*> m_activeDownloads;
     QString m_downloadLocalModelsPath;

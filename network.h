@@ -9,20 +9,27 @@ class Network : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool isActive READ isActive WRITE setActive NOTIFY activeChanged)
+    Q_PROPERTY(bool usageStatsActive READ usageStatsActive WRITE setUsageStatsActive NOTIFY usageStatsActiveChanged)
+
 public:
     static Network *globalInstance();
 
     bool isActive() const { return m_isActive; }
     void setActive(bool b);
 
+    bool usageStatsActive() const { return m_usageStatsActive; }
+    void setUsageStatsActive(bool b);
+
     Q_INVOKABLE QString generateUniqueId() const;
     Q_INVOKABLE bool sendConversation(const QString &ingestId, const QString &conversation);
 
 Q_SIGNALS:
     void activeChanged();
+    void usageStatsActiveChanged();
     void healthCheckFailed(int code);
 
 public Q_SLOTS:
+    void sendOptOut();
     void sendModelLoaded();
     void sendResetContext();
     void sendStartup();
@@ -44,9 +51,9 @@ private:
     bool packageAndSendJson(const QString &ingestId, const QString &json);
 
 private:
-    bool m_isOptIn;
     bool m_shouldSendStartup;
     bool m_isActive;
+    bool m_usageStatsActive;
     QString m_ipify;
     QString m_uniqueId;
     QNetworkAccessManager m_networkManager;

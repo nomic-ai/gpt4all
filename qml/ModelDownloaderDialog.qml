@@ -32,8 +32,6 @@ Dialog {
 
     Component.onCompleted: {
         Download.downloadLocalModelsPath = settings.modelPath
-        if (LLM.modelList.length === 0)
-            open();
     }
 
     Component.onDestruction: {
