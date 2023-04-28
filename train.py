@@ -143,7 +143,7 @@ def train(accelerator, config):
     # setup for saving training states in case preemption
     accelerator.register_for_checkpointing(scheduler)
 
-    # Initialize checkpoint manager
+    # Initialize checkpoint manager instance
     checkpoint_manager = CheckpointManager(
         base_dir=config["output_dir"],
         accelerator=accelerator,
@@ -163,15 +163,14 @@ def train(accelerator, config):
     for epoch in range(epoch_start, epoch_end):
         train_loss = MeanMetric(nan_strategy="error").to(model.device)
 
-        with tqdm(
-            initial=step_offset,
-            total=len(train_dataloader),
-            desc=f"Epoch {epoch} of {config['num_epochs']}",
-        ) as pbar:
-            for iteration, batch in enumerate(train_dataloader):
-                # Only offset step on first epoch
-                step = iteration + step_offset if epoch == epoch_start else iteration
+        derived_step = step_offset if epoch == epoch_start else 0
 
+        with tqdm(
+            initial=derived_step,
+            total=len(train_dataloader),
+            desc=f"Epoch {epoch} of {epoch_end-1}",
+        ) as pbar:
+            for step, batch in enumerate(train_dataloader, start=derived_step):
                 model.train()
                 outputs = model(**batch)
                 loss = outputs.loss
