@@ -193,7 +193,9 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                         ToolTip.visible: hovered
                         Layout.row: 0
                         Layout.column: 1
-                        validator: DoubleValidator {}
+                        validator: DoubleValidator {
+                            locale: "C"
+                        }
                         onEditingFinished: {
                             var val = parseFloat(text)
                             if (!isNaN(val)) {
@@ -228,7 +230,9 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                         ToolTip.visible: hovered
                         Layout.row: 1
                         Layout.column: 1
-                        validator: DoubleValidator {}
+                        validator: DoubleValidator {
+                            locale: "C"
+                        }
                         onEditingFinished: {
                             var val = parseFloat(text)
                             if (!isNaN(val)) {
@@ -375,7 +379,9 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                         ToolTip.visible: hovered
                         Layout.row: 5
                         Layout.column: 1
-                        validator: DoubleValidator {}
+                        validator: DoubleValidator {
+                            locale: "C"
+                        }
                         onEditingFinished: {
                             var val = parseFloat(text)
                             if (!isNaN(val)) {
