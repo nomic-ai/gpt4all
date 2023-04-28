@@ -30,6 +30,7 @@ Download::Download()
         &Download::handleSslErrors);
     connect(this, &Download::downloadLocalModelsPathChanged, this, &Download::updateModelList);
     updateModelList();
+    updateReleaseNotes();
     QSettings settings;
     settings.sync();
     m_downloadLocalModelsPath = settings.value("modelPath",
@@ -38,6 +39,10 @@ Download::Download()
 
 bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
     return lhs.filename == rhs.filename && lhs.md5sum == rhs.md5sum;
+}
+
+bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs) {
+    return lhs.version == rhs.version;
 }
 
 QList<ModelInfo> Download::modelList() const
@@ -68,6 +73,42 @@ QList<ModelInfo> Download::modelList() const
     return values;
 }
 
+ReleaseInfo Download::releaseInfo() const
+{
+    const QString currentVersion = QCoreApplication::applicationVersion();
+    if (m_releaseMap.contains(currentVersion))
+        return m_releaseMap.value(currentVersion);
+    return ReleaseInfo();
+}
+
+bool compareVersions(const QString &a, const QString &b) {
+    QStringList aParts = a.split('.');
+    QStringList bParts = b.split('.');
+
+    for (int i = 0; i < std::min(aParts.size(), bParts.size()); ++i) {
+        int aInt = aParts[i].toInt();
+        int bInt = bParts[i].toInt();
+
+        if (aInt > bInt) {
+            return true;
+        } else if (aInt < bInt) {
+            return false;
+        }
+    }
+
+    return aParts.size() > bParts.size();
+}
+
+bool Download::hasNewerRelease() const
+{
+    const QString currentVersion = QCoreApplication::applicationVersion();
+    QList<QString> versions = m_releaseMap.keys();
+    std::sort(versions.begin(), versions.end(), compareVersions);
+    if (versions.isEmpty())
+        return false;
+    return compareVersions(versions.first(), currentVersion);
+}
+
 QString Download::downloadLocalModelsPath() const {
     return m_downloadLocalModelsPath;
 }
@@ -80,6 +121,17 @@ void Download::setDownloadLocalModelsPath(const QString &modelPath) {
         m_downloadLocalModelsPath = canonical;
         emit downloadLocalModelsPathChanged();
     }
+}
+
+bool Download::isFirstStart() const
+{
+    QSettings settings;
+    settings.sync();
+    QString lastVersionStarted = settings.value("download/lastVersionStarted").toString();
+    bool first = lastVersionStarted != QCoreApplication::applicationVersion();
+    settings.setValue("download/lastVersionStarted", QCoreApplication::applicationVersion());
+    settings.sync();
+    return first;
 }
 
 QString Download::defaultLocalModelsPath() const
@@ -117,7 +169,18 @@ void Download::updateModelList()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
-    connect(jsonReply, &QNetworkReply::finished, this, &Download::handleJsonDownloadFinished);
+    connect(jsonReply, &QNetworkReply::finished, this, &Download::handleModelsJsonDownloadFinished);
+}
+
+void Download::updateReleaseNotes()
+{
+    QUrl jsonUrl("http://gpt4all.io/meta/release.json");
+    QNetworkRequest request(jsonUrl);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+    QNetworkReply *jsonReply = m_networkManager.get(request);
+    connect(jsonReply, &QNetworkReply::finished, this, &Download::handleReleaseJsonDownloadFinished);
 }
 
 void Download::downloadModel(const QString &modelFile)
@@ -173,7 +236,7 @@ void Download::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &err
         qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
 }
 
-void Download::handleJsonDownloadFinished()
+void Download::handleModelsJsonDownloadFinished()
 {
 #if 0
     QByteArray jsonData = QString(""
@@ -206,10 +269,10 @@ void Download::handleJsonDownloadFinished()
     QByteArray jsonData = jsonReply->readAll();
     jsonReply->deleteLater();
 #endif
-    parseJsonFile(jsonData);
+    parseModelsJsonFile(jsonData);
 }
 
-void Download::parseJsonFile(const QByteArray &jsonData)
+void Download::parseModelsJsonFile(const QByteArray &jsonData)
 {
     QJsonParseError err;
     QJsonDocument document = QJsonDocument::fromJson(jsonData, &err);
@@ -272,6 +335,47 @@ void Download::parseJsonFile(const QByteArray &jsonData)
     settings.sync();
     emit modelListChanged();
 }
+
+void Download::handleReleaseJsonDownloadFinished()
+{
+    QNetworkReply *jsonReply = qobject_cast<QNetworkReply *>(sender());
+    if (!jsonReply)
+        return;
+
+    QByteArray jsonData = jsonReply->readAll();
+    jsonReply->deleteLater();
+    parseReleaseJsonFile(jsonData);
+}
+
+void Download::parseReleaseJsonFile(const QByteArray &jsonData)
+{
+    QJsonParseError err;
+    QJsonDocument document = QJsonDocument::fromJson(jsonData, &err);
+    if (err.error != QJsonParseError::NoError) {
+        qDebug() << "ERROR: Couldn't parse: " << jsonData << err.errorString();
+        return;
+    }
+
+    QJsonArray jsonArray = document.array();
+
+    m_releaseMap.clear();
+    for (const QJsonValue &value : jsonArray) {
+        QJsonObject obj = value.toObject();
+
+        QString version = obj["version"].toString();
+        QString notes = obj["notes"].toString();
+        QString contributors = obj["contributors"].toString();
+        ReleaseInfo releaseInfo;
+        releaseInfo.version = version;
+        releaseInfo.notes = notes;
+        releaseInfo.contributors = contributors;
+        m_releaseMap.insert(version, releaseInfo);
+    }
+
+    emit hasNewerReleaseChanged();
+    emit releaseInfoChanged();
+}
+
 
 void Download::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {

@@ -21,17 +21,19 @@ Network *Network::globalInstance()
 Network::Network()
     : QObject{nullptr}
     , m_isActive(false)
-    , m_isOptIn(false)
+    , m_usageStatsActive(false)
     , m_shouldSendStartup(false)
 {
     QSettings settings;
     settings.sync();
-    m_isOptIn = settings.value("track", false).toBool();
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
     settings.sync();
-    setActive(settings.value("network/isActive", false).toBool());
-    if (m_isOptIn)
+    m_isActive = settings.value("network/isActive", false).toBool();
+    if (m_isActive)
+        sendHealth();
+    m_usageStatsActive = settings.value("network/usageStatsActive", false).toBool();
+    if (m_usageStatsActive)
         sendIpify();
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Network::handleSslErrors);
@@ -48,6 +50,22 @@ void Network::setActive(bool b)
     emit activeChanged();
     if (m_isActive)
         sendHealth();
+}
+
+void Network::setUsageStatsActive(bool b)
+{
+    QSettings settings;
+    settings.setValue("network/usageStatsActive", b);
+    settings.sync();
+    m_usageStatsActive = b;
+    emit usageStatsActiveChanged();
+    if (!m_usageStatsActive)
+        sendOptOut();
+    else {
+        // model might be loaded already when user opt-in for first time
+        sendStartup();
+        sendIpify();
+    }
 }
 
 QString Network::generateUniqueId() const
@@ -76,9 +94,9 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
 
     QSettings settings;
     settings.sync();
-    QString attribution = settings.value("attribution", QString()).toString();
+    QString attribution = settings.value("network/attribution", QString()).toString();
     if (!attribution.isEmpty())
-        object.insert("attribution", attribution);
+        object.insert("network/attribution", attribution);
 
     QJsonDocument newDoc;
     newDoc.setObject(object);
@@ -143,23 +161,48 @@ void Network::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &erro
         qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
 }
 
+void Network::sendOptOut()
+{
+    QJsonObject properties;
+    properties.insert("token", "ce362e568ddaee16ed243eaffb5860a2");
+    properties.insert("time", QDateTime::currentSecsSinceEpoch());
+    properties.insert("distinct_id", m_uniqueId);
+    properties.insert("$insert_id", generateUniqueId());
+
+    QJsonObject event;
+    event.insert("event", "opt_out");
+    event.insert("properties", properties);
+
+    QJsonArray array;
+    array.append(event);
+
+    QJsonDocument doc;
+    doc.setArray(array);
+    sendMixpanel(doc.toJson());
+
+#if defined(DEBUG)
+    printf("%s %s\n", qPrintable("opt_out"), qPrintable(doc.toJson(QJsonDocument::Indented)));
+    fflush(stdout);
+#endif
+}
+
 void Network::sendModelLoaded()
 {
-    if (!m_isOptIn)
+    if (!m_usageStatsActive)
         return;
     sendMixpanelEvent("model_load");
 }
 
 void Network::sendResetContext()
 {
-    if (!m_isOptIn)
+    if (!m_usageStatsActive)
         return;
     sendMixpanelEvent("reset_context");
 }
 
 void Network::sendStartup()
 {
-    if (!m_isOptIn)
+    if (!m_usageStatsActive)
         return;
     m_shouldSendStartup = true;
     if (m_ipify.isEmpty())
@@ -169,21 +212,21 @@ void Network::sendStartup()
 
 void Network::sendShutdown()
 {
-    if (!m_isOptIn)
+    if (!m_usageStatsActive)
         return;
     sendMixpanelEvent("shutdown");
 }
 
 void Network::sendCheckForUpdates()
 {
-    if (!m_isOptIn)
+    if (!m_usageStatsActive)
         return;
     sendMixpanelEvent("check_for_updates");
 }
 
 void Network::sendMixpanelEvent(const QString &ev)
 {
-    if (!m_isOptIn)
+    if (!m_usageStatsActive)
         return;
 
     QJsonObject properties;
@@ -217,7 +260,7 @@ void Network::sendMixpanelEvent(const QString &ev)
 
 void Network::sendIpify()
 {
-    if (!m_isOptIn)
+    if (!m_usageStatsActive || !m_ipify.isEmpty())
         return;
 
     QUrl ipifyUrl("https://api.ipify.org");
@@ -231,7 +274,7 @@ void Network::sendIpify()
 
 void Network::sendMixpanel(const QByteArray &json)
 {
-    if (!m_isOptIn)
+    if (!m_usageStatsActive)
         return;
 
     QUrl trackUrl("https://api.mixpanel.com/track");
@@ -246,7 +289,7 @@ void Network::sendMixpanel(const QByteArray &json)
 
 void Network::handleIpifyFinished()
 {
-    Q_ASSERT(m_isOptIn);
+    Q_ASSERT(m_usageStatsActive);
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply)
         return;
@@ -272,7 +315,7 @@ void Network::handleIpifyFinished()
 
 void Network::handleMixpanelFinished()
 {
-    Q_ASSERT(m_isOptIn);
+    Q_ASSERT(m_usageStatsActive);
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply)
         return;

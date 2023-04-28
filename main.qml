@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import llm
+import download
 import network
 
 Window {
@@ -20,6 +21,62 @@ Window {
     property string chatId: Network.generateUniqueId()
 
     color: theme.textColor
+
+    // Startup code
+    Component.onCompleted: {
+        startupDialogs();
+    }
+
+    Connections {
+        target: firstStartDialog
+        function onClosed() {
+            startupDialogs();
+        }
+    }
+
+    Connections {
+        target: downloadNewModels
+        function onClosed() {
+            startupDialogs();
+        }
+    }
+
+    Connections {
+        target: Download
+        function onHasNewerReleaseChanged() {
+            startupDialogs();
+        }
+    }
+
+    function startupDialogs() {
+        // check for first time start of this version
+        if (Download.isFirstStart()) {
+            firstStartDialog.open();
+            return;
+        }
+
+        // check for any current models and if not, open download dialog
+        if (LLM.modelList.length === 0) {
+            downloadNewModels.open();
+            return;
+        }
+
+        // check for new version
+        if (Download.hasNewerRelease) {
+            newVersionDialog.open();
+            return;
+        }
+    }
+
+    StartupDialog {
+        id: firstStartDialog
+        anchors.centerIn: parent
+    }
+
+    NewVersionDialog {
+        id: newVersionDialog
+        anchors.centerIn: parent
+    }
 
     Item {
         Accessible.role: Accessible.Window

@@ -22,6 +22,7 @@ Dialog {
 
     Settings {
         id: settings
+        category: "network"
         property string attribution: ""
     }
 
