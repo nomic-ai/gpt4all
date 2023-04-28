@@ -90,8 +90,11 @@ The prompt below is a question to answer, a task to complete, or a conversation 
         Download.downloadLocalModelsPath = settings.modelPath
     }
 
-    Component.onDestruction: {
-        settings.sync()
+    Connections {
+        target: settingsDialog
+        function onClosed() {
+            settings.sync()
+        }
     }
 
     Item {
