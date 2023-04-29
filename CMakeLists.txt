@@ -182,6 +182,7 @@ set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-256.png")
 set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-256.png")
 set(CPACK_IFW_PACKAGE_WIZARD_SHOW_PAGE_LIST OFF)
 
+include(InstallRequiredSystemLibraries)
 include(CPack)
 include(CPackIFW)
 cpack_add_component(${COMPONENT_NAME_MAIN} DOWNLOADED)
