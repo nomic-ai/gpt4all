@@ -57,7 +57,8 @@ Component.prototype.createOperationsForArchive = function(archive)
     component.createOperationsForArchive(archive);
 
     if (systemInfo.productType === "osx") {
-        var symlinkPath = targetDirectory + "/../GPT4All.app";
+        var uninstallTargetDirectory = installer.value("TargetDir");
+        var symlinkPath = uninstallTargetDirectory + "/../GPT4All.app";
 
         // Remove the symlink during uninstallation
         if (installer.isUninstaller()) {
