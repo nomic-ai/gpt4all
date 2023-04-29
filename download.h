@@ -20,6 +20,7 @@ struct ModelInfo {
     Q_PROPERTY(bool bestGPTJ MEMBER bestGPTJ)
     Q_PROPERTY(bool bestLlama MEMBER bestLlama)
     Q_PROPERTY(QString description MEMBER description)
+    Q_PROPERTY(QString requires MEMBER requires)
 
 public:
     QString filename;
@@ -31,6 +32,7 @@ public:
     bool bestGPTJ = false;
     bool bestLlama = false;
     QString description;
+    QString requires;
 };
 Q_DECLARE_METATYPE(ModelInfo)
 
