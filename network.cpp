@@ -178,7 +178,7 @@ void Network::sendOptOut()
 
     QJsonDocument doc;
     doc.setArray(array);
-    sendMixpanel(doc.toJson());
+    sendMixpanel(doc.toJson(), true /*isOptOut*/);
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable("opt_out"), qPrintable(doc.toJson(QJsonDocument::Indented)));
@@ -272,9 +272,9 @@ void Network::sendIpify()
     connect(reply, &QNetworkReply::finished, this, &Network::handleIpifyFinished);
 }
 
-void Network::sendMixpanel(const QByteArray &json)
+void Network::sendMixpanel(const QByteArray &json, bool isOptOut)
 {
-    if (!m_usageStatsActive)
+    if (!m_usageStatsActive && !isOptOut)
         return;
 
     QUrl trackUrl("https://api.mixpanel.com/track");

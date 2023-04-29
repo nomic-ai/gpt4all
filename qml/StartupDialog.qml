@@ -21,14 +21,6 @@ Dialog {
         id: theme
     }
 
-    Connections {
-        target: startupDialog
-        function onClosed() {
-            if (!Network.usageStatsActive)
-                Network.usageStatsActive = false // opt-out triggered
-        }
-    }
-
     Column {
         id: column
         spacing: 20
