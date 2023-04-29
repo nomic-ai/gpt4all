@@ -62,8 +62,8 @@ mkdir build
 cd build
 cmake ..
 cmake --build . --parallel
-mv /path/to/ggml-model-q4_0.bin .
-./chat
+mv /path/to/ggml-model-q4_0.bin bin
+./bin/chat
 ```
 
 ## To get Qt installed for your system
