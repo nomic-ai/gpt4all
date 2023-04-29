@@ -133,6 +133,7 @@ model release that uses your data!")
                 text: "Opt-in to anonymous usage analytics used to improve GPT4All"
                 Layout.row: 0
                 Layout.column: 0
+                color: theme.textColor
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Opt-in for anonymous usage statistics")
                 Accessible.description: qsTr("Label for opt-in")
@@ -159,6 +160,7 @@ model release that uses your data!")
                 text: "Opt-in to anonymous sharing of chats to the GPT4All Datalake"
                 Layout.row: 1
                 Layout.column: 0
+                color: theme.textColor
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Opt-in for network")
                 Accessible.description: qsTr("Checkbox to allow opt-in for network")
