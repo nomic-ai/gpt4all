@@ -31,7 +31,12 @@ Component.prototype.createOperations = function()
                 "iconPath=" + targetDirectory + "/favicon.ico",
                 "iconId=0", "description=Open GPT4All");
         } else if (systemInfo.productType === "osx") {
-            targetDirectory += "/gpt4all.app/Contents/MacOS/"
+            var gpt4allAppPath = targetDirectory + "/gpt4all/gpt4all.app";
+            var symlinkPath = targetDirectory + "/GPT4All.app";
+            // Remove the symlink if it already exists
+            component.addOperation("Execute", "rm", "-f", symlinkPath);
+            // Create the symlink
+            component.addOperation("Execute", "ln", "-s", gpt4allAppPath, symlinkPath);
         } else { // linux
             var homeDir = installer.environmentVariable("HOME");
             if (!installer.fileExists(homeDir + "/Desktop/GPT4All.desktop")) {
