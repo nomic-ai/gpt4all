@@ -34,6 +34,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(GPT4ALL_LOCALHOST OFF "Build installer for localhost repo")
 option(GPT4ALL_AVX_ONLY OFF "Build for avx only")
+option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 
 find_package(Qt6 6.2 COMPONENTS Core Quick QuickDialogs2 Svg REQUIRED)
 
@@ -191,6 +192,8 @@ cpack_ifw_configure_component(${COMPONENT_NAME_MAIN} REPLACES "gpt4all-chat") #W
 
 if (GPT4ALL_LOCALHOST)
     cpack_ifw_add_repository("GPT4AllRepository" URL "http://localhost/repository")
+elseif(GPT4ALL_OFFLINE_INSTALLER)
+    cpack_ifw_add_repository("GPT4AllRepository" URL "file://${CMAKE_BINARY_DIR}/packages")
 else()
   if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     if (GPT4ALL_AVX_ONLY)
