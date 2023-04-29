@@ -31,12 +31,6 @@ LLamaModel::LLamaModel()
     d_ptr->modelLoaded = false;
 }
 
-bool LLamaModel::loadModel(const std::string &modelPath, std::istream &fin)
-{
-    std::cerr << "LLAMA ERROR: loading llama model from stream unsupported!\n";
-    return false;
-}
-
 bool LLamaModel::loadModel(const std::string &modelPath)
 {
     // load the model

@@ -13,7 +13,6 @@ public:
     ~LLamaModel();
 
     bool loadModel(const std::string &modelPath) override;
-    bool loadModel(const std::string &modelPath, std::istream &fin) override;
     bool isModelLoaded() const override;
     void prompt(const std::string &prompt,
         std::function<bool(int32_t)> promptCallback,
