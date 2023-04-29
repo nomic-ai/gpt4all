@@ -165,6 +165,39 @@ model release that uses your data!")
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-in for anonymous usage statistics")
                     Accessible.description: qsTr("Radio button to allow opt-in for anonymous usage statistics")
+
+                    background: Rectangle {
+                        color: "transparent"
+                    }
+
+                    indicator: Rectangle {
+                        implicitWidth: 26
+                        implicitHeight: 26
+                        x: optInStatisticsRadioYes.leftPadding
+                        y: parent.height / 2 - height / 2
+                        radius: 13
+                        border.color: theme.dialogBorder
+                        color: "transparent"
+
+                        Rectangle {
+                            width: 14
+                            height: 14
+                            x: 6
+                            y: 6
+                            radius: 7
+                            color: theme.textColor
+                            visible: optInStatisticsRadioYes.checked
+                        }
+                    }
+
+                    contentItem: Text {
+                        text: optInStatisticsRadioYes.text
+                        font: optInStatisticsRadioYes.font
+                        opacity: enabled ? 1.0 : 0.3
+                        color: theme.textColor
+                        verticalAlignment: Text.AlignVCenter
+                        leftPadding: optInStatisticsRadioYes.indicator.width + optInStatisticsRadioYes.spacing
+                    }
                 }
                 RadioButton {
                     id: optInStatisticsRadioNo
@@ -172,6 +205,39 @@ model release that uses your data!")
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-out for anonymous usage statistics")
                     Accessible.description: qsTr("Radio button to allow opt-out for anonymous usage statistics")
+
+                    background: Rectangle {
+                        color: "transparent"
+                    }
+
+                    indicator: Rectangle {
+                        implicitWidth: 26
+                        implicitHeight: 26
+                        x: optInStatisticsRadioNo.leftPadding
+                        y: parent.height / 2 - height / 2
+                        radius: 13
+                        border.color: theme.dialogBorder
+                        color: "transparent"
+
+                        Rectangle {
+                            width: 14
+                            height: 14
+                            x: 6
+                            y: 6
+                            radius: 7
+                            color: theme.textColor
+                            visible: optInStatisticsRadioNo.checked
+                        }
+                    }
+
+                    contentItem: Text {
+                        text: optInStatisticsRadioNo.text
+                        font: optInStatisticsRadioNo.font
+                        opacity: enabled ? 1.0 : 0.3
+                        color: theme.textColor
+                        verticalAlignment: Text.AlignVCenter
+                        leftPadding: optInStatisticsRadioNo.indicator.width + optInStatisticsRadioNo.spacing
+                    }
                 }
             }
 
@@ -211,6 +277,39 @@ model release that uses your data!")
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-in for network")
                     Accessible.description: qsTr("Radio button to allow opt-in anonymous sharing of chats to the GPT4All Datalake")
+
+                    background: Rectangle {
+                        color: "transparent"
+                    }
+
+                    indicator: Rectangle {
+                        implicitWidth: 26
+                        implicitHeight: 26
+                        x: optInNetworkRadioYes.leftPadding
+                        y: parent.height / 2 - height / 2
+                        radius: 13
+                        border.color: theme.dialogBorder
+                        color: "transparent"
+
+                        Rectangle {
+                            width: 14
+                            height: 14
+                            x: 6
+                            y: 6
+                            radius: 7
+                            color: theme.textColor
+                            visible: optInNetworkRadioYes.checked
+                        }
+                    }
+
+                    contentItem: Text {
+                        text: optInNetworkRadioYes.text
+                        font: optInNetworkRadioYes.font
+                        opacity: enabled ? 1.0 : 0.3
+                        color: theme.textColor
+                        verticalAlignment: Text.AlignVCenter
+                        leftPadding: optInNetworkRadioYes.indicator.width + optInNetworkRadioYes.spacing
+                    }
                 }
                 RadioButton {
                     id: optInNetworkRadioNo
@@ -218,6 +317,39 @@ model release that uses your data!")
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-out for network")
                     Accessible.description: qsTr("Radio button to allow opt-out anonymous sharing of chats to the GPT4All Datalake")
+
+                    background: Rectangle {
+                        color: "transparent"
+                    }
+
+                    indicator: Rectangle {
+                        implicitWidth: 26
+                        implicitHeight: 26
+                        x: optInNetworkRadioNo.leftPadding
+                        y: parent.height / 2 - height / 2
+                        radius: 13
+                        border.color: theme.dialogBorder
+                        color: "transparent"
+
+                        Rectangle {
+                            width: 14
+                            height: 14
+                            x: 6
+                            y: 6
+                            radius: 7
+                            color: theme.textColor
+                            visible: optInNetworkRadioNo.checked
+                        }
+                    }
+
+                    contentItem: Text {
+                        text: optInNetworkRadioNo.text
+                        font: optInNetworkRadioNo.font
+                        opacity: enabled ? 1.0 : 0.3
+                        color: theme.textColor
+                        verticalAlignment: Text.AlignVCenter
+                        leftPadding: optInNetworkRadioNo.indicator.width + optInNetworkRadioNo.spacing
+                    }
                 }
             }
         }
