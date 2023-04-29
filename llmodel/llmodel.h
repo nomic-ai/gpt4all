@@ -11,7 +11,6 @@ public:
     virtual ~LLModel() {}
 
     virtual bool loadModel(const std::string &modelPath) = 0;
-    virtual bool loadModel(const std::string &modelPath, std::istream &fin) = 0;
     virtual bool isModelLoaded() const = 0;
     struct PromptContext {
         std::vector<float> logits;      // logits of current context

@@ -91,14 +91,14 @@ bool LLMObject::loadModelPrivate(const QString &modelName)
     if (info.exists()) {
 
         auto fin = std::ifstream(filePath.toStdString(), std::ios::binary);
-
         uint32_t magic;
         fin.read((char *) &magic, sizeof(magic));
         fin.seekg(0);
+        fin.close();
         isGPTJ = magic == 0x67676d6c;
         if (isGPTJ) {
             m_llmodel = new GPTJ;
-            m_llmodel->loadModel(modelName.toStdString(), fin);
+            m_llmodel->loadModel(filePath.toStdString());
         } else {
             m_llmodel = new LLamaModel;
             m_llmodel->loadModel(filePath.toStdString());
