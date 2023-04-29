@@ -45,42 +45,6 @@ bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs) {
     return lhs.version == rhs.version;
 }
 
-QList<ModelInfo> Download::modelList() const
-{
-    // We make sure the default model is listed first
-    QList<ModelInfo> values = m_modelMap.values();
-
-    ModelInfo defaultInfo;
-    ModelInfo bestGPTJInfo;
-    ModelInfo bestLlamaInfo;
-    for (ModelInfo v : values) {
-        if (v.isDefault)
-            defaultInfo = v;
-        if (v.bestGPTJ)
-            bestGPTJInfo = v;
-        if (v.bestLlama)
-            bestLlamaInfo = v;
-    }
-
-    Q_ASSERT(defaultInfo == bestGPTJInfo || defaultInfo == bestLlamaInfo);
-
-    values.removeAll(bestLlamaInfo);
-    values.prepend(bestLlamaInfo);
-
-    values.removeAll(bestGPTJInfo);
-    values.prepend(bestGPTJInfo);
-
-    return values;
-}
-
-ReleaseInfo Download::releaseInfo() const
-{
-    const QString currentVersion = QCoreApplication::applicationVersion();
-    if (m_releaseMap.contains(currentVersion))
-        return m_releaseMap.value(currentVersion);
-    return ReleaseInfo();
-}
-
 bool compareVersions(const QString &a, const QString &b) {
     QStringList aParts = a.split('.');
     QStringList bParts = b.split('.');
@@ -97,6 +61,50 @@ bool compareVersions(const QString &a, const QString &b) {
     }
 
     return aParts.size() > bParts.size();
+}
+
+QList<ModelInfo> Download::modelList() const
+{
+    // We make sure the default model is listed first
+    QList<ModelInfo> values = m_modelMap.values();
+    const QString currentVersion = QCoreApplication::applicationVersion();
+
+    ModelInfo defaultInfo;
+    ModelInfo bestGPTJInfo;
+    ModelInfo bestLlamaInfo;
+    QList<ModelInfo> filtered;
+    for (ModelInfo v : values) {
+        if (!v.requires.isEmpty()
+            && v.requires != currentVersion
+            && compareVersions(v.requires, currentVersion)) {
+            continue;
+        }
+        if (v.isDefault)
+            defaultInfo = v;
+        if (v.bestGPTJ)
+            bestGPTJInfo = v;
+        if (v.bestLlama)
+            bestLlamaInfo = v;
+        filtered.append(v);
+    }
+
+    Q_ASSERT(defaultInfo == bestGPTJInfo || defaultInfo == bestLlamaInfo);
+
+    filtered.removeAll(bestLlamaInfo);
+    filtered.prepend(bestLlamaInfo);
+
+    filtered.removeAll(bestGPTJInfo);
+    filtered.prepend(bestGPTJInfo);
+
+    return filtered;
+}
+
+ReleaseInfo Download::releaseInfo() const
+{
+    const QString currentVersion = QCoreApplication::applicationVersion();
+    if (m_releaseMap.contains(currentVersion))
+        return m_releaseMap.value(currentVersion);
+    return ReleaseInfo();
 }
 
 bool Download::hasNewerRelease() const
@@ -290,6 +298,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
 
         QString modelFilename = obj["filename"].toString();
         QString modelFilesize = obj["filesize"].toString();
+        QString requires = obj["requires"].toString();
         QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
         bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
         bool bestGPTJ = obj.contains("bestGPTJ") && obj["bestGPTJ"] == QString("true");
@@ -320,6 +329,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         modelInfo.bestGPTJ = bestGPTJ;
         modelInfo.bestLlama = bestLlama;
         modelInfo.description = description;
+        modelInfo.requires = requires;
         m_modelMap.insert(modelInfo.filename, modelInfo);
     }
 
