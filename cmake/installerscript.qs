@@ -31,7 +31,7 @@ Component.prototype.createOperations = function()
                 "iconPath=" + targetDirectory + "/favicon.ico",
                 "iconId=0", "description=Open GPT4All");
         } else if (systemInfo.productType === "osx") {
-            var gpt4allAppPath = targetDirectory + "/bin/gpt4all/gpt4all.app";
+            var gpt4allAppPath = targetDirectory + "/bin/gpt4all.app";
             var symlinkPath = targetDirectory + "/../GPT4All.app";
             // Remove the symlink if it already exists
             component.addOperation("Execute", "rm", "-f", symlinkPath);

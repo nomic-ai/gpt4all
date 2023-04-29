@@ -86,11 +86,8 @@ qt_add_qml_module(chat
       icons/thumbs_up.svg
       icons/thumbs_down.svg
       icons/logo.svg
-      icons/logo-16.png
       icons/logo-32.png
       icons/logo-48.png
-      icons/logo-64.png
-      icons/logo-256.png
       icons/favicon.ico
       icons/favicon.icns
 )
