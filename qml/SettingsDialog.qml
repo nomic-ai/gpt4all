@@ -538,7 +538,7 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                     FolderDialog {
                         id: modelPathDialog
                         title: "Please choose a directory"
-                        folder: Download.downloadLocalModelsPath
+                        currentFolder: Download.downloadLocalModelsPath
                         onAccepted: {
                             Download.downloadLocalModelsPath = selectedFolder
                             settings.modelPath = Download.downloadLocalModelsPath
