@@ -89,7 +89,7 @@ Please see [GPT4All-J Technical Report](https://static.nomic.ai/gpt4all/2023_GPT
 We have released updated versions of our `GPT4All-J` model and training data. 
 
 - `v1.0`: The original model trained on the v1.0 dataset
-- `v1.1-breezy`: Trained on afiltered dataset where we removed all instances of AI language model
+- `v1.1-breezy`: Trained on a filtered dataset where we removed all instances of AI language model
 - `v1.2-jazzy`: Trained on a filtered dataset where we also removed instances like I'm sorry, I can't answer... and AI language model
 
 The [models](https://huggingface.co/nomic-ai/gpt4all-j) and [data](https://huggingface.co/datasets/nomic-ai/gpt4all-j-prompt-generations) versions can be specified by passing a `revision` argument.
