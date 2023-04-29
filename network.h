@@ -47,7 +47,7 @@ private:
     void sendHealth();
     void sendIpify();
     void sendMixpanelEvent(const QString &event);
-    void sendMixpanel(const QByteArray &json);
+    void sendMixpanel(const QByteArray &json, bool isOptOut = false);
     bool packageAndSendJson(const QString &ingestId, const QString &json);
 
 private:
