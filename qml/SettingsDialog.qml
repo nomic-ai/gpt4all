@@ -565,6 +565,10 @@ The prompt below is a question to answer, a task to complete, or a conversation 
                         Accessible.role: Accessible.ToolTip
                         Accessible.name: modelPathDisplayLabel.text
                         Accessible.description: ToolTip.text
+                        background: Rectangle {
+                            color: theme.backgroundLighter
+                            radius: 10
+                        }
                     }
                     Button {
                         Layout.row: 1

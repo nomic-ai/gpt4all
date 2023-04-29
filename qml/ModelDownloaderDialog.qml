@@ -349,6 +349,10 @@ Dialog {
                 Accessible.role: Accessible.ToolTip
                 Accessible.name: modelPathDisplayLabel.text
                 Accessible.description: ToolTip.text
+                background: Rectangle {
+                    color: theme.backgroundLighter
+                    radius: 10
+                }
             }
             Button {
                 text: qsTr("Browse")
