@@ -37,8 +37,6 @@ Network::Network()
         sendIpify();
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Network::handleSslErrors);
-    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
-        &Network::sendShutdown);
 }
 
 void Network::setActive(bool b)
@@ -208,13 +206,6 @@ void Network::sendStartup()
     if (m_ipify.isEmpty())
         return; // when it completes it will send
     sendMixpanelEvent("startup");
-}
-
-void Network::sendShutdown()
-{
-    if (!m_usageStatsActive)
-        return;
-    sendMixpanelEvent("shutdown");
 }
 
 void Network::sendCheckForUpdates()
