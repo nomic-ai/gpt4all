@@ -3,6 +3,7 @@
 #include <QQmlContext>
 
 #include <QDirIterator>
+#include <QSettings>
 
 #include "llm.h"
 #include "download.h"
@@ -15,6 +16,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("gpt4all.io");
     QCoreApplication::setApplicationName("GPT4All");
     QCoreApplication::setApplicationVersion(APP_VERSION);
+    QSettings::setDefaultFormat(QSettings::IniFormat);
 
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
