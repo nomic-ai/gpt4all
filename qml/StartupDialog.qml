@@ -10,11 +10,12 @@ import llm
 Dialog {
     id: startupDialog
     anchors.centerIn: parent
-    modal: false
+    modal: true
     opacity: 0.9
     padding: 20
     width: 1024
     height: column.height + 40
+    closePolicy: !optInStatisticsRadio.choiceMade || !optInNetworkRadio.choiceMade ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
 
     Theme {
         id: theme
@@ -139,22 +140,41 @@ model release that uses your data!")
                 Accessible.description: qsTr("Label for opt-in")
             }
 
-            CheckBox {
-                id: optInStatisticsBox
+            ButtonGroup {
+                buttons: optInStatisticsRadio.children
+                onClicked: {
+                    Network.usageStatsActive = optInStatisticsRadio.checked
+                    if (optInNetworkRadio.choiceMade && optInStatisticsRadio.choiceMade)
+                        startupDialog.close();
+                }
+            }
+
+            RowLayout {
+                id: optInStatisticsRadio
                 Layout.alignment: Qt.AlignVCenter
                 Layout.row: 0
                 Layout.column: 1
                 property bool defaultChecked: Network.usageStatsActive
-                checked: defaultChecked
-                Accessible.role: Accessible.CheckBox
-                Accessible.name: qsTr("Opt-in for anonymous usage statistics")
-                Accessible.description: qsTr("Checkbox to allow opt-in for anonymous usage statistics")
-                onClicked: {
-                    Network.usageStatsActive = optInStatisticsBox.checked
-                    if (optInNetworkBox.checked && optInStatisticsBox.checked)
-                        startupDialog.close()
+                property alias checked: optInStatisticsRadioYes.checked
+                property bool choiceMade: optInStatisticsRadioYes.checked || optInStatisticsRadioNo.checked
+
+                RadioButton {
+                    id: optInStatisticsRadioYes
+                    checked: optInStatisticsRadio.defaultChecked
+                    text: qsTr("Yes")
+                    Accessible.role: Accessible.RadioButton
+                    Accessible.name: qsTr("Opt-in for anonymous usage statistics")
+                    Accessible.description: qsTr("Radio button to allow opt-in for anonymous usage statistics")
+                }
+                RadioButton {
+                    id: optInStatisticsRadioNo
+                    text: qsTr("No")
+                    Accessible.role: Accessible.RadioButton
+                    Accessible.name: qsTr("Opt-out for anonymous usage statistics")
+                    Accessible.description: qsTr("Radio button to allow opt-out for anonymous usage statistics")
                 }
             }
+
             Label {
                 id: optInNetwork
                 text: "Opt-in to anonymous sharing of chats to the GPT4All Datalake"
@@ -166,20 +186,38 @@ model release that uses your data!")
                 Accessible.description: qsTr("Checkbox to allow opt-in for network")
             }
 
-            CheckBox {
-                id: optInNetworkBox
+            ButtonGroup {
+                buttons: optInNetworkRadio.children
+                onClicked: {
+                    Network.isActive = optInNetworkRadio.checked
+                    if (optInNetworkRadio.choiceMade && optInStatisticsRadio.choiceMade)
+                        startupDialog.close();
+                }
+            }
+
+            RowLayout {
+                id: optInNetworkRadio
                 Layout.alignment: Qt.AlignVCenter
                 Layout.row: 1
                 Layout.column: 1
                 property bool defaultChecked: Network.isActive
-                checked: defaultChecked
-                Accessible.role: Accessible.CheckBox
-                Accessible.name: qsTr("Opt-in for network")
-                Accessible.description: qsTr("Label for opt-in")
-                onClicked: {
-                    Network.isActive = optInNetworkBox.checked
-                    if (optInNetworkBox.checked && optInStatisticsBox.checked)
-                        startupDialog.close()
+                property alias checked: optInNetworkRadioYes.checked
+                property bool choiceMade: optInNetworkRadioYes.checked || optInNetworkRadioNo.checked
+
+                RadioButton {
+                    id: optInNetworkRadioYes
+                    checked: optInNetworkRadio.defaultChecked
+                    text: qsTr("Yes")
+                    Accessible.role: Accessible.RadioButton
+                    Accessible.name: qsTr("Opt-in for network")
+                    Accessible.description: qsTr("Radio button to allow opt-in anonymous sharing of chats to the GPT4All Datalake")
+                }
+                RadioButton {
+                    id: optInNetworkRadioNo
+                    text: qsTr("No")
+                    Accessible.role: Accessible.RadioButton
+                    Accessible.name: qsTr("Opt-out for network")
+                    Accessible.description: qsTr("Radio button to allow opt-out anonymous sharing of chats to the GPT4All Datalake")
                 }
             }
         }
