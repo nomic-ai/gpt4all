@@ -60,6 +60,8 @@ Component.prototype.createOperationsForArchive = function(archive)
         var symlinkPath = targetDirectory + "/../GPT4All.app";
 
         // Remove the symlink during uninstallation
-        component.addOperation("Delete", symlinkPath, "UNDOEXECUTE");
+        if (installer.isUninstaller()) {
+            component.addOperation("Execute", "rm", "-f", symlinkPath, "UNDOEXECUTE");
+        }
     }
 }
