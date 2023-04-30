@@ -297,11 +297,6 @@ bool LLMObject::handleResponse(int32_t token, const std::string &response)
     Q_ASSERT(!response.empty());
     m_response.append(response);
     emit responseChanged();
-
-    // Stop generation if we encounter prompt or response tokens
-    QString r = QString::fromStdString(m_response);
-    if (r.contains("### Prompt:") || r.contains("### Response:"))
-        return false;
     return !m_stopGenerating;
 }
 
