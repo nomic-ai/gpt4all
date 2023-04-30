@@ -90,6 +90,10 @@ of download overhead. You can deselect webassembly target, android, sources, etc
 * https://gpt4all.io/models/ggml-wizardLM-7B.q4_2.bin (md5sum 99e6d129745a3f1fb1121abed747b05a) An non-commercially licensable model based on Llama 7b and trained by Microsoft and Peking University.
 * https://gpt4all.io/models/ggml-stable-vicuna-13B.q4_2.bin (md5sum 6cb4ee297537c9133bddab9692879de0) An non-commercially licensable model based on Llama 13b and RLHF trained by Stable AI.
 
+## Terminal Only Interface with no Qt dependency
+
+Check out https://github.com/kuvaus/LlamaGPTJ-chat which is using the llmodel backend so it is compliant with our ecosystem and all models downloaded above should work with it.
+
 ## Contributing
 
 * Pull requests welcome. See the feature wish list for ideas :)
