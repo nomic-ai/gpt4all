@@ -75,6 +75,9 @@ mv /path/to/ggml-model-q4_0.bin bin
 * ALL PLATFORMS NOTE: the installer has options for lots of different targets which will add a lot
 of download overhead. You can deselect webassembly target, android, sources, etc to save space on your disk.
 
+## Manual download of models
+* https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin (default)
+
 ## Contributing
 
 * Pull requests welcome. See the feature wish list for ideas :)
