@@ -38,6 +38,10 @@ GPT-J model by following build instructions below.
 * Advanced settings for changing temperature, topk, etc. (DONE)
 * YOUR IDEA HERE
 
+## Getting the latest
+
+If you've already checked out the source code and/or built the program make sure when you do a git fetch to get the latest changes and that you also do ```git submodule update --init --recursive``` to update the submodules.
+
 ## Building and running
 
 * Install Qt 6.x for your platform https://doc.qt.io/qt-6/get-and-install-qt.html
