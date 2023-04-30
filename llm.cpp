@@ -22,13 +22,13 @@ static LLModel::PromptContext s_ctx;
 static QString modelFilePath(const QString &modelName)
 {
     QString appPath = QCoreApplication::applicationDirPath()
-        + QDir::separator() + "ggml-" + modelName + ".bin";
+        + "/ggml-" + modelName + ".bin";
     QFileInfo infoAppPath(appPath);
     if (infoAppPath.exists())
         return appPath;
 
     QString downloadPath = Download::globalInstance()->downloadLocalModelsPath()
-        + QDir::separator() + "ggml-" + modelName + ".bin";
+        + "/ggml-" + modelName + ".bin";
 
     QFileInfo infoLocalPath(downloadPath);
     if (infoLocalPath.exists())
@@ -469,7 +469,7 @@ bool LLM::checkForUpdates() const
 #endif
 
     QString fileName = QCoreApplication::applicationDirPath()
-        + QDir::separator() + ".." + QDir::separator() + tool;
+        + "/../" + tool;
     if (!QFileInfo::exists(fileName)) {
         qDebug() << "Couldn't find tool at" << fileName << "so cannot check for updates!";
         return false;
