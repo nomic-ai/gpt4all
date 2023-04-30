@@ -124,7 +124,7 @@ QString Download::downloadLocalModelsPath() const {
 void Download::setDownloadLocalModelsPath(const QString &modelPath) {
     QString filePath = (modelPath.startsWith("file://") ?
                         QUrl(modelPath).toLocalFile() : modelPath);
-    QString canonical = QFileInfo(filePath).canonicalFilePath() + QDir::separator();
+    QString canonical = QFileInfo(filePath).canonicalFilePath() + "/";
     if (m_downloadLocalModelsPath != canonical) {
         m_downloadLocalModelsPath = canonical;
         emit downloadLocalModelsPathChanged();
@@ -145,9 +145,9 @@ bool Download::isFirstStart() const
 QString Download::defaultLocalModelsPath() const
 {
     QString localPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
-        + QDir::separator();
+        + "/";
     QString testWritePath = localPath + QString("test_write.txt");
-    QString canonicalLocalPath = QFileInfo(localPath).canonicalFilePath() + QDir::separator();
+    QString canonicalLocalPath = QFileInfo(localPath).canonicalFilePath() + "/";
     QDir localDir(localPath);
     if (!localDir.exists()) {
         if (!localDir.mkpath(localPath)) {
