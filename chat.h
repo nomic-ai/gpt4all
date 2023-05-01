@@ -35,7 +35,6 @@ public:
                             float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void resetResponse();
-    Q_INVOKABLE void resetContext();
     Q_INVOKABLE void stopGenerating();
     Q_INVOKABLE void syncThreadCount();
     Q_INVOKABLE void setThreadCount(int32_t n_threads);
