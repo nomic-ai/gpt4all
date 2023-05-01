@@ -170,3 +170,5 @@ cython_debug/
 # vs code
 .vscode
 *.bin
+
+.DS_Store
