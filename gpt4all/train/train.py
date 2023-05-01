@@ -1,5 +1,5 @@
 import os
-from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler, LlamaForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler
 import torch
 from torch.optim import AdamW
 from argparse import ArgumentParser
@@ -7,7 +7,7 @@ from gpt4all.utils.read import read_config
 from accelerate import Accelerator
 from accelerate.utils import DummyScheduler, DummyOptim, set_seed
 from peft import get_peft_model, LoraConfig, TaskType
-from gpt4all.utils.data import load_data
+from gpt4all.data.instruction_tuning_dataloader import load_data
 from torchmetrics import MeanMetric
 from tqdm import tqdm
 import wandb
@@ -104,7 +104,7 @@ def train(accelerator, config):
         )
     else:
         scheduler = DummyScheduler(
-            optimizer, total_num_steps=config["warmup_steps"], warmup_num_steps=config["warmup_steps"]
+            optimizer, total_num_steps=total_num_steps, warmup_num_steps=config["warmup_steps"]
         )
 
     model, optimizer, train_dataloader, val_dataloader, scheduler = accelerator.prepare(
