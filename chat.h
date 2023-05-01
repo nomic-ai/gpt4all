@@ -28,6 +28,12 @@ public:
     QString name() const { return m_name; }
     ChatModel *chatModel() { return m_chatModel; }
 
+    Q_INVOKABLE void reset()
+    {
+        m_id = Network::globalInstance()->generateUniqueId();
+        m_chatModel->clear();
+    }
+
 Q_SIGNALS:
     void idChanged();
     void nameChanged();

@@ -125,6 +125,16 @@ public:
         emit countChanged();
     }
 
+    Q_INVOKABLE void clear()
+    {
+        if (m_chatItems.isEmpty()) return;
+
+        beginResetModel();
+        m_chatItems.clear();
+        endResetModel();
+        emit countChanged();
+    }
+
     Q_INVOKABLE ChatItem get(int index)
     {
         if (index < 0 || index >= m_chatItems.size()) return ChatItem();

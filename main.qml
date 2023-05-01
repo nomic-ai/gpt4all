@@ -18,7 +18,6 @@ Window {
         id: theme
     }
 
-    property string chatId: Network.generateUniqueId()
     property var chatModel: LLM.currentChat.chatModel
 
     color: theme.textColor
@@ -172,7 +171,7 @@ Window {
                 onActivated: {
                     LLM.stopGenerating()
                     LLM.modelName = comboBox.currentText
-                    chatModel.clear()
+                    LLM.currentChat.reset();
                 }
             }
         }
@@ -474,8 +473,7 @@ Window {
         onClicked: {
             LLM.stopGenerating()
             LLM.resetContext()
-            chatId = Network.generateUniqueId()
-            chatModel.clear()
+            LLM.currentChat.reset();
         }
     }
 
@@ -750,7 +748,7 @@ Window {
                                 chatModel.updateNewResponse(index, response)
                                 chatModel.updateThumbsUpState(index, false)
                                 chatModel.updateThumbsDownState(index, true)
-                                Network.sendConversation(chatId, getConversationJson());
+                                Network.sendConversation(LLM.currentChat.id, getConversationJson());
                             }
                         }
 
@@ -782,7 +780,7 @@ Window {
                                         chatModel.updateNewResponse(index, "")
                                         chatModel.updateThumbsUpState(index, true)
                                         chatModel.updateThumbsDownState(index, false)
-                                        Network.sendConversation(chatId, getConversationJson());
+                                        Network.sendConversation(LLM.currentChat.id, getConversationJson());
                                     }
                                 }
 
