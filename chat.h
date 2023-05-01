@@ -34,11 +34,11 @@ public:
     Q_INVOKABLE void prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
                             float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
     Q_INVOKABLE void regenerateResponse();
-    Q_INVOKABLE void resetResponse();
     Q_INVOKABLE void stopGenerating();
     Q_INVOKABLE void syncThreadCount();
     Q_INVOKABLE void setThreadCount(int32_t n_threads);
     Q_INVOKABLE int32_t threadCount();
+    Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
 
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
