@@ -32,7 +32,10 @@ Chat::Chat(QObject *parent)
 
 void Chat::reset()
 {
+    stopGenerating();
+    emit resetContextRequested(); // blocking queued connection
     m_id = Network::globalInstance()->generateUniqueId();
+    emit idChanged();
     m_chatModel->clear();
 }
 
@@ -55,11 +58,6 @@ void Chat::regenerateResponse()
 void Chat::resetResponse()
 {
     emit resetResponseRequested(); // blocking queued connection
-}
-
-void Chat::resetContext()
-{
-    emit resetContextRequested(); // blocking queued connection
 }
 
 void Chat::stopGenerating()

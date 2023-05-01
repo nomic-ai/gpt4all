@@ -472,8 +472,6 @@ Window {
         }
 
         onClicked: {
-            LLM.currentChat.stopGenerating()
-            LLM.currentChat.resetContext()
             LLM.currentChat.reset();
         }
     }
