@@ -18,7 +18,8 @@ Window {
         id: theme
     }
 
-    property var chatModel: LLM.currentChat.chatModel
+    property var currentChat: LLM.chatListModel.currentChat
+    property var chatModel: currentChat.chatModel
 
     color: theme.textColor
 
@@ -94,13 +95,13 @@ Window {
         Item {
             anchors.centerIn: parent
             height: childrenRect.height
-            visible: LLM.currentChat.isModelLoaded
+            visible: currentChat.isModelLoaded
 
             Label {
                 id: modelLabel
                 color: theme.textColor
                 padding: 20
-                font.pixelSize: 24
+                font.pixelSize: theme.fontSizeLarger
                 text: ""
                 background: Rectangle {
                     color: theme.backgroundDarkest
@@ -169,17 +170,17 @@ Window {
                 }
 
                 onActivated: {
-                    LLM.currentChat.stopGenerating()
-                    LLM.currentChat.modelName = comboBox.currentText
-                    LLM.currentChat.reset();
+                    currentChat.stopGenerating()
+                    currentChat.modelName = comboBox.currentText
+                    currentChat.reset();
                 }
             }
         }
 
         BusyIndicator {
             anchors.centerIn: parent
-            visible: !LLM.currentChat.isModelLoaded
-            running: !LLM.currentChat.isModelLoaded
+            visible: !currentChat.isModelLoaded
+            running: !currentChat.isModelLoaded
             Accessible.role: Accessible.Animation
             Accessible.name: qsTr("Busy indicator")
             Accessible.description: qsTr("Displayed when the model is loading")
@@ -409,7 +410,7 @@ Window {
             var string = item.name;
             var isResponse = item.name === qsTr("Response: ")
             if (item.currentResponse)
-                string += LLM.currentChat.response
+                string += currentChat.response
             else
                 string += chatModel.get(i).value
             if (isResponse && item.stopped)
@@ -427,7 +428,7 @@ Window {
             var isResponse = item.name === qsTr("Response: ")
             str += "{\"content\": ";
             if (item.currentResponse)
-                str += JSON.stringify(LLM.currentChat.response)
+                str += JSON.stringify(currentChat.response)
             else
                 str += JSON.stringify(item.value)
             str += ", \"role\": \"" + (isResponse ? "assistant" : "user") + "\"";
@@ -471,7 +472,7 @@ Window {
         }
 
         onClicked: {
-            LLM.currentChat.reset();
+            currentChat.reset();
         }
     }
 
@@ -555,14 +556,14 @@ Window {
                     Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
 
                     delegate: TextArea {
-                        text: currentResponse ? LLM.currentChat.response : (value ? value : "")
+                        text: currentResponse ? currentChat.response : (value ? value : "")
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
                         focus: false
                         readOnly: true
                         font.pixelSize: theme.fontSizeLarge
-                        cursorVisible: currentResponse ? (LLM.currentChat.response !== "" ? LLM.currentChat.responseInProgress : false) : false
+                        cursorVisible: currentResponse ? (currentChat.response !== "" ? currentChat.responseInProgress : false) : false
                         cursorPosition: text.length
                         background: Rectangle {
                             color: name === qsTr("Response: ") ? theme.backgroundLighter : theme.backgroundLight
@@ -582,8 +583,8 @@ Window {
                             anchors.leftMargin: 90
                             anchors.top: parent.top
                             anchors.topMargin: 5
-                            visible: (currentResponse ? true : false) && LLM.currentChat.response === "" && LLM.currentChat.responseInProgress
-                            running: (currentResponse ? true : false) && LLM.currentChat.response === "" && LLM.currentChat.responseInProgress
+                            visible: (currentResponse ? true : false) && currentChat.response === "" && currentChat.responseInProgress
+                            running: (currentResponse ? true : false) && currentChat.response === "" && currentChat.responseInProgress
 
                             Accessible.role: Accessible.Animation
                             Accessible.name: qsTr("Busy indicator")
@@ -614,7 +615,7 @@ Window {
                                 window.height / 2 - height / 2)
                             x: globalPoint.x
                             y: globalPoint.y
-                            property string text: currentResponse ? LLM.currentChat.response : (value ? value : "")
+                            property string text: currentResponse ? currentChat.response : (value ? value : "")
                             response: newResponse === undefined || newResponse === "" ? text : newResponse
                             onAccepted: {
                                 var responseHasChanged = response !== text && response !== newResponse
@@ -624,13 +625,13 @@ Window {
                                 chatModel.updateNewResponse(index, response)
                                 chatModel.updateThumbsUpState(index, false)
                                 chatModel.updateThumbsDownState(index, true)
-                                Network.sendConversation(LLM.currentChat.id, getConversationJson());
+                                Network.sendConversation(currentChat.id, getConversationJson());
                             }
                         }
 
                         Column {
                             visible: name === qsTr("Response: ") &&
-                                (!currentResponse || !LLM.currentChat.responseInProgress) && Network.isActive
+                                (!currentResponse || !currentChat.responseInProgress) && Network.isActive
                             anchors.right: parent.right
                             anchors.rightMargin: 20
                             anchors.top: parent.top
@@ -656,7 +657,7 @@ Window {
                                         chatModel.updateNewResponse(index, "")
                                         chatModel.updateThumbsUpState(index, true)
                                         chatModel.updateThumbsDownState(index, false)
-                                        Network.sendConversation(LLM.currentChat.id, getConversationJson());
+                                        Network.sendConversation(currentChat.id, getConversationJson());
                                     }
                                 }
 
@@ -729,27 +730,27 @@ Window {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: 15
-                source: LLM.currentChat.responseInProgress ? "qrc:/gpt4all/icons/stop_generating.svg" : "qrc:/gpt4all/icons/regenerate.svg"
+                source: currentChat.responseInProgress ? "qrc:/gpt4all/icons/stop_generating.svg" : "qrc:/gpt4all/icons/regenerate.svg"
             }
             leftPadding: 50
             onClicked: {
                 var index = Math.max(0, chatModel.count - 1);
                 var listElement = chatModel.get(index);
 
-                if (LLM.currentChat.responseInProgress) {
+                if (currentChat.responseInProgress) {
                     listElement.stopped = true
-                    LLM.currentChat.stopGenerating()
+                    currentChat.stopGenerating()
                 } else {
-                    LLM.currentChat.regenerateResponse()
+                    currentChat.regenerateResponse()
                     if (chatModel.count) {
                         if (listElement.name === qsTr("Response: ")) {
                             chatModel.updateCurrentResponse(index, true);
                             chatModel.updateStopped(index, false);
-                            chatModel.updateValue(index, LLM.currentChat.response);
+                            chatModel.updateValue(index, currentChat.response);
                             chatModel.updateThumbsUpState(index, false);
                             chatModel.updateThumbsDownState(index, false);
                             chatModel.updateNewResponse(index, "");
-                            LLM.currentChat.prompt(listElement.prompt, settingsDialog.promptTemplate,
+                            currentChat.prompt(listElement.prompt, settingsDialog.promptTemplate,
                                        settingsDialog.maxLength,
                                        settingsDialog.topK, settingsDialog.topP,
                                        settingsDialog.temperature,
@@ -765,7 +766,7 @@ Window {
             anchors.bottomMargin: 40
             padding: 15
             contentItem: Text {
-                text: LLM.currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
+                text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
                 color: theme.textColor
                 Accessible.role: Accessible.Button
                 Accessible.name: text
@@ -793,7 +794,7 @@ Window {
                 color: theme.textColor
                 padding: 20
                 rightPadding: 40
-                enabled: LLM.currentChat.isModelLoaded
+                enabled: currentChat.isModelLoaded
                 wrapMode: Text.WordWrap
                 font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Send a message...")
@@ -817,16 +818,16 @@ Window {
                     if (textInput.text === "")
                         return
 
-                    LLM.currentChat.stopGenerating()
+                    currentChat.stopGenerating()
 
                     if (chatModel.count) {
                         var index = Math.max(0, chatModel.count - 1);
                         var listElement = chatModel.get(index);
                         chatModel.updateCurrentResponse(index, false);
-                        chatModel.updateValue(index, LLM.currentChat.response);
+                        chatModel.updateValue(index, currentChat.response);
                     }
-                    LLM.currentChat.newPromptResponsePair(textInput.text);
-                    LLM.currentChat.prompt(textInput.text, settingsDialog.promptTemplate,
+                    currentChat.newPromptResponsePair(textInput.text);
+                    currentChat.prompt(textInput.text, settingsDialog.promptTemplate,
                                settingsDialog.maxLength,
                                settingsDialog.topK,
                                settingsDialog.topP,

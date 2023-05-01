@@ -1,8 +1,6 @@
 #include "llm.h"
 #include "download.h"
 #include "network.h"
-#include "llmodel/gptj.h"
-#include "llmodel/llamamodel.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -21,16 +19,20 @@ LLM *LLM::globalInstance()
 
 LLM::LLM()
     : QObject{nullptr}
+    , m_chatListModel(new ChatListModel(this))
 {
-    if (m_chats.isEmpty())
-        addChat();
     connect(Download::globalInstance(), &Download::modelListChanged,
         this, &LLM::modelListChanged, Qt::QueuedConnection);
+    connect(m_chatListModel, &ChatListModel::connectChat,
+        this, &LLM::connectChat, Qt::QueuedConnection);
+    connect(m_chatListModel, &ChatListModel::disconnectChat,
+        this, &LLM::disconnectChat, Qt::QueuedConnection);
 }
 
 QList<QString> LLM::modelList() const
 {
-    Q_ASSERT(currentChat());
+    Q_ASSERT(m_chatListModel->currentChat());
+    const Chat *currentChat = m_chatListModel->currentChat();
     // Build a model list from exepath and from the localpath
     QList<QString> list;
 
@@ -46,7 +48,7 @@ QList<QString> LLM::modelList() const
             QFileInfo info(filePath);
             QString name = info.completeBaseName().remove(0, 5);
             if (info.exists()) {
-                if (name == currentChat()->modelName())
+                if (name == currentChat->modelName())
                     list.prepend(name);
                 else
                     list.append(name);
@@ -63,7 +65,7 @@ QList<QString> LLM::modelList() const
             QFileInfo info(filePath);
             QString name = info.completeBaseName().remove(0, 5);
             if (info.exists() && !list.contains(name)) { // don't allow duplicates
-                if (name == currentChat()->modelName())
+                if (name == currentChat->modelName())
                     list.prepend(name);
                 else
                     list.append(name);
@@ -109,75 +111,8 @@ bool LLM::checkForUpdates() const
 
 bool LLM::isRecalc() const
 {
-    Q_ASSERT(currentChat());
-    return currentChat()->isRecalc();
-}
-
-Chat *LLM::currentChat() const
-{
-    return chatFromId(m_currentChat);
-}
-
-QList<QString> LLM::chatList() const
-{
-    return m_chats.keys();
-}
-
-QString LLM::addChat()
-{
-    Chat *newChat = new Chat(this);
-    m_chats.insert(newChat->id(), newChat);
-    emit chatListChanged();
-    setCurrentChatFromId(newChat->id());
-    return newChat->id();
-}
-
-void LLM::removeChat(const QString &id)
-{
-    if (!m_chats.contains(id)) {
-        qDebug() << "WARNING: Removing chat with id" << id;
-        return;
-    }
-
-    const bool chatIsCurrent = id == m_currentChat;
-    Chat *chat = m_chats.value(id);
-    disconnectChat(chat);
-    m_chats.remove(id);
-    emit chatListChanged();
-    delete chat;
-    if (m_chats.isEmpty())
-        addChat();
-    else
-        setCurrentChatFromId(chatList().first());
-}
-
-Chat *LLM::chatFromId(const QString &id) const
-{
-    if (!m_chats.contains(id)) {
-        qDebug() << "WARNING: Getting chat from id" << id;
-        return nullptr;
-    }
-    return m_chats.value(id);
-}
-
-void LLM::setCurrentChatFromId(const QString &id)
-{
-    if (!m_chats.contains(id)) {
-        qDebug() << "ERROR: Setting current chat from id" << id;
-        return;
-    }
-
-    // On load this can be empty as we add a new chat in ctor this method will be called
-    if (!m_currentChat.isEmpty()) {
-        Chat *curr = currentChat();
-        Q_ASSERT(curr);
-        disconnect(curr);
-    }
-
-    Chat *newCurr = m_chats.value(id);
-    connectChat(newCurr);
-    m_currentChat = id;
-    emit currentChatChanged();
+    Q_ASSERT(m_chatListModel->currentChat());
+    return m_chatListModel->currentChat()->isRecalc();
 }
 
 void LLM::connectChat(Chat *chat)
