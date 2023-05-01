@@ -38,7 +38,7 @@ def prep_index():
     if os.path.exists(config['index_database']):
         retrieval_dataset = Dataset.load_from_disk(config['index_database'])
     else:
-        retrieval_dataset = load_dataset(config['index_database'], split=args.split)
+        retrieval_dataset = load_dataset(config['index_database'], split="train")
 
     # vectorize queries
     query_vector_path =  f"{ds_path}_queries_embedded/{ds_path}_embedded_{args.split}"
