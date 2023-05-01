@@ -84,9 +84,10 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     }
 
     Q_ASSERT(doc.isObject());
+    Q_ASSERT(LLM::globalInstance()->chatListModel()->currentChat());
     QJsonObject object = doc.object();
     object.insert("source", "gpt4all-chat");
-    object.insert("agent_id", LLM::globalInstance()->currentChat()->modelName());
+    object.insert("agent_id", LLM::globalInstance()->chatListModel()->currentChat()->modelName());
     object.insert("submitter_id", m_uniqueId);
     object.insert("ingest_id", ingestId);
 
@@ -220,6 +221,7 @@ void Network::sendMixpanelEvent(const QString &ev)
     if (!m_usageStatsActive)
         return;
 
+    Q_ASSERT(LLM::globalInstance()->chatListModel()->currentChat());
     QJsonObject properties;
     properties.insert("token", "ce362e568ddaee16ed243eaffb5860a2");
     properties.insert("time", QDateTime::currentSecsSinceEpoch());
@@ -230,7 +232,7 @@ void Network::sendMixpanelEvent(const QString &ev)
         properties.insert("ip", m_ipify);
     properties.insert("name", QCoreApplication::applicationName() + " v"
         + QCoreApplication::applicationVersion());
-    properties.insert("model", LLM::globalInstance()->currentChat()->modelName());
+    properties.insert("model", LLM::globalInstance()->chatListModel()->currentChat()->modelName());
 
     QJsonObject event;
     event.insert("event", ev);

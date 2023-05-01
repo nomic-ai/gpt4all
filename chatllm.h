@@ -16,7 +16,6 @@ class ChatLLM : public QObject
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
 
 public:
-
     ChatLLM();
 
     bool isModelLoaded() const;

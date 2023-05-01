@@ -25,27 +25,68 @@ Drawer {
 
     Item {
         anchors.fill: parent
-        anchors.margins: 30
+        anchors.margins: 10
 
         Accessible.role: Accessible.Pane
         Accessible.name: qsTr("Drawer on the left of the application")
         Accessible.description: qsTr("Drawer that is revealed by pressing the hamburger button")
 
-        Label {
+        Button {
+            id: newChat
+            anchors.left: parent.left
+            anchors.right: parent.right
+            padding: 15
+            font.pixelSize: theme.fontSizeLarger
+            background: Rectangle {
+                color: theme.backgroundDarkest
+                opacity: .5
+                border.color: theme.backgroundLightest
+                border.width: 1
+                radius: 10
+            }
+            contentItem: Text {
+                text: qsTr("New chat")
+                horizontalAlignment: Text.AlignHCenter
+                color: theme.textColor
+
+                Accessible.role: Accessible.Button
+                Accessible.name: text
+                Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
+            }
+            onClicked: {
+                LLM.chatListModel.addChat();
+            }
+        }
+
+        ListView {
             id: conversationList
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.top: parent.top
-            wrapMode: Text.WordWrap
-            text: qsTr("Chat lists of specific conversations coming soon! Check back often for new features :)")
-            color: theme.textColor
+            anchors.topMargin: 10
+            anchors.top: newChat.bottom
+            anchors.bottom: checkForUpdatesButton.top
+            model: LLM.chatListModel
 
-            Accessible.role: Accessible.Paragraph
-            Accessible.name: qsTr("Coming soon")
-            Accessible.description: text
+            delegate: Label {
+                id: chatLabel
+                anchors.left: parent.left
+                anchors.right: parent.right
+                color: theme.textColor
+                padding: 15
+                font.pixelSize: theme.fontSizeLarger
+                text: name
+                background: Rectangle {
+                    color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
+                }
+                horizontalAlignment: TextInput.AlignLeft
+            }
+
+            Accessible.role: Accessible.List
+            Accessible.name: qsTr("List of chats")
+            Accessible.description: qsTr("List of chats in the drawer dialog")
         }
 
-        Label {
+        /*Label {
             id: discordLink
             textFormat: Text.RichText
             anchors.left: parent.left
@@ -78,13 +119,14 @@ Drawer {
             Accessible.role: Accessible.Paragraph
             Accessible.name: qsTr("Thank you blurb")
             Accessible.description: qsTr("Contains embedded link to https://home.nomic.ai")
-        }
+        }*/
 
         Button {
+            id: checkForUpdatesButton
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: downloadButton.top
-            anchors.bottomMargin: 20
+            anchors.bottomMargin: 10
             padding: 15
             contentItem: Text {
                 text: qsTr("Check for updates...")
