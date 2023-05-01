@@ -4,7 +4,7 @@ import torch.nn as nn
 from argparse import ArgumentParser
 from gpt4all.utils.read import read_config
 from accelerate.utils import set_seed
-from gpt4all.utils.data import load_data_for_inference
+from gpt4all.data.instruction_tuning_dataloader import load_data_for_inference
 from gpt4all.utils.distributed_utils import rank0_print
 from tqdm import tqdm
 from datasets import Dataset
