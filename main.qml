@@ -353,10 +353,9 @@ Window {
         text: qsTr("Recalculating context.")
 
         Connections {
-            // FIXME: This connection has to be setup everytime a new chat object is created
-            target: LLM.currentChat
+            target: LLM
             function onRecalcChanged() {
-                if (LLM.currentChat.isRecalc)
+                if (LLM.isRecalc)
                     recalcPopup.open()
                 else
                     recalcPopup.close()
@@ -817,8 +816,7 @@ Window {
                     property bool isAutoScrolling: false
 
                     Connections {
-                        // FIXME: This connection has to be setup everytime a new chat object is created
-                        target: LLM.currentChat
+                        target: LLM
                         function onResponseChanged() {
                             if (listView.shouldAutoScroll) {
                                 listView.isAutoScrolling = true

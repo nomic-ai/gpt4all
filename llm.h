@@ -10,6 +10,7 @@ class LLM : public QObject
     Q_OBJECT
     Q_PROPERTY(QList<QString> modelList READ modelList NOTIFY modelListChanged)
     Q_PROPERTY(Chat *currentChat READ currentChat NOTIFY currentChatChanged)
+    Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
 
 public:
 
@@ -18,10 +19,13 @@ public:
     QList<QString> modelList() const;
     Q_INVOKABLE bool checkForUpdates() const;
     Chat *currentChat() const { return m_currentChat; }
+    bool isRecalc() const;
 
 Q_SIGNALS:
     void modelListChanged();
     void currentChatChanged();
+    void recalcChanged();
+    void responseChanged();
 
 private:
     Chat *m_currentChat;
