@@ -1,6 +1,8 @@
 #include "llm.h"
 #include "download.h"
 #include "network.h"
+#include "llmodel/gptj.h"
+#include "llmodel/llamamodel.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -345,6 +347,7 @@ bool LLMObject::prompt(const QString &prompt, const QString &prompt_template, in
 
 LLM::LLM()
     : QObject{nullptr}
+    , m_currentChat(new Chat)
     , m_llmodel(new LLMObject)
     , m_responseInProgress(false)
 {

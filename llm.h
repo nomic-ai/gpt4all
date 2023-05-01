@@ -3,8 +3,9 @@
 
 #include <QObject>
 #include <QThread>
-#include "llmodel/gptj.h"
-#include "llmodel/llamamodel.h"
+
+#include "chat.h"
+#include "llmodel/llmodel.h"
 
 class LLMObject : public QObject
 {
@@ -24,6 +25,7 @@ public:
     void regenerateResponse();
     void resetResponse();
     void resetContext();
+
     void stopGenerating() { m_stopGenerating = true; }
     void setThreadCount(int32_t n_threads);
     int32_t threadCount();
@@ -83,6 +85,7 @@ class LLM : public QObject
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
     Q_PROPERTY(int32_t threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
+    Q_PROPERTY(Chat *currentChat READ currentChat NOTIFY currentChatChanged)
 
 public:
 
@@ -111,6 +114,8 @@ public:
 
     bool isRecalc() const;
 
+    Chat *currentChat() const { return m_currentChat; }
+
 Q_SIGNALS:
     void isModelLoadedChanged();
     void responseChanged();
@@ -126,12 +131,14 @@ Q_SIGNALS:
     void threadCountChanged();
     void setThreadCountRequested(int32_t threadCount);
     void recalcChanged();
+    void currentChatChanged();
 
 private Q_SLOTS:
     void responseStarted();
     void responseStopped();
 
 private:
+    Chat *m_currentChat;
     LLMObject *m_llmodel;
     int32_t m_desiredThreadCount;
     bool m_responseInProgress;

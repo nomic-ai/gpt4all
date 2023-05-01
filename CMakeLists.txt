@@ -58,6 +58,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 qt_add_executable(chat
     main.cpp
+    chat.h chat.cpp chatmodel.h
     download.h download.cpp
     network.h network.cpp
     llm.h llm.cpp

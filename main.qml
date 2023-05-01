@@ -19,6 +19,7 @@ Window {
     }
 
     property string chatId: Network.generateUniqueId()
+    property var chatModel: LLM.currentChat.chatModel
 
     color: theme.textColor
 
@@ -666,10 +667,6 @@ Window {
             anchors.bottomMargin: 30
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
-            ListModel {
-                id: chatModel
-            }
-
             Rectangle {
                 anchors.fill: parent
                 color: theme.backgroundLighter
@@ -750,9 +747,9 @@ Window {
                                 if (thumbsDownState && !thumbsUpState && !responseHasChanged)
                                     return
 
-                                newResponse = response
-                                thumbsDownState = true
-                                thumbsUpState = false
+                                chatModel.updateNewResponse(index, response)
+                                chatModel.updateThumbsUpState(index, false)
+                                chatModel.updateThumbsDownState(index, true)
                                 Network.sendConversation(chatId, getConversationJson());
                             }
                         }
@@ -782,9 +779,9 @@ Window {
                                         if (thumbsUpState && !thumbsDownState)
                                             return
 
-                                        newResponse = ""
-                                        thumbsUpState = true
-                                        thumbsDownState = false
+                                        chatModel.updateNewResponse(index, "")
+                                        chatModel.updateThumbsUpState(index, true)
+                                        chatModel.updateThumbsDownState(index, false)
                                         Network.sendConversation(chatId, getConversationJson());
                                     }
                                 }
@@ -862,8 +859,8 @@ Window {
             }
             leftPadding: 50
             onClicked: {
-                if (chatModel.count)
-                    var listElement = chatModel.get(chatModel.count - 1)
+                var index = Math.max(0, chatModel.count - 1);
+                var listElement = chatModel.get(index);
 
                 if (LLM.responseInProgress) {
                     listElement.stopped = true
@@ -872,12 +869,12 @@ Window {
                     LLM.regenerateResponse()
                     if (chatModel.count) {
                         if (listElement.name === qsTr("Response: ")) {
-                            listElement.currentResponse = true
-                            listElement.stopped = false
-                            listElement.value = LLM.response
-                            listElement.thumbsUpState = false
-                            listElement.thumbsDownState = false
-                            listElement.newResponse = ""
+                            chatModel.updateCurrentResponse(index, true);
+                            chatModel.updateStopped(index, false);
+                            chatModel.updateValue(index, LLM.response);
+                            chatModel.updateThumbsUpState(index, false);
+                            chatModel.updateThumbsDownState(index, false);
+                            chatModel.updateNewResponse(index, "");
                             LLM.prompt(listElement.prompt, settingsDialog.promptTemplate,
                                        settingsDialog.maxLength,
                                        settingsDialog.topK, settingsDialog.topP,
@@ -949,18 +946,14 @@ Window {
                     LLM.stopGenerating()
 
                     if (chatModel.count) {
-                        var listElement = chatModel.get(chatModel.count - 1)
-                        listElement.currentResponse = false
-                        listElement.value = LLM.response
+                        var index = Math.max(0, chatModel.count - 1);
+                        var listElement = chatModel.get(index);
+                        chatModel.updateCurrentResponse(index, false);
+                        chatModel.updateValue(index, LLM.response);
                     }
                     var prompt = textInput.text + "\n"
-                    chatModel.append({"name": qsTr("Prompt: "), "currentResponse": false,
-                        "value": textInput.text})
-                    chatModel.append({"id": chatModel.count, "name": qsTr("Response: "),
-                        "currentResponse": true, "value": "", "stopped": false,
-                        "thumbsUpState": false, "thumbsDownState": false,
-                        "newResponse": "",
-                        "prompt": prompt})
+                    chatModel.appendPrompt(qsTr("Prompt: "), textInput.text);
+                    chatModel.appendResponse(qsTr("Response: "), prompt);
                     LLM.resetResponse()
                     LLM.prompt(prompt, settingsDialog.promptTemplate,
                                settingsDialog.maxLength,
