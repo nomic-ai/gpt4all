@@ -514,135 +514,13 @@ Window {
         }
     }
 
-    Drawer {
+    ChatDrawer {
         id: drawer
         y: header.height
         width: 0.3 * window.width
         height: window.height - y
-        modal: false
-        opacity: 0.9
-
-        background: Rectangle {
-            height: parent.height
-            color: theme.backgroundDarkest
-        }
-
-        Item {
-            anchors.fill: parent
-            anchors.margins: 30
-
-            Accessible.role: Accessible.Pane
-            Accessible.name: qsTr("Drawer on the left of the application")
-            Accessible.description: qsTr("Drawer that is revealed by pressing the hamburger button")
-
-            Label {
-                id: conversationList
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                wrapMode: Text.WordWrap
-                text: qsTr("Chat lists of specific conversations coming soon! Check back often for new features :)")
-                color: theme.textColor
-
-                Accessible.role: Accessible.Paragraph
-                Accessible.name: qsTr("Coming soon")
-                Accessible.description: text
-            }
-
-            Label {
-                id: discordLink
-                textFormat: Text.RichText
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: conversationList.bottom
-                anchors.topMargin: 20
-                wrapMode: Text.WordWrap
-                text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
-                onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
-                color: theme.textColor
-                linkColor: theme.linkColor
-
-                Accessible.role: Accessible.Link
-                Accessible.name: qsTr("Discord link")
-            }
-
-            Label {
-                id: nomicProps
-                textFormat: Text.RichText
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: discordLink.bottom
-                anchors.topMargin: 20
-                wrapMode: Text.WordWrap
-                text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">Nomic AI</a> and the community for contributing so much great data and energy!")
-                onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
-                color: theme.textColor
-                linkColor: theme.linkColor
-
-                Accessible.role: Accessible.Paragraph
-                Accessible.name: qsTr("Thank you blurb")
-                Accessible.description: qsTr("Contains embedded link to https://home.nomic.ai")
-            }
-
-            Button {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: downloadButton.top
-                anchors.bottomMargin: 20
-                padding: 15
-                contentItem: Text {
-                    text: qsTr("Check for updates...")
-                    horizontalAlignment: Text.AlignHCenter
-                    color: theme.textColor
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: text
-                    Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
-                }
-
-                background: Rectangle {
-                    opacity: .5
-                    border.color: theme.backgroundLightest
-                    border.width: 1
-                    radius: 10
-                    color: theme.backgroundLight
-                }
-
-                onClicked: {
-                    if (!LLM.checkForUpdates())
-                        checkForUpdatesError.open()
-                }
-            }
-
-            Button {
-                id: downloadButton
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                padding: 15
-                contentItem: Text {
-                    text: qsTr("Download new models...")
-                    horizontalAlignment: Text.AlignHCenter
-                    color: theme.textColor
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: text
-                    Accessible.description: qsTr("Use this to launch a dialog to download new models")
-                }
-
-                background: Rectangle {
-                    opacity: .5
-                    border.color: theme.backgroundLightest
-                    border.width: 1
-                    radius: 10
-                    color: theme.backgroundLight
-                }
-
-                onClicked: {
-                    downloadNewModels.open()
-                }
-            }
-
+        onDownloadClicked: {
+            downloadNewModels.open()
         }
     }
 
