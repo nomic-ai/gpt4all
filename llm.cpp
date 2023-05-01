@@ -25,13 +25,18 @@ LLM::LLM()
 {
     connect(Download::globalInstance(), &Download::modelListChanged,
         this, &LLM::modelListChanged, Qt::QueuedConnection);
-    // FIXME: This should be moved to connect whenever we make a new chat object in future
+    // FIXME: These should be moved to connect whenever we make a new chat object in future
     connect(m_currentChat, &Chat::modelNameChanged,
         this, &LLM::modelListChanged, Qt::QueuedConnection);
+    connect(m_currentChat, &Chat::recalcChanged,
+        this, &LLM::recalcChanged, Qt::QueuedConnection);
+    connect(m_currentChat, &Chat::responseChanged,
+        this, &LLM::responseChanged, Qt::QueuedConnection);
 }
 
 QList<QString> LLM::modelList() const
 {
+    Q_ASSERT(m_currentChat);
     // Build a model list from exepath and from the localpath
     QList<QString> list;
 
@@ -107,3 +112,10 @@ bool LLM::checkForUpdates() const
 
     return QProcess::startDetached(fileName);
 }
+
+bool LLM::isRecalc() const
+{
+    Q_ASSERT(m_currentChat);
+    return m_currentChat->isRecalc();
+}
+
