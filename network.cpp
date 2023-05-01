@@ -86,7 +86,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     Q_ASSERT(doc.isObject());
     QJsonObject object = doc.object();
     object.insert("source", "gpt4all-chat");
-    object.insert("agent_id", LLM::globalInstance()->modelName());
+    object.insert("agent_id", LLM::globalInstance()->currentChat()->modelName());
     object.insert("submitter_id", m_uniqueId);
     object.insert("ingest_id", ingestId);
 
@@ -230,7 +230,7 @@ void Network::sendMixpanelEvent(const QString &ev)
         properties.insert("ip", m_ipify);
     properties.insert("name", QCoreApplication::applicationName() + " v"
         + QCoreApplication::applicationVersion());
-    properties.insert("model", LLM::globalInstance()->modelName());
+    properties.insert("model", LLM::globalInstance()->currentChat()->modelName());
 
     QJsonObject event;
     event.insert("event", ev);
