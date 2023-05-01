@@ -70,6 +70,7 @@ qt_add_qml_module(chat
     VERSION 1.0
     QML_FILES
       main.qml
+      qml/ChatDrawer.qml
       qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
