@@ -94,7 +94,7 @@ Window {
         Item {
             anchors.centerIn: parent
             height: childrenRect.height
-            visible: LLM.isModelLoaded
+            visible: LLM.currentChat.isModelLoaded
 
             Label {
                 id: modelLabel
@@ -169,8 +169,8 @@ Window {
                 }
 
                 onActivated: {
-                    LLM.stopGenerating()
-                    LLM.modelName = comboBox.currentText
+                    LLM.currentChat.stopGenerating()
+                    LLM.currentChat.modelName = comboBox.currentText
                     LLM.currentChat.reset();
                 }
             }
@@ -178,8 +178,8 @@ Window {
 
         BusyIndicator {
             anchors.centerIn: parent
-            visible: !LLM.isModelLoaded
-            running: !LLM.isModelLoaded
+            visible: !LLM.currentChat.isModelLoaded
+            running: !LLM.currentChat.isModelLoaded
             Accessible.role: Accessible.Animation
             Accessible.name: qsTr("Busy indicator")
             Accessible.description: qsTr("Displayed when the model is loading")
@@ -353,9 +353,10 @@ Window {
         text: qsTr("Recalculating context.")
 
         Connections {
-            target: LLM
+            // FIXME: This connection has to be setup everytime a new chat object is created
+            target: LLM.currentChat
             function onRecalcChanged() {
-                if (LLM.isRecalc)
+                if (LLM.currentChat.isRecalc)
                     recalcPopup.open()
                 else
                     recalcPopup.close()
@@ -409,7 +410,7 @@ Window {
             var string = item.name;
             var isResponse = item.name === qsTr("Response: ")
             if (item.currentResponse)
-                string += LLM.response
+                string += LLM.currentChat.response
             else
                 string += chatModel.get(i).value
             if (isResponse && item.stopped)
@@ -427,7 +428,7 @@ Window {
             var isResponse = item.name === qsTr("Response: ")
             str += "{\"content\": ";
             if (item.currentResponse)
-                str += JSON.stringify(LLM.response)
+                str += JSON.stringify(LLM.currentChat.response)
             else
                 str += JSON.stringify(item.value)
             str += ", \"role\": \"" + (isResponse ? "assistant" : "user") + "\"";
@@ -471,8 +472,8 @@ Window {
         }
 
         onClicked: {
-            LLM.stopGenerating()
-            LLM.resetContext()
+            LLM.currentChat.stopGenerating()
+            LLM.currentChat.resetContext()
             LLM.currentChat.reset();
         }
     }
@@ -679,14 +680,14 @@ Window {
                     Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
 
                     delegate: TextArea {
-                        text: currentResponse ? LLM.response : (value ? value : "")
+                        text: currentResponse ? LLM.currentChat.response : (value ? value : "")
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
                         focus: false
                         readOnly: true
                         font.pixelSize: theme.fontSizeLarge
-                        cursorVisible: currentResponse ? (LLM.response !== "" ? LLM.responseInProgress : false) : false
+                        cursorVisible: currentResponse ? (LLM.currentChat.response !== "" ? LLM.currentChat.responseInProgress : false) : false
                         cursorPosition: text.length
                         background: Rectangle {
                             color: name === qsTr("Response: ") ? theme.backgroundLighter : theme.backgroundLight
@@ -706,8 +707,8 @@ Window {
                             anchors.leftMargin: 90
                             anchors.top: parent.top
                             anchors.topMargin: 5
-                            visible: (currentResponse ? true : false) && LLM.response === "" && LLM.responseInProgress
-                            running: (currentResponse ? true : false) && LLM.response === "" && LLM.responseInProgress
+                            visible: (currentResponse ? true : false) && LLM.currentChat.response === "" && LLM.currentChat.responseInProgress
+                            running: (currentResponse ? true : false) && LLM.currentChat.response === "" && LLM.currentChat.responseInProgress
 
                             Accessible.role: Accessible.Animation
                             Accessible.name: qsTr("Busy indicator")
@@ -738,7 +739,7 @@ Window {
                                 window.height / 2 - height / 2)
                             x: globalPoint.x
                             y: globalPoint.y
-                            property string text: currentResponse ? LLM.response : (value ? value : "")
+                            property string text: currentResponse ? LLM.currentChat.response : (value ? value : "")
                             response: newResponse === undefined || newResponse === "" ? text : newResponse
                             onAccepted: {
                                 var responseHasChanged = response !== text && response !== newResponse
@@ -754,7 +755,7 @@ Window {
 
                         Column {
                             visible: name === qsTr("Response: ") &&
-                                (!currentResponse || !LLM.responseInProgress) && Network.isActive
+                                (!currentResponse || !LLM.currentChat.responseInProgress) && Network.isActive
                             anchors.right: parent.right
                             anchors.rightMargin: 20
                             anchors.top: parent.top
@@ -818,7 +819,8 @@ Window {
                     property bool isAutoScrolling: false
 
                     Connections {
-                        target: LLM
+                        // FIXME: This connection has to be setup everytime a new chat object is created
+                        target: LLM.currentChat
                         function onResponseChanged() {
                             if (listView.shouldAutoScroll) {
                                 listView.isAutoScrolling = true
@@ -853,27 +855,27 @@ Window {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: 15
-                source: LLM.responseInProgress ? "qrc:/gpt4all/icons/stop_generating.svg" : "qrc:/gpt4all/icons/regenerate.svg"
+                source: LLM.currentChat.responseInProgress ? "qrc:/gpt4all/icons/stop_generating.svg" : "qrc:/gpt4all/icons/regenerate.svg"
             }
             leftPadding: 50
             onClicked: {
                 var index = Math.max(0, chatModel.count - 1);
                 var listElement = chatModel.get(index);
 
-                if (LLM.responseInProgress) {
+                if (LLM.currentChat.responseInProgress) {
                     listElement.stopped = true
-                    LLM.stopGenerating()
+                    LLM.currentChat.stopGenerating()
                 } else {
-                    LLM.regenerateResponse()
+                    LLM.currentChat.regenerateResponse()
                     if (chatModel.count) {
                         if (listElement.name === qsTr("Response: ")) {
                             chatModel.updateCurrentResponse(index, true);
                             chatModel.updateStopped(index, false);
-                            chatModel.updateValue(index, LLM.response);
+                            chatModel.updateValue(index, LLM.currentChat.response);
                             chatModel.updateThumbsUpState(index, false);
                             chatModel.updateThumbsDownState(index, false);
                             chatModel.updateNewResponse(index, "");
-                            LLM.prompt(listElement.prompt, settingsDialog.promptTemplate,
+                            LLM.currentChat.prompt(listElement.prompt, settingsDialog.promptTemplate,
                                        settingsDialog.maxLength,
                                        settingsDialog.topK, settingsDialog.topP,
                                        settingsDialog.temperature,
@@ -889,7 +891,7 @@ Window {
             anchors.bottomMargin: 40
             padding: 15
             contentItem: Text {
-                text: LLM.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
+                text: LLM.currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
                 color: theme.textColor
                 Accessible.role: Accessible.Button
                 Accessible.name: text
@@ -917,7 +919,7 @@ Window {
                 color: theme.textColor
                 padding: 20
                 rightPadding: 40
-                enabled: LLM.isModelLoaded
+                enabled: LLM.currentChat.isModelLoaded
                 wrapMode: Text.WordWrap
                 font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Send a message...")
@@ -941,19 +943,18 @@ Window {
                     if (textInput.text === "")
                         return
 
-                    LLM.stopGenerating()
+                    LLM.currentChat.stopGenerating()
 
                     if (chatModel.count) {
                         var index = Math.max(0, chatModel.count - 1);
                         var listElement = chatModel.get(index);
                         chatModel.updateCurrentResponse(index, false);
-                        chatModel.updateValue(index, LLM.response);
+                        chatModel.updateValue(index, LLM.currentChat.response);
                     }
-                    var prompt = textInput.text + "\n"
                     chatModel.appendPrompt(qsTr("Prompt: "), textInput.text);
-                    chatModel.appendResponse(qsTr("Response: "), prompt);
-                    LLM.resetResponse()
-                    LLM.prompt(prompt, settingsDialog.promptTemplate,
+                    chatModel.appendResponse(qsTr("Response: "), textInput.text);
+                    LLM.currentChat.resetResponse()
+                    LLM.currentChat.prompt(textInput.text, settingsDialog.promptTemplate,
                                settingsDialog.maxLength,
                                settingsDialog.topK,
                                settingsDialog.topP,
