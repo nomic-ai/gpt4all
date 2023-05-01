@@ -949,9 +949,7 @@ Window {
                         chatModel.updateCurrentResponse(index, false);
                         chatModel.updateValue(index, LLM.currentChat.response);
                     }
-                    chatModel.appendPrompt(qsTr("Prompt: "), textInput.text);
-                    chatModel.appendResponse(qsTr("Response: "), textInput.text);
-                    LLM.currentChat.resetResponse()
+                    LLM.currentChat.newPromptResponsePair(textInput.text);
                     LLM.currentChat.prompt(textInput.text, settingsDialog.promptTemplate,
                                settingsDialog.maxLength,
                                settingsDialog.topK,

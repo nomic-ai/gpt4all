@@ -55,11 +55,6 @@ void Chat::regenerateResponse()
     emit regenerateResponseRequested(); // blocking queued connection
 }
 
-void Chat::resetResponse()
-{
-    emit resetResponseRequested(); // blocking queued connection
-}
-
 void Chat::stopGenerating()
 {
     m_llmodel->stopGenerating();
@@ -107,6 +102,13 @@ void Chat::setThreadCount(int32_t n_threads) {
 
 int32_t Chat::threadCount() {
     return m_llmodel->threadCount();
+}
+
+void Chat::newPromptResponsePair(const QString &prompt)
+{
+    m_chatModel->appendPrompt(tr("Prompt: "), prompt);
+    m_chatModel->appendResponse(tr("Response: "), prompt);
+    emit resetResponseRequested(); // blocking queued connection
 }
 
 bool Chat::isRecalc() const

@@ -101,7 +101,7 @@ public:
         return roles;
     }
 
-    Q_INVOKABLE void appendPrompt(const QString &name, const QString &value)
+    void appendPrompt(const QString &name, const QString &value)
     {
         ChatItem item;
         item.name = name;
@@ -112,7 +112,7 @@ public:
         emit countChanged();
     }
 
-    Q_INVOKABLE void appendResponse(const QString &name, const QString &prompt)
+    void appendResponse(const QString &name, const QString &prompt)
     {
         ChatItem item;
         item.id = m_chatItems.count(); // This is only relevant for responses
