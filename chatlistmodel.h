@@ -78,8 +78,12 @@ public:
             return;
         }
 
-        const bool chatIsCurrent = chat == m_currentChat;
         emit disconnectChat(chat);
+        if (chat == m_newChat) {
+            m_newChat->disconnect(this);
+            m_newChat = nullptr;
+        }
+
         const int index = m_chats.indexOf(chat);
         if (m_chats.count() < 2) {
             addChat();
