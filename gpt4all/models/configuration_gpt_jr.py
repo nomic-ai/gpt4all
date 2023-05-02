@@ -116,7 +116,9 @@ class GPTJRConfig(PretrainedConfig):
         eos_token_id=50256,
         tie_word_embeddings=False,
         encoder_dim=4096,
-        encoder_path=None,
+        total_alpha_steps=0,
+        initial_alpha=1,
+        final_alpha=.5,
         **kwargs
     ):
         self.vocab_size = vocab_size
@@ -139,6 +141,10 @@ class GPTJRConfig(PretrainedConfig):
         self.eos_token_id = eos_token_id
 
         self.encoder_dim = encoder_dim
+
+        self.total_alpha_steps = total_alpha_steps
+        self.initial_alpha = initial_alpha
+        self.final_alpha = final_alpha
 
         super().__init__(
             bos_token_id=bos_token_id, eos_token_id=eos_token_id, tie_word_embeddings=tie_word_embeddings, **kwargs
