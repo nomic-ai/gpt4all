@@ -21,6 +21,8 @@ Chat::Chat(QObject *parent)
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
     connect(this, &Chat::modelNameChangeRequested, m_llmodel, &ChatLLM::modelNameChangeRequested, Qt::QueuedConnection);
+    connect(this, &Chat::unloadRequested, m_llmodel, &ChatLLM::unload, Qt::QueuedConnection);
+    connect(this, &Chat::reloadRequested, m_llmodel, &ChatLLM::reload, Qt::QueuedConnection);
 
     // The following are blocking operations and will block the gui thread, therefore must be fast
     // to respond to
@@ -114,4 +116,15 @@ void Chat::newPromptResponsePair(const QString &prompt)
 bool Chat::isRecalc() const
 {
     return m_llmodel->isRecalc();
+}
+
+void Chat::unload()
+{
+    stopGenerating();
+    emit unloadRequested();
+}
+
+void Chat::reload()
+{
+    emit reloadRequested();
 }

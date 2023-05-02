@@ -21,12 +21,16 @@ LLM::LLM()
     : QObject{nullptr}
     , m_chatListModel(new ChatListModel(this))
 {
+    // Should be in the same thread
     connect(Download::globalInstance(), &Download::modelListChanged,
-        this, &LLM::modelListChanged, Qt::QueuedConnection);
+        this, &LLM::modelListChanged, Qt::DirectConnection);
     connect(m_chatListModel, &ChatListModel::connectChat,
-        this, &LLM::connectChat, Qt::QueuedConnection);
+        this, &LLM::connectChat, Qt::DirectConnection);
     connect(m_chatListModel, &ChatListModel::disconnectChat,
-        this, &LLM::disconnectChat, Qt::QueuedConnection);
+        this, &LLM::disconnectChat, Qt::DirectConnection);
+
+    if (!m_chatListModel->count())
+        m_chatListModel->addChat();
 }
 
 QList<QString> LLM::modelList() const
@@ -117,12 +121,10 @@ bool LLM::isRecalc() const
 
 void LLM::connectChat(Chat *chat)
 {
-    connect(chat, &Chat::modelNameChanged,
-        this, &LLM::modelListChanged, Qt::QueuedConnection);
-    connect(chat, &Chat::recalcChanged,
-        this, &LLM::recalcChanged, Qt::QueuedConnection);
-    connect(chat, &Chat::responseChanged,
-        this, &LLM::responseChanged, Qt::QueuedConnection);
+    // Should be in the same thread
+    connect(chat, &Chat::modelNameChanged, this, &LLM::modelListChanged, Qt::DirectConnection);
+    connect(chat, &Chat::recalcChanged, this, &LLM::recalcChanged, Qt::DirectConnection);
+    connect(chat, &Chat::responseChanged, this, &LLM::responseChanged, Qt::DirectConnection);
 }
 
 void LLM::disconnectChat(Chat *chat)

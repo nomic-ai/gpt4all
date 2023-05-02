@@ -58,32 +58,93 @@ Drawer {
             }
         }
 
-        ListView {
-            id: conversationList
+        ScrollView {
             anchors.left: parent.left
             anchors.right: parent.right
+            anchors.rightMargin: -10
             anchors.topMargin: 10
             anchors.top: newChat.bottom
             anchors.bottom: checkForUpdatesButton.top
-            model: LLM.chatListModel
+            anchors.bottomMargin: 10
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
-            delegate: Label {
-                id: chatLabel
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: theme.textColor
-                padding: 15
-                font.pixelSize: theme.fontSizeLarger
-                text: name
-                background: Rectangle {
+            ListView {
+                id: conversationList
+                anchors.fill: parent
+                anchors.rightMargin: 10
+
+                model: LLM.chatListModel
+
+                delegate: Rectangle {
+                    id: chatRectangle
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: chatName.height
+                    opacity: 0.9
+                    property bool isCurrent: LLM.chatListModel.currentChat === LLM.chatListModel.get(index)
                     color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
+                    border.width: isCurrent
+                    border.color: theme.backgroundLightest
+                    TextArea {
+                        id: chatName
+                        anchors.left: parent.left
+                        anchors.right: editButton.left
+                        color: theme.textColor
+                        padding: 15
+                        focus: false
+                        readOnly: true
+                        wrapMode: Text.NoWrap
+                        hoverEnabled: false // Disable hover events on the TextArea
+                        selectByMouse: false // Disable text selection in the TextArea
+                        font.pixelSize: theme.fontSizeLarger
+                        text: name
+                        horizontalAlignment: TextInput.AlignLeft
+                        background: Rectangle {
+                            color: "transparent"
+                        }
+                        Keys.onReturnPressed: (event)=> {
+                            changeName();
+                        }
+                        onEditingFinished: {
+                            changeName();
+                        }
+                        function changeName() {
+                            LLM.chatListModel.get(index).name = chatName.text
+                            chatName.focus = false
+                            chatName.readOnly = true
+                        }
+                        TapHandler {
+                            onTapped: {
+                                if (isCurrent)
+                                    return;
+                                LLM.chatListModel.currentChat = LLM.chatListModel.get(index);
+                            }
+                        }
+                    }
+                    Button {
+                        id: editButton
+                        anchors.verticalCenter: chatName.verticalCenter
+                        anchors.right: chatRectangle.right
+                        anchors.rightMargin: 10
+                        width: 30
+                        height: 30
+                        visible: isCurrent
+                        background: Image {
+                            width: 30
+                            height: 30
+                            source: "qrc:/gpt4all/icons/edit.svg"
+                        }
+                        onClicked: {
+                            chatName.focus = true
+                            chatName.readOnly = false
+                        }
+                    }
                 }
-                horizontalAlignment: TextInput.AlignLeft
-            }
 
-            Accessible.role: Accessible.List
-            Accessible.name: qsTr("List of chats")
-            Accessible.description: qsTr("List of chats in the drawer dialog")
+                Accessible.role: Accessible.List
+                Accessible.name: qsTr("List of chats")
+                Accessible.description: qsTr("List of chats in the drawer dialog")
+            }
         }
 
         /*Label {

@@ -29,8 +29,8 @@ Q_SIGNALS:
     void chatListModelChanged();
 
 private Q_SLOTS:
-    void connectChat(Chat *chat);
-    void disconnectChat(Chat *chat);
+    void connectChat(Chat*);
+    void disconnectChat(Chat*);
 
 private:
     ChatListModel *m_chatListModel;
