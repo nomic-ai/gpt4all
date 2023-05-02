@@ -81,6 +81,7 @@ Drawer {
                     height: chatName.height
                     opacity: 0.9
                     property bool isCurrent: LLM.chatListModel.currentChat === LLM.chatListModel.get(index)
+                    property bool trashQuestionDisplayed: false
                     color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
                     border.width: isCurrent
                     border.color: chatName.readOnly ? theme.assistantColor : theme.userColor
@@ -98,6 +99,7 @@ Drawer {
                         font.pixelSize: theme.fontSizeLarger
                         text: readOnly ? metrics.elidedText : name
                         horizontalAlignment: TextInput.AlignLeft
+                        opacity: trashQuestionDisplayed ? 0.5 : 1.0
                         TextMetrics {
                             id: metrics
                             font: chatName.font
@@ -127,6 +129,9 @@ Drawer {
                                 LLM.chatListModel.currentChat = LLM.chatListModel.get(index);
                             }
                         }
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr("Select the current chat")
+                        Accessible.description: qsTr("Provides a button to select the current chat or edit the chat when in edit mode")
                     }
                     Row {
                         id: buttons
@@ -139,6 +144,7 @@ Drawer {
                             width: 30
                             height: 30
                             visible: isCurrent
+                            opacity: trashQuestionDisplayed ? 0.5 : 1.0
                             background: Image {
                                 width: 30
                                 height: 30
@@ -149,9 +155,12 @@ Drawer {
                                 chatName.readOnly = false
                                 chatName.selectByMouse = true
                             }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Edit the chat name")
+                            Accessible.description: qsTr("Provides a button to edit the chat name")
                         }
                         Button {
-                            id: trashButton
+                            id: c
                             width: 30
                             height: 30
                             visible: isCurrent
@@ -161,9 +170,79 @@ Drawer {
                                 source: "qrc:/gpt4all/icons/trash.svg"
                             }
                             onClicked: {
-                                LLM.chatListModel.removeChat(LLM.chatListModel.get(index))
+                                trashQuestionDisplayed = true
+                                timer.start()
+                            }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Delete of the chat")
+                            Accessible.description: qsTr("Provides a button to delete the chat")
+                        }
+                    }
+                    Rectangle {
+                        id: trashSureQuestion
+                        anchors.top: buttons.bottom
+                        anchors.topMargin: 10
+                        anchors.right: buttons.right
+                        width: childrenRect.width
+                        height: childrenRect.height
+                        color: chatRectangle.color
+                        visible: isCurrent && trashQuestionDisplayed
+                        opacity: 1.0
+                        radius: 10
+                        Row {
+                            spacing: 10
+                            Button {
+                                id: checkMark
+                                width: 30
+                                height: 30
+                                contentItem: Text {
+                                    color: theme.textErrorColor
+                                    text: "\u2713"
+                                    font.pixelSize: theme.fontSizeLarger
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                background: Rectangle {
+                                    width: 30
+                                    height: 30
+                                    color: "transparent"
+                                }
+                                onClicked: {
+                                    LLM.chatListModel.removeChat(LLM.chatListModel.get(index))
+                                }
+                                Accessible.role: Accessible.Button
+                                Accessible.name: qsTr("Confirm delete of the chat")
+                                Accessible.description: qsTr("Provides a button to confirm delete of the chat")
+                            }
+                            Button {
+                                id: cancel
+                                width: 30
+                                height: 30
+                                contentItem: Text {
+                                    color: theme.textColor
+                                    text: "\u2715"
+                                    font.pixelSize: theme.fontSizeLarger
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                background: Rectangle {
+                                    width: 30
+                                    height: 30
+                                    color: "transparent"
+                                }
+                                onClicked: {
+                                    trashQuestionDisplayed = false
+                                }
+                                Accessible.role: Accessible.Button
+                                Accessible.name: qsTr("Cancel the delete of the chat")
+                                Accessible.description: qsTr("Provides a button to cancel delete of the chat")
                             }
                         }
+                    }
+                    Timer {
+                        id: timer
+                        interval: 3000; running: false; repeat: false
+                        onTriggered: trashQuestionDisplayed = false
                     }
                 }
 
