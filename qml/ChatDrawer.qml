@@ -83,7 +83,7 @@ Drawer {
                     property bool isCurrent: LLM.chatListModel.currentChat === LLM.chatListModel.get(index)
                     color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
                     border.width: isCurrent
-                    border.color: theme.backgroundLightest
+                    border.color: chatName.readOnly ? theme.assistantColor : theme.userColor
                     TextField {
                         id: chatName
                         anchors.left: parent.left
