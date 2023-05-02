@@ -13,6 +13,8 @@ class ChatListModel : public QAbstractListModel
 public:
     explicit ChatListModel(QObject *parent = nullptr)
         : QAbstractListModel(parent)
+        , m_currentChat(nullptr)
+        , m_newChat(nullptr)
     {
     }
 
@@ -51,15 +53,22 @@ public:
         return roles;
     }
 
-    Q_INVOKABLE Chat* addChat()
+    Q_INVOKABLE void addChat()
     {
-        Chat *newChat = new Chat(this);
+        // Don't add a new chat if the current chat is empty
+        if (m_newChat)
+            return;
+
+        // Create a new chat pointer and connect it to determine when it is populated
+        m_newChat = new Chat(this);
+        connect(m_newChat->chatModel(), &ChatModel::countChanged,
+            this, &ChatListModel::newChatCountChanged);
+
         beginInsertRows(QModelIndex(), 0, 0);
-        m_chats.prepend(newChat);
+        m_chats.prepend(m_newChat);
         endInsertRows();
         emit countChanged();
-        setCurrentChat(newChat);
-        return newChat;
+        setCurrentChat(m_newChat);
     }
 
     Q_INVOKABLE void removeChat(Chat* chat)
@@ -130,7 +139,16 @@ Q_SIGNALS:
     void disconnectChat(Chat*);
     void currentChatChanged();
 
+private Q_SLOTS:
+    void newChatCountChanged()
+    {
+        Q_ASSERT(m_newChat && m_newChat->chatModel()->count());
+        m_newChat->disconnect(this);
+        m_newChat = nullptr;
+    }
+
 private:
+    Chat* m_newChat;
     Chat* m_currentChat;
     QList<Chat*> m_chats;
 };
