@@ -129,5 +129,5 @@ void LLM::connectChat(Chat *chat)
 
 void LLM::disconnectChat(Chat *chat)
 {
-    disconnect(chat);
+    chat->disconnect(this);
 }
