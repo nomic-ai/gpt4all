@@ -18,11 +18,13 @@ Chat::Chat(QObject *parent)
     connect(m_llmodel, &ChatLLM::threadCountChanged, this, &Chat::threadCountChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::threadCountChanged, this, &Chat::syncThreadCount, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::recalcChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
     connect(this, &Chat::modelNameChangeRequested, m_llmodel, &ChatLLM::modelNameChangeRequested, Qt::QueuedConnection);
     connect(this, &Chat::unloadRequested, m_llmodel, &ChatLLM::unload, Qt::QueuedConnection);
     connect(this, &Chat::reloadRequested, m_llmodel, &ChatLLM::reload, Qt::QueuedConnection);
+    connect(this, &Chat::generateNameRequested, m_llmodel, &ChatLLM::generateName, Qt::QueuedConnection);
 
     // The following are blocking operations and will block the gui thread, therefore must be fast
     // to respond to
@@ -77,6 +79,8 @@ void Chat::responseStopped()
 {
     m_responseInProgress = false;
     emit responseInProgressChanged();
+    if (m_llmodel->generatedName().isEmpty())
+        emit generateNameRequested();
 }
 
 QString Chat::modelName() const
@@ -127,4 +131,14 @@ void Chat::unload()
 void Chat::reload()
 {
     emit reloadRequested();
+}
+
+void Chat::generatedNameChanged()
+{
+    // Only use the first three words maximum and remove newlines and extra spaces
+    QString gen = m_llmodel->generatedName().simplified();
+    QStringList words = gen.split(' ', Qt::SkipEmptyParts);
+    int wordCount = qMin(3, words.size());
+    m_name = words.mid(0, wordCount).join(' ');
+    emit nameChanged();
 }

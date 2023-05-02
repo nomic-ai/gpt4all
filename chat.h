@@ -73,10 +73,12 @@ Q_SIGNALS:
     void recalcChanged();
     void unloadRequested();
     void reloadRequested();
+    void generateNameRequested();
 
 private Q_SLOTS:
     void responseStarted();
     void responseStopped();
+    void generatedNameChanged();
 
 private:
     ChatLLM *m_llmodel;

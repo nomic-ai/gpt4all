@@ -84,7 +84,7 @@ Drawer {
                     color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
                     border.width: isCurrent
                     border.color: theme.backgroundLightest
-                    TextArea {
+                    TextField {
                         id: chatName
                         anchors.left: parent.left
                         anchors.right: buttons.left
@@ -96,8 +96,15 @@ Drawer {
                         hoverEnabled: false // Disable hover events on the TextArea
                         selectByMouse: false // Disable text selection in the TextArea
                         font.pixelSize: theme.fontSizeLarger
-                        text: name
+                        text: readOnly ? metrics.elidedText : name
                         horizontalAlignment: TextInput.AlignLeft
+                        TextMetrics {
+                            id: metrics
+                            font: chatName.font
+                            text: name
+                            elide: Text.ElideRight
+                            elideWidth: chatName.width - 25
+                        }
                         background: Rectangle {
                             color: "transparent"
                         }
@@ -111,6 +118,7 @@ Drawer {
                             LLM.chatListModel.get(index).name = chatName.text
                             chatName.focus = false
                             chatName.readOnly = true
+                            chatName.selectByMouse = false
                         }
                         TapHandler {
                             onTapped: {
@@ -139,6 +147,7 @@ Drawer {
                             onClicked: {
                                 chatName.focus = true
                                 chatName.readOnly = false
+                                chatName.selectByMouse = true
                             }
                         }
                         Button {
