@@ -99,7 +99,9 @@ public:
             Q_ASSERT(nextChat);
             setCurrentChat(nextChat);
         }
-        beginRemoveRows(QModelIndex(), index, index);
+
+        const int newIndex = m_chats.indexOf(chat);
+        beginRemoveRows(QModelIndex(), newIndex, newIndex);
         m_chats.removeAll(chat);
         endRemoveRows();
         delete chat;
@@ -165,6 +167,15 @@ private Q_SLOTS:
 
         QModelIndex index = createIndex(row, 0);
         emit dataChanged(index, index, {NameRole});
+    }
+
+    void printChats()
+    {
+        for (auto c : m_chats) {
+            qDebug() << c->name()
+                << (c == m_currentChat ? "currentChat: true" : "currentChat: false")
+                << (c == m_newChat ? "newChat: true" : "newChat: false");
+        }
     }
 
 private:
