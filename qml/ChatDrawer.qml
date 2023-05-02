@@ -343,7 +343,8 @@ Drawer {
             }
 
             onClicked: {
-                downloadClicked()            }
+                downloadClicked()
+            }
         }
     }
 }

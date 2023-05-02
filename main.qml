@@ -171,8 +171,8 @@ Window {
 
                 onActivated: {
                     currentChat.stopGenerating()
-                    currentChat.modelName = comboBox.currentText
                     currentChat.reset();
+                    currentChat.modelName = comboBox.currentText
                 }
             }
         }
