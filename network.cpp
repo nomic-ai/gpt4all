@@ -2,14 +2,26 @@
 #include "llm.h"
 
 #include <QCoreApplication>
+#include <QGuiApplication>
 #include <QUuid>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QSettings>
 #include <QNetworkRequest>
+#include <QScreen>
 
 //#define DEBUG
+
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+std::string getCPUModel() {
+    char buffer[256];
+    size_t bufferlen = sizeof(buffer);
+    sysctlbyname("machdep.cpu.brand_string", &buffer, &bufferlen, NULL, 0);
+    return std::string(buffer);
+}
+#endif
 
 class MyNetwork: public Network { };
 Q_GLOBAL_STATIC(MyNetwork, networkInstance)
@@ -233,6 +245,20 @@ void Network::sendMixpanelEvent(const QString &ev)
     properties.insert("name", QCoreApplication::applicationName() + " v"
         + QCoreApplication::applicationVersion());
     properties.insert("model", LLM::globalInstance()->chatListModel()->currentChat()->modelName());
+
+    // Some additional startup information
+    if (ev == "startup") {
+        const QSize display = QGuiApplication::primaryScreen()->size();
+        properties.insert("display", QString("%1x%2").arg(display.width()).arg(display.height()));
+#if defined(__x86_64__) || defined(__i386__)
+        properties.insert("avx", __builtin_cpu_supports("avx"));
+        properties.insert("avx2", __builtin_cpu_supports("avx2"));
+        properties.insert("fma", __builtin_cpu_supports("fma"));
+#endif
+#ifdef __APPLE__
+        properties.insert("cpu", QString::fromStdString(getCPUModel()));
+#endif
+    }
 
     QJsonObject event;
     event.insert("event", ev);
