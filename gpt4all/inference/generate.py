@@ -1,6 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModelForCausalLM
-from read import read_config
+from gpt4all.utils.read import read_config
 from argparse import ArgumentParser
 import torch
 import time

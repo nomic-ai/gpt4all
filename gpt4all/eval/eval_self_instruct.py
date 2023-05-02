@@ -3,7 +3,7 @@ import torch
 import pickle
 import numpy as np
 from tqdm import tqdm
-from read import read_config
+from gpt4all.utils.read import read_config
 from argparse import ArgumentParser
 from peft import PeftModelForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer
