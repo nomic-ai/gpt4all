@@ -56,11 +56,11 @@ public:
 
 public Q_SLOTS:
     void hashAndSave(const QString &hash, const QString &saveFilePath,
-        QTemporaryFile *tempFile, QNetworkReply *modelReply);
+        QFile *tempFile, QNetworkReply *modelReply);
 
 Q_SIGNALS:
     void hashAndSaveFinished(bool success,
-        QTemporaryFile *tempFile, QNetworkReply *modelReply);
+        QFile *tempFile, QNetworkReply *modelReply);
 
 private:
     QThread m_hashAndSaveThread;
@@ -99,7 +99,7 @@ private Q_SLOTS:
     void handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void handleModelDownloadFinished();
     void handleHashAndSaveFinished(bool success,
-        QTemporaryFile *tempFile, QNetworkReply *modelReply);
+        QFile *tempFile, QNetworkReply *modelReply);
     void handleReadyRead();
 
 Q_SIGNALS:
@@ -110,18 +110,20 @@ Q_SIGNALS:
     void hasNewerReleaseChanged();
     void downloadLocalModelsPathChanged();
     void requestHashAndSave(const QString &hash, const QString &saveFilePath,
-        QTemporaryFile *tempFile, QNetworkReply *modelReply);
+        QFile *tempFile, QNetworkReply *modelReply);
 
 private:
     void parseModelsJsonFile(const QByteArray &jsonData);
     void parseReleaseJsonFile(const QByteArray &jsonData);
+    QString incompleteDownloadPath(const QString &modelFile);
 
     HashAndSaveFile *m_hashAndSave;
     QMap<QString, ModelInfo> m_modelMap;
     QMap<QString, ReleaseInfo> m_releaseMap;
     QNetworkAccessManager m_networkManager;
-    QMap<QNetworkReply*, QTemporaryFile*> m_activeDownloads;
+    QMap<QNetworkReply*, QFile*> m_activeDownloads;
     QString m_downloadLocalModelsPath;
+    QDateTime m_startTime;
 
 private:
     explicit Download();
