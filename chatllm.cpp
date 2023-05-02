@@ -300,3 +300,55 @@ void ChatLLM::reload()
 {
     loadModel();
 }
+
+void ChatLLM::generateName()
+{
+    Q_ASSERT(isModelLoaded());
+    if (!isModelLoaded())
+        return;
+
+    QString instructPrompt("### Instruction:\n"
+                           "Describe response above in three words.\n"
+                           "### Response:\n");
+    auto promptFunc = std::bind(&ChatLLM::handleNamePrompt, this, std::placeholders::_1);
+    auto responseFunc = std::bind(&ChatLLM::handleNameResponse, this, std::placeholders::_1,
+        std::placeholders::_2);
+    auto recalcFunc = std::bind(&ChatLLM::handleNameRecalculate, this, std::placeholders::_1);
+    LLModel::PromptContext ctx = m_ctx;
+#if defined(DEBUG)
+    printf("%s", qPrintable(instructPrompt));
+    fflush(stdout);
+#endif
+    m_llmodel->prompt(instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, ctx);
+#if defined(DEBUG)
+    printf("\n");
+    fflush(stdout);
+#endif
+    std::string trimmed = trim_whitespace(m_nameResponse);
+    if (trimmed != m_nameResponse) {
+        m_nameResponse = trimmed;
+        emit generatedNameChanged();
+    }
+}
+
+bool ChatLLM::handleNamePrompt(int32_t token)
+{
+    Q_UNUSED(token);
+    qt_noop();
+    return true;
+}
+
+bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
+{
+    Q_UNUSED(token);
+    m_nameResponse.append(response);
+    emit generatedNameChanged();
+    return true;
+}
+
+bool ChatLLM::handleNameRecalculate(bool isRecalc)
+{
+    Q_UNUSED(isRecalc);
+    Q_UNREACHABLE();
+    return true;
+}

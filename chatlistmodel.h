@@ -63,6 +63,8 @@ public:
         m_newChat = new Chat(this);
         connect(m_newChat->chatModel(), &ChatModel::countChanged,
             this, &ChatListModel::newChatCountChanged);
+        connect(m_newChat, &Chat::nameChanged,
+            this, &ChatListModel::nameChanged);
 
         beginInsertRows(QModelIndex(), 0, 0);
         m_chats.prepend(m_newChat);
@@ -147,8 +149,22 @@ private Q_SLOTS:
     void newChatCountChanged()
     {
         Q_ASSERT(m_newChat && m_newChat->chatModel()->count());
-        m_newChat->disconnect(this);
+        m_newChat->chatModel()->disconnect(this);
         m_newChat = nullptr;
+    }
+
+    void nameChanged()
+    {
+        Chat *chat = qobject_cast<Chat *>(sender());
+        if (!chat)
+            return;
+
+        int row = m_chats.indexOf(chat);
+        if (row < 0 || row >= m_chats.size())
+            return;
+
+        QModelIndex index = createIndex(row, 0);
+        emit dataChanged(index, index, {NameRole});
     }
 
 private:
