@@ -16,6 +16,7 @@
 
 from typing import Optional, Tuple, Union
 
+import math
 import torch
 import torch.utils.checkpoint
 from torch import nn
@@ -286,8 +287,8 @@ class GPTJRCrossAttention(GPTJRAttention):
             )
         self.scale_attn = torch.sqrt(torch.tensor(self.head_dim, dtype=torch.float32)).to(torch.get_default_dtype())
 
-        self.k_proj = nn.Linear(config.encoder_dim, self.embed_dim, bias=False)
-        self.v_proj = nn.Linear(config.encoder_dim, self.embed_dim, bias=False)
+        self.k_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
+        self.v_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
         self.q_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
         self.out_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
 
@@ -419,11 +420,13 @@ class GPTJRBlock(nn.Module):
         self.attn = GPTJRAttention(config)
         self.mlp = GPTJRMLP(inner_dim, config)
 
-        self.ln_2 = nn.LayerNorm(config.encoder_dim, eps=config.layer_norm_epsilon)
+        self.ln_2 = nn.LayerNorm(config.n_embd, eps=config.layer_norm_epsilon)
         self.cross_attn = GPTJRCrossAttention(config)
         self.cross_attn_mlp = GPTJRMLP(inner_dim, config)
         
-        self.world_size = torch.distributed.get_world_size() if torch.distributed.is_initialized() else torch.cuda.device_count() or 1
+        self.total_alpha_steps = config.total_alpha_steps
+        self.initial_alpha = config.initial_alpha
+        self.final_alpha = config.final_alpha
 
     def forward(
         self,
@@ -473,13 +476,14 @@ class GPTJRBlock(nn.Module):
             cross_attn_output[0] 
         )
 
-        if step is not None:
-            alpha = self._update_alpha(step)
-            alpha = alpha.to(cross_attn_ff.device).to(cross_attn_ff.dtype)
-        else:
-            alpha = 0.5 
+        # if step is not None:
+        #     alpha = self._update_alpha(step)
+        #     #alpha = alpha.to(cross_attn_ff.device).to(cross_attn_ff.dtype)
+        # else:
+        #     alpha = 0.5 
 
-        hidden_states = (1 - alpha) * cross_attn_ff +  alpha * self_attention_residual  
+        # hidden_states = (1 - alpha) * cross_attn_ff +  alpha * self_attention_residual  
+        hidden_states = cross_attn_ff + self_attention_residual
         if use_cache:
             outputs = (hidden_states,) + outputs
         else:
@@ -487,8 +491,35 @@ class GPTJRBlock(nn.Module):
 
         return outputs  # hidden_states, present, (attentions)
         
-    def _update_alpha(self, iteration):
-        return torch.clamp(torch.tensor([1 / (max(iteration * self.world_size, 1)) ** 0.08]), min=torch.tensor([0.5]), max=torch.tensor([1.0]))
+    # def _update_alpha(self, iteration):
+    #     return torch.clamp(torch.tensor([1 / (max(iteration * self.world_size, 1)) ** 0.08]), min=torch.tensor([0.5]), max=torch.tensor([1.0]))
+
+        
+    def _update_alpha(self, current_step):
+        """
+        Computes the learning rate for the current step using a cosine decay schedule.
+
+        Args:
+            initial_lr (float): The initial learning rate.
+            final_lr (float): The final learning rate.
+            total_steps (int): The total number of steps in the schedule.
+            current_step (int): The current step.
+
+        Returns:
+            float: The learning rate for the current step.
+        """
+        initial_alpha = 1
+        final_alpha = .5
+        if current_step >= self.total_alpha_steps:
+            return final_alpha
+
+        # Compute the cosine decay factor
+        cosine_decay = 0.5 * (1 + math.cos(math.pi * current_step / self.total_alpha_steps))
+
+        # Compute the current learning rate
+        alpha = final_alpha + (initial_alpha - final_alpha) * cosine_decay
+
+        return alpha
 
 
 class GPTJRPreTrainedModel(PreTrainedModel):
@@ -766,6 +797,12 @@ class GPTJRForCausalLM(GPTJRPreTrainedModel):
         self.transformer = GPTJRModel(config)
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size)
 
+        self.hidden_size = config.hidden_size
+        self.encoder_dim = config.encoder_dim
+
+        if self.hidden_size != self.encoder_dim:
+            self.enc_dec_proj = nn.Linear(config.encoder_dim, config.n_embd)
+
         # Model parallel
         self.model_parallel = False
         self.device_map = None
@@ -850,6 +887,10 @@ class GPTJRForCausalLM(GPTJRPreTrainedModel):
         """
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        if self.hidden_size != self.encoder_dim:
+            encoder_hidden_states = encoder_hidden_states.to(self.enc_dec_proj.weight.dtype)
+            encoder_hidden_states = self.enc_dec_proj(encoder_hidden_states)
 
         transformer_outputs = self.transformer(
             input_ids,

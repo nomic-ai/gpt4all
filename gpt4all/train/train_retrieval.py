@@ -1,5 +1,5 @@
 import os
-from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler, LlamaForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler
 import torch
 from torch.optim import AdamW
 from argparse import ArgumentParser
@@ -57,6 +57,15 @@ def train(accelerator, config):
     with accelerator.main_process_first():
         train_dataloader, val_dataloader = load_retrieval_augmented_data(config, tokenizer) 
 
+    if accelerator.state.deepspeed_plugin is not None:
+        gradient_accumulation_steps = accelerator.state.deepspeed_plugin.deepspeed_config[
+            "gradient_accumulation_steps"
+        ]
+
+    accelerator.print(f"Len of train_dataloader: {len(train_dataloader)}")
+    total_num_steps = (len(train_dataloader) / gradient_accumulation_steps) * config["num_epochs"]
+    # instead of decaying to zero, decay to ratio of min_lr / lr
+    accelerator.print(f"Total training steps: {total_num_steps}")
 
     checkpoint = config["gradient_checkpointing"]
     #ensures back compat with non retrieval models
@@ -66,6 +75,7 @@ def train(accelerator, config):
                                                     revision=config['version'] if 'version' in config else None,
                                                     use_cache=False if checkpoint else True,
                                                     encoder_dim=config["encoder_dim"],
+                                                    total_alpha_steps=total_num_steps
                                                     ) 
     else:
         model = AutoModelForCausalLM.from_pretrained(config["model_name"], 
@@ -94,18 +104,6 @@ def train(accelerator, config):
     # https://github.com/karpathy/minGPT/commit/bbbdac74fa9b2e55574d70056163ffbae42310c1#diff-2075fa9c224b395be5bda85544dd36572b59c76c54562819eadadbf268602834R157s
     optimizer = optimizer_cls(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
 
-    if accelerator.state.deepspeed_plugin is not None:
-        gradient_accumulation_steps = accelerator.state.deepspeed_plugin.deepspeed_config[
-            "gradient_accumulation_steps"
-        ]
-
-    # decay to min_lr instead of 0
-    lr_ratio = config["min_lr"] / config["lr"]
-    accelerator.print(f"Len of train_dataloader: {len(train_dataloader)}")
-    total_num_steps = (len(train_dataloader) / gradient_accumulation_steps) * config["num_epochs"]
-    # instead of decaying to zero, decay to ratio of min_lr / lr
-    total_num_steps += int(total_num_steps * lr_ratio) + config["warmup_steps"]
-    accelerator.print(f"Total training steps: {total_num_steps}")
 
     # Creates Dummy Scheduler if `scheduler` was spcified in the config file else creates `args.lr_scheduler_type` Scheduler
     if (
@@ -206,13 +204,14 @@ def train(accelerator, config):
         accelerator.print(f"Pushing to HF hub")
         accelerator.wait_for_everyone()
         unwrapped_model = accelerator.unwrap_model(model)
-        try:
-            if accelerator.is_main_process:
-                unwrapped_model.push_to_hub(config["save_name"] + f"-epoch_{epoch}", private=True)
+        if config["push_to_hub"]:
+            try:
+                if accelerator.is_main_process:
+                    unwrapped_model.push_to_hub(config["save_name"] + f"-epoch_{epoch}", private=True)
 
-        except Exception as e:
-            accelerator.print(e)
-            accelerator.print(f"Failed to push to hub")
+            except Exception as e:
+                accelerator.print(e)
+                accelerator.print(f"Failed to push to hub")
 
         unwrapped_model.save_pretrained(
             f"{config['output_dir']}/epoch_{epoch}",
