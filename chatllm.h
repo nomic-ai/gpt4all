@@ -39,6 +39,8 @@ public Q_SLOTS:
                 float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
     bool loadModel();
     void modelNameChangeRequested(const QString &modelName);
+    void unload();
+    void reload();
 
 Q_SIGNALS:
     void isModelLoadedChanged();

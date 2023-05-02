@@ -14,8 +14,6 @@ public:
     explicit ChatListModel(QObject *parent = nullptr)
         : QAbstractListModel(parent)
     {
-        if (m_chats.isEmpty())
-            addChat();
     }
 
     enum Roles {
@@ -56,8 +54,8 @@ public:
     Q_INVOKABLE Chat* addChat()
     {
         Chat *newChat = new Chat(this);
-        beginInsertRows(QModelIndex(), m_chats.size(), m_chats.size());
-        m_chats.append(newChat);
+        beginInsertRows(QModelIndex(), 0, 0);
+        m_chats.prepend(newChat);
         endInsertRows();
         emit countChanged();
         setCurrentChat(newChat);
@@ -97,12 +95,15 @@ public:
         }
 
         if (m_currentChat) {
-            Q_ASSERT(m_currentChat);
+            if (m_currentChat->isModelLoaded())
+                m_currentChat->unload();
             emit disconnect(m_currentChat);
         }
 
         emit connectChat(chat);
         m_currentChat = chat;
+        if (!m_currentChat->isModelLoaded())
+            m_currentChat->reload();
         emit currentChatChanged();
     }
 
@@ -117,8 +118,8 @@ public:
 
 Q_SIGNALS:
     void countChanged();
-    void connectChat(Chat *);
-    void disconnectChat(Chat *);
+    void connectChat(Chat*);
+    void disconnectChat(Chat*);
     void currentChatChanged();
 
 private:

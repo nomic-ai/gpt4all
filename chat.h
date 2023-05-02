@@ -11,7 +11,7 @@ class Chat : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString id READ id NOTIFY idChanged)
-    Q_PROPERTY(QString name READ name NOTIFY nameChanged)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(ChatModel *chatModel READ chatModel NOTIFY chatModelChanged)
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
@@ -26,7 +26,12 @@ public:
     explicit Chat(QObject *parent = nullptr);
 
     QString id() const { return m_id; }
-    QString name() const { return m_name; }
+    QString name() const { return m_userName.isEmpty() ? m_name : m_userName; }
+    void setName(const QString &name)
+    {
+        m_userName = name;
+        emit nameChanged();
+    }
     ChatModel *chatModel() { return m_chatModel; }
 
     Q_INVOKABLE void reset();
@@ -46,6 +51,9 @@ public:
     void setModelName(const QString &modelName);
     bool isRecalc() const;
 
+    void unload();
+    void reload();
+
 Q_SIGNALS:
     void idChanged();
     void nameChanged();
@@ -63,6 +71,8 @@ Q_SIGNALS:
     void threadCountChanged();
     void setThreadCountRequested(int32_t threadCount);
     void recalcChanged();
+    void unloadRequested();
+    void reloadRequested();
 
 private Q_SLOTS:
     void responseStarted();
@@ -72,6 +82,7 @@ private:
     ChatLLM *m_llmodel;
     QString m_id;
     QString m_name;
+    QString m_userName;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
     int32_t m_desiredThreadCount;

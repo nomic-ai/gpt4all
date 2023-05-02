@@ -288,3 +288,15 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     emit responseStopped();
     return true;
 }
+
+void ChatLLM::unload()
+{
+    delete m_llmodel;
+    m_llmodel = nullptr;
+    emit isModelLoadedChanged();
+}
+
+void ChatLLM::reload()
+{
+    loadModel();
+}
