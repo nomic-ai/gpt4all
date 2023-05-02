@@ -77,8 +77,7 @@ Drawer {
 
                 delegate: Rectangle {
                     id: chatRectangle
-                    anchors.left: parent.left
-                    anchors.right: parent.right
+                    width: conversationList.width
                     height: chatName.height
                     opacity: 0.9
                     property bool isCurrent: LLM.chatListModel.currentChat === LLM.chatListModel.get(index)
@@ -88,7 +87,7 @@ Drawer {
                     TextArea {
                         id: chatName
                         anchors.left: parent.left
-                        anchors.right: editButton.left
+                        anchors.right: buttons.left
                         color: theme.textColor
                         padding: 15
                         focus: false
@@ -121,22 +120,40 @@ Drawer {
                             }
                         }
                     }
-                    Button {
-                        id: editButton
+                    Row {
+                        id: buttons
                         anchors.verticalCenter: chatName.verticalCenter
                         anchors.right: chatRectangle.right
                         anchors.rightMargin: 10
-                        width: 30
-                        height: 30
-                        visible: isCurrent
-                        background: Image {
+                        spacing: 10
+                        Button {
+                            id: editButton
                             width: 30
                             height: 30
-                            source: "qrc:/gpt4all/icons/edit.svg"
+                            visible: isCurrent
+                            background: Image {
+                                width: 30
+                                height: 30
+                                source: "qrc:/gpt4all/icons/edit.svg"
+                            }
+                            onClicked: {
+                                chatName.focus = true
+                                chatName.readOnly = false
+                            }
                         }
-                        onClicked: {
-                            chatName.focus = true
-                            chatName.readOnly = false
+                        Button {
+                            id: trashButton
+                            width: 30
+                            height: 30
+                            visible: isCurrent
+                            background: Image {
+                                width: 30
+                                height: 30
+                                source: "qrc:/gpt4all/icons/trash.svg"
+                            }
+                            onClicked: {
+                                LLM.chatListModel.removeChat(LLM.chatListModel.get(index))
+                            }
                         }
                     }
                 }

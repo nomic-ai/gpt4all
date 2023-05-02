@@ -72,14 +72,22 @@ public:
         const bool chatIsCurrent = chat == m_currentChat;
         emit disconnectChat(chat);
         const int index = m_chats.indexOf(chat);
+        if (m_chats.count() < 2) {
+            addChat();
+        } else {
+            int nextIndex;
+            if (index == m_chats.count() - 1)
+                nextIndex = index - 1;
+            else
+                nextIndex = index + 1;
+            Chat *nextChat = get(nextIndex);
+            Q_ASSERT(nextChat);
+            setCurrentChat(nextChat);
+        }
         beginRemoveRows(QModelIndex(), index, index);
         m_chats.removeAll(chat);
         endRemoveRows();
         delete chat;
-        if (m_chats.isEmpty())
-            addChat();
-        else
-            setCurrentChat(m_chats.first());
     }
 
     Chat *currentChat() const
