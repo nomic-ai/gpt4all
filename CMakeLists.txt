@@ -87,6 +87,7 @@ qt_add_qml_module(chat
       icons/copy.svg
       icons/settings.svg
       icons/edit.svg
+      icons/trash.svg
       icons/network.svg
       icons/thumbs_up.svg
       icons/thumbs_down.svg
