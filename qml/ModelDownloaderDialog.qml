@@ -6,6 +6,7 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 import download
 import llm
+import network
 
 Dialog {
     id: modelDownloaderDialog
@@ -21,6 +22,10 @@ Dialog {
         border.width: 1
         border.color: theme.dialogBorder
         radius: 10
+    }
+
+    onOpened: {
+        Network.sendModelDownloaderDialog();
     }
 
     property string defaultModelPath: Download.defaultLocalModelsPath()

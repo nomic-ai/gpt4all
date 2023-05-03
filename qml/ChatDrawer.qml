@@ -55,6 +55,7 @@ Drawer {
             }
             onClicked: {
                 LLM.chatListModel.addChat();
+                Network.sendNewChat(LLM.chatListModel.count)
             }
         }
 
@@ -110,11 +111,9 @@ Drawer {
                         background: Rectangle {
                             color: "transparent"
                         }
-                        Keys.onReturnPressed: (event)=> {
-                            changeName();
-                        }
                         onEditingFinished: {
                             changeName();
+                            Network.sendRenameChat()
                         }
                         function changeName() {
                             LLM.chatListModel.get(index).name = chatName.text
@@ -209,6 +208,7 @@ Drawer {
                                 }
                                 onClicked: {
                                     LLM.chatListModel.removeChat(LLM.chatListModel.get(index))
+                                    Network.sendRemoveChat()
                                 }
                                 Accessible.role: Accessible.Button
                                 Accessible.name: qsTr("Confirm delete of the chat")

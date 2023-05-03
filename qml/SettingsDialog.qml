@@ -23,6 +23,10 @@ Dialog {
         radius: 10
     }
 
+    onOpened: {
+        Network.sendSettingsDialog();
+    }
+
     Theme {
         id: theme
     }

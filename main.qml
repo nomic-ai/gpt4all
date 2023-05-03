@@ -290,9 +290,10 @@ Window {
         }
 
         onClicked: {
-            if (Network.isActive)
+            if (Network.isActive) {
                 Network.isActive = false
-            else
+                Network.sendNetworkToggled(false);
+            } else
                 networkDialog.open()
         }
     }
@@ -472,6 +473,7 @@ Window {
         }
 
         onClicked: {
+            Network.sendResetContext(chatModel.count)
             currentChat.reset();
         }
     }

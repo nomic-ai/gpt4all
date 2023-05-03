@@ -79,6 +79,7 @@ private Q_SLOTS:
     void responseStarted();
     void responseStopped();
     void generatedNameChanged();
+    void handleRecalculating();
 
 private:
     ChatLLM *m_llmodel;

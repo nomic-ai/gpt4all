@@ -95,6 +95,7 @@ private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void handleModelsJsonDownloadFinished();
     void handleReleaseJsonDownloadFinished();
+    void handleErrorOccurred(QNetworkReply::NetworkError code);
     void handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void handleModelDownloadFinished();
     void handleHashAndSaveFinished(bool success,

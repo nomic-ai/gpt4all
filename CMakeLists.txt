@@ -64,6 +64,7 @@ qt_add_executable(chat
     download.h download.cpp
     network.h network.cpp
     llm.h llm.cpp
+    sysinfo.h
 )
 
 qt_add_qml_module(chat
