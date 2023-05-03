@@ -37,11 +37,9 @@ Dialog {
     property real defaultRepeatPenalty: 1.10
     property int defaultRepeatPenaltyTokens: 64
     property int defaultThreadCount: 0
-    property string defaultPromptTemplate: "### Instruction:
-The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.
-### Prompt:
+    property string defaultPromptTemplate: "### Human:
 %1
-### Response:\n"
+### Assistant:\n"
     property string defaultModelPath: Download.defaultLocalModelsPath()
 
     property alias temperature: settings.temperature
