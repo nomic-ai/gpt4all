@@ -72,7 +72,7 @@ Q_SIGNALS:
     void setThreadCountRequested(int32_t threadCount);
     void recalcChanged();
     void unloadRequested();
-    void reloadRequested();
+    void reloadRequested(const QString &modelName);
     void generateNameRequested();
 
 private Q_SLOTS:
@@ -86,6 +86,7 @@ private:
     QString m_id;
     QString m_name;
     QString m_userName;
+    QString m_savedModelName;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
     int32_t m_desiredThreadCount;
