@@ -18,6 +18,7 @@ Chat::Chat(QObject *parent)
     connect(m_llmodel, &ChatLLM::threadCountChanged, this, &Chat::threadCountChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::threadCountChanged, this, &Chat::syncThreadCount, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::recalcChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
@@ -37,7 +38,6 @@ Chat::Chat(QObject *parent)
 void Chat::reset()
 {
     stopGenerating();
-    qDebug() << "reset blocking";
     emit resetContextRequested(); // blocking queued connection
     m_id = Network::globalInstance()->generateUniqueId();
     emit idChanged();
@@ -80,8 +80,10 @@ void Chat::responseStopped()
 {
     m_responseInProgress = false;
     emit responseInProgressChanged();
-    if (m_llmodel->generatedName().isEmpty())
+    if (m_llmodel->generatedName().isEmpty()) {
+        Network::globalInstance()->sendChatStarted();
         emit generateNameRequested();
+    }
 }
 
 QString Chat::modelName() const
@@ -142,4 +144,9 @@ void Chat::generatedNameChanged()
     int wordCount = qMin(3, words.size());
     m_name = words.mid(0, wordCount).join(' ');
     emit nameChanged();
+}
+
+void Chat::handleRecalculating()
+{
+    Network::globalInstance()->sendRecalculatingContext(m_chatModel->count());
 }

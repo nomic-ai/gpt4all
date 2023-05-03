@@ -1,4 +1,5 @@
 #include "download.h"
+#include "network.h"
 
 #include <QCoreApplication>
 #include <QNetworkRequest>
@@ -202,6 +203,7 @@ void Download::downloadModel(const QString &modelFile)
         return;
     }
 
+    Network::globalInstance()->sendDownloadStarted(modelFile);
     QNetworkRequest request("http://gpt4all.io/models/" + modelFile);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -219,6 +221,8 @@ void Download::cancelDownload(const QString &modelFile)
         QNetworkReply *modelReply = m_activeDownloads.keys().at(i);
         QUrl url = modelReply->request().url();
         if (url.toString().endsWith(modelFile)) {
+            Network::globalInstance()->sendDownloadCanceled(modelFile);
+
             // Disconnect the signals
             disconnect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
             disconnect(modelReply, &QNetworkReply::finished, this, &Download::handleModelDownloadFinished);
@@ -386,6 +390,20 @@ void Download::parseReleaseJsonFile(const QByteArray &jsonData)
     emit releaseInfoChanged();
 }
 
+void Download::handleErrorOccurred(QNetworkReply::NetworkError code)
+{
+    QNetworkReply *modelReply = qobject_cast<QNetworkReply *>(sender());
+    if (!modelReply)
+        return;
+
+    QString modelFilename = modelReply->url().fileName();
+    qWarning() << "ERROR: Network error occurred attemptint to download"
+               << modelFilename
+               << "code:" << code
+               << "errorString" << modelReply->errorString();
+    Network::globalInstance()->sendDownloadError(modelFilename, (int)code, modelReply->errorString());
+    cancelDownload(modelFilename);
+}
 
 void Download::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
@@ -509,6 +527,7 @@ void Download::handleHashAndSaveFinished(bool success,
     // The hash and save should send back with tempfile closed
     Q_ASSERT(!tempFile->isOpen());
     QString modelFilename = modelReply->url().fileName();
+    Network::globalInstance()->sendDownloadFinished(modelFilename, success);
 
     ModelInfo info = m_modelMap.value(modelFilename);
     info.calcHash = false;

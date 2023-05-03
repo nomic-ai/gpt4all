@@ -43,7 +43,6 @@ ChatLLM::ChatLLM()
     connect(&m_llmThread, &QThread::started, this, &ChatLLM::loadModel);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
     connect(this, &ChatLLM::sendModelLoaded, Network::globalInstance(), &Network::sendModelLoaded);
-    connect(this, &ChatLLM::sendResetContext, Network::globalInstance(), &Network::sendResetContext);
     m_llmThread.setObjectName("llm thread"); // FIXME: Should identify these with chat name
     m_llmThread.start();
 }
