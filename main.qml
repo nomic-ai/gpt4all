@@ -198,6 +198,8 @@ Window {
     SettingsDialog {
         id: settingsDialog
         anchors.centerIn: parent
+        width: Math.min(1024, window.width - (window.width * .2))
+        height: Math.min(600, window.height - (window.height * .2))
     }
 
     Button {
@@ -257,6 +259,8 @@ Window {
     NetworkDialog {
         id: networkDialog
         anchors.centerIn: parent
+        width: Math.min(1024, window.width - (window.width * .2))
+        height: Math.min(600, window.height - (window.height * .2))
         Item {
             Accessible.role: Accessible.Dialog
             Accessible.name: qsTr("Network dialog")
@@ -518,6 +522,8 @@ Window {
     ModelDownloaderDialog {
         id: downloadNewModels
         anchors.centerIn: parent
+        width: Math.min(1024, window.width - (window.width * .2))
+        height: Math.min(600, window.height - (window.height * .2))
         Item {
             Accessible.role: Accessible.Dialog
             Accessible.name: qsTr("Download new models dialog")

@@ -12,7 +12,6 @@ Dialog {
     modal: true
     opacity: 0.9
     padding: 20
-    width: 900
 
     Theme {
         id: theme

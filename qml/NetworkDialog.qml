@@ -13,8 +13,6 @@ Dialog {
     modal: true
     opacity: 0.9
     padding: 20
-    width: 1024
-    height: column.height + dialogBox.height + 20
 
     Theme {
         id: theme
