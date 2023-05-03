@@ -35,14 +35,5 @@
 		  ],
 		  "eps": 1e-08
 		}
-	  },
-	  "scheduler": {
-		"type": "WarmupLR",
-		"params": {
-		  "warmup_min_lr": 0,
-		  "warmup_max_lr": "auto",
-		  "warmup_num_steps": "auto",
-		  "warmup_type": "linear"
-		}
 	  }
 }
