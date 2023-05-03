@@ -33,6 +33,7 @@ lora: false
 warmup_steps: 500
 num_epochs: 5 
 debug: false
+scheduler: false
 
 # logging
 wandb: true
