@@ -49,6 +49,14 @@ Window {
         }
     }
 
+    Connections {
+        target: currentChat
+        function onResponseInProgressChanged() {
+            if (Network.isActive && !currentChat.responseInProgress)
+                Network.sendConversation(currentChat.id, getConversationJson());
+        }
+    }
+
     function startupDialogs() {
         // check for first time start of this version
         if (Download.isFirstStart()) {
