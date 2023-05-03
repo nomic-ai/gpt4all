@@ -10,8 +10,6 @@ import network
 
 Dialog {
     id: modelDownloaderDialog
-    width: 1024
-    height: 600
     modal: true
     opacity: 0.9
     closePolicy: LLM.modelList.length === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)

@@ -11,8 +11,6 @@ import llm
 Dialog {
     id: settingsDialog
     modal: true
-    width: 1024
-    height: 600
     opacity: 0.9
     background: Rectangle {
         anchors.fill: parent
