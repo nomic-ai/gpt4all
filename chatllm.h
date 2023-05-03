@@ -43,7 +43,7 @@ public Q_SLOTS:
     bool loadModel();
     void modelNameChangeRequested(const QString &modelName);
     void unload();
-    void reload();
+    void reload(const QString &modelName);
     void generateName();
 
 Q_SIGNALS:

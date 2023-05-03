@@ -127,13 +127,14 @@ bool Chat::isRecalc() const
 
 void Chat::unload()
 {
+    m_savedModelName = m_llmodel->modelName();
     stopGenerating();
     emit unloadRequested();
 }
 
 void Chat::reload()
 {
-    emit reloadRequested();
+    emit reloadRequested(m_savedModelName);
 }
 
 void Chat::generatedNameChanged()

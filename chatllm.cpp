@@ -295,9 +295,12 @@ void ChatLLM::unload()
     emit isModelLoadedChanged();
 }
 
-void ChatLLM::reload()
+void ChatLLM::reload(const QString &modelName)
 {
-    loadModel();
+    if (modelName.isEmpty())
+        loadModel();
+    else
+        loadModelPrivate(modelName);
 }
 
 void ChatLLM::generateName()
