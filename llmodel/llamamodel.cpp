@@ -67,11 +67,27 @@ int32_t LLamaModel::threadCount() {
 
 LLamaModel::~LLamaModel()
 {
+    llama_free(d_ptr->ctx);
 }
 
 bool LLamaModel::isModelLoaded() const
 {
     return d_ptr->modelLoaded;
+}
+
+size_t LLamaModel::stateSize() const
+{
+    return llama_get_state_size(d_ptr->ctx);
+}
+
+size_t LLamaModel::saveState(uint8_t *dest) const
+{
+    return llama_copy_state_data(d_ptr->ctx, dest);
+}
+
+size_t LLamaModel::restoreState(const uint8_t *src)
+{
+    return llama_set_state_data(d_ptr->ctx, src);
 }
 
 void LLamaModel::prompt(const std::string &prompt,

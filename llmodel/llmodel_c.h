@@ -99,6 +99,32 @@ bool llmodel_loadModel(llmodel_model model, const char *model_path);
 bool llmodel_isModelLoaded(llmodel_model model);
 
 /**
+ * Get the size of the internal state of the model.
+ * NOTE: This state data is specific to the type of model you have created.
+ * @param model A pointer to the llmodel_model instance.
+ * @return the size in bytes of the internal state of the model
+ */
+uint64_t llmodel_get_state_size(llmodel_model model);
+
+/**
+ * Saves the internal state of the model to the specified destination address.
+ * NOTE: This state data is specific to the type of model you have created.
+ * @param model A pointer to the llmodel_model instance.
+ * @param dest A pointer to the destination.
+ * @return the number of bytes copied
+ */
+uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest);
+
+/**
+ * Restores the internal state of the model using data from the specified address.
+ * NOTE: This state data is specific to the type of model you have created.
+ * @param model A pointer to the llmodel_model instance.
+ * @param src A pointer to the src.
+ * @return the number of bytes read
+ */
+uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src);
+
+/**
  * Generate a response using the model.
  * @param model A pointer to the llmodel_model instance.
  * @param prompt A string representing the input prompt.

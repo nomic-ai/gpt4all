@@ -12,6 +12,9 @@ public:
 
     virtual bool loadModel(const std::string &modelPath) = 0;
     virtual bool isModelLoaded() const = 0;
+    virtual size_t stateSize() const { return 0; }
+    virtual size_t saveState(uint8_t *dest) const { return 0; }
+    virtual size_t restoreState(const uint8_t *src) { return 0; }
     struct PromptContext {
         std::vector<float> logits;      // logits of current context
         std::vector<int32_t> tokens;    // current tokens in the context window

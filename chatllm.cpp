@@ -1,7 +1,7 @@
 #include "chatllm.h"
+#include "chat.h"
 #include "download.h"
 #include "network.h"
-#include "llm.h"
 #include "llmodel/gptj.h"
 #include "llmodel/llamamodel.h"
 
@@ -32,28 +32,29 @@ static QString modelFilePath(const QString &modelName)
     return QString();
 }
 
-ChatLLM::ChatLLM()
+ChatLLM::ChatLLM(Chat *parent)
     : QObject{nullptr}
     , m_llmodel(nullptr)
     , m_promptResponseTokens(0)
     , m_responseLogits(0)
     , m_isRecalc(false)
+    , m_chat(parent)
 {
     moveToThread(&m_llmThread);
-    connect(&m_llmThread, &QThread::started, this, &ChatLLM::loadModel);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
     connect(this, &ChatLLM::sendModelLoaded, Network::globalInstance(), &Network::sendModelLoaded);
-    m_llmThread.setObjectName("llm thread"); // FIXME: Should identify these with chat name
+    connect(m_chat, &Chat::idChanged, this, &ChatLLM::handleChatIdChanged);
+    m_llmThread.setObjectName(m_chat->id());
     m_llmThread.start();
 }
 
-bool ChatLLM::loadModel()
+bool ChatLLM::loadDefaultModel()
 {
-    const QList<QString> models = LLM::globalInstance()->modelList();
+    const QList<QString> models = m_chat->modelList();
     if (models.isEmpty()) {
         // try again when we get a list of models
         connect(Download::globalInstance(), &Download::modelListChanged, this,
-            &ChatLLM::loadModel, Qt::SingleShotConnection);
+            &ChatLLM::loadDefaultModel, Qt::SingleShotConnection);
         return false;
     }
 
@@ -62,10 +63,10 @@ bool ChatLLM::loadModel()
     QString defaultModel = settings.value("defaultModel", "gpt4all-j-v1.3-groovy").toString();
     if (defaultModel.isEmpty() || !models.contains(defaultModel))
         defaultModel = models.first();
-    return loadModelPrivate(defaultModel);
+    return loadModel(defaultModel);
 }
 
-bool ChatLLM::loadModelPrivate(const QString &modelName)
+bool ChatLLM::loadModel(const QString &modelName)
 {
     if (isModelLoaded() && m_modelName == modelName)
         return true;
@@ -100,31 +101,19 @@ bool ChatLLM::loadModelPrivate(const QString &modelName)
         }
 
         emit isModelLoadedChanged();
-        emit threadCountChanged();
 
         if (isFirstLoad)
             emit sendStartup();
         else
             emit sendModelLoaded();
+    } else {
+        qWarning() << "ERROR: Could not find model at" << filePath;
     }
 
     if (m_llmodel)
         setModelName(info.completeBaseName().remove(0, 5)); // remove the ggml- prefix
 
     return m_llmodel;
-}
-
-void ChatLLM::setThreadCount(int32_t n_threads) {
-    if (m_llmodel && m_llmodel->threadCount() != n_threads) {
-        m_llmodel->setThreadCount(n_threads);
-        emit threadCountChanged();
-    }
-}
-
-int32_t ChatLLM::threadCount() {
-    if (!m_llmodel)
-        return 1;
-    return m_llmodel->threadCount();
 }
 
 bool ChatLLM::isModelLoaded() const
@@ -203,7 +192,7 @@ void ChatLLM::setModelName(const QString &modelName)
 
 void ChatLLM::modelNameChangeRequested(const QString &modelName)
 {
-    if (!loadModelPrivate(modelName))
+    if (!loadModel(modelName))
         qWarning() << "ERROR: Could not load model" << modelName;
 }
 
@@ -247,8 +236,8 @@ bool ChatLLM::handleRecalculate(bool isRecalc)
     return !m_stopGenerating;
 }
 
-bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
-                       float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens)
+bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k,
+    float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens, int n_threads)
 {
     if (!isModelLoaded())
         return false;
@@ -269,6 +258,7 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     m_ctx.n_batch = n_batch;
     m_ctx.repeat_penalty = repeat_penalty;
     m_ctx.repeat_last_n = repeat_penalty_tokens;
+    m_llmodel->setThreadCount(n_threads);
 #if defined(DEBUG)
     printf("%s", qPrintable(instructPrompt));
     fflush(stdout);
@@ -288,19 +278,22 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     return true;
 }
 
-void ChatLLM::unload()
+void ChatLLM::unloadModel()
 {
+    saveState();
     delete m_llmodel;
     m_llmodel = nullptr;
     emit isModelLoadedChanged();
 }
 
-void ChatLLM::reload(const QString &modelName)
+void ChatLLM::reloadModel(const QString &modelName)
 {
-    if (modelName.isEmpty())
-        loadModel();
-    else
-        loadModelPrivate(modelName);
+    if (modelName.isEmpty()) {
+        loadDefaultModel();
+    } else {
+        loadModel(modelName);
+    }
+    restoreState();
 }
 
 void ChatLLM::generateName()
@@ -333,6 +326,11 @@ void ChatLLM::generateName()
     }
 }
 
+void ChatLLM::handleChatIdChanged()
+{
+    m_llmThread.setObjectName(m_chat->id());
+}
+
 bool ChatLLM::handleNamePrompt(int32_t token)
 {
     Q_UNUSED(token);
@@ -353,4 +351,61 @@ bool ChatLLM::handleNameRecalculate(bool isRecalc)
     Q_UNUSED(isRecalc);
     Q_UNREACHABLE();
     return true;
+}
+
+bool ChatLLM::serialize(QDataStream &stream)
+{
+    stream << response();
+    stream << generatedName();
+    stream << m_promptResponseTokens;
+    stream << m_responseLogits;
+    stream << m_ctx.n_past;
+    stream << quint64(m_ctx.logits.size());
+    stream.writeRawData(reinterpret_cast<const char*>(m_ctx.logits.data()), m_ctx.logits.size() * sizeof(float));
+    stream << quint64(m_ctx.tokens.size());
+    stream.writeRawData(reinterpret_cast<const char*>(m_ctx.tokens.data()), m_ctx.tokens.size() * sizeof(int));
+    saveState();
+    stream << m_state;
+    return stream.status() == QDataStream::Ok;
+}
+
+bool ChatLLM::deserialize(QDataStream &stream)
+{
+    QString response;
+    stream >> response;
+    m_response = response.toStdString();
+    QString nameResponse;
+    stream >> nameResponse;
+    m_nameResponse = nameResponse.toStdString();
+    stream >> m_promptResponseTokens;
+    stream >> m_responseLogits;
+    stream >> m_ctx.n_past;
+    quint64 logitsSize;
+    stream >> logitsSize;
+    m_ctx.logits.resize(logitsSize);
+    stream.readRawData(reinterpret_cast<char*>(m_ctx.logits.data()), logitsSize * sizeof(float));
+    quint64 tokensSize;
+    stream >> tokensSize;
+    m_ctx.tokens.resize(tokensSize);
+    stream.readRawData(reinterpret_cast<char*>(m_ctx.tokens.data()), tokensSize * sizeof(int));
+    stream >> m_state;
+    return stream.status() == QDataStream::Ok;
+}
+
+void ChatLLM::saveState()
+{
+    if (!isModelLoaded())
+        return;
+
+    const size_t stateSize = m_llmodel->stateSize();
+    m_state.resize(stateSize);
+    m_llmodel->saveState(static_cast<uint8_t*>(reinterpret_cast<void*>(m_state.data())));
+}
+
+void ChatLLM::restoreState()
+{
+    if (!isModelLoaded())
+        return;
+
+    m_llmodel->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
 }

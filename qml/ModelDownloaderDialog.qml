@@ -12,7 +12,7 @@ Dialog {
     id: modelDownloaderDialog
     modal: true
     opacity: 0.9
-    closePolicy: LLM.modelList.length === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+    closePolicy: LLM.chatListModel.currentChat.modelList.length === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
     background: Rectangle {
         anchors.fill: parent
         anchors.margins: -20

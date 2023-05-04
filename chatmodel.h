@@ -3,6 +3,7 @@
 
 #include <QAbstractListModel>
 #include <QtQml>
+#include <QDataStream>
 
 struct ChatItem
 {
@@ -208,6 +209,46 @@ public:
     }
 
     int count() const { return m_chatItems.size(); }
+
+    bool serialize(QDataStream &stream) const
+    {
+        stream << count();
+        for (auto c : m_chatItems) {
+            stream << c.id;
+            stream << c.name;
+            stream << c.value;
+            stream << c.prompt;
+            stream << c.newResponse;
+            stream << c.currentResponse;
+            stream << c.stopped;
+            stream << c.thumbsUpState;
+            stream << c.thumbsDownState;
+        }
+        return stream.status() == QDataStream::Ok;
+    }
+
+    bool deserialize(QDataStream &stream)
+    {
+        int size;
+        stream >> size;
+        for (int i = 0; i < size; ++i) {
+            ChatItem c;
+            stream >> c.id;
+            stream >> c.name;
+            stream >> c.value;
+            stream >> c.prompt;
+            stream >> c.newResponse;
+            stream >> c.currentResponse;
+            stream >> c.stopped;
+            stream >> c.thumbsUpState;
+            stream >> c.thumbsDownState;
+            beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
+            m_chatItems.append(c);
+            endInsertRows();
+        }
+        emit countChanged();
+        return stream.status() == QDataStream::Ok;
+    }
 
 Q_SIGNALS:
     void countChanged();
