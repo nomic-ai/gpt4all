@@ -130,3 +130,8 @@ class PythiaSeekConfig(PretrainedConfig):
         self.use_cache = use_cache
         self.tie_word_embeddings = tie_word_embeddings
         self.use_parallel_residual = use_parallel_residual
+
+        self.encoder_dim = encoder_dim
+        self.total_alpha_steps = total_alpha_steps
+        self.initial_alpha = initial_alpha
+        self.final_alpha = final_alpha
