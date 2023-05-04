@@ -3,37 +3,33 @@
 
 #include <QObject>
 
-#include "chat.h"
 #include "chatlistmodel.h"
 
 class LLM : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<QString> modelList READ modelList NOTIFY modelListChanged)
-    Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
     Q_PROPERTY(ChatListModel *chatListModel READ chatListModel NOTIFY chatListModelChanged)
+    Q_PROPERTY(int32_t threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
 
 public:
     static LLM *globalInstance();
 
-    QList<QString> modelList() const;
-    bool isRecalc() const;
     ChatListModel *chatListModel() const { return m_chatListModel; }
+    int32_t threadCount() const;
+    void setThreadCount(int32_t n_threads);
 
     Q_INVOKABLE bool checkForUpdates() const;
 
 Q_SIGNALS:
-    void modelListChanged();
-    void recalcChanged();
-    void responseChanged();
     void chatListModelChanged();
+    void threadCountChanged();
 
 private Q_SLOTS:
-    void connectChat(Chat*);
-    void disconnectChat(Chat*);
+    void aboutToQuit();
 
 private:
     ChatListModel *m_chatListModel;
+    int32_t m_threadCount;
 
 private:
     explicit LLM();

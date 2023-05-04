@@ -60,7 +60,7 @@ qt_add_executable(chat
     main.cpp
     chat.h chat.cpp
     chatllm.h chatllm.cpp
-    chatmodel.h chatlistmodel.h
+    chatmodel.h chatlistmodel.h chatlistmodel.cpp
     download.h download.cpp
     network.h network.cpp
     llm.h llm.cpp

@@ -83,6 +83,7 @@ Drawer {
                     opacity: 0.9
                     property bool isCurrent: LLM.chatListModel.currentChat === LLM.chatListModel.get(index)
                     property bool trashQuestionDisplayed: false
+                    z: isCurrent ? 199 : 1
                     color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
                     border.width: isCurrent
                     border.color: chatName.readOnly ? theme.assistantColor : theme.userColor
@@ -112,6 +113,11 @@ Drawer {
                             color: "transparent"
                         }
                         onEditingFinished: {
+                            // Work around a bug in qml where we're losing focus when the whole window
+                            // goes out of focus even though this textfield should be marked as not
+                            // having focus
+                            if (chatName.readOnly)
+                                return;
                             changeName();
                             Network.sendRenameChat()
                         }
@@ -188,6 +194,7 @@ Drawer {
                         visible: isCurrent && trashQuestionDisplayed
                         opacity: 1.0
                         radius: 10
+                        z: 200
                         Row {
                             spacing: 10
                             Button {

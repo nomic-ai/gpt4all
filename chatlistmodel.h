@@ -55,7 +55,7 @@ public:
 
     Q_INVOKABLE void addChat()
     {
-        // Don't add a new chat if the current chat is empty
+        // Don't add a new chat if we already have one
         if (m_newChat)
             return;
 
@@ -73,12 +73,28 @@ public:
         setCurrentChat(m_newChat);
     }
 
+    void setNewChat(Chat* chat)
+    {
+        // Don't add a new chat if we already have one
+        if (m_newChat)
+            return;
+
+        m_newChat = chat;
+        connect(m_newChat->chatModel(), &ChatModel::countChanged,
+            this, &ChatListModel::newChatCountChanged);
+        connect(m_newChat, &Chat::nameChanged,
+            this, &ChatListModel::nameChanged);
+        setCurrentChat(m_newChat);
+    }
+
     Q_INVOKABLE void removeChat(Chat* chat)
     {
         if (!m_chats.contains(chat)) {
-            qDebug() << "WARNING: Removing chat failed with id" << chat->id();
+            qWarning() << "WARNING: Removing chat failed with id" << chat->id();
             return;
         }
+
+        removeChatFile(chat);
 
         emit disconnectChat(chat);
         if (chat == m_newChat) {
@@ -115,20 +131,20 @@ public:
     void setCurrentChat(Chat *chat)
     {
         if (!m_chats.contains(chat)) {
-            qDebug() << "ERROR: Setting current chat failed with id" << chat->id();
+            qWarning() << "ERROR: Setting current chat failed with id" << chat->id();
             return;
         }
 
         if (m_currentChat) {
             if (m_currentChat->isModelLoaded())
-                m_currentChat->unload();
+                m_currentChat->unloadModel();
             emit disconnect(m_currentChat);
         }
 
         emit connectChat(chat);
         m_currentChat = chat;
         if (!m_currentChat->isModelLoaded())
-            m_currentChat->reload();
+            m_currentChat->reloadModel();
         emit currentChatChanged();
     }
 
@@ -138,8 +154,11 @@ public:
         return m_chats.at(index);
     }
 
-
     int count() const { return m_chats.size(); }
+
+    void removeChatFile(Chat *chat) const;
+    void saveChats() const;
+    void restoreChats();
 
 Q_SIGNALS:
     void countChanged();

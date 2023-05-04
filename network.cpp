@@ -458,7 +458,6 @@ void Network::handleIpifyFinished()
 
 void Network::handleMixpanelFinished()
 {
-    Q_ASSERT(m_usageStatsActive);
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply)
         return;

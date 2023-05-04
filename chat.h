@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtQml>
+#include <QDataStream>
 
 #include "chatllm.h"
 #include "chatmodel.h"
@@ -17,8 +18,8 @@ class Chat : public QObject
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
     Q_PROPERTY(QString modelName READ modelName WRITE setModelName NOTIFY modelNameChanged)
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
-    Q_PROPERTY(int32_t threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
+    Q_PROPERTY(QList<QString> modelList READ modelList NOTIFY modelListChanged)
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -36,13 +37,10 @@ public:
 
     Q_INVOKABLE void reset();
     Q_INVOKABLE bool isModelLoaded() const;
-    Q_INVOKABLE void prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
-                            float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
+    Q_INVOKABLE void prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict,
+        int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void stopGenerating();
-    Q_INVOKABLE void syncThreadCount();
-    Q_INVOKABLE void setThreadCount(int32_t n_threads);
-    Q_INVOKABLE int32_t threadCount();
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
 
     QString response() const;
@@ -51,8 +49,16 @@ public:
     void setModelName(const QString &modelName);
     bool isRecalc() const;
 
-    void unload();
-    void reload();
+    void loadDefaultModel();
+    void loadModel(const QString &modelName);
+    void unloadModel();
+    void reloadModel();
+
+    qint64 creationDate() const { return m_creationDate; }
+    bool serialize(QDataStream &stream) const;
+    bool deserialize(QDataStream &stream);
+
+    QList<QString> modelList() const;
 
 Q_SIGNALS:
     void idChanged();
@@ -61,35 +67,39 @@ Q_SIGNALS:
     void isModelLoadedChanged();
     void responseChanged();
     void responseInProgressChanged();
-    void promptRequested(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k, float top_p,
-                         float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
+    void promptRequested(const QString &prompt, const QString &prompt_template, int32_t n_predict,
+        int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens,
+        int32_t n_threads);
     void regenerateResponseRequested();
     void resetResponseRequested();
     void resetContextRequested();
     void modelNameChangeRequested(const QString &modelName);
     void modelNameChanged();
-    void threadCountChanged();
-    void setThreadCountRequested(int32_t threadCount);
     void recalcChanged();
-    void unloadRequested();
-    void reloadRequested(const QString &modelName);
+    void loadDefaultModelRequested();
+    void loadModelRequested(const QString &modelName);
+    void unloadModelRequested();
+    void reloadModelRequested(const QString &modelName);
     void generateNameRequested();
+    void modelListChanged();
 
 private Q_SLOTS:
+    void handleResponseChanged();
     void responseStarted();
     void responseStopped();
     void generatedNameChanged();
     void handleRecalculating();
+    void handleModelNameChanged();
 
 private:
-    ChatLLM *m_llmodel;
     QString m_id;
     QString m_name;
     QString m_userName;
     QString m_savedModelName;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
-    int32_t m_desiredThreadCount;
+    qint64 m_creationDate;
+    ChatLLM *m_llmodel;
 };
 
 #endif // CHAT_H

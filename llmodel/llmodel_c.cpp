@@ -48,6 +48,24 @@ bool llmodel_isModelLoaded(llmodel_model model)
     return wrapper->llModel->isModelLoaded();
 }
 
+uint64_t llmodel_get_state_size(llmodel_model model)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->stateSize();
+}
+
+uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->saveState(dest);
+}
+
+uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->restoreState(src);
+}
+
 // Wrapper functions for the C callbacks
 bool prompt_wrapper(int32_t token_id, void *user_data) {
     llmodel_prompt_callback callback = reinterpret_cast<llmodel_prompt_callback>(user_data);
