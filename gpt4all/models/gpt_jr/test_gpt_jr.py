@@ -35,7 +35,7 @@ encodings = mean_pooling(encoder(**tokenized), tokenized["attention_mask"])
 
 # make 2 neighbors
 # (bs, knn, encoding_dim)
-encoder_outputs = torch.stack([encodings, encodings]).squeeze().unsqueeze(0)
+encoder_hidden_states = torch.stack([encodings, encodings]).squeeze().unsqueeze(0)
 
 inputs = "What did the fox do?"
 
@@ -43,7 +43,7 @@ print("Encoded inputs")
 tokenized_input = tokenizer([inputs], padding="max_length", truncation=True, return_tensors="pt")
 
 print("Running model")
-outputs = model(**tokenized_input, encoder_outputs=encoder_outputs)
+outputs = model(**tokenized_input, encoder_hidden_states=encoder_hidden_states)
 
 print(outputs)
 print(outputs[0].shape)
