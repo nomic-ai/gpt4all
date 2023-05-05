@@ -4,6 +4,7 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <cstdint>
 
 class LLModel {
 public:
