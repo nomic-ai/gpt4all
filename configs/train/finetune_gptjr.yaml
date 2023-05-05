@@ -1,9 +1,10 @@
 # model/tokenizer
-model_name: "EleutherAI/gpt-j-6B"
-tokenizer_name: "EleutherAI/gpt-j-6B"
+model_name: "EleutherAI/gpt-j-6b"
+tokenizer_name: "EleutherAI/gpt-j-6b"
 version: null
 gradient_checkpointing: true
 save_name: "nomic-ai/gpt-jr-decay-alpha"
+push_to_hub: false
 encoder_dim: 384
 
 # dataset
@@ -11,7 +12,7 @@ streaming: false
 num_proc: 64
 dataset_path: "/home/paperspace/gpt4all/gpt4all/index/squad_supplemented_train" 
 max_length: 1024
-batch_size: 32
+batch_size: 8
 pct_test: 0.05
 q_column: "question"
 a_column: "answers"
@@ -23,7 +24,7 @@ lr: 1.0e-4
 min_lr: 0 
 weight_decay: 0.0
 eval_every: 50 
-save_every: 500
+save_every: -1
 log_grads_every: 100
 log_lr_every: 10
 output_dir: "ckpts/decay_alpha"
@@ -31,6 +32,8 @@ checkpoint: null
 lora: false
 warmup_steps: 500
 num_epochs: 5 
+debug: false
+scheduler: false
 
 # logging
 wandb: true

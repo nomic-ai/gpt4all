@@ -1,21 +1,26 @@
 import torch
-from gpt4all.models import GPTJRForCausalLM, GPTJRConfig
+from gpt4all.models import PythiaSeekConfig, PythiaSeekForCausalLM
 from transformers import AutoTokenizer, AutoModel
 
 # seed torch 
 
 torch.manual_seed(0)
 
-config = GPTJRConfig(encoder_dim=384, n_layer=4)
+config = PythiaSeekConfig(encoder_dim=384, 
+                          hidden_size=1024, 
+                          intermediate_size=4096,
+                          num_hidden_layers=4,
+                          num_attention_heads=4)
 print("loaded config")
 
 print("loading model")
-model = GPTJRForCausalLM(config)
+model = PythiaSeekForCausalLM(config)
 print("loaded model")
 
 
-tokenizer =  AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6b")
+tokenizer =  AutoTokenizer.from_pretrained("EleutherAI/pythia-1b")
 tokenizer.pad_token = tokenizer.eos_token
+tokenizer.model_max_length = 1024
 
 encoder_tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 encoder = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
@@ -35,7 +40,7 @@ encodings = mean_pooling(encoder(**tokenized), tokenized["attention_mask"])
 
 # make 2 neighbors
 # (bs, knn, encoding_dim)
-encoder_outputs = torch.stack([encodings, encodings]).squeeze().unsqueeze(0)
+encoder_hidden_states = torch.stack([encodings, encodings]).squeeze().unsqueeze(0)
 
 inputs = "What did the fox do?"
 
@@ -43,7 +48,7 @@ print("Encoded inputs")
 tokenized_input = tokenizer([inputs], padding="max_length", truncation=True, return_tensors="pt")
 
 print("Running model")
-outputs = model(**tokenized_input, encoder_outputs=encoder_outputs)
+outputs = model(**tokenized_input, encoder_hidden_states=encoder_hidden_states)
 
 print(outputs)
 print(outputs[0].shape)
