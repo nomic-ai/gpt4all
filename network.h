@@ -47,6 +47,7 @@ public Q_SLOTS:
     void sendDownloadFinished(const QString &model, bool success);
     Q_INVOKABLE void sendSettingsDialog();
     Q_INVOKABLE void sendNetworkToggled(bool active);
+    Q_INVOKABLE void sendSaveChatsToggled(bool active);
     Q_INVOKABLE void sendNewChat(int count);
     Q_INVOKABLE void sendRemoveChat();
     Q_INVOKABLE void sendRenameChat();

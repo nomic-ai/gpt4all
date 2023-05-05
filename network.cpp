@@ -306,6 +306,16 @@ void Network::sendNetworkToggled(bool isActive)
     sendMixpanelEvent("network_toggled", QVector<KeyValue>{kv});
 }
 
+void Network::sendSaveChatsToggled(bool isActive)
+{
+    if (!m_usageStatsActive)
+        return;
+    KeyValue kv;
+    kv.key = QString("isActive");
+    kv.value = QJsonValue(isActive);
+    sendMixpanelEvent("savechats_toggled", QVector<KeyValue>{kv});
+}
+
 void Network::sendNewChat(int count)
 {
     if (!m_usageStatsActive)

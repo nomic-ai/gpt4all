@@ -9,12 +9,14 @@ class ChatListModel : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(Chat *currentChat READ currentChat WRITE setCurrentChat NOTIFY currentChatChanged)
+    Q_PROPERTY(bool shouldSaveChats READ shouldSaveChats WRITE setShouldSaveChats NOTIFY shouldSaveChatsChanged)
 
 public:
     explicit ChatListModel(QObject *parent = nullptr)
         : QAbstractListModel(parent)
         , m_currentChat(nullptr)
         , m_newChat(nullptr)
+        , m_shouldSaveChats(false)
     {
     }
 
@@ -52,6 +54,9 @@ public:
         roles[NameRole] = "name";
         return roles;
     }
+
+    bool shouldSaveChats() const;
+    void setShouldSaveChats(bool b);
 
     Q_INVOKABLE void addChat()
     {
@@ -165,6 +170,7 @@ Q_SIGNALS:
     void connectChat(Chat*);
     void disconnectChat(Chat*);
     void currentChatChanged();
+    void shouldSaveChatsChanged();
 
 private Q_SLOTS:
     void newChatCountChanged()
@@ -198,6 +204,7 @@ private Q_SLOTS:
     }
 
 private:
+    bool m_shouldSaveChats;
     Chat* m_newChat;
     Chat* m_currentChat;
     QList<Chat*> m_chats;

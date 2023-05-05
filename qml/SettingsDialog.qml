@@ -37,6 +37,7 @@ Dialog {
     property real defaultRepeatPenalty: 1.10
     property int defaultRepeatPenaltyTokens: 64
     property int defaultThreadCount: 0
+    property bool defaultSaveChats: false
     property string defaultPromptTemplate: "### Human:
 %1
 ### Assistant:\n"
@@ -51,6 +52,7 @@ Dialog {
     property alias repeatPenalty: settings.repeatPenalty
     property alias repeatPenaltyTokens: settings.repeatPenaltyTokens
     property alias threadCount: settings.threadCount
+    property alias saveChats: settings.saveChats
     property alias modelPath: settings.modelPath
 
     Settings {
@@ -61,6 +63,7 @@ Dialog {
         property int maxLength: settingsDialog.defaultMaxLength
         property int promptBatchSize: settingsDialog.defaultPromptBatchSize
         property int threadCount: settingsDialog.defaultThreadCount
+        property bool saveChats: settingsDialog.defaultSaveChats
         property real repeatPenalty: settingsDialog.defaultRepeatPenalty
         property int repeatPenaltyTokens: settingsDialog.defaultRepeatPenaltyTokens
         property string promptTemplate: settingsDialog.defaultPromptTemplate
@@ -80,13 +83,16 @@ Dialog {
     function restoreApplicationDefaults() {
         settings.modelPath = settingsDialog.defaultModelPath
         settings.threadCount = defaultThreadCount
+        settings.saveChats = defaultSaveChats
         Download.downloadLocalModelsPath = settings.modelPath
         LLM.threadCount = settings.threadCount
+        LLM.chatListModel.shouldSaveChats = settings.saveChats
         settings.sync()
     }
 
     Component.onCompleted: {
         LLM.threadCount = settings.threadCount
+        LLM.chatListModel.shouldSaveChats = settings.saveChats
         Download.downloadLocalModelsPath = settings.modelPath
     }
 
@@ -630,8 +636,61 @@ Dialog {
                         Accessible.name: nThreadsLabel.text
                         Accessible.description: ToolTip.text
                     }
-                    Button {
+                    Label {
+                        id: saveChatsLabel
+                        text: qsTr("Save chats to disk:")
+                        color: theme.textColor
                         Layout.row: 3
+                        Layout.column: 0
+                    }
+                    CheckBox {
+                        id: saveChatsBox
+                        Layout.row: 3
+                        Layout.column: 1
+                        checked: settingsDialog.saveChats
+                        onClicked: {
+                            Network.sendSaveChatsToggled(saveChatsBox.checked);
+                            settingsDialog.saveChats = saveChatsBox.checked
+                            LLM.chatListModel.shouldSaveChats = saveChatsBox.checked
+                            settings.sync()
+                        }
+
+                        ToolTip.text: qsTr("WARNING: Saving chats to disk can be ~2GB per chat")
+                        ToolTip.visible: hovered
+
+                        background: Rectangle {
+                            color: "transparent"
+                        }
+
+                        indicator: Rectangle {
+                            implicitWidth: 26
+                            implicitHeight: 26
+                            x: saveChatsBox.leftPadding
+                            y: parent.height / 2 - height / 2
+                            border.color: theme.dialogBorder
+                            color: "transparent"
+
+                            Rectangle {
+                                width: 14
+                                height: 14
+                                x: 6
+                                y: 6
+                                color: theme.textColor
+                                visible: saveChatsBox.checked
+                            }
+                        }
+
+                        contentItem: Text {
+                            text: saveChatsBox.text
+                            font: saveChatsBox.font
+                            opacity: enabled ? 1.0 : 0.3
+                            color: theme.textColor
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: saveChatsBox.indicator.width + saveChatsBox.spacing
+                        }
+                    }
+                    Button {
+                        Layout.row: 4
                         Layout.column: 1
                         Layout.fillWidth: true
                         padding: 15
