@@ -3,6 +3,19 @@
 #include <QFile>
 #include <QDataStream>
 
+bool ChatListModel::shouldSaveChats() const
+{
+    return m_shouldSaveChats;
+}
+
+void ChatListModel::setShouldSaveChats(bool b)
+{
+    if (m_shouldSaveChats == b)
+        return;
+    m_shouldSaveChats = b;
+    emit shouldSaveChatsChanged();
+}
+
 void ChatListModel::removeChatFile(Chat *chat) const
 {
     QSettings settings;
@@ -18,6 +31,9 @@ void ChatListModel::removeChatFile(Chat *chat) const
 
 void ChatListModel::saveChats() const
 {
+    if (!m_shouldSaveChats)
+        return;
+
     QSettings settings;
     QFileInfo settingsInfo(settings.fileName());
     QString settingsPath = settingsInfo.absolutePath();
