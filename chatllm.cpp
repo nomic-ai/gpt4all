@@ -404,7 +404,7 @@ void ChatLLM::saveState()
 
 void ChatLLM::restoreState()
 {
-    if (!isModelLoaded())
+    if (!isModelLoaded() || m_state.isEmpty())
         return;
 
     m_llmodel->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
