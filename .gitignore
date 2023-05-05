@@ -1,3 +1,5 @@
+*.json
+*.arrow
 *.pkl
 ckpts*
 .deepspeed_env
