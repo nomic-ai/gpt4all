@@ -80,6 +80,7 @@ qt_add_qml_module(chat
       qml/SettingsDialog.qml
       qml/StartupDialog.qml
       qml/PopupDialog.qml
+      qml/AboutDialog.qml
       qml/Theme.qml
     RESOURCES
       icons/send_message.svg

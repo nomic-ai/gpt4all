@@ -87,6 +87,11 @@ Window {
         anchors.centerIn: parent
     }
 
+    AboutDialog {
+        id: aboutDialog
+        anchors.centerIn: parent
+    }
+
     Item {
         Accessible.role: Accessible.Window
         Accessible.name: title
@@ -532,6 +537,9 @@ Window {
         height: window.height - y
         onDownloadClicked: {
             downloadNewModels.open()
+        }
+        onAboutClicked: {
+            aboutDialog.open()
         }
     }
 
