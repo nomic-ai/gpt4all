@@ -17,6 +17,7 @@ Drawer {
     }
 
     signal downloadClicked
+    signal aboutClicked
 
     background: Rectangle {
         height: parent.height
@@ -259,41 +260,6 @@ Drawer {
             }
         }
 
-        /*Label {
-            id: discordLink
-            textFormat: Text.RichText
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: conversationList.bottom
-            anchors.topMargin: 20
-            wrapMode: Text.WordWrap
-            text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
-            onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
-            color: theme.textColor
-            linkColor: theme.linkColor
-
-            Accessible.role: Accessible.Link
-            Accessible.name: qsTr("Discord link")
-        }
-
-        Label {
-            id: nomicProps
-            textFormat: Text.RichText
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: discordLink.bottom
-            anchors.topMargin: 20
-            wrapMode: Text.WordWrap
-            text: qsTr("Thanks to <a href=\"https://home.nomic.ai\">Nomic AI</a> and the community for contributing so much great data and energy!")
-            onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
-            color: theme.textColor
-            linkColor: theme.linkColor
-
-            Accessible.role: Accessible.Paragraph
-            Accessible.name: qsTr("Thank you blurb")
-            Accessible.description: qsTr("Contains embedded link to https://home.nomic.ai")
-        }*/
-
         Button {
             id: checkForUpdatesButton
             anchors.left: parent.left
@@ -329,7 +295,8 @@ Drawer {
             id: downloadButton
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.bottom: parent.bottom
+            anchors.bottom: aboutButton.top
+            anchors.bottomMargin: 10
             padding: 15
             contentItem: Text {
                 text: qsTr("Download new models...")
@@ -351,6 +318,35 @@ Drawer {
 
             onClicked: {
                 downloadClicked()
+            }
+        }
+
+        Button {
+            id: aboutButton
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            padding: 15
+            contentItem: Text {
+                text: qsTr("About")
+                horizontalAlignment: Text.AlignHCenter
+                color: theme.textColor
+
+                Accessible.role: Accessible.Button
+                Accessible.name: text
+                Accessible.description: qsTr("Use this to launch a dialog to show the about page")
+            }
+
+            background: Rectangle {
+                opacity: .5
+                border.color: theme.backgroundLightest
+                border.width: 1
+                radius: 10
+                color: theme.backgroundLight
+            }
+
+            onClicked: {
+                aboutClicked()
             }
         }
     }
