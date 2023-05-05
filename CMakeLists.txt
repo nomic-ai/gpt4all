@@ -13,8 +13,8 @@ if(APPLE)
 endif()
 
 set(APP_VERSION_MAJOR 2)
-set(APP_VERSION_MINOR 3)
-set(APP_VERSION_PATCH 1)
+set(APP_VERSION_MINOR 4)
+set(APP_VERSION_PATCH 0)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Generate a header file with the version number
