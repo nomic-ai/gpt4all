@@ -26,6 +26,8 @@ This is roughly based on what's feasible now and path of least resistance.
     - Separate model backends into separate subdirectories (e.g. llama, gptj)
 
 3. Develop Python bindings (high priority and in-flight)
+    - Release Python binding as PyPi package
+    - Reimplement [Nomic GPT4All](https://github.com/nomic-ai/nomic/blob/main/nomic/gpt4all/gpt4all.py#L58-L190) to call new Python bindings
 
 4. Develop Dockerfiles for different combinations of model backends and bindings
     - Dockerfile for just model backend
