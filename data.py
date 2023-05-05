@@ -72,7 +72,9 @@ def load_data(config, tokenizer):
         dataset = load_dataset("json", data_files=files, split="train")
 
     else:
-        dataset = load_dataset(dataset_path, split="train")
+        dataset = load_dataset(dataset_path,
+                               split="train",
+                               revision=config["revision"] if "revision" in config else None)
 
     dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
 
@@ -87,13 +89,13 @@ def load_data(config, tokenizer):
     train_dataset = train_dataset.map(
         lambda ele: tokenize_inputs(config, tokenizer, ele),
         batched=True,
-        remove_columns=["source", "prompt"],
+        remove_columns=["source", "prompt", "id"],
         **kwargs
     )
     val_dataset = val_dataset.map(
         lambda ele: tokenize_inputs(config, tokenizer, ele),
         batched=True,
-        remove_columns=["source", "prompt"],
+        remove_columns=["source", "prompt", "id"],
         **kwargs
     )
 
