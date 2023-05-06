@@ -32,8 +32,10 @@ struct mpt_hparams {
 
 struct mpt_layer {
     // normalization
-    struct ggml_tensor * ln_1_g;
-    struct ggml_tensor * ln_1_b;
+    struct ggml_tensor * norm_1_g;
+    struct ggml_tensor * norm_1_b;
+    struct ggml_tensor * norm_2_g;
+    struct ggml_tensor * norm_2_b;
 
     // attention
     struct ggml_tensor * c_attn_q_proj_w;
@@ -43,11 +45,11 @@ struct mpt_layer {
     struct ggml_tensor * c_attn_proj_w;
 
     // ff
-    struct ggml_tensor * c_mlp_fc_w;
-    struct ggml_tensor * c_mlp_fc_b;
+    struct ggml_tensor * up_proj_w;
+    struct ggml_tensor * up_proj_b;
 
-    struct ggml_tensor * c_mlp_proj_w;
-    struct ggml_tensor * c_mlp_proj_b;
+    struct ggml_tensor * down_proj_w;
+    struct ggml_tensor * down_proj_b;
 };
 
 struct mpt_buffer {
@@ -154,16 +156,14 @@ struct mpt_vocab {
 bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & model, mpt_vocab & vocab) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
 
-    // verify magic
-    // TODO: Do we really need this?
-    // {
-    //     uint32_t magic;
-    //     fin.read((char *) &magic, sizeof(magic));
-    //     if (magic != 0x67676d6c) {
-    //         fprintf(stderr, "%s: invalid model file '%s' (bad magic)\n", __func__, fname.c_str());
-    //         return false;
-    //     }
-    // }
+    {
+        uint32_t magic;
+        fin.read((char *) &magic, sizeof(magic));
+    if (magic != 0x67676d6c) {
+            fprintf(stderr, "%s: invalid model file '%s' (bad magic)\n", __func__, fname.c_str());
+            return false;
+        }
+    }
 
     // load hparams
     {
@@ -313,8 +313,8 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         for (int i = 0; i < n_layer; ++i) {
             auto & layer = model.layers[i];
 
-            layer.ln_1_g          = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
-            layer.ln_1_b          = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
+            layer.norm_1_g         = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
+            layer.norm_1_b          = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
 
             layer.c_attn_q_proj_w = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
             layer.c_attn_k_proj_w = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
@@ -322,27 +322,27 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 
             layer.c_attn_proj_w   = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
 
-            layer.c_mlp_fc_w      = ggml_new_tensor_2d(ctx, wtype,           n_embd, 4*n_embd);
-            layer.c_mlp_fc_b      = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, 4*n_embd);
+            layer.up_proj_w      = ggml_new_tensor_2d(ctx, wtype,           n_embd, 4*n_embd);
+            layer.up_proj_b      = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, 4*n_embd);
 
-            layer.c_mlp_proj_w    = ggml_new_tensor_2d(ctx, wtype,         4*n_embd,   n_embd);
-            layer.c_mlp_proj_b    = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
+            layer.down_proj_w    = ggml_new_tensor_2d(ctx, wtype,         4*n_embd,   n_embd);
+            layer.down_proj_b    = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
 
             // map by name
-            model.tensors["transformer.h." + std::to_string(i) + ".ln_1.weight"]          = layer.ln_1_g;
-            model.tensors["transformer.h." + std::to_string(i) + ".ln_1.bias"]            = layer.ln_1_b;
+            model.tensors["transformer.block." + std::to_string(i) + ".norm_1.weight"]          = layer.norm_1_g;
+            model.tensors["transformer.block." + std::to_string(i) + ".norm_1.bias"]            = layer.norm_1_b;
 
-            model.tensors["transformer.h." + std::to_string(i) + ".attn.q_proj.weight"]   = layer.c_attn_q_proj_w;
-            model.tensors["transformer.h." + std::to_string(i) + ".attn.k_proj.weight"]   = layer.c_attn_k_proj_w;
-            model.tensors["transformer.h." + std::to_string(i) + ".attn.v_proj.weight"]   = layer.c_attn_v_proj_w;
+            model.tensors["transformer.block." + std::to_string(i) + ".attn.q_proj.weight"]   = layer.c_attn_q_proj_w;
+            model.tensors["transformer.block." + std::to_string(i) + ".attn.k_proj.weight"]   = layer.c_attn_k_proj_w;
+            model.tensors["transformer.block." + std::to_string(i) + ".attn.v_proj.weight"]   = layer.c_attn_v_proj_w;
 
-            model.tensors["transformer.h." + std::to_string(i) + ".attn.out_proj.weight"] = layer.c_attn_proj_w;
+            model.tensors["transformer.block." + std::to_string(i) + ".attn.out_proj.weight"] = layer.c_attn_proj_w;
 
-            model.tensors["transformer.h." + std::to_string(i) + ".mlp.fc_in.weight"]     = layer.c_mlp_fc_w;
-            model.tensors["transformer.h." + std::to_string(i) + ".mlp.fc_in.bias"]       = layer.c_mlp_fc_b;
+            model.tensors["transformer.block." + std::to_string(i) + ".mlp.fc_in.weight"]     = layer.c_mlp_fc_w;
+            model.tensors["transformer.block." + std::to_string(i) + ".mlp.fc_in.bias"]       = layer.c_mlp_fc_b;
 
-            model.tensors["transformer.h." + std::to_string(i) + ".mlp.fc_out.weight"]    = layer.c_mlp_proj_w;
-            model.tensors["transformer.h." + std::to_string(i) + ".mlp.fc_out.bias"]      = layer.c_mlp_proj_b;
+            model.tensors["transformer.block." + std::to_string(i) + ".mlp.fc_out.weight"]    = layer.c_mlp_proj_w;
+            model.tensors["transformer.block." + std::to_string(i) + ".mlp.fc_out.bias"]      = layer.c_mlp_proj_b;
         }
 
         // key + value memory
@@ -531,9 +531,9 @@ bool mpt_eval(
             // cur = ln_1_g*cur + ln_1_b
             cur = ggml_add(ctx0,
                     ggml_mul(ctx0,
-                        ggml_repeat(ctx0, model.layers[il].ln_1_g, cur),
+                        ggml_repeat(ctx0, model.layers[il].norm_1_g, cur),
                         cur),
-                    ggml_repeat(ctx0, model.layers[il].ln_1_b, cur));
+                    ggml_repeat(ctx0, model.layers[il].norm_1_b, cur));
         }
 
         struct ggml_tensor * inpSA = cur;
@@ -615,6 +615,18 @@ bool mpt_eval(
                     cur);
         }
 
+        // norm 2
+        {
+            cur = ggml_norm(ctx0, cur);
+
+            // cur = ln_1_g*cur + ln_1_b
+            cur = ggml_add(ctx0,
+                    ggml_mul(ctx0,
+                        ggml_repeat(ctx0, model.layers[il].norm_2_g, cur),
+                        cur),
+                    ggml_repeat(ctx0, model.layers[il].norm_2_b, cur));
+        } 
+
         struct ggml_tensor * inpFF = cur;
 
         // feed-forward network
@@ -622,11 +634,11 @@ bool mpt_eval(
         {
             // note here we pass inpSA instead of cur
             cur = ggml_mul_mat(ctx0,
-                    model.layers[il].c_mlp_fc_w,
+                    model.layers[il].up_proj_w,
                     inpSA);
 
             cur = ggml_add(ctx0,
-                    ggml_repeat(ctx0, model.layers[il].c_mlp_fc_b, cur),
+                    ggml_repeat(ctx0, model.layers[il].up_proj_b, cur),
                     cur);
 
             // RELU activation
@@ -635,11 +647,11 @@ bool mpt_eval(
             // projection
             // cur = proj_w*cur + proj_b
             cur = ggml_mul_mat(ctx0,
-                    model.layers[il].c_mlp_proj_w,
+                    model.layers[il].down_proj_w,
                     cur);
 
             cur = ggml_add(ctx0,
-                    ggml_repeat(ctx0, model.layers[il].c_mlp_proj_b, cur),
+                    ggml_repeat(ctx0, model.layers[il].down_proj_b, cur),
                     cur);
         }
 
