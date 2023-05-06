@@ -15,11 +15,11 @@
 #include <sstream>
 #include <thread>
 #include <unordered_set>
+#include <regex>
 
 static const size_t MB = 1024*1024;
 
 struct mpt_hparams {
-    // FIXME: for mpt
     int32_t n_vocab = 50432;
     int32_t n_ctx   = 2048;
     int32_t n_embd  = 4096;
@@ -150,6 +150,9 @@ struct mpt_vocab {
 
     std::map<token, id> token_to_id;
     std::map<id, token> id_to_token;
+    std::vector<std::string> special_tokens;
+
+    void add_special_token(const std::string &token);
 };
 
 // load the model's weights from a stream
@@ -316,6 +319,9 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
             layer.norm_1_g         = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
             layer.norm_1_b          = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
 
+            layer.norm_2_g         = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
+            layer.norm_2_b          = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
+
             layer.c_attn_q_proj_w = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
             layer.c_attn_k_proj_w = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
             layer.c_attn_v_proj_w = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
@@ -338,11 +344,14 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 
             model.tensors["transformer.block." + std::to_string(i) + ".attn.out_proj.weight"] = layer.c_attn_proj_w;
 
-            model.tensors["transformer.block." + std::to_string(i) + ".mlp.fc_in.weight"]     = layer.c_mlp_fc_w;
-            model.tensors["transformer.block." + std::to_string(i) + ".mlp.fc_in.bias"]       = layer.c_mlp_fc_b;
+            model.tensors["transformer.block." + std::to_string(i) + ".mlp.up_proj.weight"]     = layer.up_proj_w;
+            model.tensors["transformer.block." + std::to_string(i) + ".mlp.up_proj.bias"]       = layer.up_proj_b;
 
-            model.tensors["transformer.block." + std::to_string(i) + ".mlp.fc_out.weight"]    = layer.c_mlp_proj_w;
-            model.tensors["transformer.block." + std::to_string(i) + ".mlp.fc_out.bias"]      = layer.c_mlp_proj_b;
+            model.tensors["transformer.block." + std::to_string(i) + ".mlp.down_proj.weight"]    = layer.down_proj_w;
+            model.tensors["transformer.block." + std::to_string(i) + ".mlp.down_proj.bias"]      = layer.down_proj_b;
+
+            model.tensors["transformer.block." + std::to_string(i) + ".norm_2.weight"]          = layer.norm_2_g;
+            model.tensors["transformer.block." + std::to_string(i) + ".norm_2.bias"]            = layer.norm_2_b;
         }
 
         // key + value memory
@@ -552,7 +561,6 @@ bool mpt_eval(
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Kcur, k));
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Vcur, v));
             }
-            // we need to replace rope with alibi 
 
             // Q = Qcur.contiguous().view(n_embd/n_head, n_head, N).permute(0, 2, 1, 3)
             struct ggml_tensor * Q =
@@ -710,15 +718,77 @@ bool mpt_eval(
 }
 
 std::vector<int> mpt_tokenize(const mpt_vocab & vocab, const std::string & text) {
-    // FIXME
-    return std::vector<int>();
-}
+    // taken from stablelm example in ggml
+    // they both use the gpt-neox tokenizer
+    // not sure if this entirely right?
+    std::vector<std::string> words;
 
-const std::string mpt_token_to_str(const mpt_vocab & vocab, int token) {
-    // FIXME
-    return std::string();
-}
+ 
+    // first split the text into words
+    {
+        std::string str = text;
+        std::string pat = R"('s|'t|'re|'ve|'m|'ll|'d| ?[[:alpha:]]+| ?[[:digit:]]+| ?[^\s[:alpha:][:digit:]]+|\s+(?!\S)|\s+)";
 
+        // Generate the subpattern from the special_tokens vector if it's not empty
+        if (!vocab.special_tokens.empty()) {
+            std::string special_tokens_subpattern;
+            for (const auto &token : vocab.special_tokens) {
+                if (!special_tokens_subpattern.empty()) {
+                    special_tokens_subpattern += "|";
+                }
+                special_tokens_subpattern += token;
+            }
+
+            // Modify the regex pattern with the generated special tokens subpattern
+            pat = special_tokens_subpattern + "|" + pat;
+        }
+
+        std::regex re(pat);
+        std::smatch m;
+
+        while (std::regex_search(str, m, re)) {
+            for (auto x : m) {
+                words.push_back(x);
+            }
+            str = m.suffix();
+        }
+    }
+
+    // find the longest tokens that form the words:
+    std::vector<mpt_vocab::id> tokens;
+    for (const auto & word : words) {
+        if (word.size() == 0) continue;
+
+        int i = 0;
+        int n = word.size();
+        while (i < n) {
+            int j = n;
+            while (j > i) {
+                auto it = vocab.token_to_id.find(word.substr(i, j-i));
+                if (it != vocab.token_to_id.end()) {
+                    tokens.push_back(it->second);
+                    i = j;
+                    break;
+                }
+                --j;
+            }
+            if (i == n) {
+                break;
+            }
+            if (j == i) {
+                auto sub = word.substr(i, 1);
+                if (vocab.token_to_id.find(sub) != vocab.token_to_id.end()) {
+                    tokens.push_back(vocab.token_to_id.at(sub));
+                } else {
+                    fprintf(stderr, "%s: unknown token '%s'\n", __func__, sub.data());
+                }
+                ++i;
+            }
+        }
+    }
+
+    return tokens;
+}
 
 #define MPT_MAX_RNG_STATE 64*1024
 
@@ -1127,10 +1197,10 @@ void MPT::prompt(const std::string &prompt,
         // display text
         ++totalPredictions;
 
-        if (id == 50256 /*end of text*/)
+        if (id == 0 /*end of text*/)
             goto stop_generating;
 
-        const std::string str = mpt_token_to_str(d_ptr->vocab, id);
+        const std::string str = d_ptr->vocab.id_to_token[id];
 
         // Check if the provided str is part of our reverse prompts
         bool foundPartialReversePrompt = false;
@@ -1160,7 +1230,7 @@ void MPT::prompt(const std::string &prompt,
             if (promptCtx.tokens.size() == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
-            if (!responseCallback(t, mpt_token_to_str(d_ptr->vocab, t)))
+            if (!responseCallback(t, d_ptr->vocab.id_to_token[t]))
                 goto stop_generating;
         }
         cachedTokens.clear();
