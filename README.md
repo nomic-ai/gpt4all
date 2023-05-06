@@ -1,5 +1,5 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Demo, data, and code to train open-source assistant-style large language model based on GPT-J and LLaMa</p>
+<p align="center">Demo, data, and code to train open-source assistant-style large language model based on GPT-J and LLaMA</p>
 <p align="center">
 <a href="https://static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf">:green_book: Technical Report 2: GPT4All-J </a>
 </p>
@@ -103,7 +103,7 @@ accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 -
 ```
 
 
-## Original GPT4All Model (based on GPL Licensed LLaMa)
+## Original GPT4All Model (based on GPL Licensed LLaMA)
 
 
 
@@ -184,7 +184,7 @@ Feel free to convert this to a more structured table.
 - [gpt4all-unfiltered](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin) [[MD5 Signature](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-unfiltered-quantized.bin.md5)]
 - [ggml-vicuna-7b-4bit](https://huggingface.co/eachadea/ggml-vicuna-7b-4bit)
 - [vicuna-13b-GPTQ-4bit-128g](https://huggingface.co/anon8231489123/vicuna-13b-GPTQ-4bit-128g)
-- [LLaMa-Storytelling-4Bit](https://huggingface.co/GamerUntouch/LLaMa-Storytelling-4Bit)
+- [LLaMA-Storytelling-4Bit](https://huggingface.co/GamerUntouch/LLaMa-Storytelling-4Bit)
 - [Alpaca Native 4bit](https://huggingface.co/Sosaka/Alpaca-native-4bit-ggml/tree/main)
 
 
@@ -223,7 +223,7 @@ Raw Data:
    -  Explorer Indexed on Prompts: https://atlas.nomic.ai/map/gpt4all-j-prompts-curated
    -  Explorer Indexed on Responses: https://atlas.nomic.ai/map/gpt4all-j-response-curated
 
-We are not distributing a LLaMa 7B checkpoint.
+We are not distributing a LLaMA 7B checkpoint.
 
 You can reproduce our trained model by doing the following:
 
