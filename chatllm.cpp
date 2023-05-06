@@ -365,7 +365,8 @@ bool ChatLLM::serialize(QDataStream &stream)
     stream << quint64(m_ctx.tokens.size());
     stream.writeRawData(reinterpret_cast<const char*>(m_ctx.tokens.data()), m_ctx.tokens.size() * sizeof(int));
     saveState();
-    stream << m_state;
+    QByteArray compressed = qCompress(m_state);
+    stream << compressed;
     return stream.status() == QDataStream::Ok;
 }
 
@@ -388,7 +389,9 @@ bool ChatLLM::deserialize(QDataStream &stream)
     stream >> tokensSize;
     m_ctx.tokens.resize(tokensSize);
     stream.readRawData(reinterpret_cast<char*>(m_ctx.tokens.data()), tokensSize * sizeof(int));
-    stream >> m_state;
+    QByteArray compressed;
+    stream >> compressed;
+    m_state = qUncompress(compressed);
     return stream.status() == QDataStream::Ok;
 }
 
