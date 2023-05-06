@@ -4,6 +4,7 @@
 #include "network.h"
 #include "llmodel/gptj.h"
 #include "llmodel/llamamodel.h"
+#include "llmodel/mpt.h"
 
 #include <QCoreApplication>
 #include <QDir>
