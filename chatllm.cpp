@@ -100,6 +100,13 @@ bool ChatLLM::loadModel(const QString &modelName)
             m_llmodel->loadModel(filePath.toStdString());
         }
 
+        restoreState();
+
+#if defined(DEBUG)
+    qDebug() << "chatllm modelLoadedChanged" << m_chat->id();
+    fflush(stdout);
+#endif
+
         emit isModelLoadedChanged();
 
         if (isFirstLoad)
@@ -200,6 +207,9 @@ bool ChatLLM::handlePrompt(int32_t token)
 {
     // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
+#if defined(DEBUG)
+    qDebug() << "chatllm prompt process" << m_chat->id() << token;
+#endif
     ++m_promptResponseTokens;
     return !m_stopGenerating;
 }
@@ -280,6 +290,9 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
 
 void ChatLLM::unloadModel()
 {
+#if defined(DEBUG)
+    qDebug() << "chatllm unloadModel" << m_chat->id();
+#endif
     saveState();
     delete m_llmodel;
     m_llmodel = nullptr;
@@ -288,12 +301,14 @@ void ChatLLM::unloadModel()
 
 void ChatLLM::reloadModel(const QString &modelName)
 {
+#if defined(DEBUG)
+    qDebug() << "chatllm reloadModel" << m_chat->id();
+#endif
     if (modelName.isEmpty()) {
         loadDefaultModel();
     } else {
         loadModel(modelName);
     }
-    restoreState();
 }
 
 void ChatLLM::generateName()
@@ -367,6 +382,9 @@ bool ChatLLM::serialize(QDataStream &stream)
     saveState();
     QByteArray compressed = qCompress(m_state);
     stream << compressed;
+#if defined(DEBUG)
+    qDebug() << "chatllm serialize" << m_chat->id() << m_state.size();
+#endif
     return stream.status() == QDataStream::Ok;
 }
 
@@ -392,6 +410,9 @@ bool ChatLLM::deserialize(QDataStream &stream)
     QByteArray compressed;
     stream >> compressed;
     m_state = qUncompress(compressed);
+#if defined(DEBUG)
+    qDebug() << "chatllm deserialize" << m_chat->id();
+#endif
     return stream.status() == QDataStream::Ok;
 }
 
@@ -402,6 +423,9 @@ void ChatLLM::saveState()
 
     const size_t stateSize = m_llmodel->stateSize();
     m_state.resize(stateSize);
+#if defined(DEBUG)
+    qDebug() << "chatllm saveState" << m_chat->id() << "size:" << m_state.size();
+#endif
     m_llmodel->saveState(static_cast<uint8_t*>(reinterpret_cast<void*>(m_state.data())));
 }
 
@@ -410,5 +434,8 @@ void ChatLLM::restoreState()
     if (!isModelLoaded() || m_state.isEmpty())
         return;
 
+#if defined(DEBUG)
+    qDebug() << "chatllm restoreState" << m_chat->id() << "size:" << m_state.size();
+#endif
     m_llmodel->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
 }

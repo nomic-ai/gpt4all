@@ -231,8 +231,13 @@ void ChatListModel::restoreChat(Chat *chat)
 void ChatListModel::chatsRestoredFinished()
 {
     if (m_dummyChat) {
-        removeChat(m_dummyChat);
+        beginResetModel();
+        Chat *dummy = m_dummyChat;
         m_dummyChat = nullptr;
+        m_chats.clear();
+        addChat();
+        delete dummy;
+        endResetModel();
     }
 
     if (m_chats.isEmpty())

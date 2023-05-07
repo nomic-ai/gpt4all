@@ -60,7 +60,6 @@ struct gptj_buffer {
     }
 
     ~gptj_buffer() {
-        std::cout << "yes we are cleaning up" << std::endl;
         fflush(stdout);
         delete[] addr;
     }
