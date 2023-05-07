@@ -73,23 +73,28 @@ print("Model loaded: ", model_name)
 
 fname_out = dir_out + f"/ggml-model-{model_name.split('/')[-1]}-{ftype_str[ftype]}.bin"
 fout = open(fname_out, "wb")
+vocab = tokenizer.vocab
 
 hparams["multiple_of"] = 1
-fout.write(struct.pack("i", 0x67676d6c)) # magic: ggml in hex
+fout.write(struct.pack("i", 0x67676d6d)) # magic: ggml in hex
 fout.write(struct.pack("i", hparams["vocab_size"]))
-# fout.write(struct.pack("i", hparams["seq_length"]))
+fout.write(struct.pack("i", hparams["max_seq_len"]))
 fout.write(struct.pack("i", hparams["d_model"]))
-fout.write(struct.pack("i", hparams["multiple_of"]))
 fout.write(struct.pack("i", hparams["n_heads"]))
 fout.write(struct.pack("i", hparams["n_layers"]))
+# n_rot (unused)
+fout.write(struct.pack("i", 0))
 fout.write(struct.pack("i", ftype))
 
 # # Is this correct??
 # dot_token = tokenizer.encode(".")[0]
-# for i in range(hparams["vocab_size"]):
-#     text = tokenizer.decode([i]).encode('utf-8')
-#     fout.write(struct.pack("i", len(text)))
-#     fout.write(text)
+# write tokens to ggml file 
+fout.write(struct.pack("i", hparams["vocab_size"]))
+
+for i in range(hparams["vocab_size"]):
+    text = tokenizer.decode([i]).encode('utf-8')
+    fout.write(struct.pack("i", len(text)))
+    fout.write(text)
     
 list_vars = model.state_dict()
 for name in list_vars.keys():
@@ -107,21 +112,16 @@ for name in list_vars.keys():
 
         new_name = name.split("Wqkv.weight")[0]
 
-        for (data, name) in [(query, new_name + "q_proj_w"), (key, new_name + "k_proj_w"), (value, new_name + "v_proj_w")]:
+        for (data, name) in [(query, new_name + "q_proj.weight"), (key, new_name + "k_proj.weight"), (value, new_name + "v_proj.weight")]:
             print(f"Processing variable: {name} with shape: {data.shape}")
             n_dims = len(data.shape);
 
             # ftype == 0 -> float32, ftype == 1 -> float16
             ftype_cur = 0;
             if ftype != 0:
-                if name[-7:] == ".weight" and n_dims == 2:
-                    print("  Converting to float16")
-                    data = data.astype(np.float16)
-                    ftype_cur = 1
-                else:
-                    print("  Converting to float32")
-                    data = data.astype(np.float32)
-                    ftype_cur = 0
+                print("  Converting to float16")
+                data = data.astype(np.float16)
+                ftype_cur = 1
             else:
                 if data.dtype != np.float32:
                     print("  Converting to float32")
@@ -137,7 +137,6 @@ for name in list_vars.keys():
 
             # data
             data.tofile(fout)
-            fout.write(struct.pack("i", len(data)))
 
     else:
 
