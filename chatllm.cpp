@@ -83,6 +83,7 @@ bool ChatLLM::loadModel(const QString &modelName)
     }
 
     bool isGPTJ = false;
+    bool isMPT = false;
     QString filePath = modelFilePath(modelName);
     QFileInfo info(filePath);
     if (info.exists()) {
@@ -93,8 +94,12 @@ bool ChatLLM::loadModel(const QString &modelName)
         fin.seekg(0);
         fin.close();
         isGPTJ = magic == 0x67676d6c;
+        isMPT = magic == 0x67676d6d;
         if (isGPTJ) {
             m_llmodel = new GPTJ;
+            m_llmodel->loadModel(filePath.toStdString());
+        } else if (isMPT) {
+            m_llmodel = new MPT;
             m_llmodel->loadModel(filePath.toStdString());
         } else {
             m_llmodel = new LLamaModel;
