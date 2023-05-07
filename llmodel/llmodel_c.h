@@ -72,6 +72,18 @@ llmodel_model llmodel_gptj_create();
 void llmodel_gptj_destroy(llmodel_model gptj);
 
 /**
+ * Create a MPT instance.
+ * @return A pointer to the MPT instance.
+ */
+llmodel_model llmodel_mpt_create();
+
+/**
+ * Destroy a MPT instance.
+ * @param gptj A pointer to the MPT instance.
+ */
+void llmodel_mpt_destroy(llmodel_model mpt);
+
+/**
  * Create a LLAMA instance.
  * @return A pointer to the LLAMA instance.
  */

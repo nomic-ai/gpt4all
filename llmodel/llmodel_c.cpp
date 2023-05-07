@@ -2,6 +2,7 @@
 
 #include "gptj.h"
 #include "llamamodel.h"
+#include "mpt.h"
 
 struct LLModelWrapper {
     LLModel *llModel = nullptr;
@@ -18,6 +19,20 @@ llmodel_model llmodel_gptj_create()
 void llmodel_gptj_destroy(llmodel_model gptj)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(gptj);
+    delete wrapper->llModel;
+    delete wrapper;
+}
+
+llmodel_model llmodel_mpt_create()
+{
+    LLModelWrapper *wrapper = new LLModelWrapper;
+    wrapper->llModel = new MPT;
+    return reinterpret_cast<void*>(wrapper);
+}
+
+void llmodel_mpt_destroy(llmodel_model mpt)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(mpt);
     delete wrapper->llModel;
     delete wrapper;
 }
