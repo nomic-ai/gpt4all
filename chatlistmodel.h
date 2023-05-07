@@ -11,7 +11,7 @@ public:
     void run() override;
 
 Q_SIGNALS:
-    void chatsRestored(QList<Chat*> chats);
+    void chatRestored(Chat *chat);
 };
 
 class ChatListModel : public QAbstractListModel
@@ -174,7 +174,8 @@ public:
 
     void removeChatFile(Chat *chat) const;
     void saveChats() const;
-    void restoreChats(const QList<Chat*> &chats);
+    void restoreChat(Chat *chat);
+    void chatsRestoredFinished();
 
 Q_SIGNALS:
     void countChanged();
