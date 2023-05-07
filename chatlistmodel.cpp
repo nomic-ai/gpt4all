@@ -66,7 +66,7 @@ void ChatListModel::saveChats() const
 
         out << (quint32)CHAT_FORMAT_MAGIC;
         out << (qint32)CHAT_FORMAT_VERSION;
-        out.setVersion(QDataStream::Qt_6_5);
+        out.setVersion(QDataStream::Qt_6_2);
 
         qDebug() << "serializing chat" << fileName;
         if (!chat->serialize(out)) {
@@ -145,7 +145,7 @@ void ChatsRestoreThread::run()
             }
 
             if (version <= 100)
-                in.setVersion(QDataStream::Qt_6_5);
+                in.setVersion(QDataStream::Qt_6_2);
 
             Chat *chat = new Chat;
             chat->moveToThread(qApp->thread());
