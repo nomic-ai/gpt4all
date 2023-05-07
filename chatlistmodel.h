@@ -4,6 +4,16 @@
 #include <QAbstractListModel>
 #include "chat.h"
 
+class ChatsRestoreThread : public QThread
+{
+    Q_OBJECT
+public:
+    void run() override;
+
+Q_SIGNALS:
+    void chatsRestored(QList<Chat*> chats);
+};
+
 class ChatListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -12,13 +22,7 @@ class ChatListModel : public QAbstractListModel
     Q_PROPERTY(bool shouldSaveChats READ shouldSaveChats WRITE setShouldSaveChats NOTIFY shouldSaveChatsChanged)
 
 public:
-    explicit ChatListModel(QObject *parent = nullptr)
-        : QAbstractListModel(parent)
-        , m_currentChat(nullptr)
-        , m_newChat(nullptr)
-        , m_shouldSaveChats(false)
-    {
-    }
+    explicit ChatListModel(QObject *parent = nullptr);
 
     enum Roles {
         IdRole = Qt::UserRole + 1,
@@ -61,7 +65,7 @@ public:
     Q_INVOKABLE void addChat()
     {
         // Don't add a new chat if we already have one
-        if (m_newChat)
+        if (m_newChat || m_dummyChat)
             return;
 
         // Create a new chat pointer and connect it to determine when it is populated
@@ -76,6 +80,18 @@ public:
         endInsertRows();
         emit countChanged();
         setCurrentChat(m_newChat);
+    }
+
+    Q_INVOKABLE void addDummyChat()
+    {
+        // Create a new dummy chat pointer and don't connect it
+        m_dummyChat = new Chat(this);
+        beginInsertRows(QModelIndex(), 0, 0);
+        m_chats.prepend(m_dummyChat);
+        endInsertRows();
+        emit countChanged();
+        m_currentChat = m_dummyChat;
+        emit currentChatChanged();
     }
 
     void setNewChat(Chat* chat)
@@ -101,7 +117,6 @@ public:
 
         removeChatFile(chat);
 
-        emit disconnectChat(chat);
         if (chat == m_newChat) {
             m_newChat->disconnect(this);
             m_newChat = nullptr;
@@ -140,13 +155,9 @@ public:
             return;
         }
 
-        if (m_currentChat) {
-            if (m_currentChat->isModelLoaded())
-                m_currentChat->unloadModel();
-            emit disconnect(m_currentChat);
-        }
+        if (m_currentChat && m_currentChat->isModelLoaded())
+            m_currentChat->unloadModel();
 
-        emit connectChat(chat);
         m_currentChat = chat;
         if (!m_currentChat->isModelLoaded())
             m_currentChat->reloadModel();
@@ -163,12 +174,10 @@ public:
 
     void removeChatFile(Chat *chat) const;
     void saveChats() const;
-    void restoreChats();
+    void restoreChats(const QList<Chat*> &chats);
 
 Q_SIGNALS:
     void countChanged();
-    void connectChat(Chat*);
-    void disconnectChat(Chat*);
     void currentChatChanged();
     void shouldSaveChatsChanged();
 
@@ -206,6 +215,7 @@ private Q_SLOTS:
 private:
     bool m_shouldSaveChats;
     Chat* m_newChat;
+    Chat* m_dummyChat;
     Chat* m_currentChat;
     QList<Chat*> m_chats;
 };

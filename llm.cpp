@@ -24,16 +24,6 @@ LLM::LLM()
 {
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
         this, &LLM::aboutToQuit);
-
-    m_chatListModel->restoreChats();
-    if (m_chatListModel->count()) {
-        Chat *firstChat = m_chatListModel->get(0);
-        if (firstChat->chatModel()->count() < 2)
-            m_chatListModel->setNewChat(firstChat);
-        else
-            m_chatListModel->setCurrentChat(firstChat);
-    } else
-        m_chatListModel->addChat();
 }
 
 bool LLM::checkForUpdates() const
