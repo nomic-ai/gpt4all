@@ -26,7 +26,7 @@ struct mpt_hparams {
     int32_t n_head  = 32;
     int32_t n_layer = 32;
     // this isn't used should we remove?
-    int32_t n_rot   = 64;
+    int32_t n_rot   = 0;
     int32_t f16     = 1;
 };
 
@@ -162,7 +162,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
     {
         uint32_t magic;
         fin.read((char *) &magic, sizeof(magic));
-    if (magic != 0x67676d6c) {
+    if (magic != 0x67676d6d) {
             fprintf(stderr, "%s: invalid model file '%s' (bad magic)\n", __func__, fname.c_str());
             return false;
         }
@@ -268,6 +268,9 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         ctx_size += n_ctx*n_layer*n_embd*ggml_type_sizef(GGML_TYPE_F32); // memory_k
         ctx_size += n_ctx*n_layer*n_embd*ggml_type_sizef(GGML_TYPE_F32); // memory_v
 
+        ctx_size += n_layer*(n_embd*ggml_type_sizef(GGML_TYPE_F32)); // ln_2_g
+        ctx_size += n_layer*(n_embd*ggml_type_sizef(GGML_TYPE_F32)); // ln_2_b
+
         // TODO: what is this??
         ctx_size += (5 + 10*n_layer)*256; // object overhead
 
@@ -335,23 +338,23 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
             layer.down_proj_b    = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
 
             // map by name
-            model.tensors["transformer.block." + std::to_string(i) + ".norm_1.weight"]          = layer.norm_1_g;
-            model.tensors["transformer.block." + std::to_string(i) + ".norm_1.bias"]            = layer.norm_1_b;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_1.weight"]          = layer.norm_1_g;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_1.bias"]            = layer.norm_1_b;
 
-            model.tensors["transformer.block." + std::to_string(i) + ".attn.q_proj.weight"]   = layer.c_attn_q_proj_w;
-            model.tensors["transformer.block." + std::to_string(i) + ".attn.k_proj.weight"]   = layer.c_attn_k_proj_w;
-            model.tensors["transformer.block." + std::to_string(i) + ".attn.v_proj.weight"]   = layer.c_attn_v_proj_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.q_proj.weight"]   = layer.c_attn_q_proj_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.k_proj.weight"]   = layer.c_attn_k_proj_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.v_proj.weight"]   = layer.c_attn_v_proj_w;
 
-            model.tensors["transformer.block." + std::to_string(i) + ".attn.out_proj.weight"] = layer.c_attn_proj_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.out_proj.weight"] = layer.c_attn_proj_w;
 
-            model.tensors["transformer.block." + std::to_string(i) + ".mlp.up_proj.weight"]     = layer.up_proj_w;
-            model.tensors["transformer.block." + std::to_string(i) + ".mlp.up_proj.bias"]       = layer.up_proj_b;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.up_proj.weight"]     = layer.up_proj_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.up_proj.bias"]       = layer.up_proj_b;
 
-            model.tensors["transformer.block." + std::to_string(i) + ".mlp.down_proj.weight"]    = layer.down_proj_w;
-            model.tensors["transformer.block." + std::to_string(i) + ".mlp.down_proj.bias"]      = layer.down_proj_b;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.down_proj.weight"]    = layer.down_proj_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.down_proj.bias"]      = layer.down_proj_b;
 
-            model.tensors["transformer.block." + std::to_string(i) + ".norm_2.weight"]          = layer.norm_2_g;
-            model.tensors["transformer.block." + std::to_string(i) + ".norm_2.bias"]            = layer.norm_2_b;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_2.weight"]          = layer.norm_2_g;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_2.bias"]            = layer.norm_2_b;
         }
 
         // key + value memory
@@ -390,6 +393,8 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
             fin.read(reinterpret_cast<char *>(&length), sizeof(length));
             fin.read(reinterpret_cast<char *>(&ftype),  sizeof(ftype));
 
+            fprintf(stderr, "%s: n_dims = %d, length = %d, ftype = %d\n", __func__, n_dims, length, ftype);
+
             if (fin.eof()) {
                 break;
             }
@@ -403,7 +408,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 
             std::string name(length, 0);
             fin.read(&name[0], length);
-
+            fprintf(stderr, "%s: %s\n", __func__, name.data());
             if (model.tensors.find(name.data()) == model.tensors.end()) {
                 fprintf(stderr, "%s: unknown tensor '%s' in model file\n", __func__, name.data());
                 return false;
@@ -448,7 +453,8 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 
             fin.read(reinterpret_cast<char *>(tensor->data), ggml_nbytes(tensor));
 
-            //printf("%42s - [%5d, %5d], type = %6s, %6.2f MB\n", name.data(), ne[0], ne[1], ftype == 0 ? "float" : "f16", ggml_nbytes(tensor)/1024.0/1024.0);
+
+            fprintf(stderr, "%42s - [%5d, %5d], type = %6s, %6.2f MB\n", name.data(), ne[0], ne[1], ftype == 0 ? "float" : "f16", ggml_nbytes(tensor)/1024.0/1024.0);
             total_size += ggml_nbytes(tensor);
             if (++n_tensors % 8 == 0) {
                 printf(".");
