@@ -7,6 +7,21 @@
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
 #define CHAT_FORMAT_VERSION 100
 
+ChatListModel::ChatListModel(QObject *parent)
+    : QAbstractListModel(parent)
+    , m_newChat(nullptr)
+    , m_dummyChat(nullptr)
+    , m_currentChat(nullptr)
+    , m_shouldSaveChats(false)
+{
+    addDummyChat();
+
+    ChatsRestoreThread *thread = new ChatsRestoreThread;
+    connect(thread, &ChatsRestoreThread::chatsRestored, this, &ChatListModel::restoreChats);
+    connect(thread, &ChatsRestoreThread::finished, thread, &QObject::deleteLater);
+    thread->start();
+}
+
 bool ChatListModel::shouldSaveChats() const
 {
     return m_shouldSaveChats;
@@ -36,6 +51,8 @@ void ChatListModel::saveChats() const
     if (!m_shouldSaveChats)
         return;
 
+    QElapsedTimer timer;
+    timer.start();
     const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
     for (Chat *chat : m_chats) {
         QString fileName = "gpt4all-" + chat->id() + ".chat";
@@ -58,11 +75,15 @@ void ChatListModel::saveChats() const
         }
         file.close();
     }
+    qint64 elapsedTime = timer.elapsed();
+    qDebug() << "serializing chats took:" << elapsedTime << "ms";
 }
 
-void ChatListModel::restoreChats()
+void ChatsRestoreThread::run()
 {
-    beginResetModel();
+    QElapsedTimer timer;
+    timer.start();
+    QList<Chat*> chats;
     {
         // Look for any files in the original spot which was the settings config directory
         QSettings settings;
@@ -80,13 +101,13 @@ void ChatListModel::restoreChats()
                 continue;
             }
             QDataStream in(&file);
-            Chat *chat = new Chat(this);
+            Chat *chat = new Chat;
+            chat->moveToThread(qApp->thread());
             if (!chat->deserialize(in)) {
                 qWarning() << "ERROR: Couldn't deserialize chat from file:" << file.fileName();
                 file.remove();
             } else {
-                connect(chat, &Chat::nameChanged, this, &ChatListModel::nameChanged);
-                m_chats.append(chat);
+                chats.append(chat);
             }
             qDebug() << "deserializing chat" << f;
             file.remove(); // No longer storing in this directory
@@ -126,20 +147,51 @@ void ChatListModel::restoreChats()
             if (version <= 100)
                 in.setVersion(QDataStream::Qt_6_5);
 
-            Chat *chat = new Chat(this);
+            Chat *chat = new Chat;
+            chat->moveToThread(qApp->thread());
             if (!chat->deserialize(in)) {
                 qWarning() << "ERROR: Couldn't deserialize chat from file:" << file.fileName();
                 file.remove();
             } else {
-                connect(chat, &Chat::nameChanged, this, &ChatListModel::nameChanged);
-                m_chats.append(chat);
+                chats.append(chat);
             }
             qDebug() << "deserializing chat" << f;
             file.close();
         }
     }
-    std::sort(m_chats.begin(), m_chats.end(), [](const Chat* a, const Chat* b) {
+    std::sort(chats.begin(), chats.end(), [](const Chat* a, const Chat* b) {
         return a->creationDate() > b->creationDate();
     });
+    qint64 elapsedTime = timer.elapsed();
+    qDebug() << "deserializing chats took:" << elapsedTime << "ms";
+
+    emit chatsRestored(chats);
+}
+
+void ChatListModel::restoreChats(const QList<Chat*> &chats)
+{
+    for (Chat* chat : chats) {
+        chat->setParent(this);
+        connect(chat, &Chat::nameChanged, this, &ChatListModel::nameChanged);
+    }
+
+    beginResetModel();
+
+    // Setup the new chats
+    m_chats = chats;
+
+    if (!m_chats.isEmpty()) {
+        Chat *firstChat = m_chats.first();
+        if (firstChat->chatModel()->count() < 2)
+            setNewChat(firstChat);
+        else
+            setCurrentChat(firstChat);
+    } else
+        addChat();
+
+    // Clean up the dummy
+    delete m_dummyChat;
+    m_dummyChat = nullptr;
+
     endResetModel();
 }
