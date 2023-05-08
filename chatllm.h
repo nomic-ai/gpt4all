@@ -17,6 +17,12 @@ class ChatLLM : public QObject
     Q_PROPERTY(QString generatedName READ generatedName NOTIFY generatedNameChanged)
 
 public:
+    enum ModelType {
+        MPT_,
+        GPTJ_,
+        LLAMA_
+    };
+
     ChatLLM(Chat *parent);
 
     bool isModelLoaded() const;
@@ -82,6 +88,7 @@ private:
     quint32 m_promptResponseTokens;
     quint32 m_responseLogits;
     QString m_modelName;
+    ModelType m_modelType;
     Chat *m_chat;
     QByteArray m_state;
     QThread m_llmThread;
