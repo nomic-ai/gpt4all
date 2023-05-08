@@ -202,6 +202,12 @@ bool Chat::deserialize(QDataStream &stream, int version)
     stream >> m_userName;
     emit nameChanged();
     stream >> m_savedModelName;
+
+    // Prior to version 2 gptj models had a bug that fixed the kv_cache to F32 instead of F16 so
+    // unfortunately, we cannot deserialize these
+    if (version < 2 && m_savedModelName.contains("gpt4all-j"))
+        return false;
+
     if (!m_llmodel->deserialize(stream, version))
         return false;
     if (!m_chatModel->deserialize(stream, version))
