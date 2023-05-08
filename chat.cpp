@@ -179,21 +179,21 @@ void Chat::handleModelNameChanged()
     emit modelNameChanged();
 }
 
-bool Chat::serialize(QDataStream &stream) const
+bool Chat::serialize(QDataStream &stream, int version) const
 {
     stream << m_creationDate;
     stream << m_id;
     stream << m_name;
     stream << m_userName;
     stream << m_savedModelName;
-    if (!m_llmodel->serialize(stream))
+    if (!m_llmodel->serialize(stream, version))
         return false;
-    if (!m_chatModel->serialize(stream))
+    if (!m_chatModel->serialize(stream, version))
         return false;
     return stream.status() == QDataStream::Ok;
 }
 
-bool Chat::deserialize(QDataStream &stream)
+bool Chat::deserialize(QDataStream &stream, int version)
 {
     stream >> m_creationDate;
     stream >> m_id;
@@ -202,9 +202,9 @@ bool Chat::deserialize(QDataStream &stream)
     stream >> m_userName;
     emit nameChanged();
     stream >> m_savedModelName;
-    if (!m_llmodel->deserialize(stream))
+    if (!m_llmodel->deserialize(stream, version))
         return false;
-    if (!m_chatModel->deserialize(stream))
+    if (!m_chatModel->deserialize(stream, version))
         return false;
     emit chatModelChanged();
     return stream.status() == QDataStream::Ok;

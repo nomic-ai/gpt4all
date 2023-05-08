@@ -55,8 +55,8 @@ public:
     void reloadModel();
 
     qint64 creationDate() const { return m_creationDate; }
-    bool serialize(QDataStream &stream) const;
-    bool deserialize(QDataStream &stream);
+    bool serialize(QDataStream &stream, int version) const;
+    bool deserialize(QDataStream &stream, int version);
 
     QList<QString> modelList() const;
 

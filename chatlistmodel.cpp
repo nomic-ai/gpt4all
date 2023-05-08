@@ -5,7 +5,7 @@
 #include <QDataStream>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
-#define CHAT_FORMAT_VERSION 100
+#define CHAT_FORMAT_VERSION 1
 
 ChatListModel::ChatListModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -70,7 +70,7 @@ void ChatListModel::saveChats() const
         out.setVersion(QDataStream::Qt_6_2);
 
         qDebug() << "serializing chat" << fileName;
-        if (!chat->serialize(out)) {
+        if (!chat->serialize(out, CHAT_FORMAT_VERSION)) {
             qWarning() << "ERROR: Couldn't serialize chat to file:" << file.fileName();
             file.remove();
         }
@@ -169,6 +169,7 @@ void ChatsRestoreThread::run()
             }
             QDataStream in(&file);
 
+            qint32 version = 0;
             if (!f.oldFile) {
                 // Read and check the header
                 quint32 magic;
@@ -179,14 +180,13 @@ void ChatsRestoreThread::run()
                 }
 
                 // Read the version
-                qint32 version;
                 in >> version;
-                if (version < 100) {
+                if (version < 1) {
                     qWarning() << "ERROR: Chat file has non supported version:" << file.fileName();
                     continue;
                 }
 
-                if (version <= 100)
+                if (version <= 1)
                     in.setVersion(QDataStream::Qt_6_2);
             }
 
@@ -194,7 +194,7 @@ void ChatsRestoreThread::run()
 
             Chat *chat = new Chat;
             chat->moveToThread(qApp->thread());
-            if (!chat->deserialize(in)) {
+            if (!chat->deserialize(in, version)) {
                 qWarning() << "ERROR: Couldn't deserialize chat from file:" << file.fileName();
                 file.remove();
             } else {

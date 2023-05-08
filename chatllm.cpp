@@ -368,7 +368,7 @@ bool ChatLLM::handleNameRecalculate(bool isRecalc)
     return true;
 }
 
-bool ChatLLM::serialize(QDataStream &stream)
+bool ChatLLM::serialize(QDataStream &stream, int version)
 {
     stream << response();
     stream << generatedName();
@@ -388,7 +388,7 @@ bool ChatLLM::serialize(QDataStream &stream)
     return stream.status() == QDataStream::Ok;
 }
 
-bool ChatLLM::deserialize(QDataStream &stream)
+bool ChatLLM::deserialize(QDataStream &stream, int version)
 {
     QString response;
     stream >> response;
@@ -407,9 +407,13 @@ bool ChatLLM::deserialize(QDataStream &stream)
     stream >> tokensSize;
     m_ctx.tokens.resize(tokensSize);
     stream.readRawData(reinterpret_cast<char*>(m_ctx.tokens.data()), tokensSize * sizeof(int));
-    QByteArray compressed;
-    stream >> compressed;
-    m_state = qUncompress(compressed);
+    if (version > 0) {
+        QByteArray compressed;
+        stream >> compressed;
+        m_state = qUncompress(compressed);
+    } else {
+        stream >> m_state;
+    }
 #if defined(DEBUG)
     qDebug() << "chatllm deserialize" << m_chat->id();
 #endif
