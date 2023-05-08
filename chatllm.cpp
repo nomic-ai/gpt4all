@@ -356,9 +356,13 @@ bool ChatLLM::handleNamePrompt(int32_t token)
 bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
 {
     Q_UNUSED(token);
+
     m_nameResponse.append(response);
     emit generatedNameChanged();
-    return true;
+    QString gen = QString::fromStdString(m_nameResponse).simplified();
+    QStringList words = gen.split(' ', Qt::SkipEmptyParts);
+    int wordCount = words.size();
+    return words.size() <= 3;
 }
 
 bool ChatLLM::handleNameRecalculate(bool isRecalc)
