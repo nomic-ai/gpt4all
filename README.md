@@ -65,16 +65,23 @@ If you have older hardware that only supports avx and not avx2 you can use these
 
 [Ubuntu - avx-only](https://gpt4all.io/installers/gpt4all-installer-linux-avx-only.run)
 
-These files are not yet cert signed by Windows/Apple so you will see security warnings on initial installation. We did not want to delay release while waiting for their process to complete.
 
 Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/)
 
-### Raw Model
-[ggml Model Download Link](https://gpt4all.io/models/ggml-gpt4all-j.bin)
+### Raw Models
+* https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin (default) (md5sum 81a09a0ddf89690372fc296ff7f625af) Current best commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset.
+* https://gpt4all.io/models/ggml-gpt4all-l13b-snoozy.bin (md5sum 91f886b68fbce697e9a3cd501951e455) Current best non-commercially licensable model based on Llama 13b and trained by Nomic AI on the latest curated GPT4All dataset.
+* https://gpt4all.io/models/ggml-gpt4all-j-v1.2-jazzy.bin (md5sum 879344aaa9d62fdccbda0be7a09e7976) An commercially licensable model based on GPT-J and trained by Nomic AI on the v2 GPT4All dataset.
+* https://gpt4all.io/models/ggml-gpt4all-j-v1.1-breezy.bin (md5sum 61d48a82cb188cceb14ebb8082bfec37) An commercially licensable model based on GPT-J and trained by Nomic AI on the v1 GPT4All dataset.
+* https://gpt4all.io/models/ggml-gpt4all-j.bin (md5sum 5b5a3f9b858d33b29b52b89692415595) An commercially licensable model based on GPT-J and trained by Nomic AI on the v0 GPT4All dataset.
+* https://gpt4all.io/models/ggml-vicuna-7b-1.1-q4_2.bin (md5sum 29119f8fa11712704c6b22ac5ab792ea) An non-commercially licensable model based on Llama 7b and trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego.
+* https://gpt4all.io/models/ggml-vicuna-13b-1.1-q4_2.bin (md5sum 95999b7b0699e2070af63bf5d34101a8) An non-commercially licensable model based on Llama 13b and trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego.
+* https://gpt4all.io/models/ggml-wizardLM-7B.q4_2.bin (md5sum 99e6d129745a3f1fb1121abed747b05a) An non-commercially licensable model based on Llama 7b and trained by Microsoft and Peking University.
+* https://gpt4all.io/models/ggml-stable-vicuna-13B.q4_2.bin (md5sum 6cb4ee297537c9133bddab9692879de0) An non-commercially licensable model based on Llama 13b and RLHF trained by Stable AI.
 
-Note this model is only compatible with the C++ bindings found [here](https://github.com/nomic-ai/gpt4all-chat). It will not work with any existing llama.cpp bindings as we had to do a large fork of llama.cpp. GPT4All will support the ecosystem around this new C++ backend going forward.
+Note these models are only compatible with the C++ bindings found [here](https://github.com/nomic-ai/gpt4all-chat). It will not work with any existing llama.cpp bindings as we had to do a large fork of llama.cpp. GPT4All will support the ecosystem around this new C++ backend going forward.
 
-Python bindings are imminent and will be integrated into this [repository](https://github.com/nomic-ai/pyllamacpp). Stay tuned on the [GPT4All discord](https://discord.gg/mGZE39AS3e) for updates.
+Python bindings are imminent and will be integrated into this repository. Stay tuned on the [GPT4All discord](https://discord.gg/mGZE39AS3e) for updates.
 
 ## Training GPT4All-J
 
@@ -118,18 +125,6 @@ accelerate launch --dynamo_backend=inductor --num_processes=8 --num_machines=1 -
 ![gpt4all-lora-demo](https://user-images.githubusercontent.com/13879686/228352356-de66ca7a-df70-474e-b929-2e3656165051.gif)
 
 Run on M1 Mac (not sped up!)
-
-# Try it yourself
-
-Here's how to get started with the CPU quantized GPT4All model checkpoint:
-
-1. Download the `gpt4all-lora-quantized.bin` file from [Direct Link](https://the-eye.eu/public/AI/models/nomic-ai/gpt4all/gpt4all-lora-quantized.bin) or [[Torrent-Magnet]](https://tinyurl.com/gpt4all-lora-quantized).
-2. Clone this repository, navigate to `chat`, and place the downloaded file there.
-3. Run the appropriate command for your OS:
-   - M1 Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-m1`
-   - Linux: `cd chat;./gpt4all-lora-quantized-linux-x86`
-   - Windows (PowerShell): `cd chat;./gpt4all-lora-quantized-win64.exe`
-   - Intel Mac/OSX: `cd chat;./gpt4all-lora-quantized-OSX-intel`
 
 For custom hardware compilation, see our [llama.cpp](https://github.com/zanussbaum/gpt4all.cpp) fork.
 
