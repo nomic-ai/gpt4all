@@ -236,6 +236,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         case 1: wtype = GGML_TYPE_F16;  break;
         case 2: wtype = GGML_TYPE_Q4_0; break;
         case 3: wtype = GGML_TYPE_Q4_1; break;
+        case 5: wtype = GGML_TYPE_Q4_2; break;
         default:
                 {
                     fprintf(stderr, "%s: invalid model file '%s' (bad f16 value %d)\n",
