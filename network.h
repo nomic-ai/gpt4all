@@ -51,6 +51,7 @@ public Q_SLOTS:
     Q_INVOKABLE void sendNewChat(int count);
     Q_INVOKABLE void sendRemoveChat();
     Q_INVOKABLE void sendRenameChat();
+    Q_INVOKABLE void sendNonCompatHardware();
     void sendChatStarted();
     void sendRecalculatingContext(int conversationLength);
 

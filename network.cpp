@@ -358,6 +358,13 @@ void Network::sendRecalculatingContext(int conversationLength)
     sendMixpanelEvent("recalc_context", QVector<KeyValue>{kv});
 }
 
+void Network::sendNonCompatHardware()
+{
+    if (!m_usageStatsActive)
+        return;
+    sendMixpanelEvent("noncompat_hardware");
+}
+
 void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &values)
 {
     if (!m_usageStatsActive)
