@@ -32,7 +32,6 @@ LLM::LLM()
         const bool avx2(__builtin_cpu_supports("avx2"));
         const bool fma(__builtin_cpu_supports("fma"));
         m_compatHardware = avx && avx2 && fma;
-        qDebug() << "m_compatHardware" << m_compatHardware;
         emit compatHardwareChanged();
     }
 #endif
