@@ -140,12 +140,12 @@ void ChatsRestoreThread::run()
             // Read the version
             qint32 version;
             in >> version;
-            if (version < 100) {
+            if (version < 1) {
                 qWarning() << "ERROR: Chat file has non supported version:" << file.fileName();
                 continue;
             }
 
-            if (version <= 100)
+            if (version <= 1)
                 in.setVersion(QDataStream::Qt_6_2);
 
             FileInfo info;
