@@ -25,7 +25,10 @@ Window {
 
     // Startup code
     Component.onCompleted: {
-        startupDialogs();
+        if (!LLM.compatHardware)
+            errorCompatHardware.open();
+        else
+            startupDialogs();
     }
 
     Connections {
@@ -75,6 +78,16 @@ Window {
             newVersionDialog.open();
             return;
         }
+    }
+
+    PopupDialog {
+        id: errorCompatHardware
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: false
+        closePolicy: Popup.NoAutoClose
+        modal: true
+        text: qsTr("Incompatible hardware detected. Please try the avx-only installer on https://gpt4all.io")
     }
 
     StartupDialog {

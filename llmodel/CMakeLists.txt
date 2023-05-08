@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 if(APPLE)
-  option(BUILD_UNIVERSAL "Build a Universal binary on macOS" OFF)
+  option(BUILD_UNIVERSAL "Build a Universal binary on macOS" ON)
   if(BUILD_UNIVERSAL)
     # Build a Universal binary on macOS
     # This requires that the found Qt library is compiled as Universal binaries.
@@ -25,6 +25,8 @@ set(BUILD_SHARED_LIBS ON FORCE)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 if (GPT4ALL_AVX_ONLY)
     set(LLAMA_AVX2 OFF CACHE BOOL "llama: enable AVX2" FORCE)
+    set(LLAMA_F16C OFF CACHE BOOL "llama: enable F16C" FORCE)
+    set(LLAMA_FMA  OFF CACHE BOOL "llama: enable FMA" FORCE)
 endif()
 
 add_subdirectory(llama.cpp)
