@@ -19,37 +19,31 @@
 
 static const size_t MB = 1024*1024;
 
+// default hparams (MPT 7B)
 struct mpt_hparams {
-    int32_t n_vocab = 50432;
-    int32_t n_ctx   = 2048;
-    int32_t n_embd  = 4096;
-    int32_t n_head  = 32;
-    int32_t n_layer = 32;
-    // this isn't used should we remove?
-    int32_t n_rot   = 0;
-    int32_t f16     = 1;
+    int32_t n_vocab      = 50432;
+    int32_t n_ctx        = 2048;
+    int32_t n_embd       = 4096;
+    int32_t n_head       = 32;
+    int32_t n_layer      = 32;
+    float alibi_bias_max = 8;
+    float clip_qkv       = 0;
+    int32_t expand       = 4;
+    int32_t f16          = 1;
 };
 
 struct mpt_layer {
     // normalization
-    struct ggml_tensor * norm_1_g;
-    struct ggml_tensor * norm_1_b;
-    struct ggml_tensor * norm_2_g;
-    struct ggml_tensor * norm_2_b;
+    struct ggml_tensor * norm_1_w;
+    struct ggml_tensor * norm_2_w;
 
     // attention
-    struct ggml_tensor * c_attn_q_proj_w;
-    struct ggml_tensor * c_attn_k_proj_w;
-    struct ggml_tensor * c_attn_v_proj_w;
-
-    struct ggml_tensor * c_attn_proj_w;
-
+    struct ggml_tensor * attn_Wqkv_w;
+    struct ggml_tensor * attn_out_proj_w;
+    
     // ff
-    struct ggml_tensor * up_proj_w;
-    struct ggml_tensor * up_proj_b;
-
-    struct ggml_tensor * down_proj_w;
-    struct ggml_tensor * down_proj_b;
+    struct ggml_tensor * ffn_up_proj_w;
+    struct ggml_tensor * ffn_down_proj_w;
 };
 
 struct mpt_buffer {
@@ -90,8 +84,7 @@ struct mpt_model {
     mpt_hparams hparams;
 
     // normalization
-    struct ggml_tensor * ln_f_g;
-    struct ggml_tensor * ln_f_b;
+    struct ggml_tensor * norm_f_w;
 
     struct ggml_tensor * wte; // position embedding
     
@@ -159,10 +152,11 @@ struct mpt_vocab {
 bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & model, mpt_vocab & vocab) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
 
+    // verify magic
     {
         uint32_t magic;
         fin.read((char *) &magic, sizeof(magic));
-    if (magic != 0x67676d6d) {
+        if (magic != 0x67676d6d) {
             fprintf(stderr, "%s: invalid model file '%s' (bad magic)\n", __func__, fname.c_str());
             return false;
         }
@@ -174,23 +168,26 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 
         fin.read((char *) &hparams.n_vocab, sizeof(hparams.n_vocab));
         fin.read((char *) &hparams.n_ctx,   sizeof(hparams.n_ctx));
-        fin.read((char *) &hparams.n_embd,  sizeof(hparams.n_embd));
-        fin.read((char *) &hparams.n_head,  sizeof(hparams.n_head));
         fin.read((char *) &hparams.n_layer, sizeof(hparams.n_layer));
-        fin.read((char *) &hparams.n_rot,   sizeof(hparams.n_rot));
-        fin.read((char *) &hparams.f16,     sizeof(hparams.f16));
+        fin.read((char *) &hparams.n_head,  sizeof(hparams.n_head));
+        fin.read((char *) &hparams.n_embd,  sizeof(hparams.n_embd));
+        fin.read((char *) &hparams.alibi_bias_max,  sizeof(hparams.alibi_bias_max));
+        fin.read((char *) &hparams.clip_qkv,  sizeof(hparams.clip_qkv));
+        fin.read((char *) &hparams.f16,   sizeof(hparams.f16));
 
-        printf("%s: n_vocab = %d\n", __func__, hparams.n_vocab);
-        printf("%s: n_ctx   = %d\n", __func__, hparams.n_ctx);
-        printf("%s: n_embd  = %d\n", __func__, hparams.n_embd);
-        printf("%s: n_head  = %d\n", __func__, hparams.n_head);
-        printf("%s: n_layer = %d\n", __func__, hparams.n_layer);
-        printf("%s: n_rot   = %d\n", __func__, hparams.n_rot);
-        printf("%s: f16     = %d\n", __func__, hparams.f16);
+        printf("%s: n_vocab        = %d\n", __func__, hparams.n_vocab);
+        printf("%s: n_ctx          = %d\n", __func__, hparams.n_ctx);
+        printf("%s: n_embd         = %d\n", __func__, hparams.n_embd);
+        printf("%s: n_head         = %d\n", __func__, hparams.n_head);
+        printf("%s: n_layer        = %d\n", __func__, hparams.n_layer);
+        printf("%s: alibi_bias_max = %f\n", __func__, hparams.alibi_bias_max);
+        printf("%s: clip_qkv       = %f\n", __func__, hparams.clip_qkv);
+        printf("%s: ftype          = %d\n", __func__, hparams.f16);
     }
+
     // load vocab
     {
-        int32_t n_vocab = 0;
+        int32_t n_vocab = model.hparams.n_vocab;
         fin.read((char *) &n_vocab, sizeof(n_vocab));
 
         if (n_vocab != model.hparams.n_vocab) {
@@ -203,14 +200,24 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         for (int i = 0; i < n_vocab; i++) {
             uint32_t len;
             fin.read((char *) &len, sizeof(len));
+            bool special = false;
+            if (len & (1<<31)) {
+                len = len &~ (1<<31);
+                special = true;
+            }
 
-            word.resize(len);
-            fin.read((char *) word.data(), len);
+            if (len > 0) {
+                word.resize(len);
+                fin.read((char *) word.data(), len);
+                vocab.token_to_id[word] = i;
+                vocab.id_to_token[i] = word;
+            }
 
-            vocab.token_to_id[word] = i;
-            vocab.id_to_token[i] = word;
+            // TODO: this only kind-of works, the gpt_tokenize can still incorrectly
+            // tokenize special tokens
         }
     }
+
     // for the big tensors, we have the option to store the data in 16-bit floats or quantized
     // in order to save memory and also to speed up the computation
     ggml_type wtype = GGML_TYPE_COUNT;
@@ -227,8 +234,6 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
                 }
     }
 
-    const ggml_type wtype2 = GGML_TYPE_F32;
-
     auto & ctx = model.ctx;
 
     size_t ctx_size = 0;
@@ -240,38 +245,26 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         const int n_layer = hparams.n_layer;
         const int n_ctx   = hparams.n_ctx;
         const int n_vocab = hparams.n_vocab;
+        const int expand  = hparams.expand;
 
-        ctx_size += n_embd*ggml_type_sizef(GGML_TYPE_F32); // ln_f_g
-        ctx_size += n_embd*ggml_type_sizef(GGML_TYPE_F32); // ln_f_b
 
-        ctx_size += n_embd*n_vocab*ggml_type_sizef(wtype); // wte
+        ctx_size += n_embd*ggml_type_sizef(GGML_TYPE_F32); // ln_f_w
 
-        // with weight tying i don't think we need this
-        // ctx_size += n_embd*n_vocab*ggml_type_sizef(wtype);         // lmh_g
-        // ctx_size +=        n_vocab*ggml_type_sizef(GGML_TYPE_F32); // lmh_b
+        ctx_size += n_embd*n_vocab*ggml_type_sizef(GGML_TYPE_F32); // wte
 
-        ctx_size += n_layer*(n_embd*ggml_type_sizef(GGML_TYPE_F32)); // ln_1_g
-        ctx_size += n_layer*(n_embd*ggml_type_sizef(GGML_TYPE_F32)); // ln_1_b
+        ctx_size += n_layer*(n_embd*ggml_type_sizef(GGML_TYPE_F32)); // norm_1_w
+        ctx_size += n_layer*(n_embd*ggml_type_sizef(GGML_TYPE_F32)); // norm_2_w
 
-        ctx_size += n_layer*(n_embd*n_embd*ggml_type_sizef(wtype)); // c_attn_q_proj_w
-        ctx_size += n_layer*(n_embd*n_embd*ggml_type_sizef(wtype)); // c_attn_k_proj_w
-        ctx_size += n_layer*(n_embd*n_embd*ggml_type_sizef(wtype)); // c_attn_v_proj_w
+        ctx_size += n_layer*(3*n_embd*n_embd*ggml_type_sizef(wtype)); // attn_Wqkv_w
+        ctx_size += n_layer*(n_embd*n_embd*ggml_type_sizef(wtype)); // attn_out_proj_w
 
-        ctx_size += n_layer*(n_embd*n_embd*ggml_type_sizef(wtype)); // c_attn_proj_w
+        ctx_size += n_layer*(expand*n_embd*n_embd*ggml_type_sizef(wtype));  // ffn_up_proj_w
+        ctx_size += n_layer*(expand*n_embd*n_embd*ggml_type_sizef(wtype)); // ffn_down_proj_w
+        
+        ctx_size += n_ctx*n_layer*n_embd*ggml_type_sizef(GGML_TYPE_F16); // memory_k
+        ctx_size += n_ctx*n_layer*n_embd*ggml_type_sizef(GGML_TYPE_F16); // memory_v
 
-        ctx_size += n_layer*(4*n_embd*n_embd*ggml_type_sizef(wtype));         // c_mlp_fc_w
-        ctx_size += n_layer*(       4*n_embd*ggml_type_sizef(GGML_TYPE_F32)); // c_mlp_fc_b
-
-        ctx_size += n_layer*(4*n_embd*n_embd*ggml_type_sizef(wtype));         // c_mlp_proj_w
-        ctx_size += n_layer*(         n_embd*ggml_type_sizef(GGML_TYPE_F32)); // c_mlp_proj_b
-
-        ctx_size += n_ctx*n_layer*n_embd*ggml_type_sizef(GGML_TYPE_F32); // memory_k
-        ctx_size += n_ctx*n_layer*n_embd*ggml_type_sizef(GGML_TYPE_F32); // memory_v
-
-        ctx_size += n_layer*(n_embd*ggml_type_sizef(GGML_TYPE_F32)); // ln_2_g
-        ctx_size += n_layer*(n_embd*ggml_type_sizef(GGML_TYPE_F32)); // ln_2_b
-
-        // TODO: what is this??
+        // TODO probably less now?
         ctx_size += (5 + 10*n_layer)*256; // object overhead
 
         printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size/(1024.0*1024.0));
@@ -282,6 +275,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         struct ggml_init_params params = {
             .mem_size   = ctx_size,
             .mem_buffer = NULL,
+            .no_alloc   = false,
         };
 
         model.ctx = ggml_init(params);
@@ -290,7 +284,8 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
             return false;
         }
     }
-     // prepare memory for the weights
+
+    // prepare memory for the weights
     {
         const auto & hparams = model.hparams;
 
@@ -298,66 +293,40 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         const int n_layer = hparams.n_layer;
         const int n_ctx   = hparams.n_ctx;
         const int n_vocab = hparams.n_vocab;
+        const int expand  = hparams.expand;
 
         model.layers.resize(n_layer);
 
-        model.wte    = ggml_new_tensor_2d(ctx, wtype,         n_embd, n_vocab);
-
-        model.ln_f_g = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-        model.ln_f_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-
-        // we don't need this because of weight tying
-        // model.lmh_g  = ggml_new_tensor_2d(ctx, wtype,         n_embd, n_vocab);
-        // model.lmh_b  = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_vocab);
+        model.wte    = ggml_new_tensor_2d(ctx, GGML_TYPE_F32, n_embd, n_vocab);
+        model.norm_f_w = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
 
         // map by name
         model.tensors["transformer.wte.weight"] = model.wte;
-
-        model.tensors["transformer.ln_f.weight"] = model.ln_f_g;
-        model.tensors["transformer.ln_f.bias"]   = model.ln_f_b;
+        model.tensors["transformer.norm_f.weight"] = model.norm_f_w;
 
         for (int i = 0; i < n_layer; ++i) {
             auto & layer = model.layers[i];
 
-            layer.norm_1_g         = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
-            layer.norm_1_b          = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
+            layer.norm_1_w        = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
+            layer.norm_2_w        = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
 
-            layer.norm_2_g         = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
-            layer.norm_2_b          = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
-
-            layer.c_attn_q_proj_w = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
-            layer.c_attn_k_proj_w = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
-            layer.c_attn_v_proj_w = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
-
-            layer.c_attn_proj_w   = ggml_new_tensor_2d(ctx, wtype,           n_embd,   n_embd);
-
-            layer.up_proj_w      = ggml_new_tensor_2d(ctx, wtype,           n_embd, 4*n_embd);
-            layer.up_proj_b      = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, 4*n_embd);
-
-            layer.down_proj_w    = ggml_new_tensor_2d(ctx, wtype,         4*n_embd,   n_embd);
-            layer.down_proj_b    = ggml_new_tensor_1d(ctx, GGML_TYPE_F32,   n_embd);
+            layer.attn_Wqkv_w     = ggml_new_tensor_2d(ctx, wtype,        n_embd, n_embd * 3);
+            layer.attn_out_proj_w = ggml_new_tensor_2d(ctx, wtype,        n_embd, n_embd);
+            layer.ffn_up_proj_w   = ggml_new_tensor_2d(ctx, wtype,        n_embd, expand*n_embd);
+            layer.ffn_down_proj_w = ggml_new_tensor_2d(ctx, wtype, expand*n_embd, n_embd);
 
             // map by name
-            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_1.weight"]          = layer.norm_1_g;
-            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_1.bias"]            = layer.norm_1_b;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_1.weight"]        = layer.norm_1_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_2.weight"]        = layer.norm_2_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.Wqkv.weight"]     = layer.attn_Wqkv_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.out_proj.weight"] = layer.attn_out_proj_w;
 
-            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.q_proj.weight"]   = layer.c_attn_q_proj_w;
-            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.k_proj.weight"]   = layer.c_attn_k_proj_w;
-            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.v_proj.weight"]   = layer.c_attn_v_proj_w;
-
-            model.tensors["transformer.blocks." + std::to_string(i) + ".attn.out_proj.weight"] = layer.c_attn_proj_w;
-
-            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.up_proj.weight"]     = layer.up_proj_w;
-            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.up_proj.bias"]       = layer.up_proj_b;
-
-            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.down_proj.weight"]    = layer.down_proj_w;
-            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.down_proj.bias"]      = layer.down_proj_b;
-
-            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_2.weight"]          = layer.norm_2_g;
-            model.tensors["transformer.blocks." + std::to_string(i) + ".norm_2.bias"]            = layer.norm_2_b;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.up_proj.weight"]   = layer.ffn_up_proj_w;
+            model.tensors["transformer.blocks." + std::to_string(i) + ".ffn.down_proj.weight"] = layer.ffn_down_proj_w;
         }
+    }
 
-        // key + value memory
+    // key + value memory
     {
         const auto & hparams = model.hparams;
 
@@ -377,7 +346,8 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
         printf("%s: kv self size  = %7.2f MB\n", __func__, memory_size / 1024.0 / 1024.0);
     }
-// load weights
+
+    // load weights
     {
         int n_tensors = 0;
         size_t total_size = 0;
@@ -387,13 +357,11 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         while (true) {
             int32_t n_dims;
             int32_t length;
-            int32_t ftype;
+            int32_t ttype;
 
             fin.read(reinterpret_cast<char *>(&n_dims), sizeof(n_dims));
             fin.read(reinterpret_cast<char *>(&length), sizeof(length));
-            fin.read(reinterpret_cast<char *>(&ftype),  sizeof(ftype));
-
-            fprintf(stderr, "%s: n_dims = %d, length = %d, ftype = %d\n", __func__, n_dims, length, ftype);
+            fin.read(reinterpret_cast<char *>(&ttype),  sizeof(ttype));
 
             if (fin.eof()) {
                 break;
@@ -408,7 +376,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 
             std::string name(length, 0);
             fin.read(&name[0], length);
-            fprintf(stderr, "%s: %s\n", __func__, name.data());
+
             if (model.tensors.find(name.data()) == model.tensors.end()) {
                 fprintf(stderr, "%s: unknown tensor '%s' in model file\n", __func__, name.data());
                 return false;
@@ -421,29 +389,17 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
             }
 
             if (tensor->ne[0] != ne[0] || tensor->ne[1] != ne[1]) {
-                fprintf(stderr, "%s: tensor '%s' has wrong shape in model file: got [%lu, %lu], expected [%d, %d]\n",
-                        __func__, name.data(), tensor->ne[0], tensor->ne[1], ne[0], ne[1]);
+                fprintf(stderr, "%s: tensor '%s' has wrong shape in model file: got [%d, %d], expected [%d, %d]\n",
+                        __func__, name.data(), (int) tensor->ne[0], (int) tensor->ne[1], ne[0], ne[1]);
                 return false;
             }
 
+            // for debugging
             if (0) {
-                static const char * ftype_str[] = { "f32", "f16", "q4_0", "q4_1", };
-                printf("%24s - [%5d, %5d], type = %6s, %6.2f MB, %9zu bytes\n", name.data(), ne[0], ne[1], ftype_str[ftype], ggml_nbytes(tensor)/1024.0/1024.0, ggml_nbytes(tensor));
+                printf("%24s - [%5d, %5d], type = %6s, %6.2f MB, %9zu bytes\n", name.data(), ne[0], ne[1], ggml_type_name(ggml_type(ttype)), ggml_nbytes(tensor)/1024.0/1024.0, ggml_nbytes(tensor));
             }
 
-            size_t bpe = 0;
-
-            switch (ftype) {
-                case 0: bpe = ggml_type_size(GGML_TYPE_F32);  break;
-                case 1: bpe = ggml_type_size(GGML_TYPE_F16);  break;
-                case 2: bpe = ggml_type_size(GGML_TYPE_Q4_0); assert(ne[0] % 64 == 0); break;
-                case 3: bpe = ggml_type_size(GGML_TYPE_Q4_1); assert(ne[0] % 64 == 0); break;
-                default:
-                        {
-                            fprintf(stderr, "%s: unknown ftype %d in model file\n", __func__, ftype);
-                            return false;
-                        }
-            };
+            const size_t bpe = ggml_type_size(ggml_type(ttype));
 
             if ((nelements*bpe)/ggml_blck_size(tensor->type) != ggml_nbytes(tensor)) {
                 fprintf(stderr, "%s: tensor '%s' has wrong size in model file: got %zu, expected %zu\n",
@@ -453,8 +409,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 
             fin.read(reinterpret_cast<char *>(tensor->data), ggml_nbytes(tensor));
 
-
-            fprintf(stderr, "%42s - [%5d, %5d], type = %6s, %6.2f MB\n", name.data(), ne[0], ne[1], ftype == 0 ? "float" : "f16", ggml_nbytes(tensor)/1024.0/1024.0);
+            //printf("%42s - [%5d, %5d], type = %6s, %6.2f MB\n", name.data(), ne[0], ne[1], ttype == 0 ? "float" : "f16", ggml_nbytes(tensor)/1024.0/1024.0);
             total_size += ggml_nbytes(tensor);
             if (++n_tensors % 8 == 0) {
                 printf(".");
@@ -468,7 +423,6 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
     }
 
     return true;
-    }
 }
 
 
@@ -502,29 +456,30 @@ bool mpt_eval(
     const int n_ctx   = hparams.n_ctx;
     const int n_head  = hparams.n_head;
     const int n_vocab = hparams.n_vocab;
-    const int n_rot   = hparams.n_rot;
+    const int expand  = hparams.expand;
 
     const int d_key = n_embd/n_head;
 
-    static size_t buf_size = 1024u*MB;
-    if (!model.buf.addr || model.buf.size < buf_size)
-        model.buf.resize(buf_size);
+    static size_t buf_size = 256u*1024*1024;
+    static void * buf = malloc(buf_size);
 
-    if (mem_per_token > 0 && mem_per_token*N > model.buf.size) {
+    if (mem_per_token > 0 && mem_per_token*N > buf_size) {
         const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
-        printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, model.buf.size, buf_size_new);
+        //printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, buf_size, buf_size_new);
 
         // reallocate
-        model.buf.resize(buf_size_new);
-        if (model.buf.addr == nullptr) {
-            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, model.buf.size);
+        buf_size = buf_size_new;
+        buf = realloc(buf, buf_size);
+        if (buf == nullptr) {
+            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, buf_size);
             return false;
         }
     }
 
     struct ggml_init_params params = {
-        .mem_size   = model.buf.size,
-        .mem_buffer = model.buf.addr,
+        .mem_size   = buf_size,
+        .mem_buffer = buf,
+        .no_alloc   = false,
     };
 
     struct ggml_context * ctx0 = ggml_init(params);
@@ -537,27 +492,26 @@ bool mpt_eval(
     struct ggml_tensor * inpL = ggml_get_rows(ctx0, model.wte, embd);
 
     for (int il = 0; il < n_layer; ++il) {
-        struct ggml_tensor * cur;
 
-        // norm
-        {
-            cur = ggml_norm(ctx0, inpL);
-
-            // cur = ln_1_g*cur + ln_1_b
-            cur = ggml_add(ctx0,
-                    ggml_mul(ctx0,
-                        ggml_repeat(ctx0, model.layers[il].norm_1_g, cur),
-                        cur),
-                    ggml_repeat(ctx0, model.layers[il].norm_1_b, cur));
-        }
-
-        struct ggml_tensor * inpSA = cur;
-
+        struct ggml_tensor * inpSA = inpL;
+        struct ggml_tensor * cur = inpSA;
         // self-attention
         {
-            struct ggml_tensor * Qcur = ggml_mul_mat(ctx0, model.layers[il].c_attn_q_proj_w, cur);
-            struct ggml_tensor * Kcur = ggml_mul_mat(ctx0, model.layers[il].c_attn_k_proj_w, cur);
-            struct ggml_tensor * Vcur = ggml_mul_mat(ctx0, model.layers[il].c_attn_v_proj_w, cur);
+
+            // norm1
+            cur = ggml_norm(ctx0, cur);
+            cur = ggml_mul(ctx0,
+                    ggml_repeat(ctx0, model.layers[il].norm_1_w, cur),
+                    cur);
+            // compute QKV
+            cur = ggml_mul_mat(ctx0,
+                    model.layers[il].attn_Wqkv_w,
+                    cur);
+
+            // TODO: clip_qkv
+            struct ggml_tensor * Qcur = ggml_cont(ctx0, ggml_view_2d(ctx0, cur, n_embd, N, cur->nb[1], 0*ggml_element_size(cur)*n_embd));
+            struct ggml_tensor * Kcur = ggml_cont(ctx0, ggml_view_2d(ctx0, cur, n_embd, N, cur->nb[1], 1*ggml_element_size(cur)*n_embd));
+            struct ggml_tensor * Vcur = ggml_cont(ctx0, ggml_view_2d(ctx0, cur, n_embd, N, cur->nb[1], 2*ggml_element_size(cur)*n_embd));
 
             // store key and value to memory
             if (N >= 1) {
@@ -567,21 +521,17 @@ bool mpt_eval(
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Kcur, k));
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Vcur, v));
             }
-
             // Q = Qcur.contiguous().view(n_embd/n_head, n_head, N).permute(0, 2, 1, 3)
             struct ggml_tensor * Q =
                 ggml_permute(ctx0,
-                            ggml_cpy(ctx0,
-                                Qcur,
-                                ggml_new_tensor_3d(ctx0, GGML_TYPE_F32, n_embd/n_head, n_head, N)),
+                        ggml_reshape_3d(ctx0, Qcur, n_embd/n_head, n_head, N),
                         0, 2, 1, 3);
 
-            // K = Kmem.view(n_embd/n_head, n_head, n_past + N).permute(0, 2, 1, 3)
             struct ggml_tensor * K =
-                ggml_permute(ctx0,
-                            ggml_reshape_3d(ctx0,
-                                ggml_view_1d(ctx0, model.kv_self.k, (n_past + N)*n_embd, il*n_ctx*ggml_element_size(model.kv_self.k)*n_embd),
-                                n_embd/n_head, n_head, n_past + N),
+                ggml_permute(ctx0, 
+                        ggml_reshape_3d(ctx0,
+                            ggml_view_1d(ctx0, model.kv_self.k, (n_past + N)*n_embd, il*n_ctx*ggml_element_size(model.kv_self.k)*n_embd),
+                            n_embd/n_head, n_head, n_past + N),
                         0, 2, 1, 3);
 
             // K * Q
@@ -594,26 +544,26 @@ bool mpt_eval(
                         ggml_new_f32(ctx0, 1.0f/sqrt(float(n_embd)/n_head))
                         );
 
-            struct ggml_tensor * KQ_scaled_alibi = ggml_alibi(ctx0, KQ_scaled, n_past, n_head);
+
+            // Alibi
+            struct ggml_tensor * KQ_scaled_biased = ggml_alibi(ctx0, ggml_cont(ctx0, KQ_scaled), n_past, n_head);
 
             // KQ_masked = mask_past(KQ_scaled)
-            struct ggml_tensor * KQ_masked = ggml_diag_mask_inf(ctx0, KQ_scaled_alibi, n_past);
+            struct ggml_tensor * KQ_masked = ggml_diag_mask_inf(ctx0, KQ_scaled_biased, n_past);
 
             // KQ = soft_max(KQ_masked)
             struct ggml_tensor * KQ_soft_max = ggml_soft_max(ctx0, KQ_masked);
 
             // V_trans = Vmem.view(n_embd/n_head, n_head, n_past + N).permute(1, 2, 0, 3).contiguous()
-            struct ggml_tensor * V_trans =
-                ggml_cpy(ctx0,
-                        ggml_permute(ctx0,
-                            ggml_reshape_3d(ctx0,
-                                ggml_view_1d(ctx0, model.kv_self.v, (n_past + N)*n_embd, il*n_ctx*ggml_element_size(model.kv_self.v)*n_embd),
-                                n_embd/n_head, n_head, n_past + N),
-                            1, 2, 0, 3),
-                        ggml_new_tensor_3d(ctx0, model.kv_self.v->type, n_past + N, n_embd/n_head, n_head));
+            struct ggml_tensor * V =
+                ggml_view_3d(ctx0, model.kv_self.v,
+                        n_past + N, n_embd/n_head, n_head,
+                        n_ctx*ggml_element_size(model.kv_self.v),
+                        n_ctx*ggml_element_size(model.kv_self.v)*n_embd/n_head,
+                        il*n_ctx*ggml_element_size(model.kv_self.v)*n_embd);
 
             // KQV = transpose(V) * KQ_soft_max
-            struct ggml_tensor * KQV = ggml_mul_mat(ctx0, V_trans, KQ_soft_max);
+            struct ggml_tensor * KQV = ggml_mul_mat(ctx0, V, KQ_soft_max);
 
             // KQV_merged = KQV.permute(0, 2, 1, 3)
             struct ggml_tensor * KQV_merged = ggml_permute(ctx0, KQV, 0, 2, 1, 3);
@@ -625,93 +575,55 @@ bool mpt_eval(
 
             // projection (no bias)
             cur = ggml_mul_mat(ctx0,
-                    model.layers[il].c_attn_proj_w,
+                    model.layers[il].attn_out_proj_w,
                     cur);
         }
 
-        // norm 2
-        {
-            cur = ggml_norm(ctx0, cur);
 
-            // cur = ln_1_g*cur + ln_1_b
-            cur = ggml_add(ctx0,
-                    ggml_mul(ctx0,
-                        ggml_repeat(ctx0, model.layers[il].norm_2_g, cur),
-                        cur),
-                    ggml_repeat(ctx0, model.layers[il].norm_2_b, cur));
-        } 
-
-        struct ggml_tensor * inpFF = cur;
-
+        // residual
+        struct ggml_tensor * resSA = ggml_add(ctx0, cur, inpSA);
         // feed-forward network
-        // this is independent of the self-attention result, so it could be done in parallel to the self-attention
         {
-            // note here we pass inpSA instead of cur
+            cur = resSA;
+            // norm2
+            cur = ggml_norm(ctx0, cur);
+            cur = ggml_mul(ctx0,
+                    ggml_repeat(ctx0, model.layers[il].norm_2_w, cur),
+                    cur);
+            // ffn
             cur = ggml_mul_mat(ctx0,
-                    model.layers[il].up_proj_w,
-                    inpSA);
-
-            cur = ggml_add(ctx0,
-                    ggml_repeat(ctx0, model.layers[il].up_proj_b, cur),
+                    model.layers[il].ffn_up_proj_w,
                     cur);
-
-            // RELU activation
-            cur = ggml_relu(ctx0, cur);
-
-            // projection
-            // cur = proj_w*cur + proj_b
+            cur = ggml_gelu(ctx0, cur);
             cur = ggml_mul_mat(ctx0,
-                    model.layers[il].down_proj_w,
+                    model.layers[il].ffn_down_proj_w,
                     cur);
 
-            cur = ggml_add(ctx0,
-                    ggml_repeat(ctx0, model.layers[il].down_proj_b, cur),
-                    cur);
         }
 
         // self-attention + FF
-        cur  = ggml_add(ctx0, cur, inpFF);
-
-        // input for next layer
-        inpL = ggml_add(ctx0, cur, inpL);
+        inpL = ggml_add(ctx0, cur, resSA);
     }
 
-    // norm
+    struct ggml_tensor * out = inpL;
+    // -> logits
     {
-        inpL = ggml_norm(ctx0, inpL);
-
-        // inpL = ln_f_g*inpL + ln_f_b
-        inpL = ggml_add(ctx0,
-                ggml_mul(ctx0,
-                    ggml_repeat(ctx0, model.ln_f_g, inpL),
-                    inpL),
-                ggml_repeat(ctx0, model.ln_f_b, inpL));
+        out = ggml_norm(ctx0, out);
+        out = ggml_mul(ctx0,
+                    ggml_repeat(ctx0, model.norm_f_w, out),
+                    out);
+        out = ggml_mul_mat(ctx0, model.wte, out);
     }
 
-    // lm_head with weight tying
-    {
-        inpL = ggml_mul_mat(ctx0, model.wte, inpL);
-
-    }
-
-    // logits -> probs
-    //inpL = ggml_soft_max(ctx0, inpL);
 
     // run the computation
-    ggml_build_forward_expand(&gf, inpL);
+    ggml_build_forward_expand(&gf, out);
     ggml_graph_compute       (ctx0, &gf);
 
-    //if (n_past%100 == 0) {
-    //    ggml_graph_print   (&gf);
-    //    ggml_graph_dump_dot(&gf, NULL, "gpt-2.dot");
-    //}
-
-    //embd_w.resize(n_vocab*N);
-    //memcpy(embd_w.data(), ggml_get_data(inpL), sizeof(float)*n_vocab*N);
 
     // return result for just the last token
     embd_w.resize(n_vocab);
-    memcpy(embd_w.data(), (float *) ggml_get_data(inpL) + (n_vocab*(N-1)), sizeof(float)*n_vocab);
+    memcpy(embd_w.data(), (float *) ggml_get_data(out) + (n_vocab*(N-1)), sizeof(float)*n_vocab);
 
     if (mem_per_token == 0) {
         mem_per_token = ggml_used_mem(ctx0)/N;
