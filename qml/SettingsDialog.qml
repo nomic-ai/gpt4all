@@ -77,6 +77,8 @@ Dialog {
         settings.maxLength = defaultMaxLength
         settings.promptBatchSize = defaultPromptBatchSize
         settings.promptTemplate = defaultPromptTemplate
+        settings.repeatPenalty = defaultRepeatPenalty
+        settings.repeatPenaltyTokens = defaultRepeatPenaltyTokens
         settings.sync()
     }
 
