@@ -17,12 +17,6 @@ set(APP_VERSION_MINOR 4)
 set(APP_VERSION_PATCH 1)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
-# Generate a header file with the version number
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/config.h"
-)
-
 # Include the binary directory for the generated header file
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -35,6 +29,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(GPT4ALL_LOCALHOST OFF "Build installer for localhost repo")
 option(GPT4ALL_AVX_ONLY OFF "Build for avx only")
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
+
+# Generate a header file with the version number
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+)
 
 find_package(Qt6 6.2 COMPONENTS Core Quick QuickDialogs2 Svg REQUIRED)
 
