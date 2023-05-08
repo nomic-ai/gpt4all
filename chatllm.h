@@ -35,8 +35,8 @@ public:
 
     QString generatedName() const { return QString::fromStdString(m_nameResponse); }
 
-    bool serialize(QDataStream &stream);
-    bool deserialize(QDataStream &stream);
+    bool serialize(QDataStream &stream, int version);
+    bool deserialize(QDataStream &stream, int version);
 
 public Q_SLOTS:
     bool prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict,

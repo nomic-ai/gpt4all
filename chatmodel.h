@@ -210,7 +210,7 @@ public:
 
     int count() const { return m_chatItems.size(); }
 
-    bool serialize(QDataStream &stream) const
+    bool serialize(QDataStream &stream, int version) const
     {
         stream << count();
         for (auto c : m_chatItems) {
@@ -227,7 +227,7 @@ public:
         return stream.status() == QDataStream::Ok;
     }
 
-    bool deserialize(QDataStream &stream)
+    bool deserialize(QDataStream &stream, int version)
     {
         int size;
         stream >> size;
