@@ -25,9 +25,10 @@ Window {
 
     // Startup code
     Component.onCompleted: {
-        if (!LLM.compatHardware)
+        if (!LLM.compatHardware) {
+            Network.sendNonCompatHardware();
             errorCompatHardware.open();
-        else
+        } else
             startupDialogs();
     }
 
