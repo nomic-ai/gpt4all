@@ -58,6 +58,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void isModelLoadedChanged();
+    void modelLoadingError(const QString &error);
     void responseChanged();
     void responseStarted();
     void responseStopped();

@@ -213,6 +213,7 @@ void ChatListModel::restoreChat(Chat *chat)
 {
     chat->setParent(this);
     connect(chat, &Chat::nameChanged, this, &ChatListModel::nameChanged);
+    connect(chat, &Chat::modelLoadingError, this, &ChatListModel::handleModelLoadingError);
 
     if (m_dummyChat) {
         beginResetModel();
