@@ -25,6 +25,8 @@ Dialog {
         Network.sendSettingsDialog();
     }
 
+    property var currentChat: LLM.chatListModel.currentChat
+
     Theme {
         id: theme
     }
@@ -42,6 +44,7 @@ Dialog {
 %1
 ### Assistant:\n"
     property string defaultModelPath: Download.defaultLocalModelsPath()
+    property string defaultUserDefaultModel: "Application default"
 
     property alias temperature: settings.temperature
     property alias topP: settings.topP
@@ -54,6 +57,7 @@ Dialog {
     property alias threadCount: settings.threadCount
     property alias saveChats: settings.saveChats
     property alias modelPath: settings.modelPath
+    property alias userDefaultModel: settings.userDefaultModel
 
     Settings {
         id: settings
@@ -68,6 +72,7 @@ Dialog {
         property int repeatPenaltyTokens: settingsDialog.defaultRepeatPenaltyTokens
         property string promptTemplate: settingsDialog.defaultPromptTemplate
         property string modelPath: settingsDialog.defaultModelPath
+        property string userDefaultModel: settingsDialog.defaultUserDefaultModel
     }
 
     function restoreGenerationDefaults() {
@@ -86,6 +91,7 @@ Dialog {
         settings.modelPath = settingsDialog.defaultModelPath
         settings.threadCount = defaultThreadCount
         settings.saveChats = defaultSaveChats
+        settings.userDefaultModel = defaultUserDefaultModel
         Download.downloadLocalModelsPath = settings.modelPath
         LLM.threadCount = settings.threadCount
         LLM.chatListModel.shouldSaveChats = settings.saveChats
@@ -498,7 +504,7 @@ Dialog {
                         Layout.row: 8
                         Layout.column: 1
                         Layout.fillWidth: true
-                        padding: 15
+                        padding: 10
                         contentItem: Text {
                             text: qsTr("Restore Defaults")
                             horizontalAlignment: Text.AlignHCenter
@@ -543,6 +549,104 @@ Dialog {
                     rowSpacing: 10
                     columnSpacing: 10
                     anchors.fill: parent
+                    Label {
+                        id: defaultModelLabel
+                        text: qsTr("Default model:")
+                        color: theme.textColor
+                        Layout.row: 1
+                        Layout.column: 0
+                    }
+                    ComboBox {
+                        id: comboBox
+                        Layout.row: 1
+                        Layout.column: 1
+                        Layout.minimumWidth: 350
+                        font.pixelSize: theme.fontSizeLarge
+                        spacing: 0
+                        padding: 10
+                        model: modelList
+                        Accessible.role: Accessible.ComboBox
+                        Accessible.name: qsTr("ComboBox for displaying/picking the default model")
+                        Accessible.description: qsTr("Use this for picking the default model to use; the first item is the current default model")
+                        function updateModel(newModelList) {
+                            var newArray = Array.from(newModelList);
+                            newArray.unshift('Application default');
+                            comboBox.model = newArray;
+                            settings.sync();
+                            comboBox.currentIndex = comboBox.indexOfValue(settingsDialog.userDefaultModel);
+
+                        }
+                        Component.onCompleted: {
+                            comboBox.updateModel(currentChat.modelList)
+                        }
+                        Connections {
+                            target: settings
+                            function onUserDefaultModelChanged() {
+                                comboBox.updateModel(currentChat.modelList)
+                            }
+                        }
+                        Connections {
+                            target: currentChat
+                            function onModelListChanged() {
+                                comboBox.updateModel(currentChat.modelList)
+                            }
+                        }
+                        contentItem: Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            leftPadding: 10
+                            rightPadding: 10
+                            text: comboBox.displayText
+                            font: comboBox.font
+                            color: theme.textColor
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                        }
+                        delegate: ItemDelegate {
+                            width: comboBox.width
+                            contentItem: Text {
+                                text: modelData
+                                color: theme.textColor
+                                font: comboBox.font
+                                elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            background: Rectangle {
+                                color: highlighted ? theme.backgroundLight : theme.backgroundDark
+                            }
+                            highlighted: comboBox.highlightedIndex === index
+                        }
+                        popup: Popup {
+                            y: comboBox.height - 1
+                            width: comboBox.width
+                            implicitHeight: contentItem.implicitHeight
+                            padding: 0
+
+                            contentItem: ListView {
+                                clip: true
+                                implicitHeight: contentHeight
+                                model: comboBox.popup.visible ? comboBox.delegateModel : null
+                                currentIndex: comboBox.highlightedIndex
+                                ScrollIndicator.vertical: ScrollIndicator { }
+                            }
+
+                            background: Rectangle {
+                                color: theme.backgroundDark
+                            }
+                        }
+
+                        background: Rectangle {
+                            color: theme.backgroundDark
+                            border.width: 1
+                            border.color: theme.backgroundLightest
+                            radius: 10
+                        }
+
+                        onActivated: {
+                            settingsDialog.userDefaultModel = comboBox.currentText
+                            settings.sync()
+                        }
+                    }
                     FolderDialog {
                         id: modelPathDialog
                         title: "Please choose a directory"
@@ -557,7 +661,7 @@ Dialog {
                         id: modelPathLabel
                         text: qsTr("Download path:")
                         color: theme.textColor
-                        Layout.row: 1
+                        Layout.row: 2
                         Layout.column: 0
                     }
                     TextField {
@@ -566,7 +670,8 @@ Dialog {
                         readOnly: true
                         color: theme.textColor
                         implicitWidth: 300
-                        Layout.row: 1
+                        padding: 10
+                        Layout.row: 2
                         Layout.column: 1
                         Layout.fillWidth: true
                         ToolTip.text: qsTr("Path where model files will be downloaded to")
@@ -580,7 +685,7 @@ Dialog {
                         }
                     }
                     Button {
-                        Layout.row: 1
+                        Layout.row: 2
                         Layout.column: 2
                         text: qsTr("Browse")
                         contentItem: Text {
@@ -604,7 +709,7 @@ Dialog {
                         id: nThreadsLabel
                         text: qsTr("CPU Threads:")
                         color: theme.textColor
-                        Layout.row: 2
+                        Layout.row: 3
                         Layout.column: 0
                     }
                     TextField {
@@ -618,7 +723,7 @@ Dialog {
                         padding: 10
                         ToolTip.text: qsTr("Amount of processing threads to use, a setting of 0 will use the lesser of 4 or your number of CPU threads")
                         ToolTip.visible: hovered
-                        Layout.row: 2
+                        Layout.row: 3
                         Layout.column: 1
                         validator: IntValidator {
                             bottom: 1
@@ -642,12 +747,12 @@ Dialog {
                         id: saveChatsLabel
                         text: qsTr("Save chats to disk:")
                         color: theme.textColor
-                        Layout.row: 3
+                        Layout.row: 4
                         Layout.column: 0
                     }
                     CheckBox {
                         id: saveChatsBox
-                        Layout.row: 3
+                        Layout.row: 4
                         Layout.column: 1
                         checked: settingsDialog.saveChats
                         onClicked: {
@@ -692,10 +797,10 @@ Dialog {
                         }
                     }
                     Button {
-                        Layout.row: 4
+                        Layout.row: 5
                         Layout.column: 1
                         Layout.fillWidth: true
-                        padding: 15
+                        padding: 10
                         contentItem: Text {
                             text: qsTr("Restore Defaults")
                             horizontalAlignment: Text.AlignHCenter

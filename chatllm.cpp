@@ -65,7 +65,12 @@ bool ChatLLM::loadDefaultModel()
 
     QSettings settings;
     settings.sync();
-    QString defaultModel = settings.value("defaultModel", "gpt4all-j-v1.3-groovy").toString();
+    // The user default model can be set by the user in the settings dialog. The "default" user
+    // default model is "Application default" which signals we should use the default model that was
+    // specified by the models.json file.
+    QString defaultModel = settings.value("userDefaultModel").toString();
+    if (defaultModel.isEmpty() || !models.contains(defaultModel) || defaultModel == "Application default")
+        defaultModel = settings.value("defaultModel").toString();
     if (defaultModel.isEmpty() || !models.contains(defaultModel))
         defaultModel = models.first();
     return loadModel(defaultModel);
