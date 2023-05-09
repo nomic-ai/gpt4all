@@ -19,6 +19,7 @@ struct ModelInfo {
     Q_PROPERTY(bool isDefault MEMBER isDefault)
     Q_PROPERTY(bool bestGPTJ MEMBER bestGPTJ)
     Q_PROPERTY(bool bestLlama MEMBER bestLlama)
+    Q_PROPERTY(bool bestMPT MEMBER bestMPT)
     Q_PROPERTY(QString description MEMBER description)
     Q_PROPERTY(QString requires MEMBER requires)
 
