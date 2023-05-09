@@ -105,6 +105,8 @@ public:
             this, &ChatListModel::newChatCountChanged);
         connect(m_newChat, &Chat::nameChanged,
             this, &ChatListModel::nameChanged);
+        connect(m_newChat, &Chat::modelLoadingError,
+            this, &ChatListModel::handleModelLoadingError);
         setCurrentChat(m_newChat);
     }
 
@@ -202,6 +204,13 @@ private Q_SLOTS:
 
         QModelIndex index = createIndex(row, 0);
         emit dataChanged(index, index, {NameRole});
+    }
+
+    void handleModelLoadingError(const QString &error)
+    {
+        Chat *chat = qobject_cast<Chat *>(sender());
+        qWarning() << "ERROR:" << qPrintable(error) << "id" << chat->id();
+        removeChat(chat);
     }
 
     void printChats()

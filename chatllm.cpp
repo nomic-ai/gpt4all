@@ -127,7 +127,8 @@ bool ChatLLM::loadModel(const QString &modelName)
         else
             emit sendModelLoaded();
     } else {
-        qWarning() << "ERROR: Could not find model at" << filePath;
+        const QString error = QString("Could not find model %1").arg(modelName);
+        emit modelLoadingError(error);
     }
 
     if (m_llmodel)

@@ -82,6 +82,7 @@ Q_SIGNALS:
     void reloadModelRequested(const QString &modelName);
     void generateNameRequested();
     void modelListChanged();
+    void modelLoadingError(const QString &error);
 
 private Q_SLOTS:
     void handleResponseChanged();
