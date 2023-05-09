@@ -86,7 +86,7 @@ Dialog {
                         padding: 20
                         anchors.top: parent.top
                         anchors.left: parent.left
-                        font.bold: modelData.isDefault || modelData.bestGPTJ || modelData.bestLlama
+                        font.bold: modelData.isDefault || modelData.bestGPTJ || modelData.bestLlama || modelData.bestMPT
                         color: theme.assistantColor
                         Accessible.role: Accessible.Paragraph
                         Accessible.name: qsTr("Model file")
@@ -277,6 +277,7 @@ Dialog {
                                     let timeDifference = currentTime - lastUpdate[modelName].timestamp;
                                     let bytesDifference = bytesReceived - lastUpdate[modelName].bytesReceived;
                                     let speed = (bytesDifference / timeDifference) * 1000; // bytes per second
+                                    delegateItem.downloading = true
 
                                     // Update the speed label
                                     let speedLabel = delegateItem.children.find(child => child.objectName === "speedLabel");

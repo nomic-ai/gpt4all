@@ -366,6 +366,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         modelInfo.isDefault = isDefault;
         modelInfo.bestGPTJ = bestGPTJ;
         modelInfo.bestLlama = bestLlama;
+        modelInfo.bestMPT = bestMPT;
         modelInfo.description = description;
         modelInfo.requires = requires;
         m_modelMap.insert(modelInfo.filename, modelInfo);
@@ -431,7 +432,7 @@ void Download::handleErrorOccurred(QNetworkReply::NetworkError code)
         return;
 
     QString modelFilename = modelReply->url().fileName();
-    qWarning() << "ERROR: Network error occurred attemptint to download"
+    qWarning() << "ERROR: Network error occurred attempting to download"
                << modelFilename
                << "code:" << code
                << "errorString" << modelReply->errorString();
