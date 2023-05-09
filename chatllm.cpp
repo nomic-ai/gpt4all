@@ -474,4 +474,6 @@ void ChatLLM::restoreState()
     qDebug() << "chatllm restoreState" << m_chat->id() << "size:" << m_state.size();
 #endif
     m_llmodel->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
+    m_state.clear();
+    m_state.resize(0);
 }
