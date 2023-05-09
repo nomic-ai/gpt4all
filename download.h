@@ -31,6 +31,7 @@ public:
     bool isDefault = false;
     bool bestGPTJ = false;
     bool bestLlama = false;
+    bool bestMPT = false;
     QString description;
     QString requires;
 };

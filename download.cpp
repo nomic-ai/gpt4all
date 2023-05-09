@@ -69,34 +69,39 @@ QList<ModelInfo> Download::modelList() const
 {
     // We make sure the default model is listed first
     QList<ModelInfo> values = m_modelMap.values();
-    const QString currentVersion = QCoreApplication::applicationVersion();
-
     ModelInfo defaultInfo;
     ModelInfo bestGPTJInfo;
     ModelInfo bestLlamaInfo;
+    ModelInfo bestMPTInfo;
     QList<ModelInfo> filtered;
     for (ModelInfo v : values) {
-        if (!v.requires.isEmpty()
-            && v.requires != currentVersion
-            && compareVersions(v.requires, currentVersion)) {
-            continue;
-        }
         if (v.isDefault)
             defaultInfo = v;
         if (v.bestGPTJ)
             bestGPTJInfo = v;
         if (v.bestLlama)
             bestLlamaInfo = v;
+        if (v.bestMPT)
+            bestMPTInfo = v;
         filtered.append(v);
     }
 
-    Q_ASSERT(defaultInfo == bestGPTJInfo || defaultInfo == bestLlamaInfo);
+    Q_ASSERT(defaultInfo == bestGPTJInfo || defaultInfo == bestLlamaInfo || defaultInfo == bestMPTInfo);
 
-    filtered.removeAll(bestLlamaInfo);
-    filtered.prepend(bestLlamaInfo);
+    if (bestLlamaInfo.bestLlama) {
+        filtered.removeAll(bestLlamaInfo);
+        filtered.prepend(bestLlamaInfo);
+    }
 
-    filtered.removeAll(bestGPTJInfo);
-    filtered.prepend(bestGPTJInfo);
+    if (bestGPTJInfo.bestGPTJ) {
+        filtered.removeAll(bestGPTJInfo);
+        filtered.prepend(bestGPTJInfo);
+    }
+
+    if (bestMPTInfo.bestMPT) {
+        filtered.removeAll(bestMPTInfo);
+        filtered.prepend(bestMPTInfo);
+    }
 
     return filtered;
 }
@@ -316,6 +321,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
 
     QString defaultModel;
     QJsonArray jsonArray = document.array();
+    const QString currentVersion = QCoreApplication::applicationVersion();
 
     m_modelMap.clear();
     for (const QJsonValue &value : jsonArray) {
@@ -328,7 +334,14 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
         bool bestGPTJ = obj.contains("bestGPTJ") && obj["bestGPTJ"] == QString("true");
         bool bestLlama = obj.contains("bestLlama") && obj["bestLlama"] == QString("true");
+        bool bestMPT = obj.contains("bestMPT") && obj["bestMPT"] == QString("true");
         QString description = obj["description"].toString();
+
+        if (!requires.isEmpty()
+            && requires != currentVersion
+            && compareVersions(requires, currentVersion)) {
+            continue;
+        }
 
         if (isDefault)
             defaultModel = modelFilename;
