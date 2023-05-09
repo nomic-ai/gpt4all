@@ -76,14 +76,11 @@ bool ChatLLM::loadModel(const QString &modelName)
     if (isModelLoaded() && m_modelName == modelName)
         return true;
 
-    bool isFirstLoad = false;
     if (isModelLoaded()) {
         resetContextPrivate();
         delete m_llmodel;
         m_llmodel = nullptr;
         emit isModelLoadedChanged();
-    } else {
-        isFirstLoad = true;
     }
 
     bool isGPTJ = false;
@@ -122,9 +119,11 @@ bool ChatLLM::loadModel(const QString &modelName)
 
         emit isModelLoadedChanged();
 
-        if (isFirstLoad)
+        static bool isFirstLoad = false;
+        if (isFirstLoad) {
             emit sendStartup();
-        else
+            isFirstLoad = false;
+        } else
             emit sendModelLoaded();
     } else {
         const QString error = QString("Could not find model %1").arg(modelName);
