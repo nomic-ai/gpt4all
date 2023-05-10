@@ -124,7 +124,7 @@ bool ChatLLM::loadModel(const QString &modelName)
 
         emit isModelLoadedChanged();
 
-        static bool isFirstLoad = false;
+        static bool isFirstLoad = true;
         if (isFirstLoad) {
             emit sendStartup();
             isFirstLoad = false;
