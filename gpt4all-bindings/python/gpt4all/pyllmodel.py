@@ -7,7 +7,7 @@ import re
 import sys
 
 # TODO: provide a config file to make this more robust
-LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build")
+LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
 
 def load_llmodel_library():
     system = platform.system()
