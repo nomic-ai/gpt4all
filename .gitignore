@@ -177,3 +177,4 @@ cython_debug/
 CMakeLists.txt.user
 gpt4all-chat/meta/*
 gpt4all-chat/models/*
+build_*
