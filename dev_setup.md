@@ -1,8 +1,8 @@
-# Install Qt 6.x
+# Install Qt 6.x and setup/build gpt4all-chat from source
 
 Depending upon your operating system, there are many ways that Qt is distributed. 
-Here is the recommended method for getting the Qt dependency installed to begin 
-gpt4all-chat developement.
+Here is the recommended method for getting the Qt dependency installed to setup and build 
+gpt4all-chat from source.
 
 ## Create a [Qt account](https://login.qt.io/register) 
 
@@ -26,5 +26,32 @@ gpt4all-chat developement.
 
 NOTE: This is for macOS. For Linux it is similar, but you need ming64 for Windows, not the MSVC install
 
-## Open up QtCreator which you can find in a subdirectory of Qt install
+## Open up QtCreator
+
+![image](https://github.com/nomic-ai/gpt4all-chat/assets/10168/a34978f4-a220-459c-af66-e901d7ccd7bb)
+
+## Clone the git repo for gpt4all-chat
+
+```
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all-chat
+```
+
+## Open the gpt4all-chat project in QtCreator
+
+![image](https://github.com/nomic-ai/gpt4all-chat/assets/10168/3d3e2743-2a1d-43d6-9e55-62f7f4306de7)
+
+NOTE: File->Open File or Project and navigate to the gpt4all-chat repo and choose the CMakeLists.txt
+
+## Configure project
+
+![image](https://github.com/nomic-ai/gpt4all-chat/assets/10168/44d5aafb-a95d-434b-ba2a-a3138c0e49a0)
+
+## Build project
+
+![image](https://github.com/nomic-ai/gpt4all-chat/assets/10168/43cd7b42-32f0-4efa-9612-d51f85637103)
+
+## Run project
+
+![image](https://github.com/nomic-ai/gpt4all-chat/assets/10168/611ea795-bdcd-4feb-a466-eb1c2e936e7e)
+
 
