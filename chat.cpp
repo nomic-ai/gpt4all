@@ -107,10 +107,10 @@ void Chat::responseStopped()
 {
     m_responseInProgress = false;
     emit responseInProgressChanged();
-    if (m_llmodel->generatedName().isEmpty()) {
-        Network::globalInstance()->sendChatStarted();
+    if (m_llmodel->generatedName().isEmpty())
         emit generateNameRequested();
-    }
+    if (chatModel()->count() < 3)
+        Network::globalInstance()->sendChatStarted();
 }
 
 QString Chat::modelName() const
