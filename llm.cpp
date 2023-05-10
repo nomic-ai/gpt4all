@@ -22,6 +22,7 @@ LLM::LLM()
     : QObject{nullptr}
     , m_chatListModel(new ChatListModel(this))
     , m_threadCount(std::min(4, (int32_t) std::thread::hardware_concurrency()))
+    , m_compatHardware(true)
 {
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
         this, &LLM::aboutToQuit);
