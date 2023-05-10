@@ -42,13 +42,13 @@ One click installers for macOS, Linux, and Windows at https://gpt4all.io
 * Advanced settings for changing temperature, topk, etc. (DONE)
 * YOUR IDEA HERE
 
-## Getting the latest
-
-If you've already checked out the source code and/or built the program make sure when you do a git fetch to get the latest changes and that you also do ```git submodule update --init --recursive``` to update the submodules.
-
 ## Building and running
 
 * Follow the visual instructions on the [build_and_run](build_and_run.md) page
+
+## Getting the latest
+
+If you've already checked out the source code and/or built the program make sure when you do a git fetch to get the latest changes and that you also do ```git submodule update --init --recursive``` to update the submodules.
 
 ## Manual download of models
 * https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin (default) (md5sum 81a09a0ddf89690372fc296ff7f625af) Current best commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset.
