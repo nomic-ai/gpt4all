@@ -2,9 +2,9 @@
 #include "chat.h"
 #include "download.h"
 #include "network.h"
-#include "llmodel/gptj.h"
-#include "llmodel/llamamodel.h"
-#include "llmodel/mpt.h"
+#include "../gpt4all-backend/gptj.h"
+#include "../gpt4all-backend/llamamodel.h"
+#include "../gpt4all-backend/mpt.h"
 
 #include <QCoreApplication>
 #include <QDir>

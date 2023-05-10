@@ -15,7 +15,11 @@ endif()
 # Include the binary directory for the generated header file
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-project(llmodel VERSION ${APP_VERSION} LANGUAGES CXX C)
+set(LLMODEL_VERSION_MAJOR 0)
+set(LLMODEL_VERSION_MINOR 1)
+set(LLMODEL_VERSION_PATCH 0)
+set(LLMODEL_VERSION "${LLMODEL_VERSION_MAJOR}.${LLMODEL_VERSION_MINOR}.${LLMODEL_VERSION_PATCH}")
+project(llmodel VERSION ${LLMODEL_VERSION} LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -42,6 +46,10 @@ add_library(llmodel
 
 target_link_libraries(llmodel
     PRIVATE llama)
+
+set_target_properties(llmodel PROPERTIES
+                              VERSION ${PROJECT_VERSION}
+                              SOVERSION ${PROJECT_VERSION_MAJOR})
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
