@@ -38,4 +38,3 @@ messages = [{"role": "user", "content": "Name 3 colors"}]
 gptj.chat_completion(messages)
 
 ```
-
