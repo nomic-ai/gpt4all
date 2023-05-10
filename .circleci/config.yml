@@ -170,14 +170,8 @@ workflows:
       #- build-linux
       #- build-macos
       - build-windows
-          filters:
-            branches:
-              only: main
       - store-and-upload-wheels:
           requires:
             - build-windows
       #      - build-linux
       #      - build-macos
-          filters:
-            branches:
-              only: main
