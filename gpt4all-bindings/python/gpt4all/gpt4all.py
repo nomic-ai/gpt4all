@@ -114,6 +114,7 @@ class GPT4All():
         
     @staticmethod
     def download_model(model_filename, model_path):
+        # TODO: Find good way of safely removing file that got interrupted.
         def get_download_url(model_filename):
             return f"https://gpt4all.io/models/{model_filename}"
     

@@ -4,7 +4,7 @@ orbs:
   python: circleci/python@1.2
 
 jobs:
-  build-linux:
+  build-py-linux:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -35,7 +35,7 @@ jobs:
           paths:
             - "*.whl"
 
-  build-macos:
+  build-py-macos:
     macos:
       xcode: "14.2.0"
     resource_class: macos.m1.large.gen1
@@ -66,7 +66,7 @@ jobs:
           paths:
             - "*.whl"
 
-  build-windows:
+  build-py-windows:
     executor:
       name: win/default
     steps:
@@ -132,13 +132,13 @@ jobs:
 
 workflows:
   version: 2
-  build-deploy:
+  build-py-deploy:
     jobs:
-      - build-linux
-      - build-macos
-      - build-windows
+      - build-py-linux
+      - build-py-macos
+      - build-py-windows
       - store-and-upload-wheels:
           requires:
-            - build-windows
-            - build-linux
-            - build-macos
+            - build-py-windows
+            - build-py-linux
+            - build-py-macos

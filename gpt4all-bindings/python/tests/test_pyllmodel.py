@@ -41,4 +41,3 @@ def prompt_unloaded_llama():
 
     response = response.strip()
     assert response == "LLAMA ERROR: prompt won't work with an unloaded model!"
-    
