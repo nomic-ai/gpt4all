@@ -1,0 +1,2 @@
+# GPT4All API
+This directory will contain code to build out a RESTful API for GPT4All models. Exact details TBD, but as an MVP, user should be able to send requests to list, download, and generate text with different models.

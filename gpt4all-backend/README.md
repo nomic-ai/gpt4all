@@ -1,0 +1,2 @@
+# GPT4ALL Backend
+This directory will contain the C/C++ model backends. We will want a subdirectory for each model we build out (e.g. gptj, llama). Ideally, there will be a universal library/wrapper for all models. Language bindings will be build on top of the universal library.
