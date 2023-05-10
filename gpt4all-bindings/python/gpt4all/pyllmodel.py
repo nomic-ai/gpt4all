@@ -31,9 +31,7 @@ def load_llmodel_library():
 
     # For windows
     llama_dir = llama_dir.replace("\\", "\\\\")
-    print(llama_dir)
     llmodel_dir = llmodel_dir.replace("\\", "\\\\")
-    print(llmodel_dir)
 
     llama_lib = ctypes.CDLL(llama_dir, mode=ctypes.RTLD_GLOBAL)
     llmodel_lib = ctypes.CDLL(llmodel_dir)
@@ -79,7 +77,6 @@ llmodel.llmodel_prompt.argtypes = [ctypes.c_void_p,
                                    ResponseCallback, 
                                    RecalculateCallback, 
                                    ctypes.POINTER(LLModelPromptContext)]
-
 
 class LLModel:
     """

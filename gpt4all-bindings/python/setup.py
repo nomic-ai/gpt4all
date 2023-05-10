@@ -36,19 +36,19 @@ def copy_prebuilt_C_lib(src_dir, dest_dir, dest_build_dir):
         os.mkdir(dest_dir)
         os.mkdir(dest_build_dir)
 
-        for dirpath, _, filenames in os.walk(src_dir):
-            for item in filenames:
-                # copy over header files to dest dir
+    for dirpath, _, filenames in os.walk(src_dir):
+        for item in filenames:
+            # copy over header files to dest dir
+            s = os.path.join(dirpath, item)
+            if item.endswith(".h"):
+                d = os.path.join(dest_dir, item)
+                shutil.copy2(s, d)
+                files_copied += 1
+            if item.endswith(lib_ext):
                 s = os.path.join(dirpath, item)
-                if item.endswith(".h"):
-                    d = os.path.join(dest_dir, item)
-                    shutil.copy2(s, d)
-                    files_copied += 1
-                if item.endswith(lib_ext):
-                    s = os.path.join(dirpath, item)
-                    d = os.path.join(dest_build_dir, item)
-                    shutil.copy2(s, d)
-                    files_copied += 1
+                d = os.path.join(dest_build_dir, item)
+                shutil.copy2(s, d)
+                files_copied += 1
     
     return files_copied
 

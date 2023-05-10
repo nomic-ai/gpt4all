@@ -66,46 +66,6 @@ jobs:
           paths:
             - "*.whl"
 
-  # build-linux:
-  #   docker:
-  #     - image: circleci/python:3.8
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           sudo apt-get update
-  #           sudo apt-get install -y cmake build-essential
-  #           pip install setuptools wheel cmake
-  #     - run:
-  #         name: Install MingW
-  #         command: sudo apt-get install -y mingw-w64
-  #     - run:
-  #         name: Build C library
-  #         command: |
-  #           git submodule init
-  #           git submodule update
-  #           cd llmodel
-  #           mkdir build
-  #           cd build
-  #           cmake \
-  #             -DCMAKE_SYSTEM_NAME=Windows \
-  #             -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
-  #             -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
-  #             -DCMAKE_EXECUTABLE_SUFFIX=".exe" \
-  #             -DCMAKE_SHARED_LIBRARY_SUFFIX=".dll" \
-  #             ..
-  #           cmake --build . --parallel
-  #     - run:
-  #         name: Build wheel
-  #         command: |
-  #           cd bindings/python/
-  #           python setup.py bdist_wheel --plat-name=manylinux1_x86_64
-  #     - persist_to_workspace:
-  #         root: bindings/python/dist
-  #         paths:
-  #           - "*.whl"
-
   build-windows:
     executor:
       name: win/default
@@ -135,8 +95,15 @@ jobs:
             cmake --build . --parallel
       - run:
           name: Build wheel
+          # TODO: As part of this task, we need to move mingw64 binaries into package.
+          # This is terrible and needs a more robust solution eventually.
           command: |
             cd gpt4all-bindings/python
+            cd gpt4all
+            mkdir llmodel_DO_NOT_MODIFY
+            mkdir llmodel_DO_NOT_MODIFY/build/
+            cp 'C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll' 'llmodel_DO_NOT_MODIFY/build/'
+            cd ..
             python setup.py bdist_wheel --plat-name=win_amd64
       - persist_to_workspace:
           root: gpt4all-bindings/python/dist
@@ -156,10 +123,10 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y cmake build-essential
             pip install setuptools wheel twine
-      # - run:
-      #     name: Upload Python package
-      #     command: |
-      #       twine upload /tmp/workspace/*.whl --username __token__ --password $PYPI_CRED
+      - run:
+          name: Upload Python package
+          command: |
+            twine upload /tmp/workspace/*.whl --username __token__ --password $PYPI_CRED
       - store_artifacts:
           path: /tmp/workspace
 
@@ -167,11 +134,11 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      #- build-linux
-      #- build-macos
+      - build-linux
+      - build-macos
       - build-windows
       - store-and-upload-wheels:
           requires:
             - build-windows
-      #      - build-linux
-      #      - build-macos
+            - build-linux
+            - build-macos
