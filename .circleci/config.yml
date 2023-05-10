@@ -20,7 +20,7 @@ jobs:
           command: |
             git submodule init
             git submodule update
-            cd gpt4all-backend/llmodel
+            cd gpt4all-backend
             mkdir build
             cd build
             cmake ..
@@ -51,7 +51,7 @@ jobs:
           command: |
             git submodule init
             git submodule update
-            cd gpt4all-backend/llmodel
+            cd gpt4all-backend
             mkdir build
             cd build
             cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
@@ -128,7 +128,7 @@ jobs:
           command: |
             git submodule init
             git submodule update
-            cd gpt4all-backend/llmodel
+            cd gpt4all-backend
             mkdir build
             cd build
             cmake -G "MinGW Makefiles" .. 

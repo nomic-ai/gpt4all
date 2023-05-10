@@ -6,8 +6,8 @@ import shutil
 package_name = "gpt4all"
 
 # Define the location of your prebuilt C library files
-SRC_CLIB_DIRECtORY = os.path.join("..", "..", "gpt4all-backend", "llmodel")
-SRC_CLIB_BUILD_DIRECTORY = os.path.join("..", "..", "gpt4all-backend", "llmodel", "build") 
+SRC_CLIB_DIRECtORY = os.path.join("..", "..", "gpt4all-backend")
+SRC_CLIB_BUILD_DIRECTORY = os.path.join("..", "..", "gpt4all-backend", "build") 
 
 LIB_NAME = "llmodel"
 
