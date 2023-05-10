@@ -8,6 +8,6 @@ gpt4all-chat developement.
 
 ![image](https://github.com/nomic-ai/gpt4all-chat/assets/10168/d1e44cab-4245-4144-a91c-7b02267df2b2)
 
-* Go to the Open Source [download page](https://www.qt.io/download-qt-installer-oss)
+* Go to the Qt open source [download page](https://www.qt.io/download-qt-installer-oss)
 
 ![image](https://github.com/nomic-ai/gpt4all-chat/assets/10168/d68f5f45-cca3-4fe9-acf4-cabdcb95f669)
