@@ -44,40 +44,7 @@ If you've already checked out the source code and/or built the program make sure
 
 ## Building and running
 
-* Install Qt 6.x for your platform https://doc.qt.io/qt-6/get-and-install-qt.html
-* Install cmake for your platform https://cmake.org/install/
-* Download https://huggingface.co/EleutherAI/gpt-j-6b
-* Clone this repo and build
-```
-git clone https://github.com/ggerganov/ggml.git
-cd ggml
-mkdir build
-cd build
-cmake ..
-cmake --build . --parallel
-python3 ../ggml/examples/gpt-j/convert-h5-to-ggml.py /path/to/your/local/copy/of/EleutherAI/gpt-j-6B 0
-./bin/gpt-j-quantize /path/to/your/local/copy/of/EleutherAI/gpt-j-6B/ggml-model-f32.bin ./ggml-model-q4_0.bin 2
-```
-and then
-```
-git clone --recurse-submodules https://github.com/nomic-ai/gpt4all-chat
-cd gpt4all-chat
-mkdir build
-cd build
-cmake ..
-cmake --build . --parallel
-mv /path/to/ggml-model-q4_0.bin bin
-./bin/chat
-```
-
-## To get Qt installed for your system
-
-* Highly advise using the official Qt online open source installer.
-* You can obtain this by creating an account on qt.io and downloading the installer. 
-* You should get latest Qt {Qt 6.5.x} for your system and the developer tools including QtCreator, cmake, ninja.
-* WINDOWS NOTE: you need to use the mingw64 toolchain and not msvc
-* ALL PLATFORMS NOTE: the installer has options for lots of different targets which will add a lot
-of download overhead. You can deselect webassembly target, android, sources, etc to save space on your disk.
+* Follow the visual instructions on the [build_and_run](build_and_run.md) page
 
 ## Manual download of models
 * https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin (default) (md5sum 81a09a0ddf89690372fc296ff7f625af) Current best commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset.
