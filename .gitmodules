@@ -1,3 +1,3 @@
 [submodule "llama.cpp"]
-	path = gpt4all-chat/llmodel/llama.cpp
+	path = gpt4all-backend/llama.cpp
 	url = https://github.com/manyoso/llama.cpp.git

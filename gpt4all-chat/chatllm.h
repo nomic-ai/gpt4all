@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QThread>
 
-#include "llmodel/llmodel.h"
+#include "../gpt4all-backend/llmodel.h"
 
 class Chat;
 class ChatLLM : public QObject
