@@ -268,7 +268,7 @@ Drawer {
             anchors.bottomMargin: 10
             padding: 15
             contentItem: Text {
-                text: qsTr("Check for updates...")
+                text: qsTr("Updates")
                 horizontalAlignment: Text.AlignHCenter
                 color: theme.textColor
 
@@ -299,7 +299,7 @@ Drawer {
             anchors.bottomMargin: 10
             padding: 15
             contentItem: Text {
-                text: qsTr("Download new models...")
+                text: qsTr("Downloads")
                 horizontalAlignment: Text.AlignHCenter
                 color: theme.textColor
 
