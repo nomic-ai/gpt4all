@@ -9,6 +9,10 @@ GPT-J model by following build instructions below.
 
 ![image](https://user-images.githubusercontent.com/50458173/231464085-da9edff6-a593-410e-8f38-7513f75c8aab.png)
 
+## Install
+
+One click installers for macOS, Linux, and Windows at https://gpt4all.io
+
 ## Features
 
 * Cross-platform (Linux, Windows, MacOSX)
