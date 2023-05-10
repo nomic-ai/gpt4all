@@ -73,7 +73,7 @@ class GPT4All():
         Returns:
             Model file destination.
         """
-        model_path = model_path.replace("\\", "\\\\")
+        
         model_filename = model_name
         if ".bin" not in model_filename:
             model_filename += ".bin"
@@ -87,6 +87,8 @@ class GPT4All():
                 except:
                     raise ValueError("Failed to create model download directory at ~/.cache/gpt4all/. \
                     Please specify download_dir.")
+        else:
+            model_path = model_path.replace("\\", "\\\\")
 
         if os.path.exists(model_path):
             model_dest = os.path.join(model_path, model_filename).replace("\\", "\\\\")
@@ -178,7 +180,6 @@ class GPT4All():
         full_prompt = self._build_prompt(messages, 
                                         default_prompt_header=default_prompt_header, 
                                         default_prompt_footer=default_prompt_footer)
-
         if verbose:
             print(full_prompt)
 
