@@ -10,19 +10,19 @@ TODO: Right now instructions in main README still depend on Qt6 setup. To setup 
 1. Setup `llmodel`
 
 ```
-git clone --recurse-submodules https://github.com/nomic-ai/gpt4all-chat
-cd gpt4all-chat/llmodel/
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
+cd gpt4all-backend/llmodel/
 mkdir build
 cd build
 cmake ..
 cmake --build . --parallel
 ```
-Confirm that `libllmodel.dylib` exists in `gpt4all-chat/llmodel/build`.
+Confirm that `libllmodel.*` exists in `gpt4all-backend/llmodel/build`.
 
 2. Setup Python package
 
 ```
-cd ../../bindings/python
+cd ../../gpt4all-bindings/python
 pip3 install -r requirements.txt
 pip3 install -e .
 ```
