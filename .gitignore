@@ -172,3 +172,8 @@ cython_debug/
 *.bin
 
 .DS_Store
+
+# gpt4all-chat
+CMakeLists.txt.user
+gpt4all-chat/meta/*
+gpt4all-chat/models/*
