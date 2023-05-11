@@ -53,3 +53,5 @@ set_target_properties(llmodel PROPERTIES
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+
+install(TARGETS llmodel LIBRARY DESTINATION lib)
