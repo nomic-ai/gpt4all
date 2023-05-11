@@ -1,5 +1,5 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Demo, data, and code to train open-source assistant-style large language model based on GPT-J and LLaMa</p>
+<p align="center">Open-source assistant-style large language models that run locally on CPU</p>
 
 <p align="center">
 <a href="https://gpt4all.io">GPT4All Website</a>
@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/nomic-ai/pyllamacpp">:snake: Official Python Bindings</a>
+<a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python/README.md">:snake: Official Python Bindings</a>
 </p>
 
 <p align="center">
@@ -57,6 +57,14 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 Run on an M1 Mac (not sped up!)
 
 
+## Contributing
+GPT4All welcomes contribution, involvment, and discussion from the open source community!
+Please see CONTRIBUTING.md and follow the issue, bug report, and PR markdown templates.
+
+**Note**: Please make sure to tag all of the above with relevant project identifiers
+ 
+
+
 ### Chat Client
 Run any GPT4All model natively on your home desktop with the auto-updating desktop chat client. See website for exaustive list of models.
 
@@ -83,6 +91,18 @@ If you have older hardware that only supports avx and not avx2 you can use these
 
 Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/)
 
+### Python Bindings
+
+```bash
+pip install gpt4all
+```
+
+```python
+import gpt4all
+gptj = gpt4all.GPT4All("ggml-gpt4all-j-v1.3-groovy")
+messages = [{"role": "user", "content": "Name 3 colors"}]
+gptj.chat_completion(messages)
+```
 
 ## Training GPT4All-J
 
