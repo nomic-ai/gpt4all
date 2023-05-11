@@ -19,6 +19,29 @@
 #include <iostream>
 #include <unistd.h>
 
+void* load_mpt_model(const char *fname, int n_threads) {
+    // load the model
+    auto gptj = llmodel_mpt_create();
+
+    llmodel_setThreadCount(gptj,  n_threads);
+    if (!llmodel_loadModel(gptj, fname)) {
+        return nullptr;
+    }
+
+    return gptj;
+}
+
+void* load_llama_model(const char *fname, int n_threads) {
+    // load the model
+    auto gptj = llmodel_llama_create();
+
+    llmodel_setThreadCount(gptj,  n_threads);
+    if (!llmodel_loadModel(gptj, fname)) {
+        return nullptr;
+    }
+
+    return gptj;
+}
 
 void* load_gptj_model(const char *fname, int n_threads) {
     // load the model
