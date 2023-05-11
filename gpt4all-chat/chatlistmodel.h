@@ -94,6 +94,19 @@ public:
         emit currentChatChanged();
     }
 
+    Q_INVOKABLE void addServerChat()
+    {
+        // Create a new dummy chat pointer and don't connect it
+        if (m_serverChat)
+            return;
+
+        m_serverChat = new Chat(true /*isServer*/, this);
+        beginInsertRows(QModelIndex(), m_chats.size(), m_chats.size());
+        m_chats.append(m_serverChat);
+        endInsertRows();
+        emit countChanged();
+    }
+
     void setNewChat(Chat* chat)
     {
         // Don't add a new chat if we already have one
@@ -161,7 +174,7 @@ public:
             m_currentChat->unloadModel();
 
         m_currentChat = chat;
-        if (!m_currentChat->isModelLoaded())
+        if (!m_currentChat->isModelLoaded() && m_currentChat != m_serverChat)
             m_currentChat->reloadModel();
         emit currentChatChanged();
     }
@@ -178,6 +191,9 @@ public:
     void saveChats() const;
     void restoreChat(Chat *chat);
     void chatsRestoredFinished();
+
+public Q_SLOTS:
+    void handleServerEnabledChanged();
 
 Q_SIGNALS:
     void countChanged();
@@ -226,6 +242,7 @@ private:
     bool m_shouldSaveChats;
     Chat* m_newChat;
     Chat* m_dummyChat;
+    Chat* m_serverChat;
     Chat* m_currentChat;
     QList<Chat*> m_chats;
 };
