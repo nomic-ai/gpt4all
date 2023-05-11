@@ -2,6 +2,11 @@
 
 This package contains a set of Python bindings around the `llmodel` C-API.
 
+## Installation
+
+```
+pip install gpt4all
+```
 
 ## Local Build Instructions
 
