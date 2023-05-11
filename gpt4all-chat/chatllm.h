@@ -70,9 +70,15 @@ Q_SIGNALS:
     void sendResetContext();
     void generatedNameChanged();
     void stateChanged();
+    void threadStarted();
+
+protected:
+    LLModel::PromptContext m_ctx;
+    quint32 m_promptTokens;
+    quint32 m_promptResponseTokens;
+    void resetContextProtected();
 
 private:
-    void resetContextPrivate();
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
     bool handleRecalculate(bool isRecalc);
@@ -83,11 +89,9 @@ private:
     void restoreState();
 
 private:
-    LLModel::PromptContext m_ctx;
     LLModel *m_llmodel;
     std::string m_response;
     std::string m_nameResponse;
-    quint32 m_promptResponseTokens;
     quint32 m_responseLogits;
     QString m_modelName;
     ModelType m_modelType;
