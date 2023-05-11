@@ -63,7 +63,7 @@ If you've already checked out the source code and/or built the program make sure
 * https://gpt4all.io/models/ggml-stable-vicuna-13B.q4_2.bin (md5sum 6cb4ee297537c9133bddab9692879de0) An non-commercially licensable model based on Llama 13b and RLHF trained by Stable AI.
 * https://gpt4all.io/models/ggml-mpt-7b-base.bin (md5sum 120c32a51d020066288df045ef5d52b9) A commercially licensable model base pre-trained by Mosaic ML.
 * https://gpt4all.io/models/ggml-nous-gpt4-vicuna-13b.bin (md5sum d5eafd5b0bd0d615cfd5fd763f642dfe) A non-commercially licensable model based on Vicuna 13b, fine-tuned on ~180,000 instructions, trained by Nous Research.
-* https://gpt4all.io/models/ggml-mpt-7b-instruct.bin (md5sum 1cfa4958f489f0a0d1ffdf6b37322809) A commericially licensable instruct model based on MPT and trained by Mosaic ML.
+* https://gpt4all.io/models/ggml-mpt-7b-instruct.bin (md5sum 1cfa4958f489f0a0d1ffdf6b37322809) A commercially licensable instruct model based on MPT and trained by Mosaic ML.
 
 ## Terminal Only Interface with no Qt dependency
 
