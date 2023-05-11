@@ -69,8 +69,3 @@ extra:
   analytics:
     provider: google
     property: G-NPXC8BYHJV
-  #social:
-  #  - icon: fontawesome/brands/twitter
-  #    link: https://twitter.com/nomic_ai
-  #  - icon: material/fruit-pineapple
-  #    link: https://www.youtube.com/watch?v=628eVJgHD6I
