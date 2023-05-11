@@ -5,7 +5,11 @@ package gpt4all
 // #cgo darwin LDFLAGS: -framework Accelerate
 // #cgo darwin CXXFLAGS: -std=c++17
 // #cgo LDFLAGS: -lgpt4all -lm -lstdc++
-// #include <binding.h>
+// void* load_gptj_model(const char *fname, int n_threads);
+// void gptj_model_prompt( const char *prompt, void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, int top_k,
+//                            float top_p, float temp, int n_batch,float ctx_erase);
+// void gptj_free_model(void *state_ptr);
+// extern unsigned char tokenCallback(void *, char *);
 import "C"
 import (
 	"fmt"

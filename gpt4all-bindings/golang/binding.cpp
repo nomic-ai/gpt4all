@@ -7,7 +7,6 @@
 
 #include "../../gpt4all-backend/llamamodel.h"
 #include "../../gpt4all-backend/gptj.h"
-
 #include "binding.h"
 #include <cassert>
 #include <cmath>
@@ -19,6 +18,7 @@
 #include <vector>
 #include <iostream>
 #include <unistd.h>
+
 
 void* load_gptj_model(const char *fname, int n_threads) {
     // load the model
