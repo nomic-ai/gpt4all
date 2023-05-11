@@ -62,7 +62,7 @@ GPT4All welcomes contribution, involvment, and discussion from the open source c
 Please see CONTRIBUTING.md and follow the issue, bug report, and PR markdown templates.
 
 Check project discord, with project owners, or through existing issues/PRs to avoid duplicate work.
-Please mmake sure to tag all of the above with relevant project identifiers or your contribution may be dismissed.
+Please mmake sure to tag all of the above with relevant project identifiers or your contribution could potentially get lost.
 Example tags: `backend`, `bindings`, `python-bindings`, `documentation`, etc.
  
 
