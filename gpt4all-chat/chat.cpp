@@ -11,6 +11,20 @@ Chat::Chat(QObject *parent)
     , m_responseInProgress(false)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
     , m_llmodel(new ChatLLM(this))
+    , m_isServer(false)
+{
+    connectLLM();
+}
+
+Chat::Chat(bool isServer, QObject *parent)
+    : QObject(parent)
+    , m_id(Network::globalInstance()->generateUniqueId())
+    , m_name(tr("Server Chat"))
+    , m_chatModel(new ChatModel(this))
+    , m_responseInProgress(false)
+    , m_creationDate(QDateTime::currentSecsSinceEpoch())
+    , m_llmodel(new Server(this))
+    , m_isServer(true)
 {
     connectLLM();
 }
@@ -138,9 +152,17 @@ void Chat::setModelName(const QString &modelName)
 
 void Chat::newPromptResponsePair(const QString &prompt)
 {
+    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     m_chatModel->appendPrompt(tr("Prompt: "), prompt);
     m_chatModel->appendResponse(tr("Response: "), prompt);
     emit resetResponseRequested(); // blocking queued connection
+}
+
+void Chat::serverNewPromptResponsePair(const QString &prompt)
+{
+    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
+    m_chatModel->appendPrompt(tr("Prompt: "), prompt);
+    m_chatModel->appendResponse(tr("Response: "), prompt);
 }
 
 bool Chat::isRecalc() const
@@ -236,6 +258,17 @@ QList<QString> Chat::modelList() const
     QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     QString localPath = Download::globalInstance()->downloadLocalModelsPath();
 
+    QSettings settings;
+    settings.sync();
+    // The user default model can be set by the user in the settings dialog. The "default" user
+    // default model is "Application default" which signals we should use the default model that was
+    // specified by the models.json file.
+    QString defaultModel = settings.value("userDefaultModel").toString();
+    if (defaultModel.isEmpty() || defaultModel == "Application default")
+        defaultModel = settings.value("defaultModel").toString();
+
+    QString currentModelName = modelName().isEmpty() ? defaultModel : modelName();
+
     {
         QDir dir(exePath);
         dir.setNameFilters(QStringList() << "ggml-*.bin");
@@ -245,7 +278,7 @@ QList<QString> Chat::modelList() const
             QFileInfo info(filePath);
             QString name = info.completeBaseName().remove(0, 5);
             if (info.exists()) {
-                if (name == modelName())
+                if (name == currentModelName)
                     list.prepend(name);
                 else
                     list.append(name);
@@ -262,7 +295,7 @@ QList<QString> Chat::modelList() const
             QFileInfo info(filePath);
             QString name = info.completeBaseName().remove(0, 5);
             if (info.exists() && !list.contains(name)) { // don't allow duplicates
-                if (name == modelName())
+                if (name == currentModelName)
                     list.prepend(name);
                 else
                     list.append(name);

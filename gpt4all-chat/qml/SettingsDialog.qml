@@ -40,6 +40,7 @@ Dialog {
     property int defaultRepeatPenaltyTokens: 64
     property int defaultThreadCount: 0
     property bool defaultSaveChats: false
+    property bool defaultServerChat: false
     property string defaultPromptTemplate: "### Human:
 %1
 ### Assistant:\n"
@@ -56,6 +57,7 @@ Dialog {
     property alias repeatPenaltyTokens: settings.repeatPenaltyTokens
     property alias threadCount: settings.threadCount
     property alias saveChats: settings.saveChats
+    property alias serverChat: settings.serverChat
     property alias modelPath: settings.modelPath
     property alias userDefaultModel: settings.userDefaultModel
 
@@ -68,6 +70,7 @@ Dialog {
         property int promptBatchSize: settingsDialog.defaultPromptBatchSize
         property int threadCount: settingsDialog.defaultThreadCount
         property bool saveChats: settingsDialog.defaultSaveChats
+        property bool serverChat: settingsDialog.defaultServerChat
         property real repeatPenalty: settingsDialog.defaultRepeatPenalty
         property int repeatPenaltyTokens: settingsDialog.defaultRepeatPenaltyTokens
         property string promptTemplate: settingsDialog.defaultPromptTemplate
@@ -91,15 +94,18 @@ Dialog {
         settings.modelPath = settingsDialog.defaultModelPath
         settings.threadCount = defaultThreadCount
         settings.saveChats = defaultSaveChats
+        settings.serverChat = defaultServerChat
         settings.userDefaultModel = defaultUserDefaultModel
         Download.downloadLocalModelsPath = settings.modelPath
         LLM.threadCount = settings.threadCount
+        LLM.serverEnabled = settings.serverChat
         LLM.chatListModel.shouldSaveChats = settings.saveChats
         settings.sync()
     }
 
     Component.onCompleted: {
         LLM.threadCount = settings.threadCount
+        LLM.serverEnabled = settings.serverChat
         LLM.chatListModel.shouldSaveChats = settings.saveChats
         Download.downloadLocalModelsPath = settings.modelPath
     }
@@ -796,8 +802,60 @@ Dialog {
                             leftPadding: saveChatsBox.indicator.width + saveChatsBox.spacing
                         }
                     }
-                    Button {
+                    Label {
+                        id: serverChatLabel
+                        text: qsTr("Enable web server:")
+                        color: theme.textColor
                         Layout.row: 5
+                        Layout.column: 0
+                    }
+                    CheckBox {
+                        id: serverChatBox
+                        Layout.row: 5
+                        Layout.column: 1
+                        checked: settings.serverChat
+                        onClicked: {
+                            settingsDialog.serverChat = serverChatBox.checked
+                            LLM.serverEnabled = serverChatBox.checked
+                            settings.sync()
+                        }
+
+                        ToolTip.text: qsTr("WARNING: This enables the gui to act as a local web server for AI API requests")
+                        ToolTip.visible: hovered
+
+                        background: Rectangle {
+                            color: "transparent"
+                        }
+
+                        indicator: Rectangle {
+                            implicitWidth: 26
+                            implicitHeight: 26
+                            x: serverChatBox.leftPadding
+                            y: parent.height / 2 - height / 2
+                            border.color: theme.dialogBorder
+                            color: "transparent"
+
+                            Rectangle {
+                                width: 14
+                                height: 14
+                                x: 6
+                                y: 6
+                                color: theme.textColor
+                                visible: serverChatBox.checked
+                            }
+                        }
+
+                        contentItem: Text {
+                            text: serverChatBox.text
+                            font: serverChatBox.font
+                            opacity: enabled ? 1.0 : 0.3
+                            color: theme.textColor
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: serverChatBox.indicator.width + serverChatBox.spacing
+                        }
+                    }
+                    Button {
+                        Layout.row: 6
                         Layout.column: 1
                         Layout.fillWidth: true
                         padding: 10

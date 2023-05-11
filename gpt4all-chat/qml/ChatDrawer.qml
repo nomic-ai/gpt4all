@@ -83,9 +83,11 @@ Drawer {
                     height: chatName.height
                     opacity: 0.9
                     property bool isCurrent: LLM.chatListModel.currentChat === LLM.chatListModel.get(index)
+                    property bool isServer: LLM.chatListModel.get(index) && LLM.chatListModel.get(index).isServer
                     property bool trashQuestionDisplayed: false
+                    visible: !isServer || LLM.serverEnabled
                     z: isCurrent ? 199 : 1
-                    color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
+                    color: isServer ? theme.backgroundDarkest : (index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter)
                     border.width: isCurrent
                     border.color: chatName.readOnly ? theme.assistantColor : theme.userColor
                     TextField {
@@ -149,7 +151,7 @@ Drawer {
                             id: editButton
                             width: 30
                             height: 30
-                            visible: isCurrent
+                            visible: isCurrent && !isServer
                             opacity: trashQuestionDisplayed ? 0.5 : 1.0
                             background: Image {
                                 width: 30
@@ -166,10 +168,10 @@ Drawer {
                             Accessible.description: qsTr("Provides a button to edit the chat name")
                         }
                         Button {
-                            id: c
+                            id: trashButton
                             width: 30
                             height: 30
-                            visible: isCurrent
+                            visible: isCurrent && !isServer
                             background: Image {
                                 width: 30
                                 height: 30

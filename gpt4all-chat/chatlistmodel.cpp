@@ -1,5 +1,6 @@
 #include "chatlistmodel.h"
 #include "download.h"
+#include "llm.h"
 
 #include <QFile>
 #include <QDataStream>
@@ -11,6 +12,7 @@ ChatListModel::ChatListModel(QObject *parent)
     : QAbstractListModel(parent)
     , m_newChat(nullptr)
     , m_dummyChat(nullptr)
+    , m_serverChat(nullptr)
     , m_currentChat(nullptr)
     , m_shouldSaveChats(false)
 {
@@ -243,4 +245,16 @@ void ChatListModel::chatsRestoredFinished()
 
     if (m_chats.isEmpty())
         addChat();
+
+    addServerChat();
+}
+
+void ChatListModel::handleServerEnabledChanged()
+{
+    if (LLM::globalInstance()->serverEnabled() || m_serverChat != m_currentChat)
+        return;
+
+    Chat *nextChat = get(0);
+    Q_ASSERT(nextChat && nextChat != m_serverChat);
+    setCurrentChat(nextChat);
 }
