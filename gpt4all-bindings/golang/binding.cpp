@@ -51,7 +51,7 @@ void gptj_model_prompt( const char *prompt, void *m, char* result, int repeat_la
 
     auto lambda_response = [](int token_id, const char *responsechars) {
         res.append((char*)responsechars);
-        return !!tokenCallback(mm, (char*)responsechars);
+        return !!getTokenCallback(mm, (char*)responsechars);
 	};
 	
 	auto lambda_recalculate = [](bool is_recalculating) {

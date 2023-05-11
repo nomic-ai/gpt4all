@@ -9,7 +9,7 @@ package gpt4all
 // void gptj_model_prompt( const char *prompt, void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, int top_k,
 //                            float top_p, float temp, int n_batch,float ctx_erase);
 // void gptj_free_model(void *state_ptr);
-// extern unsigned char tokenCallback(void *, char *);
+// extern unsigned char getTokenCallback(void *, char *);
 import "C"
 import (
 	"fmt"
@@ -36,7 +36,7 @@ func New(model string, opts ...ModelOption) (*GPTJ, error) {
 	gpt := &GPTJ{state: state}
 	// set a finalizer to remove any callbacks when the struct is reclaimed by the garbage collector.
 	runtime.SetFinalizer(gpt, func(g *GPTJ) {
-		setCallback(g.state, nil)
+		setTokenCallback(g.state, nil)
 	})
 
 	return gpt, nil
@@ -69,7 +69,7 @@ func (l *GPTJ) Free() {
 }
 
 func (l *GPTJ) SetTokenCallback(callback func(token string) bool) {
-	setCallback(l.state, callback)
+	setTokenCallback(l.state, callback)
 }
 
 var (
@@ -77,8 +77,8 @@ var (
 	callbacks = map[uintptr]func(string) bool{}
 )
 
-//export tokenCallback
-func tokenCallback(statePtr unsafe.Pointer, token *C.char) bool {
+//export getTokenCallback
+func getTokenCallback(statePtr unsafe.Pointer, token *C.char) bool {
 	m.Lock()
 	defer m.Unlock()
 
@@ -91,7 +91,7 @@ func tokenCallback(statePtr unsafe.Pointer, token *C.char) bool {
 
 // setCallback can be used to register a token callback for LLama. Pass in a nil callback to
 // remove the callback.
-func setCallback(statePtr unsafe.Pointer, callback func(string) bool) {
+func setTokenCallback(statePtr unsafe.Pointer, callback func(string) bool) {
 	m.Lock()
 	defer m.Unlock()
 

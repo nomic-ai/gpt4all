@@ -11,7 +11,7 @@ void gptj_model_prompt( const char *prompt, void *m, char* result, int repeat_la
 
 void gptj_free_model(void *state_ptr);
 
-extern unsigned char tokenCallback(void *, char *);
+extern unsigned char getTokenCallback(void *, char *);
 
 #ifdef __cplusplus
 }
