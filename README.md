@@ -61,7 +61,9 @@ Run on an M1 Mac (not sped up!)
 GPT4All welcomes contribution, involvment, and discussion from the open source community!
 Please see CONTRIBUTING.md and follow the issue, bug report, and PR markdown templates.
 
-**Note**: Please make sure to tag all of the above with relevant project identifiers
+Check project discord, with project owners, or through existing issues/PRs to avoid duplicate work.
+Please mmake sure to tag all of the above with relevant project identifiers or your contribution may be dismissed.
+Example tags: `backend`, `bindings`, `python-bindings`, `documentation`, etc.
  
 
 
