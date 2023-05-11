@@ -1,6 +1,9 @@
 #include "../../gpt4all-backend/llmodel_c.h"
 #include "../../gpt4all-backend/llmodel.h"
 #include "../../gpt4all-backend/llama.cpp/llama.h"
+#include "../../gpt4all-backend/llmodel_c.cpp"
+#include "../../gpt4all-backend/mpt.h"
+#include "../../gpt4all-backend/mpt.cpp"
 
 #include "../../gpt4all-backend/llamamodel.h"
 #include "../../gpt4all-backend/gptj.h"
@@ -29,10 +32,10 @@ void* load_gptj_model(const char *fname, int n_threads) {
     return gptj;
 }
 
-std::string res ="";
+std::string res = "";
 void * mm;
 
-void binding_model_prompt( const char *prompt, void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, int top_k,
+void gptj_model_prompt( const char *prompt, void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, int top_k,
                             float top_p, float temp, int n_batch,float ctx_erase)
 {
     llmodel_model* model = (llmodel_model*) m;
@@ -55,6 +58,7 @@ void binding_model_prompt( const char *prompt, void *m, char* result, int repeat
 	        // You can handle recalculation requests here if needed
 	    return is_recalculating;
 	};
+
     llmodel_prompt_context* prompt_context = new llmodel_prompt_context{
         .logits = NULL,
         .logits_size = 0,
@@ -93,7 +97,7 @@ void binding_model_prompt( const char *prompt, void *m, char* result, int repeat
     free(prompt_context);
 }
 
-void llama_free_model(void *state_ptr) {
+void gptj_free_model(void *state_ptr) {
     llmodel_model* ctx = (llmodel_model*) state_ptr;
     llmodel_llama_destroy(ctx);
 }

@@ -1,7 +1,7 @@
 package gpt4all
 
-// #cgo CFLAGS: -I../../gpt4all-backend/ -I../../gpt4all-backend/llama.cpp
-// #cgo CXXFLAGS: -std=c++17 -I../../gpt4all-backend/ -I../../gpt4all-backend/llama.cpp
+// #cgo CFLAGS: -I../../gpt4all-backend/ -I../../gpt4all-backend/llama.cpp -I./
+// #cgo CXXFLAGS: -std=c++17 -I../../gpt4all-backend/ -I../../gpt4all-backend/llama.cpp -I./
 // #cgo darwin LDFLAGS: -framework Accelerate
 // #cgo darwin CXXFLAGS: -std=c++17
 // #cgo LDFLAGS: -lgpt4all -lm -lstdc++
@@ -48,7 +48,7 @@ func (l *GPTJ) Predict(text string, opts ...PredictOption) (string, error) {
 	}
 	out := make([]byte, po.Tokens)
 
-	C.binding_model_prompt(input, l.state, (*C.char)(unsafe.Pointer(&out[0])), C.int(po.RepeatLastN), C.float(po.RepeatPenalty), C.int(po.ContextSize),
+	C.gptj_model_prompt(input, l.state, (*C.char)(unsafe.Pointer(&out[0])), C.int(po.RepeatLastN), C.float(po.RepeatPenalty), C.int(po.ContextSize),
 		C.int(po.Tokens), C.int(po.TopK), C.float(po.TopP), C.float(po.Temperature), C.int(po.Batch), C.float(po.ContextErase))
 
 	res := C.GoString((*C.char)(unsafe.Pointer(&out[0])))
@@ -61,7 +61,7 @@ func (l *GPTJ) Predict(text string, opts ...PredictOption) (string, error) {
 }
 
 func (l *GPTJ) Free() {
-	C.llama_free_model(l.state)
+	C.gptj_free_model(l.state)
 }
 
 func (l *GPTJ) SetTokenCallback(callback func(token string) bool) {
