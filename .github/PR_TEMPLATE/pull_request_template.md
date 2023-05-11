@@ -3,7 +3,7 @@
 ## Issue ticket number and link
 
 ## Checklist before requesting a review
-- [ ] I have performed a self-review of my code
+- [ ] I have performed a self-review of my code.
 - [ ] If it is a core feature, I have added thorough tests.
 - [ ] I have added thorough documentation for my code.
 - [ ] I have tagged PR with relevant project identifiers.
