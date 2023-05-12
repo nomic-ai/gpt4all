@@ -186,6 +186,7 @@ class GPT4All():
                 before user/assistant role messages.
             default_prompt_footer: If True (default), add default footer at end of prompt.
             verbose: If True (default), print full prompt and generated response.
+            **generate_kwargs: Optional kwargs to pass to prompt context.
 
         Returns:
             Response dictionary with:  
