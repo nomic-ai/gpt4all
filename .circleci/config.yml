@@ -167,7 +167,6 @@ workflows:
             branches:
               only:
                 - main
-                - rguo123/docs-cicd
   #build-py-deploy:
   #  jobs:
       #- build-py-linux
