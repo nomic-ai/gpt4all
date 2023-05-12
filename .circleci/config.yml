@@ -27,6 +27,7 @@ jobs:
       - run:
           name: Deploy Documentation
           command: |
+            cd gpt4all-bindings/python/
             aws s3 cp ./site s3://docs.gpt4all.io/ --recursive | cat
 
             
