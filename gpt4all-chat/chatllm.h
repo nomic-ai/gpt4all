@@ -24,6 +24,7 @@ public:
     };
 
     ChatLLM(Chat *parent);
+    virtual ~ChatLLM();
 
     bool isModelLoaded() const;
     void regenerateResponse();
