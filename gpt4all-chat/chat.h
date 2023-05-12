@@ -25,6 +25,8 @@ class Chat : public QObject
 
 public:
     explicit Chat(QObject *parent = nullptr);
+    virtual ~Chat();
+    void connectLLM();
 
     QString id() const { return m_id; }
     QString name() const { return m_userName.isEmpty() ? m_name : m_userName; }

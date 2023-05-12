@@ -53,6 +53,13 @@ ChatLLM::ChatLLM(Chat *parent)
     m_llmThread.start();
 }
 
+ChatLLM::~ChatLLM()
+{
+    m_llmThread.quit();
+    m_llmThread.wait();
+    delete m_llmodel;
+}
+
 bool ChatLLM::loadDefaultModel()
 {
     const QList<QString> models = m_chat->modelList();
