@@ -12,9 +12,7 @@ def download_model():
     return gpt4all.GPT4All("ggml-gpt4all-j-v1.3-groovy.bin")
 
 image=modal.Image.debian_slim().pip_install("gpt4all").run_function(download_model)
-
 stub = modal.Stub("gpt4all", image=image)
-
 @stub.cls(keep_warm=1)
 class GPT4All:
     def __enter__(self):
@@ -22,6 +20,7 @@ class GPT4All:
         self.gptj = download_model()
         print("Loaded model")
 
+    @modal.method()
     def generate(self):
         messages = [{"role": "user", "content": "Name 3 colors"}]
         completion = self.gptj.chat_completion(messages)
@@ -31,5 +30,5 @@ class GPT4All:
 def main():
     model = GPT4All()
     for i in range(10):
-            model.generate()
+        model.generate.call()
 ```
