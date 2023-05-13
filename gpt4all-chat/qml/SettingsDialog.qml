@@ -820,7 +820,7 @@ Dialog {
                             settings.sync()
                         }
 
-                        ToolTip.text: qsTr("WARNING: This enables the gui to act as a local web server for AI API requests")
+                        ToolTip.text: qsTr("WARNING: This enables the gui to act as a local web server for AI API requests and will increase your RAM usage as well")
                         ToolTip.visible: hovered
 
                         background: Rectangle {

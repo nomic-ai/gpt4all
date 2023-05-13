@@ -81,13 +81,14 @@ void LLModelStore::releaseModel(const LLModelInfo &info)
     m_condition.wakeAll();
 }
 
-ChatLLM::ChatLLM(Chat *parent)
+ChatLLM::ChatLLM(Chat *parent, bool isServer)
     : QObject{nullptr}
     , m_promptResponseTokens(0)
     , m_promptTokens(0)
     , m_responseLogits(0)
     , m_isRecalc(false)
     , m_chat(parent)
+    , m_isServer(isServer)
 {
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
@@ -151,7 +152,7 @@ bool ChatLLM::loadModel(const QString &modelName)
         delete m_modelInfo.model;
         m_modelInfo.model = nullptr;
         emit isModelLoadedChanged();
-    } else {
+    } else if (!m_isServer) {
         // This is a blocking call that tries to retrieve the model we need from the model store.
         // If it succeeds, then we just have to restore state. If the store has never had a model
         // returned to it, then the modelInfo.model pointer should be null which will happen on startup
@@ -163,7 +164,9 @@ bool ChatLLM::loadModel(const QString &modelName)
         // store, that our state was changed to not be loaded. If this is the case, release the model
         // back into the store and quit loading
         if (!m_shouldBeLoaded) {
+#if defined(DEBUG_MODEL_LOADING)
             qDebug() << "no longer need model" << m_chat->id() << m_modelInfo.model;
+#endif
             LLModelStore::globalInstance()->releaseModel(m_modelInfo);
             m_modelInfo = LLModelInfo();
             emit isModelLoadedChanged();
@@ -232,7 +235,8 @@ bool ChatLLM::loadModel(const QString &modelName)
         } else
             emit sendModelLoaded();
     } else {
-        LLModelStore::globalInstance()->releaseModel(m_modelInfo); // release back into the store
+        if (!m_isServer)
+            LLModelStore::globalInstance()->releaseModel(m_modelInfo); // release back into the store
         const QString error = QString("Could not find model %1").arg(modelName);
         emit modelLoadingError(error);
     }
@@ -436,7 +440,7 @@ void ChatLLM::forceUnloadModel()
 
 void ChatLLM::unloadModel()
 {
-    if (!isModelLoaded())
+    if (!isModelLoaded() || m_isServer)
         return;
 
     saveState();
@@ -450,7 +454,7 @@ void ChatLLM::unloadModel()
 
 void ChatLLM::reloadModel()
 {
-    if (isModelLoaded())
+    if (isModelLoaded() || m_isServer)
         return;
 
 #if defined(DEBUG_MODEL_LOADING)
