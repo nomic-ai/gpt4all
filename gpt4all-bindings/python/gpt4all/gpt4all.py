@@ -29,7 +29,7 @@ class GPT4All():
             model_name: Name of GPT4All or custom model. Including ".bin" file extension is optional but encouraged.
             model_path: Path to directory containing model file or, if file does not exist, where to download model.
                 Default is None, in which case models will be stored in `~/.cache/gpt4all/`.
-            model_type: Model architecture to use - currently, only options are 'llama' or 'gptj'. Only required if model
+            model_type: Model architecture to use - currently, options are 'llama', 'gptj', or 'mpt'. Only required if model
                 is custom. Note that these models still must be built from llama.cpp or GPTJ ggml architecture.
                 Default is None.
             allow_download: Allow API to download models from gpt4all.io. Default is True. 
@@ -169,7 +169,8 @@ class GPT4All():
                         messages: List[Dict], 
                         default_prompt_header: bool = True, 
                         default_prompt_footer: bool = True, 
-                        verbose: bool = True) -> str:
+                        verbose: bool = True,
+                        **generate_kwargs) -> str:
         """
         Format list of message dictionaries into a prompt and call model
         generate on prompt. Returns a response dictionary with metadata and
@@ -185,6 +186,7 @@ class GPT4All():
                 before user/assistant role messages.
             default_prompt_footer: If True (default), add default footer at end of prompt.
             verbose: If True (default), print full prompt and generated response.
+            **generate_kwargs: Optional kwargs to pass to prompt context.
 
         Returns:
             Response dictionary with:  
@@ -201,7 +203,7 @@ class GPT4All():
         if verbose:
             print(full_prompt)
 
-        response = self.model.generate(full_prompt)
+        response = self.model.generate(full_prompt, **generate_kwargs)
 
         if verbose:
             print(response)
@@ -263,6 +265,8 @@ class GPT4All():
             return pyllmodel.GPTJModel()
         elif model_type == "llama":
             return pyllmodel.LlamaModel()
+        elif model_type == "mpt":
+            return pyllmodel.MPTModel()
         else:
             raise ValueError(f"No corresponding model for model_type: {model_type}")
         
@@ -286,13 +290,22 @@ class GPT4All():
             "ggml-vicuna-7b-1.1-q4_2.bin",
             "ggml-vicuna-13b-1.1-q4_2.bin",
             "ggml-wizardLM-7B.q4_2.bin",
-            "ggml-stable-vicuna-13B.q4_2.bin"
+            "ggml-stable-vicuna-13B.q4_2.bin",
+            "ggml-nous-gpt4-vicuna-13b.bin"
+        ]
+
+        MPT_MODELS = [
+            "ggml-mpt-7b-base.bin",
+            "ggml-mpt-7b-chat.bin",
+            "ggml-mpt-7b-instruct.bin"
         ]
 
         if model_name in GPTJ_MODELS:
             return pyllmodel.GPTJModel()
         elif model_name in LLAMA_MODELS:
             return pyllmodel.LlamaModel()
+        elif model_name in MPT_MODELS:
+            return pyllmodel.MPTModel()
         else:
             err_msg = f"""No corresponding model for provided filename {model_name}.
             If this is a custom model, make sure to specify a valid model_type.

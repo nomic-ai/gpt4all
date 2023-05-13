@@ -12,6 +12,17 @@ Chat::Chat(QObject *parent)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
     , m_llmodel(new ChatLLM(this))
 {
+    connectLLM();
+}
+
+Chat::~Chat()
+{
+    delete m_llmodel;
+    m_llmodel = nullptr;
+}
+
+void Chat::connectLLM()
+{
     // Should be in same thread
     connect(Download::globalInstance(), &Download::modelListChanged, this, &Chat::modelListChanged, Qt::DirectConnection);
     connect(this, &Chat::modelNameChanged, this, &Chat::modelListChanged, Qt::DirectConnection);
