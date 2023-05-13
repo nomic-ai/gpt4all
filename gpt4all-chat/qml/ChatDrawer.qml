@@ -69,6 +69,7 @@ Drawer {
             anchors.bottom: checkForUpdatesButton.top
             anchors.bottomMargin: 10
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+            clip: true
 
             ListView {
                 id: conversationList
