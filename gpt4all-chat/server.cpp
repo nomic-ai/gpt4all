@@ -52,7 +52,7 @@ static inline QJsonObject modelToJson(const ModelInfo &info)
 }
 
 Server::Server(Chat *chat)
-    : ChatLLM(chat)
+    : ChatLLM(chat, true /*isServer*/)
     , m_chat(chat)
     , m_server(nullptr)
 {
@@ -170,13 +170,15 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
         }
     }
 
+    setShouldBeLoaded(true);
+
     if (!foundModel) {
         if (!loadDefaultModel()) {
-            std::cerr << "ERROR: couldn't load default model" << model.toStdString() << std::endl;
+            std::cerr << "ERROR: couldn't load default model " << model.toStdString() << std::endl;
             return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
         }
     } else if (!loadModel(model)) {
-        std::cerr << "ERROR: couldn't load model" << model.toStdString() << std::endl;
+        std::cerr << "ERROR: couldn't load model " << model.toStdString() << std::endl;
         return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
@@ -308,7 +310,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             repeat_last_n,
             LLM::globalInstance()->threadCount())) {
 
-            std::cerr << "ERROR: couldn't prompt model" << model.toStdString() << std::endl;
+            std::cerr << "ERROR: couldn't prompt model " << model.toStdString() << std::endl;
             return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
         }
         QString echoedPrompt = actualPrompt;

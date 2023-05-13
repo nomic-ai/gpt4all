@@ -31,7 +31,7 @@ class ChatLLM : public QObject
     Q_PROPERTY(QString generatedName READ generatedName NOTIFY generatedNameChanged)
 
 public:
-    ChatLLM(Chat *parent);
+    ChatLLM(Chat *parent, bool isServer = false);
     virtual ~ChatLLM();
 
     bool isModelLoaded() const;
@@ -87,12 +87,7 @@ Q_SIGNALS:
     void shouldBeLoadedChanged();
 
 protected:
-    LLModel::PromptContext m_ctx;
-    quint32 m_promptTokens;
-    quint32 m_promptResponseTokens;
     void resetContextProtected();
-
-private:
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
     bool handleRecalculate(bool isRecalc);
@@ -102,7 +97,10 @@ private:
     void saveState();
     void restoreState();
 
-private:
+protected:
+    LLModel::PromptContext m_ctx;
+    quint32 m_promptTokens;
+    quint32 m_promptResponseTokens;
     LLModelInfo m_modelInfo;
     LLModelType m_modelType;
     std::string m_response;
@@ -115,6 +113,7 @@ private:
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;
     bool m_isRecalc;
+    bool m_isServer;
 };
 
 #endif // CHATLLM_H

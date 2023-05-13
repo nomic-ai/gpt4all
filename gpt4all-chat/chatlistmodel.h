@@ -171,9 +171,8 @@ public:
             return;
         }
 
-        if (m_currentChat)
+        if (m_currentChat && m_currentChat != m_serverChat)
             m_currentChat->unloadModel();
-
         m_currentChat = chat;
         if (!m_currentChat->isModelLoaded() && m_currentChat != m_serverChat)
             m_currentChat->reloadModel();
