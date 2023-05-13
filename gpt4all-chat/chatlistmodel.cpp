@@ -40,6 +40,7 @@ void ChatListModel::setShouldSaveChats(bool b)
 
 void ChatListModel::removeChatFile(Chat *chat) const
 {
+    Q_ASSERT(chat != m_serverChat);
     const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
     QFile file(savePath + "/gpt4all-" + chat->id() + ".chat");
     if (!file.exists())
@@ -58,6 +59,8 @@ void ChatListModel::saveChats() const
     timer.start();
     const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
     for (Chat *chat : m_chats) {
+        if (chat == m_serverChat)
+            continue;
         QString fileName = "gpt4all-" + chat->id() + ".chat";
         QFile file(savePath + "/" + fileName);
         bool success = file.open(QIODevice::WriteOnly);
