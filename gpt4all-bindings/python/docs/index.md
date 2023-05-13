@@ -1,4 +1,4 @@
-# GPT4All
+# GPT4All with Python
 
 In this package, we introduce Python bindings built around GPT4All's C/C++ model backends.
 

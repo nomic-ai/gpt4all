@@ -1,4 +1,4 @@
-# GPT4All API
+# GPT4All Python API
 The `GPT4All` provides a universal API to call all GPT4All models and 
 introduces additional helpful functionality such as downloading models.
 
