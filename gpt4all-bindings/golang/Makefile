@@ -126,7 +126,7 @@ endif
 # Print build information
 #
 
-$(info I go-gpt4all-j build info: )
+$(info I go-gpt4all build info: )
 $(info I UNAME_S:  $(UNAME_S))
 $(info I UNAME_P:  $(UNAME_P))
 $(info I UNAME_M:  $(UNAME_M))
@@ -137,7 +137,6 @@ $(info I CMAKEFLAGS:  $(CMAKEFLAGS))
 $(info I CC:       $(CCV))
 $(info I CXX:      $(CXXV))
 $(info )
-
 
 llama.o:
 	mkdir buildllama
@@ -156,13 +155,9 @@ llmodel.o:
 clean:
 	rm -f *.o
 	rm -f *.a
-	rm -rf build
 	rm -rf buildllm
 	rm -rf buildllama
-	rm -rf example
-
-gptj.o: gptj.cpp ggml.o utils.o
-	$(CXX) $(CXXFLAGS) gptj.cpp ggml.o utils.o -o gptj.o -c $(LDFLAGS)
+	rm -rf example/main
 
 binding.o: 
 	$(CXX) $(CXXFLAGS) binding.cpp -o binding.o -c $(LDFLAGS)
@@ -172,3 +167,6 @@ libgpt4all.a: binding.o llmodel.o llama.o
 
 test: libgpt4all.a
 	@C_INCLUDE_PATH=${INCLUDE_PATH} LIBRARY_PATH=${LIBRARY_PATH} go test -v ./...
+
+example/main: libgpt4all.a
+	C_INCLUDE_PATH=$(INCLUDE_PATH) LIBRARY_PATH=$(INCLUDE_PATH) go build -o example/main ./example/
