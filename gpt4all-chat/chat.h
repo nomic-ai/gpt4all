@@ -58,6 +58,7 @@ public:
     void loadModel(const QString &modelName);
     void unloadModel();
     void reloadModel();
+    void unloadAndDeleteLater();
 
     qint64 creationDate() const { return m_creationDate; }
     bool serialize(QDataStream &stream, int version) const;
@@ -87,8 +88,6 @@ Q_SIGNALS:
     void recalcChanged();
     void loadDefaultModelRequested();
     void loadModelRequested(const QString &modelName);
-    void unloadModelRequested();
-    void reloadModelRequested(const QString &modelName);
     void generateNameRequested();
     void modelListChanged();
     void modelLoadingError(const QString &error);
@@ -96,6 +95,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void handleResponseChanged();
+    void handleModelLoadedChanged();
     void responseStarted();
     void responseStopped();
     void generatedNameChanged();
@@ -112,6 +112,7 @@ private:
     qint64 m_creationDate;
     ChatLLM *m_llmodel;
     bool m_isServer;
+    bool m_shouldDeleteLater;
 };
 
 #endif // CHAT_H
