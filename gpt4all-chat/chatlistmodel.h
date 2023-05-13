@@ -125,6 +125,7 @@ public:
 
     Q_INVOKABLE void removeChat(Chat* chat)
     {
+        Q_ASSERT(chat != m_serverChat);
         if (!m_chats.contains(chat)) {
             qWarning() << "WARNING: Removing chat failed with id" << chat->id();
             return;
@@ -138,11 +139,11 @@ public:
         }
 
         const int index = m_chats.indexOf(chat);
-        if (m_chats.count() < 2) {
+        if (m_chats.count() < 3 /*m_serverChat included*/) {
             addChat();
         } else {
             int nextIndex;
-            if (index == m_chats.count() - 1)
+            if (index == m_chats.count() - 2 /*m_serverChat is last*/)
                 nextIndex = index - 1;
             else
                 nextIndex = index + 1;
@@ -155,7 +156,7 @@ public:
         beginRemoveRows(QModelIndex(), newIndex, newIndex);
         m_chats.removeAll(chat);
         endRemoveRows();
-        delete chat;
+        chat->unloadAndDeleteLater();
     }
 
     Chat *currentChat() const
@@ -170,7 +171,7 @@ public:
             return;
         }
 
-        if (m_currentChat && m_currentChat->isModelLoaded())
+        if (m_currentChat)
             m_currentChat->unloadModel();
 
         m_currentChat = chat;
