@@ -6,6 +6,21 @@ import platform
 import re
 import sys
 
+class DualOutput:
+    def __init__(self, stdout, string_io):
+        self.stdout = stdout
+        self.string_io = string_io
+
+    def write(self, text):
+        self.stdout.write(text)
+        self.string_io.write(text)
+
+    def flush(self):
+        # It's a good idea to also define a flush method that flushes both
+        # outputs, as sys.stdout is expected to have this method.
+        self.stdout.flush()
+        self.string_io.flush()
+
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
 
@@ -138,7 +153,8 @@ class LLModel:
                  n_batch: int = 8, 
                  repeat_penalty: float = 1.2, 
                  repeat_last_n: int = 10, 
-                 context_erase: float = .5) -> str:
+                 context_erase: float = .5,
+                 std_passthrough: bool = False) -> str:
         """
         Generate response from model from a prompt.
 
@@ -164,7 +180,10 @@ class LLModel:
         # Change stdout to StringIO so we can collect response
         old_stdout = sys.stdout 
         collect_response = StringIO()
-        sys.stdout = collect_response
+        if std_passthrough:
+            sys.stdout = DualOutput(old_stdout, collect_response)
+        else:
+            sys.stdout = collect_response
 
         context = LLModelPromptContext(
             logits_size=logits_size, 
@@ -222,7 +241,7 @@ class GPTJModel(LLModel):
         self.model = llmodel.llmodel_gptj_create()
 
     def __del__(self):
-        if self.model is not None:
+        if self.model is not None and llmodel is not None:
             llmodel.llmodel_gptj_destroy(self.model)
         super().__del__()
 
@@ -236,7 +255,7 @@ class LlamaModel(LLModel):
         self.model = llmodel.llmodel_llama_create()
 
     def __del__(self):
-        if self.model is not None:
+        if self.model is not None and llmodel is not None:
             llmodel.llmodel_llama_destroy(self.model)
         super().__del__()
 
@@ -250,6 +269,6 @@ class MPTModel(LLModel):
         self.model = llmodel.llmodel_mpt_create()
 
     def __del__(self):
-        if self.model is not None:
+        if self.model is not None and llmodel is not None:
             llmodel.llmodel_mpt_destroy(self.model)
         super().__del__()
