@@ -96,6 +96,15 @@ llmodel.llmodel_prompt.argtypes = [ctypes.c_void_p,
                                    RecalculateCallback, 
                                    ctypes.POINTER(LLModelPromptContext)]
 
+llmodel.llmodel_prompt.restype = None
+
+llmodel.llmodel_setThreadCount.argtypes = [ctypes.c_void_p, ctypes.c_int32]
+llmodel.llmodel_setThreadCount.restype = None
+
+llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_threadCount.restype = ctypes.c_int32
+
+
 class LLModel:
     """
     Base class and universal wrapper for GPT4All language models
@@ -139,6 +148,18 @@ class LLModel:
             return True
         else:
             return False
+
+
+    def set_thread_count(self, n_threads):
+        if not llmodel.llmodel_isModelLoaded(self.model):
+            raise Exception("Model not loaded")
+        llmodel.llmodel_setThreadCount(self.model, n_threads)
+
+    def thread_count(self):
+        if not llmodel.llmodel_isModelLoaded(self.model):
+            raise Exception("Model not loaded")
+        return llmodel.llmodel_threadCount(self.model)
+
 
     def generate(self, 
                  prompt: str,

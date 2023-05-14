@@ -47,9 +47,25 @@ def repl(
     model: Annotated[
         str,
         typer.Option("--model", "-m", help="Model to use for chatbot"),
-    ] = "ggml-gpt4all-j-v1.3-groovy"
+    ] = "ggml-gpt4all-j-v1.3-groovy",
+    n_threads: Annotated[
+        int,
+        typer.Option("--n-threads", "-t", help="Number of threads to use for chatbot"),
+    ] = 4,
 ):
     gpt4all_instance = GPT4All(model)
+
+    # if threads are passed, set them
+    if n_threads != 4:
+        num_threads = gpt4all_instance.model.thread_count()
+        print(f"\nAdjusted: {num_threads} →", end="")
+
+        # set number of threads
+        gpt4all_instance.model.set_thread_count(n_threads)
+
+        num_threads = gpt4all_instance.model.thread_count()
+        print(f" {num_threads} threads", end="", flush=True)
+
 
     # overwrite _response_callback on model
     gpt4all_instance.model._response_callback = _cli_override_response_callback
@@ -69,7 +85,7 @@ def repl(
 
         # execute chat completion and ignore the full response since 
         # we are outputting it incrementally
-        unused_full_response = gpt4all_instance.chat_completion(
+        full_response = gpt4all_instance.chat_completion(
             MESSAGES,
             # preferential kwargs for chat ux
             logits_size=0,
@@ -88,7 +104,9 @@ def repl(
             verbose=False,
             std_passthrough=True,
         )
-        print()
+        # record assistant's response to messages
+        MESSAGES.append(full_response.get("choices")[0].get("message"))
+        print() # newline before next prompt
 
 
 @app.command()
