@@ -84,7 +84,7 @@ Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io
 
 ### Chat Client building and running
 
-* Follow the visual instructions on the chat client [build_and_run](build_and_run.md) page
+* Follow the visual instructions on the chat client [build_and_run](gpt4all-chat/build_and_run.md) page
 
 ### Bindings
 
