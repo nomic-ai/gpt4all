@@ -83,6 +83,10 @@ If you have older hardware that only supports avx and not avx2 you can use these
 
 Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io/)
 
+### Chat Client building and running
+
+* Follow the visual instructions on the chat client [build_and_run](build_and_run.md) page
+
 ### Bindings
 
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python/README.md">:snake: Official Python Bindings</a>
