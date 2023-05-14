@@ -23,7 +23,7 @@ cd build
 cmake ..
 cmake --build . --parallel
 ```
-Confirm that `libllmodel.*` exists in `gpt4all-backend/llmodel/build`.
+Confirm that `libllmodel.*` exists in `gpt4all-backend/build`.
 
 2. Setup Python package
 
