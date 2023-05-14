@@ -27,7 +27,7 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/nomic-ai/gpt4all-ts">:computer: Official Typescript Bindings</a>
+<a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/typescript">:computer: Official Typescript Bindings</a>
 </p>
 
 <p align="center">
@@ -90,7 +90,7 @@ Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io
 ### Bindings
 
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python/README.md">:snake: Official Python Bindings</a>
-* <a href="https://github.com/nomic-ai/gpt4all-ts">:computer: Official Typescript Bindings</a>
+* <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/typescript">:computer: Official Typescript Bindings</a>
 
 
 ## Training GPT4All-J
