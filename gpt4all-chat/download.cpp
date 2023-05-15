@@ -267,6 +267,26 @@ void Download::cancelDownload(const QString &modelFile)
     }
 }
 
+void Download::installModel(const QString &modelFile, const QString &apiKey)
+{
+    Q_ASSERT(!apiKey.isEmpty());
+    if (apiKey.isEmpty())
+        return;
+
+    Network::globalInstance()->sendInstallModel(modelFile);
+    QString filePath = downloadLocalModelsPath() + modelFile + ".txt";
+    QFile file(filePath);
+    if (file.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
+        QTextStream stream(&file);
+        stream << apiKey;
+        file.close();
+        ModelInfo info = m_modelMap.value(modelFile);
+        info.installed = true;
+        m_modelMap.insert(modelFile, info);
+        emit modelListChanged();
+    }
+}
+
 void Download::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 {
     QUrl url = reply->request().url();
@@ -369,6 +389,47 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         modelInfo.bestMPT = bestMPT;
         modelInfo.description = description;
         modelInfo.requires = requires;
+        m_modelMap.insert(modelInfo.filename, modelInfo);
+    }
+
+    const QString chatGPTDesc = tr("WARNING: requires personal OpenAI API key and usage of this "
+        "model will send your chats over the network to OpenAI. Your API key will be stored on disk "
+        "and only used to interact with OpenAI models. If you don't have one, you can apply for "
+        "an API key <a href=\"https://platform.openai.com/account/api-keys\">here.</a>");
+
+    {
+        ModelInfo modelInfo;
+        modelInfo.isChatGPT = true;
+        modelInfo.filename = "chatgpt-gpt-3.5-turbo";
+        modelInfo.description = tr("OpenAI's ChatGPT model gpt-3.5-turbo. ") + chatGPTDesc;
+        modelInfo.requires = "2.4.2";
+        QString filePath = downloadLocalModelsPath() + modelInfo.filename + ".txt";
+        QFileInfo info(filePath);
+        modelInfo.installed = info.exists();
+        m_modelMap.insert(modelInfo.filename, modelInfo);
+    }
+
+    {
+        ModelInfo modelInfo;
+        modelInfo.isChatGPT = true;
+        modelInfo.filename = "chatgpt-gpt-4";
+        modelInfo.description = tr("OpenAI's ChatGPT model gpt-4. ") + chatGPTDesc;
+        modelInfo.requires = "2.4.2";
+        QString filePath = downloadLocalModelsPath() + modelInfo.filename + ".txt";
+        QFileInfo info(filePath);
+        modelInfo.installed = info.exists();
+        m_modelMap.insert(modelInfo.filename, modelInfo);
+    }
+
+    {
+        ModelInfo modelInfo;
+        modelInfo.isChatGPT = true;
+        modelInfo.filename = "chatgpt-text-davinci-003";
+        modelInfo.description = tr("OpenAI's ChatGPT model text-davinci-003. ") + chatGPTDesc;
+        modelInfo.requires = "2.4.2";
+        QString filePath = downloadLocalModelsPath() + modelInfo.filename + ".txt";
+        QFileInfo info(filePath);
+        modelInfo.installed = info.exists();
         m_modelMap.insert(modelInfo.filename, modelInfo);
     }
 
