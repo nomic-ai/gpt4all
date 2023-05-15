@@ -123,7 +123,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
-    QByteArray body(newDoc.toJson());
+    QByteArray body(newDoc.toJson(QJsonDocument::Compact));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *jsonReply = m_networkManager.post(request, body);
     connect(jsonReply, &QNetworkReply::finished, this, &Network::handleJsonUploadFinished);
@@ -190,7 +190,7 @@ void Network::sendOptOut()
 
     QJsonDocument doc;
     doc.setArray(array);
-    sendMixpanel(doc.toJson(), true /*isOptOut*/);
+    sendMixpanel(doc.toJson(QJsonDocument::Compact), true /*isOptOut*/);
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable("opt_out"), qPrintable(doc.toJson(QJsonDocument::Indented)));
@@ -410,7 +410,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
 
     QJsonDocument doc;
     doc.setArray(array);
-    sendMixpanel(doc.toJson());
+    sendMixpanel(doc.toJson(QJsonDocument::Compact));
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable(ev), qPrintable(doc.toJson(QJsonDocument::Indented)));
