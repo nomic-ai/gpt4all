@@ -122,7 +122,7 @@ Window {
         Item {
             anchors.centerIn: parent
             height: childrenRect.height
-            visible: currentChat.isModelLoaded
+            visible: currentChat.isModelLoaded || currentChat.isServer
 
             Label {
                 id: modelLabel
@@ -142,6 +142,7 @@ Window {
                 anchors.top: modelLabel.top
                 anchors.bottom: modelLabel.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
+                enabled: !currentChat.isServer
                 font.pixelSize: theme.fontSizeLarge
                 spacing: 0
                 model: currentChat.modelList
@@ -206,8 +207,8 @@ Window {
 
         BusyIndicator {
             anchors.centerIn: parent
-            visible: !currentChat.isModelLoaded
-            running: !currentChat.isModelLoaded
+            visible: !currentChat.isModelLoaded && !currentChat.isServer
+            running: !currentChat.isModelLoaded && !currentChat.isServer
             Accessible.role: Accessible.Animation
             Accessible.name: qsTr("Busy indicator")
             Accessible.description: qsTr("Displayed when the model is loading")
@@ -570,13 +571,13 @@ Window {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.bottom: textInputView.top
-            anchors.bottomMargin: 30
+            anchors.bottom: !currentChat.isServer ? textInputView.top : parent.bottom
+            anchors.bottomMargin: !currentChat.isServer ? 30 : 0
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
             Rectangle {
                 anchors.fill: parent
-                color: theme.backgroundLighter
+                color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLighter
 
                 ListView {
                     id: listView
@@ -598,7 +599,9 @@ Window {
                         cursorVisible: currentResponse ? currentChat.responseInProgress : false
                         cursorPosition: text.length
                         background: Rectangle {
-                            color: name === qsTr("Response: ") ? theme.backgroundLighter : theme.backgroundLight
+                            color: name === qsTr("Response: ")
+                                ? (currentChat.isServer ? theme.backgroundDarkest : theme.backgroundLighter)
+                                : (currentChat.isServer ? theme.backgroundDark : theme.backgroundLight)
                         }
 
                         Accessible.role: Accessible.Paragraph
@@ -757,7 +760,7 @@ Window {
         }
 
         Button {
-            visible: chatModel.count
+            visible: chatModel.count && !currentChat.isServer
             Image {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
@@ -819,13 +822,14 @@ Window {
             anchors.bottom: parent.bottom
             anchors.margins: 30
             height: Math.min(contentHeight, 200)
+            visible: !currentChat.isServer
 
             TextArea {
                 id: textInput
                 color: theme.textColor
                 padding: 20
                 rightPadding: 40
-                enabled: currentChat.isModelLoaded
+                enabled: currentChat.isModelLoaded && !currentChat.isServer
                 wrapMode: Text.WordWrap
                 font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Send a message...")
@@ -850,12 +854,6 @@ Window {
                         return
 
                     currentChat.stopGenerating()
-
-                    if (chatModel.count) {
-                        var index = Math.max(0, chatModel.count - 1);
-                        var listElement = chatModel.get(index);
-                        chatModel.updateCurrentResponse(index, false);
-                    }
                     currentChat.newPromptResponsePair(textInput.text);
                     currentChat.prompt(textInput.text, settingsDialog.promptTemplate,
                                settingsDialog.maxLength,
@@ -876,6 +874,7 @@ Window {
             anchors.rightMargin: 15
             width: 30
             height: 30
+            visible: !currentChat.isServer
 
             background: Image {
                 anchors.centerIn: parent

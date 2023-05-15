@@ -17,13 +17,13 @@ pip install gpt4all
 
 ```
 git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
-cd gpt4all/gpt4all-backend/llmodel/
+cd gpt4all/gpt4all-backend/
 mkdir build
 cd build
 cmake ..
 cmake --build . --parallel
 ```
-Confirm that `libllmodel.*` exists in `gpt4all-backend/llmodel/build`.
+Confirm that `libllmodel.*` exists in `gpt4all-backend/build`.
 
 2. Setup Python package
 

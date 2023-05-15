@@ -1,5 +1,6 @@
 #include "chatlistmodel.h"
 #include "download.h"
+#include "llm.h"
 
 #include <QFile>
 #include <QDataStream>
@@ -11,6 +12,7 @@ ChatListModel::ChatListModel(QObject *parent)
     : QAbstractListModel(parent)
     , m_newChat(nullptr)
     , m_dummyChat(nullptr)
+    , m_serverChat(nullptr)
     , m_currentChat(nullptr)
     , m_shouldSaveChats(false)
 {
@@ -38,6 +40,7 @@ void ChatListModel::setShouldSaveChats(bool b)
 
 void ChatListModel::removeChatFile(Chat *chat) const
 {
+    Q_ASSERT(chat != m_serverChat);
     const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
     QFile file(savePath + "/gpt4all-" + chat->id() + ".chat");
     if (!file.exists())
@@ -56,6 +59,8 @@ void ChatListModel::saveChats() const
     timer.start();
     const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
     for (Chat *chat : m_chats) {
+        if (chat == m_serverChat)
+            continue;
         QString fileName = "gpt4all-" + chat->id() + ".chat";
         QFile file(savePath + "/" + fileName);
         bool success = file.open(QIODevice::WriteOnly);
@@ -243,4 +248,16 @@ void ChatListModel::chatsRestoredFinished()
 
     if (m_chats.isEmpty())
         addChat();
+
+    addServerChat();
+}
+
+void ChatListModel::handleServerEnabledChanged()
+{
+    if (LLM::globalInstance()->serverEnabled() || m_serverChat != m_currentChat)
+        return;
+
+    Chat *nextChat = get(0);
+    Q_ASSERT(nextChat && nextChat != m_serverChat);
+    setCurrentChat(nextChat);
 }

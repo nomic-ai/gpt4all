@@ -3,8 +3,22 @@
 
 #include <QObject>
 #include <QThread>
+#include <QFileInfo>
 
 #include "../gpt4all-backend/llmodel.h"
+
+enum LLModelType {
+    MPT_,
+    GPTJ_,
+    LLAMA_
+};
+
+struct LLModelInfo {
+    LLModel *model = nullptr;
+    QFileInfo fileInfo;
+    // NOTE: This does not store the model type or name on purpose as this is left for ChatLLM which
+    // must be able to serialize the information even if it is in the unloaded state
+};
 
 class Chat;
 class ChatLLM : public QObject
@@ -17,13 +31,7 @@ class ChatLLM : public QObject
     Q_PROPERTY(QString generatedName READ generatedName NOTIFY generatedNameChanged)
 
 public:
-    enum ModelType {
-        MPT_,
-        GPTJ_,
-        LLAMA_
-    };
-
-    ChatLLM(Chat *parent);
+    ChatLLM(Chat *parent, bool isServer = false);
     virtual ~ChatLLM();
 
     bool isModelLoaded() const;
@@ -32,6 +40,9 @@ public:
     void resetContext();
 
     void stopGenerating() { m_stopGenerating = true; }
+
+    bool shouldBeLoaded() const { return m_shouldBeLoaded; }
+    void setShouldBeLoaded(bool b);
 
     QString response() const;
     QString modelName() const;
@@ -52,10 +63,12 @@ public Q_SLOTS:
     bool loadDefaultModel();
     bool loadModel(const QString &modelName);
     void modelNameChangeRequested(const QString &modelName);
+    void forceUnloadModel();
     void unloadModel();
-    void reloadModel(const QString &modelName);
+    void reloadModel();
     void generateName();
     void handleChatIdChanged();
+    void handleShouldBeLoadedChanged();
 
 Q_SIGNALS:
     void isModelLoadedChanged();
@@ -70,9 +83,11 @@ Q_SIGNALS:
     void sendResetContext();
     void generatedNameChanged();
     void stateChanged();
+    void threadStarted();
+    void shouldBeLoadedChanged();
 
-private:
-    void resetContextPrivate();
+protected:
+    void resetContextProtected();
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
     bool handleRecalculate(bool isRecalc);
@@ -82,20 +97,23 @@ private:
     void saveState();
     void restoreState();
 
-private:
+protected:
     LLModel::PromptContext m_ctx;
-    LLModel *m_llmodel;
+    quint32 m_promptTokens;
+    quint32 m_promptResponseTokens;
+    LLModelInfo m_modelInfo;
+    LLModelType m_modelType;
     std::string m_response;
     std::string m_nameResponse;
-    quint32 m_promptResponseTokens;
     quint32 m_responseLogits;
     QString m_modelName;
-    ModelType m_modelType;
     Chat *m_chat;
     QByteArray m_state;
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
+    std::atomic<bool> m_shouldBeLoaded;
     bool m_isRecalc;
+    bool m_isServer;
 };
 
 #endif // CHATLLM_H

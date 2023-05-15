@@ -7,6 +7,7 @@
 
 #include "chatllm.h"
 #include "chatmodel.h"
+#include "server.h"
 
 class Chat : public QObject
 {
@@ -20,11 +21,13 @@ class Chat : public QObject
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
     Q_PROPERTY(QList<QString> modelList READ modelList NOTIFY modelListChanged)
+    Q_PROPERTY(bool isServer READ isServer NOTIFY isServerChanged)
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
 public:
     explicit Chat(QObject *parent = nullptr);
+    explicit Chat(bool isServer, QObject *parent = nullptr);
     virtual ~Chat();
     void connectLLM();
 
@@ -55,12 +58,17 @@ public:
     void loadModel(const QString &modelName);
     void unloadModel();
     void reloadModel();
+    void unloadAndDeleteLater();
 
     qint64 creationDate() const { return m_creationDate; }
     bool serialize(QDataStream &stream, int version) const;
     bool deserialize(QDataStream &stream, int version);
 
     QList<QString> modelList() const;
+    bool isServer() const { return m_isServer; }
+
+public Q_SLOTS:
+    void serverNewPromptResponsePair(const QString &prompt);
 
 Q_SIGNALS:
     void idChanged();
@@ -80,14 +88,14 @@ Q_SIGNALS:
     void recalcChanged();
     void loadDefaultModelRequested();
     void loadModelRequested(const QString &modelName);
-    void unloadModelRequested();
-    void reloadModelRequested(const QString &modelName);
     void generateNameRequested();
     void modelListChanged();
     void modelLoadingError(const QString &error);
+    void isServerChanged();
 
 private Q_SLOTS:
     void handleResponseChanged();
+    void handleModelLoadedChanged();
     void responseStarted();
     void responseStopped();
     void generatedNameChanged();
@@ -103,6 +111,8 @@ private:
     bool m_responseInProgress;
     qint64 m_creationDate;
     ChatLLM *m_llmodel;
+    bool m_isServer;
+    bool m_shouldDeleteLater;
 };
 
 #endif // CHAT_H
