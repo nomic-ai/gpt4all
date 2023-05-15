@@ -91,7 +91,7 @@ def train(accelerator, config):
     total_num_steps += int(total_num_steps * lr_ratio) + config["warmup_steps"]
     accelerator.print(f"Total training steps: {total_num_steps}")
 
-    # Creates Dummy Scheduler if `scheduler` was spcified in the config file else creates `args.lr_scheduler_type` Scheduler
+    # Creates Dummy Scheduler if `scheduler` was specified in the config file else creates `args.lr_scheduler_type` Scheduler
     if (
         accelerator.state.deepspeed_plugin is None
         or "scheduler" not in accelerator.state.deepspeed_plugin.deepspeed_config
