@@ -110,6 +110,9 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     if (!attribution.isEmpty())
         object.insert("network/attribution", attribution);
 
+    QString promptTemplate = settings.value("promptTemplate", QString()).toString();
+    object.insert("prompt_template", promptTemplate);
+
     QJsonDocument newDoc;
     newDoc.setObject(object);
 
