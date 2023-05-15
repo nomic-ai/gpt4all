@@ -181,7 +181,7 @@ class GPT4All():
                 with value of "system", "assistant", or "user" and a "content" key with a
                 string value. Messages are organized such that "system" messages are at top of prompt,
                 and "user" and "assistant" messages are displayed in order. Assistant messages get formatted as
-                "Reponse: {content}". 
+                "Response: {content}". 
             default_prompt_header: If True (default), add default prompt header after any system role messages and
                 before user/assistant role messages.
             default_prompt_footer: If True (default), add default footer at end of prompt.

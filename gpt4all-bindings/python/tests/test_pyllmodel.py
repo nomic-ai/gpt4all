@@ -4,7 +4,7 @@ import sys
 from gpt4all import pyllmodel
 
 # TODO: Integration test for loadmodel and prompt. 
-# # Right now, too slow b/c it requries file download.
+# # Right now, too slow b/c it requires file download.
 
 def test_create_gptj():
     gptj = pyllmodel.GPTJModel()

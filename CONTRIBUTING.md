@@ -9,7 +9,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 
 1. Ensure any install or build dependencies are removed before the end of the layer when doing a build.
 2. Make sure Pull Request is tagged with appropriate project identifiers and has a clear description of contribution.
-3. Any new or updated code must have documentation and preferrably tests included with Pull Request.
+3. Any new or updated code must have documentation and preferably tests included with Pull Request.
 4. Significant feature or code changes should provide a short video or screenshot demo.
 4. Fill out relevant parts of Pull Request template. 
 4. Pull requests must have sign-off from one other developer. Reach out to a repository owner once your
