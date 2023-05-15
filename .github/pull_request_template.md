@@ -6,7 +6,7 @@
 - [ ] I have performed a self-review of my code.
 - [ ] If it is a core feature, I have added thorough tests.
 - [ ] I have added thorough documentation for my code.
-- [ ] I have tagged PR with relevant project identifiers.
+- [ ] I have tagged PR with relevant project labels. I acknowledge that a PR without labels may be dismissed.
 - [ ] If this PR addresses a bug, I have provided both a screenshot/video of the original bug and the working solution.
 
 ## Demo
