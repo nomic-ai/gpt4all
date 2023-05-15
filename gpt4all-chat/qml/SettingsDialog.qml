@@ -40,6 +40,7 @@ Dialog {
     property int defaultRepeatPenaltyTokens: 64
     property int defaultThreadCount: 0
     property bool defaultSaveChats: false
+    property bool defaultSaveChatGPTChats: true
     property bool defaultServerChat: false
     property string defaultPromptTemplate: "### Human:
 %1
@@ -57,6 +58,7 @@ Dialog {
     property alias repeatPenaltyTokens: settings.repeatPenaltyTokens
     property alias threadCount: settings.threadCount
     property alias saveChats: settings.saveChats
+    property alias saveChatGPTChats: settings.saveChatGPTChats
     property alias serverChat: settings.serverChat
     property alias modelPath: settings.modelPath
     property alias userDefaultModel: settings.userDefaultModel
@@ -70,6 +72,7 @@ Dialog {
         property int promptBatchSize: settingsDialog.defaultPromptBatchSize
         property int threadCount: settingsDialog.defaultThreadCount
         property bool saveChats: settingsDialog.defaultSaveChats
+        property bool saveChatGPTChats: settingsDialog.defaultSaveChatGPTChats
         property bool serverChat: settingsDialog.defaultServerChat
         property real repeatPenalty: settingsDialog.defaultRepeatPenalty
         property int repeatPenaltyTokens: settingsDialog.defaultRepeatPenaltyTokens
@@ -94,12 +97,14 @@ Dialog {
         settings.modelPath = settingsDialog.defaultModelPath
         settings.threadCount = defaultThreadCount
         settings.saveChats = defaultSaveChats
+        settings.saveChatGPTChats = defaultSaveChatGPTChats
         settings.serverChat = defaultServerChat
         settings.userDefaultModel = defaultUserDefaultModel
         Download.downloadLocalModelsPath = settings.modelPath
         LLM.threadCount = settings.threadCount
         LLM.serverEnabled = settings.serverChat
         LLM.chatListModel.shouldSaveChats = settings.saveChats
+        LLM.chatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
         settings.sync()
     }
 
@@ -107,6 +112,7 @@ Dialog {
         LLM.threadCount = settings.threadCount
         LLM.serverEnabled = settings.serverChat
         LLM.chatListModel.shouldSaveChats = settings.saveChats
+        LLM.chatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
         Download.downloadLocalModelsPath = settings.modelPath
     }
 
@@ -803,15 +809,64 @@ Dialog {
                         }
                     }
                     Label {
-                        id: serverChatLabel
-                        text: qsTr("Enable web server:")
+                        id: saveChatGPTChatsLabel
+                        text: qsTr("Save ChatGPT chats to disk:")
                         color: theme.textColor
                         Layout.row: 5
                         Layout.column: 0
                     }
                     CheckBox {
-                        id: serverChatBox
+                        id: saveChatGPTChatsBox
                         Layout.row: 5
+                        Layout.column: 1
+                        checked: settingsDialog.saveChatGPTChats
+                        onClicked: {
+                            settingsDialog.saveChatGPTChats = saveChatGPTChatsBox.checked
+                            LLM.chatListModel.shouldSaveChatGPTChats = saveChatGPTChatsBox.checked
+                            settings.sync()
+                        }
+
+                        background: Rectangle {
+                            color: "transparent"
+                        }
+
+                        indicator: Rectangle {
+                            implicitWidth: 26
+                            implicitHeight: 26
+                            x: saveChatGPTChatsBox.leftPadding
+                            y: parent.height / 2 - height / 2
+                            border.color: theme.dialogBorder
+                            color: "transparent"
+
+                            Rectangle {
+                                width: 14
+                                height: 14
+                                x: 6
+                                y: 6
+                                color: theme.textColor
+                                visible: saveChatGPTChatsBox.checked
+                            }
+                        }
+
+                        contentItem: Text {
+                            text: saveChatGPTChatsBox.text
+                            font: saveChatGPTChatsBox.font
+                            opacity: enabled ? 1.0 : 0.3
+                            color: theme.textColor
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: saveChatGPTChatsBox.indicator.width + saveChatGPTChatsBox.spacing
+                        }
+                    }
+                    Label {
+                        id: serverChatLabel
+                        text: qsTr("Enable web server:")
+                        color: theme.textColor
+                        Layout.row: 6
+                        Layout.column: 0
+                    }
+                    CheckBox {
+                        id: serverChatBox
+                        Layout.row: 6
                         Layout.column: 1
                         checked: settings.serverChat
                         onClicked: {
@@ -855,7 +910,7 @@ Dialog {
                         }
                     }
                     Button {
-                        Layout.row: 6
+                        Layout.row: 7
                         Layout.column: 1
                         Layout.fillWidth: true
                         padding: 10

@@ -46,6 +46,7 @@ bool ChatGPT::isModelLoaded() const
     return true;
 }
 
+// All three of the state virtual functions are handled custom inside of chatllm save/restore
 size_t ChatGPT::stateSize() const
 {
     return 0;
@@ -53,11 +54,13 @@ size_t ChatGPT::stateSize() const
 
 size_t ChatGPT::saveState(uint8_t *dest) const
 {
+    Q_UNUSED(dest);
     return 0;
 }
 
 size_t ChatGPT::restoreState(const uint8_t *src)
 {
+    Q_UNUSED(src);
     return 0;
 }
 
@@ -141,8 +144,8 @@ void ChatGPT::handleFinished()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        qWarning() << QString("\nERROR: ChatGPT responded with error code \"%1-%2%3\"\n")
-            .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString();
+        qWarning() << QString("ERROR: ChatGPT responded with error code \"%1-%2\"")
+            .arg(code).arg(reply->errorString()).toStdString();
     }
     reply->deleteLater();
 }
@@ -190,8 +193,11 @@ void ChatGPT::handleReadyRead()
         const QString content = delta.value("content").toString();
         Q_ASSERT(m_ctx);
         Q_ASSERT(m_responseCallback);
-        m_responseCallback(0, content.toStdString());
         m_currentResponse += content;
+        if (!m_responseCallback(0, content.toStdString())) {
+            reply->abort();
+            return;
+        }
     }
 }
 
@@ -201,6 +207,6 @@ void ChatGPT::handleErrorOccurred(QNetworkReply::NetworkError code)
     if (!reply)
         return;
 
-    qWarning() << QString("\nERROR: ChatGPT responded with error code \"%1-%2%3\"\n")
-                      .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString();
+    qWarning() << QString("ERROR: ChatGPT responded with error code \"%1-%2\"")
+                      .arg(code).arg(reply->errorString()).toStdString();
 }

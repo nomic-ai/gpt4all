@@ -611,6 +611,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version)
         stream >> compressed;
         m_state = qUncompress(compressed);
     } else {
+
         stream >> m_state;
     }
 #if defined(DEBUG)
@@ -624,6 +625,15 @@ void ChatLLM::saveState()
     if (!isModelLoaded())
         return;
 
+    if (m_isChatGPT) {
+        m_state.clear();
+        QDataStream stream(&m_state, QIODeviceBase::WriteOnly);
+        stream.setVersion(QDataStream::Qt_6_5);
+        ChatGPT *chatGPT = static_cast<ChatGPT*>(m_modelInfo.model);
+        stream << chatGPT->context();
+        return;
+    }
+
     const size_t stateSize = m_modelInfo.model->stateSize();
     m_state.resize(stateSize);
 #if defined(DEBUG)
@@ -636,6 +646,18 @@ void ChatLLM::restoreState()
 {
     if (!isModelLoaded() || m_state.isEmpty())
         return;
+
+    if (m_isChatGPT) {
+        QDataStream stream(&m_state, QIODeviceBase::ReadOnly);
+        stream.setVersion(QDataStream::Qt_6_5);
+        ChatGPT *chatGPT = static_cast<ChatGPT*>(m_modelInfo.model);
+        QList<QString> context;
+        stream >> context;
+        chatGPT->setContext(context);
+        m_state.clear();
+        m_state.resize(0);
+        return;
+    }
 
 #if defined(DEBUG)
     qDebug() << "restoreState" << m_chat->id() << "size:" << m_state.size();
