@@ -38,6 +38,19 @@ void ChatListModel::setShouldSaveChats(bool b)
     emit shouldSaveChatsChanged();
 }
 
+bool ChatListModel::shouldSaveChatGPTChats() const
+{
+    return m_shouldSaveChatGPTChats;
+}
+
+void ChatListModel::setShouldSaveChatGPTChats(bool b)
+{
+    if (m_shouldSaveChatGPTChats == b)
+        return;
+    m_shouldSaveChatGPTChats = b;
+    emit shouldSaveChatGPTChatsChanged();
+}
+
 void ChatListModel::removeChatFile(Chat *chat) const
 {
     Q_ASSERT(chat != m_serverChat);
@@ -52,14 +65,16 @@ void ChatListModel::removeChatFile(Chat *chat) const
 
 void ChatListModel::saveChats() const
 {
-    if (!m_shouldSaveChats)
-        return;
-
     QElapsedTimer timer;
     timer.start();
     const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
     for (Chat *chat : m_chats) {
         if (chat == m_serverChat)
+            continue;
+        const bool isChatGPT = chat->modelName().startsWith("chatgpt-");
+        if (!isChatGPT && !m_shouldSaveChats)
+            continue;
+        if (isChatGPT && !m_shouldSaveChatGPTChats)
             continue;
         QString fileName = "gpt4all-" + chat->id() + ".chat";
         QFile file(savePath + "/" + fileName);

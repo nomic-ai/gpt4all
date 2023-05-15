@@ -258,6 +258,7 @@ bool Chat::deserialize(QDataStream &stream, int version)
     // unfortunately, we cannot deserialize these
     if (version < 2 && m_savedModelName.contains("gpt4all-j"))
         return false;
+    m_llmodel->setModelName(m_savedModelName);
     if (!m_llmodel->deserialize(stream, version))
         return false;
     if (!m_chatModel->deserialize(stream, version))

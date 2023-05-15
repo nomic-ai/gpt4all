@@ -20,6 +20,7 @@ class ChatListModel : public QAbstractListModel
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(Chat *currentChat READ currentChat WRITE setCurrentChat NOTIFY currentChatChanged)
     Q_PROPERTY(bool shouldSaveChats READ shouldSaveChats WRITE setShouldSaveChats NOTIFY shouldSaveChatsChanged)
+    Q_PROPERTY(bool shouldSaveChatGPTChats READ shouldSaveChatGPTChats WRITE setShouldSaveChatGPTChats NOTIFY shouldSaveChatGPTChatsChanged)
 
 public:
     explicit ChatListModel(QObject *parent = nullptr);
@@ -61,6 +62,9 @@ public:
 
     bool shouldSaveChats() const;
     void setShouldSaveChats(bool b);
+
+    bool shouldSaveChatGPTChats() const;
+    void setShouldSaveChatGPTChats(bool b);
 
     Q_INVOKABLE void addChat()
     {
@@ -199,6 +203,7 @@ Q_SIGNALS:
     void countChanged();
     void currentChatChanged();
     void shouldSaveChatsChanged();
+    void shouldSaveChatGPTChatsChanged();
 
 private Q_SLOTS:
     void newChatCountChanged()
@@ -240,6 +245,7 @@ private Q_SLOTS:
 
 private:
     bool m_shouldSaveChats;
+    bool m_shouldSaveChatGPTChats;
     Chat* m_newChat;
     Chat* m_dummyChat;
     Chat* m_serverChat;
