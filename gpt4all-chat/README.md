@@ -18,7 +18,7 @@ One click installers for macOS, Linux, and Windows at https://gpt4all.io
 * Cross-platform (Linux, Windows, MacOSX)
 * Fast CPU based inference using ggml for GPT-J based models
 * The UI is made to look and feel like you've come to expect from a chatty gpt
-* Check for updates so you can alway stay fresh with latest models
+* Check for updates so you can always stay fresh with latest models
 * Easy to install with precompiled binaries available for all three major desktop platforms
 * Multi-modal - Ability to load more than one model and switch between them
 * Supports both llama.cpp and gptj.cpp style models
@@ -36,7 +36,7 @@ One click installers for macOS, Linux, and Windows at https://gpt4all.io
 * Typescript bindings
 * Plugin support for langchain other developer tools
 * Save your prompt/responses to disk
-* Upload prompt/respones manually/automatically to nomic.ai to aid future training runs
+* Upload prompt/response manually/automatically to nomic.ai to aid future training runs
 * Syntax highlighting support for programming languages, etc.
 * REST API with a built-in webserver in the chat gui itself with a headless operation mode as well
 * Advanced settings for changing temperature, topk, etc. (DONE)
