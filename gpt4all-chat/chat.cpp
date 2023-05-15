@@ -304,12 +304,13 @@ QList<QString> Chat::modelList() const
 
     if (localPath != exePath) {
         QDir dir(localPath);
-        dir.setNameFilters(QStringList() << "ggml-*.bin");
+        dir.setNameFilters(QStringList() << "ggml-*.bin" << "chatgpt-*.txt");
         QStringList fileNames = dir.entryList();
         for (QString f : fileNames) {
             QString filePath = localPath + f;
             QFileInfo info(filePath);
-            QString name = info.completeBaseName().remove(0, 5);
+            QString basename = info.completeBaseName();
+            QString name = basename.startsWith("ggml-") ? basename.remove(0, 5) : basename;
             if (info.exists() && !list.contains(name)) { // don't allow duplicates
                 if (name == currentModelName)
                     list.prepend(name);
