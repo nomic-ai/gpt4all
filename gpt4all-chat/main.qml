@@ -579,6 +579,16 @@ Window {
                 anchors.fill: parent
                 color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLighter
 
+                Image {
+                    visible: currentChat.isServer || currentChat.modelName.startsWith("chatgpt-")
+                    anchors.fill: parent
+                    sourceSize.width: 1024
+                    sourceSize.height: 1024
+                    fillMode: Image.PreserveAspectFit
+                    opacity: 0.15
+                    source: "qrc:/gpt4all/icons/network.svg"
+                }
+
                 ListView {
                     id: listView
                     anchors.fill: parent
@@ -599,6 +609,7 @@ Window {
                         cursorVisible: currentResponse ? currentChat.responseInProgress : false
                         cursorPosition: text.length
                         background: Rectangle {
+                            opacity: 0.3
                             color: name === qsTr("Response: ")
                                 ? (currentChat.isServer ? theme.backgroundDarkest : theme.backgroundLighter)
                                 : (currentChat.isServer ? theme.backgroundDark : theme.backgroundLight)
