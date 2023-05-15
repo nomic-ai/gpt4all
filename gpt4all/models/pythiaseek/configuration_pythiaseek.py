@@ -112,6 +112,8 @@ class PythiaSeekConfig(PretrainedConfig):
         total_alpha_steps=0,
         initial_alpha=1,
         final_alpha=.5,
+        cross_attn_layer=9,
+        learnable_alpha=False,
         **kwargs,
     ):
         super().__init__(bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
@@ -135,3 +137,6 @@ class PythiaSeekConfig(PretrainedConfig):
         self.total_alpha_steps = total_alpha_steps
         self.initial_alpha = initial_alpha
         self.final_alpha = final_alpha
+        # index of cross attention layer to add
+        self.cross_attn_layer = cross_attn_layer
+        self.learnable_alpha = learnable_alpha
