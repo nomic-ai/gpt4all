@@ -1,6 +1,6 @@
 # GPT4All Golang bindings
 
-The golang bindings has been tested on:
+The golang bindings have been tested on:
 - MacOS
 - Linux
 
