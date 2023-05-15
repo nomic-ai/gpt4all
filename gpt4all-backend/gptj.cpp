@@ -12,7 +12,17 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <unistd.h>
+#ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
+    #include <windows.h>
+    #include <io.h>
+    #include <stdio.h> // for _fseeki64
+#else
+	#include <unistd.h>
+#endif
 #include <sstream>
 #include <unordered_set>
 
