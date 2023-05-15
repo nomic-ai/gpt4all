@@ -465,7 +465,7 @@ void ChatLLM::forceUnloadModel()
 
 void ChatLLM::unloadModel()
 {
-    if (!isModelLoaded() || m_isServer) // FIXME: What if server switches models?
+    if (!isModelLoaded() || m_isServer)
         return;
 
     saveState();
@@ -479,7 +479,7 @@ void ChatLLM::unloadModel()
 
 void ChatLLM::reloadModel()
 {
-    if (isModelLoaded() || m_isServer) // FIXME: What if server switches models?
+    if (isModelLoaded() || m_isServer)
         return;
 
 #if defined(DEBUG_MODEL_LOADING)
