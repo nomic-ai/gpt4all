@@ -240,6 +240,16 @@ void Network::sendModelDownloaderDialog()
     sendMixpanelEvent("download_dialog");
 }
 
+void Network::sendInstallModel(const QString &model)
+{
+    if (!m_usageStatsActive)
+        return;
+    KeyValue kv;
+    kv.key = QString("model");
+    kv.value = QJsonValue(model);
+    sendMixpanelEvent("install_model", QVector<KeyValue>{kv});
+}
+
 void Network::sendDownloadStarted(const QString &model)
 {
     if (!m_usageStatsActive)
