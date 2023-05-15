@@ -30,6 +30,9 @@ public:
     void setModelName(const QString &modelName) { m_modelName = modelName; }
     void setAPIKey(const QString &apiKey) { m_apiKey = apiKey; }
 
+    QList<QString> context() const { return m_context; }
+    void setContext(const QList<QString> &context) { m_context = context; }
+
 protected:
     void recalculateContext(PromptContext &promptCtx,
         std::function<bool(bool)> recalculate) override {}
