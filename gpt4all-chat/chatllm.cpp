@@ -88,6 +88,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_isRecalc(false)
     , m_chat(parent)
     , m_isServer(isServer)
+    , m_isChatGPT(false)
 {
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
@@ -138,8 +139,8 @@ bool ChatLLM::loadModel(const QString &modelName)
     if (isModelLoaded() && m_modelName == modelName)
         return true;
 
-    const bool isChatGPT = modelName.startsWith("chatgpt-");
-    QString filePath = modelFilePath(modelName, isChatGPT);
+    m_isChatGPT = modelName.startsWith("chatgpt-");
+    QString filePath = modelFilePath(modelName, m_isChatGPT);
     QFileInfo fileInfo(filePath);
 
     // We have a live model, but it isn't the one we want
@@ -198,7 +199,7 @@ bool ChatLLM::loadModel(const QString &modelName)
     m_modelInfo.fileInfo = fileInfo;
 
     if (fileInfo.exists()) {
-        if (isChatGPT) {
+        if (m_isChatGPT) {
             QString apiKey;
             QString chatGPTModel = fileInfo.completeBaseName().remove(0, 8); // remove the chatgpt- prefix
             {
@@ -260,7 +261,7 @@ bool ChatLLM::loadModel(const QString &modelName)
 
     if (m_modelInfo.model) {
         QString basename = fileInfo.completeBaseName();
-        setModelName(isChatGPT ? basename : basename.remove(0, 5)); // remove the ggml- prefix
+        setModelName(m_isChatGPT ? basename : basename.remove(0, 5)); // remove the ggml- prefix
     }
 
     return m_modelInfo.model;
@@ -273,7 +274,12 @@ bool ChatLLM::isModelLoaded() const
 
 void ChatLLM::regenerateResponse()
 {
-    m_ctx.n_past -= m_promptResponseTokens;
+    // ChatGPT uses a different semantic meaning for n_past than local models. For ChatGPT, the meaning
+    // of n_past is of the number of prompt/response pairs, rather than for total tokens.
+    if (m_isChatGPT)
+        m_ctx.n_past -= 1;
+    else
+        m_ctx.n_past -= m_promptResponseTokens;
     m_ctx.n_past = std::max(0, m_ctx.n_past);
     // FIXME: This does not seem to be needed in my testing and llama models don't to it. Remove?
     m_ctx.logits.erase(m_ctx.logits.end() -= m_responseLogits, m_ctx.logits.end());
