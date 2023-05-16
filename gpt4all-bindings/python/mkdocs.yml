@@ -9,9 +9,11 @@ use_directory_urls: false
 
 nav:
     - 'index.md'
-    - 'gpt4all_modal.md'
+    - 'gpt4all_chat.md'
+    - 'Tutorials':
+      - 'gpt4all_modal.md'
     - 'API Reference':
-      - 'gpt4all_api.md'
+      - 'gpt4all_python.md'
 
 theme:
   name: material
