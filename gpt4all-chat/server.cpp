@@ -170,18 +170,6 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
         }
     }
 
-    setShouldBeLoaded(true);
-
-    if (!foundModel) {
-        if (!loadDefaultModel()) {
-            std::cerr << "ERROR: couldn't load default model " << model.toStdString() << std::endl;
-            return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
-        }
-    } else if (!loadModel(model)) {
-        std::cerr << "ERROR: couldn't load model " << model.toStdString() << std::endl;
-        return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
-    }
-
     // We only support one prompt for now
     QList<QString> prompts;
     if (body.contains("prompt")) {
@@ -283,6 +271,19 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
 
     // adds prompt/response items to GUI
     emit requestServerNewPromptResponsePair(actualPrompt); // blocks
+
+    // load the new model if necessary
+    setShouldBeLoaded(true);
+
+    if (!foundModel) {
+        if (!loadDefaultModel()) {
+            std::cerr << "ERROR: couldn't load default model " << model.toStdString() << std::endl;
+            return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
+        }
+    } else if (!loadModel(model)) {
+        std::cerr << "ERROR: couldn't load model " << model.toStdString() << std::endl;
+        return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
+    }
 
     // don't remember any context
     resetContextProtected();

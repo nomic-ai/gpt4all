@@ -10,7 +10,8 @@
 enum LLModelType {
     MPT_,
     GPTJ_,
-    LLAMA_
+    LLAMA_,
+    CHATGPT_,
 };
 
 struct LLModelInfo {
@@ -114,6 +115,7 @@ protected:
     std::atomic<bool> m_shouldBeLoaded;
     bool m_isRecalc;
     bool m_isServer;
+    bool m_isChatGPT;
 };
 
 #endif // CHATLLM_H

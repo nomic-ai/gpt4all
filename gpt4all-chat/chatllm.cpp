@@ -5,6 +5,7 @@
 #include "../gpt4all-backend/gptj.h"
 #include "../gpt4all-backend/llamamodel.h"
 #include "../gpt4all-backend/mpt.h"
+#include "chatgpt.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -21,17 +22,15 @@
 #define GPTJ_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
 
-static QString modelFilePath(const QString &modelName)
+static QString modelFilePath(const QString &modelName, bool isChatGPT)
 {
-    QString appPath = QCoreApplication::applicationDirPath()
-        + "/ggml-" + modelName + ".bin";
+    QString modelFilename = isChatGPT ? modelName + ".txt" : "/ggml-" + modelName + ".bin";
+    QString appPath = QCoreApplication::applicationDirPath() + modelFilename;
     QFileInfo infoAppPath(appPath);
     if (infoAppPath.exists())
         return appPath;
 
-    QString downloadPath = Download::globalInstance()->downloadLocalModelsPath()
-        + "/ggml-" + modelName + ".bin";
-
+    QString downloadPath = Download::globalInstance()->downloadLocalModelsPath() + modelFilename;
     QFileInfo infoLocalPath(downloadPath);
     if (infoLocalPath.exists())
         return downloadPath;
@@ -89,6 +88,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_isRecalc(false)
     , m_chat(parent)
     , m_isServer(isServer)
+    , m_isChatGPT(false)
 {
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
@@ -139,7 +139,8 @@ bool ChatLLM::loadModel(const QString &modelName)
     if (isModelLoaded() && m_modelName == modelName)
         return true;
 
-    QString filePath = modelFilePath(modelName);
+    m_isChatGPT = modelName.startsWith("chatgpt-");
+    QString filePath = modelFilePath(modelName, m_isChatGPT);
     QFileInfo fileInfo(filePath);
 
     // We have a live model, but it isn't the one we want
@@ -198,25 +199,42 @@ bool ChatLLM::loadModel(const QString &modelName)
     m_modelInfo.fileInfo = fileInfo;
 
     if (fileInfo.exists()) {
-        auto fin = std::ifstream(filePath.toStdString(), std::ios::binary);
-        uint32_t magic;
-        fin.read((char *) &magic, sizeof(magic));
-        fin.seekg(0);
-        fin.close();
-        const bool isGPTJ = magic == 0x67676d6c;
-        const bool isMPT = magic == 0x67676d6d;
-        if (isGPTJ) {
-            m_modelType = LLModelType::GPTJ_;
-            m_modelInfo.model = new GPTJ;
-            m_modelInfo.model->loadModel(filePath.toStdString());
-        } else if (isMPT) {
-            m_modelType = LLModelType::MPT_;
-            m_modelInfo.model = new MPT;
-            m_modelInfo.model->loadModel(filePath.toStdString());
+        if (m_isChatGPT) {
+            QString apiKey;
+            QString chatGPTModel = fileInfo.completeBaseName().remove(0, 8); // remove the chatgpt- prefix
+            {
+                QFile file(filePath);
+                file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text);
+                QTextStream stream(&file);
+                apiKey = stream.readAll();
+                file.close();
+            }
+            m_modelType = LLModelType::CHATGPT_;
+            ChatGPT *model = new ChatGPT();
+            model->setModelName(chatGPTModel);
+            model->setAPIKey(apiKey);
+            m_modelInfo.model = model;
         } else {
-            m_modelType = LLModelType::LLAMA_;
-            m_modelInfo.model = new LLamaModel;
-            m_modelInfo.model->loadModel(filePath.toStdString());
+            auto fin = std::ifstream(filePath.toStdString(), std::ios::binary);
+            uint32_t magic;
+            fin.read((char *) &magic, sizeof(magic));
+            fin.seekg(0);
+            fin.close();
+            const bool isGPTJ = magic == 0x67676d6c;
+            const bool isMPT = magic == 0x67676d6d;
+            if (isGPTJ) {
+                m_modelType = LLModelType::GPTJ_;
+                m_modelInfo.model = new GPTJ;
+                m_modelInfo.model->loadModel(filePath.toStdString());
+            } else if (isMPT) {
+                m_modelType = LLModelType::MPT_;
+                m_modelInfo.model = new MPT;
+                m_modelInfo.model->loadModel(filePath.toStdString());
+            } else {
+                m_modelType = LLModelType::LLAMA_;
+                m_modelInfo.model = new LLamaModel;
+                m_modelInfo.model->loadModel(filePath.toStdString());
+            }
         }
 #if defined(DEBUG_MODEL_LOADING)
         qDebug() << "new model" << m_chat->id() << m_modelInfo.model;
@@ -241,8 +259,10 @@ bool ChatLLM::loadModel(const QString &modelName)
         emit modelLoadingError(error);
     }
 
-    if (m_modelInfo.model)
-        setModelName(fileInfo.completeBaseName().remove(0, 5)); // remove the ggml- prefix
+    if (m_modelInfo.model) {
+        QString basename = fileInfo.completeBaseName();
+        setModelName(m_isChatGPT ? basename : basename.remove(0, 5)); // remove the ggml- prefix
+    }
 
     return m_modelInfo.model;
 }
@@ -254,7 +274,12 @@ bool ChatLLM::isModelLoaded() const
 
 void ChatLLM::regenerateResponse()
 {
-    m_ctx.n_past -= m_promptResponseTokens;
+    // ChatGPT uses a different semantic meaning for n_past than local models. For ChatGPT, the meaning
+    // of n_past is of the number of prompt/response pairs, rather than for total tokens.
+    if (m_isChatGPT)
+        m_ctx.n_past -= 1;
+    else
+        m_ctx.n_past -= m_promptResponseTokens;
     m_ctx.n_past = std::max(0, m_ctx.n_past);
     // FIXME: This does not seem to be needed in my testing and llama models don't to it. Remove?
     m_ctx.logits.erase(m_ctx.logits.end() -= m_responseLogits, m_ctx.logits.end());
@@ -586,6 +611,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version)
         stream >> compressed;
         m_state = qUncompress(compressed);
     } else {
+
         stream >> m_state;
     }
 #if defined(DEBUG)
@@ -599,6 +625,15 @@ void ChatLLM::saveState()
     if (!isModelLoaded())
         return;
 
+    if (m_isChatGPT) {
+        m_state.clear();
+        QDataStream stream(&m_state, QIODeviceBase::WriteOnly);
+        stream.setVersion(QDataStream::Qt_6_5);
+        ChatGPT *chatGPT = static_cast<ChatGPT*>(m_modelInfo.model);
+        stream << chatGPT->context();
+        return;
+    }
+
     const size_t stateSize = m_modelInfo.model->stateSize();
     m_state.resize(stateSize);
 #if defined(DEBUG)
@@ -611,6 +646,18 @@ void ChatLLM::restoreState()
 {
     if (!isModelLoaded() || m_state.isEmpty())
         return;
+
+    if (m_isChatGPT) {
+        QDataStream stream(&m_state, QIODeviceBase::ReadOnly);
+        stream.setVersion(QDataStream::Qt_6_5);
+        ChatGPT *chatGPT = static_cast<ChatGPT*>(m_modelInfo.model);
+        QList<QString> context;
+        stream >> context;
+        chatGPT->setContext(context);
+        m_state.clear();
+        m_state.resize(0);
+        return;
+    }
 
 #if defined(DEBUG)
     qDebug() << "restoreState" << m_chat->id() << "size:" << m_state.size();
