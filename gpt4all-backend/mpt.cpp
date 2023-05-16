@@ -469,26 +469,25 @@ bool mpt_eval(
 
     const int d_key = n_embd/n_head;
 
-    static size_t buf_size = 256u*1024*1024;
-    static void * buf = malloc(buf_size);
+    static size_t buf_size = 1024u*MB;
+    if (!model.buf.addr || model.buf.size < buf_size)
+        model.buf.resize(buf_size);
 
-    if (mem_per_token > 0 && mem_per_token*N > buf_size) {
+    if (mem_per_token > 0 && mem_per_token*N > model.buf.size) {
         const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
-        //printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, buf_size, buf_size_new);
+        // printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, model.buf.size, buf_size_new);
 
         // reallocate
-        buf_size = buf_size_new;
-        buf = realloc(buf, buf_size);
-        if (buf == nullptr) {
-            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, buf_size);
+        model.buf.resize(buf_size_new);
+        if (model.buf.addr == nullptr) {
+            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, model.buf.size);
             return false;
         }
     }
 
     struct ggml_init_params params = {
-        .mem_size   = buf_size,
-        .mem_buffer = buf,
-        .no_alloc   = false,
+        .mem_size   = model.buf.size,
+        .mem_buffer = model.buf.addr,
     };
 
     struct ggml_context * ctx0 = ggml_init(params);
