@@ -15,7 +15,7 @@ with any supported local LLM through a *very familiar* HTTP API. You can find th
 Enabling server mode in the chat client will spin-up on an HTTP server running on `localhost` port
 `4891` (the reverse of 1984). You can enable the webserver via `GPT4All Chat > Settings > Enable web server`.
 
-Begin using local LLMs in your AI powered apps by changing a single line of code: the bath path for requests.
+Begin using local LLMs in your AI powered apps by changing a single line of code: the base path for requests.
 
 ```python
 import openai
