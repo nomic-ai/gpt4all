@@ -96,6 +96,22 @@ llmodel_model llmodel_llama_create();
 void llmodel_llama_destroy(llmodel_model llama);
 
 /**
+ * Create a llmodel instance.
+ * Recognises correct model type from file at model_path
+ * @param model_path A string representing the path to the model file. 
+ * @return A pointer to the llmodel_model instance.
+ */
+llmodel_model llmodel_model_create(const char *model_path);
+
+/**
+ * Destroy a llmodel instance.
+ * Recognises correct model type using type info
+ * @param model a pointer to a llmodel_model instance.
+ */
+void llmodel_model_destroy(llmodel_model model);
+
+
+/**
  * Load a model from a file.
  * @param model A pointer to the llmodel_model instance.
  * @param model_path A string representing the path to the model file.
