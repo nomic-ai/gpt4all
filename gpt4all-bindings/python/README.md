@@ -13,6 +13,8 @@ pip install gpt4all
 
 ## Local Build Instructions
 
+**NOTE**: If you are doing this on a Windows machine, you must build the GPT4All backend using [MinGW64](https://www.mingw-w64.org/) compiler.
+
 1. Setup `llmodel`
 
 ```

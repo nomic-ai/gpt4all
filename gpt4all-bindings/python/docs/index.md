@@ -11,7 +11,7 @@ pip install gpt4all
 In Python, run the following commands to retrieve a GPT4All model and generate a response
 to a prompt.
 
-**Download Note*:**
+**Download Note:**
 By default, models are stored in `~/.cache/gpt4all/` (you can change this with `model_path`). If the file already exists, model download will be skipped.
 
 ```python
