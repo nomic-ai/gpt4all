@@ -51,6 +51,31 @@ void llmodel_llama_destroy(llmodel_model llama)
     delete wrapper;
 }
 
+llmodel_model llmodel_model_create(const char *model_path) {
+
+    uint32_t magic;
+    llmodel_model model;
+    FILE *f = fopen(model_path, "rb");
+    fread(&magic, sizeof(magic), 1, f);
+
+    if (magic == 0x67676d6c) { model = llmodel_gptj_create();  }
+    if (magic == 0x67676a74) { model = llmodel_llama_create(); }
+    if (magic == 0x67676d6d) { model = llmodel_mpt_create();   }
+    else  {fprintf(stderr, "Invalid model file\n");}
+    fclose(f);
+    return model;
+}
+
+void llmodel_model_destroy(llmodel_model model) {
+
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    const std::type_info &modelTypeInfo = typeid(*wrapper->llModel);
+
+    if (modelTypeInfo == typeid(GPTJ))       { llmodel_gptj_destroy(model);  }
+    if (modelTypeInfo == typeid(LLamaModel)) { llmodel_llama_destroy(model); }
+    if (modelTypeInfo == typeid(MPT))        { llmodel_mpt_destroy(model);   }
+}
+
 bool llmodel_loadModel(llmodel_model model, const char *model_path)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);

@@ -11,6 +11,33 @@ Chat::Chat(QObject *parent)
     , m_responseInProgress(false)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
     , m_llmodel(new ChatLLM(this))
+    , m_isServer(false)
+    , m_shouldDeleteLater(false)
+{
+    connectLLM();
+}
+
+Chat::Chat(bool isServer, QObject *parent)
+    : QObject(parent)
+    , m_id(Network::globalInstance()->generateUniqueId())
+    , m_name(tr("Server Chat"))
+    , m_chatModel(new ChatModel(this))
+    , m_responseInProgress(false)
+    , m_creationDate(QDateTime::currentSecsSinceEpoch())
+    , m_llmodel(new Server(this))
+    , m_isServer(true)
+    , m_shouldDeleteLater(false)
+{
+    connectLLM();
+}
+
+Chat::~Chat()
+{
+    delete m_llmodel;
+    m_llmodel = nullptr;
+}
+
+void Chat::connectLLM()
 {
     // Should be in same thread
     connect(Download::globalInstance(), &Download::modelListChanged, this, &Chat::modelListChanged, Qt::DirectConnection);
@@ -18,6 +45,7 @@ Chat::Chat(QObject *parent)
 
     // Should be in different threads
     connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::isModelLoadedChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::handleModelLoadedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStarted, this, &Chat::responseStarted, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
@@ -30,8 +58,6 @@ Chat::Chat(QObject *parent)
     connect(this, &Chat::modelNameChangeRequested, m_llmodel, &ChatLLM::modelNameChangeRequested, Qt::QueuedConnection);
     connect(this, &Chat::loadDefaultModelRequested, m_llmodel, &ChatLLM::loadDefaultModel, Qt::QueuedConnection);
     connect(this, &Chat::loadModelRequested, m_llmodel, &ChatLLM::loadModel, Qt::QueuedConnection);
-    connect(this, &Chat::unloadModelRequested, m_llmodel, &ChatLLM::unloadModel, Qt::QueuedConnection);
-    connect(this, &Chat::reloadModelRequested, m_llmodel, &ChatLLM::reloadModel, Qt::QueuedConnection);
     connect(this, &Chat::generateNameRequested, m_llmodel, &ChatLLM::generateName, Qt::QueuedConnection);
 
     // The following are blocking operations and will block the gui thread, therefore must be fast
@@ -97,6 +123,12 @@ void Chat::handleResponseChanged()
     emit responseChanged();
 }
 
+void Chat::handleModelLoadedChanged()
+{
+    if (m_shouldDeleteLater)
+        deleteLater();
+}
+
 void Chat::responseStarted()
 {
     m_responseInProgress = true;
@@ -127,9 +159,17 @@ void Chat::setModelName(const QString &modelName)
 
 void Chat::newPromptResponsePair(const QString &prompt)
 {
+    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     m_chatModel->appendPrompt(tr("Prompt: "), prompt);
     m_chatModel->appendResponse(tr("Response: "), prompt);
     emit resetResponseRequested(); // blocking queued connection
+}
+
+void Chat::serverNewPromptResponsePair(const QString &prompt)
+{
+    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
+    m_chatModel->appendPrompt(tr("Prompt: "), prompt);
+    m_chatModel->appendResponse(tr("Response: "), prompt);
 }
 
 bool Chat::isRecalc() const
@@ -147,15 +187,26 @@ void Chat::loadModel(const QString &modelName)
     emit loadModelRequested(modelName);
 }
 
+void Chat::unloadAndDeleteLater()
+{
+    if (!isModelLoaded()) {
+        deleteLater();
+        return;
+    }
+
+    m_shouldDeleteLater = true;
+    unloadModel();
+}
+
 void Chat::unloadModel()
 {
     stopGenerating();
-    emit unloadModelRequested();
+    m_llmodel->setShouldBeLoaded(false);
 }
 
 void Chat::reloadModel()
 {
-    emit reloadModelRequested(m_savedModelName);
+    m_llmodel->setShouldBeLoaded(true);
 }
 
 void Chat::generatedNameChanged()
@@ -203,12 +254,11 @@ bool Chat::deserialize(QDataStream &stream, int version)
     stream >> m_userName;
     emit nameChanged();
     stream >> m_savedModelName;
-
     // Prior to version 2 gptj models had a bug that fixed the kv_cache to F32 instead of F16 so
     // unfortunately, we cannot deserialize these
     if (version < 2 && m_savedModelName.contains("gpt4all-j"))
         return false;
-
+    m_llmodel->setModelName(m_savedModelName);
     if (!m_llmodel->deserialize(stream, version))
         return false;
     if (!m_chatModel->deserialize(stream, version))
@@ -225,6 +275,17 @@ QList<QString> Chat::modelList() const
     QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     QString localPath = Download::globalInstance()->downloadLocalModelsPath();
 
+    QSettings settings;
+    settings.sync();
+    // The user default model can be set by the user in the settings dialog. The "default" user
+    // default model is "Application default" which signals we should use the default model that was
+    // specified by the models.json file.
+    QString defaultModel = settings.value("userDefaultModel").toString();
+    if (defaultModel.isEmpty() || defaultModel == "Application default")
+        defaultModel = settings.value("defaultModel").toString();
+
+    QString currentModelName = modelName().isEmpty() ? defaultModel : modelName();
+
     {
         QDir dir(exePath);
         dir.setNameFilters(QStringList() << "ggml-*.bin");
@@ -234,7 +295,7 @@ QList<QString> Chat::modelList() const
             QFileInfo info(filePath);
             QString name = info.completeBaseName().remove(0, 5);
             if (info.exists()) {
-                if (name == modelName())
+                if (name == currentModelName)
                     list.prepend(name);
                 else
                     list.append(name);
@@ -244,14 +305,15 @@ QList<QString> Chat::modelList() const
 
     if (localPath != exePath) {
         QDir dir(localPath);
-        dir.setNameFilters(QStringList() << "ggml-*.bin");
+        dir.setNameFilters(QStringList() << "ggml-*.bin" << "chatgpt-*.txt");
         QStringList fileNames = dir.entryList();
         for (QString f : fileNames) {
             QString filePath = localPath + f;
             QFileInfo info(filePath);
-            QString name = info.completeBaseName().remove(0, 5);
+            QString basename = info.completeBaseName();
+            QString name = basename.startsWith("ggml-") ? basename.remove(0, 5) : basename;
             if (info.exists() && !list.contains(name)) { // don't allow duplicates
-                if (name == modelName())
+                if (name == currentModelName)
                     list.prepend(name);
                 else
                     list.append(name);

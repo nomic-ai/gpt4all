@@ -1,6 +1,8 @@
 #include "mpt.h"
 #include "llama.cpp/ggml.h"
 
+#include "utils.h"
+
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -11,7 +13,17 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <unistd.h>
+#if defined(_WIN32) && defined(_MSC_VER)
+    #define WIN32_LEAN_AND_MEAN
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
+    #include <windows.h>
+    #include <io.h>
+    #include <stdio.h>
+#else
+    #include <unistd.h>
+#endif
 #include <sstream>
 #include <thread>
 #include <unordered_set>
@@ -136,26 +148,8 @@ static bool kv_cache_init(
     return true;
 }
 
-struct mpt_vocab {
-    using id    = int32_t;
-    using token = std::string;
-
-    std::map<token, id> token_to_id;
-    std::map<id, token> id_to_token;
-    std::vector<std::string> special_tokens;
-
-    void add_special_token(const std::string &token) {
-        special_tokens.push_back(token);
-    }
-};
-
-std::string regex_escape(const std::string &s) {
-  static const std::regex metacharacters(R"([\.\^\$\-\+\(\)\[\]\{\}\|\?\*])");
-  return std::regex_replace(s, metacharacters, "\\$&");
-}
-
 // load the model's weights from a stream
-bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & model, mpt_vocab & vocab) {
+bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & model, gpt_vocab & vocab) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
 
     // verify magic
@@ -219,8 +213,6 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
                 vocab.id_to_token[i] = word;
             }
 
-            // TODO: this only kind-of works, the gpt_tokenize can still incorrectly
-            // tokenize special tokens
             if(special) {
                 vocab.add_special_token(word);
             }
@@ -436,7 +428,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 }
 
 // load the model's weights from a file path
-bool mpt_model_load(const std::string & fname, mpt_model & model, mpt_vocab & vocab) {
+bool mpt_model_load(const std::string & fname, mpt_model & model, gpt_vocab & vocab) {
 
     auto fin = std::ifstream(fname, std::ios::binary);
     if (!fin) {
@@ -469,26 +461,25 @@ bool mpt_eval(
 
     const int d_key = n_embd/n_head;
 
-    static size_t buf_size = 256u*1024*1024;
-    static void * buf = malloc(buf_size);
+    const size_t init_buf_size = 1024u*MB;
+    if (!model.buf.addr || model.buf.size < init_buf_size)
+        model.buf.resize(init_buf_size);
 
-    if (mem_per_token > 0 && mem_per_token*N > buf_size) {
+    if (mem_per_token > 0 && mem_per_token*N > model.buf.size) {
         const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
-        //printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, buf_size, buf_size_new);
+        // printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, model.buf.size, buf_size_new);
 
         // reallocate
-        buf_size = buf_size_new;
-        buf = realloc(buf, buf_size);
-        if (buf == nullptr) {
-            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, buf_size);
+        model.buf.resize(buf_size_new);
+        if (model.buf.addr == nullptr) {
+            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, model.buf.size);
             return false;
         }
     }
 
     struct ggml_init_params params = {
-        .mem_size   = buf_size,
-        .mem_buffer = buf,
-        .no_alloc   = false,
+        .mem_size   = model.buf.size,
+        .mem_buffer = model.buf.addr,
     };
 
     struct ggml_context * ctx0 = ggml_init(params);
@@ -648,98 +639,6 @@ bool mpt_eval(
     return true;
 }
 
-std::vector<int> mpt_tokenize_inner(const mpt_vocab & vocab, const std::string & text) {
-    // taken from stablelm example in ggml
-    // they both use the gpt-neox tokenizer
-    // not sure if this entirely right?
-    std::vector<std::string> words;
-
-
-    // first split the text into words
-    {
-        std::string str = text;
-        std::string pat = R"('s|'t|'re|'ve|'m|'ll|'d| ?[[:alpha:]]+| ?[[:digit:]]+| ?[^\s[:alpha:][:digit:]]+|\s+(?!\S)|\s+)";
-        std::regex re(pat);
-        std::smatch m;
-
-        while (std::regex_search(str, m, re)) {
-            for (auto x : m) {
-                words.push_back(x);
-            }
-            str = m.suffix();
-        }
-    }
-
-    // find the longest tokens that form the words:
-    std::vector<mpt_vocab::id> tokens;
-    for (const auto & word : words) {
-        if (word.size() == 0) continue;
-
-        int i = 0;
-        int n = word.size();
-        while (i < n) {
-            int j = n;
-            while (j > i) {
-                auto it = vocab.token_to_id.find(word.substr(i, j-i));
-                if (it != vocab.token_to_id.end()) {
-                    tokens.push_back(it->second);
-                    i = j;
-                    break;
-                }
-                --j;
-            }
-            if (i == n) {
-                break;
-            }
-            if (j == i) {
-                auto sub = word.substr(i, 1);
-                if (vocab.token_to_id.find(sub) != vocab.token_to_id.end()) {
-                    tokens.push_back(vocab.token_to_id.at(sub));
-                } else {
-                    fprintf(stderr, "%s: unknown token '%s'\n", __func__, sub.data());
-                }
-                ++i;
-            }
-        }
-    }
-
-    return tokens;
-}
-
-std::vector<mpt_vocab::id> mpt_tokenize(const mpt_vocab & vocab, const std::string & text) {
-    // Generate the subpattern from the special_tokens vector if it's not empty
-    if (!vocab.special_tokens.empty()) {
-        std::vector<mpt_vocab::id> out;
-        std::vector<std::string> chunks;
-        std::string str = text;
-        std::string special_tokens_subpattern;
-        for (const auto &token : vocab.special_tokens) {
-            if (!special_tokens_subpattern.empty()) {
-                special_tokens_subpattern += "|";
-            }
-            special_tokens_subpattern += regex_escape(token);
-        }
-        std::regex re(special_tokens_subpattern);
-        std::smatch m;
-        while (std::regex_search(str, m, re)) {
-            auto tok = vocab.token_to_id.find(m.str());
-            if (tok != vocab.token_to_id.end()) {
-                auto tokid = tok->second;
-                auto pfxtoks = mpt_tokenize_inner(vocab, m.prefix());
-                out.insert(out.end(), pfxtoks.begin(), pfxtoks.end());
-                out.push_back(tokid);
-                str = m.suffix();
-            }
-        }
-        if (!str.empty()) {
-            auto tokrest = mpt_tokenize_inner(vocab, str);
-            out.insert(out.end(), tokrest.begin(), tokrest.end());
-        }
-        return out;
-    } else {
-        return mpt_tokenize_inner(vocab, text);
-    }
-}
 
 #define MPT_MAX_RNG_STATE 64*1024
 
@@ -802,104 +701,6 @@ size_t mpt_copy_state_data(const mpt_model &model, const std::mt19937 &rng, uint
     return written;
 }
 
-mpt_vocab::id mpt_sample_top_k_top_p(
-        const mpt_vocab & vocab,
-        const size_t actualVocabSize,
-        const int32_t * last_n_tokens_data,
-        int   last_n_tokens_size,
-        const std::vector<float> logits,
-        int    top_k,
-        double top_p,
-        double temp,
-        float repeat_penalty,
-        std::mt19937 & rng) {
-    int n_logits = actualVocabSize;
-
-    const auto last_n_tokens = std::vector<int32_t>(last_n_tokens_data, last_n_tokens_data + last_n_tokens_size);
-    const auto * plogits = logits.data() + logits.size() - n_logits;
-
-    std::vector<std::pair<double, mpt_vocab::id>> logits_id;
-    logits_id.reserve(n_logits);
-
-    {
-        const float scale = 1.0f/temp;
-        for (int i = 0; i < n_logits; ++i) {
-            // repetition penalty from ctrl paper (https://arxiv.org/abs/1909.05858)
-            // credit https://github.com/facebookresearch/llama/compare/main...shawwn:llama:main
-            if (std::find(last_n_tokens.begin(), last_n_tokens.end(), i) != last_n_tokens.end()) {
-                // if score < 0 then repetition penalty has to multiplied to reduce the previous token probability
-                if (plogits[i] < 0.0f) {
-                    logits_id.push_back(std::make_pair(plogits[i]*scale*repeat_penalty, i));
-                } else {
-                    logits_id.push_back(std::make_pair(plogits[i]*scale/repeat_penalty, i));
-                }
-            } else {
-                logits_id.push_back(std::make_pair(plogits[i]*scale, i));
-            }
-        }
-    }
-
-    // find the top K tokens
-    std::partial_sort(
-            logits_id.begin(),
-            logits_id.begin() + top_k, logits_id.end(),
-            [](const std::pair<double, mpt_vocab::id> & a, const std::pair<double, mpt_vocab::id> & b) {
-        return a.first > b.first;
-    });
-
-    logits_id.resize(top_k);
-
-    double maxl = -INFINITY;
-    for (const auto & kv : logits_id) {
-        maxl = std::max(maxl, kv.first);
-    }
-
-    // compute probs for the top K tokens
-    std::vector<double> probs;
-    probs.reserve(logits_id.size());
-
-    double sum = 0.0;
-    for (const auto & kv : logits_id) {
-        double p = exp(kv.first - maxl);
-        probs.push_back(p);
-        sum += p;
-    }
-
-    // normalize the probs
-    for (auto & p : probs) {
-        p /= sum;
-    }
-
-    if (top_p < 1.0f) {
-        double cumsum = 0.0f;
-        for (int i = 0; i < top_k; i++) {
-            cumsum += probs[i];
-            if (cumsum >= top_p) {
-                top_k = i + 1;
-                probs.resize(top_k);
-                logits_id.resize(top_k);
-                break;
-            }
-        }
-
-        cumsum = 1.0/cumsum;
-        for (int i = 0; i < (int) probs.size(); i++) {
-            probs[i] *= cumsum;
-        }
-    }
-
-    //printf("\n");
-    //for (int i = 0; i < (int) probs.size(); i++) {
-    //    printf("%d: '%s' %f\n", i, vocab.id_to_token.at(logits_id[i].second).c_str(), probs[i]);
-    //}
-    //exit(0);
-
-    std::discrete_distribution<> dist(probs.begin(), probs.end());
-    int idx = dist(rng);
-
-    return logits_id[idx].second;
-}
-
 size_t mpt_set_state_data(mpt_model *model, std::mt19937 *rng, const uint8_t *src)
 {
     const uint8_t * in = src;
@@ -953,7 +754,7 @@ size_t mpt_set_state_data(mpt_model *model, std::mt19937 *rng, const uint8_t *sr
 struct MPTPrivate {
     const std::string modelPath;
     bool modelLoaded;
-    mpt_vocab vocab;
+    gpt_vocab vocab;
     mpt_model *model = nullptr;
     int64_t n_threads = 0;
     size_t mem_per_token = 0;
@@ -1038,7 +839,7 @@ void MPT::prompt(const std::string &prompt,
     int64_t t_prompt_us = 0;
 
     // tokenize the prompt
-    std::vector<int> embd_inp = mpt_tokenize(d_ptr->vocab, prompt);
+    std::vector<int> embd_inp = gpt_tokenize(d_ptr->vocab, prompt);
 
     // save the context size
     promptCtx.n_ctx = d_ptr->model->hparams.n_ctx;
@@ -1117,7 +918,7 @@ void MPT::prompt(const std::string &prompt,
         int id = 0;
         {
             const int64_t t_start_sample_us = ggml_time_us();
-            id = mpt_sample_top_k_top_p(d_ptr->vocab, n_vocab,
+            id = gpt_sample_top_k_top_p(d_ptr->vocab, n_vocab,
                 promptCtx.tokens.data() + promptCtx.n_ctx - promptCtx.n_ctx,
                 promptCtx.n_ctx,
                 promptCtx.logits,

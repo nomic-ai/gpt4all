@@ -36,3 +36,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Additional context**
 Add any other context about the problem here.
+
+**Label Tagging**
+Add related label tags to your bug report. Please check all existing label tags before creating a new one.
+Issues without labels may be dismissed.

@@ -22,10 +22,13 @@ LLM::LLM()
     : QObject{nullptr}
     , m_chatListModel(new ChatListModel(this))
     , m_threadCount(std::min(4, (int32_t) std::thread::hardware_concurrency()))
+    , m_serverEnabled(false)
     , m_compatHardware(true)
 {
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
         this, &LLM::aboutToQuit);
+    connect(this, &LLM::serverEnabledChanged,
+        m_chatListModel, &ChatListModel::handleServerEnabledChanged);
 
 #if defined(__x86_64__) || defined(__i386__)
     if (QString(GPT4ALL_AVX_ONLY) == "OFF") {
@@ -71,6 +74,19 @@ void LLM::setThreadCount(int32_t n_threads)
         n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     m_threadCount = n_threads;
     emit threadCountChanged();
+}
+
+bool LLM::serverEnabled() const
+{
+    return m_serverEnabled;
+}
+
+void LLM::setServerEnabled(bool enabled)
+{
+    if (m_serverEnabled == enabled)
+        return;
+    m_serverEnabled = enabled;
+    emit serverEnabledChanged();
 }
 
 void LLM::aboutToQuit()

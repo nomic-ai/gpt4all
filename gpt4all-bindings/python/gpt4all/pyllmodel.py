@@ -46,6 +46,9 @@ llmodel.llmodel_gptj_create.restype = ctypes.c_void_p
 llmodel.llmodel_gptj_destroy.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_llama_create.restype = ctypes.c_void_p
 llmodel.llmodel_llama_destroy.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_mpt_create.restype = ctypes.c_void_p
+llmodel.llmodel_mpt_destroy.argtypes = [ctypes.c_void_p]
+
 
 llmodel.llmodel_loadModel.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 llmodel.llmodel_loadModel.restype = ctypes.c_bool
@@ -235,4 +238,18 @@ class LlamaModel(LLModel):
     def __del__(self):
         if self.model is not None:
             llmodel.llmodel_llama_destroy(self.model)
+        super().__del__()
+
+
+class MPTModel(LLModel):
+
+    model_type = "mpt"
+
+    def __init__(self):
+        super().__init__()
+        self.model = llmodel.llmodel_mpt_create()
+
+    def __del__(self):
+        if self.model is not None:
+            llmodel.llmodel_mpt_destroy(self.model)
         super().__del__()
