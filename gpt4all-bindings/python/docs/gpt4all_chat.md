@@ -24,7 +24,7 @@ import openai
 openai.api_base = "http://localhost:4891/v1" 
 #openai.api_base = "https://api.openai.com/v1"
 
-openai_api_key = "no needed for a local LLM"
+openai_api_key = "not needed for a local LLM"
 
 # Set up the prompt and other parameters for the API request
 prompt = "Who is Michael Jordan?"
