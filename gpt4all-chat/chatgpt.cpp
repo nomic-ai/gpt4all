@@ -81,12 +81,16 @@ void ChatGPT::prompt(const std::string &prompt,
     m_ctx = &promptCtx;
     m_responseCallback = responseCallback;
 
+    // FIXME: We don't set the max_tokens on purpose because in order to do so safely without encountering
+    // an error we need to be able to count the tokens in our prompt. The only way to do this is to use
+    // the OpenAI tiktokken library or to implement our own tokenization function that matches precisely
+    // the tokenization used by the OpenAI model we're calling. OpenAI has not introduced any means of
+    // using the REST API to count tokens in a prompt.
     QJsonObject root;
     root.insert("model", m_modelName);
     root.insert("stream", true);
     root.insert("temperature", promptCtx.temp);
     root.insert("top_p", promptCtx.top_p);
-    root.insert("max_tokens", 200);
 
     QJsonArray messages;
     for (int i = 0; i < m_context.count() && i < promptCtx.n_past; ++i) {
