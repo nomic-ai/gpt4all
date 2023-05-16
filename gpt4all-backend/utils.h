@@ -44,6 +44,11 @@ struct gpt_vocab {
 
     std::map<token, id> token_to_id;
     std::map<id, token> id_to_token;
+    std::vector<std::string> special_tokens;
+
+    void add_special_token(const std::string &token) {
+        special_tokens.push_back(token);
+    }
 };
 
 void replace(std::string & str, const std::string & needle, const std::string & replacement);
@@ -75,6 +80,7 @@ bool gpt_vocab_init(const std::string & fname, gpt_vocab & vocab);
 //
 gpt_vocab::id gpt_sample_top_k_top_p(
         const gpt_vocab & vocab,
+        const size_t actualVocabSize,
         const int32_t * last_n_tokens_data,
         int   last_n_tokens_size,
         const std::vector<float> logits,
