@@ -102,7 +102,7 @@ std::map<std::string, int32_t> json_parse(const std::string & fname) {
     return result;
 }
 
-std::vector<gpt_vocab::id> gpt_tokenize(const gpt_vocab & vocab, const std::string & text) {
+std::vector<gpt_vocab::id> gpt_tokenize_inner(const gpt_vocab & vocab, const std::string & text) {
     std::vector<std::string> words;
 
     // first split the text into words
@@ -156,6 +156,47 @@ std::vector<gpt_vocab::id> gpt_tokenize(const gpt_vocab & vocab, const std::stri
 
     return tokens;
 }
+
+std::string regex_escape(const std::string &s) {
+  static const std::regex metacharacters(R"([\.\^\$\-\+\(\)\[\]\{\}\|\?\*])");
+  return std::regex_replace(s, metacharacters, "\\$&");
+}
+
+std::vector<gpt_vocab::id> gpt_tokenize(const gpt_vocab & vocab, const std::string & text) {
+    // Generate the subpattern from the special_tokens vector if it's not empty
+    if (!vocab.special_tokens.empty()) {
+        std::vector<gpt_vocab::id> out;
+        std::vector<std::string> chunks;
+        std::string str = text;
+        std::string special_tokens_subpattern;
+        for (const auto &token : vocab.special_tokens) {
+            if (!special_tokens_subpattern.empty()) {
+                special_tokens_subpattern += "|";
+            }
+            special_tokens_subpattern += regex_escape(token);
+        }
+        std::regex re(special_tokens_subpattern);
+        std::smatch m;
+        while (std::regex_search(str, m, re)) {
+            auto tok = vocab.token_to_id.find(m.str());
+            if (tok != vocab.token_to_id.end()) {
+                auto tokid = tok->second;
+                auto pfxtoks = gpt_tokenize_inner(vocab, m.prefix());
+                out.insert(out.end(), pfxtoks.begin(), pfxtoks.end());
+                out.push_back(tokid);
+                str = m.suffix();
+            }
+        }
+        if (!str.empty()) {
+            auto tokrest = gpt_tokenize_inner(vocab, str);
+            out.insert(out.end(), tokrest.begin(), tokrest.end());
+        }
+        return out;
+    } else {
+        return gpt_tokenize_inner(vocab, text);
+    }
+}
+
 
 bool gpt_vocab_init(const std::string & fname, gpt_vocab & vocab) {
     printf("%s: loading vocab from '%s'\n", __func__, fname.c_str());
