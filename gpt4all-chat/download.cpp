@@ -442,18 +442,6 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         m_modelMap.insert(modelInfo.filename, modelInfo);
     }
 
-    {
-        ModelInfo modelInfo;
-        modelInfo.isChatGPT = true;
-        modelInfo.filename = "chatgpt-text-davinci-003";
-        modelInfo.description = tr("OpenAI's ChatGPT model text-davinci-003. ") + chatGPTDesc;
-        modelInfo.requires = "2.4.2";
-        QString filePath = downloadLocalModelsPath() + modelInfo.filename + ".txt";
-        QFileInfo info(filePath);
-        modelInfo.installed = info.exists();
-        m_modelMap.insert(modelInfo.filename, modelInfo);
-    }
-
     // remove ggml- prefix and .bin suffix
     Q_ASSERT(defaultModel.startsWith("ggml-"));
     defaultModel = defaultModel.remove(0, 5);
