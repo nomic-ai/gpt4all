@@ -44,6 +44,11 @@ struct gpt_vocab {
 
     std::map<token, id> token_to_id;
     std::map<id, token> id_to_token;
+    std::vector<std::string> special_tokens;
+
+    void add_special_token(const std::string &token) {
+        special_tokens.push_back(token);
+    }
 };
 
 void replace(std::string & str, const std::string & needle, const std::string & replacement);
