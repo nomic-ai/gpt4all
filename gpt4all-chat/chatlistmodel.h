@@ -20,6 +20,7 @@ class ChatListModel : public QAbstractListModel
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(Chat *currentChat READ currentChat WRITE setCurrentChat NOTIFY currentChatChanged)
     Q_PROPERTY(bool shouldSaveChats READ shouldSaveChats WRITE setShouldSaveChats NOTIFY shouldSaveChatsChanged)
+    Q_PROPERTY(bool shouldSaveChatGPTChats READ shouldSaveChatGPTChats WRITE setShouldSaveChatGPTChats NOTIFY shouldSaveChatGPTChatsChanged)
 
 public:
     explicit ChatListModel(QObject *parent = nullptr);
@@ -62,6 +63,9 @@ public:
     bool shouldSaveChats() const;
     void setShouldSaveChats(bool b);
 
+    bool shouldSaveChatGPTChats() const;
+    void setShouldSaveChatGPTChats(bool b);
+
     Q_INVOKABLE void addChat()
     {
         // Don't add a new chat if we already have one
@@ -94,6 +98,19 @@ public:
         emit currentChatChanged();
     }
 
+    Q_INVOKABLE void addServerChat()
+    {
+        // Create a new dummy chat pointer and don't connect it
+        if (m_serverChat)
+            return;
+
+        m_serverChat = new Chat(true /*isServer*/, this);
+        beginInsertRows(QModelIndex(), m_chats.size(), m_chats.size());
+        m_chats.append(m_serverChat);
+        endInsertRows();
+        emit countChanged();
+    }
+
     void setNewChat(Chat* chat)
     {
         // Don't add a new chat if we already have one
@@ -112,6 +129,7 @@ public:
 
     Q_INVOKABLE void removeChat(Chat* chat)
     {
+        Q_ASSERT(chat != m_serverChat);
         if (!m_chats.contains(chat)) {
             qWarning() << "WARNING: Removing chat failed with id" << chat->id();
             return;
@@ -125,11 +143,11 @@ public:
         }
 
         const int index = m_chats.indexOf(chat);
-        if (m_chats.count() < 2) {
+        if (m_chats.count() < 3 /*m_serverChat included*/) {
             addChat();
         } else {
             int nextIndex;
-            if (index == m_chats.count() - 1)
+            if (index == m_chats.count() - 2 /*m_serverChat is last*/)
                 nextIndex = index - 1;
             else
                 nextIndex = index + 1;
@@ -142,7 +160,7 @@ public:
         beginRemoveRows(QModelIndex(), newIndex, newIndex);
         m_chats.removeAll(chat);
         endRemoveRows();
-        delete chat;
+        chat->unloadAndDeleteLater();
     }
 
     Chat *currentChat() const
@@ -157,11 +175,10 @@ public:
             return;
         }
 
-        if (m_currentChat && m_currentChat->isModelLoaded())
+        if (m_currentChat && m_currentChat != m_serverChat)
             m_currentChat->unloadModel();
-
         m_currentChat = chat;
-        if (!m_currentChat->isModelLoaded())
+        if (!m_currentChat->isModelLoaded() && m_currentChat != m_serverChat)
             m_currentChat->reloadModel();
         emit currentChatChanged();
     }
@@ -179,10 +196,14 @@ public:
     void restoreChat(Chat *chat);
     void chatsRestoredFinished();
 
+public Q_SLOTS:
+    void handleServerEnabledChanged();
+
 Q_SIGNALS:
     void countChanged();
     void currentChatChanged();
     void shouldSaveChatsChanged();
+    void shouldSaveChatGPTChatsChanged();
 
 private Q_SLOTS:
     void newChatCountChanged()
@@ -224,8 +245,10 @@ private Q_SLOTS:
 
 private:
     bool m_shouldSaveChats;
+    bool m_shouldSaveChatGPTChats;
     Chat* m_newChat;
     Chat* m_dummyChat;
+    Chat* m_serverChat;
     Chat* m_currentChat;
     QList<Chat*> m_chats;
 };

@@ -110,6 +110,9 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     if (!attribution.isEmpty())
         object.insert("network/attribution", attribution);
 
+    QString promptTemplate = settings.value("promptTemplate", QString()).toString();
+    object.insert("prompt_template", promptTemplate);
+
     QJsonDocument newDoc;
     newDoc.setObject(object);
 
@@ -123,7 +126,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
-    QByteArray body(newDoc.toJson());
+    QByteArray body(newDoc.toJson(QJsonDocument::Compact));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *jsonReply = m_networkManager.post(request, body);
     connect(jsonReply, &QNetworkReply::finished, this, &Network::handleJsonUploadFinished);
@@ -190,7 +193,7 @@ void Network::sendOptOut()
 
     QJsonDocument doc;
     doc.setArray(array);
-    sendMixpanel(doc.toJson(), true /*isOptOut*/);
+    sendMixpanel(doc.toJson(QJsonDocument::Compact), true /*isOptOut*/);
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable("opt_out"), qPrintable(doc.toJson(QJsonDocument::Indented)));
@@ -238,6 +241,26 @@ void Network::sendModelDownloaderDialog()
     if (!m_usageStatsActive)
         return;
     sendMixpanelEvent("download_dialog");
+}
+
+void Network::sendInstallModel(const QString &model)
+{
+    if (!m_usageStatsActive)
+        return;
+    KeyValue kv;
+    kv.key = QString("model");
+    kv.value = QJsonValue(model);
+    sendMixpanelEvent("install_model", QVector<KeyValue>{kv});
+}
+
+void Network::sendRemoveModel(const QString &model)
+{
+    if (!m_usageStatsActive)
+        return;
+    KeyValue kv;
+    kv.key = QString("model");
+    kv.value = QJsonValue(model);
+    sendMixpanelEvent("remove_model", QVector<KeyValue>{kv});
 }
 
 void Network::sendDownloadStarted(const QString &model)
@@ -410,7 +433,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
 
     QJsonDocument doc;
     doc.setArray(array);
-    sendMixpanel(doc.toJson());
+    sendMixpanel(doc.toJson(QJsonDocument::Compact));
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable(ev), qPrintable(doc.toJson(QJsonDocument::Indented)));

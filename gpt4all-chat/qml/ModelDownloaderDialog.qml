@@ -82,7 +82,7 @@ Dialog {
                         id: modelName
                         objectName: "modelName"
                         property string filename: modelData.filename
-                        text: filename.slice(5, filename.length - 4)
+                        text: !modelData.isChatGPT ? filename.slice(5, filename.length - 4) : filename
                         padding: 20
                         anchors.top: parent.top
                         anchors.left: parent.left
@@ -102,10 +102,13 @@ Dialog {
                         anchors.left: modelName.left
                         anchors.right: parent.right
                         wrapMode: Text.WordWrap
+                        textFormat: Text.StyledText
                         color: theme.textColor
+                        linkColor: theme.textColor
                         Accessible.role: Accessible.Paragraph
                         Accessible.name: qsTr("Description")
                         Accessible.description: qsTr("The description of the file")
+                        onLinkActivated: Qt.openUrlExternally(link)
                     }
 
                     Text {
@@ -206,18 +209,94 @@ Dialog {
                         }
                     }
 
-                    Label {
-                        id: installedLabel
+                    Item {
                         anchors.top: modelName.top
+                        anchors.topMargin: 15
                         anchors.right: parent.right
-                        padding: 20
-                        objectName: "installedLabel"
-                        color: theme.textColor
-                        text: qsTr("Already installed")
                         visible: modelData.installed
-                        Accessible.role: Accessible.Paragraph
-                        Accessible.name: text
-                        Accessible.description: qsTr("Whether the file is already installed on your system")
+
+                        Label {
+                            id: installedLabel
+                            anchors.verticalCenter: removeButton.verticalCenter
+                            anchors.right: removeButton.left
+                            anchors.rightMargin: 15
+                            objectName: "installedLabel"
+                            color: theme.textColor
+                            text: qsTr("Already installed")
+                            Accessible.role: Accessible.Paragraph
+                            Accessible.name: text
+                            Accessible.description: qsTr("Whether the file is already installed on your system")
+                        }
+
+                        Button {
+                            id: removeButton
+                            contentItem: Text {
+                                color: theme.textColor
+                                text: "Remove"
+                            }
+                            anchors.right: parent.right
+                            anchors.rightMargin: 20
+                            background: Rectangle {
+                                opacity: .5
+                                border.color: theme.backgroundLightest
+                                border.width: 1
+                                radius: 10
+                                color: theme.backgroundLight
+                            }
+                            onClicked: {
+                                Download.removeModel(modelData.filename);
+                            }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Remove button")
+                            Accessible.description: qsTr("Remove button to remove model from filesystem")
+                        }
+                    }
+
+                    Item {
+                        visible: modelData.isChatGPT && !modelData.installed
+                        anchors.top: modelName.top
+                        anchors.topMargin: 15
+                        anchors.right: parent.right
+
+                        TextField {
+                            id: openaiKey
+                            anchors.right: installButton.left
+                            anchors.rightMargin: 15
+                            color: theme.textColor
+                            background: Rectangle {
+                                color: theme.backgroundLighter
+                                radius: 10
+                            }
+                            placeholderText: qsTr("enter $OPENAI_API_KEY")
+                            placeholderTextColor: theme.backgroundLightest
+                            Accessible.role: Accessible.EditableText
+                            Accessible.name: placeholderText
+                            Accessible.description: qsTr("Whether the file hash is being calculated")
+                        }
+
+                        Button {
+                            id: installButton
+                            contentItem: Text {
+                                color: openaiKey.text === "" ? theme.backgroundLightest : theme.textColor
+                                text: "Install"
+                            }
+                            enabled: openaiKey.text !== ""
+                            anchors.right: parent.right
+                            anchors.rightMargin: 20
+                            background: Rectangle {
+                                opacity: .5
+                                border.color: theme.backgroundLightest
+                                border.width: 1
+                                radius: 10
+                                color: theme.backgroundLight
+                            }
+                            onClicked: {
+                                Download.installModel(modelData.filename, openaiKey.text);
+                            }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Install button")
+                            Accessible.description: qsTr("Install button to install chatgpt model")
+                        }
                     }
 
                     Button {
@@ -230,7 +309,7 @@ Dialog {
                         anchors.right: parent.right
                         anchors.topMargin: 15
                         anchors.rightMargin: 20
-                        visible: !modelData.installed && !modelData.calcHash
+                        visible: !modelData.isChatGPT && !modelData.installed && !modelData.calcHash
                         onClicked: {
                             if (!downloading) {
                                 downloading = true;
