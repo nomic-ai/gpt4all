@@ -209,18 +209,47 @@ Dialog {
                         }
                     }
 
-                    Label {
-                        id: installedLabel
+                    Item {
                         anchors.top: modelName.top
+                        anchors.topMargin: 15
                         anchors.right: parent.right
-                        padding: 20
-                        objectName: "installedLabel"
-                        color: theme.textColor
-                        text: qsTr("Already installed")
                         visible: modelData.installed
-                        Accessible.role: Accessible.Paragraph
-                        Accessible.name: text
-                        Accessible.description: qsTr("Whether the file is already installed on your system")
+
+                        Label {
+                            id: installedLabel
+                            anchors.verticalCenter: removeButton.verticalCenter
+                            anchors.right: removeButton.left
+                            anchors.rightMargin: 15
+                            objectName: "installedLabel"
+                            color: theme.textColor
+                            text: qsTr("Already installed")
+                            Accessible.role: Accessible.Paragraph
+                            Accessible.name: text
+                            Accessible.description: qsTr("Whether the file is already installed on your system")
+                        }
+
+                        Button {
+                            id: removeButton
+                            contentItem: Text {
+                                color: theme.textColor
+                                text: "Remove"
+                            }
+                            anchors.right: parent.right
+                            anchors.rightMargin: 20
+                            background: Rectangle {
+                                opacity: .5
+                                border.color: theme.backgroundLightest
+                                border.width: 1
+                                radius: 10
+                                color: theme.backgroundLight
+                            }
+                            onClicked: {
+                                Download.removeModel(modelData.filename);
+                            }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Remove button")
+                            Accessible.description: qsTr("Remove button to remove model from filesystem")
+                        }
                     }
 
                     Item {

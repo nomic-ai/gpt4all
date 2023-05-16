@@ -91,6 +91,7 @@ public:
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
     Q_INVOKABLE void installModel(const QString &modelFile, const QString &apiKey);
+    Q_INVOKABLE void removeModel(const QString &modelFile);
     Q_INVOKABLE QString defaultLocalModelsPath() const;
     Q_INVOKABLE QString downloadLocalModelsPath() const;
     Q_INVOKABLE void setDownloadLocalModelsPath(const QString &modelPath);

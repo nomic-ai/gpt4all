@@ -287,6 +287,27 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
     }
 }
 
+void Download::removeModel(const QString &modelFile)
+{
+    const bool isChatGPT = modelFile.startsWith("chatgpt-");
+    const QString filePath = downloadLocalModelsPath()
+        + (!isChatGPT ? "ggml-" : QString())
+        + modelFile
+        + (!isChatGPT ? ".bin" : ".txt");
+    QFile file(filePath);
+    if (!file.exists()) {
+        qWarning() << "ERROR: Cannot remove file that does not exist" << filePath;
+        return;
+    }
+
+    Network::globalInstance()->sendRemoveModel(modelFile);
+    ModelInfo info = m_modelMap.value(modelFile);
+    info.installed = false;
+    m_modelMap.insert(modelFile, info);
+    file.remove();
+    emit modelListChanged();
+}
+
 void Download::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 {
     QUrl url = reply->request().url();
