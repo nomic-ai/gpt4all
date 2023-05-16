@@ -9,7 +9,7 @@ It is optimized to run 7-13B parameter LLMs on the CPU's of any computer in comp
 
 ## GPT4All Chat Server Mode
 
-GPT4All Chat comes with a built-in server mode allowing you to programatically interact
+GPT4All Chat comes with a built-in server mode allowing you to programmatically interact
 with any supported local LLM through a *very familiar* HTTP API. You can find the API documentation [here](https://platform.openai.com/docs/api-reference/completions).
 
 Enabling server mode in the chat client will spin-up on an HTTP server running on `localhost` port
