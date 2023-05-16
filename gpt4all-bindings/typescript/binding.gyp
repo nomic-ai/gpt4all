@@ -1,15 +1,15 @@
 {
   "targets": [
     {
-      "target_name": "gpt4allts",
+      "target_name": "gpt4allts", # gpt4all-ts will cause compile error
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
-        "../../gpt4all-backend/llama.cpp/",
+        "../../gpt4all-backend/llama.cpp/", # need to include llama.cpp because the include paths for examples/common.h include llama.h relatively
         "../../gpt4all-backend",
       ],
-      "sources": [
+      "sources": [ # is there a better way to do this :(
         "../../gpt4all-backend/llama.cpp/examples/common.cpp",
         "../../gpt4all-backend/llama.cpp/ggml.c",
         "../../gpt4all-backend/llama.cpp/llama.cpp",
@@ -30,10 +30,10 @@
         ['OS=="win"', {
             'defines': [
                 'NAPI_DISABLE_CPP_EXCEPTIONS',
-                "__AVX2__"
+                "__AVX2__" # allows SIMD: https://discord.com/channels/1076964370942267462/1092290790388150272/1107564673957630023
             ],
             "msvs_settings": {
-                "VCCLCompilerTool": { "AdditionalOptions": ["/std:c++20"], },
+                "VCCLCompilerTool": { "AdditionalOptions": [], }, # just in case
             },
         }, {
         }]
