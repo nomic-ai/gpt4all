@@ -983,7 +983,7 @@ void GPTJ::prompt(const std::string &prompt,
         gpt_vocab::id id = 0;
         {
             const int64_t t_start_sample_us = ggml_time_us();
-            id = gpt_sample_top_k_top_p(d_ptr->vocab,
+            id = gpt_sample_top_k_top_p(d_ptr->vocab, n_vocab,
                 promptCtx.tokens.data() + promptCtx.n_ctx - promptCtx.n_ctx,
                 promptCtx.n_ctx,
                 promptCtx.logits,
