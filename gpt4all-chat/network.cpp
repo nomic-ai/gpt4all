@@ -253,6 +253,16 @@ void Network::sendInstallModel(const QString &model)
     sendMixpanelEvent("install_model", QVector<KeyValue>{kv});
 }
 
+void Network::sendRemoveModel(const QString &model)
+{
+    if (!m_usageStatsActive)
+        return;
+    KeyValue kv;
+    kv.key = QString("model");
+    kv.value = QJsonValue(model);
+    sendMixpanelEvent("remove_model", QVector<KeyValue>{kv});
+}
+
 void Network::sendDownloadStarted(const QString &model)
 {
     if (!m_usageStatsActive)
