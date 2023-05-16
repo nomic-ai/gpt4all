@@ -1,18 +1,26 @@
 {
   "targets": [
     {
-      "target_name": "ts4all",
+      "target_name": "gpt4allts",
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
-      "sources": [
-         "../../gpt4all-backend/llama.cpp/ggml.c",
-        "../../gpt4all-backend/llama.cpp/llama.cpp",
-        "index.cc",
-       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
-        "../../gpt4all-backend"
+        "../../gpt4all-backend/llama.cpp/",
+        "../../gpt4all-backend",
       ],
+      "sources": [
+        "../../gpt4all-backend/llama.cpp/examples/common.cpp",
+        "../../gpt4all-backend/llama.cpp/ggml.c",
+        "../../gpt4all-backend/llama.cpp/llama.cpp",
+        "../../gpt4all-backend/utils.cpp", 
+        "../../gpt4all-backend/llmodel_c.cpp",
+        "../../gpt4all-backend/gptj.cpp",
+        "../../gpt4all-backend/llamamodel.cpp",
+        "../../gpt4all-backend/mpt.cpp",
+        "index.cc",
+       ],
+
       "conditions": [
         ['OS=="mac"', {
             'defines': [
@@ -28,7 +36,6 @@
                 "VCCLCompilerTool": { "AdditionalOptions": ["/std:c++20"], },
             },
         }, {
-
         }]
       ],
     },
