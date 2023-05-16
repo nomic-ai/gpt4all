@@ -497,9 +497,9 @@ bool gptj_eval(
 
     const int d_key = n_embd/n_head;
 
-    static size_t buf_size = 1024u*MB;
-    if (!model.buf.addr || model.buf.size < buf_size)
-        model.buf.resize(buf_size);
+    const size_t init_buf_size = 1024u*MB;
+    if (!model.buf.addr || model.buf.size < init_buf_size)
+        model.buf.resize(init_buf_size);
 
     if (mem_per_token > 0 && mem_per_token*N > model.buf.size) {
         const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
