@@ -42,6 +42,7 @@ public Q_SLOTS:
     Q_INVOKABLE void sendModelDownloaderDialog();
     Q_INVOKABLE void sendResetContext(int conversationLength);
     void sendInstallModel(const QString &model);
+    void sendRemoveModel(const QString &model);
     void sendDownloadStarted(const QString &model);
     void sendDownloadCanceled(const QString &model);
     void sendDownloadError(const QString &model, int code, const QString &errorString);
