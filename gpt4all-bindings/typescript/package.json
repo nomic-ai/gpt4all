@@ -1,0 +1,16 @@
+{
+  "name": "gpt4all-ts",
+  "packageManager": "yarn@3.5.1",
+  "gypfile": true,
+  "scripts": {
+    "build:dev": "node precompile.mjs && node-gyp configure build -m --debug --verbose",
+    "build:release": "node precompile.mjs && node-gyp configure build -m --release"
+  },
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.1.5"
+  }
+}
