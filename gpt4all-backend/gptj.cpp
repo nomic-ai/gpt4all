@@ -12,16 +12,16 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
     #define WIN32_LEAN_AND_MEAN
     #ifndef NOMINMAX
         #define NOMINMAX
     #endif
     #include <windows.h>
     #include <io.h>
-    #include <stdio.h> // for _fseeki64
+    #include <stdio.h>
 #else
-	#include <unistd.h>
+    #include <unistd.h>
 #endif
 #include <sstream>
 #include <unordered_set>
