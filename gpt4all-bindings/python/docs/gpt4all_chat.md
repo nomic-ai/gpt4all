@@ -1,7 +1,8 @@
 # GPT4All Chat Client
 
-The [GPT4All Chat Client](https://gpt4all.io) lets you easily interact with any local large language model. It is
-optimized to run 7-13B parameter LLMs on the CPU's of any computer running OSX/Windows/Linux.
+The [GPT4All Chat Client](https://gpt4all.io) lets you easily interact with any local large language model.
+
+It is optimized to run 7-13B parameter LLMs on the CPU's of any computer in computer running OSX/Windows/Linux.
 
 
 
