@@ -2,6 +2,10 @@
 
 #include <napi.h>
 #include "llmodel.h"
+#include "gptj.h"
+#include "llamamodel.h"
+#include "mpt.h"
+
 
 class LLModelWrapper : public Napi::ObjectWrap<LLModelWrapper> {
 public:
