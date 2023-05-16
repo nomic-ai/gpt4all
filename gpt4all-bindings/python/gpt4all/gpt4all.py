@@ -4,6 +4,7 @@ Python only API for running all GPT4All models.
 import json
 import os
 from pathlib import Path
+import time
 from typing import Dict, List
 
 import requests
@@ -148,6 +149,8 @@ class GPT4All():
             raise RuntimeError(
                 "An error occurred during download. Downloaded file may not work."
             )
+        # Sleep for a little bit so OS can remove file lock
+        time.sleep(2)
 
         print("Model downloaded at: " + download_path)
         return download_path

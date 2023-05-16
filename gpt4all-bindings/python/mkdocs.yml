@@ -1,7 +1,7 @@
 site_name: GPT4All Documentation
 repo_url: https://github.com/nomic-ai/gpt4all
 repo_name: nomic-ai/gpt4all
-site_url: https://docs.nomic.ai # TODO: change
+site_url: https://docs.gpt4all.io
 edit_uri: edit/main/docs/
 site_description: Documentation for running GPT4All anywhere.
 copyright: Copyright &copy; 2023 Nomic, Inc
@@ -66,9 +66,3 @@ plugins:
   #- mkdocs-jupyter:
   #    ignore_h1_titles: True
   #    show_input: True
-
-extra:
-  generator: false
-  analytics:
-    provider: google
-    property: G-NPXC8BYHJV

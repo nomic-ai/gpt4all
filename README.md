@@ -6,6 +6,10 @@
 </p>
 
 <p align="center">
+<a href="https://docs.gpt4all.io">GPT4All Documentation</a>
+</p>
+
+<p align="center">
 <a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
 
