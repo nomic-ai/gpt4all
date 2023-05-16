@@ -24,11 +24,7 @@ import openai
 openai.api_base = "http://localhost:4891/v1" 
 #openai.api_base = "https://api.openai.com/v1"
 
-# Read the OpenAI API key from an environment variable (not needed if using local LLM)
-openai_api_key = os.environ.get("OPENAI_API_KEY")
-if not openai_api_key:
-    raise ValueError("Please set the 'OPENAI_API_KEY' environment variable.")
-openai.api_key = openai_api_key
+openai_api_key = "no needed for a local LLM"
 
 # Set up the prompt and other parameters for the API request
 prompt = "Who is Michael Jordan?"
