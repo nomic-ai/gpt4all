@@ -1,4 +1,11 @@
 const { LLModel } = require('bindings')('../build/Release/gpt4allts');
 
 
-exports.LLModel = LLModel; 
+//todo
+function download(name) {
+
+
+}
+
+
+exports = { LLModel, download }; 
