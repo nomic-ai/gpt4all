@@ -183,8 +183,7 @@ def train(accelerator, config):
             outputs = model(input_ids=batch["input_ids"], 
                             labels=batch["labels"], 
                             encoder_hidden_states=batch["encoder_hidden_states"],
-            )
-                            #step=curr_step)
+                            step=curr_step)
             loss = outputs.loss
 
             if config["debug"]:

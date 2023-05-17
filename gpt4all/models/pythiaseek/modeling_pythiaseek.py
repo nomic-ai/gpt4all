@@ -246,7 +246,7 @@ class PythiaSeekCrossAttention(PythiaSeekAttention):
                 f"embed_dim must be divisible by num_attention_heads (got `embed_dim`: {self.embed_dim} and"
                 f" `num_attention_heads`: {self.num_attention_heads})."
             )
-        self.scale_attn = torch.sqrt(torch.tensor(self.head_dim, dtype=torch.float32)).to(torch.get_default_dtype())
+        self.norm_factor = torch.sqrt(torch.tensor(self.head_dim, dtype=torch.float32)).to(torch.get_default_dtype())
 
         self.k_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
         self.v_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
@@ -282,7 +282,7 @@ class PythiaSeekCrossAttention(PythiaSeekAttention):
         # query -> (bs, num_attention_heads, seq_len, head_dim)
         # key -> (bs, num_attention_heads, head_dim, neighbors)
         # attn_weights -> (bs, num_attention_heads, seq_len, neighbors)
-        attn_weights = torch.matmul(query, key)
+        attn_weights = torch.matmul(query, key) / self.norm_factor
 
         attn_weights = nn.functional.softmax(attn_weights, dim=-1)
         attn_weights = attn_weights.to(value.dtype)
@@ -498,11 +498,10 @@ class PythiaSeekLayer(nn.Module):
                 cross_attn_output[0] 
             )
 
-            if step is not None:
-                if self.learnable_alpha:
-                    alpha = F.sigmoid(self.alpha)
-                else:
-                    alpha = self._update_alpha(step)
+            if self.learnable_alpha:
+                alpha = F.sigmoid(self.alpha)
+            elif step is not None:
+                alpha = self._update_alpha(step)
             else:
                 alpha = 0.5 
 
