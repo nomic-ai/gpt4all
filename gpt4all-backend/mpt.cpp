@@ -918,9 +918,10 @@ void MPT::prompt(const std::string &prompt,
         int id = 0;
         {
             const int64_t t_start_sample_us = ggml_time_us();
+            const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
             id = gpt_sample_top_k_top_p(d_ptr->vocab, n_vocab,
-                promptCtx.tokens.data() + promptCtx.n_ctx - promptCtx.n_ctx,
-                promptCtx.n_ctx,
+                promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
+                n_prev_toks,
                 promptCtx.logits,
                 promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
                 promptCtx.repeat_penalty,

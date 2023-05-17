@@ -59,8 +59,8 @@ llmodel_model llmodel_model_create(const char *model_path) {
     fread(&magic, sizeof(magic), 1, f);
 
     if (magic == 0x67676d6c) { model = llmodel_gptj_create();  }
-    if (magic == 0x67676a74) { model = llmodel_llama_create(); }
-    if (magic == 0x67676d6d) { model = llmodel_mpt_create();   }
+    else if (magic == 0x67676a74) { model = llmodel_llama_create(); }
+    else if (magic == 0x67676d6d) { model = llmodel_mpt_create();   }
     else  {fprintf(stderr, "Invalid model file\n");}
     fclose(f);
     return model;
