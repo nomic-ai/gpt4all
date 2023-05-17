@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import { LLModel } from '../src/gpt4all.js'
 
 

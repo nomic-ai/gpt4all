@@ -80,13 +80,15 @@ declare class LLModel {
 }
 
 interface DownloadController {
+    //Cancel the request to download from gpt4all website if this is called.
     cancel: () => void;
+    //Convert the downloader into a promise, allowing people to await and manage its lifetime
     promise: () => Promise<void>
 }
 
 /**
  * Initiates the download of a model file of a specific model type.
- *
+ * By default this downloads without waiting. use the controller returned to alter this behavior.
  * @param {ModelFile[ModelType]} m - The model file to be downloaded.
  * @param {Record<string, unknown>} op - options to pass into the downloader. Default is { location: (cwd), debug: false }.
  * @returns {DownloadController} A DownloadController object that allows controlling the download process.

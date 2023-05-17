@@ -48,9 +48,9 @@ public:
     
   };
   ~NodeModelWrapper() {
-    //this causes cleanup too early, why?
+    //this causes exit code 3221226505, why?
     // without destroying the model manually, everything is okay so far.
-   //llmodel_model_destroy(inference_);
+    //llmodel_model_destroy(inference_);
   }
   Napi::Value IsModelLoaded(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(inference_));
