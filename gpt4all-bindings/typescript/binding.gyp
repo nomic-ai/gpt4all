@@ -29,11 +29,16 @@
         }],
         ['OS=="win"', {
             'defines': [
-                'NAPI_DISABLE_CPP_EXCEPTIONS',
+                'NAPI_CPP_EXCEPTIONS',
                 "__AVX2__" # allows SIMD: https://discord.com/channels/1076964370942267462/1092290790388150272/1107564673957630023
             ],
             "msvs_settings": {
-                "VCCLCompilerTool": { "AdditionalOptions": ["/std:c++20"], }, # just in case
+                "VCCLCompilerTool": {
+                    "AdditionalOptions": [
+                        "/std:c++20",
+                        "/EHsc"
+                    ], 
+                }, # just in case
             },
         }, {
         }]
