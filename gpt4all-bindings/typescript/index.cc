@@ -11,6 +11,7 @@ class NodeModelWrapper : public Napi::ObjectWrap<NodeModelWrapper> {
 public:
   static Napi::Object Init(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "LLModel", {
+      InstanceMethod("type",  &NodeModelWrapper::getType),
       InstanceMethod("stateSize", &NodeModelWrapper::StateSize),
       InstanceMethod("saveState", &NodeModelWrapper::SaveState),
       InstanceMethod("restoreState", &NodeModelWrapper::RestoreState),
@@ -27,27 +28,18 @@ public:
     return exports;
   }
 
-  static bool response_callback(int32_t tid, const char* resp) 
+  Napi::Value getType(const Napi::CallbackInfo& info) 
   {
-    return true;
-  }
-
-  static bool prompt_callback(int32_t tid, const char* resp)
-  {
-    return true;
-  }
-    
-  static bool recalculate_callback(bool isrecalculating)
-  {
-    return isrecalculating;
+    return Napi::String::New(info.Env(), type);
   }
   NodeModelWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<NodeModelWrapper>(info) {
     auto env = info.Env();
     std::string weights_path = info[0].As<Napi::String>().Utf8Value();
-    //one of either gptj, mpt, or llama weights (LLModelWrapper);
+
     const char *c_weights_path = weights_path.c_str();
-    //todo: parse params
-    inference_ = llmodel_model_create(c_weights_path);
+    
+    inference_ = create_model_set_type(c_weights_path);
+
     auto success = llmodel_loadModel(inference_, c_weights_path);
     if(!success) {
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
@@ -56,7 +48,9 @@ public:
     
   };
   ~NodeModelWrapper() {
-    llmodel_model_destroy(inference_);
+    //this causes cleanup too early, why?
+    // without destroying the model manually, everything is okay so far.
+   //llmodel_model_destroy(inference_);
   }
   Napi::Value IsModelLoaded(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(inference_));
@@ -187,9 +181,10 @@ public:
     
     }
 
+    llmodel_prompt(inference_, question.c_str(), &prompt_callback, &response_callback, &recalculate_callback, &promptContext);  
 
 //    custom callbacks are weird with the gpt4all c bindings: I need to turn Napi::Functions into  raw c function pointers,
-//    but it doesnt seem like its possible? (TODO, is it possible?)
+//    but it doesn't seem like its possible? (TODO, is it possible?)
 
 //    if(info[1].IsFunction()) {
 //        Napi::Callback cb = *info[1].As<Napi::Function>();
@@ -200,7 +195,6 @@ public:
 //    if(info[3].IsFunction()) {
 //        Napi::Callback cb = *info[3].As<Napi::Function>(); 
 //    }
-    llmodel_prompt(inference_, question.c_str(), &prompt_callback, &response_callback, &recalculate_callback, &promptContext);  
   }
 
   void SetThreadCount(const Napi::CallbackInfo& info) {
@@ -213,12 +207,54 @@ public:
   }
 
   Napi::Value ThreadCount(const Napi::CallbackInfo& info) {
-    // Implement the binding for the threadCount method
     return Napi::Number::New(info.Env(), llmodel_threadCount(inference_));
   }
 
 private:
   llmodel_model inference_;
+  std::string type;
+  static bool response_callback(int32_t tid, const char* resp) 
+  {
+    return true;
+  }
+
+  static bool prompt_callback(int32_t tid, const char* resp)
+  {
+    return true;
+  }
+    
+  static bool recalculate_callback(bool isrecalculating)
+  {
+    return isrecalculating;
+  }
+  // Had to use this instead of the c library in order 
+  // set the type of the model loaded.
+  // causes side effect: type is mutated;
+  llmodel_model create_model_set_type(const char* c_weights_path) 
+  {
+
+    uint32_t magic;
+    llmodel_model model;
+    FILE *f = fopen(c_weights_path, "rb");
+    fread(&magic, sizeof(magic), 1, f);
+
+    if (magic == 0x67676d6c) {
+        model = llmodel_gptj_create();  
+        type = "gptj";
+    }
+    else if (magic == 0x67676a74) {
+        model = llmodel_llama_create(); 
+        type = "llama";
+    }
+    else if (magic == 0x67676d6d) {
+        model = llmodel_mpt_create();   
+        type = "mpt";
+    }
+    else  {fprintf(stderr, "Invalid model file\n");}
+    fclose(f);
+    
+    return model;
+  }
 };
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {

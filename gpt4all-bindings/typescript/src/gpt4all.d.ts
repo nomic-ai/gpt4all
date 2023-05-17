@@ -2,6 +2,8 @@
 declare module 'gpt4all-ts';
 
 
+
+
 interface LLModelPromptContext {
   
   // Size of the raw logits vector
@@ -47,7 +49,7 @@ interface LLModelPromptContext {
  * This is a base class that provides common functionality for different types of language models.
  */
 declare class LLModel {
-
+    type() : 'gptj' | 'mpt' | 'llama';
     constructor(path: string);
     /**
      * Get the size of the internal state of the model.
@@ -77,4 +79,37 @@ declare class LLModel {
     
 }
 
-export { LLModel, LLModelPromptContext }
+interface DownloadController {
+    cancel: () => void;
+    promise: () => Promise<void>
+}
+
+/**
+ * Initiates the download of a model file of a specific model type.
+ *
+ * @param {ModelFile[ModelType]} m - The model file to be downloaded.
+ * @param {Record<string, unknown>} op - options to pass into the downloader. Default is { location: (cwd), debug: false }.
+ * @returns {DownloadController} A DownloadController object that allows controlling the download process.
+ */
+declare function download(m: ModelFile[ModelType], op: { location: string, debug: boolean }): DownloadController 
+
+
+type ModelType = 'gptj' | 'llama' | 'mpt';
+
+interface ModelFile {
+    'gptj': | "ggml-gpt4all-j-v1.3-groovy.bin"
+            | "ggml-gpt4all-j-v1.2-jazzy.bin"
+            | "ggml-gpt4all-j-v1.1-breezy.bin"
+            | "ggml-gpt4all-j.bin";
+    'llama':| "ggml-gpt4all-l13b-snoozy.bin"
+            | "ggml-vicuna-7b-1.1-q4_2.bin"
+            | "ggml-vicuna-13b-1.1-q4_2.bin"
+            | "ggml-wizardLM-7B.q4_2.bin"
+            | "ggml-stable-vicuna-13B.q4_2.bin"
+            | "ggml-nous-gpt4-vicuna-13b.bin"
+    'mpt':  | "ggml-mpt-7b-base.bin"
+            | "ggml-mpt-7b-chat.bin"
+            | "ggml-mpt-7b-instruct.bin"
+}
+
+export { LLModel, LLModelPromptContext, ModelType, download, DownloadController }
