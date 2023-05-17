@@ -1,5 +1,5 @@
 import torch
-from gpt4all.models import GPTJRForCausalLM
+from gpt4all.models import GPTJRForCausalLM, PythiaSeekForCausalLM
 from gpt4all.data.retrieval_dataloader import load_retrieval_augmented_data
 from gpt4all.train.metrics import f1_score, exact_match_score
 from gpt4all.utils.read import read_config
@@ -22,7 +22,7 @@ dataloader = load_retrieval_augmented_data(config, tokenizer, split_dataset=Fals
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = GPTJRForCausalLM.from_pretrained(config["model_name"], use_cache=False)
+model = PythiaSeekForCausalLM.from_pretrained(config["model_name"], use_cache=False)
 model.to(device)
 model.eval()
 
@@ -35,13 +35,18 @@ with torch.no_grad():
                         labels=batch["labels"].to(device),
                         encoder_hidden_states=batch["encoder_hidden_states"].to(device))
 
-        predicted_tokens = outputs.logits.argmax(dim=-1)
-        predicted = tokenizer.batch_decode(predicted_tokens, skip_special_tokens=True)
-
         labels = batch["labels"]
         mask = labels == -100
+
+        # since it's causal we predict the next token
+        predicted_tokens = outputs.logits.argmax(dim=-1)[:, :-1]
+        predicted_tokens[mask[:, 1:]] = tokenizer.pad_token_id
+        predicted = tokenizer.batch_decode(predicted_tokens, skip_special_tokens=True)
+
         labels[mask] = tokenizer.pad_token_id
         ground_truth = tokenizer.batch_decode(labels, skip_special_tokens=True)
+        print(f"Predicted: {predicted}")
+        print(f"Ground truth: {ground_truth}")
 
         f1 = f1_score(predicted, ground_truth)
         exact_match = exact_match_score(predicted, ground_truth)
