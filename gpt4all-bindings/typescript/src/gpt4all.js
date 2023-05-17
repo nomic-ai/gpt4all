@@ -20,18 +20,22 @@ exports.LLModel = LLModel;
 exports.download = function (name, options = { debug: false, location: process.cwd() }) {
     const abortController = new AbortController();
     const signal = abortController.signal;
-    
+
+
+    //wrapper function to get the readable stream from request
     const fetcher = (name) => fetch(`https://gpt4all.io/models/${name}`, 
         {
             signal,
         }
     )
     .then(res => res.body.getReader());
+
     const pathToModel = join(options.location, name);
     if(existsSync(pathToModel)) {
         throw Error("Path to model already exists");
     }
-    const wstream = createWriteStream(join(location, name));
+    const wstream = createWriteStream(pathToModel);
+    //a promise that executes and writes to a stream. Resolves when done writing.
     const res = new Promise((resolve, reject) => {
         fetcher(name).then( 
             async readable => {
