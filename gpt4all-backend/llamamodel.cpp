@@ -180,9 +180,10 @@ void LLamaModel::prompt(const std::string &prompt,
     int32_t totalPredictions = 0;
     for (int i = 0; i < promptCtx.n_predict; i++) {
         // sample next token
+        const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
         llama_token id = llama_sample_top_p_top_k(d_ptr->ctx,
-            promptCtx.tokens.data() + promptCtx.n_ctx - promptCtx.repeat_last_n,
-            promptCtx.repeat_last_n, promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
+            promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
+            n_prev_toks, promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
             promptCtx.repeat_penalty);
 
         // Check if the context has run out...
