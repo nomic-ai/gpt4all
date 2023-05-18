@@ -94,6 +94,7 @@ Q_SIGNALS:
     void isServerChanged();
 
 private Q_SLOTS:
+    void handleLocalDocsRetrieved();
     void handleResponseChanged();
     void handleModelLoadedChanged();
     void responseStarted();
@@ -103,6 +104,18 @@ private Q_SLOTS:
     void handleModelNameChanged();
 
 private:
+    struct Prompt {
+        QString prompt;
+        QString prompt_template;
+        int32_t n_predict;
+        int32_t top_k;
+        float top_p;
+        float temp;
+        int32_t n_batch;
+        float repeat_penalty;
+        int32_t repeat_penalty_tokens;
+    };
+
     QString m_id;
     QString m_name;
     QString m_userName;
@@ -113,6 +126,7 @@ private:
     ChatLLM *m_llmodel;
     bool m_isServer;
     bool m_shouldDeleteLater;
+    Prompt m_queuedPrompt;
 };
 
 #endif // CHAT_H
