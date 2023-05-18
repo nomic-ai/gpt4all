@@ -19,7 +19,7 @@ jobs:
           for (let { number } of issues.data) {
             const issueData = await github.issues.get({...repo, issue_number: number});
             const comments = await github.issues.listComments({...repo, issue_number: number});
-            if (issueData.data.labels.length === 0 && comments.data.length < 1) { 
+            if (issueData.data.labels.length === 0 && comments.data.length <= 1) {
               await github.issues.update({...repo, issue_number: number, state: 'closed'});
               await github.issues.createComment({...repo, issue_number: number, body: 'Issue closed as it does not have any labels or comments.'});
             }
