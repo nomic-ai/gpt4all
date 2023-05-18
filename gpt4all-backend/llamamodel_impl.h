@@ -1,16 +1,19 @@
-#ifndef GPTJ_H
-#define GPTJ_H
+#ifndef LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#error This file is NOT meant to be included outside of llamamodel.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#endif
+#ifndef LLAMAMODEL_H
+#define LLAMAMODEL_H
 
 #include <string>
 #include <functional>
 #include <vector>
 #include "llmodel.h"
 
-class GPTJPrivate;
-class GPTJ : public LLModel {
+struct LLamaPrivate;
+class LLamaModel : public LLModel {
 public:
-    GPTJ();
-    ~GPTJ();
+    LLamaModel();
+    ~LLamaModel();
 
     bool loadModel(const std::string &modelPath) override;
     bool isModelLoaded() const override;
@@ -30,7 +33,7 @@ protected:
         std::function<bool(bool)> recalculate) override;
 
 private:
-    GPTJPrivate *d_ptr;
+    LLamaPrivate *d_ptr;
 };
 
-#endif // GPTJ_H
+#endif // LLAMAMODEL_H

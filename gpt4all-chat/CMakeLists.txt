@@ -55,9 +55,9 @@ get_filename_component(Qt6_ROOT_DIR "${Qt6_ROOT_DIR}/.." ABSOLUTE)
 message(STATUS "qmake binary: ${QMAKE_EXECUTABLE}")
 message(STATUS "Qt 6 root directory: ${Qt6_ROOT_DIR}")
 
-add_subdirectory(../gpt4all-backend llmodel)
-
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_subdirectory(../gpt4all-backend llmodel)
 
 qt_add_executable(chat
     main.cpp
@@ -146,7 +146,6 @@ endif()
 
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llmodel DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llama DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
 set(CPACK_VERBATIM_VARIABLES YES)

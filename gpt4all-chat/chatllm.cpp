@@ -2,9 +2,7 @@
 #include "chat.h"
 #include "download.h"
 #include "network.h"
-#include "../gpt4all-backend/gptj.h"
-#include "../gpt4all-backend/llamamodel.h"
-#include "../gpt4all-backend/mpt.h"
+#include "../gpt4all-backend/llmodel.h"
 #include "chatgpt.h"
 
 #include <QCoreApplication>
@@ -215,25 +213,15 @@ bool ChatLLM::loadModel(const QString &modelName)
             model->setAPIKey(apiKey);
             m_modelInfo.model = model;
         } else {
-            auto fin = std::ifstream(filePath.toStdString(), std::ios::binary);
-            uint32_t magic;
-            fin.read((char *) &magic, sizeof(magic));
-            fin.seekg(0);
-            fin.close();
-            const bool isGPTJ = magic == 0x67676d6c;
-            const bool isMPT = magic == 0x67676d6d;
-            if (isGPTJ) {
-                m_modelType = LLModelType::GPTJ_;
-                m_modelInfo.model = new GPTJ;
+            m_modelInfo.model = LLModel::construct(filePath.toStdString());
+            if (m_modelInfo.model) {
                 m_modelInfo.model->loadModel(filePath.toStdString());
-            } else if (isMPT) {
-                m_modelType = LLModelType::MPT_;
-                m_modelInfo.model = new MPT;
-                m_modelInfo.model->loadModel(filePath.toStdString());
-            } else {
-                m_modelType = LLModelType::LLAMA_;
-                m_modelInfo.model = new LLamaModel;
-                m_modelInfo.model->loadModel(filePath.toStdString());
+                switch (m_modelInfo.model->getModelType()[0]) {
+                case 'L': m_modelType = LLModelType::LLAMA_; break;
+                case 'G': m_modelType = LLModelType::GPTJ_; break;
+                case 'M': m_modelType = LLModelType::MPT_; break;
+                default: delete std::exchange(m_modelInfo.model, nullptr);
+                }
             }
         }
 #if defined(DEBUG_MODEL_LOADING)

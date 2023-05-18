@@ -1,3 +1,6 @@
+#ifndef MPT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#error This file is NOT meant to be included outside of mpt.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define MPT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#endif
 #ifndef MPT_H
 #define MPT_H
 
@@ -6,7 +9,7 @@
 #include <vector>
 #include "llmodel.h"
 
-class MPTPrivate;
+struct MPTPrivate;
 class MPT : public LLModel {
 public:
     MPT();

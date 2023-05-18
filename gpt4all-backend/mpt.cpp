@@ -1,4 +1,5 @@
-#include "mpt.h"
+#define MPT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#include "mpt_impl.h"
 #include "llama.cpp/ggml.h"
 
 #include "utils.h"
@@ -29,7 +30,14 @@
 #include <unordered_set>
 #include <regex>
 
-static const size_t MB = 1024*1024;
+
+namespace {
+const char *modelType_ = "MPT";
+
+constexpr inline unsigned long long operator ""_MiB(unsigned long long bytes) {
+    return bytes*1024*1024;
+}
+}
 
 // default hparams (MPT 7B)
 struct mpt_hparams {
@@ -128,7 +136,7 @@ static bool kv_cache_init(
     const int64_t n_mem      = (int64_t)n_layer*n_ctx;
     const int64_t n_elements = n_embd*n_mem;
 
-    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2u*MB);
+    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2_MiB);
 
     struct ggml_init_params params;
     params.mem_size   = cache.buf.size;
@@ -461,7 +469,7 @@ bool mpt_eval(
 
     const int d_key = n_embd/n_head;
 
-    const size_t init_buf_size = 1024u*MB;
+    const size_t init_buf_size = 1024_MiB;
     if (!model.buf.addr || model.buf.size < init_buf_size)
         model.buf.resize(init_buf_size);
 
@@ -764,6 +772,7 @@ struct MPTPrivate {
 
 MPT::MPT()
     : d_ptr(new MPTPrivate) {
+    modelType = modelType_;
 
     d_ptr->model = new mpt_model;
     d_ptr->modelLoaded = false;
@@ -797,28 +806,23 @@ int32_t MPT::threadCount() const
     return d_ptr->n_threads;
 }
 
-MPT::~MPT()
-{
+MPT::~MPT() {
     delete d_ptr->model;
 }
 
-bool MPT::isModelLoaded() const
-{
+bool MPT::isModelLoaded() const {
     return d_ptr->modelLoaded;
 }
 
-size_t MPT::stateSize() const
-{
+size_t MPT::stateSize() const {
     return mpt_get_state_size(*d_ptr->model);
 }
 
-size_t MPT::saveState(uint8_t *dest) const
-{
+size_t MPT::saveState(uint8_t *dest) const {
     return mpt_copy_state_data(*d_ptr->model, d_ptr->rng, dest);
 }
 
-size_t MPT::restoreState(const uint8_t *src)
-{
+size_t MPT::restoreState(const uint8_t *src) {
     return mpt_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
@@ -1016,8 +1020,7 @@ stop_generating:
     return;
 }
 
-void MPT::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
-{
+void MPT::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {
     size_t i = 0;
     promptCtx.n_past = 0;
     while (i < promptCtx.tokens.size()) {
@@ -1040,4 +1043,27 @@ void MPT::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)>
 
 stop_generating:
     recalculate(false);
+}
+
+
+extern "C" {
+bool is_g4a_backend_model_implementation() {
+    return true;
+}
+
+const char *get_model_type() {
+    return modelType_;
+}
+
+const char *get_build_variant() {
+    return GGML_BUILD_VARIANT;
+}
+
+bool magic_match(uint32_t magic) {
+    return magic == 0x67676d6d;
+}
+
+LLModel *construct() {
+    return new MPT;
+}
 }
