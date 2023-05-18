@@ -21,35 +21,75 @@ set(LLMODEL_VERSION_PATCH 1)
 set(LLMODEL_VERSION "${LLMODEL_VERSION_MAJOR}.${LLMODEL_VERSION_MINOR}.${LLMODEL_VERSION_PATCH}")
 project(llmodel VERSION ${LLMODEL_VERSION} LANGUAGES CXX C)
 
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set(BUILD_SHARED_LIBS ON)
 
-set(LLAMA_BUILD_EXAMPLES ON CACHE BOOL "llama: build examples" FORCE)
-set(BUILD_SHARED_LIBS ON FORCE)
-
-set(CMAKE_VERBOSE_MAKEFILE ON)
-if (GPT4ALL_AVX_ONLY)
-    set(LLAMA_AVX2 OFF CACHE BOOL "llama: enable AVX2" FORCE)
-    set(LLAMA_F16C OFF CACHE BOOL "llama: enable F16C" FORCE)
-    set(LLAMA_FMA  OFF CACHE BOOL "llama: enable FMA" FORCE)
+# Check for IPO support
+include(CheckIPOSupported)
+check_ipo_supported(RESULT IPO_SUPPORTED OUTPUT IPO_ERROR)
+if (NOT IPO_SUPPORTED)
+    message(WARNING "Interprocedural optimization is not supported by your toolchain! This will lead to bigger file sizes and worse performance: ${IPO_ERROR}")
+else()
+    message(STATUS "Interprocedural optimization support detected")
 endif()
 
-add_subdirectory(llama.cpp)
+include(llama.cpp.cmake)
+
+set(BUILD_VARIANTS default avxonly)
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+# Go through each build variant
+foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
+    # Determine flags
+    if (BUILD_VARIANT STREQUAL avxonly)
+        set(GPT4ALL_ALLOW_NON_AVX NO)
+    else()
+        set(GPT4ALL_ALLOW_NON_AVX YES)
+    endif()
+    set(LLAMA_AVX2 ${GPT4ALL_ALLOW_NON_AVX})
+    set(LLAMA_F16C ${GPT4ALL_ALLOW_NON_AVX})
+    set(LLAMA_FMA  ${GPT4ALL_ALLOW_NON_AVX})
+
+    # Include GGML
+    include_ggml(llama.cpp -${BUILD_VARIANT} ON)
+
+    # Function for preparing individual implementations
+    function(prepare_target TARGET_NAME BASE_LIB)
+        set(TARGET_NAME ${TARGET_NAME}-${BUILD_VARIANT})
+        message(STATUS "Configuring model implementation target ${TARGET_NAME}")
+        # Link to ggml/llama
+        target_link_libraries(${TARGET_NAME}
+            PUBLIC ${BASE_LIB}-${BUILD_VARIANT})
+        # Let it know about its build variant
+        target_compile_definitions(${TARGET_NAME}
+            PRIVATE GGML_BUILD_VARIANT="${BUILD_VARIANT}")
+        # Enable IPO if possible
+        set_property(TARGET ${TARGET_NAME}
+                     PROPERTY INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED})
+    endfunction()
+
+    # Add each individual implementation
+    add_library(llamamodel-${BUILD_VARIANT} SHARED
+        llamamodel.cpp)
+    prepare_target(llamamodel llama)
+
+    add_library(gptj-${BUILD_VARIANT} SHARED
+        gptj.cpp)
+    prepare_target(gptj ggml)
+
+    add_library(mpt-${BUILD_VARIANT} SHARED
+        mpt.cpp)
+    prepare_target(mpt ggml)
+endforeach()
 
 add_library(llmodel
-    gptj.h gptj.cpp
-    llamamodel.h llamamodel.cpp
-    llama.cpp/examples/common.cpp
-    llmodel.h llmodel_c.h llmodel_c.cpp
-    mpt.h mpt.cpp
+    llmodel.h llmodel.cpp llmodel_c.h llmodel_c.cpp
     utils.h utils.cpp
 )
-
-target_link_libraries(llmodel
-    PRIVATE llama)
-
-set_target_properties(llmodel PROPERTIES
-                              VERSION ${PROJECT_VERSION}
-                              SOVERSION ${PROJECT_VERSION_MAJOR})
+target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
