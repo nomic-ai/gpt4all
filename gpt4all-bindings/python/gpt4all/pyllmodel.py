@@ -225,6 +225,8 @@ class LLModel:
 
         # Revert to old stdout
         sys.stdout = old_stdout
+        # Force new line
+        print()
 
         return stream_processor.output
 
