@@ -78,6 +78,8 @@ setup(
         'dev': [
             'pytest',
             'twine',
+            'wheel',
+            'setuptools',
             'mkdocs-material',
             'mkautodoc',
             'mkdocstrings[python]',

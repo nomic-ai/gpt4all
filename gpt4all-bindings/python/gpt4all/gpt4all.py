@@ -155,24 +155,26 @@ class GPT4All():
         print("Model downloaded at: " + download_path)
         return download_path
 
-    def generate(self, prompt: str, **generate_kwargs) -> str:
+    def generate(self, prompt: str, streaming: bool = False, **generate_kwargs) -> str:
         """
         Surfaced method of running generate without accessing model object.
 
         Args:
             prompt: Raw string to be passed to model.
+            streaming: True if want output streamed to stdout.
             **generate_kwargs: Optional kwargs to pass to prompt context.
         
         Returns:
             Raw string of generated model response.
         """
-        return self.model.generate(prompt, **generate_kwargs)
+        return self.model.generate(prompt, streaming=streaming, **generate_kwargs)
     
     def chat_completion(self, 
                         messages: List[Dict], 
                         default_prompt_header: bool = True, 
                         default_prompt_footer: bool = True, 
                         verbose: bool = True,
+                        streaming: bool = True,
                         **generate_kwargs) -> str:
         """
         Format list of message dictionaries into a prompt and call model
@@ -189,6 +191,7 @@ class GPT4All():
                 before user/assistant role messages.
             default_prompt_footer: If True (default), add default footer at end of prompt.
             verbose: If True (default), print full prompt and generated response.
+            streaming: True if want output streamed to stdout.
             **generate_kwargs: Optional kwargs to pass to prompt context.
 
         Returns:
@@ -206,7 +209,7 @@ class GPT4All():
         if verbose:
             print(full_prompt)
 
-        response = self.model.generate(full_prompt, **generate_kwargs)
+        response = self.model.generate(full_prompt, streaming=streaming, **generate_kwargs)
 
         if verbose:
             print(response)
