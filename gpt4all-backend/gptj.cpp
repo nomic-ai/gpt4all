@@ -31,9 +31,7 @@
 namespace {
 const char *modelType_ = "MPT";
 
-constexpr inline unsigned long long operator ""_MiB(unsigned long long bytes) {
-    return bytes*1024*1024;
-}
+static const size_t MB = 1024*1024;
 }
 
 // default hparams (GPT-J 6B)
@@ -141,7 +139,7 @@ static bool kv_cache_init(
     const int64_t n_mem      = (int64_t)n_layer*n_ctx;
     const int64_t n_elements = n_embd*n_mem;
 
-    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2_MiB);
+    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2u*MB);
 
     struct ggml_init_params params;
     params.mem_size   = cache.buf.size;
@@ -515,7 +513,7 @@ bool gptj_eval(
 
     const int d_key = n_embd/n_head;
 
-    const size_t init_buf_size = 1024_MiB;
+    const size_t init_buf_size = 1024u*MB;
     if (!model.buf.addr || model.buf.size < init_buf_size)
         model.buf.resize(init_buf_size);
 
