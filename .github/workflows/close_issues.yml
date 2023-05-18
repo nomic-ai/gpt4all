@@ -15,11 +15,18 @@ jobs:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
           const repo = context.repo;
-          const issues = await github.issues.listForRepo(repo);
-          for (let { number } of issues.data) {
+          let page = 1;
+          let issues = [];
+          while (true) {
+            const result = await github.issues.listForRepo({...repo, per_page: 100, page: page});
+            if (result.data.length === 0) break;
+            issues = issues.concat(result.data);
+            page += 1;
+          }
+          for (let { number } of issues) {
             const issueData = await github.issues.get({...repo, issue_number: number});
             const comments = await github.issues.listComments({...repo, issue_number: number});
-            if (issueData.data.labels.length === 0 && comments.data.length <= 1) {
+            if (issueData.data.labels.length === 0 && comments.data.length < 1) {
               await github.issues.update({...repo, issue_number: number, state: 'closed'});
               await github.issues.createComment({...repo, issue_number: number, body: 'Issue closed as it does not have any labels or comments.'});
             }
