@@ -1,5 +1,6 @@
 #include "chat.h"
 #include "llm.h"
+#include "localdocs.h"
 #include "network.h"
 #include "download.h"
 
@@ -42,6 +43,7 @@ void Chat::connectLLM()
     // Should be in same thread
     connect(Download::globalInstance(), &Download::modelListChanged, this, &Chat::modelListChanged, Qt::DirectConnection);
     connect(this, &Chat::modelNameChanged, this, &Chat::modelListChanged, Qt::DirectConnection);
+    connect(LocalDocs::globalInstance(), &LocalDocs::receivedResult, this, &Chat::handleLocalDocsRetrieved, Qt::DirectConnection);
 
     // Should be in different threads
     connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::isModelLoadedChanged, Qt::QueuedConnection);
@@ -97,8 +99,38 @@ void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t
     int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
     int32_t repeat_penalty_tokens)
 {
-    emit promptRequested(prompt, prompt_template, n_predict, top_k, top_p, temp, n_batch,
-        repeat_penalty, repeat_penalty_tokens, LLM::globalInstance()->threadCount());
+    m_queuedPrompt.prompt = prompt;
+    m_queuedPrompt.prompt_template = prompt_template;
+    m_queuedPrompt.n_predict = n_predict;
+    m_queuedPrompt.top_k = top_k;
+    m_queuedPrompt.temp = temp;
+    m_queuedPrompt.n_batch = n_batch;
+    m_queuedPrompt.repeat_penalty = repeat_penalty;
+    m_queuedPrompt.repeat_penalty_tokens = repeat_penalty_tokens;
+    LocalDocs::globalInstance()->requestRetrieve(QList<QString>("localdocs"), prompt);
+}
+
+void Chat::handleLocalDocsRetrieved()
+{
+    QList<QString> augmentedTemplate;
+    QList<QString> results = LocalDocs::globalInstance()->result();
+    if (!results.isEmpty()) {
+        augmentedTemplate.append("### Context:");
+        augmentedTemplate.append(results);
+    }
+    augmentedTemplate.append(m_queuedPrompt.prompt_template);
+    emit promptRequested(
+        m_queuedPrompt.prompt,
+        augmentedTemplate.join("\n"),
+        m_queuedPrompt.n_predict,
+        m_queuedPrompt.top_k,
+        m_queuedPrompt.top_p,
+        m_queuedPrompt.temp,
+        m_queuedPrompt.n_batch,
+        m_queuedPrompt.repeat_penalty,
+        m_queuedPrompt.repeat_penalty_tokens,
+        LLM::globalInstance()->threadCount());
+    m_queuedPrompt = Prompt();
 }
 
 void Chat::regenerateResponse()
