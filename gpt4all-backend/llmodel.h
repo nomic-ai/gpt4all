@@ -1,15 +1,17 @@
 #ifndef LLMODEL_H
 #define LLMODEL_H
-
 #include <string>
 #include <functional>
 #include <vector>
 #include <cstdint>
 
+
 class LLModel {
 public:
     explicit LLModel() {}
     virtual ~LLModel() {}
+
+    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
 
     virtual bool loadModel(const std::string &modelPath) = 0;
     virtual bool isModelLoaded() const = 0;
@@ -39,9 +41,15 @@ public:
     virtual void setThreadCount(int32_t n_threads) {}
     virtual int32_t threadCount() const { return 1; }
 
+    const char *getModelType() const {
+        return modelType;
+    }
+
 protected:
     virtual void recalculateContext(PromptContext &promptCtx,
         std::function<bool(bool)> recalculate) = 0;
+
+    const char *modelType;
 };
 
 #endif // LLMODEL_H

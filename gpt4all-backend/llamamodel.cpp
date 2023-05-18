@@ -1,8 +1,5 @@
-#include "llamamodel.h"
-
-#include "llama.cpp/examples/common.h"
-#include "llama.cpp/llama.h"
-#include "llama.cpp/ggml.h"
+#define LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#include "llamamodel_impl.h"
 
 #include <cassert>
 #include <cmath>
@@ -28,6 +25,26 @@
 #include <thread>
 #include <unordered_set>
 
+#include <llama.h>
+#include <ggml.h>
+
+namespace {
+const char *modelType_ = "LLaMa";
+}
+
+struct gpt_params {
+    int32_t seed          = -1;   // RNG seed
+    int32_t n_parts       = -1;   // amount of model parts (-1 = determine from model dimensions)
+    int32_t n_keep        = 0;    // number of tokens to keep from initial prompt
+
+    std::string prompt = "";
+
+    bool memory_f16        = true;  // use f16 instead of f32 for memory kv
+
+    bool use_mmap          = true;  // use mmap for faster loads
+    bool use_mlock         = false; // use mlock to keep model in memory
+};
+
 struct LLamaPrivate {
     const std::string modelPath;
     bool modelLoaded;
@@ -36,14 +53,25 @@ struct LLamaPrivate {
     int64_t n_threads = 0;
 };
 
+
+static std::vector<llama_token> llama_tokenize(struct llama_context * ctx, const std::string & text, bool add_bos) {
+    // initialize to prompt numer of chars, since n_tokens <= n_prompt_chars
+    std::vector<llama_token> res(text.size() + (int)add_bos);
+    int n = llama_tokenize(ctx, text.c_str(), res.data(), res.size(), add_bos);
+    assert(n >= 0);
+    res.resize(n);
+
+    return res;
+}
+
 LLamaModel::LLamaModel()
     : d_ptr(new LLamaPrivate) {
+    modelType = modelType_;
 
     d_ptr->modelLoaded = false;
 }
 
-bool LLamaModel::loadModel(const std::string &modelPath)
-{
+bool LLamaModel::loadModel(const std::string &modelPath) {
     // load the model
     d_ptr->params = llama_context_default_params();
 
@@ -80,28 +108,23 @@ int32_t LLamaModel::threadCount() const
     return d_ptr->n_threads;
 }
 
-LLamaModel::~LLamaModel()
-{
+LLamaModel::~LLamaModel() {
     llama_free(d_ptr->ctx);
 }
 
-bool LLamaModel::isModelLoaded() const
-{
+bool LLamaModel::isModelLoaded() const {
     return d_ptr->modelLoaded;
 }
 
-size_t LLamaModel::stateSize() const
-{
+size_t LLamaModel::stateSize() const {
     return llama_get_state_size(d_ptr->ctx);
 }
 
-size_t LLamaModel::saveState(uint8_t *dest) const
-{
+size_t LLamaModel::saveState(uint8_t *dest) const {
     return llama_copy_state_data(d_ptr->ctx, dest);
 }
 
-size_t LLamaModel::restoreState(const uint8_t *src)
-{
+size_t LLamaModel::restoreState(const uint8_t *src) {
     return llama_set_state_data(d_ptr->ctx, src);
 }
 
@@ -250,8 +273,7 @@ void LLamaModel::prompt(const std::string &prompt,
     }
 }
 
-void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
-{
+void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {
     size_t i = 0;
     promptCtx.n_past = 0;
     while (i < promptCtx.tokens.size()) {
@@ -273,4 +295,27 @@ void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool
 
 stop_generating:
     recalculate(false);
+}
+
+
+extern "C" {
+bool is_g4a_backend_model_implementation() {
+    return true;
+}
+
+const char *get_model_type() {
+    return modelType_;
+}
+
+const char *get_build_variant() {
+    return GGML_BUILD_VARIANT;
+}
+
+bool magic_match(uint32_t magic) {
+    return magic == 0x67676a74;
+}
+
+LLModel *construct() {
+    return new LLamaModel;
+}
 }
