@@ -29,7 +29,7 @@
 #include <ggml.h>
 
 namespace {
-const char *modelType_ = "LLaMa";
+const char *modelType_ = "LLaMA";
 }
 
 struct gpt_params {
