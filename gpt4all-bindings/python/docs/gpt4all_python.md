@@ -25,16 +25,13 @@ gptj.chat_completion(messages)
 ## Give it a try!
 [Google Colab Tutorial](https://colab.research.google.com/drive/1QRFHV5lj1Kb7_tGZZGZ-E6BfX6izpeMI?usp=sharing)
 
-
 ## Supported Models
 Python bindings support the following ggml architectures: `gptj`, `llama`, `mpt`. See API reference for more details.
-
-
-## API Reference
-
-::: gpt4all.gpt4all.GPT4All
-
 
 ## Best Practices
 
 There are two methods to interface with the underlying language model, `chat_completion()` and `generate()`. Chat completion formats a user-provided message dictionary into a prompt template (see API documentation for more details and options). This will usually produce much better results and is the approach we recommend. You may also prompt the model with `generate()` which will just pass the raw input string to the model. 
+
+## API Reference
+
+::: gpt4all.gpt4all.GPT4All
