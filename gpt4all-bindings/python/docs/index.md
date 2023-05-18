@@ -1,28 +1,11 @@
-# GPT4All with Python
+# GPT4All
 
-In this package, we introduce Python bindings built around GPT4All's C/C++ model backends.
+GTP4All is an ecosystem to train and deploy **powerful** and **customized** large language models that run locally on consumer grade CPUs.
 
-## Quickstart
 
-```bash
-pip install gpt4all
-```
+## Models
 
-In Python, run the following commands to retrieve a GPT4All model and generate a response
-to a prompt.
-
-**Download Note:**
-By default, models are stored in `~/.cache/gpt4all/` (you can change this with `model_path`). If the file already exists, model download will be skipped.
-
-```python
-import gpt4all
-gptj = gpt4all.GPT4All("ggml-gpt4all-j-v1.3-groovy")
-messages = [{"role": "user", "content": "Name 3 colors"}]
-gptj.chat_completion(messages)
-```
-
-## Give it a try!
-[Google Colab Tutorial](https://colab.research.google.com/drive/1QRFHV5lj1Kb7_tGZZGZ-E6BfX6izpeMI?usp=sharing)
+A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4All open-source ecosystem software. **Nomic AI** supports and maintains this software ecosystem to enforce quality and security alongside spearheading the effort to allow any person or enterprise to easily train and deploy their own on-edge large language models. 
 
 
 ## Best Practices

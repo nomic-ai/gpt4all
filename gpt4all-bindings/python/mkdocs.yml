@@ -12,8 +12,10 @@ nav:
     - 'gpt4all_chat.md'
     - 'Tutorials':
       - 'gpt4all_modal.md'
-    - 'API Reference':
+    - 'Python API Reference':
       - 'gpt4all_python.md'
+    - Wiki
+      -'faq.md'
 
 theme:
   name: material
