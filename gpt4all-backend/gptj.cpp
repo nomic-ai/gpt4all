@@ -878,23 +878,28 @@ int32_t GPTJ::threadCount() {
     return d_ptr->n_threads;
 }
 
-GPTJ::~GPTJ() {
+GPTJ::~GPTJ()
+{
     delete d_ptr->model;
 }
 
-bool GPTJ::isModelLoaded() const {
+bool GPTJ::isModelLoaded() const
+{
     return d_ptr->modelLoaded;
 }
 
-size_t GPTJ::stateSize() const {
+size_t GPTJ::stateSize() const
+{
     return gptj_get_state_size(*d_ptr->model);
 }
 
-size_t GPTJ::saveState(uint8_t *dest) const {
+size_t GPTJ::saveState(uint8_t *dest) const
+{
     return gptj_copy_state_data(*d_ptr->model, d_ptr->rng, dest);
 }
 
-size_t GPTJ::restoreState(const uint8_t *src) {
+size_t GPTJ::restoreState(const uint8_t *src)
+{
     return gptj_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
@@ -1088,7 +1093,8 @@ stop_generating:
     return;
 }
 
-void GPTJ::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {
+void GPTJ::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
+{
     size_t i = 0;
     promptCtx.n_past = 0;
     while (i < promptCtx.tokens.size()) {

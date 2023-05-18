@@ -803,23 +803,28 @@ int32_t MPT::threadCount() {
     return d_ptr->n_threads;
 }
 
-MPT::~MPT() {
+MPT::~MPT()
+{
     delete d_ptr->model;
 }
 
-bool MPT::isModelLoaded() const {
+bool MPT::isModelLoaded() const
+{
     return d_ptr->modelLoaded;
 }
 
-size_t MPT::stateSize() const {
+size_t MPT::stateSize() const
+{
     return mpt_get_state_size(*d_ptr->model);
 }
 
-size_t MPT::saveState(uint8_t *dest) const {
+size_t MPT::saveState(uint8_t *dest) const
+{
     return mpt_copy_state_data(*d_ptr->model, d_ptr->rng, dest);
 }
 
-size_t MPT::restoreState(const uint8_t *src) {
+size_t MPT::restoreState(const uint8_t *src)
+{
     return mpt_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
@@ -1017,7 +1022,8 @@ stop_generating:
     return;
 }
 
-void MPT::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {
+void MPT::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
+{
     size_t i = 0;
     promptCtx.n_past = 0;
     while (i < promptCtx.tokens.size()) {
