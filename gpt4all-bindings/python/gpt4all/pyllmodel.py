@@ -1,25 +1,23 @@
-from io import StringIO
 import pkg_resources
 import ctypes
 import os
 import platform
 import re
+import subprocess
 import sys
 
-class DualOutput:
-    def __init__(self, stdout, string_io):
-        self.stdout = stdout
-        self.string_io = string_io
+class DualStreamProcessor:
+    def __init__(self, stream=None):
+        self.stream = stream
+        self.output = ""
 
     def write(self, text):
-        self.stdout.write(text)
-        self.string_io.write(text)
+        cleaned_text = re.sub(r"\n(?!\n)", "", text)
+        if self.stream is not None:
+            self.stream.write(cleaned_text)
+            self.stream.flush()
+        self.output += cleaned_text
 
-    def flush(self):
-        # It's a good idea to also define a flush method that flushes both
-        # outputs, as sys.stdout is expected to have this method.
-        self.stdout.flush()
-        self.string_io.flush()
 
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
@@ -175,7 +173,7 @@ class LLModel:
                  repeat_penalty: float = 1.2, 
                  repeat_last_n: int = 10, 
                  context_erase: float = .5,
-                 std_passthrough: bool = False) -> str:
+                 streaming: bool = False) -> str:
         """
         Generate response from model from a prompt.
 
@@ -183,12 +181,8 @@ class LLModel:
         ----------
         prompt: str
             Question, task, or conversation for model to respond to
-        add_default_header: bool, optional
-            Whether to add a prompt header (default is True)
-        add_default_footer: bool, optional
-            Whether to add a prompt footer (default is True)
-        verbose: bool, optional
-            Whether to print prompt and response
+        streaming: bool
+            Stream response to stdout
 
         Returns
         -------
@@ -198,13 +192,14 @@ class LLModel:
         prompt = prompt.encode('utf-8')
         prompt = ctypes.c_char_p(prompt)
 
-        # Change stdout to StringIO so we can collect response
         old_stdout = sys.stdout 
-        collect_response = StringIO()
-        if std_passthrough:
-            sys.stdout = DualOutput(old_stdout, collect_response)
-        else:
-            sys.stdout = collect_response
+
+        stream_processor = DualStreamProcessor()
+    
+        if streaming:
+            stream_processor.stream = sys.stdout
+        
+        sys.stdout = stream_processor
 
         context = LLModelPromptContext(
             logits_size=logits_size, 
@@ -227,14 +222,11 @@ class LLModel:
                                ResponseCallback(self._response_callback), 
                                RecalculateCallback(self._recalculate_callback), 
                                context)
-        
-        response = collect_response.getvalue()
+
+        # Revert to old stdout
         sys.stdout = old_stdout
 
-        # Remove the unnecessary new lines from response
-        response = re.sub(r"\n(?!\n)", "", response).strip()
-        
-        return response
+        return stream_processor.output
 
     # Empty prompt callback
     @staticmethod
