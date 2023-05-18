@@ -155,7 +155,7 @@ class GPT4All():
         print("Model downloaded at: " + download_path)
         return download_path
 
-    def generate(self, prompt: str, streaming: bool = False, **generate_kwargs) -> str:
+    def generate(self, prompt: str, streaming: bool = True, **generate_kwargs) -> str:
         """
         Surfaced method of running generate without accessing model object.
 
@@ -211,7 +211,7 @@ class GPT4All():
 
         response = self.model.generate(full_prompt, streaming=streaming, **generate_kwargs)
 
-        if verbose:
+        if verbose and not streaming:
             print(response)
 
         response_dict = {
