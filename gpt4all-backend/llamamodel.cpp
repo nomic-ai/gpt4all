@@ -71,7 +71,8 @@ LLamaModel::LLamaModel()
     d_ptr->modelLoaded = false;
 }
 
-bool LLamaModel::loadModel(const std::string &modelPath) {
+bool LLamaModel::loadModel(const std::string &modelPath)
+{
     // load the model
     d_ptr->params = llama_context_default_params();
 
@@ -108,23 +109,28 @@ int32_t LLamaModel::threadCount() const
     return d_ptr->n_threads;
 }
 
-LLamaModel::~LLamaModel() {
+LLamaModel::~LLamaModel()
+{
     llama_free(d_ptr->ctx);
 }
 
-bool LLamaModel::isModelLoaded() const {
+bool LLamaModel::isModelLoaded() const
+{
     return d_ptr->modelLoaded;
 }
 
-size_t LLamaModel::stateSize() const {
+size_t LLamaModel::stateSize() const
+{
     return llama_get_state_size(d_ptr->ctx);
 }
 
-size_t LLamaModel::saveState(uint8_t *dest) const {
+size_t LLamaModel::saveState(uint8_t *dest) const
+{
     return llama_copy_state_data(d_ptr->ctx, dest);
 }
 
-size_t LLamaModel::restoreState(const uint8_t *src) {
+size_t LLamaModel::restoreState(const uint8_t *src)
+{
     return llama_set_state_data(d_ptr->ctx, src);
 }
 
@@ -273,7 +279,8 @@ void LLamaModel::prompt(const std::string &prompt,
     }
 }
 
-void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {
+void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
+{
     size_t i = 0;
     promptCtx.n_past = 0;
     while (i < promptCtx.tokens.size()) {
