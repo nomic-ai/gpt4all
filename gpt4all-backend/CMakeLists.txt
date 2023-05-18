@@ -87,8 +87,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 endforeach()
 
 add_library(llmodel
-    llmodel.h llmodel.cpp llmodel_c.h llmodel_c.cpp
+    llmodel.h llmodel.cpp
+    llmodel_c.h llmodel_c.cpp
     utils.h utils.cpp
+    dlhandle.h
 )
 target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
