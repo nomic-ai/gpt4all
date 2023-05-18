@@ -1,16 +1,19 @@
-#ifndef LLAMAMODEL_H
-#define LLAMAMODEL_H
+#ifndef MPT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#error This file is NOT meant to be included outside of mpt.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define MPT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#endif
+#ifndef MPT_H
+#define MPT_H
 
 #include <string>
 #include <functional>
 #include <vector>
 #include "llmodel.h"
 
-class LLamaPrivate;
-class LLamaModel : public LLModel {
+struct MPTPrivate;
+class MPT : public LLModel {
 public:
-    LLamaModel();
-    ~LLamaModel();
+    MPT();
+    ~MPT();
 
     bool loadModel(const std::string &modelPath) override;
     bool isModelLoaded() const override;
@@ -30,7 +33,7 @@ protected:
         std::function<bool(bool)> recalculate) override;
 
 private:
-    LLamaPrivate *d_ptr;
+    MPTPrivate *d_ptr;
 };
 
-#endif // LLAMAMODEL_H
+#endif // MPT_H
