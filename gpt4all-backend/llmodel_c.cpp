@@ -54,27 +54,32 @@ void llmodel_model_destroy(llmodel_model model) {
     delete wrapper->llModel;
 }
 
-bool llmodel_loadModel(llmodel_model model, const char *model_path) {
+bool llmodel_loadModel(llmodel_model model, const char *model_path)
+{
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     return wrapper->llModel->loadModel(model_path);
 }
 
-bool llmodel_isModelLoaded(llmodel_model model) {
+bool llmodel_isModelLoaded(llmodel_model model)
+{
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     return wrapper->llModel->isModelLoaded();
 }
 
-uint64_t llmodel_get_state_size(llmodel_model model) {
+uint64_t llmodel_get_state_size(llmodel_model model)
+{
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     return wrapper->llModel->stateSize();
 }
 
-uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest) {
+uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest)
+{
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     return wrapper->llModel->saveState(dest);
 }
 
-uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src) {
+uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src)
+{
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     return wrapper->llModel->restoreState(src);
 }
@@ -99,7 +104,8 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
                     llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
                     llmodel_recalculate_callback recalculate_callback,
-                    llmodel_prompt_context *ctx) {
+                    llmodel_prompt_context *ctx)
+{
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
 
     // Create std::function wrappers that call the C function pointers
@@ -145,19 +151,14 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     ctx->context_erase = wrapper->promptContext.contextErase;
 }
 
-void llmodel_setThreadCount(llmodel_model model, int32_t n_threads) {
+void llmodel_setThreadCount(llmodel_model model, int32_t n_threads)
+{
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     wrapper->llModel->setThreadCount(n_threads);
 }
 
-<<<<<<< HEAD
 int32_t llmodel_threadCount(llmodel_model model)
 {
-    const auto *llm = reinterpret_cast<LLModelWrapper*>(model)->llModel;
-    return llm->threadCount();
-=======
-int32_t llmodel_threadCount(llmodel_model model) {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     return wrapper->llModel->threadCount();
->>>>>>> 3a83776 (Implemented basic dynamic model implementation loading)
 }
