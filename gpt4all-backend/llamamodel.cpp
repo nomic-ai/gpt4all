@@ -28,6 +28,7 @@
 #include <llama.h>
 #include <ggml.h>
 
+
 namespace {
 const char *modelType_ = "LLaMA";
 }
@@ -48,16 +49,7 @@ struct gpt_params {
     bool use_mlock         = false; // use mlock to keep model in memory
 };
 
-struct LLamaPrivate {
-    const std::string modelPath;
-    bool modelLoaded;
-    llama_context *ctx = nullptr;
-    llama_context_params params;
-    int64_t n_threads = 0;
-    bool empty = true;
-};
-
-static int llama_sample_top_p_top_k(
+int llama_sample_top_p_top_k(
         llama_context *ctx,
         const llama_token *last_n_tokens_data,
         int last_n_tokens_size,
@@ -84,6 +76,15 @@ static int llama_sample_top_p_top_k(
     llama_sample_temperature(ctx, &candidates_p, temp);
     return llama_sample_token(ctx, &candidates_p);
 }
+
+struct LLamaPrivate {
+    const std::string modelPath;
+    bool modelLoaded;
+    llama_context *ctx = nullptr;
+    llama_context_params params;
+    int64_t n_threads = 0;
+    bool empty = true;
+};
 
 LLamaModel::LLamaModel()
     : d_ptr(new LLamaPrivate) {
