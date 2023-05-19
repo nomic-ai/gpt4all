@@ -1,6 +1,5 @@
 #define GPTJ_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "gptj_impl.h"
-#include "llama.cpp/ggml.h"
 
 #include "utils.h"
 
@@ -26,6 +25,7 @@
 #endif
 #include <sstream>
 #include <unordered_set>
+#include <ggml.h>
 
 
 namespace {

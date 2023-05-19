@@ -1,5 +1,5 @@
-#define LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
-#include "llamamodel_impl.h"
+#define LLAMAMODEL_OLD_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#include "llamamodel_old_impl.h"
 
 #include <cassert>
 #include <cmath>
