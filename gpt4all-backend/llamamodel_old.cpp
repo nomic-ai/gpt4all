@@ -51,18 +51,8 @@ struct LLamaPrivate {
     llama_context *ctx = nullptr;
     llama_context_params params;
     int64_t n_threads = 0;
+    bool empty = true;
 };
-
-
-static std::vector<llama_token> llama_tokenize(struct llama_context * ctx, const std::string & text, bool add_bos) {
-    // initialize to prompt numer of chars, since n_tokens <= n_prompt_chars
-    std::vector<llama_token> res(text.size() + (int)add_bos);
-    int n = llama_tokenize(ctx, text.c_str(), res.data(), res.size(), add_bos);
-    assert(n >= 0);
-    res.resize(n);
-
-    return res;
-}
 
 LLamaModel::LLamaModel()
     : d_ptr(new LLamaPrivate) {
@@ -147,7 +137,11 @@ void LLamaModel::prompt(const std::string &prompt,
     params.prompt.insert(0, 1, ' ');
 
     // tokenize the prompt
-    auto embd_inp = ::llama_tokenize(d_ptr->ctx, params.prompt, false);
+    std::vector<llama_token> embd_inp(params.prompt.size() + 4);
+    int n = llama_tokenize(d_ptr->ctx, params.prompt.c_str(), embd_inp.data(), embd_inp.size(), d_ptr->empty);
+    assert(n >= 0);
+    embd_inp.resize(n);
+    d_ptr->empty = false;
 
     // save the context size
     promptCtx.n_ctx = llama_n_ctx(d_ptr->ctx);
