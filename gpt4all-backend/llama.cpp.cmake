@@ -332,10 +332,16 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
     endif()
 
     if (WITH_LLAMA)
+        # Backwards compatibility with old llama.cpp versions
+        set(LLAMA_UTIL_SOURCE_FILE llama-util.h)
+        if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}/${LLAMA_UTIL_SOURCE_FILE})
+            set(LLAMA_UTIL_SOURCE_FILE llama_util.h)
+        endif()
+
         add_library(llama${SUFFIX}
                     ${DIRECTORY}/llama.cpp
                     ${DIRECTORY}/llama.h
-                    ${DIRECTORY}/llama_util.h)
+                    ${DIRECTORY}/${LLAMA_UTIL_SOURCE_FILE})
 
         target_include_directories(llama${SUFFIX} PUBLIC ${DIRECTORY})
         target_compile_features(llama${SUFFIX} PUBLIC cxx_std_11) # don't bump

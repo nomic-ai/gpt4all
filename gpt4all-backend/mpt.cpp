@@ -1,6 +1,5 @@
 #define MPT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "mpt_impl.h"
-#include "llama.cpp/ggml.h"
 
 #include "utils.h"
 
@@ -29,6 +28,7 @@
 #include <thread>
 #include <unordered_set>
 #include <regex>
+#include <ggml.h>
 
 
 namespace {
