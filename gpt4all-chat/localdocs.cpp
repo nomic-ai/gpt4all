@@ -20,11 +20,11 @@ const auto INSERT_CHUNK_FTS_SQL = QLatin1String(R"(
     )");
 
 const auto DELETE_CHUNKS_SQL = QLatin1String(R"(
-    DELETE FROM chunks WHERE document_id = ?;
+    delete from chunks WHERE document_id = ?;
     )");
 
 const auto DELETE_CHUNKS_FTS_SQL = QLatin1String(R"(
-    DELETE FROM chunks_fts WHERE document_id = ?;
+    delete from chunks_fts WHERE document_id = ?;
     )");
 
 const auto CHUNKS_SQL = QLatin1String(R"(
@@ -76,7 +76,7 @@ bool addChunk(QSqlQuery &q, int document_id, int chunk_id, const QString &chunk_
     return true;
 }
 
-bool deleteChunksByDocumentId(QSqlQuery &q, int document_id)
+bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
 {
     {
         if (!q.prepare(DELETE_CHUNKS_SQL))
@@ -159,6 +159,10 @@ const auto INSERT_COLLECTION_SQL = QLatin1String(R"(
     insert into collections(collection_name, folder_id) values(?, ?);
     )");
 
+const auto DELETE_COLLECTION_SQL = QLatin1String(R"(
+    delete from collections where collection_name = ? and folder_id = ?;
+    )");
+
 const auto COLLECTIONS_SQL = QLatin1String(R"(
     create table collections(collection_name varchar, folder_id integer, unique(collection_name, folder_id));
     )");
@@ -167,9 +171,22 @@ const auto SELECT_FOLDERS_FROM_COLLECTIONS_SQL = QLatin1String(R"(
     select folder_id from collections where collection_name = ?;
     )");
 
+const auto SELECT_COLLECTIONS_FROM_FOLDER_SQL = QLatin1String(R"(
+    select collection_name from collections where folder_id = ?;
+    )");
+
 bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
 {
     if (!q.prepare(INSERT_COLLECTION_SQL))
+        return false;
+    q.addBindValue(collection_name);
+    q.addBindValue(folder_id);
+    return q.exec();
+}
+
+bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
+{
+    if (!q.prepare(DELETE_COLLECTION_SQL))
         return false;
     q.addBindValue(collection_name);
     q.addBindValue(folder_id);
@@ -187,12 +204,23 @@ bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, Q
     return true;
 }
 
+bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *collections) {
+    if (!q.prepare(SELECT_COLLECTIONS_FROM_FOLDER_SQL))
+        return false;
+    q.addBindValue(folder_id);
+    if (!q.exec())
+        return false;
+    while (q.next())
+        collections->append(q.value(0).toString());
+    return true;
+}
+
 const auto INSERT_FOLDERS_SQL = QLatin1String(R"(
     insert into folders(folder_path) values(?);
     )");
 
 const auto DELETE_FOLDERS_SQL = QLatin1String(R"(
-    delete from folders where folder_path = ?;
+    delete from folders where id = ?;
     )");
 
 const auto SELECT_FOLDERS_SQL = QLatin1String(R"(
@@ -214,10 +242,10 @@ bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
     return true;
 }
 
-bool removeFolderFromDB(QSqlQuery &q, const QString &folder_path) {
+bool removeFolderFromDB(QSqlQuery &q, int folder_id) {
     if (!q.prepare(DELETE_FOLDERS_SQL))
         return false;
-    q.addBindValue(folder_path);
+    q.addBindValue(folder_id);
     return q.exec();
 }
 
@@ -241,12 +269,20 @@ const auto UPDATE_DOCUMENT_TIME_SQL = QLatin1String(R"(
     update documents set document_time = ? where id = ?;
     )");
 
+const auto DELETE_DOCUMENTS_SQL = QLatin1String(R"(
+    delete from documents where id = ?;
+    )");
+
 const auto DOCUMENTS_SQL = QLatin1String(R"(
     create table documents(id integer primary key, folder_id integer, document_time integer, document_path varchar unique);
     )");
 
 const auto SELECT_DOCUMENT_SQL = QLatin1String(R"(
     select id, document_time from documents where document_path = ?;
+    )");
+
+const auto SELECT_DOCUMENTS_SQL = QLatin1String(R"(
+    select id from documents where folder_id = ?;
     )");
 
 bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QString &document_path, int *document_id)
@@ -260,6 +296,13 @@ bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QStrin
         return false;
     *document_id = q.lastInsertId().toInt();
     return true;
+}
+
+bool removeDocument(QSqlQuery &q, int document_id) {
+    if (!q.prepare(DELETE_DOCUMENTS_SQL))
+        return false;
+    q.addBindValue(document_id);
+    return q.exec();
 }
 
 bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
@@ -282,6 +325,17 @@ bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 
         *id = q.value(0).toInt();
         *document_time = q.value(1).toLongLong();
     }
+    return true;
+}
+
+bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
+    if (!q.prepare(SELECT_DOCUMENTS_SQL))
+        return false;
+    q.addBindValue(folder_id);
+    if (!q.exec())
+        return false;
+    while (q.next())
+        documentIds->append(q.value(0).toInt());
     return true;
 }
 
@@ -439,8 +493,8 @@ void Database::scanQueue()
             if (!m_docsToScan.isEmpty()) QTimer::singleShot(0, this, &Database::scanQueue);
             return;
         } else {
-            if (!deleteChunksByDocumentId(q, existing_id)) {
-                return handleDocumentErrorAndScheduleNext("ERROR: Cannot delete chunks of document",
+            if (!removeChunksByDocumentId(q, existing_id)) {
+                return handleDocumentErrorAndScheduleNext("ERROR: Cannot remove chunks of document",
                     existing_id, document_path, q.lastError());
             }
         }
@@ -592,11 +646,74 @@ void Database::removeFolder(const QString &collection, const QString &path)
     qDebug() << "removeFolder" << path;
 #endif
 
-    // FIXME: Determine if the folder is used by more than one collection
+    QSqlQuery q;
+    int folder_id = -1;
 
-    // FIXME: If not, then delete all chunks and documents associated with it
+    // See if the folder exists in the db
+    if (!selectFolder(q, path, &folder_id)) {
+        qWarning() << "ERROR: Cannot select folder from path" << path << q.lastError();
+        return;
+    }
 
-    // FIXME: Remove it from the collections
+    // If we don't have a folder_id in the db, then something bad has happened
+    Q_ASSERT(folder_id != -1);
+    if (folder_id == -1) {
+        qWarning() << "ERROR: Collected folder does not exist in db" << path;
+        m_watcher->removePath(path);
+        return;
+    }
+
+    // Determine if the folder is used by more than one collection
+    QList<QString> collections;
+    if (!selectCollectionsFromFolder(q, folder_id, &collections)) {
+        qWarning() << "ERROR: Cannot select collections from folder" << folder_id << q.lastError();
+        return;
+    }
+
+    // Remove it from the collections
+    if (!removeCollection(q, collection, folder_id)) {
+        qWarning() << "ERROR: Cannot remove collection" << collection << folder_id << q.lastError();
+        return;
+    }
+
+    // If the folder is associated with more than one collection, then return
+    if (collections.count() > 1)
+        return;
+
+    // First remove all upcoming jobs associated with this folder by performing an opt-in filter
+    QQueue<DocumentInfo> docsToScan;
+    for (DocumentInfo info : m_docsToScan) {
+        if (info.folder == folder_id)
+            continue;
+        docsToScan.append(info);
+    }
+    m_docsToScan = docsToScan;
+    emit docsToScanChanged();
+
+    // Get a list of all documents associated with folder
+    QList<int> documentIds;
+    if (!selectDocuments(q, folder_id, &documentIds)) {
+        qWarning() << "ERROR: Cannot select documents" << folder_id << q.lastError();
+        return;
+    }
+
+    // Remove all chunks and documents associated with this folder
+    for (int document_id : documentIds) {
+        if (!removeChunksByDocumentId(q, document_id)) {
+            qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << q.lastError();
+            return;
+        }
+
+        if (!removeDocument(q, document_id)) {
+            qWarning() << "ERROR: Cannot remove document_id" << document_id << q.lastError();
+            return;
+        }
+    }
+
+    if (!removeFolderFromDB(q, folder_id)) {
+        qWarning() << "ERROR: Cannot remove folder_id" << folder_id << q.lastError();
+        return;
+    }
 
     removeFolderFromWatch(path);
 }
