@@ -318,8 +318,15 @@ const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-bool magic_match(uint32_t magic) {
-    return magic == 0x67676a74;
+bool magic_match(std::istream& f) {
+    // Check magic
+    uint32_t magic = 0;
+    f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
+    if (magic != 0x67676a74) return false;
+    // Check version
+    uint32_t version = 0;
+    f.read(reinterpret_cast<char*>(&version), sizeof(version));
+    return version < 2;
 }
 
 LLModel *construct() {
