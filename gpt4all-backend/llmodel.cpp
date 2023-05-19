@@ -9,7 +9,7 @@
 
 
 static
-Dlhandle *get_implementation(uint32_t magic, const std::string& buildVariant) {
+Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVariant) {
     // Collect all model implementation libraries
     static auto libs = [] () {
         std::vector<Dlhandle> fres;
@@ -31,9 +31,10 @@ Dlhandle *get_implementation(uint32_t magic, const std::string& buildVariant) {
     }();
     // Iterate over all libraries
     for (auto& dl : libs) {
+        f.seekg(0);
         // Check that magic matches
-        auto magic_match = dl.get<bool(uint32_t)>("magic_match");
-        if (!magic_match || !magic_match(magic)) {
+        auto magic_match = dl.get<bool(std::ifstream&)>("magic_match");
+        if (!magic_match || !magic_match(f)) {
             continue;
         }
         // Check that build variant is correct
@@ -55,14 +56,11 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     }
     // Read magic
     std::ifstream f(modelPath, std::ios::binary);
-    uint32_t magic;
-    if (!f.read(reinterpret_cast<char*>(&magic), sizeof(magic))) {
-        return nullptr;
-    }
-    f.close();
+    if (!f) return nullptr;
     // Get correct implementation
-    auto impl = get_implementation(magic, buildVariant);
+    auto impl = get_implementation(f, buildVariant);
     if (!impl) return nullptr;
+    f.close();
     // Get inference constructor
     auto constructor = impl->get<LLModel *()>("construct");
     if (!constructor) return nullptr;
