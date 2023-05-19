@@ -10,10 +10,11 @@ use_directory_urls: false
 nav:
     - 'index.md'
     - 'gpt4all_chat.md'
+    - 'gpt4all_python.md'
     - 'Tutorials':
       - 'gpt4all_modal.md'
-    - 'API Reference':
-      - 'gpt4all_python.md'
+    - 'Wiki':
+      - 'gpt4all_faq.md'
 
 theme:
   name: material

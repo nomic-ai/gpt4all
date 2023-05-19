@@ -33,7 +33,7 @@ NOTE: This is for macOS. For Linux it is similar, but you need ming64 for Window
 ## Clone the git repo for gpt4all-chat
 
 ```
-git clone --recurse-submodules https://github.com/nomic-ai/gpt4all-chat
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
 ```
 
 ## Open the gpt4all-chat project in QtCreator
