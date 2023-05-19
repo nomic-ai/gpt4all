@@ -34,7 +34,6 @@ Q_SIGNALS:
 private Q_SLOTS:
     void start();
     void directoryChanged(const QString &path);
-    void fileChanged(const QString &path);
     bool addFolderToWatch(const QString &path);
     bool removeFolderFromWatch(const QString &path);
 

@@ -249,7 +249,7 @@ const auto SELECT_DOCUMENT_SQL = QLatin1String(R"(
     select id, document_time from documents where document_path = ?;
     )");
 
-bool addDocument(QSqlQuery &q, int folder_id, int document_time, const QString &document_path, int *document_id)
+bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QString &document_path, int *document_id)
 {
     if (!q.prepare(INSERT_DOCUMENTS_SQL))
         return false;
@@ -262,7 +262,7 @@ bool addDocument(QSqlQuery &q, int folder_id, int document_time, const QString &
     return true;
 }
 
-bool updateDocument(QSqlQuery &q, int id, int document_time)
+bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
 {
     if (!q.prepare(UPDATE_DOCUMENT_TIME_SQL))
         return false;
@@ -271,7 +271,7 @@ bool updateDocument(QSqlQuery &q, int id, int document_time)
     return q.exec();
 }
 
-bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, int *document_time) {
+bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 *document_time) {
     if (!q.prepare(SELECT_DOCUMENT_SQL))
         return false;
     q.addBindValue(document_path);
@@ -280,7 +280,7 @@ bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, int *do
     Q_ASSERT(q.size() < 2);
     if (q.next()) {
         *id = q.value(0).toInt();
-        *document_time = q.value(1).toInt();
+        *document_time = q.value(1).toLongLong();
     }
     return true;
 }
@@ -407,28 +407,6 @@ void Database::chunkStream(QTextStream &stream, int document_id)
     }
 }
 
-//void Database::chunkStream(QTextStream &stream, int document_id)
-//{
-//    QString line;
-//    int chunk_id = 0;
-//    while (stream.readLineInto(&line)) {
-//        int chunkSize = 256;
-//        for (int i = 0; i < line.length(); i += chunkSize) {
-//            QString chunk = line.mid(i, chunkSize);
-//            QSqlQuery q;
-//            if (!addChunk(q,
-//                document_id,
-//                ++chunk_id,
-//                chunk,
-//                0 /*embedding_id*/,
-//                QString() /*embedding_path*/
-//            )) {
-//                qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
-//            }
-//        }
-//    }
-//}
-
 void Database::scanQueue()
 {
     if (m_docsToScan.isEmpty())
@@ -440,13 +418,13 @@ void Database::scanQueue()
     const QString document_path = info.doc.canonicalFilePath();
 
 #if defined(DEBUG)
-    qDebug() << "scanDocument" << folder_id << document_time << document_path;
+    qDebug() << "scanning document" << document_path;
 #endif
 
     // Check and see if we already have this document
     QSqlQuery q;
     int existing_id = -1;
-    int existing_time = -1;
+    qint64 existing_time = -1;
     if (!selectDocument(q, document_path, &existing_id, &existing_time)) {
         return handleDocumentErrorAndScheduleNext("ERROR: Cannot select document",
             existing_id, document_path, q.lastError());
@@ -457,20 +435,15 @@ void Database::scanQueue()
     if (existing_id != -1) {
         Q_ASSERT(existing_time != -1);
         if (document_time == existing_time) {
-            return handleDocumentErrorAndScheduleNext("WARNING: No need to rescan",
-                existing_id, document_path, q.lastError());
+            // No need to rescan, but we do have to schedule next
+            if (!m_docsToScan.isEmpty()) QTimer::singleShot(0, this, &Database::scanQueue);
+            return;
         } else {
             if (!deleteChunksByDocumentId(q, existing_id)) {
                 return handleDocumentErrorAndScheduleNext("ERROR: Cannot delete chunks of document",
                     existing_id, document_path, q.lastError());
             }
         }
-    }
-
-    QFile file(document_path);
-    if (!file.open( QIODevice::ReadOnly)) {
-        return handleDocumentErrorAndScheduleNext("ERROR: Cannot open file for scanning",
-            existing_id, document_path, q.lastError());
     }
 
     // Update the document_time for an existing document, or add it for the first time now
@@ -493,7 +466,6 @@ void Database::scanQueue()
     QSqlDatabase::database().transaction();
     Q_ASSERT(document_id != -1);
     if (info.doc.suffix() == QLatin1String("pdf")) {
-        file.close();
         QPdfDocument doc;
         if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
             return handleDocumentErrorAndScheduleNext("ERROR: Could not load pdf",
@@ -508,6 +480,11 @@ void Database::scanQueue()
         QTextStream stream(&text);
         chunkStream(stream, document_id);
     } else {
+        QFile file(document_path);
+        if (!file.open( QIODevice::ReadOnly)) {
+            return handleDocumentErrorAndScheduleNext("ERROR: Cannot open file for scanning",
+                                                      existing_id, document_path, q.lastError());
+        }
         QTextStream stream(&file);
         chunkStream(stream, document_id);
         file.close();
@@ -515,7 +492,7 @@ void Database::scanQueue()
     QSqlDatabase::database().commit();
 
 #if defined(DEBUG)
-    qDebug() << "localdocs chunking" << document_path << "took" << timer.elapsed() << "milliseconds";
+    qDebug() << "chunking" << document_path << "took" << timer.elapsed() << "ms";
 #endif
 
     if (!m_docsToScan.isEmpty()) QTimer::singleShot(0, this, &Database::scanQueue);
@@ -524,7 +501,7 @@ void Database::scanQueue()
 void Database::scanDocuments(int folder_id, const QString &folder_path)
 {
 #if defined(DEBUG)
-    qDebug() << "scanDocuments" << folder_id << folder_path;
+    qDebug() << "scanning folder for documents" << folder_path;
 #endif
 
     QDir dir(folder_path);
@@ -556,7 +533,6 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
 void Database::start()
 {
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Database::directoryChanged);
-    connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &Database::fileChanged);
     connect(this, &Database::docsToScanChanged, this, &Database::scanQueue);
     if (!QSqlDatabase::drivers().contains("QSQLITE")) {
         qWarning() << "ERROR: missing sqllite driver";
@@ -684,17 +660,25 @@ void Database::directoryChanged(const QString &path)
     qDebug() << "directoryChanged" << path;
 #endif
 
-    // FIXME: Get the folder id
-    // Re-scan documents associated with folder_id
-}
+    QSqlQuery q;
+    int folder_id = -1;
 
-void Database::fileChanged(const QString &path)
-{
-#if defined(DEBUG)
-    qDebug() << "fileChanged" << path;
-#endif
-    // FIXME: Get the folder id
-    // Re-scan documents associated with document_path
+    // Lookup the folder_id in the db
+    if (!selectFolder(q, path, &folder_id)) {
+        qWarning() << "ERROR: Cannot select folder from path" << path << q.lastError();
+        return;
+    }
+
+    // If we don't have a folder_id in the db, then something bad has happened
+    Q_ASSERT(folder_id != -1);
+    if (folder_id == -1) {
+        qWarning() << "ERROR: Watched folder does not exist in db" << path;
+        m_watcher->removePath(path);
+        return;
+    }
+
+    // Rescan the documents associated with the folder
+    scanDocuments(folder_id, path);
 }
 
 class MyLocalDocs: public LocalDocs { };
@@ -741,9 +725,6 @@ void LocalDocs::requestRetrieve(const QList<QString> &collections, const QString
 
 void LocalDocs::retrieveResult(const QList<QString> &result)
 {
-#if defined(DEBUG)
-    qDebug() << "local docs retrieve" << result;
-#endif
     m_retrieveInProgress = false;
     m_retrieveResult = result;
     emit receivedResult();
