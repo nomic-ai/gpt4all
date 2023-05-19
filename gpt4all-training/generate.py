@@ -15,7 +15,7 @@ def generate(tokenizer, prompt, model, config):
 
     return decoded[len(prompt):]
 
-    
+
 def setup_model(config):
     model = AutoModelForCausalLM.from_pretrained(config["model_name"], device_map="auto", torch_dtype=torch.float16)
     tokenizer = AutoTokenizer.from_pretrained(config["tokenizer_name"])
@@ -29,30 +29,41 @@ def setup_model(config):
         model.to(dtype=torch.float16)
 
     print(f"Mem needed: {model.get_memory_footprint() / 1024 / 1024 / 1024:.2f} GB")
-        
+
     return model, tokenizer
 
-    
-    
+
+def generate_for_multiple_prompts(tokenizer, prompts, model, config):
+    results = []
+    for prompt in prompts:
+        generation = generate(tokenizer, prompt, model, config)
+        results.append(generation)
+    return results
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, required=True)
-    parser.add_argument("--prompt", type=str)
+    parser.add_argument("--prompts", nargs='+', type=str)
 
     args = parser.parse_args()
 
     config = read_config(args.config)
 
-    if config["prompt"] is None and args.prompt is None:
-        raise ValueError("Prompt is required either in config or as argument")
+    if config["prompts"] is None and args.prompts is None:
+        raise ValueError("Prompt list is required either in config or as argument")
 
-    prompt = config["prompt"] if args.prompt is None else args.prompt
+    prompts = config["prompts"] if args.prompts is None else args.prompts
 
     print("Setting up model")
     model, tokenizer = setup_model(config)
 
     print("Generating")
     start = time.time()
-    generation = generate(tokenizer, prompt, model, config)
+    generation_results = generate_for_multiple_prompts(tokenizer, prompts, model, config)
     print(f"Done in {time.time() - start:.2f}s")
-    print(generation)
+    
+    for prompt, result in zip(prompts, generation_results):
+        print(f"Prompt: {prompt}")
+        print(f"Generated Text: {result}")
+        print()
