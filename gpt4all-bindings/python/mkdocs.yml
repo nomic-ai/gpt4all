@@ -1,0 +1,69 @@
+site_name: GPT4All Documentation
+repo_url: https://github.com/nomic-ai/gpt4all
+repo_name: nomic-ai/gpt4all
+site_url: https://docs.gpt4all.io
+edit_uri: edit/main/docs/
+site_description: Documentation for running GPT4All anywhere.
+copyright: Copyright &copy; 2023 Nomic, Inc
+use_directory_urls: false
+
+nav:
+    - 'index.md'
+    - 'gpt4all_chat.md'
+    - 'gpt4all_python.md'
+    - 'Tutorials':
+      - 'gpt4all_modal.md'
+    - 'Wiki':
+      - 'gpt4all_faq.md'
+
+theme:
+  name: material
+  palette:
+    primary: white
+  logo: assets/nomic.png
+  favicon: assets/favicon.ico
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+#    - navigation.tabs
+#    - navigation.tabs.sticky
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+      options:
+        custom_icons:
+          - docs/overrides/.icons
+  - tables
+  - admonition
+  - codehilite:
+      css_class: highlight
+
+extra_css:
+    - css/custom.css
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: True
+            heading_level: 4
+            show_root_full_path: false
+            docstring_section_style: list
+  #- material/social:
+  #    cards_font: Roboto
+
+  #- mkdocs-jupyter:
+  #    ignore_h1_titles: True
+  #    show_input: True

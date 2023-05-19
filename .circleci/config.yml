@@ -1,0 +1,194 @@
+version: 2.1
+orbs:
+  win: circleci/windows@5.0
+  python: circleci/python@1.2
+
+jobs:
+  build-py-docs:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          # TODO: eventually this will be cleaned up so we aren't building
+          # new dependencies each time unnecessarily.
+          # This will be introduced once we setup branch and path filtering
+          command: |
+            sudo apt-get update
+            sudo apt-get -y install python3 python3-pip
+            sudo pip3 install awscli --upgrade
+            sudo pip3 install mkdocs mkdocs-material mkautodoc 'mkdocstrings[python]'
+      - run:
+          name: Make Documentation
+          command: |
+            cd gpt4all-bindings/python/
+            mkdocs build
+      - run:
+          name: Deploy Documentation
+          command: |
+            cd gpt4all-bindings/python/
+            aws s3 cp ./site s3://docs.gpt4all.io/ --recursive | cat
+      - run:
+          name: Invalidate docs.gpt4all.io cloudfront
+          command: aws cloudfront create-invalidation --distribution-id E1STQOW63QL2OH --paths "/*"
+
+            
+
+  build-py-linux:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y cmake build-essential
+            pip install setuptools wheel cmake
+      - run:
+          name: Build C library
+          command: |
+            git submodule init
+            git submodule update
+            cd gpt4all-backend
+            mkdir build
+            cd build
+            cmake ..
+            cmake --build . --parallel
+      - run:
+          name: Build wheel
+          command: |
+            cd gpt4all-bindings/python/
+            python setup.py bdist_wheel --plat-name=manylinux1_x86_64
+      - persist_to_workspace:
+          root: gpt4all-bindings/python/dist
+          paths:
+            - "*.whl"
+
+  build-py-macos:
+    macos:
+      xcode: "14.2.0"
+    resource_class: macos.m1.large.gen1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            brew install cmake
+            pip install setuptools wheel cmake
+      - run:
+          name: Build C library
+          command: |
+            git submodule init
+            git submodule update
+            cd gpt4all-backend
+            mkdir build
+            cd build
+            cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake --build . --parallel
+      - run:
+          name: Build wheel
+          command: |
+            cd gpt4all-bindings/python
+            python setup.py bdist_wheel --plat-name=macosx_10_9_universal2
+      - persist_to_workspace:
+          root: gpt4all-bindings/python/dist
+          paths:
+            - "*.whl"
+
+  build-py-windows:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - run:
+          name: Install MinGW64
+          command: choco install -y mingw --force --no-progress
+      - run:
+          name: Add MinGW64 to PATH
+          command: $env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+      - run:
+          name: Install dependencies
+          command: choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      - run:
+          name: Install Python dependencies
+          command: pip install setuptools wheel cmake
+      - run:
+          name: Build C library
+          command: |
+            git submodule init
+            git submodule update
+            cd gpt4all-backend
+            mkdir build
+            cd build
+            cmake -G "MinGW Makefiles" .. 
+            cmake --build . --parallel
+      - run:
+          name: Build wheel
+          # TODO: As part of this task, we need to move mingw64 binaries into package.
+          # This is terrible and needs a more robust solution eventually.
+          command: |
+            cd gpt4all-bindings/python
+            cd gpt4all
+            mkdir llmodel_DO_NOT_MODIFY
+            mkdir llmodel_DO_NOT_MODIFY/build/
+            cp 'C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll' 'llmodel_DO_NOT_MODIFY/build/'
+            cd ..
+            python setup.py bdist_wheel --plat-name=win_amd64
+      - persist_to_workspace:
+          root: gpt4all-bindings/python/dist
+          paths:
+            - "*.whl"
+
+  store-and-upload-wheels:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - setup_remote_docker
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y cmake build-essential
+            pip install setuptools wheel twine
+      - run:
+          name: Upload Python package
+          command: |
+            twine upload /tmp/workspace/*.whl --username __token__ --password $PYPI_CRED
+      - store_artifacts:
+          path: /tmp/workspace
+
+workflows:
+  version: 2
+  deploy-docs:
+    jobs:
+      - build-py-docs:
+          filters:
+            branches:
+              only:
+                - main
+  # build-py-deploy:
+  #   jobs:
+  #     - build-py-linux:
+  #         filters:
+  #           branches:
+  #             only:
+  #     - build-py-macos:
+  #         filters:
+  #           branches:
+  #             only:
+  #     - build-py-windows:
+  #         filters:
+  #           branches:
+  #             only:
+  #     - store-and-upload-wheels:
+  #         filters:
+  #           branches:
+  #             only:
+  #         requires:
+  #           - build-py-windows
+  #           - build-py-linux
+  #           - build-py-macos
