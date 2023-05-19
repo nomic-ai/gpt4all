@@ -74,6 +74,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     endfunction()
 
     # Add each individual implementations
+    add_library(llamamodel-${BUILD_VARIANT} SHARED
+        llamamodel.cpp)
+    prepare_target(llamamodel llama)
+
     add_library(llamamodel-old-${BUILD_VARIANT} SHARED
         llamamodel_old.cpp)
     prepare_target(llamamodel-old llama-old)
