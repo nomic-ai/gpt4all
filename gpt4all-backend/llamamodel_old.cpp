@@ -28,6 +28,7 @@
 #include <llama.h>
 #include <ggml.h>
 
+
 namespace {
 const char *modelType_ = "LLaMA";
 }
