@@ -52,7 +52,6 @@ private:
 class LocalDocs : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool retrieveInProgress READ retrieveInProgress NOTIFY retrieveInProgressChanged)
 
 public:
     static LocalDocs *globalInstance();
@@ -62,14 +61,12 @@ public:
 
     QList<QString> result() const { return m_retrieveResult; }
     void requestRetrieve(const QList<QString> &collections, const QString &text);
-    bool retrieveInProgress() const { return m_retrieveInProgress; }
 
 Q_SIGNALS:
     void requestAddFolder(const QString &collection, const QString &path);
     void requestRemoveFolder(const QString &collection, const QString &path);
     void requestRetrieveFromDB(const QList<QString> &collections, const QString &text);
     void receivedResult();
-    void retrieveInProgressChanged();
 
 private Q_SLOTS:
     void retrieveResult(const QList<QString> &result);
@@ -77,7 +74,6 @@ private Q_SLOTS:
 private:
     Database *m_database;
     QList<QString> m_retrieveResult;
-    bool m_retrieveInProgress;
 
 private:
     explicit LocalDocs();
