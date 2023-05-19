@@ -808,7 +808,6 @@ LocalDocs *LocalDocs::globalInstance()
 LocalDocs::LocalDocs()
     : QObject(nullptr)
     , m_database(new Database)
-    , m_retrieveInProgress(false)
 {
     connect(this, &LocalDocs::requestAddFolder, m_database,
         &Database::addFolder, Qt::QueuedConnection);
@@ -834,16 +833,12 @@ void LocalDocs::removeFolder(const QString &collection, const QString &path)
 
 void LocalDocs::requestRetrieve(const QList<QString> &collections, const QString &text)
 {
-    m_retrieveInProgress = true;
     m_retrieveResult = QList<QString>();
-    emit retrieveInProgressChanged();
     emit requestRetrieveFromDB(collections, text);
 }
 
 void LocalDocs::retrieveResult(const QList<QString> &result)
 {
-    m_retrieveInProgress = false;
     m_retrieveResult = result;
     emit receivedResult();
-    emit retrieveInProgressChanged();
 }
