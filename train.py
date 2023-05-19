@@ -149,6 +149,9 @@ def train(accelerator, config):
         accelerator=accelerator,
         epochs=config["num_epochs"],
         max_steps_between_checkpoints=config["save_every"],
+        max_checkpoints_per_epoch=config["max_checkpoints_per_epoch"]
+        if "max_checkpoints_per_epoch" in config
+        else None,
     )
 
     epoch_start, epoch_end, step_offset = checkpoint_manager.start(

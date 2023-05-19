@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple, TypedDict
 import sys
 from glob import glob
 import logging
+import shutil
 
 from accelerate import Accelerator
 from accelerate.data_loader import DataLoader
@@ -77,6 +78,7 @@ class CheckpointManager:
         max_runs=sys.maxsize,
         max_epochs=sys.maxsize,
         max_steps=sys.maxsize,
+        max_checkpoints_per_epoch: Optional[int] = None,
         log: logging.Logger = logging.getLogger(__name__),
     ) -> None:
         self.base_dir = base_dir
@@ -87,6 +89,11 @@ class CheckpointManager:
         self.max_runs = max_runs
         self.max_epochs = max_epochs
         self.max_steps = max_steps
+
+        if max_checkpoints_per_epoch is not None and max_checkpoints_per_epoch < 1:
+            raise CheckpointManagerException(f"max_checkpoints_per_epoch must be >= 1")
+
+        self.max_checkpoints_per_epoch = max_checkpoints_per_epoch
 
         # Calculated when start() is invoked
         self._epoch_end: Optional[int] = None
@@ -214,6 +221,22 @@ class CheckpointManager:
         """
         new_checkpoint_path = self.gen_path(epoch=epoch, step=step)
         self.accelerator.save_state(new_checkpoint_path)
+
+        # Optionally purge after checkpoint is saved
+        if (
+            self.accelerator.is_main_process
+            and self.max_checkpoints_per_epoch is not None
+            and self.max_checkpoints_per_epoch > 1
+        ):
+            all_checkpoints = self.ls()
+
+            for cur_epoch in {x["epoch"] for x in all_checkpoints}:
+                purge_files = list(
+                    filter(lambda x: x["epoch"] == cur_epoch, all_checkpoints)
+                )[: self.max_checkpoints_per_epoch * -1]
+                for purge_file in purge_files:
+                    self.log.info("Purging: %s", purge_file["path"])
+                    shutil.rmtree(purge_file["path"])
 
     def start(
         self, train_dataloader: DataLoader, force_checkpoint_path: Optional[str] = None
