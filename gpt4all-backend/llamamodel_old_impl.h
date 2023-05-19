@@ -1,5 +1,5 @@
-#ifndef LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
-#error This file is NOT meant to be included outside of llamamodel.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#ifndef LLAMAMODEL_OLD_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#error This file is NOT meant to be included outside of llamamodel_old.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define LLAMAMODEL_OLD_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #endif
 #ifndef LLAMAMODEL_H
 #define LLAMAMODEL_H
