@@ -36,6 +36,10 @@ struct gpt_params {
     int32_t seed          = -1;   // RNG seed
     int32_t n_keep        = 0;    // number of tokens to keep from initial prompt
 
+    // sampling parameters
+    float   tfs_z         = 1.0f; // 1.0 = disabled
+    float   typical_p     = 1.0f; // 1.0 = disabled
+
     std::string prompt = "";
 
     bool memory_f16        = true;  // use f16 instead of f32 for memory kv
@@ -338,8 +342,15 @@ const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-bool magic_match(uint32_t magic) {
-    return magic == 0x67676a74;
+bool magic_match(std::istream& f) {
+    // Check magic
+    uint32_t magic = 0;
+    f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
+    if (magic != 0x67676a74) return false;
+    // Check version
+    uint32_t version = 0;
+    f.read(reinterpret_cast<char*>(&version), sizeof(version));
+    return version >= 2;
 }
 
 LLModel *construct() {

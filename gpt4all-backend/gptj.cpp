@@ -1134,7 +1134,9 @@ const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-bool magic_match(uint32_t magic) {
+bool magic_match(std::istream& f) {
+    uint32_t magic = 0;
+    f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
     return magic == 0x67676d6c;
 }
 
