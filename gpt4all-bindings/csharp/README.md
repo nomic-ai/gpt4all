@@ -17,7 +17,7 @@ gpt4all-bindings/
     ├── build_win-msvc.ps1    // Native build scripts
     ├── build_win-mingw.ps1   
     ├── build_linux.sh        
-    └── native                // [POST-BUILD] Platform-specific native libraries
+    └── runtimes              // [POST-BUILD] Platform-specific native libraries
           ├── win-x64
           ├── ...
           └── linux-x64
@@ -78,7 +78,7 @@ choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
 >                              SOVERSION ${PROJECT_VERSION_MAJOR})
 > ```
 ## C# Bindings Build Instructions
-Build the `Gpt4All` (or `Gpt4All.Samples`) projects from within VisualStudio
+Build the `Gpt4All` (or `Gpt4All.Samples`) projects from within VisualStudio.
 ### Try the bindings
 ```csharp
 using Gpt4All;
