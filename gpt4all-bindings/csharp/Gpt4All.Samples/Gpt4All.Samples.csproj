@@ -11,4 +11,8 @@
     <ProjectReference Include="..\Gpt4All\Gpt4All.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>

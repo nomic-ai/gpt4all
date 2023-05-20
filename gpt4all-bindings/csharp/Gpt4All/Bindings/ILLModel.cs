@@ -1,5 +1,8 @@
 ﻿namespace Gpt4All.Bindings;
 
+/// <summary>
+/// Represents the interface exposed by the universal wrapper for GPT4All language models built around llmodel C-API.
+/// </summary>
 public interface ILLModel : IDisposable
 {
     ModelType ModelType { get; }
@@ -22,8 +25,8 @@ public interface ILLModel : IDisposable
         Func<ModelRecalculatingEventArgs, bool>? recalculateCallback = null,
         CancellationToken cancellationToken = default);
 
-    unsafe void RestoreStateData(byte* destination);
+    unsafe ulong RestoreStateData(byte* destination);
 
-    unsafe void SaveStateData(byte* source);
+    unsafe ulong SaveStateData(byte* source);
 
 }

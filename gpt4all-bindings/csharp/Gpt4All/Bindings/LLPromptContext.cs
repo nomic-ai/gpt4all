@@ -1,5 +1,14 @@
-﻿namespace Gpt4All.Bindings;
+﻿using System.Reflection;
 
+namespace Gpt4All.Bindings;
+
+/// <summary>
+/// Wrapper around the llmodel_prompt_context structure for holding the prompt context.
+/// </summary>
+/// <remarks>
+/// The implementation takes care of all the memory handling of the raw logits pointer and the
+/// raw tokens pointer.Attempting to resize them or modify them in any way can lead to undefined behavior
+/// </remarks>
 public unsafe class LLModelPromptContext
 {
     private llmodel_prompt_context _ctx;

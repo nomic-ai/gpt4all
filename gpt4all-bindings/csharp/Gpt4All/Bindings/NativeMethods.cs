@@ -50,6 +50,10 @@ public static unsafe partial class NativeMethods
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
+    public unsafe delegate bool LlmodelPromptCallback(int token_id);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return: MarshalAs(UnmanagedType.I1)]
     public unsafe delegate bool LlmodelRecalculateCallback(bool isRecalculating);
 
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -108,7 +112,7 @@ public static unsafe partial class NativeMethods
     public static extern void llmodel_prompt(
         [NativeTypeName("llmodel_model")] IntPtr model, 
         [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string prompt,
-        LlmodelResponseCallback prompt_callback, 
+        LlmodelPromptCallback prompt_callback, 
         LlmodelResponseCallback response_callback, 
         LlmodelRecalculateCallback recalculate_callback,
         ref llmodel_prompt_context ctx);
