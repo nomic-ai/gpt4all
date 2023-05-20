@@ -113,20 +113,20 @@ QStringList generateGrams(const QString &input, int N)
     for (int i = 0; i < words.size() - (N - 1); ++i) {
         QStringList currentNgram;
         for (int j = 0; j < N; ++j) {
-            currentNgram.append(words[i + j]);
+            currentNgram.append("\"" + words[i + j] + "\"");
         }
-        ngrams.append("\"" + currentNgram.join(" ") + "\"");
+        ngrams.append("NEAR(" + currentNgram.join(" ") + ", " + QString::number(N) + ")");
     }
     return ngrams;
 }
 
 bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QString &chunk_text)
 {
-    for (int N = 5; N > 1; N--) {
+    const int N_WORDS = chunk_text.split(QRegularExpression("\\s+")).size();
+    for (int N = N_WORDS; N > 2; N--) {
         // first try trigrams
         QList<QString> text = generateGrams(chunk_text, N);
         QString orText = text.join(" OR ");
-        qDebug() << "before" << chunk_text << "after" << orText;
         const QString collection_names_str = collection_names.join("', '");
         const QString formatted_query = SELECT_SQL.arg("'" + collection_names_str + "'");
         if (!q.prepare(formatted_query))
@@ -135,6 +135,9 @@ bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QSt
         bool success = q.exec();
         if (!success) return false;
         if (q.next()) {
+#if defined(DEBUG)
+            qDebug() << "hit on" << N << "before" << chunk_text << "after" << orText;
+#endif
             q.previous();
             return true;
         }
@@ -173,6 +176,10 @@ const auto SELECT_FOLDERS_FROM_COLLECTIONS_SQL = QLatin1String(R"(
 
 const auto SELECT_COLLECTIONS_FROM_FOLDER_SQL = QLatin1String(R"(
     select collection_name from collections where folder_id = ?;
+    )");
+
+const auto SELECT_COLLECTIONS_SQL = QLatin1String(R"(
+    select collection_name, folder_id from collections;
     )");
 
 bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
@@ -215,6 +222,16 @@ bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *co
     return true;
 }
 
+bool selectAllFromCollections(QSqlQuery &q, QList<QPair<QString, int>> *collections) {
+    if (!q.prepare(SELECT_COLLECTIONS_SQL))
+        return false;
+    if (!q.exec())
+        return false;
+    while (q.next())
+        collections->append(qMakePair(q.value(0).toString(), q.value(1).toInt()));
+    return true;
+}
+
 const auto INSERT_FOLDERS_SQL = QLatin1String(R"(
     insert into folders(folder_path) values(?);
     )");
@@ -223,8 +240,12 @@ const auto DELETE_FOLDERS_SQL = QLatin1String(R"(
     delete from folders where id = ?;
     )");
 
-const auto SELECT_FOLDERS_SQL = QLatin1String(R"(
+const auto SELECT_FOLDERS_FROM_PATH_SQL = QLatin1String(R"(
     select id from folders where folder_path = ?;
+    )");
+
+const auto SELECT_FOLDERS_FROM_ID_SQL = QLatin1String(R"(
+    select folder_path from folders where id = ?;
     )");
 
 const auto FOLDERS_SQL = QLatin1String(R"(
@@ -250,7 +271,7 @@ bool removeFolderFromDB(QSqlQuery &q, int folder_id) {
 }
 
 bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
-    if (!q.prepare(SELECT_FOLDERS_SQL))
+    if (!q.prepare(SELECT_FOLDERS_FROM_PATH_SQL))
         return false;
     q.addBindValue(folder_path);
     if (!q.exec())
@@ -258,6 +279,18 @@ bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
     Q_ASSERT(q.size() < 2);
     if (q.next())
         *id = q.value(0).toInt();
+    return true;
+}
+
+bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
+    if (!q.prepare(SELECT_FOLDERS_FROM_ID_SQL))
+        return false;
+    q.addBindValue(id);
+    if (!q.exec())
+        return false;
+    Q_ASSERT(q.size() < 2);
+    if (q.next())
+        *folder_path = q.value(0).toString();
     return true;
 }
 
@@ -283,6 +316,10 @@ const auto SELECT_DOCUMENT_SQL = QLatin1String(R"(
 
 const auto SELECT_DOCUMENTS_SQL = QLatin1String(R"(
     select id from documents where folder_id = ?;
+    )");
+
+const auto SELECT_ALL_DOCUMENTS_SQL = QLatin1String(R"(
+    select id, document_path from documents;
     )");
 
 bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QString &document_path, int *document_id)
@@ -441,22 +478,30 @@ void Database::handleDocumentErrorAndScheduleNext(const QString &errorMessage,
 
 void Database::chunkStream(QTextStream &stream, int document_id)
 {
-    QString text = stream.readAll();
-    int chunkSize = 256;
-    int overlap = 25;
+    const int chunkSize = 256;
     int chunk_id = 0;
+    int charCount = 0;
+    QList<QString> words;
 
-    for (int i = 0; i + chunkSize < text.length(); i += (chunkSize - overlap)) {
-        QString chunk = text.mid(i, chunkSize);
-        QSqlQuery q;
-        if (!addChunk(q,
-            document_id,
-            ++chunk_id,
-            chunk,
-            0 /*embedding_id*/,
-            QString() /*embedding_path*/
-        )) {
-            qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
+    while (!stream.atEnd()) {
+        QString word;
+        stream >> word;
+        charCount += word.length();
+        words.append(word);
+        if (charCount + words.size() - 1 >= chunkSize || stream.atEnd()) {
+            const QString chunk = words.join(" ");
+            QSqlQuery q;
+            if (!addChunk(q,
+                document_id,
+                ++chunk_id,
+                chunk,
+                0 /*embedding_id*/,
+                QString() /*embedding_path*/
+            )) {
+                qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
+            }
+            words.clear();
+            charCount = 0;
         }
     }
 }
@@ -466,7 +511,18 @@ void Database::scanQueue()
     if (m_docsToScan.isEmpty())
         return;
 
-    const DocumentInfo info = m_docsToScan.dequeue();
+    DocumentInfo info = m_docsToScan.dequeue();
+
+    // Update info
+    info.doc.stat();
+
+    // If the doc has since been deleted or no longer readable, then we schedule more work and return
+    // leaving the cleanup for the cleanup handler
+    if (!info.doc.exists() || !info.doc.isReadable()) {
+        if (!m_docsToScan.isEmpty()) QTimer::singleShot(0, this, &Database::scanQueue);
+        return;
+    }
+
     const int folder_id = info.folder;
     const qint64 document_time = info.doc.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
     const QString document_path = info.doc.canonicalFilePath();
@@ -565,7 +621,6 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     while (it.hasNext()) {
         it.next();
         QFileInfo fileInfo = it.fileInfo();
-        fileInfo.setCaching(false);
         if (fileInfo.isDir()) {
             addFolderToWatch(fileInfo.canonicalFilePath());
             continue;
@@ -663,7 +718,13 @@ void Database::removeFolder(const QString &collection, const QString &path)
         return;
     }
 
+    removeFolderInternal(collection, folder_id, path);
+}
+
+void Database::removeFolderInternal(const QString &collection, int folder_id, const QString &path)
+{
     // Determine if the folder is used by more than one collection
+    QSqlQuery q;
     QList<QString> collections;
     if (!selectCollectionsFromFolder(q, folder_id, &collections)) {
         qWarning() << "ERROR: Cannot select collections from folder" << folder_id << q.lastError();
@@ -771,6 +832,73 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     emit retrieveResult(results);
 }
 
+void Database::cleanDB()
+{
+#if defined(DEBUG)
+    qDebug() << "cleanDB";
+#endif
+
+    // Scan all folders in db to make sure they still exist
+    QSqlQuery q;
+    QList<QPair<QString, int>> collections;
+    if (!selectAllFromCollections(q, &collections)) {
+        qWarning() << "ERROR: Cannot select collections" << q.lastError();
+        return;
+    }
+
+    for (auto pair : collections) {
+        // Find the path for the folder
+        QString collection = pair.first;
+        int folder_id = pair.second;
+        QString folder_path;
+        if (!selectFolder(q, folder_id, &folder_path)) {
+            qWarning() << "ERROR: Cannot select folder from id" << folder_id << q.lastError();
+            return;
+        }
+
+        QFileInfo info(folder_path);
+        if (!info.exists() || !info.isReadable()) {
+#if defined(DEBUG)
+            qDebug() << "clean db removing folder" << folder_id << folder_path;
+#endif
+            removeFolderInternal(collection, folder_id, folder_path);
+        }
+    }
+
+    // Scan all documents in db to make sure they still exist
+    if (!q.prepare(SELECT_ALL_DOCUMENTS_SQL)) {
+        qWarning() << "ERROR: Cannot prepare sql for select all documents" << q.lastError();
+        return;
+    }
+
+    if (!q.exec()) {
+        qWarning() << "ERROR: Cannot exec sql for select all documents" << q.lastError();
+        return;
+    }
+
+    while (q.next()) {
+        int document_id = q.value(0).toInt();
+        QString document_path = q.value(1).toString();
+        QFileInfo info(document_path);
+        if (info.exists() && info.isReadable())
+            continue;
+
+#if defined(DEBUG)
+        qDebug() << "clean db removing document" << document_id << document_path;
+#endif
+
+        // Remove all chunks and documents that either don't exist or have become unreadable
+        QSqlQuery query;
+        if (!removeChunksByDocumentId(query, document_id)) {
+            qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << query.lastError();
+        }
+
+        if (!removeDocument(query, document_id)) {
+            qWarning() << "ERROR: Cannot remove document_id" << document_id << query.lastError();
+        }
+    }
+}
+
 void Database::directoryChanged(const QString &path)
 {
 #if defined(DEBUG)
@@ -793,6 +921,9 @@ void Database::directoryChanged(const QString &path)
         m_watcher->removePath(path);
         return;
     }
+
+    // Clean the database
+    cleanDB();
 
     // Rescan the documents associated with the folder
     scanDocuments(folder_id, path);
