@@ -54,8 +54,8 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     set(LLAMA_FMA  ${GPT4ALL_ALLOW_NON_AVX})
 
     # Include GGML
-    include_ggml(llama.cpp-old -old-${BUILD_VARIANT} ON)
-    include_ggml(llama.cpp -${BUILD_VARIANT} ON)
+    include_ggml(llama.cpp-230511 -230511-${BUILD_VARIANT} ON)
+    include_ggml(llama.cpp-230519 -230519-${BUILD_VARIANT} ON)
 
     # Function for preparing individual implementations
     function(prepare_target TARGET_NAME BASE_LIB)
@@ -75,19 +75,19 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     # Add each individual implementations
     add_library(llamamodel-${BUILD_VARIANT} SHARED
         llamamodel.cpp)
-    prepare_target(llamamodel llama)
+    prepare_target(llamamodel llama-230519)
 
     add_library(llamamodel-old-${BUILD_VARIANT} SHARED
         llamamodel_old.cpp)
-    prepare_target(llamamodel-old llama-old)
+    prepare_target(llamamodel-old llama-230511)
 
     add_library(gptj-${BUILD_VARIANT} SHARED
         gptj.cpp)
-    prepare_target(gptj ggml-old)
+    prepare_target(gptj ggml-230511)
 
     add_library(mpt-${BUILD_VARIANT} SHARED
         mpt.cpp)
-    prepare_target(mpt ggml-old)
+    prepare_target(mpt ggml-230511)
 endforeach()
 
 add_library(llmodel
