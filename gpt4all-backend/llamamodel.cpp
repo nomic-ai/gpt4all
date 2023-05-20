@@ -55,7 +55,7 @@ struct gpt_params {
 };
 
 #if LLAMA_DATE >= 230519
-int llama_sample_top_p_top_k(
+static int llama_sample_top_p_top_k(
         llama_context *ctx,
         const llama_token *last_n_tokens_data,
         int last_n_tokens_size,
