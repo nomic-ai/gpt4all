@@ -26,6 +26,7 @@ public Q_SLOTS:
     void addFolder(const QString &collection, const QString &path);
     void removeFolder(const QString &collection, const QString &path);
     void retrieveFromDB(const QList<QString> &collections, const QString &text);
+    void cleanDB();
 
 Q_SIGNALS:
     void docsToScanChanged();
@@ -38,6 +39,7 @@ private Q_SLOTS:
     bool removeFolderFromWatch(const QString &path);
 
 private:
+    void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
     void chunkStream(QTextStream &stream, int document_id);
     void handleDocumentErrorAndScheduleNext(const QString &errorMessage,
         int document_id, const QString &document_path, const QSqlError &error);
