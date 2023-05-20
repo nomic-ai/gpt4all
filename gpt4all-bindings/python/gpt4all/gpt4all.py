@@ -246,15 +246,14 @@ class GPT4All():
         if default_prompt_header:
             full_prompt += """### Instruction: 
             The prompt below is a question to answer, a task to complete, or a conversation 
-            to respond to; decide which and write an appropriate response.
-            \n### Prompt: """
+            to respond to; decide which and write an appropriate response.\n"""
 
         for message in messages:
             if message["role"] == "user":
-                user_message = "\n" + message["content"]
+                user_message = "\n" + "### Prompt:\n" + message["content"]
                 full_prompt += user_message
             if message["role"] == "assistant":
-                assistant_message = "\n### Response: " + message["content"]
+                assistant_message = "\n### Response:\n" + message["content"]
                 full_prompt += assistant_message
 
         if default_prompt_footer:
