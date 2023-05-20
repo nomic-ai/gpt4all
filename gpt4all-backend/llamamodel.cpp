@@ -147,7 +147,7 @@ size_t LLamaModel::saveState(uint8_t *dest) const
 
 size_t LLamaModel::restoreState(const uint8_t *src)
 {
-    // Argh. Const cast is required because function declaration doesn't match function definition and requires non-const...
+    // const_cast is required, see: https://github.com/ggerganov/llama.cpp/pull/1540
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
