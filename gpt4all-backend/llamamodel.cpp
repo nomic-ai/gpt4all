@@ -147,7 +147,8 @@ size_t LLamaModel::saveState(uint8_t *dest) const
 
 size_t LLamaModel::restoreState(const uint8_t *src)
 {
-    return llama_set_state_data(d_ptr->ctx, src);
+    // Argh. Const cast is required because function declaration doesn't match function definition and requires non-const...
+    return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
 void LLamaModel::prompt(const std::string &prompt,
@@ -346,7 +347,7 @@ bool magic_match(std::istream& f) {
     // Check version
     uint32_t version = 0;
     f.read(reinterpret_cast<char*>(&version), sizeof(version));
-    return version >= 2;
+    return version LLAMA_VERSIONS;
 }
 
 LLModel *construct() {
