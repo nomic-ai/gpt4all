@@ -4,6 +4,7 @@ import QtQuick.Controls.Basic
 
 QtObject {
     property color textColor: "#d1d5db"
+    property color mutedTextColor: backgroundLightest
     property color textErrorColor: "red"
     property color backgroundDarkest: "#202123"
     property color backgroundDarker: "#222326"
