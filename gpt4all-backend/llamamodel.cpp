@@ -53,7 +53,11 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->params.seed       = params.seed;
     d_ptr->params.f16_kv     = params.memory_f16;
     d_ptr->params.use_mmap   = params.use_mmap;
+#if defined (__APPLE__)
     d_ptr->params.use_mlock  = true;
+#else
+    d_ptr->params.use_mlock  = params.use_mlock;
+#endif
 
     d_ptr->ctx = llama_init_from_file(modelPath.c_str(), d_ptr->params);
     if (!d_ptr->ctx) {
