@@ -22,10 +22,20 @@ class Chat : public QObject
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
     Q_PROPERTY(QList<QString> modelList READ modelList NOTIFY modelListChanged)
     Q_PROPERTY(bool isServer READ isServer NOTIFY isServerChanged)
+    Q_PROPERTY(QString responseState READ responseState NOTIFY responseStateChanged)
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
 public:
+    enum ResponseState {
+        ResponseStopped,
+        LocalDocsRetrieval,
+        LocalDocsProcessing,
+        PromptProcessing,
+        ResponseGeneration
+    };
+    Q_ENUM(ResponseState)
+
     explicit Chat(QObject *parent = nullptr);
     explicit Chat(bool isServer, QObject *parent = nullptr);
     virtual ~Chat();
@@ -50,6 +60,7 @@ public:
 
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
+    QString responseState() const;
     QString modelName() const;
     void setModelName(const QString &modelName);
     bool isRecalc() const;
@@ -77,6 +88,7 @@ Q_SIGNALS:
     void isModelLoadedChanged();
     void responseChanged();
     void responseInProgressChanged();
+    void responseStateChanged();
     void promptRequested(const QString &prompt, const QString &prompt_template, int32_t n_predict,
         int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens,
         int32_t n_threads);
@@ -97,7 +109,7 @@ private Q_SLOTS:
     void handleLocalDocsRetrieved();
     void handleResponseChanged();
     void handleModelLoadedChanged();
-    void responseStarted();
+    void promptProcessing();
     void responseStopped();
     void generatedNameChanged();
     void handleRecalculating();
@@ -122,10 +134,12 @@ private:
     QString m_savedModelName;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
+    ResponseState m_responseState;
     qint64 m_creationDate;
     ChatLLM *m_llmodel;
     bool m_isServer;
     bool m_shouldDeleteLater;
+    bool m_contextContainsLocalDocs;
     Prompt m_queuedPrompt;
 };
 

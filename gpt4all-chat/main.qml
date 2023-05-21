@@ -577,17 +577,29 @@ Window {
                         leftPadding: 100
                         rightPadding: 100
 
-                        BusyIndicator {
+                        Item {
                             anchors.left: parent.left
                             anchors.leftMargin: 90
                             anchors.top: parent.top
                             anchors.topMargin: 5
                             visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
-                            running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
-
-                            Accessible.role: Accessible.Animation
-                            Accessible.name: qsTr("Busy indicator")
-                            Accessible.description: qsTr("Displayed when the model is thinking")
+                            width: childrenRect.width
+                            height: childrenRect.height
+                            Row {
+                                spacing: 5
+                                BusyIndicator {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
+                                    Accessible.role: Accessible.Animation
+                                    Accessible.name: qsTr("Busy indicator")
+                                    Accessible.description: qsTr("Displayed when the model is thinking")
+                                }
+                                Label {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: currentChat.responseState + "..."
+                                    color: theme.mutedTextColor
+                                }
+                            }
                         }
 
                         Rectangle {
