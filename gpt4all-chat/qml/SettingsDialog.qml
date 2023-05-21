@@ -219,6 +219,43 @@ Dialog {
             Accessible.name: qsTr("Application settings")
             Accessible.description: qsTr("Settings related to general behavior of the application")
         }
+
+        TabButton {
+            id: localDocsButton
+            contentItem: IconLabel {
+                color: theme.textColor
+                font.bold: localDocsButton.checked
+                font.pixelSize: localDocsButton.checked ? theme.fontSizeLarger : theme.fontSizeLarge
+                text: qsTr("LocalDocs")
+            }
+            background: Rectangle {
+                color: localDocsButton.checked ? theme.backgroundDarkest : theme.backgroundLight
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 1 ? localDocsButton.checked : 0
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    width: 1 ? localDocsButton.checked : 0
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    width: 1 ? localDocsButton.checked : 0
+                    color: theme.tabBorder
+                }
+            }
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("LocalDocs settings")
+            Accessible.description: qsTr("Settings related to localdocs plugin")
+        }
     }
 
     StackLayout {
@@ -748,6 +785,30 @@ Dialog {
                             settingsDialog.restoreApplicationDefaults()
                         }
                     }
+                }
+            }
+        }
+        Item {
+            id: localDocsTab
+            ScrollView {
+                background: Rectangle {
+                    color: 'transparent'
+                    border.color: theme.tabBorder
+                    border.width: 1
+                    radius: 2
+                }
+                padding: 10
+                width: parent.width
+                height: parent.height - 30
+                contentWidth: availableWidth - 20
+                ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+
+                GridLayout {
+                    anchors.margins: 10
+                    columns: 3
+                    rowSpacing: 10
+                    columnSpacing: 10
+                    anchors.fill: parent
                 }
             }
         }
