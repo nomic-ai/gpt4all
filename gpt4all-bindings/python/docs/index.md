@@ -30,7 +30,7 @@ The GPT4All software ecosystem is currently compatible with three variants of th
 Any model trained with one of these architectures can be quantized and run locally with all GPT4All bindings and in the
 chat client. You can add new variants by contributing the gpt4all-backend.
 
-You can find an exaustive list of pre-quantized models at [https://gpt4all.io] or in the download pane of the chat client.
+You can find an exhaustive list of pre-quantized models at [https://gpt4all.io] or in the download pane of the chat client.
 
 ## Frequently Asked Questions
 Find answers to frequently asked questions by searching the Github issues or in this documentations wiki.
