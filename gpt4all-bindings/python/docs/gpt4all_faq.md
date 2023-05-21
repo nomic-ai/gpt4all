@@ -37,3 +37,7 @@ In newer versions of llama.cpp, there has been some added support for NVIDIA GPU
 1. Check to make sure the huggingface model is available in one of our three supported architectures
 2. If it is, then you can use the conversion script inside of our pinned llama.cpp submodule for GPTJ and LLAMA based models
 3. Or if your model is an MPT model you can use the conversion script located directly in this backend directory under the scripts subdirectory 
+
+## What is the best way to write prompt templates?
+
+Prompt Engineering is an evolving field with many new discoveries in how to navigate a model's latent space. Some commands that work on a model may not work on another. Please [join the discussion](https://github.com/nomic-ai/gpt4all/issues/631) on our github for more information on how to write good prompt templates for different models.
