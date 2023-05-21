@@ -1,7 +1,6 @@
 $ROOT_DIR = '.\runtimes\win-x64'
 $BUILD_DIR = '.\runtimes\win-x64\build\mingw'
 $LIBS_DIR = '.\runtimes\win-x64\native'
-$env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
 
 # cleanup env
 Remove-Item -Force -Recurse $ROOT_DIR -ErrorAction SilentlyContinue | Out-Null

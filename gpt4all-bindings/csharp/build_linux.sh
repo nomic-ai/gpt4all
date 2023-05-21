@@ -1,8 +1,6 @@
-sudo apt-get update
-sudo apt-get install -y cmake build-essential
-mkdir runtimes
+mkdir -p runtimes
 rm -rf runtimes/linux-x64
-mkdir runtimes/linux-x64/native
+mkdir -p runtimes/linux-x64/native
 mkdir runtimes/linux-x64/build
 cmake -S ../../gpt4all-backend -B runtimes/linux-x64/build
 cmake --build runtimes/linux-x64/build --parallel --config Release
