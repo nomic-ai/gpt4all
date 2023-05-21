@@ -1,7 +1,7 @@
 package gpt4all
 
-// #cgo CFLAGS: -I../../gpt4all-backend/ -I../../gpt4all-backend/llama.cpp -I./
-// #cgo CXXFLAGS: -std=c++17 -I../../gpt4all-backend/ -I../../gpt4all-backend/llama.cpp -I./
+// #cgo CFLAGS: -I${SRCDIR}../../gpt4all-backend/ -I${SRCDIR}../../gpt4all-backend/llama.cpp -I./
+// #cgo CXXFLAGS: -std=c++17 -I${SRCDIR}../../gpt4all-backend/ -I${SRCDIR}../../gpt4all-backend/llama.cpp -I./
 // #cgo darwin LDFLAGS: -framework Accelerate
 // #cgo darwin CXXFLAGS: -std=c++17
 // #cgo LDFLAGS: -lgpt4all -lm -lstdc++
