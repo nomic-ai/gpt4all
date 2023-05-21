@@ -421,15 +421,15 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     m_ctx.repeat_penalty = repeat_penalty;
     m_ctx.repeat_last_n = repeat_penalty_tokens;
     m_modelInfo.model->setThreadCount(n_threads);
-//#if defined(DEBUG)
+#if defined(DEBUG)
     printf("%s", qPrintable(instructPrompt));
     fflush(stdout);
-//#endif
+#endif
     m_modelInfo.model->prompt(instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
-//#if defined(DEBUG)
+#if defined(DEBUG)
     printf("\n");
     fflush(stdout);
-//#endif
+#endif
     m_responseLogits += m_ctx.logits.size() - logitsBefore;
     std::string trimmed = trim_whitespace(m_response);
     if (trimmed != m_response) {
