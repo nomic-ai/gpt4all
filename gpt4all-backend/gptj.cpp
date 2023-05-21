@@ -867,7 +867,8 @@ void GPTJ::setThreadCount(int32_t n_threads) {
     d_ptr->n_threads = n_threads;
 }
 
-int32_t GPTJ::threadCount() {
+int32_t GPTJ::threadCount() const
+{
     return d_ptr->n_threads;
 }
 
