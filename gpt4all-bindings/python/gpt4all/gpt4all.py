@@ -36,17 +36,17 @@ class GPT4All():
             allow_download: Allow API to download models from gpt4all.io. Default is True. 
         """
         self.model = None
-
-        # Model type provided for when model is custom
-        if model_type:
-            self.model = GPT4All.get_model_from_type(model_type)
-        # Else get model from gpt4all model filenames
-        else:
-            self.model = GPT4All.get_model_from_name(model_name)
-
-        # Retrieve model and download if allowed
-        model_dest = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
-        self.model.load_model(model_dest)
+        try:
+            # Model type provided for when model is custom
+            if model_type:
+                self.model = GPT4All.get_model_from_type(model_type)
+            # Else get model from gpt4all model filenames
+            else:
+                self.model = GPT4All.get_model_from_name(model_name)
+        except ValueError:
+            # Retrieve model and download if allowed
+            model_dest = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
+            self.model.load_model(model_dest)
 
     @staticmethod
     def list_models():
