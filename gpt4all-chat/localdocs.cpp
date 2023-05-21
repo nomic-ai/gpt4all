@@ -4,7 +4,7 @@
 #include <QTimer>
 #include <QPdfDocument>
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_EXAMPLE
 
 #define LOCALDOCS_VERSION 0
