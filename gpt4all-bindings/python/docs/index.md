@@ -16,6 +16,7 @@ This C API is then bound to any higher level programming language such as C++, P
 - **gpt4all-api**: The GPT4All API (under initial development) exposes REST API endpoints for gathering completions and embeddings from large language models.
 - **gpt4all-chat**: GPT4All Chat is an OS native chat application that runs on OSX, Windows and Ubuntu. It is the easiest way to run local, privacy aware chat assistants on everyday hardware. You can download it on the [GPT4All Website](https://gpt4all.io) and read its source code in the monorepo.
 
+Explore detailed documentation for the backend, bindings and chat client in the sidebar.
 ## Models
 GPT4All models are artifacts produced through a process known as neural network quantization.
 A multi-billion parameter transformer decoder usually takes 30+ GB of VRAM to execute a forward pass.
@@ -30,10 +31,10 @@ The GPT4All software ecosystem is currently compatible with three variants of th
 Any model trained with one of these architectures can be quantized and run locally with all GPT4All bindings and in the
 chat client. You can add new variants by contributing the gpt4all-backend.
 
-You can find an exhaustive list of pre-quantized models at [https://gpt4all.io] or in the download pane of the chat client.
+You can find an exhaustive list of pre-quantized models on the [website](https://gpt4all.io) or in the download pane of the chat client.
 
 ## Frequently Asked Questions
-Find answers to frequently asked questions by searching the Github issues or in this documentations wiki.
+Find answers to frequently asked questions by searching the [Github issues](https://github.com/nomic-ai/gpt4all/issues) or in the [documentation FAQ](gpt4all_faq.md).
 
 ## Getting the most of your local LLM
 
