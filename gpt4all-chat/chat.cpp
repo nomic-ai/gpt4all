@@ -10,10 +10,12 @@ Chat::Chat(QObject *parent)
     , m_name(tr("New Chat"))
     , m_chatModel(new ChatModel(this))
     , m_responseInProgress(false)
+    , m_responseState(Chat::ResponseStopped)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
     , m_llmodel(new ChatLLM(this))
     , m_isServer(false)
     , m_shouldDeleteLater(false)
+    , m_contextContainsLocalDocs(false)
 {
     connectLLM();
 }
@@ -24,10 +26,12 @@ Chat::Chat(bool isServer, QObject *parent)
     , m_name(tr("Server Chat"))
     , m_chatModel(new ChatModel(this))
     , m_responseInProgress(false)
+    , m_responseState(Chat::ResponseStopped)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
     , m_llmodel(new Server(this))
     , m_isServer(true)
     , m_shouldDeleteLater(false)
+    , m_contextContainsLocalDocs(false)
 {
     connectLLM();
 }
@@ -49,7 +53,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::isModelLoadedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::handleModelLoadedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::responseStarted, this, &Chat::responseStarted, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelNameChanged, this, &Chat::handleModelNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::modelLoadingError, Qt::QueuedConnection);
@@ -99,6 +103,11 @@ void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t
     int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
     int32_t repeat_penalty_tokens)
 {
+    m_contextContainsLocalDocs = false;
+    m_responseInProgress = true;
+    m_responseState = Chat::LocalDocsRetrieval;
+    emit responseInProgressChanged();
+    emit responseStateChanged();
     m_queuedPrompt.prompt = prompt;
     m_queuedPrompt.prompt_template = prompt_template;
     m_queuedPrompt.n_predict = n_predict;
@@ -116,8 +125,9 @@ void Chat::handleLocalDocsRetrieved()
     QList<QString> results = LocalDocs::globalInstance()->result();
     if (!results.isEmpty()) {
         augmentedTemplate.append("### Context:");
-        augmentedTemplate.append(results);
+        augmentedTemplate.append(results.join("\n\n"));
     }
+    m_contextContainsLocalDocs = !results.isEmpty();
     augmentedTemplate.append(m_queuedPrompt.prompt_template);
     emit promptRequested(
         m_queuedPrompt.prompt,
@@ -148,8 +158,26 @@ QString Chat::response() const
     return m_llmodel->response();
 }
 
+QString Chat::responseState() const
+{
+    switch (m_responseState) {
+    case ResponseStopped: return QStringLiteral("response stopped");
+    case LocalDocsRetrieval: return QStringLiteral("retrieving localdocs");
+    case LocalDocsProcessing: return QStringLiteral("processing localdocs");
+    case PromptProcessing: return QStringLiteral("processing prompt");
+    case ResponseGeneration: return QStringLiteral("generating response");
+    };
+    Q_UNREACHABLE();
+    return QString();
+}
+
 void Chat::handleResponseChanged()
 {
+    if (m_responseState != Chat::ResponseGeneration) {
+        m_responseState = Chat::ResponseGeneration;
+        emit responseStateChanged();
+    }
+
     const int index = m_chatModel->count() - 1;
     m_chatModel->updateValue(index, response());
     emit responseChanged();
@@ -161,16 +189,19 @@ void Chat::handleModelLoadedChanged()
         deleteLater();
 }
 
-void Chat::responseStarted()
+void Chat::promptProcessing()
 {
-    m_responseInProgress = true;
-    emit responseInProgressChanged();
+    m_responseState = m_contextContainsLocalDocs ? Chat::LocalDocsProcessing : Chat::PromptProcessing;
+    emit responseStateChanged();
 }
 
 void Chat::responseStopped()
 {
+    m_contextContainsLocalDocs = false;
     m_responseInProgress = false;
+    m_responseState = Chat::ResponseStopped;
     emit responseInProgressChanged();
+    emit responseStateChanged();
     if (m_llmodel->generatedName().isEmpty())
         emit generateNameRequested();
     if (chatModel()->count() < 3)
