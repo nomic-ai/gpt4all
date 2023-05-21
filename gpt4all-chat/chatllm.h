@@ -75,7 +75,7 @@ Q_SIGNALS:
     void isModelLoadedChanged();
     void modelLoadingError(const QString &error);
     void responseChanged();
-    void responseStarted();
+    void promptProcessing();
     void responseStopped();
     void modelNameChanged();
     void recalcChanged();
