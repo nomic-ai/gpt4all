@@ -983,7 +983,7 @@ void GPTJ::prompt(const std::string &prompt,
     std::string cachedResponse;
     std::vector<gpt_vocab::id> cachedTokens;
     std::unordered_set<std::string> reversePrompts
-        = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant" };
+        = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context" };
 
     // predict next tokens
     int32_t totalPredictions = 0;
