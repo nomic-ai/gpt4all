@@ -803,7 +803,7 @@ Window {
                 wrapMode: Text.WordWrap
                 font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Send a message...")
-                placeholderTextColor: theme.backgroundLightest
+                placeholderTextColor: theme.mutedTextColor
                 background: Rectangle {
                     color: theme.backgroundLighter
                     radius: 10
