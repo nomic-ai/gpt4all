@@ -179,7 +179,10 @@ const auto SELECT_COLLECTIONS_FROM_FOLDER_SQL = QLatin1String(R"(
     )");
 
 const auto SELECT_COLLECTIONS_SQL = QLatin1String(R"(
-    select collection_name, folder_id from collections;
+    select c.collection_name, f.folder_path, f.id
+    from collections c
+    join folders f on c.folder_id = f.id
+    order by c.collection_name asc, f.folder_path asc;
     )");
 
 bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
@@ -222,13 +225,24 @@ bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *co
     return true;
 }
 
-bool selectAllFromCollections(QSqlQuery &q, QList<QPair<QString, int>> *collections) {
+struct CollectionEntry {
+    QString collection;
+    QString folder_path;
+    int folder_id = -1;
+};
+
+bool selectAllFromCollections(QSqlQuery &q, QList<CollectionEntry> *collections) {
     if (!q.prepare(SELECT_COLLECTIONS_SQL))
         return false;
     if (!q.exec())
         return false;
-    while (q.next())
-        collections->append(qMakePair(q.value(0).toString(), q.value(1).toInt()));
+    while (q.next()) {
+        CollectionEntry e;
+        e.collection = q.value(0).toString();
+        e.folder_path = q.value(1).toString();
+        e.folder_id = q.value(0).toInt();
+        collections->append(e);
+    }
     return true;
 }
 
@@ -246,6 +260,10 @@ const auto SELECT_FOLDERS_FROM_PATH_SQL = QLatin1String(R"(
 
 const auto SELECT_FOLDERS_FROM_ID_SQL = QLatin1String(R"(
     select folder_path from folders where id = ?;
+    )");
+
+const auto SELECT_ALL_FOLDERPATHS_SQL = QLatin1String(R"(
+    select folder_path from folders;
     )");
 
 const auto FOLDERS_SQL = QLatin1String(R"(
@@ -291,6 +309,16 @@ bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
     Q_ASSERT(q.size() < 2);
     if (q.next())
         *folder_path = q.value(0).toString();
+    return true;
+}
+
+bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
+    if (!q.prepare(SELECT_ALL_FOLDERPATHS_SQL))
+        return false;
+    if (!q.exec())
+        return false;
+    while (q.next())
+        folder_paths->append(q.value(0).toString());
     return true;
 }
 
@@ -658,6 +686,57 @@ void Database::start()
         if (err.type() != QSqlError::NoError)
             qWarning() << "ERROR: initializing db" << err.text();
     }
+    addCurrentFolders();
+}
+
+void Database::addCurrentFolders()
+{
+#if defined(DEBUG)
+    qDebug() << "addCurrentFolders";
+#endif
+
+    QSqlQuery q;
+    QList<CollectionEntry> collections;
+    if (!selectAllFromCollections(q, &collections)) {
+        qWarning() << "ERROR: Cannot select collections" << q.lastError();
+        return;
+    }
+
+    for (auto e : collections)
+        addFolder(e.collection, e.folder_path);
+}
+
+void Database::updateCollectionList()
+{
+#if defined(DEBUG)
+    qDebug() << "updateCollectionList";
+#endif
+
+    QSqlQuery q;
+    QList<CollectionEntry> collections;
+    if (!selectAllFromCollections(q, &collections)) {
+        qWarning() << "ERROR: Cannot select collections" << q.lastError();
+        return;
+    }
+
+    QList<CollectionInfo> collectionList;
+    QString currentCollectionName;
+    CollectionInfo currentCollectionInfo;
+
+    for (auto e : collections) {
+        if (e.collection != currentCollectionName) {
+            if (!currentCollectionInfo.name.isEmpty())
+                collectionList.append(currentCollectionInfo);
+            currentCollectionName = e.collection;
+            currentCollectionInfo.name = e.collection;
+            currentCollectionInfo.folders.clear();
+        }
+        currentCollectionInfo.folders.append(e.folder_path);
+    }
+    if (!currentCollectionInfo.name.isEmpty())
+        collectionList.append(currentCollectionInfo);
+
+    emit collectionListUpdated(collectionList);
 }
 
 void Database::addFolder(const QString &collection, const QString &path)
@@ -701,6 +780,7 @@ void Database::addFolder(const QString &collection, const QString &path)
         return;
 
     scanDocuments(folder_id, path);
+    updateCollectionList();
 }
 
 void Database::removeFolder(const QString &collection, const QString &path)
@@ -785,6 +865,7 @@ void Database::removeFolderInternal(const QString &collection, int folder_id, co
     }
 
     removeFolderFromWatch(path);
+    updateCollectionList();
 }
 
 bool Database::addFolderToWatch(const QString &path)
@@ -848,28 +929,20 @@ void Database::cleanDB()
 
     // Scan all folders in db to make sure they still exist
     QSqlQuery q;
-    QList<QPair<QString, int>> collections;
+    QList<CollectionEntry> collections;
     if (!selectAllFromCollections(q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
         return;
     }
 
-    for (auto pair : collections) {
+    for (auto e : collections) {
         // Find the path for the folder
-        QString collection = pair.first;
-        int folder_id = pair.second;
-        QString folder_path;
-        if (!selectFolder(q, folder_id, &folder_path)) {
-            qWarning() << "ERROR: Cannot select folder from id" << folder_id << q.lastError();
-            return;
-        }
-
-        QFileInfo info(folder_path);
+        QFileInfo info(e.folder_path);
         if (!info.exists() || !info.isReadable()) {
 #if defined(DEBUG)
-            qDebug() << "clean db removing folder" << folder_id << folder_path;
+            qDebug() << "clean db removing folder" << e.folder_id << e.folder_path;
 #endif
-            removeFolderInternal(collection, folder_id, folder_path);
+            removeFolderInternal(e.collection, e.folder_id, e.folder_path);
         }
     }
 
@@ -905,6 +978,7 @@ void Database::cleanDB()
             qWarning() << "ERROR: Cannot remove document_id" << document_id << query.lastError();
         }
     }
+    updateCollectionList();
 }
 
 void Database::directoryChanged(const QString &path)
@@ -955,7 +1029,7 @@ LocalDocs::LocalDocs()
     connect(this, &LocalDocs::requestRetrieveFromDB, m_database,
         &Database::retrieveFromDB, Qt::QueuedConnection);
     connect(m_database, &Database::retrieveResult, this,
-        &LocalDocs::retrieveResult, Qt::QueuedConnection);
+        &LocalDocs::handleRetrieveResult, Qt::QueuedConnection);
 
     addFolder("localdocs", "/home/atreat/dev/large_language_models/localdocs");
 }
@@ -976,8 +1050,14 @@ void LocalDocs::requestRetrieve(const QList<QString> &collections, const QString
     emit requestRetrieveFromDB(collections, text);
 }
 
-void LocalDocs::retrieveResult(const QList<QString> &result)
+void LocalDocs::handleRetrieveResult(const QList<QString> &result)
 {
     m_retrieveResult = result;
     emit receivedResult();
+}
+
+void LocalDocs::handleCollectionListUpdated(const QList<CollectionInfo> &collectionList)
+{
+    m_collectionList = collectionList;
+    emit collectionListChanged();
 }

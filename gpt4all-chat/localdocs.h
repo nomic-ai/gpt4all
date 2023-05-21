@@ -14,6 +14,15 @@ struct DocumentInfo
     QFileInfo doc;
 };
 
+struct CollectionInfo {
+    Q_GADGET
+    Q_PROPERTY(QString name MEMBER name)
+public:
+    QString name;
+    QList<QString> folders;
+};
+Q_DECLARE_METATYPE(CollectionInfo)
+
 class Database : public QObject
 {
     Q_OBJECT
@@ -31,12 +40,15 @@ public Q_SLOTS:
 Q_SIGNALS:
     void docsToScanChanged();
     void retrieveResult(const QList<QString> &result);
+    void collectionListUpdated(const QList<CollectionInfo> &collectionList);
 
 private Q_SLOTS:
     void start();
     void directoryChanged(const QString &path);
     bool addFolderToWatch(const QString &path);
     bool removeFolderFromWatch(const QString &path);
+    void addCurrentFolders();
+    void updateCollectionList();
 
 private:
     void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
@@ -54,9 +66,12 @@ private:
 class LocalDocs : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QList<CollectionInfo> collectionList READ collectionList NOTIFY collectionListChanged)
 
 public:
     static LocalDocs *globalInstance();
+
+    QList<CollectionInfo> collectionList() const { return m_collectionList; }
 
     void addFolder(const QString &collection, const QString &path);
     void removeFolder(const QString &collection, const QString &path);
@@ -69,13 +84,16 @@ Q_SIGNALS:
     void requestRemoveFolder(const QString &collection, const QString &path);
     void requestRetrieveFromDB(const QList<QString> &collections, const QString &text);
     void receivedResult();
+    void collectionListChanged();
 
 private Q_SLOTS:
-    void retrieveResult(const QList<QString> &result);
+    void handleRetrieveResult(const QList<QString> &result);
+    void handleCollectionListUpdated(const QList<CollectionInfo> &collectionList);
 
 private:
     Database *m_database;
     QList<QString> m_retrieveResult;
+    QList<CollectionInfo> m_collectionList;
 
 private:
     explicit LocalDocs();
