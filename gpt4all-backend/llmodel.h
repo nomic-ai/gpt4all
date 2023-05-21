@@ -37,7 +37,7 @@ public:
         std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx) = 0;
     virtual void setThreadCount(int32_t n_threads) {}
-    virtual int32_t threadCount() { return 1; }
+    virtual int32_t threadCount() const { return 1; }
 
 protected:
     virtual void recalculateContext(PromptContext &promptCtx,
