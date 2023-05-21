@@ -162,7 +162,7 @@ uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src);
  * @param ctx A pointer to the llmodel_prompt_context structure.
  */
 void llmodel_prompt(llmodel_model model, const char *prompt,
-                    llmodel_response_callback prompt_callback,
+                    llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
                     llmodel_recalculate_callback recalculate_callback,
                     llmodel_prompt_context *ctx);
