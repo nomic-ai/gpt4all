@@ -408,7 +408,7 @@ Dialog {
             FolderDialog {
                 id: modelPathDialog
                 title: "Please choose a directory"
-                currentFolder: Download.downloadLocalModelsPath
+                currentFolder: "file://" + Download.downloadLocalModelsPath
                 onAccepted: {
                     Download.downloadLocalModelsPath = selectedFolder
                     settings.modelPath = Download.downloadLocalModelsPath
