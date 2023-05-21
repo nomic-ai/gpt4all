@@ -142,8 +142,27 @@ Dialog {
             }
             background: Rectangle {
                 color: genSettingsButton.checked ? theme.backgroundDarkest : theme.backgroundLight
-                border.color: theme.tabBorder
-                border.width: 1 ? genSettingsButton.checked : 0
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 1 ? genSettingsButton.checked : 0
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    width: 1 ? genSettingsButton.checked : 0
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    width: 1 ? genSettingsButton.checked : 0
+                    color: theme.tabBorder
+                }
             }
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("Generation settings")
@@ -160,8 +179,27 @@ Dialog {
             }
             background: Rectangle {
                 color: appSettingsButton.checked ? theme.backgroundDarkest : theme.backgroundLight
-                border.color: theme.tabBorder
-                border.width: 1 ? appSettingsButton.checked : 0
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 1 ? appSettingsButton.checked : 0
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    width: 1 ? appSettingsButton.checked : 0
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    width: 1 ? appSettingsButton.checked : 0
+                    color: theme.tabBorder
+                }
             }
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("Application settings")
