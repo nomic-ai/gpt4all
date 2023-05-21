@@ -84,12 +84,13 @@ class LLModelPromptContext(ctypes.Structure):
                 ("repeat_last_n", ctypes.c_int32),
                 ("context_erase", ctypes.c_float)]
     
+PromptCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32)
 ResponseCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32, ctypes.c_char_p)
 RecalculateCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_bool)
 
 llmodel.llmodel_prompt.argtypes = [ctypes.c_void_p, 
                                    ctypes.c_char_p, 
-                                   ResponseCallback, 
+                                   PromptCallback,
                                    ResponseCallback, 
                                    RecalculateCallback, 
                                    ctypes.POINTER(LLModelPromptContext)]
@@ -218,7 +219,7 @@ class LLModel:
 
         llmodel.llmodel_prompt(self.model, 
                                prompt, 
-                               ResponseCallback(self._prompt_callback), 
+                               PromptCallback(self._prompt_callback),
                                ResponseCallback(self._response_callback), 
                                RecalculateCallback(self._recalculate_callback), 
                                context)
@@ -232,7 +233,7 @@ class LLModel:
 
     # Empty prompt callback
     @staticmethod
-    def _prompt_callback(token_id, response):
+    def _prompt_callback(token_id):
         return True
 
     # Empty response callback method that just prints response to be collected
