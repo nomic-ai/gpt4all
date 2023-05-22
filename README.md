@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-<a href="https://discord.gg/mGZE39AS3e">Discord</a>
+<a href="https://discord.gg/zNJvxykt5s">Discord</a>
 </p>
 
 <p align="center">
