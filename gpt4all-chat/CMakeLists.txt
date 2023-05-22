@@ -84,6 +84,10 @@ qt_add_qml_module(chat
       qml/PopupDialog.qml
       qml/AboutDialog.qml
       qml/Theme.qml
+      qml/MyButton.qml
+      qml/MyComboBox.qml
+      qml/MyTextField.qml
+      qml/MyCheckBox.qml
     RESOURCES
       icons/send_message.svg
       icons/stop_generating.svg
