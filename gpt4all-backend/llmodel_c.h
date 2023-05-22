@@ -91,6 +91,18 @@ typedef bool (*llmodel_recalculate_callback)(bool is_recalculating);
 DEPRECATED llmodel_model llmodel_model_create(const char *model_path);
 
 /**
+ * Create a Replit instance.
+ * @return A pointer to the Replit instance.
+ */
+llmodel_model llmodel_replit_create();
+
+/**
+ * Destroy a Replit instance.
+ * @param gptj A pointer to the Replit instance.
+ */
+void llmodel_replit_destroy(llmodel_model replit);
+
+/**
  * Create a llmodel instance.
  * Recognises correct model type from file at model_path
  * @param model_path A string representing the path to the model file; will only be used to detect model type.

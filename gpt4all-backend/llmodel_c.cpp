@@ -15,6 +15,20 @@ struct LLModelWrapper {
 thread_local static std::string last_error_message;
 
 
+llmodel_model llmodel_replit_create()
+{
+    LLModelWrapper *wrapper = new LLModelWrapper;
+    wrapper->llModel = new Replit;
+    return reinterpret_cast<void*>(wrapper);
+}
+
+void llmodel_replit_destroy(llmodel_model replit)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(replit);
+    delete wrapper->llModel;
+    delete wrapper;
+}
+
 llmodel_model llmodel_model_create(const char *model_path) {
     auto fres = llmodel_model_create2(model_path, "auto", nullptr);
     if (!fres) {
