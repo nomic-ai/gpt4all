@@ -9,7 +9,6 @@ try {
    class Extended extends LLModel {
         
    }
-   console.log(Object.getPrototypeOf(Extended))
 } catch(e) {
     console.log("Extending from native class gone wrong " + e)
 }
@@ -27,7 +26,7 @@ console.log(createCompletion(
     ll,
     prompt`${"header"} ${"prompt"}`, {
         verbose: true,
-        prompt: 'hello! talk dirty to me'
+        prompt: 'hello! Say something thought provoking.'
     }
 ));
 

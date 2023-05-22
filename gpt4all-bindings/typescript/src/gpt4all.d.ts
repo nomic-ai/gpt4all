@@ -49,7 +49,9 @@ interface LLModelPromptContext {
  * This is a base class that provides common functionality for different types of language models.
  */
 declare class LLModel {
+    //either 'gpt', mpt', or 'llama'
     type() : ModelType;
+    //The name of the model
     name(): ModelFile;
     constructor(path: string);
     /**
@@ -88,6 +90,23 @@ interface DownloadController {
     promise: () => Promise<void>
 }
 
+
+export interface DownloadConfig {
+    /**
+     * location to download the model.
+     * Default is process.cwd(), or the current working directory
+     */
+    location: string;
+    /**
+     * Debug mode -- check how long it took to download in seconds
+     */
+    debug: boolean;
+    /**
+     * Default link = https://gpt4all.io/models`
+     * This property overrides the default.
+     */
+    link?: string
+}
 /**
  * Initiates the download of a model file of a specific model type.
  * By default this downloads without waiting. use the controller returned to alter this behavior.
@@ -100,6 +119,9 @@ declare function download(m: ModelFile[ModelType], op: { location: string, debug
 
 type ModelType = 'gptj' | 'llama' | 'mpt';
 
+/*
+ * A nice interface for intellisense of all possibly models. 
+ */
 interface ModelFile {
     'gptj': | "ggml-gpt4all-j-v1.3-groovy.bin"
             | "ggml-gpt4all-j-v1.2-jazzy.bin"
@@ -123,6 +145,7 @@ interface ExtendedOptions {
     prompt: string;
     promptEntries?: Record<string, unknown>
 }
+
 type PromptTemplate = (...args: string[]) => string;
 
 declare function createCompletion(

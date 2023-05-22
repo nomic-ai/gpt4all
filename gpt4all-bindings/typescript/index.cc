@@ -31,6 +31,7 @@ public:
   {
     return Napi::String::New(info.Env(), type);
   }
+
   NodeModelWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<NodeModelWrapper>(info) 
   {
     auto env = info.Env();
@@ -173,23 +174,21 @@ private:
   llmodel_model inference_;
   std::string type;
   std::string name;
+
+
   //wrapper cb to capture output into stdout.then, CoutRedirect captures this 
   // and writes it to a file
   static bool response_callback(int32_t tid, const char* resp) 
   {
-    std::cout<<std::string(resp);
-    return true;
+    if(tid != -1) {
+        std::cout<<std::string(resp);
+        return true;
+    }
+    return false;
   }
 
-  static bool prompt_callback(int32_t tid)
-  {
-    return true;
-  }
-    
-  static bool recalculate_callback(bool isrecalculating)
-  {
-    return isrecalculating;
-  }
+  static bool prompt_callback(int32_t tid) { return true; }
+  static bool recalculate_callback(bool isrecalculating) { return  isrecalculating; }
   // Had to use this instead of the c library in order 
   // set the type of the model loaded.
   // causes side effect: type is mutated;
