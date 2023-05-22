@@ -178,3 +178,4 @@ CMakeLists.txt.user
 gpt4all-chat/meta/*
 gpt4all-chat/models/*
 build_*
+build-*
