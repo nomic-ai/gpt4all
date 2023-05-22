@@ -1,0 +1,19 @@
+{
+  "name": "gpt4all-ts",
+  "packageManager": "yarn@3.5.1",
+  "gypfile": true,
+  "scripts": {
+    "test": "node ./test/index.mjs"
+  },
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.1.5"
+  },
+  "engines": {
+    "node": ">= 18.x.x"
+  }
+
+}
