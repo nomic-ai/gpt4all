@@ -136,67 +136,20 @@ Window {
                 horizontalAlignment: TextInput.AlignRight
             }
 
-            ComboBox {
+            MyComboBox {
                 id: comboBox
                 width: 350
                 anchors.top: modelLabel.top
                 anchors.bottom: modelLabel.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 enabled: !currentChat.isServer
-                font.pixelSize: theme.fontSizeLarge
-                spacing: 0
                 model: currentChat.modelList
                 Accessible.role: Accessible.ComboBox
                 Accessible.name: qsTr("ComboBox for displaying/picking the current model")
                 Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
-                contentItem: Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    leftPadding: 10
-                    rightPadding: 10
-                    text: comboBox.displayText
-                    font: comboBox.font
-                    color: theme.textColor
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                }
-                delegate: ItemDelegate {
-                    width: comboBox.width
-                    contentItem: Text {
-                        text: modelData
-                        color: theme.textColor
-                        font: comboBox.font
-                        elide: Text.ElideRight
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    background: Rectangle {
-                        color: highlighted ? theme.backgroundLight : theme.backgroundDark
-                    }
-                    highlighted: comboBox.highlightedIndex === index
-                }
-                popup: Popup {
-                    y: comboBox.height - 1
-                    width: comboBox.width
-                    implicitHeight: contentItem.implicitHeight
-                    padding: 0
-
-                    contentItem: ListView {
-                        clip: true
-                        implicitHeight: contentHeight
-                        model: comboBox.popup.visible ? comboBox.delegateModel : null
-                        currentIndex: comboBox.highlightedIndex
-                        ScrollIndicator.vertical: ScrollIndicator { }
-                    }
-
-                    background: Rectangle {
-                        color: theme.backgroundDark
-                    }
-                }
-
                 background: Rectangle {
                     color: theme.backgroundDark
                 }
-
                 onActivated: {
                     currentChat.stopGenerating()
                     currentChat.reset();

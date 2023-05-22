@@ -550,27 +550,14 @@ Dialog {
                             }
                         }
                     }
-                    Button {
+                    MyButton {
                         Layout.row: 8
                         Layout.column: 1
                         Layout.fillWidth: true
-                        padding: 10
-                        contentItem: Text {
-                            text: qsTr("Restore Defaults")
-                            horizontalAlignment: Text.AlignHCenter
-                            color: theme.textColor
-                            Accessible.role: Accessible.Button
-                            Accessible.name: text
-                            Accessible.description: qsTr("Restores the settings dialog to a default state")
-                        }
-
-                        background: Rectangle {
-                            opacity: .5
-                            border.color: theme.backgroundLightest
-                            border.width: 1
-                            radius: 10
-                            color: theme.backgroundLight
-                        }
+                        text: qsTr("Restore Defaults")
+                        Accessible.role: Accessible.Button
+                        Accessible.name: text
+                        Accessible.description: qsTr("Restores the settings dialog to a default state")
                         onClicked: {
                             settingsDialog.restoreGenerationDefaults()
                         }
@@ -606,14 +593,11 @@ Dialog {
                         Layout.row: 1
                         Layout.column: 0
                     }
-                    ComboBox {
+                    MyComboBox {
                         id: comboBox
                         Layout.row: 1
                         Layout.column: 1
                         Layout.minimumWidth: 350
-                        font.pixelSize: theme.fontSizeLarge
-                        spacing: 0
-                        padding: 10
                         model: modelList
                         Accessible.role: Accessible.ComboBox
                         Accessible.name: qsTr("ComboBox for displaying/picking the default model")
@@ -641,57 +625,6 @@ Dialog {
                                 comboBox.updateModel(currentChat.modelList)
                             }
                         }
-                        contentItem: Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            leftPadding: 10
-                            rightPadding: 10
-                            text: comboBox.displayText
-                            font: comboBox.font
-                            color: theme.textColor
-                            verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignHCenter
-                            elide: Text.ElideRight
-                        }
-                        delegate: ItemDelegate {
-                            width: comboBox.width
-                            contentItem: Text {
-                                text: modelData
-                                color: theme.textColor
-                                font: comboBox.font
-                                elide: Text.ElideRight
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            background: Rectangle {
-                                color: highlighted ? theme.backgroundLight : theme.backgroundDark
-                            }
-                            highlighted: comboBox.highlightedIndex === index
-                        }
-                        popup: Popup {
-                            y: comboBox.height - 1
-                            width: comboBox.width
-                            implicitHeight: contentItem.implicitHeight
-                            padding: 0
-
-                            contentItem: ListView {
-                                clip: true
-                                implicitHeight: contentHeight
-                                model: comboBox.popup.visible ? comboBox.delegateModel : null
-                                currentIndex: comboBox.highlightedIndex
-                                ScrollIndicator.vertical: ScrollIndicator { }
-                            }
-
-                            background: Rectangle {
-                                color: theme.backgroundDark
-                            }
-                        }
-
-                        background: Rectangle {
-                            color: theme.backgroundDark
-                            border.width: 1
-                            border.color: theme.backgroundLightest
-                            radius: 10
-                        }
-
                         onActivated: {
                             settingsDialog.userDefaultModel = comboBox.currentText
                             settings.sync()
@@ -734,25 +667,13 @@ Dialog {
                             radius: 10
                         }
                     }
-                    Button {
+                    MyButton {
                         Layout.row: 2
                         Layout.column: 2
                         text: qsTr("Browse")
-                        contentItem: Text {
-                            text: qsTr("Browse")
-                            horizontalAlignment: Text.AlignHCenter
-                            color: theme.textColor
-                            Accessible.role: Accessible.Button
-                            Accessible.name: text
-                            Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
-                        }
-                        background: Rectangle {
-                            opacity: .5
-                            border.color: theme.backgroundLightest
-                            border.width: 1
-                            radius: 10
-                            color: theme.backgroundLight
-                        }
+                        Accessible.role: Accessible.Button
+                        Accessible.name: text
+                        Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
                         onClicked: modelPathDialog.open()
                     }
                     Label {
@@ -947,27 +868,14 @@ Dialog {
                             leftPadding: serverChatBox.indicator.width + serverChatBox.spacing
                         }
                     }
-                    Button {
+                    MyButton {
                         Layout.row: 7
                         Layout.column: 1
                         Layout.fillWidth: true
-                        padding: 10
-                        contentItem: Text {
-                            text: qsTr("Restore Defaults")
-                            horizontalAlignment: Text.AlignHCenter
-                            color: theme.textColor
-                            Accessible.role: Accessible.Button
-                            Accessible.name: text
-                            Accessible.description: qsTr("Restores the settings dialog to a default state")
-                        }
-
-                        background: Rectangle {
-                            opacity: .5
-                            border.color: theme.backgroundLightest
-                            border.width: 1
-                            radius: 10
-                            color: theme.backgroundLight
-                        }
+                        text: qsTr("Restore Defaults")
+                        Accessible.role: Accessible.Button
+                        Accessible.name: text
+                        Accessible.description: qsTr("Restores the settings dialog to a default state")
                         onClicked: {
                             settingsDialog.restoreApplicationDefaults()
                         }
