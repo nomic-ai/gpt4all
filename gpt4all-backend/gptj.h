@@ -23,7 +23,7 @@ public:
         std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx) override;
     void setThreadCount(int32_t n_threads) override;
-    int32_t threadCount() override;
+    int32_t threadCount() const override;
 
 protected:
     void recalculateContext(PromptContext &promptCtx,

@@ -84,20 +84,20 @@ bool llmodel_loadModel(llmodel_model model, const char *model_path)
 
 bool llmodel_isModelLoaded(llmodel_model model)
 {
-    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
-    return wrapper->llModel->isModelLoaded();
+    const auto *llm = reinterpret_cast<LLModelWrapper*>(model)->llModel;
+    return llm->isModelLoaded();
 }
 
 uint64_t llmodel_get_state_size(llmodel_model model)
 {
-    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
-    return wrapper->llModel->stateSize();
+    const auto *llm = reinterpret_cast<LLModelWrapper*>(model)->llModel;
+    return llm->stateSize();
 }
 
 uint64_t llmodel_save_state_data(llmodel_model model, uint8_t *dest)
 {
-    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
-    return wrapper->llModel->saveState(dest);
+    const auto *llm = reinterpret_cast<LLModelWrapper*>(model)->llModel;
+    return llm->saveState(dest);
 }
 
 uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src)
@@ -181,6 +181,6 @@ void llmodel_setThreadCount(llmodel_model model, int32_t n_threads)
 
 int32_t llmodel_threadCount(llmodel_model model)
 {
-    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
-    return wrapper->llModel->threadCount();
+    const auto *llm = reinterpret_cast<LLModelWrapper*>(model)->llModel;
+    return llm->threadCount();
 }
