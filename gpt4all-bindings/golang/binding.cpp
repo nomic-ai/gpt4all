@@ -65,7 +65,7 @@ void gptj_model_prompt( const char *prompt, void *m, char* result, int repeat_la
 
    // std::string res = "";
  
-    auto lambda_prompt = [](int token_id, const char *promptchars)  {
+    auto lambda_prompt = [](int token_id)  {
 	        return true;
     };
 
