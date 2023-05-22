@@ -286,7 +286,6 @@ Drawer {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            padding: 15
             text: qsTr("About")
             Accessible.role: Accessible.Button
             Accessible.name: text
