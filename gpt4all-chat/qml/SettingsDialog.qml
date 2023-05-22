@@ -244,15 +244,9 @@ Dialog {
                         Layout.row: 0
                         Layout.column: 0
                     }
-                    TextField {
+                    MyTextField {
                         text: settings.temperature.toString()
                         color: theme.textColor
-                        background: Rectangle {
-                            implicitWidth: 150
-                            color: theme.backgroundLighter
-                            radius: 10
-                        }
-                        padding: 10
                         ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens - higher temperature gives more creative but less predictable outputs")
                         ToolTip.visible: hovered
                         Layout.row: 0
@@ -281,15 +275,9 @@ Dialog {
                         Layout.row: 1
                         Layout.column: 0
                     }
-                    TextField {
+                    MyTextField {
                         text: settings.topP.toString()
                         color: theme.textColor
-                        background: Rectangle {
-                            implicitWidth: 150
-                            color: theme.backgroundLighter
-                            radius: 10
-                        }
-                        padding: 10
                         ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen, prevents choosing highly unlikely tokens, aka Nucleus Sampling")
                         ToolTip.visible: hovered
                         Layout.row: 1
@@ -318,15 +306,9 @@ Dialog {
                         Layout.row: 2
                         Layout.column: 0
                     }
-                    TextField {
+                    MyTextField {
                         text: settings.topK.toString()
                         color: theme.textColor
-                        background: Rectangle {
-                            implicitWidth: 150
-                            color: theme.backgroundLighter
-                            radius: 10
-                        }
-                        padding: 10
                         ToolTip.text: qsTr("Only the top K most likely tokens will be chosen from")
                         ToolTip.visible: hovered
                         Layout.row: 2
@@ -355,15 +337,9 @@ Dialog {
                         Layout.row: 3
                         Layout.column: 0
                     }
-                    TextField {
+                    MyTextField {
                         text: settings.maxLength.toString()
                         color: theme.textColor
-                        background: Rectangle {
-                            implicitWidth: 150
-                            color: theme.backgroundLighter
-                            radius: 10
-                        }
-                        padding: 10
                         ToolTip.text: qsTr("Maximum length of response in tokens")
                         ToolTip.visible: hovered
                         Layout.row: 3
@@ -393,15 +369,9 @@ Dialog {
                         Layout.row: 4
                         Layout.column: 0
                     }
-                    TextField {
+                    MyTextField {
                         text: settings.promptBatchSize.toString()
                         color: theme.textColor
-                        background: Rectangle {
-                            implicitWidth: 150
-                            color: theme.backgroundLighter
-                            radius: 10
-                        }
-                        padding: 10
                         ToolTip.text: qsTr("Amount of prompt tokens to process at once, higher values can speed up reading prompts but will use more RAM")
                         ToolTip.visible: hovered
                         Layout.row: 4
@@ -430,15 +400,9 @@ Dialog {
                         Layout.row: 5
                         Layout.column: 0
                     }
-                    TextField {
+                    MyTextField {
                         text: settings.repeatPenalty.toString()
                         color: theme.textColor
-                        background: Rectangle {
-                            implicitWidth: 150
-                            color: theme.backgroundLighter
-                            radius: 10
-                        }
-                        padding: 10
                         ToolTip.text: qsTr("Amount to penalize repetitiveness of the output")
                         ToolTip.visible: hovered
                         Layout.row: 5
@@ -467,15 +431,9 @@ Dialog {
                         Layout.row: 6
                         Layout.column: 0
                     }
-                    TextField {
+                    MyTextField {
                         text: settings.repeatPenaltyTokens.toString()
                         color: theme.textColor
-                        background: Rectangle {
-                            implicitWidth: 150
-                            color: theme.backgroundLighter
-                            radius: 10
-                        }
-                        padding: 10
                         ToolTip.text: qsTr("How far back in output to apply repeat penalty")
                         ToolTip.visible: hovered
                         Layout.row: 6
@@ -683,15 +641,9 @@ Dialog {
                         Layout.row: 3
                         Layout.column: 0
                     }
-                    TextField {
+                    MyTextField {
                         text: settingsDialog.threadCount.toString()
                         color: theme.textColor
-                        background: Rectangle {
-                            implicitWidth: 150
-                            color: theme.backgroundLighter
-                            radius: 10
-                        }
-                        padding: 10
                         ToolTip.text: qsTr("Amount of processing threads to use, a setting of 0 will use the lesser of 4 or your number of CPU threads")
                         ToolTip.visible: hovered
                         Layout.row: 3
@@ -721,7 +673,7 @@ Dialog {
                         Layout.row: 4
                         Layout.column: 0
                     }
-                    CheckBox {
+                    MyCheckBox {
                         id: saveChatsBox
                         Layout.row: 4
                         Layout.column: 1
@@ -732,40 +684,8 @@ Dialog {
                             LLM.chatListModel.shouldSaveChats = saveChatsBox.checked
                             settings.sync()
                         }
-
                         ToolTip.text: qsTr("WARNING: Saving chats to disk can be ~2GB per chat")
                         ToolTip.visible: hovered
-
-                        background: Rectangle {
-                            color: "transparent"
-                        }
-
-                        indicator: Rectangle {
-                            implicitWidth: 26
-                            implicitHeight: 26
-                            x: saveChatsBox.leftPadding
-                            y: parent.height / 2 - height / 2
-                            border.color: theme.dialogBorder
-                            color: "transparent"
-
-                            Rectangle {
-                                width: 14
-                                height: 14
-                                x: 6
-                                y: 6
-                                color: theme.textColor
-                                visible: saveChatsBox.checked
-                            }
-                        }
-
-                        contentItem: Text {
-                            text: saveChatsBox.text
-                            font: saveChatsBox.font
-                            opacity: enabled ? 1.0 : 0.3
-                            color: theme.textColor
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: saveChatsBox.indicator.width + saveChatsBox.spacing
-                        }
                     }
                     Label {
                         id: saveChatGPTChatsLabel
@@ -774,7 +694,7 @@ Dialog {
                         Layout.row: 5
                         Layout.column: 0
                     }
-                    CheckBox {
+                    MyCheckBox {
                         id: saveChatGPTChatsBox
                         Layout.row: 5
                         Layout.column: 1
@@ -784,37 +704,6 @@ Dialog {
                             LLM.chatListModel.shouldSaveChatGPTChats = saveChatGPTChatsBox.checked
                             settings.sync()
                         }
-
-                        background: Rectangle {
-                            color: "transparent"
-                        }
-
-                        indicator: Rectangle {
-                            implicitWidth: 26
-                            implicitHeight: 26
-                            x: saveChatGPTChatsBox.leftPadding
-                            y: parent.height / 2 - height / 2
-                            border.color: theme.dialogBorder
-                            color: "transparent"
-
-                            Rectangle {
-                                width: 14
-                                height: 14
-                                x: 6
-                                y: 6
-                                color: theme.textColor
-                                visible: saveChatGPTChatsBox.checked
-                            }
-                        }
-
-                        contentItem: Text {
-                            text: saveChatGPTChatsBox.text
-                            font: saveChatGPTChatsBox.font
-                            opacity: enabled ? 1.0 : 0.3
-                            color: theme.textColor
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: saveChatGPTChatsBox.indicator.width + saveChatGPTChatsBox.spacing
-                        }
                     }
                     Label {
                         id: serverChatLabel
@@ -823,7 +712,7 @@ Dialog {
                         Layout.row: 6
                         Layout.column: 0
                     }
-                    CheckBox {
+                    MyCheckBox {
                         id: serverChatBox
                         Layout.row: 6
                         Layout.column: 1
@@ -833,40 +722,8 @@ Dialog {
                             LLM.serverEnabled = serverChatBox.checked
                             settings.sync()
                         }
-
                         ToolTip.text: qsTr("WARNING: This enables the gui to act as a local web server for AI API requests and will increase your RAM usage as well")
                         ToolTip.visible: hovered
-
-                        background: Rectangle {
-                            color: "transparent"
-                        }
-
-                        indicator: Rectangle {
-                            implicitWidth: 26
-                            implicitHeight: 26
-                            x: serverChatBox.leftPadding
-                            y: parent.height / 2 - height / 2
-                            border.color: theme.dialogBorder
-                            color: "transparent"
-
-                            Rectangle {
-                                width: 14
-                                height: 14
-                                x: 6
-                                y: 6
-                                color: theme.textColor
-                                visible: serverChatBox.checked
-                            }
-                        }
-
-                        contentItem: Text {
-                            text: serverChatBox.text
-                            font: serverChatBox.font
-                            opacity: enabled ? 1.0 : 0.3
-                            color: theme.textColor
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: serverChatBox.indicator.width + serverChatBox.spacing
-                        }
                     }
                     MyButton {
                         Layout.row: 7
