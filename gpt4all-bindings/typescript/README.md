@@ -17,7 +17,11 @@ The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-t
     - all of its requirements.
 
 ### Build
-- These shell commands assume the current working directory is `typescript`.
+```sh
+git clone https://github.com/nomic-ai/gpt4all.git
+cd gpt4all-bindings/typescript
+```
+- The below shell commands assume the current working directory is `typescript`.
 
 - To Build and Rebuild: 
  ```sh
