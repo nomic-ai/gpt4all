@@ -1,4 +1,5 @@
 /// This file implements the gpt4all.d.ts file endings.
+/// Written in commonjs to support both ESM and CJS projects.
 
 const { LLModel } = require('bindings')('../build/Release/gpt4allts');
 const { createWriteStream, existsSync } = require('fs');

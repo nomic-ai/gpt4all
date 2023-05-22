@@ -24,7 +24,7 @@
       "conditions": [
         ['OS=="mac"', {
             'defines': [
-                'NAPI_DISABLE_CPP_EXCEPTIONS'
+                'NAPI_CPP_EXCEPTIONS'
             ],
         }],
         ['OS=="win"', {
