@@ -13,35 +13,6 @@
 <a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
 
-
-<p align="center">
-<a href="https://gpt4all.io/reports/GPT4All_Technical_Report_3.pdf">:green_book: Technical Report 3: GPT4All Snoozy and Groovy </a>
-</p>
-
-<p align="center">
-<a href="https://static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf">:green_book: Technical Report 2: GPT4All-J </a>
-</p>
-
-<p align="center">
-<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 1: GPT4All</a>
-</p>
-
-<p align="center">
-<a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python/README.md">:snake: Official Python Bindings</a>
-</p>
-
-<p align="center">
-<a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/typescript">:computer: Official Typescript Bindings</a>
-</p>
-
-<p align="center">
-<a href="https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-chat/README.md">:speech_balloon: Official Chat Interface</a>
-</p>
-
-<p align="center">
-<a href="https://github.com/nomic-ai/gpt4all-ui">:speech_balloon: Official Web Chat Interface</a>
-</p>
-
 <p align="center">
 <a href="https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html">🦜️🔗 Official Langchain Backend</a> 
 </p>
@@ -59,6 +30,8 @@ Run on an M1 Mac (not sped up!)
 
 ## GPT4All: An ecosystem of open-source on-edge large language models.
 GTP4All is an ecosystem to train and deploy **powerful** and **customized** large language models that run locally on consumer grade CPUs.
+
+Learn more in the [documentation](https://docs.gpt4all.io).
 
 The goal is simple - be the best instruction tuned assistant-style language model that any person or enterprise can freely use, distribute and build on.
 
@@ -95,6 +68,7 @@ Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python/README.md">:snake: Official Python Bindings</a>
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/typescript">:computer: Official Typescript Bindings</a>
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/golang">:computer: Official GoLang Bindings</a>
+* <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/csharp">:computer: Official C# Bindings</a>
 
 
 ## Contributing
@@ -105,6 +79,19 @@ Check project discord, with project owners, or through existing issues/PRs to av
 Please make sure to tag all of the above with relevant project identifiers or your contribution could potentially get lost.
 Example tags: `backend`, `bindings`, `python-bindings`, `documentation`, etc.
 
+## Technical Reports
+
+<p align="center">
+<a href="https://gpt4all.io/reports/GPT4All_Technical_Report_3.pdf">:green_book: Technical Report 3: GPT4All Snoozy and Groovy </a>
+</p>
+
+<p align="center">
+<a href="https://static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf">:green_book: Technical Report 2: GPT4All-J </a>
+</p>
+
+<p align="center">
+<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 1: GPT4All</a>
+</p>
 
 ## Citation
 
