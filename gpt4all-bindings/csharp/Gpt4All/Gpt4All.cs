@@ -31,7 +31,7 @@ public class Gpt4All : IGpt4AllModel
                 return true;
             }, cancellationToken: cancellationToken);
 
-            return (ITextPredictionResult) result;
+            return (ITextPredictionResult)result;
         }, CancellationToken.None);
     }
 
@@ -66,8 +66,17 @@ public class Gpt4All : IGpt4AllModel
         return Task.FromResult((ITextPredictionStreamingResult)result);
     }
 
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _model.Dispose();
+        }
+    }
+
     public void Dispose()
     {
-        _model.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

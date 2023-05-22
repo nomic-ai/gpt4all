@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Gpt4All.Bindings;
 
@@ -42,19 +42,19 @@ public unsafe partial struct llmodel_prompt_context
     public float context_erase;
 }
 
-public static unsafe partial class NativeMethods
+internal static unsafe partial class NativeMethods
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public unsafe delegate bool LlmodelResponseCallback(int token_id, [MarshalAs(UnmanagedType.LPUTF8Str)] string response);
+    public delegate bool LlmodelResponseCallback(int token_id, [MarshalAs(UnmanagedType.LPUTF8Str)] string response);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public unsafe delegate bool LlmodelPromptCallback(int token_id);
+    public delegate bool LlmodelPromptCallback(int token_id);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public unsafe delegate bool LlmodelRecalculateCallback(bool isRecalculating);
+    public delegate bool LlmodelRecalculateCallback(bool isRecalculating);
 
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     [return: NativeTypeName("llmodel_model")]
@@ -77,7 +77,7 @@ public static unsafe partial class NativeMethods
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern void llmodel_llama_destroy([NativeTypeName("llmodel_model")] IntPtr llama);
 
-    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
     [return: NativeTypeName("llmodel_model")]
     public static extern IntPtr llmodel_model_create(
         [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string model_path);
@@ -85,7 +85,7 @@ public static unsafe partial class NativeMethods
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern void llmodel_model_destroy([NativeTypeName("llmodel_model")] IntPtr model);
 
-    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static extern bool llmodel_loadModel(
         [NativeTypeName("llmodel_model")] IntPtr model,
@@ -108,12 +108,12 @@ public static unsafe partial class NativeMethods
     [return: NativeTypeName("uint64_t")]
     public static extern ulong llmodel_restore_state_data([NativeTypeName("llmodel_model")] IntPtr model, [NativeTypeName("const uint8_t *")] byte* src);
 
-    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
     public static extern void llmodel_prompt(
-        [NativeTypeName("llmodel_model")] IntPtr model, 
+        [NativeTypeName("llmodel_model")] IntPtr model,
         [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string prompt,
-        LlmodelPromptCallback prompt_callback, 
-        LlmodelResponseCallback response_callback, 
+        LlmodelPromptCallback prompt_callback,
+        LlmodelResponseCallback response_callback,
         LlmodelRecalculateCallback recalculate_callback,
         ref llmodel_prompt_context ctx);
 

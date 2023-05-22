@@ -9,10 +9,10 @@ using var model = modelFactory.LoadModel(modelPath);
 var input = args.Length > 1 ? args[1] : "Name 3 colors.";
 
 var result = await model.GetStreamingPredictionAsync(
-    input, 
+    input,
     PredictRequestOptions.Defaults);
 
-await foreach(var token in result.GetPredictionStreamingAsync())
+await foreach (var token in result.GetPredictionStreamingAsync())
 {
     Console.Write(token);
 }

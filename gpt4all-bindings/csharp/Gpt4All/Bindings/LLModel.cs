@@ -22,7 +22,6 @@ public record ModelResponseEventArgs(int TokenId, string Response)
 /// </return>
 public record ModelPromptEventArgs(int TokenId)
 {
-    
 }
 
 /// <summary>
@@ -45,7 +44,6 @@ public class LLModel : ILLModel
 
     public ModelType ModelType => _modelType;
 
-    
     internal LLModel(IntPtr handle, ModelType modelType)
     {
         _handle = handle;

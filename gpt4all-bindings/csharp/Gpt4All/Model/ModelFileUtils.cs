@@ -11,7 +11,7 @@ public static class ModelFileUtils
         using var fileStream = new FileStream(modelPath, FileMode.Open);
         using var binReader = new BinaryReader(fileStream);
 
-        uint magic = binReader.ReadUInt32();
+        var magic = binReader.ReadUInt32();
 
         return magic switch
         {

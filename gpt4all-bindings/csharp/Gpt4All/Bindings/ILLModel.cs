@@ -28,5 +28,4 @@ public interface ILLModel : IDisposable
     unsafe ulong RestoreStateData(byte* destination);
 
     unsafe ulong SaveStateData(byte* source);
-
 }

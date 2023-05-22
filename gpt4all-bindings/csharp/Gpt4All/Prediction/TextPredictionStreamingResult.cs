@@ -34,7 +34,7 @@ public record TextPredictionStreamingResult : ITextPredictionStreamingResult
 
         var tokens = GetPredictionStreamingAsync(cancellationToken).ConfigureAwait(false);
 
-        await foreach (string token in tokens)
+        await foreach (var token in tokens)
         {
             sb.Append(token);
         }

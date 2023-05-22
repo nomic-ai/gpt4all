@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Gpt4All;
 
-public class Gpt4AllModelFactory: IGpt4AllModelFactory
+public class Gpt4AllModelFactory : IGpt4AllModelFactory
 {
     private static IGpt4AllModel CreateModel(string modelPath, ModelType? modelType = null)
     {
@@ -32,7 +32,7 @@ public class Gpt4AllModelFactory: IGpt4AllModelFactory
     }
 
     public IGpt4AllModel LoadModel(string modelPath) => CreateModel(modelPath, modelType: null);
-    
+
     public IGpt4AllModel LoadMptModel(string modelPath) => CreateModel(modelPath, ModelType.MPT);
 
     public IGpt4AllModel LoadGptjModel(string modelPath) => CreateModel(modelPath, ModelType.GPTJ);
