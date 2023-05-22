@@ -25,7 +25,7 @@ public:
         std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx) override;
     void setThreadCount(int32_t n_threads) override;
-    int32_t threadCount() override;
+    int32_t threadCount() const override;
 
     void setModelName(const QString &modelName) { m_modelName = modelName; }
     void setAPIKey(const QString &apiKey) { m_apiKey = apiKey; }

@@ -32,7 +32,7 @@ void ChatGPT::setThreadCount(int32_t n_threads)
     qt_noop();
 }
 
-int32_t ChatGPT::threadCount()
+int32_t ChatGPT::threadCount() const
 {
     return 1;
 }
