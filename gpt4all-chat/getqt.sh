@@ -56,7 +56,7 @@ case $package_manager in
     "brew")
         echo "Using brew package manager..."
         brew update
-        brew install qt6
+        brew list qt6 &>/dev/null || brew install qt6
         ;;
     "choco")
         echo "Using Chocolatey package manager..."
@@ -69,7 +69,7 @@ case $package_manager in
 esac
 
 # Check if Qt 6 was successfully installed
-if [ -x "$(command -v qmake-qt6)" ]; then
+if [ -x "$(command -v qmake6)" ]; then
     echo "Qt 6 has been successfully installed."
     exit 0
 else
