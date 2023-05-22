@@ -9,7 +9,7 @@
         "../../gpt4all-backend/llama.cpp/", # need to include llama.cpp because the include paths for examples/common.h include llama.h relatively
         "../../gpt4all-backend",
       ],
-      "sources": [ # is there a better way to do this :(
+      "sources": [ # is there a better way to do this 
         "../../gpt4all-backend/llama.cpp/examples/common.cpp",
         "../../gpt4all-backend/llama.cpp/ggml.c",
         "../../gpt4all-backend/llama.cpp/llama.cpp",
@@ -18,9 +18,9 @@
         "../../gpt4all-backend/gptj.cpp",
         "../../gpt4all-backend/llamamodel.cpp",
         "../../gpt4all-backend/mpt.cpp",
+        "stdcapture.cc",
         "index.cc",
        ],
-
       "conditions": [
         ['OS=="mac"', {
             'defines': [
@@ -38,12 +38,9 @@
                         "/std:c++20",
                         "/EHsc"
                     ], 
-                }, # just in case
+                },  
             },
-        }, {
         }]
-      ],
-    },
-
-  ]
+      ]
+    }]
 }

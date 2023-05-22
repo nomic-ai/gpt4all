@@ -49,12 +49,12 @@ interface LLModelPromptContext {
  * This is a base class that provides common functionality for different types of language models.
  */
 declare class LLModel {
-    type() : 'gptj' | 'mpt' | 'llama';
+    type() : ModelType;
+    name(): ModelFile;
     constructor(path: string);
     /**
      * Get the size of the internal state of the model.
      * NOTE: This state data is specific to the type of model you have created.
-     * @param model A pointer to the llmodel_model instance.
      * @return the size in bytes of the internal state of the model
      */
     stateSize(): number;
@@ -71,11 +71,13 @@ declare class LLModel {
     setThreadCount(newNumber: number): void;
      /**
       * Prompt the model with a given input and optional parameters.
+      * This is the raw output from std out.
+      * Use the prompt function exported for a value 
       * @param q The prompt input.
       * @param params Optional parameters for the prompt context.
       * @returns The result of the model prompt.
      */
-    prompt(q: string, params?: Partial<LLModelPromptContext>) : unknown; //todo work on return type
+    raw_prompt(q: string, params?: Partial<LLModelPromptContext>) : unknown; //todo work on return type
     
 }
 
@@ -93,7 +95,7 @@ interface DownloadController {
  * @param {Record<string, unknown>} op - options to pass into the downloader. Default is { location: (cwd), debug: false }.
  * @returns {DownloadController} A DownloadController object that allows controlling the download process.
  */
-declare function download(m: ModelFile[ModelType], op: { location: string, debug: boolean }): DownloadController 
+declare function download(m: ModelFile[ModelType], op: { location: string, debug: boolean, link?:string }): DownloadController 
 
 
 type ModelType = 'gptj' | 'llama' | 'mpt';
@@ -114,4 +116,24 @@ interface ModelFile {
             | "ggml-mpt-7b-instruct.bin"
 }
 
-export { LLModel, LLModelPromptContext, ModelType, download, DownloadController }
+interface ExtendedOptions {
+    verbose?: boolean;
+    system?: string;
+    header?: string;
+    prompt: string;
+    promptEntries?: Record<string, unknown>
+}
+type PromptTemplate = (...args: string[]) => string;
+
+declare function createCompletion(
+    model: LLModel,
+    pt: PromptTemplate,
+    options: LLModelPromptContext&ExtendedOptions 
+) : string
+
+function prompt(
+    strings: TemplateStringsArray
+): PromptTemplate
+
+
+export { LLModel, LLModelPromptContext, ModelType, download, DownloadController, prompt, ExtendedOptions, createCompletion }
