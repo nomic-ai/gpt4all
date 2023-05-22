@@ -1,21 +1,22 @@
 ﻿using Gpt4All;
 
 var modelFactory = new Gpt4AllModelFactory();
+if (args.Length < 2)
+{
+    Console.WriteLine($"Usage: Gpt4All.Samples <model-path> <prompt>");
+    return;
+}
 
 var modelPath = args[0];
+var prompt = args[1];
 
 using var model = modelFactory.LoadModel(modelPath);
 
-var input = args.Length > 1 ? args[1] : "Name 3 colors.";
-
 var result = await model.GetStreamingPredictionAsync(
-    input,
+    prompt,
     PredictRequestOptions.Defaults);
 
 await foreach (var token in result.GetPredictionStreamingAsync())
 {
     Console.Write(token);
 }
-
-Console.WriteLine();
-Console.WriteLine("DONE.");
