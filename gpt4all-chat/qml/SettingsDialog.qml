@@ -225,8 +225,7 @@ Dialog {
             contentItem: IconLabel {
                 color: theme.textColor
                 font.bold: localDocsButton.checked
-                font.pixelSize: localDocsButton.checked ? theme.fontSizeLarger : theme.fontSizeLarge
-                text: qsTr("Local Docs Plugin")
+                text: qsTr("LocalDocs Plugin (BETA)")
             }
             background: Rectangle {
                 color: localDocsButton.checked ? theme.backgroundDarkest : theme.backgroundLight

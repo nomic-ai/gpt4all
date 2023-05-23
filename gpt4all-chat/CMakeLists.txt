@@ -77,6 +77,7 @@ qt_add_qml_module(chat
     QML_FILES
       main.qml
       qml/ChatDrawer.qml
+      qml/CollectionsDialog.qml
       qml/LocalDocs.qml
       qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
@@ -96,6 +97,7 @@ qt_add_qml_module(chat
       icons/stop_generating.svg
       icons/regenerate.svg
       icons/copy.svg
+      icons/db.svg
       icons/settings.svg
       icons/edit.svg
       icons/trash.svg

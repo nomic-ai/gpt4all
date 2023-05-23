@@ -290,9 +290,53 @@ Window {
         }
     }
 
+    CollectionsDialog {
+        id: collectionsDialog
+        anchors.centerIn: parent
+    }
+
+    Button {
+        id: collectionsButton
+        anchors.right: networkButton.left
+        anchors.top: parent.top
+        anchors.topMargin: 30
+        anchors.rightMargin: 30
+        width: 40
+        height: 40
+        z: 200
+        padding: 15
+
+        background: Item {
+            anchors.fill: parent
+            Rectangle {
+                anchors.fill: parent
+                color: "transparent"
+                visible: currentChat.collectionList.length
+                border.color: theme.backgroundLightest
+                border.width: 1
+                radius: 10
+            }
+            Image {
+                anchors.centerIn: parent
+                mipmap: true
+                width: 25
+                height: 25
+                source: "qrc:/gpt4all/icons/db.svg"
+            }
+        }
+
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("Add collections of documents to the chat")
+        Accessible.description: qsTr("Provides a button to add collections of documents to the chat")
+
+        onClicked: {
+            collectionsDialog.open()
+        }
+    }
+
     Button {
         id: settingsButton
-        anchors.right: networkButton.left
+        anchors.right: collectionsButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
         anchors.rightMargin: 30
