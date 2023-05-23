@@ -131,7 +131,7 @@ Dialog {
     }
     TabBar {
         id: settingsTabBar
-        width: parent.width / 1.5
+        width: parent.width / 1.25
         z: 200
 
         TabButton {
@@ -139,7 +139,6 @@ Dialog {
             contentItem: IconLabel {
                 color: theme.textColor
                 font.bold: genSettingsButton.checked
-                font.pixelSize: genSettingsButton.checked ? theme.fontSizeLarger : theme.fontSizeLarge
                 text: qsTr("Generation")
             }
             background: Rectangle {
@@ -183,7 +182,6 @@ Dialog {
             contentItem: IconLabel {
                 color: theme.textColor
                 font.bold: appSettingsButton.checked
-                font.pixelSize: appSettingsButton.checked ? theme.fontSizeLarger : theme.fontSizeLarge
                 text: qsTr("Application")
             }
             background: Rectangle {
@@ -264,7 +262,7 @@ Dialog {
                     MyTextField {
                         text: settings.temperature.toString()
                         color: theme.textColor
-                        ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens - higher temperature gives more creative but less predictable outputs")
+                        ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens.\nNOTE: Higher temperature gives more creative but less predictable outputs.")
                         ToolTip.visible: hovered
                         Layout.row: 0
                         Layout.column: 1
@@ -295,7 +293,7 @@ Dialog {
                     MyTextField {
                         text: settings.topP.toString()
                         color: theme.textColor
-                        ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen, prevents choosing highly unlikely tokens, aka Nucleus Sampling")
+                        ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen.\nNOTE: Prevents choosing highly unlikely tokens, aka Nucleus Sampling")
                         ToolTip.visible: hovered
                         Layout.row: 1
                         Layout.column: 1
@@ -389,7 +387,7 @@ Dialog {
                     MyTextField {
                         text: settings.promptBatchSize.toString()
                         color: theme.textColor
-                        ToolTip.text: qsTr("Amount of prompt tokens to process at once, higher values can speed up reading prompts but will use more RAM")
+                        ToolTip.text: qsTr("Amount of prompt tokens to process at once.\nNOTE: Higher values can speed up reading prompts but will use more RAM")
                         ToolTip.visible: hovered
                         Layout.row: 4
                         Layout.column: 1
@@ -522,6 +520,8 @@ Dialog {
                                 Accessible.role: Accessible.EditableText
                                 Accessible.name: promptTemplateLabel.text
                                 Accessible.description: promptTemplateLabelHelp.text
+                                ToolTip.text: qsTr("The prompt template partially determines how models will respond to prompts.\nNOTE: A longer, detailed template can lead to higher quality answers, but can also slow down generation.")
+                                ToolTip.visible: hovered
                             }
                         }
                     }
