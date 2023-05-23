@@ -234,12 +234,10 @@ Dialog {
                             text: "Remove"
                             anchors.right: parent.right
                             anchors.rightMargin: 20
+                            Accessible.description: qsTr("Remove button to remove model from filesystem")
                             onClicked: {
                                 Download.removeModel(modelData.filename);
                             }
-                            Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("Remove button")
-                            Accessible.description: qsTr("Remove button to remove model from filesystem")
                         }
                     }
 
@@ -298,6 +296,7 @@ Dialog {
                         anchors.topMargin: 15
                         anchors.rightMargin: 20
                         visible: !modelData.isChatGPT && !modelData.installed && !modelData.calcHash
+                        Accessible.description: qsTr("Cancel/Download button to stop/start the download")
                         onClicked: {
                             if (!downloading) {
                                 downloading = true;
@@ -307,9 +306,6 @@ Dialog {
                                 Download.cancelDownload(modelData.filename);
                             }
                         }
-                        Accessible.role: Accessible.Button
-                        Accessible.name: text
-                        Accessible.description: qsTr("Cancel/Download button to stop/start the download")
                     }
                 }
 
@@ -420,8 +416,6 @@ Dialog {
             }
             MyButton {
                 text: qsTr("Browse")
-                Accessible.role: Accessible.Button
-                Accessible.name: text
                 Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
                 onClicked: modelPathDialog.open()
             }

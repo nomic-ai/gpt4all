@@ -20,4 +20,6 @@ Button {
         radius: 10
         color: theme.backgroundLight
     }
+    Accessible.role: Accessible.Button
+    Accessible.name: text
 }
