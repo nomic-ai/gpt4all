@@ -12,9 +12,10 @@ Dialog {
     id: settingsDialog
     modal: true
     opacity: 0.9
+    padding: 20
+    bottomPadding: 30
     background: Rectangle {
         anchors.fill: parent
-        anchors.margins: -20
         color: theme.backgroundDarkest
         border.width: 1
         border.color: theme.dialogBorder
@@ -131,6 +132,7 @@ Dialog {
     TabBar {
         id: settingsTabBar
         width: parent.width / 1.5
+        z: 200
 
         TabButton {
             id: genSettingsButton
@@ -146,21 +148,28 @@ Dialog {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: 1 ? genSettingsButton.checked : 0
+                    height: genSettingsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: !genSettingsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
-                    width: 1 ? genSettingsButton.checked : 0
+                    width: genSettingsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.right: parent.right
-                    width: 1 ? genSettingsButton.checked : 0
+                    width: genSettingsButton.checked
                     color: theme.tabBorder
                 }
             }
@@ -183,21 +192,28 @@ Dialog {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: 1 ? appSettingsButton.checked : 0
+                    height: appSettingsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: !appSettingsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
-                    width: 1 ? appSettingsButton.checked : 0
+                    width: appSettingsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.right: parent.right
-                    width: 1 ? appSettingsButton.checked : 0
+                    width: appSettingsButton.checked
                     color: theme.tabBorder
                 }
             }
@@ -209,6 +225,7 @@ Dialog {
 
     StackLayout {
         anchors.top: settingsTabBar.bottom
+        anchors.topMargin: -1
         width: parent.width
         height: availableHeight
         currentIndex: settingsTabBar.currentIndex

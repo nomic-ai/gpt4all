@@ -6,6 +6,7 @@ QtObject {
     property color textColor: "#d1d5db"
     property color textErrorColor: "red"
     property color backgroundDarkest: "#202123"
+    property color backgroundDarker: "#222326"
     property color backgroundDark: "#242528"
     property color backgroundLight: "#343541"
     property color backgroundLighter: "#444654"
@@ -14,7 +15,7 @@ QtObject {
     property color userColor: "#ec86bf"
     property color assistantColor: "#10a37f"
     property color linkColor: "white"
-    property color tabBorder: "#aaa"
+    property color tabBorder: "#2C2D35"
     property real  fontSizeLarge: Qt.application.font.pixelSize
     property real  fontSizeLarger: Qt.application.font.pixelSize + 2
 }
