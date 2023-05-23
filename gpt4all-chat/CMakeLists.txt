@@ -62,9 +62,10 @@ qt_add_executable(chat
     chatllm.h chatllm.cpp
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
     chatgpt.h chatgpt.cpp
+    database.h database.cpp
     download.h download.cpp
     network.h network.cpp
-    localdocs.h localdocs.cpp
+    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
     llm.h llm.cpp
     server.h server.cpp
     sysinfo.h
@@ -77,6 +78,7 @@ qt_add_qml_module(chat
       main.qml
       qml/ChatDrawer.qml
       qml/LocalDocs.qml
+      qml/AddCollectionDialog.qml
       qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
