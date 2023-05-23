@@ -9,7 +9,7 @@ Button {
     contentItem: Text {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter
-        color: theme.textColor
+        color: myButton.enabled ? theme.textColor : theme.mutedTextColor
         Accessible.role: Accessible.Button
         Accessible.name: text
     }
