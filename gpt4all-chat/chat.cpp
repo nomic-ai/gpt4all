@@ -116,7 +116,7 @@ void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t
     m_queuedPrompt.n_batch = n_batch;
     m_queuedPrompt.repeat_penalty = repeat_penalty;
     m_queuedPrompt.repeat_penalty_tokens = repeat_penalty_tokens;
-    LocalDocs::globalInstance()->requestRetrieve(QList<QString>("localdocs"), prompt);
+    LocalDocs::globalInstance()->requestRetrieve(m_collections, prompt);
 }
 
 void Chat::handleLocalDocsRetrieved()
@@ -162,9 +162,9 @@ QString Chat::responseState() const
 {
     switch (m_responseState) {
     case ResponseStopped: return QStringLiteral("response stopped");
-    case LocalDocsRetrieval: return QStringLiteral("retrieving localdocs");
-    case LocalDocsProcessing: return QStringLiteral("processing localdocs");
-    case PromptProcessing: return QStringLiteral("processing prompt");
+    case LocalDocsRetrieval: return QStringLiteral("retrieving ") + m_collections.join(", ");
+    case LocalDocsProcessing: return QStringLiteral("processing ") + m_collections.join(", ");
+    case PromptProcessing: return QStringLiteral("processing");
     case ResponseGeneration: return QStringLiteral("generating response");
     };
     Q_UNREACHABLE();
@@ -396,4 +396,32 @@ QList<QString> Chat::modelList() const
     }
 
     return list;
+}
+
+QList<QString> Chat::collectionList() const
+{
+    return m_collections;
+}
+
+bool Chat::hasCollection(const QString &collection) const
+{
+    return m_collections.contains(collection);
+}
+
+void Chat::addCollection(const QString &collection)
+{
+    if (hasCollection(collection))
+        return;
+
+    m_collections.append(collection);
+    emit collectionListChanged();
+}
+
+void Chat::removeCollection(const QString &collection)
+{
+    if (!hasCollection(collection))
+        return;
+
+    m_collections.removeAll(collection);
+    emit collectionListChanged();
 }
