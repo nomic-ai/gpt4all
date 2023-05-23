@@ -50,6 +50,7 @@ Dialog {
             anchors.verticalCenter: label.verticalCenter
             padding: 20
             text: qsTr("Update")
+            Accessible.description: qsTr("Update to new version")
             onClicked: {
                 if (!LLM.checkForUpdates())
                     checkForUpdatesError.open()

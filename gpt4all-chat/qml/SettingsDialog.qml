@@ -530,8 +530,6 @@ Dialog {
                         Layout.column: 1
                         Layout.fillWidth: true
                         text: qsTr("Restore Defaults")
-                        Accessible.role: Accessible.Button
-                        Accessible.name: text
                         Accessible.description: qsTr("Restores the settings dialog to a default state")
                         onClicked: {
                             settingsDialog.restoreGenerationDefaults()
@@ -646,8 +644,6 @@ Dialog {
                         Layout.row: 2
                         Layout.column: 2
                         text: qsTr("Browse")
-                        Accessible.role: Accessible.Button
-                        Accessible.name: text
                         Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
                         onClicked: modelPathDialog.open()
                     }
@@ -747,8 +743,6 @@ Dialog {
                         Layout.column: 1
                         Layout.fillWidth: true
                         text: qsTr("Restore Defaults")
-                        Accessible.role: Accessible.Button
-                        Accessible.name: text
                         Accessible.description: qsTr("Restores the settings dialog to a default state")
                         onClicked: {
                             settingsDialog.restoreApplicationDefaults()
