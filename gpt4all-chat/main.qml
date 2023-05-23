@@ -651,7 +651,7 @@ Window {
                                     }
                                     Accessible.role = Accessible.Button
                                     Accessible.name = qsTr("Thumbs up")
-                                    Accessible.description = qsTr("Updates response and chatModel state for thumbs up")
+                                    Accessible.description = qsTr("Gives a thumbs up to the response")
                                     onClicked: {
                                         if (thumbsUpState && !thumbsDownState)
                                             return
