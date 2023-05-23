@@ -57,7 +57,7 @@ fout = open(fname_out, "wb")
 
 print(hparams)
 
-fout.write(struct.pack("i", 0x67676D6C))  # magic: ggml in hex
+fout.write(struct.pack("i", 0x7265706c))  # magic: repl in hex
 fout.write(struct.pack("i", hparams["vocab_size"]))
 fout.write(struct.pack("i", hparams["max_seq_len"]))
 fout.write(struct.pack("i", hparams["d_model"]))

@@ -12,6 +12,7 @@ enum LLModelType {
     MPT_,
     GPTJ_,
     LLAMA_,
+    REPLIT_,
     CHATGPT_,
 };
 

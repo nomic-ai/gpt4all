@@ -263,7 +263,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
     {
         uint32_t magic;
         fin.read((char *)&magic, sizeof(magic));
-        if (magic != 0x67676d6c) {
+        if (magic != 0x7265706c) {
             fprintf(stderr, "%s: invalid model file '%s' (bad magic)\n", __func__, fname.c_str());
             return false;
         }
@@ -843,7 +843,7 @@ struct ReplitPrivate {
     int64_t n_threads = 0;
     size_t mem_per_token = 0;
     std::mt19937 rng;
-    bool has_im_end = false;
+    bool has_end_of_text = false;
 };
 
 Replit::Replit()
@@ -867,7 +867,7 @@ bool Replit::loadModel(const std::string &modelPath) {
 
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
-    d_ptr->has_im_end = d_ptr->vocab.raw_vocab.token_to_id.find("<|im_end|>") != d_ptr->vocab.raw_vocab.token_to_id.end();
+    d_ptr->has_end_of_text = d_ptr->vocab.raw_vocab.token_to_id.find("<|endoftext|>") != d_ptr->vocab.raw_vocab.token_to_id.end();
     fflush(stdout);
     return true;
 }
@@ -1040,18 +1040,18 @@ void Replit::prompt(const std::string &prompt,
 
         // mpt-7b-chat has special token for end
         // TODO: need to change this for replit model (return, ```, def)
-        if (d_ptr->has_im_end && id == d_ptr->vocab.raw_vocab.token_to_id["<|im_end|>"])
+        if (d_ptr->has_end_of_text && id == d_ptr->vocab.raw_vocab.token_to_id["<|endoftext|>"])
             goto stop_generating;
 
         if (id == 0 ) // end of text
             goto stop_generating;
 
-        const std::string str = d_ptr->vocab.raw_vocab.id_to_token[id];
-        auto denormalized_str = replace_all(str, ws_symbol, " ");
+        //const std::string str = d_ptr->vocab.raw_vocab.id_to_token[id];
+        const std::string str = replit_tokenizer_detokenize(vocab, {static_cast<std::size_t>(id)}).c_str();
 
         // Check if the provided str is part of our reverse prompts
         bool foundPartialReversePrompt = false;
-        const std::string completed = cachedResponse + denormalized_str;
+        const std::string completed = cachedResponse + str;
         if (reversePrompts.find(completed) != reversePrompts.end()) {
             goto stop_generating;
         }
