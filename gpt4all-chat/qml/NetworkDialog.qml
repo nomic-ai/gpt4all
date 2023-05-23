@@ -119,15 +119,11 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         spacing: 10
         MyButton {
             text: qsTr("Enable")
-            Accessible.role: Accessible.Button
-            Accessible.name: text
             Accessible.description: qsTr("Enable opt-in button")
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
         MyButton {
             text: qsTr("Cancel")
-            Accessible.role: Accessible.Button
-            Accessible.name: text
             Accessible.description: qsTr("Cancel opt-in button")
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
         }

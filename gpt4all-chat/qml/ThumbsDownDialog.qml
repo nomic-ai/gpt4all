@@ -79,15 +79,11 @@ Dialog {
         spacing: 10
         MyButton {
             text: qsTr("Submit")
-            Accessible.role: Accessible.Button
-            Accessible.name: text
             Accessible.description: qsTr("Submits the user's response")
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
         MyButton {
             text: qsTr("Cancel")
-            Accessible.role: Accessible.Button
-            Accessible.name: text
             Accessible.description: qsTr("Closes the response dialog")
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
         }
