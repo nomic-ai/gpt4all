@@ -24,8 +24,11 @@ Most people do not have such a powerful computer or access to GPU hardware. By r
 GPT4All models can run on your laptop using only 4-8GB of RAM enabling their wide-spread utility.
 
 The GPT4All software ecosystem is currently compatible with three variants of the Transformer neural network architecture:
+
 - LLaMa
+
 - GPT-J
+
 - MPT
 
 Any model trained with one of these architectures can be quantized and run locally with all GPT4All bindings and in the
