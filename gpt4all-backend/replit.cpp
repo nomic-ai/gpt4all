@@ -1,8 +1,9 @@
+#include "replit.h"
 #include "llama.cpp/ggml.h"
 //#include "ggml/ggml.h"
 
 //#include "common-ggml.h"
-#include "llama.cpp/examples/common.h"
+//#include "llama.cpp/examples/common.h"
 //#include "common.h"
 
 #include "utils.h"
@@ -180,7 +181,7 @@ struct replit_kv_cache {
 
     struct ggml_context * ctx = NULL;
 
-    mpt_buffer buf;
+    replit_buffer buf;
 
     int n; // number of tokens currently in the cache
 
@@ -200,15 +201,15 @@ struct replit_model {
     std::vector<replit_layer> layers;
 
     // key + value memory
-    struct mpt_kv_cache kv_self;
+    struct replit_kv_cache kv_self;
 
     struct ggml_context * ctx;
     std::map<std::string, struct ggml_tensor *> tensors;
 };
 
 static bool kv_cache_init(
-        const struct gptj_hparams & hparams,
-             struct gptj_kv_cache & cache,
+        const struct mpt_hparams & hparams,
+             struct replit_kv_cache & cache,
                          ggml_type   wtype,
                                int   n_ctx) {
     const int n_embd  = hparams.n_embd;
@@ -480,6 +481,20 @@ bool replit_model_load(const std::string & fname, replit_model & model, replit_t
     fin.close();
 
     return true;
+}
+
+// load the model's weights from a file path
+bool replit_model_load(const std::string & fname, replit_model & model, gpt_vocab & vocab) {
+
+    auto fin = std::ifstream(fname, std::ios::binary);
+    if (!fin) {
+        fprintf(stderr, "%s: failed to open '%s'\n", __func__, fname.c_str());
+        return false;
+    }
+
+    bool loaded = replit_model_load(fname, fin, model, vocab);
+    fin.close();
+    return loaded;
 }
 
 // evaluate the transformer
