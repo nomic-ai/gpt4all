@@ -226,7 +226,7 @@ Dialog {
                 color: theme.textColor
                 font.bold: localDocsButton.checked
                 font.pixelSize: localDocsButton.checked ? theme.fontSizeLarger : theme.fontSizeLarge
-                text: qsTr("LocalDocs")
+                text: qsTr("Local Docs Plugin")
             }
             background: Rectangle {
                 color: localDocsButton.checked ? theme.backgroundDarkest : theme.backgroundLight

@@ -1,61 +1,101 @@
+import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import localdocs
 
 Item {
-    AddCollectionDialog {
-        id: addCollectionDialog
-    }
+    id: root
+    property string collection: ""
+    property string folder_path: ""
 
-    Connections {
-        target: addCollectionDialog
-        function onAccepted() {
-            LocalDocs.addFolder(addCollectionDialog.collection, addCollectionDialog.folder_path)
+    FolderDialog {
+        id: folderDialog
+        title: "Please choose a directory"
+        currentFolder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        onAccepted: {
+            root.folder_path = selectedFolder
         }
     }
 
-    GridLayout {
-        id: gridLayout
-        columns: 2
-        rowSpacing: 10
-        columnSpacing: 10
+    Rectangle {
+        id: addCollection
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: collection.height + 20
+        color: theme.backgroundDark
 
-        Label {
-            id: contextItemsPerPrompt
-            text: qsTr("Context items per prompt:")
+        MyTextField {
+            id: collection
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            width: 225
+            horizontalAlignment: Text.AlignJustify
             color: theme.textColor
-            Layout.row: 0
-            Layout.column: 0
+            placeholderText: qsTr("Collection name...")
+            placeholderTextColor: theme.mutedTextColor
+            ToolTip.text: qsTr("Name of the collection to add (Required)")
+            ToolTip.visible: hovered
+            onEditingFinished: {
+                root.collection = text
+            }
+            Accessible.role: Accessible.EditableText
+            Accessible.name: collection.text
+            Accessible.description: ToolTip.text
         }
 
         MyTextField {
-            Layout.row: 0
-            Layout.column: 1
-        }
-
-        Label {
-            id: chunkLabel
-            text: qsTr("Chunksize:")
+            id: folderLabel
+            anchors.left: collection.right
+            anchors.leftMargin: 10
+            anchors.right: browseButton.left
+            anchors.rightMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.folder_path
+            readOnly: true
             color: theme.textColor
-            Layout.row: 1
-            Layout.column: 0
+            placeholderText: qsTr("Folder path...")
+            placeholderTextColor: theme.mutedTextColor
+            ToolTip.text: qsTr("Folder path to documents (Required)")
+            ToolTip.visible: hovered
         }
 
-        MyTextField {
-            id: chunkSizeTextField
-            Layout.row: 1
-            Layout.column: 1
+        MyButton {
+            id: browseButton
+            text: qsTr("Browse")
+            anchors.right: addButton.left
+            anchors.rightMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            onClicked: {
+                folderDialog.open();
+            }
+        }
+
+        MyButton {
+            id: addButton
+            text: qsTr("Add")
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            enabled: root.collection !== "" && root.folder_path != ""
+            Accessible.role: Accessible.Button
+            Accessible.name: text
+            Accessible.description: qsTr("Add button")
+            onClicked: {
+                LocalDocs.addFolder(root.collection, root.folder_path)
+                root.collection = ""
+                root.folder_path = ""
+                collection.clear()
+            }
         }
     }
 
     ScrollView {
         id: scrollView
-        anchors.top: gridLayout.bottom
-        anchors.topMargin: 20
-        anchors.bottom: newCollectionButton.top
-        anchors.bottomMargin: 10
+        anchors.top: addCollection.bottom
+        anchors.bottom: gridLayout.top
+        anchors.bottomMargin: 20
         anchors.left: parent.left
         anchors.right: parent.right
         clip: true
@@ -70,32 +110,6 @@ Item {
             id: listView
             model: LocalDocs.localDocsModel
             boundsBehavior: Flickable.StopAtBounds
-            headerPositioning: ListView.InlineHeader
-            header: Rectangle {
-                width: listView.width
-                height: collectionLabel.height + 40
-                color: theme.backgroundDark
-                Label {
-                    id: collectionLabel
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.margins: 20
-                    text: "Collection"
-                    color: theme.textColor
-                    font.bold: true
-                    width: 200
-                }
-
-                Label {
-                    anchors.left: collectionLabel.right
-                    anchors.margins: 20
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Folder"
-                    color: theme.textColor
-                    font.bold: true
-                }
-            }
-
             delegate: Rectangle {
                 id: item
                 width: listView.width
@@ -129,11 +143,11 @@ Item {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.margins: 20
-                    width: childrenRect.width
+                    width: Math.max(removeButton.width, busyIndicator.width)
                     height: Math.max(removeButton.height, busyIndicator.height)
                     MyButton {
                         id: removeButton
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.centerIn: parent
                         text: qsTr("Remove")
                         visible: !item.removing
                         onClicked: {
@@ -143,7 +157,7 @@ Item {
                     }
                     BusyIndicator {
                         id: busyIndicator
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.centerIn: parent
                         visible: item.removing
                     }
                 }
@@ -151,26 +165,58 @@ Item {
         }
     }
 
-    MyButton {
-        id: newCollectionButton
-        anchors.right: parent.right
+    GridLayout {
+        id: gridLayout
         anchors.bottom: parent.bottom
-        text: qsTr("New collection")
-        onClicked: {
-            addCollectionDialog.open();
-        }
-    }
-
-    MyButton {
-        id: restoreDefaultsButton
         anchors.left: parent.left
-        anchors.bottom: parent.bottom
-        text: qsTr("Restore Defaults")
-        Accessible.role: Accessible.Button
-        Accessible.name: text
-        Accessible.description: qsTr("Restores the settings dialog to a default state")
-        onClicked: {
-            //                settingsDialog.restoreGenerationDefaults()
+        anchors.right: parent.right
+        columns: 3
+        rowSpacing: 10
+        columnSpacing: 10
+
+        Label {
+            id: chunkLabel
+            Layout.row: 0
+            Layout.column: 0
+            color: theme.textColor
+            text: qsTr("Document snippet size (characters):")
+        }
+
+        MyTextField {
+            id: chunkSizeTextField
+            Layout.row: 0
+            Layout.column: 1
+            ToolTip.text: qsTr("Number of characters per document snippet. NOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
+            ToolTip.visible: hovered
+        }
+
+        Label {
+            id: contextItemsPerPrompt
+            Layout.row: 1
+            Layout.column: 0
+            color: theme.textColor
+            text: qsTr("Document snippets to process per prompt:")
+        }
+
+        MyTextField {
+            Layout.row: 1
+            Layout.column: 1
+            ToolTip.text: qsTr("Best N matches of retrieved document snippets to add to the context for prompt. NOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
+            ToolTip.visible: hovered
+        }
+
+        MyButton {
+            id: restoreDefaultsButton
+            Layout.row: 2
+            Layout.column: 1
+            Layout.fillWidth: true
+            text: qsTr("Restore Defaults")
+            Accessible.role: Accessible.Button
+            Accessible.name: text
+            Accessible.description: qsTr("Restores the settings dialog to a default state")
+            onClicked: {
+                //                settingsDialog.restoreGenerationDefaults()
+            }
         }
     }
 }
