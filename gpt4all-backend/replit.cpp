@@ -496,10 +496,10 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
 
     const auto & hparams = model.hparams;
 
-    const int n_embd = hparams.d_model;
-    const int n_layer = hparams.n_layers;
-    const int n_ctx = hparams.max_seq_len;
-    const int n_head = hparams.n_heads;
+    const int n_embd = hparams.n_embd;
+    const int n_layer = hparams.n_layer;
+    const int n_ctx = hparams.n_ctx;
+    const int n_head = hparams.n_head;
     const int n_vocab = hparams.n_vocab;
 
     static size_t buf_size = 256u * 1024 * 1024;
@@ -560,11 +560,11 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
             // store key and value to memory
             {
                 struct ggml_tensor * k =
-                    ggml_view_1d(ctx0, model.memory_k, N * n_embd,
-                                 (ggml_element_size(model.memory_k) * n_embd) * (il * n_ctx + n_past));
+                    ggml_view_1d(ctx0, model.kv_self.k, N * n_embd,
+                                 (ggml_element_size(model.kv_self.k) * n_embd) * (il * n_ctx + n_past));
                 struct ggml_tensor * v =
-                    ggml_view_1d(ctx0, model.memory_v, N * n_embd,
-                                 (ggml_element_size(model.memory_v) * n_embd) * (il * n_ctx + n_past));
+                    ggml_view_1d(ctx0, model.kv_self.v, N * n_embd,
+                                 (ggml_element_size(model.kv_self.v) * n_embd) * (il * n_ctx + n_past));
 
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Kcur, k));
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Vcur, v));
@@ -581,8 +581,8 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
             struct ggml_tensor * K =
                 ggml_permute(ctx0,
                              ggml_reshape_3d(ctx0,
-                                             ggml_view_1d(ctx0, model.memory_k, (n_past + N) * n_embd,
-                                                          il * n_ctx * ggml_element_size(model.memory_k) * n_embd),
+                                             ggml_view_1d(ctx0, model.kv_self.k, (n_past + N) * n_embd,
+                                                          il * n_ctx * ggml_element_size(model.kv_self.v) * n_embd),
                                              n_embd / n_head, n_head, n_past + N),
                              0, 2, 1, 3);
             // K * Q
@@ -606,11 +606,11 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
                 ctx0,
                 ggml_permute(ctx0,
                              ggml_reshape_3d(ctx0,
-                                             ggml_view_1d(ctx0, model.memory_v, (n_past + N) * n_embd,
-                                                          il * n_ctx * ggml_element_size(model.memory_v) * n_embd),
+                                             ggml_view_1d(ctx0, model.kv_self.v, (n_past + N) * n_embd,
+                                                          il * n_ctx * ggml_element_size(model.kv_self.v) * n_embd),
                                              n_embd / n_head, n_head, n_past + N),
                              1, 2, 0, 3),
-                ggml_new_tensor_3d(ctx0, model.memory_v->type, n_past + N, n_embd / n_head, n_head));
+                ggml_new_tensor_3d(ctx0, model.kv_self.v->type, n_past + N, n_embd / n_head, n_head));
 
             // KQV = transpose(V) * KQ_soft_max
             struct ggml_tensor * KQV = ggml_mul_mat(ctx0, V_trans, KQ_soft_max);
