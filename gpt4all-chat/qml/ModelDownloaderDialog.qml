@@ -13,9 +13,10 @@ Dialog {
     modal: true
     opacity: 0.9
     closePolicy: LLM.chatListModel.currentChat.modelList.length === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+    padding: 20
+    bottomPadding: 30
     background: Rectangle {
         anchors.fill: parent
-        anchors.margins: -20
         color: theme.backgroundDarkest
         border.width: 1
         border.color: theme.dialogBorder
