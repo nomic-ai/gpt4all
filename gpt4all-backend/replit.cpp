@@ -12,18 +12,35 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <stdint.h>
 #include <string>
-#include <unistd.h>
+#include <thread>
+#if defined(_WIN32) && defined(_MSC_VER)
+    #define WIN32_LEAN_AND_MEAN
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
+    #include <windows.h>
+    #include <io.h>
+    #include <stdio.h>
+#else
+    #include <unistd.h>
+#endif
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
+#include <regex>
+
 
 using piece_t = std::pair<std::size_t, float>;
 using piece_map_t = std::unordered_map<std::string, piece_t>;
+
+static const size_t MB = 1024*1024;
 
 struct replit_tokenizer {
     gpt_vocab raw_vocab;
@@ -238,15 +255,9 @@ static bool kv_cache_init(
     return true;
 }
 
-// load the model's weights from a file
-bool replit_model_load(const std::string & fname, replit_model & model, replit_tokenizer & vocab) {
+// load the model's weights from a stream
+bool replit_model_load(const std::string & fname, std::istream &fin, replit_model & model, replit_tokenizer & vocab) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
-
-    auto fin = std::ifstream(fname, std::ios::binary);
-    if (!fin) {
-        fprintf(stderr, "%s: failed to open '%s'\n", __func__, fname.c_str());
-        return false;
-    }
 
     // verify magic
     {
@@ -286,11 +297,19 @@ bool replit_model_load(const std::string & fname, replit_model & model, replit_t
     // for the big tensors, we have the option to store the data in 16-bit
     // floats or quantized in order to save memory and also to speed up the
     // computation
-    ggml_type wtype = ggml_ftype_to_ggml_type((ggml_ftype)(model.hparams.ftype));
-    if (wtype == GGML_TYPE_COUNT) {
-        fprintf(stderr, "%s: invalid model file '%s' (bad ftype value %d)\n", __func__, fname.c_str(),
-                model.hparams.ftype);
-        return false;
+    ggml_type wtype = GGML_TYPE_COUNT;
+    switch (model.hparams.ftype) {
+        case 0: wtype = GGML_TYPE_F32;  break;
+        case 1: wtype = GGML_TYPE_F16;  break;
+        case 2: wtype = GGML_TYPE_Q4_0; break;
+        case 3: wtype = GGML_TYPE_Q4_1; break;
+        case 5: wtype = GGML_TYPE_Q4_2; break;
+        default:
+                {
+                    fprintf(stderr, "%s: invalid model file '%s' (bad f16 value %d)\n",
+                            __func__, fname.c_str(), model.hparams.ftype);
+                    return false;
+                }
     }
 
     auto & ctx = model.ctx;
@@ -478,13 +497,11 @@ bool replit_model_load(const std::string & fname, replit_model & model, replit_t
         printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size / 1024.0 / 1024.0, n_tensors);
     }
 
-    fin.close();
-
     return true;
 }
 
 // load the model's weights from a file path
-bool replit_model_load(const std::string & fname, replit_model & model, gpt_vocab & vocab) {
+bool replit_model_load(const std::string & fname, replit_model & model, replit_tokenizer & vocab) {
 
     auto fin = std::ifstream(fname, std::ios::binary);
     if (!fin) {
@@ -607,7 +624,8 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
             struct ggml_tensor * KQ_scaled =
                 ggml_scale(ctx0, KQ, ggml_new_f32(ctx0, 1.0f / sqrt(float(n_embd) / n_head)));
 
-            struct ggml_tensor * KQ_scaled_alibi = ggml_alibi(ctx0, KQ_scaled, n_past, n_head, 8.0);
+            // Alibi
+            struct ggml_tensor * KQ_scaled_alibi = ggml_alibi(ctx0, ggml_cont(ctx0, KQ_scaled), n_past, n_head);
 
             // KQ_masked = mask_past(KQ_scaled)
             struct ggml_tensor * KQ_masked = ggml_diag_mask_inf(ctx0, KQ_scaled_alibi, n_past);
@@ -820,7 +838,7 @@ size_t replit_set_state_data(replit_model *model, std::mt19937 *rng, const uint8
 struct ReplitPrivate {
     const std::string modelPath;
     bool modelLoaded;
-    gpt_vocab vocab;
+    replit_tokenizer vocab;
     replit_model *model = nullptr;
     int64_t n_threads = 0;
     size_t mem_per_token = 0;
@@ -849,7 +867,7 @@ bool Replit::loadModel(const std::string &modelPath) {
 
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
-    d_ptr->has_im_end = d_ptr->vocab.token_to_id.find("<|im_end|>") != d_ptr->vocab.token_to_id.end();
+    d_ptr->has_im_end = d_ptr->vocab.raw_vocab.token_to_id.find("<|im_end|>") != d_ptr->vocab.raw_vocab.token_to_id.end();
     fflush(stdout);
     return true;
 }
@@ -906,7 +924,7 @@ void Replit::prompt(const std::string &prompt,
     int64_t t_prompt_us = 0;
 
     // tokenize the prompt
-    std::vector<int> embd_inp = gpt_tokenize(d_ptr->vocab, prompt);
+    std::vector<size_t> embd_inp = replit_tokenizer_tokenize(d_ptr->vocab, prompt);
 
     // save the context size
     promptCtx.n_ctx = d_ptr->model->hparams.n_ctx;
@@ -986,7 +1004,7 @@ void Replit::prompt(const std::string &prompt,
         {
             const int64_t t_start_sample_us = ggml_time_us();
             const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
-            id = gpt_sample_top_k_top_p(d_ptr->vocab, n_vocab,
+            id = gpt_sample_top_k_top_p(d_ptr->vocab.raw_vocab, n_vocab,
                 promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
                 n_prev_toks,
                 promptCtx.logits,
@@ -1022,17 +1040,18 @@ void Replit::prompt(const std::string &prompt,
 
         // mpt-7b-chat has special token for end
         // TODO: need to change this for replit model (return, ```, def)
-        if (d_ptr->has_im_end && id == d_ptr->vocab.token_to_id["<|im_end|>"])
+        if (d_ptr->has_im_end && id == d_ptr->vocab.raw_vocab.token_to_id["<|im_end|>"])
             goto stop_generating;
 
         if (id == 0 ) // end of text
             goto stop_generating;
 
-        const std::string str = d_ptr->vocab.id_to_token[id];
+        const std::string str = d_ptr->vocab.raw_vocab.id_to_token[id];
+        auto denormalized_str = replace_all(str, ws_symbol, " ");
 
         // Check if the provided str is part of our reverse prompts
         bool foundPartialReversePrompt = false;
-        const std::string completed = cachedResponse + str;
+        const std::string completed = cachedResponse + denormalized_str;
         if (reversePrompts.find(completed) != reversePrompts.end()) {
             goto stop_generating;
         }
@@ -1058,7 +1077,7 @@ void Replit::prompt(const std::string &prompt,
             if (promptCtx.tokens.size() == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
-            if (!responseCallback(t, d_ptr->vocab.id_to_token[t]))
+            if (!responseCallback(t, d_ptr->vocab.raw_vocab.id_to_token[t]))
                 goto stop_generating;
         }
         cachedTokens.clear();
@@ -1093,7 +1112,7 @@ void Replit::recalculateContext(PromptContext &promptCtx, std::function<bool(boo
 
         assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
 
-        if (!mpt_eval(*d_ptr->model, d_ptr->n_threads, promptCtx.n_past, batch, promptCtx.logits,
+        if (!replit_eval(*d_ptr->model, d_ptr->n_threads, promptCtx.n_past, batch, promptCtx.logits,
             d_ptr->mem_per_token)) {
             std::cerr << "Replit ERROR: Failed to process prompt\n";
             goto stop_generating;
