@@ -13,7 +13,7 @@ CheckBox {
     indicator: Rectangle {
         implicitWidth: 26
         implicitHeight: 26
-        x: saveChatsBox.leftPadding
+        x: myCheckBox.leftPadding
         y: parent.height / 2 - height / 2
         border.color: theme.dialogBorder
         color: "transparent"
