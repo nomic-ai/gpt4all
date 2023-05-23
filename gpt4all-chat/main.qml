@@ -649,6 +649,9 @@ Window {
                                         anchors.fill: parent
                                         source: "qrc:/gpt4all/icons/thumbs_up.svg"
                                     }
+                                    Accessible.role = Accessible.Button
+                                    Accessible.name = qsTr("Thumbs up")
+                                    Accessible.description = qsTr("Updates response and chatModel state for thumbs up")
                                     onClicked: {
                                         if (thumbsUpState && !thumbsDownState)
                                             return
@@ -682,6 +685,9 @@ Window {
                                         anchors.fill: parent
                                         source: "qrc:/gpt4all/icons/thumbs_down.svg"
                                     }
+                                    Accessible.role = Accessible.Button
+                                    Accessible.name = qsTr("Thumbs down")
+                                    Accessible.description = qsTr("Opens thumbs down dialog")
                                     onClicked: {
                                         thumbsDownDialog.open()
                                     }
