@@ -234,21 +234,28 @@ Dialog {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: 1 ? localDocsButton.checked : 0
+                    height: localDocsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: !localDocsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
-                    width: 1 ? localDocsButton.checked : 0
+                    width: localDocsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.right: parent.right
-                    width: 1 ? localDocsButton.checked : 0
+                    width: localDocsButton.checked
                     color: theme.tabBorder
                 }
             }
