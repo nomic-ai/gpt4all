@@ -29,7 +29,7 @@ Run on an M1 Mac (not sped up!)
 </p>
 
 ## GPT4All: An ecosystem of open-source on-edge large language models.
-GTP4All is an ecosystem to train and deploy **powerful** and **customized** large language models that run locally on consumer grade CPUs.
+GPT4All is an ecosystem to train and deploy **powerful** and **customized** large language models that run locally on consumer grade CPUs.
 
 Learn more in the [documentation](https://docs.gpt4all.io).
 
