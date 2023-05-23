@@ -77,32 +77,18 @@ Dialog {
         padding: 20
         alignment: Qt.AlignRight
         spacing: 10
-        Button {
-            contentItem: Text {
-                color: theme.textColor
-                text: qsTr("Submit")
-            }
-            background: Rectangle {
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-                color: theme.backgroundLight
-            }
-            padding: 15
+        MyButton {
+            text: qsTr("Submit")
+            Accessible.role: Accessible.Button
+            Accessible.name: text
+            Accessible.description: qsTr("Submits the user's response")
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
-        Button {
-            contentItem: Text {
-                color: theme.textColor
-                text: qsTr("Cancel")
-            }
-            background: Rectangle {
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-                color: theme.backgroundLight
-            }
-            padding: 15
+        MyButton {
+            text: qsTr("Cancel")
+            Accessible.role: Accessible.Button
+            Accessible.name: text
+            Accessible.description: qsTr("Closes the response dialog")
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
         }
         background: Rectangle {
