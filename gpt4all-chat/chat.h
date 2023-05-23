@@ -23,6 +23,7 @@ class Chat : public QObject
     Q_PROPERTY(QList<QString> modelList READ modelList NOTIFY modelListChanged)
     Q_PROPERTY(bool isServer READ isServer NOTIFY isServerChanged)
     Q_PROPERTY(QString responseState READ responseState NOTIFY responseStateChanged)
+    Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -78,6 +79,12 @@ public:
     QList<QString> modelList() const;
     bool isServer() const { return m_isServer; }
 
+    QList<QString> collectionList() const;
+
+    Q_INVOKABLE bool hasCollection(const QString &collection) const;
+    Q_INVOKABLE void addCollection(const QString &collection);
+    Q_INVOKABLE void removeCollection(const QString &collection);
+
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt);
 
@@ -104,6 +111,7 @@ Q_SIGNALS:
     void modelListChanged();
     void modelLoadingError(const QString &error);
     void isServerChanged();
+    void collectionListChanged();
 
 private Q_SLOTS:
     void handleLocalDocsRetrieved();
@@ -132,6 +140,7 @@ private:
     QString m_name;
     QString m_userName;
     QString m_savedModelName;
+    QList<QString> m_collections;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
     ResponseState m_responseState;

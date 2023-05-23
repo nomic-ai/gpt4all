@@ -186,7 +186,7 @@ Item {
             id: chunkSizeTextField
             Layout.row: 0
             Layout.column: 1
-            ToolTip.text: qsTr("Number of characters per document snippet. NOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
+            ToolTip.text: qsTr("Number of characters per document snippet.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
             ToolTip.visible: hovered
         }
 
@@ -201,7 +201,7 @@ Item {
         MyTextField {
             Layout.row: 1
             Layout.column: 1
-            ToolTip.text: qsTr("Best N matches of retrieved document snippets to add to the context for prompt. NOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
+            ToolTip.text: qsTr("Best N matches of retrieved document snippets to add to the context for prompt.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
             ToolTip.visible: hovered
         }
 
