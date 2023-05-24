@@ -10,14 +10,24 @@ LocalDocs *LocalDocs::globalInstance()
 LocalDocs::LocalDocs()
     : QObject(nullptr)
     , m_localDocsModel(new LocalDocsModel(this))
-    , m_database(new Database)
+    , m_database(nullptr)
 {
+    QSettings settings;
+    settings.sync();
+    m_chunkSize = settings.value("localdocs/chunkSize", 256).toInt();
+    m_retrievalSize = settings.value("localdocs/retrievalSize", 3).toInt();
+
+    // Create the DB with the chunk size from settings
+    m_database = new Database(m_chunkSize);
+
     connect(this, &LocalDocs::requestAddFolder, m_database,
         &Database::addFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestRemoveFolder, m_database,
         &Database::removeFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestRetrieveFromDB, m_database,
         &Database::retrieveFromDB, Qt::QueuedConnection);
+    connect(this, &LocalDocs::requestChunkSizeChange, m_database,
+        &Database::changeChunkSize, Qt::QueuedConnection);
     connect(m_database, &Database::retrieveResult, this,
         &LocalDocs::handleRetrieveResult, Qt::QueuedConnection);
     connect(m_database, &Database::collectionListUpdated,
@@ -42,7 +52,36 @@ void LocalDocs::removeFolder(const QString &collection, const QString &path)
 void LocalDocs::requestRetrieve(const QList<QString> &collections, const QString &text)
 {
     m_retrieveResult = QList<QString>();
-    emit requestRetrieveFromDB(collections, text);
+    emit requestRetrieveFromDB(collections, text, m_retrievalSize);
+}
+
+int LocalDocs::chunkSize() const
+{
+    return m_chunkSize;
+}
+
+void LocalDocs::setChunkSize(int chunkSize)
+{
+    if (m_chunkSize == chunkSize)
+        return;
+
+    m_chunkSize = chunkSize;
+    emit chunkSizeChanged();
+    emit requestChunkSizeChange(chunkSize);
+}
+
+int LocalDocs::retrievalSize() const
+{
+    return m_retrievalSize;
+}
+
+void LocalDocs::setRetrievalSize(int retrievalSize)
+{
+    if (m_retrievalSize == retrievalSize)
+        return;
+
+    m_retrievalSize = retrievalSize;
+    emit retrievalSizeChanged();
 }
 
 void LocalDocs::handleRetrieveResult(const QList<QString> &result)
