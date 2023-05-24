@@ -29,7 +29,7 @@ LocalDocs::LocalDocs()
     connect(this, &LocalDocs::requestChunkSizeChange, m_database,
         &Database::changeChunkSize, Qt::QueuedConnection);
     connect(m_database, &Database::retrieveResult, this,
-        &LocalDocs::handleRetrieveResult, Qt::QueuedConnection);
+        &LocalDocs::receivedResult, Qt::QueuedConnection);
     connect(m_database, &Database::collectionListUpdated,
         m_localDocsModel, &LocalDocsModel::handleCollectionListUpdated, Qt::QueuedConnection);
 }
@@ -49,10 +49,9 @@ void LocalDocs::removeFolder(const QString &collection, const QString &path)
     emit requestRemoveFolder(collection, path);
 }
 
-void LocalDocs::requestRetrieve(const QList<QString> &collections, const QString &text)
+void LocalDocs::requestRetrieve(const QString &uid, const QList<QString> &collections, const QString &text)
 {
-    m_retrieveResult = QList<QString>();
-    emit requestRetrieveFromDB(collections, text, m_retrievalSize);
+    emit requestRetrieveFromDB(uid, collections, text, m_retrievalSize);
 }
 
 int LocalDocs::chunkSize() const
@@ -82,10 +81,4 @@ void LocalDocs::setRetrievalSize(int retrievalSize)
 
     m_retrievalSize = retrievalSize;
     emit retrievalSizeChanged();
-}
-
-void LocalDocs::handleRetrieveResult(const QList<QString> &result)
-{
-    m_retrieveResult = result;
-    emit receivedResult();
 }

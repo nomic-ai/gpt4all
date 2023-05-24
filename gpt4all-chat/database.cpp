@@ -11,12 +11,14 @@
 
 const auto INSERT_CHUNK_SQL = QLatin1String(R"(
     insert into chunks(document_id, chunk_id, chunk_text,
-        embedding_id, embedding_path) values(?, ?, ?, ?, ?);
+        file, title, author, subject, keywords, page, line_from, line_to,
+        embedding_id, embedding_path) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     )");
 
 const auto INSERT_CHUNK_FTS_SQL = QLatin1String(R"(
     insert into chunks_fts(document_id, chunk_id, chunk_text,
-        embedding_id, embedding_path) values(?, ?, ?, ?, ?);
+        file, title, author, subject, keywords, page, line_from, line_to,
+        embedding_id, embedding_path) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     )");
 
 const auto DELETE_CHUNKS_SQL = QLatin1String(R"(
@@ -29,16 +31,21 @@ const auto DELETE_CHUNKS_FTS_SQL = QLatin1String(R"(
 
 const auto CHUNKS_SQL = QLatin1String(R"(
     create table chunks(document_id integer, chunk_id integer, chunk_text varchar,
+        file varchar, title varchar, author varchar, subject varchar, keywords varchar,
+        page integer, line_from integer, line_to integer,
         embedding_id integer, embedding_path varchar);
     )");
 
 const auto FTS_CHUNKS_SQL = QLatin1String(R"(
     create virtual table chunks_fts using fts5(document_id unindexed, chunk_id unindexed, chunk_text,
+        file, title, author, subject, keywords, page, line_from, line_to,
         embedding_id unindexed, embedding_path unindexed, tokenize="trigram");
     )");
 
 const auto SELECT_SQL = QLatin1String(R"(
-    select chunks_fts.rowid, chunks_fts.document_id, chunks_fts.chunk_text
+    select chunks_fts.rowid, documents.document_time,
+        chunks_fts.chunk_text, chunks_fts.file, chunks_fts.title, chunks_fts.author, chunks_fts.page,
+        chunks_fts.line_from, chunks_fts.line_to
     from chunks_fts
     join documents ON chunks_fts.document_id = documents.id
     join folders ON documents.folder_id = folders.id
@@ -48,8 +55,10 @@ const auto SELECT_SQL = QLatin1String(R"(
     limit %2;
     )");
 
-bool addChunk(QSqlQuery &q, int document_id, int chunk_id, const QString &chunk_text, int embedding_id,
-    const QString &embedding_path)
+bool addChunk(QSqlQuery &q, int document_id, int chunk_id, const QString &chunk_text,
+    const QString &file, const QString &title, const QString &author, const QString &subject, const QString &keywords,
+    int page, int from, int to,
+    int embedding_id, const QString &embedding_path)
 {
     {
         if (!q.prepare(INSERT_CHUNK_SQL))
@@ -57,6 +66,14 @@ bool addChunk(QSqlQuery &q, int document_id, int chunk_id, const QString &chunk_
         q.addBindValue(document_id);
         q.addBindValue(chunk_id);
         q.addBindValue(chunk_text);
+        q.addBindValue(file);
+        q.addBindValue(title);
+        q.addBindValue(author);
+        q.addBindValue(subject);
+        q.addBindValue(keywords);
+        q.addBindValue(page);
+        q.addBindValue(from);
+        q.addBindValue(to);
         q.addBindValue(embedding_id);
         q.addBindValue(embedding_path);
         if (!q.exec())
@@ -68,6 +85,14 @@ bool addChunk(QSqlQuery &q, int document_id, int chunk_id, const QString &chunk_
         q.addBindValue(document_id);
         q.addBindValue(chunk_id);
         q.addBindValue(chunk_text);
+        q.addBindValue(file);
+        q.addBindValue(title);
+        q.addBindValue(author);
+        q.addBindValue(subject);
+        q.addBindValue(keywords);
+        q.addBindValue(page);
+        q.addBindValue(from);
+        q.addBindValue(to);
         q.addBindValue(embedding_id);
         q.addBindValue(embedding_path);
         if (!q.exec())
@@ -143,19 +168,6 @@ bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QSt
         }
     }
     return true;
-}
-
-void printResults(QSqlQuery &q)
-{
-    while (q.next()) {
-        int rowid = q.value(0).toInt();
-        QString collection_name = q.value(1).toString();
-        QString chunk_text = q.value(2).toString();
-
-        qDebug() << "rowid:" << rowid
-                 << "collection_name:" << collection_name
-                 << "chunk_text:" << chunk_text;
-    }
 }
 
 const auto INSERT_COLLECTION_SQL = QLatin1String(R"(
@@ -457,10 +469,18 @@ QSqlError initDb()
     QString chunk_text1 = "This is an example chunk.";
     QString chunk_text2 = "Another example chunk.";
     QString embedding_path = "/example/embeddings/embedding1.bin";
+    QString file = "document1.txt";
+    QString title;
+    QString author;
+    QString subject;
+    QString keywords;
+    int page = -1;
+    int from = -1;
+    int to = -1;;
     int embedding_id = 1;
 
-    if (!addChunk(q, document_id, 1, chunk_text1, embedding_id, embedding_path) ||
-        !addChunk(q, document_id, 2, chunk_text2, embedding_id, embedding_path)) {
+    if (!addChunk(q, document_id, 1, chunk_text1, file, title, author, subject, keywords, page, from, to, embedding_id, embedding_path) ||
+        !addChunk(q, document_id, 2, chunk_text2, file, title, author, subject, keywords, page, from, to, embedding_id, embedding_path)) {
         qDebug() << "Error adding chunks:" << q.lastError().text();
         return q.lastError();
     }
@@ -468,13 +488,10 @@ QSqlError initDb()
     // Perform a search
     QList<QString> collection_names = {collection_name};
     QString search_text = "example";
-    if (!selectChunk(q, collection_names, search_text)) {
+    if (!selectChunk(q, collection_names, search_text, 3)) {
         qDebug() << "Error selecting chunks:" << q.lastError().text();
         return q.lastError();
     }
-
-    // Print the results
-    printResults(q);
 #endif
 
     return QSqlError();
@@ -499,10 +516,13 @@ void Database::handleDocumentErrorAndScheduleNext(const QString &errorMessage,
         QTimer::singleShot(0, this, &Database::scanQueue);
 }
 
-void Database::chunkStream(QTextStream &stream, int document_id)
+void Database::chunkStream(QTextStream &stream, int document_id, const QString &file,
+    const QString &title, const QString &author, const QString &subject, const QString &keywords, int page)
 {
     int chunk_id = 0;
     int charCount = 0;
+    int line_from = -1;
+    int line_to = -1;
     QList<QString> words;
 
     while (!stream.atEnd()) {
@@ -517,6 +537,14 @@ void Database::chunkStream(QTextStream &stream, int document_id)
                 document_id,
                 ++chunk_id,
                 chunk,
+                file,
+                title,
+                author,
+                subject,
+                keywords,
+                page,
+                line_from,
+                line_to,
                 0 /*embedding_id*/,
                 QString() /*embedding_path*/
             )) {
@@ -604,13 +632,18 @@ void Database::scanQueue()
                 document_id, document_path, q.lastError());
             return;
         }
-        QString text;
         for (int i = 0; i < doc.pageCount(); ++i) {
             const QPdfSelection selection = doc.getAllText(i);
-            text.append(selection.text());
+            QString text = selection.text();
+            QTextStream stream(&text);
+            chunkStream(stream, document_id, info.doc.fileName(),
+                doc.metaData(QPdfDocument::MetaDataField::Title).toString(),
+                doc.metaData(QPdfDocument::MetaDataField::Author).toString(),
+                doc.metaData(QPdfDocument::MetaDataField::Subject).toString(),
+                doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(),
+                i + 1
+            );
         }
-        QTextStream stream(&text);
-        chunkStream(stream, document_id);
     } else {
         QFile file(document_path);
         if (!file.open( QIODevice::ReadOnly)) {
@@ -618,7 +651,8 @@ void Database::scanQueue()
                                                       existing_id, document_path, q.lastError());
         }
         QTextStream stream(&file);
-        chunkStream(stream, document_id);
+        chunkStream(stream, document_id, file.fileName(), QString() /*title*/, QString() /*author*/,
+            QString() /*subject*/, QString() /*keywords*/, -1 /*page*/);
         file.close();
     }
     QSqlDatabase::database().commit();
@@ -867,7 +901,7 @@ bool Database::removeFolderFromWatch(const QString &path)
     return true;
 }
 
-void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize)
+void Database::retrieveFromDB(const QString &uid, const QList<QString> &collections, const QString &text, int retrievalSize)
 {
 #if defined(DEBUG)
     qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
@@ -879,20 +913,33 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         return;
     }
 
-    QList<QString> results;
+    QList<ResultInfo> results;
     while (q.next()) {
-        int rowid = q.value(0).toInt();
-        QString collection_name = q.value(1).toString();
-        QString chunk_text = q.value(2).toString();
-        results.append(chunk_text);
+        const int rowid = q.value(0).toInt();
+        const QString date = QDateTime::fromMSecsSinceEpoch(q.value(1).toLongLong()).toString("yyyy, MMMM dd");
+        const QString chunk_text = q.value(2).toString();
+        const QString file = q.value(3).toString();
+        const QString title = q.value(4).toString();
+        const QString author = q.value(5).toString();
+        const int page = q.value(6).toInt();
+        const int from =q.value(7).toInt();
+        const int to =q.value(8).toInt();
+        ResultInfo info;
+        info.file = file;
+        info.title = title;
+        info.author = author;
+        info.date = date;
+        info.text = chunk_text;
+        info.page = page;
+        info.from = from;
+        info.to = to;
+        results.append(info);
 #if defined(DEBUG)
         qDebug() << "retrieve rowid:" << rowid
-                 << "collection_name:" << collection_name
                  << "chunk_text:" << chunk_text;
 #endif
     }
-
-    emit retrieveResult(results);
+    emit retrieveResult(uid, results);
 }
 
 void Database::cleanDB()

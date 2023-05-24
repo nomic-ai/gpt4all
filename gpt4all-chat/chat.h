@@ -7,6 +7,7 @@
 
 #include "chatllm.h"
 #include "chatmodel.h"
+#include "database.h"
 #include "server.h"
 
 class Chat : public QObject
@@ -114,7 +115,7 @@ Q_SIGNALS:
     void collectionListChanged();
 
 private Q_SLOTS:
-    void handleLocalDocsRetrieved();
+    void handleLocalDocsRetrieved(const QString &uid, const QList<ResultInfo> &results);
     void handleResponseChanged();
     void handleModelLoadedChanged();
     void promptProcessing();
@@ -141,6 +142,7 @@ private:
     QString m_userName;
     QString m_savedModelName;
     QList<QString> m_collections;
+    QList<ResultInfo> m_results;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
     ResponseState m_responseState;
@@ -148,7 +150,6 @@ private:
     ChatLLM *m_llmodel;
     bool m_isServer;
     bool m_shouldDeleteLater;
-    bool m_contextContainsLocalDocs;
     Prompt m_queuedPrompt;
 };
 
