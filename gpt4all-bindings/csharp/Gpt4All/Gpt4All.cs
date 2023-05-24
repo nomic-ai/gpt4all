@@ -7,6 +7,7 @@ public class Gpt4All : IGpt4AllModel
 {
     private readonly ILLModel _model;
 
+    /// <inheritdoc/>
     public IPromptFormatter? PromptFormatter { get; set; }
 
     internal Gpt4All(ILLModel model)
