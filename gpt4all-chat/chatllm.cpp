@@ -564,7 +564,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
         switch (m_modelType) {
         case MPT_: stream << MPT_INTERNAL_STATE_VERSION; break;
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
-        case REPLIT: stream << REPLIT_INTERNAL_STATE_VERSION; break;
+        case REPLIT_: stream << REPLIT_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
         default: Q_UNREACHABLE();
         }

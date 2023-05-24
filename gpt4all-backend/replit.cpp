@@ -108,6 +108,7 @@ bool replit_tokenizer_load(replit_tokenizer & tokenizer, std::istream & fin, int
 
         tokenizer.piece_map[word] = std::make_pair(i, -score);
         tokenizer.raw_vocab.id_to_token[i] = word;
+        tokenizer.raw_vocab.token_to_id[word] = i;
     }
 
     return true;
@@ -1047,7 +1048,7 @@ void Replit::prompt(const std::string &prompt,
             goto stop_generating;
 
         //const std::string str = d_ptr->vocab.raw_vocab.id_to_token[id];
-        const std::string str = replit_tokenizer_detokenize(vocab, {static_cast<std::size_t>(id)}).c_str();
+        const std::string str = replit_tokenizer_detokenize(d_ptr->vocab, {static_cast<std::size_t>(id)}).c_str();
 
         // Check if the provided str is part of our reverse prompts
         bool foundPartialReversePrompt = false;
@@ -1077,7 +1078,7 @@ void Replit::prompt(const std::string &prompt,
             if (promptCtx.tokens.size() == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
-            if (!responseCallback(t, d_ptr->vocab.raw_vocab.id_to_token[t]))
+            if (!responseCallback(t, d_ptr->vocab.raw_vocab.id_to_token[t].c_str()))
                 goto stop_generating;
         }
         cachedTokens.clear();
