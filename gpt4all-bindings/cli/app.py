@@ -32,13 +32,6 @@ Welcome to the GPT4All CLI! Version {VERSION}
 Type /help for special commands.
                                                     
 """
-
-# def _cli_override_response_callback(token_id, response):
-#     resp = response.decode("utf-8")
-#     print(resp, end="", flush=True)
-#     return True
-# 
-
 # create typer app
 app = typer.Typer()
 
