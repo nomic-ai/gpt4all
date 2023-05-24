@@ -14,6 +14,17 @@ struct DocumentInfo
     QFileInfo doc;
 };
 
+struct ResultInfo {
+    QString file;   // [Required] The name of the file, but not the full path
+    QString title;  // [Optional] The title of the document
+    QString author; // [Optional] The author of the document
+    QString date;   // [Required] The creation or the last modification date whichever is latest
+    QString text;   // [Required] The text actually used in the augmented context
+    int page = -1;  // [Optional] The page where the text was found
+    int from = -1;  // [Optional] The line number where the text begins
+    int to = -1;    // [Optional] The line number where the text ends
+};
+
 struct CollectionItem {
     QString collection;
     QString folder_path;
@@ -32,13 +43,13 @@ public Q_SLOTS:
     void scanDocuments(int folder_id, const QString &folder_path);
     void addFolder(const QString &collection, const QString &path);
     void removeFolder(const QString &collection, const QString &path);
-    void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize);
+    void retrieveFromDB(const QString &uid, const QList<QString> &collections, const QString &text, int retrievalSize);
     void cleanDB();
     void changeChunkSize(int chunkSize);
 
 Q_SIGNALS:
     void docsToScanChanged();
-    void retrieveResult(const QList<QString> &result);
+    void retrieveResult(const QString &uid, const QList<ResultInfo> &result);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
 private Q_SLOTS:
@@ -51,14 +62,15 @@ private Q_SLOTS:
 
 private:
     void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
-    void chunkStream(QTextStream &stream, int document_id);
+    void chunkStream(QTextStream &stream, int document_id, const QString &file,
+        const QString &title, const QString &author, const QString &subject, const QString &keywords, int page);
     void handleDocumentErrorAndScheduleNext(const QString &errorMessage,
         int document_id, const QString &document_path, const QSqlError &error);
 
 private:
     int m_chunkSize;
     QQueue<DocumentInfo> m_docsToScan;
-    QList<QString> m_retrieve;
+    QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
     QFileSystemWatcher *m_watcher;
 };
