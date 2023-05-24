@@ -44,8 +44,8 @@ const auto SELECT_SQL = QLatin1String(R"(
     join folders ON documents.folder_id = folders.id
     join collections ON folders.id = collections.folder_id
     where chunks_fts match ? and collections.collection_name in (%1)
-    order by bm25(chunks_fts) desc
-    limit 3;
+    order by bm25(chunks_fts)
+    limit %2;
     )");
 
 bool addChunk(QSqlQuery &q, int document_id, int chunk_id, const QString &chunk_text, int embedding_id,
@@ -120,7 +120,7 @@ QStringList generateGrams(const QString &input, int N)
     return ngrams;
 }
 
-bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QString &chunk_text)
+bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QString &chunk_text, int retrievalSize)
 {
     const int N_WORDS = chunk_text.split(QRegularExpression("\\s+")).size();
     for (int N = N_WORDS; N > 2; N--) {
@@ -128,7 +128,7 @@ bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QSt
         QList<QString> text = generateGrams(chunk_text, N);
         QString orText = text.join(" OR ");
         const QString collection_names_str = collection_names.join("', '");
-        const QString formatted_query = SELECT_SQL.arg("'" + collection_names_str + "'");
+        const QString formatted_query = SELECT_SQL.arg("'" + collection_names_str + "'").arg(QString::number(retrievalSize));
         if (!q.prepare(formatted_query))
             return false;
         q.addBindValue(orText);
@@ -480,9 +480,10 @@ QSqlError initDb()
     return QSqlError();
 }
 
-Database::Database()
+Database::Database(int chunkSize)
     : QObject(nullptr)
     , m_watcher(new QFileSystemWatcher(this))
+    , m_chunkSize(chunkSize)
 {
     moveToThread(&m_dbThread);
     connect(&m_dbThread, &QThread::started, this, &Database::start);
@@ -500,7 +501,6 @@ void Database::handleDocumentErrorAndScheduleNext(const QString &errorMessage,
 
 void Database::chunkStream(QTextStream &stream, int document_id)
 {
-    const int chunkSize = 256;
     int chunk_id = 0;
     int charCount = 0;
     QList<QString> words;
@@ -510,7 +510,7 @@ void Database::chunkStream(QTextStream &stream, int document_id)
         stream >> word;
         charCount += word.length();
         words.append(word);
-        if (charCount + words.size() - 1 >= chunkSize || stream.atEnd()) {
+        if (charCount + words.size() - 1 >= m_chunkSize || stream.atEnd()) {
             const QString chunk = words.join(" ");
             QSqlQuery q;
             if (!addChunk(q,
@@ -752,9 +752,7 @@ void Database::addFolder(const QString &collection, const QString &path)
         return;
     }
 
-    if (!addFolderToWatch(path))
-        return;
-
+    addFolderToWatch(path);
     scanDocuments(folder_id, path);
     updateCollectionList();
 }
@@ -869,14 +867,14 @@ bool Database::removeFolderFromWatch(const QString &path)
     return true;
 }
 
-void Database::retrieveFromDB(const QList<QString> &collections, const QString &text)
+void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize)
 {
 #if defined(DEBUG)
-    qDebug() << "retrieveFromDB" << collections << text;
+    qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
 #endif
 
     QSqlQuery q;
-    if (!selectChunk(q, collections, text)) {
+    if (!selectChunk(q, collections, text, retrievalSize)) {
         qDebug() << "ERROR: selecting chunks:" << q.lastError().text();
         return;
     }
@@ -955,6 +953,45 @@ void Database::cleanDB()
         }
     }
     updateCollectionList();
+}
+
+void Database::changeChunkSize(int chunkSize)
+{
+    if (chunkSize == m_chunkSize)
+        return;
+
+#if defined(DEBUG)
+    qDebug() << "changeChunkSize" << chunkSize;
+#endif
+
+    m_chunkSize = chunkSize;
+
+    QSqlQuery q;
+    // Scan all documents in db to make sure they still exist
+    if (!q.prepare(SELECT_ALL_DOCUMENTS_SQL)) {
+        qWarning() << "ERROR: Cannot prepare sql for select all documents" << q.lastError();
+        return;
+    }
+
+    if (!q.exec()) {
+        qWarning() << "ERROR: Cannot exec sql for select all documents" << q.lastError();
+        return;
+    }
+
+    while (q.next()) {
+        int document_id = q.value(0).toInt();
+        QString document_path = q.value(1).toString();
+        // Remove all chunks and documents to change the chunk size
+        QSqlQuery query;
+        if (!removeChunksByDocumentId(query, document_id)) {
+            qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << query.lastError();
+        }
+
+        if (!removeDocument(query, document_id)) {
+            qWarning() << "ERROR: Cannot remove document_id" << document_id << query.lastError();
+        }
+    }
+    addCurrentFolders();
 }
 
 void Database::directoryChanged(const QString &path)

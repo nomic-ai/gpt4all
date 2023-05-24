@@ -25,15 +25,16 @@ class Database : public QObject
 {
     Q_OBJECT
 public:
-    Database();
+    Database(int chunkSize);
 
 public Q_SLOTS:
     void scanQueue();
     void scanDocuments(int folder_id, const QString &folder_path);
     void addFolder(const QString &collection, const QString &path);
     void removeFolder(const QString &collection, const QString &path);
-    void retrieveFromDB(const QList<QString> &collections, const QString &text);
+    void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize);
     void cleanDB();
+    void changeChunkSize(int chunkSize);
 
 Q_SIGNALS:
     void docsToScanChanged();
@@ -55,6 +56,7 @@ private:
         int document_id, const QString &document_path, const QSqlError &error);
 
 private:
+    int m_chunkSize;
     QQueue<DocumentInfo> m_docsToScan;
     QList<QString> m_retrieve;
     QThread m_dbThread;
