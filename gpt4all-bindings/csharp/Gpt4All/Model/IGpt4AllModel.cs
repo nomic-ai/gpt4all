@@ -2,4 +2,5 @@
 
 public interface IGpt4AllModel : ITextPrediction, IDisposable
 {
+    IPromptFormatter? PromptFormatter { get; set; }
 }
