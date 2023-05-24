@@ -596,7 +596,7 @@ Window {
                     Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
 
                     delegate: TextArea {
-                        text: value
+                        text: value + references
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
