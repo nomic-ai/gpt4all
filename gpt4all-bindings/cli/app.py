@@ -1,6 +1,6 @@
 import sys
 import typer
-
+import readline
 from typing_extensions import Annotated
 from gpt4all import GPT4All
 
@@ -33,11 +33,11 @@ Type /help for special commands.
                                                     
 """
 
-def _cli_override_response_callback(token_id, response):
-    resp = response.decode("utf-8")
-    print(resp, end="", flush=True)
-    return True
-
+# def _cli_override_response_callback(token_id, response):
+#     resp = response.decode("utf-8")
+#     print(resp, end="", flush=True)
+#     return True
+# 
 
 # create typer app
 app = typer.Typer()
@@ -68,7 +68,7 @@ def repl(
 
 
     # overwrite _response_callback on model
-    gpt4all_instance.model._response_callback = _cli_override_response_callback
+#     gpt4all_instance.model._response_callback = _cli_override_response_callback
 
     print(CLI_START_MESSAGE)
 
@@ -102,7 +102,7 @@ def repl(
             context_erase=0.0,
             # required kwargs for cli ux (incremental response)
             verbose=False,
-            std_passthrough=True,
+            #std_passthrough=True,
         )
         # record assistant's response to messages
         MESSAGES.append(full_response.get("choices")[0].get("message"))
