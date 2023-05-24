@@ -1078,6 +1078,7 @@ void Replit::prompt(const std::string &prompt,
             if (promptCtx.tokens.size() == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
+            //printf("%s", replit_tokenizer_detokenize(d_ptr->vocab, {static_cast<std::size_t>(t)}).c_str());
             if (!responseCallback(t, replit_tokenizer_detokenize(d_ptr->vocab, {static_cast<std::size_t>(t)}).c_str()))
                 goto stop_generating;
         }
