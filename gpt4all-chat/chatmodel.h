@@ -17,6 +17,7 @@ struct ChatItem
     Q_PROPERTY(bool stopped MEMBER stopped)
     Q_PROPERTY(bool thumbsUpState MEMBER thumbsUpState)
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
+    Q_PROPERTY(QString references MEMBER references)
 
 public:
     int id = 0;
@@ -24,6 +25,7 @@ public:
     QString value;
     QString prompt;
     QString newResponse;
+    QString references;
     bool currentResponse = false;
     bool stopped = false;
     bool thumbsUpState = false;
@@ -48,7 +50,8 @@ public:
         CurrentResponseRole,
         StoppedRole,
         ThumbsUpStateRole,
-        ThumbsDownStateRole
+        ThumbsDownStateRole,
+        ReferencesRole
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
@@ -82,6 +85,8 @@ public:
                 return item.thumbsUpState;
             case ThumbsDownStateRole:
                 return item.thumbsDownState;
+            case ReferencesRole:
+                return item.references;
         }
 
         return QVariant();
@@ -99,6 +104,7 @@ public:
         roles[StoppedRole] = "stopped";
         roles[ThumbsUpStateRole] = "thumbsUpState";
         roles[ThumbsDownStateRole] = "thumbsDownState";
+        roles[ReferencesRole] = "references";
         return roles;
     }
 
@@ -175,6 +181,17 @@ public:
         }
     }
 
+    Q_INVOKABLE void updateReferences(int index, const QString &references)
+    {
+        if (index < 0 || index >= m_chatItems.size()) return;
+
+        ChatItem &item = m_chatItems[index];
+        if (item.references != references) {
+            item.references = references;
+            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ReferencesRole});
+        }
+    }
+
     Q_INVOKABLE void updateThumbsUpState(int index, bool b)
     {
         if (index < 0 || index >= m_chatItems.size()) return;
@@ -223,6 +240,8 @@ public:
             stream << c.stopped;
             stream << c.thumbsUpState;
             stream << c.thumbsDownState;
+            if (version > 2)
+                stream << c.references;
         }
         return stream.status() == QDataStream::Ok;
     }
@@ -242,6 +261,8 @@ public:
             stream >> c.stopped;
             stream >> c.thumbsUpState;
             stream >> c.thumbsDownState;
+            if (version > 2)
+                stream >> c.references;
             beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
             m_chatItems.append(c);
             endInsertRows();

@@ -204,13 +204,13 @@ void Chat::promptProcessing()
 void Chat::responseStopped()
 {
     const QString chatResponse = response();
-    QList<QString> finalResponse { chatResponse };
+    QList<QString> references;
     int validReferenceNumber = 1;
     for (const ResultInfo &info : m_results) {
         if (info.file.isEmpty())
             continue;
         if (validReferenceNumber == 1)
-            finalResponse.append(QStringLiteral("---"));
+            references.append((!chatResponse.endsWith("\n") ? "\n" : QString()) + QStringLiteral("---"));
         QString reference;
         {
             QTextStream stream(&reference);
@@ -231,11 +231,11 @@ void Chat::responseStopped()
                 stream << ". ";
             }
         }
-        finalResponse.append(reference);
+        references.append(reference);
     }
 
     const int index = m_chatModel->count() - 1;
-    m_chatModel->updateValue(index, finalResponse.join("\n"));
+    m_chatModel->updateReferences(index, references.join("\n"));
     emit responseChanged();
 
     m_results.clear();
