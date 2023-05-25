@@ -73,7 +73,7 @@ class GPT4All():
         """
         
         model_filename = model_name
-        if ".bin" not in model_filename:
+        if not model_filename.endswith(".bin"):
             model_filename += ".bin"
 
         # Validate download directory
