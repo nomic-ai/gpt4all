@@ -1,7 +1,6 @@
 """
 Python only API for running all GPT4All models.
 """
-import json
 import os
 from pathlib import Path
 import time
@@ -56,9 +55,7 @@ class GPT4All():
         Returns:
             Model list in JSON format.
         """
-        response = requests.get("https://gpt4all.io/models/models.json")
-        model_json = json.loads(response.content)
-        return model_json
+        return requests.get("https://gpt4all.io/models/models.json").json()
 
     @staticmethod
     def retrieve_model(model_name: str, model_path: str = None, allow_download: bool = True) -> str:
