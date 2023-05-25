@@ -49,10 +49,23 @@ Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVariant) 
     return nullptr;
 }
 
+static
+bool requires_avxonly() {
+#ifdef __x86_64__
+    return !__builtin_cpu_supports("avx2") && !__builtin_cpu_supports("fma");
+#else
+    return false;  // Don't know how to handle ARM
+#endif
+}
+
 LLModel *LLModel::construct(const std::string &modelPath, std::string buildVariant) {
     //TODO: Auto-detect
     if (buildVariant == "auto") {
-        buildVariant = "default";
+        if (requires_avxonly()) {
+            buildVariant = "avxonly";
+        } else {
+            buildVariant = "default";
+        }
     }
     // Read magic
     std::ifstream f(modelPath, std::ios::binary);
