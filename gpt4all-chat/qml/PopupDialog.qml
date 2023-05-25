@@ -21,8 +21,6 @@ Dialog {
 
     Row {
         anchors.centerIn: parent
-        width: childrenRect.width
-        height: childrenRect.height
         spacing: 20
 
         Text {

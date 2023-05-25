@@ -632,11 +632,8 @@ Window {
 
                         onLinkActivated: function (link) {
                             if (!link.startsWith("context://"))
-                                return;
-
-                            console.log("link " + link);
+                                return
                             var integer = parseInt(link.split("://")[1]);
-                            console.log("context is" + referencesContext[integer - 1]);
                             referenceContextDialog.text = referencesContext[integer - 1];
                             referenceContextDialog.open();
                         }

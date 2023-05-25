@@ -36,7 +36,7 @@ Item {
     FolderDialog {
         id: folderDialog
         title: "Please choose a directory"
-        currentFolder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        currentFolder: StandardPaths.writableLocation(StandardPaths.HomeLocation)
         onAccepted: {
             root.folder_path = selectedFolder
         }
