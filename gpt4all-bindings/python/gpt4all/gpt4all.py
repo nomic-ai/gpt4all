@@ -146,6 +146,7 @@ class GPT4All():
             raise RuntimeError(
                 "An error occurred during download. Downloaded file may not work."
             )
+
         # Sleep for a little bit so OS can remove file lock
         time.sleep(2)
 
@@ -309,8 +310,8 @@ class GPT4All():
             return pyllmodel.LlamaModel()
         elif model_name in MPT_MODELS:
             return pyllmodel.MPTModel()
-        else:
-            err_msg = f"""No corresponding model for provided filename {model_name}.
-            If this is a custom model, make sure to specify a valid model_type.
-            """
-            raise ValueError(err_msg)
+
+        err_msg = f"""No corresponding model for provided filename {model_name}.
+        If this is a custom model, make sure to specify a valid model_type.
+        """
+        raise ValueError(err_msg)
