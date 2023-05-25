@@ -41,6 +41,7 @@ using piece_t = std::pair<std::size_t, float>;
 using piece_map_t = std::unordered_map<std::string, piece_t>;
 
 static const size_t MB = 1024*1024;
+static const std::string ws_symbol = "\342\226\201";
 
 struct replit_tokenizer {
     gpt_vocab raw_vocab;
@@ -131,7 +132,6 @@ std::string replace_all(const std::string & str,    // where to work
     return result;
 }
 
-std::string ws_symbol = "\342\226\201";
 std::vector<std::size_t> replit_tokenizer_tokenize(replit_tokenizer & tokenizer, const std::string & text) {
     std::vector<std::size_t> tokens;
     auto normalized_text = replace_all(text, " ", ws_symbol);
@@ -1040,7 +1040,6 @@ void Replit::prompt(const std::string &prompt,
         ++totalPredictions;
 
         // mpt-7b-chat has special token for end
-        // TODO: need to change this for replit model (return, ```, def)
         if (d_ptr->has_end_of_text && id == d_ptr->vocab.raw_vocab.token_to_id["<|endoftext|>"])
             goto stop_generating;
 
@@ -1078,7 +1077,6 @@ void Replit::prompt(const std::string &prompt,
             if (promptCtx.tokens.size() == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
-            //printf("%s", replit_tokenizer_detokenize(d_ptr->vocab, {static_cast<std::size_t>(t)}).c_str());
             if (!responseCallback(t, replit_tokenizer_detokenize(d_ptr->vocab, {static_cast<std::size_t>(t)}).c_str()))
                 goto stop_generating;
         }
