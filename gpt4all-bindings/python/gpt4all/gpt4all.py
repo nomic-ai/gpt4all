@@ -96,12 +96,8 @@ class GPT4All():
             # If model file does not exist, download
             elif allow_download: 
                 # Make sure valid model filename before attempting download
-                model_match = False
-                for item in GPT4All.list_models():
-                    if model_filename == item["filename"]:
-                        model_match = True
-                        break
-                if not model_match:
+                available_models = GPT4All.list_models()
+                if model_filename not in (m["filename"] for m in available_models):
                     raise ValueError(f"Model filename not in model list: {model_filename}")
                 return GPT4All.download_model(model_filename, model_path)
             else:
