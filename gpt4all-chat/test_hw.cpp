@@ -3,6 +3,7 @@
 
 int main(int argc, char *argv[])
 {
+#if __GNUC__
     static bool avx = __builtin_cpu_supports("avx");
     static bool avx2 = __builtin_cpu_supports("avx2");
     static bool fma = __builtin_cpu_supports("fma");
@@ -25,5 +26,6 @@ int main(int argc, char *argv[])
     fflush(stdout);
     fprintf(stderr, "\" version of gpt4all.\n");
     fflush(stderr);
+#endif
     return 0;
 }
