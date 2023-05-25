@@ -18,6 +18,7 @@ struct ChatItem
     Q_PROPERTY(bool thumbsUpState MEMBER thumbsUpState)
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
     Q_PROPERTY(QString references MEMBER references)
+    Q_PROPERTY(QList<QString> referencesContext MEMBER referencesContext)
 
 public:
     int id = 0;
@@ -26,6 +27,7 @@ public:
     QString prompt;
     QString newResponse;
     QString references;
+    QList<QString> referencesContext;
     bool currentResponse = false;
     bool stopped = false;
     bool thumbsUpState = false;
@@ -51,7 +53,8 @@ public:
         StoppedRole,
         ThumbsUpStateRole,
         ThumbsDownStateRole,
-        ReferencesRole
+        ReferencesRole,
+        ReferencesContextRole
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
@@ -87,6 +90,8 @@ public:
                 return item.thumbsDownState;
             case ReferencesRole:
                 return item.references;
+            case ReferencesContextRole:
+                return item.referencesContext;
         }
 
         return QVariant();
@@ -105,6 +110,7 @@ public:
         roles[ThumbsUpStateRole] = "thumbsUpState";
         roles[ThumbsDownStateRole] = "thumbsDownState";
         roles[ReferencesRole] = "references";
+        roles[ReferencesContextRole] = "referencesContext";
         return roles;
     }
 
@@ -181,7 +187,7 @@ public:
         }
     }
 
-    Q_INVOKABLE void updateReferences(int index, const QString &references)
+    Q_INVOKABLE void updateReferences(int index, const QString &references, const QList<QString> &referencesContext)
     {
         if (index < 0 || index >= m_chatItems.size()) return;
 
@@ -189,6 +195,10 @@ public:
         if (item.references != references) {
             item.references = references;
             emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ReferencesRole});
+        }
+        if (item.referencesContext != referencesContext) {
+            item.referencesContext = referencesContext;
+            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ReferencesContextRole});
         }
     }
 
@@ -240,8 +250,10 @@ public:
             stream << c.stopped;
             stream << c.thumbsUpState;
             stream << c.thumbsDownState;
-            if (version > 2)
+            if (version > 2) {
                 stream << c.references;
+                stream << c.referencesContext;
+            }
         }
         return stream.status() == QDataStream::Ok;
     }
@@ -261,8 +273,10 @@ public:
             stream >> c.stopped;
             stream >> c.thumbsUpState;
             stream >> c.thumbsDownState;
-            if (version > 2)
+            if (version > 2) {
                 stream >> c.references;
+                stream >> c.referencesContext;
+            }
             beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
             m_chatItems.append(c);
             endInsertRows();

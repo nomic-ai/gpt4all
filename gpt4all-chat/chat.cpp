@@ -205,12 +205,13 @@ void Chat::responseStopped()
 {
     const QString chatResponse = response();
     QList<QString> references;
+    QList<QString> referencesContext;
     int validReferenceNumber = 1;
     for (const ResultInfo &info : m_results) {
         if (info.file.isEmpty())
             continue;
         if (validReferenceNumber == 1)
-            references.append((!chatResponse.endsWith("\n") ? "\n" : QString()) + QStringLiteral("---"));
+            references.append((!chatResponse.endsWith("\n") ? "\n" : QString()) + QStringLiteral("\n---"));
         QString reference;
         {
             QTextStream stream(&reference);
@@ -230,12 +231,14 @@ void Chat::responseStopped()
                     stream << "-" << info.to;
                 stream << ". ";
             }
+            stream << "[Context](context://" << validReferenceNumber - 1 << ")";
         }
         references.append(reference);
+        referencesContext.append(info.text);
     }
 
     const int index = m_chatModel->count() - 1;
-    m_chatModel->updateReferences(index, references.join("\n"));
+    m_chatModel->updateReferences(index, references.join("\n"), referencesContext);
     emit responseChanged();
 
     m_results.clear();
