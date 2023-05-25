@@ -27,8 +27,12 @@ Dialog {
 
         Text {
             id: textField
-            anchors.verticalCenter: busyIndicator.verticalCenter
-            horizontalAlignment: Text.AlignJustify
+            width: Math.min(1024, implicitWidth)
+            height: Math.min(600, implicitHeight)
+            anchors.verticalCenter: shouldShowBusy ? busyIndicator.verticalCenter : parent.verticalCenter
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+            wrapMode: Text.WordWrap
             color: theme.textColor
             Accessible.role: Accessible.HelpBalloon
             Accessible.name: text
