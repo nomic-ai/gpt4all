@@ -173,7 +173,7 @@ class GPT4All():
                         default_prompt_footer: bool = True, 
                         verbose: bool = True,
                         streaming: bool = True,
-                        **generate_kwargs) -> str:
+                        **generate_kwargs) -> dict:
         """
         Format list of message dictionaries into a prompt and call model
         generate on prompt. Returns a response dictionary with metadata and
