@@ -881,12 +881,7 @@ bool Database::addFolderToWatch(const QString &path)
 #if defined(DEBUG)
     qDebug() << "addFolderToWatch" << path;
 #endif
-
-    if (!m_watcher->addPath(path)) {
-        qWarning() << "ERROR: Cannot add path to file watcher:" << path;
-        return false;
-    }
-    return true;
+    return m_watcher->addPath(path);
 }
 
 bool Database::removeFolderFromWatch(const QString &path)
@@ -894,11 +889,7 @@ bool Database::removeFolderFromWatch(const QString &path)
 #if defined(DEBUG)
     qDebug() << "removeFolderFromWatch" << path;
 #endif
-    if (!m_watcher->removePath(path)) {
-        qWarning() << "ERROR: Cannot remove path from file watcher:" << path;
-        return false;
-    }
-    return true;
+    return m_watcher->removePath(path);
 }
 
 void Database::retrieveFromDB(const QString &uid, const QList<QString> &collections, const QString &text, int retrievalSize)
