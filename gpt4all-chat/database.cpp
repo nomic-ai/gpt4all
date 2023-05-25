@@ -651,7 +651,7 @@ void Database::scanQueue()
                                                       existing_id, document_path, q.lastError());
         }
         QTextStream stream(&file);
-        chunkStream(stream, document_id, file.fileName(), QString() /*title*/, QString() /*author*/,
+        chunkStream(stream, document_id, info.doc.fileName(), QString() /*title*/, QString() /*author*/,
             QString() /*subject*/, QString() /*keywords*/, -1 /*page*/);
         file.close();
     }
