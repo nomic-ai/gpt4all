@@ -128,7 +128,7 @@ class GPT4All():
         # TODO: Find good way of safely removing file that got interrupted.
         response = requests.get(download_url, stream=True)
         total_size_in_bytes = int(response.headers.get("content-length", 0))
-        block_size = 1048576  # 1 MB
+        block_size = 2 ** 20  # 1 MB
         progress_bar = tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
         with open(download_path, "wb") as file:
             for data in response.iter_content(block_size):
