@@ -219,6 +219,49 @@ Dialog {
             Accessible.name: qsTr("Application settings")
             Accessible.description: qsTr("Settings related to general behavior of the application")
         }
+
+        TabButton {
+            id: localDocsButton
+            contentItem: IconLabel {
+                color: theme.textColor
+                font.bold: localDocsButton.checked
+                text: qsTr("LocalDocs Plugin (BETA)")
+            }
+            background: Rectangle {
+                color: localDocsButton.checked ? theme.backgroundDarkest : theme.backgroundLight
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: localDocsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: !localDocsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    width: localDocsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    width: localDocsButton.checked
+                    color: theme.tabBorder
+                }
+            }
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("LocalDocs settings")
+            Accessible.description: qsTr("Settings related to localdocs plugin")
+        }
     }
 
     StackLayout {
@@ -748,6 +791,27 @@ Dialog {
                             settingsDialog.restoreApplicationDefaults()
                         }
                     }
+                }
+            }
+        }
+        Item {
+            id: localDocsTab
+            ScrollView {
+                background: Rectangle {
+                    color: 'transparent'
+                    border.color: theme.tabBorder
+                    border.width: 1
+                    radius: 2
+                }
+                padding: 10
+                width: parent.width
+                height: parent.height - 30
+                contentWidth: availableWidth - 20
+                ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+
+                LocalDocs {
+                    anchors.margins: 10
+                    anchors.fill: parent
                 }
             }
         }

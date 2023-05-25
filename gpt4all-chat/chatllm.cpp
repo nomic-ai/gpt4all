@@ -411,7 +411,7 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     auto responseFunc = std::bind(&ChatLLM::handleResponse, this, std::placeholders::_1,
         std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleRecalculate, this, std::placeholders::_1);
-    emit responseStarted();
+    emit promptProcessing();
     qint32 logitsBefore = m_ctx.logits.size();
     m_ctx.n_predict = n_predict;
     m_ctx.top_k = top_k;
