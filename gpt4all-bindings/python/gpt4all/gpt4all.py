@@ -77,14 +77,13 @@ class GPT4All():
             model_filename += ".bin"
 
         # Validate download directory
-        if model_path == None:
+        if model_path is None:
+            try:
+                os.makedirs(DEFAULT_MODEL_DIRECTORY, exist_ok=True)
+            except OSError as exc:
+                raise ValueError("Failed to create model download directory at {}: {}. "
+                                 "Please specify model_path.".format(DEFAULT_MODEL_DIRECTORY, exc))
             model_path = DEFAULT_MODEL_DIRECTORY
-            if not os.path.exists(DEFAULT_MODEL_DIRECTORY):
-                try:
-                    os.makedirs(DEFAULT_MODEL_DIRECTORY)
-                except:
-                    raise ValueError("Failed to create model download directory at ~/.cache/gpt4all/. \
-                    Please specify download_dir.")
         else:
             model_path = model_path.replace("\\", "\\\\")
 
