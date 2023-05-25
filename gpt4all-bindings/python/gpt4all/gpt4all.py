@@ -81,14 +81,14 @@ class GPT4All():
             try:
                 os.makedirs(DEFAULT_MODEL_DIRECTORY, exist_ok=True)
             except OSError as exc:
-                raise ValueError("Failed to create model download directory at {}: {}. "
-                                 "Please specify model_path.".format(DEFAULT_MODEL_DIRECTORY, exc))
+                raise ValueError(f"Failed to create model download directory at {DEFAULT_MODEL_DIRECTORY}: {exc}. "
+                                 "Please specify model_path.")
             model_path = DEFAULT_MODEL_DIRECTORY
         else:
             model_path = model_path.replace("\\", "\\\\")
 
         if not os.path.exists(model_path):
-            raise ValueError("Invalid model directory: {}".format(model_path))
+            raise ValueError(f"Invalid model directory: {model_path}")
 
         model_dest = os.path.join(model_path, model_filename).replace("\\", "\\\\")
         if os.path.exists(model_dest):
