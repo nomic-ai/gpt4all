@@ -555,6 +555,14 @@ Window {
         }
     }
 
+    PopupDialog {
+        id: referenceContextDialog
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: false
+        modal: true
+    }
+
     Rectangle {
         id: conversation
         color: theme.backgroundLight
@@ -600,6 +608,7 @@ Window {
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
+                        textFormat: TextEdit.MarkdownText
                         focus: false
                         readOnly: true
                         font.pixelSize: theme.fontSizeLarge
@@ -620,6 +629,17 @@ Window {
                         bottomPadding: 20
                         leftPadding: 100
                         rightPadding: 100
+
+                        onLinkActivated: function (link) {
+                            if (!link.startsWith("context://"))
+                                return;
+
+                            console.log("link " + link);
+                            var integer = parseInt(link.split("://")[1]);
+                            console.log("context is" + referencesContext[integer - 1]);
+                            referenceContextDialog.text = referencesContext[integer - 1];
+                            referenceContextDialog.open();
+                        }
 
                         Item {
                             anchors.left: parent.left
