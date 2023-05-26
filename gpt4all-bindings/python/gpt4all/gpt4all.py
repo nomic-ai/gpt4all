@@ -316,7 +316,7 @@ class GPT4All():
         elif model_name in MPT_MODELS:
             return pyllmodel.MPTModel()
 
-        err_msg = f"""No corresponding model for provided filename {model_name}.
-        If this is a custom model, make sure to specify a valid model_type.
-        """
+        err_msg = (f"No corresponding model for provided filename {model_name}.\n"
+                   f"If this is a custom model, make sure to specify a valid model_type.\n")
+
         raise ValueError(err_msg)
