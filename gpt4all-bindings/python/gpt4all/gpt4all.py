@@ -103,12 +103,12 @@ class GPT4All():
             available_models = GPT4All.list_models()
             if model_filename not in (m["filename"] for m in available_models):
                 raise ValueError(f"Model filename not in model list: {model_filename}")
-            return GPT4All.download_model(model_filename, model_path)
+            return GPT4All.download_model(model_filename, model_path, verbose = verbose)
         else:
             raise ValueError("Failed to retrieve model")
 
     @staticmethod
-    def download_model(model_filename: str, model_path: str, verbose: bool) -> str:
+    def download_model(model_filename: str, model_path: str, verbose: bool = True) -> str:
         """
         Download model from https://gpt4all.io.
 
