@@ -278,7 +278,7 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
     # Build libraries
     #
 
-    if (LLAMA_CUBLAS)
+    if (LLAMA_CUBLAS AND EXISTS ${DIRECTORY}/ggml-cuda.h)
         cmake_minimum_required(VERSION 3.17)
 
         find_package(CUDAToolkit)
@@ -287,7 +287,7 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
 
             enable_language(CUDA)
 
-            set(GGML_CUDA_SOURCES ${DIRECTORY}ggml-cuda.cu ${DIRECTORY}ggml-cuda.h)
+            set(GGML_CUDA_SOURCES ${DIRECTORY}/ggml-cuda.cu ${DIRECTORY}/ggml-cuda.h)
 
             add_compile_definitions(GGML_USE_CUBLAS)
 
@@ -302,12 +302,12 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
         endif()
     endif()
 
-    if (LLAMA_CLBLAST)
+    if (LLAMA_CLBLAST AND EXISTS ${DIRECTORY}/ggml-opencl.h)
         find_package(CLBlast)
         if (CLBlast_FOUND)
             message(STATUS "CLBlast found")
 
-            set(GGML_OPENCL_SOURCES ${DIRECTORY}ggml-opencl.c ${DIRECTORY}ggml-opencl.h)
+            set(GGML_OPENCL_SOURCES ${DIRECTORY}/ggml-opencl.c ${DIRECTORY}/ggml-opencl.h)
 
             add_compile_definitions(GGML_USE_CLBLAST)
 
