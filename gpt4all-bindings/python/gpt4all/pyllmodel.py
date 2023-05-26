@@ -10,13 +10,8 @@ class DualStreamProcessor:
     def __init__(self, stream=None):
         self.stream = stream
         self.output = ""
-        self.debug_clean = []
-        self.debug = []
 
     def write(self, text):
-        self.debug.append(text)
-        cleaned_text = re.sub('\n+', lambda x: '\n'*(len(x.group(0))-1), text)
-        self.debug_clean.append(cleaned_text)
         if self.stream is not None:
             self.stream.write(text)
             self.stream.flush()
@@ -240,10 +235,7 @@ class LLModel:
         sys.stdout = old_stdout
         # Force new line
         print()
-
-
-
-        return stream_processor.output, stream_processor.debug, stream_processor.debug_clean
+        return stream_processor.output
 
     # Empty prompt callback
     @staticmethod
