@@ -1,10 +1,5 @@
 #include "replit.h"
 #include "llama.cpp/ggml.h"
-//#include "ggml/ggml.h"
-
-//#include "common-ggml.h"
-//#include "llama.cpp/examples/common.h"
-//#include "common.h"
 
 #include "utils.h"
 #include <cassert>
