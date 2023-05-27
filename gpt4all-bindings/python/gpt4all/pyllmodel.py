@@ -86,12 +86,16 @@ class LLModelPromptContext(ctypes.Structure):
     
 PromptCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32)
 ResponseCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32, ctypes.c_char_p)
+
+ResponseCallback2 = ctypes.CFUNCTYPE(ctypes.c_char_p, ctypes.c_int32, ctypes.c_char_p)
+
 RecalculateCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_bool)
 
 llmodel.llmodel_prompt.argtypes = [ctypes.c_void_p, 
                                    ctypes.c_char_p, 
                                    PromptCallback,
-                                   ResponseCallback, 
+                                   ResponseCallback,
+                                   ResponseCallback2, 
                                    RecalculateCallback, 
                                    ctypes.POINTER(LLModelPromptContext)]
 
@@ -220,7 +224,8 @@ class LLModel:
         llmodel.llmodel_prompt(self.model, 
                                prompt, 
                                PromptCallback(self._prompt_callback),
-                               ResponseCallback(self._response_callback), 
+                               ResponseCallback(self._response_callback),
+                               ResponseCallback2(self._response_callback2), 
                                RecalculateCallback(self._recalculate_callback), 
                                context)
 
@@ -241,6 +246,14 @@ class LLModel:
     def _response_callback(token_id, response):
         print(response.decode('utf-8'))
         return True
+    
+    # Empty response callback method that returns the response to be streamed
+    @staticmethod
+    def _response_callback2(token_id, response):
+        #print(response.decode('utf-8'))
+        buff = ctypes.c_char_p(response.encode('utf-8'))
+        print("Buffer in _reponse_callback2 is:\n {}\n".format(buff))
+        return buff
 
     # Empty recalculate callback
     @staticmethod

@@ -233,6 +233,83 @@ class GPT4All():
         }
 
         return response_dict
+    
+
+    def chat_completion_diy(self,
+                        messages: List[Dict],
+                        default_prompt_header: bool = True,
+                        default_prompt_footer: bool = True,
+                        verbose: bool = True,
+                        streaming: bool = True,
+                        generator: bool = True,
+                        **generate_kwargs) -> dict:
+        """
+        Format list of message dictionaries into a prompt and call model
+        generate on prompt. Returns a response dictionary with metadata and
+        generated content.
+
+        Args:
+            messages: List of dictionaries. Each dictionary should have a "role" key
+                with value of "system", "assistant", or "user" and a "content" key with a
+                string value. Messages are organized such that "system" messages are at top of prompt,
+                and "user" and "assistant" messages are displayed in order. Assistant messages get formatted as
+                "Response: {content}". 
+            default_prompt_header: If True (default), add default prompt header after any system role messages and
+                before user/assistant role messages.
+            default_prompt_footer: If True (default), add default footer at end of prompt.
+            verbose: If True (default), print full prompt and generated response.
+            streaming: True if want output streamed to stdout.
+            **generate_kwargs: Optional kwargs to pass to prompt context.
+
+        Returns:
+            Response dictionary with:  
+                "model": name of model.  
+                "usage": a dictionary with number of full prompt tokens, number of 
+                    generated tokens in response, and total tokens.  
+                "choices": List of message dictionary where "content" is generated response and "role" is set
+                as "assistant". Right now, only one choice is returned by model.
+        """
+
+        full_prompt = self._build_prompt(messages,
+                                         default_prompt_header=default_prompt_header,
+                                         default_prompt_footer=default_prompt_footer)
+        if verbose:
+            print(full_prompt)
+
+        if generator:
+            output=""
+            for tok in self.model.generate(full_prompt, streaming=streaming, **generate_kwargs):
+                output += tok
+                return tok
+            
+
+        else:
+            response = self.model.generate(full_prompt, streaming=streaming, **generate_kwargs)
+            
+            if verbose and not streaming:
+                print(response)
+            
+            response_dict = {
+                "model": self.model.model_name,
+                "usage": {"prompt_tokens": len(full_prompt),
+                        "completion_tokens": len(response),
+                        "total_tokens": len(full_prompt) + len(response)},
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": response
+                        }
+                    }
+                ]
+            }
+            return response_dict
+
+
+
+
+
+
 
     @staticmethod
     def _build_prompt(messages: List[Dict],
