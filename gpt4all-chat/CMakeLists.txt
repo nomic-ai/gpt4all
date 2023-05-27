@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if(APPLE)
   option(BUILD_UNIVERSAL "Build a Universal binary on macOS" OFF)
   if(BUILD_UNIVERSAL)
@@ -14,7 +17,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 4)
-set(APP_VERSION_PATCH 3)
+set(APP_VERSION_PATCH 5)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -36,7 +39,7 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
-find_package(Qt6 6.5 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer REQUIRED)
+find_package(Qt6 6.5 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
 
 # Get the Qt6Core target properties
 get_target_property(Qt6Core_INCLUDE_DIRS Qt6::Core INTERFACE_INCLUDE_DIRECTORIES)
@@ -62,8 +65,10 @@ qt_add_executable(chat
     chatllm.h chatllm.cpp
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
     chatgpt.h chatgpt.cpp
+    database.h database.cpp
     download.h download.cpp
     network.h network.cpp
+    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
     llm.h llm.cpp
     server.h server.cpp
     sysinfo.h
@@ -75,6 +80,8 @@ qt_add_qml_module(chat
     QML_FILES
       main.qml
       qml/ChatDrawer.qml
+      qml/CollectionsDialog.qml
+      qml/LocalDocs.qml
       qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
@@ -93,6 +100,7 @@ qt_add_qml_module(chat
       icons/stop_generating.svg
       icons/regenerate.svg
       icons/copy.svg
+      icons/db.svg
       icons/settings.svg
       icons/edit.svg
       icons/trash.svg
@@ -124,7 +132,7 @@ endif()
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(chat
-    PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer)
+    PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
 target_link_libraries(chat
     PRIVATE llmodel)
 

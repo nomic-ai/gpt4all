@@ -13,9 +13,10 @@ Dialog {
     modal: true
     opacity: 0.9
     closePolicy: LLM.chatListModel.currentChat.modelList.length === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+    padding: 20
+    bottomPadding: 30
     background: Rectangle {
         anchors.fill: parent
-        anchors.margins: -20
         color: theme.backgroundDarkest
         border.width: 1
         border.color: theme.dialogBorder
@@ -228,27 +229,15 @@ Dialog {
                             Accessible.description: qsTr("Whether the file is already installed on your system")
                         }
 
-                        Button {
+                        MyButton {
                             id: removeButton
-                            contentItem: Text {
-                                color: theme.textColor
-                                text: "Remove"
-                            }
+                            text: "Remove"
                             anchors.right: parent.right
                             anchors.rightMargin: 20
-                            background: Rectangle {
-                                opacity: .5
-                                border.color: theme.backgroundLightest
-                                border.width: 1
-                                radius: 10
-                                color: theme.backgroundLight
-                            }
+                            Accessible.description: qsTr("Remove button to remove model from filesystem")
                             onClicked: {
                                 Download.removeModel(modelData.filename);
                             }
-                            Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("Remove button")
-                            Accessible.description: qsTr("Remove button to remove model from filesystem")
                         }
                     }
 
@@ -299,17 +288,15 @@ Dialog {
                         }
                     }
 
-                    Button {
+                    MyButton {
                         id: downloadButton
-                        contentItem: Text {
-                            color: theme.textColor
-                            text: downloading ? "Cancel" : "Download"
-                        }
+                        text: downloading ? qsTr("Cancel") : qsTr("Download")
                         anchors.top: modelName.top
                         anchors.right: parent.right
                         anchors.topMargin: 15
                         anchors.rightMargin: 20
                         visible: !modelData.isChatGPT && !modelData.installed && !modelData.calcHash
+                        Accessible.description: qsTr("Cancel/Download button to stop/start the download")
                         onClicked: {
                             if (!downloading) {
                                 downloading = true;
@@ -319,17 +306,6 @@ Dialog {
                                 Download.cancelDownload(modelData.filename);
                             }
                         }
-                        background: Rectangle {
-                            opacity: .5
-                            border.color: theme.backgroundLightest
-                            border.width: 1
-                            radius: 10
-                            color: theme.backgroundLight
-                        }
-                        Accessible.role: Accessible.Button
-                        Accessible.name: text
-                        Accessible.description: qsTr("Cancel/Download button to stop/start the download")
-
                     }
                 }
 
@@ -438,23 +414,9 @@ Dialog {
                     radius: 10
                 }
             }
-            Button {
+            MyButton {
                 text: qsTr("Browse")
-                contentItem: Text {
-                    text: qsTr("Browse")
-                    horizontalAlignment: Text.AlignHCenter
-                    color: theme.textColor
-                    Accessible.role: Accessible.Button
-                    Accessible.name: text
-                    Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
-                }
-                background: Rectangle {
-                    opacity: .5
-                    border.color: theme.backgroundLightest
-                    border.width: 1
-                    radius: 10
-                    color: theme.backgroundLight
-                }
+                Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
                 onClicked: modelPathDialog.open()
             }
         }

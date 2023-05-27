@@ -117,40 +117,14 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         padding: 20
         alignment: Qt.AlignRight
         spacing: 10
-        Button {
-            contentItem: Text {
-                color: theme.textColor
-                text: qsTr("Enable")
-            }
-            background: Rectangle {
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-                color: theme.backgroundLight
-            }
-            Accessible.role: Accessible.Button
-            Accessible.name: text
+        MyButton {
+            text: qsTr("Enable")
             Accessible.description: qsTr("Enable opt-in button")
-
-            padding: 15
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
-        Button {
-            contentItem: Text {
-                color: theme.textColor
-                text: qsTr("Cancel")
-            }
-            background: Rectangle {
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-                color: theme.backgroundLight
-            }
-            Accessible.role: Accessible.Button
-            Accessible.name: text
+        MyButton {
+            text: qsTr("Cancel")
             Accessible.description: qsTr("Cancel opt-in button")
-
-            padding: 15
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
         }
         background: Rectangle {

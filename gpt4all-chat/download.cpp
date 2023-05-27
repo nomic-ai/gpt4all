@@ -370,7 +370,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
 
         QString modelFilename = obj["filename"].toString();
         QString modelFilesize = obj["filesize"].toString();
-        QString requires = obj["requires"].toString();
+        QString requiresVersion = obj["requires"].toString();
         QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
         bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
         bool bestGPTJ = obj.contains("bestGPTJ") && obj["bestGPTJ"] == QString("true");
@@ -378,9 +378,9 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         bool bestMPT = obj.contains("bestMPT") && obj["bestMPT"] == QString("true");
         QString description = obj["description"].toString();
 
-        if (!requires.isEmpty()
-            && requires != currentVersion
-            && compareVersions(requires, currentVersion)) {
+        if (!requiresVersion.isEmpty()
+            && requiresVersion != currentVersion
+            && compareVersions(requiresVersion, currentVersion)) {
             continue;
         }
 
@@ -409,7 +409,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         modelInfo.bestLlama = bestLlama;
         modelInfo.bestMPT = bestMPT;
         modelInfo.description = description;
-        modelInfo.requires = requires;
+        modelInfo.requiresVersion = requiresVersion;
         m_modelMap.insert(modelInfo.filename, modelInfo);
     }
 
@@ -423,7 +423,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         modelInfo.isChatGPT = true;
         modelInfo.filename = "chatgpt-gpt-3.5-turbo";
         modelInfo.description = tr("OpenAI's ChatGPT model gpt-3.5-turbo. ") + chatGPTDesc;
-        modelInfo.requires = "2.4.2";
+        modelInfo.requiresVersion = "2.4.2";
         QString filePath = downloadLocalModelsPath() + modelInfo.filename + ".txt";
         QFileInfo info(filePath);
         modelInfo.installed = info.exists();
@@ -435,7 +435,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         modelInfo.isChatGPT = true;
         modelInfo.filename = "chatgpt-gpt-4";
         modelInfo.description = tr("OpenAI's ChatGPT model gpt-4. ") + chatGPTDesc;
-        modelInfo.requires = "2.4.2";
+        modelInfo.requiresVersion = "2.4.2";
         QString filePath = downloadLocalModelsPath() + modelInfo.filename + ".txt";
         QFileInfo info(filePath);
         modelInfo.installed = info.exists();

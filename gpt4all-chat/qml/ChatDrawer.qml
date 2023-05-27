@@ -38,8 +38,6 @@ Drawer {
             anchors.right: parent.right
             font.pixelSize: theme.fontSizeLarger
             text: qsTr("New chat")
-            Accessible.role: Accessible.Button
-            Accessible.name: text
             Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
             onClicked: {
                 LLM.chatListModel.addChat();
@@ -257,8 +255,6 @@ Drawer {
             anchors.bottom: downloadButton.top
             anchors.bottomMargin: 10
             text: qsTr("Updates")
-            Accessible.role: Accessible.Button
-            Accessible.name: text
             Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
             onClicked: {
                 if (!LLM.checkForUpdates())
@@ -273,8 +269,6 @@ Drawer {
             anchors.bottom: aboutButton.top
             anchors.bottomMargin: 10
             text: qsTr("Downloads")
-            Accessible.role: Accessible.Button
-            Accessible.name: text
             Accessible.description: qsTr("Use this to launch a dialog to download new models")
             onClicked: {
                 downloadClicked()
@@ -287,8 +281,6 @@ Drawer {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             text: qsTr("About")
-            Accessible.role: Accessible.Button
-            Accessible.name: text
             Accessible.description: qsTr("Use this to launch a dialog to show the about page")
             onClicked: {
                 aboutClicked()

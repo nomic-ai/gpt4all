@@ -12,9 +12,10 @@ Dialog {
     id: settingsDialog
     modal: true
     opacity: 0.9
+    padding: 20
+    bottomPadding: 30
     background: Rectangle {
         anchors.fill: parent
-        anchors.margins: -20
         color: theme.backgroundDarkest
         border.width: 1
         border.color: theme.dialogBorder
@@ -130,14 +131,14 @@ Dialog {
     }
     TabBar {
         id: settingsTabBar
-        width: parent.width / 1.5
+        width: parent.width / 1.25
+        z: 200
 
         TabButton {
             id: genSettingsButton
             contentItem: IconLabel {
                 color: theme.textColor
                 font.bold: genSettingsButton.checked
-                font.pixelSize: genSettingsButton.checked ? theme.fontSizeLarger : theme.fontSizeLarge
                 text: qsTr("Generation")
             }
             background: Rectangle {
@@ -146,21 +147,28 @@ Dialog {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: 1 ? genSettingsButton.checked : 0
+                    height: genSettingsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: !genSettingsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
-                    width: 1 ? genSettingsButton.checked : 0
+                    width: genSettingsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.right: parent.right
-                    width: 1 ? genSettingsButton.checked : 0
+                    width: genSettingsButton.checked
                     color: theme.tabBorder
                 }
             }
@@ -174,7 +182,6 @@ Dialog {
             contentItem: IconLabel {
                 color: theme.textColor
                 font.bold: appSettingsButton.checked
-                font.pixelSize: appSettingsButton.checked ? theme.fontSizeLarger : theme.fontSizeLarge
                 text: qsTr("Application")
             }
             background: Rectangle {
@@ -183,21 +190,28 @@ Dialog {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: 1 ? appSettingsButton.checked : 0
+                    height: appSettingsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: !appSettingsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
-                    width: 1 ? appSettingsButton.checked : 0
+                    width: appSettingsButton.checked
                     color: theme.tabBorder
                 }
                 Rectangle {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.right: parent.right
-                    width: 1 ? appSettingsButton.checked : 0
+                    width: appSettingsButton.checked
                     color: theme.tabBorder
                 }
             }
@@ -205,10 +219,54 @@ Dialog {
             Accessible.name: qsTr("Application settings")
             Accessible.description: qsTr("Settings related to general behavior of the application")
         }
+
+        TabButton {
+            id: localDocsButton
+            contentItem: IconLabel {
+                color: theme.textColor
+                font.bold: localDocsButton.checked
+                text: qsTr("LocalDocs Plugin (BETA)")
+            }
+            background: Rectangle {
+                color: localDocsButton.checked ? theme.backgroundDarkest : theme.backgroundLight
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: localDocsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: !localDocsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    width: localDocsButton.checked
+                    color: theme.tabBorder
+                }
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    width: localDocsButton.checked
+                    color: theme.tabBorder
+                }
+            }
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("LocalDocs settings")
+            Accessible.description: qsTr("Settings related to localdocs plugin")
+        }
     }
 
     StackLayout {
         anchors.top: settingsTabBar.bottom
+        anchors.topMargin: -1
         width: parent.width
         height: availableHeight
         currentIndex: settingsTabBar.currentIndex
@@ -247,7 +305,7 @@ Dialog {
                     MyTextField {
                         text: settings.temperature.toString()
                         color: theme.textColor
-                        ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens - higher temperature gives more creative but less predictable outputs")
+                        ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens.\nNOTE: Higher temperature gives more creative but less predictable outputs.")
                         ToolTip.visible: hovered
                         Layout.row: 0
                         Layout.column: 1
@@ -278,7 +336,7 @@ Dialog {
                     MyTextField {
                         text: settings.topP.toString()
                         color: theme.textColor
-                        ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen, prevents choosing highly unlikely tokens, aka Nucleus Sampling")
+                        ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen.\nNOTE: Prevents choosing highly unlikely tokens, aka Nucleus Sampling")
                         ToolTip.visible: hovered
                         Layout.row: 1
                         Layout.column: 1
@@ -372,7 +430,7 @@ Dialog {
                     MyTextField {
                         text: settings.promptBatchSize.toString()
                         color: theme.textColor
-                        ToolTip.text: qsTr("Amount of prompt tokens to process at once, higher values can speed up reading prompts but will use more RAM")
+                        ToolTip.text: qsTr("Amount of prompt tokens to process at once.\nNOTE: Higher values can speed up reading prompts but will use more RAM")
                         ToolTip.visible: hovered
                         Layout.row: 4
                         Layout.column: 1
@@ -505,6 +563,8 @@ Dialog {
                                 Accessible.role: Accessible.EditableText
                                 Accessible.name: promptTemplateLabel.text
                                 Accessible.description: promptTemplateLabelHelp.text
+                                ToolTip.text: qsTr("The prompt template partially determines how models will respond to prompts.\nNOTE: A longer, detailed template can lead to higher quality answers, but can also slow down generation.")
+                                ToolTip.visible: hovered
                             }
                         }
                     }
@@ -513,8 +573,6 @@ Dialog {
                         Layout.column: 1
                         Layout.fillWidth: true
                         text: qsTr("Restore Defaults")
-                        Accessible.role: Accessible.Button
-                        Accessible.name: text
                         Accessible.description: qsTr("Restores the settings dialog to a default state")
                         onClicked: {
                             settingsDialog.restoreGenerationDefaults()
@@ -629,8 +687,6 @@ Dialog {
                         Layout.row: 2
                         Layout.column: 2
                         text: qsTr("Browse")
-                        Accessible.role: Accessible.Button
-                        Accessible.name: text
                         Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
                         onClicked: modelPathDialog.open()
                     }
@@ -730,13 +786,32 @@ Dialog {
                         Layout.column: 1
                         Layout.fillWidth: true
                         text: qsTr("Restore Defaults")
-                        Accessible.role: Accessible.Button
-                        Accessible.name: text
                         Accessible.description: qsTr("Restores the settings dialog to a default state")
                         onClicked: {
                             settingsDialog.restoreApplicationDefaults()
                         }
                     }
+                }
+            }
+        }
+        Item {
+            id: localDocsTab
+            ScrollView {
+                background: Rectangle {
+                    color: 'transparent'
+                    border.color: theme.tabBorder
+                    border.width: 1
+                    radius: 2
+                }
+                padding: 10
+                width: parent.width
+                height: parent.height - 30
+                contentWidth: availableWidth - 20
+                ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+
+                LocalDocs {
+                    anchors.margins: 10
+                    anchors.fill: parent
                 }
             }
         }

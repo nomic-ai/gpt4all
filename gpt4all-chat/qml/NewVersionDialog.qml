@@ -43,30 +43,14 @@ Dialog {
             color: theme.textColor
         }
 
-        Button {
+        MyButton {
             id: button
             anchors.left: label.right
             anchors.leftMargin: 10
             anchors.verticalCenter: label.verticalCenter
             padding: 20
-            contentItem: Text {
-                text: qsTr("Update")
-                horizontalAlignment: Text.AlignHCenter
-                color: theme.textColor
-
-                Accessible.role: Accessible.Button
-                Accessible.name: text
-                Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
-            }
-
-            background: Rectangle {
-                opacity: .5
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-                color: theme.backgroundLight
-            }
-
+            text: qsTr("Update")
+            Accessible.description: qsTr("Update to new version")
             onClicked: {
                 if (!LLM.checkForUpdates())
                     checkForUpdatesError.open()

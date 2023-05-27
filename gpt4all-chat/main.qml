@@ -290,9 +290,53 @@ Window {
         }
     }
 
+    CollectionsDialog {
+        id: collectionsDialog
+        anchors.centerIn: parent
+    }
+
+    Button {
+        id: collectionsButton
+        anchors.right: networkButton.left
+        anchors.top: parent.top
+        anchors.topMargin: 30
+        anchors.rightMargin: 30
+        width: 40
+        height: 40
+        z: 200
+        padding: 15
+
+        background: Item {
+            anchors.fill: parent
+            Rectangle {
+                anchors.fill: parent
+                color: "transparent"
+                visible: currentChat.collectionList.length
+                border.color: theme.backgroundLightest
+                border.width: 1
+                radius: 10
+            }
+            Image {
+                anchors.centerIn: parent
+                mipmap: true
+                width: 25
+                height: 25
+                source: "qrc:/gpt4all/icons/db.svg"
+            }
+        }
+
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("Add collections of documents to the chat")
+        Accessible.description: qsTr("Provides a button to add collections of documents to the chat")
+
+        onClicked: {
+            collectionsDialog.open()
+        }
+    }
+
     Button {
         id: settingsButton
-        anchors.right: networkButton.left
+        anchors.right: collectionsButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
         anchors.rightMargin: 30
@@ -511,6 +555,14 @@ Window {
         }
     }
 
+    PopupDialog {
+        id: referenceContextDialog
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: false
+        modal: true
+    }
+
     Rectangle {
         id: conversation
         color: theme.backgroundLight
@@ -552,10 +604,11 @@ Window {
                     Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
 
                     delegate: TextArea {
-                        text: value
+                        text: value + references
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
+                        textFormat: TextEdit.MarkdownText
                         focus: false
                         readOnly: true
                         font.pixelSize: theme.fontSizeLarge
@@ -577,17 +630,37 @@ Window {
                         leftPadding: 100
                         rightPadding: 100
 
-                        BusyIndicator {
+                        onLinkActivated: function (link) {
+                            if (!link.startsWith("context://"))
+                                return
+                            var integer = parseInt(link.split("://")[1]);
+                            referenceContextDialog.text = referencesContext[integer - 1];
+                            referenceContextDialog.open();
+                        }
+
+                        Item {
                             anchors.left: parent.left
                             anchors.leftMargin: 90
                             anchors.top: parent.top
                             anchors.topMargin: 5
                             visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
-                            running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
-
-                            Accessible.role: Accessible.Animation
-                            Accessible.name: qsTr("Busy indicator")
-                            Accessible.description: qsTr("Displayed when the model is thinking")
+                            width: childrenRect.width
+                            height: childrenRect.height
+                            Row {
+                                spacing: 5
+                                BusyIndicator {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
+                                    Accessible.role: Accessible.Animation
+                                    Accessible.name: qsTr("Busy indicator")
+                                    Accessible.description: qsTr("Displayed when the model is thinking")
+                                }
+                                Label {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: currentChat.responseState + "..."
+                                    color: theme.mutedTextColor
+                                }
+                            }
                         }
 
                         Rectangle {
@@ -649,6 +722,9 @@ Window {
                                         anchors.fill: parent
                                         source: "qrc:/gpt4all/icons/thumbs_up.svg"
                                     }
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: qsTr("Thumbs up")
+                                    Accessible.description: qsTr("Gives a thumbs up to the response")
                                     onClicked: {
                                         if (thumbsUpState && !thumbsDownState)
                                             return
@@ -682,6 +758,9 @@ Window {
                                         anchors.fill: parent
                                         source: "qrc:/gpt4all/icons/thumbs_down.svg"
                                     }
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: qsTr("Thumbs down")
+                                    Accessible.description: qsTr("Opens thumbs down dialog")
                                     onClicked: {
                                         thumbsDownDialog.open()
                                     }
@@ -797,7 +876,7 @@ Window {
                 wrapMode: Text.WordWrap
                 font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Send a message...")
-                placeholderTextColor: theme.backgroundLightest
+                placeholderTextColor: theme.mutedTextColor
                 background: Rectangle {
                     color: theme.backgroundLighter
                     radius: 10
