@@ -8,7 +8,7 @@ The golang bindings have been tested on:
 
 ```
 import (
-	"github.com/nomic/gpt4all/gpt4all-bindings/golang"
+	"github.com/nomic-ai/gpt4all/gpt4all-bindings/golang"
 )
 
 func main() {
