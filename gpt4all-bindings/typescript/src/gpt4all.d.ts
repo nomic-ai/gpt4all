@@ -80,6 +80,8 @@ declare class LLModel {
       * @returns The result of the model prompt.
      */
     raw_prompt(q: string, params?: Partial<LLModelPromptContext>) : unknown; //todo work on return type
+
+    isModelLoaded() : boolean;
     
 }
 
@@ -151,12 +153,31 @@ type PromptTemplate = (...args: string[]) => string;
 declare function createCompletion(
     model: LLModel,
     pt: PromptTemplate,
-    options: LLModelPromptContext&ExtendedOptions 
+    options: Partial<LLModelPromptContext>&ExtendedOptions 
 ) : string
 
-function prompt(
-    strings: TemplateStringsArray
+declare function prompt(
+    strings: TemplateStringsArray,
+    ...keys: (string | number)[]
 ): PromptTemplate
 
 
-export { LLModel, LLModelPromptContext, ModelType, download, DownloadController, prompt, ExtendedOptions, createCompletion }
+declare function createTokenStream(
+    pt: PromptTemplate, options: LLModelPromptContext&ExtendedOptions
+): (ll: LLModel) => AsyncGenerator<string>
+
+export {
+    LLModel,
+    LLModelPromptContext,
+    ModelType,
+    download,
+    DownloadController,
+    prompt,
+    ExtendedOptions,
+    createCompletion,
+    createTokenStream,
+    ModelType 
+};
+
+
+

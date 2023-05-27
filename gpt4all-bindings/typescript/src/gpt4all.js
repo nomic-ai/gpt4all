@@ -1,11 +1,16 @@
+'use strict';
 /// This file implements the gpt4all.d.ts file endings.
 /// Written in commonjs to support both ESM and CJS projects.
-
+const { EventEmitter } = require('node:events');
 const { LLModel } = require('bindings')('../build/Release/gpt4allts');
 const { createWriteStream, existsSync } = require('fs');
 const { join } = require('path');
 const { performance } = require('node:perf_hooks');
 
+///
+   Reflect.setPrototypeOf(LLModel.prototype, EventEmitter.prototype);
+
+///   
 
 
 // readChunks() reads from the provided reader and yields the results into an async iterable
@@ -91,10 +96,7 @@ exports.prompt = function prompt(strings, ...keys) {
   };
 }
 
-
-
-exports.createCompletion = function (llmodel, promptMaker, options) {
-    //creating the keys to insert into promptMaker.
+function createPrompt (promptMaker, options) {
     const entries = { 
         system: options.system ?? '',
         header: options.header ?? "### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.\n### Prompt: ",
@@ -107,6 +109,15 @@ exports.createCompletion = function (llmodel, promptMaker, options) {
     if(options.verbose) {
        console.log("sending prompt: " + `"${fullPrompt}"`) 
     }
+   return { options, fullPrompt } ;
+}
+
+exports.createCompletion = function (llmodel, promptMaker, inoptions) {
+    //creating the keys to insert into promptMaker.
+    const { fullPrompt, options } = createPrompt(promptMaker, inoptions); 
     
-    return llmodel.raw_prompt(fullPrompt, options);
+    return llmodel.raw_prompt(fullPrompt, options, (tid, resp) => {
+        process.stdout.write(resp);
+        return true;
+    });
 }
