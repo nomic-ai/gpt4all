@@ -1,19 +1,22 @@
 {
   "name": "gpt4all-ts",
+  "version": "2.0.0",
   "packageManager": "yarn@3.5.1",
-  "gypfile": true,
+  "main": "src/gpt4all.js",
   "scripts": {
-    "test": "node ./test/index.mjs"
+    "test": "node ./test/index.mjs",
+    "install": "node-gyp-build",
+    "prebuild": "prebuildify --napi"
   },
   "dependencies": {
-    "bindings": "^1.5.0",
-    "node-addon-api": "^6.1.0"
+    "node-addon-api": "^6.1.0",
+    "node-gyp-build": "^4.6.0"
   },
   "devDependencies": {
-    "@types/node": "^20.1.5"
+    "@types/node": "^20.1.5",
+    "prebuildify": "^5.0.1"
   },
   "engines": {
     "node": ">= 18.x.x"
   }
-
 }

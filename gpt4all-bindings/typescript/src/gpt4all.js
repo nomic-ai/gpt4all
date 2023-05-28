@@ -2,10 +2,10 @@
 
 /// This file implements the gpt4all.d.ts file endings.
 /// Written in commonjs to support both ESM and CJS projects.
-    
-const { LLModel } = require('bindings')('../build/Release/gpt4allts');
+const { EventEmitter } = require('node:events');
+const path = require('path');
+const { LLModel } = require('node-gyp-build')(path.resolve(__dirname, '..'));
 const { createWriteStream, existsSync } = require('fs');
-const { join } = require('path');
 const { performance } = require('node:perf_hooks');
 
 
@@ -33,7 +33,7 @@ exports.download = function (
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const pathToModel = join(options.location, name);
+    const pathToModel = path.join(options.location, name);
     if(existsSync(pathToModel)) {
         throw Error("Path to model already exists");
     }
