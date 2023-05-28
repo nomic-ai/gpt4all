@@ -6,6 +6,23 @@
 #include <fstream>
 #include <filesystem>
 
+
+
+static bool requires_avxonly() {
+#ifdef __x86_64__
+    return !__builtin_cpu_supports("avx2") && !__builtin_cpu_supports("fma");
+#else
+    #ifdef __x86_64__
+        int cpuInfo[4];
+        __cpuidex(cpuInfo, 7, 0);
+        return !(cpuInfo[1] & (1 << 5));
+    #else
+        return false;  // Windows doesn't support detection on architectures other than x86_64
+    #endif
+#endif
+}
+
+
 static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVariant) {
     // Collect all model implementation libraries
     // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
@@ -54,14 +71,6 @@ static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVa
     }
     // Nothing found, so return nothing
     return nullptr;
-}
-
-static bool requires_avxonly() {
-#ifdef __x86_64__
-    return !__builtin_cpu_supports("avx2") && !__builtin_cpu_supports("fma");
-#else
-    return false;  // Don't know how to handle ARM
-#endif
 }
 
 LLModel *LLModel::construct(const std::string &modelPath, std::string buildVariant) {
