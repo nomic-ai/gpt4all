@@ -27,6 +27,7 @@ project(llmodel VERSION ${LLMODEL_VERSION} LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set(CMAKE_VERBOSE_MAKEFILE ON)
 set(BUILD_SHARED_LIBS ON)
 
 # Check for IPO support
@@ -38,18 +39,31 @@ else()
     message(STATUS "Interprocedural optimization support detected")
 endif()
 
+# llama.cpp base configuration
+set(LLAMA_LTO ${IPO_SUPPORTED})
 include(llama.cpp.cmake)
 
-set(BUILD_VARIANTS default avxonly)
+# Build variant list
+set(BUILD_VARIANTS default avxonly cuda opencl)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(BUILD_VARIANTS ${BUILD_VARIANTS} metal)
 endif()
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+# Detect CUDA
+find_package(CUDAToolkit)
+if (CUDAToolkit_FOUND)
+    list(APPEND BUILD_VARIANTS cuda)
+endif()
+
+# Detect opencl
+find_package(CLBlast)
+if (CLBlast_FOUND)
+    list(APPEND BUILD_VARIANTS opencl)
+endif()
 
 # Go through each build variant
 foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
-    # Determine flags
+    # avxonly configuration
     if (BUILD_VARIANT STREQUAL avxonly)
         set(GPT4ALL_ALLOW_NON_AVX NO)
     else()
@@ -59,19 +73,40 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     set(LLAMA_F16C ${GPT4ALL_ALLOW_NON_AVX})
     set(LLAMA_FMA  ${GPT4ALL_ALLOW_NON_AVX})
 
+    # metal configuration
     if (BUILD_VARIANT STREQUAL metal)
         set(LLAMA_METAL YES)
+        set(LLAMA_GPU YES)
     else()
         set(LLAMA_METAL NO)
+        set(LLAMA_GPU NO)
+    endif()
+
+    # cuda configuration
+    if (BUILD_VARIANT STREQUAL cuda)
+        set(LLAMA_CUBLAS YES)
+        set(LLAMA_GPU YES)
+    else()
+        set(LLAMA_CUBLAS NO)
+        set(LLAMA_GPU NO)
+    endif()
+
+    # opencl configuration
+    if (BUILD_VARIANT STREQUAL opencl)
+        set(LLAMA_CLBLAST YES)
+        set(LLAMA_GPU YES)
+    else()
+        set(LLAMA_CLBLAST NO)
+        set(LLAMA_GPU NO)
     endif()
 
     # Include GGML
     set(LLAMA_K_QUANTS YES)
     include_ggml(llama.cpp-mainline -mainline-${BUILD_VARIANT} ON)
-    if (NOT LLAMA_METAL)
+    if (NOT LLAMA_GPU)
         set(LLAMA_K_QUANTS NO)
-        include_ggml(llama.cpp-230511 -230511-${BUILD_VARIANT} ON)
         include_ggml(llama.cpp-230519 -230519-${BUILD_VARIANT} ON)
+        include_ggml(llama.cpp-230511 -230511-${BUILD_VARIANT} ON)
     endif()
 
     # Function for preparing individual implementations
@@ -101,7 +136,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     replit.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
     prepare_target(replit-mainline llama-mainline)
 
-    if (NOT LLAMA_METAL)
+    if (NOT GPU)
         add_library(llamamodel-230519-${BUILD_VARIANT} SHARED
             llamamodel.cpp llmodel_shared.cpp)
         target_compile_definitions(llamamodel-230519-${BUILD_VARIANT} PRIVATE
