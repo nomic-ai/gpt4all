@@ -332,15 +332,31 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     responseObject.insert("model", modelName());
 
     QJsonArray choices;
-    int index = 0;
-    for (QString r : responses) {
-        QJsonObject choice;
-        choice.insert("text", r);
-        choice.insert("index", index++);
-        choice.insert("logprobs", QJsonValue::Null); // We don't support
-        choice.insert("finish_reason", responseTokens == max_tokens ? "length" : "stop");
-        choices.append(choice);
+
+    if (isChat) {
+        int index = 0;
+        for (QString r : responses) {
+            QJsonObject choice;
+            choice.insert("index", index++);
+            choice.insert("finish_reason", responseTokens == max_tokens ? "length" : "stop");
+            QJsonObject message;
+            message.insert("role", "assistant");
+            message.insert("content", r);
+            choice.insert("message", message);
+            choices.append(choice);
+        }
+    } else {
+        int index = 0;
+        for (QString r : responses) {
+            QJsonObject choice;
+            choice.insert("text", r);
+            choice.insert("index", index++);
+            choice.insert("logprobs", QJsonValue::Null); // We don't support
+            choice.insert("finish_reason", responseTokens == max_tokens ? "length" : "stop");
+            choices.append(choice);
+        }
     }
+
     responseObject.insert("choices", choices);
 
     QJsonObject usage;
