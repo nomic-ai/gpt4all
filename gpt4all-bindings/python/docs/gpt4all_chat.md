@@ -6,6 +6,8 @@ It is optimized to run 7-13B parameter LLMs on the CPU's of any computer running
 
 
 ## Plugins
+GPT4All Chat Plugins allow you to expand the capabilities of Local LLMs. All plugins are compatible with the
+chat clients server mode.
 
 ### LocalDocs Plugin (Chat With Your Data)
 LocalDocs is a GPT4All plugin that allows you to chat with your local files and data.
@@ -24,8 +26,12 @@ add more files to your collection, your LLM will dynamically be able to access t
 ### How it works
 LocalDocs works by maintaining an index of all data in the directory your collection is linked to. This index
 consists of small chunks of each document that the LLM can receive as additional input when you ask it a question.
+This helps it respond to your queries with knowledge about the contents of your data.
 The number of chunks and the size of each chunk can be configured in the LocalDocs plugin settings tab.
-
+For indexing speed purposes, LocalDocs uses pre-deep-learning n-gram and tfidf based retrieval when deciding
+what documents your LLM should have as context in response to a question. You'll find its of comparable quality
+with embedding based retrieval approaches but magnitudes faster to ingest data. Don't worry, embedding based semantic
+search for retrieval is on the roadmap for those with more powerful computers - pick up the feature on Github!
 
 
 ## Server Mode
