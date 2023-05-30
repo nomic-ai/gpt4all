@@ -22,7 +22,7 @@ struct ModelInfo {
     Q_PROPERTY(bool bestMPT MEMBER bestMPT)
     Q_PROPERTY(bool isChatGPT MEMBER isChatGPT)
     Q_PROPERTY(QString description MEMBER description)
-    Q_PROPERTY(QString requires MEMBER requires)
+    Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
 
 public:
     QString filename;
@@ -36,7 +36,7 @@ public:
     bool bestMPT = false;
     bool isChatGPT = false;
     QString description;
-    QString requires;
+    QString requiresVersion;
 };
 Q_DECLARE_METATYPE(ModelInfo)
 

@@ -1,7 +1,6 @@
 """
 Python only API for running all GPT4All models.
 """
-import json
 import os
 from pathlib import Path
 import time
@@ -14,6 +13,7 @@ from . import pyllmodel
 
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
+
 
 class GPT4All():
     """Python API for retrieving and interacting with GPT4All models.
@@ -56,12 +56,11 @@ class GPT4All():
         Returns:
             Model list in JSON format.
         """
-        response = requests.get("https://gpt4all.io/models/models.json")
-        model_json = json.loads(response.content)
-        return model_json
+        return requests.get("https://gpt4all.io/models/models.json").json()
 
     @staticmethod
-    def retrieve_model(model_name: str, model_path: str = None, allow_download: bool = True) -> str:
+    def retrieve_model(model_name: str, model_path: str = None, allow_download: bool = True,
+                       verbose: bool = True) -> str:
         """
         Find model file, and if it doesn't exist, download the model.
 
@@ -70,57 +69,53 @@ class GPT4All():
             model_path: Path to find model. Default is None in which case path is set to
                 ~/.cache/gpt4all/.
             allow_download: Allow API to download model from gpt4all.io. Default is True.
+            verbose: If True (default), print debug messages.
 
         Returns:
             Model file destination.
         """
-        
-        model_filename = model_name
-        if ".bin" not in model_filename:
-            model_filename += ".bin"
+
+        model_filename = append_bin_suffix_if_missing(model_name)
 
         # Validate download directory
-        if model_path == None:
+        if model_path is None:
+            try:
+                os.makedirs(DEFAULT_MODEL_DIRECTORY, exist_ok=True)
+            except OSError as exc:
+                raise ValueError(f"Failed to create model download directory at {DEFAULT_MODEL_DIRECTORY}: {exc}. "
+                                 "Please specify model_path.")
             model_path = DEFAULT_MODEL_DIRECTORY
-            if not os.path.exists(DEFAULT_MODEL_DIRECTORY):
-                try:
-                    os.makedirs(DEFAULT_MODEL_DIRECTORY)
-                except:
-                    raise ValueError("Failed to create model download directory at ~/.cache/gpt4all/. \
-                    Please specify download_dir.")
         else:
             model_path = model_path.replace("\\", "\\\\")
 
-        if os.path.exists(model_path):
-            model_dest = os.path.join(model_path, model_filename).replace("\\", "\\\\")
-            if os.path.exists(model_dest):
-                print("Found model file.")
-                return model_dest
+        if not os.path.exists(model_path):
+            raise ValueError(f"Invalid model directory: {model_path}")
 
-            # If model file does not exist, download
-            elif allow_download: 
-                # Make sure valid model filename before attempting download
-                model_match = False
-                for item in GPT4All.list_models():
-                    if model_filename == item["filename"]:
-                        model_match = True
-                        break
-                if not model_match:
-                    raise ValueError(f"Model filename not in model list: {model_filename}")
-                return GPT4All.download_model(model_filename, model_path)
-            else:
-                raise ValueError("Failed to retrieve model")
+        model_dest = os.path.join(model_path, model_filename).replace("\\", "\\\\")
+        if os.path.exists(model_dest):
+            if verbose:
+                print("Found model file at ", model_dest)
+            return model_dest
+
+        # If model file does not exist, download
+        elif allow_download:
+            # Make sure valid model filename before attempting download
+            available_models = GPT4All.list_models()
+            if model_filename not in (m["filename"] for m in available_models):
+                raise ValueError(f"Model filename not in model list: {model_filename}")
+            return GPT4All.download_model(model_filename, model_path, verbose = verbose)
         else:
-            raise ValueError("Invalid model directory")
-        
+            raise ValueError("Failed to retrieve model")
+
     @staticmethod
-    def download_model(model_filename: str, model_path: str) -> str:
+    def download_model(model_filename: str, model_path: str, verbose: bool = True) -> str:
         """
         Download model from https://gpt4all.io.
 
         Args:
             model_filename: Filename of model (with .bin extension).
             model_path: Path to download model to.
+            verbose: If True (default), print debug messages.
 
         Returns:
             Model file destination.
@@ -128,31 +123,39 @@ class GPT4All():
 
         def get_download_url(model_filename):
             return f"https://gpt4all.io/models/{model_filename}"
-    
+
         # Download model
         download_path = os.path.join(model_path, model_filename).replace("\\", "\\\\")
         download_url = get_download_url(model_filename)
 
-        # TODO: Find good way of safely removing file that got interrupted.
         response = requests.get(download_url, stream=True)
         total_size_in_bytes = int(response.headers.get("content-length", 0))
-        block_size = 1048576  # 1 MB
-        progress_bar = tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
-        with open(download_path, "wb") as file:
-            for data in response.iter_content(block_size):
-                progress_bar.update(len(data))
-                file.write(data)
-        progress_bar.close()
+        block_size = 2 ** 20  # 1 MB
+
+        with tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True) as progress_bar:
+            try:
+                with open(download_path, "wb") as file:
+                    for data in response.iter_content(block_size):
+                        progress_bar.update(len(data))
+                        file.write(data)
+            except Exception:
+                if os.path.exists(download_path):
+                    if verbose:
+                        print('Cleaning up the interrupted download...')
+                    os.remove(download_path)
+                raise
 
         # Validate download was successful
         if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
             raise RuntimeError(
                 "An error occurred during download. Downloaded file may not work."
             )
+
         # Sleep for a little bit so OS can remove file lock
         time.sleep(2)
 
-        print("Model downloaded at: " + download_path)
+        if verbose:
+            print("Model downloaded at: ", download_path)
         return download_path
 
     def generate(self, prompt: str, streaming: bool = True, **generate_kwargs) -> str:
@@ -168,14 +171,14 @@ class GPT4All():
             Raw string of generated model response.
         """
         return self.model.generate(prompt, streaming=streaming, **generate_kwargs)
-    
-    def chat_completion(self, 
-                        messages: List[Dict], 
-                        default_prompt_header: bool = True, 
-                        default_prompt_footer: bool = True, 
+
+    def chat_completion(self,
+                        messages: List[Dict],
+                        default_prompt_header: bool = True,
+                        default_prompt_footer: bool = True,
                         verbose: bool = True,
                         streaming: bool = True,
-                        **generate_kwargs) -> str:
+                        **generate_kwargs) -> dict:
         """
         Format list of message dictionaries into a prompt and call model
         generate on prompt. Returns a response dictionary with metadata and
@@ -202,10 +205,10 @@ class GPT4All():
                 "choices": List of message dictionary where "content" is generated response and "role" is set
                 as "assistant". Right now, only one choice is returned by model.
         """
-       
-        full_prompt = self._build_prompt(messages, 
-                                        default_prompt_header=default_prompt_header, 
-                                        default_prompt_footer=default_prompt_footer)
+
+        full_prompt = self._build_prompt(messages,
+                                         default_prompt_header=default_prompt_header,
+                                         default_prompt_footer=default_prompt_footer)
         if verbose:
             print(full_prompt)
 
@@ -216,9 +219,9 @@ class GPT4All():
 
         response_dict = {
             "model": self.model.model_name,
-            "usage": {"prompt_tokens": len(full_prompt), 
-                      "completion_tokens": len(response), 
-                      "total_tokens" : len(full_prompt) + len(response)},
+            "usage": {"prompt_tokens": len(full_prompt),
+                      "completion_tokens": len(response),
+                      "total_tokens": len(full_prompt) + len(response)},
             "choices": [
                 {
                     "message": {
@@ -230,10 +233,10 @@ class GPT4All():
         }
 
         return response_dict
-    
+
     @staticmethod
-    def _build_prompt(messages: List[Dict], 
-                      default_prompt_header=True, 
+    def _build_prompt(messages: List[Dict],
+                      default_prompt_header=True,
                       default_prompt_footer=False) -> str:
         # Helper method to format messages into prompt.
         full_prompt = ""
@@ -275,14 +278,13 @@ class GPT4All():
             return pyllmodel.MPTModel()
         else:
             raise ValueError(f"No corresponding model for model_type: {model_type}")
-        
+
     @staticmethod
     def get_model_from_name(model_name: str) -> pyllmodel.LLModel:
         # This needs to be updated for each new model
 
         # NOTE: We are doing this preprocessing a lot, maybe there's a better way to organize
-        if ".bin" not in model_name:
-            model_name += ".bin"
+        model_name = append_bin_suffix_if_missing(model_name)
 
         GPTJ_MODELS = [
             "ggml-gpt4all-j-v1.3-groovy.bin",
@@ -312,8 +314,14 @@ class GPT4All():
             return pyllmodel.LlamaModel()
         elif model_name in MPT_MODELS:
             return pyllmodel.MPTModel()
-        else:
-            err_msg = f"""No corresponding model for provided filename {model_name}.
-            If this is a custom model, make sure to specify a valid model_type.
-            """
-            raise ValueError(err_msg)
+
+        err_msg = (f"No corresponding model for provided filename {model_name}.\n"
+                   f"If this is a custom model, make sure to specify a valid model_type.\n")
+
+        raise ValueError(err_msg)
+
+
+def append_bin_suffix_if_missing(model_name):
+    if not model_name.endswith(".bin"):
+        model_name += ".bin"
+    return model_name

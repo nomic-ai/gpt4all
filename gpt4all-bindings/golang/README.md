@@ -8,7 +8,7 @@ The golang bindings have been tested on:
 
 ```
 import (
-	"github.com/nomic/gpt4all/gpt4all-bindings/golang"
+	"github.com/nomic-ai/gpt4all/gpt4all-bindings/golang"
 )
 
 func main() {
@@ -43,7 +43,7 @@ make libgpt4all.a
 
 To use the bindings in your own software:
 
-- Import `github.com/nomic/gpt4all/gpt4all-bindings/golang`;
+- Import `github.com/nomic-ai/gpt4all/gpt4all-bindings/golang`;
 - Compile `libgpt4all.a` (you can use `make libgpt4all.a` in the bindings/go directory);
 - Link your go binary against whisper by setting the environment variables `C_INCLUDE_PATH` and `LIBRARY_PATH` to point to the `binding.h` file directory and `libgpt4all.a` file directory respectively.
 
