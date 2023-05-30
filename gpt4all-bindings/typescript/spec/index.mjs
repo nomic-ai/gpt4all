@@ -1,6 +1,4 @@
 import { LLModel, prompt, createCompletion } from '../src/gpt4all.js'
-import { EventEmitter } from 'node:events';
-import { abort } from 'process';
 
 const ll = new LLModel("./ggml-vicuna-7b-1.1-q4_2.bin");
 try {
@@ -20,17 +18,21 @@ ll.setThreadCount(4);
 console.log("thread count " + ll.threadCount());
 
 
-createCompletion(
+console.log(createCompletion(
     ll,
     prompt`${"header"} ${"prompt"}`, {
         verbose: false,
-        prompt: 'hello! Say something thought provoking.'
+        prompt: 'hello! Say something thought provoking.',
     }
-);
+))
+console.log('new prompt');
 
-createCompletion(ll, 
-    prompt`${"header"}, ${"prompt"}`, {
+console.log(createCompletion(
+    ll,
+    prompt`${"header"} ${"prompt"}`, {
         verbose: false,
-        prompt: 'hello, repeat what was said previously.'
+        prompt: 'hello! Repeat what you previously said.'
     }
-)
+))
+
+

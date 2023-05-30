@@ -2,8 +2,7 @@
   "targets": [
     {
       "target_name": "gpt4allts", # gpt4all-ts will cause compile error
-      "cflags!": [ "-fno-exceptions" ],
-      "cflags_cc!": [ "-fno-exceptions" ],
+      "cflags_cc!": [ "-fno-exceptions"],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
         "../../gpt4all-backend/llama.cpp/", # need to include llama.cpp because the include paths for examples/common.h include llama.h relatively
@@ -18,7 +17,6 @@
         "../../gpt4all-backend/gptj.cpp",
         "../../gpt4all-backend/llamamodel.cpp",
         "../../gpt4all-backend/mpt.cpp",
-        "stdcapture.cc",
         "index.cc",
        ],
       "conditions": [
@@ -40,6 +38,16 @@
                     ], 
                 },  
             },
+        }],
+        ['OS=="linux"', {
+            'defines': [
+                'NAPI_CPP_EXCEPTIONS'
+            ],
+            'cflags': [
+                '-fno-rtti'
+            ]
+
+
         }]
       ]
     }]

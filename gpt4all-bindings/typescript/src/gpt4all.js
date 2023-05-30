@@ -1,16 +1,10 @@
 'use strict';
 /// This file implements the gpt4all.d.ts file endings.
 /// Written in commonjs to support both ESM and CJS projects.
-const { EventEmitter } = require('node:events');
 const { LLModel } = require('bindings')('../build/Release/gpt4allts');
 const { createWriteStream, existsSync } = require('fs');
 const { join } = require('path');
 const { performance } = require('node:perf_hooks');
-
-///
-   Reflect.setPrototypeOf(LLModel.prototype, EventEmitter.prototype);
-
-///   
 
 
 // readChunks() reads from the provided reader and yields the results into an async iterable
@@ -116,8 +110,6 @@ exports.createCompletion = function (llmodel, promptMaker, inoptions) {
     //creating the keys to insert into promptMaker.
     const { fullPrompt, options } = createPrompt(promptMaker, inoptions); 
     
-    return llmodel.raw_prompt(fullPrompt, options, (tid, resp) => {
-        process.stdout.write(resp);
-        return true;
-    });
+    return llmodel.raw_prompt(fullPrompt, options);
+    
 }
