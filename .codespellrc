@@ -1,4 +1,4 @@
 [codespell]
-skip = .git,*.pdf,*.svg,*_tokenizer_config.h
+skip = .git,*.pdf,*.svg
 #
 # ignore-words-list =
