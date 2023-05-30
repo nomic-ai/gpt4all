@@ -17,8 +17,8 @@ public:
     virtual bool loadModel(const std::string &modelPath) = 0;
     virtual bool isModelLoaded() const = 0;
     virtual size_t stateSize() const { return 0; }
-    virtual size_t saveState(uint8_t *dest) const { return 0; }
-    virtual size_t restoreState(const uint8_t *src) { return 0; }
+    virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
+    virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
     struct PromptContext {
         std::vector<float> logits;      // logits of current context
         std::vector<int32_t> tokens;    // current tokens in the context window
@@ -39,7 +39,7 @@ public:
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx) = 0;
-    virtual void setThreadCount(int32_t n_threads) {}
+    virtual void setThreadCount(int32_t /*n_threads*/) {}
     virtual int32_t threadCount() const { return 1; }
 
     const char *getModelType() const {
