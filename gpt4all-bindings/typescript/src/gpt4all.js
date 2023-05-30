@@ -1,6 +1,8 @@
 'use strict';
+
 /// This file implements the gpt4all.d.ts file endings.
 /// Written in commonjs to support both ESM and CJS projects.
+    
 const { LLModel } = require('bindings')('../build/Release/gpt4allts');
 const { createWriteStream, existsSync } = require('fs');
 const { join } = require('path');
@@ -89,27 +91,76 @@ exports.prompt = function prompt(strings, ...keys) {
     return result.join("");
   };
 }
+/** 
+  * 
+  *
+  */
+function createPrompt (messages, hasDefaultHeader, hasDefaultFooter) {
+    let fullPrompt = "";
 
-function createPrompt (promptMaker, options) {
-    const entries = { 
-        system: options.system ?? '',
-        header: options.header ?? "### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.\n### Prompt: ",
-        prompt: options.prompt,
-        ...(options.promptEntries ?? {})
-    };
-    
-    const fullPrompt = promptMaker(entries)+'\n### Response:';
-
-    if(options.verbose) {
-       console.log("sending prompt: " + `"${fullPrompt}"`) 
+    for(const message of messages) {
+        if(message.role === 'system') {
+            const systemMessage = message.content + "\n";
+            fullPrompt+= systemMessage;
+        }
     }
-   return { options, fullPrompt } ;
+    if(hasDefaultHeader) {
+        fullPrompt+= `### Instruction: 
+            The prompt below is a question to answer, a task to complete, or a conversation 
+            to respond to; decide which and write an appropriate response.
+            \n### Prompt: 
+        `;
+    }
+    for(const message of messages) {
+        if (message.role === "user") {
+            const user_message = "\n" + message["content"];
+            fullPrompt += user_message;
+        }
+        if (message["role"] == "assistant") {
+            const assistant_message = "\n### Response: " + message["content"];
+            fullPrompt += assistant_message;
+        }
+    }
+    if(hasDefaultFooter) {
+        fullPrompt += "\n### Response:";
+    }
+
+    return fullPrompt;
 }
 
-exports.createCompletion = function (llmodel, promptMaker, inoptions) {
+
+
+
+exports.createCompletion = function (
+    llmodel,
+    messages,
+    options = {
+       hasDefaultHeader: true,
+       hasDefaultFooter: false,
+       verbose : true
+    },
+) {
     //creating the keys to insert into promptMaker.
-    const { fullPrompt, options } = createPrompt(promptMaker, inoptions); 
-    
-    return llmodel.raw_prompt(fullPrompt, options);
+    const fullPrompt = createPrompt(messages, options.hasDefaultHeader, options.hasDefaultFooter);
+    const response = '';
+    if(options.verbose) {
+        console.log(fullPrompt);
+    }
+    return {
+        llmodel : llmodel.name(),
+        usage : {
+            prompt_tokens: fullPrompt.length(),
+            completion_tokens: 0, //TODO
+            total_tokens: fullPrompt.length() + 0 //TODO
+        },
+        choices: [
+            {
+              "message": {
+                "role": "assistant",
+                "content": response
+                }
+            }
+        ]
+    }
     
 }
