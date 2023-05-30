@@ -14,11 +14,10 @@ Button {
         Accessible.name: text
     }
     background: Rectangle {
-        opacity: .5
-        border.color: theme.backgroundLightest
-        border.width: 1
+        border.color: myButton.down ? theme.backgroundLightest : theme.buttonBorder
+        border.width: 2
         radius: 10
-        color: theme.backgroundLight
+        color: myButton.hovered ? theme.backgroundLighter : theme.backgroundLight
     }
     Accessible.role: Accessible.Button
     Accessible.name: text

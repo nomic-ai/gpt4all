@@ -12,6 +12,7 @@ QtObject {
     property color backgroundLight: "#343541"
     property color backgroundLighter: "#444654"
     property color backgroundLightest: "#7d7d8e"
+    property color buttonBorder: "#565869"
     property color dialogBorder: "#d1d5db"
     property color userColor: "#ec86bf"
     property color assistantColor: "#10a37f"
