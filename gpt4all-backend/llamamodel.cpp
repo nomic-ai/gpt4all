@@ -203,20 +203,19 @@ void LLamaModel::prompt(const std::string &prompt,
 
     // process the prompt in batches
     size_t i = 0;
-    const int64_t t_start_prompt_us = ggml_time_us();
     while (i < embd_inp.size()) {
         size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
         std::vector<llama_token> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
 
         // Check if the context has run out...
-        if (promptCtx.n_past + batch.size() > promptCtx.n_ctx) {
+        if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
             const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
             // Erase the first percentage of context from the tokens...
             std::cerr << "LLAMA: reached the end of the context window so resizing\n";
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
             recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
+            assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
         }
 
         if (llama_eval(d_ptr->ctx, batch.data(), batch.size(), promptCtx.n_past, d_ptr->n_threads)) {
@@ -226,7 +225,7 @@ void LLamaModel::prompt(const std::string &prompt,
 
         size_t tokens = batch_end - i;
         for (size_t t = 0; t < tokens; ++t) {
-            if (promptCtx.tokens.size() == promptCtx.n_ctx)
+            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(batch.at(t));
             if (!promptCallback(batch.at(t)))
@@ -242,7 +241,6 @@ void LLamaModel::prompt(const std::string &prompt,
         = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant" };
 
     // predict next tokens
-    int32_t totalPredictions = 0;
     for (int i = 0; i < promptCtx.n_predict; i++) {
         // sample next token
         const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
@@ -269,7 +267,6 @@ void LLamaModel::prompt(const std::string &prompt,
 
         promptCtx.n_past += 1;
         // display text
-        ++totalPredictions;
         if (id == llama_token_eos())
             return;
 
@@ -300,7 +297,7 @@ void LLamaModel::prompt(const std::string &prompt,
 
         // Empty the cache
         for (auto t : cachedTokens) {
-            if (promptCtx.tokens.size() == promptCtx.n_ctx)
+            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
             if (!responseCallback(t, llama_token_to_str(d_ptr->ctx, t)))
@@ -318,7 +315,7 @@ void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool
         size_t batch_end = std::min(i + promptCtx.n_batch, promptCtx.tokens.size());
         std::vector<llama_token> batch(promptCtx.tokens.begin() + i, promptCtx.tokens.begin() + batch_end);
 
-        assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
+        assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
 
         if (llama_eval(d_ptr->ctx, batch.data(), batch.size(), promptCtx.n_past, d_ptr->n_threads)) {
             std::cerr << "LLAMA ERROR: Failed to process prompt\n";
@@ -329,7 +326,7 @@ void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool
             goto stop_generating;
         i = batch_end;
     }
-    assert(promptCtx.n_past == promptCtx.tokens.size());
+    assert(promptCtx.n_past == int32_t(promptCtx.tokens.size()));
 
 stop_generating:
     recalculate(false);
