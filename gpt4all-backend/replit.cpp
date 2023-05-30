@@ -114,16 +114,15 @@ std::string replace_all(const std::string & str,    // where to work
                         const std::string & find,   // substitute 'find'
                         const std::string & replace //      by 'replace'
 ) {
-    using namespace std;
-    string result;
+    std::string result;
     size_t find_len = find.size();
     size_t pos, from = 0;
-    while (string::npos != (pos = str.find(find, from))) {
+    while (std::string::npos != (pos = str.find(find, from))) {
         result.append(str, from, pos - from);
         result.append(replace);
         from = pos + find_len;
     }
-    result.append(str, from, string::npos);
+    result.append(str, from, std::string::npos);
     return result;
 }
 
@@ -230,16 +229,13 @@ static bool kv_cache_init(
 
     const int64_t n_mem      = (int64_t)n_layer*n_ctx;
     const int64_t n_elements = n_embd*n_mem;
-
     cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2u*MB);
-
     struct ggml_init_params params;
     params.mem_size   = cache.buf.size;
     params.mem_buffer = cache.buf.addr;
     params.no_alloc   = false;
-
+    
     cache.ctx = ggml_init(params);
-
     if (!cache.ctx) {
         fprintf(stderr, "%s: failed to allocate memory for kv cache\n", __func__);
         return false;
@@ -247,7 +243,6 @@ static bool kv_cache_init(
 
     cache.k = ggml_new_tensor_1d(cache.ctx, wtype, n_elements);
     cache.v = ggml_new_tensor_1d(cache.ctx, wtype, n_elements);
-
     return true;
 }
 
