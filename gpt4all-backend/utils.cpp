@@ -218,7 +218,6 @@ bool gpt_vocab_init(const std::string & fname, gpt_vocab & vocab) {
 }
 
 gpt_vocab::id gpt_sample_top_k_top_p(
-        const gpt_vocab & vocab,
         const size_t actualVocabSize,
         const int32_t * last_n_tokens_data,
         int   last_n_tokens_size,
