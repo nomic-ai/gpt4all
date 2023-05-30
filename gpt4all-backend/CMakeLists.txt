@@ -23,7 +23,6 @@ set(LLMODEL_VERSION "${LLMODEL_VERSION_MAJOR}.${LLMODEL_VERSION_MINOR}.${LLMODEL
 project(llmodel VERSION ${LLMODEL_VERSION} LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 17)
 
 set(LLAMA_BUILD_EXAMPLES ON CACHE BOOL "llama: build examples" FORCE)
 set(BUILD_SHARED_LIBS ON FORCE)
@@ -35,7 +34,6 @@ if (GPT4ALL_AVX_ONLY)
     set(LLAMA_FMA  OFF CACHE BOOL "llama: enable FMA" FORCE)
 endif()
 
-find_package(ICU REQUIRED COMPONENTS uc i18n)
 add_subdirectory(llama.cpp)
 
 add_library(llmodel
@@ -43,14 +41,12 @@ add_library(llmodel
     llamamodel.h llamamodel.cpp
     llama.cpp/examples/common.cpp
     llmodel.h llmodel_c.h llmodel_c.cpp
-    mpt.h mpt.cpp tokenizer/bpe.cpp tokenizer/bpe.h
-    tokenizer/mpt_tokenizer_config.h tokenizer/gptj_tokenizer_config.h
+    mpt.h mpt.cpp
     utils.h utils.cpp
 )
 
 target_link_libraries(llmodel
-    PRIVATE llama
-    PUBLIC ICU::uc ICU::i18n)
+    PRIVATE llama)
 
 set_target_properties(llmodel PROPERTIES
                               VERSION ${PROJECT_VERSION}

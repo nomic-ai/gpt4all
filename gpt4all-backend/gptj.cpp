@@ -7,7 +7,6 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <filesystem>
 #include <fstream>
 #include <map>
 #include <string>
@@ -861,8 +860,6 @@ bool GPTJ::loadModel(const std::string &modelPath) {
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
     fflush(stdout);
-    
-    get_bpecpp_tokenizer(TokenizerType::GPTJ, m_bpe, m_tokav);
     return true;
 }
 
@@ -918,7 +915,7 @@ void GPTJ::prompt(const std::string &prompt,
     int64_t t_prompt_us = 0;
 
     // tokenize the prompt
-    std::vector<uint32_t> embd_inp = m_tokav->encode(prompt, *m_bpe);
+    std::vector<gpt_vocab::id> embd_inp = ::gpt_tokenize(d_ptr->vocab, prompt);
 
     // save the context size
     promptCtx.n_ctx = d_ptr->model->hparams.n_ctx;
@@ -1035,7 +1032,7 @@ void GPTJ::prompt(const std::string &prompt,
         if (id == 50256 /*end of text*/)
             goto stop_generating;
 
-        const std::string str = m_tokav->decode({(uint32_t) id}, *m_bpe, true, false);
+        const std::string str = d_ptr->vocab.id_to_token[id];
 
         // Check if the provided str is part of our reverse prompts
         bool foundPartialReversePrompt = false;
@@ -1065,8 +1062,7 @@ void GPTJ::prompt(const std::string &prompt,
             if (promptCtx.tokens.size() == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
-            const std::string decoded = m_tokav->decode({(uint32_t) t}, *m_bpe, true, false);
-            if (!responseCallback(t, decoded))
+            if (!responseCallback(t, d_ptr->vocab.id_to_token[t]))
                 goto stop_generating;
         }
         cachedTokens.clear();

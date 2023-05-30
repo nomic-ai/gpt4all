@@ -7,7 +7,6 @@
 #include <vector>
 #include <random>
 #include <thread>
-#include "tokenizer/bpe.h"
 
 //
 // CLI argument parsing
@@ -52,6 +51,26 @@ struct gpt_vocab {
     }
 };
 
+void replace(std::string & str, const std::string & needle, const std::string & replacement);
+
+// poor-man's JSON parsing
+std::map<std::string, int32_t> json_parse(const std::string & fname);
+
+// split text into tokens
+//
+// ref: https://github.com/openai/gpt-2/blob/a74da5d99abaaba920de8131d64da2862a8f213b/src/encoder.py#L53
+//
+// Regex (Python):
+// r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
+//
+// Regex (C++):
+// R"('s|'t|'re|'ve|'m|'ll|'d| ?[[:alpha:]]+| ?[[:digit:]]+| ?[^\s[:alpha:][:digit:]]+|\s+(?!\S)|\s+)"
+//
+std::vector<gpt_vocab::id> gpt_tokenize(const gpt_vocab & vocab, const std::string & text);
+
+// load the tokens from encoder.json
+bool gpt_vocab_init(const std::string & fname, gpt_vocab & vocab);
+
 // sample next token given probabilities for each embedding
 //
 //   - consider only the top K tokens
@@ -70,9 +89,3 @@ gpt_vocab::id gpt_sample_top_k_top_p(
         double temp,
         float repeat_penalty,
         std::mt19937 & rng);
-
-enum TokenizerType {
-    MPT, MPT_CHAT, GPTJ 
-};
-
-void get_bpecpp_tokenizer(const TokenizerType ttype, std::unique_ptr<bpecpp::BPE>& bpe, std::unique_ptr<bpecpp::AdditionalVocabAdapter>& av);
