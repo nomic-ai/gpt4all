@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Gpt4All.Bindings;
+﻿namespace Gpt4All.Bindings;
 
 /// <summary>
 /// Wrapper around the llmodel_prompt_context structure for holding the prompt context.
