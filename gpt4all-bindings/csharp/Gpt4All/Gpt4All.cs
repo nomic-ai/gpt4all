@@ -7,19 +7,33 @@ public class Gpt4All : IGpt4AllModel
 {
     private readonly ILLModel _model;
 
+    /// <inheritdoc/>
+    public IPromptFormatter? PromptFormatter { get; set; }
+
     internal Gpt4All(ILLModel model)
     {
         _model = model;
+        PromptFormatter = new DefaultPromptFormatter();
+    }
+
+    private string FormatPrompt(string prompt)
+    {
+        if (PromptFormatter == null) return prompt;
+
+        return PromptFormatter.FormatPrompt(prompt);
     }
 
     public Task<ITextPredictionResult> GetPredictionAsync(string text, PredictRequestOptions opts, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(text);
+
         return Task.Run(() =>
         {
             var result = new TextPredictionResult();
             var context = opts.ToPromptContext();
+            var prompt = FormatPrompt(text);
 
-            _model.Prompt(text, context, responseCallback: e =>
+            _model.Prompt(prompt, context, responseCallback: e =>
             {
                 if (e.IsError)
                 {
@@ -37,6 +51,8 @@ public class Gpt4All : IGpt4AllModel
 
     public Task<ITextPredictionStreamingResult> GetStreamingPredictionAsync(string text, PredictRequestOptions opts, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(text);
+
         var result = new TextPredictionStreamingResult();
 
         _ = Task.Run(() =>
@@ -44,8 +60,9 @@ public class Gpt4All : IGpt4AllModel
             try
             {
                 var context = opts.ToPromptContext();
+                var prompt = FormatPrompt(text);
 
-                _model.Prompt(text, context, responseCallback: e =>
+                _model.Prompt(prompt, context, responseCallback: e =>
                 {
                     if (e.IsError)
                     {
