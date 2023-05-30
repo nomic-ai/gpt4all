@@ -4,27 +4,15 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <algorithm>
 #include <filesystem>
 
 
 
 static
-bool requires_avxonly() {
-#ifdef __x86_64__
-    return !__builtin_cpu_supports("avx2") && !__builtin_cpu_supports("fma");
-#else
-    return false;  // Don't know how to handle ARM
-#endif
-}
-
-
-std::vector<Dlhandle> LLModel::implementations = {{}};
-
-void LLModel::loadImplementationList() {
-    // Collect all model implementation libraries if that hasn't been done yet
-    if (!implementations[0].is_valid()) {
-        implementations.clear();
+Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVariant) {
+    // Collect all model implementation libraries
+    static auto libs = [] () {
+        std::vector<Dlhandle> fres;
         // Iterate over all libraries
         for (const auto& f : std::filesystem::directory_iterator(".")) {
             // Get path
@@ -35,17 +23,14 @@ void LLModel::loadImplementationList() {
             try {
                 Dlhandle dl(p);
                 if (dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation")) {
-                    implementations.emplace_back(std::move(dl));
+                    fres.emplace_back(std::move(dl));
                 }
             } catch (...) {}
         }
-    }
-}
-
-Dlhandle *LLModel::getImplementation(std::ifstream& f, const std::string& buildVariant) {
-    loadImplementationList();
+        return fres;
+    }();
     // Iterate over all libraries
-    for (auto& dl : implementations) {
+    for (auto& dl : libs) {
         f.seekg(0);
         // Check that magic matches
         auto magic_match = dl.get<bool(std::ifstream&)>("magic_match");
@@ -64,24 +49,13 @@ Dlhandle *LLModel::getImplementation(std::ifstream& f, const std::string& buildV
     return nullptr;
 }
 
-std::vector<std::string_view> LLModel::getBuildVariantList() {
-    std::vector<std::string_view> fres;
-    loadImplementationList();
-    // Collect all build variants
-    for (auto& dl : implementations) {
-        // Get build variant getter
-        auto get_build_variant = dl.get<const char *()>("get_build_variant");
-        if (!get_build_variant) continue;
-        // Get build variant
-        std::string_view build_variant = get_build_variant();
-        // Make sure it's not listed yet
-        if (std::find(fres.begin(), fres.end(), build_variant) != fres.end())
-            continue;
-        // Add it to list
-        fres.push_back(build_variant);
-    }
-    // Return final list
-    return fres;
+static
+bool requires_avxonly() {
+#ifdef __x86_64__
+    return !__builtin_cpu_supports("avx2") && !__builtin_cpu_supports("fma");
+#else
+    return false;  // Don't know how to handle ARM
+#endif
 }
 
 LLModel *LLModel::construct(const std::string &modelPath, std::string buildVariant) {
@@ -97,7 +71,7 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     std::ifstream f(modelPath, std::ios::binary);
     if (!f) return nullptr;
     // Get correct implementation
-    auto impl = getImplementation(f, buildVariant);
+    auto impl = get_implementation(f, buildVariant);
     if (!impl) return nullptr;
     f.close();
     // Get inference constructor
