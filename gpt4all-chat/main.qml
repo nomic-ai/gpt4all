@@ -158,13 +158,27 @@ Window {
             }
         }
 
-        BusyIndicator {
+        Item {
             anchors.centerIn: parent
             visible: !currentChat.isModelLoaded && !currentChat.isServer
-            running: !currentChat.isModelLoaded && !currentChat.isServer
-            Accessible.role: Accessible.Animation
-            Accessible.name: qsTr("Busy indicator")
-            Accessible.description: qsTr("Displayed when the model is loading")
+            width: childrenRect.width
+            height: childrenRect.height
+            Row {
+                spacing: 5
+                BusyIndicator {
+                    anchors.verticalCenter: parent.verticalCenter
+                    running: parent.visible
+                    Accessible.role: Accessible.Animation
+                    Accessible.name: qsTr("Busy indicator")
+                    Accessible.description: qsTr("Displayed when the model is loading")
+                }
+
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Loading model...")
+                    color: theme.mutedTextColor
+                }
+            }
         }
     }
 
