@@ -816,7 +816,7 @@ Window {
             }
         }
 
-        Button {
+        MyButton {
             visible: chatModel.count && !currentChat.isServer
             Image {
                 anchors.verticalCenter: parent.verticalCenter
@@ -856,20 +856,8 @@ Window {
             anchors.horizontalCenter: textInputView.horizontalCenter
             anchors.bottomMargin: 40
             padding: 15
-            contentItem: Text {
-                text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
-                color: theme.textColor
-                Accessible.role: Accessible.Button
-                Accessible.name: text
-                Accessible.description: qsTr("Controls generation of the response")
-            }
-            background: Rectangle {
-                opacity: .5
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-                color: theme.backgroundLight
-            }
+            text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
+            Accessible.description: qsTr("Controls generation of the response")
         }
 
         ScrollView {
