@@ -20,19 +20,19 @@ console.log("thread count " + ll.threadCount());
 
 console.log(createCompletion(
     ll,
-    prompt`${"header"} ${"prompt"}`, {
-        verbose: false,
-        prompt: 'hello! Say something thought provoking.',
-    }
+    [
+        { role : 'system', message: 'be as annoying as possible'  },
+        { role : 'assistant', message: 'Consider the most annoying quote and say it in the most annoying way'  }, 
+    ],
 ))
 console.log('new prompt');
 
-console.log(createCompletion(
-    ll,
-    prompt`${"header"} ${"prompt"}`, {
-        verbose: false,
-        prompt: 'hello! Repeat what you previously said.'
-    }
-))
+//console.log(createCompletion(
+//    ll,
+//    prompt`${"header"} ${"prompt"}`, {
+//        verbose: false,
+//        prompt: 'hello! Repeat what you previously said.'
+//    }
+//))
 
 
