@@ -286,7 +286,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     }
 
     // don't remember any context
-    resetContextProtected();
+    resetContext();
 
     QSettings settings;
     settings.sync();
