@@ -88,7 +88,7 @@ struct buf_ref {
     uint32_t offset : 20;
     uint32_t length : 12;
 
-    std::string_view into(const char* buf) const {
+    std::string_view into(const char* buf) {
         return std::string_view(&buf[offset], length);
     }
 };
