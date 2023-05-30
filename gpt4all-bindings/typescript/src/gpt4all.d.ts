@@ -147,29 +147,58 @@ interface ExtendedOptions {
     prompt: string;
     promptEntries?: Record<string, unknown>
 }
-
+interface CompletionReturnObject {
+    model : ModelFile[ModelType];
+    usage: {
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+    };
+    choices: PromptMessage[]
+}
 type PromptTemplate = (...args: string[]) => string;
 
+/**
+ * The nodejs equivalent to python binding's chat_completion
+ * @param {LLModel} llmodel - The language model object.
+ * @param {PromptMessage[]} messages - The array of messages for the conversation.
+ * @param {{ hasDefaultHeader: boolean; hasDefaultFooter: boolean; verbose: boolean }} options - The options for creating the completion.
+ * @param {boolean} [options.hasDefaultHeader=true] - Indicates if the default header is included in the prompt.
+ * @param {boolean} [options.hasDefaultFooter=false] - Indicates if the default footer is included in the prompt.
+ * @param {boolean} [options.verbose=true] - Indicates if verbose logging is enabled.
+ * @returns {} - The completion object.
+  */
 declare function createCompletion(
     model: LLModel,
-    pt: PromptTemplate,
+    messages: PromptMessage[],
     options: Partial<LLModelPromptContext>&ExtendedOptions 
-) : string
+) : CompletionReturnObject
 
+/**
+  * Some helper function to create prompts quickly
+  * Use langchain.js instead
+  * @deprecated
+  */
 declare function prompt(
     strings: TemplateStringsArray,
     ...keys: (string | number)[]
 ): PromptTemplate
 
-
+/**
+  * HELP needed to implement this
+  */
 declare function createTokenStream(
     pt: PromptTemplate, options: LLModelPromptContext&ExtendedOptions
 ): (ll: LLModel) => AsyncGenerator<string>
 
+interface PromptMessage { 
+    role: "system" |"assistant" | "user";
+    message: string;
+}
 export {
     LLModel,
     LLModelPromptContext,
-    ModelType,
+    PromptMessage,
     download,
     DownloadController,
     prompt,
