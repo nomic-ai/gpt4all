@@ -1,11 +1,8 @@
 #ifndef LLMODEL_H
 #define LLMODEL_H
-#include "dlhandle.h"
-
 #include <string>
 #include <functional>
 #include <vector>
-#include <string_view>
 #include <cstdint>
 
 
@@ -13,6 +10,8 @@ class LLModel {
 public:
     explicit LLModel() {}
     virtual ~LLModel() {}
+
+    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
 
     virtual bool loadModel(const std::string &modelPath) = 0;
     virtual bool isModelLoaded() const = 0;
@@ -46,18 +45,11 @@ public:
         return modelType;
     }
 
-    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
-
-protected:    
+protected:
     virtual void recalculateContext(PromptContext &promptCtx,
         std::function<bool(bool)> recalculate) = 0;
 
     const char *modelType;
-
-    static std::vector<Dlhandle> implementations;
-    static void loadImplementationList();
-    static Dlhandle *getImplementation(std::ifstream& f, const std::string& buildVariant);
-    static std::vector<std::string_view> getBuildVariantList();
 };
 
 #endif // LLMODEL_H
