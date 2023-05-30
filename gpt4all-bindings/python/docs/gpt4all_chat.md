@@ -48,7 +48,7 @@ LocalDocs supports the following file types:
 ```
 
 #### LocalDocs Limitations
-LocalDocs allows your LLM to have context about the contents of your documentation collection. It cannot currently:
+LocalDocs allows your LLM to have context about the contents of your documentation collection. LocalDocs currently cannot:
 - Answer metadata queries about your documents (e.g. `What documents do you know about?`)
 - Summarize *all* of your documents. It can however write a summary informed by the contents of your documents.
 
