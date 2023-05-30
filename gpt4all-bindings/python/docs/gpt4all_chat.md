@@ -27,7 +27,7 @@ add more files to your collection, your LLM will dynamically be able to access t
 #### How LocalDocs Works
 LocalDocs works by maintaining an index of all data in the directory your collection is linked to. This index
 consists of small chunks of each document that the LLM can receive as additional input when you ask it a question.
-The general paradigm this plugin works under is called [Retrieval Augmented Generation](https://arxiv.org/abs/2005.11401).
+The general technique this plugin uses is called [Retrieval Augmented Generation](https://arxiv.org/abs/2005.11401).
 
 These document chunks help your LLM respond to queries with knowledge about the contents of your data.
 The number of chunks and the size of each chunk can be configured in the LocalDocs plugin settings tab.
