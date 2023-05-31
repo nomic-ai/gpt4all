@@ -146,7 +146,7 @@ bool ChatLLM::loadModel(const QString &modelName)
     // We have a live model, but it isn't the one we want
     bool alreadyAcquired = isModelLoaded();
     if (alreadyAcquired) {
-        resetContextProtected();
+        resetContext();
 #if defined(DEBUG_MODEL_LOADING)
         qDebug() << "already acquired model deleted" << m_chat->id() << m_modelInfo.model;
 #endif
@@ -301,12 +301,6 @@ void ChatLLM::resetResponse()
 }
 
 void ChatLLM::resetContext()
-{
-    resetContextProtected();
-    emit sendResetContext();
-}
-
-void ChatLLM::resetContextProtected()
 {
     regenerateResponse();
     m_ctx = LLModel::PromptContext();
