@@ -1,6 +1,6 @@
 #ifndef DLHANDLE_H
 #define DLHANDLE_H
-#ifndef __WIN32
+#ifndef _WIN32
 #include <string>
 #include <stdexcept>
 #include <utility>
