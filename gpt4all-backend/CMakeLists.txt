@@ -109,5 +109,9 @@ add_library(llmodel
 )
 target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
+set_target_properties(llmodel PROPERTIES
+                              VERSION ${PROJECT_VERSION}
+                              SOVERSION ${PROJECT_VERSION_MAJOR})
+
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
