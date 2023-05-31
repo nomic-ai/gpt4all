@@ -8,7 +8,9 @@
 
 static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVariant) {
     // Collect all model implementation libraries
-    static auto libs = [] () {
+    // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
+    // individual models without the cleanup of the static list interfering
+    static auto* libs = new std::vector<Dlhandle>([] () {
         std::vector<Dlhandle> fres;
 
         auto search_in_directory = [&](const std::filesystem::path& path) {
@@ -33,9 +35,9 @@ static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVa
         search_in_directory("../../../");
 #endif
         return fres;
-    }();
+    }());
     // Iterate over all libraries
-    for (auto& dl : libs) {
+    for (auto& dl : *libs) {
         f.seekg(0);
         // Check that magic matches
         auto magic_match = dl.get<bool(std::ifstream&)>("magic_match");
