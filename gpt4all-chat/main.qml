@@ -148,9 +148,6 @@ Window {
                 Accessible.role: Accessible.ComboBox
                 Accessible.name: qsTr("ComboBox for displaying/picking the current model")
                 Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
-                background: Rectangle {
-                    color: theme.backgroundDark
-                }
                 onActivated: {
                     currentChat.stopGenerating()
                     currentChat.reset();
