@@ -22,7 +22,7 @@ static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVa
                 if (p.extension() != LIB_FILE_EXT) continue;
                 // Add to list if model implementation
                 try {
-                    Dlhandle dl(p);
+                    Dlhandle dl(p.string());
                     if (dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation")) {
                         fres.emplace_back(std::move(dl));
                     }

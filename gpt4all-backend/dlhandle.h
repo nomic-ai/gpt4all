@@ -55,6 +55,8 @@ public:
 #else
 #include <string>
 #include <exception>
+#include <stdexcept>
+#include <windows.h>
 #include <libloaderapi.h>
 
 
