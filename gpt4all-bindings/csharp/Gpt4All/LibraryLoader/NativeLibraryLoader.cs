@@ -53,8 +53,7 @@ public static class NativeLibraryLoader
                 $"Unsupported OS platform, architecture: {RuntimeInformation.OSArchitecture}")
         };
 
-        var libllmodel = string.Empty;
-
+        // If the user hasn't set the path, we'll try to find it ourselves.
         if (string.IsNullOrEmpty(path))
         {
             var assemblySearchPath = new[]
@@ -64,9 +63,8 @@ public static class NativeLibraryLoader
                 Path.GetDirectoryName(Environment.GetCommandLineArgs()[0])
             }.FirstOrDefault(it => !string.IsNullOrEmpty(it));
 
-            libllmodel = string.IsNullOrEmpty(assemblySearchPath)
-                ? Path.Combine("runtimes", $"{platform}-{architecture}", $"libllmodel.{extension}")
-                : Path.Combine(assemblySearchPath, "runtimes", $"{platform}-{architecture}", $"libllmodel.{extension}");
+            // Search for the library dll within the assembly search path. If it doesn't exist, for whatever reason, use the default path.
+            path = Directory.EnumerateFiles(assemblySearchPath ?? string.Empty, $"libllmodel.{extension}", SearchOption.AllDirectories).FirstOrDefault() ?? Path.Combine("runtimes", $"{platform}-{architecture}", $"libllmodel.{extension}");
         }
 
         if (defaultLibraryLoader != null)
@@ -74,7 +72,7 @@ public static class NativeLibraryLoader
             return defaultLibraryLoader.OpenLibrary(path);
         }
 
-        if (!File.Exists(libllmodel))
+        if (!File.Exists(path))
         {
             throw new FileNotFoundException($"Native Library not found in path {path}. " +
                                             $"Verify you have have included the native Gpt4All library in your application.");
@@ -88,9 +86,7 @@ public static class NativeLibraryLoader
             _ => throw new PlatformNotSupportedException($"Currently {platform} platform is not supported")
         };
 
-        var result = libraryLoader.OpenLibrary(libllmodel);
-
-        return result;
+        return libraryLoader.OpenLibrary(path);
 #endif
     }
 }
