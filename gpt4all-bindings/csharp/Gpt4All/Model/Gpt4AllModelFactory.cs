@@ -14,7 +14,7 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         return NativeLibraryLoader.LoadNativeLibrary(Gpt4AllModelFactory.libraryPath, Gpt4AllModelFactory.bypassLoading);
     }, true);
 
-    public Gpt4AllModelFactory(string? libraryPath = default, bool bypassLoading = true)
+    public Gpt4AllModelFactory(string? libraryPath = default, bool bypassLoading = false)
     {
         Gpt4AllModelFactory.libraryPath = libraryPath;
         Gpt4AllModelFactory.bypassLoading = bypassLoading;
