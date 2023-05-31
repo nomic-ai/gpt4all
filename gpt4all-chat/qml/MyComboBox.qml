@@ -52,8 +52,6 @@ ComboBox {
     }
     background: Rectangle {
         color: theme.backgroundDark
-        border.width: 1
-        border.color: theme.backgroundLightest
         radius: 10
     }
 }

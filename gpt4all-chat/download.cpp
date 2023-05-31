@@ -291,9 +291,8 @@ void Download::removeModel(const QString &modelFile)
 {
     const bool isChatGPT = modelFile.startsWith("chatgpt-");
     const QString filePath = downloadLocalModelsPath()
-        + (!isChatGPT ? "ggml-" : QString())
         + modelFile
-        + (!isChatGPT ? ".bin" : ".txt");
+        + (isChatGPT ? ".txt" : QString());
     QFile file(filePath);
     if (!file.exists()) {
         qWarning() << "ERROR: Cannot remove file that does not exist" << filePath;

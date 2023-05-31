@@ -29,7 +29,7 @@ cd gpt4all-bindings/typescript
  ```
  - llama.cpp git submodule for gpt4all can be possibly absent. If this is the case, make sure to run in llama.cpp parent directory
  ```sh
-git submodule update --init --depth 1 --recursive`
+git submodule update --init --depth 1 --recursive
  ```
 ### Test
 ```sh

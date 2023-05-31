@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import llm
 import download
 import network
@@ -147,9 +148,6 @@ Window {
                 Accessible.role: Accessible.ComboBox
                 Accessible.name: qsTr("ComboBox for displaying/picking the current model")
                 Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
-                background: Rectangle {
-                    color: theme.backgroundDark
-                }
                 onActivated: {
                     currentChat.stopGenerating()
                     currentChat.reset();
@@ -158,13 +156,27 @@ Window {
             }
         }
 
-        BusyIndicator {
+        Item {
             anchors.centerIn: parent
             visible: !currentChat.isModelLoaded && !currentChat.isServer
-            running: !currentChat.isModelLoaded && !currentChat.isServer
-            Accessible.role: Accessible.Animation
-            Accessible.name: qsTr("Busy indicator")
-            Accessible.description: qsTr("Displayed when the model is loading")
+            width: childrenRect.width
+            height: childrenRect.height
+            Row {
+                spacing: 5
+                BusyIndicator {
+                    anchors.verticalCenter: parent.verticalCenter
+                    running: parent.visible
+                    Accessible.role: Accessible.Animation
+                    Accessible.name: qsTr("Busy indicator")
+                    Accessible.description: qsTr("Displayed when the model is loading")
+                }
+
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Loading model...")
+                    color: theme.mutedTextColor
+                }
+            }
         }
     }
 
@@ -582,17 +594,7 @@ Window {
 
             Rectangle {
                 anchors.fill: parent
-                color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLighter
-
-                Image {
-                    visible: currentChat.isServer || currentChat.modelName.startsWith("chatgpt-")
-                    anchors.fill: parent
-                    sourceSize.width: 1024
-                    sourceSize.height: 1024
-                    fillMode: Image.PreserveAspectFit
-                    opacity: 0.15
-                    source: "qrc:/gpt4all/icons/network.svg"
-                }
+                color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLight
 
                 ListView {
                     id: listView
@@ -615,7 +617,7 @@ Window {
                         cursorVisible: currentResponse ? currentChat.responseInProgress : false
                         cursorPosition: text.length
                         background: Rectangle {
-                            opacity: 0.3
+                            opacity: 1.0
                             color: name === qsTr("Response: ")
                                 ? (currentChat.isServer ? theme.backgroundDarkest : theme.backgroundLighter)
                                 : (currentChat.isServer ? theme.backgroundDark : theme.backgroundLight)
@@ -799,10 +801,20 @@ Window {
                         height: 60
                     }
                 }
+
+                Image {
+                    visible: currentChat.isServer || currentChat.modelName.startsWith("chatgpt-")
+                    anchors.fill: parent
+                    sourceSize.width: 1024
+                    sourceSize.height: 1024
+                    fillMode: Image.PreserveAspectFit
+                    opacity: 0.15
+                    source: "qrc:/gpt4all/icons/network.svg"
+                }
             }
         }
 
-        Button {
+        MyButton {
             visible: chatModel.count && !currentChat.isServer
             Image {
                 anchors.verticalCenter: parent.verticalCenter
@@ -840,22 +852,20 @@ Window {
             }
             anchors.bottom: textInputView.top
             anchors.horizontalCenter: textInputView.horizontalCenter
-            anchors.bottomMargin: 40
+            anchors.bottomMargin: 20
             padding: 15
-            contentItem: Text {
-                text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
-                color: theme.textColor
-                Accessible.role: Accessible.Button
-                Accessible.name: text
-                Accessible.description: qsTr("Controls generation of the response")
-            }
-            background: Rectangle {
-                opacity: .5
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-                color: theme.backgroundLight
-            }
+            text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
+            Accessible.description: qsTr("Controls generation of the response")
+        }
+
+        RectangularGlow {
+            id: effect
+            anchors.fill: textInputView
+            glowRadius: 50
+            spread: 0
+            color: theme.backgroundDark
+            cornerRadius: 10
+            opacity: 0.2
         }
 
         ScrollView {
@@ -866,19 +876,20 @@ Window {
             anchors.margins: 30
             height: Math.min(contentHeight, 200)
             visible: !currentChat.isServer
-
             TextArea {
                 id: textInput
-                color: theme.textColor
-                padding: 20
+                color: theme.textAccent
+                topPadding: 30
+                bottomPadding: 30
+                leftPadding: 20
                 rightPadding: 40
                 enabled: currentChat.isModelLoaded && !currentChat.isServer
                 wrapMode: Text.WordWrap
-                font.pixelSize: theme.fontSizeLarge
+                font.pixelSize: theme.fontSizeLarger
                 placeholderText: qsTr("Send a message...")
                 placeholderTextColor: theme.mutedTextColor
                 background: Rectangle {
-                    color: theme.backgroundLighter
+                    color: theme.backgroundAccent
                     radius: 10
                 }
                 Accessible.role: Accessible.EditableText

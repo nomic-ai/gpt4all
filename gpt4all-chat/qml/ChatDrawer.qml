@@ -38,7 +38,7 @@ Drawer {
             anchors.right: parent.right
             font.pixelSize: theme.fontSizeLarger
             text: qsTr("New chat")
-            Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
+            Accessible.description: qsTr("Use this to create a new chat")
             onClicked: {
                 LLM.chatListModel.addChat();
                 Network.sendNewChat(LLM.chatListModel.count)
