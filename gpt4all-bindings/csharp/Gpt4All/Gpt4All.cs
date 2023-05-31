@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Gpt4All.Bindings;
-using Gpt4All.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Gpt4All;

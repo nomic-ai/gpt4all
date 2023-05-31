@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Gpt4All.Extensions;
 
 namespace Gpt4All.Bindings;
 
