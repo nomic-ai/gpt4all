@@ -629,7 +629,7 @@ Window {
 
                         topPadding: 20
                         bottomPadding: 20
-                        leftPadding: 100
+                        leftPadding: 70
                         rightPadding: 100
 
                         onLinkActivated: function (link) {
@@ -642,9 +642,8 @@ Window {
 
                         Item {
                             anchors.left: parent.left
-                            anchors.leftMargin: 90
-                            anchors.top: parent.top
-                            anchors.topMargin: 5
+                            anchors.leftMargin: 60
+                            y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
                             visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
                             width: childrenRect.width
                             height: childrenRect.height
@@ -667,9 +666,8 @@ Window {
 
                         Rectangle {
                             anchors.left: parent.left
-                            anchors.top: parent.top
                             anchors.leftMargin: 20
-                            anchors.topMargin: 20
+                            y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
                             width: 30
                             height: 30
                             radius: 5
@@ -708,8 +706,7 @@ Window {
                                 (!currentResponse || !currentChat.responseInProgress) && Network.isActive
                             anchors.right: parent.right
                             anchors.rightMargin: 20
-                            anchors.top: parent.top
-                            anchors.topMargin: 20
+                            y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
                             spacing: 10
 
                             Item {
