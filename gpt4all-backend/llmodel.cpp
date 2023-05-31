@@ -8,17 +8,18 @@
 
 
 
-static bool requires_avxonly() {
+static
+bool requires_avxonly() {
 #ifdef __x86_64__
-    return !__builtin_cpu_supports("avx2") && !__builtin_cpu_supports("fma");
-#else
-    #ifdef __x86_64__
+    #ifndef _MSC_VER
+        return !__builtin_cpu_supports("avx2");
+    #else
         int cpuInfo[4];
         __cpuidex(cpuInfo, 7, 0);
         return !(cpuInfo[1] & (1 << 5));
-    #else
-        return false;  // Windows doesn't support detection on architectures other than x86_64
     #endif
+#else
+    return false; // Don't know how to handle non-x86_64
 #endif
 }
 
