@@ -112,7 +112,7 @@ void Server::start()
     );
 
     m_server->route("/v1/completions", QHttpServerRequest::Method::Post,
-        [=](const QHttpServerRequest &request) {
+        [this](const QHttpServerRequest &request) {
             if (!LLM::globalInstance()->serverEnabled())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return handleCompletionRequest(request, false);
@@ -120,7 +120,7 @@ void Server::start()
     );
 
     m_server->route("/v1/chat/completions", QHttpServerRequest::Method::Post,
-        [=](const QHttpServerRequest &request) {
+        [this](const QHttpServerRequest &request) {
             if (!LLM::globalInstance()->serverEnabled())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return handleCompletionRequest(request, true);
