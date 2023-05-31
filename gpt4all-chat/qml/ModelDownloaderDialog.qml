@@ -199,7 +199,7 @@ Dialog {
                             Accessible.description: qsTr("Whether the file hash is being calculated")
                         }
 
-                        BusyIndicator {
+                        MyBusyIndicator {
                             id: busyCalcHash
                             anchors.right: parent.right
                             padding: 20

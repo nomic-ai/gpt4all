@@ -37,7 +37,7 @@ Dialog {
             Accessible.description: qsTr("Reveals a shortlived help balloon")
         }
 
-        BusyIndicator {
+        MyBusyIndicator {
             id: busyIndicator
             visible: shouldShowBusy
             running: shouldShowBusy
