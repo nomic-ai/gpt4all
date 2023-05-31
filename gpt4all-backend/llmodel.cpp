@@ -6,27 +6,31 @@
 #include <fstream>
 #include <filesystem>
 
-
-
-static
-Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVariant) {
+static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVariant) {
     // Collect all model implementation libraries
     static auto libs = [] () {
         std::vector<Dlhandle> fres;
-        // Iterate over all libraries
-        for (const auto& f : std::filesystem::directory_iterator(".")) {
-            // Get path
-            const auto& p = f.path();
-            // Check extension
-            if (p.extension() != LIB_FILE_EXT) continue;
-            // Add to list if model implementation
-            try {
-                Dlhandle dl(p);
-                if (dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation")) {
-                    fres.emplace_back(std::move(dl));
-                }
-            } catch (...) {}
-        }
+
+        auto search_in_directory = [&](const std::filesystem::path& path) {
+            // Iterate over all libraries
+            for (const auto& f : std::filesystem::directory_iterator(path)) {
+                // Get path
+                const auto& p = f.path();
+                // Check extension
+                if (p.extension() != LIB_FILE_EXT) continue;
+                // Add to list if model implementation
+                try {
+                    Dlhandle dl(p);
+                    if (dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation")) {
+                        fres.emplace_back(std::move(dl));
+                    }
+                } catch (...) {}
+            }
+        };
+
+        search_in_directory(".");
+        search_in_directory("../../../");
+
         return fres;
     }();
     // Iterate over all libraries
@@ -49,8 +53,7 @@ Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVariant) 
     return nullptr;
 }
 
-static
-bool requires_avxonly() {
+static bool requires_avxonly() {
 #ifdef __x86_64__
     return !__builtin_cpu_supports("avx2") && !__builtin_cpu_supports("fma");
 #else

@@ -94,18 +94,17 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     prepare_target(llamamodel-230511 llama-230511)
 
     add_library(gptj-${BUILD_VARIANT} SHARED
-        gptj.cpp)
+        gptj.cpp utils.h utils.cpp)
     prepare_target(gptj ggml-230511)
 
     add_library(mpt-${BUILD_VARIANT} SHARED
-        mpt.cpp)
+        mpt.cpp utils.h utils.cpp)
     prepare_target(mpt ggml-230511)
 endforeach()
 
 add_library(llmodel
     llmodel.h llmodel.cpp
     llmodel_c.h llmodel_c.cpp
-    utils.h utils.cpp
     dlhandle.h
 )
 target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")
