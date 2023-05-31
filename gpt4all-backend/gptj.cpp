@@ -834,8 +834,6 @@ struct GPTJPrivate {
 
 GPTJ::GPTJ()
     : d_ptr(new GPTJPrivate) {
-    modelType = modelType_;
-
     d_ptr->model = new gptj_model;
     d_ptr->modelLoaded = false;
 }
