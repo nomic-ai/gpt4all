@@ -44,11 +44,11 @@ public:
     }
 
     template<typename T>
-    T* get(const std::string& fname) {
+    T* get(const std::string& fname) const {
         auto fres = reinterpret_cast<T*>(dlsym(chandle, fname.c_str()));
         return (dlerror()==NULL)?fres:nullptr;
     }
-    auto get_fnc(const std::string& fname) {
+    auto get_fnc(const std::string& fname) const {
         return get<void*(...)>(fname);
     }
 };
@@ -90,10 +90,10 @@ public:
     }
 
     template<typename T>
-    T* get(const std::string& fname) {
+    T* get(const std::string& fname) const {
         return reinterpret_cast<T*>(GetProcAddress(chandle, fname.c_str()));
     }
-    auto get_fnc(const std::string& fname) {
+    auto get_fnc(const std::string& fname) const {
         return get<void*(...)>(fname);
     }
 };
