@@ -163,7 +163,7 @@ Window {
             height: childrenRect.height
             Row {
                 spacing: 5
-                BusyIndicator {
+                MyBusyIndicator {
                     anchors.verticalCenter: parent.verticalCenter
                     running: parent.visible
                     Accessible.role: Accessible.Animation
@@ -174,7 +174,7 @@ Window {
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Loading model...")
-                    color: theme.mutedTextColor
+                    color: theme.textAccent
                 }
             }
         }
@@ -649,7 +649,7 @@ Window {
                             height: childrenRect.height
                             Row {
                                 spacing: 5
-                                BusyIndicator {
+                                MyBusyIndicator {
                                     anchors.verticalCenter: parent.verticalCenter
                                     running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
                                     Accessible.role: Accessible.Animation
@@ -659,7 +659,7 @@ Window {
                                 Label {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: currentChat.responseState + "..."
-                                    color: theme.mutedTextColor
+                                    color: theme.textAccent
                                 }
                             }
                         }
