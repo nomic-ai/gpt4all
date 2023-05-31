@@ -1,10 +1,10 @@
-import { LLModel, prompt, createCompletion } from '../src/gpt4all.js'
+import { LLModel, createCompletion } from '../src/gpt4all.js'
 
 const ll = new LLModel("./ggml-vicuna-7b-1.1-q4_2.bin");
 try {
    class Extended extends LLModel {
-        
    }
+
 } catch(e) {
     console.log("Extending from native class gone wrong " + e)
 }

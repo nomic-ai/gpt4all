@@ -1,5 +1,5 @@
 {
-  "name": "gpt4all-ts",
+  "name": "gpt4all",
   "version": "2.0.0",
   "packageManager": "yarn@3.5.1",
   "main": "src/gpt4all.js",

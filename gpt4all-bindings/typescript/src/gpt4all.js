@@ -2,7 +2,6 @@
 
 /// This file implements the gpt4all.d.ts file endings.
 /// Written in commonjs to support both ESM and CJS projects.
-const { EventEmitter } = require('node:events');
 const path = require('path');
 const { LLModel } = require('node-gyp-build')(path.resolve(__dirname, '..'));
 const { createWriteStream, existsSync } = require('fs');
@@ -91,10 +90,7 @@ exports.prompt = function prompt(strings, ...keys) {
     return result.join("");
   };
 }
-/** 
-  * 
-  *
-  */
+
 function createPrompt (messages, hasDefaultHeader, hasDefaultFooter) {
     let fullPrompt = "";
 
@@ -149,9 +145,9 @@ exports.createCompletion = function (
     return {
         llmodel : llmodel.name(),
         usage : {
-            prompt_tokens: fullPrompt.length(),
+            prompt_tokens: fullPrompt.length,
             completion_tokens: 0, //TODO
-            total_tokens: fullPrompt.length() + 0 //TODO
+            total_tokens: fullPrompt.length + 0 //TODO
         },
         choices: [
             {
