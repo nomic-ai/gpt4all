@@ -53,7 +53,6 @@ public static class NativeLibraryLoader
                 $"Unsupported OS platform, architecture: {RuntimeInformation.OSArchitecture}")
         };
 
-        var path2 = string.Empty;
         // If the user hasn't set the path, we'll try to find it ourselves.
         if (string.IsNullOrEmpty(path))
         {
