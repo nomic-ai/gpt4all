@@ -1,4 +1,4 @@
-#if !IOS && !MACCATALYST && !TVOS && !ANDROID
+﻿#if !IOS && !MACCATALYST && !TVOS && !ANDROID
 using System.Runtime.InteropServices;
 #endif
 
@@ -17,7 +17,7 @@ public static class NativeLibraryLoader
         defaultLibraryLoader = libraryLoader;
     }
 
-    public static LoadResult LoadNativeLibrary(string? path = default, bool bypassLoading = false)
+    internal static LoadResult LoadNativeLibrary(string? path = default, bool bypassLoading = false)
     {
 #if IOS || MACCATALYST || TVOS || ANDROID
         // If we're not bypass loading, and the path was set, and loader was set, allow it to go through.

@@ -1,10 +1,30 @@
 ﻿using Gpt4All.Bindings;
+using Gpt4All.LibraryLoader;
 using System.Diagnostics;
 
 namespace Gpt4All;
 
 public class Gpt4AllModelFactory : IGpt4AllModelFactory
 {
+    private static bool bypassLoading;
+    private static string? libraryPath;
+
+    private static readonly Lazy<LoadResult> libraryLoaded = new(() =>
+    {
+        return NativeLibraryLoader.LoadNativeLibrary(Gpt4AllModelFactory.libraryPath, Gpt4AllModelFactory.bypassLoading);
+    }, true);
+
+    public Gpt4AllModelFactory(string? libraryPath = default, bool bypassLoading = false)
+    {
+        Gpt4AllModelFactory.libraryPath = libraryPath;
+        Gpt4AllModelFactory.bypassLoading = bypassLoading;
+
+        if (!libraryLoaded.Value.IsSuccess)
+        {
+            throw new Exception($"Failed to load native gpt4all library. Error: {libraryLoaded.Value.ErrorMessage}");
+        }
+    }
+
     private static IGpt4AllModel CreateModel(string modelPath, ModelType? modelType = null)
     {
         var modelType_ = modelType ?? ModelFileUtils.GetModelTypeFromModelFileHeader(modelPath);
