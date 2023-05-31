@@ -53,6 +53,7 @@ public static class NativeLibraryLoader
                 $"Unsupported OS platform, architecture: {RuntimeInformation.OSArchitecture}")
         };
 
+        var path2 = string.Empty;
         // If the user hasn't set the path, we'll try to find it ourselves.
         if (string.IsNullOrEmpty(path))
         {
@@ -62,7 +63,6 @@ public static class NativeLibraryLoader
                 Path.GetDirectoryName(typeof(NativeLibraryLoader).Assembly.Location),
                 Path.GetDirectoryName(Environment.GetCommandLineArgs()[0])
             }.FirstOrDefault(it => !string.IsNullOrEmpty(it));
-
             // Search for the library dll within the assembly search path. If it doesn't exist, for whatever reason, use the default path.
             path = Directory.EnumerateFiles(assemblySearchPath ?? string.Empty, $"libllmodel.{extension}", SearchOption.AllDirectories).FirstOrDefault() ?? Path.Combine("runtimes", $"{platform}-{architecture}", $"libllmodel.{extension}");
         }
@@ -85,7 +85,6 @@ public static class NativeLibraryLoader
             "linux" => new LinuxLibraryLoader(),
             _ => throw new PlatformNotSupportedException($"Currently {platform} platform is not supported")
         };
-
         return libraryLoader.OpenLibrary(path);
 #endif
     }

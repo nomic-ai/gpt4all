@@ -4,10 +4,14 @@ namespace Gpt4All.LibraryLoader;
 
 internal class LinuxLibraryLoader : ILibraryLoader
 {
-    [DllImport("libdl.so", ExactSpelling = true, CharSet = CharSet.Unicode, EntryPoint = "dlopen")]
+#pragma warning disable CA2101
+    [DllImport("libdl.so", ExactSpelling = true, CharSet = CharSet.Auto, EntryPoint = "dlopen")]
+#pragma warning restore CA2101
     public static extern IntPtr NativeOpenLibraryLibdl(string? filename, int flags);
 
-    [DllImport("libdl.so.2", ExactSpelling = true, CharSet = CharSet.Unicode, EntryPoint = "dlopen")]
+#pragma warning disable CA2101
+    [DllImport("libdl.so.2", ExactSpelling = true, CharSet = CharSet.Auto, EntryPoint = "dlopen")]
+#pragma warning restore CA2101
     public static extern IntPtr NativeOpenLibraryLibdl2(string? filename, int flags);
 
     [DllImport("libdl.so", ExactSpelling = true, CharSet = CharSet.Auto, EntryPoint = "dlerror")]

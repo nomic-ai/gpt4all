@@ -4,7 +4,9 @@ namespace Gpt4All.LibraryLoader;
 
 internal class MacOsLibraryLoader : ILibraryLoader
 {
-    [DllImport("libdl.dylib", ExactSpelling = true, CharSet = CharSet.Unicode, EntryPoint = "dlopen")]
+#pragma warning disable CA2101
+    [DllImport("libdl.dylib", ExactSpelling = true, CharSet = CharSet.Auto, EntryPoint = "dlopen")]
+#pragma warning restore CA2101
     public static extern IntPtr NativeOpenLibraryLibdl(string? filename, int flags);
 
     [DllImport("libdl.dylib", ExactSpelling = true, CharSet = CharSet.Auto, EntryPoint = "dlerror")]
