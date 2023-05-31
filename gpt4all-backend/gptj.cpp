@@ -1070,27 +1070,32 @@ stop_generating:
     recalculate(false);
 }
 
+#if defined(_WIN32)
+#define DLL_EXPORT __declspec(dllexport)
+#else
+#define DLL_EXPORT __attribute__ ((visibility ("default")))
+#endif
 
 extern "C" {
-bool is_g4a_backend_model_implementation() {
+DLL_EXPORT bool is_g4a_backend_model_implementation() {
     return true;
 }
 
-const char *get_model_type() {
+DLL_EXPORT const char *get_model_type() {
     return modelType_;
 }
 
-const char *get_build_variant() {
+DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-bool magic_match(std::istream& f) {
+DLL_EXPORT bool magic_match(std::istream& f) {
     uint32_t magic = 0;
     f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
     return magic == 0x67676d6c;
 }
 
-LLModel *construct() {
+DLL_EXPORT LLModel *construct() {
     return new GPTJ;
 }
 }
