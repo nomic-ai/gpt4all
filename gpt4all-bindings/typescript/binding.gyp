@@ -43,11 +43,9 @@
             'defines': [
                 'NAPI_CPP_EXCEPTIONS'
             ],
-            'cflags': [
+            'cflags_cc!': [
                 '-fno-rtti'
             ]
-
-
         }]
       ]
     }]
