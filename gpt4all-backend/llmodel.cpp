@@ -29,8 +29,9 @@ static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVa
         };
 
         search_in_directory(".");
+#if defined(__APPLE__)
         search_in_directory("../../../");
-
+#endif
         return fres;
     }();
     // Iterate over all libraries
