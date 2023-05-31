@@ -5,6 +5,7 @@
 #include <functional>
 #include <vector>
 #include "llmodel.h"
+#include "tokenizer/bpe.h"
 
 class GPTJPrivate;
 class GPTJ : public LLModel {
@@ -31,6 +32,8 @@ protected:
 
 private:
     GPTJPrivate *d_ptr;
+    std::unique_ptr<bpecpp::AdditionalVocabAdapter> m_tokav;
+    std::unique_ptr<bpecpp::BPE> m_bpe;
 };
 
 #endif // GPTJ_H
