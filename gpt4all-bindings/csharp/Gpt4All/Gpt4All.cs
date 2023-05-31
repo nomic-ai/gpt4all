@@ -1,13 +1,14 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Gpt4All.Bindings;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Gpt4All;
 
 public class Gpt4All : IGpt4AllModel
 {
     private readonly ILLModel _model;
-    private readonly ILogger? _logger;
+    private readonly ILogger _logger;
 
     private const string ResponseErrorMessage =
         "The model reported an error during token generation error={ResponseError}";
@@ -18,7 +19,7 @@ public class Gpt4All : IGpt4AllModel
     internal Gpt4All(ILLModel model, ILogger? logger = null)
     {
         _model = model;
-        _logger = logger;
+        _logger = logger ?? NullLogger.Instance;
         PromptFormatter = new DefaultPromptFormatter();
     }
 
@@ -35,7 +36,7 @@ public class Gpt4All : IGpt4AllModel
 
         return Task.Run(() =>
         {
-            _logger?.LogInformation("Start prediction task");
+            _logger.LogInformation("Start prediction task");
 
             var sw = Stopwatch.StartNew();
             var result = new TextPredictionResult();
@@ -48,7 +49,7 @@ public class Gpt4All : IGpt4AllModel
                 {
                     if (e.IsError)
                     {
-                        _logger?.LogWarning(ResponseErrorMessage, e.Response);
+                        _logger.LogWarning(ResponseErrorMessage, e.Response);
                         result.Success = false;
                         result.ErrorMessage = e.Response;
                         return false;
@@ -59,12 +60,12 @@ public class Gpt4All : IGpt4AllModel
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "Prompt error");
+                _logger.LogError(e, "Prompt error");
                 result.Success = false;
             }
 
             sw.Stop();
-            _logger?.LogInformation("Prediction task completed elapsed={Elapsed}s", sw.Elapsed.TotalSeconds);
+            _logger.LogInformation("Prediction task completed elapsed={Elapsed}s", sw.Elapsed.TotalSeconds);
 
             return (ITextPredictionResult)result;
         }, CancellationToken.None);
@@ -78,7 +79,7 @@ public class Gpt4All : IGpt4AllModel
 
         _ = Task.Run(() =>
         {
-            _logger?.LogInformation("Start streaming prediction task");
+            _logger.LogInformation("Start streaming prediction task");
             var sw = Stopwatch.StartNew();
 
             try
@@ -90,7 +91,7 @@ public class Gpt4All : IGpt4AllModel
                 {
                     if (e.IsError)
                     {
-                        _logger?.LogWarning(ResponseErrorMessage, e.Response);
+                        _logger.LogWarning(ResponseErrorMessage, e.Response);
                         result.Success = false;
                         result.ErrorMessage = e.Response;
                         return false;
@@ -101,14 +102,14 @@ public class Gpt4All : IGpt4AllModel
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "Prompt error");
+                _logger.LogError(e, "Prompt error");
                 result.Success = false;
             }
             finally
             {
                 result.Complete();
                 sw.Stop();
-                _logger?.LogInformation("Prediction task completed elapsed={Elapsed}s", sw.Elapsed.TotalSeconds);
+                _logger.LogInformation("Prediction task completed elapsed={Elapsed}s", sw.Elapsed.TotalSeconds);
             }
         }, CancellationToken.None);
 
