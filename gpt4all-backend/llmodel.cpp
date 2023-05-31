@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <filesystem>
+#include <cassert>
 
 
 
@@ -24,12 +25,27 @@ bool requires_avxonly() {
 }
 
 
-static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVariant) {
-    // Collect all model implementation libraries
-    // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
-    // individual models without the cleanup of the static list interfering
-    static auto* libs = new std::vector<Dlhandle>([] () {
-        std::vector<Dlhandle> fres;
+LLModel::Implementation::Implementation(Dlhandle &&dlhandle_) : dlhandle(std::move(dlhandle_)) {
+    auto get_model_type = dlhandle.get<const char *()>("get_model_type");
+    assert(get_model_type);
+    modelType = get_model_type();
+    auto get_build_variant = dlhandle.get<const char *()>("get_build_variant");
+    assert(get_build_variant);
+    buildVariant = get_build_variant();
+    magicMatch = dlhandle.get<bool(std::ifstream&)>("magic_match");
+    assert(magicMatch);
+    construct_ = dlhandle.get<LLModel *()>("construct");
+    assert(construct_);
+}
+
+bool LLModel::Implementation::isImplementation(const Dlhandle &dl) {
+    return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
+}
+
+
+const std::vector<LLModel::Implementation> &LLModel::getImplementationList() {
+    static auto* libs = new std::vector<LLModel::Implementation>([] () {
+        std::vector<LLModel::Implementation> fres;
 
         auto search_in_directory = [&](const std::filesystem::path& path) {
             // Iterate over all libraries
@@ -41,9 +57,10 @@ static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVa
                 // Add to list if model implementation
                 try {
                     Dlhandle dl(p.string());
-                    if (dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation")) {
-                        fres.emplace_back(std::move(dl));
+                    if (!Implementation::isImplementation(dl)) {
+                        continue;
                     }
+                    fres.emplace_back(Implementation(std::move(dl)));
                 } catch (...) {}
             }
         };
@@ -54,21 +71,24 @@ static Dlhandle *get_implementation(std::ifstream& f, const std::string& buildVa
 #endif
         return fres;
     }());
+    // Return static result
+    return *libs;
+}
+
+const LLModel::Implementation* LLModel::getImplementation(std::ifstream& f, const std::string& buildVariant) {
     // Iterate over all libraries
-    for (auto& dl : *libs) {
+    for (const auto& i : getImplementationList()) {
         f.seekg(0);
         // Check that magic matches
-        auto magic_match = dl.get<bool(std::ifstream&)>("magic_match");
-        if (!magic_match || !magic_match(f)) {
+        if (!i.magicMatch(f)) {
             continue;
         }
         // Check that build variant is correct
-        auto get_build_variant = dl.get<const char *()>("get_build_variant");
-        if (buildVariant != (get_build_variant?get_build_variant():"default")) {
+        if (buildVariant != i.buildVariant) {
             continue;
         }
         // Looks like we're good to go, return this dlhandle
-        return &dl;
+        return &i;
     }
     // Nothing found, so return nothing
     return nullptr;
@@ -87,14 +107,9 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     std::ifstream f(modelPath, std::ios::binary);
     if (!f) return nullptr;
     // Get correct implementation
-    auto impl = get_implementation(f, buildVariant);
+    auto impl = getImplementation(f, buildVariant);
     if (!impl) return nullptr;
     f.close();
-    // Get inference constructor
-    auto constructor = impl->get<LLModel *()>("construct");
-    if (!constructor) return nullptr;
-    // Construct llmodel implementation
-    auto fres = constructor();
-    // Return final instance
-    return fres;
+    // Construct and return llmodel implementation
+    return impl->construct();
 }

@@ -95,8 +95,6 @@ struct LLamaPrivate {
 
 LLamaModel::LLamaModel()
     : d_ptr(new LLamaPrivate) {
-    modelType = modelType_;
-
     d_ptr->modelLoaded = false;
 }
 
