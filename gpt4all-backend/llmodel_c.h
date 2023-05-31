@@ -5,6 +5,15 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#ifdef __GNUC__
+#define DEPRECATED __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED __declspec(deprecated)
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define DEPRECATED
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -79,7 +88,7 @@ typedef bool (*llmodel_recalculate_callback)(bool is_recalculating);
  * @param model_path A string representing the path to the model file.
  * @return A pointer to the llmodel_model instance; NULL on error.
  */
-llmodel_model llmodel_model_create(const char *model_path) __attribute__ ((deprecated));
+DEPRECATED llmodel_model llmodel_model_create(const char *model_path);
 
 /**
  * Create a llmodel instance.
