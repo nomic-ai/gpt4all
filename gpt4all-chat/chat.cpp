@@ -96,10 +96,22 @@ bool Chat::isModelLoaded() const
     return m_llmodel->isModelLoaded();
 }
 
+void Chat::resetResponseState()
+{
+    if (m_responseInProgress && m_responseState == Chat::LocalDocsRetrieval)
+        return;
+
+    m_responseInProgress = true;
+    m_responseState = Chat::LocalDocsRetrieval;
+    emit responseInProgressChanged();
+    emit responseStateChanged();
+}
+
 void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict,
     int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
     int32_t repeat_penalty_tokens)
 {
+    resetResponseState();
     emit promptRequested(
         prompt,
         prompt_template,
@@ -115,6 +127,8 @@ void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t
 
 void Chat::regenerateResponse()
 {
+    const int index = m_chatModel->count() - 1;
+    m_chatModel->updateReferences(index, QString(), QList<QString>());
     emit regenerateResponseRequested();
 }
 
@@ -234,10 +248,7 @@ void Chat::setModelName(const QString &modelName)
 
 void Chat::newPromptResponsePair(const QString &prompt)
 {
-    m_responseInProgress = true;
-    m_responseState = Chat::LocalDocsRetrieval;
-    emit responseInProgressChanged();
-    emit responseStateChanged();
+    resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     m_chatModel->appendPrompt(tr("Prompt: "), prompt);
     m_chatModel->appendResponse(tr("Response: "), prompt);
@@ -246,11 +257,8 @@ void Chat::newPromptResponsePair(const QString &prompt)
 
 void Chat::serverNewPromptResponsePair(const QString &prompt)
 {
-    m_responseInProgress = true;
-    m_responseState = Chat::LocalDocsRetrieval;
-    emit responseInProgressChanged();
-    emit responseStateChanged();
-        m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
+    resetResponseState();
+    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     m_chatModel->appendPrompt(tr("Prompt: "), prompt);
     m_chatModel->appendResponse(tr("Response: "), prompt);
 }
