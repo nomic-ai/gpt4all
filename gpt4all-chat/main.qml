@@ -209,7 +209,7 @@ Window {
 
             Rectangle {
                 id: bar1
-                color: theme.backgroundLightest
+                color: drawerButton.hovered ? theme.textColor : theme.backgroundLightest
                 width: parent.width
                 height: 6
                 radius: 2
@@ -219,7 +219,7 @@ Window {
             Rectangle {
                 id: bar2
                 anchors.centerIn: parent
-                color: theme.backgroundLightest
+                color: drawerButton.hovered ? theme.textColor : theme.backgroundLightest
                 width: parent.width
                 height: 6
                 radius: 2
@@ -229,7 +229,7 @@ Window {
             Rectangle {
                 id: bar3
                 anchors.bottom: parent.bottom
-                color: theme.backgroundLightest
+                color: drawerButton.hovered ? theme.textColor : theme.backgroundLightest
                 width: parent.width
                 height: 6
                 radius: 2
@@ -253,7 +253,7 @@ Window {
         }
     }
 
-    Button {
+    MyToolButton {
         id: networkButton
         anchors.right: parent.right
         anchors.top: parent.top
@@ -263,28 +263,11 @@ Window {
         height: 40
         z: 200
         padding: 15
-
-        Accessible.role: Accessible.Button
+        checkable: true
+        checked: Network.isActive
+        source: "qrc:/gpt4all/icons/network.svg"
         Accessible.name: qsTr("Network button")
         Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
-
-        background: Item {
-            anchors.fill: parent
-            Rectangle {
-                anchors.fill: parent
-                color: "transparent"
-                visible: Network.isActive
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-            }
-            Image {
-                anchors.centerIn: parent
-                width: 30
-                height: 30
-                source: "qrc:/gpt4all/icons/network.svg"
-            }
-        }
 
         onClicked: {
             if (Network.isActive) {
@@ -307,7 +290,7 @@ Window {
         anchors.centerIn: parent
     }
 
-    Button {
+    MyToolButton {
         id: collectionsButton
         anchors.right: networkButton.left
         anchors.top: parent.top
@@ -317,27 +300,9 @@ Window {
         height: 40
         z: 200
         padding: 15
-
-        background: Item {
-            anchors.fill: parent
-            Rectangle {
-                anchors.fill: parent
-                color: "transparent"
-                visible: currentChat.collectionList.length
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-            }
-            Image {
-                anchors.centerIn: parent
-                mipmap: true
-                width: 25
-                height: 25
-                source: "qrc:/gpt4all/icons/db.svg"
-            }
-        }
-
-        Accessible.role: Accessible.Button
+        checkable: true
+        checked: currentChat.collectionList.length
+        source: "qrc:/gpt4all/icons/db.svg"
         Accessible.name: qsTr("Add collections of documents to the chat")
         Accessible.description: qsTr("Provides a button to add collections of documents to the chat")
 
@@ -346,7 +311,7 @@ Window {
         }
     }
 
-    Button {
+    MyToolButton {
         id: settingsButton
         anchors.right: collectionsButton.left
         anchors.top: parent.top
@@ -356,18 +321,7 @@ Window {
         height: 40
         z: 200
         padding: 15
-
-        background: Item {
-            anchors.fill: parent
-            Image {
-                anchors.centerIn: parent
-                width: 30
-                height: 30
-                source: "qrc:/gpt4all/icons/settings.svg"
-            }
-        }
-
-        Accessible.role: Accessible.Button
+        source: "qrc:/gpt4all/icons/settings.svg"
         Accessible.name: qsTr("Settings button")
         Accessible.description: qsTr("Reveals a dialogue where you can change various settings")
 
@@ -406,7 +360,7 @@ Window {
         }
     }
 
-    Button {
+    MyToolButton {
         id: copyButton
         anchors.right: settingsButton.left
         anchors.top: parent.top
@@ -416,20 +370,9 @@ Window {
         height: 40
         z: 200
         padding: 15
-
-        Accessible.role: Accessible.Button
+        source: "qrc:/gpt4all/icons/copy.svg"
         Accessible.name: qsTr("Copy button")
         Accessible.description: qsTr("Copy the conversation to the clipboard")
-
-        background: Item {
-            anchors.fill: parent
-            Image {
-                anchors.centerIn: parent
-                width: 30
-                height: 30
-                source: "qrc:/gpt4all/icons/copy.svg"
-            }
-        }
 
         TextEdit{
             id: copyEdit
@@ -482,7 +425,7 @@ Window {
         return str + "]}"
     }
 
-    Button {
+    MyToolButton {
         id: resetContextButton
         anchors.right: copyButton.left
         anchors.top: parent.top
@@ -492,20 +435,10 @@ Window {
         height: 40
         z: 200
         padding: 15
+        source: "qrc:/gpt4all/icons/regenerate.svg"
 
-        Accessible.role: Accessible.Button
         Accessible.name: text
         Accessible.description: qsTr("Reset the context which erases current conversation")
-
-        background: Item {
-            anchors.fill: parent
-            Image {
-                anchors.centerIn: parent
-                width: 30
-                height: 30
-                source: "qrc:/gpt4all/icons/regenerate.svg"
-            }
-        }
 
         onClicked: {
             Network.sendResetContext(chatModel.count)
@@ -712,16 +645,12 @@ Window {
                             Item {
                                 width: childrenRect.width
                                 height: childrenRect.height
-                                Button {
+                                MyToolButton {
                                     id: thumbsUp
                                     width: 30
                                     height: 30
                                     opacity: thumbsUpState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
-                                    background: Image {
-                                        anchors.fill: parent
-                                        source: "qrc:/gpt4all/icons/thumbs_up.svg"
-                                    }
-                                    Accessible.role: Accessible.Button
+                                    source: "qrc:/gpt4all/icons/thumbs_up.svg"
                                     Accessible.name: qsTr("Thumbs up")
                                     Accessible.description: qsTr("Gives a thumbs up to the response")
                                     onClicked: {
@@ -735,7 +664,7 @@ Window {
                                     }
                                 }
 
-                                Button {
+                                MyToolButton {
                                     id: thumbsDown
                                     anchors.top: thumbsUp.top
                                     anchors.topMargin: 10
@@ -753,11 +682,7 @@ Window {
                                         x: thumbsDown.width
                                       }
                                     ]
-                                    background: Image {
-                                        anchors.fill: parent
-                                        source: "qrc:/gpt4all/icons/thumbs_down.svg"
-                                    }
-                                    Accessible.role: Accessible.Button
+                                    source: "qrc:/gpt4all/icons/thumbs_down.svg"
                                     Accessible.name: qsTr("Thumbs down")
                                     Accessible.description: qsTr("Opens thumbs down dialog")
                                     onClicked: {
@@ -919,20 +844,14 @@ Window {
             }
         }
 
-        Button {
+        MyToolButton {
             anchors.right: textInputView.right
             anchors.verticalCenter: textInputView.verticalCenter
             anchors.rightMargin: 15
             width: 30
             height: 30
             visible: !currentChat.isServer
-
-            background: Image {
-                anchors.centerIn: parent
-                source: "qrc:/gpt4all/icons/send_message.svg"
-            }
-
-            Accessible.role: Accessible.Button
+            source: "qrc:/gpt4all/icons/send_message.svg"
             Accessible.name: qsTr("Send the message button")
             Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
 

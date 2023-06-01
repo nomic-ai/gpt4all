@@ -96,6 +96,7 @@ qt_add_qml_module(chat
       qml/MyTextField.qml
       qml/MyCheckBox.qml
       qml/MyBusyIndicator.qml
+      qml/MyToolButton.qml
     RESOURCES
       icons/send_message.svg
       icons/stop_generating.svg

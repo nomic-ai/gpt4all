@@ -141,41 +141,31 @@ Drawer {
                         anchors.right: chatRectangle.right
                         anchors.rightMargin: 10
                         spacing: 10
-                        Button {
+                        MyToolButton {
                             id: editButton
                             width: 30
                             height: 30
                             visible: isCurrent && !isServer
                             opacity: trashQuestionDisplayed ? 0.5 : 1.0
-                            background: Image {
-                                width: 30
-                                height: 30
-                                source: "qrc:/gpt4all/icons/edit.svg"
-                            }
+                            source: "qrc:/gpt4all/icons/edit.svg"
                             onClicked: {
                                 chatName.focus = true
                                 chatName.readOnly = false
                                 chatName.selectByMouse = true
                             }
-                            Accessible.role: Accessible.Button
                             Accessible.name: qsTr("Edit the chat name")
                             Accessible.description: qsTr("Provides a button to edit the chat name")
                         }
-                        Button {
+                        MyToolButton {
                             id: trashButton
                             width: 30
                             height: 30
                             visible: isCurrent && !isServer
-                            background: Image {
-                                width: 30
-                                height: 30
-                                source: "qrc:/gpt4all/icons/trash.svg"
-                            }
+                            source: "qrc:/gpt4all/icons/trash.svg"
                             onClicked: {
                                 trashQuestionDisplayed = true
                                 timer.start()
                             }
-                            Accessible.role: Accessible.Button
                             Accessible.name: qsTr("Delete of the chat")
                             Accessible.description: qsTr("Provides a button to delete the chat")
                         }
