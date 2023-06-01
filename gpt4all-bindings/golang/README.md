@@ -46,6 +46,7 @@ To use the bindings in your own software:
 - Import `github.com/nomic-ai/gpt4all/gpt4all-bindings/golang`;
 - Compile `libgpt4all.a` (you can use `make libgpt4all.a` in the bindings/go directory);
 - Link your go binary against whisper by setting the environment variables `C_INCLUDE_PATH` and `LIBRARY_PATH` to point to the `binding.h` file directory and `libgpt4all.a` file directory respectively.
+- Note: you need to have *.so/*.dynlib/*.dll files of the implementation nearby the binary produced by the binding in order to make this to work
 
 ## Testing
 
