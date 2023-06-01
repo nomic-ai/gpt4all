@@ -56,6 +56,9 @@ public:
 #include <string>
 #include <exception>
 #include <stdexcept>
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif
 #include <windows.h>
 #include <libloaderapi.h>
 
