@@ -159,14 +159,14 @@ void Chat::handleModelLoadedChanged()
         deleteLater();
 }
 
-QList<ResultInfo> Chat::results() const
+QList<ResultInfo> Chat::databaseResults() const
 {
-    return m_llmodel->results();
+    return m_llmodel->databaseResults();
 }
 
 void Chat::promptProcessing()
 {
-    m_responseState = !results().isEmpty() ? Chat::LocalDocsProcessing : Chat::PromptProcessing;
+    m_responseState = !databaseResults().isEmpty() ? Chat::LocalDocsProcessing : Chat::PromptProcessing;
     emit responseStateChanged();
 }
 
@@ -176,7 +176,7 @@ void Chat::responseStopped()
     QList<QString> references;
     QList<QString> referencesContext;
     int validReferenceNumber = 1;
-    for (const ResultInfo &info : results()) {
+    for (const ResultInfo &info : databaseResults()) {
         if (info.file.isEmpty())
             continue;
         if (validReferenceNumber == 1)

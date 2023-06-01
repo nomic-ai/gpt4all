@@ -40,7 +40,7 @@ public:
     void regenerateResponse();
     void resetResponse();
     void resetContext();
-    QList<ResultInfo> results() const { return m_results; }
+    QList<ResultInfo> databaseResults() const { return m_databaseResults; }
 
     void stopGenerating() { m_stopGenerating = true; }
 
@@ -115,7 +115,7 @@ protected:
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;
-    QList<ResultInfo> m_results;
+    QList<ResultInfo> m_databaseResults;
     bool m_isRecalc;
     bool m_isServer;
     bool m_isChatGPT;

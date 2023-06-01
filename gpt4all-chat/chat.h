@@ -60,7 +60,7 @@ public:
     Q_INVOKABLE void stopGenerating();
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
 
-    QList<ResultInfo> results() const;
+    QList<ResultInfo> databaseResults() const;
 
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
