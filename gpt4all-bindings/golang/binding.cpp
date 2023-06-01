@@ -1,6 +1,5 @@
 #include "../../gpt4all-backend/llmodel_c.h"
 #include "../../gpt4all-backend/llmodel.h"
-#include "../../gpt4all-backend/llama.cpp/llama.h"
 #include "../../gpt4all-backend/llmodel_c.cpp"
 
 #include "binding.h"
