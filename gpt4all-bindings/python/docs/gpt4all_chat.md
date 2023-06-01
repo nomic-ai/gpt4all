@@ -33,9 +33,11 @@ LocalDocs allows your LLM to have context about the contents of your documentati
 collection for context. If LocalDocs was used in your LLMs response, you will see references to the document snippets that LocalDocs used.
 
 LocalDocs **can**:
+
 - Query your documents based upon your prompt / question. If your documents contain answers that may help answer your question/prompt LocalDocs will try to utilize snippets of your documents to provide context.
 
 LocalDocs **cannot**:
+
 - Answer general metadata queries (e.g. `What documents do you know about?`, `Tell me about my documents`)
 - Summarize a single document (e.g. `Summarize my magna carta PDF.`)
 
@@ -66,6 +68,7 @@ LocalDocs supports the following file types:
 
 #### Troubleshooting and FAQ
 *My LocalDocs plugin isn't using my documents*
+
 - Make sure LocalDocs is enabled for your chat session (the DB icon on the top-right should have a border)
 - Try to modify your prompt to be more specific and use terminology that is in your document. This will increase the likelihood that LocalDocs matches document snippets for your question.
 - If your document collection is large, wait 1-2 minutes for it to finish indexing.
