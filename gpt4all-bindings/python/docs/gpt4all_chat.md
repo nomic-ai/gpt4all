@@ -74,7 +74,7 @@ LocalDocs supports the following file types:
 #### LocalDocs Roadmap
 - Embedding based semantic search for retrieval. 
 - Customize model fine-tuned with retrieval in the loop.
-- Plugin compatability with chat client server mode.
+- Plugin compatibility with chat client server mode.
 
 ## Server Mode
 
