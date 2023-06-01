@@ -6,13 +6,19 @@ It is optimized to run 7-13B parameter LLMs on the CPU's of any computer running
 
 
 ## Plugins
-GPT4All Chat Plugins allow you to expand the capabilities of Local LLMs. All plugins are compatible with the
-chat clients server mode.
+GPT4All Chat Plugins allow you to expand the capabilities of Local LLMs.
 
-### LocalDocs Plugin (Chat With Your Data, PrivateGPT)
+### LocalDocs Beta Plugin (Chat With Your Data)
 LocalDocs is a GPT4All plugin that allows you to chat with your local files and data.
 It allows you to utilize powerful local LLMs to chat with private data without any data leaving your computer or server.
-When using LocalDocs, your LLM will cite the sources that most likely contributed to a given output. Note, even an LLM equipped with LocalDocs can hallucinate.
+When using LocalDocs, your LLM will cite the sources that most likely contributed to a given output. Note, even an LLM equipped with LocalDocs can hallucinate. If the LocalDocs plugin decides to utilize your documents to help answer a prompt, you will see references appear below the response.
+
+<p align="center">
+  <img width="70%" src="https://github.com/nomic-ai/gpt4all/assets/13879686/f70f40b4-9684-46d8-b388-ca186f63d13e">
+</p>
+<p align="center">
+GPT4All-Snoozy with LocalDocs. Try GPT4All-Groovy for a faster experience!
+</p>
 
 #### Enabling LocalDocs
 1. Install the latest version of GPT4All Chat from [GPT4All Website](https://gpt4all.io).
@@ -22,7 +28,18 @@ add more files to your collection, your LLM will dynamically be able to access t
 4. Spin up a chat session with any LLM (including external ones like ChatGPT but warning data will leave your machine!)
 5. At the top right, click the database icon and select which collection you want your LLM to know about during your chat session.
 
+#### LocalDocs Capabilities
+LocalDocs allows your LLM to have context about the contents of your documentation collection. Not all prompts/question will utilize your document
+collection for context. If LocalDocs was used in your LLMs response, you will see references to the document snippets that LocalDocs used.
 
+LocalDocs **can**:
+- Query your documents based upon your prompt / question. If your documents contain answers that may help answer your question/prompt LocalDocs will try to utilize snippets of your documents to provide context.
+
+LocalDocs **cannot**:
+- Answer general metadata queries (e.g. `What documents do you know about?`, `Tell me about my documents`)
+- Summarize a single document (e.g. `Summarize my magna carta PDF.`)
+
+See the Troubleshooting section for common issues.
 
 #### How LocalDocs Works
 LocalDocs works by maintaining an index of all data in the directory your collection is linked to. This index
@@ -37,28 +54,27 @@ with embedding based retrieval approaches but magnitudes faster to ingest data.
 
 LocalDocs supports the following file types:
 ```json
-["txt", "doc", "docx", "pdf", "rtf", "odt", "html", "htm",
-    "xls", "xlsx", "csv", "ods", "ppt", "pptx", "odp", "xml", "json", "log", "md", "tex", "asc", "wks",
-    "wpd", "wps", "wri", "xhtml", "xht", "xslt", "yaml", "yml", "dtd", "sgml", "tsv", "strings", "resx",
-    "plist", "properties", "ini", "config", "bat", "sh", "ps1", "cmd", "awk", "sed", "vbs", "ics", "mht",
-    "mhtml", "epub", "djvu", "azw", "azw3", "mobi", "fb2", "prc", "lit", "lrf", "tcr", "pdb", "oxps",
-    "xps", "pages", "numbers", "key", "keynote", "abw", "zabw", "123", "wk1", "wk3", "wk4", "wk5", "wq1",
-    "wq2", "xlw", "xlr", "dif", "slk", "sylk", "wb1", "wb2", "wb3", "qpw", "wdb", "wks", "wku", "wr1",
-    "wrk", "xlk", "xlt", "xltm", "xltx", "xlsm", "xla", "xlam", "xll", "xld", "xlv", "xlw", "xlc", "xlm",
-    "xlt", "xln"]
+["txt", "doc", "docx", "pdf", "rtf", "odt", "html", "htm", "xls", "xlsx", "csv", "ods", "ppt", "pptx", "odp", "xml", "json", "log", "md", "tex", "asc", "wks",
+"wpd", "wps", "wri", "xhtml", "xht", "xslt", "yaml", "yml", "dtd", "sgml", "tsv", "strings", "resx",
+"plist", "properties", "ini", "config", "bat", "sh", "ps1", "cmd", "awk", "sed", "vbs", "ics", "mht",
+"mhtml", "epub", "djvu", "azw", "azw3", "mobi", "fb2", "prc", "lit", "lrf", "tcr", "pdb", "oxps",
+"xps", "pages", "numbers", "key", "keynote", "abw", "zabw", "123", "wk1", "wk3", "wk4", "wk5", "wq1",
+"wq2", "xlw", "xlr", "dif", "slk", "sylk", "wb1", "wb2", "wb3", "qpw", "wdb", "wks", "wku", "wr1",
+"wrk", "xlk", "xlt", "xltm", "xltx", "xlsm", "xla", "xlam", "xll", "xld", "xlv", "xlw", "xlc", "xlm",
+"xlt", "xln"]
 ```
 
-#### LocalDocs Limitations
-LocalDocs allows your LLM to have context about the contents of your documentation collection.
+#### Troubleshooting and FAQ
+*My LocalDocs plugin isn't using my documents*
+- Make sure LocalDocs is enabled for your chat session (the DB icon on the top-right should have a border)
+- Try to modify your prompt to be more specific and use terminology that is in your document. This will increase the likelihood that LocalDocs matches document snippets for your question.
+- If your document collection is large, wait 1-2 minutes for it to finish indexing.
 
-LocalDocs currently cannot:
-
-- Answer general metadata queries (e.g. `What documents do you know about?`, `Tell me about my documents`)
-- Summarize *all* of your documents. It can however write a summary informed by the contents of your documents.
 
 #### LocalDocs Roadmap
 - Embedding based semantic search for retrieval. 
 - Customize model fine-tuned with retrieval in the loop.
+- Plugin compatibility with chat client server mode.
 
 ## Server Mode
 
