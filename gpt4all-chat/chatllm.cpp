@@ -216,7 +216,7 @@ bool ChatLLM::loadModel(const QString &modelName)
             m_modelInfo.model = LLModel::construct(filePath.toStdString());
             if (m_modelInfo.model) {
                 m_modelInfo.model->loadModel(filePath.toStdString());
-                switch (m_modelInfo.model->getImplementation().modelType[0]) {
+                switch (m_modelInfo.model->implementation().modelType[0]) {
                 case 'L': m_modelType = LLModelType::LLAMA_; break;
                 case 'G': m_modelType = LLModelType::GPTJ_; break;
                 case 'M': m_modelType = LLModelType::MPT_; break;
