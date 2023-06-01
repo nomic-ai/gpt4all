@@ -18,8 +18,14 @@
 
 void* load_gpt4all_model(const char *fname, int n_threads) {
     // load the model
-    auto gptj4all = llmodel_model_create(fname);
+        llmodel_error new_error{};
+   fprintf(stderr, "%s: fname '%s'\n",
+                            __func__, fname);
+    auto gptj4all = llmodel_model_create2(fname, "auto", &new_error);
     if (gptj4all == NULL ){
+                   fprintf(stderr, "%s: error '%s'\n",
+                            __func__, new_error.message);
+
         return nullptr;
     }
     llmodel_setThreadCount(gptj4all,  n_threads);
