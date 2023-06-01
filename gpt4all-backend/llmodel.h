@@ -72,7 +72,7 @@ public:
     static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
 
 protected:
-    const Implementation *m_implementation; // This is initialized via Implementation::construct
+    const Implementation *m_implementation = nullptr;
 
     virtual void recalculateContext(PromptContext &promptCtx,
         std::function<bool(bool)> recalculate) = 0;
