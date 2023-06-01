@@ -91,9 +91,15 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
     connect(this, &ChatLLM::sendModelLoaded, Network::globalInstance(), &Network::sendModelLoaded);
-    connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged, Qt::QueuedConnection);
+    connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
+        Qt::QueuedConnection); // explicitly queued
     connect(m_chat, &Chat::idChanged, this, &ChatLLM::handleChatIdChanged);
     connect(&m_llmThread, &QThread::started, this, &ChatLLM::threadStarted);
+
+    // The following are blocking operations and will block the llm thread
+    connect(this, &ChatLLM::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
+        Qt::BlockingQueuedConnection);
+
     m_llmThread.setObjectName(m_chat->id());
     m_llmThread.start();
 }
@@ -386,7 +392,19 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     if (!isModelLoaded())
         return false;
 
-    QString instructPrompt = prompt_template.arg(prompt);
+    m_results.clear();
+    const int retrievalSize = LocalDocs::globalInstance()->retrievalSize();
+    emit requestRetrieveFromDB(m_chat->collectionList(), prompt, retrievalSize, &m_results); // blocks
+
+    // Augment the prompt template with the results if any
+    QList<QString> augmentedTemplate;
+    if (!m_results.isEmpty())
+        augmentedTemplate.append("### Context:");
+    for (const ResultInfo &info : m_results)
+        augmentedTemplate.append(info.text);
+    augmentedTemplate.append(prompt_template);
+
+    QString instructPrompt = augmentedTemplate.join("\n").arg(prompt);
 
     m_stopGenerating = false;
     auto promptFunc = std::bind(&ChatLLM::handlePrompt, this, std::placeholders::_1);

@@ -5,6 +5,7 @@
 #include <QThread>
 #include <QFileInfo>
 
+#include "localdocs.h"
 #include "../gpt4all-backend/llmodel.h"
 
 enum LLModelType {
@@ -39,6 +40,7 @@ public:
     void regenerateResponse();
     void resetResponse();
     void resetContext();
+    QList<ResultInfo> results() const { return m_results; }
 
     void stopGenerating() { m_stopGenerating = true; }
 
@@ -85,6 +87,8 @@ Q_SIGNALS:
     void stateChanged();
     void threadStarted();
     void shouldBeLoadedChanged();
+    void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
+
 
 protected:
     bool handlePrompt(int32_t token);
@@ -111,6 +115,7 @@ protected:
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;
+    QList<ResultInfo> m_results;
     bool m_isRecalc;
     bool m_isServer;
     bool m_isChatGPT;

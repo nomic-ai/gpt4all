@@ -24,12 +24,8 @@ LocalDocs::LocalDocs()
         &Database::addFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestRemoveFolder, m_database,
         &Database::removeFolder, Qt::QueuedConnection);
-    connect(this, &LocalDocs::requestRetrieveFromDB, m_database,
-        &Database::retrieveFromDB, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestChunkSizeChange, m_database,
         &Database::changeChunkSize, Qt::QueuedConnection);
-    connect(m_database, &Database::retrieveResult, this,
-        &LocalDocs::receivedResult, Qt::QueuedConnection);
     connect(m_database, &Database::collectionListUpdated,
         m_localDocsModel, &LocalDocsModel::handleCollectionListUpdated, Qt::QueuedConnection);
 }
@@ -47,11 +43,6 @@ void LocalDocs::addFolder(const QString &collection, const QString &path)
 void LocalDocs::removeFolder(const QString &collection, const QString &path)
 {
     emit requestRemoveFolder(collection, path);
-}
-
-void LocalDocs::requestRetrieve(const QString &uid, const QList<QString> &collections, const QString &text)
-{
-    emit requestRetrieveFromDB(uid, collections, text, m_retrievalSize);
 }
 
 int LocalDocs::chunkSize() const
