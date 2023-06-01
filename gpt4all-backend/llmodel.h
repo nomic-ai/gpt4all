@@ -8,13 +8,15 @@
 #include <fstream>
 #include <cstdint>
 
+class Dlhandle;
+
 class LLModel {
 public:
     class Implementation {
         LLModel *(*construct_)();
 
     public:
-        Implementation(class Dlhandle&&);
+        Implementation(Dlhandle&&);
         ~Implementation();
 
         static bool isImplementation(const Dlhandle&);
