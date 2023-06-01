@@ -44,14 +44,16 @@ def test_build_prompt():
     ]
 
     expected_prompt = """You are a helpful assistant.\
-    \n### Instruction:
-            The prompt below is a question to answer, a task to complete, or a conversation 
-            to respond to; decide which and write an appropriate response.\
-    ### Prompt:\
-    Hello there.\
-    Response: Hi, how can I help you?\
-    Reverse a list in Python.\
-    ### Response:"""
+    \n### Instruction: 
+          The prompt below is a question to answer, a task to complete, or a conversation 
+          to respond to; decide which and write an appropriate response.\n
+### Prompt:
+Hello there.
+### Response:
+Hi, how can I help you?
+### Prompt:
+Reverse a list in Python.
+### Response:"""
 
     print(expected_prompt)
 
