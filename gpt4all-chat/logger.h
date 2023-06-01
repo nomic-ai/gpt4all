@@ -1,13 +1,10 @@
 #ifndef LOGGER_H
 #define LOGGER_H
-#include <QObject>
 #include <QFile>
 
-class Logger : public QObject
+class Logger
 {
-    Q_OBJECT
-
-    QFile file;
+    QFile m_file;
 
     static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 

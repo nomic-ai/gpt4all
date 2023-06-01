@@ -5,15 +5,13 @@
 #include <QStandardPaths>
 #include <QDateTime>
 
-class MyLogger: public Logger { };
-Q_GLOBAL_STATIC(MyLogger, loggerInstance)
 Logger *Logger::globalInstance()
 {
-    return loggerInstance();
+    static Logger instance;
+    return &instance;
 }
 
 Logger::Logger()
-    : QObject(nullptr)
 {
     // Get log file dir
     auto dir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
@@ -21,10 +19,10 @@ Logger::Logger()
     QFile::remove(dir+"/log-prev.txt");
     QFile::rename(dir+"/log.txt", dir+"/log-prev.txt");
     // Open new log file
-    file.setFileName(dir+"/log.txt");
-    if (!file.open(QIODevice::NewOnly | QIODevice::WriteOnly | QIODevice::Text)) {
+    m_file.setFileName(dir+"/log.txt");
+    if (!m_file.open(QIODevice::NewOnly | QIODevice::WriteOnly | QIODevice::Text)) {
         qWarning() << "Failed to open log file, logging to stdout...";
-        file.open(stdout, QIODevice::WriteOnly | QIODevice::Text);
+        m_file.open(stdout, QIODevice::WriteOnly | QIODevice::Text);
     }
     // On success, install message handler
     qInstallMessageHandler(Logger::messageHandler);
@@ -57,6 +55,6 @@ void Logger::messageHandler(QtMsgType type, const QMessageLogContext &, const QS
     // Get time and date
     auto timestamp = QDateTime::currentDateTime().toString();
     // Write message
-    logger->file.write(QString("[%1] (%2): %4\n").arg(typeString, timestamp, msg).toStdString().c_str());
-    logger->file.flush();
+    logger->m_file.write(QString("[%1] (%2): %4\n").arg(typeString, timestamp, msg).toStdString().c_str());
+    logger->m_file.flush();
 }

@@ -20,9 +20,10 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion(APP_VERSION);
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
+    Logger::globalInstance();
+
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
-    qmlRegisterSingletonInstance("logger", 1, 0, "Logger", Logger::globalInstance());
     qmlRegisterSingletonInstance("llm", 1, 0, "LLM", LLM::globalInstance());
     qmlRegisterSingletonInstance("download", 1, 0, "Download", Download::globalInstance());
     qmlRegisterSingletonInstance("network", 1, 0, "Network", Network::globalInstance());
