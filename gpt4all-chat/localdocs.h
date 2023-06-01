@@ -20,7 +20,8 @@ public:
 
     Q_INVOKABLE void addFolder(const QString &collection, const QString &path);
     Q_INVOKABLE void removeFolder(const QString &collection, const QString &path);
-    void requestRetrieve(const QString &uid, const QList<QString> &collections, const QString &text);
+
+    Database *database() const { return m_database; }
 
     int chunkSize() const;
     void setChunkSize(int chunkSize);
@@ -31,9 +32,7 @@ public:
 Q_SIGNALS:
     void requestAddFolder(const QString &collection, const QString &path);
     void requestRemoveFolder(const QString &collection, const QString &path);
-    void requestRetrieveFromDB(const QString &uid, const QList<QString> &collections, const QString &text, int retrievalSize);
     void requestChunkSizeChange(int chunkSize);
-    void receivedResult(const QString &uid, const QList<ResultInfo> &result);
     void localDocsModelChanged();
     void chunkSizeChanged();
     void retrievalSizeChanged();
