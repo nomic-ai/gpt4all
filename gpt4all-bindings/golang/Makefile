@@ -144,13 +144,12 @@ llama.o:
 
 llmodel.o:
 	mkdir buildllm
-	cd buildllm && cmake ../../../gpt4all-backend/ $(CMAKEFLAGS) && make VERBOSE=1 llmodel ggml common
-	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llmodel_c.cpp.o ../llmodel.o
-	cd buildllm && cp -rfv CMakeFiles/llmodel.dir/llama.cpp/examples/common.cpp.o ../common.o
-	cd buildllm && cp -rf CMakeFiles/llmodel.dir/gptj.cpp.o ../gptj.o
-	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llamamodel.cpp.o ../llamamodel.o
-	cd buildllm && cp -rf CMakeFiles/llmodel.dir/utils.cpp.o ../utils.o
-	cd buildllm && cp -rf llama.cpp/CMakeFiles/ggml.dir/ggml.c.o ../ggml.o
+	cd buildllm && cmake ../../../gpt4all-backend/ $(CMAKEFLAGS) && make VERBOSE=1 llmodel ggml-mainline-default ggml-230511-default ggml-230519-default
+	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llmodel_c.cpp.o ../llmodel_c.o
+	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llmodel.cpp.o ../llmodel.o
+	cd buildllm && cp -rf CMakeFiles/ggml-230519-default.dir/llama.cpp-230519/ggml.c.o ../ggml-230519.o
+	cd buildllm && cp -rf CMakeFiles/ggml-230511-default.dir/llama.cpp-230511/ggml.c.o ../ggml-230511.o
+	cd buildllm && cp -rf CMakeFiles/ggml-mainline-default.dir/llama.cpp-mainline/ggml.c.o ../ggml-mainline.o
 
 clean:
 	rm -f *.o
@@ -163,7 +162,7 @@ binding.o:
 	$(CXX) $(CXXFLAGS) binding.cpp -o binding.o -c $(LDFLAGS)
 
 libgpt4all.a: binding.o llmodel.o llama.o
-	ar src libgpt4all.a ggml.o common.o llama.o llamamodel.o utils.o llmodel.o gptj.o binding.o
+	ar src libgpt4all.a ggml-230519.o ggml-230511.o ggml-mainline.o llama.o llmodel.o  binding.o
 
 test: libgpt4all.a
 	@C_INCLUDE_PATH=${INCLUDE_PATH} LIBRARY_PATH=${LIBRARY_PATH} go test -v ./...
