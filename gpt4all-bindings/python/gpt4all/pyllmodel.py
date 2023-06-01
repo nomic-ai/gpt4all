@@ -148,10 +148,14 @@ class LLModel:
         model_path_enc = model_path.encode("utf-8")
         build_var = "auto".encode("utf-8")
         self.model = llmodel.llmodel_model_create2(model_path_enc, build_var, None)
-        llmodel.llmodel_loadModel(self.model, model_path_enc)
+
+        if self.model is not None:
+            llmodel.llmodel_loadModel(self.model, model_path_enc)
+        else:
+            raise ValueError("Unable to instantiate model")
         filename = os.path.basename(model_path)
         self.model_name = os.path.splitext(filename)[0]
-    
+
         if llmodel.llmodel_isModelLoaded(self.model):
             return True
         else:
