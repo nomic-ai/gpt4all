@@ -177,7 +177,7 @@ Item {
                             LocalDocs.removeFolder(collection, folder_path)
                         }
                     }
-                    BusyIndicator {
+                    MyBusyIndicator {
                         id: busyIndicator
                         anchors.centerIn: parent
                         visible: item.removing

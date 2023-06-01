@@ -63,10 +63,10 @@ void Chat::connectLLM()
     connect(this, &Chat::loadDefaultModelRequested, m_llmodel, &ChatLLM::loadDefaultModel, Qt::QueuedConnection);
     connect(this, &Chat::loadModelRequested, m_llmodel, &ChatLLM::loadModel, Qt::QueuedConnection);
     connect(this, &Chat::generateNameRequested, m_llmodel, &ChatLLM::generateName, Qt::QueuedConnection);
+    connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::QueuedConnection);
 
     // The following are blocking operations and will block the gui thread, therefore must be fast
     // to respond to
-    connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::BlockingQueuedConnection);
     connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::BlockingQueuedConnection);
     connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::BlockingQueuedConnection);
 }
@@ -151,7 +151,7 @@ void Chat::handleLocalDocsRetrieved(const QString &uid, const QList<ResultInfo> 
 
 void Chat::regenerateResponse()
 {
-    emit regenerateResponseRequested(); // blocking queued connection
+    emit regenerateResponseRequested();
 }
 
 void Chat::stopGenerating()

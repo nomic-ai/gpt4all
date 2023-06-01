@@ -81,14 +81,12 @@ Q_SIGNALS:
     void recalcChanged();
     void sendStartup();
     void sendModelLoaded();
-    void sendResetContext();
     void generatedNameChanged();
     void stateChanged();
     void threadStarted();
     void shouldBeLoadedChanged();
 
 protected:
-    void resetContextProtected();
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
     bool handleRecalculate(bool isRecalc);

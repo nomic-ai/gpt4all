@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import llm
 import download
 import network
@@ -147,9 +148,6 @@ Window {
                 Accessible.role: Accessible.ComboBox
                 Accessible.name: qsTr("ComboBox for displaying/picking the current model")
                 Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
-                background: Rectangle {
-                    color: theme.backgroundDark
-                }
                 onActivated: {
                     currentChat.stopGenerating()
                     currentChat.reset();
@@ -158,13 +156,27 @@ Window {
             }
         }
 
-        BusyIndicator {
+        Item {
             anchors.centerIn: parent
             visible: !currentChat.isModelLoaded && !currentChat.isServer
-            running: !currentChat.isModelLoaded && !currentChat.isServer
-            Accessible.role: Accessible.Animation
-            Accessible.name: qsTr("Busy indicator")
-            Accessible.description: qsTr("Displayed when the model is loading")
+            width: childrenRect.width
+            height: childrenRect.height
+            Row {
+                spacing: 5
+                MyBusyIndicator {
+                    anchors.verticalCenter: parent.verticalCenter
+                    running: parent.visible
+                    Accessible.role: Accessible.Animation
+                    Accessible.name: qsTr("Busy indicator")
+                    Accessible.description: qsTr("Displayed when the model is loading")
+                }
+
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Loading model...")
+                    color: theme.textAccent
+                }
+            }
         }
     }
 
@@ -197,7 +209,7 @@ Window {
 
             Rectangle {
                 id: bar1
-                color: theme.backgroundLightest
+                color: drawerButton.hovered ? theme.textColor : theme.backgroundLightest
                 width: parent.width
                 height: 6
                 radius: 2
@@ -207,7 +219,7 @@ Window {
             Rectangle {
                 id: bar2
                 anchors.centerIn: parent
-                color: theme.backgroundLightest
+                color: drawerButton.hovered ? theme.textColor : theme.backgroundLightest
                 width: parent.width
                 height: 6
                 radius: 2
@@ -217,7 +229,7 @@ Window {
             Rectangle {
                 id: bar3
                 anchors.bottom: parent.bottom
-                color: theme.backgroundLightest
+                color: drawerButton.hovered ? theme.textColor : theme.backgroundLightest
                 width: parent.width
                 height: 6
                 radius: 2
@@ -241,7 +253,7 @@ Window {
         }
     }
 
-    Button {
+    MyToolButton {
         id: networkButton
         anchors.right: parent.right
         anchors.top: parent.top
@@ -251,28 +263,11 @@ Window {
         height: 40
         z: 200
         padding: 15
-
-        Accessible.role: Accessible.Button
+        checkable: true
+        checked: Network.isActive
+        source: "qrc:/gpt4all/icons/network.svg"
         Accessible.name: qsTr("Network button")
         Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
-
-        background: Item {
-            anchors.fill: parent
-            Rectangle {
-                anchors.fill: parent
-                color: "transparent"
-                visible: Network.isActive
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-            }
-            Image {
-                anchors.centerIn: parent
-                width: 30
-                height: 30
-                source: "qrc:/gpt4all/icons/network.svg"
-            }
-        }
 
         onClicked: {
             if (Network.isActive) {
@@ -295,7 +290,7 @@ Window {
         anchors.centerIn: parent
     }
 
-    Button {
+    MyToolButton {
         id: collectionsButton
         anchors.right: networkButton.left
         anchors.top: parent.top
@@ -305,27 +300,9 @@ Window {
         height: 40
         z: 200
         padding: 15
-
-        background: Item {
-            anchors.fill: parent
-            Rectangle {
-                anchors.fill: parent
-                color: "transparent"
-                visible: currentChat.collectionList.length
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-            }
-            Image {
-                anchors.centerIn: parent
-                mipmap: true
-                width: 25
-                height: 25
-                source: "qrc:/gpt4all/icons/db.svg"
-            }
-        }
-
-        Accessible.role: Accessible.Button
+        checkable: true
+        checked: currentChat.collectionList.length
+        source: "qrc:/gpt4all/icons/db.svg"
         Accessible.name: qsTr("Add collections of documents to the chat")
         Accessible.description: qsTr("Provides a button to add collections of documents to the chat")
 
@@ -334,7 +311,7 @@ Window {
         }
     }
 
-    Button {
+    MyToolButton {
         id: settingsButton
         anchors.right: collectionsButton.left
         anchors.top: parent.top
@@ -344,18 +321,7 @@ Window {
         height: 40
         z: 200
         padding: 15
-
-        background: Item {
-            anchors.fill: parent
-            Image {
-                anchors.centerIn: parent
-                width: 30
-                height: 30
-                source: "qrc:/gpt4all/icons/settings.svg"
-            }
-        }
-
-        Accessible.role: Accessible.Button
+        source: "qrc:/gpt4all/icons/settings.svg"
         Accessible.name: qsTr("Settings button")
         Accessible.description: qsTr("Reveals a dialogue where you can change various settings")
 
@@ -394,7 +360,7 @@ Window {
         }
     }
 
-    Button {
+    MyToolButton {
         id: copyButton
         anchors.right: settingsButton.left
         anchors.top: parent.top
@@ -404,20 +370,9 @@ Window {
         height: 40
         z: 200
         padding: 15
-
-        Accessible.role: Accessible.Button
+        source: "qrc:/gpt4all/icons/copy.svg"
         Accessible.name: qsTr("Copy button")
         Accessible.description: qsTr("Copy the conversation to the clipboard")
-
-        background: Item {
-            anchors.fill: parent
-            Image {
-                anchors.centerIn: parent
-                width: 30
-                height: 30
-                source: "qrc:/gpt4all/icons/copy.svg"
-            }
-        }
 
         TextEdit{
             id: copyEdit
@@ -470,7 +425,7 @@ Window {
         return str + "]}"
     }
 
-    Button {
+    MyToolButton {
         id: resetContextButton
         anchors.right: copyButton.left
         anchors.top: parent.top
@@ -480,20 +435,10 @@ Window {
         height: 40
         z: 200
         padding: 15
+        source: "qrc:/gpt4all/icons/regenerate.svg"
 
-        Accessible.role: Accessible.Button
         Accessible.name: text
         Accessible.description: qsTr("Reset the context which erases current conversation")
-
-        background: Item {
-            anchors.fill: parent
-            Image {
-                anchors.centerIn: parent
-                width: 30
-                height: 30
-                source: "qrc:/gpt4all/icons/regenerate.svg"
-            }
-        }
 
         onClicked: {
             Network.sendResetContext(chatModel.count)
@@ -582,17 +527,7 @@ Window {
 
             Rectangle {
                 anchors.fill: parent
-                color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLighter
-
-                Image {
-                    visible: currentChat.isServer || currentChat.modelName.startsWith("chatgpt-")
-                    anchors.fill: parent
-                    sourceSize.width: 1024
-                    sourceSize.height: 1024
-                    fillMode: Image.PreserveAspectFit
-                    opacity: 0.15
-                    source: "qrc:/gpt4all/icons/network.svg"
-                }
+                color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLight
 
                 ListView {
                     id: listView
@@ -615,7 +550,7 @@ Window {
                         cursorVisible: currentResponse ? currentChat.responseInProgress : false
                         cursorPosition: text.length
                         background: Rectangle {
-                            opacity: 0.3
+                            opacity: 1.0
                             color: name === qsTr("Response: ")
                                 ? (currentChat.isServer ? theme.backgroundDarkest : theme.backgroundLighter)
                                 : (currentChat.isServer ? theme.backgroundDark : theme.backgroundLight)
@@ -627,7 +562,7 @@ Window {
 
                         topPadding: 20
                         bottomPadding: 20
-                        leftPadding: 100
+                        leftPadding: 70
                         rightPadding: 100
 
                         onLinkActivated: function (link) {
@@ -640,15 +575,14 @@ Window {
 
                         Item {
                             anchors.left: parent.left
-                            anchors.leftMargin: 90
-                            anchors.top: parent.top
-                            anchors.topMargin: 5
+                            anchors.leftMargin: 60
+                            y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
                             visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
                             width: childrenRect.width
                             height: childrenRect.height
                             Row {
                                 spacing: 5
-                                BusyIndicator {
+                                MyBusyIndicator {
                                     anchors.verticalCenter: parent.verticalCenter
                                     running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
                                     Accessible.role: Accessible.Animation
@@ -658,16 +592,15 @@ Window {
                                 Label {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: currentChat.responseState + "..."
-                                    color: theme.mutedTextColor
+                                    color: theme.textAccent
                                 }
                             }
                         }
 
                         Rectangle {
                             anchors.left: parent.left
-                            anchors.top: parent.top
                             anchors.leftMargin: 20
-                            anchors.topMargin: 20
+                            y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
                             width: 30
                             height: 30
                             radius: 5
@@ -706,23 +639,18 @@ Window {
                                 (!currentResponse || !currentChat.responseInProgress) && Network.isActive
                             anchors.right: parent.right
                             anchors.rightMargin: 20
-                            anchors.top: parent.top
-                            anchors.topMargin: 20
+                            y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
                             spacing: 10
 
                             Item {
                                 width: childrenRect.width
                                 height: childrenRect.height
-                                Button {
+                                MyToolButton {
                                     id: thumbsUp
                                     width: 30
                                     height: 30
                                     opacity: thumbsUpState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
-                                    background: Image {
-                                        anchors.fill: parent
-                                        source: "qrc:/gpt4all/icons/thumbs_up.svg"
-                                    }
-                                    Accessible.role: Accessible.Button
+                                    source: "qrc:/gpt4all/icons/thumbs_up.svg"
                                     Accessible.name: qsTr("Thumbs up")
                                     Accessible.description: qsTr("Gives a thumbs up to the response")
                                     onClicked: {
@@ -736,7 +664,7 @@ Window {
                                     }
                                 }
 
-                                Button {
+                                MyToolButton {
                                     id: thumbsDown
                                     anchors.top: thumbsUp.top
                                     anchors.topMargin: 10
@@ -754,11 +682,7 @@ Window {
                                         x: thumbsDown.width
                                       }
                                     ]
-                                    background: Image {
-                                        anchors.fill: parent
-                                        source: "qrc:/gpt4all/icons/thumbs_down.svg"
-                                    }
-                                    Accessible.role: Accessible.Button
+                                    source: "qrc:/gpt4all/icons/thumbs_down.svg"
                                     Accessible.name: qsTr("Thumbs down")
                                     Accessible.description: qsTr("Opens thumbs down dialog")
                                     onClicked: {
@@ -799,10 +723,20 @@ Window {
                         height: 60
                     }
                 }
+
+                Image {
+                    visible: currentChat.isServer || currentChat.modelName.startsWith("chatgpt-")
+                    anchors.fill: parent
+                    sourceSize.width: 1024
+                    sourceSize.height: 1024
+                    fillMode: Image.PreserveAspectFit
+                    opacity: 0.15
+                    source: "qrc:/gpt4all/icons/network.svg"
+                }
             }
         }
 
-        Button {
+        MyButton {
             visible: chatModel.count && !currentChat.isServer
             Image {
                 anchors.verticalCenter: parent.verticalCenter
@@ -840,22 +774,20 @@ Window {
             }
             anchors.bottom: textInputView.top
             anchors.horizontalCenter: textInputView.horizontalCenter
-            anchors.bottomMargin: 40
+            anchors.bottomMargin: 20
             padding: 15
-            contentItem: Text {
-                text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
-                color: theme.textColor
-                Accessible.role: Accessible.Button
-                Accessible.name: text
-                Accessible.description: qsTr("Controls generation of the response")
-            }
-            background: Rectangle {
-                opacity: .5
-                border.color: theme.backgroundLightest
-                border.width: 1
-                radius: 10
-                color: theme.backgroundLight
-            }
+            text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
+            Accessible.description: qsTr("Controls generation of the response")
+        }
+
+        RectangularGlow {
+            id: effect
+            anchors.fill: textInputView
+            glowRadius: 50
+            spread: 0
+            color: theme.backgroundDark
+            cornerRadius: 10
+            opacity: 0.2
         }
 
         ScrollView {
@@ -866,19 +798,20 @@ Window {
             anchors.margins: 30
             height: Math.min(contentHeight, 200)
             visible: !currentChat.isServer
-
             TextArea {
                 id: textInput
                 color: theme.textColor
-                padding: 20
+                topPadding: 30
+                bottomPadding: 30
+                leftPadding: 20
                 rightPadding: 40
                 enabled: currentChat.isModelLoaded && !currentChat.isServer
                 wrapMode: Text.WordWrap
-                font.pixelSize: theme.fontSizeLarge
+                font.pixelSize: theme.fontSizeLarger
                 placeholderText: qsTr("Send a message...")
                 placeholderTextColor: theme.mutedTextColor
                 background: Rectangle {
-                    color: theme.backgroundLighter
+                    color: theme.backgroundAccent
                     radius: 10
                 }
                 Accessible.role: Accessible.EditableText
@@ -911,20 +844,14 @@ Window {
             }
         }
 
-        Button {
+        MyToolButton {
             anchors.right: textInputView.right
             anchors.verticalCenter: textInputView.verticalCenter
             anchors.rightMargin: 15
             width: 30
             height: 30
             visible: !currentChat.isServer
-
-            background: Image {
-                anchors.centerIn: parent
-                source: "qrc:/gpt4all/icons/send_message.svg"
-            }
-
-            Accessible.role: Accessible.Button
+            source: "qrc:/gpt4all/icons/send_message.svg"
             Accessible.name: qsTr("Send the message button")
             Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
 

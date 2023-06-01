@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Basic
 
 ComboBox {
+    id: comboBox
     font.pixelSize: theme.fontSizeLarge
     spacing: 0
     padding: 10
@@ -50,10 +51,36 @@ ComboBox {
             color: theme.backgroundDark
         }
     }
+    indicator: Canvas {
+        id: canvas
+        x: comboBox.width - width - comboBox.rightPadding
+        y: comboBox.topPadding + (comboBox.availableHeight - height) / 2
+        width: 12
+        height: 18
+        contextType: "2d"
+
+        Connections {
+            target: comboBox
+            function onPressedChanged() { canvas.requestPaint(); }
+        }
+
+        onPaint: {
+            var context = getContext("2d");
+            context.reset();
+            context.lineWidth = 2;
+            context.moveTo(0, height / 2 - 2);
+            context.lineTo(width / 2, 0);
+            context.lineTo(width, height / 2 - 2);
+            context.moveTo(0, height / 2 + 2);
+            context.lineTo(width / 2, height);
+            context.lineTo(width, height / 2 + 2);
+            context.strokeStyle = comboBox.pressed ? theme.textAccent : theme.mutedTextColor;
+            context.stroke();
+
+        }
+    }
     background: Rectangle {
         color: theme.backgroundDark
-        border.width: 1
-        border.color: theme.backgroundLightest
         radius: 10
     }
 }
