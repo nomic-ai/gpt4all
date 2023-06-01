@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QStandardPaths>
 #include <QDateTime>
+#include <iostream>
 
 class MyLogger: public Logger { };
 Q_GLOBAL_STATIC(MyLogger, loggerInstance)
@@ -56,6 +57,9 @@ void Logger::messageHandler(QtMsgType type, const QMessageLogContext &, const QS
     // Get time and date
     auto timestamp = QDateTime::currentDateTime().toString();
     // Write message
-    logger->m_file.write(QString("[%1] (%2): %4\n").arg(typeString, timestamp, msg).toStdString().c_str());
+    const std::string out = QString("[%1] (%2): %4\n").arg(typeString, timestamp, msg).toStdString();
+    logger->m_file.write(out.c_str());
     logger->m_file.flush();
+    std::cerr << out;
+    fflush(stderr);
 }
