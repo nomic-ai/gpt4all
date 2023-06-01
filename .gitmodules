@@ -1,3 +1,9 @@
-[submodule "llama.cpp"]
-	path = gpt4all-backend/llama.cpp
+[submodule "llama.cpp-230519"]
+	path = gpt4all-backend/llama.cpp-230519
+	url = https://github.com/ggerganov/llama.cpp.git
+[submodule "llama.cpp-230511"]
+	path = gpt4all-backend/llama.cpp-230511
 	url = https://github.com/manyoso/llama.cpp.git
+[submodule "llama.cpp-mainline"]
+	path = gpt4all-backend/llama.cpp-mainline
+	url = https://github.com/ggerganov/llama.cpp.git

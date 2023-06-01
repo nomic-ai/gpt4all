@@ -5,6 +5,15 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#ifdef __GNUC__
+#define DEPRECATED __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED __declspec(deprecated)
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define DEPRECATED
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15,12 +24,23 @@ extern "C" {
 typedef void *llmodel_model;
 
 /**
+ * Structure containing any errors that may eventually occur
+ */
+struct llmodel_error {
+    const char *message;  // Human readable error description; Thread-local; guaranteed to survive until next llmodel C API call
+    int code;             // errno; 0 if none
+};
+#ifndef __cplusplus
+typedef struct llmodel_error llmodel_error;
+#endif
+
+/**
  * llmodel_prompt_context structure for holding the prompt context.
  * NOTE: The implementation takes care of all the memory handling of the raw logits pointer and the
  * raw tokens pointer. Attempting to resize them or modify them in any way can lead to undefined
  * behavior.
  */
-typedef struct {
+struct llmodel_prompt_context {
     float *logits;          // logits of current context
     size_t logits_size;     // the size of the raw logits vector
     int32_t *tokens;        // current tokens in the context window
@@ -35,7 +55,10 @@ typedef struct {
     float repeat_penalty;   // penalty factor for repeated tokens
     int32_t repeat_last_n;  // last n tokens to penalize
     float context_erase;    // percent of context to erase if we exceed the context window
-} llmodel_prompt_context;
+};
+#ifndef __cplusplus
+typedef struct llmodel_prompt_context llmodel_prompt_context;
+#endif
 
 /**
  * Callback type for prompt processing.
@@ -60,48 +83,22 @@ typedef bool (*llmodel_response_callback)(int32_t token_id, const char *response
 typedef bool (*llmodel_recalculate_callback)(bool is_recalculating);
 
 /**
- * Create a GPTJ instance.
- * @return A pointer to the GPTJ instance.
+ * Create a llmodel instance.
+ * Recognises correct model type from file at model_path
+ * @param model_path A string representing the path to the model file.
+ * @return A pointer to the llmodel_model instance; NULL on error.
  */
-llmodel_model llmodel_gptj_create();
-
-/**
- * Destroy a GPTJ instance.
- * @param gptj A pointer to the GPTJ instance.
- */
-void llmodel_gptj_destroy(llmodel_model gptj);
-
-/**
- * Create a MPT instance.
- * @return A pointer to the MPT instance.
- */
-llmodel_model llmodel_mpt_create();
-
-/**
- * Destroy a MPT instance.
- * @param gptj A pointer to the MPT instance.
- */
-void llmodel_mpt_destroy(llmodel_model mpt);
-
-/**
- * Create a LLAMA instance.
- * @return A pointer to the LLAMA instance.
- */
-llmodel_model llmodel_llama_create();
-
-/**
- * Destroy a LLAMA instance.
- * @param llama A pointer to the LLAMA instance.
- */
-void llmodel_llama_destroy(llmodel_model llama);
+DEPRECATED llmodel_model llmodel_model_create(const char *model_path);
 
 /**
  * Create a llmodel instance.
  * Recognises correct model type from file at model_path
- * @param model_path A string representing the path to the model file. 
- * @return A pointer to the llmodel_model instance.
+ * @param model_path A string representing the path to the model file; will only be used to detect model type.
+ * @param build_variant A string representing the implementation to use (auto, default, avxonly, ...),
+ * @param error A pointer to a llmodel_error; will only be set on error.
+ * @return A pointer to the llmodel_model instance; NULL on error.
  */
-llmodel_model llmodel_model_create(const char *model_path);
+llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, llmodel_error *error);
 
 /**
  * Destroy a llmodel instance.
@@ -109,7 +106,6 @@ llmodel_model llmodel_model_create(const char *model_path);
  * @param model a pointer to a llmodel_model instance.
  */
 void llmodel_model_destroy(llmodel_model model);
-
 
 /**
  * Load a model from a file.
