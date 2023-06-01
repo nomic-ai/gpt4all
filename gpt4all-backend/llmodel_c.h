@@ -68,6 +68,13 @@ typedef struct llmodel_prompt_context llmodel_prompt_context;
 typedef bool (*llmodel_prompt_callback)(int32_t token_id);
 
 /**
+ * Callback type for progress on prompt processing.
+ * @param Float percentage (0.0f to 100.0f).
+ * @return a bool indicating whether the model should keep generating.
+ */
+typedef bool (*llmodel_prompt_progress_callback)(bool is_recalculating);
+
+/**
  * Callback type for response.
  * @param token_id The token id of the response.
  * @param response The response string. NOTE: a token_id of -1 indicates the string is an error string.
@@ -81,6 +88,23 @@ typedef bool (*llmodel_response_callback)(int32_t token_id, const char *response
  * @return a bool indicating whether the model should keep generating.
  */
 typedef bool (*llmodel_recalculate_callback)(bool is_recalculating);
+
+/**
+ * llmodel_prompt_callbacks structure for holding the callbacks executed by llmodel_prompt()/llmodel_prompt2().
+ * Includes a boolean `stop` pointer whose referenced value may be incremented to make the prompt() function stop and return asap (will happen automatically when returning false).
+ * Each value may be NULL.
+ */
+struct llmodel_prompt_callbacks {
+    llmodel_prompt_callback prompt_callback;
+    llmodel_prompt_progress_callback prompt_progress_callback;
+    llmodel_response_callback response_callback;
+    llmodel_recalculate_callback recalculate_callback;
+    _Bool legacy_behavior; // Private; must be initialized to 0
+    uint8_t *stop; // Initialized by and only valid during prompt() function execution
+};
+#ifndef __cplusplus
+typedef struct llmodel_prompt_callbacks llmodel_prompt_callbacks;
+#endif
 
 /**
  * Create a llmodel instance.
@@ -157,10 +181,21 @@ uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src);
  * @param recalculate_callback A callback function for handling recalculation requests.
  * @param ctx A pointer to the llmodel_prompt_context structure.
  */
-void llmodel_prompt(llmodel_model model, const char *prompt,
-                    llmodel_prompt_callback prompt_callback,
-                    llmodel_response_callback response_callback,
-                    llmodel_recalculate_callback recalculate_callback,
+DEPRECATED void llmodel_prompt(llmodel_model model, const char *prompt,
+                               llmodel_prompt_callback prompt_callback,
+                               llmodel_response_callback response_callback,
+                               llmodel_recalculate_callback recalculate_callback,
+                               llmodel_prompt_context *ctx);
+
+/**
+ * Generate a response using the model.
+ * @param model A pointer to the llmodel_model instance.
+ * @param prompt A string representing the input prompt.
+ * @param callbacks A `struct llmodel_prompt_callbacks` filled with callbacks.
+ * @param ctx A pointer to the llmodel_prompt_context structure.
+ */
+void llmodel_prompt2(llmodel_model model, const char *prompt,
+                    llmodel_prompt_callbacks *callbacks,
                     llmodel_prompt_context *ctx);
 
 /**

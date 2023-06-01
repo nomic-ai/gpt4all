@@ -16,7 +16,7 @@ ChatGPT::ChatGPT()
     : QObject(nullptr)
     , m_modelName("gpt-3.5-turbo")
     , m_ctx(nullptr)
-    , m_responseCallback(nullptr)
+    , callbacks(nullptr)
 {
 }
 
@@ -64,14 +64,8 @@ size_t ChatGPT::restoreState(const uint8_t *src)
     return 0;
 }
 
-void ChatGPT::prompt(const std::string &prompt,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &promptCtx) {
-
-    Q_UNUSED(promptCallback);
-    Q_UNUSED(recalculateCallback);
+void ChatGPT::prompt(const std::string &prompt, PromptCallbacks &cbs, PromptContext &promptCtx) {
+    cbs.should_stop = false;
 
     if (!isModelLoaded()) {
         std::cerr << "ChatGPT ERROR: prompt won't work with an unloaded model!\n";
@@ -79,7 +73,7 @@ void ChatGPT::prompt(const std::string &prompt,
     }
 
     m_ctx = &promptCtx;
-    m_responseCallback = responseCallback;
+    callbacks = &cbs;
 
     // FIXME: We don't set the max_tokens on purpose because in order to do so safely without encountering
     // an error we need to be able to count the tokens in our prompt. The only way to do this is to use
@@ -133,7 +127,7 @@ void ChatGPT::prompt(const std::string &prompt,
     m_context.append(m_currentResponse);
 
     m_ctx = nullptr;
-    m_responseCallback = nullptr;
+    callbacks = nullptr;
     m_currentResponse = QString();
 }
 
@@ -165,8 +159,8 @@ void ChatGPT::handleReadyRead()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        m_responseCallback(-1, QString("\nERROR: 2 ChatGPT responded with error code \"%1-%2\" %3\n")
-            .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
+        callbacks->responseCallback(-1, QString("\nERROR: 2 ChatGPT responded with error code \"%1-%2\" %3\n")
+                                    .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
         return;
     }
 
@@ -185,8 +179,8 @@ void ChatGPT::handleReadyRead()
         QJsonParseError err;
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
         if (err.error != QJsonParseError::NoError) {
-            m_responseCallback(-1, QString("\nERROR: ChatGPT responded with invalid json \"%1\"\n")
-                .arg(err.errorString()).toStdString());
+            callbacks->responseCallback(-1, QString("\nERROR: ChatGPT responded with invalid json \"%1\"\n")
+                                        .arg(err.errorString()).toStdString());
             continue;
         }
 
@@ -196,9 +190,10 @@ void ChatGPT::handleReadyRead()
         const QJsonObject delta = choice.value("delta").toObject();
         const QString content = delta.value("content").toString();
         Q_ASSERT(m_ctx);
-        Q_ASSERT(m_responseCallback);
+        Q_ASSERT(callbacks);
         m_currentResponse += content;
-        if (!m_responseCallback(0, content.toStdString())) {
+        callbacks->responseCallback(0, content.toStdString());
+        if (callbacks->should_stop) {
             reply->abort();
             return;
         }

@@ -815,11 +815,8 @@ size_t MPT::restoreState(const uint8_t *src)
     return mpt_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-void MPT::prompt(const std::string &prompt,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &promptCtx) {
+void MPT::prompt(const std::string &prompt, PromptCallbacks& cbs, PromptContext &promptCtx) {
+    cbs.should_stop = false;
 
     if (!isModelLoaded()) {
         std::cerr << "GPT-J ERROR: prompt won't work with an unloaded model!\n";
@@ -833,7 +830,7 @@ void MPT::prompt(const std::string &prompt,
     promptCtx.n_ctx = d_ptr->model->hparams.n_ctx;
 
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
-        responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
+        cbs.responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
         std::cerr << "GPT-J ERROR: The prompt is" << embd_inp.size() <<
             "tokens and the context window is" << promptCtx.n_ctx << "!\n";
         return;
@@ -853,6 +850,7 @@ void MPT::prompt(const std::string &prompt,
     }
 
     // process the prompt in batches
+    reportPromptBeginning(cbs);
     size_t i = 0;
     while (i < embd_inp.size()) {
         size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
@@ -865,7 +863,7 @@ void MPT::prompt(const std::string &prompt,
             std::cerr << "MPT: reached the end of the context window so resizing\n";
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculateCallback);
+            recalculateContext(promptCtx, cbs);
             assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
         }
 
@@ -875,17 +873,22 @@ void MPT::prompt(const std::string &prompt,
             return;
         }
 
+        reportPromptProgress(cbs, i, embd_inp.size());
+
         size_t tokens = batch_end - i;
         for (size_t t = 0; t < tokens; ++t) {
             if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(batch.at(t));
-            if (!promptCallback(batch.at(t)))
+            cbs.promptCallback(batch.at(t));
+            if (cbs.should_stop)
                 return;
         }
         promptCtx.n_past += batch.size();
         i = batch_end;
     }
+
+    reportPromptCompletion(cbs);
 
     std::string cachedResponse;
     std::vector<int> cachedTokens;
@@ -916,7 +919,7 @@ void MPT::prompt(const std::string &prompt,
             std::cerr << "MPT: reached the end of the context window so resizing\n";
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculateCallback);
+            recalculateContext(promptCtx, cbs);
             assert(promptCtx.n_past + 1 <= promptCtx.n_ctx);
         }
 
@@ -964,14 +967,15 @@ void MPT::prompt(const std::string &prompt,
             if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
-            if (!responseCallback(t, d_ptr->vocab.id_to_token[t]))
+            cbs.responseCallback(t, d_ptr->vocab.id_to_token[t]);
+            if (cbs.should_stop)
                 return;
         }
         cachedTokens.clear();
     }
 }
 
-void MPT::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
+void MPT::recalculateContext(PromptContext &promptCtx, PromptCallbacks& cbs)
 {
     size_t i = 0;
     promptCtx.n_past = 0;
@@ -987,14 +991,15 @@ void MPT::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)>
             goto stop_generating;
         }
         promptCtx.n_past += batch.size();
-        if (!recalculate(true))
+        cbs.recalculateCallback(true);
+        if (cbs.should_stop)
             goto stop_generating;
         i = batch_end;
     }
     assert(promptCtx.n_past == int32_t(promptCtx.tokens.size()));
 
 stop_generating:
-    recalculate(false);
+    cbs.recalculateCallback(false);
 }
 
 #if defined(_WIN32)

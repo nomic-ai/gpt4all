@@ -114,3 +114,17 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     // Construct and return llmodel implementation
     return impl->construct();
 }
+
+void LLModel::prompt(const std::string &prompt_, std::function<bool (int32_t)> promptCallback, std::function<bool (int32_t, const std::string &)> responseCallback, std::function<bool (bool)> recalculateCallback, PromptContext &ctx) {
+    PromptCallbacks cbs;
+    cbs.promptCallback = [&] (int32_t v) {
+        cbs.should_stop = !promptCallback(v);
+    };
+    cbs.responseCallback = [&] (int32_t v, const std::string& s) {
+        cbs.should_stop = !responseCallback(v, s);
+    };
+    cbs.recalculateCallback = [&] (bool v) {
+        cbs.should_stop = !recalculateCallback(v);
+    };
+    prompt(prompt_, cbs, ctx);
+}

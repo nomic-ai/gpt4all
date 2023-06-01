@@ -84,20 +84,34 @@ uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src)
     return wrapper->llModel->restoreState(src);
 }
 
+// Helper function for the C callbacks to update stop value according to legacy behavior value
+void update_callbacks_stop_value(llmodel_prompt_callbacks *callbacks, bool should_stop) {
+    *callbacks->stop = uint8_t(!callbacks->legacy_behavior)*(*callbacks->stop) + should_stop;
+}
+
 // Wrapper functions for the C callbacks
-bool prompt_wrapper(int32_t token_id, void *user_data) {
-    llmodel_prompt_callback callback = reinterpret_cast<llmodel_prompt_callback>(user_data);
-    return callback(token_id);
+void prompt_wrapper(int32_t token_id, void *user_data) {
+    llmodel_prompt_callbacks *callbacks = reinterpret_cast<llmodel_prompt_callbacks*>(user_data);
+    bool should_stop = !callbacks->prompt_callback(token_id);
+    update_callbacks_stop_value(callbacks, should_stop);
 }
 
-bool response_wrapper(int32_t token_id, const std::string &response, void *user_data) {
-    llmodel_response_callback callback = reinterpret_cast<llmodel_response_callback>(user_data);
-    return callback(token_id, response.c_str());
+void prompt_progress_wrapper(float progress, void *user_data) {
+    llmodel_prompt_callbacks *callbacks = reinterpret_cast<llmodel_prompt_callbacks*>(user_data);
+    bool should_stop = !callbacks->prompt_progress_callback(progress);
+    update_callbacks_stop_value(callbacks, should_stop);
 }
 
-bool recalculate_wrapper(bool is_recalculating, void *user_data) {
-    llmodel_recalculate_callback callback = reinterpret_cast<llmodel_recalculate_callback>(user_data);
-    return callback(is_recalculating);
+void response_wrapper(int32_t token_id, const std::string &response, void *user_data) {
+    llmodel_prompt_callbacks *callbacks = reinterpret_cast<llmodel_prompt_callbacks*>(user_data);
+    bool should_stop = !callbacks->response_callback(token_id, response.c_str());
+    update_callbacks_stop_value(callbacks, should_stop);
+}
+
+void recalculate_wrapper(bool is_recalculating, void *user_data) {
+    llmodel_prompt_callbacks *callbacks = reinterpret_cast<llmodel_prompt_callbacks*>(user_data);
+    bool should_stop = !callbacks->recalculate_callback(is_recalculating);
+    update_callbacks_stop_value(callbacks, should_stop);
 }
 
 void llmodel_prompt(llmodel_model model, const char *prompt,
@@ -106,15 +120,32 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
                     llmodel_recalculate_callback recalculate_callback,
                     llmodel_prompt_context *ctx)
 {
+    llmodel_prompt_callbacks cbs{};
+    cbs.prompt_callback = prompt_callback;
+    cbs.response_callback = response_callback;
+    cbs.recalculate_callback = recalculate_callback;
+    cbs.legacy_behavior = 1; // Enable legacy behavior
+    llmodel_prompt2(model, prompt, &cbs, ctx);
+}
+
+void llmodel_prompt2(llmodel_model model, const char *prompt,
+                     llmodel_prompt_callbacks *callbacks,
+                     llmodel_prompt_context *ctx)
+{
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
 
     // Create std::function wrappers that call the C function pointers
-    std::function<bool(int32_t)> prompt_func =
-        std::bind(&prompt_wrapper, std::placeholders::_1, reinterpret_cast<void*>(prompt_callback));
-    std::function<bool(int32_t, const std::string&)> response_func =
-        std::bind(&response_wrapper, std::placeholders::_1, std::placeholders::_2, reinterpret_cast<void*>(response_callback));
-    std::function<bool(bool)> recalc_func =
-        std::bind(&recalculate_wrapper, std::placeholders::_1, reinterpret_cast<void*>(recalculate_callback));
+    LLModel::PromptCallbacks cpp_callbacks;
+    cpp_callbacks.promptCallback =
+        std::bind(&prompt_wrapper, std::placeholders::_1, reinterpret_cast<void*>(callbacks));
+    cpp_callbacks.promptProgressCallback =
+        std::bind(&prompt_progress_wrapper, std::placeholders::_1, reinterpret_cast<void*>(callbacks));
+    cpp_callbacks.responseCallback =
+        std::bind(&response_wrapper, std::placeholders::_1, std::placeholders::_2, reinterpret_cast<void*>(callbacks));
+    cpp_callbacks.recalculateCallback =
+        std::bind(&recalculate_wrapper, std::placeholders::_1, reinterpret_cast<void*>(callbacks));
+
+    callbacks->stop = reinterpret_cast<uint8_t*>(&cpp_callbacks.should_stop); // Should be safe on little endian since uint8_t is always equal or lower size than bool
 
     // Copy the C prompt context
     wrapper->promptContext.n_past = ctx->n_past;
@@ -129,7 +160,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     wrapper->promptContext.contextErase = ctx->context_erase;
 
     // Call the C++ prompt method
-    wrapper->llModel->prompt(prompt, prompt_func, response_func, recalc_func, wrapper->promptContext);
+    wrapper->llModel->prompt(prompt, cpp_callbacks, wrapper->promptContext);
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data
     // which involves no copies
