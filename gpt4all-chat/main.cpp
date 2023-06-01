@@ -10,6 +10,7 @@
 #include "download.h"
 #include "network.h"
 #include "config.h"
+#include "logger.h"
 
 int main(int argc, char *argv[])
 {
@@ -21,6 +22,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
+    qmlRegisterSingletonInstance("logger", 1, 0, "Logger", Logger::globalInstance());
     qmlRegisterSingletonInstance("llm", 1, 0, "LLM", LLM::globalInstance());
     qmlRegisterSingletonInstance("download", 1, 0, "Download", Download::globalInstance());
     qmlRegisterSingletonInstance("network", 1, 0, "Network", Network::globalInstance());
