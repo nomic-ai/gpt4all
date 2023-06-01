@@ -25,18 +25,11 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         }
     }
 
-    private static IGpt4AllModel CreateModel(string modelPath, ModelType? modelType = null)
+    private static IGpt4AllModel CreateModel(string modelPath)
     {
-        var modelType_ = modelType ?? ModelFileUtils.GetModelTypeFromModelFileHeader(modelPath);
-
-        var handle = modelType_ switch
-        {
-            ModelType.LLAMA => NativeMethods.llmodel_llama_create(),
-            ModelType.GPTJ => NativeMethods.llmodel_gptj_create(),
-            ModelType.MPT => NativeMethods.llmodel_mpt_create(),
-            _ => NativeMethods.llmodel_model_create(modelPath),
-        };
-
+        var modelType_ = ModelFileUtils.GetModelTypeFromModelFileHeader(modelPath);
+        IntPtr error;
+        var handle = NativeMethods.llmodel_model_create2(modelPath, "auto", out error);
         var loadedSuccesfully = NativeMethods.llmodel_loadModel(handle, modelPath);
 
         if (loadedSuccesfully == false)
@@ -51,11 +44,5 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         return new Gpt4All(underlyingModel);
     }
 
-    public IGpt4AllModel LoadModel(string modelPath) => CreateModel(modelPath, modelType: null);
-
-    public IGpt4AllModel LoadMptModel(string modelPath) => CreateModel(modelPath, ModelType.MPT);
-
-    public IGpt4AllModel LoadGptjModel(string modelPath) => CreateModel(modelPath, ModelType.GPTJ);
-
-    public IGpt4AllModel LoadLlamaModel(string modelPath) => CreateModel(modelPath, ModelType.LLAMA);
+    public IGpt4AllModel LoadModel(string modelPath) => CreateModel(modelPath);
 }

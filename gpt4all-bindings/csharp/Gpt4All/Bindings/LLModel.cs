@@ -183,22 +183,6 @@ public class LLModel : ILLModel
     {
         NativeMethods.llmodel_model_destroy(_handle);
     }
-
-    protected void DestroyLLama()
-    {
-        NativeMethods.llmodel_llama_destroy(_handle);
-    }
-
-    protected void DestroyGptj()
-    {
-        NativeMethods.llmodel_gptj_destroy(_handle);
-    }
-
-    protected void DestroyMtp()
-    {
-        NativeMethods.llmodel_mpt_destroy(_handle);
-    }
-
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed) return;
@@ -210,15 +194,6 @@ public class LLModel : ILLModel
 
         switch (_modelType)
         {
-            case ModelType.LLAMA:
-                DestroyLLama();
-                break;
-            case ModelType.GPTJ:
-                DestroyGptj();
-                break;
-            case ModelType.MPT:
-                DestroyMtp();
-                break;
             default:
                 Destroy();
                 break;
