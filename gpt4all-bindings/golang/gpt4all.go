@@ -4,7 +4,7 @@ package gpt4all
 // #cgo CXXFLAGS: -std=c++17 -I${SRCDIR}../../gpt4all-backend/ -I${SRCDIR}../../gpt4all-backend/llama.cpp -I./
 // #cgo darwin LDFLAGS: -framework Accelerate
 // #cgo darwin CXXFLAGS: -std=c++17
-// #cgo LDFLAGS: -lgpt4all -lm -lstdc++
+// #cgo LDFLAGS: -lgpt4all -lm -lstdc++ -ldl
 // void* load_model(const char *fname, int n_threads);
 // void model_prompt( const char *prompt, void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, int top_k,
 //                            float top_p, float temp, int n_batch,float ctx_erase);
