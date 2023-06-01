@@ -17,8 +17,13 @@
         "../../gpt4all-backend/gptj.cpp",
         "../../gpt4all-backend/llamamodel.cpp",
         "../../gpt4all-backend/mpt.cpp",
+        "prompt.cc",
         "index.cc",
        ],
+      "defines": [
+        'GGML_BUILD_VARIANT=\"default\"',
+        'LLAMA_VERSIONS=<=3',
+      ],
       "conditions": [
         ['OS=="mac"', {
             'defines': [
