@@ -5,6 +5,7 @@
 #include <fstream>
 #include <filesystem>
 #include <cassert>
+#include <cstdlib>
 
 static bool requires_avxonly() {
 #ifdef __x86_64__
@@ -64,7 +65,8 @@ const std::vector<LLModel::Implementation> &LLModel::getImplementationList() {
             }
         };
 
-        search_in_directory(".");
+        const char *custom_impl_lookup_path = getenv("GPT4ALL_IMPLEMENTATIONS_PATH");
+        search_in_directory(custom_impl_lookup_path?custom_impl_lookup_path:".");
 #if defined(__APPLE__)
         search_in_directory("../../../");
 #endif
