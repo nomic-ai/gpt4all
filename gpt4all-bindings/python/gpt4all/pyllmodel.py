@@ -39,22 +39,27 @@ def load_llmodel_library():
     c_lib_ext = get_c_shared_lib_extension()
 
     llmodel_file = "libllmodel" + '.' + c_lib_ext
-    model_lib_files = glob.glob(f"lib*.{c_lib_ext}")
-    model_lib_dirs = []
 
-    for lib in model_lib_files:
-        if lib != llmodel_file:
-            model_lib_dirs.append(str(pkg_resources.resource_filename('gpt4all', \
-                os.path.join(LLMODEL_PATH, lib))).replace("\\", "\\\\"))
+    model_lib_path = str(pkg_resources.resource_filename("gpt4all", \
+        os.path.join(LLMODEL_PATH, f"lib*.{c_lib_ext}"))).replace("\\", "\\\\")
+    model_lib_dirs = glob.glob(model_lib_path)
 
-    llama_file = "libllama" + '.' + c_lib_ext
-    llama_dir = str(pkg_resources.resource_filename('gpt4all', os.path.join(LLMODEL_PATH, llama_file)))
+    # model_lib_dirs = []
+    # print("hello")
+    # print(model_lib_files)
+    # for lib in model_lib_files:
+    #     if lib != llmodel_file:
+    #         model_lib_dirs.append(str(pkg_resources.resource_filename('gpt4all', \
+    #             os.path.join(LLMODEL_PATH, lib))).replace("\\", "\\\\"))
+
     llmodel_dir = str(pkg_resources.resource_filename('gpt4all', \
         os.path.join(LLMODEL_PATH, llmodel_file))).replace("\\", "\\\\")
 
     model_libs = []
     for model_dir in model_lib_dirs:
-        model_libs.append(ctypes.CDLL(model_dir, mode=ctypes.RTLD_GLOBAL))
+        if "libllmodel" not in model_dir:
+            print("loading")
+            model_libs.append(ctypes.CDLL(model_dir, mode=ctypes.RTLD_GLOBAL))
     llmodel_lib = ctypes.CDLL(llmodel_dir)
 
     return llmodel_lib, model_libs
@@ -82,6 +87,8 @@ class LLModelPromptContext(ctypes.Structure):
                 ("context_erase", ctypes.c_float)]
 
 # Define C function signatures using ctypes
+llmodel.llmodel_model_create.argtypes = [ctypes.c_char_p]
+llmodel.llmodel_model_create.restype = ctypes.c_void_p
 
 llmodel.llmodel_model_create2.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(LLModelError)]
 llmodel.llmodel_model_create2.restype = ctypes.c_void_p
@@ -146,13 +153,13 @@ class LLModel:
         True if model loaded successfully, False otherwise
         """
         model_path_enc = model_path.encode("utf-8")
-        build_var = "auto".encode("utf-8")
-        self.model = llmodel.llmodel_model_create2(model_path_enc, build_var, None)
+        self.model = llmodel.llmodel_model_create(model_path_enc)
 
         if self.model is not None:
             llmodel.llmodel_loadModel(self.model, model_path_enc)
         else:
             raise ValueError("Unable to instantiate model")
+
         filename = os.path.basename(model_path)
         self.model_name = os.path.splitext(filename)[0]
 
