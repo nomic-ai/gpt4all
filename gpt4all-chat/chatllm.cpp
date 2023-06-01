@@ -392,15 +392,15 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     if (!isModelLoaded())
         return false;
 
-    m_results.clear();
+    m_databaseResults.clear();
     const int retrievalSize = LocalDocs::globalInstance()->retrievalSize();
-    emit requestRetrieveFromDB(m_chat->collectionList(), prompt, retrievalSize, &m_results); // blocks
+    emit requestRetrieveFromDB(m_chat->collectionList(), prompt, retrievalSize, &m_databaseResults); // blocks
 
     // Augment the prompt template with the results if any
     QList<QString> augmentedTemplate;
-    if (!m_results.isEmpty())
+    if (!m_databaseResults.isEmpty())
         augmentedTemplate.append("### Context:");
-    for (const ResultInfo &info : m_results)
+    for (const ResultInfo &info : m_databaseResults)
         augmentedTemplate.append(info.text);
     augmentedTemplate.append(prompt_template);
 
