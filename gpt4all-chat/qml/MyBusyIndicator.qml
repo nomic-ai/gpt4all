@@ -11,8 +11,8 @@ BusyIndicator {
 
         Item {
             id: item
-            x: parent.width / 2 - 24
-            y: parent.height / 2 - 24
+            x: parent.width / 2 - width / 2
+            y: parent.height / 2 - height / 2
             width: 48
             height: 48
             opacity: control.running ? 1 : 0
