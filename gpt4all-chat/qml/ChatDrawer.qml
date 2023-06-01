@@ -37,8 +37,16 @@ Drawer {
             anchors.left: parent.left
             anchors.right: parent.right
             font.pixelSize: theme.fontSizeLarger
-            text: qsTr("New chat")
+            topPadding: 20
+            bottomPadding: 20
+            text: qsTr("\uFF0B New chat")
             Accessible.description: qsTr("Use this to create a new chat")
+            background: Rectangle {
+                border.color: newChat.down ? theme.backgroundLightest : theme.buttonBorder
+                border.width: 2
+                radius: 10
+                color: newChat.hovered ? theme.backgroundDark : theme.backgroundDarkest
+            }
             onClicked: {
                 LLM.chatListModel.addChat();
                 Network.sendNewChat(LLM.chatListModel.count)
