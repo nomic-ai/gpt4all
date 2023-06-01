@@ -34,8 +34,17 @@ LLModel::Implementation::Implementation(Dlhandle &&dlhandle_) : dlhandle(new Dlh
     assert(construct_);
 }
 
+LLModel::Implementation::Implementation(Implementation &&o)
+    : construct_(o.construct_)
+    , modelType(o.modelType)
+    , buildVariant(o.buildVariant)
+    , magicMatch(o.magicMatch)
+    , dlhandle(o.dlhandle) {
+    o.dlhandle = nullptr;
+}
+
 LLModel::Implementation::~Implementation() {
-    delete dlhandle;
+    if (dlhandle) delete dlhandle;
 }
 
 bool LLModel::Implementation::isImplementation(const Dlhandle &dl) {

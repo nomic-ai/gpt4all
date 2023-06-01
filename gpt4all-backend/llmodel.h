@@ -17,6 +17,8 @@ public:
 
     public:
         Implementation(Dlhandle&&);
+        Implementation(const Implementation&) = delete;
+        Implementation(Implementation&&);
         ~Implementation();
 
         static bool isImplementation(const Dlhandle&);
