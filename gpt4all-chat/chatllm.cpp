@@ -297,6 +297,10 @@ void ChatLLM::resetResponse()
 void ChatLLM::resetContext()
 {
     regenerateResponse();
+    if (m_isChatGPT && isModelLoaded()) {
+        ChatGPT *chatGPT = static_cast<ChatGPT*>(m_modelInfo.model);
+        chatGPT->setContext(QList<QString>());
+    }
     m_ctx = LLModel::PromptContext();
 }
 
