@@ -1,5 +1,4 @@
 #include "llmodel.h"
-#include "dlhandle.h"
 
 #include <string>
 #include <vector>
@@ -7,10 +6,7 @@
 #include <filesystem>
 #include <cassert>
 
-
-
-static
-bool requires_avxonly() {
+static bool requires_avxonly() {
 #ifdef __x86_64__
     #ifndef _MSC_VER
         return !__builtin_cpu_supports("avx2");
@@ -23,7 +19,6 @@ bool requires_avxonly() {
     return false; // Don't know how to handle non-x86_64
 #endif
 }
-
 
 LLModel::Implementation::Implementation(Dlhandle &&dlhandle_) : dlhandle(std::move(dlhandle_)) {
     auto get_model_type = dlhandle.get<const char *()>("get_model_type");
@@ -42,8 +37,9 @@ bool LLModel::Implementation::isImplementation(const Dlhandle &dl) {
     return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
-
 const std::vector<LLModel::Implementation> &LLModel::getImplementationList() {
+    // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
+    // individual models without the cleanup of the static list interfering
     static auto* libs = new std::vector<LLModel::Implementation>([] () {
         std::vector<LLModel::Implementation> fres;
 
@@ -51,6 +47,9 @@ const std::vector<LLModel::Implementation> &LLModel::getImplementationList() {
             // Iterate over all libraries
             for (const auto& f : std::filesystem::directory_iterator(path)) {
                 // Get path
+                // FIXME: Remove useless comment and avoid usage of 'auto' where having the type is
+                // helpful for code readability so someone doesn't have to look up the docs for what
+                // type is returned by 'path' as it is not std::string
                 const auto& p = f.path();
                 // Check extension
                 if (p.extension() != LIB_FILE_EXT) continue;
@@ -76,6 +75,8 @@ const std::vector<LLModel::Implementation> &LLModel::getImplementationList() {
 }
 
 const LLModel::Implementation* LLModel::getImplementation(std::ifstream& f, const std::string& buildVariant) {
+    // FIXME: Please remove all these useless comments as the code itself is more than enough in these
+    // instances to tell what is going on
     // Iterate over all libraries
     for (const auto& i : getImplementationList()) {
         f.seekg(0);

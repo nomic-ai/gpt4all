@@ -1,6 +1,7 @@
 #ifndef LLMODEL_H
 #define LLMODEL_H
-#include "dlhandle.h"
+
+#include "dlhandle.h" // FIXME: would be nice to move this into implementation file
 
 #include <string>
 #include <functional>
@@ -9,13 +10,13 @@
 #include <fstream>
 #include <cstdint>
 
-
 class LLModel {
 public:
     class Implementation {
         LLModel *(*construct_)();
 
     public:
+        // FIXME: Move the whole implementation details to cpp file
         Implementation(Dlhandle&&);
 
         static bool isImplementation(const Dlhandle&);
@@ -30,6 +31,7 @@ public:
             return fres;
         }
     };
+
     struct PromptContext {
         std::vector<float> logits;      // logits of current context
         std::vector<int32_t> tokens;    // current tokens in the context window
@@ -62,16 +64,20 @@ public:
     virtual void setThreadCount(int32_t /*n_threads*/) {}
     virtual int32_t threadCount() const { return 1; }
 
+    // FIXME: This is unused??
     const Implementation& getImplementation() const {
         return *implementation;
     }
 
+    // FIXME: Maybe have an 'ImplementationInfo' class for the GUI here, but the DLHandle stuff should
+    // be hidden in cpp file
+    // FIXME: Avoid usage of 'get' for getters
     static const std::vector<Implementation>& getImplementationList();
     static const Implementation *getImplementation(std::ifstream& f, const std::string& buildVariant);
     static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
 
 protected:
-    const Implementation *implementation;
+    const Implementation *implementation; // FIXME: This is dangling! You don't initialize it in ctor either
 
     virtual void recalculateContext(PromptContext &promptCtx,
         std::function<bool(bool)> recalculate) = 0;
