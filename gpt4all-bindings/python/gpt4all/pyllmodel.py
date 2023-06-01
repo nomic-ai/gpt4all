@@ -5,6 +5,7 @@ import platform
 import re
 import subprocess
 import sys
+import glob
 
 class DualStreamProcessor:
     def __init__(self, stream=None):
@@ -38,21 +39,27 @@ def load_llmodel_library():
     c_lib_ext = get_c_shared_lib_extension()
 
     llmodel_file = "libllmodel" + '.' + c_lib_ext
+    model_lib_files = glob.glob(f"lib*.{c_lib_ext}")
+    model_lib_dirs = []
+
+    for lib in model_lib_files:
+        if lib != llmodel_file:
+            model_lib_dirs.append(str(pkg_resources.resource_filename('gpt4all', \
+                os.path.join(LLMODEL_PATH, lib))).replace("\\", "\\\\"))
+
     llama_file = "libllama" + '.' + c_lib_ext
     llama_dir = str(pkg_resources.resource_filename('gpt4all', os.path.join(LLMODEL_PATH, llama_file)))
-    llmodel_dir = str(pkg_resources.resource_filename('gpt4all', os.path.join(LLMODEL_PATH, llmodel_file)))
+    llmodel_dir = str(pkg_resources.resource_filename('gpt4all', \
+        os.path.join(LLMODEL_PATH, llmodel_file))).replace("\\", "\\\\")
 
-    # For windows
-    llama_dir = llama_dir.replace("\\", "\\\\")
-    llmodel_dir = llmodel_dir.replace("\\", "\\\\")
-
-    llama_lib = ctypes.CDLL(llama_dir, mode=ctypes.RTLD_GLOBAL)
+    model_libs = []
+    for model_dir in model_lib_dirs:
+        model_libs.append(ctypes.CDLL(model_dir, mode=ctypes.RTLD_GLOBAL))
     llmodel_lib = ctypes.CDLL(llmodel_dir)
 
-    return llmodel_lib, llama_lib
+    return llmodel_lib, model_libs
 
-
-llmodel, llama = load_llmodel_library()
+llmodel, model_libs = load_llmodel_library()
 
 class LLModelError(ctypes.Structure):
     _fields_ = [("message", ctypes.c_char_p),
