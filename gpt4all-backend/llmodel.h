@@ -1,8 +1,6 @@
 #ifndef LLMODEL_H
 #define LLMODEL_H
 
-#include "dlhandle.h" // FIXME: would be nice to move this into implementation file
-
 #include <string>
 #include <functional>
 #include <vector>
@@ -10,24 +8,27 @@
 #include <fstream>
 #include <cstdint>
 
+class Dlhandle;
+
 class LLModel {
 public:
     class Implementation {
         LLModel *(*construct_)();
 
     public:
-        // FIXME: Move the whole implementation details to cpp file
         Implementation(Dlhandle&&);
+        ~Implementation();
 
         static bool isImplementation(const Dlhandle&);
 
         std::string_view modelType, buildVariant;
         bool (*magicMatch)(std::ifstream& f);
-        Dlhandle dlhandle;
+        Dlhandle *dlhandle;
 
+        // The only way an implementation should be constructed
         LLModel *construct() const {
             auto fres = construct_();
-            fres->implementation = this;
+            fres->m_implementation = this;
             return fres;
         }
     };
@@ -64,20 +65,16 @@ public:
     virtual void setThreadCount(int32_t /*n_threads*/) {}
     virtual int32_t threadCount() const { return 1; }
 
-    // FIXME: This is unused??
-    const Implementation& getImplementation() const {
-        return *implementation;
+    const Implementation& implementation() const {
+        return *m_implementation;
     }
 
-    // FIXME: Maybe have an 'ImplementationInfo' class for the GUI here, but the DLHandle stuff should
-    // be hidden in cpp file
-    // FIXME: Avoid usage of 'get' for getters
-    static const std::vector<Implementation>& getImplementationList();
-    static const Implementation *getImplementation(std::ifstream& f, const std::string& buildVariant);
+    static const std::vector<Implementation>& implementationList();
+    static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
     static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
 
 protected:
-    const Implementation *implementation; // FIXME: This is dangling! You don't initialize it in ctor either
+    const Implementation *m_implementation = nullptr;
 
     virtual void recalculateContext(PromptContext &promptCtx,
         std::function<bool(bool)> recalculate) = 0;
