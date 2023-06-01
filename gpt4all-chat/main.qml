@@ -875,7 +875,7 @@ Window {
             visible: !currentChat.isServer
             TextArea {
                 id: textInput
-                color: theme.textAccent
+                color: theme.textColor
                 topPadding: 30
                 bottomPadding: 30
                 leftPadding: 20
