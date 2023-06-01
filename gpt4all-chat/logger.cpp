@@ -5,10 +5,11 @@
 #include <QStandardPaths>
 #include <QDateTime>
 
+class MyLogger: public Logger { };
+Q_GLOBAL_STATIC(MyLogger, loggerInstance)
 Logger *Logger::globalInstance()
 {
-    static Logger instance;
-    return &instance;
+    return loggerInstance();
 }
 
 Logger::Logger()
