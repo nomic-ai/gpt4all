@@ -87,6 +87,7 @@ public:
     Q_INVOKABLE bool hasCollection(const QString &collection) const;
     Q_INVOKABLE void addCollection(const QString &collection);
     Q_INVOKABLE void removeCollection(const QString &collection);
+    void resetResponseState();
 
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt);
