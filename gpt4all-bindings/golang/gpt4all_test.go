@@ -13,15 +13,5 @@ var _ = Describe("LLama binding", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(model).To(BeNil())
 		})
-		It("fails with no model", func() {
-			model, err := New("not-existing", SetModelType(MPTType))
-			Expect(err).To(HaveOccurred())
-			Expect(model).To(BeNil())
-		})
-		It("fails with no model", func() {
-			model, err := New("not-existing", SetModelType(LLaMAType))
-			Expect(err).To(HaveOccurred())
-			Expect(model).To(BeNil())
-		})
 	})
 })
