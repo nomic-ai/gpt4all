@@ -6,19 +6,6 @@ import re
 import subprocess
 import sys
 
-class DualStreamProcessor:
-    def __init__(self, stream=None):
-        self.stream = stream
-        self.output = ""
-
-    def write(self, text):
-        cleaned_text = re.sub(r"\n(?!\n)", "", text)
-        if self.stream is not None:
-            self.stream.write(cleaned_text)
-            self.stream.flush()
-        self.output += cleaned_text
-
-
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
 
@@ -162,6 +149,7 @@ class LLModel:
 
     def generate(self, 
                  prompt: str,
+                 response_callback: callable,
                  logits_size: int = 0, 
                  tokens_size: int = 0, 
                  n_past: int = 0, 
@@ -173,8 +161,7 @@ class LLModel:
                  n_batch: int = 8, 
                  repeat_penalty: float = 1.2, 
                  repeat_last_n: int = 10, 
-                 context_erase: float = .5,
-                 streaming: bool = False) -> str:
+                 context_erase: float = .5) -> str:
         """
         Generate response from model from a prompt.
 
@@ -182,25 +169,14 @@ class LLModel:
         ----------
         prompt: str
             Question, task, or conversation for model to respond to
-        streaming: bool
-            Stream response to stdout
 
         Returns
         -------
-        Model response str
+        None
         """
         
         prompt = prompt.encode('utf-8')
         prompt = ctypes.c_char_p(prompt)
-
-        old_stdout = sys.stdout 
-
-        stream_processor = DualStreamProcessor()
-    
-        if streaming:
-            stream_processor.stream = sys.stdout
-        
-        sys.stdout = stream_processor
 
         context = LLModelPromptContext(
             logits_size=logits_size, 
@@ -220,16 +196,10 @@ class LLModel:
         llmodel.llmodel_prompt(self.model, 
                                prompt, 
                                PromptCallback(self._prompt_callback),
-                               ResponseCallback(self._response_callback), 
+                               ResponseCallback(self._response_callback_wrapper(response_callback)), 
                                RecalculateCallback(self._recalculate_callback), 
                                context)
 
-        # Revert to old stdout
-        sys.stdout = old_stdout
-        # Force new line
-        print()
-
-        return stream_processor.output
 
     # Empty prompt callback
     @staticmethod
@@ -238,9 +208,14 @@ class LLModel:
 
     # Empty response callback method that just prints response to be collected
     @staticmethod
-    def _response_callback(token_id, response):
-        print(response.decode('utf-8'))
-        return True
+    def _response_callback_wrapper(response_callback):
+
+        def _response_callback(token_id, response):
+            nonlocal response_callback
+            cleared_response = re.sub(r"\n(?!\n)", "", response.decode('utf-8'))
+            return response_callback(cleared_response)
+
+        return _response_callback
 
     # Empty recalculate callback
     @staticmethod

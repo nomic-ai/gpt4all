@@ -158,26 +158,65 @@ class GPT4All():
             print("Model downloaded at: ", download_path)
         return download_path
 
-    def generate(self, prompt: str, streaming: bool = True, **generate_kwargs) -> str:
+    def generate(self, 
+                 prompt: str, 
+                 response_callback: callable = None, 
+                 streaming: bool = False, 
+                 reverse_prompts : List = [], 
+                 **generate_kwargs) -> str:
+
         """
         Surfaced method of running generate without accessing model object.
 
         Args:
             prompt: Raw string to be passed to model.
+            response_callback: A function which is called every time the model generates a new token. It accepts the generated token (String) and returns a Bool with False stopping the generation.
             streaming: True if want output streamed to stdout.
+            reverse_prompts: A list of reverse prompts which stop the generation. A reverse prompt must be a concatenation of one or multiple tokens.
             **generate_kwargs: Optional kwargs to pass to prompt context.
         
         Returns:
             Raw string of generated model response.
         """
-        return self.model.generate(prompt, streaming=streaming, **generate_kwargs)
+
+        response = ""
+        token_cache = ""
+
+        def wrapped_response_callback(token):
+            nonlocal response, streaming, response_callback, reverse_prompts, token_cache
+
+            token_cache += token
+
+            if token_cache in reverse_prompts:
+                token_cache = ""
+                return False
+
+            if any(r_p.startswith(token_cache) for r_p in reverse_prompts):
+                return True
+
+            token_passed = token_cache
+            token_cache = ""
+
+            response += token_passed
+
+            if streaming:
+                print(token_passed, end = "", flush = True)
+
+            if response_callback is not None:
+                return response_callback(token_passed)
+
+            return True
+
+        self.model.generate(prompt, response_callback=wrapped_response_callback, **generate_kwargs)
+
+        return response
+
 
     def chat_completion(self,
                         messages: List[Dict],
                         default_prompt_header: bool = True,
                         default_prompt_footer: bool = True,
                         verbose: bool = True,
-                        streaming: bool = True,
                         **generate_kwargs) -> dict:
         """
         Format list of message dictionaries into a prompt and call model
@@ -194,8 +233,7 @@ class GPT4All():
                 before user/assistant role messages.
             default_prompt_footer: If True (default), add default footer at end of prompt.
             verbose: If True (default), print full prompt and generated response.
-            streaming: True if want output streamed to stdout.
-            **generate_kwargs: Optional kwargs to pass to prompt context.
+            **generate_kwargs: Optional kwargs to pass to self.generate function including the prompt context.
 
         Returns:
             Response dictionary with:  
@@ -212,7 +250,7 @@ class GPT4All():
         if verbose:
             print(full_prompt)
 
-        response = self.model.generate(full_prompt, streaming=streaming, **generate_kwargs)
+        response = self.generate(full_prompt, **generate_kwargs)
 
         if verbose and not streaming:
             print(response)
