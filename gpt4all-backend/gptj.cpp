@@ -29,7 +29,7 @@
 
 
 namespace {
-const char *modelType_ = "MPT";
+const char *modelType_ = "GPT-J";
 
 static const size_t MB = 1024*1024;
 }
