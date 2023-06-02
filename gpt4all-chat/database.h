@@ -43,13 +43,12 @@ public Q_SLOTS:
     void scanDocuments(int folder_id, const QString &folder_path);
     void addFolder(const QString &collection, const QString &path);
     void removeFolder(const QString &collection, const QString &path);
-    void retrieveFromDB(const QString &uid, const QList<QString> &collections, const QString &text, int retrievalSize);
+    void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void cleanDB();
     void changeChunkSize(int chunkSize);
 
 Q_SIGNALS:
     void docsToScanChanged();
-    void retrieveResult(const QString &uid, const QList<ResultInfo> &result);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
 private Q_SLOTS:

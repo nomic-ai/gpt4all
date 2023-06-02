@@ -138,32 +138,23 @@ $(info I CC:       $(CCV))
 $(info I CXX:      $(CXXV))
 $(info )
 
-llama.o:
-	mkdir buildllama
-	cd buildllama && cmake ../../../gpt4all-backend/llama.cpp $(CMAKEFLAGS) && make VERBOSE=1 llama.o && cp -rf CMakeFiles/llama.dir/llama.cpp.o ../llama.o
-
 llmodel.o:
 	mkdir buildllm
-	cd buildllm && cmake ../../../gpt4all-backend/ $(CMAKEFLAGS) && make VERBOSE=1 llmodel ggml common
-	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llmodel_c.cpp.o ../llmodel.o
-	cd buildllm && cp -rfv CMakeFiles/llmodel.dir/llama.cpp/examples/common.cpp.o ../common.o
-	cd buildllm && cp -rf CMakeFiles/llmodel.dir/gptj.cpp.o ../gptj.o
-	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llamamodel.cpp.o ../llamamodel.o
-	cd buildllm && cp -rf CMakeFiles/llmodel.dir/utils.cpp.o ../utils.o
-	cd buildllm && cp -rf llama.cpp/CMakeFiles/ggml.dir/ggml.c.o ../ggml.o
+	cd buildllm && cmake ../../../gpt4all-backend/ $(CMAKEFLAGS) && make
+	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llmodel_c.cpp.o ../llmodel_c.o
+	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llmodel.cpp.o ../llmodel.o
 
 clean:
 	rm -f *.o
 	rm -f *.a
 	rm -rf buildllm
-	rm -rf buildllama
 	rm -rf example/main
 
 binding.o: 
 	$(CXX) $(CXXFLAGS) binding.cpp -o binding.o -c $(LDFLAGS)
 
-libgpt4all.a: binding.o llmodel.o llama.o
-	ar src libgpt4all.a ggml.o common.o llama.o llamamodel.o utils.o llmodel.o gptj.o binding.o
+libgpt4all.a: binding.o llmodel.o
+	ar src libgpt4all.a llmodel.o binding.o
 
 test: libgpt4all.a
 	@C_INCLUDE_PATH=${INCLUDE_PATH} LIBRARY_PATH=${LIBRARY_PATH} go test -v ./...

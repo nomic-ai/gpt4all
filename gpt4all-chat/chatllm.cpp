@@ -91,9 +91,15 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
     connect(this, &ChatLLM::sendModelLoaded, Network::globalInstance(), &Network::sendModelLoaded);
-    connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged, Qt::QueuedConnection);
+    connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
+        Qt::QueuedConnection); // explicitly queued
     connect(m_chat, &Chat::idChanged, this, &ChatLLM::handleChatIdChanged);
     connect(&m_llmThread, &QThread::started, this, &ChatLLM::threadStarted);
+
+    // The following are blocking operations and will block the llm thread
+    connect(this, &ChatLLM::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
+        Qt::BlockingQueuedConnection);
+
     m_llmThread.setObjectName(m_chat->id());
     m_llmThread.start();
 }
@@ -216,7 +222,7 @@ bool ChatLLM::loadModel(const QString &modelName)
             m_modelInfo.model = LLModel::construct(filePath.toStdString());
             if (m_modelInfo.model) {
                 m_modelInfo.model->loadModel(filePath.toStdString());
-                switch (m_modelInfo.model->getModelType()[0]) {
+                switch (m_modelInfo.model->implementation().modelType[0]) {
                 case 'L': m_modelType = LLModelType::LLAMA_; break;
                 case 'G': m_modelType = LLModelType::GPTJ_; break;
                 case 'M': m_modelType = LLModelType::MPT_; break;
@@ -291,6 +297,10 @@ void ChatLLM::resetResponse()
 void ChatLLM::resetContext()
 {
     regenerateResponse();
+    if (m_isChatGPT && isModelLoaded()) {
+        ChatGPT *chatGPT = static_cast<ChatGPT*>(m_modelInfo.model);
+        chatGPT->setContext(QList<QString>());
+    }
     m_ctx = LLModel::PromptContext();
 }
 
@@ -386,7 +396,19 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     if (!isModelLoaded())
         return false;
 
-    QString instructPrompt = prompt_template.arg(prompt);
+    m_databaseResults.clear();
+    const int retrievalSize = LocalDocs::globalInstance()->retrievalSize();
+    emit requestRetrieveFromDB(m_chat->collectionList(), prompt, retrievalSize, &m_databaseResults); // blocks
+
+    // Augment the prompt template with the results if any
+    QList<QString> augmentedTemplate;
+    if (!m_databaseResults.isEmpty())
+        augmentedTemplate.append("### Context:");
+    for (const ResultInfo &info : m_databaseResults)
+        augmentedTemplate.append(info.text);
+    augmentedTemplate.append(prompt_template);
+
+    QString instructPrompt = augmentedTemplate.join("\n").arg(prompt);
 
     m_stopGenerating = false;
     auto promptFunc = std::bind(&ChatLLM::handlePrompt, this, std::placeholders::_1);

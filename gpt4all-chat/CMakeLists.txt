@@ -71,6 +71,7 @@ qt_add_executable(chat
     localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
     llm.h llm.cpp
     server.h server.cpp
+    logger.h logger.cpp
     sysinfo.h
 )
 

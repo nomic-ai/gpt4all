@@ -758,8 +758,6 @@ struct MPTPrivate {
 
 MPT::MPT()
     : d_ptr(new MPTPrivate) {
-    modelType = modelType_;
-
     d_ptr->model = new mpt_model;
     d_ptr->modelLoaded = false;
 }

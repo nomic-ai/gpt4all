@@ -60,6 +60,8 @@ public:
     Q_INVOKABLE void stopGenerating();
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
 
+    QList<ResultInfo> databaseResults() const;
+
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
     QString responseState() const;
@@ -85,6 +87,7 @@ public:
     Q_INVOKABLE bool hasCollection(const QString &collection) const;
     Q_INVOKABLE void addCollection(const QString &collection);
     Q_INVOKABLE void removeCollection(const QString &collection);
+    void resetResponseState();
 
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt);
@@ -115,7 +118,6 @@ Q_SIGNALS:
     void collectionListChanged();
 
 private Q_SLOTS:
-    void handleLocalDocsRetrieved(const QString &uid, const QList<ResultInfo> &results);
     void handleResponseChanged();
     void handleModelLoadedChanged();
     void promptProcessing();
@@ -125,24 +127,11 @@ private Q_SLOTS:
     void handleModelNameChanged();
 
 private:
-    struct Prompt {
-        QString prompt;
-        QString prompt_template;
-        int32_t n_predict;
-        int32_t top_k;
-        float top_p;
-        float temp;
-        int32_t n_batch;
-        float repeat_penalty;
-        int32_t repeat_penalty_tokens;
-    };
-
     QString m_id;
     QString m_name;
     QString m_userName;
     QString m_savedModelName;
     QList<QString> m_collections;
-    QList<ResultInfo> m_results;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
     ResponseState m_responseState;
@@ -150,7 +139,6 @@ private:
     ChatLLM *m_llmodel;
     bool m_isServer;
     bool m_shouldDeleteLater;
-    Prompt m_queuedPrompt;
 };
 
 #endif // CHAT_H

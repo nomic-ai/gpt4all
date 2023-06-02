@@ -1,4 +1,7 @@
-﻿namespace Gpt4All.Bindings;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace Gpt4All.Bindings;
 
 /// <summary>
 /// Arguments for the response processing callback
@@ -40,14 +43,16 @@ public class LLModel : ILLModel
 {
     protected readonly IntPtr _handle;
     private readonly ModelType _modelType;
+    private readonly ILogger _logger;
     private bool _disposed;
 
     public ModelType ModelType => _modelType;
 
-    internal LLModel(IntPtr handle, ModelType modelType)
+    internal LLModel(IntPtr handle, ModelType modelType, ILogger? logger = null)
     {
         _handle = handle;
         _modelType = modelType;
+        _logger = logger ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -55,9 +60,9 @@ public class LLModel : ILLModel
     /// </summary>
     /// <param name="handle">Pointer to underlying model</param>
     /// <param name="modelType">The model type</param>
-    public static LLModel Create(IntPtr handle, ModelType modelType)
+    public static LLModel Create(IntPtr handle, ModelType modelType, ILogger? logger = null)
     {
-        return new LLModel(handle, modelType);
+        return new LLModel(handle, modelType, logger: logger);
     }
 
     /// <summary>
@@ -82,6 +87,8 @@ public class LLModel : ILLModel
         GC.KeepAlive(recalculateCallback);
         GC.KeepAlive(cancellationToken);
 
+        _logger.LogInformation("Prompt input='{Prompt}' ctx={Context}", text, context.Dump());
+
         NativeMethods.llmodel_prompt(
             _handle,
             text,
@@ -94,7 +101,12 @@ public class LLModel : ILLModel
             },
             (tokenId, response) =>
             {
-                if (cancellationToken.IsCancellationRequested) return false;
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogDebug("ResponseCallback evt=CancellationRequested");
+                    return false;
+                }
+
                 if (responseCallback == null) return true;
                 var args = new ModelResponseEventArgs(tokenId, response);
                 return responseCallback(args);

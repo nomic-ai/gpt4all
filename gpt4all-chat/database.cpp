@@ -892,7 +892,8 @@ bool Database::removeFolderFromWatch(const QString &path)
     return m_watcher->removePath(path);
 }
 
-void Database::retrieveFromDB(const QString &uid, const QList<QString> &collections, const QString &text, int retrievalSize)
+void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize,
+    QList<ResultInfo> *results)
 {
 #if defined(DEBUG)
     qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
@@ -904,7 +905,6 @@ void Database::retrieveFromDB(const QString &uid, const QList<QString> &collecti
         return;
     }
 
-    QList<ResultInfo> results;
     while (q.next()) {
         const int rowid = q.value(0).toInt();
         const QString date = QDateTime::fromMSecsSinceEpoch(q.value(1).toLongLong()).toString("yyyy, MMMM dd");
@@ -924,13 +924,12 @@ void Database::retrieveFromDB(const QString &uid, const QList<QString> &collecti
         info.page = page;
         info.from = from;
         info.to = to;
-        results.append(info);
+        results->append(info);
 #if defined(DEBUG)
         qDebug() << "retrieve rowid:" << rowid
                  << "chunk_text:" << chunk_text;
 #endif
     }
-    emit retrieveResult(uid, results);
 }
 
 void Database::cleanDB()

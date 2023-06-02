@@ -1,6 +1,6 @@
 ﻿using Gpt4All.Bindings;
 
-namespace Gpt4All.Extensions;
+namespace Gpt4All;
 
 public static class PredictRequestOptionsExtensions
 {

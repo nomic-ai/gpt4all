@@ -10,6 +10,7 @@
 #include "download.h"
 #include "network.h"
 #include "config.h"
+#include "logger.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +19,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("GPT4All");
     QCoreApplication::setApplicationVersion(APP_VERSION);
     QSettings::setDefaultFormat(QSettings::IniFormat);
+
+    Logger::globalInstance();
 
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
