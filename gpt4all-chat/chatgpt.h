@@ -24,10 +24,6 @@ public:
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx) override;
-    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) override { return true; }
-    std::vector<Token> tokenize(const std::string&) override { return {}; }
-    std::string_view tokenToString(Token) override { return ""; }
-    Token sampleToken(PromptContext &ctx) override { return 0; }
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
 
@@ -36,6 +32,12 @@ public:
 
     QList<QString> context() const { return m_context; }
     void setContext(const QList<QString> &context) { m_context = context; }
+
+protected:
+    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) override { return true; }
+    std::vector<Token> tokenize(const std::string&) override { return {}; }
+    std::string_view tokenToString(Token) override { return ""; }
+    Token sampleToken(PromptContext &ctx) override { return 0; }
 
 private Q_SLOTS:
     void handleFinished();

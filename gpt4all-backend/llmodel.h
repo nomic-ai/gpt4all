@@ -67,12 +67,7 @@ public:
                         std::function<bool(int32_t, const std::string&)> responseCallback,
                         std::function<bool(bool)> recalculateCallback,
                         PromptContext &ctx);
-    virtual std::vector<Token> tokenize(const std::string&) = 0;
-    virtual std::string_view tokenToString(Token) = 0;
-    virtual Token sampleToken(PromptContext &ctx) = 0;
-    virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) { return {}; }
-    virtual int32_t getContextLength() { return std::numeric_limits<int32_t>::max(); }
-    virtual const std::vector<Token>& getEndTokens() { static const std::vector<Token> fres; return fres; }
+
     virtual void setThreadCount(int32_t /*n_threads*/) {}
     virtual int32_t threadCount() const { return 1; }
 
@@ -88,5 +83,11 @@ protected:
     const Implementation *m_implementation = nullptr;
 
     void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
+    virtual std::vector<Token> tokenize(const std::string&) = 0;
+    virtual std::string_view tokenToString(Token) = 0;
+    virtual Token sampleToken(PromptContext &ctx) = 0;
+    virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) { return {}; }
+    virtual int32_t getContextLength() { return std::numeric_limits<int32_t>::max(); }
+    virtual const std::vector<Token>& getEndTokens() { static const std::vector<Token> fres; return fres; }
 };
 #endif // LLMODEL_H
