@@ -125,12 +125,13 @@ bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
 QStringList generateGrams(const QString &input, int N)
 {
     // Remove common English punctuation using QRegularExpression
-    QRegularExpression punctuation(R"([.,;:!?'"()\-])");
+    static QRegularExpression punctuation(R"([.,;:!?'"()\-])");
     QString cleanedInput = input;
     cleanedInput = cleanedInput.remove(punctuation);
 
     // Split the cleaned input into words using whitespace
-    QStringList words = cleanedInput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    static QRegularExpression spaces("\\s+");
+    QStringList words = cleanedInput.split(spaces, Qt::SkipEmptyParts);
     N = qMin(words.size(), N);
 
     // Generate all possible N-grams
@@ -147,7 +148,8 @@ QStringList generateGrams(const QString &input, int N)
 
 bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QString &chunk_text, int retrievalSize)
 {
-    const int N_WORDS = chunk_text.split(QRegularExpression("\\s+")).size();
+    static QRegularExpression spaces("\\s+");
+    const int N_WORDS = chunk_text.split(spaces).size();
     for (int N = N_WORDS; N > 2; N--) {
         // first try trigrams
         QList<QString> text = generateGrams(chunk_text, N);
@@ -730,7 +732,7 @@ void Database::addCurrentFolders()
         return;
     }
 
-    for (auto i : collections)
+    for (const auto &i : collections)
         addFolder(i.collection, i.folder_path);
 }
 
@@ -839,7 +841,7 @@ void Database::removeFolderInternal(const QString &collection, int folder_id, co
 
     // First remove all upcoming jobs associated with this folder by performing an opt-in filter
     QQueue<DocumentInfo> docsToScan;
-    for (DocumentInfo info : m_docsToScan) {
+    for (const DocumentInfo &info : m_docsToScan) {
         if (info.folder == folder_id)
             continue;
         docsToScan.append(info);
@@ -906,9 +908,11 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     }
 
     while (q.next()) {
+#if defined(DEBUG)
         const int rowid = q.value(0).toInt();
-        const QString date = QDateTime::fromMSecsSinceEpoch(q.value(1).toLongLong()).toString("yyyy, MMMM dd");
+#endif
         const QString chunk_text = q.value(2).toString();
+        const QString date = QDateTime::fromMSecsSinceEpoch(q.value(1).toLongLong()).toString("yyyy, MMMM dd");
         const QString file = q.value(3).toString();
         const QString title = q.value(4).toString();
         const QString author = q.value(5).toString();
@@ -946,7 +950,7 @@ void Database::cleanDB()
         return;
     }
 
-    for (auto i : collections) {
+    for (const auto &i : collections) {
         // Find the path for the folder
         QFileInfo info(i.folder_path);
         if (!info.exists() || !info.isReadable()) {
@@ -1017,7 +1021,6 @@ void Database::changeChunkSize(int chunkSize)
 
     while (q.next()) {
         int document_id = q.value(0).toInt();
-        QString document_path = q.value(1).toString();
         // Remove all chunks and documents to change the chunk size
         QSqlQuery query;
         if (!removeChunksByDocumentId(query, document_id)) {

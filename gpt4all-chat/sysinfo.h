@@ -24,7 +24,8 @@ QString getSystemTotalRAM()
         QString line = in.readLine();
         while (!line.isNull()) {
             if (line.startsWith("MemTotal")) {
-                QStringList parts = line.split(QRegularExpression("\\s+"));
+                static QRegularExpression spaces("\\s+");
+                QStringList parts = line.split(spaces);
                 totalRAM = parts[1].toLongLong() * 1024; // Convert from KB to bytes
                 break;
             }
