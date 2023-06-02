@@ -75,6 +75,9 @@ llmodel.llmodel_model_create.restype = ctypes.c_void_p
 llmodel.llmodel_model_create2.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(LLModelError)]
 llmodel.llmodel_model_create2.restype = ctypes.c_void_p
 
+llmodel.llmodel_model_destroy.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_model_destroy.restype = None
+
 llmodel.llmodel_loadModel.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 llmodel.llmodel_loadModel.restype = ctypes.c_bool
 llmodel.llmodel_isModelLoaded.argtypes = [ctypes.c_void_p]
@@ -124,7 +127,7 @@ class LLModel:
         self.model_name = None
 
     def __del__(self):
-        if self.model is not None and llmodel is not None:
+        if self.model is not None:
             llmodel.llmodel_model_destroy(self.model)
 
     def load_model(self, model_path: str) -> bool:
