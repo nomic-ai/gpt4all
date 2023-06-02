@@ -391,7 +391,7 @@ QList<QString> Chat::modelList() const
             QString filePath = exePath + f;
             QFileInfo info(filePath);
             QString name = info.completeBaseName().remove(0, 5);
-            if (info.exists()) {
+            if (info.exists() && !m_modelIgnoreList.contains(name)) {
                 if (name == currentModelName)
                     list.prepend(name);
                 else
@@ -409,7 +409,7 @@ QList<QString> Chat::modelList() const
             QFileInfo info(filePath);
             QString basename = info.completeBaseName();
             QString name = basename.startsWith("ggml-") ? basename.remove(0, 5) : basename;
-            if (info.exists() && !list.contains(name)) { // don't allow duplicates
+            if (info.exists() && !list.contains(name) && !m_modelIgnoreList.contains(name)) { // don't allow duplicates
                 if (name == currentModelName)
                     list.prepend(name);
                 else
@@ -430,6 +430,11 @@ QList<QString> Chat::modelList() const
     }
 
     return list;
+}
+
+void Chat::ignoreModel(const QString &modelName)
+{
+    m_modelIgnoreList.append(modelName);
 }
 
 QList<QString> Chat::collectionList() const

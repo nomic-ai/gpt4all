@@ -119,14 +119,14 @@ ChatLLM::~ChatLLM()
 
 bool ChatLLM::loadDefaultModel()
 {
-    const QList<QString> models = m_chat->modelList();
-    if (models.isEmpty()) {
-        // try again when we get a list of models
-        connect(Download::globalInstance(), &Download::modelListChanged, this,
-            &ChatLLM::loadDefaultModel, Qt::SingleShotConnection);
-        return false;
+    // Attempt to load each model available
+    for (const auto& model : m_chat->modelList()) {
+        if (loadModel(model)) return true;
     }
-    return loadModel(models.first());
+    // Try again when we get a list of models
+    connect(Download::globalInstance(), &Download::modelListChanged, this,
+        &ChatLLM::loadDefaultModel, Qt::SingleShotConnection);
+    return false;
 }
 
 bool ChatLLM::loadModel(const QString &modelName)
@@ -219,7 +219,12 @@ bool ChatLLM::loadModel(const QString &modelName)
             model->setAPIKey(apiKey);
             m_modelInfo.model = model;
         } else {
-            m_modelInfo.model = LLModel::construct(filePath.toStdString());
+            std::string error_message = "Format not supported or model file permission denied?"; // Most likely the case if loading fails without an exception
+            try {
+                m_modelInfo.model = LLModel::construct(filePath.toStdString());
+            } catch (const std::exception& e) {
+                error_message = e.what();
+            }
             if (m_modelInfo.model) {
                 m_modelInfo.model->loadModel(filePath.toStdString());
                 switch (m_modelInfo.model->implementation().modelType[0]) {
@@ -228,6 +233,9 @@ bool ChatLLM::loadModel(const QString &modelName)
                 case 'M': m_modelType = LLModelType::MPT_; break;
                 default: delete std::exchange(m_modelInfo.model, nullptr);
                 }
+            } else {
+                const QString error = QString("Could not load model %1: %2").arg(modelName, QString::fromStdString(error_message));
+                emit modelLoadingError(error);
             }
         }
 #if defined(DEBUG_MODEL_LOADING)
@@ -256,9 +264,13 @@ bool ChatLLM::loadModel(const QString &modelName)
     if (m_modelInfo.model) {
         QString basename = fileInfo.completeBaseName();
         setModelName(m_isChatGPT ? basename : basename.remove(0, 5)); // remove the ggml- prefix
+        return true;
+    } else {
+        m_chat->ignoreModel(modelName);
+        qWarning() << "Model" << modelName << "added to ignore list";
+        LLModelStore::globalInstance()->releaseModel(m_modelInfo);
+        return false;
     }
-
-    return m_modelInfo.model;
 }
 
 bool ChatLLM::isModelLoaded() const

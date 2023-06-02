@@ -82,6 +82,8 @@ public:
     QList<QString> modelList() const;
     bool isServer() const { return m_isServer; }
 
+    void ignoreModel(const QString&);
+
     QList<QString> collectionList() const;
 
     Q_INVOKABLE bool hasCollection(const QString &collection) const;
@@ -132,6 +134,7 @@ private:
     QString m_userName;
     QString m_savedModelName;
     QList<QString> m_collections;
+    QList<QString> m_modelIgnoreList;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
     ResponseState m_responseState;
