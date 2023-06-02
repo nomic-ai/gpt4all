@@ -387,7 +387,7 @@ QList<QString> Chat::modelList() const
         QDir dir(exePath);
         dir.setNameFilters(QStringList() << "ggml-*.bin");
         QStringList fileNames = dir.entryList();
-        for (QString f : fileNames) {
+        for (const QString& f : fileNames) {
             QString filePath = exePath + f;
             QFileInfo info(filePath);
             QString name = info.completeBaseName().remove(0, 5);
@@ -404,7 +404,7 @@ QList<QString> Chat::modelList() const
         QDir dir(localPath);
         dir.setNameFilters(QStringList() << "ggml-*.bin" << "chatgpt-*.txt");
         QStringList fileNames = dir.entryList();
-        for (QString f : fileNames) {
+        for (const QString &f : fileNames) {
             QString filePath = localPath + f;
             QFileInfo info(filePath);
             QString basename = info.completeBaseName();

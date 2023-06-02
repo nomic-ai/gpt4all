@@ -546,7 +546,6 @@ bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
     emit generatedNameChanged();
     QString gen = QString::fromStdString(m_nameResponse).simplified();
     QStringList words = gen.split(' ', Qt::SkipEmptyParts);
-    int wordCount = words.size();
     return words.size() <= 3;
 }
 
