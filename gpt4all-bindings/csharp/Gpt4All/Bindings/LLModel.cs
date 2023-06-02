@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;﻿
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Gpt4All.Bindings;
 
@@ -86,7 +86,7 @@ public class LLModel : ILLModel
         GC.KeepAlive(responseCallback);
         GC.KeepAlive(recalculateCallback);
         GC.KeepAlive(cancellationToken);
-        
+
         _logger.LogInformation("Prompt input='{Prompt}' ctx={Context}", text, context.Dump());
 
         NativeMethods.llmodel_prompt(
@@ -106,7 +106,7 @@ public class LLModel : ILLModel
                     _logger.LogDebug("ResponseCallback evt=CancellationRequested");
                     return false;
                 }
-                
+
                 if (responseCallback == null) return true;
                 var args = new ModelResponseEventArgs(tokenId, response);
                 return responseCallback(args);

@@ -1,6 +1,6 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging;﻿
+using Microsoft.Extensions.Logging;
 using Gpt4All.Bindings;
 using Gpt4All.LibraryLoader;
 
@@ -8,7 +8,7 @@ namespace Gpt4All;
 
 public class Gpt4AllModelFactory : IGpt4AllModelFactory
 {
-	private readonly ILoggerFactory _loggerFactory;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private static bool bypassLoading;
     private static string? libraryPath;
@@ -20,7 +20,7 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
 
     public Gpt4AllModelFactory(string? libraryPath = default, bool bypassLoading = false, ILoggerFactory? loggerFactory = null)
     {
-    	_loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         _logger = _loggerFactory.CreateLogger<Gpt4AllModelFactory>();
         Gpt4AllModelFactory.libraryPath = libraryPath;
         Gpt4AllModelFactory.bypassLoading = bypassLoading;
@@ -31,22 +31,22 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         }
     }
 
-    private static IGpt4AllModel CreateModel(string modelPath)
+    private IGpt4AllModel CreateModel(string modelPath)
     {
         var modelType_ = ModelFileUtils.GetModelTypeFromModelFileHeader(modelPath);
         _logger.LogInformation("Creating model path={ModelPath} type={ModelType}", modelPath, modelType_);
         IntPtr error;
         var handle = NativeMethods.llmodel_model_create2(modelPath, "auto", out error);
-         _logger.LogDebug("Model created handle=0x{ModelHandle:X8}", handle);
+        _logger.LogDebug("Model created handle=0x{ModelHandle:X8}", handle);
         _logger.LogInformation("Model loading started");
-        var loadedSuccesfully = NativeMethods.llmodel_loadModel(handle, modelPath);
-		 _logger.LogInformation("Model loading completed success={ModelLoadSuccess}", loadedSuccessfully);
-        if (loadedSuccesfully == false)
+        var loadedSuccessfully = NativeMethods.llmodel_loadModel(handle, modelPath);
+        _logger.LogInformation("Model loading completed success={ModelLoadSuccess}", loadedSuccessfully);
+        if (!loadedSuccessfully)
         {
             throw new Exception($"Failed to load model: '{modelPath}'");
         }
-        
-		var logger = _loggerFactory.CreateLogger<LLModel>();
+
+        var logger = _loggerFactory.CreateLogger<LLModel>();
         var underlyingModel = LLModel.Create(handle, modelType_, logger: logger);
 
         Debug.Assert(underlyingModel.IsLoaded());
