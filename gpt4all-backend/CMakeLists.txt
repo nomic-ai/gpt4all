@@ -82,13 +82,13 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     prepare_target(llamamodel-mainline llama-mainline)
 
     add_library(llamamodel-230519-${BUILD_VARIANT} SHARED
-        llamamodel.cpp)
+        llamamodel.cpp llmodel_shared.cpp)
     target_compile_definitions(llamamodel-230519-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS===2 LLAMA_DATE=230519)
     prepare_target(llamamodel-230519 llama-230519)
 
     add_library(llamamodel-230511-${BUILD_VARIANT} SHARED
-        llamamodel.cpp)
+        llamamodel.cpp llmodel_shared.cpp)
     target_compile_definitions(llamamodel-230511-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=<=1 LLAMA_DATE=230511)
     prepare_target(llamamodel-230511 llama-230511)
