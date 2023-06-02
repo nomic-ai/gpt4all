@@ -56,7 +56,7 @@ public static class NativeLibraryLoader
         // If the user hasn't set the path, we'll try to find it ourselves.
         if (string.IsNullOrEmpty(path))
         {
-            var libraryname = platform == "win" ? "llmodel" : "libllmodel";
+            var libraryname = "libllmodel";
             var assemblySearchPath = new[]
             {
                 AppDomain.CurrentDomain.RelativeSearchPath,
