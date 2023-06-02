@@ -1,12 +1,15 @@
 #include "llmodel.h"
 #include "dlhandle.h"
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <filesystem>
 #include <cassert>
 #include <cstdlib>
+
+std::string LLModel::m_implementations_search_path = ".";
 
 static bool requires_avxonly() {
 #ifdef __x86_64__
@@ -74,8 +77,7 @@ const std::vector<LLModel::Implementation> &LLModel::implementationList() {
             }
         };
 
-        const char *custom_impl_lookup_path = getenv("GPT4ALL_IMPLEMENTATIONS_PATH");
-        search_in_directory(custom_impl_lookup_path?custom_impl_lookup_path:".");
+        search_in_directory(m_implementations_search_path);
 #if defined(__APPLE__)
         search_in_directory("../../../");
 #endif
