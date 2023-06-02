@@ -83,7 +83,7 @@
     "filename": "ggml-mpt-7b-instruct.bin",
     "filesize": "4854401028",
     "requires": "2.4.1",
-    "description": "A commericially licensable instruct model based on MPT and trained by Mosaic ML."
+    "description": "A commercially licensable instruct model based on MPT and trained by Mosaic ML."
   },
   {
     "md5sum": "679fc463f01388ea2d339664af0a0836",
