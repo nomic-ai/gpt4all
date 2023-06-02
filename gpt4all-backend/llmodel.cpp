@@ -77,7 +77,6 @@ const std::vector<LLModel::Implementation> &LLModel::implementationList() {
             }
         };
 
-        const char *custom_impl_lookup_path = getenv("GPT4ALL_IMPLEMENTATIONS_PATH");
         search_in_directory(m_implementations_search_path);
 #if defined(__APPLE__)
         search_in_directory("../../../");
