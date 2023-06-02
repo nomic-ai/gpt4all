@@ -25,12 +25,9 @@ public:
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx) override;
+    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) override;
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
-
-protected:
-    void recalculateContext(PromptContext &promptCtx,
-        std::function<bool(bool)> recalculate) override;
 
 private:
     GPTJPrivate *d_ptr;
