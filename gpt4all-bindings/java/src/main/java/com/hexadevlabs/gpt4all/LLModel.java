@@ -1,0 +1,286 @@
+package com.hexadevlabs.gpt4all;
+
+import jnr.ffi.Pointer;
+
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public abstract  class LLModel implements AutoCloseable {
+
+    /**
+     * Config used for how to decode LLM outputs.
+     * High temperature closer to 1 gives more creative outputs
+     * while low temperature closer to 0 produce more precise outputs.
+     * <p>
+     * Use builder to set settings you want.
+     */
+    public static class GenerationConfig extends LLModelLibrary.LLModelPromptContext {
+
+        private GenerationConfig() {
+            super(jnr.ffi.Runtime.getSystemRuntime());
+            logits_size.set(0);
+            tokens_size.set(0);
+            n_past.set(0);
+            n_ctx.set(1024);
+            n_predict.set(128);
+            top_k.set(40);
+            top_p.set(0.95);
+            temp.set(0.28);
+            n_batch.set(8);
+            repeat_penalty.set(1.1);
+            repeat_last_n.set(10);
+            context_erase.set(0.55);
+        }
+
+        public static class Builder {
+            private final GenerationConfig configToBuild;
+
+            public Builder() {
+                configToBuild = new GenerationConfig();
+            }
+
+            public Builder withNPast(int n_past) {
+                configToBuild.n_past.set(n_past);
+                return this;
+            }
+
+            public Builder withNCtx(int n_ctx) {
+                configToBuild.n_ctx.set(n_ctx);
+                return this;
+            }
+
+            public Builder withNPredict(int n_predict) {
+                configToBuild.n_predict.set(n_predict);
+                return this;
+            }
+
+            public Builder withTopK(int top_k) {
+                configToBuild.top_k.set(top_k);
+                return this;
+            }
+
+            public Builder withTopP(float top_p) {
+                configToBuild.top_p.set(top_p);
+                return this;
+            }
+
+            public Builder withTemp(float temp) {
+                configToBuild.temp.set(temp);
+                return this;
+            }
+
+            public Builder withNBatch(int n_batch) {
+                configToBuild.n_batch.set(n_batch);
+                return this;
+            }
+
+            public Builder withRepeatPenalty(float repeat_penalty) {
+                configToBuild.repeat_penalty.set(repeat_penalty);
+                return this;
+            }
+
+            public Builder withRepeatLastN(int repeat_last_n) {
+                configToBuild.repeat_last_n.set(repeat_last_n);
+                return this;
+            }
+
+            public Builder withContextErase(float context_erase) {
+                configToBuild.context_erase.set(context_erase);
+                return this;
+            }
+
+            public GenerationConfig build() {
+                return configToBuild;
+            }
+        }
+    }
+
+    /**
+     * Shortcut for making GenerativeConfig builder.
+     */
+    public static GenerationConfig.Builder config(){
+        return new GenerationConfig.Builder();
+    }
+
+    /**
+     * This may be set before any Model instance classe are instantiated to
+     * set where the model may be found. This may be needed if setting
+     * library search path by standard means is not available.
+     */
+    public static String LIBRARY_SEARCH_PATH;
+
+    protected static LLModelLibrary library;
+
+    protected Pointer model;
+
+    protected LLModelType modelType;
+    protected String modelName;
+
+
+    public LLModel(Path modelPath, LLModelType type) {
+
+        if(library==null)
+            library = Util.loadSharedLibrary(LIBRARY_SEARCH_PATH);
+
+        modelType = type;
+        modelName = modelPath.getFileName().toString();
+
+        model = createModel();
+        library.llmodel_loadModel(model, modelPath.toAbsolutePath().toString());
+
+        if(!library.llmodel_isModelLoaded(model)){
+            throw new IllegalStateException("The model " + modelName + " could not be loaded");
+        }
+
+    }
+
+    protected abstract Pointer createModel();
+
+    public void setThreadCount(int nThreads) {
+        library.llmodel_setThreadCount(this.model, nThreads);
+    }
+
+    public int threadCount() {
+        return library.llmodel_threadCount(this.model);
+    }
+
+    /**
+     * Generate text after the prompt
+     *
+     * @param prompt The text prompt to complete
+     * @param generationConfig What generation settings to use while generating text
+     * @return String The complete generated text
+     */
+    public String generate(String prompt, GenerationConfig generationConfig) {
+        return generate(prompt, generationConfig, false);
+    }
+
+    /**
+     * Generate text after the prompt
+     *
+     * @param prompt The text prompt to complete
+     * @param generationConfig What generation settings to use while generating text
+     * @param streamToStdOut Should the generation be streamed to standard output. Useful for troubleshooting.
+     * @return String The complete generated text
+     */
+    public String generate(String prompt, GenerationConfig generationConfig, boolean streamToStdOut) {
+
+        StringBuilder wholeGeneration = new StringBuilder();
+
+        LLModelLibrary.ResponseCallback responseCallback = (int tokenID, String response) -> {
+            wholeGeneration.append(response);
+            if(streamToStdOut)
+                System.out.print(response);
+            return true; // continue generating
+        };
+
+        library.llmodel_prompt(this.model,
+                prompt,
+                 (int tokenID) -> {
+                    return true; // continue processing
+                },
+                responseCallback,
+                (boolean isRecalculating) -> {
+                    return isRecalculating; // continue generating
+                },
+                generationConfig);
+
+        return wholeGeneration.toString();
+    }
+
+
+
+    public static class ChatCompletionResponse {
+        public String model;
+        public Usage usage;
+        public List<Map<String, String>> choices;
+
+        // Getters and setters
+    }
+
+    public static class Usage {
+        public int promptTokens;
+        public int completionTokens;
+        public int totalTokens;
+
+        // Getters and setters
+    }
+
+    public ChatCompletionResponse chatCompletion(List<Map<String, String>> messages,
+                                                              GenerationConfig generationConfig) {
+        return chatCompletion(messages, generationConfig, false, false);
+    }
+
+    /**
+     * chatCompletion formats the existing chat conversation into a template to be
+     * easier to process for chat UIs. It is not absolutely necessary as generate method
+     * may be directly used to make generations with gpt models.
+     *
+     * @param messages List of Maps "role"->"user", "content"->"...", "role"-> "assistant"->"..."
+     * @param generationConfig How to decode/process the generation.
+     * @param streamToStdOut Send tokens as they are calculated Standard output.
+     * @param outputFullPromptToStdOut Should full prompt built out of messages be sent to Standard output.
+     * @return ChatCompletionResponse contains stats and generated Text.
+     */
+    public ChatCompletionResponse  chatCompletion(List<Map<String, String>> messages,
+                                              GenerationConfig generationConfig, boolean streamToStdOut,
+                                              boolean outputFullPromptToStdOut) {
+        String fullPrompt = buildPrompt(messages);
+
+        if(outputFullPromptToStdOut)
+            System.out.print(fullPrompt);
+
+        String generatedText = generate(fullPrompt, generationConfig, streamToStdOut);
+
+        ChatCompletionResponse  response = new ChatCompletionResponse();
+        response.model = this.modelName;
+
+        Usage usage = new Usage();
+        usage.promptTokens = fullPrompt.length();
+        usage.completionTokens = generatedText.length();
+        usage.totalTokens = fullPrompt.length() + generatedText.length();
+        response.usage =  usage;
+
+        Map<String, String> message = new HashMap<>();
+        message.put("role", "assistant");
+        message.put("content", generatedText);
+
+        response.choices = List.of(message);
+
+        return response;
+    }
+
+    protected static String buildPrompt(List<Map<String, String>> messages) {
+        StringBuilder fullPrompt = new StringBuilder();
+
+        for (Map<String, String> message : messages) {
+            if ("system".equals(message.get("role"))) {
+                String systemMessage = message.get("content") + "\n";
+                fullPrompt.append(systemMessage);
+            }
+        }
+
+        fullPrompt.append("### Instruction: \n" +
+                "The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.\n" +
+                "### Prompt: ");
+
+        for (Map<String, String> message : messages) {
+            if ("user".equals(message.get("role"))) {
+                String userMessage = "\n" + message.get("content");
+                fullPrompt.append(userMessage);
+            }
+            if ("assistant".equals(message.get("role"))) {
+                String assistantMessage = "\n### Response: " + message.get("content");
+                fullPrompt.append(assistantMessage);
+            }
+        }
+
+        fullPrompt.append("\n### Response:");
+
+        return fullPrompt.toString();
+    }
+
+
+}
