@@ -12,7 +12,7 @@ public class Example4 {
         //LLModel.LIBRARY_SEARCH_PATH = "C:\\Users\\felix\\gpt4all\\lib\\";
 
         String model = "ggml-vicuna-7b-1.1-q4_2.bin";
-        try (LlamaModel mptModel = new LlamaModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\" + model))) {
+        try (LLModel mptModel = new LLModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\" + model))) {
 
             LLModel.GenerationConfig config =
                     LLModel.config()

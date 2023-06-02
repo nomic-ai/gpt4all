@@ -13,7 +13,7 @@ public class Example2 {
         // Optionally in case extra search path are necessary.
         //LLModel.LIBRARY_SEARCH_PATH = "C:\\Users\\felix\\gpt4all\\lib\\";
 
-        try (MPTModel mptModel = new MPTModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\ggml-mpt-7b-instruct.bin"))) {
+        try (LLModel mptModel = new LLModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\ggml-mpt-7b-instruct.bin"))) {
 
             LLModel.GenerationConfig config =
                     LLModel.config()

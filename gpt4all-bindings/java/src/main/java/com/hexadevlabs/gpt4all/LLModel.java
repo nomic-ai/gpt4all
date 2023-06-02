@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract  class LLModel implements AutoCloseable {
+public  class LLModel implements AutoCloseable {
 
     /**
      * Config used for how to decode LLM outputs.
@@ -115,28 +115,33 @@ public abstract  class LLModel implements AutoCloseable {
 
     protected Pointer model;
 
-    protected LLModelType modelType;
     protected String modelName;
 
-
-    public LLModel(Path modelPath, LLModelType type) {
+    public LLModel(Path modelPath) {
 
         if(library==null)
             library = Util.loadSharedLibrary(LIBRARY_SEARCH_PATH);
 
-        modelType = type;
+        // modelType = type;
         modelName = modelPath.getFileName().toString();
 
-        model = createModel();
-        library.llmodel_loadModel(model, modelPath.toAbsolutePath().toString());
+        String modelPathAbs = modelPath.toAbsolutePath().toString();
+
+        LLModelLibrary.LLModelError error = new LLModelLibrary.LLModelError(jnr.ffi.Runtime.getSystemRuntime());
+
+        // Create Model Struct. Will load dynamically the correct backend based on model type
+        model = library.llmodel_model_create2(modelPathAbs, "auto", error);
+
+        if(model == null) {
+            throw new IllegalStateException("Could not load gpt4all backend :" + error.message.toString());
+        }
+        library.llmodel_loadModel(model, modelPathAbs);
 
         if(!library.llmodel_isModelLoaded(model)){
             throw new IllegalStateException("The model " + modelName + " could not be loaded");
         }
 
     }
-
-    protected abstract Pointer createModel();
 
     public void setThreadCount(int nThreads) {
         library.llmodel_setThreadCount(this.model, nThreads);
@@ -282,5 +287,9 @@ public abstract  class LLModel implements AutoCloseable {
         return fullPrompt.toString();
     }
 
+    @Override
+    public void close() throws Exception {
+        library.llmodel_model_destroy(model);
+    }
 
 }

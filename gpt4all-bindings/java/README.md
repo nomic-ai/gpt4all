@@ -20,7 +20,7 @@ LLModel.LIBRARY_SEARCH_PATH = "C:\\Users\\felix\\gpt4all\\lib\\";
 <dependency>
     <groupId>com.hexadevlabs</groupId>
     <artifactId>gpt4all-java-binding</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 * Sample Code:
@@ -33,12 +33,12 @@ public class Example {
         // Optionally in case extra search path are necessary.
         //LLModel.LIBRARY_SEARCH_PATH = "C:\\Users\\felix\\gpt4all\\lib\\";
 
-        try (MPTModel mptModel = new MPTModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\ggml-mpt-7b-instruct.bin"))) {
+        try (LLModel model = new LLModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\ggml-mpt-7b-instruct.bin"))) {
 
             LLModel.GenerationConfig config = LLModel.config()
                     .withNPredict(4096).build();
 
-            mptModel.generate(prompt, config, true);
+            model.generate(prompt, config, true);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

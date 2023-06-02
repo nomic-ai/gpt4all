@@ -4,6 +4,7 @@ import jnr.ffi.Pointer;
 import jnr.ffi.Struct;
 import jnr.ffi.annotations.Delegate;
 import jnr.ffi.annotations.In;
+import jnr.ffi.annotations.Out;
 import jnr.ffi.types.u_int64_t;
 
 
@@ -27,6 +28,14 @@ public interface LLModelLibrary {
         boolean invoke(boolean is_recalculating);
     }
 
+    class LLModelError extends Struct {
+        public final Struct.AsciiStringRef message = new Struct.AsciiStringRef();
+        public final int32_t status = new int32_t();
+        public LLModelError(jnr.ffi.Runtime runtime) {
+            super(runtime);
+        }
+    }
+
     class LLModelPromptContext extends Struct {
         public final Pointer logits = new Pointer();
         public final ssize_t logits_size = new ssize_t();
@@ -48,13 +57,7 @@ public interface LLModelLibrary {
         }
     }
 
-    Pointer llmodel_gptj_create();
-    void llmodel_gptj_destroy(Pointer gptj);
-    Pointer llmodel_mpt_create();
-    void llmodel_mpt_destroy(Pointer mpt);
-    Pointer llmodel_llama_create();
-    void llmodel_llama_destroy(Pointer llama);
-    Pointer llmodel_model_create(String model_path);
+    Pointer llmodel_model_create2(String model_path, String build_variant, @Out LLModelError llmodel_error);
     void llmodel_model_destroy(Pointer model);
     boolean llmodel_loadModel(Pointer model, String model_path);
     boolean llmodel_isModelLoaded(Pointer model);

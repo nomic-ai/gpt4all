@@ -13,7 +13,7 @@ public class Example1 {
         // Optionally in case extra search path are necessary.
         //LLModel.LIBRARY_SEARCH_PATH = "C:\\Users\\felix\\gpt4all\\lib\\";
 
-        try ( GPTJModel gptjModel = new GPTJModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\ggml-gpt4all-j-v1.3-groovy.bin")) ){
+        try ( LLModel gptjModel = new LLModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\ggml-gpt4all-j-v1.3-groovy.bin")) ){
 
             LLModel.GenerationConfig config = LLModel.config()
                     .withNPredict(4096).build();
