@@ -56,7 +56,7 @@ public static class NativeLibraryLoader
         // If the user hasn't set the path, we'll try to find it ourselves.
         if (string.IsNullOrEmpty(path))
         {
-            var libraryname = "libllmodel";
+            var libraryName = "libllmodel";
             var assemblySearchPath = new[]
             {
                 AppDomain.CurrentDomain.RelativeSearchPath,
@@ -64,7 +64,7 @@ public static class NativeLibraryLoader
                 Path.GetDirectoryName(Environment.GetCommandLineArgs()[0])
             }.FirstOrDefault(it => !string.IsNullOrEmpty(it));
             // Search for the library dll within the assembly search path. If it doesn't exist, for whatever reason, use the default path.
-            path = Directory.EnumerateFiles(assemblySearchPath ?? string.Empty, $"{libraryname}.{extension}", SearchOption.AllDirectories).FirstOrDefault() ?? Path.Combine("runtimes", $"{platform}-{architecture}", $"{libraryname}.{extension}");
+            path = Directory.EnumerateFiles(assemblySearchPath ?? string.Empty, $"{libraryName}.{extension}", SearchOption.AllDirectories).FirstOrDefault() ?? Path.Combine("runtimes", $"{platform}-{architecture}", $"{libraryName}.{extension}");
         }
 
         if (defaultLibraryLoader != null)
