@@ -76,8 +76,17 @@ public:
     static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
     static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
 
+    static inline void setImplementationsSearchPath(const std::string& path) {
+        m_implementations_search_path = path;
+    }
+    static inline const std::string& implementationsSearchPath() {
+        return m_implementations_search_path;
+    }
+
 protected:
     const Implementation *m_implementation = nullptr;
+
+    static std::string m_implementations_search_path;
 
     void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 };
