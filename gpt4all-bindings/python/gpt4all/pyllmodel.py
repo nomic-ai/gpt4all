@@ -5,7 +5,6 @@ import platform
 import re
 import subprocess
 import sys
-import glob
 
 class DualStreamProcessor:
     def __init__(self, stream=None):
@@ -21,6 +20,7 @@ class DualStreamProcessor:
 
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
+MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
 
 def load_llmodel_library():
     system = platform.system()
@@ -105,8 +105,7 @@ llmodel.llmodel_set_implementation_search_path.restype = None
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
-model_lib_path = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
-llmodel.llmodel_set_implementation_search_path(model_lib_path.encode('utf-8'))
+llmodel.llmodel_set_implementation_search_path(MODEL_LIB_PATH.encode('utf-8'))
 
 
 class LLModel:
@@ -119,7 +118,7 @@ class LLModel:
     model: llmodel_model
         Ctype pointer to underlying model
     model_name: str
-        Model name.
+        Model name
     """
 
     def __init__(self):
