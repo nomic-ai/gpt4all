@@ -19,7 +19,6 @@ class DualStreamProcessor:
             self.stream.flush()
         self.output += cleaned_text
 
-
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
 
@@ -40,31 +39,14 @@ def load_llmodel_library():
 
     llmodel_file = "libllmodel" + '.' + c_lib_ext
 
-    model_lib_path = str(pkg_resources.resource_filename("gpt4all", \
-        os.path.join(LLMODEL_PATH, f"lib*.{c_lib_ext}"))).replace("\\", "\\\\")
-    model_lib_dirs = glob.glob(model_lib_path)
-
-    # model_lib_dirs = []
-    # print("hello")
-    # print(model_lib_files)
-    # for lib in model_lib_files:
-    #     if lib != llmodel_file:
-    #         model_lib_dirs.append(str(pkg_resources.resource_filename('gpt4all', \
-    #             os.path.join(LLMODEL_PATH, lib))).replace("\\", "\\\\"))
-
     llmodel_dir = str(pkg_resources.resource_filename('gpt4all', \
         os.path.join(LLMODEL_PATH, llmodel_file))).replace("\\", "\\\\")
 
-    model_libs = []
-    for model_dir in model_lib_dirs:
-        if "libllmodel" not in model_dir:
-            print("loading")
-            model_libs.append(ctypes.CDLL(model_dir, mode=ctypes.RTLD_GLOBAL))
     llmodel_lib = ctypes.CDLL(llmodel_dir)
 
-    return llmodel_lib, model_libs
+    return llmodel_lib
 
-llmodel, model_libs = load_llmodel_library()
+llmodel = load_llmodel_library()
 
 class LLModelError(ctypes.Structure):
     _fields_ = [("message", ctypes.c_char_p),
@@ -114,8 +96,14 @@ llmodel.llmodel_prompt.restype = None
 llmodel.llmodel_setThreadCount.argtypes = [ctypes.c_void_p, ctypes.c_int32]
 llmodel.llmodel_setThreadCount.restype = None
 
+llmodel.llmodel_set_implementation_search_path.argtypes = [ctypes.c_char_p]
+llmodel.llmodel_set_implementation_search_path.restype = None
+
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
+
+model_lib_path = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
+llmodel.llmodel_set_implementation_search_path(model_lib_path.encode('utf-8'))
 
 
 class LLModel:

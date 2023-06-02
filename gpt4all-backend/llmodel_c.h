@@ -177,6 +177,20 @@ void llmodel_setThreadCount(llmodel_model model, int32_t n_threads);
  */
 int32_t llmodel_threadCount(llmodel_model model);
 
+/**
+ * Set llmodel implementation search path.
+ * Default is "."
+ * @param path The path to the llmodel implementation shared objects.
+ */
+void llmodel_set_implementation_search_path(const char *path);
+
+/**
+ * Get llmodel implementation search path.
+ * @return The current search path; lifetime ends on next set llmodel_set_implementation_search_path() call.
+ */
+const char *llmodel_get_implementation_search_path();
+
+
 #ifdef __cplusplus
 }
 #endif
