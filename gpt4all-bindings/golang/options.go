@@ -20,23 +20,13 @@ var DefaultOptions PredictOptions = PredictOptions{
 }
 
 var DefaultModelOptions ModelOptions = ModelOptions{
-	Threads:   4,
-	ModelType: GPTJType,
+	Threads: 4,
 }
 
 type ModelOptions struct {
-	Threads   int
-	ModelType ModelType
+	Threads int
 }
 type ModelOption func(p *ModelOptions)
-
-type ModelType int
-
-const (
-	LLaMAType ModelType = 0
-	GPTJType  ModelType = iota
-	MPTType   ModelType = iota
-)
 
 // SetTokens sets the number of tokens to generate.
 func SetTokens(tokens int) PredictOption {
@@ -107,13 +97,6 @@ func NewPredictOptions(opts ...PredictOption) PredictOptions {
 func SetThreads(c int) ModelOption {
 	return func(p *ModelOptions) {
 		p.Threads = c
-	}
-}
-
-// SetModelType sets the model type.
-func SetModelType(c ModelType) ModelOption {
-	return func(p *ModelOptions) {
-		p.ModelType = c
 	}
 }
 

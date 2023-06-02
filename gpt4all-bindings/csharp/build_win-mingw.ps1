@@ -13,5 +13,4 @@ cmake --build $BUILD_DIR --parallel --config Release
 
 # copy native dlls
 cp "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll" $LIBS_DIR
-cp "$BUILD_DIR\libllmodel.dll" $LIBS_DIR
-cp "$BUILD_DIR\bin\libllama.dll" $LIBS_DIR
+cp "$BUILD_DIR\*.dll" $LIBS_DIR
