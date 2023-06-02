@@ -24,6 +24,7 @@ public:
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx) override;
+    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) override { return true; }
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
 
@@ -32,10 +33,6 @@ public:
 
     QList<QString> context() const { return m_context; }
     void setContext(const QList<QString> &context) { m_context = context; }
-
-protected:
-    void recalculateContext(PromptContext &promptCtx,
-        std::function<bool(bool)> recalculate) override {}
 
 private Q_SLOTS:
     void handleFinished();
