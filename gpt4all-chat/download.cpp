@@ -74,7 +74,7 @@ QList<ModelInfo> Download::modelList() const
     ModelInfo bestLlamaInfo;
     ModelInfo bestMPTInfo;
     QList<ModelInfo> filtered;
-    for (ModelInfo v : values) {
+    for (const ModelInfo &v : values) {
         if (v.isDefault)
             defaultInfo = v;
         if (v.bestGPTJ)
@@ -310,7 +310,7 @@ void Download::removeModel(const QString &modelFile)
 void Download::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 {
     QUrl url = reply->request().url();
-    for (auto e : errors)
+    for (const auto &e : errors)
         qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
 }
 
@@ -658,7 +658,6 @@ void Download::handleReadyRead()
     if (!modelReply)
         return;
 
-    QString modelFilename = modelReply->url().fileName();
     QFile *tempFile = m_activeDownloads.value(modelReply);
     QByteArray buffer;
     while (!modelReply->atEnd()) {

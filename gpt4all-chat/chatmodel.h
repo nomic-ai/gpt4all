@@ -240,7 +240,7 @@ public:
     bool serialize(QDataStream &stream, int version) const
     {
         stream << count();
-        for (auto c : m_chatItems) {
+        for (const auto &c : m_chatItems) {
             stream << c.id;
             stream << c.name;
             stream << c.value;
