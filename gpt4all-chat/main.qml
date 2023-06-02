@@ -12,6 +12,8 @@ Window {
     id: window
     width: 1280
     height: 720
+    minimumWidth: 720
+    minimumHeight: 480
     visible: true
     title: qsTr("GPT4All v") + Qt.application.version
 
@@ -119,7 +121,6 @@ Window {
         anchors.top: parent.top
         height: 100
         color: theme.backgroundDarkest
-
         Item {
             anchors.centerIn: parent
             height: childrenRect.height
@@ -139,10 +140,12 @@ Window {
 
             MyComboBox {
                 id: comboBox
-                width: 350
+                implicitWidth: 375
+                width: window.width >= 750 ? implicitWidth : implicitWidth - ((750 - window.width))
                 anchors.top: modelLabel.top
                 anchors.bottom: modelLabel.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
+                anchors.horizontalCenterOffset: window.width >= 950 ? 0 : Math.max(-((950 - window.width) / 2), -99.5)
                 enabled: !currentChat.isServer
                 model: currentChat.modelList
                 Accessible.role: Accessible.ComboBox
@@ -295,7 +298,7 @@ Window {
         anchors.right: networkButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
-        anchors.rightMargin: 30
+        anchors.rightMargin: 10
         width: 40
         height: 40
         z: 200
@@ -316,7 +319,7 @@ Window {
         anchors.right: collectionsButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
-        anchors.rightMargin: 30
+        anchors.rightMargin: 10
         width: 40
         height: 40
         z: 200
@@ -365,7 +368,7 @@ Window {
         anchors.right: settingsButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
-        anchors.rightMargin: 30
+        anchors.rightMargin: 10
         width: 40
         height: 40
         z: 200
@@ -430,7 +433,7 @@ Window {
         anchors.right: copyButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
-        anchors.rightMargin: 30
+        anchors.rightMargin: 10
         width: 40
         height: 40
         z: 200
