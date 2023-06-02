@@ -1,7 +1,8 @@
-#include "replit.h"
-#include "llama.cpp/ggml.h"
+#define REPLIT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#include "replit_impl.h"
 
 #include "utils.h"
+
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -30,13 +31,20 @@
 #include <utility>
 #include <vector>
 #include <regex>
+#include <ggml.h>
 
 
 using piece_t = std::pair<std::size_t, float>;
 using piece_map_t = std::unordered_map<std::string, piece_t>;
 
+namespace {
+const char *modelType_ = "Replit";
+
 static const size_t MB = 1024*1024;
 static const std::string ws_symbol = "\342\226\201";
+
+}
+
 
 struct replit_tokenizer {
     gpt_vocab raw_vocab;
@@ -995,7 +1003,7 @@ void Replit::prompt(const std::string &prompt,
         {
             const int64_t t_start_sample_us = ggml_time_us();
             const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
-            id = gpt_sample_top_k_top_p(d_ptr->vocab.raw_vocab, n_vocab,
+            id = gpt_sample_top_k_top_p(n_vocab,
                 promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
                 n_prev_toks,
                 promptCtx.logits,
@@ -1092,28 +1100,37 @@ stop_generating:
     return;
 }
 
-void Replit::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
+bool Replit::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
 {
-    size_t i = 0;
-    promptCtx.n_past = 0;
-    while (i < promptCtx.tokens.size()) {
-        size_t batch_end = std::min(i + promptCtx.n_batch, promptCtx.tokens.size());
-        std::vector<int> batch(promptCtx.tokens.begin() + i, promptCtx.tokens.begin() + batch_end);
+    return replit_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
+}
 
-        assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
+#if defined(_WIN32)
+#define DLL_EXPORT __declspec(dllexport)
+#else
+#define DLL_EXPORT __attribute__ ((visibility ("default")))
+#endif
 
-        if (!replit_eval(*d_ptr->model, d_ptr->n_threads, promptCtx.n_past, batch, promptCtx.logits,
-            d_ptr->mem_per_token)) {
-            std::cerr << "Replit ERROR: Failed to process prompt\n";
-            goto stop_generating;
-        }
-        promptCtx.n_past += batch.size();
-        if (!recalculate(true))
-            goto stop_generating;
-        i = batch_end;
-    }
-    assert(promptCtx.n_past == promptCtx.tokens.size());
+extern "C" {
+DLL_EXPORT bool is_g4a_backend_model_implementation() {
+    return true;
+}
 
-stop_generating:
-    recalculate(false);
+DLL_EXPORT const char *get_model_type() {
+    return modelType_;
+}
+
+DLL_EXPORT const char *get_build_variant() {
+    return GGML_BUILD_VARIANT;
+}
+
+DLL_EXPORT bool magic_match(std::istream& f) {
+    uint32_t magic = 0;
+    f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
+    return magic == 0x7265706c;
+}
+
+DLL_EXPORT LLModel *construct() {
+    return new Replit;
+}
 }
