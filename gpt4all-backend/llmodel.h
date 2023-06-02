@@ -64,6 +64,7 @@ public:
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx) = 0;
+    virtual bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) = 0;
     virtual void setThreadCount(int32_t /*n_threads*/) {}
     virtual int32_t threadCount() const { return 1; }
 
@@ -78,7 +79,6 @@ public:
 protected:
     const Implementation *m_implementation = nullptr;
 
-    virtual void recalculateContext(PromptContext &promptCtx,
-        std::function<bool(bool)> recalculate) = 0;
+    void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 };
 #endif // LLMODEL_H
