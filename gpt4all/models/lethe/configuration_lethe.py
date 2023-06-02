@@ -111,6 +111,7 @@ class LetheConfig(PretrainedConfig):
         memory_attn_layer=9,
         num_neighbors_to_retrieve=32,
         num_neighbors_stored=128,
+        attn_scale_init=20.0,
         **kwargs,
     ):
         super().__init__(bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
@@ -134,3 +135,4 @@ class LetheConfig(PretrainedConfig):
         self.memory_attn_layer = memory_attn_layer 
         self.num_neighbors_to_retrieve = num_neighbors_to_retrieve
         self.num_neighbors_stored = num_neighbors_stored
+        self.attn_scale_init = attn_scale_init

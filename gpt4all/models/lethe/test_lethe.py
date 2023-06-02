@@ -23,8 +23,9 @@ print("loading model")
 dimension = config.max_position_embeddings * config.hidden_size
 head_size = config.hidden_size // config.num_attention_heads
 index = MemoryIndex(head_size,
-                    500_000,
-                    config.num_attention_heads
+                    5_000_000,
+                    # 2 since multi-query attention and storing one each for key and value
+                    config.num_attention_heads,
 )
 model = LetheForCausalLM(config, index)
 model.to("cuda:0")
@@ -69,7 +70,7 @@ with torch.no_grad():
     for chunk_start in tqdm(range(0, memories.shape[0], 32)):
         chunk_end = min(memories.shape[0], chunk_start + 32)
         mem_chunk = memories[chunk_start:chunk_end].to(model.device)
-        model(input_ids=mem_chunk, labels=None)
+        model(input_ids=mem_chunk, labels=None,)
 
 model.train()
 

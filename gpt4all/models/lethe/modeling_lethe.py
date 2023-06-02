@@ -12,8 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" PyTorch PythiaSeek model."""
+""" PyTorch Lethe model."""
 
+import wandb
+import math
+import torch.nn.functional as F
+import matplotlib.pyplot as plt
 from typing import Optional, Tuple, Union
 
 import torch
@@ -29,8 +33,9 @@ from transformers.modeling_outputs import (
 from transformers.modeling_utils import PreTrainedModel
 from transformers.utils import logging
 from gpt4all.models.lethe import LetheConfig
-import hnswlib
 import numpy as np
+import faiss
+import faiss.contrib.torch_utils
 
 
 logger = logging.get_logger(__name__)
@@ -40,17 +45,18 @@ GPT_NEOX_PRETRAINED_MODEL_ARCHIVE_LIST = [
     "EleutherAI/gpt-neox-20b",
 ]
 
-# TODO: understand why Phil only does this per batch and doens't persist across many batches -> he uses multi-query attention
-# TODO: do we need to implement masking for the dense vectors we pull from?
-# TODO: i think phil is using a memmapped database to pull out rather than using the index 
-
 
 class HNSWIndex:
     def __init__(self, max_memories, dimension):
         # num_memories will be batch size * num_neighbors
         # can memmap this too like
-        self.index = hnswlib.Index(space="l2", dim=dimension)
-        self.index.init_index(max_elements=max_memories, ef_construction=50, M=16)
+        self.index = faiss.IndexHNSWFlat(dimension, 16, faiss.METRIC_INNER_PRODUCT)
+        # taking params from: https://www.pinecone.io/learn/vector-indexes/#hnsw-implementation
+        # and https://www.pinecone.io/learn/hnsw/#hnsw-performance
+        # seems like efConstruction dictates how long the index takes to build
+        # and efSearch and M (second arg to faiss.Index) dictates how long it takes to search
+        self.index.hnsw.efConstruction = 16
+        self.index.hnsw.efSearch = 32   
         self.max_memories = max_memories
         self.dimension = dimension
 
@@ -60,44 +66,64 @@ class HNSWIndex:
 
     def query(self, query, k=1):
         # hack what should we do here?
-        if self.index.get_current_count() == 0:
-            return np.ones((query.shape[0], k, query.shape[1]), dtype=np.float32)
+        if self.index.ntotal == 0:
+            return np.ones((query.shape[0], k), dtype=np.int32)
 
-        assert query.ndim == 2
-        bs_seq_len, _ = query.shape
+        _, labels = self.index.search(np.ascontiguousarray(query), k=k)
 
-        labels, _ = self.index.knn_query(query, k=k)
-        neighbors = torch.tensor(self.index.get_items(labels.reshape(-1)))
-        neighbors = neighbors.reshape((bs_seq_len, k, query.shape[1]))
-
-        assert neighbors.ndim == 3 
-        assert neighbors.shape[0] == bs_seq_len
-
-        return neighbors
+        return labels
 
     def add(self, memories):
-        assert memories.ndim == 2
-        bs_seq_len, _ = memories.shape
-
-        ids = np.arange(self.idx_offset, self.idx_offset + bs_seq_len)
-
-        self.index.add_items(memories, ids)
-
-        self.idx_offset += bs_seq_len
+        return self.index.add(np.ascontiguousarray(memories))
 
             
     def reset(self):
-        self.index = hnswlib.Index(space="l2", dim=self.dimension)
-        self.index.init_index(max_elements=self.max_memories, ef_construction=50, M=16)
+        self.index.reset()
+
         
+class NumpyKNNIndex:
+    def __init__(self, max_memories, dimension):
+        # num_memories will be batch size * num_neighbors
+        # can memmap this too like
+        self.index = np.zeros((max_memories, dimension), dtype=np.float32)
+        self.max_memories = max_memories
+        self.dimension = dimension
+
+        # if we want to allow for insertion of len(elements) > max_memories
+        # we need to figure out a way to get the most recent memories
+        self.idx_offset = 0
+
+    def query(self, query, k=1):
+        # hack what should we do here?
+        if self.index.sum() == 0:
+            return np.ones((query.shape[0], k), dtype=np.int32)
+
+        dots = query.dot(self.index[:self.idx_offset].T)
+        labels = np.argsort(dots, axis=1)[:, -k:]
+
+        return labels
+
+
+    def add(self, memories):
+        self.index[self.idx_offset:self.idx_offset + memories.shape[0]] = memories
+        self.idx_offset += memories.shape[0]
+
+            
+    def reset(self):
+        self.index.reset()
+
 
 
 class MemoryIndex:
     def __init__(self, hidden_dim, num_mems, nheads):
-        # we store an index for each k/v for each head
-        self.key_indices = [HNSWIndex(num_mems, hidden_dim) for _ in range(nheads)]
-        self.value_indices = [HNSWIndex(num_mems, hidden_dim) for _ in range(nheads)]
         self.nheads = nheads
+
+        # NOTE: we are storing kv pairs, instead indices for both keys and values
+        self.key_indices = [HNSWIndex(num_mems, hidden_dim) for _ in range(nheads)]
+
+        shape = (num_mems, nheads, 2, hidden_dim)
+        self.kv_pairs = np.zeros(shape, dtype=np.float32)
+        self.idx_offset = 0
 
     def add(self, keys, values):
         # k/v are (bs, num_attention_heads, seq_len, head_size)
@@ -106,22 +132,30 @@ class MemoryIndex:
 
         for head in range(self.nheads):
             self.key_indices[head].add(reshaped_keys[:, head, :])
-            self.value_indices[head].add(reshaped_values[:, head, :])
 
+        kv_pairs = np.stack((reshaped_keys, reshaped_values), axis=2)
+
+        if self.idx_offset + kv_pairs.shape[0] > self.kv_pairs.shape[0]:
+            raise ValueError("Not enough memory!")
+
+        self.kv_pairs[self.idx_offset:self.idx_offset + kv_pairs.shape[0]] = kv_pairs
+        self.idx_offset += kv_pairs.shape[0]
 
     def knn_query(self, query, k=1):
         reshaped_query = query.reshape(query.shape[0] * query.shape[2], query.shape[1], query.shape[3])
 
         mem_keys = []
         mem_values = []
+        mem_indices = []
 
-        # this is prob so so slow
+        # we can prob make this better
         for head in range(self.nheads):
-            knn_keys = self.key_indices[head].query(reshaped_query[:, head, :], k=k)
-            knn_values = self.value_indices[head].query(reshaped_query[:, head, :], k=k)
-
-            mem_keys.append(knn_keys)
-            mem_values.append(knn_values)
+            knn_indices = self.key_indices[head].query(reshaped_query[:, head, :], k=k)
+            kv_pairs = self.kv_pairs[:, head, :, :][knn_indices]
+            
+            mem_keys.append(kv_pairs[:, :, 0, :])
+            mem_values.append(kv_pairs[:, :, 1, :])
+            mem_indices.append(knn_indices)
 
         mem_keys = torch.from_numpy(np.stack(mem_keys, axis=1))
         # (bs, num_attention_heads, seq_len, k, head_size)
@@ -131,13 +165,14 @@ class MemoryIndex:
         # (bs, num_attention_heads, seq_len, k, head_size)
         mem_values = mem_values.view(query.shape[:-1] + (k,) + (query.shape[-1],))
 
-        return mem_keys, mem_values
+        return mem_keys, mem_values, np.stack(mem_indices, axis=1)
         
 
     def reset(self):
         for head in range(self.nheads):
             self.key_indices[head].reset()
-            self.value_indices[head].reset()
+
+        self.kv_pairs = np.zeros((self.kv_pairs.shape[0], self.nheads, 2, self.kv_pairs.shape[-1]), dtype=np.float32)
 
 
 class LethePreTrainedModel(PreTrainedModel):
@@ -171,7 +206,7 @@ class LethePreTrainedModel(PreTrainedModel):
 
 
 class LetheAttention(nn.Module):
-    def __init__(self, config, memory_attention=False, index=None):
+    def __init__(self, config, memory_attention=False, index=None, tracker=None):
         super().__init__()
         self.num_attention_heads = config.num_attention_heads
         self.hidden_size = config.hidden_size
@@ -188,21 +223,24 @@ class LetheAttention(nn.Module):
         self.rotary_emb = RotaryEmbedding(
             self.rotary_ndims, config.max_position_embeddings, base=config.rotary_emb_base
         )
-        self.register_buffer(
+        if not memory_attention:
+            self.register_buffer(
             "norm_factor",
             torch.sqrt(torch.tensor(self.head_size, dtype=torch.float32)).to(torch.get_default_dtype()),
             persistent=False,
         )
+
         self.query_key_value = nn.Linear(config.hidden_size, 3 * config.hidden_size)
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.memory = False
         
         if memory_attention:
+            self.scale = nn.Parameter(torch.ones(self.num_attention_heads, 1, 1) * math.log(config.attn_scale_init))
             self.memory = True
-            self.alpha = nn.Parameter(torch.zeros(self.num_attention_heads))
             self.num_neighbors = config.num_neighbors_to_retrieve
             # for testing, just using np array since it's easy
             self.index = index
+            self.tracker = tracker
 
 
     def forward(
@@ -214,7 +252,9 @@ class LetheAttention(nn.Module):
         layer_past: Optional[Tuple[torch.Tensor]] = None,
         use_cache: Optional[bool] = False,
         output_attentions: Optional[bool] = False,
-        use_mem_attn: Optional[bool] = True,
+        log_attn_scores: Optional[bool] = False,
+        step: Optional[int] = None,
+        save_kv: Optional[bool] = True,
     ):
         has_layer_past = layer_past is not None
 
@@ -233,6 +273,12 @@ class LetheAttention(nn.Module):
         query = qkv[..., : self.head_size].permute(0, 2, 1, 3)
         key = qkv[..., self.head_size : 2 * self.head_size].permute(0, 2, 1, 3)
         value = qkv[..., 2 * self.head_size :].permute(0, 2, 1, 3)
+
+        # if self.memory:
+        if self.memory:
+            # QKNorm: https://arxiv.org/abs/2010.04245
+            query = F.normalize(query, dim=-1)
+            key = F.normalize(key, dim=-1)
 
         # Compute rotary embeddings on rotary_ndims
         query_rot = query[..., : self.rotary_ndims]
@@ -257,27 +303,38 @@ class LetheAttention(nn.Module):
             value = torch.cat((past_value, value), dim=-2)
         present = (key, value) if use_cache else None
 
-        # Compute attention
-        attn_output, attn_weights = self._attn(query, key, value, attention_mask, head_mask)
-
-        # TODO: need to do masking??
+        # memory attention
         if self.memory:
-            # get knns 
-            # since we do an eval batch w context before, let's not do the expensive step until we need to
-            # [batch, knn, num_attention_heads, seq_len, head_size]
-            if use_mem_attn:
-                knn_keys, knn_values = self.index.knn_query(query.cpu().detach().to(torch.float32).numpy(), k=self.num_neighbors)
-                mem_attn = self._mem_attn(query,
-                                        knn_keys.to(query.device),
-                                        knn_values.to(query.device), 
-                                        attention_mask, 
-                                        head_mask
-                                        )
+            if save_kv:
+                self.index.add(key.cpu().detach().to(torch.float32).numpy(), value.cpu().detach().to(torch.float32).numpy())
 
-                expanded_alpha = self.alpha[None, :, None, None]
-                attn_output = (attn_output * (1 - expanded_alpha)) + (mem_attn * expanded_alpha)
+            knn_keys, knn_values, knn_labels = self.index.knn_query(query.cpu().detach().to(torch.float32).numpy(), k=self.num_neighbors)
+            if log_attn_scores:
+                batch_size = query.shape[0]
+                seq_len = query.shape[-2]
 
-            self.index.add(key.cpu().detach().to(torch.float32).numpy(), value.cpu().detach().to(torch.float32).numpy())
+                key_labels = knn_labels // seq_len
+                key_labels = key_labels.reshape(batch_size, seq_len, self.num_attention_heads, -1)
+                correct_keys = np.equal(key_labels, np.arange(batch_size)[:, np.newaxis, np.newaxis, np.newaxis])
+                # calculate the accuracy 
+                key_acc = np.sum(correct_keys) / np.prod(correct_keys.shape)
+
+                self.tracker.log({"retrieved_acc": key_acc}, step=step)
+
+            attn_output = self._mem_attn(query,
+                                    knn_keys.to(query.device).to(value.dtype),
+                                    knn_values.to(query.device).to(value.dtype),
+                                    key,
+                                    value,
+                                    attention_mask, 
+                                    head_mask,
+                                    log_attn_scores=log_attn_scores,
+                                    step=step,
+                                    knn_labels=knn_labels,
+                                    )
+        else:
+            # Normal self-attention
+            attn_output, attn_weights = self._attn(query, key, value, attention_mask, head_mask)
 
         # Reshape outputs
         attn_output = self._merge_heads(attn_output, self.num_attention_heads, self.head_size)
@@ -315,28 +372,131 @@ class LetheAttention(nn.Module):
         return tensor
 
     
-    def _mem_attn(self, query, key, value, attention_mask=None, head_mask=None):
+    def _mem_attn(self, 
+                  query,
+                  knn_key, 
+                  knn_value, 
+                  local_key, 
+                  local_value, 
+                  attention_mask=None, 
+                  head_mask=None, 
+                  log_attn_scores=False,
+                  step=None,
+                  knn_labels=None):
+        # local self-attention 
         # q: [bs, num_attention_heads, seq_len, attn_head_size]
         # k,v: [bs, num_attention_heads, seq_len, knn, attn_head_size]
+        query_length = query.size(-2)
+        key_length = local_key.size(-2)
 
-        attn_scores = torch.einsum("bhsd, bhsnd-> bshn", query, key)
-        # attn_scores: [bs, seq_len, num_attention_heads, knn]
-        attn_scores = attn_scores / self.norm_factor
+        causal_mask = self.bias[:, :, key_length - query_length : key_length, :key_length]
 
-        # softmax over knns
-        attn_weights = nn.functional.softmax(attn_scores, dim=-1)
-        attn_weights = attn_weights.to(value.dtype)
+        local_attn_scores = torch.matmul(query, local_key.transpose(-1, -2))
+        scale = self.scale.exp()
+
+        local_attn_scores = local_attn_scores * scale
+
+        mask_value = torch.finfo(local_attn_scores.dtype).min
+        # Need to be a tensor, otherwise we get error: `RuntimeError: expected scalar type float but found double`.
+        # Need to be on the same device, otherwise `RuntimeError: ..., x and y to be on the same device`
+        mask_value = torch.tensor(mask_value, dtype=local_attn_scores.dtype).to(local_attn_scores.device)
+        local_attn_scores = torch.where(causal_mask, local_attn_scores, mask_value)
 
         if attention_mask is not None:
             # Apply the attention mask
-            attn_scores = attn_scores + attention_mask
+            local_attn_scores = local_attn_scores + attention_mask
 
-        # Mask heads if we want to
-        if head_mask is not None:
-            attn_weights = attn_weights * head_mask
+        mem_attn_scores = torch.einsum("bhsd, bhsnd-> bhsn", query, knn_key)
+        # attn_scores: [bs, seq_len, num_attention_heads, knn]
+        mem_attn_scores = mem_attn_scores * scale
+
+        attn_scores = torch.cat((mem_attn_scores, local_attn_scores), dim=-1)
+
+        # softmax over knns
+        attn_weights = nn.functional.softmax(attn_scores, dim=-1)
+        attn_weights = attn_weights.to(local_value.dtype)
+
+        mem_attn_weights, local_attn_weights = attn_weights.split([self.num_neighbors, local_attn_scores.size(-1)], dim=-1)
+        if log_attn_scores:
+            # (bs, seq_len, num_attention_heads, knn) probabilities
+            # curate (x,y) pairs
+            # where x is attention weight, y is accuracy of retrieved token
+            bs, seq_len = mem_attn_weights.size(0), mem_attn_weights.size(2)
+            key_labels = knn_labels // seq_len
+            key_labels = key_labels.reshape(bs, self.num_attention_heads, seq_len, -1)
+            correct_keys = np.equal(key_labels, np.arange(bs)[:, np.newaxis, np.newaxis, np.newaxis])
+
+            bin_width = 0.05
+
+            # Calculate the number of bins
+            num_bins = int(1 / bin_width)
+
+            # Create empty lists for storing bin probabilities and accuracies
+            bin_probabilities = []
+            bin_accuracies = []
+
+            probs = mem_attn_weights.clone().detach().cpu().numpy().reshape(-1).tolist()
+            correct_keys = correct_keys.reshape(-1).tolist()
+
+            # Iterate over each bin
+            for i in range(num_bins):
+                bin_lower = i * bin_width
+                bin_upper = (i + 1) * bin_width
+
+                # Filter data points within the current bin range
+                bin_x_values = [x for x in probs if bin_lower <= x < bin_upper]
+                bin_y_values = [y for j, y in enumerate(correct_keys) if bin_lower <= probs[j] < bin_upper]
+
+                # Calculate accuracy for the bin
+                total = len(bin_x_values)
+                correct = sum(bin_y_values)
+                accuracy = correct / total if total > 0 else 0
+
+                # Store the probability and accuracy for the bin
+                bin_probabilities.append((bin_lower + bin_upper) / 2)
+                bin_accuracies.append(accuracy)
+
+            data = [[x, y] for x, y in zip(bin_probabilities, bin_accuracies)]
+            table = wandb.Table(data=data, columns=["attn_prob", "retrieved_acc"])
+            self.tracker.log({"attn_vs_acc": wandb.plot.scatter(table, "attn_prob", "retrieved_acc")}, step=step)
+
+
+        if log_attn_scores:
+            # this def won't work well on multi-gpu machines
+            num_attention_heads = mem_attn_weights.size(1)
+            for head in range(num_attention_heads):
+                mem_attn_score_per_head = mem_attn_weights[:, head].reshape(-1)
+                mem_flat = mem_attn_score_per_head.clone().detach().cpu()
+                mem_hist = torch.histc(mem_flat, bins=20, min=0, max=1)
+                mem_bins = torch.linspace(0, 1, steps=20 + 1)
+                plt.stairs(mem_hist.tolist(), mem_bins.tolist())
+                plt.title(f"mem_attn_score_{head}")
+                # set arbitrarily but we want to see those peaks!!
+                plt.ylim((0, 1000))
+                self.tracker.log({f"mem_attn_score_{head}": wandb.Image(plt)}, step=step)
+                plt.close()
+
+
+                local_attn_scores_per_head = local_attn_weights[:, head].reshape(-1)
+                local_flat = local_attn_scores_per_head.clone().detach().cpu()
+                local_hist = torch.histc(local_flat, bins=20, min=0, max=1)
+                local_bins = torch.linspace(0, 1, steps=20 + 1)
+                plt.stairs(local_hist.tolist(), local_bins.tolist())
+                plt.title(f"local_attn_score_{head}")
+                # set arbitrarily but we want to see those peaks!!
+                plt.ylim((0, 1000))
+                self.tracker.log({f"local_attn_score_{head}": wandb.Image(plt)}, step=step)
+                plt.close()
+
 
         # attn_output: [bs, num_attention_heads, seq_len, attn_head_size]
-        attn_output = torch.einsum("bshn, bhsnd-> bhsd", attn_scores, value)
+        mem_attn_output = torch.einsum("bhsn, bhsnd-> bhsd", mem_attn_weights, knn_value)
+        local_attn_output = torch.matmul(local_attn_weights, local_value)
+
+        # TODO: do we need flamingo style gating 
+        # of output_gate.tanh * attn_output
+        attn_output = mem_attn_output + local_attn_output
+
         return attn_output
 
     def _attn(self, query, key, value, attention_mask=None, head_mask=None):
@@ -361,9 +521,11 @@ class LetheAttention(nn.Module):
             query,
             key.transpose(1, 2),
             beta=1.0,
-            alpha=(torch.tensor(1.0, dtype=self.norm_factor.dtype, device=self.norm_factor.device) / self.norm_factor),
+            alpha=1.0 if self.memory else (torch.tensor(1.0, dtype=self.norm_factor.dtype, device=self.norm_factor.device) / self.norm_factor)
         )
         attn_scores = attn_scores.view(batch_size, num_attention_heads, query_length, key_length)
+        if self.memory:
+            attn_scores = attn_scores * self.scale.exp()
 
         mask_value = torch.finfo(attn_scores.dtype).min
         # Need to be a tensor, otherwise we get error: `RuntimeError: expected scalar type float but found double`.
@@ -413,7 +575,7 @@ class RotaryEmbedding(torch.nn.Module):
             emb = torch.cat((freqs, freqs), dim=-1).to(x.device)
             self.cos_cached = emb.cos()[None, None, :, :]
             self.sin_cached = emb.sin()[None, None, :, :]
-        return self.cos_cached[:seq_len, ...].to(x.device), self.sin_cached[:seq_len, ...].to(x.device)
+        return self.cos_cached[:seq_len, ...].to(x.device).to(x.dtype), self.sin_cached[:seq_len, ...].to(x.device).to(x.dtype)
 
 
 def rotate_half(x):
@@ -448,12 +610,12 @@ class LetheMLP(nn.Module):
 
 
 class LetheLayer(nn.Module):
-    def __init__(self, config, memory_attention=False, index=None):
+    def __init__(self, config, memory_attention=False, index=None, tracker=None):
         super().__init__()
         self.use_parallel_residual = config.use_parallel_residual
         self.input_layernorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.post_attention_layernorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
-        self.attention = LetheAttention(config, memory_attention=memory_attention, index=index)
+        self.attention = LetheAttention(config, memory_attention=memory_attention, index=index, tracker=tracker)
         self.mlp = LetheMLP(config)
 
     def forward(
@@ -465,7 +627,9 @@ class LetheLayer(nn.Module):
         use_cache: Optional[bool] = False,
         layer_past: Optional[Tuple[torch.Tensor]] = None,
         output_attentions: Optional[bool] = False,
-        use_mem_attn: Optional[bool] = True,
+        log_attn_scores: Optional[bool] = False,
+        step: Optional[int] = None,
+        save_kv: Optional[bool] = True
     ):
         ln_hidden_states = self.input_layernorm(hidden_states)
         attention_layer_outputs = self.attention(
@@ -476,7 +640,9 @@ class LetheLayer(nn.Module):
             head_mask=head_mask,
             use_cache=use_cache,
             output_attentions=output_attentions,
-            use_mem_attn=use_mem_attn,
+            log_attn_scores=log_attn_scores,
+            step=step,
+            save_kv=save_kv,
         )
         attn_output = attention_layer_outputs[0]  # output_attn: attn_output, present, (attn_weights)
         outputs = attention_layer_outputs[1:]
@@ -503,7 +669,7 @@ class LetheLayer(nn.Module):
         
 
 class LetheModel(LethePreTrainedModel):
-    def __init__(self, config, index):
+    def __init__(self, config, index, tracker=None):
         super().__init__(config)
         self.config = config
 
@@ -511,7 +677,8 @@ class LetheModel(LethePreTrainedModel):
 
         self.layers = nn.ModuleList([LetheLayer(config,
                                                 memory_attention=i+1 == config.memory_attn_layer,
-                                                index=index if i+1 == config.memory_attn_layer else None) 
+                                                index=index if i+1 == config.memory_attn_layer else None,
+                                                tracker=tracker) 
                                      for i in range(config.num_hidden_layers)])
         self.final_layer_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
 
@@ -538,7 +705,9 @@ class LetheModel(LethePreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-        use_mem_attn: Optional[bool] = True,
+        log_attn_scores: Optional[bool] = False,
+        step: Optional[int] = None,
+        save_kv: Optional[bool] = True,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
         r"""
         past_key_values (`tuple(tuple(torch.FloatTensor))` of length `config.n_layers` with each tuple having 4 tensors of shape `(batch_size, num_heads, sequence_length - 1, embed_size_per_head)`):
@@ -631,7 +800,7 @@ class LetheModel(LethePreTrainedModel):
                 def create_custom_forward(module):
                     def custom_forward(*inputs):
                         # None for layer_past
-                        return module(*inputs, use_cache, None, output_attentions, use_mem_attn)
+                        return module(*inputs, use_cache, None, output_attentions, log_attn_scores, step, save_kv)
 
                     return custom_forward
 
@@ -651,7 +820,9 @@ class LetheModel(LethePreTrainedModel):
                     layer_past=layer_past,
                     use_cache=use_cache,
                     output_attentions=output_attentions,
-                    use_mem_attn=use_mem_attn,
+                    log_attn_scores=log_attn_scores,
+                    step=step,
+                    save_kv=save_kv,
                 )
             hidden_states = outputs[0]
             if use_cache is True:
@@ -678,10 +849,10 @@ class LetheModel(LethePreTrainedModel):
 class LetheForCausalLM(LethePreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"position_ids", r"predictions.decoder.bias"]
 
-    def __init__(self, config, index):
+    def __init__(self, config, index, tracker=None):
         super().__init__(config)
 
-        self.gpt_neox = LetheModel(config, index)
+        self.gpt_neox = LetheModel(config, index, tracker=tracker)
         self.embed_out = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
         self.hidden_size = config.hidden_size
@@ -709,7 +880,9 @@ class LetheForCausalLM(LethePreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-        use_mem_attn: Optional[bool] = True,
+        log_attn_scores: Optional[bool] = None,
+        step: Optional[int] = None,
+        save_kv: Optional[bool] = True,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
         r"""
         past_key_values (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`):
@@ -763,7 +936,9 @@ class LetheForCausalLM(LethePreTrainedModel):
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
-            use_mem_attn=use_mem_attn
+            log_attn_scores=log_attn_scores,
+            step=step,
+            save_kv=save_kv,
         )
 
         hidden_states = outputs[0]

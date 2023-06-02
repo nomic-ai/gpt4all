@@ -1,0 +1,23 @@
+# model/tokenizer
+model_name: "/home/paperspace/gpt4all/gpt4all/train/ckpts/mem_attn/step_1000"
+tokenizer_name: "EleutherAI/pythia-1b"
+version: null
+gradient_checkpointing: false
+memory_attn_layer: 12
+
+
+# dataset
+streaming: false
+num_proc: 64
+dataset_path: "/home/paperspace/gpt4all/gpt4all/inference/synth_data_combined_174"
+# dataset_path: "/home/paperspace/gpt4all/gpt4all/index/squad_supplemented_validation" 
+max_length: 1024
+batch_size: 1
+pct_test: 0.05
+q_column: "question"
+a_column: "answer"
+context_column: "text"
+num_memories_per_index: 2000000
+num_neighbors_to_retrieve: 2
+num_neighbors_to_store: 1 
+mem_chunk_size: 64

@@ -3,37 +3,34 @@ model_name: "EleutherAI/pythia-1b"
 tokenizer_name: "EleutherAI/pythia-1b"
 version: null
 gradient_checkpointing: true
-save_name: "nomic-ai/lethe"
+save_name: "nomic-ai/minipille"
 push_to_hub: false
 memory_attn_layer: 12
 
 # dataset
 streaming: false
 num_proc: 64
-dataset_path: "/home/paperspace/gpt4all/gpt4all/inference/synth_data_combined_174"
-max_length: 1024
-batch_size: 32
+dataset_path: "JeanKaddour/minipile" 
+max_length: 2048
+batch_size: 64
 pct_test: 0.05
-q_column: "question"
-a_column: "answer"
-context_column: "text"
-num_memories_per_index: 2000000
-num_neighbors_to_retrieve: 2
-num_neighbors_to_store: 1 
-mem_chunk_size: 64
+num_memories_per_index: 5000000
+mem_chunk_size: 512
+num_chunks: 10
+num_neighbors_to_retrieve: 32
 
 # train dynamics
-lr: 1.0e-5
+lr: 1.0e-4
 min_lr: 0 
 weight_decay: 0.0
 eval_every: 100 
-save_every: 100
+save_every: -1
 log_grads_every: 100
 log_lr_every: 10
-output_dir: "ckpts/mem_attn_no_cosine_sim"
+output_dir: "ckpts/minipile"
 checkpoint: null
 lora: false
-warmup_steps: 200
+warmup_steps: 500
 num_epochs: 5 
 debug: false
 scheduler: false
@@ -41,6 +38,6 @@ scheduler: false
 # logging
 wandb: true
 wandb_entity: gpt4all
-wandb_project_name: mem_attn
+wandb_project_name: minipile
 seed: 42
 

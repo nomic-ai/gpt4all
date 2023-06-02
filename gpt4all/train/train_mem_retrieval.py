@@ -1,4 +1,5 @@
 import os
+import torch.nn.functional as F
 from transformers import AutoTokenizer, get_scheduler, AutoConfig
 import torch
 from torch.optim import AdamW
@@ -12,6 +13,8 @@ from tqdm import tqdm
 from gpt4all.models import LetheForCausalLM
 from gpt4all.models.lethe.modeling_lethe import MemoryIndex
 import wandb
+import pyarrow as pa
+from pyarrow import feather
 
 torch.backends.cuda.matmul.allow_tf32 = True
 
@@ -22,39 +25,58 @@ def format_metrics(metrics, split, prefix=""):
     return log
 
 
-def evaluate(model, config, val_dataloader, main_process=False):
+def calculate_per_example_loss(logits, labels):
+    lm_logits = logits[:, :-1, :].contiguous()
+    lm_labels = labels[:, 1:].contiguous()
+    loss = F.cross_entropy(lm_logits.view(-1, lm_logits.size(-1)), lm_labels.view(-1), reduction="none")
+    loss = loss.reshape(labels.shape[0], -1).mean(dim=-1)
+
+    # return tensor of shape (B,) where B is the batch size
+    return loss.cpu().tolist()
+
+
+def evaluate(model, index, config, val_dataloader, main_process=False):
     model.eval()
     val_loss = MeanMetric(nan_strategy="error").to(model.device)
 
-    head_size = model.config.hidden_size // model.config.num_attention_heads
-    index = MemoryIndex(head_size,
-                        config["num_memories_per_index"],
-                        model.config.num_attention_heads
-    )
-
+    ids = []
+    losses = []
     with torch.no_grad():
         for batch in tqdm(val_dataloader, disable=not main_process):
+            batch["id"] = batch["id"].detach().cpu()
             memories = batch["retrieved_context"]
 
-            # need to set to eval so we don't do mem attn as it's slow
-            model.eval()
+            memories = memories[:, :config["num_neighbors_to_store"], :]
+            memories = memories.reshape(-1, memories.shape[-1])
+
             for chunk_start in range(0, memories.shape[0], config["mem_chunk_size"]):
                 chunk_end = min(memories.shape[0], chunk_start + config["mem_chunk_size"])
                 mem_chunk = memories[chunk_start:chunk_end]
-                model(input_ids=mem_chunk, labels=None, use_mem_attn=False)
+                model(input_ids=mem_chunk)
 
             qa_inputs = batch["input_ids"]
             qa_labels = batch["labels"]
             outputs = model(input_ids=qa_inputs, 
                             labels=qa_labels, 
             )
+
+            del memories
+            torch.cuda.empty_cache()
             loss_values = accelerator.gather_for_metrics({"loss": outputs["loss"].detach()})
 
-
-            val_loss.update(loss_values["loss"])
             index.reset()
+            val_loss.update(loss_values["loss"])
 
-    return val_loss
+            per_example_loss = calculate_per_example_loss(outputs["logits"], qa_labels)
+
+            losses.extend(per_example_loss)
+            ids.extend(batch["id"].tolist())
+
+    ids = pa.array(ids)
+    losses = pa.array(losses)
+    schema = pa.schema([("loss", pa.float64()), ("id", pa.int32())])
+    table = pa.Table.from_arrays([losses, ids], schema=schema)
+    return val_loss, table
 
 
 def train(accelerator, config):
@@ -71,6 +93,7 @@ def train(accelerator, config):
         
     with accelerator.main_process_first():
         train_dataloader, val_dataloader = load_memory_augmented_data(config, tokenizer) 
+
 
     if accelerator.state.deepspeed_plugin is not None:
         gradient_accumulation_steps = accelerator.state.deepspeed_plugin.deepspeed_config[
@@ -97,6 +120,7 @@ def train(accelerator, config):
                                              memory_attn_layer=config["memory_attn_layer"],
                                              num_neighbors_to_retrieve=config["num_neighbors_to_retrieve"],
                                              index=index,
+                                             tracker=accelerator.get_tracker("wandb"),
                                             )
 
 
@@ -135,16 +159,15 @@ def train(accelerator, config):
         model, optimizer, train_dataloader, val_dataloader, scheduler = accelerator.prepare(
                 model, optimizer, train_dataloader, val_dataloader, scheduler
         )
-        scheduler = True
+        use_scheduler = True
     else:
         model, optimizer, train_dataloader, val_dataloader = accelerator.prepare(
                 model, optimizer, train_dataloader, val_dataloader
         )
-        scheduler = False
-
+        use_scheduler = False
 
     #  setup for saving training states in case preemption
-    if scheduler:
+    if use_scheduler:
         accelerator.register_for_checkpointing(scheduler)
 
     if config["checkpoint"]:
@@ -167,24 +190,33 @@ def train(accelerator, config):
         for step, batch in enumerate(tqdm(train_dataloader, disable=not main_process)):
             curr_step = step + epoch * len(train_dataloader)
             memories = batch["retrieved_context"]
+            memories = memories[:, :config["num_neighbors_to_store"], :]
+            memories = memories.reshape(-1, memories.shape[-1])
 
             # need to set to eval so we don't do mem attn as it's slow
             model.eval()
             with torch.no_grad():
                 for chunk_start in range(0, memories.shape[0], config["mem_chunk_size"]):
-                    chunk_end = min(memories.shape[0], chunk_start + 32)
+                    chunk_end = min(memories.shape[0], chunk_start + config["mem_chunk_size"])
                     mem_chunk = memories[chunk_start:chunk_end]
-                    model(input_ids=mem_chunk, labels=None, use_mem_attn=False)
+                    model(input_ids=mem_chunk)
+
+            del memories
+            torch.cuda.empty_cache()
 
             model.train()
             qa_inputs = batch["input_ids"]
             qa_labels = batch["labels"]
             outputs = model(input_ids=qa_inputs, 
                             labels=qa_labels, 
+                            log_attn_scores=True,
+                            step=curr_step,
+                            save_kv=False,
             )
             loss = outputs.loss
+            if config["wandb"]:
+                accelerator.log({"loss": loss}, step=curr_step)
 
-            index.reset()
 
             # gather loss before backprop in case of gradient accumulation
             loss_values = accelerator.gather_for_metrics({"loss": loss.detach().float()})
@@ -192,6 +224,8 @@ def train(accelerator, config):
 
             loss = loss / gradient_accumulation_steps
             accelerator.backward(loss)
+            # !! don't reset index until after backwards pass
+            index.reset()
             # get gradient norm of all params
 
             # log LR in case something weird happens 
@@ -202,15 +236,25 @@ def train(accelerator, config):
 
             if (step + 1) % gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
                 optimizer.step()
-                if scheduler:
+                if use_scheduler:
                     scheduler.step()
                 optimizer.zero_grad()
 
             if step > 0 and config["save_every"] > 0 and step % config["save_every"] == 0:
-                accelerator.save_state(f"{config['output_dir']}/step_{curr_step}")
+                # accelerator.save_state(f"{config['output_dir']}/step_{curr_step}")
+                unwrapped_model = accelerator.unwrap_model(model)
+                unwrapped_model.save_pretrained(
+                        f"{config['output_dir']}/step_{step}",
+                        is_main_process=accelerator.is_main_process,
+                        save_function=accelerator.save,
+                        state_dict=accelerator.get_state_dict(model),
+                )
 
             if step > 0 and (step % config["eval_every"] == 0 or step == len(train_dataloader) - 1):
-                val_loss = evaluate(model, config, val_dataloader, main_process=main_process)
+                val_loss, loss_table = evaluate(model, index, config, val_dataloader, main_process=main_process)
+
+                local_rank = accelerator.process_index
+                feather.write_feather(loss_table, f"{config['output_dir']}/val_losses_step_{curr_step}_rank_{local_rank}.feather")
 
                 log_train = {
                         "train_loss": train_loss.compute()
