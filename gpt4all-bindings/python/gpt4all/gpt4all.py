@@ -22,7 +22,7 @@ class GPT4All():
         model: Pointer to underlying C model.
     """
 
-    def __init__(self, model_name: str, model_path: str = None,  model_type: str = None, allow_download=True):
+    def __init__(self, model_name: str, model_path: str = None, model_type: str = None, allow_download = True):
         """
         Constructor
 
