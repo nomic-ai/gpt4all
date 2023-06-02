@@ -18,7 +18,7 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         return NativeLibraryLoader.LoadNativeLibrary(Gpt4AllModelFactory.libraryPath, Gpt4AllModelFactory.bypassLoading);
     }, true);
 
-    public Gpt4AllModelFactory(string? libraryPath = default, bool bypassLoading = false, ILoggerFactory? loggerFactory = null)
+    public Gpt4AllModelFactory(string? libraryPath = default, bool bypassLoading = true, ILoggerFactory? loggerFactory = null)
     {
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         _logger = _loggerFactory.CreateLogger<Gpt4AllModelFactory>();

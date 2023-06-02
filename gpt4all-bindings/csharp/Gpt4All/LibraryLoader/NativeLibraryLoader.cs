@@ -17,17 +17,8 @@ public static class NativeLibraryLoader
         defaultLibraryLoader = libraryLoader;
     }
 
-    internal static LoadResult LoadNativeLibrary(string? path = default, bool bypassLoading = false)
+    internal static LoadResult LoadNativeLibrary(string? path = default, bool bypassLoading = true)
     {
-#if IOS || MACCATALYST || TVOS || ANDROID
-        // If we're not bypass loading, and the path was set, and loader was set, allow it to go through.
-        if (!bypassLoading && defaultLibraryLoader != null)
-        {
-            return defaultLibraryLoader.OpenLibrary(path);
-        }
-
-        return LoadResult.Success;
-#else
         // If the user has handled loading the library themselves, we don't need to do anything.
         if (bypassLoading)
         {
@@ -86,6 +77,5 @@ public static class NativeLibraryLoader
             _ => throw new PlatformNotSupportedException($"Currently {platform} platform is not supported")
         };
         return libraryLoader.OpenLibrary(path);
-#endif
     }
 }
