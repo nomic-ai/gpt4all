@@ -14,39 +14,40 @@
         "../../gpt4all-backend/llama.cpp/llama.cpp",
         "../../gpt4all-backend/utils.cpp", 
         "../../gpt4all-backend/llmodel_c.cpp",
-        "../../gpt4all-backend/gptj.cpp",
-        "../../gpt4all-backend/llamamodel.cpp",
-        "../../gpt4all-backend/mpt.cpp",
+        "../../gpt4all-backend/llmodel.cpp",
         "prompt.cc",
         "index.cc",
        ],
-      "defines": [
-        'GGML_BUILD_VARIANT=\"default\"',
-        'LLAMA_VERSIONS=<=3',
+      "defines" :[ 
+         'GGML_BUILD_VARIANT=\"default\"',
+         'LLAMA_VERSIONS=<=3',
       ],
       "conditions": [
         ['OS=="mac"', {
             'defines': [
-                'NAPI_CPP_EXCEPTIONS'
+                'NAPI_CPP_EXCEPTIONS',
+                'LIB_FILE_EXT=\".dylib\"',
             ],
         }],
         ['OS=="win"', {
             'defines': [
                 'NAPI_CPP_EXCEPTIONS',
-                "__AVX2__" # allows SIMD: https://discord.com/channels/1076964370942267462/1092290790388150272/1107564673957630023
+                "__AVX2__" # allows SIMD: https://discord.com/channels/1076964370942267462/1092290790388150272/1107564673957630023,
+                'LIB_FILE_EXT=\".dll\"',
             ],
             "msvs_settings": {
                 "VCCLCompilerTool": {
                     "AdditionalOptions": [
                         "/std:c++20",
-                        "/EHsc"
-                    ], 
+                        "/EHsc",
+                  ], 
                 },  
             },
         }],
         ['OS=="linux"', {
             'defines': [
-                'NAPI_CPP_EXCEPTIONS'
+                'NAPI_CPP_EXCEPTIONS',
+                'LIB_FILE_EXT=\".so\"',
             ],
             'cflags_cc!': [
                 '-fno-rtti'
