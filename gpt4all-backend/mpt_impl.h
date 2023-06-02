@@ -20,12 +20,12 @@ public:
     size_t stateSize() const override;
     size_t saveState(uint8_t *dest) const override;
     size_t restoreState(const uint8_t *src) override;
-    void prompt(const std::string &prompt,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &ctx) override;
+    std::vector<Token> tokenize(const std::string&) override;
+    std::string_view tokenToString(Token) override;
+    Token sampleToken(PromptContext &ctx) override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) override;
+    int32_t getContextLength() override;
+    const std::vector<Token>& getEndTokens() override;
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
 

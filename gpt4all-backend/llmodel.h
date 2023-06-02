@@ -7,11 +7,14 @@
 #include <string_view>
 #include <fstream>
 #include <cstdint>
+#include <limits>
 
 class Dlhandle;
 
 class LLModel {
 public:
+    using Token = int32_t;
+
     class Implementation {
         LLModel *(*construct_)();
 
@@ -60,11 +63,16 @@ public:
     virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
     virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
     virtual void prompt(const std::string &prompt,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &ctx) = 0;
-    virtual bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) = 0;
+                        std::function<bool(int32_t)> promptCallback,
+                        std::function<bool(int32_t, const std::string&)> responseCallback,
+                        std::function<bool(bool)> recalculateCallback,
+                        PromptContext &ctx);
+    virtual std::vector<Token> tokenize(const std::string&) = 0;
+    virtual std::string_view tokenToString(Token) = 0;
+    virtual Token sampleToken(PromptContext &ctx) = 0;
+    virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) { return {}; }
+    virtual int32_t getContextLength() { return std::numeric_limits<int32_t>::max(); }
+    virtual const std::vector<Token>& getEndTokens() { static const std::vector<Token> fres; return fres; }
     virtual void setThreadCount(int32_t /*n_threads*/) {}
     virtual int32_t threadCount() const { return 1; }
 
