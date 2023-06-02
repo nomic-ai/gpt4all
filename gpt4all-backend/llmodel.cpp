@@ -63,7 +63,7 @@ void LLModel::prompt(const std::string &prompt,
                      PromptContext &promptCtx)
 {
     if (!isModelLoaded()) {
-        std::cerr << "GPT-J ERROR: prompt won't work with an unloaded model!\n";
+        std::cerr << implementation().modelType << " ERROR: prompt won't work with an unloaded model!\n";
         return;
     }
 
@@ -75,7 +75,7 @@ void LLModel::prompt(const std::string &prompt,
 
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
-        std::cerr << "GPT-J ERROR: The prompt is" << embd_inp.size() <<
+        std::cerr << implementation().modelType << " ERROR: The prompt is" << embd_inp.size() <<
             "tokens and the context window is" << promptCtx.n_ctx << "!\n";
         return;
     }
@@ -93,7 +93,7 @@ void LLModel::prompt(const std::string &prompt,
         if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
             const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
             // Erase the first percentage of context from the tokens...
-            std::cerr << "GPTJ: reached the end of the context window so resizing\n";
+            std::cerr << implementation().modelType << ": reached the end of the context window so resizing\n";
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
             recalculateContext(promptCtx, recalculateCallback);
@@ -101,7 +101,7 @@ void LLModel::prompt(const std::string &prompt,
         }
 
         if (!evalTokens(promptCtx, batch)) {
-            std::cerr << "GPT-J ERROR: Failed to process prompt\n";
+            std::cerr << implementation().modelType << " ERROR: Failed to process prompt\n";
             return;
         }
 
@@ -132,7 +132,7 @@ void LLModel::prompt(const std::string &prompt,
         if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
             const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
             // Erase the first percentage of context from the tokens...
-            std::cerr << "GPTJ: reached the end of the context window so resizing\n";
+            std::cerr << implementation().modelType << ": reached the end of the context window so resizing\n";
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
             recalculateContext(promptCtx, recalculateCallback);
@@ -140,7 +140,7 @@ void LLModel::prompt(const std::string &prompt,
         }
 
         if (!evalTokens(promptCtx, { id })) {
-            std::cerr << "GPT-J ERROR: Failed to predict next token\n";
+            std::cerr << implementation().modelType << " ERROR: Failed to predict next token\n";
             return;
         }
 
