@@ -32,7 +32,8 @@ exports.download = function (
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const pathToModel = path.join(options.location, name);
+    const downloadLocation = options.location ?? process.cwd();
+    const pathToModel = path.join(downloadLocation, name);
     if(existsSync(pathToModel)) {
         throw Error("Path to model already exists");
     }

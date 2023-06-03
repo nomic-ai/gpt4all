@@ -7,11 +7,15 @@ declare module 'gpt4all'
  * @param {ModelFile} model - The model file to be downloaded.
  * @param {DownloadOptions} options - to pass into the downloader. Default is { location: (cwd), debug: false }.
  * @returns {DownloadController} object that allows controlling the download process.
+ * 
+ * @throws {Error} If the model already exists in the specified location.
+ * @throws {Error} If the model cannot be found at the specified url.
+ * 
  * @example
  * const controller = download('ggml-gpt4all-j-v1.3-groovy.bin')
  * controller.promise().then(() => console.log('Downloaded!'))
  */
-declare function download(model: ModelFile[ModelType], options: DownloadOptions): DownloadController
+declare function download(model: ModelFile[ModelType], options?: DownloadOptions): DownloadController
 
 /**
  * Options for the model download process.
@@ -21,16 +25,17 @@ export interface DownloadOptions {
      * location to download the model.
      * Default is process.cwd(), or the current working directory
      */
-    location: string;
+    location?: string;
 
     /**
      * Debug mode -- check how long it took to download in seconds
+     * @default false
      */
-    debug: boolean;
+    debug?: boolean;
 
     /**
-     * Default url = https://gpt4all.io/models
-     * This property overrides the default.
+     * Remote download url. Defaults to `https://gpt4all.io/models`
+     * @default https://gpt4all.io/models
      */
     url?: string;
 }
@@ -76,6 +81,11 @@ interface ModelFile {
  */
 declare class LLModel {
 
+    /**
+     * Initialize a new LLModel.
+     * @param path Absolute path to the model file.
+     * @throws {Error} If the model file does not exist.
+     */
     constructor(path: string)
 
     /** either 'gpt', mpt', or 'llama' */
@@ -125,7 +135,7 @@ declare class LLModel {
  * @param {LLModel} llmodel - The language model object.
  * @param {PromptMessage[]} messages - The array of messages for the conversation.
  * @param {CompletionOptions} options - The options for creating the completion.
- * @returns {CompletionReturn} - The completion result.
+ * @returns {CompletionReturn} The completion result.
  * @example
  * const llmodel = new LLModel(model)
  * const messages = [ 
@@ -141,8 +151,8 @@ declare class LLModel {
 declare function createCompletion(
     llmodel: LLModel,
     messages: PromptMessage[],
-    options: CompletionOptions
-): Promise<CompletionReturn>;
+    options?: CompletionOptions
+): CompletionReturn;
 
 /**
  * The options for creating the completion.
@@ -175,7 +185,7 @@ interface PromptMessage {
     role: "system" | "assistant" | "user";
     
     /** The message content. */
-    message: string;
+    content: string;
 }
 
 /**
@@ -208,13 +218,7 @@ interface CompletionReturn {
  */
 interface CompletionChoice {
     /** Response message */
-    message: {
-        /** The role of the message. */
-        role: 'assistant';
-
-        /** The message content. */
-        content: string;
-    };
+    message: PromptMessage;
 }
 
 /**
@@ -230,31 +234,49 @@ interface LLModelPromptContext {
     /** The number of tokens in the past conversation. */
     n_past: number;
     
-    /** The number of tokens possible in the context window. */
+    /** The number of tokens possible in the context window.
+     * @default 1024
+     */
     n_ctx: number;
     
-    /** The number of tokens to predict. */
+    /** The number of tokens to predict.
+     * @default 128
+     * */
     n_predict: number;
     
-    /** The top-k logits to sample from. */
+    /** The top-k logits to sample from.
+     * @default 40
+     * */
     top_k: number;
     
-    /** The nucleus sampling probability threshold. */
+    /** The nucleus sampling probability threshold.
+     * @default 0.9
+     * */
     top_p: number;
     
-    /** The temperature to adjust the model's output distribution. */
+    /** The temperature to adjust the model's output distribution.
+     * @default 0.72
+     * */
     temp: number;
     
-    /** The number of predictions to generate in parallel. */
+    /** The number of predictions to generate in parallel.
+     * @default 8
+     * */
     n_batch: number;
     
-    /** The penalty factor for repeated tokens. */
+    /** The penalty factor for repeated tokens.
+     * @default 1
+     * */
     repeat_penalty: number;
     
-    /** The number of last tokens to penalize. */
+    /** The number of last tokens to penalize.
+     * @default 10
+     * */
     repeat_last_n: number;
     
-    /** The percentage of context to erase if the context window is exceeded. */
+    /** The percentage of context to erase if the context window is exceeded.
+     * @default 0.5
+     * */
     context_erase: number;
 }
 

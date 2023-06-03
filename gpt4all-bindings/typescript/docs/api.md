@@ -18,34 +18,34 @@
     *   [llama][14]
     *   [mpt][15]
 *   [LLModel][16]
-    *   [type][17]
-    *   [name][18]
-    *   [stateSize][19]
-    *   [threadCount][20]
-    *   [setThreadCount][21]
-        *   [Parameters][22]
-    *   [raw\_prompt][23]
+    *   [constructor][17]
+        *   [Parameters][18]
+    *   [type][19]
+    *   [name][20]
+    *   [stateSize][21]
+    *   [threadCount][22]
+    *   [setThreadCount][23]
         *   [Parameters][24]
-    *   [isModelLoaded][25]
-*   [createCompletion][26]
-    *   [Parameters][27]
-    *   [Examples][28]
-*   [CompletionOptions][29]
-    *   [verbose][30]
-    *   [hasDefaultHeader][31]
-    *   [hasDefaultFooter][32]
-*   [PromptMessage][33]
-    *   [role][34]
-    *   [message][35]
-*   [prompt\_tokens][36]
-*   [completion\_tokens][37]
-*   [total\_tokens][38]
-*   [CompletionReturn][39]
-    *   [model][40]
-    *   [usage][41]
-    *   [choices][42]
-*   [role][43]
-*   [content][44]
+    *   [raw\_prompt][25]
+        *   [Parameters][26]
+    *   [isModelLoaded][27]
+*   [createCompletion][28]
+    *   [Parameters][29]
+    *   [Examples][30]
+*   [CompletionOptions][31]
+    *   [verbose][32]
+    *   [hasDefaultHeader][33]
+    *   [hasDefaultFooter][34]
+*   [PromptMessage][35]
+    *   [role][36]
+    *   [content][37]
+*   [prompt\_tokens][38]
+*   [completion\_tokens][39]
+*   [total\_tokens][40]
+*   [CompletionReturn][41]
+    *   [model][42]
+    *   [usage][43]
+    *   [choices][44]
 *   [CompletionChoice][45]
     *   [message][46]
 *   [LLModelPromptContext][47]
@@ -81,6 +81,9 @@ const controller = download('ggml-gpt4all-j-v1.3-groovy.bin')
 controller.promise().then(() => console.log('Downloaded!'))
 ```
 
+*   Throws **[Error][62]** If the model already exists in the specified location.
+*   Throws **[Error][62]** If the model cannot be found at the specified url.
+
 Returns **[DownloadController][8]** object that allows controlling the download process.
 
 ## DownloadOptions
@@ -92,20 +95,19 @@ Options for the model download process.
 location to download the model.
 Default is process.cwd(), or the current working directory
 
-Type: [string][62]
+Type: [string][63]
 
 ### debug
 
 Debug mode -- check how long it took to download in seconds
 
-Type: [boolean][63]
+Type: [boolean][64]
 
 ### url
 
-Default url = [https://gpt4all.io/models][64]
-This property overrides the default.
+Remote download url. Defaults to `https://gpt4all.io/models`
 
-Type: [string][62]
+Type: [string][63]
 
 ## DownloadController
 
@@ -156,6 +158,18 @@ Type: (`"ggml-mpt-7b-base.bin"` | `"ggml-mpt-7b-chat.bin"` | `"ggml-mpt-7b-instr
 LLModel class representing a language model.
 This is a base class that provides common functionality for different types of language models.
 
+### constructor
+
+Initialize a new LLModel.
+
+#### Parameters
+
+*   `path` **[string][63]** Absolute path to the model file.
+
+<!---->
+
+*   Throws **[Error][62]** If the model file does not exist.
+
 ### type
 
 either 'gpt', mpt', or 'llama'
@@ -200,7 +214,7 @@ Use the prompt function exported for a value
 
 #### Parameters
 
-*   `q` **[string][62]** The prompt input.
+*   `q` **[string][63]** The prompt input.
 *   `params` **Partial<[LLModelPromptContext][47]>?** Optional parameters for the prompt context.
 
 Returns **any** The result of the model prompt.
@@ -209,7 +223,7 @@ Returns **any** The result of the model prompt.
 
 Whether the model is loaded or not.
 
-Returns **[boolean][63]**&#x20;
+Returns **[boolean][64]**&#x20;
 
 ## createCompletion
 
@@ -218,8 +232,8 @@ The nodejs equivalent to python binding's chat\_completion
 ### Parameters
 
 *   `llmodel` **[LLModel][16]** The language model object.
-*   `messages` **[Array][67]<[PromptMessage][33]>** The array of messages for the conversation.
-*   `options` **[CompletionOptions][29]** The options for creating the completion.
+*   `messages` **[Array][67]<[PromptMessage][35]>** The array of messages for the conversation.
+*   `options` **[CompletionOptions][31]** The options for creating the completion.
 
 ### Examples
 
@@ -236,7 +250,7 @@ console.log(completion.choices[0].message.content)
 // No, it's going to be cold and rainy.
 ```
 
-Returns **[CompletionReturn][39]** The completion result.
+Returns **[CompletionReturn][41]** The completion result.
 
 ## CompletionOptions
 
@@ -248,19 +262,19 @@ The options for creating the completion.
 
 Indicates if verbose logging is enabled.
 
-Type: [boolean][63]
+Type: [boolean][64]
 
 ### hasDefaultHeader
 
 Indicates if the default header is included in the prompt.
 
-Type: [boolean][63]
+Type: [boolean][64]
 
 ### hasDefaultFooter
 
 Indicates if the default footer is included in the prompt.
 
-Type: [boolean][63]
+Type: [boolean][64]
 
 ## PromptMessage
 
@@ -272,11 +286,11 @@ The role of the message.
 
 Type: (`"system"` | `"assistant"` | `"user"`)
 
-### message
+### content
 
 The message content.
 
-Type: [string][62]
+Type: [string][63]
 
 ## prompt\_tokens
 
@@ -318,18 +332,6 @@ The generated completions.
 
 Type: [Array][67]<[CompletionChoice][45]>
 
-## role
-
-The role of the message.
-
-Type: `"assistant"`
-
-## content
-
-The message content.
-
-Type: [string][62]
-
 ## CompletionChoice
 
 A completion choice, similar to OpenAI's format.
@@ -338,7 +340,7 @@ A completion choice, similar to OpenAI's format.
 
 Response message
 
-Type: {role: `"assistant"`, content: [string][62]}
+Type: [PromptMessage][35]
 
 ## LLModelPromptContext
 
@@ -423,10 +425,10 @@ TODO: Help wanted to implement this
 ### Parameters
 
 *   `llmodel` **[LLModel][16]**&#x20;
-*   `messages` **[Array][67]<[PromptMessage][33]>**&#x20;
-*   `options` **[CompletionOptions][29]**&#x20;
+*   `messages` **[Array][67]<[PromptMessage][35]>**&#x20;
+*   `options` **[CompletionOptions][31]**&#x20;
 
-Returns **function (ll: [LLModel][16]): AsyncGenerator<[string][62]>**&#x20;
+Returns **function (ll: [LLModel][16]): AsyncGenerator<[string][63]>**&#x20;
 
 [1]: #download
 
@@ -460,65 +462,65 @@ Returns **function (ll: [LLModel][16]): AsyncGenerator<[string][62]>**&#x20;
 
 [16]: #llmodel
 
-[17]: #type
+[17]: #constructor
 
-[18]: #name
+[18]: #parameters-1
 
-[19]: #statesize
+[19]: #type
 
-[20]: #threadcount
+[20]: #name
 
-[21]: #setthreadcount
+[21]: #statesize
 
-[22]: #parameters-1
+[22]: #threadcount
 
-[23]: #raw_prompt
+[23]: #setthreadcount
 
 [24]: #parameters-2
 
-[25]: #ismodelloaded
+[25]: #raw_prompt
 
-[26]: #createcompletion
+[26]: #parameters-3
 
-[27]: #parameters-3
+[27]: #ismodelloaded
 
-[28]: #examples-1
+[28]: #createcompletion
 
-[29]: #completionoptions
+[29]: #parameters-4
 
-[30]: #verbose
+[30]: #examples-1
 
-[31]: #hasdefaultheader
+[31]: #completionoptions
 
-[32]: #hasdefaultfooter
+[32]: #verbose
 
-[33]: #promptmessage
+[33]: #hasdefaultheader
 
-[34]: #role
+[34]: #hasdefaultfooter
 
-[35]: #message
+[35]: #promptmessage
 
-[36]: #prompt_tokens
+[36]: #role
 
-[37]: #completion_tokens
+[37]: #content
 
-[38]: #total_tokens
+[38]: #prompt_tokens
 
-[39]: #completionreturn
+[39]: #completion_tokens
 
-[40]: #model
+[40]: #total_tokens
 
-[41]: #usage
+[41]: #completionreturn
 
-[42]: #choices
+[42]: #model
 
-[43]: #role-1
+[43]: #usage
 
-[44]: #content
+[44]: #choices
 
 [45]: #completionchoice
 
-[46]: #message-1
+[46]: #message
 
 [47]: #llmodelpromptcontext
 
@@ -548,13 +550,13 @@ Returns **function (ll: [LLModel][16]): AsyncGenerator<[string][62]>**&#x20;
 
 [60]: #createtokenstream
 
-[61]: #parameters-4
+[61]: #parameters-5
 
-[62]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[62]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
 
-[63]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[63]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 
-[64]: https://gpt4all.io/models
+[64]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
 [65]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
