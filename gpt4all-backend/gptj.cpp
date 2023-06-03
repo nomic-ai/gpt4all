@@ -890,12 +890,12 @@ size_t GPTJ::restoreState(const uint8_t *src)
     return gptj_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-std::vector<LLModel::Token> GPTJ::tokenize(const std::string &str)
+std::vector<LLModel::Token> GPTJ::tokenize(const std::string &str) const
 {
     return ::gpt_tokenize(d_ptr->vocab, str);
 }
 
-LLModel::Token GPTJ::sampleToken(PromptContext &promptCtx)
+LLModel::Token GPTJ::sampleToken(PromptContext &promptCtx) const
 {
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return gpt_sample_top_k_top_p(d_ptr->model->hparams.n_vocab,
@@ -907,12 +907,12 @@ LLModel::Token GPTJ::sampleToken(PromptContext &promptCtx)
         d_ptr->rng);
 }
 
-std::string_view GPTJ::tokenToString(Token id)
+std::string_view GPTJ::tokenToString(Token id) const
 {
     return d_ptr->vocab.id_to_token[id];
 }
 
-bool GPTJ::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
+bool GPTJ::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
     // determine the required inference memory per token:
     static bool initialized = false;
@@ -925,12 +925,12 @@ bool GPTJ::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
     return gptj_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
 }
 
-int32_t GPTJ::getContextLength()
+int32_t GPTJ::contextLength() const
 {
     return d_ptr->model->hparams.n_ctx;
 }
 
-const std::vector<LLModel::Token> &GPTJ::getEndTokens()
+const std::vector<LLModel::Token> &GPTJ::endTokens() const
 {
     static const std::vector<LLModel::Token> fres = {50256};
     return fres;

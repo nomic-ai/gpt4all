@@ -41,7 +41,7 @@ void LLModel::prompt(const std::string &prompt,
     std::vector<Token> embd_inp = tokenize(prompt);
 
     // save the context size
-    promptCtx.n_ctx = getContextLength();
+    promptCtx.n_ctx = contextLength();
 
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
@@ -117,7 +117,7 @@ void LLModel::prompt(const std::string &prompt,
         promptCtx.n_past += 1;
 
         // display text
-        for (const auto token : getEndTokens()) {
+        for (const auto token : endTokens()) {
             if (id == token) return;
         }
 

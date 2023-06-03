@@ -815,17 +815,17 @@ size_t MPT::restoreState(const uint8_t *src)
     return mpt_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-std::vector<LLModel::Token> MPT::tokenize(const std::string &str)
+std::vector<LLModel::Token> MPT::tokenize(const std::string &str) const
 {
     return ::gpt_tokenize(d_ptr->vocab, str);
 }
 
-std::string_view MPT::tokenToString(Token id)
+std::string_view MPT::tokenToString(Token id) const
 {
     return d_ptr->vocab.id_to_token[id];
 }
 
-LLModel::Token MPT::sampleToken(PromptContext &promptCtx)
+LLModel::Token MPT::sampleToken(PromptContext &promptCtx) const
 {
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return gpt_sample_top_k_top_p(d_ptr->model->hparams.n_vocab,
@@ -837,7 +837,7 @@ LLModel::Token MPT::sampleToken(PromptContext &promptCtx)
         d_ptr->rng);
 }
 
-bool MPT::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
+bool MPT::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
     // determine the required inference memory per token:
     static bool initialized = false;
@@ -850,12 +850,12 @@ bool MPT::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
     return mpt_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
 }
 
-int32_t MPT::getContextLength()
+int32_t MPT::contextLength() const
 {
     return d_ptr->model->hparams.n_ctx;
 }
 
-const std::vector<LLModel::Token> &MPT::getEndTokens()
+const std::vector<LLModel::Token> &MPT::endTokens() const
 {
     static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.token_to_id["<|im_end|>"]};
     return fres;

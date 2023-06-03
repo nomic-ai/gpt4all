@@ -163,7 +163,7 @@ size_t LLamaModel::restoreState(const uint8_t *src)
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
-std::vector<LLModel::Token> LLamaModel::tokenize(const std::string &str)
+std::vector<LLModel::Token> LLamaModel::tokenize(const std::string &str) const
 {
     std::vector<LLModel::Token> fres(str.size()+4);
     auto fres_len = llama_tokenize(d_ptr->ctx, str.c_str(), fres.data(), fres.size(), d_ptr->empty);
@@ -171,12 +171,12 @@ std::vector<LLModel::Token> LLamaModel::tokenize(const std::string &str)
     return fres;
 }
 
-std::string_view LLamaModel::tokenToString(Token id)
+std::string_view LLamaModel::tokenToString(Token id) const
 {
     return llama_token_to_str(d_ptr->ctx, id);
 }
 
-LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx)
+LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
 {
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return llama_sample_top_p_top_k(d_ptr->ctx,
@@ -185,18 +185,18 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx)
         promptCtx.repeat_penalty);
 }
 
-bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
+bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
     d_ptr->empty = false;
     return llama_eval(d_ptr->ctx, tokens.data(), tokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
 }
 
-int32_t LLamaModel::getContextLength()
+int32_t LLamaModel::contextLength() const
 {
     return llama_n_ctx(d_ptr->ctx);
 }
 
-const std::vector<LLModel::Token> &LLamaModel::getEndTokens()
+const std::vector<LLModel::Token> &LLamaModel::endTokens() const
 {
     static const std::vector<LLModel::Token> fres = {llama_token_eos()};
     return fres;

@@ -87,15 +87,20 @@ public:
     }
 
 protected:
+    // These are pure virtual because subclasses need to implement as the default implementation of
+    // 'prompt' above calls these functions
+    virtual std::vector<Token> tokenize(const std::string&) const = 0;
+    virtual std::string_view tokenToString(Token) const = 0;
+    virtual Token sampleToken(PromptContext &ctx) const = 0;
+    virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const = 0;
+    virtual int32_t contextLength() const = 0;
+    virtual const std::vector<Token>& endTokens() const = 0;
+
+    // This is a helper function called from the default implementation of 'prompt' but it can be
+    // shared by all base classes so it isn't virtual
+    void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
+
     const Implementation *m_implementation = nullptr;
     static std::string m_implementations_search_path;
-
-    virtual std::vector<Token> tokenize(const std::string&) = 0;
-    virtual std::string_view tokenToString(Token) = 0;
-    virtual Token sampleToken(PromptContext &ctx) = 0;
-    virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) { return {}; }
-    virtual int32_t getContextLength() { return std::numeric_limits<int32_t>::max(); }
-    virtual const std::vector<Token>& getEndTokens() { static const std::vector<Token> fres; return fres; }
-    void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 };
 #endif // LLMODEL_H
