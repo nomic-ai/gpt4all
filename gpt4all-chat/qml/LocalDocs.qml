@@ -166,7 +166,7 @@ Item {
                         id: removeButton
                         anchors.centerIn: parent
                         text: qsTr("Remove")
-                        visible: !item.removing
+                        visible: !item.removing && installed
                         onClicked: {
                             item.removing = true
                             LocalDocs.removeFolder(collection, folder_path)
@@ -175,7 +175,7 @@ Item {
                     MyBusyIndicator {
                         id: busyIndicator
                         anchors.centerIn: parent
-                        visible: item.removing
+                        visible: item.removing || !installed
                     }
                 }
             }
