@@ -6,6 +6,7 @@
   "repository": "nomic-ai/gpt4all",
   "scripts": {
     "test": "node ./test/index.mjs",
+    "cmakeruntime": "node scripts/build.js",
     "install": "node-gyp-build",
     "prebuild": "prebuildify --napi",
     "docs:build": "documentation build ./src/gpt4all.d.ts --parse-extension d.ts --format md --output docs/api.md"

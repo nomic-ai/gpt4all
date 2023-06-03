@@ -1,6 +1,6 @@
 import { LLModel, createCompletion } from '../src/gpt4all.js'
+const ll= new LLModel("./llmodel.dll");
 
-const ll = new LLModel("./ggml-vicuna-7b-1.1-q4_2.bin");
 try {
    class Extended extends LLModel {
    }
@@ -18,13 +18,14 @@ ll.setThreadCount(4);
 console.log("thread count " + ll.threadCount());
 
 
-console.log(createCompletion(
+createCompletion(
     ll,
     [
-        { role : 'system', message: 'be as annoying as possible'  },
-        { role : 'assistant', message: 'Consider the most annoying quote and say it in the most annoying way'  }, 
+        { role : 'system', content: 'be as annoying as possible'  },
+        { role : 'user', content: 'Consider the most annoying quote and say it in the most annoying way'  }, 
     ],
-))
+    { verbose: true }
+);
 console.log('new prompt');
 
 //console.log(createCompletion(

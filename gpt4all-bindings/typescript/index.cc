@@ -31,25 +31,38 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     std::string weights_path = info[0].As<Napi::String>().Utf8Value();
 
     const char *c_weights_path = weights_path.c_str();
-    inference_ = std::make_shared<llmodel_model>(create_model_set_type(c_weights_path));
-    auto success = llmodel_loadModel(GetInference(), c_weights_path);
+    llmodel_error* e = nullptr;
+    inference_ = llmodel_model_create2("./llama-230519-default.dll", "auto", e);
+
+    if(e != nullptr) {
+       Napi::Error::New(env, e->message).ThrowAsJavaScriptException(); 
+       return;
+    }
+    if(inference_ == nullptr) {
+       Napi::Error::New(env, "Had an issue creating llmodel object, inference is null").ThrowAsJavaScriptException(); 
+       return;
+    }
+
+    auto success = llmodel_loadModel(inference_, c_weights_path);
     if(!success) {
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
         return;
     }
+    type = "hello";
+    std::cout << "done";
     name = weights_path.substr(weights_path.find_last_of("/\\") + 1);
   };
   NodeModelWrapper::~NodeModelWrapper() {
-    inference_.reset();
+    //inference_.reset();
   }
 
   Napi::Value NodeModelWrapper::IsModelLoaded(const Napi::CallbackInfo& info) {
-    return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(GetInference()));
+    return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(inference_));
   }
 
   Napi::Value NodeModelWrapper::StateSize(const Napi::CallbackInfo& info) {
     // Implement the binding for the stateSize method
-    return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(GetInference())));
+    return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(inference_)));
   }
   
 
@@ -118,32 +131,37 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        if(inputObject.Has("context_erase")) 
             promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
     }
-    //Napi::Function callback = info[2].As<Napi::Function>();
-    auto recalculate_callback = [](bool isrecalculating) {  return isrecalculating; };
 
-    auto prompt_callback = [](int32_t tid) {
-        return true;
+    llmodel_model inf = inference_;
+    llmodel_prompt_context copiedPrompt = promptContext;
+    PromptWorkContext pc = {
+        question.c_str(),
+        inf,
+        copiedPrompt
     };
-
-    auto response_callback = [](int32_t tid, const char* resp) {
-        _res += resp;
-        return tid != -1;
-    };
-
-    // TODO MAKE PROMISEABLE / use the availible threads
-    // RN THIS IS SYNCHRONOUS
-    // !! NEEDS HELP
-    // Do we need threadsafe function?
+    auto threadSafeContext = new TsfnContext(env, pc);
+    threadSafeContext->tsfn = Napi::ThreadSafeFunction::New(
+        env,                                    // Environment
+        info[2].As<Napi::Function>(),           // JS function from caller
+        "PromptCallback",                       // Resource name
+        0,                                      // Max queue size (0 = unlimited).
+        1,      // Initial thread count
+        threadSafeContext,                      // Context,
+        FinalizerCallback,                      // Finalizer
+        (void*)nullptr                          // Finalizer data
+    );
+    threadSafeContext->nativeThread = std::thread(threadEntry, threadSafeContext);
     
-    llmodel_prompt(GetInference(), question.c_str(), prompt_callback, response_callback, recalculate_callback, &promptContext);
-    std::string o = _res;
-    _res.clear();
-    return Napi::String::New(env, o);
+    //    llmodel_prompt(inference_, question.c_str(), prompt_callback, response_callback, recalculate_callback, &promptContext);
+    //    std::string o = _res;
+    //    _res.clear();
+    //return Napi::String::New(env, o);
+    return threadSafeContext->GetPromise();
   }
 
   void NodeModelWrapper::SetThreadCount(const Napi::CallbackInfo& info) {
     if(info[0].IsNumber()) {
-        llmodel_setThreadCount(GetInference(), info[0].As<Napi::Number>().Int64Value());
+        llmodel_setThreadCount(inference_, info[0].As<Napi::Number>().Int64Value());
     } else {
         Napi::Error::New(info.Env(), "Could not set thread count: argument 1 is NaN").ThrowAsJavaScriptException(); 
         return;
@@ -154,39 +172,9 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     return Napi::String::New(info.Env(), name);
   }
   Napi::Value NodeModelWrapper::ThreadCount(const Napi::CallbackInfo& info) {
-    return Napi::Number::New(info.Env(), llmodel_threadCount(GetInference()));
+    return Napi::Number::New(info.Env(), llmodel_threadCount(inference_));
   }
 
-   llmodel_model NodeModelWrapper::GetInference() 
-   {
-      return *inference_;
-   }
-  
-   llmodel_model NodeModelWrapper::create_model_set_type(const char* c_weights_path) 
-  {
-
-    uint32_t magic;
-    llmodel_model model;
-    FILE *f = fopen(c_weights_path, "rb");
-    fread(&magic, sizeof(magic), 1, f);
-
-    if (magic == 0x67676d6c) {
-        model = llmodel_gptj_create();  
-        type = "gptj";
-    }
-    else if (magic == 0x67676a74) {
-        model = llmodel_llama_create(); 
-        type = "llama";
-    }
-    else if (magic == 0x67676d6d) {
-        model = llmodel_mpt_create();   
-        type = "mpt";
-    }
-    else  {fprintf(stderr, "Invalid model file\n");}
-    fclose(f);
-    
-    return model;
-  }
 
 
 //Exports Bindings

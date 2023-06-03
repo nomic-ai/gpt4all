@@ -1,11 +1,9 @@
 #include <napi.h>
+#include "llmodel.h"
 #include <iostream>
 #include "llmodel_c.h" 
-#include "gptj.h"
-#include "llamamodel.h"
-#include "mpt.h"
-#include "stdcapture.h"
-#include "fnwrapper.hpp"
+#include "prompt.h"
+#include <atomic>
 class NodeModelWrapper: public Napi::ObjectWrap<NodeModelWrapper> {
 public:
   NodeModelWrapper(const Napi::CallbackInfo &);
@@ -21,12 +19,11 @@ public:
   static Napi::Function GetClass(Napi::Env);
 
 private:
-  std::shared_ptr<llmodel_model> inference_;
+  llmodel_model inference_;
   // Had to use this instead of the c library in order 
   // set the type of the model loaded.
   // causes side effect: type is mutated;
-  llmodel_model create_model_set_type(const char* c_weights_path);
-  llmodel_model GetInference();
+  //llmodel_model create_model_set_type(const char* c_weights_path);
   std::string type;
   std::string name;
   static Napi::FunctionReference constructor;
