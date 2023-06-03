@@ -16,6 +16,7 @@ Window {
     minimumHeight: 480
     visible: true
     title: qsTr("GPT4All v") + Qt.application.version
+    color: "transparent"
 
     Theme {
         id: theme
@@ -23,8 +24,6 @@ Window {
 
     property var currentChat: LLM.chatListModel.currentChat
     property var chatModel: currentChat.chatModel
-
-    color: theme.textColor
 
     // Startup code
     Component.onCompleted: {
