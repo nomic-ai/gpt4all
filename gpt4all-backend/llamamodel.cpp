@@ -108,7 +108,11 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->params.seed       = params.seed;
     d_ptr->params.f16_kv     = params.memory_f16;
     d_ptr->params.use_mmap   = params.use_mmap;
+#if defined (__APPLE__)
+    d_ptr->params.use_mlock  = true;
+#else
     d_ptr->params.use_mlock  = params.use_mlock;
+#endif    
 #if LLAMA_DATE <= 230511
     d_ptr->params.n_parts  = params.n_parts;
 #endif
