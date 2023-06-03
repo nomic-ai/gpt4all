@@ -249,6 +249,7 @@ bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collections) 
         i.collection = q.value(0).toString();
         i.folder_path = q.value(1).toString();
         i.folder_id = q.value(0).toInt();
+        i.installed = true;
         collections->append(i);
     }
     return true;
