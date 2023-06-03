@@ -32,7 +32,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
 
     const char *c_weights_path = weights_path.c_str();
     llmodel_error* e = nullptr;
-    inference_ = llmodel_model_create2("./llama-230519-default.dll", "auto", e);
+    inference_ = llmodel_model_create2(weights_path.c_str(), "auto", e);
 
     if(e != nullptr) {
        Napi::Error::New(env, e->message).ThrowAsJavaScriptException(); 
