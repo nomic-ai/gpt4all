@@ -177,12 +177,7 @@ interface PromptMessage {
     /** The message content. */
     message: string;
 }
-/** Token usage report. */
-interface ExtendedOptions {
-    verbose?: boolean;
-    hasDefaultHeader?: boolean,
-    hasDefaultFooter?: boolean,
-}
+
 /**
  * The result of the completion, similar to OpenAI's format.
  */
@@ -191,6 +186,8 @@ interface CompletionReturn {
      * @type {ModelFile}
      */
     model : ModelFile[ModelType];
+
+    /** Token usage report. */
     usage: {
       /** The number of tokens used in the prompt. */
       prompt_tokens: number;
