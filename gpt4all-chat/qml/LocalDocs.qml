@@ -9,8 +9,8 @@ import localdocs
 Item {
     id: root
 
-    property string collection: ""
-    property string folder_path: ""
+    property alias collection: collection.text
+    property alias folder_path: folderEdit.text
 
     property int defaultChunkSize: 256
     property int defaultRetrievalSize: 3
@@ -60,24 +60,19 @@ Item {
             placeholderTextColor: theme.mutedTextColor
             ToolTip.text: qsTr("Name of the collection to add (Required)")
             ToolTip.visible: hovered
-            onEditingFinished: {
-                root.collection = text
-            }
             Accessible.role: Accessible.EditableText
             Accessible.name: collection.text
             Accessible.description: ToolTip.text
         }
 
-        MyTextField {
-            id: folderLabel
+        MyDirectoryField {
+            id: folderEdit
             anchors.left: collection.right
             anchors.leftMargin: 10
             anchors.right: browseButton.left
             anchors.rightMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             text: root.folder_path
-            readOnly: true
-            color: theme.textColor
             placeholderText: qsTr("Folder path...")
             placeholderTextColor: theme.mutedTextColor
             ToolTip.text: qsTr("Folder path to documents (Required)")
@@ -100,7 +95,7 @@ Item {
             text: qsTr("Add")
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            enabled: root.collection !== "" && root.folder_path != ""
+            enabled: root.collection !== "" && root.folder_path !== "" && folderEdit.isValid
             Accessible.role: Accessible.Button
             Accessible.name: text
             Accessible.description: qsTr("Add button")

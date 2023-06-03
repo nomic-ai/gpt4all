@@ -25,6 +25,8 @@ public:
     bool compatHardware() const { return m_compatHardware; }
 
     Q_INVOKABLE bool checkForUpdates() const;
+    Q_INVOKABLE bool directoryExists(const QString &path) const;
+    Q_INVOKABLE bool fileExists(const QString &path) const;
 
 Q_SIGNALS:
     void chatListModelChanged();
