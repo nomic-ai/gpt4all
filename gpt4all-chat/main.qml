@@ -107,6 +107,8 @@ Window {
     AboutDialog {
         id: aboutDialog
         anchors.centerIn: parent
+        width: Math.min(1024, window.width - (window.width * .2))
+        height: Math.min(600, window.height - (window.height * .2))
     }
 
     Item {
