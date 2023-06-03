@@ -177,7 +177,12 @@ interface PromptMessage {
     /** The message content. */
     message: string;
 }
-
+/** Token usage report. */
+interface ExtendedOptions {
+    verbose?: boolean;
+    hasDefaultHeader?: boolean,
+    hasDefaultFooter?: boolean,
+}
 /**
  * The result of the completion, similar to OpenAI's format.
  */
@@ -185,9 +190,7 @@ interface CompletionReturn {
     /** The model name.
      * @type {ModelFile}
      */
-    model: ModelFile[ModelType];
-    
-    /** Token usage report. */
+    model : ModelFile[ModelType];
     usage: {
       /** The number of tokens used in the prompt. */
       prompt_tokens: number;
@@ -267,6 +270,10 @@ declare function createTokenStream(
     options: CompletionOptions
 ): (ll: LLModel) => AsyncGenerator<string>;
 
+interface PromptMessage { 
+    role: "system" |"assistant" | "user";
+    content: string;
+}
 export {
     ModelType,
     ModelFile,

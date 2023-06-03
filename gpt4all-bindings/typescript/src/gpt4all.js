@@ -89,9 +89,9 @@ function createPrompt (messages, hasDefaultHeader, hasDefaultFooter) {
     }
     if(hasDefaultHeader) {
         fullPrompt+= `### Instruction: 
-            The prompt below is a question to answer, a task to complete, or a conversation 
-            to respond to; decide which and write an appropriate response.
-            \n### Prompt: 
+        The prompt below is a question to answer, a task to complete, or a conversation 
+        to respond to; decide which and write an appropriate response.
+        \n### Prompt: 
         `;
     }
     for(const message of messages) {
@@ -100,7 +100,7 @@ function createPrompt (messages, hasDefaultHeader, hasDefaultFooter) {
             fullPrompt += user_message;
         }
         if (message["role"] == "assistant") {
-            const assistant_message = "\n### Response: " + message["content"];
+            const assistant_message = "\nResponse: " + message["content"];
             fullPrompt += assistant_message;
         }
     }
@@ -124,17 +124,25 @@ exports.createCompletion = function (
     },
 ) {
     //creating the keys to insert into promptMaker.
-    const fullPrompt = createPrompt(messages, options.hasDefaultHeader, options.hasDefaultFooter);
-    const response = '';
+    const fullPrompt = createPrompt(
+        messages,
+        options.hasDefaultHeader??true,
+        options.hasDefaultFooter
+    );
+    let response = '';
     if(options.verbose) {
         console.log(fullPrompt);
     }
+    llmodel.raw_prompt(fullPrompt, options,(s) => {
+        console.log('done')
+    })
+
     return {
         llmodel : llmodel.name(),
         usage : {
             prompt_tokens: fullPrompt.length,
-            completion_tokens: 0, //TODO
-            total_tokens: fullPrompt.length + 0 //TODO
+            completion_tokens: response.length, //TODO
+            total_tokens: fullPrompt.length + response.length //TODO
         },
         choices: [
             {
@@ -145,5 +153,4 @@ exports.createCompletion = function (
             }
         ]
     }
-    
 }
