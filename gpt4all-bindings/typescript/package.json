@@ -3,10 +3,12 @@
   "version": "2.0.0",
   "packageManager": "yarn@3.5.1",
   "main": "src/gpt4all.js",
+  "repository": "nomic-ai/gpt4all",
   "scripts": {
     "test": "node ./test/index.mjs",
     "install": "node-gyp-build",
-    "prebuild": "prebuildify --napi"
+    "prebuild": "prebuildify --napi",
+    "docs:build": "documentation build ./src/gpt4all.d.ts --parse-extension d.ts --format md --output docs/api.md"
   },
   "dependencies": {
     "node-addon-api": "^6.1.0",
@@ -14,6 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.1.5",
+    "documentation": "^14.0.2",
     "prebuildify": "^5.0.1"
   },
   "engines": {

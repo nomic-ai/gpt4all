@@ -27,7 +27,7 @@ exports.LLModel = LLModel;
 
 exports.download = function (
     name,
-    options = { debug: false, location: process.cwd(), link: undefined }
+    options = { debug: false, location: process.cwd(), url: undefined }
 ) {
     const abortController = new AbortController();
     const signal = abortController.signal;
@@ -38,12 +38,13 @@ exports.download = function (
     }
 
     //wrapper function to get the readable stream from request
-    const fetcher = (name) => fetch(options.link ?? `https://gpt4all.io/models/${name}`, {
+    const baseUrl = options.url ?? 'https://gpt4all.io/models'
+    const fetcher = (name) => fetch(`${baseUrl}/${name}`, {
         signal,
     })
     .then(res => {
          if(!res.ok) {
-            throw Error("Could not find "+ name + " from " + `https://gpt4all.io/models/` )
+            throw Error("Could not find "+ name + " from " + baseUrl)
          }
          return res.body.getReader()
     })
@@ -75,20 +76,6 @@ exports.download = function (
         cancel : () => abortController.abort(),
         promise: () => res
     }
-}
-
-
-//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates
-exports.prompt = function prompt(strings, ...keys) {
-  return (...values) => {
-    const dict = values[values.length - 1] || {};
-    const result = [strings[0]];
-    keys.forEach((key, i) => {
-      const value = Number.isInteger(key) ? values[key] : dict[key];
-      result.push(value, strings[i + 1]);
-    });
-    return result.join("");
-  };
 }
 
 function createPrompt (messages, hasDefaultHeader, hasDefaultFooter) {
