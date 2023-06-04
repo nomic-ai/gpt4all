@@ -103,7 +103,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 endforeach()
 
 add_library(llmodel
-    llmodel.h llmodel.cpp
+    llmodel.h llmodel.cpp llmodel_shared.cpp
     llmodel_c.h llmodel_c.cpp
     dlhandle.h
 )
