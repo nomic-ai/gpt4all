@@ -90,7 +90,6 @@ struct LLamaPrivate {
     llama_context *ctx = nullptr;
     llama_context_params params;
     int64_t n_threads = 0;
-    bool empty = true;
 };
 
 LLamaModel::LLamaModel()
@@ -163,10 +162,11 @@ size_t LLamaModel::restoreState(const uint8_t *src)
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
-std::vector<LLModel::Token> LLamaModel::tokenize(const std::string &str) const
+std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str) const
 {
+    const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos());
     std::vector<LLModel::Token> fres(str.size()+4);
-    auto fres_len = llama_tokenize(d_ptr->ctx, str.c_str(), fres.data(), fres.size(), d_ptr->empty);
+    auto fres_len = llama_tokenize(d_ptr->ctx, str.c_str(), fres.data(), fres.size(), useBOS);
     fres.resize(fres_len);
     return fres;
 }
@@ -187,7 +187,6 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
 
 bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
-    d_ptr->empty = false;
     return llama_eval(d_ptr->ctx, tokens.data(), tokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
 }
 

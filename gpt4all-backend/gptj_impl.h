@@ -27,7 +27,7 @@ private:
     GPTJPrivate *d_ptr;
 
 protected:
-    std::vector<Token> tokenize(const std::string&) const override;
+    std::vector<Token> tokenize(PromptContext &, const std::string&) const override;
     Token sampleToken(PromptContext &ctx) const override;
     std::string_view tokenToString(Token) const override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;

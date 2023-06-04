@@ -815,7 +815,7 @@ size_t MPT::restoreState(const uint8_t *src)
     return mpt_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-std::vector<LLModel::Token> MPT::tokenize(const std::string &str) const
+std::vector<LLModel::Token> MPT::tokenize(PromptContext &, const std::string &str) const
 {
     return ::gpt_tokenize(d_ptr->vocab, str);
 }
