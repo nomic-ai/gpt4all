@@ -8,7 +8,6 @@
 #include "chatllm.h"
 #include "chatmodel.h"
 #include "database.h"
-#include "server.h"
 
 class Chat : public QObject
 {
@@ -25,6 +24,7 @@ class Chat : public QObject
     Q_PROPERTY(bool isServer READ isServer NOTIFY isServerChanged)
     Q_PROPERTY(QString responseState READ responseState NOTIFY responseStateChanged)
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
+    Q_PROPERTY(QString modelLoadingError READ modelLoadingError NOTIFY modelLoadingErrorChanged)
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -89,6 +89,8 @@ public:
     Q_INVOKABLE void removeCollection(const QString &collection);
     void resetResponseState();
 
+    QString modelLoadingError() const { return m_modelLoadingError; }
+
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt);
 
@@ -113,7 +115,7 @@ Q_SIGNALS:
     void loadModelRequested(const QString &modelName);
     void generateNameRequested();
     void modelListChanged();
-    void modelLoadingError(const QString &error);
+    void modelLoadingErrorChanged();
     void isServerChanged();
     void collectionListChanged();
 
@@ -125,12 +127,14 @@ private Q_SLOTS:
     void generatedNameChanged();
     void handleRecalculating();
     void handleModelNameChanged();
+    void handleModelLoadingError(const QString &error);
 
 private:
     QString m_id;
     QString m_name;
     QString m_userName;
     QString m_savedModelName;
+    QString m_modelLoadingError;
     QList<QString> m_collections;
     ChatModel *m_chatModel;
     bool m_responseInProgress;

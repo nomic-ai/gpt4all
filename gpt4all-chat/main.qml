@@ -62,6 +62,10 @@ Window {
             if (Network.isActive && !currentChat.responseInProgress)
                 Network.sendConversation(currentChat.id, getConversationJson());
         }
+        function onModelLoadingErrorChanged() {
+            if (currentChat.modelLoadingError !== "")
+                modelLoadingErrorPopup.open()
+        }
     }
 
     function startupDialogs() {
@@ -116,6 +120,13 @@ Window {
         Accessible.name: title
     }
 
+    PopupDialog {
+        id: modelLoadingErrorPopup
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        text: currentChat.modelLoadingError
+    }
+
     Rectangle {
         id: header
         anchors.left: parent.left
@@ -126,7 +137,7 @@ Window {
         Item {
             anchors.centerIn: parent
             height: childrenRect.height
-            visible: currentChat.isModelLoaded || currentChat.isServer
+            visible: currentChat.isModelLoaded || currentChat.modelLoadingError !== "" || currentChat.isServer
 
             Label {
                 id: modelLabel
@@ -150,6 +161,31 @@ Window {
                 anchors.horizontalCenterOffset: window.width >= 950 ? 0 : Math.max(-((950 - window.width) / 2), -99.5)
                 enabled: !currentChat.isServer
                 model: currentChat.modelList
+                contentItem: Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    leftPadding: 10
+                    rightPadding: 20
+                    text: currentChat.modelLoadingError !== "" ? "Model loading error..." : comboBox.displayText
+                    font: comboBox.font
+                    color: theme.textColor
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                }
+                delegate: ItemDelegate {
+                    width: comboBox.width
+                    contentItem: Text {
+                        text: modelData
+                        color: theme.textColor
+                        font: comboBox.font
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        color: highlighted ? theme.backgroundLight : theme.backgroundDark
+                    }
+                    highlighted: comboBox.highlightedIndex === index
+                }
                 Accessible.role: Accessible.ComboBox
                 Accessible.name: qsTr("ComboBox for displaying/picking the current model")
                 Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
@@ -163,7 +199,7 @@ Window {
 
         Item {
             anchors.centerIn: parent
-            visible: !currentChat.isModelLoaded && !currentChat.isServer
+            visible: !currentChat.isModelLoaded && currentChat.modelLoadingError === "" && !currentChat.isServer
             width: childrenRect.width
             height: childrenRect.height
             Row {
