@@ -111,6 +111,8 @@ public  class LLModel implements AutoCloseable {
      */
     public static String LIBRARY_SEARCH_PATH;
 
+    public static boolean OUTPUT_DEBUG = false;
+
     protected static LLModelLibrary library;
 
     protected Pointer model;
@@ -184,10 +186,14 @@ public  class LLModel implements AutoCloseable {
         library.llmodel_prompt(this.model,
                 prompt,
                  (int tokenID) -> {
+                    if(LLModel.OUTPUT_DEBUG)
+                        System.out.println("token " + tokenID);
                     return true; // continue processing
                 },
                 responseCallback,
                 (boolean isRecalculating) -> {
+                    if(LLModel.OUTPUT_DEBUG)
+                        System.out.println("recalculating");
                     return isRecalculating; // continue generating
                 },
                 generationConfig);
