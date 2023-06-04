@@ -29,6 +29,7 @@ struct CollectionItem {
     QString collection;
     QString folder_path;
     int folder_id = -1;
+    bool installed = false;
 };
 Q_DECLARE_METATYPE(CollectionItem)
 

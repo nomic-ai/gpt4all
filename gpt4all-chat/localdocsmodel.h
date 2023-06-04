@@ -11,7 +11,8 @@ class LocalDocsModel : public QAbstractListModel
 public:
     enum Roles {
         CollectionRole = Qt::UserRole + 1,
-        FolderPathRole
+        FolderPathRole,
+        InstalledRole
     };
 
     explicit LocalDocsModel(QObject *parent = nullptr);
@@ -20,6 +21,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
 public Q_SLOTS:
+    void addCollectionItem(const CollectionItem &item);
     void handleCollectionListUpdated(const QList<CollectionItem> &collectionList);
 
 private:

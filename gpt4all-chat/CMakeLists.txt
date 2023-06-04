@@ -94,6 +94,7 @@ qt_add_qml_module(chat
       qml/Theme.qml
       qml/MyButton.qml
       qml/MyComboBox.qml
+      qml/MyDirectoryField.qml
       qml/MyTextField.qml
       qml/MyCheckBox.qml
       qml/MyBusyIndicator.qml
