@@ -38,7 +38,7 @@ protected:
     // We have to implement these as they are pure virtual in base class, but we don't actually use
     // them as they are only called from the default implementation of 'prompt' which we override and
     // completely replace
-    std::vector<Token> tokenize(const std::string&) const override { return std::vector<Token>(); }
+    std::vector<Token> tokenize(PromptContext &, const std::string&) const override { return std::vector<Token>(); }
     std::string_view tokenToString(Token) const override { return std::string_view(); }
     Token sampleToken(PromptContext &ctx) const override { return -1; }
     bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const override { return false; }

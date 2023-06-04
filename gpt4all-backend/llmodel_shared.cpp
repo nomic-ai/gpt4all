@@ -38,7 +38,7 @@ void LLModel::prompt(const std::string &prompt,
     }
 
     // tokenize the prompt
-    std::vector<Token> embd_inp = tokenize(prompt);
+    std::vector<Token> embd_inp = tokenize(promptCtx, prompt);
 
     // save the context size
     promptCtx.n_ctx = contextLength();
