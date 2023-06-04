@@ -112,7 +112,7 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->params.use_mlock  = true;
 #else
     d_ptr->params.use_mlock  = params.use_mlock;
-#endif    
+#endif
 #if LLAMA_DATE <= 230511
     d_ptr->params.n_parts  = params.n_parts;
 #endif
@@ -163,155 +163,43 @@ size_t LLamaModel::restoreState(const uint8_t *src)
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
-void LLamaModel::prompt(const std::string &prompt,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &promptCtx) {
-
-    if (!isModelLoaded()) {
-        std::cerr << "LLAMA ERROR: prompt won't work with an unloaded model!\n";
-        return;
-    }
-
-    gpt_params params;
-    params.prompt = prompt;
-
-    // Add a space in front of the first character to match OG llama tokenizer behavior
-    params.prompt.insert(0, 1, ' ');
-
-    // tokenize the prompt
-    std::vector<llama_token> embd_inp(params.prompt.size() + 4);
-    int n = llama_tokenize(d_ptr->ctx, params.prompt.c_str(), embd_inp.data(), embd_inp.size(), d_ptr->empty);
-    assert(n >= 0);
-    embd_inp.resize(n);
-    d_ptr->empty = false;
-
-    // save the context size
-    promptCtx.n_ctx = llama_n_ctx(d_ptr->ctx);
-
-    if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
-        responseCallback(-1, "The prompt size exceeds the context window size and cannot be processed.");
-        std::cerr << "LLAMA ERROR: The prompt is" << embd_inp.size() <<
-            "tokens and the context window is" << promptCtx.n_ctx << "!\n";
-        return;
-    }
-
-    promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
-    promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
-
-    // number of tokens to keep when resetting context
-    params.n_keep = (int)embd_inp.size();
-
-    // process the prompt in batches
-    size_t i = 0;
-    while (i < embd_inp.size()) {
-        size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
-        std::vector<llama_token> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
-
-        // Check if the context has run out...
-        if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
-            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
-            // Erase the first percentage of context from the tokens...
-            std::cerr << "LLAMA: reached the end of the context window so resizing\n";
-            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
-            promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
-        }
-
-        if (!evalTokens(promptCtx, batch)) {
-            std::cerr << "LLAMA ERROR: Failed to process prompt\n";
-            return;
-        }
-
-        size_t tokens = batch_end - i;
-        for (size_t t = 0; t < tokens; ++t) {
-            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
-                promptCtx.tokens.erase(promptCtx.tokens.begin());
-            promptCtx.tokens.push_back(batch.at(t));
-            if (!promptCallback(batch.at(t)))
-                return;
-        }
-        promptCtx.n_past += batch.size();
-        i = batch_end;
-    }
-
-    std::string cachedResponse;
-    std::vector<llama_token> cachedTokens;
-    std::unordered_set<std::string> reversePrompts
-        = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant" };
-
-    // predict next tokens
-    for (int i = 0; i < promptCtx.n_predict; i++) {
-        // sample next token
-        const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
-        llama_token id = llama_sample_top_p_top_k(d_ptr->ctx,
-            promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
-            n_prev_toks, promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
-            promptCtx.repeat_penalty);
-
-        // Check if the context has run out...
-        if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
-            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
-            // Erase the first percentage of context from the tokens...
-            std::cerr << "LLAMA: reached the end of the context window so resizing\n";
-            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
-            promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past + 1 <= promptCtx.n_ctx);
-        }
-
-        if (!evalTokens(promptCtx, { id })) {
-            std::cerr << "LLAMA ERROR: Failed to predict next token\n";
-            return;
-        }
-
-        promptCtx.n_past += 1;
-        // display text
-        if (id == llama_token_eos())
-            return;
-
-        const std::string str = llama_token_to_str(d_ptr->ctx, id);
-
-        // Check if the provided str is part of our reverse prompts
-        bool foundPartialReversePrompt = false;
-        const std::string completed = cachedResponse + str;
-        if (reversePrompts.find(completed) != reversePrompts.end()) {
-            return;
-        }
-
-        // Check if it partially matches our reverse prompts and if so, cache
-        for (const auto &s : reversePrompts) {
-            if (s.compare(0, completed.size(), completed) == 0) {
-                foundPartialReversePrompt = true;
-                cachedResponse = completed;
-                break;
-            }
-        }
-
-        // Regardless the token gets added to our cache
-        cachedTokens.push_back(id);
-
-        // Continue if we have found a partial match
-        if (foundPartialReversePrompt)
-            continue;
-
-        // Empty the cache
-        for (auto t : cachedTokens) {
-            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
-                promptCtx.tokens.erase(promptCtx.tokens.begin());
-            promptCtx.tokens.push_back(t);
-            if (!responseCallback(t, llama_token_to_str(d_ptr->ctx, t)))
-                return;
-        }
-        cachedTokens.clear();
-    }
+std::vector<LLModel::Token> LLamaModel::tokenize(const std::string &str) const
+{
+    std::vector<LLModel::Token> fres(str.size()+4);
+    auto fres_len = llama_tokenize(d_ptr->ctx, str.c_str(), fres.data(), fres.size(), d_ptr->empty);
+    fres.resize(fres_len);
+    return fres;
 }
 
-bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
+std::string_view LLamaModel::tokenToString(Token id) const
 {
+    return llama_token_to_str(d_ptr->ctx, id);
+}
+
+LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
+{
+    const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
+    return llama_sample_top_p_top_k(d_ptr->ctx,
+        promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
+        n_prev_toks, promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
+        promptCtx.repeat_penalty);
+}
+
+bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
+{
+    d_ptr->empty = false;
     return llama_eval(d_ptr->ctx, tokens.data(), tokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
+}
+
+int32_t LLamaModel::contextLength() const
+{
+    return llama_n_ctx(d_ptr->ctx);
+}
+
+const std::vector<LLModel::Token> &LLamaModel::endTokens() const
+{
+    static const std::vector<LLModel::Token> fres = {llama_token_eos()};
+    return fres;
 }
 
 #if defined(_WIN32)

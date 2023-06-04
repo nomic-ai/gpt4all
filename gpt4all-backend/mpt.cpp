@@ -815,163 +815,50 @@ size_t MPT::restoreState(const uint8_t *src)
     return mpt_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-void MPT::prompt(const std::string &prompt,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &promptCtx) {
+std::vector<LLModel::Token> MPT::tokenize(const std::string &str) const
+{
+    return ::gpt_tokenize(d_ptr->vocab, str);
+}
 
-    if (!isModelLoaded()) {
-        std::cerr << "GPT-J ERROR: prompt won't work with an unloaded model!\n";
-        return;
-    }
+std::string_view MPT::tokenToString(Token id) const
+{
+    return d_ptr->vocab.id_to_token[id];
+}
 
-    // tokenize the prompt
-    std::vector<int> embd_inp = gpt_tokenize(d_ptr->vocab, prompt);
+LLModel::Token MPT::sampleToken(PromptContext &promptCtx) const
+{
+    const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
+    return gpt_sample_top_k_top_p(d_ptr->model->hparams.n_vocab,
+        promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
+        n_prev_toks,
+        promptCtx.logits,
+        promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
+        promptCtx.repeat_penalty,
+        d_ptr->rng);
+}
 
-    // save the context size
-    promptCtx.n_ctx = d_ptr->model->hparams.n_ctx;
-
-    if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
-        responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
-        std::cerr << "GPT-J ERROR: The prompt is" << embd_inp.size() <<
-            "tokens and the context window is" << promptCtx.n_ctx << "!\n";
-        return;
-    }
-
-    promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
-    promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
-
+bool MPT::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
+{
     // determine the required inference memory per token:
     static bool initialized = false;
-    static std::vector<int> p_instruct;
-    static std::vector<int> r_instruct;
     if (!initialized) {
-         mpt_eval(*d_ptr->model, d_ptr->n_threads, 0, { 0, 1, 2, 3 }, promptCtx.logits,
+        mpt_eval(*d_ptr->model, d_ptr->n_threads, 0, { 0, 1, 2, 3 }, ctx.logits,
             d_ptr->mem_per_token);
         initialized = true;
     }
 
-    // process the prompt in batches
-    size_t i = 0;
-    while (i < embd_inp.size()) {
-        size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
-        std::vector<int> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
-
-        // Check if the context has run out...
-        if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
-            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
-            // Erase the first percentage of context from the tokens...
-            std::cerr << "MPT: reached the end of the context window so resizing\n";
-            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
-            promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
-        }
-
-        if (!evalTokens(promptCtx, batch)) {
-            std::cerr << "GPT-J ERROR: Failed to process prompt\n";
-            return;
-        }
-
-        size_t tokens = batch_end - i;
-        for (size_t t = 0; t < tokens; ++t) {
-            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
-                promptCtx.tokens.erase(promptCtx.tokens.begin());
-            promptCtx.tokens.push_back(batch.at(t));
-            if (!promptCallback(batch.at(t)))
-                return;
-        }
-        promptCtx.n_past += batch.size();
-        i = batch_end;
-    }
-
-    std::string cachedResponse;
-    std::vector<int> cachedTokens;
-    std::unordered_set<std::string> reversePrompts
-        = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context" };
-
-    // predict next tokens
-    for (int i = 0; i < promptCtx.n_predict; i++) {
-
-        // sample next token
-        const int n_vocab = d_ptr->model->hparams.n_vocab;
-        int id = 0;
-        {
-            const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
-            id = gpt_sample_top_k_top_p(n_vocab,
-                promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
-                n_prev_toks,
-                promptCtx.logits,
-                promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
-                promptCtx.repeat_penalty,
-                d_ptr->rng);
-        }
-
-        // Check if the context has run out...
-        if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
-            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
-            // Erase the first percentage of context from the tokens...
-            std::cerr << "MPT: reached the end of the context window so resizing\n";
-            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
-            promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past + 1 <= promptCtx.n_ctx);
-        }
-
-        if (!evalTokens(promptCtx, { id })) {
-            std::cerr << "GPT-J ERROR: Failed to predict next token\n";
-            return;
-        }
-
-        promptCtx.n_past += 1;
-        // display tex
-        // mpt-7b-chat has special token for end
-        if (d_ptr->has_im_end && id == d_ptr->vocab.token_to_id["<|im_end|>"])
-            return;
-
-        if (id == 0 /*end of text*/)
-            return;
-
-        const std::string str = d_ptr->vocab.id_to_token[id];
-
-        // Check if the provided str is part of our reverse prompts
-        bool foundPartialReversePrompt = false;
-        const std::string completed = cachedResponse + str;
-        if (reversePrompts.find(completed) != reversePrompts.end())
-            return;
-
-        // Check if it partially matches our reverse prompts and if so, cache
-        for (const auto &s : reversePrompts) {
-            if (s.compare(0, completed.size(), completed) == 0) {
-                foundPartialReversePrompt = true;
-                cachedResponse = completed;
-                break;
-            }
-        }
-
-        // Regardless the token gets added to our cache
-        cachedTokens.push_back(id);
-
-        // Continue if we have found a partial match
-        if (foundPartialReversePrompt)
-            continue;
-
-        // Empty the cache
-        for (auto t : cachedTokens) {
-            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
-                promptCtx.tokens.erase(promptCtx.tokens.begin());
-            promptCtx.tokens.push_back(t);
-            if (!responseCallback(t, d_ptr->vocab.id_to_token[t]))
-                return;
-        }
-        cachedTokens.clear();
-    }
+    return mpt_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
 }
 
-bool MPT::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
+int32_t MPT::contextLength() const
 {
-    return mpt_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
+    return d_ptr->model->hparams.n_ctx;
+}
+
+const std::vector<LLModel::Token> &MPT::endTokens() const
+{
+    static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.token_to_id["<|im_end|>"]};
+    return fres;
 }
 
 #if defined(_WIN32)
