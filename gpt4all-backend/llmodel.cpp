@@ -11,6 +11,20 @@
 
 std::string LLModel::m_implementations_search_path = ".";
 
+static bool has_at_least_minimal_hardware() {
+#ifdef __x86_64__
+    #ifndef _MSC_VER
+        return __builtin_cpu_supports("avx");
+    #else
+        int cpuInfo[4];
+        __cpuid(cpuInfo, 1);
+        return cpuInfo[2] & (1 << 28);
+    #endif
+#else
+    return true; // Don't know how to handle non-x86_64
+#endif
+}
+
 static bool requires_avxonly() {
 #ifdef __x86_64__
     #ifndef _MSC_VER
@@ -98,6 +112,10 @@ const LLModel::Implementation* LLModel::implementation(std::ifstream& f, const s
 }
 
 LLModel *LLModel::construct(const std::string &modelPath, std::string buildVariant) {
+
+    if (!has_at_least_minimal_hardware())
+        return nullptr;
+
     //TODO: Auto-detect CUDA/OpenCL
     if (buildVariant == "auto") {
         if (requires_avxonly()) {
