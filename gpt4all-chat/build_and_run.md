@@ -24,7 +24,7 @@ gpt4all-chat from source.
 
 ![image](https://github.com/nomic-ai/gpt4all-chat/assets/10168/c6e999e5-cc8a-4dfc-8065-b59139e8c7ae)
 
-NOTE: This is for macOS. For Linux it is similar, but you need ming64 for Windows, not the MSVC install
+NOTE: This is for macOS. For Linux it is similar, but you need MSVC for Windows, not the mingw install
 
 ## Open up QtCreator
 
