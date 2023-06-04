@@ -412,11 +412,6 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
         const QSize display = QGuiApplication::primaryScreen()->size();
         properties.insert("display", QString("%1x%2").arg(display.width()).arg(display.height()));
         properties.insert("ram", getSystemTotalRAM());
-#if defined(__x86_64__) || defined(__i386__)
-        properties.insert("avx", bool(__builtin_cpu_supports("avx")));
-        properties.insert("avx2", bool(__builtin_cpu_supports("avx2")));
-        properties.insert("fma", bool(__builtin_cpu_supports("fma")));
-#endif
 #if defined(Q_OS_MAC)
         properties.insert("cpu", QString::fromStdString(getCPUModel()));
 #endif

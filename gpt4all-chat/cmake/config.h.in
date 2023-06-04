@@ -2,6 +2,5 @@
 #define CONFIG_H
 
 #define APP_VERSION "@APP_VERSION@"
-#define GPT4ALL_AVX_ONLY "@GPT4ALL_AVX_ONLY@"
 
 #endif // CONFIG_H

@@ -30,15 +30,20 @@ LLM::LLM()
     connect(this, &LLM::serverEnabledChanged,
         m_chatListModel, &ChatListModel::handleServerEnabledChanged);
 
-#if defined(__x86_64__) || defined(__i386__)
-    if (QString(GPT4ALL_AVX_ONLY) == "OFF") {
-        const bool avx(__builtin_cpu_supports("avx"));
-        const bool avx2(__builtin_cpu_supports("avx2"));
-        const bool fma(__builtin_cpu_supports("fma"));
-        m_compatHardware = avx && avx2 && fma;
-        emit compatHardwareChanged();
-    }
+#if defined(__x86_64__)
+    #ifndef _MSC_VER
+        const bool minimal(__builtin_cpu_supports("avx"));
+    #else
+        int cpuInfo[4];
+        __cpuid(cpuInfo, 1);
+        const bool minimal(cpuInfo[2] & (1 << 28));
+    #endif
+#else
+    const bool minimal = true; // Don't know how to handle non-x86_64
 #endif
+
+    m_compatHardware = minimal;
+    emit compatHardwareChanged();
 }
 
 bool LLM::checkForUpdates() const
