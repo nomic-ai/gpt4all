@@ -942,7 +942,7 @@ void MPT::prompt(const std::string &prompt,
             return;
 
         // Check if it partially matches our reverse prompts and if so, cache
-        for (auto s : reversePrompts) {
+        for (const auto &s : reversePrompts) {
             if (s.compare(0, completed.size(), completed) == 0) {
                 foundPartialReversePrompt = true;
                 cachedResponse = completed;

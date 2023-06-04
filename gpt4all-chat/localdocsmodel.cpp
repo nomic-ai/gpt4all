@@ -22,6 +22,8 @@ QVariant LocalDocsModel::data(const QModelIndex &index, int role) const
             return item.collection;
         case FolderPathRole:
             return item.folder_path;
+        case InstalledRole:
+            return item.installed;
     }
 
     return QVariant();
@@ -32,7 +34,15 @@ QHash<int, QByteArray> LocalDocsModel::roleNames() const
     QHash<int, QByteArray> roles;
     roles[CollectionRole] = "collection";
     roles[FolderPathRole] = "folder_path";
+    roles[InstalledRole] = "installed";
     return roles;
+}
+
+void LocalDocsModel::addCollectionItem(const CollectionItem &item)
+{
+    beginInsertRows(QModelIndex(), m_collectionList.size(), m_collectionList.size());
+    m_collectionList.append(item);
+    endInsertRows();
 }
 
 void LocalDocsModel::handleCollectionListUpdated(const QList<CollectionItem> &collectionList)

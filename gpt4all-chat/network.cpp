@@ -153,15 +153,16 @@ void Network::handleJsonUploadFinished()
         sendHealth();
     }
 
+#if defined(DEBUG)
     QByteArray jsonData = jsonReply->readAll();
     QJsonParseError err;
+
     QJsonDocument document = QJsonDocument::fromJson(jsonData, &err);
     if (err.error != QJsonParseError::NoError) {
         qDebug() << "ERROR: Couldn't parse: " << jsonData << err.errorString();
         return;
     }
 
-#if defined(DEBUG)
     printf("%s\n", qPrintable(document.toJson(QJsonDocument::Indented)));
     fflush(stdout);
 #endif
@@ -172,7 +173,7 @@ void Network::handleJsonUploadFinished()
 void Network::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 {
     QUrl url = reply->request().url();
-    for (auto e : errors)
+    for (const auto &e : errors)
         qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
 }
 
@@ -421,7 +422,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
 #endif
     }
 
-    for (auto p : values)
+    for (const auto& p : values)
         properties.insert(p.key, p.value);
 
     QJsonObject event;

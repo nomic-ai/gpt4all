@@ -63,6 +63,22 @@ bool LLM::checkForUpdates() const
     return QProcess::startDetached(fileName);
 }
 
+bool LLM::directoryExists(const QString &path) const
+{
+    const QUrl url(path);
+    const QString localFilePath = url.isLocalFile() ? url.toLocalFile() : path;
+    const QFileInfo info(localFilePath);
+    return info.exists() && info.isDir();
+}
+
+bool LLM::fileExists(const QString &path) const
+{
+    const QUrl url(path);
+    const QString localFilePath = url.isLocalFile() ? url.toLocalFile() : path;
+    const QFileInfo info(localFilePath);
+    return info.exists() && info.isFile();
+}
+
 int32_t LLM::threadCount() const
 {
     return m_threadCount;

@@ -94,6 +94,7 @@ qt_add_qml_module(chat
       qml/Theme.qml
       qml/MyButton.qml
       qml/MyComboBox.qml
+      qml/MyDirectoryField.qml
       qml/MyTextField.qml
       qml/MyCheckBox.qml
       qml/MyBusyIndicator.qml
@@ -141,11 +142,6 @@ target_link_libraries(chat
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
-
-if(NOT (CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64"))
-    add_executable(test_hw test_hw.cpp)
-    install(TARGETS test_hw DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
-endif()
 
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llmodel DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})

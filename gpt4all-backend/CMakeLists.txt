@@ -76,29 +76,29 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 
     # Add each individual implementations
     add_library(llamamodel-mainline-${BUILD_VARIANT} SHARED
-        llamamodel.cpp)
+        llamamodel.cpp llmodel_shared.cpp)
     target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     prepare_target(llamamodel-mainline llama-mainline)
 
     add_library(llamamodel-230519-${BUILD_VARIANT} SHARED
-        llamamodel.cpp)
+        llamamodel.cpp llmodel_shared.cpp)
     target_compile_definitions(llamamodel-230519-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS===2 LLAMA_DATE=230519)
     prepare_target(llamamodel-230519 llama-230519)
 
     add_library(llamamodel-230511-${BUILD_VARIANT} SHARED
-        llamamodel.cpp)
+        llamamodel.cpp llmodel_shared.cpp)
     target_compile_definitions(llamamodel-230511-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=<=1 LLAMA_DATE=230511)
     prepare_target(llamamodel-230511 llama-230511)
 
     add_library(gptj-${BUILD_VARIANT} SHARED
-        gptj.cpp utils.h utils.cpp)
+        gptj.cpp utils.h utils.cpp llmodel_shared.cpp)
     prepare_target(gptj ggml-230511)
 
     add_library(mpt-${BUILD_VARIANT} SHARED
-        mpt.cpp utils.h utils.cpp)
+        mpt.cpp utils.h utils.cpp llmodel_shared.cpp)
     prepare_target(mpt ggml-230511)
 endforeach()
 

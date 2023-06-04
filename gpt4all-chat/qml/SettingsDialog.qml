@@ -651,7 +651,8 @@ Dialog {
                         title: "Please choose a directory"
                         currentFolder: "file://" + Download.downloadLocalModelsPath
                         onAccepted: {
-                            Download.downloadLocalModelsPath = selectedFolder
+                            modelPathDisplayField.text = selectedFolder
+                            Download.downloadLocalModelsPath = modelPathDisplayField.text
                             settings.modelPath = Download.downloadLocalModelsPath
                             settings.sync()
                         }
@@ -663,24 +664,26 @@ Dialog {
                         Layout.row: 2
                         Layout.column: 0
                     }
-                    TextField {
-                        id: modelPathDisplayLabel
+                    MyDirectoryField {
+                        id: modelPathDisplayField
                         text: Download.downloadLocalModelsPath
-                        readOnly: true
-                        color: theme.textColor
                         implicitWidth: 300
-                        padding: 10
                         Layout.row: 2
                         Layout.column: 1
                         Layout.fillWidth: true
                         ToolTip.text: qsTr("Path where model files will be downloaded to")
                         ToolTip.visible: hovered
                         Accessible.role: Accessible.ToolTip
-                        Accessible.name: modelPathDisplayLabel.text
+                        Accessible.name: modelPathDisplayField.text
                         Accessible.description: ToolTip.text
-                        background: Rectangle {
-                            color: theme.backgroundLighter
-                            radius: 10
+                        onEditingFinished: {
+                            if (isValid) {
+                                Download.downloadLocalModelsPath = modelPathDisplayField.text
+                                settings.modelPath = Download.downloadLocalModelsPath
+                                settings.sync()
+                            } else {
+                                text = Download.downloadLocalModelsPath
+                            }
                         }
                     }
                     MyButton {
