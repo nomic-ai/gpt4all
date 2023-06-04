@@ -192,7 +192,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             prompts.append(promptValue.toString());
         else {
             QJsonArray array = promptValue.toArray();
-            for (QJsonValue v : array)
+            for (const QJsonValue &v : array)
                 prompts.append(v.toString());
         }
     } else
