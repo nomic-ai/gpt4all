@@ -26,6 +26,9 @@ LLM::LLM()
     , m_compatHardware(true)
 {
     QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
+    const QString libDir = QCoreApplication::applicationDirPath() + "/../lib/";
+    if (directoryExists(libDir))
+        llmodelSearchPaths += ";" + libDir;
 #if defined(Q_OS_MAC)
     const QString binDir = QCoreApplication::applicationDirPath() + "/../../../";
     if (directoryExists(binDir))
