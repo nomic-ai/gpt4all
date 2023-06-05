@@ -180,7 +180,8 @@ int32_t llmodel_threadCount(llmodel_model model);
 /**
  * Set llmodel implementation search path.
  * Default is "."
- * @param path The path to the llmodel implementation shared objects.
+ * @param path The path to the llmodel implementation shared objects. This can be a single path or
+ * a list of paths separated by ';' delimiter.
  */
 void llmodel_set_implementation_search_path(const char *path);
 

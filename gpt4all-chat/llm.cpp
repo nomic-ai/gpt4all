@@ -25,6 +25,13 @@ LLM::LLM()
     , m_serverEnabled(false)
     , m_compatHardware(true)
 {
+    QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
+#if defined(Q_OS_MAC)
+    llmodelSearchPaths += ";" + QCoreApplication::applicationDirPath() + "../../../";
+    llmodelSearchPaths += ";" + QCoreApplication::applicationDirPath() + "../Frameworks/";
+#endif
+    LLModel::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
+
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
         this, &LLM::aboutToQuit);
     connect(this, &LLM::serverEnabledChanged,

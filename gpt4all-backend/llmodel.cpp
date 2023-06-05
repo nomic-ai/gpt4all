@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <cassert>
 #include <cstdlib>
+#include <sstream>
 
 std::string LLModel::m_implementations_search_path = ".";
 
@@ -75,26 +76,30 @@ const std::vector<LLModel::Implementation> &LLModel::implementationList() {
     static auto* libs = new std::vector<LLModel::Implementation>([] () {
         std::vector<LLModel::Implementation> fres;
 
-        auto search_in_directory = [&](const std::filesystem::path& path) {
-            // Iterate over all libraries
-            for (const auto& f : std::filesystem::directory_iterator(path)) {
-                const std::filesystem::path& p = f.path();
-                if (p.extension() != LIB_FILE_EXT) continue;
-                // Add to list if model implementation
-                try {
-                    Dlhandle dl(p.string());
-                    if (!Implementation::isImplementation(dl)) {
-                        continue;
-                    }
-                    fres.emplace_back(Implementation(std::move(dl)));
-                } catch (...) {}
+        auto search_in_directory = [&](const std::string& paths) {
+            std::stringstream ss(paths);
+            std::string path;
+            // Split the paths string by the delimiter and process each path.
+            while (std::getline(ss, path, ';')) {
+                std::filesystem::path fs_path(path);
+                // Iterate over all libraries
+                for (const auto& f : std::filesystem::directory_iterator(fs_path)) {
+                    const std::filesystem::path& p = f.path();
+                    if (p.extension() != LIB_FILE_EXT) continue;
+                    // Add to list if model implementation
+                    try {
+                        Dlhandle dl(p.string());
+                        if (!Implementation::isImplementation(dl)) {
+                            continue;
+                        }
+                        fres.emplace_back(Implementation(std::move(dl)));
+                    } catch (...) {}
+                }
             }
         };
 
         search_in_directory(m_implementations_search_path);
-#if defined(__APPLE__)
-        search_in_directory("../../../");
-#endif
+
         return fres;
     }());
     // Return static result
