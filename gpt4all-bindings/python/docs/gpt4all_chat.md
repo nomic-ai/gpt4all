@@ -4,6 +4,18 @@ The [GPT4All Chat Client](https://gpt4all.io) lets you easily interact with any 
 
 It is optimized to run 7-13B parameter LLMs on the CPU's of any computer running OSX/Windows/Linux.
 
+## Running LLMs on CPU
+The GPT4All Chat UI supports models from all newer versions of `ggML`, `llama.cpp` including the `LLaMA`, `MPT` and `GPT-J` architectures. The `falcon` and `replit` architectures will soon also be supported.
+
+GPT4All maintains an official list of recommended models located in [models.json](https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-chat/metadata/models.json). You can pull request new models to it and if accepted they will show up in the official download dialog.
+
+#### Sideloading any ggML model
+If a model is compatible with the gpt4all-backend, you can sideload it into GPT4All Chat by:
+
+1. Downloading your model in ggML format. It should be a 3-8 GB file similar to the ones [here](https://huggingface.co/TheBloke/Samantha-7B-GGML/tree/main).
+2. Identifying your GPT4All Chat downloads folder. This is the path listed at the bottom of the download dialog.
+3. Prefixing your downloaded model with string `ggml-` and placing it into the GPT4All Chat downloads folder.
+4. Restarting your chat app. Your model should appear in the download dialog.
 
 ## Plugins
 GPT4All Chat Plugins allow you to expand the capabilities of Local LLMs.
