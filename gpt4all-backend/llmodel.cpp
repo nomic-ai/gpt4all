@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <sstream>
 
-std::string LLModel::m_implementations_search_path = ".";
+std::string s_implementations_search_path = ".";
 
 static bool has_at_least_minimal_hardware() {
 #ifdef __x86_64__
@@ -98,7 +98,7 @@ const std::vector<LLModel::Implementation> &LLModel::implementationList() {
             }
         };
 
-        search_in_directory(m_implementations_search_path);
+        search_in_directory(s_implementations_search_path);
 
         return fres;
     }());
@@ -138,4 +138,12 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     f.close();
     // Construct and return llmodel implementation
     return impl->construct();
+}
+
+void LLModel::setImplementationsSearchPath(const std::string& path) {
+    s_implementations_search_path = path;
+}
+
+const std::string& LLModel::implementationsSearchPath() {
+    return s_implementations_search_path;
 }
