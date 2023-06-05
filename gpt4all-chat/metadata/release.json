@@ -212,5 +212,44 @@
 * Peter Gagarinov
 * Community (beta testers, bug reporters)
 "
+  },
+  {
+    "version": "2.4.6",
+    "notes":
+"
+* bugfix for model download remove
+* bugfix for blocking on regenerate
+* lots of various ui improvements enhancements
+* big new change that brings us up2date with llama.cpp/ggml support for latest models
+* advanced avx detection allowing us to fold the two installers into one
+* new logging mechanism that allows for bug reports to have more detail
+* make localdocs work with server mode
+* localdocs fix for stale references after we regenerate
+* fix so that browse to dialog on linux
+* fix so that you can also just add a path to the textfield
+* bugfix for chatgpt and resetting context
+* move models.json to github repo so people can pr suggested new models
+* allow for new models to be directly downloaded from huggingface in said prs
+* better ui for localdocs settings
+* better error handling when model fails to load
+",
+    "contributors":
+"
+* Nils Sauer (Nomic AI)
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Richard Guo (Nomic AI)
+* Konstantin Gukov
+* Joseph Mearman
+* Nandakumar
+* Chase McDougall
+* mvenditto
+* Andriy Mulyar (Nomic AI)
+* FoivosC
+* Ettore Di Giacinto
+* Tim Miller
+* Peter Gagarinov
+* Community (beta testers, bug reporters)
+"
   }
 ]
