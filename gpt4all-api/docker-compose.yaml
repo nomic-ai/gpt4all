@@ -1,0 +1,16 @@
+version: "3.5"
+
+services:
+  api:
+    image: gpt4all_api
+    container_name: gpt4all_api
+    restart: always #restart on error (usually code compilation from save during bad state)
+    ports:
+      - "80:80"
+    environment:
+      - APP_ENVIRONMENT=dev
+      - WEB_CONCURRENCY=2
+      - LOGLEVEL=debug
+    volumes:
+      - './backend/app:/app'
+    command: ["/start-reload.sh"]
