@@ -228,6 +228,11 @@ bool ChatLLM::loadModel(const QString &modelName)
                 case 'M': m_modelType = LLModelType::MPT_; break;
                 default: delete std::exchange(m_modelInfo.model, nullptr);
                 }
+            } else {
+                if (!m_isServer)
+                    LLModelStore::globalInstance()->releaseModel(m_modelInfo); // release back into the store
+                m_modelInfo = LLModelInfo();
+                emit modelLoadingError(QString("Could not load model due to invalid format for %1").arg(modelName));
             }
         }
 #if defined(DEBUG_MODEL_LOADING)
@@ -249,8 +254,8 @@ bool ChatLLM::loadModel(const QString &modelName)
     } else {
         if (!m_isServer)
             LLModelStore::globalInstance()->releaseModel(m_modelInfo); // release back into the store
-        const QString error = QString("Could not find model %1").arg(modelName);
-        emit modelLoadingError(error);
+        m_modelInfo = LLModelInfo();
+        emit modelLoadingError(QString("Could not find file for model %1").arg(modelName));
     }
 
     if (m_modelInfo.model) {
@@ -342,8 +347,7 @@ void ChatLLM::setModelName(const QString &modelName)
 
 void ChatLLM::modelNameChangeRequested(const QString &modelName)
 {
-    if (!loadModel(modelName))
-        qWarning() << "ERROR: Could not load model" << modelName;
+    loadModel(modelName);
 }
 
 bool ChatLLM::handlePrompt(int32_t token)
