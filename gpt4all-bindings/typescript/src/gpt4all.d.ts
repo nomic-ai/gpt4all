@@ -148,7 +148,7 @@ declare class LLModel {
  * console.log(completion.choices[0].message.content)
  * // No, it's going to be cold and rainy.
   */
-declare function createCompletion(
+declare async function createCompletion(
     llmodel: LLModel,
     messages: PromptMessage[],
     options?: CompletionOptions
