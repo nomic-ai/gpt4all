@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 from typing import List, Dict
 import logging
 from api_v1.settings import settings
-import numpy as np
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -18,7 +17,7 @@ class ChatCompletionMessage(BaseModel):
 
 class ChatCompletionRequest(BaseModel):
     model: str = Field(..., description='The model to generate a completion from.')
-    messages: str = Field(..., description='The model to generate a completion from.')
+    messages: List[ChatCompletionMessage] = Field(..., description='The model to generate a completion from.')
 
 
 class ChatCompletionChoice(BaseModel):

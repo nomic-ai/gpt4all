@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 from typing import List, Dict
 import logging
 from api_v1.settings import settings
-import numpy as np
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

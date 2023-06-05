@@ -10,7 +10,7 @@ for serving inference from GPT4All models. The API matches the OpenAI API spec.
 
 First build the FastAPI docker image. You only have to do this on initial build or when you add new dependencies to the requirements.txt file:
 ```bash
-DOCKER_BUILDKIT=1 docker build -t api --progress plain -f api/Dockerfile.buildkit .
+DOCKER_BUILDKIT=1 docker build -t gpt4all_api --progress plain -f gpt4all_api/Dockerfile.buildkit .
 ```
 
 Then, start the backend with:

@@ -12,13 +12,10 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title='GPT4All API', description=docs.desc)
 
-
-origins = [f"http://{settings.client_hostname}/", f"https://{settings.client_hostname}/"]
-
 #CORS Configuration (in-case you want to deploy)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] + origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
