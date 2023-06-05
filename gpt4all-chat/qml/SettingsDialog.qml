@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Dialogs
 import QtQuick.Layouts
+import Qt.labs.folderlistmodel
 import download
 import network
 import llm
