@@ -29,7 +29,7 @@ Dialog {
         id: listLabel
         anchors.top: parent.top
         anchors.left: parent.left
-        text: "Available Collections:"
+        text: "Available LocalDocs Collections:"
         color: theme.textColor
     }
 
