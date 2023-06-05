@@ -79,12 +79,8 @@ public:
     static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
     static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
 
-    static inline void setImplementationsSearchPath(const std::string& path) {
-        m_implementations_search_path = path;
-    }
-    static inline const std::string& implementationsSearchPath() {
-        return m_implementations_search_path;
-    }
+    static void setImplementationsSearchPath(const std::string& path);
+    static const std::string& implementationsSearchPath();
 
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
@@ -101,6 +97,5 @@ protected:
     void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 
     const Implementation *m_implementation = nullptr;
-    static std::string m_implementations_search_path;
 };
 #endif // LLMODEL_H
