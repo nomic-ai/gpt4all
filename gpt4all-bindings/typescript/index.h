@@ -4,6 +4,7 @@
 #include "llmodel_c.h" 
 #include "prompt.h"
 #include <atomic>
+
 class NodeModelWrapper: public Napi::ObjectWrap<NodeModelWrapper> {
 public:
   NodeModelWrapper(const Napi::CallbackInfo &);

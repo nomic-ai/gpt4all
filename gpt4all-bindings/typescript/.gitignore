@@ -2,4 +2,3 @@ node_modules/
 build/
 prebuilds/
 runtimes/
-*dll

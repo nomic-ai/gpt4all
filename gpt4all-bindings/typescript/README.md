@@ -31,6 +31,15 @@ cd gpt4all-bindings/typescript
  ```sh
 git submodule update --init --depth 1 --recursive
  ```
+**AS OF NEW BACKEND** to build the backend,
+```sh
+yarn build:backend
+```
+This will build platform-dependent dynamic libraries, and will be located in runtimes/(platform)/native The only current way to use them is to put them in the current working directory of your application. That is, **WHEREVER YOU RUN YOUR NODE APPLICATION**
+- llama-xxxx.dll is required.
+- According to whatever model you are using, you'll need to select the proper model loader.
+    - For example, if you running an Mosaic MPT model, you will need to select the mpt-(buildvariant).(dynamiclibrary)
+
 ### Test
 ```sh
 yarn test
@@ -60,5 +69,6 @@ This package is in active development, and breaking changes may happen until the
 - [ ] createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)
 - [ ] proper unit testing
 - [ ] publish to npm under alpha tag `gpt4all@alpha`
-- [ ] have more people test on other platforms
+- [ ] have more people test on other platforms (mac tester needed)
+- [x] switch to new pluggable backend
 

@@ -129,7 +129,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        if(inputObject.Has("context_erase")) 
             promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
     }
-
+    //copy to protect llmodel resources when splitting to new thread
     llmodel_model inf = GetInference();
     llmodel_prompt_context copiedPrompt = promptContext;
     PromptWorkContext pc = {
@@ -150,10 +150,6 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     );
     threadSafeContext->nativeThread = std::thread(threadEntry, threadSafeContext);
     
-    //    llmodel_prompt(GetInference(), question.c_str(), prompt_callback, response_callback, recalculate_callback, &promptContext);
-    //    std::string o = _res;
-    //    _res.clear();
-    //return Napi::String::New(env, o);
     return threadSafeContext->GetPromise();
   }
 

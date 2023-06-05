@@ -18,7 +18,7 @@ ll.setThreadCount(4);
 console.log("thread count " + ll.threadCount());
 
 
-createCompletion(
+await createCompletion(
     ll,
     [
         { role : 'system', content: 'be as annoying as possible'  },
@@ -26,7 +26,15 @@ createCompletion(
     ],
     { verbose: true }
 );
-console.log('new prompt');
+
+await createCompletion(
+    ll,
+    [
+        { role : 'system', content: 'be as annoying as possible'  },
+        { role : 'user', content: 'try to be annoying'  }, 
+    ],
+    { verbose: true }
+);
 
 //console.log(createCompletion(
 //    ll,

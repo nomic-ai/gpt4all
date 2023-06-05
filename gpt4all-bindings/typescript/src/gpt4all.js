@@ -6,6 +6,7 @@ const path = require('path');
 const { LLModel } = require('node-gyp-build')(path.resolve(__dirname, '..'));
 const { createWriteStream, existsSync } = require('fs');
 const { performance } = require('node:perf_hooks');
+const { resolve } = require('path/posix');
 
 
 // readChunks() reads from the provided reader and yields the results into an async iterable
@@ -130,29 +131,30 @@ exports.createCompletion = function (
         options.hasDefaultHeader??true,
         options.hasDefaultFooter
     );
-    let response = '';
     if(options.verbose) {
         console.log(fullPrompt);
     }
-    llmodel.raw_prompt(fullPrompt, options,(s) => {
-        console.log(s)
-        console.log('done')
-    })
-
-    return {
-        llmodel : llmodel.name(),
-        usage : {
-            prompt_tokens: fullPrompt.length,
-            completion_tokens: response.length, //TODO
-            total_tokens: fullPrompt.length + response.length //TODO
-        },
-        choices: [
-            {
-              "message": {
-                "role": "assistant",
-                "content": response
-                }
-            }
-        ]
-    }
+    const promisifiedRawPrompt = new Promise((resolve, rej) => {
+        llmodel.raw_prompt(fullPrompt, options, (s) => {
+            resolve(s);
+        })
+    });
+    return promisifiedRawPrompt
+        .then( response  => {
+            return {
+                llmodel : llmodel.name(),
+                usage : {
+                    prompt_tokens: fullPrompt.length,
+                    completion_tokens: response.length, //TODO
+                    total_tokens: fullPrompt.length + response.length //TODO
+                },
+                choices: [
+                    {
+                      "message": {
+                        "role": "assistant",
+                        "content": response
+                        }
+                    }
+                ]}
+        });
 }
