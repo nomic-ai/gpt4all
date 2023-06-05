@@ -135,6 +135,7 @@ exports.createCompletion = function (
         console.log(fullPrompt);
     }
     llmodel.raw_prompt(fullPrompt, options,(s) => {
+        console.log(s)
         console.log('done')
     })
 

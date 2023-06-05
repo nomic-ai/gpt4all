@@ -1,5 +1,5 @@
 import { LLModel, createCompletion } from '../src/gpt4all.js'
-const ll= new LLModel("./llmodel.dll");
+const ll= new LLModel("./ggml-vicuna-7b-1.1-q4_2.bin");
 
 try {
    class Extended extends LLModel {

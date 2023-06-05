@@ -8,9 +8,9 @@ mkdir $BUILD_DIR | Out-Null
 mkdir $LIBS_DIR  | Out-Null
 
 # build
-cmake -G "MinGW Makefiles" -S ..\..\gpt4all-backend -B $BUILD_DIR
+cmake -G "MinGW Makefiles" -S ..\..\gpt4all-backend -B $BUILD_DIR -DLLAMA_AVX2=ON
 cmake --build $BUILD_DIR --parallel --config Release
 
 # copy native dlls
-cp "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll" $LIBS_DIR
+# cp "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll" $LIBS_DIR
 cp "$BUILD_DIR\bin\*.dll" $LIBS_DIR

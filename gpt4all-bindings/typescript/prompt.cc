@@ -14,11 +14,11 @@ Napi::Promise::Deferred TsfnContext::GetDeferred() const {
 }
 
 
-std::string res;
+thread_local std::string res;
 // The thread entry point. This takes as its arguments the specific
 // threadsafe-function context created inside the main thread.
 void threadEntry(TsfnContext* context) {
-  context->mtx.lock();
+  //context->mtx.lock();
   // This callback transforms the native addon data (int *data) to JavaScript
   // values. It also receives the treadsafe-function's registered callback, and
   // may choose to call it.
@@ -38,13 +38,13 @@ void threadEntry(TsfnContext* context) {
   
   // Perform a call into JavaScript.
   napi_status status =
-      context->tsfn.BlockingCall(&(context->pc), callback);
+      context->tsfn.NonBlockingCall(&(context->pc), callback);
   if (status != napi_ok) {
     Napi::Error::Fatal(
         "ThreadEntry",
         "Napi::ThreadSafeNapi::Function.NonBlockingCall() failed");
   }
-  context->mtx.unlock();
+  //context->mtx.unlock();
   // Release the thread-safe function. This decrements the internal thread
   // count, and will perform finalization since the count will reach 0.
   context->tsfn.Release();

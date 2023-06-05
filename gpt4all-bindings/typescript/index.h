@@ -17,9 +17,9 @@ public:
   Napi::Value getName(const Napi::CallbackInfo& info);
   Napi::Value ThreadCount(const Napi::CallbackInfo& info);
   static Napi::Function GetClass(Napi::Env);
-
+  llmodel_model GetInference();
 private:
-  llmodel_model inference_;
+  std::shared_ptr<llmodel_model> inference_;
   // Had to use this instead of the c library in order 
   // set the type of the model loaded.
   // causes side effect: type is mutated;
