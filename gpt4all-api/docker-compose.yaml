@@ -1,7 +1,7 @@
 version: "3.5"
 
 services:
-  api:
+  gpt4all_api:
     image: gpt4all_api
     container_name: gpt4all_api
     restart: always #restart on error (usually code compilation from save during bad state)
@@ -12,5 +12,5 @@ services:
       - WEB_CONCURRENCY=2
       - LOGLEVEL=debug
     volumes:
-      - './backend/app:/app'
+      - './gpt4all_api/app:/app'
     command: ["/start-reload.sh"]

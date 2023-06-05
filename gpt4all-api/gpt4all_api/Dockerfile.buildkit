@@ -2,7 +2,7 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
 # Put first so anytime this file changes other cached layers are invalidated.
-COPY backend/requirements.txt /requirements.txt
+COPY gpt4all_api/requirements.txt /requirements.txt
 
 RUN pip install --upgrade pip
 
@@ -12,4 +12,4 @@ RUN --mount=type=ssh pip install -r /requirements.txt && \
 
 
 # Finally, copy app and client.
-COPY backend/app /app
+COPY gpt4all_api/app /app
