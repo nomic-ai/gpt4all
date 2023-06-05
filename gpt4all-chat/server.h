@@ -14,6 +14,8 @@ public:
     Server(Chat *parent);
     virtual ~Server();
 
+    void setPortNumber(int port); // Step 1: Add a setter function for the port number
+
 public Q_SLOTS:
     void start();
 
@@ -26,6 +28,8 @@ private Q_SLOTS:
 private:
     Chat *m_chat;
     QHttpServer *m_server;
+    int m_portNumber; // Step 2: Add a member variable to store the port number
 };
 
 #endif // SERVER_H
+
