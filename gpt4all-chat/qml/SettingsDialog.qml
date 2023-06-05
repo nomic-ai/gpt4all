@@ -784,8 +784,26 @@ Dialog {
                         ToolTip.text: qsTr("WARNING: This enables the gui to act as a local web server for AI API requests and will increase your RAM usage as well")
                         ToolTip.visible: hovered
                     }
-                    MyButton {
+                    Label {
+                        id: serverPortLabel
+                        text: qsTr("Web server port number:")
+                        color: theme.textColor
                         Layout.row: 7
+                        Layout.column: 0
+                    }
+
+                    TextField {
+                        id: serverPortField
+                        Layout.row: 7
+                        Layout.column: 1
+                        text: settings.serverPort.toString() // Initialize the field with the current port number
+                        onEditingFinished: {
+                        settings.serverPort = parseInt(serverPortField.text) // Update the port number in settings when editing is finished
+                        settings.sync()
+                    }
+                    
+                    MyButton {
+                        Layout.row: 8
                         Layout.column: 1
                         Layout.fillWidth: true
                         text: qsTr("Restore Defaults")
