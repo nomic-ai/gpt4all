@@ -5,14 +5,14 @@
     "filesize": "3785248281",
     "isDefault": "true",
     "bestGPTJ": "true",
-    "description": "Current best commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset."
+    "description": "GPT-J 6B finetuned by Nomic AI on the latest GPT4All dataset.\nLicensed for commercial use."
   },
   {
     "md5sum": "91f886b68fbce697e9a3cd501951e455",
     "filename": "ggml-gpt4all-l13b-snoozy.bin",
     "filesize": "8136770688",
     "bestLlama": "true",
-    "description": "Current best non-commercially licensable model based on Llama 13b and trained by Nomic AI on the latest curated GPT4All dataset."
+    "description": "LLaMA 13B finetuned by Nomic AI on the latest GPT4All dataset.\nCannot be used commercially."
   },
   {
     "md5sum": "756249d3d6abe23bde3b1ae272628640",
@@ -21,84 +21,64 @@
     "isDefault": "true",
     "bestMPT": "true",
     "requires": "2.4.1",
-    "description": "Current best non-commercially licensable chat model based on MPT and trained by Mosaic ML."
-  },
-  {
-    "md5sum": "879344aaa9d62fdccbda0be7a09e7976",
-    "filename": "ggml-gpt4all-j-v1.2-jazzy.bin",
-    "filesize": "3785248281",
-    "description": "A commercially licensable model based on GPT-J and trained by Nomic AI on the v2 GPT4All dataset."
-  },
-  {
-    "md5sum": "61d48a82cb188cceb14ebb8082bfec37",
-    "filename": "ggml-gpt4all-j-v1.1-breezy.bin",
-    "filesize": "3785248281",
-    "description": "A commercially licensable model based on GPT-J and trained by Nomic AI on the v1 GPT4All dataset."
-  },
-  {
-    "md5sum": "5b5a3f9b858d33b29b52b89692415595",
-    "filename": "ggml-gpt4all-j.bin",
-    "filesize": "3785248281",
-    "description": "A commercially licensable model based on GPT-J and trained by Nomic AI on the v0 GPT4All dataset."
+    "description": "MPT 7B chat model trained by Mosaic ML.\nCannot be used commercially."
   },
   {
     "md5sum": "29119f8fa11712704c6b22ac5ab792ea",
     "filename": "ggml-vicuna-7b-1.1-q4_2.bin",
     "filesize": "4212859520",
-    "description": "A non-commercially licensable model based on Llama 7b and trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego."
+    "description": "LLaMA 7B finetuned by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego.\nCannot be used commercially."
   },
   {
     "md5sum": "95999b7b0699e2070af63bf5d34101a8",
     "filename": "ggml-vicuna-13b-1.1-q4_2.bin",
     "filesize": "8136770688",
-    "description": "A non-commercially licensable model based on Llama 13b and trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego."
+    "description": "LLaMA 13B and trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego.\nCannot be used commercially."
   },
   {
     "md5sum": "99e6d129745a3f1fb1121abed747b05a",
     "filename": "ggml-wizardLM-7B.q4_2.bin",
     "filesize": "4212864640",
-    "description": "A non-commercially licensable model based on Llama 7b and trained by Microsoft and Peking University."
+    "description": "LLaMA 7B finetuned by Microsoft and Peking University.\nCannot be used commercially."
   },
   {
     "md5sum": "6cb4ee297537c9133bddab9692879de0",
     "filename": "ggml-stable-vicuna-13B.q4_2.bin",
     "filesize": "8136777088",
-    "description": "A non-commercially licensable model based on Llama 13b and RLHF trained by Stable AI."
+    "description": "LLaMa 13B finetuned with RLHF by Stability AI.\nCannot be used commercially."
   },
   {
     "md5sum": "120c32a51d020066288df045ef5d52b9",
     "filename": "ggml-mpt-7b-base.bin",
     "filesize": "4854401028",
     "requires": "2.4.1",
-    "description": "A commercially licensable model base pre-trained by Mosaic ML."
+    "description": "MPT 7B pre-trained by Mosaic ML. Trained for text completion with no assistant finetuning.\nLicensed for commercial use."
   },
   {
     "md5sum": "d5eafd5b0bd0d615cfd5fd763f642dfe",
     "filename": "ggml-nous-gpt4-vicuna-13b.bin",
     "filesize": "8136777088",
-    "description": "A non-commercially licensable model based on Vicuna 13b, fine-tuned on ~180,000 instructions, trained by Nous Research."
+    "description": "LLaMa 13B fine-tuned on ~180,000 instructions by Nous Research.\nCannot be used commercially."
   },
   {
     "md5sum": "1cfa4958f489f0a0d1ffdf6b37322809",
     "filename": "ggml-mpt-7b-instruct.bin",
     "filesize": "4854401028",
     "requires": "2.4.1",
-    "description": "A commercially licensable instruct model based on MPT and trained by Mosaic ML."
+    "description": "MPT 7B instruction finetuned by Mosaic ML.\nLicensed for commercial use."
   },
   {
     "md5sum": "679fc463f01388ea2d339664af0a0836",
     "filename": "ggml-wizard-13b-uncensored.bin",
     "filesize": "8136777088",
-    "description": "A non-commercially licensable model based on Wizard Vicuna 13b."
+    "description": "LLaMa 13B finetuned on the uncensored assistant and instruction data.\nCannot be used commercially."
   },
   {
     "md5sum": "f26b99c320ff358f4223a973217eb31e",
     "filename": "ggml-v3-13b-hermes-q5_1.bin",
     "filesize": "8136777088",
     "requires": "2.4.5",
-    "description": "Nous-Hermes-13b is a state-of-the-art language model fine-tuned on over 300,000 instructions. This model was fine-tuned by Nous Research, with Teknium and Karan4D leading the fine tuning process and dataset curation, Redmond AI sponsoring the compute, and several other contributors. The result is an enhanced Llama 13b model that rivals GPT-3.5-turbo in performance across a variety of tasks.
-
-This model stands out for its long responses, low hallucination rate, and absence of OpenAI censorship mechanisms. The fine-tuning process was performed with a 2000 sequence length on an 8x a100 80GB DGX machine for over 50 hours.",
+    "description": "LLaMa 13B finetuned on over 300,000 curated and uncensored instructions instructions.\nCannot be used commercially. This model was fine-tuned by Nous Research, with Teknium and Karan4D leading the fine tuning process and dataset curation, Redmond AI sponsoring the compute, and several other contributors. The result is an enhanced Llama 13b model that rivals GPT-3.5-turbo in performance across a variety of tasks. This model stands out for its long responses, low hallucination rate, and absence of OpenAI censorship mechanisms.",
     "url": "https://huggingface.co/eachadea/ggml-nous-hermes-13b/resolve/main/ggml-v3-13b-hermes-q5_1.bin"
   }
 ]
