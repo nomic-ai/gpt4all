@@ -252,8 +252,8 @@ class LLModel:
                 LLModel.buffer = bytes(LLModel.buffer + response)
             else:
                 LLModel.buffer = response
-            ver = LLModel.buffer
-            print(ver.decode())
+            val = LLModel.buffer
+            print(val.decode('utf-8'))
             LLModel.buffer = ''
         except:
             pass
