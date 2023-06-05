@@ -27,8 +27,12 @@ LLM::LLM()
 {
     QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
 #if defined(Q_OS_MAC)
-    llmodelSearchPaths += ";" + QCoreApplication::applicationDirPath() + "../../../";
-    llmodelSearchPaths += ";" + QCoreApplication::applicationDirPath() + "../Frameworks/";
+    const QString binDir = QCoreApplication::applicationDirPath() + "/../../../";
+    if (directoryExists(binDir)
+        llmodelSearchPaths += ";" + binDir;
+    const QString frameworksDir = QCoreApplication::applicationDirPath() + "/../Frameworks/";
+    if (directoryExists(frameworksDir)
+        llmodelSearchPaths += ";" + frameworksDir;
 #endif
     LLModel::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
 
