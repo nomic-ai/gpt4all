@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QtHttpServer/QHttpServer>
+#include <QSettings> // Include the QSettings header
 
 class Server : public ChatLLM
 {
@@ -14,7 +15,7 @@ public:
     Server(Chat *parent);
     virtual ~Server();
 
-    void setPortNumber(int port); // Step 1: Add a setter function for the port number
+    void setPortNumber(int port);
 
 public Q_SLOTS:
     void start();
@@ -28,8 +29,10 @@ private Q_SLOTS:
 private:
     Chat *m_chat;
     QHttpServer *m_server;
-    int m_portNumber; // Step 2: Add a member variable to store the port number
+    int m_portNumber;
+
+    // Step 3: Add a member variable to store the QSettings object
+    QSettings *m_settings;
 };
 
 #endif // SERVER_H
-
