@@ -120,7 +120,7 @@ class LLModel:
     model_name: str
         Model name
     """
-
+    buffer = ''
     def __init__(self):
         self.model = None
         self.model_name = None
@@ -247,7 +247,16 @@ class LLModel:
     # Empty response callback method that just prints response to be collected
     @staticmethod
     def _response_callback(token_id, response):
-        print(response.decode('utf-8'))
+        try:
+            if LLModel.buffer != '':
+                LLModel.buffer = bytes(LLModel.buffer + response)
+            else:
+                LLModel.buffer = response
+            ver = LLModel.buffer
+            print(ver.decode())
+            LLModel.buffer = ''
+        except:
+            pass
         return True
 
     # Empty recalculate callback
