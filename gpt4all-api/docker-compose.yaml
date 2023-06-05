@@ -12,6 +12,7 @@ services:
       - WEB_CONCURRENCY=2
       - LOGLEVEL=debug
       - PORT=4891
+      - model=ggml-gpt4all-j-v1.3-groovy
     volumes:
       - './gpt4all_api/app:/app'
     command: ["/start-reload.sh"]

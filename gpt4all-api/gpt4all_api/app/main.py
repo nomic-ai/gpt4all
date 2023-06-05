@@ -7,6 +7,7 @@ from fastapi.logger import logger as fastapi_logger
 from api_v1.settings import settings
 from api_v1.api import router as v1_router
 from api_v1 import events
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +32,11 @@ app.add_exception_handler(HTTPException, events.on_http_error)
 
 @app.on_event("startup")
 async def startup():
+    logger.info(f"Downloading/fetching model: {os.path.join(settings.gpt4all_path, settings.model)}")
+    from gpt4all import GPT4All
+    model = GPT4All(model_name=settings.model, model_path=settings.gpt4all_path)
+    del model
     logger.info("GPT4All API is ready.")
-
 
 @app.on_event("shutdown")
 async def shutdown():
