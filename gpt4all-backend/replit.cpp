@@ -33,6 +33,10 @@
 #include <regex>
 #include <ggml.h>
 
+/**
+IMPORTANT: This model backend and convert script were developed for the original Huggingface
+Replit model (hugginface commit hash: 9eceafb041eb8abd565dabfbfadd328869140011)
+*/
 
 using piece_t = std::pair<std::size_t, float>;
 using piece_map_t = std::unordered_map<std::string, piece_t>;
@@ -44,7 +48,6 @@ static const size_t MB = 1024*1024;
 static const std::string ws_symbol = "\342\226\201";
 
 }
-
 
 struct replit_tokenizer {
     gpt_vocab raw_vocab;
