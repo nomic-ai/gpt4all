@@ -65,7 +65,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         message(STATUS "Configuring model implementation target ${TARGET_NAME}")
         # Link to ggml/llama
         target_link_libraries(${TARGET_NAME}
-            PUBLIC ${BASE_LIB}-${BUILD_VARIANT})
+            PRIVATE ${BASE_LIB}-${BUILD_VARIANT})
         # Let it know about its build variant
         target_compile_definitions(${TARGET_NAME}
             PRIVATE GGML_BUILD_VARIANT="${BUILD_VARIANT}")
