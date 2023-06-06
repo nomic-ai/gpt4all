@@ -10,7 +10,7 @@ public class Example2 {
 
         String prompt = "### Human:\nWhat is the meaning of life\n### Assistant:";
 
-        // Optionally in case extra search path are necessary.
+        // Optionally in case override to location of shared libraries is necessary
         //LLModel.LIBRARY_SEARCH_PATH = "C:\\Users\\felix\\gpt4all\\lib\\";
 
         try (LLModel mptModel = new LLModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\ggml-mpt-7b-instruct.bin"))) {

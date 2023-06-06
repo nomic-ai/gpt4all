@@ -12,7 +12,7 @@ import java.util.Map;
 public class Example3 {
     public static void main(String[] args) {
 
-        // Optionally in case extra search path are necessary.
+        // Optionally in case override to location of shared libraries is necessary
         //LLModel.LIBRARY_SEARCH_PATH = "C:\\Users\\felix\\gpt4all\\lib\\";
 
         try ( LLModel gptjModel = new LLModel(Path.of("C:\\Users\\felix\\AppData\\Local\\nomic.ai\\GPT4All\\ggml-gpt4all-j-v1.3-groovy.bin")) ){

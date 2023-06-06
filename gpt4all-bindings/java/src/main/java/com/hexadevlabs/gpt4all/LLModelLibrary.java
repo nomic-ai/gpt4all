@@ -3,6 +3,7 @@ package com.hexadevlabs.gpt4all;
 import jnr.ffi.Pointer;
 import jnr.ffi.Struct;
 import jnr.ffi.annotations.Delegate;
+import jnr.ffi.annotations.Encoding;
 import jnr.ffi.annotations.In;
 import jnr.ffi.annotations.Out;
 import jnr.ffi.types.u_int64_t;
@@ -20,7 +21,7 @@ public interface LLModelLibrary {
 
     interface ResponseCallback {
         @Delegate
-        boolean invoke(int token_id, String response);
+        boolean invoke(int token_id, Pointer response);
     }
 
     interface RecalculateCallback {
@@ -65,8 +66,10 @@ public interface LLModelLibrary {
     @u_int64_t long llmodel_save_state_data(Pointer model, Pointer dest);
     @u_int64_t long llmodel_restore_state_data(Pointer model, Pointer src);
 
+    void llmodel_set_implementation_search_path(String path);
+
     // ctx was an @Out ... without @Out crash
-    void llmodel_prompt(Pointer model, String prompt,
+    void llmodel_prompt(Pointer model, @Encoding("UTF-8") String prompt,
                         PromptCallback prompt_callback,
                         ResponseCallback response_callback,
                         RecalculateCallback recalculate_callback,

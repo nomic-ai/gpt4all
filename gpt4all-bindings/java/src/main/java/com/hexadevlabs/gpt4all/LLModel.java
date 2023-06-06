@@ -2,6 +2,9 @@ package com.hexadevlabs.gpt4all;
 
 import jnr.ffi.Pointer;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -111,6 +114,12 @@ public  class LLModel implements AutoCloseable {
      */
     public static String LIBRARY_SEARCH_PATH;
 
+
+    /**
+     * Generally for debugging purposes only. Will print
+     * the numerical tokens as they are generated instead of the string representations.
+     * Will also print out the processed input tokens as numbers to standard out.
+     */
     public static boolean OUTPUT_DEBUG = false;
 
     protected static LLModelLibrary library;
@@ -121,21 +130,37 @@ public  class LLModel implements AutoCloseable {
 
     public LLModel(Path modelPath) {
 
-        if(library==null)
-            library = Util.loadSharedLibrary(LIBRARY_SEARCH_PATH);
+        if(library==null) {
+
+            if (LIBRARY_SEARCH_PATH != null){
+                library = Util.loadSharedLibrary(LIBRARY_SEARCH_PATH);
+                library.llmodel_set_implementation_search_path(LIBRARY_SEARCH_PATH);
+            }  else {
+                // Copy system libraries to Temp folder
+                Path tempLibraryDirectory = Util.copySharedLibraries();
+                library = Util.loadSharedLibrary(tempLibraryDirectory.toString());
+
+                library.llmodel_set_implementation_search_path(tempLibraryDirectory.toString() );
+            }
+
+        }
 
         // modelType = type;
         modelName = modelPath.getFileName().toString();
-
         String modelPathAbs = modelPath.toAbsolutePath().toString();
 
         LLModelLibrary.LLModelError error = new LLModelLibrary.LLModelError(jnr.ffi.Runtime.getSystemRuntime());
+
+        // Check if model file exists
+        if(!Files.exists(modelPath)){
+            throw new IllegalStateException("Model file does not exist: " + modelPathAbs);
+        }
 
         // Create Model Struct. Will load dynamically the correct backend based on model type
         model = library.llmodel_model_create2(modelPathAbs, "auto", error);
 
         if(model == null) {
-            throw new IllegalStateException("Could not load gpt4all backend :" + error.message.toString());
+            throw new IllegalStateException("Could not load gpt4all backend :" + error.message);
         }
         library.llmodel_loadModel(model, modelPathAbs);
 
@@ -174,12 +199,35 @@ public  class LLModel implements AutoCloseable {
      */
     public String generate(String prompt, GenerationConfig generationConfig, boolean streamToStdOut) {
 
-        StringBuilder wholeGeneration = new StringBuilder();
+        ByteArrayOutputStream bufferingForStdOutStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream bufferingForWholeGeneration = new ByteArrayOutputStream();
 
-        LLModelLibrary.ResponseCallback responseCallback = (int tokenID, String response) -> {
-            wholeGeneration.append(response);
-            if(streamToStdOut)
-                System.out.print(response);
+        LLModelLibrary.ResponseCallback responseCallback = (int tokenID, Pointer response) -> {
+
+            if(LLModel.OUTPUT_DEBUG)
+                System.out.print("Response token " + tokenID + " " );
+
+            long len = 0;
+            byte nextByte;
+            do{
+                nextByte= response.getByte(len);
+                len++;
+                if(nextByte!=0) {
+                    bufferingForWholeGeneration.write(nextByte);
+                    if(streamToStdOut){
+                        bufferingForStdOutStream.write(nextByte);
+                        // Test if Buffer is UTF8 valid string.
+                        byte[] currentBytes = bufferingForStdOutStream.toByteArray();
+                        String validString = Util.getValidUtf8(currentBytes);
+                        if(validString!=null){ // is valid string
+                            System.out.print(validString);
+                            // reset the buffer for next utf8 sequence to buffer
+                            bufferingForStdOutStream.reset();
+                        }
+                    }
+                }
+            } while(nextByte != 0);
+
             return true; // continue generating
         };
 
@@ -198,7 +246,7 @@ public  class LLModel implements AutoCloseable {
                 },
                 generationConfig);
 
-        return wholeGeneration.toString();
+        return bufferingForWholeGeneration.toString(StandardCharsets.UTF_8);
     }
 
 
