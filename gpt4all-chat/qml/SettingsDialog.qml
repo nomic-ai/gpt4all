@@ -785,16 +785,39 @@ Dialog {
                         ToolTip.visible: hovered
                     }
                     Label {
-                        id: serverPortLabel
-                        text: qsTr("Web server port number:")
+                        id: serverAddressLabel
+                        text: qsTr("Server Address:")
                         color: theme.textColor
                         Layout.row: 7
                         Layout.column: 0
                     }
 
+                    ToggleButton {
+                        id: serverAddressButton
+                        Layout.row: 7
+                        Layout.column: 1
+                        checked: true
+                        checkedText: qsTr("Any")
+                        uncheckedText: qsTr("LocalHost")
+                        onClicked: {
+                            if (serverAddressButton.checked) {
+                                LLM.setHostAddress("any")
+                            } else {
+                                LLM.setHostAddress("localhost")
+                                }
+                            }
+                        }
+                    Label {
+                        id: serverPortLabel
+                        text: qsTr("Web server port number:")
+                        color: theme.textColor
+                        Layout.row: 8
+                        Layout.column: 0
+                    }
+
                     TextField {
                         id: serverPortField
-                        Layout.row: 7
+                        Layout.row: 8
                         Layout.column: 1
                         text: settings.serverPort.toString() // Initialize the field with the current port number
                         onEditingFinished: {
@@ -803,7 +826,7 @@ Dialog {
                     }
                     
                     MyButton {
-                        Layout.row: 8
+                        Layout.row: 9
                         Layout.column: 1
                         Layout.fillWidth: true
                         text: qsTr("Restore Defaults")
