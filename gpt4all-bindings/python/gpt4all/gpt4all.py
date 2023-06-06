@@ -93,14 +93,23 @@ class GPT4All():
         elif allow_download:
             # Make sure valid model filename before attempting download
             available_models = GPT4All.list_models()
-            if model_filename not in (m["filename"] for m in available_models):
+
+            selected_model = None
+            for m in available_models:
+                if model_filename == m['filename']:
+                    selected_model = m
+                    break
+
+            if selected_model is None:
                 raise ValueError(f"Model filename not in model list: {model_filename}")
-            return GPT4All.download_model(model_filename, model_path, verbose = verbose)
+            url = selected_model.pop('url', None)
+
+            return GPT4All.download_model(model_filename, model_path, verbose = verbose, url=url)
         else:
             raise ValueError("Failed to retrieve model")
 
     @staticmethod
-    def download_model(model_filename: str, model_path: str, verbose: bool = True) -> str:
+    def download_model(model_filename: str, model_path: str, verbose: bool = True, url: str = None) -> str:
         """
         Download model from https://gpt4all.io.
 
@@ -108,12 +117,15 @@ class GPT4All():
             model_filename: Filename of model (with .bin extension).
             model_path: Path to download model to.
             verbose: If True (default), print debug messages.
+            url: the models remote url (e.g. may be hosted on HF)
 
         Returns:
             Model file destination.
         """
 
         def get_download_url(model_filename):
+            if url:
+                return url
             return f"https://gpt4all.io/models/{model_filename}"
 
         # Download model
