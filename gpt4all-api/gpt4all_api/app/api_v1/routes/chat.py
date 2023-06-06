@@ -39,9 +39,9 @@ class ChatCompletionResponse(BaseModel):
     usage: ChatCompletionUsage
 
 
-router = APIRouter(prefix="/chat", tags=["Search Endpoints"])
+router = APIRouter(prefix="/chat", tags=["Completions Endpoints"])
 
-@router.post("/completion", response_model=ChatCompletionResponse)
+@router.post("/completions", response_model=ChatCompletionResponse)
 async def chat_completion(request: ChatCompletionRequest):
     '''
     Completes a GPT4All model response.

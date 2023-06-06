@@ -38,10 +38,10 @@ class CompletionResponse(BaseModel):
     usage: CompletionUsage
 
 
-router = APIRouter(prefix="/search", tags=["Search Endpoints"])
+router = APIRouter(prefix="/completions", tags=["Completion Endpoints"])
 
 @router.post("/", response_model=CompletionResponse)
-async def completion(request: CompletionRequest):
+async def completions(request: CompletionRequest):
     '''
     Completes a GPT4All model response.
     '''
