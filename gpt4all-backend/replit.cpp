@@ -59,9 +59,9 @@ std::pair<std::vector<LLModel::Token>, float> encode_word(const std::string & wo
     std::vector<float> best_segmentations_scores(word.length() + 1, -std::numeric_limits<float>::infinity());
     best_segmentations_scores[0] = 1.0;
 
-    for (int start_idx = 0; start_idx < word.length(); ++start_idx) {
+    for (size_t start_idx = 0; start_idx < word.length(); ++start_idx) {
         float best_score_at_start = best_segmentations_scores[start_idx];
-        for (int end_idx = start_idx + 1; end_idx <= word.length(); ++end_idx) {
+        for (size_t end_idx = start_idx + 1; end_idx <= word.length(); ++end_idx) {
             std::string token = word.substr(start_idx, end_idx - start_idx);
             if (model.count(token) && best_score_at_start != -std::numeric_limits<float>::infinity()) {
                 float token_score = model.at(token).second;
@@ -399,12 +399,10 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
     {
         const auto & hparams = model.hparams;
 
-        const int n_embd = hparams.n_embd;
         const int n_layer = hparams.n_layer;
         const int n_ctx = hparams.n_ctx;
 
         const int64_t n_mem = n_layer * n_ctx;
-        const int64_t n_elements = n_embd * n_mem;
 
         if (!kv_cache_init(hparams, model.kv_self, GGML_TYPE_F16, model.hparams.n_ctx)) {
             fprintf(stderr, "%s: kv_cache_init() failed for self-attention cache\n", __func__);

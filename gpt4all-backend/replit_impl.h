@@ -11,7 +11,7 @@
 
 #define GGML_QNT_VERSION_FACTOR 1000 // do not change this
 
-class ReplitPrivate;
+struct ReplitPrivate;
 class Replit : public LLModel {
 public:
     Replit();
