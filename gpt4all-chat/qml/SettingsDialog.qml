@@ -819,10 +819,10 @@ Dialog {
                         id: serverPortField
                         Layout.row: 8
                         Layout.column: 1
-                        text: settings.serverPort.toString() // Initialize the field with the current port number
+                        text: settings.serverPort.toString() || "4891" // Initialize the field with the current port number or default to 4891
                         onEditingFinished: {
-                        settings.serverPort = parseInt(serverPortField.text) // Update the port number in settings when editing is finished
-                        settings.sync()
+                            settings.serverPort = parseInt(serverPortField.text) // Update the port number in settings when editing is finished
+                            settings.sync()
                     }
                     
                     MyButton {
