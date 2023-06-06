@@ -43,6 +43,7 @@ Dialog {
     property int defaultThreadCount: 0
     property bool defaultSaveChats: false
     property bool defaultSaveChatGPTChats: true
+    property bool defaultRenderMarkdown: true
     property bool defaultServerChat: false
     property string defaultPromptTemplate: "### Human:
 %1
@@ -61,6 +62,7 @@ Dialog {
     property alias threadCount: settings.threadCount
     property alias saveChats: settings.saveChats
     property alias saveChatGPTChats: settings.saveChatGPTChats
+    property alias renderMarkdown: settings.renderMarkdown
     property alias serverChat: settings.serverChat
     property alias modelPath: settings.modelPath
     property alias userDefaultModel: settings.userDefaultModel
@@ -75,6 +77,7 @@ Dialog {
         property int threadCount: settingsDialog.defaultThreadCount
         property bool saveChats: settingsDialog.defaultSaveChats
         property bool saveChatGPTChats: settingsDialog.defaultSaveChatGPTChats
+        property bool renderMarkdown: settingsDialog.defaultRenderMarkdown
         property bool serverChat: settingsDialog.defaultServerChat
         property real repeatPenalty: settingsDialog.defaultRepeatPenalty
         property int repeatPenaltyTokens: settingsDialog.defaultRepeatPenaltyTokens
@@ -99,6 +102,7 @@ Dialog {
         settings.modelPath = settingsDialog.defaultModelPath
         settings.threadCount = defaultThreadCount
         settings.saveChats = defaultSaveChats
+        settings.renderMarkdown = defaultRenderMarkdown
         settings.saveChatGPTChats = defaultSaveChatGPTChats
         settings.serverChat = defaultServerChat
         settings.userDefaultModel = defaultUserDefaultModel
@@ -107,6 +111,7 @@ Dialog {
         LLM.serverEnabled = settings.serverChat
         LLM.chatListModel.shouldSaveChats = settings.saveChats
         LLM.chatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
+        LLM.chatListModel.renderMarkdown = settings.renderMarkdown
         settings.sync()
     }
 
@@ -115,6 +120,7 @@ Dialog {
         LLM.serverEnabled = settings.serverChat
         LLM.chatListModel.shouldSaveChats = settings.saveChats
         LLM.chatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
+        LLM.chatListModel.renderMarkdown = settings.renderMarkdown
         Download.downloadLocalModelsPath = settings.modelPath
     }
 
@@ -766,15 +772,35 @@ Dialog {
                         }
                     }
                     Label {
-                        id: serverChatLabel
-                        text: qsTr("Enable web server:")
+                        id: renderMarkdownLabel
+                        text: qsTr("Render Markdown:")
                         color: theme.textColor
                         Layout.row: 6
                         Layout.column: 0
                     }
                     MyCheckBox {
-                        id: serverChatBox
+                        id: renderMarkdownBox
                         Layout.row: 6
+                        Layout.column: 1
+                        checked: settingsDialog.renderMarkdown
+                        onClicked: {
+                            settingsDialog.renderMarkdown = renderMarkdownBox.checked
+                            LLM.chatListModel.renderMarkdown = renderMarkdownBox.checked
+                            settings.sync()
+                        }
+                        ToolTip.text: qsTr("Interpret all prompts and responses as Markdown formatted text")
+                        ToolTip.visible: hovered
+                    }
+                    Label {
+                        id: serverChatLabel
+                        text: qsTr("Enable web server:")
+                        color: theme.textColor
+                        Layout.row: 7
+                        Layout.column: 0
+                    }
+                    MyCheckBox {
+                        id: serverChatBox
+                        Layout.row: 7
                         Layout.column: 1
                         checked: settings.serverChat
                         onClicked: {
@@ -786,7 +812,7 @@ Dialog {
                         ToolTip.visible: hovered
                     }
                     MyButton {
-                        Layout.row: 7
+                        Layout.row: 8
                         Layout.column: 1
                         Layout.fillWidth: true
                         text: qsTr("Restore Defaults")

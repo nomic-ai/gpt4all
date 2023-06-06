@@ -584,7 +584,7 @@ Window {
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
-                        textFormat: TextEdit.MarkdownText
+                        textFormat: LLM.chatListModel.renderMarkdown ? TextEdit.MarkdownText : TextEdit.PlainText
                         focus: false
                         readOnly: true
                         font.pixelSize: theme.fontSizeLarge

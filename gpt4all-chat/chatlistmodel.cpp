@@ -15,6 +15,7 @@ ChatListModel::ChatListModel(QObject *parent)
     , m_serverChat(nullptr)
     , m_currentChat(nullptr)
     , m_shouldSaveChats(false)
+    , m_renderMarkdown(true)
 {
     addDummyChat();
 
@@ -49,6 +50,19 @@ void ChatListModel::setShouldSaveChatGPTChats(bool b)
         return;
     m_shouldSaveChatGPTChats = b;
     emit shouldSaveChatGPTChatsChanged();
+}
+
+bool ChatListModel::renderMarkdown() const
+{
+    return m_renderMarkdown;
+}
+
+void ChatListModel::setRenderMarkdown(bool b)
+{
+    if (m_renderMarkdown == b)
+        return;
+    m_renderMarkdown = b;
+    emit renderMarkdownChanged();
 }
 
 void ChatListModel::removeChatFile(Chat *chat) const
