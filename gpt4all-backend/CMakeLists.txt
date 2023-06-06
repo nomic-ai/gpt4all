@@ -100,6 +100,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     add_library(mpt-${BUILD_VARIANT} SHARED
         mpt.cpp utils.h utils.cpp llmodel_shared.cpp)
     prepare_target(mpt ggml-230511)
+
+    add_library(replit-${BUILD_VARIANT} SHARED
+        replit.cpp utils.h utils.cpp llmodel_shared.cpp)
+    prepare_target(replit ggml-230511)
 endforeach()
 
 add_library(llmodel
