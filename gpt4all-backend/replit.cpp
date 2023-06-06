@@ -52,7 +52,7 @@ struct replit_tokenizer {
     std::vector<std::string> vocab;
 };
 
-std::pair<std::vector<std::size_t>, float> encode_word(const std::string & word, const piece_map_t & model) {
+std::pair<std::vector<LLModel::Token>, float> encode_word(const std::string & word, const piece_map_t & model) {
     std::vector<int> best_segmentations_starts(word.length() + 1, -1);
     best_segmentations_starts[0] = 0;
 
@@ -76,13 +76,13 @@ std::pair<std::vector<std::size_t>, float> encode_word(const std::string & word,
     }
 
     if (best_segmentations_scores.back() == -std::numeric_limits<float>::infinity()) {
-        return std::make_pair(std::vector<std::size_t>{0}, 0.0f);
+        return std::make_pair(std::vector<LLModel::Token>{0}, 0.0f);
     }
 
     float score = best_segmentations_scores.back();
     int start = best_segmentations_starts.back();
     int end = word.length();
-    std::vector<std::size_t> tokens;
+    std::vector<LLModel::Token> tokens;
     while (start != 0) {
         const auto token_id = model.at(word.substr(start, end - start)).first;
         tokens.insert(tokens.begin(), token_id);
@@ -99,7 +99,7 @@ bool replit_tokenizer_load(replit_tokenizer & tokenizer, std::istream & fin, int
     std::string word;
     std::vector<char> buf(128);
 
-    for (std::size_t i = 0; i < max_vocab_size; i++) {
+    for (LLModel::Token i = 0; i < max_vocab_size; i++) {
         uint32_t len;
         fin.read((char *)&len, sizeof(len));
 
@@ -134,15 +134,15 @@ std::string replace_all(const std::string & str,    // where to work
     return result;
 }
 
-std::vector<std::size_t> replit_tokenizer_tokenize(replit_tokenizer & tokenizer, const std::string & text) {
-    std::vector<std::size_t> tokens;
+std::vector<LLModel::Token> replit_tokenizer_tokenize(replit_tokenizer & tokenizer, const std::string & text) {
+    std::vector<LLModel::Token> tokens;
     auto normalized_text = replace_all(text, " ", ws_symbol);
     auto tokenized = encode_word(normalized_text, tokenizer.piece_map);
 
     return tokenized.first;
 }
 
-std::string replit_tokenizer_detokenize(replit_tokenizer & tokenizer, const std::vector<std::size_t> & tokens) {
+std::string replit_tokenizer_detokenize(replit_tokenizer & tokenizer, const std::vector<LLModel::Token> & tokens) {
     std::string text;
     for (auto token : tokens) {
         text += tokenizer.raw_vocab.id_to_token[token];
@@ -910,9 +910,9 @@ std::vector<LLModel::Token> Replit::tokenize(PromptContext &, const std::string 
     return replit_tokenizer_tokenize(d_ptr->vocab, str);
 }
 
-std::string_view Replit::tokenToString(Token id) const
+std::string_view Replit::tokenToString(LLModel::Token id) const
 {
-    return replit_tokenizer_detokenize(d_ptr->vocab, {static_cast<std::size_t>(id)});
+    return replit_tokenizer_detokenize(d_ptr->vocab, {id});
 }
 
 LLModel::Token Replit::sampleToken(PromptContext &promptCtx) const
@@ -927,7 +927,7 @@ LLModel::Token Replit::sampleToken(PromptContext &promptCtx) const
         d_ptr->rng);
 }
 
-bool Replit::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
+bool Replit::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
     return replit_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
 }
@@ -939,7 +939,7 @@ int32_t Replit::contextLength() const
 
 const std::vector<LLModel::Token> &Replit::endTokens() const
 {
-    static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.token_to_id["<|endoftext|>"]};
+    static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.raw_vocab.token_to_id["<|endoftext|>"]};
     return fres;
 }
 
