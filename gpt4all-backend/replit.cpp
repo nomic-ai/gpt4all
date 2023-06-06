@@ -905,204 +905,42 @@ size_t Replit::restoreState(const uint8_t *src)
     return replit_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-void Replit::prompt(const std::string &prompt,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &promptCtx) {
+std::vector<LLModel::Token> Replit::tokenize(PromptContext &, const std::string &str) const
+{
+    return replit_tokenizer_tokenize(d_ptr->vocab, str);
+}
 
-    if (!isModelLoaded()) {
-        std::cerr << "Replit ERROR: prompt won't work with an unloaded model!\n";
-        return;
-    }
+std::string_view Replit::tokenToString(Token id) const
+{
+    return replit_tokenizer_detokenize(d_ptr->vocab, {static_cast<std::size_t>(id)});
+}
 
-    const int64_t t_main_start_us = ggml_time_us();
-
-    int64_t t_sample_us  = 0;
-    int64_t t_predict_us = 0;
-    int64_t t_prompt_us = 0;
-
-    // tokenize the prompt
-    std::vector<size_t> embd_inp = replit_tokenizer_tokenize(d_ptr->vocab, prompt);
-
-    // save the context size
-    promptCtx.n_ctx = d_ptr->model->hparams.n_ctx;
-
-    if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
-        responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
-        std::cerr << "Replit ERROR: The prompt is" << embd_inp.size() <<
-            "tokens and the context window is" << promptCtx.n_ctx << "!\n";
-        return;
-    }
-
-    promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
-    promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
-
-    // determine the required inference memory per token:
-    static bool initialized = false;
-    static std::vector<int> p_instruct;
-    static std::vector<int> r_instruct;
-    if (!initialized) {
-         replit_eval(*d_ptr->model, d_ptr->n_threads, 0, { 0, 1, 2, 3 }, promptCtx.logits,
-            d_ptr->mem_per_token);
-        initialized = true;
-    }
-
-    // process the prompt in batches
-    size_t i = 0;
-    const int64_t t_start_prompt_us = ggml_time_us();
-    while (i < embd_inp.size()) {
-        size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
-        std::vector<int> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
-
-        // Check if the context has run out...
-        if (promptCtx.n_past + batch.size() > promptCtx.n_ctx) {
-            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
-            // Erase the first percentage of context from the tokens...
-            std::cerr << "Replit: reached the end of the context window so resizing\n";
-            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
-            promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past + batch.size() <= promptCtx.n_ctx);
-        }
-
-        if (!replit_eval(*d_ptr->model, d_ptr->n_threads, promptCtx.n_past, batch, promptCtx.logits,
-            d_ptr->mem_per_token)) {
-            std::cerr << "Replit ERROR: Failed to process prompt\n";
-            return;
-        }
-
-        size_t tokens = batch_end - i;
-        for (size_t t = 0; t < tokens; ++t) {
-            if (promptCtx.tokens.size() == promptCtx.n_ctx)
-                promptCtx.tokens.erase(promptCtx.tokens.begin());
-            promptCtx.tokens.push_back(batch.at(t));
-            if (!promptCallback(batch.at(t)))
-                return;
-        }
-        promptCtx.n_past += batch.size();
-        i = batch_end;
-    }
-    t_prompt_us += ggml_time_us() - t_start_prompt_us;
-
-    int p_instructFound = 0;
-    int r_instructFound = 0;
-
-    std::string cachedResponse;
-    std::vector<int> cachedTokens;
-    std::unordered_set<std::string> reversePrompts
-        = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant" };
-
-    // predict next tokens
-    int32_t totalPredictions = 0;
-    for (int i = 0; i < promptCtx.n_predict; i++) {
-
-        // sample next token
-        const int n_vocab = d_ptr->model->hparams.n_vocab;
-        int id = 0;
-        {
-            const int64_t t_start_sample_us = ggml_time_us();
-            const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
-            id = gpt_sample_top_k_top_p(n_vocab,
-                promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
-                n_prev_toks,
-                promptCtx.logits,
-                promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
-                promptCtx.repeat_penalty,
-                d_ptr->rng);
-
-            t_sample_us += ggml_time_us() - t_start_sample_us;
-        }
-
-        // Check if the context has run out...
-        if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
-            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
-            // Erase the first percentage of context from the tokens...
-            std::cerr << "Replit: reached the end of the context window so resizing\n";
-            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
-            promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past + 1 <= promptCtx.n_ctx);
-        }
-
-        const int64_t t_start_predict_us = ggml_time_us();
-        if (!replit_eval(*d_ptr->model, d_ptr->n_threads, promptCtx.n_past, { id }, promptCtx.logits,
-            d_ptr->mem_per_token)) {
-            std::cerr << "Replit ERROR: Failed to predict next token\n";
-            return;
-        }
-        t_predict_us += ggml_time_us() - t_start_predict_us;
-
-        promptCtx.n_past += 1;
-        // display text
-        ++totalPredictions;
-
-        // mpt-7b-chat has special token for end
-        if (d_ptr->has_end_of_text && id == d_ptr->vocab.raw_vocab.token_to_id["<|endoftext|>"])
-            goto stop_generating;
-
-        if (id == 0 ) // end of text
-            goto stop_generating;
-
-        //const std::string str = d_ptr->vocab.raw_vocab.id_to_token[id];
-        const std::string str = replit_tokenizer_detokenize(d_ptr->vocab, {static_cast<std::size_t>(id)}).c_str();
-
-        // Check if the provided str is part of our reverse prompts
-        bool foundPartialReversePrompt = false;
-        const std::string completed = cachedResponse + str;
-        if (reversePrompts.find(completed) != reversePrompts.end()) {
-            goto stop_generating;
-        }
-
-        // Check if it partially matches our reverse prompts and if so, cache
-        for (auto s : reversePrompts) {
-            if (s.compare(0, completed.size(), completed) == 0) {
-                foundPartialReversePrompt = true;
-                cachedResponse = completed;
-                break;
-            }
-        }
-
-        // Regardless the token gets added to our cache
-        cachedTokens.push_back(id);
-
-        // Continue if we have found a partial match
-        if (foundPartialReversePrompt)
-            continue;
-
-        // Empty the cache
-        for (auto t : cachedTokens) {
-            if (promptCtx.tokens.size() == promptCtx.n_ctx)
-                promptCtx.tokens.erase(promptCtx.tokens.begin());
-            promptCtx.tokens.push_back(t);
-            if (!responseCallback(t, replit_tokenizer_detokenize(d_ptr->vocab, {static_cast<std::size_t>(t)}).c_str()))
-                goto stop_generating;
-        }
-        cachedTokens.clear();
-    }
-
-stop_generating:
-
-#if 0
-    // report timing
-    {
-        const int64_t t_main_end_us = ggml_time_us();
-
-        std::cout << "Replit INFO: mem per token = " << mem_per_token << " bytes\n";
-        std::cout << "Replit INFO:   sample time = " << t_sample_us/1000.0f << " ms\n";
-        std::cout << "Replit INFO:   prompt time = " << t_prompt_us/1000.0f << " ms\n";
-        std::cout << "Replit INFO:  predict time = " << t_predict_us/1000.0f << " ms / " << t_predict_us/1000.0f/totalPredictions << " ms per token\n";
-        std::cout << "Replit INFO:    total time = " << (t_main_end_us - t_main_start_us)/1000.0f << " ms\n";
-        fflush(stdout);
-    }
-#endif
-
-    return;
+LLModel::Token Replit::sampleToken(PromptContext &promptCtx) const
+{
+    const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
+    return gpt_sample_top_k_top_p(d_ptr->model->hparams.n_vocab,
+        promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
+        n_prev_toks,
+        promptCtx.logits,
+        promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
+        promptCtx.repeat_penalty,
+        d_ptr->rng);
 }
 
 bool Replit::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens)
 {
     return replit_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
+}
+
+int32_t Replit::contextLength() const
+{
+    return d_ptr->model->hparams.n_ctx;
+}
+
+const std::vector<LLModel::Token> &Replit::endTokens() const
+{
+    static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.token_to_id["<|endoftext|>"]};
+    return fres;
 }
 
 #if defined(_WIN32)
