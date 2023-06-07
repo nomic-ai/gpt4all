@@ -224,7 +224,7 @@ class GPT4All():
                 "choices": List of message dictionary where "content" is generated response and "role" is set
                 as "assistant". Right now, only one choice is returned by model.
         """
-        full_prompt = self.build_prompt(messages,
+        full_prompt = self._build_prompt(messages,
                                          default_prompt_header=default_prompt_header,
                                          default_prompt_footer=default_prompt_footer)
         if verbose:
@@ -253,7 +253,7 @@ class GPT4All():
         return response_dict
 
     @staticmethod
-    def build_prompt(messages: List[Dict],
+    def _build_prompt(messages: List[Dict],
                       default_prompt_header=True,
                       default_prompt_footer=True) -> str:
         """

@@ -55,7 +55,7 @@ def test_build_prompt():
 
     print(expected_prompt)
 
-    full_prompt = GPT4All.build_prompt(messages, default_prompt_footer=True, default_prompt_header=True)
+    full_prompt = GPT4All._build_prompt(messages, default_prompt_footer=True, default_prompt_header=True)
 
     print("\n\n\n")
     print(full_prompt)
