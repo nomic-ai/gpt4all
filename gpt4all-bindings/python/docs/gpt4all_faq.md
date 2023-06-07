@@ -18,15 +18,12 @@ By leveraging the ggml library written by Georgi Gerganov and a growing communit
 
 ## Does that mean GPT4All is compatible with all llama.cpp models and vice versa?
 
-Unfortunately, no for three reasons:
+Yes!
 
-1. The upstream [llama.cpp](https://github.com/ggerganov/llama.cpp) project has introduced [a compatibility breaking](https://github.com/ggerganov/llama.cpp/commit/b9fd7eee57df101d4a3e3eabc9fd6c2cb13c9ca1) re-quantization method recently. This is a breaking change that renders all previous models (including the ones that GPT4All uses) inoperative with newer versions of llama.cpp since that change.
-2. The GPT4All backend has the llama.cpp submodule specifically pinned to a version prior to this breaking change.
-3. The GPT4All backend currently supports MPT based models as an added feature. Neither llama.cpp nor the original ggml repo support this architecture as of this writing, however efforts are underway to make MPT available in the ggml repo which you can follow [here.](https://github.com/ggerganov/ggml/pull/145)
+The upstream [llama.cpp](https://github.com/ggerganov/llama.cpp) project has introduced several [compatibility breaking](https://github.com/ggerganov/llama.cpp/commit/b9fd7eee57df101d4a3e3eabc9fd6c2cb13c9ca1) quantization methods recently. This is a breaking change that renders all previous models (including the ones that GPT4All uses) inoperative with newer versions of llama.cpp since that change.
 
-## What is being done to make them more compatible?
-
-A few things. Number one, we are maintaining compatibility with our current model zoo by way of the submodule pinning. However, we are also exploring how we can update to newer versions of llama.cpp without breaking our current models. This might involve an additional magic header check or it could possibly involve keeping the currently pinned submodule and also adding a new submodule with later changes and differienting them with namespaces or some other manner. Investigations continue.
+Fortunately, we have engineered a submoduling system allowing us to dynamically load different versions of the underlying library so that
+GPT4All just works.
 
 ## What about GPU inference?
 

@@ -65,7 +65,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         message(STATUS "Configuring model implementation target ${TARGET_NAME}")
         # Link to ggml/llama
         target_link_libraries(${TARGET_NAME}
-            PUBLIC ${BASE_LIB}-${BUILD_VARIANT})
+            PRIVATE ${BASE_LIB}-${BUILD_VARIANT})
         # Let it know about its build variant
         target_compile_definitions(${TARGET_NAME}
             PRIVATE GGML_BUILD_VARIANT="${BUILD_VARIANT}")
@@ -100,10 +100,14 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     add_library(mpt-${BUILD_VARIANT} SHARED
         mpt.cpp utils.h utils.cpp llmodel_shared.cpp)
     prepare_target(mpt ggml-230511)
+
+    add_library(replit-${BUILD_VARIANT} SHARED
+        replit.cpp utils.h utils.cpp llmodel_shared.cpp)
+    prepare_target(replit ggml-230511)
 endforeach()
 
 add_library(llmodel
-    llmodel.h llmodel.cpp
+    llmodel.h llmodel.cpp llmodel_shared.cpp
     llmodel_c.h llmodel_c.cpp
     dlhandle.h
 )
