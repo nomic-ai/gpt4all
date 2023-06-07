@@ -69,6 +69,13 @@
     "description": "LLaMa 13B fine-tuned on ~180,000 instructions by Nous Research.<br>- Cannot be used commercially."
   },
   {
+    "md5sum": "cc5d35250e790dff5e3c54486dcb6864",
+    "filename": "Manticore-13B-Chat-Pyg.ggmlv3.q5_1.bin",
+    "filesize": "9763701888",
+    "description": "LLaMa 13B finetuned by OpenAccess AI Collective on various instruct, instruct-augmented, and chat datasets that have been filtered for refusals and reluctance.<br>- Cannot be used commercially.",
+    "url": "https://huggingface.co/TheBloke/manticore-13b-chat-pyg-GGML/resolve/main/Manticore-13B-Chat-Pyg.ggmlv3.q5_1.bin"
+  },
+  {
     "md5sum": "1cfa4958f489f0a0d1ffdf6b37322809",
     "filename": "ggml-mpt-7b-instruct.bin",
     "filesize": "4854401028",
