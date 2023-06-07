@@ -1,0 +1,22 @@
+[
+    {
+        "name": "llama_7B_ggmlv3",
+        "url": "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/main/llama-7b.ggmlv3.q4_0.bin",
+        "test_response": " The average American eats 20 teaspoons of added sugar every day."
+    },
+    {
+        "name": "llama_7B_ggmlv2",
+        "url": "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/previous_llama_ggmlv2/llama-7b.ggml.q4_0.bin",
+        "test_response": " The average American eats 20 teaspoons of added sugar per day."
+    },
+    {
+        "name": "mpt_base",
+        "url": "https://gpt4all.io/models/ggml-mpt-7b-base.bin",
+        "test_response": " The first ever recorded use of the word “blog” was in 1999."
+    },
+    {
+        "name": "gpt4all_j_groovy",
+        "url": "https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin",
+        "test_response": "\nI am a machine learning model, and I do not have the ability to \"know\" anything."
+    }
+]
