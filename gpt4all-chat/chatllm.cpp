@@ -18,6 +18,7 @@
 
 #define MPT_INTERNAL_STATE_VERSION 0
 #define GPTJ_INTERNAL_STATE_VERSION 0
+#define REPLIT_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
 
 static QString modelFilePath(const QString &modelName, bool isChatGPT)
@@ -226,6 +227,7 @@ bool ChatLLM::loadModel(const QString &modelName)
                 case 'L': m_modelType = LLModelType::LLAMA_; break;
                 case 'G': m_modelType = LLModelType::GPTJ_; break;
                 case 'M': m_modelType = LLModelType::MPT_; break;
+                case 'R': m_modelType = LLModelType::REPLIT_; break;
                 default: delete std::exchange(m_modelInfo.model, nullptr);
                 }
             } else {
@@ -561,6 +563,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
     if (version > 1) {
         stream << m_modelType;
         switch (m_modelType) {
+        case REPLIT_: stream << REPLIT_INTERNAL_STATE_VERSION; break;
         case MPT_: stream << MPT_INTERNAL_STATE_VERSION; break;
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
