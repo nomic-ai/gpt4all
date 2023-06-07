@@ -70,8 +70,9 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         target_compile_definitions(${TARGET_NAME}
             PRIVATE GGML_BUILD_VARIANT="${BUILD_VARIANT}")
         # Enable IPO if possible
-        set_property(TARGET ${TARGET_NAME}
-                     PROPERTY INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED})
+# FIXME: Doesn't work with msvc reliably. See https://github.com/nomic-ai/gpt4all/issues/841
+#        set_property(TARGET ${TARGET_NAME}
+#                     PROPERTY INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED})
     endfunction()
 
     # Add each individual implementations
