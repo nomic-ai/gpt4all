@@ -32,6 +32,7 @@ class ChatLLM : public QObject
     Q_PROPERTY(QString modelName READ modelName WRITE setModelName NOTIFY modelNameChanged)
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
     Q_PROPERTY(QString generatedName READ generatedName NOTIFY generatedNameChanged)
+    Q_PROPERTY(QString modelPromptTemplate READ modelPromptTemplate NOTIFY modelPromptTemplateChanged)
 
 public:
     ChatLLM(Chat *parent, bool isServer = false);
@@ -56,6 +57,7 @@ public:
     bool isRecalc() const { return m_isRecalc; }
 
     QString generatedName() const { return QString::fromStdString(m_nameResponse); }
+    QString modelPromptTemplate() const;
 
     bool serialize(QDataStream &stream, int version);
     bool deserialize(QDataStream &stream, int version);
@@ -85,6 +87,7 @@ Q_SIGNALS:
     void sendStartup();
     void sendModelLoaded();
     void generatedNameChanged();
+    void modelPromptTemplateChanged();
     void stateChanged();
     void threadStarted();
     void shouldBeLoadedChanged();
@@ -98,6 +101,7 @@ protected:
     bool handleNamePrompt(int32_t token);
     bool handleNameResponse(int32_t token, const std::string &response);
     bool handleNameRecalculate(bool isRecalc);
+    void handlePromptTemplateChanged(const QString&);
     void saveState();
     void restoreState();
 
@@ -111,6 +115,7 @@ protected:
     std::string m_nameResponse;
     quint32 m_responseLogits;
     QString m_modelName;
+    QString m_modelPromptTemplate;
     Chat *m_chat;
     QByteArray m_state;
     QThread m_llmThread;

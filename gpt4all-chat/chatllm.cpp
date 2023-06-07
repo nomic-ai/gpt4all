@@ -265,6 +265,18 @@ bool ChatLLM::loadModel(const QString &modelName)
         setModelName(m_isChatGPT ? basename : basename.remove(0, 5)); // remove the ggml- prefix
     }
 
+    m_modelPromptTemplate.clear();
+    if (!m_isServer) {
+        QFile modelInfoFile(filePath+".json");
+        if (modelInfoFile.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text)) {
+            QJsonDocument doc;
+            doc.fromJson(modelInfoFile.readAll());
+            auto obj = doc.object();
+            if (obj.contains("prompt_format"))
+                m_modelPromptTemplate = doc["prompt_format"].toString();
+        }
+    }
+
     return m_modelInfo.model;
 }
 
@@ -343,6 +355,15 @@ void ChatLLM::setModelName(const QString &modelName)
     emit modelNameChanged();
 }
 
+QString ChatLLM::modelPromptTemplate() const {
+    if (!m_modelPromptTemplate.isEmpty())
+        return m_modelPromptTemplate;
+
+    QSettings settings;
+    settings.sync();
+    return settings.value("promptTemplate", "%1").toString();
+}
+
 void ChatLLM::modelNameChangeRequested(const QString &modelName)
 {
     loadModel(modelName);
@@ -395,6 +416,9 @@ bool ChatLLM::handleRecalculate(bool isRecalc)
 bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k,
     float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens, int n_threads)
 {
+#warning Note to myself: remove that line before pushing :-)
+    qDebug() << "Prompted with template:" << prompt_template;
+
     if (!isModelLoaded())
         return false;
 
@@ -556,6 +580,11 @@ bool ChatLLM::handleNameRecalculate(bool isRecalc)
     Q_UNUSED(isRecalc);
     Q_UNREACHABLE();
     return true;
+}
+
+void ChatLLM::handlePromptTemplateChanged(const QString &template_)
+{
+    m_modelPromptTemplate = template_;
 }
 
 bool ChatLLM::serialize(QDataStream &stream, int version)

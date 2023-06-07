@@ -802,7 +802,7 @@ Window {
                             chatModel.updateThumbsUpState(index, false);
                             chatModel.updateThumbsDownState(index, false);
                             chatModel.updateNewResponse(index, "");
-                            currentChat.prompt(listElement.prompt, settingsDialog.promptTemplate,
+                            currentChat.prompt(listElement.prompt, currentChat.modelPromptTemplate,
                                        settingsDialog.maxLength,
                                        settingsDialog.topK, settingsDialog.topP,
                                        settingsDialog.temperature,
@@ -872,7 +872,7 @@ Window {
 
                     currentChat.stopGenerating()
                     currentChat.newPromptResponsePair(textInput.text);
-                    currentChat.prompt(textInput.text, settingsDialog.promptTemplate,
+                    currentChat.prompt(textInput.text, currentChat.modelPromptTemplate,
                                settingsDialog.maxLength,
                                settingsDialog.topK,
                                settingsDialog.topP,
