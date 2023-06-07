@@ -146,7 +146,7 @@ if (LLMODEL_BUILD_TESTS)
     foreach(IDX RANGE ${TESTS_JSON_MAXIDX})
         string(JSON TEST_NAME GET ${TESTS_JSON} ${IDX} name)
         string(JSON TEST_DW_URL GET ${TESTS_JSON} ${IDX} url)
-        string(JSON TEST_RESPONSE GET ${TESTS_JSON} ${IDX} test_response)
+        string(JSON EXPECTED_RESPONSE GET ${TESTS_JSON} ${IDX} expected_response)
 
         message(STATUS "Configuring model implementation test ${TEST_NAME}")
 
@@ -164,8 +164,8 @@ if (LLMODEL_BUILD_TESTS)
 
         # Stuff that can't be passed via target_compile_definitions() for one or another reason
         file(WRITE ${TEST_INCLUDE}/macros.h "#define GET_SUITE_NAME(PREFIX) PREFIX ## ${TEST_NAME}\n")
-        file(APPEND ${TEST_INCLUDE}/macros.h "constexpr char LLMODEL_TEST_RESPONSE[] = R\"(${TEST_RESPONSE})\";\n")
-        file(APPEND ${TEST_INCLUDE}/macros.h "#define LLMODEL_TEST_RESPONSE_LEN (sizeof(LLMODEL_TEST_RESPONSE)-1)\n")
+        file(APPEND ${TEST_INCLUDE}/macros.h "constexpr char LLMODEL_EXPECTED_RESPONSE[] = R\"(${EXPECTED_RESPONSE})\";\n")
+        file(APPEND ${TEST_INCLUDE}/macros.h "#define LLMODEL_EXPECTED_RESPONSE_LEN (sizeof(LLMODEL_EXPECTED_RESPONSE)-1)\n")
 
         add_library(${TEST_TARGET} SHARED
             llmodel_cpp_test.cpp

@@ -29,7 +29,7 @@ TEST(GET_SUITE_NAME(CAPITest_), Prompt) {
     };
     auto response_cb = [] (int32_t, const char *token) {
         response += token;
-        return response.size() < LLMODEL_TEST_RESPONSE_LEN;
+        return response.size() < LLMODEL_EXPECTED_RESPONSE_LEN;
     };
     auto recalc_cb = [] (bool is_recalculating) {
         EXPECT_FALSE(is_recalculating);
@@ -43,15 +43,15 @@ TEST(GET_SUITE_NAME(CAPITest_), Prompt) {
     ctx.temp = 0.6f;
     ctx.n_ctx = 2024;
     ctx.n_batch = 16;
-    ctx.n_predict = LLMODEL_TEST_RESPONSE_LEN;
+    ctx.n_predict = LLMODEL_EXPECTED_RESPONSE_LEN;
     ctx.repeat_penalty = 1.10f;
     ctx.repeat_last_n = 64;
 
     llmodel_prompt(model, "Did you know?", prompt_cb, response_cb, recalc_cb, &ctx);
 
     EXPECT_FALSE(response.empty()) << "Model didn't generate a response";
-    if (response.size() >= LLMODEL_TEST_RESPONSE_LEN) response.resize(LLMODEL_TEST_RESPONSE_LEN);
-    EXPECT_EQ(response, LLMODEL_TEST_RESPONSE) << "Model didn't generate the expected response";
+    if (response.size() >= LLMODEL_EXPECTED_RESPONSE_LEN) response.resize(LLMODEL_EXPECTED_RESPONSE_LEN);
+    EXPECT_EQ(response, LLMODEL_EXPECTED_RESPONSE) << "Model didn't generate the expected response";
 }
 
 /*TEST(GET_SUITE_NAME(CAPITest_), StateSave) {
