@@ -143,7 +143,7 @@ if (LLMODEL_BUILD_TESTS)
         )
     endif()
 
-    add_executable(llmodel_test llmodel_test.cpp)
+    add_executable(llmodel_test llmodel_c_test.cpp)
     target_compile_definitions(llmodel_test PRIVATE LLMODEL_TEST_MODEL="${LLMODEL_TEST_MODEL}")
     target_link_libraries(llmodel_test PRIVATE GTest::gtest_main llmodel)
 endif()
