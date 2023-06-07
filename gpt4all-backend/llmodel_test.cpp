@@ -10,15 +10,17 @@ namespace {
 llmodel_model model;
 uint8_t *savedState;
 
-TEST(ResponseTest, ModelLoad) {
+TEST(CAPITest, ModelLoad) {
     llmodel_error ec;
     llmodel_set_implementation_search_path("..");
     model = llmodel_model_create2(LLMODEL_TEST_MODEL, "auto", &ec);
     EXPECT_NE(model, reinterpret_cast<void*>(NULL)) << "Implementation creation failed: " << ec.message;
+    EXPECT_FALSE(llmodel_isModelLoaded(model));
     EXPECT_TRUE(llmodel_loadModel(model, LLMODEL_TEST_MODEL)) << "Model load failed";
+    EXPECT_TRUE(llmodel_isModelLoaded(model));
 }
 
-TEST(ResponseTest, Evaluation) {
+TEST(CAPITest, Prompt) {
     static std::string response;
 
     auto prompt_cb = [] (int32_t) {
@@ -48,13 +50,17 @@ TEST(ResponseTest, Evaluation) {
     EXPECT_EQ(response, " The average American eats 200 pounds of cheese per year.") << "Model didn't generate the expected response";
 }
 
-TEST(SaveRestoreTest, Save) {
+TEST(CAPITest, StateSave) {
     savedState = new uint8_t[llmodel_get_state_size(model)];
     EXPECT_GT(llmodel_save_state_data(model, savedState), 0);
 }
 
-TEST(SaveRestoreTest, Restore) {
+TEST(CAPITest, StateRestore) {
     EXPECT_GT(llmodel_restore_state_data(model, savedState), 0);
     delete []savedState;
+}
+
+TEST(CAPITest, ModelUnload) {
+    llmodel_model_destroy(model);
 }
 }
