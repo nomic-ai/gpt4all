@@ -119,3 +119,31 @@ set_target_properties(llmodel PROPERTIES
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+
+
+# build tests
+option(LLMODEL_BUILD_TESTS "Build llmodel tests" OFF)
+if (LLMODEL_BUILD_TESTS)
+    cmake_policy(SET CMP0135 NEW)
+
+    include(FetchContent)
+    FetchContent_Declare(googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.13.0.tar.gz)
+    # for Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+
+    set(LLMODEL_TEST_MODEL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_model.bin)
+
+    if (NOT EXISTS ${LLMODEL_TEST_MODEL})
+        file(DOWNLOAD
+            "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/main/llama-7b.ggmlv3.q4_0.bin"
+            ${LLMODEL_TEST_MODEL}
+            SHOW_PROGRESS
+        )
+    endif()
+
+    add_executable(llmodel_test llmodel_test.cpp)
+    target_compile_definitions(llmodel_test PRIVATE LLMODEL_TEST_MODEL="${LLMODEL_TEST_MODEL}")
+    target_link_libraries(llmodel_test PRIVATE GTest::gtest_main llmodel)
+endif()
