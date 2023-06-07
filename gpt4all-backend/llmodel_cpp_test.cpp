@@ -1,4 +1,5 @@
 #include "llmodel.h"
+#include "macros.h"
 
 #include <string>
 #include <string_view>
@@ -8,7 +9,7 @@ namespace {
 LLModel *model;
 uint8_t *savedState;
 
-TEST(CppAPITest, ModelLoad) {
+TEST(GET_SUITE_NAME(CppAPITest_), ModelLoad) {
     LLModel::setImplementationsSearchPath("..");
     model = LLModel::construct(LLMODEL_TEST_MODEL, "auto");
     EXPECT_NE(model, nullptr) << "Implementation creation failed";
@@ -17,7 +18,7 @@ TEST(CppAPITest, ModelLoad) {
     EXPECT_TRUE(model->isModelLoaded());
 }
 
-TEST(CppAPITest, Prompt) {
+TEST(GET_SUITE_NAME(CppAPITest_), Prompt) {
     static std::string response;
 
     auto prompt_cb = [] (int32_t) {
@@ -45,20 +46,20 @@ TEST(CppAPITest, Prompt) {
     model->prompt("Did you know?", prompt_cb, response_cb, recalc_cb, ctx);
 
     EXPECT_FALSE(response.empty()) << "Model didn't generate a response";
-    EXPECT_EQ(response, " The average American eats 20 teaspoons of added sugar every day.") << "Model didn't generate the expected response";
+    EXPECT_EQ(response, LLMODEL_TEST_RESPONSE) << "Model didn't generate the expected response";
 }
 
-TEST(CppAPITest, StateSave) {
+TEST(GET_SUITE_NAME(CppAPITest_), StateSave) {
     savedState = new uint8_t[model->stateSize()];
     EXPECT_GT(model->saveState(savedState), 0);
 }
 
-TEST(CppAPITest, StateRestore) {
+TEST(GET_SUITE_NAME(CppAPITest_), StateRestore) {
     EXPECT_GT(model->restoreState(savedState), 0);
     delete []savedState;
 }
 
-TEST(CppAPITest, ModelUnload) {
+TEST(GET_SUITE_NAME(CppAPITest_), ModelUnload) {
     delete model;
 }
 }

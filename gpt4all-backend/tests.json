@@ -1,0 +1,12 @@
+[
+    {
+        "name": "llama_ggmlv3",
+        "url": "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/main/llama-7b.ggmlv3.q4_0.bin",
+        "test_response": " The average American eats 20 teaspoons of added sugar every day."
+    },
+    {
+        "name": "llama_ggmlv2",
+        "url": "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/previous_llama_ggmlv2/llama-7b.ggml.q4_0.bin",
+        "test_response": " The average American eats 20 teaspoons of added sugar per day."
+    },
+]

@@ -133,17 +133,43 @@ if (LLMODEL_BUILD_TESTS)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
 
-    set(LLMODEL_TEST_MODEL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_model.bin)
+    file(WRITE "${CMAKE_BINARY_DIR}/null.cpp" "")
+    add_executable(llmodel_test "${CMAKE_BINARY_DIR}/null.cpp")
+    target_link_libraries(llmodel_test PUBLIC GTest::gtest_main llmodel)
 
-    if (NOT EXISTS ${LLMODEL_TEST_MODEL})
-        file(DOWNLOAD
-            "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/main/llama-7b.ggmlv3.q4_0.bin"
-            ${LLMODEL_TEST_MODEL}
-            SHOW_PROGRESS
-        )
-    endif()
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/tests.json TESTS_JSON)
+    string(JSON TESTS_JSON_LEN LENGTH ${TESTS_JSON})
+    math(EXPR TESTS_JSON_MAXIDX "${TESTS_JSON_LEN} - 1")
+    message(STATUS "${TESTS_JSON_LEN} llmodel implementation tests found")
 
-    add_executable(llmodel_test llmodel_c_test.cpp llmodel_cpp_test.cpp)
-    target_compile_definitions(llmodel_test PRIVATE LLMODEL_TEST_MODEL="${LLMODEL_TEST_MODEL}")
-    target_link_libraries(llmodel_test PRIVATE GTest::gtest_main llmodel)
+    foreach(IDX RANGE ${TESTS_JSON_MAXIDX})
+        string(JSON TEST_NAME GET ${TESTS_JSON} ${IDX} name)
+        string(JSON TEST_DW_URL GET ${TESTS_JSON} ${IDX} url)
+        string(JSON TEST_RESPONSE GET ${TESTS_JSON} ${IDX} test_response)
+
+        set(TEST_MODEL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_${TEST_NAME}.bin)
+
+        if (NOT EXISTS ${TEST_MODEL})
+            file(DOWNLOAD
+                "${TEST_DW_URL}"
+                "${TEST_MODEL}"
+                SHOW_PROGRESS)
+        endif()
+
+        set(TEST_TARGET llmodel_test_${TEST_NAME})
+        set(TEST_INCLUDE "${CMAKE_BINARY_DIR}/test_${TEST_NAME}/")
+        file(WRITE ${TEST_INCLUDE}/macros.h "#define GET_SUITE_NAME(PREFIX) PREFIX ## ${TEST_NAME}")
+
+        add_library(${TEST_TARGET} SHARED
+            llmodel_cpp_test.cpp
+            llmodel_c_test.cpp)
+        target_compile_definitions(${TEST_TARGET} PRIVATE
+            LLMODEL_TEST_NAME=${TEST_NAME}
+            LLMODEL_TEST_MODEL="${TEST_MODEL}"
+            LLMODEL_TEST_RESPONSE="${TEST_RESPONSE}")
+        target_link_libraries(${TEST_TARGET} PUBLIC GTest::gtest_main llmodel)
+        target_include_directories(${TEST_TARGET} PRIVATE ${TEST_INCLUDE})
+
+        target_link_libraries(llmodel_test PUBLIC ${TEST_TARGET})
+    endforeach()
 endif()
