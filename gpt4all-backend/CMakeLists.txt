@@ -78,6 +78,9 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     # Add each individual implementations
     add_library(llamamodel-mainline-${BUILD_VARIANT} SHARED
         llamamodel.cpp llmodel_shared.cpp)
+    if (LLAMA_METAL)
+        target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PUBLIC GGML_USE_METAL GGML_METAL_NDEBUG)
+    endif()
     target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     prepare_target(llamamodel-mainline llama-mainline)

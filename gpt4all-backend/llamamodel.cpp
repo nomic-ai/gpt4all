@@ -115,6 +115,12 @@ bool LLamaModel::loadModel(const std::string &modelPath)
 #if LLAMA_DATE <= 230511
     d_ptr->params.n_parts  = params.n_parts;
 #endif
+#ifdef GGML_USE_METAL
+    std::cerr << "llama.cpp: using Metal" << std::endl;
+    // metal always runs the whole model if n_gpu_layers is not 0, at least
+    // currently
+    d_ptr->params.n_gpu_layers = 1;
+#endif
 
     d_ptr->ctx = llama_init_from_file(modelPath.c_str(), d_ptr->params);
     if (!d_ptr->ctx) {
