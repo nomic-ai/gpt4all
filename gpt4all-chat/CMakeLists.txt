@@ -122,6 +122,10 @@ set_target_properties(chat PROPERTIES
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
+    # TODO this isn't doing the trick for some reason
+    # the file needs to wind up in the bundle's Contents/Resources dir ths CMake docs indicate this *should* do...
+    # https://cmake.org/cmake/help/latest/prop_tgt/RESOURCE.html
+    RESOURCE "../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal"
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE_ICON_FILE "favicon.icns"
 )
