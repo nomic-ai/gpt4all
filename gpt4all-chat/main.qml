@@ -581,10 +581,19 @@ Window {
 
                     delegate: TextArea {
                         text: value + references
+                        // binding 'textFormat' directly is not enough, because switching formats
+                        // is not only a visible change; 'text' is getting changed, too. Reset it
+                        // using the underlying model value:
+                        Component.onCompleted: {
+                            textFormat = LLM.chatListModel.renderMarkdown ? TextEdit.MarkdownText : TextEdit.PlainText;
+                            LLM.chatListModel.onRenderMarkdownChanged.connect(function() {
+                                textFormat = LLM.chatListModel.renderMarkdown ? TextEdit.MarkdownText : TextEdit.PlainText;
+                                text = value + references;
+                            });
+                        }
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
-                        textFormat: LLM.chatListModel.renderMarkdown ? TextEdit.MarkdownText : TextEdit.PlainText
                         focus: false
                         readOnly: true
                         font.pixelSize: theme.fontSizeLarge
