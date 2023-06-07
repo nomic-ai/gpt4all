@@ -242,6 +242,10 @@ void Download::downloadModel(const QString &modelFile)
     connect(modelReply, &QNetworkReply::finished, this, &Download::handleModelDownloadFinished);
     connect(modelReply, &QNetworkReply::readyRead, this, &Download::handleReadyRead);
     m_activeDownloads.insert(modelReply, tempFile);
+
+    QFile localModelInfoFile(downloadLocalModelsPath() + modelFile + ".json");
+    localModelInfoFile.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text);
+    localModelInfoFile.write(QJsonDocument(info.jsonData).toJson());
 }
 
 void Download::cancelDownload(const QString &modelFile)
@@ -414,6 +418,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         modelInfo.description = description;
         modelInfo.requiresVersion = requiresVersion;
         modelInfo.url = url;
+        modelInfo.jsonData = obj;
         m_modelMap.insert(modelInfo.filename, modelInfo);
     }
 

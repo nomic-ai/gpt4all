@@ -1,6 +1,7 @@
 #ifndef DOWNLOAD_H
 #define DOWNLOAD_H
 
+#include "qjsonobject.h"
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -39,6 +40,7 @@ public:
     QString description;
     QString requiresVersion;
     QString url;
+    QJsonObject jsonData;
 };
 Q_DECLARE_METATYPE(ModelInfo)
 
