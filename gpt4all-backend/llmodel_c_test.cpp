@@ -39,15 +39,17 @@ TEST(CAPITest, Prompt) {
     memset(&ctx, 0, sizeof(ctx));
     ctx.top_k = 0;
     ctx.top_p = 1.0f;
-    ctx.temp = 0.6;
+    ctx.temp = 0.6f;
     ctx.n_ctx = 2024;
     ctx.n_batch = 16;
-    ctx.n_predict = 16;
+    ctx.n_predict = 18;
+    ctx.repeat_penalty = 1.10f;
+    ctx.repeat_last_n = 64;
 
     llmodel_prompt(model, "Did you know?", prompt_cb, response_cb, recalc_cb, &ctx);
 
     EXPECT_FALSE(response.empty()) << "Model didn't generate a response";
-    EXPECT_EQ(response, " The average American eats 200 pounds of cheese per year.") << "Model didn't generate the expected response";
+    EXPECT_EQ(response, " The average American eats 20 teaspoons of added sugar every day.") << "Model didn't generate the expected response";
 }
 
 TEST(CAPITest, StateSave) {
