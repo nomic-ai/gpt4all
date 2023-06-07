@@ -279,7 +279,7 @@ class LLModel:
 
         # Put response tokens into an output queue
         def _generator_response_callback(token_id, response):
-            output_queue.put(response.decode('utf-8'))
+            output_queue.put(response.decode('utf-8', 'replace'))
             return True
 
         def run_llmodel_prompt(model, 
@@ -323,7 +323,7 @@ class LLModel:
     # Empty response callback method that just prints response to be collected
     @staticmethod
     def _response_callback(token_id, response):
-        sys.stdout.write(response.decode('utf-8'))
+        sys.stdout.write(response.decode('utf-8', 'replace'))
         return True
 
     # Empty recalculate callback
