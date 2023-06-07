@@ -122,7 +122,6 @@ class GPT4All():
         Returns:
             Model file destination.
         """
-
         def get_download_url(model_filename):
             if url:
                 return url
@@ -190,7 +189,6 @@ class GPT4All():
         Returns:
             Raw string of generated model response.
         """
-
         return self.model.generator(prompt, **generate_kwargs)
 
     def chat_completion(self,
@@ -226,7 +224,6 @@ class GPT4All():
                 "choices": List of message dictionary where "content" is generated response and "role" is set
                 as "assistant". Right now, only one choice is returned by model.
         """
-
         full_prompt = self.build_prompt(messages,
                                          default_prompt_header=default_prompt_header,
                                          default_prompt_footer=default_prompt_footer)
@@ -275,7 +272,6 @@ class GPT4All():
         Returns:
             Formatted prompt.
         """
-
         full_prompt = ""
 
         for message in messages:
