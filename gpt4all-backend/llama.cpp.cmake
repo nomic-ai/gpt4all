@@ -65,8 +65,12 @@ option(LLAMA_SANITIZE_UNDEFINED     "llama: enable undefined sanitizer"         
 # 3rd party libs
 option(LLAMA_ACCELERATE             "llama: enable Accelerate framework"                    ON)
 option(LLAMA_OPENBLAS               "llama: use OpenBLAS"                                   OFF)
-option(LLAMA_CUBLAS                 "llama: use cuBLAS"                                     OFF)
-option(LLAMA_CLBLAST                "llama: use CLBlast"                                    OFF)
+#option(LLAMA_CUBLAS                 "llama: use cuBLAS"                                     OFF)
+#option(LLAMA_CLBLAST                "llama: use CLBlast"                                    OFF)
+#option(LLAMA_METAL                  "llama: use Metal"                                      OFF)
+set(LLAMA_BLAS_VENDOR "Generic" CACHE STRING "llama: BLAS library vendor")
+set(LLAMA_CUDA_DMMV_X "32" CACHE STRING "llama: x stride for dmmv CUDA kernels")
+set(LLAMA_CUDA_DMMV_Y "1" CACHE STRING  "llama: y block size for dmmv CUDA kernels")
 
 #
 # Compile flags
@@ -210,86 +214,22 @@ endif()
 function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
     message(STATUS "Configuring ggml implementation target llama${SUFFIX} in ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}")
 
-    if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
-        message(STATUS "ARM detected")
-        if (MSVC)
-            # TODO: arm msvc?
-        else()
-            if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
-                add_compile_options(-mcpu=native)
-            endif()
-            # TODO: armv6,7,8 version specific flags
-        endif()
-    elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "^(x86_64|i686|AMD64)$")
-        message(STATUS "x86 detected")
-        if (MSVC)
-            if (LLAMA_AVX512)
-                add_compile_options($<$<COMPILE_LANGUAGE:C>:/arch:AVX512>)
-                add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arch:AVX512>)
-                # MSVC has no compile-time flags enabling specific
-                # AVX512 extensions, neither it defines the
-                # macros corresponding to the extensions.
-                # Do it manually.
-                if (LLAMA_AVX512_VBMI)
-                    add_compile_definitions($<$<COMPILE_LANGUAGE:C>:__AVX512VBMI__>)
-                    add_compile_definitions($<$<COMPILE_LANGUAGE:CXX>:__AVX512VBMI__>)
-                endif()
-                if (LLAMA_AVX512_VNNI)
-                    add_compile_definitions($<$<COMPILE_LANGUAGE:C>:__AVX512VNNI__>)
-                    add_compile_definitions($<$<COMPILE_LANGUAGE:CXX>:__AVX512VNNI__>)
-                endif()
-            elseif (LLAMA_AVX2)
-                add_compile_options($<$<COMPILE_LANGUAGE:C>:/arch:AVX2>)
-                add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arch:AVX2>)
-            elseif (LLAMA_AVX)
-                add_compile_options($<$<COMPILE_LANGUAGE:C>:/arch:AVX>)
-                add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arch:AVX>)
-            endif()
-        else()
-            if (LLAMA_F16C)
-                add_compile_options(-mf16c)
-            endif()
-            if (LLAMA_FMA)
-                add_compile_options(-mfma)
-            endif()
-            if (LLAMA_AVX)
-                add_compile_options(-mavx)
-            endif()
-            if (LLAMA_AVX2)
-                add_compile_options(-mavx2)
-            endif()
-            if (LLAMA_AVX512)
-                add_compile_options(-mavx512f)
-                add_compile_options(-mavx512bw)
-            endif()
-            if (LLAMA_AVX512_VBMI)
-                add_compile_options(-mavx512vbmi)
-            endif()
-            if (LLAMA_AVX512_VNNI)
-                add_compile_options(-mavx512vnni)
-            endif()
-        endif()
-    else()
-        # TODO: support PowerPC
-        message(STATUS "Unknown architecture")
-    endif()
-
     #
     # Build libraries
     #
 
-    if (LLAMA_CUBLAS AND EXISTS ${DIRECTORY}/ggml-cuda.h)
+    set(GGML_CUBLAS_USE NO)
+    if (LLAMA_CUBLAS)
         cmake_minimum_required(VERSION 3.17)
 
         find_package(CUDAToolkit)
         if (CUDAToolkit_FOUND)
+            set(GGML_CUBLAS_USE YES)
             message(STATUS "cuBLAS found")
 
             enable_language(CUDA)
 
-            set(GGML_CUDA_SOURCES ${DIRECTORY}/ggml-cuda.cu ${DIRECTORY}/ggml-cuda.h)
-
-            add_compile_definitions(GGML_USE_CUBLAS)
+            set(GGML_SOURCES_CUDA ${DIRECTORY}/ggml-cuda.cu ${DIRECTORY}/ggml-cuda.h)
 
             if (LLAMA_STATIC)
                 set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cudart_static CUDA::cublas_static CUDA::cublasLt_static)
@@ -302,14 +242,19 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
         endif()
     endif()
 
-    if (LLAMA_CLBLAST AND EXISTS ${DIRECTORY}/ggml-opencl.h)
+    set(GGML_CLBLAST_USE NO)
+    if (LLAMA_CLBLAST)
         find_package(CLBlast)
         if (CLBlast_FOUND)
+            set(GGML_CLBLAST_USE YES)
             message(STATUS "CLBlast found")
 
-            set(GGML_OPENCL_SOURCES ${DIRECTORY}/ggml-opencl.c ${DIRECTORY}/ggml-opencl.h)
+            set(GGML_OPENCL_SOURCE_FILE ggml-opencl.cpp)
+            if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}/${GGML_OPENCL_SOURCE_FILE})
+                set(GGML_OPENCL_SOURCE_FILE ggml-opencl.c)
+            endif()
 
-            add_compile_definitions(GGML_USE_CLBLAST)
+            set(GGML_OPENCL_SOURCES ${DIRECTORY}/${GGML_OPENCL_SOURCE_FILE} ${DIRECTORY}/ggml-opencl.h)
 
             set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} clblast)
         else()
@@ -317,15 +262,22 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
         endif()
     endif()
 
+    set(GGML_SOURCES_QUANT_K )
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}/ggml-quants-k.h)
+        set(GGML_SOURCES_QUANT_K
+            ${DIRECTORY}/ggml-quants-k.h
+            ${DIRECTORY}/ggml-quants-k.c)
+    endif()
+
     add_library(ggml${SUFFIX} OBJECT
                 ${DIRECTORY}/ggml.c
                 ${DIRECTORY}/ggml.h
-                ${GGML_CUDA_SOURCES}
+                ${GGML_SOURCES_QUANT_K}
+                ${GGML_SOURCES_CUDA}
                 ${GGML_OPENCL_SOURCES})
 
     target_include_directories(ggml${SUFFIX} PUBLIC ${DIRECTORY})
     target_compile_features(ggml${SUFFIX} PUBLIC c_std_11) # don't bump
-    target_link_libraries(ggml${SUFFIX} PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
 
     if (BUILD_SHARED_LIBS)
         set_target_properties(ggml${SUFFIX} PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -338,14 +290,13 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
             set(LLAMA_UTIL_SOURCE_FILE llama_util.h)
         endif()
 
-        add_library(llama${SUFFIX} STATIC
+        add_library(llama${SUFFIX}
                     ${DIRECTORY}/llama.cpp
                     ${DIRECTORY}/llama.h
                     ${DIRECTORY}/${LLAMA_UTIL_SOURCE_FILE})
 
         target_include_directories(llama${SUFFIX} PUBLIC ${DIRECTORY})
         target_compile_features(llama${SUFFIX} PUBLIC cxx_std_11) # don't bump
-        target_link_libraries(llama${SUFFIX} PRIVATE ggml${SUFFIX} ${LLAMA_EXTRA_LIBS})
 
         if (BUILD_SHARED_LIBS)
             set_target_properties(llama${SUFFIX} PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -353,12 +304,131 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
         endif()
     endif()
 
-    if (GGML_CUDA_SOURCES)
+    if (GGML_SOURCES_CUDA)
         message(STATUS "GGML CUDA sources found, configuring CUDA architecture")
         set_property(TARGET ggml${SUFFIX} PROPERTY CUDA_ARCHITECTURES OFF)
         set_property(TARGET ggml${SUFFIX} PROPERTY CUDA_SELECT_NVCC_ARCH_FLAGS "Auto")
         if (WITH_LLAMA)
             set_property(TARGET llama${SUFFIX} PROPERTY CUDA_ARCHITECTURES OFF)
         endif()
+    endif()
+
+    if (GGML_CUBLAS_USE)
+        target_compile_definitions(ggml${SUFFIX} PRIVATE
+            GGML_USE_CUBLAS
+            GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X}
+            GGML_CUDA_DMMV_Y=${LLAMA_CUDA_DMMV_Y})
+        if (WITH_LLAMA)
+            target_compile_definitions(llama${SUFFIX} PRIVATE
+                GGML_USE_CUBLAS
+                GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X}
+                GGML_CUDA_DMMV_Y=${LLAMA_CUDA_DMMV_Y})
+        endif()
+    endif()
+    if (GGML_CLBLAST_USE)
+        if (WITH_LLAMA)
+            target_compile_definitions(llama${SUFFIX} PRIVATE GGML_USE_CLBLAST)
+        endif()
+        target_compile_definitions(ggml${SUFFIX} PRIVATE GGML_USE_CLBLAST)
+    endif()
+
+    if (LLAMA_METAL)
+        find_library(FOUNDATION_LIBRARY         Foundation              REQUIRED)
+        find_library(METAL_FRAMEWORK            Metal                   REQUIRED)
+        find_library(METALKIT_FRAMEWORK         MetalKit                REQUIRED)
+        find_library(METALPERFORMANCE_FRAMEWORK MetalPerformanceShaders REQUIRED)
+
+        set(GGML_SOURCES_METAL ggml-metal.m ggml-metal.h)
+
+        target_compile_definitions(llama${SUFFIX} PRIVATE
+            GGML_USE_METAL
+            GGML_METAL_NDEBUG)
+
+        # get full path to the file
+        #add_compile_definitions(GGML_METAL_DIR_KERNELS="${CMAKE_CURRENT_SOURCE_DIR}/")
+
+        # copy ggml-metal.metal to bin directory
+        configure_file(ggml-metal.metal ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal COPYONLY)
+
+        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS}
+            ${FOUNDATION_LIBRARY}
+            ${METAL_FRAMEWORK}
+            ${METALKIT_FRAMEWORK}
+            ${METALPERFORMANCE_FRAMEWORK}
+            )
+    endif()
+
+    if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
+        message(STATUS "ARM detected")
+        if (MSVC)
+            # TODO: arm msvc?
+        else()
+            if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
+                target_compile_options(ggml${SUFFIX} PRIVATE -mcpu=native)
+            endif()
+            # TODO: armv6,7,8 version specific flags
+        endif()
+    elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "^(x86_64|i686|AMD64)$")
+        message(STATUS "x86 detected")
+        if (MSVC)
+            if (LLAMA_AVX512)
+                target_compile_definitions(ggml${SUFFIX} PRIVATE
+                    $<$<COMPILE_LANGUAGE:C>:/arch:AVX512>
+                    $<$<COMPILE_LANGUAGE:CXX>:/arch:AVX512>)
+                # MSVC has no compile-time flags enabling specific
+                # AVX512 extensions, neither it defines the
+                # macros corresponding to the extensions.
+                # Do it manually.
+                if (LLAMA_AVX512_VBMI)
+                    target_compile_definitions(ggml${SUFFIX} PRIVATE
+                        $<$<COMPILE_LANGUAGE:C>:__AVX512VBMI__>
+                        $<$<COMPILE_LANGUAGE:CXX>:__AVX512VBMI__>)
+                endif()
+                if (LLAMA_AVX512_VNNI)
+                    target_compile_definitions(ggml${SUFFIX} PRIVATE
+                        $<$<COMPILE_LANGUAGE:C>:__AVX512VNNI__>
+                        $<$<COMPILE_LANGUAGE:CXX>:__AVX512VNNI__>)
+                endif()
+            elseif (LLAMA_AVX2)
+                target_compile_definitions(ggml${SUFFIX} PRIVATE
+                    $<$<COMPILE_LANGUAGE:C>:/arch:AVX2>
+                    $<$<COMPILE_LANGUAGE:CXX>:/arch:AVX2>)
+            elseif (LLAMA_AVX)
+                target_compile_definitions(ggml${SUFFIX} PRIVATE
+                    $<$<COMPILE_LANGUAGE:C>:/arch:AVX>
+                    $<$<COMPILE_LANGUAGE:CXX>:/arch:AVX>)
+            endif()
+        else()
+            if (LLAMA_F16C)
+                target_compile_options(ggml${SUFFIX} PRIVATE -mf16c)
+            endif()
+            if (LLAMA_FMA)
+                target_compile_options(ggml${SUFFIX} PRIVATE -mfma)
+            endif()
+            if (LLAMA_AVX)
+                target_compile_options(ggml${SUFFIX} PRIVATE -mavx)
+            endif()
+            if (LLAMA_AVX2)
+                target_compile_options(ggml${SUFFIX} PRIVATE -mavx2)
+            endif()
+            if (LLAMA_AVX512)
+                target_compile_options(ggml${SUFFIX} PRIVATE -mavx512f)
+                target_compile_options(ggml${SUFFIX} PRIVATE -mavx512bw)
+            endif()
+            if (LLAMA_AVX512_VBMI)
+                target_compile_options(ggml${SUFFIX} PRIVATE -mavx512vbmi)
+            endif()
+            if (LLAMA_AVX512_VNNI)
+                target_compile_options(ggml${SUFFIX} PRIVATE -mavx512vnni)
+            endif()
+        endif()
+    else()
+        # TODO: support PowerPC
+        message(STATUS "Unknown architecture")
+    endif()
+
+    target_link_libraries(ggml${SUFFIX} PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
+    if (WITH_LLAMA)
+        target_link_libraries(llama${SUFFIX} PRIVATE ggml${SUFFIX} ${LLAMA_EXTRA_LIBS})
     endif()
 endfunction()
