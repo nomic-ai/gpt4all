@@ -230,7 +230,7 @@ gpt_vocab::id gpt_sample_top_k_top_p(
     int n_logits = actualVocabSize;
 
     const auto last_n_tokens = std::vector<int32_t>(last_n_tokens_data, last_n_tokens_data + last_n_tokens_size);
-    const auto * plogits = logits.data() + logits.size() - n_logits;
+    const auto * plogits = logits.data();
 
     std::vector<std::pair<double, gpt_vocab::id>> logits_id;
     logits_id.reserve(n_logits);
