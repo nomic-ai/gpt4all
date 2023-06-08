@@ -11,6 +11,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("raw_prompt", &NodeModelWrapper::Prompt),
        InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
        InstanceMethod("threadCount", &NodeModelWrapper::ThreadCount),
+       InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath)
     });
     // Keep a static reference to the constructor
     //
@@ -27,12 +28,42 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
   NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<NodeModelWrapper>(info) 
   {
     auto env = info.Env();
-    std::string weights_path = info[0].As<Napi::String>().Utf8Value();
+    std::filesystem::path cache = ".cache";
+    std::filesystem::path gpt4all = "gpt4all";
+    std::filesystem::path model_path;
 
-    const char *c_weights_path = weights_path.c_str();
+    std::string full_weight_path;
+    //todo
+    std::string implementation_path = ".";
+    std::string model_name;
+    if(info[0].IsString()) {
+        model_path = info[0].As<Napi::String>().Utf8Value();
+        full_weight_path = model_path.string();
+        type = "Unknown";
+        std::cout << "DEPRECATION: constructor accepts object now. Check docs for more.\n";
+    } else {
+        auto config_object = info[0].As<Napi::Object>();
+        model_name = config_object.Get("model_name").As<Napi::String>();
+        if(config_object.Has("model_path")) {
+           model_path = config_object.Get("model_path").As<Napi::String>().Utf8Value(); 
+        } else {
+           model_path =  cache / gpt4all;
+        }
+
+        type = config_object.Has("model_type")
+            ? config_object.Get("model_type").As<Napi::String>(); 
+            : "Unknown";
+
+        full_weight_path = (model_path / std::filesystem::path(model_name)).string();
+        if(config_object.Has("implementation_path")) {
+            implementation_path = config_object.Get("implementation_path").As<Napi::String>(); 
+        } else {
+            implementation_path = ".";
+        }
+    }
+    llmodel_set_implementation_search_path(implementation_path.c_str());
     llmodel_error* e = nullptr;
-    inference_ = std::make_shared<llmodel_model>(llmodel_model_create2(c_weights_path, "auto", e));
-
+    inference_ = std::make_shared<llmodel_model>(llmodel_model_create2(full_weight_path.c_str(), "auto", e));
     if(e != nullptr) {
        Napi::Error::New(env, e->message).ThrowAsJavaScriptException(); 
        return;
@@ -42,17 +73,16 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        return;
     }
 
-    auto success = llmodel_loadModel(GetInference(), c_weights_path);
+    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str());
     if(!success) {
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
         return;
     }
-    type = "hello";
-    name = weights_path.substr(weights_path.find_last_of("/\\") + 1);
+    name = model_name.empty() ? model_path.filename().string() : model_name;
   };
-  NodeModelWrapper::~NodeModelWrapper() {
+  //NodeModelWrapper::~NodeModelWrapper() {
     //GetInference().reset();
-  }
+  //}
 
   Napi::Value NodeModelWrapper::IsModelLoaded(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(GetInference()));
@@ -82,7 +112,6 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
         Napi::Error::New(info.Env(), "invalid string argument").ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
-
     //defaults copied from python bindings
     llmodel_prompt_context promptContext = {
              .logits = nullptr,
@@ -130,12 +159,12 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
             promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
     }
     //copy to protect llmodel resources when splitting to new thread
-    llmodel_model inf = GetInference();
+
     llmodel_prompt_context copiedPrompt = promptContext;
+    std::string copiedQuestion = question;
     PromptWorkContext pc = {
-        question.c_str(),
-        inf,
-        copiedPrompt
+        copiedQuestion,
+        copiedPrompt,
     };
     auto threadSafeContext = new TsfnContext(env, pc);
     threadSafeContext->tsfn = Napi::ThreadSafeFunction::New(
@@ -143,14 +172,20 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
         info[2].As<Napi::Function>(),           // JS function from caller
         "PromptCallback",                       // Resource name
         0,                                      // Max queue size (0 = unlimited).
-        1,      // Initial thread count
+        1,                                      // Initial thread count
         threadSafeContext,                      // Context,
         FinalizerCallback,                      // Finalizer
         (void*)nullptr                          // Finalizer data
     );
     threadSafeContext->nativeThread = std::thread(threadEntry, threadSafeContext);
-    
-    return threadSafeContext->GetPromise();
+    return threadSafeContext->deferred_.Promise();
+//    llmodel_prompt(*inference_.get(),  
+//            copiedQuestion.c_str(),
+//            &prompt_callback,
+//            &response_callback,
+//            &recalculate_callback,
+//            &copiedPrompt 
+//    );
   }
 
   void NodeModelWrapper::SetThreadCount(const Napi::CallbackInfo& info) {
@@ -169,8 +204,13 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     return Napi::Number::New(info.Env(), llmodel_threadCount(GetInference()));
   }
 
+  Napi::Value NodeModelWrapper::GetLibraryPath(const Napi::CallbackInfo& info) {
+      return Napi::String::New(info.Env(),
+        llmodel_get_implementation_search_path());
+  }
+
   llmodel_model NodeModelWrapper::GetInference() {
-    return *inference_;
+    return *inference_.load();
   }
 
 //Exports Bindings
@@ -178,5 +218,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports["LLModel"] = NodeModelWrapper::GetClass(env);
   return exports;
 }
+
+
 
 NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init)

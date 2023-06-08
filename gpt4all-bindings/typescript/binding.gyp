@@ -1,7 +1,7 @@
 {
   "targets": [
     {
-      "target_name": "gpt4allts", # gpt4all-ts will cause compile error
+      "target_name": "gpt4all", # gpt4all-ts will cause compile error
       "cflags_cc!": [ "-fno-exceptions"],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
@@ -27,7 +27,7 @@
         }],
         ['OS=="win"', {
             'defines': [
-                'LIB_FILE_EXT=\".dll\"',
+                'LIB_FILE_EXT=".dll"',
                 'NAPI_CPP_EXCEPTIONS',
             ],
             "msvs_settings": {
@@ -36,16 +36,19 @@
                         "/std:c++20",
                         "/EHsc",
                   ], 
-                },  
+                },
             },
         }],
         ['OS=="linux"', {
             'defines': [
-                'LIB_FILE_EXT=\".so\"',
+                'LIB_FILE_EXT=".so"',
                 'NAPI_CPP_EXCEPTIONS',
             ],
             'cflags_cc!': [
-                '-fno-rtti'
+                '-fno-rtti',
+            ],
+            'cflags_cc': [
+                '-std=c++20'
             ]
         }]
       ]

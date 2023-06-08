@@ -58,23 +58,31 @@ type ModelType = 'gptj' | 'llama' | 'mpt';
  */
 interface ModelFile {
     /** List of GPT-J Models */
-    gptj: | "ggml-gpt4all-j-v1.3-groovy.bin"
-          | "ggml-gpt4all-j-v1.2-jazzy.bin"
-          | "ggml-gpt4all-j-v1.1-breezy.bin"
-          | "ggml-gpt4all-j.bin";
+    gptj:  | "ggml-gpt4all-j-v1.3-groovy.bin"
+           | "ggml-gpt4all-j-v1.2-jazzy.bin"
+           | "ggml-gpt4all-j-v1.1-breezy.bin"
+           | "ggml-gpt4all-j.bin";
     /** List Llama Models */
-    llama:| "ggml-gpt4all-l13b-snoozy.bin"
-          | "ggml-vicuna-7b-1.1-q4_2.bin"
-          | "ggml-vicuna-13b-1.1-q4_2.bin"
-          | "ggml-wizardLM-7B.q4_2.bin"
-          | "ggml-stable-vicuna-13B.q4_2.bin"
-          | "ggml-nous-gpt4-vicuna-13b.bin";
+    llama: | "ggml-gpt4all-l13b-snoozy.bin"
+           | "ggml-vicuna-7b-1.1-q4_2.bin"
+           | "ggml-vicuna-13b-1.1-q4_2.bin"
+           | "ggml-wizardLM-7B.q4_2.bin"
+           | "ggml-stable-vicuna-13B.q4_2.bin"
+           | "ggml-nous-gpt4-vicuna-13b.bin";
     /** List of MPT Models */
-    mpt:  | "ggml-mpt-7b-base.bin"
-          | "ggml-mpt-7b-chat.bin"
-          | "ggml-mpt-7b-instruct.bin";
+    mpt:   | "ggml-mpt-7b-base.bin"
+           | "ggml-mpt-7b-chat.bin"
+           | "ggml-mpt-7b-instruct.bin";
+    replit:| "";
 }
 
+//mirrors py options
+interface LLModelOptions {
+    type?: ModelType;
+    model_name: ModelFile[ModelType];
+    model_path?: string;
+    implementation_path: string;
+}
 /**
  * LLModel class representing a language model.
  * This is a base class that provides common functionality for different types of language models.
@@ -86,7 +94,8 @@ declare class LLModel {
      * @param path Absolute path to the model file.
      * @throws {Error} If the model file does not exist.
      */
-    constructor(path: string)
+    constructor(path: string);
+    constructor(options: LLModelOptions);
 
     /** either 'gpt', mpt', or 'llama' */
     type() : ModelType;
@@ -128,6 +137,15 @@ declare class LLModel {
      * Whether the model is loaded or not.
      */
     isModelLoaded(): boolean;
+    
+    /**
+     * Where to search for the pluggable backend libraries
+     */
+    setLibraryPath(s: string): void;
+    /**
+     * Where to get the pluggable backend libraries
+     */
+    getLibraryPath(): string;
 }
 
 /**
@@ -148,11 +166,11 @@ declare class LLModel {
  * console.log(completion.choices[0].message.content)
  * // No, it's going to be cold and rainy.
   */
-declare async function createCompletion(
+declare function createCompletion(
     llmodel: LLModel,
     messages: PromptMessage[],
     options?: CompletionOptions
-): CompletionReturn;
+): Promise<CompletionReturn>;
 
 /**
  * The options for creating the completion.

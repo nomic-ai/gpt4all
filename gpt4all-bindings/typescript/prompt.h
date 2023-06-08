@@ -6,30 +6,21 @@
 #include <thread>
 #include <mutex>
 #include <iostream>
-
+#include <atomic>
+#include <memory>
 struct PromptWorkContext {
-    const char* question;
-    llmodel_model inference_;
+    std::string question;
+    std::shared_ptr<llmodel_model> inference_;
     llmodel_prompt_context prompt_params;
 };
 
 struct TsfnContext {
 public:
-  TsfnContext(Napi::Env env, PromptWorkContext &pc);
+  TsfnContext(Napi::Env env, const PromptWorkContext &pc);
   std::thread nativeThread;
-  std::mutex mtx;
+  Napi::Promise::Deferred deferred_;
   PromptWorkContext pc;
   Napi::ThreadSafeFunction tsfn;
-  Napi::Promise GetPromise() const;
-  Napi::Promise::Deferred GetDeferred() const;
-  // You can add more member functions here as needed
-
-private:
-  // Native Promise returned to JavaScript
-  Napi::Promise::Deferred deferred_;
-
-  // Native thread
-  // std::thread nativeThread;
 
   // Some data to pass around
   // int ints[ARRAY_LENGTH];
@@ -45,5 +36,7 @@ void threadEntry(TsfnContext* context);
 // data and threadsafe-function context.
 void FinalizerCallback(Napi::Env env, void* finalizeData, TsfnContext* context);
 
-
+bool response_callback(int32_t token_id, const char *response);
+bool recalculate_callback (bool isrecalculating);
+bool prompt_callback (int32_t tid); 
 #endif  // TSFN_CONTEXT_H
