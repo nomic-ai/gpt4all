@@ -78,10 +78,13 @@ interface ModelFile {
 
 //mirrors py options
 interface LLModelOptions {
+    /**
+     * Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
+     */
     type?: ModelType;
     model_name: ModelFile[ModelType];
-    model_path?: string;
-    implementation_path: string;
+    model_path: string;
+    library_path?: string;
 }
 /**
  * LLModel class representing a language model.
@@ -97,8 +100,8 @@ declare class LLModel {
     constructor(path: string);
     constructor(options: LLModelOptions);
 
-    /** either 'gpt', mpt', or 'llama' */
-    type() : ModelType;
+    /** either 'gpt', mpt', or 'llama' or undefined */
+    type() : ModelType|undefined;
 
     /** The name of the model. */
     name(): ModelFile
@@ -306,7 +309,17 @@ declare function createTokenStream(
     messages: PromptMessage[],
     options: CompletionOptions
 ): (ll: LLModel) => AsyncGenerator<string>;
-
+/**
+  * From python api: 
+  * models will be stored in (homedir)/.cache/gpt4all/`
+  */
+declare const DEFAULT_DIRECTORY: string;
+/**
+  * From python api: 
+  * The default path for dynamic libraries to be stored.
+  * This searches DEFAULT_DIRECTORY/libraries, cwd/libraries, and finally cwd.
+  */
+declare const DEFAULT_LIBRARIES_DIRECTORY: string;
 interface PromptMessage { 
     role: "system" |"assistant" | "user";
     content: string;
@@ -322,6 +335,8 @@ export {
     CompletionOptions,
     createCompletion,
     createTokenStream,
+    DEFAULT_DIRECTORY,
+    DEFAULT_LIBRARIES_DIRECTORY
 };
 
 

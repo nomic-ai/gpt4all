@@ -22,43 +22,38 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
  
   Napi::Value NodeModelWrapper::getType(const Napi::CallbackInfo& info) 
   {
+    if(type.empty()) {
+        return info.Env().Undefined();
+    } 
     return Napi::String::New(info.Env(), type);
   }
 
   NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<NodeModelWrapper>(info) 
   {
     auto env = info.Env();
-    std::filesystem::path cache = ".cache";
-    std::filesystem::path gpt4all = "gpt4all";
-    std::filesystem::path model_path;
+    fs::path model_path;
 
     std::string full_weight_path;
     //todo
-    std::string implementation_path = ".";
+    std::string library_path = ".";
     std::string model_name;
     if(info[0].IsString()) {
         model_path = info[0].As<Napi::String>().Utf8Value();
         full_weight_path = model_path.string();
-        type = "Unknown";
         std::cout << "DEPRECATION: constructor accepts object now. Check docs for more.\n";
     } else {
         auto config_object = info[0].As<Napi::Object>();
         model_name = config_object.Get("model_name").As<Napi::String>();
-        if(config_object.Has("model_path")) {
-           model_path = config_object.Get("model_path").As<Napi::String>().Utf8Value(); 
-        } else {
-           model_path =  cache / gpt4all;
+        model_path = config_object.Get("model_path").As<Napi::String>().Utf8Value(); 
+        if(config_object.Has("model_type")) {
+            type = config_object.Get("model_type").As<Napi::String>(); 
         }
-
-        type = config_object.Has("model_type")
-            ? config_object.Get("model_type").As<Napi::String>(); 
-            : "Unknown";
-
-        full_weight_path = (model_path / std::filesystem::path(model_name)).string();
-        if(config_object.Has("implementation_path")) {
-            implementation_path = config_object.Get("implementation_path").As<Napi::String>(); 
+        full_weight_path = (model_path / fs::path(model_name)).string();
+        
+        if(config_object.Has("library_path")) {
+            library_path = config_object.Get("library_path").As<Napi::String>(); 
         } else {
-            implementation_path = ".";
+            library_path = ".";
         }
     }
     llmodel_set_implementation_search_path(implementation_path.c_str());
@@ -164,6 +159,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     std::string copiedQuestion = question;
     PromptWorkContext pc = {
         copiedQuestion,
+        inference_.load(),
         copiedPrompt,
     };
     auto threadSafeContext = new TsfnContext(env, pc);

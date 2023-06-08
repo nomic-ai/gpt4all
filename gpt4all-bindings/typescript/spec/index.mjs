@@ -1,5 +1,9 @@
-import { LLModel, createCompletion } from '../src/gpt4all.js'
-const ll = new LLModel('./ggml-gpt4all-j-v1.3-groovy.bin');
+import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } from '../src/gpt4all.js'
+const ll = new LLModel({
+    model_name: 'ggml-gpt4all-j-v1.3-groovy.bin',
+    model_path: './', 
+    library_path: DEFAULT_LIBRARIES_DIRECTORY
+});
 
 try {
    class Extended extends LLModel {
@@ -18,6 +22,9 @@ ll.setThreadCount(4);
 console.log("thread count " + ll.threadCount());
 console.log("name " + ll.name());
 console.log("type: " + ll.type());
+console.log("Default directory for models", DEFAULT_DIRECTORY);
+console.log("Default directory for libraries", DEFAULT_LIBRARIES_DIRECTORY);
+
 console.log(await createCompletion(
     ll,
     [

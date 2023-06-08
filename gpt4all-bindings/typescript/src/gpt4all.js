@@ -2,11 +2,13 @@
 
 /// This file implements the gpt4all.d.ts file endings.
 /// Written in commonjs to support both ESM and CJS projects.
-const path = require('path');
+const path = require('node:path');
+const os = require('node:os');
 const { LLModel } = require('node-gyp-build')(path.resolve(__dirname, '..'));
 const { createWriteStream, existsSync } = require('fs');
 const { performance } = require('node:perf_hooks');
 
+const DEFAULT_DIRECTORY = path.join(os.homedir(), 'cache', 'gpt4all');
 
 // readChunks() reads from the provided reader and yields the results into an async iterable
 // https://css-tricks.com/web-streams-everywhere-and-fetch-for-node-js/
@@ -23,8 +25,8 @@ function readChunks(reader) {
 }
 
 exports.LLModel = LLModel;
-
-
+exports.DEFAULT_DIRECTORY = DEFAULT_DIRECTORY;
+exports.DEFAULT_LIBRARIES_DIRECTORY = `${path.join(DEFAULT_DIRECTORY, 'libraries')};${path.resolve('./libraries')};${process.cwd()}`
 exports.download = function (
     name,
     options = { debug: false, location: process.cwd(), url: undefined }

@@ -6,6 +6,7 @@
 #include <atomic>
 #include <memory>
 #include <filesystem>
+namespace fs = std::filesystem;
 
 class NodeModelWrapper: public Napi::ObjectWrap<NodeModelWrapper> {
 public:
