@@ -1,27 +1,27 @@
 [
     {
         "name": "llama_7B_ggmlv3",
-        "url": "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/main/llama-7b.ggmlv3.q4_0.bin",
+        "url": "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/8874d2892d40c53548b07e91fff12ddb51f238f8/llama-7b.ggmlv3.q4_0.bin",
         "expected_response": " The average American eats 20 teaspoons of added sugar every day."
     },
     {
         "name": "llama_7B_ggmlv2",
-        "url": "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/previous_llama_ggmlv2/llama-7b.ggml.q4_0.bin",
+        "url": "https://huggingface.co/TheBloke/LLaMa-7B-GGML/resolve/925f64399a48912bba5e68e5a8975eab3a301a06/llama-7b.ggml.q4_0.bin",
         "expected_response": " The average American eats 20 teaspoons of added sugar per day."
     },
     {
         "name": "llama_7B_ggmlv1",
-        "url": "https://huggingface.co/Tuxifan/ggml-wizardLM-7B.q4_2/resolve/main/ggml-wizardLM-7B.q4_2.bin",
+        "url": "https://huggingface.co/Tuxifan/ggmlv1_models/resolve/e1042f57236f679c7eabe25122b90d3eaba72af7/ggml-wizardLM-7B.q4_2.bin",
         "expected_response": ""
     },
     {
         "name": "mpt_base",
-        "url": "https://gpt4all.io/models/ggml-mpt-7b-base.bin",
+        "url": "https://huggingface.co/Tuxifan/ggmlv1_models/resolve/211f06e8ec90b614a726def86488342102101712/test_mpt_base.bin",
         "expected_response": " The first ever recorded use of the word “blog” was in 1999."
     },
     {
         "name": "gpt4all_j_groovy",
-        "url": "https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin",
+        "url": "https://huggingface.co/Tuxifan/ggmlv1_models/resolve/211f06e8ec90b614a726def86488342102101712/test_gpt4all_j_groovy.bin",
         "expected_response": "\nI am a machine learning model, and I do not have the ability to \"know\" anything."
     }
 ]
