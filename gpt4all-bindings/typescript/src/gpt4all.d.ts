@@ -317,6 +317,7 @@ declare const DEFAULT_DIRECTORY: string;
 /**
   * From python api: 
   * The default path for dynamic libraries to be stored.
+  * You may separate paths by a semicolon to search in multiple areas.
   * This searches DEFAULT_DIRECTORY/libraries, cwd/libraries, and finally cwd.
   */
 declare const DEFAULT_LIBRARIES_DIRECTORY: string;
