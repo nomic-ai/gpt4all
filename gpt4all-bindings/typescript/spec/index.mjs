@@ -1,5 +1,5 @@
 import { LLModel, createCompletion } from '../src/gpt4all.js'
-const ll= new LLModel("./ggml-vicuna-7b-1.1-q4_2.bin");
+const ll = new LLModel('./ggml-gpt4all-j-v1.3-groovy.bin');
 
 try {
    class Extended extends LLModel {
@@ -16,32 +16,23 @@ ll.setThreadCount(5);
 console.log("thread count " + ll.threadCount());
 ll.setThreadCount(4);
 console.log("thread count " + ll.threadCount());
-
-
-await createCompletion(
+console.log("name " + ll.name());
+console.log("type: " + ll.type());
+console.log(await createCompletion(
     ll,
     [
-        { role : 'system', content: 'be as annoying as possible'  },
-        { role : 'user', content: 'Consider the most annoying quote and say it in the most annoying way'  }, 
+        { role : 'system', content: 'You are a girl who likes playing league of legends.'  },
+        { role : 'user', content: 'What is the best top laner to play right now?'  }, 
     ],
-    { verbose: true }
-);
+    { verbose: false}
+));
 
-await createCompletion(
+
+console.log(await createCompletion(
     ll,
     [
-        { role : 'system', content: 'be as annoying as possible'  },
-        { role : 'user', content: 'try to be annoying'  }, 
+        { role : 'user', content: 'What is the best bottom laner to play right now?'  }, 
     ],
-    { verbose: true }
-);
-
-//console.log(createCompletion(
-//    ll,
-//    prompt`${"header"} ${"prompt"}`, {
-//        verbose: false,
-//        prompt: 'hello! Repeat what you previously said.'
-//    }
-//))
+))
 
 

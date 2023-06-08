@@ -6,7 +6,6 @@ const path = require('path');
 const { LLModel } = require('node-gyp-build')(path.resolve(__dirname, '..'));
 const { createWriteStream, existsSync } = require('fs');
 const { performance } = require('node:perf_hooks');
-const { resolve } = require('path/posix');
 
 
 // readChunks() reads from the provided reader and yields the results into an async iterable
@@ -116,7 +115,7 @@ function createPrompt (messages, hasDefaultHeader, hasDefaultFooter) {
 
 
 
-exports.createCompletion = function (
+exports.createCompletion = async function (
     llmodel,
     messages,
     options = {
@@ -132,7 +131,7 @@ exports.createCompletion = function (
         options.hasDefaultFooter
     );
     if(options.verbose) {
-        console.log(fullPrompt);
+        console.log("Sent: "+ fullPrompt);
     }
     const promisifiedRawPrompt = new Promise((resolve, rej) => {
         llmodel.raw_prompt(fullPrompt, options, (s) => {
