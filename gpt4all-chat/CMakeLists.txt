@@ -58,6 +58,11 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(../gpt4all-backend llmodel)
 
+set(METAL_SHADER_FILE)
+
+if(LLAMA_METAL)
+set(METAL_SHADER_FILE ../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal)
+endif()
 qt_add_executable(chat
     main.cpp
     chat.h chat.cpp
@@ -72,6 +77,7 @@ qt_add_executable(chat
     server.h server.cpp
     logger.h logger.cpp
     sysinfo.h
+    ${METAL_SHADER_FILE}
 )
 
 qt_add_qml_module(chat
@@ -122,10 +128,6 @@ set_target_properties(chat PROPERTIES
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
-    # TODO this isn't doing the trick for some reason
-    # the file needs to wind up in the bundle's Contents/Resources dir ths CMake docs indicate this *should* do...
-    # https://cmake.org/cmake/help/latest/prop_tgt/RESOURCE.html
-    RESOURCE "../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal"
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE_ICON_FILE "favicon.icns"
 )
@@ -133,6 +135,7 @@ set_target_properties(chat PROPERTIES
 if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     set_target_properties(chat PROPERTIES
         OUTPUT_NAME gpt4all
+        RESOURCE ${METAL_SHADER_FILE}
     )
 endif()
 
