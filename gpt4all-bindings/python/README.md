@@ -2,8 +2,10 @@
 
 This package contains a set of Python bindings around the `llmodel` C-API.
 
+Package on PyPI: https://pypi.org/project/gpt4all/
+
 ## Documentation
-docs.gpt4all.io
+https://docs.gpt4all.io/gpt4all_python.html
 
 ## Installation
 
