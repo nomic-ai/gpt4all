@@ -17,52 +17,58 @@
     *   [gptj][13]
     *   [llama][14]
     *   [mpt][15]
-*   [LLModel][16]
-    *   [constructor][17]
-        *   [Parameters][18]
-    *   [type][19]
-    *   [name][20]
-    *   [stateSize][21]
-    *   [threadCount][22]
-    *   [setThreadCount][23]
-        *   [Parameters][24]
-    *   [raw\_prompt][25]
-        *   [Parameters][26]
-    *   [isModelLoaded][27]
-*   [createCompletion][28]
-    *   [Parameters][29]
-    *   [Examples][30]
-*   [CompletionOptions][31]
-    *   [verbose][32]
-    *   [hasDefaultHeader][33]
-    *   [hasDefaultFooter][34]
-*   [PromptMessage][35]
-    *   [role][36]
-    *   [content][37]
-*   [prompt\_tokens][38]
-*   [completion\_tokens][39]
-*   [total\_tokens][40]
-*   [CompletionReturn][41]
-    *   [model][42]
-    *   [usage][43]
-    *   [choices][44]
-*   [CompletionChoice][45]
-    *   [message][46]
-*   [LLModelPromptContext][47]
-    *   [logits\_size][48]
-    *   [tokens\_size][49]
-    *   [n\_past][50]
-    *   [n\_ctx][51]
-    *   [n\_predict][52]
-    *   [top\_k][53]
-    *   [top\_p][54]
-    *   [temp][55]
-    *   [n\_batch][56]
-    *   [repeat\_penalty][57]
-    *   [repeat\_last\_n][58]
-    *   [context\_erase][59]
-*   [createTokenStream][60]
-    *   [Parameters][61]
+*   [type][16]
+*   [LLModel][17]
+    *   [constructor][18]
+        *   [Parameters][19]
+    *   [type][20]
+    *   [name][21]
+    *   [stateSize][22]
+    *   [threadCount][23]
+    *   [setThreadCount][24]
+        *   [Parameters][25]
+    *   [raw\_prompt][26]
+        *   [Parameters][27]
+    *   [isModelLoaded][28]
+    *   [setLibraryPath][29]
+        *   [Parameters][30]
+    *   [getLibraryPath][31]
+*   [createCompletion][32]
+    *   [Parameters][33]
+    *   [Examples][34]
+*   [CompletionOptions][35]
+    *   [verbose][36]
+    *   [hasDefaultHeader][37]
+    *   [hasDefaultFooter][38]
+*   [PromptMessage][39]
+    *   [role][40]
+    *   [content][41]
+*   [prompt\_tokens][42]
+*   [completion\_tokens][43]
+*   [total\_tokens][44]
+*   [CompletionReturn][45]
+    *   [model][46]
+    *   [usage][47]
+    *   [choices][48]
+*   [CompletionChoice][49]
+    *   [message][50]
+*   [LLModelPromptContext][51]
+    *   [logits\_size][52]
+    *   [tokens\_size][53]
+    *   [n\_past][54]
+    *   [n\_ctx][55]
+    *   [n\_predict][56]
+    *   [top\_k][57]
+    *   [top\_p][58]
+    *   [temp][59]
+    *   [n\_batch][60]
+    *   [repeat\_penalty][61]
+    *   [repeat\_last\_n][62]
+    *   [context\_erase][63]
+*   [createTokenStream][64]
+    *   [Parameters][65]
+*   [DEFAULT\_DIRECTORY][66]
+*   [DEFAULT\_LIBRARIES\_DIRECTORY][67]
 
 ## download
 
@@ -81,8 +87,8 @@ const controller = download('ggml-gpt4all-j-v1.3-groovy.bin')
 controller.promise().then(() => console.log('Downloaded!'))
 ```
 
-*   Throws **[Error][62]** If the model already exists in the specified location.
-*   Throws **[Error][62]** If the model cannot be found at the specified url.
+*   Throws **[Error][68]** If the model already exists in the specified location.
+*   Throws **[Error][68]** If the model cannot be found at the specified url.
 
 Returns **[DownloadController][8]** object that allows controlling the download process.
 
@@ -95,19 +101,19 @@ Options for the model download process.
 location to download the model.
 Default is process.cwd(), or the current working directory
 
-Type: [string][63]
+Type: [string][69]
 
 ### debug
 
 Debug mode -- check how long it took to download in seconds
 
-Type: [boolean][64]
+Type: [boolean][70]
 
 ### url
 
 Remote download url. Defaults to `https://gpt4all.io/models`
 
-Type: [string][63]
+Type: [string][69]
 
 ## DownloadController
 
@@ -123,7 +129,7 @@ Type: function (): void
 
 Convert the downloader into a promise, allowing people to await and manage its lifetime
 
-Type: function (): [Promise][65]\<void>
+Type: function (): [Promise][71]\<void>
 
 ## ModelType
 
@@ -153,6 +159,12 @@ List of MPT Models
 
 Type: (`"ggml-mpt-7b-base.bin"` | `"ggml-mpt-7b-chat.bin"` | `"ggml-mpt-7b-instruct.bin"`)
 
+## type
+
+Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
+
+Type: [ModelType][11]
+
 ## LLModel
 
 LLModel class representing a language model.
@@ -164,17 +176,17 @@ Initialize a new LLModel.
 
 #### Parameters
 
-*   `path` **[string][63]** Absolute path to the model file.
+*   `path` **[string][69]** Absolute path to the model file.
 
 <!---->
 
-*   Throws **[Error][62]** If the model file does not exist.
+*   Throws **[Error][68]** If the model file does not exist.
 
 ### type
 
-either 'gpt', mpt', or 'llama'
+either 'gpt', mpt', or 'llama' or undefined
 
-Returns **[ModelType][11]**&#x20;
+Returns **([ModelType][11] | [undefined][72])**&#x20;
 
 ### name
 
@@ -187,14 +199,14 @@ Returns **[ModelFile][12]**&#x20;
 Get the size of the internal state of the model.
 NOTE: This state data is specific to the type of model you have created.
 
-Returns **[number][66]** the size in bytes of the internal state of the model
+Returns **[number][73]** the size in bytes of the internal state of the model
 
 ### threadCount
 
 Get the number of threads used for model inference.
 The default is the number of physical cores your computer has.
 
-Returns **[number][66]** The number of threads used for model inference.
+Returns **[number][73]** The number of threads used for model inference.
 
 ### setThreadCount
 
@@ -202,7 +214,7 @@ Set the number of threads used for model inference.
 
 #### Parameters
 
-*   `newNumber` **[number][66]** The new number of threads.
+*   `newNumber` **[number][73]** The new number of threads.
 
 Returns **void**&#x20;
 
@@ -214,8 +226,8 @@ Use the prompt function exported for a value
 
 #### Parameters
 
-*   `q` **[string][63]** The prompt input.
-*   `params` **Partial<[LLModelPromptContext][47]>?** Optional parameters for the prompt context.
+*   `q` **[string][69]** The prompt input.
+*   `params` **Partial<[LLModelPromptContext][51]>?** Optional parameters for the prompt context.
 
 Returns **any** The result of the model prompt.
 
@@ -223,7 +235,23 @@ Returns **any** The result of the model prompt.
 
 Whether the model is loaded or not.
 
-Returns **[boolean][64]**&#x20;
+Returns **[boolean][70]**&#x20;
+
+### setLibraryPath
+
+Where to search for the pluggable backend libraries
+
+#### Parameters
+
+*   `s` **[string][69]**&#x20;
+
+Returns **void**&#x20;
+
+### getLibraryPath
+
+Where to get the pluggable backend libraries
+
+Returns **[string][69]**&#x20;
 
 ## createCompletion
 
@@ -231,9 +259,9 @@ The nodejs equivalent to python binding's chat\_completion
 
 ### Parameters
 
-*   `llmodel` **[LLModel][16]** The language model object.
-*   `messages` **[Array][67]<[PromptMessage][35]>** The array of messages for the conversation.
-*   `options` **[CompletionOptions][31]** The options for creating the completion.
+*   `llmodel` **[LLModel][17]** The language model object.
+*   `messages` **[Array][74]<[PromptMessage][39]>** The array of messages for the conversation.
+*   `options` **[CompletionOptions][35]** The options for creating the completion.
 
 ### Examples
 
@@ -250,7 +278,7 @@ console.log(completion.choices[0].message.content)
 // No, it's going to be cold and rainy.
 ```
 
-Returns **[CompletionReturn][41]** The completion result.
+Returns **[CompletionReturn][45]** The completion result.
 
 ## CompletionOptions
 
@@ -262,19 +290,19 @@ The options for creating the completion.
 
 Indicates if verbose logging is enabled.
 
-Type: [boolean][64]
+Type: [boolean][70]
 
 ### hasDefaultHeader
 
 Indicates if the default header is included in the prompt.
 
-Type: [boolean][64]
+Type: [boolean][70]
 
 ### hasDefaultFooter
 
 Indicates if the default footer is included in the prompt.
 
-Type: [boolean][64]
+Type: [boolean][70]
 
 ## PromptMessage
 
@@ -290,25 +318,25 @@ Type: (`"system"` | `"assistant"` | `"user"`)
 
 The message content.
 
-Type: [string][63]
+Type: [string][69]
 
 ## prompt\_tokens
 
 The number of tokens used in the prompt.
 
-Type: [number][66]
+Type: [number][73]
 
 ## completion\_tokens
 
 The number of tokens used in the completion.
 
-Type: [number][66]
+Type: [number][73]
 
 ## total\_tokens
 
 The total number of tokens used.
 
-Type: [number][66]
+Type: [number][73]
 
 ## CompletionReturn
 
@@ -324,13 +352,13 @@ Type: [ModelFile][12]
 
 Token usage report.
 
-Type: {prompt\_tokens: [number][66], completion\_tokens: [number][66], total\_tokens: [number][66]}
+Type: {prompt\_tokens: [number][73], completion\_tokens: [number][73], total\_tokens: [number][73]}
 
 ### choices
 
 The generated completions.
 
-Type: [Array][67]<[CompletionChoice][45]>
+Type: [Array][74]<[CompletionChoice][49]>
 
 ## CompletionChoice
 
@@ -340,7 +368,7 @@ A completion choice, similar to OpenAI's format.
 
 Response message
 
-Type: [PromptMessage][35]
+Type: [PromptMessage][39]
 
 ## LLModelPromptContext
 
@@ -350,73 +378,73 @@ Model inference arguments for generating completions.
 
 The size of the raw logits vector.
 
-Type: [number][66]
+Type: [number][73]
 
 ### tokens\_size
 
 The size of the raw tokens vector.
 
-Type: [number][66]
+Type: [number][73]
 
 ### n\_past
 
 The number of tokens in the past conversation.
 
-Type: [number][66]
+Type: [number][73]
 
 ### n\_ctx
 
 The number of tokens possible in the context window.
 
-Type: [number][66]
+Type: [number][73]
 
 ### n\_predict
 
 The number of tokens to predict.
 
-Type: [number][66]
+Type: [number][73]
 
 ### top\_k
 
 The top-k logits to sample from.
 
-Type: [number][66]
+Type: [number][73]
 
 ### top\_p
 
 The nucleus sampling probability threshold.
 
-Type: [number][66]
+Type: [number][73]
 
 ### temp
 
 The temperature to adjust the model's output distribution.
 
-Type: [number][66]
+Type: [number][73]
 
 ### n\_batch
 
 The number of predictions to generate in parallel.
 
-Type: [number][66]
+Type: [number][73]
 
 ### repeat\_penalty
 
 The penalty factor for repeated tokens.
 
-Type: [number][66]
+Type: [number][73]
 
 ### repeat\_last\_n
 
 The number of last tokens to penalize.
 
-Type: [number][66]
+Type: [number][73]
 
 ### context\_erase
 
 The percentage of context to erase if the context window is exceeded.
 
-Type: [number][66]
+Type: [number][73]
 
 ## createTokenStream
 
@@ -424,11 +452,27 @@ TODO: Help wanted to implement this
 
 ### Parameters
 
-*   `llmodel` **[LLModel][16]**&#x20;
-*   `messages` **[Array][67]<[PromptMessage][35]>**&#x20;
-*   `options` **[CompletionOptions][31]**&#x20;
+*   `llmodel` **[LLModel][17]**&#x20;
+*   `messages` **[Array][74]<[PromptMessage][39]>**&#x20;
+*   `options` **[CompletionOptions][35]**&#x20;
 
-Returns **function (ll: [LLModel][16]): AsyncGenerator<[string][63]>**&#x20;
+Returns **function (ll: [LLModel][17]): AsyncGenerator<[string][69]>**&#x20;
+
+## DEFAULT\_DIRECTORY
+
+From python api:
+models will be stored in (homedir)/.cache/gpt4all/\`
+
+Type: [string][69]
+
+## DEFAULT\_LIBRARIES\_DIRECTORY
+
+From python api:
+The default path for dynamic libraries to be stored.
+You may separate paths by a semicolon to search in multiple areas.
+This searches DEFAULT\_DIRECTORY/libraries, cwd/libraries, and finally cwd.
+
+Type: [string][69]
 
 [1]: #download
 
@@ -460,106 +504,120 @@ Returns **function (ll: [LLModel][16]): AsyncGenerator<[string][63]>**&#x20;
 
 [15]: #mpt
 
-[16]: #llmodel
+[16]: #type
 
-[17]: #constructor
+[17]: #llmodel
 
-[18]: #parameters-1
+[18]: #constructor
 
-[19]: #type
+[19]: #parameters-1
 
-[20]: #name
+[20]: #type-1
 
-[21]: #statesize
+[21]: #name
 
-[22]: #threadcount
+[22]: #statesize
 
-[23]: #setthreadcount
+[23]: #threadcount
 
-[24]: #parameters-2
+[24]: #setthreadcount
 
-[25]: #raw_prompt
+[25]: #parameters-2
 
-[26]: #parameters-3
+[26]: #raw_prompt
 
-[27]: #ismodelloaded
+[27]: #parameters-3
 
-[28]: #createcompletion
+[28]: #ismodelloaded
 
-[29]: #parameters-4
+[29]: #setlibrarypath
 
-[30]: #examples-1
+[30]: #parameters-4
 
-[31]: #completionoptions
+[31]: #getlibrarypath
 
-[32]: #verbose
+[32]: #createcompletion
 
-[33]: #hasdefaultheader
+[33]: #parameters-5
 
-[34]: #hasdefaultfooter
+[34]: #examples-1
 
-[35]: #promptmessage
+[35]: #completionoptions
 
-[36]: #role
+[36]: #verbose
 
-[37]: #content
+[37]: #hasdefaultheader
 
-[38]: #prompt_tokens
+[38]: #hasdefaultfooter
 
-[39]: #completion_tokens
+[39]: #promptmessage
 
-[40]: #total_tokens
+[40]: #role
 
-[41]: #completionreturn
+[41]: #content
 
-[42]: #model
+[42]: #prompt_tokens
 
-[43]: #usage
+[43]: #completion_tokens
 
-[44]: #choices
+[44]: #total_tokens
 
-[45]: #completionchoice
+[45]: #completionreturn
 
-[46]: #message
+[46]: #model
 
-[47]: #llmodelpromptcontext
+[47]: #usage
 
-[48]: #logits_size
+[48]: #choices
 
-[49]: #tokens_size
+[49]: #completionchoice
 
-[50]: #n_past
+[50]: #message
 
-[51]: #n_ctx
+[51]: #llmodelpromptcontext
 
-[52]: #n_predict
+[52]: #logits_size
 
-[53]: #top_k
+[53]: #tokens_size
 
-[54]: #top_p
+[54]: #n_past
 
-[55]: #temp
+[55]: #n_ctx
 
-[56]: #n_batch
+[56]: #n_predict
 
-[57]: #repeat_penalty
+[57]: #top_k
 
-[58]: #repeat_last_n
+[58]: #top_p
 
-[59]: #context_erase
+[59]: #temp
 
-[60]: #createtokenstream
+[60]: #n_batch
 
-[61]: #parameters-5
+[61]: #repeat_penalty
 
-[62]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[62]: #repeat_last_n
 
-[63]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[63]: #context_erase
 
-[64]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[64]: #createtokenstream
 
-[65]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[65]: #parameters-6
 
-[66]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[66]: #default_directory
 
-[67]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[67]: #default_libraries_directory
+
+[68]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+
+[69]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+
+[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+
+[71]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+
+[72]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+
+[73]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+
+[74]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
