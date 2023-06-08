@@ -3,13 +3,14 @@
 
 #include <string>
 #include <string_view>
+#include <limits>
 #include <cstring>
 #include <cstdint>
 #include <gtest/gtest.h>
 
 namespace {
 llmodel_model model;
-uint8_t *savedState;
+//uint8_t *savedState;
 
 TEST(GET_SUITE_NAME(CAPITest_), ModelLoad) {
     llmodel_error ec;
@@ -40,16 +41,17 @@ TEST(GET_SUITE_NAME(CAPITest_), Prompt) {
     memset(&ctx, 0, sizeof(ctx));
     ctx.top_k = 0;
     ctx.top_p = 1.0f;
-    ctx.temp = 0.6f;
+    ctx.temp = std::numeric_limits<float>::epsilon(); // Lowest possible temperature
     ctx.n_ctx = 2024;
     ctx.n_batch = 16;
-    ctx.n_predict = LLMODEL_EXPECTED_RESPONSE_LEN;
+    ctx.n_predict = LLMODEL_EXPECTED_RESPONSE_LEN?LLMODEL_EXPECTED_RESPONSE_LEN:8;
     ctx.repeat_penalty = 1.10f;
     ctx.repeat_last_n = 64;
 
     llmodel_prompt(model, "Did you know?", prompt_cb, response_cb, recalc_cb, &ctx);
 
     EXPECT_FALSE(response.empty()) << "Model didn't generate a response";
+    if (LLMODEL_EXPECTED_RESPONSE_LEN == 0) return; // In this case there seems to be no way to reliably get the same response every time :-(
     if (response.size() >= LLMODEL_EXPECTED_RESPONSE_LEN) response.resize(LLMODEL_EXPECTED_RESPONSE_LEN);
     EXPECT_EQ(response, LLMODEL_EXPECTED_RESPONSE) << "Model didn't generate the expected response";
 }

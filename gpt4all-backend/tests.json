@@ -10,6 +10,11 @@
         "expected_response": " The average American eats 20 teaspoons of added sugar per day."
     },
     {
+        "name": "llama_7B_ggmlv1",
+        "url": "https://huggingface.co/Tuxifan/ggml-wizardLM-7B.q4_2/resolve/main/ggml-wizardLM-7B.q4_2.bin",
+        "expected_response": ""
+    },
+    {
         "name": "mpt_base",
         "url": "https://gpt4all.io/models/ggml-mpt-7b-base.bin",
         "expected_response": " The first ever recorded use of the word “blog” was in 1999."
