@@ -34,6 +34,7 @@ endif()
 #
 # Option list
 #
+# some of the options here are commented out so they can be set "dynamically" before calling include_ggml()
 
 # general
 option(LLAMA_STATIC                 "llama: static link libraries"                          OFF)
