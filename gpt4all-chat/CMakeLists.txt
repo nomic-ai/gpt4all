@@ -135,6 +135,11 @@ set_target_properties(chat PROPERTIES
 if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     set_target_properties(chat PROPERTIES
         OUTPUT_NAME gpt4all
+    )
+endif()
+
+if(METAL_SHADER_FILE)
+    set_target_properties(chat PROPERTIES
         RESOURCE ${METAL_SHADER_FILE}
     )
 endif()

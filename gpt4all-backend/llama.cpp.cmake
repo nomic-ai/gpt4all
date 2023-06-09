@@ -67,7 +67,7 @@ option(LLAMA_ACCELERATE             "llama: enable Accelerate framework"        
 option(LLAMA_OPENBLAS               "llama: use OpenBLAS"                                   OFF)
 #option(LLAMA_CUBLAS                 "llama: use cuBLAS"                                     OFF)
 #option(LLAMA_CLBLAST                "llama: use CLBlast"                                    OFF)
-#option(LLAMA_METAL                  "llama: use Metal"                                      OFF)
+option(LLAMA_METAL                  "llama: use Metal"                                      OFF)
 set(LLAMA_BLAS_VENDOR "Generic" CACHE STRING "llama: BLAS library vendor")
 set(LLAMA_CUDA_DMMV_X "32" CACHE STRING "llama: x stride for dmmv CUDA kernels")
 set(LLAMA_CUDA_DMMV_Y "1" CACHE STRING  "llama: y block size for dmmv CUDA kernels")
