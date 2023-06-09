@@ -64,7 +64,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        return;
     }
     if(GetInference() == nullptr) {
-       std::cerr << "Tried searching libaries in \"" << library_path << "\"" <<  std::endl;
+       std::cerr << "Tried searching libraries in \"" << library_path << "\"" <<  std::endl;
        std::cerr << "Tried searching for model weight in \"" << full_weight_path << "\"" << std::endl;
        Napi::Error::New(env, "Had an issue creating llmodel object, inference is null").ThrowAsJavaScriptException(); 
        return;
