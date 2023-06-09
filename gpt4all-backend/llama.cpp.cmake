@@ -34,6 +34,7 @@ endif()
 #
 # Option list
 #
+# some of the options here are commented out so they can be set "dynamically" before calling include_ggml()
 
 # general
 option(LLAMA_STATIC                 "llama: static link libraries"                          OFF)
@@ -67,7 +68,8 @@ option(LLAMA_ACCELERATE             "llama: enable Accelerate framework"        
 option(LLAMA_OPENBLAS               "llama: use OpenBLAS"                                   OFF)
 #option(LLAMA_CUBLAS                 "llama: use cuBLAS"                                     OFF)
 #option(LLAMA_CLBLAST                "llama: use CLBlast"                                    OFF)
-option(LLAMA_METAL                  "llama: use Metal"                                      OFF)
+#option(LLAMA_METAL                  "llama: use Metal"                                      OFF)
+#option(LLAMA_K_QUANTS               "llama: use k-quants"                                   ON)
 set(LLAMA_BLAS_VENDOR "Generic" CACHE STRING "llama: BLAS library vendor")
 set(LLAMA_CUDA_DMMV_X "32" CACHE STRING "llama: x stride for dmmv CUDA kernels")
 set(LLAMA_CUDA_DMMV_Y "1" CACHE STRING  "llama: y block size for dmmv CUDA kernels")
@@ -264,10 +266,10 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
 
     set(GGML_SOURCES_QUANT_K )
     set(GGML_METAL_SOURCES )
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}/ggml-quants-k.h)
+    if (LLAMA_K_QUANTS)
         set(GGML_SOURCES_QUANT_K
-            ${DIRECTORY}/ggml-quants-k.h
-            ${DIRECTORY}/ggml-quants-k.c)
+            ${DIRECTORY}/k_quants.h
+            ${DIRECTORY}/k_quants.c)
 
         if (LLAMA_METAL)
             find_library(FOUNDATION_LIBRARY         Foundation              REQUIRED)
@@ -291,13 +293,6 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
         endif()
     endif()
 
-    set(GGML_SOURCES_QUANT_K )
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}/ggml-quants-k.h)
-        set(GGML_SOURCES_QUANT_K
-            ${DIRECTORY}/ggml-quants-k.h
-            ${DIRECTORY}/ggml-quants-k.c)
-    endif()
-
     add_library(ggml${SUFFIX} OBJECT
                 ${DIRECTORY}/ggml.c
                 ${DIRECTORY}/ggml.h
@@ -305,6 +300,10 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
                 ${GGML_SOURCES_CUDA}
                 ${GGML_METAL_SOURCES}
                 ${GGML_OPENCL_SOURCES})
+
+    if (LLAMA_K_QUANTS)
+        target_compile_definitions(ggml${SUFFIX} PUBLIC GGML_USE_K_QUANTS)
+    endif()
 
     if (LLAMA_METAL AND GGML_METAL_SOURCES)
         target_compile_definitions(ggml${SUFFIX} PUBLIC GGML_USE_METAL GGML_METAL_NDEBUG)
