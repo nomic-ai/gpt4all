@@ -15,12 +15,12 @@
         "expected_response": ""
     },
     {
-        "name": "mpt_base",
+        "name": "mpt_ggmlv1",
         "url": "https://huggingface.co/Tuxifan/ggmlv1_models/resolve/211f06e8ec90b614a726def86488342102101712/test_mpt_base.bin",
         "expected_response": " The first ever recorded use of the word “blog” was in 1999."
     },
     {
-        "name": "gpt4all_j_groovy",
+        "name": "gptj_ggmlv1",
         "url": "https://huggingface.co/Tuxifan/ggmlv1_models/resolve/211f06e8ec90b614a726def86488342102101712/test_gpt4all_j_groovy.bin",
         "expected_response": "\nI am a machine learning model, and I do not have the ability to \"know\" anything."
     }
