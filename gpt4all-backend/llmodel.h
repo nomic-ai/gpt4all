@@ -77,7 +77,7 @@ public:
 
     static const std::vector<Implementation>& implementationList();
     static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
-    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "default");
+    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
 
     static void setImplementationsSearchPath(const std::string& path);
     static const std::string& implementationsSearchPath();

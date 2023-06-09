@@ -36,7 +36,9 @@ cd ../../gpt4all-bindings/python
 pip3 install -e .
 ```
 
-3. Test it out! In a Python script or console:
+## Usage
+
+Test it out! In a Python script or console:
 
 ```python
 
