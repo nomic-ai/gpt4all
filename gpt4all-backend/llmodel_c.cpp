@@ -162,3 +162,13 @@ int32_t llmodel_threadCount(llmodel_model model)
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     return wrapper->llModel->threadCount();
 }
+
+void llmodel_set_implementation_search_path(const char *path)
+{
+    LLModel::setImplementationsSearchPath(path);
+}
+
+const char *llmodel_get_implementation_search_path()
+{
+    return LLModel::implementationsSearchPath().c_str();
+}

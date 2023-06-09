@@ -33,11 +33,13 @@ LocalDocs::LocalDocs()
 void LocalDocs::addFolder(const QString &collection, const QString &path)
 {
     const QUrl url(path);
-    if (url.isLocalFile()) {
-        emit requestAddFolder(collection, url.toLocalFile());
-    } else {
-        emit requestAddFolder(collection, path);
-    }
+    const QString localPath = url.isLocalFile() ? url.toLocalFile() : path;
+    // Add a placeholder collection that is not installed yet
+    CollectionItem i;
+    i.collection = collection;
+    i.folder_path = localPath;
+    m_localDocsModel->addCollectionItem(i);
+    emit requestAddFolder(collection, localPath);
 }
 
 void LocalDocs::removeFolder(const QString &collection, const QString &path)

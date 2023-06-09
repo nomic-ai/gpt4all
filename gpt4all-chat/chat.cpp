@@ -3,6 +3,7 @@
 #include "localdocs.h"
 #include "network.h"
 #include "download.h"
+#include "server.h"
 
 Chat::Chat(QObject *parent)
     : QObject(parent)
@@ -53,7 +54,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelNameChanged, this, &Chat::handleModelNameChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::modelLoadingError, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
 
@@ -243,6 +244,8 @@ void Chat::setModelName(const QString &modelName)
 {
     // doesn't block but will unload old model and load new one which the gui can see through changes
     // to the isModelLoaded property
+    m_modelLoadingError = QString();
+    emit modelLoadingErrorChanged();
     emit modelNameChangeRequested(modelName);
 }
 
@@ -270,11 +273,15 @@ bool Chat::isRecalc() const
 
 void Chat::loadDefaultModel()
 {
+    m_modelLoadingError = QString();
+    emit modelLoadingErrorChanged();
     emit loadDefaultModelRequested();
 }
 
 void Chat::loadModel(const QString &modelName)
 {
+    m_modelLoadingError = QString();
+    emit modelLoadingErrorChanged();
     emit loadModelRequested(modelName);
 }
 
@@ -320,6 +327,13 @@ void Chat::handleModelNameChanged()
 {
     m_savedModelName = modelName();
     emit modelNameChanged();
+}
+
+void Chat::handleModelLoadingError(const QString &error)
+{
+    qWarning() << "ERROR:" << qPrintable(error) << "id" << id();
+    m_modelLoadingError = error;
+    emit modelLoadingErrorChanged();
 }
 
 bool Chat::serialize(QDataStream &stream, int version) const
@@ -387,7 +401,7 @@ QList<QString> Chat::modelList() const
         QDir dir(exePath);
         dir.setNameFilters(QStringList() << "ggml-*.bin");
         QStringList fileNames = dir.entryList();
-        for (QString f : fileNames) {
+        for (const QString& f : fileNames) {
             QString filePath = exePath + f;
             QFileInfo info(filePath);
             QString name = info.completeBaseName().remove(0, 5);
@@ -404,7 +418,7 @@ QList<QString> Chat::modelList() const
         QDir dir(localPath);
         dir.setNameFilters(QStringList() << "ggml-*.bin" << "chatgpt-*.txt");
         QStringList fileNames = dir.entryList();
-        for (QString f : fileNames) {
+        for (const QString &f : fileNames) {
             QString filePath = localPath + f;
             QFileInfo info(filePath);
             QString basename = info.completeBaseName();

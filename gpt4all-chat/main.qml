@@ -12,6 +12,8 @@ Window {
     id: window
     width: 1280
     height: 720
+    minimumWidth: 720
+    minimumHeight: 480
     visible: true
     title: qsTr("GPT4All v") + Qt.application.version
 
@@ -22,7 +24,7 @@ Window {
     property var currentChat: LLM.chatListModel.currentChat
     property var chatModel: currentChat.chatModel
 
-    color: theme.textColor
+    color: theme.backgroundDarkest
 
     // Startup code
     Component.onCompleted: {
@@ -60,6 +62,10 @@ Window {
             if (Network.isActive && !currentChat.responseInProgress)
                 Network.sendConversation(currentChat.id, getConversationJson());
         }
+        function onModelLoadingErrorChanged() {
+            if (currentChat.modelLoadingError !== "")
+                modelLoadingErrorPopup.open()
+        }
     }
 
     function startupDialogs() {
@@ -89,7 +95,7 @@ Window {
         shouldShowBusy: false
         closePolicy: Popup.NoAutoClose
         modal: true
-        text: qsTr("Incompatible hardware detected. Please try the avx-only installer on https://gpt4all.io")
+        text: qsTr("Incompatible hardware detected. Your hardware does not meet the minimal requirements to run GPT4All. In particular, it does not seem to support AVX intrinsics. See here for more: https://en.wikipedia.org/wiki/Advanced_Vector_Extensions")
     }
 
     StartupDialog {
@@ -105,11 +111,20 @@ Window {
     AboutDialog {
         id: aboutDialog
         anchors.centerIn: parent
+        width: Math.min(1024, window.width - (window.width * .2))
+        height: Math.min(600, window.height - (window.height * .2))
     }
 
     Item {
         Accessible.role: Accessible.Window
         Accessible.name: title
+    }
+
+    PopupDialog {
+        id: modelLoadingErrorPopup
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        text: currentChat.modelLoadingError
     }
 
     Rectangle {
@@ -119,11 +134,10 @@ Window {
         anchors.top: parent.top
         height: 100
         color: theme.backgroundDarkest
-
         Item {
             anchors.centerIn: parent
             height: childrenRect.height
-            visible: currentChat.isModelLoaded || currentChat.isServer
+            visible: currentChat.isModelLoaded || currentChat.modelLoadingError !== "" || currentChat.isServer
 
             Label {
                 id: modelLabel
@@ -139,12 +153,39 @@ Window {
 
             MyComboBox {
                 id: comboBox
-                width: 350
+                implicitWidth: 375
+                width: window.width >= 750 ? implicitWidth : implicitWidth - ((750 - window.width))
                 anchors.top: modelLabel.top
                 anchors.bottom: modelLabel.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
+                anchors.horizontalCenterOffset: window.width >= 950 ? 0 : Math.max(-((950 - window.width) / 2), -99.5)
                 enabled: !currentChat.isServer
                 model: currentChat.modelList
+                contentItem: Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    leftPadding: 10
+                    rightPadding: 20
+                    text: currentChat.modelLoadingError !== "" ? "Model loading error..." : comboBox.displayText
+                    font: comboBox.font
+                    color: theme.textColor
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                }
+                delegate: ItemDelegate {
+                    width: comboBox.width
+                    contentItem: Text {
+                        text: modelData
+                        color: theme.textColor
+                        font: comboBox.font
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        color: highlighted ? theme.backgroundLight : theme.backgroundDark
+                    }
+                    highlighted: comboBox.highlightedIndex === index
+                }
                 Accessible.role: Accessible.ComboBox
                 Accessible.name: qsTr("ComboBox for displaying/picking the current model")
                 Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
@@ -158,7 +199,7 @@ Window {
 
         Item {
             anchors.centerIn: parent
-            visible: !currentChat.isModelLoaded && !currentChat.isServer
+            visible: !currentChat.isModelLoaded && currentChat.modelLoadingError === "" && !currentChat.isServer
             width: childrenRect.width
             height: childrenRect.height
             Row {
@@ -295,7 +336,7 @@ Window {
         anchors.right: networkButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
-        anchors.rightMargin: 30
+        anchors.rightMargin: 10
         width: 40
         height: 40
         z: 200
@@ -316,7 +357,7 @@ Window {
         anchors.right: collectionsButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
-        anchors.rightMargin: 30
+        anchors.rightMargin: 10
         width: 40
         height: 40
         z: 200
@@ -365,7 +406,7 @@ Window {
         anchors.right: settingsButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
-        anchors.rightMargin: 30
+        anchors.rightMargin: 10
         width: 40
         height: 40
         z: 200
@@ -430,7 +471,7 @@ Window {
         anchors.right: copyButton.left
         anchors.top: parent.top
         anchors.topMargin: 30
-        anchors.rightMargin: 30
+        anchors.rightMargin: 10
         width: 40
         height: 40
         z: 200

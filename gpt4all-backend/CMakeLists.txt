@@ -67,45 +67,50 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         message(STATUS "Configuring model implementation target ${TARGET_NAME}")
         # Link to ggml/llama
         target_link_libraries(${TARGET_NAME}
-            PUBLIC ${BASE_LIB}-${BUILD_VARIANT})
+            PRIVATE ${BASE_LIB}-${BUILD_VARIANT})
         # Let it know about its build variant
         target_compile_definitions(${TARGET_NAME}
             PRIVATE GGML_BUILD_VARIANT="${BUILD_VARIANT}")
         # Enable IPO if possible
-        set_property(TARGET ${TARGET_NAME}
-                     PROPERTY INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED})
+# FIXME: Doesn't work with msvc reliably. See https://github.com/nomic-ai/gpt4all/issues/841
+#        set_property(TARGET ${TARGET_NAME}
+#                     PROPERTY INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED})
     endfunction()
 
     # Add each individual implementations
     add_library(llamamodel-mainline-${BUILD_VARIANT} SHARED
-        llamamodel.cpp)
+        llamamodel.cpp llmodel_shared.cpp)
     target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     prepare_target(llamamodel-mainline llama-mainline)
 
     add_library(llamamodel-230519-${BUILD_VARIANT} SHARED
-        llamamodel.cpp)
+        llamamodel.cpp llmodel_shared.cpp)
     target_compile_definitions(llamamodel-230519-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS===2 LLAMA_DATE=230519)
     prepare_target(llamamodel-230519 llama-230519)
 
     add_library(llamamodel-230511-${BUILD_VARIANT} SHARED
-        llamamodel.cpp)
+        llamamodel.cpp llmodel_shared.cpp)
     target_compile_definitions(llamamodel-230511-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=<=1 LLAMA_DATE=230511)
     prepare_target(llamamodel-230511 llama-230511)
 
     add_library(gptj-${BUILD_VARIANT} SHARED
-        gptj.cpp utils.h utils.cpp)
+        gptj.cpp utils.h utils.cpp llmodel_shared.cpp)
     prepare_target(gptj ggml-230511)
 
     add_library(mpt-${BUILD_VARIANT} SHARED
-        mpt.cpp utils.h utils.cpp)
+        mpt.cpp utils.h utils.cpp llmodel_shared.cpp)
     prepare_target(mpt ggml-230511)
+
+    add_library(replit-${BUILD_VARIANT} SHARED
+        replit.cpp utils.h utils.cpp llmodel_shared.cpp)
+    prepare_target(replit ggml-230511)
 endforeach()
 
 add_library(llmodel
-    llmodel.h llmodel.cpp
+    llmodel.h llmodel.cpp llmodel_shared.cpp
     llmodel_c.h llmodel_c.cpp
     dlhandle.h
 )

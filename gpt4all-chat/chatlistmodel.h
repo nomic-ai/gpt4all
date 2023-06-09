@@ -227,10 +227,9 @@ private Q_SLOTS:
         emit dataChanged(index, index, {NameRole});
     }
 
-    void handleModelLoadingError(const QString &error)
+    void handleModelLoadingError()
     {
         Chat *chat = qobject_cast<Chat *>(sender());
-        qWarning() << "ERROR:" << qPrintable(error) << "id" << chat->id();
         removeChat(chat);
     }
 

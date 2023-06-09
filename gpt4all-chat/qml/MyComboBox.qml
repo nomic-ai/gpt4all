@@ -11,7 +11,7 @@ ComboBox {
     contentItem: Text {
         anchors.horizontalCenter: parent.horizontalCenter
         leftPadding: 10
-        rightPadding: 10
+        rightPadding: 20
         text: comboBox.displayText
         font: comboBox.font
         color: theme.textColor

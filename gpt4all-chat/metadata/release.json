@@ -1,0 +1,255 @@
+[
+  {
+    "version": "2.2.2",
+    "notes":
+"
+* repeat penalty for both gptj and llama models
+* scroll the context window when conversation reaches context limit
+* persistent thread count setting
+* new default template
+* new settings for model path, repeat penalty
+* bugfix for settings dialog onEditingFinished
+* new tab based settings dialog format
+* bugfix for datalake when conversation contains forbidden json chars
+* new C library API and split the backend into own separate lib for bindings
+* apple signed/notarized dmg installer
+* update llama.cpp submodule to latest
+* bugfix for too large of a prompt
+* support for opt-in only anonymous usage and statistics
+* bugfixes for the model downloader and improve performance
+* various UI bugfixes and enhancements including the send message textarea automatically wrapping by word
+* new startup dialog on first start of a new release displaying release notes and opt-in buttons
+* new logo and icons
+* fixed apple installer so there is now a symlink in the applications folder
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Aaron Miller
+* Matthieu Talbot
+* Tim Jobbins
+* chad (eachadea)
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.3.0",
+    "notes":
+"
+* repeat penalty for both gptj and llama models
+* scroll the context window when conversation reaches context limit
+* persistent thread count setting
+* new default template
+* new settings for model path, repeat penalty
+* bugfix for settings dialog onEditingFinished
+* new tab based settings dialog format
+* bugfix for datalake when conversation contains forbidden json chars
+* new C library API and split the backend into own separate lib for bindings
+* apple signed/notarized dmg installer
+* update llama.cpp submodule to latest
+* bugfix for too large of a prompt
+* support for opt-in only anonymous usage and statistics
+* bugfixes for the model downloader and improve performance
+* various UI bugfixes and enhancements including the send message textarea automatically wrapping by word
+* new startup dialog on first start of a new release displaying release notes and opt-in buttons
+* new logo and icons
+* fixed apple installer so there is now a symlink in the applications folder
+* fixed bug with versions
+* fixed optout marking
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Aaron Miller
+* Matthieu Talbot
+* Tim Jobbins
+* chad (eachadea)
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.0",
+    "notes":
+"
+* reverse prompt for both llama and gptj models which should help stop them from repeating the prompt template
+* resumable downloads for models
+* chat list in the drawer drop down
+* add/remove/rename chats
+* perist chats to disk and restore them with full context (WARNING: the average size of each chat on disk is ~1.5GB)
+* NOTE: to turn on the persistent chats feature you need to do so via the settings dialog as it is off by default
+* automatically rename chats using the AI after the first prompt/response pair
+* new usage statistics including more detailed hardware info to help debug problems on older hardware
+* fix dialog sizes for those with smaller displays
+* add support for persistent contexts and internal model state to the C api
+* add a confirm button for deletion of chats
+* bugfix for blocking the gui when changing models
+* datalake now captures all conversations when network opt-in is turned on
+* new much shorter prompt template by default
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Aaron Miller
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.1",
+    "notes":
+"
+* compress persistent chats and save order of magnitude disk space on some small chats
+* persistent chat files are now stored in same folder as models
+* use a thread for deserializing chats on startup so the gui shows window faster
+* fail gracefully and early when we detect incompatible hardware
+* repeat penalty restore default bugfix
+* new mpt backend for mosaic ml's new base model and chat model
+* add mpt chat and base model to downloads
+* lower memory required for gptj models by using f16 for kv cache
+* better error handling for when a model is deleted by user and persistent chat remains
+* add a user default model setting so the users preferred model comes up on startup
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Zach Nussbaum (Nomic AI)
+* Aaron Miller
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.2",
+    "notes":
+"
+* add webserver feature that offers mirror api to chatgpt on localhost:4891
+* add chatgpt models installed using openai key to chat client gui
+* fixup the memory handling when switching between chats/models to decrease RAM load across the board
+* fix bug in thread safety for mpt model and de-duplicated code
+* uses compact json format for network
+* add remove model option in download dialog
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Aaron Miller
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.3",
+    "notes":
+"
+* add webserver feature that offers mirror api to chatgpt on localhost:4891
+* add chatgpt models installed using openai key to chat client gui
+* fixup the memory handling when switching between chats/models to decrease RAM load across the board
+* fix bug in thread safety for mpt model and de-duplicated code
+* uses compact json format for network
+* add remove model option in download dialog
+* remove text-davinci-003 as it is not a chat model
+* fix installers on mac and linux to include libllmodel versions
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Aaron Miller
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.4",
+    "notes":
+"
+* fix buffer overrun in backend
+* bugfix for browse for model directory
+* dedup of qml code
+* revamp settings dialog UI
+* add localdocs plugin (beta) feature allowing scanning of local docs
+* various other bugfixes and performance improvements
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Aaron Miller
+* Juuso Alasuutari
+* Justin Wang
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.5",
+    "notes":
+"
+* bugfix for model download remove
+* bugfix for blocking on regenerate
+* lots of various ui improvements enhancements
+* big new change that brings us up2date with llama.cpp/ggml support for latest models
+* advanced avx detection allowing us to fold the two installers into one
+* new logging mechanism that allows for bug reports to have more detail
+* make localdocs work with server mode
+* localdocs fix for stale references after we regenerate
+* fix so that browse to dialog on linux
+* fix so that you can also just add a path to the textfield
+* bugfix for chatgpt and resetting context
+* move models.json to github repo so people can pr suggested new models
+* allow for new models to be directly downloaded from huggingface in said prs
+* better ui for localdocs settings
+* better error handling when model fails to load
+",
+    "contributors":
+"
+* Nils Sauer (Nomic AI)
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Richard Guo (Nomic AI)
+* Konstantin Gukov
+* Joseph Mearman
+* Nandakumar
+* Chase McDougall
+* mvenditto
+* Andriy Mulyar (Nomic AI)
+* FoivosC
+* Ettore Di Giacinto
+* Tim Miller
+* Peter Gagarinov
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.6",
+    "notes":
+"
+* bugfix for model download remove
+* bugfix for blocking on regenerate
+* lots of various ui improvements enhancements
+* big new change that brings us up2date with llama.cpp/ggml support for latest models
+* advanced avx detection allowing us to fold the two installers into one
+* new logging mechanism that allows for bug reports to have more detail
+* make localdocs work with server mode
+* localdocs fix for stale references after we regenerate
+* fix so that browse to dialog on linux
+* fix so that you can also just add a path to the textfield
+* bugfix for chatgpt and resetting context
+* move models.json to github repo so people can pr suggested new models
+* allow for new models to be directly downloaded from huggingface in said prs
+* better ui for localdocs settings
+* better error handling when model fails to load
+",
+    "contributors":
+"
+* Nils Sauer (Nomic AI)
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Richard Guo (Nomic AI)
+* Konstantin Gukov
+* Joseph Mearman
+* Nandakumar
+* Chase McDougall
+* mvenditto
+* Andriy Mulyar (Nomic AI)
+* FoivosC
+* Ettore Di Giacinto
+* Tim Miller
+* Peter Gagarinov
+* Community (beta testers, bug reporters)
+"
+  }
+]

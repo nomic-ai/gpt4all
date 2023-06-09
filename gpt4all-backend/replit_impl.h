@@ -1,19 +1,21 @@
-#ifndef GPTJ_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
-#error This file is NOT meant to be included outside of gptj.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define GPTJ_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#ifndef REPLIT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#error This file is NOT meant to be included outside of replit.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define REPLIT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #endif
-#ifndef GPTJ_H
-#define GPTJ_H
+#ifndef REPLIT_H
+#define REPLIT_H
 
 #include <string>
 #include <functional>
 #include <vector>
 #include "llmodel.h"
 
-struct GPTJPrivate;
-class GPTJ : public LLModel {
+#define GGML_QNT_VERSION_FACTOR 1000 // do not change this
+
+struct ReplitPrivate;
+class Replit : public LLModel {
 public:
-    GPTJ();
-    ~GPTJ();
+    Replit();
+    ~Replit();
 
     bool loadModel(const std::string &modelPath) override;
     bool isModelLoaded() const override;
@@ -24,15 +26,15 @@ public:
     int32_t threadCount() const override;
 
 private:
-    GPTJPrivate *d_ptr;
+    ReplitPrivate *d_ptr;
 
 protected:
     std::vector<Token> tokenize(PromptContext &, const std::string&) const override;
-    Token sampleToken(PromptContext &ctx) const override;
     std::string_view tokenToString(Token) const override;
+    Token sampleToken(PromptContext &ctx) const override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
     int32_t contextLength() const override;
     const std::vector<Token>& endTokens() const override;
 };
 
-#endif // GPTJ_H
+#endif // REPLIT_H

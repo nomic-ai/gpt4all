@@ -118,7 +118,7 @@ void ChatsRestoreThread::run()
         QDir dir(settingsPath);
         dir.setNameFilters(QStringList() << "gpt4all-*.chat");
         QStringList fileNames = dir.entryList();
-        for (QString f : fileNames) {
+        for (const QString &f : fileNames) {
             QString filePath = settingsPath + "/" + f;
             QFile file(filePath);
             bool success = file.open(QIODevice::ReadOnly);
@@ -140,7 +140,7 @@ void ChatsRestoreThread::run()
         QDir dir(savePath);
         dir.setNameFilters(QStringList() << "gpt4all-*.chat");
         QStringList fileNames = dir.entryList();
-        for (QString f : fileNames) {
+        for (const QString &f : fileNames) {
             QString filePath = savePath + "/" + f;
             QFile file(filePath);
             bool success = file.open(QIODevice::ReadOnly);
@@ -233,7 +233,7 @@ void ChatListModel::restoreChat(Chat *chat)
 {
     chat->setParent(this);
     connect(chat, &Chat::nameChanged, this, &ChatListModel::nameChanged);
-    connect(chat, &Chat::modelLoadingError, this, &ChatListModel::handleModelLoadingError);
+    connect(chat, &Chat::modelLoadingErrorChanged, this, &ChatListModel::handleModelLoadingError);
 
     if (m_dummyChat) {
         beginResetModel();

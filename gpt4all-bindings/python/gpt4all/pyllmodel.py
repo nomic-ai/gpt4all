@@ -12,15 +12,14 @@ class DualStreamProcessor:
         self.output = ""
 
     def write(self, text):
-        cleaned_text = re.sub(r"\n(?!\n)", "", text)
         if self.stream is not None:
-            self.stream.write(cleaned_text)
+            self.stream.write(text)
             self.stream.flush()
-        self.output += cleaned_text
-
+        self.output += text
 
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
+MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
 
 def load_llmodel_library():
     system = platform.system()
@@ -38,35 +37,19 @@ def load_llmodel_library():
     c_lib_ext = get_c_shared_lib_extension()
 
     llmodel_file = "libllmodel" + '.' + c_lib_ext
-    llama_file = "libllama" + '.' + c_lib_ext
-    llama_dir = str(pkg_resources.resource_filename('gpt4all', os.path.join(LLMODEL_PATH, llama_file)))
-    llmodel_dir = str(pkg_resources.resource_filename('gpt4all', os.path.join(LLMODEL_PATH, llmodel_file)))
 
-    # For windows
-    llama_dir = llama_dir.replace("\\", "\\\\")
-    llmodel_dir = llmodel_dir.replace("\\", "\\\\")
+    llmodel_dir = str(pkg_resources.resource_filename('gpt4all', \
+        os.path.join(LLMODEL_PATH, llmodel_file))).replace("\\", "\\\\")
 
-    llama_lib = ctypes.CDLL(llama_dir, mode=ctypes.RTLD_GLOBAL)
     llmodel_lib = ctypes.CDLL(llmodel_dir)
 
-    return llmodel_lib, llama_lib
+    return llmodel_lib
 
+llmodel = load_llmodel_library()
 
-llmodel, llama = load_llmodel_library()
-
-# Define C function signatures using ctypes
-llmodel.llmodel_gptj_create.restype = ctypes.c_void_p
-llmodel.llmodel_gptj_destroy.argtypes = [ctypes.c_void_p]
-llmodel.llmodel_llama_create.restype = ctypes.c_void_p
-llmodel.llmodel_llama_destroy.argtypes = [ctypes.c_void_p]
-llmodel.llmodel_mpt_create.restype = ctypes.c_void_p
-llmodel.llmodel_mpt_destroy.argtypes = [ctypes.c_void_p]
-
-
-llmodel.llmodel_loadModel.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-llmodel.llmodel_loadModel.restype = ctypes.c_bool
-llmodel.llmodel_isModelLoaded.argtypes = [ctypes.c_void_p]
-llmodel.llmodel_isModelLoaded.restype = ctypes.c_bool
+class LLModelError(ctypes.Structure):
+    _fields_ = [("message", ctypes.c_char_p),
+                ("code", ctypes.c_int32)]
 
 class LLModelPromptContext(ctypes.Structure):
     _fields_ = [("logits", ctypes.POINTER(ctypes.c_float)),
@@ -83,7 +66,22 @@ class LLModelPromptContext(ctypes.Structure):
                 ("repeat_penalty", ctypes.c_float),
                 ("repeat_last_n", ctypes.c_int32),
                 ("context_erase", ctypes.c_float)]
-    
+
+# Define C function signatures using ctypes
+llmodel.llmodel_model_create.argtypes = [ctypes.c_char_p]
+llmodel.llmodel_model_create.restype = ctypes.c_void_p
+
+llmodel.llmodel_model_create2.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(LLModelError)]
+llmodel.llmodel_model_create2.restype = ctypes.c_void_p
+
+llmodel.llmodel_model_destroy.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_model_destroy.restype = None
+
+llmodel.llmodel_loadModel.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+llmodel.llmodel_loadModel.restype = ctypes.c_bool
+llmodel.llmodel_isModelLoaded.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_isModelLoaded.restype = ctypes.c_bool
+
 PromptCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32)
 ResponseCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32, ctypes.c_char_p)
 RecalculateCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_bool)
@@ -100,8 +98,13 @@ llmodel.llmodel_prompt.restype = None
 llmodel.llmodel_setThreadCount.argtypes = [ctypes.c_void_p, ctypes.c_int32]
 llmodel.llmodel_setThreadCount.restype = None
 
+llmodel.llmodel_set_implementation_search_path.argtypes = [ctypes.c_char_p]
+llmodel.llmodel_set_implementation_search_path.restype = None
+
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
+
+llmodel.llmodel_set_implementation_search_path(MODEL_LIB_PATH.encode('utf-8'))
 
 
 class LLModel:
@@ -113,18 +116,17 @@ class LLModel:
     ----------
     model: llmodel_model
         Ctype pointer to underlying model
-    model_type : str
-        Model architecture identifier
+    model_name: str
+        Model name
     """
-
-    model_type: str = None
 
     def __init__(self):
         self.model = None
         self.model_name = None
 
     def __del__(self):
-        pass
+        if self.model is not None:
+            llmodel.llmodel_model_destroy(self.model)
 
     def load_model(self, model_path: str) -> bool:
         """
@@ -139,15 +141,21 @@ class LLModel:
         -------
         True if model loaded successfully, False otherwise
         """
-        llmodel.llmodel_loadModel(self.model, model_path.encode('utf-8'))
+        model_path_enc = model_path.encode("utf-8")
+        self.model = llmodel.llmodel_model_create(model_path_enc)
+
+        if self.model is not None:
+            llmodel.llmodel_loadModel(self.model, model_path_enc)
+        else:
+            raise ValueError("Unable to instantiate model")
+
         filename = os.path.basename(model_path)
         self.model_name = os.path.splitext(filename)[0]
-    
+
         if llmodel.llmodel_isModelLoaded(self.model):
             return True
         else:
             return False
-
 
     def set_thread_count(self, n_threads):
         if not llmodel.llmodel_isModelLoaded(self.model):
@@ -158,7 +166,6 @@ class LLModel:
         if not llmodel.llmodel_isModelLoaded(self.model):
             raise Exception("Model not loaded")
         return llmodel.llmodel_threadCount(self.model)
-
 
     def generate(self, 
                  prompt: str,
@@ -228,7 +235,6 @@ class LLModel:
         sys.stdout = old_stdout
         # Force new line
         print()
-
         return stream_processor.output
 
     # Empty prompt callback
@@ -239,52 +245,10 @@ class LLModel:
     # Empty response callback method that just prints response to be collected
     @staticmethod
     def _response_callback(token_id, response):
-        print(response.decode('utf-8'))
+        sys.stdout.write(response.decode('utf-8'))
         return True
 
     # Empty recalculate callback
     @staticmethod
     def _recalculate_callback(is_recalculating):
         return is_recalculating
-
-
-class GPTJModel(LLModel):
-
-    model_type = "gptj"
-
-    def __init__(self):
-        super().__init__()
-        self.model = llmodel.llmodel_gptj_create()
-
-    def __del__(self):
-        if self.model is not None and llmodel is not None:
-            llmodel.llmodel_gptj_destroy(self.model)
-        super().__del__()
-
-
-class LlamaModel(LLModel):
-
-    model_type = "llama"
-
-    def __init__(self):
-        super().__init__()
-        self.model = llmodel.llmodel_llama_create()
-
-    def __del__(self):
-        if self.model is not None and llmodel is not None:
-            llmodel.llmodel_llama_destroy(self.model)
-        super().__del__()
-
-
-class MPTModel(LLModel):
-
-    model_type = "mpt"
-
-    def __init__(self):
-        super().__init__()
-        self.model = llmodel.llmodel_mpt_create()
-
-    def __del__(self):
-        if self.model is not None and llmodel is not None:
-            llmodel.llmodel_mpt_destroy(self.model)
-        super().__del__()
