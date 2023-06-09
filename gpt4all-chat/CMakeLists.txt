@@ -58,11 +58,6 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(../gpt4all-backend llmodel)
 
-set(METAL_SHADER_FILE)
-if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-  set(METAL_SHADER_FILE ../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal)
-endif()
-
 qt_add_executable(chat
     main.cpp
     chat.h chat.cpp
@@ -77,7 +72,6 @@ qt_add_executable(chat
     server.h server.cpp
     logger.h logger.cpp
     sysinfo.h
-    ${METAL_SHADER_FILE}
 )
 
 qt_add_qml_module(chat
@@ -135,12 +129,6 @@ set_target_properties(chat PROPERTIES
 if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     set_target_properties(chat PROPERTIES
         OUTPUT_NAME gpt4all
-    )
-endif()
-
-if(METAL_SHADER_FILE)
-    set_target_properties(chat PROPERTIES
-        RESOURCE ${METAL_SHADER_FILE}
     )
 endif()
 

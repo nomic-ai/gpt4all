@@ -34,7 +34,6 @@ endif()
 #
 # Option list
 #
-# some of the options here are commented out so they can be set "dynamically" before calling include_ggml()
 
 # general
 option(LLAMA_STATIC                 "llama: static link libraries"                          OFF)
@@ -69,7 +68,6 @@ option(LLAMA_OPENBLAS               "llama: use OpenBLAS"                       
 #option(LLAMA_CUBLAS                 "llama: use cuBLAS"                                     OFF)
 #option(LLAMA_CLBLAST                "llama: use CLBlast"                                    OFF)
 #option(LLAMA_METAL                  "llama: use Metal"                                      OFF)
-#option(LLAMA_K_QUANTS               "llama: use k-quants"                                   ON)
 set(LLAMA_BLAS_VENDOR "Generic" CACHE STRING "llama: BLAS library vendor")
 set(LLAMA_CUDA_DMMV_X "32" CACHE STRING "llama: x stride for dmmv CUDA kernels")
 set(LLAMA_CUDA_DMMV_Y "1" CACHE STRING  "llama: y block size for dmmv CUDA kernels")
@@ -265,32 +263,10 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
     endif()
 
     set(GGML_SOURCES_QUANT_K )
-    set(GGML_METAL_SOURCES )
-    if (LLAMA_K_QUANTS)
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}/ggml-quants-k.h)
         set(GGML_SOURCES_QUANT_K
-            ${DIRECTORY}/k_quants.h
-            ${DIRECTORY}/k_quants.c)
-
-        if (LLAMA_METAL)
-            find_library(FOUNDATION_LIBRARY         Foundation              REQUIRED)
-            find_library(METAL_FRAMEWORK            Metal                   REQUIRED)
-            find_library(METALKIT_FRAMEWORK         MetalKit                REQUIRED)
-            find_library(METALPERFORMANCE_FRAMEWORK MetalPerformanceShaders REQUIRED)
-
-            set(GGML_METAL_SOURCES ${DIRECTORY}/ggml-metal.m ${DIRECTORY}/ggml-metal.h)
-            # get full path to the file
-            #add_compile_definitions(GGML_METAL_DIR_KERNELS="${CMAKE_CURRENT_SOURCE_DIR}/")
-
-            # copy ggml-metal.metal to bin directory
-            configure_file(${DIRECTORY}/ggml-metal.metal bin/ggml-metal.metal COPYONLY)
-
-            set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS}
-                ${FOUNDATION_LIBRARY}
-                ${METAL_FRAMEWORK}
-                ${METALKIT_FRAMEWORK}
-                ${METALPERFORMANCE_FRAMEWORK}
-            )
-        endif()
+            ${DIRECTORY}/ggml-quants-k.h
+            ${DIRECTORY}/ggml-quants-k.c)
     endif()
 
     add_library(ggml${SUFFIX} OBJECT
@@ -298,16 +274,8 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
                 ${DIRECTORY}/ggml.h
                 ${GGML_SOURCES_QUANT_K}
                 ${GGML_SOURCES_CUDA}
-                ${GGML_METAL_SOURCES}
                 ${GGML_OPENCL_SOURCES})
 
-    if (LLAMA_K_QUANTS)
-        target_compile_definitions(ggml${SUFFIX} PUBLIC GGML_USE_K_QUANTS)
-    endif()
-
-    if (LLAMA_METAL AND GGML_METAL_SOURCES)
-        target_compile_definitions(ggml${SUFFIX} PUBLIC GGML_USE_METAL GGML_METAL_NDEBUG)
-    endif()
     target_include_directories(ggml${SUFFIX} PUBLIC ${DIRECTORY})
     target_compile_features(ggml${SUFFIX} PUBLIC c_std_11) # don't bump
 
@@ -327,9 +295,6 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
                     ${DIRECTORY}/llama.h
                     ${DIRECTORY}/${LLAMA_UTIL_SOURCE_FILE})
 
-        if (LLAMA_METAL AND GGML_METAL_SOURCES)
-            target_compile_definitions(llama${SUFFIX} PUBLIC GGML_USE_METAL GGML_METAL_NDEBUG)
-        endif()
         target_include_directories(llama${SUFFIX} PUBLIC ${DIRECTORY})
         target_compile_features(llama${SUFFIX} PUBLIC cxx_std_11) # don't bump
 
@@ -365,6 +330,32 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
             target_compile_definitions(llama${SUFFIX} PRIVATE GGML_USE_CLBLAST)
         endif()
         target_compile_definitions(ggml${SUFFIX} PRIVATE GGML_USE_CLBLAST)
+    endif()
+
+    if (LLAMA_METAL)
+        find_library(FOUNDATION_LIBRARY         Foundation              REQUIRED)
+        find_library(METAL_FRAMEWORK            Metal                   REQUIRED)
+        find_library(METALKIT_FRAMEWORK         MetalKit                REQUIRED)
+        find_library(METALPERFORMANCE_FRAMEWORK MetalPerformanceShaders REQUIRED)
+
+        set(GGML_SOURCES_METAL ggml-metal.m ggml-metal.h)
+
+        target_compile_definitions(llama${SUFFIX} PRIVATE
+            GGML_USE_METAL
+            GGML_METAL_NDEBUG)
+
+        # get full path to the file
+        #add_compile_definitions(GGML_METAL_DIR_KERNELS="${CMAKE_CURRENT_SOURCE_DIR}/")
+
+        # copy ggml-metal.metal to bin directory
+        configure_file(ggml-metal.metal ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal COPYONLY)
+
+        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS}
+            ${FOUNDATION_LIBRARY}
+            ${METAL_FRAMEWORK}
+            ${METALKIT_FRAMEWORK}
+            ${METALPERFORMANCE_FRAMEWORK}
+            )
     endif()
 
     if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
