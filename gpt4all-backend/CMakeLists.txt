@@ -120,3 +120,62 @@ set_target_properties(llmodel PROPERTIES
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+
+
+# build tests
+option(LLMODEL_BUILD_TESTS "Build llmodel tests" OFF)
+if (LLMODEL_BUILD_TESTS)
+    cmake_policy(SET CMP0135 NEW)
+
+    include(FetchContent)
+    FetchContent_Declare(googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.13.0.tar.gz)
+    # for Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+
+    file(WRITE "${CMAKE_BINARY_DIR}/null.cpp" "")
+    add_executable(llmodel_test "${CMAKE_BINARY_DIR}/null.cpp")
+    target_link_libraries(llmodel_test PUBLIC GTest::gtest_main llmodel)
+
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/tests.json TESTS_JSON)
+    string(JSON TESTS_JSON_LEN LENGTH ${TESTS_JSON})
+    math(EXPR TESTS_JSON_MAXIDX "${TESTS_JSON_LEN} - 1")
+    message(STATUS "${TESTS_JSON_LEN} llmodel implementation tests found")
+
+    foreach(IDX RANGE ${TESTS_JSON_MAXIDX})
+        string(JSON TEST_NAME GET ${TESTS_JSON} ${IDX} name)
+        string(JSON TEST_DW_URL GET ${TESTS_JSON} ${IDX} url)
+        string(JSON EXPECTED_RESPONSE GET ${TESTS_JSON} ${IDX} expected_response)
+
+        message(STATUS "Configuring model implementation test ${TEST_NAME}")
+
+        set(TEST_MODEL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_${TEST_NAME}.bin)
+
+        if (NOT EXISTS ${TEST_MODEL})
+            file(DOWNLOAD
+                "${TEST_DW_URL}"
+                "${TEST_MODEL}"
+                SHOW_PROGRESS)
+        endif()
+
+        set(TEST_TARGET llmodel_test_${TEST_NAME})
+        set(TEST_INCLUDE "${CMAKE_BINARY_DIR}/test_${TEST_NAME}/")
+
+        # Stuff that can't be passed via target_compile_definitions() for one or another reason
+        file(WRITE ${TEST_INCLUDE}/macros.h "#define GET_SUITE_NAME(PREFIX) PREFIX ## ${TEST_NAME}\n")
+        file(APPEND ${TEST_INCLUDE}/macros.h "constexpr char LLMODEL_EXPECTED_RESPONSE[] = R\"(${EXPECTED_RESPONSE})\";\n")
+        file(APPEND ${TEST_INCLUDE}/macros.h "#define LLMODEL_EXPECTED_RESPONSE_LEN (sizeof(LLMODEL_EXPECTED_RESPONSE)-1)\n")
+
+        add_library(${TEST_TARGET} SHARED
+            llmodel_cpp_test.cpp
+            llmodel_c_test.cpp)
+        target_compile_definitions(${TEST_TARGET} PRIVATE
+            LLMODEL_TEST_NAME=${TEST_NAME}
+            LLMODEL_TEST_MODEL="${TEST_MODEL}")
+        target_link_libraries(${TEST_TARGET} PUBLIC GTest::gtest_main llmodel)
+        target_include_directories(${TEST_TARGET} PRIVATE ${TEST_INCLUDE})
+
+        target_link_libraries(llmodel_test PUBLIC ${TEST_TARGET})
+    endforeach()
+endif()
