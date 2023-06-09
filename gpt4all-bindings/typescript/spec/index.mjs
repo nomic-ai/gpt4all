@@ -1,6 +1,7 @@
 import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } from '../src/gpt4all.js'
+
 const ll = new LLModel({
-    model_name: 'ggml-gpt4all-j-v1.3-groovy.bin',
+    model_name: 'ggml-vicuna-7b-1.1-q4_2.bin',
     model_path: './', 
     library_path: DEFAULT_LIBRARIES_DIRECTORY
 });

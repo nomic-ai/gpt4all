@@ -56,7 +56,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
             library_path = ".";
         }
     }
-    llmodel_set_implementation_search_path(implementation_path.c_str());
+    llmodel_set_implementation_search_path(library_path.c_str());
     llmodel_error* e = nullptr;
     inference_ = std::make_shared<llmodel_model>(llmodel_model_create2(full_weight_path.c_str(), "auto", e));
     if(e != nullptr) {
@@ -64,6 +64,8 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        return;
     }
     if(GetInference() == nullptr) {
+       std::cerr << "Tried searching libaries in \"" << library_path << "\"" <<  std::endl;
+       std::cerr << "Tried searching for model weight in \"" << full_weight_path << "\"" << std::endl;
        Napi::Error::New(env, "Had an issue creating llmodel object, inference is null").ThrowAsJavaScriptException(); 
        return;
     }
