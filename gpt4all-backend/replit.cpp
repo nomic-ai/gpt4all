@@ -44,9 +44,8 @@ using piece_map_t = std::unordered_map<std::string, piece_t>;
 namespace {
 const char *modelType_ = "Replit";
 
-static const size_t MB = 1024*1024;
-static const std::string ws_symbol = "\342\226\201";
-
+const size_t MB = 1024*1024;
+const std::string ws_symbol = "\342\226\201";
 }
 
 struct replit_tokenizer {
