@@ -11,7 +11,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("raw_prompt", &NodeModelWrapper::Prompt),
        InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
        InstanceMethod("threadCount", &NodeModelWrapper::ThreadCount),
-       InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath)
+       InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
     });
     // Keep a static reference to the constructor
     //
@@ -175,13 +175,6 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     );
     threadSafeContext->nativeThread = std::thread(threadEntry, threadSafeContext);
     return threadSafeContext->deferred_.Promise();
-//    llmodel_prompt(*inference_.get(),  
-//            copiedQuestion.c_str(),
-//            &prompt_callback,
-//            &response_callback,
-//            &recalculate_callback,
-//            &copiedPrompt 
-//    );
   }
 
   void NodeModelWrapper::SetThreadCount(const Napi::CallbackInfo& info) {
