@@ -142,6 +142,7 @@ if(METAL_SHADER_FILE)
     set_target_properties(chat PROPERTIES
         RESOURCE ${METAL_SHADER_FILE}
     )
+    configure_file(${METAL_SHADER_FILE} bin/ggml-metal.metal COPYONLY)
 endif()
 
 target_compile_definitions(chat
