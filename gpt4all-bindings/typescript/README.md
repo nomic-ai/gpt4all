@@ -65,7 +65,7 @@ yarn test
 ### Roadmap
 This package is in active development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
 
-- [ ] prompt models via a threadsafe function in order to have proper non blocking behavior in nodejs
+- [x] prompt models via a threadsafe function in order to have proper non blocking behavior in nodejs
 - [ ] createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)
 - [ ] proper unit testing
 - [ ] publish to npm under alpha tag `gpt4all@alpha`

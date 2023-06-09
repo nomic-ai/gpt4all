@@ -51,7 +51,7 @@ interface DownloadController {
 }
 
 /** Type of the model */
-type ModelType = 'gptj' | 'llama' | 'mpt';
+type ModelType = 'gptj' | 'llama' | 'mpt' | 'replit';
 
 /**
  * Full list of models available
@@ -68,12 +68,14 @@ interface ModelFile {
            | "ggml-vicuna-13b-1.1-q4_2.bin"
            | "ggml-wizardLM-7B.q4_2.bin"
            | "ggml-stable-vicuna-13B.q4_2.bin"
-           | "ggml-nous-gpt4-vicuna-13b.bin";
+           | "ggml-nous-gpt4-vicuna-13b.bin"
+           | "ggml-v3-13b-hermes-q5_1.bin";
     /** List of MPT Models */
     mpt:   | "ggml-mpt-7b-base.bin"
            | "ggml-mpt-7b-chat.bin"
            | "ggml-mpt-7b-instruct.bin";
-    replit:| "";
+    /** List of Replit Models */
+    replit:| "ggml-replit-code-v1-3b.bin";
 }
 
 //mirrors py options
