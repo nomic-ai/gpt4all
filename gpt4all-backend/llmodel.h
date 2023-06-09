@@ -14,6 +14,9 @@ class Dlhandle;
 class LLModel {
 public:
     using Token = int32_t;
+    using PromptCallback = std::function<bool(std::string_view token, float logit, bool isPartOfTemplate)>;
+    using ResponseCallback = std::function<bool(std::string_view token, float logit)>;
+    using RecalculateCallback = std::function<bool(bool isRecalculating)>;
 
     class Implementation {
         LLModel *(*construct_)();
@@ -66,6 +69,13 @@ public:
                         std::function<bool(int32_t)> promptCallback,
                         std::function<bool(int32_t, const std::string&)> responseCallback,
                         std::function<bool(bool)> recalculateCallback,
+                        PromptContext &ctx);
+    virtual void prompt(const std::string &templatePrefix,
+                        const std::string &templateSuffix,
+                        const std::string &prompt,
+                        PromptCallback promptCallback,
+                        ResponseCallback responseCallback,
+                        RecalculateCallback recalculateCallback,
                         PromptContext &ctx);
 
     virtual void setThreadCount(int32_t /*n_threads*/) {}
