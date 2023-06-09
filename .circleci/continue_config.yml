@@ -337,6 +337,8 @@ workflows:
   build-py-deploy:
     when: << pipeline.parameters.run-python-workflow >>
     jobs:
+      - pypi-hold:
+          type: approval
       - hold:
           type: approval
       - build-py-linux:
@@ -360,7 +362,7 @@ workflows:
             branches:
               only:
           requires:
-            - hold
+            - pypi-hold
             - build-py-windows
             - build-py-linux
             - build-py-macos
