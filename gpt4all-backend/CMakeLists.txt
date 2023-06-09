@@ -39,6 +39,9 @@ endif()
 include(llama.cpp.cmake)
 
 set(BUILD_VARIANTS default avxonly)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(BUILD_VARIANTS ${BUILD_VARIANTS} metal)
+endif()
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -53,6 +56,14 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     set(LLAMA_AVX2 ${GPT4ALL_ALLOW_NON_AVX})
     set(LLAMA_F16C ${GPT4ALL_ALLOW_NON_AVX})
     set(LLAMA_FMA  ${GPT4ALL_ALLOW_NON_AVX})
+
+    if (BUILD_VARIANT STREQUAL metal)
+        set(LLAMA_K_QUANTS YES)
+        set(LLAMA_METAL YES)
+    else()
+        set(LLAMA_K_QUANTS NO)
+        set(LLAMA_METAL NO)
+    endif()
 
     # Include GGML
     include_ggml(llama.cpp-mainline -mainline-${BUILD_VARIANT} ON)
