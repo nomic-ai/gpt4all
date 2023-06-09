@@ -359,7 +359,6 @@ workflows:
           filters:
             branches:
               only:
-                - main
           requires:
             - hold
             - build-py-windows
