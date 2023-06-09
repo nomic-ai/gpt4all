@@ -59,10 +59,10 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_subdirectory(../gpt4all-backend llmodel)
 
 set(METAL_SHADER_FILE)
-
-if(LLAMA_METAL)
-set(METAL_SHADER_FILE ../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal)
+if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+  set(METAL_SHADER_FILE ../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal)
 endif()
+
 qt_add_executable(chat
     main.cpp
     chat.h chat.cpp

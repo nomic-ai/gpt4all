@@ -123,11 +123,15 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
 
     //TODO: Auto-detect CUDA/OpenCL
     if (buildVariant == "auto") {
+#if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
+        buildVariant = "metal";
+#else
         if (requires_avxonly()) {
             buildVariant = "avxonly";
         } else {
             buildVariant = "default";
         }
+#endif
     }
     // Read magic
     std::ifstream f(modelPath, std::ios::binary);
