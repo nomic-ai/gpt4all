@@ -23,5 +23,10 @@
         "name": "gptj_ggmlv1",
         "url": "https://huggingface.co/Tuxifan/ggmlv1_models/resolve/211f06e8ec90b614a726def86488342102101712/test_gpt4all_j_groovy.bin",
         "expected_response": "\nI am a machine learning model, and I do not have the ability to \"know\" anything."
+    },
+    {
+        "name": "replit_ggmlv2",
+        "url": "https://huggingface.co/nomic-ai/ggml-replit-code-v1-3b/resolve/8a675f4b641c26f395316d127565917953a66849/ggml-replit-code-v1-3b.bin",
+        "expected_response": " Your data is safe with me.</p>\n"
     }
 ]
