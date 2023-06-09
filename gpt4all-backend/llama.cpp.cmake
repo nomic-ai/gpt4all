@@ -381,7 +381,7 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
         message(STATUS "x86 detected")
         if (MSVC)
             if (LLAMA_AVX512)
-                target_compile_definitions(ggml${SUFFIX} PRIVATE
+                target_compile_options(ggml${SUFFIX} PRIVATE
                     $<$<COMPILE_LANGUAGE:C>:/arch:AVX512>
                     $<$<COMPILE_LANGUAGE:CXX>:/arch:AVX512>)
                 # MSVC has no compile-time flags enabling specific
@@ -399,11 +399,11 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
                         $<$<COMPILE_LANGUAGE:CXX>:__AVX512VNNI__>)
                 endif()
             elseif (LLAMA_AVX2)
-                target_compile_definitions(ggml${SUFFIX} PRIVATE
+                target_compile_options(ggml${SUFFIX} PRIVATE
                     $<$<COMPILE_LANGUAGE:C>:/arch:AVX2>
                     $<$<COMPILE_LANGUAGE:CXX>:/arch:AVX2>)
             elseif (LLAMA_AVX)
-                target_compile_definitions(ggml${SUFFIX} PRIVATE
+                target_compile_options(ggml${SUFFIX} PRIVATE
                     $<$<COMPILE_LANGUAGE:C>:/arch:AVX>
                     $<$<COMPILE_LANGUAGE:CXX>:/arch:AVX>)
             endif()
