@@ -121,20 +121,30 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     if (!has_at_least_minimal_hardware())
         return nullptr;
 
-    //TODO: Auto-detect CUDA/OpenCL
-    if (buildVariant == "auto") {
-        if (requires_avxonly()) {
-            buildVariant = "avxonly";
-        } else {
-            buildVariant = "default";
-        }
-    }
     // Read magic
     std::ifstream f(modelPath, std::ios::binary);
     if (!f) return nullptr;
     // Get correct implementation
-    auto impl = implementation(f, buildVariant);
-    if (!impl) return nullptr;
+    const LLModel::Implementation* impl = nullptr;
+
+    #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
+        if (buildVariant == "auto") {
+            impl = implementation(f, "metal");
+        }
+    #endif
+
+    if (!impl) {
+        //TODO: Auto-detect CUDA/OpenCL
+        if (buildVariant == "auto") {
+            if (requires_avxonly()) {
+                buildVariant = "avxonly";
+            } else {
+                buildVariant = "default";
+            }
+        }
+        impl = implementation(f, buildVariant);
+        if (!impl) return nullptr;
+    }
     f.close();
     // Construct and return llmodel implementation
     return impl->construct();
