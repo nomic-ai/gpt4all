@@ -93,7 +93,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     prepare_target(llamamodel-mainline llama-mainline)
 
-    if (NOT LLAMA_METAL)
+    if (NOT ${LLAMA_METAL})
         add_library(llamamodel-230519-${BUILD_VARIANT} SHARED
             llamamodel.cpp llmodel_shared.cpp)
         target_compile_definitions(llamamodel-230519-${BUILD_VARIANT} PRIVATE
