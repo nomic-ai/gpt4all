@@ -268,8 +268,8 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
     set(GGML_METAL_SOURCES )
     if (LLAMA_K_QUANTS)
         set(GGML_SOURCES_QUANT_K
-            ${DIRECTORY}/ggml-quants-k.h
-            ${DIRECTORY}/ggml-quants-k.c)
+            ${DIRECTORY}/k_quants.h
+            ${DIRECTORY}/k_quants.c)
 
         if (LLAMA_METAL)
             find_library(FOUNDATION_LIBRARY         Foundation              REQUIRED)
