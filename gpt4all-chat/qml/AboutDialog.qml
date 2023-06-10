@@ -76,7 +76,7 @@ Dialog {
         Label {
             id: discordLink
             width: parent.width
-            textFormat: Text.RichText
+            textFormat: Text.StyledText
             wrapMode: Text.WordWrap
             text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
             onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
@@ -90,7 +90,7 @@ Dialog {
         Label {
             id: nomicProps
             width: parent.width
-            textFormat: Text.RichText
+            textFormat: Text.StyledText
             wrapMode: Text.WordWrap
             text: qsTr("Thank you to <a href=\"https://home.nomic.ai\">Nomic AI</a> and the community for contributing so much great data, code, ideas, and energy to the growing open source AI ecosystem!")
             onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
