@@ -1,3 +1,6 @@
 node_modules/
 build/
 prebuilds/
+
+# *.so files are ignored by toplevel .gitignore
+!*.so
