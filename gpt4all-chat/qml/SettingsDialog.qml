@@ -33,12 +33,12 @@ Dialog {
         id: theme
     }
 
-    property real defaultTemperature: 0.28
-    property real defaultTopP: 0.95
+    property real defaultTemperature: 0.7
+    property real defaultTopP: 0.1
     property int defaultTopK: 40
     property int defaultMaxLength: 4096
-    property int defaultPromptBatchSize: 9
-    property real defaultRepeatPenalty: 1.10
+    property int defaultPromptBatchSize: 128
+    property real defaultRepeatPenalty: 1.18
     property int defaultRepeatPenaltyTokens: 64
     property int defaultThreadCount: 0
     property bool defaultSaveChats: false

@@ -770,7 +770,7 @@ bool MPT::loadModel(const std::string &modelPath) {
 
     // load the model
     if (!mpt_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab)) {
-        std::cerr << "GPT-J ERROR: failed to load model from " <<  modelPath;
+        std::cerr << "MPT ERROR: failed to load model from " <<  modelPath;
         return false;
     }
 
