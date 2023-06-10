@@ -122,7 +122,6 @@ class GPT4All():
         Returns:
             Model file destination.
         """
-
         def get_download_url(model_filename):
             if url:
                 return url
@@ -162,6 +161,8 @@ class GPT4All():
             print("Model downloaded at: ", download_path)
         return download_path
 
+    # TODO: this naming is just confusing now and needs to be deprecated now that we have generator
+    # Need to better consolidate all these different model response methods
     def generate(self, prompt: str, streaming: bool = True, **generate_kwargs) -> str:
         """
         Surfaced method of running generate without accessing model object.
@@ -174,7 +175,21 @@ class GPT4All():
         Returns:
             Raw string of generated model response.
         """
-        return self.model.generate(prompt, streaming=streaming, **generate_kwargs)
+        return self.model.prompt_model(prompt, streaming=streaming, **generate_kwargs)
+
+    def generator(self, prompt: str, **generate_kwargs) -> str:
+        """
+        Surfaced method of running generate without accessing model object.
+
+        Args:
+            prompt: Raw string to be passed to model.
+            streaming: True if want output streamed to stdout.
+            **generate_kwargs: Optional kwargs to pass to prompt context.
+        
+        Returns:
+            Raw string of generated model response.
+        """
+        return self.model.generator(prompt, **generate_kwargs)
 
     def chat_completion(self,
                         messages: List[Dict],
@@ -209,14 +224,13 @@ class GPT4All():
                 "choices": List of message dictionary where "content" is generated response and "role" is set
                 as "assistant". Right now, only one choice is returned by model.
         """
-
         full_prompt = self._build_prompt(messages,
                                          default_prompt_header=default_prompt_header,
                                          default_prompt_footer=default_prompt_footer)
         if verbose:
             print(full_prompt)
 
-        response = self.model.generate(full_prompt, streaming=streaming, **generate_kwargs)
+        response = self.model.prompt_model(full_prompt, streaming=streaming, **generate_kwargs)
 
         if verbose and not streaming:
             print(response)
@@ -241,8 +255,23 @@ class GPT4All():
     @staticmethod
     def _build_prompt(messages: List[Dict],
                       default_prompt_header=True,
-                      default_prompt_footer=False) -> str:
-        # Helper method to format messages into prompt.
+                      default_prompt_footer=True) -> str:
+        """
+        Helper method for buildilng a prompt using template from list of messages.
+
+        Args:
+            messages:  List of dictionaries. Each dictionary should have a "role" key
+                with value of "system", "assistant", or "user" and a "content" key with a
+                string value. Messages are organized such that "system" messages are at top of prompt,
+                and "user" and "assistant" messages are displayed in order. Assistant messages get formatted as
+                "Response: {content}".
+            default_prompt_header: If True (default), add default prompt header after any system role messages and
+                before user/assistant role messages.
+            default_prompt_footer: If True (default), add default footer at end of prompt.
+        
+        Returns:
+            Formatted prompt.
+        """
         full_prompt = ""
 
         for message in messages:

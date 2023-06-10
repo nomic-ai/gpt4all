@@ -80,5 +80,13 @@
     "filename": "ggml-wizard-13b-uncensored.bin",
     "filesize": "8136777088",
     "description": "LLaMa 13B finetuned on the uncensored assistant and instruction data.<br>- Cannot be used commercially."
+  },
+  {
+    "md5sum": "615890cb571fcaa0f70b2f8d15ef809e",
+    "filename": "ggml-replit-code-v1-3b.bin",
+    "filesize": "5202046853",
+    "requires": "2.4.7",
+    "description": "Replit 3B code model trained on subset of the Stack. Licensed for commercial use.",
+    "url": "https://huggingface.co/nomic-ai/ggml-replit-code-v1-3b/resolve/main/ggml-replit-code-v1-3b.bin"
   }
 ]

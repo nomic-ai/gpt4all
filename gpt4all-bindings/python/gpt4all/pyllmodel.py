@@ -2,9 +2,11 @@ import pkg_resources
 import ctypes
 import os
 import platform
+import queue
 import re
 import subprocess
 import sys
+import threading
 
 class DualStreamProcessor:
     def __init__(self, stream=None):
@@ -167,21 +169,21 @@ class LLModel:
             raise Exception("Model not loaded")
         return llmodel.llmodel_threadCount(self.model)
 
-    def generate(self, 
-                 prompt: str,
-                 logits_size: int = 0, 
-                 tokens_size: int = 0, 
-                 n_past: int = 0, 
-                 n_ctx: int = 1024, 
-                 n_predict: int = 128, 
-                 top_k: int = 40, 
-                 top_p: float = .9, 
-                 temp: float = .1, 
-                 n_batch: int = 8, 
-                 repeat_penalty: float = 1.2, 
-                 repeat_last_n: int = 10, 
-                 context_erase: float = .5,
-                 streaming: bool = False) -> str:
+    def prompt_model(self, 
+                     prompt: str,
+                     logits_size: int = 0, 
+                     tokens_size: int = 0, 
+                     n_past: int = 0, 
+                     n_ctx: int = 1024, 
+                     n_predict: int = 128, 
+                     top_k: int = 40, 
+                     top_p: float = .9, 
+                     temp: float = .1, 
+                     n_batch: int = 8, 
+                     repeat_penalty: float = 1.2, 
+                     repeat_last_n: int = 10, 
+                     context_erase: float = .5,
+                     streaming: bool = True) -> str:
         """
         Generate response from model from a prompt.
 
@@ -237,6 +239,82 @@ class LLModel:
         print()
         return stream_processor.output
 
+    def generator(self, 
+                  prompt: str,
+                  logits_size: int = 0, 
+                  tokens_size: int = 0, 
+                  n_past: int = 0, 
+                  n_ctx: int = 1024, 
+                  n_predict: int = 128, 
+                  top_k: int = 40, 
+                  top_p: float = .9, 
+                  temp: float = .1, 
+                  n_batch: int = 8, 
+                  repeat_penalty: float = 1.2, 
+                  repeat_last_n: int = 10, 
+                  context_erase: float = .5) -> str:
+
+        # Symbol to terminate from generator
+        TERMINATING_SYMBOL = "#TERMINATE#"
+        
+        output_queue = queue.Queue()
+
+        prompt = prompt.encode('utf-8')
+        prompt = ctypes.c_char_p(prompt)
+
+        context = LLModelPromptContext(
+            logits_size=logits_size, 
+            tokens_size=tokens_size, 
+            n_past=n_past, 
+            n_ctx=n_ctx, 
+            n_predict=n_predict, 
+            top_k=top_k, 
+            top_p=top_p, 
+            temp=temp, 
+            n_batch=n_batch, 
+            repeat_penalty=repeat_penalty, 
+            repeat_last_n=repeat_last_n, 
+            context_erase=context_erase
+        )
+
+        # Put response tokens into an output queue
+        def _generator_response_callback(token_id, response):
+            output_queue.put(response.decode('utf-8', 'replace'))
+            return True
+
+        def run_llmodel_prompt(model, 
+                               prompt,
+                               prompt_callback,
+                               response_callback,
+                               recalculate_callback,
+                               context):
+            llmodel.llmodel_prompt(model, 
+                                   prompt, 
+                                   prompt_callback,
+                                   response_callback, 
+                                   recalculate_callback, 
+                                   context)
+            output_queue.put(TERMINATING_SYMBOL)
+            
+
+        # Kick off llmodel_prompt in separate thread so we can return generator
+        # immediately
+        thread = threading.Thread(target=run_llmodel_prompt,
+                                  args=(self.model, 
+                                        prompt, 
+                                        PromptCallback(self._prompt_callback),
+                                        ResponseCallback(_generator_response_callback), 
+                                        RecalculateCallback(self._recalculate_callback), 
+                                        context))
+        thread.start()
+
+        # Generator
+        while True:
+            response = output_queue.get()
+            if response == TERMINATING_SYMBOL:
+                break
+            yield response
+
     # Empty prompt callback
     @staticmethod
     def _prompt_callback(token_id):
@@ -245,7 +323,7 @@ class LLModel:
     # Empty response callback method that just prints response to be collected
     @staticmethod
     def _response_callback(token_id, response):
-        sys.stdout.write(response.decode('utf-8'))
+        sys.stdout.write(response.decode('utf-8', 'replace'))
         return True
 
     # Empty recalculate callback
