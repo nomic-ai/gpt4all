@@ -8,7 +8,7 @@
     "test": "node ./test/index.mjs",
     "build:backend": "node scripts/build.js",
     "install": "node-gyp-build",
-    "prebuild": "prebuildify --napi",
+    "prebuild": "node scripts/prebuild.js",
     "docs:build": "documentation build ./src/gpt4all.d.ts --parse-extension d.ts --format md --output docs/api.md"
   },
   "dependencies": {
