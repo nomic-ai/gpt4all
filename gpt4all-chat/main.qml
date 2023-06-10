@@ -7,6 +7,7 @@ import Qt5Compat.GraphicalEffects
 import llm
 import download
 import network
+import gpt4all
 
 Window {
     id: window
@@ -580,11 +581,12 @@ Window {
                     Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
 
                     delegate: TextArea {
+                        id: myTextArea
                         text: value + references
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
-                        textFormat: TextEdit.MarkdownText
+                        textFormat: TextEdit.PlainText
                         focus: false
                         readOnly: true
                         font.pixelSize: theme.fontSizeLarge
@@ -595,6 +597,31 @@ Window {
                             color: name === qsTr("Response: ")
                                 ? (currentChat.isServer ? theme.backgroundDarkest : theme.backgroundLighter)
                                 : (currentChat.isServer ? theme.backgroundDark : theme.backgroundLight)
+                        }
+
+                        MouseArea {
+                            id: mouseArea
+                            anchors.fill: parent
+                            propagateComposedEvents: true
+                            onClicked: {
+                                var clickedPos = myTextArea.positionAt(mouse.x, mouse.y);
+                                var link = responseText.getLinkAtPosition(clickedPos);
+                                if (!link.startsWith("context://"))
+                                    return
+                                var integer = parseInt(link.split("://")[1]);
+                                referenceContextDialog.text = referencesContext[integer - 1];
+                                referenceContextDialog.open();
+                                mouse.accepted = true;
+                            }
+                        }
+
+                        ResponseText {
+                            id: responseText
+                        }
+
+                        Component.onCompleted: {
+                            responseText.textDocument = textDocument
+                            responseText.setLinkColor(theme.linkColor);
                         }
 
                         Accessible.role: Accessible.Paragraph
