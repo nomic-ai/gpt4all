@@ -603,7 +603,7 @@ Window {
                             id: mouseArea
                             anchors.fill: parent
                             propagateComposedEvents: true
-                            onClicked: {
+                            onClicked: function(mouse) {
                                 var clickedPos = myTextArea.positionAt(mouse.x, mouse.y);
                                 var link = responseText.getLinkAtPosition(clickedPos);
                                 if (!link.startsWith("context://"))
@@ -632,14 +632,6 @@ Window {
                         bottomPadding: 20
                         leftPadding: 70
                         rightPadding: 100
-
-                        onLinkActivated: function (link) {
-                            if (!link.startsWith("context://"))
-                                return
-                            var integer = parseInt(link.split("://")[1]);
-                            referenceContextDialog.text = referencesContext[integer - 1];
-                            referenceContextDialog.open();
-                        }
 
                         Item {
                             anchors.left: parent.left
