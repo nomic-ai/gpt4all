@@ -7,22 +7,12 @@
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
 
-struct HighlightingRule
-{
-    QRegularExpression pattern;
-    QTextCharFormat format;
-};
-
 class SyntaxHighlighter : public QSyntaxHighlighter {
     Q_OBJECT
 public:
     SyntaxHighlighter(QObject *parent);
     ~SyntaxHighlighter();
-
     void highlightBlock(const QString &text) override;
-
-private:
-    QVector<HighlightingRule> m_highlightingRules;
 };
 
 struct ContextLink {
@@ -30,6 +20,12 @@ struct ContextLink {
     int endPos = -1;
     QString text;
     QString href;
+};
+
+struct CodeCopy {
+    int startPos = -1;
+    int endPos = -1;
+    QString text;
 };
 
 class ResponseText : public QObject
@@ -44,19 +40,26 @@ public:
     void setTextDocument(QQuickTextDocument* textDocument);
 
     Q_INVOKABLE void setLinkColor(const QColor &c) { m_linkColor = c; }
+    Q_INVOKABLE void setHeaderColor(const QColor &c) { m_headerColor = c; }
+
     Q_INVOKABLE QString getLinkAtPosition(int position) const;
+    Q_INVOKABLE bool tryCopyAtPosition(int position) const;
 
 Q_SIGNALS:
     void textDocumentChanged();
 
 private Q_SLOTS:
     void handleTextChanged();
+    void handleContextLinks();
+    void handleCodeBlocks();
 
 private:
     QQuickTextDocument *m_textDocument;
     SyntaxHighlighter *m_syntaxHighlighter;
     QVector<ContextLink> m_links;
+    QVector<CodeCopy> m_copies;
     QColor m_linkColor;
+    QColor m_headerColor;
     bool m_isProcessingText = false;
 };
 

@@ -5,6 +5,92 @@
 #include <QTextDocumentFragment>
 #include <QFontMetricsF>
 #include <QTextTableCell>
+#include <QGuiApplication>
+#include <QClipboard>
+
+enum Language {
+    None,
+    Python
+};
+
+static QColor keywordColor      = "#2e95d3"; // blue
+static QColor functionColor     = "#f22c3d"; // red
+static QColor functionCallColor = "#e9950c"; // orange
+static QColor commentColor      = "#808080"; // gray
+static QColor stringColor       = "#00a37d"; // green
+static QColor numberColor       = "#df3079"; // fuschia
+
+static Language stringToLanguage(const QString &language)
+{
+    if (language == "python")
+        return Python;
+    return None;
+}
+
+struct HighlightingRule {
+    QRegularExpression pattern;
+    QTextCharFormat format;
+};
+
+static QVector<HighlightingRule> pythonHighlightingRules()
+{
+    static QVector<HighlightingRule> highlightingRules;
+    if (highlightingRules.isEmpty()) {
+
+        HighlightingRule rule;
+
+        QTextCharFormat functionCallFormat;
+        functionCallFormat.setForeground(functionCallColor);
+        rule.pattern = QRegularExpression("\\b(\\w+)\\s*(?=\\()");
+        rule.format = functionCallFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat functionFormat;
+        functionFormat.setForeground(functionColor);
+        rule.pattern = QRegularExpression("\\bdef\\s+(\\w+)\\b");
+        rule.format = functionFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat numberFormat;
+        numberFormat.setForeground(numberColor);
+        rule.pattern = QRegularExpression("\\b[0-9]*\\.?[0-9]+\\b");
+        rule.format = numberFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat keywordFormat;
+        keywordFormat.setForeground(keywordColor);
+        QStringList keywordPatterns = {
+            "\\bdef\\b", "\\bclass\\b", "\\bif\\b", "\\belse\\b", "\\belif\\b",
+            "\\bwhile\\b", "\\bfor\\b", "\\breturn\\b", "\\bprint\\b", "\\bimport\\b",
+            "\\bfrom\\b", "\\bas\\b", "\\btry\\b", "\\bexcept\\b", "\\braise\\b",
+            "\\bwith\\b", "\\bfinally\\b", "\\bcontinue\\b", "\\bbreak\\b", "\\bpass\\b"
+        };
+
+        for (const QString &pattern : keywordPatterns) {
+            rule.pattern = QRegularExpression(pattern);
+            rule.format = keywordFormat;
+            highlightingRules.append(rule);
+        }
+
+        QTextCharFormat stringFormat;
+        stringFormat.setForeground(stringColor);
+        rule.pattern = QRegularExpression("\".*?\"");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        rule.pattern = QRegularExpression("\'.*?\'");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat commentFormat;
+        commentFormat.setForeground(commentColor);
+        rule.pattern = QRegularExpression("#[^\n]*");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
+    }
+    return highlightingRules;
+}
 
 SyntaxHighlighter::SyntaxHighlighter(QObject *parent)
     : QSyntaxHighlighter(parent)
@@ -17,11 +103,19 @@ SyntaxHighlighter::~SyntaxHighlighter()
 
 void SyntaxHighlighter::highlightBlock(const QString &text)
 {
-    for (const HighlightingRule &rule : qAsConst(m_highlightingRules)) {
+    QTextBlock block = this->currentBlock();
+
+    QVector<HighlightingRule> rules;
+    if (block.userState() == Python)
+        rules = pythonHighlightingRules();
+
+    for (const HighlightingRule &rule : qAsConst(rules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
-            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+            int startIndex = match.capturedStart();
+            int length = match.capturedLength();
+            setFormat(startIndex, length, rule.format);
         }
     }
 }
@@ -59,6 +153,18 @@ QString ResponseText::getLinkAtPosition(int position) const
     return QString();
 }
 
+bool ResponseText::tryCopyAtPosition(int position) const
+{
+    for (const auto &copy : m_copies) {
+        if (position >= copy.startPos && position < copy.endPos) {
+            QClipboard *clipboard = QGuiApplication::clipboard();
+            clipboard->setText(copy.text);
+            return true;
+        }
+    }
+    return false;
+}
+
 void ResponseText::handleTextChanged()
 {
     if (!m_textDocument || m_isProcessingText)
@@ -66,25 +172,32 @@ void ResponseText::handleTextChanged()
 
     m_isProcessingText = true;
     QTextDocument* doc = m_textDocument->textDocument();
-    QTextCursor cursor(doc);
+    handleContextLinks();
+    handleCodeBlocks();
+    m_isProcessingText = false;
+}
 
+void ResponseText::handleContextLinks()
+{
+    QTextDocument* doc = m_textDocument->textDocument();
+    QTextCursor cursor(doc);
     QTextCharFormat linkFormat;
     linkFormat.setForeground(m_linkColor);
     linkFormat.setFontUnderline(true);
 
-    // Loop through the document looking for context links
-    QRegularExpression re("\\[Context\\]\\((context://\\d+)\\)");
-    QRegularExpressionMatchIterator i = re.globalMatch(doc->toPlainText());
+    // Regex for context links
+    QRegularExpression reLink("\\[Context\\]\\((context://\\d+)\\)");
+    QRegularExpressionMatchIterator iLink = reLink.globalMatch(doc->toPlainText());
 
-    QList<QRegularExpressionMatch> matches;
-    while (i.hasNext())
-        matches.append(i.next());
+    QList<QRegularExpressionMatch> matchesLink;
+    while (iLink.hasNext())
+        matchesLink.append(iLink.next());
 
     QVector<ContextLink> newLinks;
 
     // Calculate new positions and store them in newLinks
     int positionOffset = 0;
-    for(const auto &match : matches) {
+    for(const auto &match : matchesLink) {
         ContextLink newLink;
         newLink.href = match.captured(1);
         newLink.text = "Context";
@@ -95,9 +208,9 @@ void ResponseText::handleTextChanged()
     }
 
     // Replace the context links with the word "Context" in reverse order
-    for(int index = matches.count() - 1; index >= 0; --index) {
-        cursor.setPosition(matches.at(index).capturedStart());
-        cursor.setPosition(matches.at(index).capturedEnd(), QTextCursor::KeepAnchor);
+    for(int index = matchesLink.count() - 1; index >= 0; --index) {
+        cursor.setPosition(matchesLink.at(index).capturedStart());
+        cursor.setPosition(matchesLink.at(index).capturedEnd(), QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
         cursor.setCharFormat(linkFormat);
         cursor.insertText(newLinks.at(index).text);
@@ -105,5 +218,131 @@ void ResponseText::handleTextChanged()
     }
 
     m_links = newLinks;
-    m_isProcessingText = false;
+}
+
+void ResponseText::handleCodeBlocks()
+{
+    QTextDocument* doc = m_textDocument->textDocument();
+    QTextCursor cursor(doc);
+
+    QTextCharFormat textFormat;
+    textFormat.setFontFamilies(QStringList() << "Monospace");
+    textFormat.setForeground(QColor("white"));
+
+    QTextFrameFormat frameFormatBase;
+    frameFormatBase.setBackground(QColor("black"));
+
+    QTextTableFormat tableFormat;
+    tableFormat.setMargin(0);
+    tableFormat.setPadding(0);
+    tableFormat.setBorder(0);
+    tableFormat.setBorderCollapse(true);
+    QList<QTextLength> constraints;
+    constraints << QTextLength(QTextLength::PercentageLength, 100);
+    tableFormat.setColumnWidthConstraints(constraints);
+
+    QTextTableFormat headerTableFormat;
+    headerTableFormat.setBackground(m_headerColor);
+    headerTableFormat.setPadding(0);
+    headerTableFormat.setBorder(0);
+    headerTableFormat.setBorderCollapse(true);
+    headerTableFormat.setTopMargin(15);
+    headerTableFormat.setBottomMargin(15);
+    headerTableFormat.setLeftMargin(30);
+    headerTableFormat.setRightMargin(30);
+    QList<QTextLength> headerConstraints;
+    headerConstraints << QTextLength(QTextLength::PercentageLength, 80);
+    headerConstraints << QTextLength(QTextLength::PercentageLength, 20);
+    headerTableFormat.setColumnWidthConstraints(headerConstraints);
+
+    QTextTableFormat codeBlockTableFormat;
+    codeBlockTableFormat.setBackground(QColor("black"));
+    codeBlockTableFormat.setPadding(0);
+    codeBlockTableFormat.setBorder(0);
+    codeBlockTableFormat.setBorderCollapse(true);
+    codeBlockTableFormat.setTopMargin(30);
+    codeBlockTableFormat.setBottomMargin(30);
+    codeBlockTableFormat.setLeftMargin(30);
+    codeBlockTableFormat.setRightMargin(30);
+    codeBlockTableFormat.setColumnWidthConstraints(constraints);
+
+    QTextImageFormat copyImageFormat;
+    copyImageFormat.setWidth(30);
+    copyImageFormat.setHeight(30);
+    copyImageFormat.setName("qrc:/gpt4all/icons/copy.svg");
+
+    // Regex for code blocks
+    QRegularExpression reCode("```(.*?)(```|$)", QRegularExpression::DotMatchesEverythingOption);
+    QRegularExpressionMatchIterator iCode = reCode.globalMatch(doc->toPlainText());
+
+    QList<QRegularExpressionMatch> matchesCode;
+    while (iCode.hasNext())
+        matchesCode.append(iCode.next());
+
+    QVector<CodeCopy> newCopies;
+
+    for(int index = matchesCode.count() - 1; index >= 0; --index) {
+        cursor.setPosition(matchesCode[index].capturedStart());
+        cursor.setPosition(matchesCode[index].capturedEnd(), QTextCursor::KeepAnchor);
+        cursor.removeSelectedText();
+
+        // Check if the first word in the code block is "python"
+        QTextFrameFormat frameFormat = frameFormatBase;
+        QStringList lines = matchesCode[index].captured(1).split('\n');
+        QString codeLanguage;
+        if (!lines.empty() && lines[0].trimmed() == "python")
+            codeLanguage = lines.takeFirst().trimmed();
+\
+        QTextFrame *mainFrame = cursor.currentFrame();
+        cursor.setCharFormat(textFormat);
+
+        QTextFrame *frame = cursor.insertFrame(frameFormat);
+        QTextTable *table = cursor.insertTable(codeLanguage.isEmpty() ? 1 : 2, 1, tableFormat);
+
+        if (!codeLanguage.isEmpty()) {
+            QTextTableCell headerCell = table->cellAt(0, 0);
+            QTextCursor headerCellCursor = headerCell.firstCursorPosition();
+            QTextTable *headerTable = headerCellCursor.insertTable(1, 2, headerTableFormat);
+            QTextTableCell header = headerTable->cellAt(0, 0);
+            QTextCursor headerCursor = header.firstCursorPosition();
+            headerCursor.insertText(codeLanguage);
+            QTextTableCell copy = headerTable->cellAt(0, 1);
+            QTextCursor copyCursor = copy.firstCursorPosition();
+            int startPos = copyCursor.position();
+            CodeCopy newCopy;
+            newCopy.text = lines.join("\n");
+            newCopy.startPos = copyCursor.position();
+            newCopy.endPos = newCopy.startPos + 1;
+            newCopies.append(newCopy);
+            QTextBlockFormat blockFormat;
+            blockFormat.setAlignment(Qt::AlignRight);
+            copyCursor.setBlockFormat(blockFormat);
+            copyCursor.insertImage(copyImageFormat, QTextFrameFormat::FloatRight);
+        }
+
+        QTextTableCell codeCell = table->cellAt(codeLanguage.isEmpty() ? 0 : 1, 0);
+        QTextCursor codeCellCursor = codeCell.firstCursorPosition();
+        QTextTable *codeTable = codeCellCursor.insertTable(1, 1, codeBlockTableFormat);
+        QTextTableCell code = codeTable->cellAt(0, 0);
+        QTextCursor codeCursor = code.firstCursorPosition();
+        if (!codeLanguage.isEmpty()) {
+            codeCursor.block().setUserState(stringToLanguage(codeLanguage));
+            for (const QString &line : lines) {
+                codeCursor.insertText(line);
+                codeCursor.insertBlock();
+                codeCursor.block().setUserState(stringToLanguage(codeLanguage));
+            }
+        } else {
+            codeCursor.insertText(lines.join("\n"));
+        }
+        if (codeCursor.position() > 0) {
+            codeCursor.setPosition(codeCursor.position() - 1);
+            codeCursor.deleteChar();
+        }
+
+        cursor = mainFrame->lastCursorPosition();
+        cursor.setCharFormat(QTextCharFormat());
+    }
+
+    m_copies = newCopies;
 }
