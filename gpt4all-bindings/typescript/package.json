@@ -18,9 +18,14 @@
   "devDependencies": {
     "@types/node": "^20.1.5",
     "documentation": "^14.0.2",
-    "prebuildify": "^5.0.1"
+    "prebuildify": "^5.0.1",
+    "prettier": "^2.8.8"
   },
   "engines": {
     "node": ">= 18.x.x"
+  },
+  "prettier": {
+    "endOfLine": "lf",
+    "tabWidth": 4
   }
 }
