@@ -73,7 +73,7 @@
     "filename": "Manticore-13B-Chat-Pyg.ggmlv3.q5_1.bin",
     "filesize": "9763701888",
     "description": "LLaMa 13B finetuned by OpenAccess AI Collective on various instruct, instruct-augmented, and chat datasets that have been filtered for refusals and reluctance.<br>- Cannot be used commercially.",
-    "url": "https://huggingface.co/TheBloke/manticore-13b-chat-pyg-GGML/resolve/main/Manticore-13B-Chat-Pyg.ggmlv3.q5_1.bin"
+    "url": "https://huggingface.co/TheBloke/manticore-13b-chat-pyg-GGML/resolve/dc8766c9050f0e1f088d6a3e8b853431121b0dc1/Manticore-13B-Chat-Pyg.ggmlv3.q5_1.bin"
   },
   {
     "md5sum": "1cfa4958f489f0a0d1ffdf6b37322809",
