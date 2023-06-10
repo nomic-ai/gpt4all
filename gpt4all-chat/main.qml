@@ -379,6 +379,12 @@ Window {
     }
 
     PopupDialog {
+        id: copyCodeMessage
+        anchors.centerIn: parent
+        text: qsTr("Code copied to clipboard.")
+    }
+
+    PopupDialog {
         id: healthCheckFailed
         anchors.centerIn: parent
         text: qsTr("Connection to datalake failed.")
@@ -607,6 +613,10 @@ Window {
                                     var integer = parseInt(link.split("://")[1]);
                                     referenceContextDialog.text = referencesContext[integer - 1];
                                     referenceContextDialog.open();
+                                } else {
+                                    var success = responseText.tryCopyAtPosition(clickedPos);
+                                    if (success)
+                                        copyCodeMessage.open();
                                 }
                             }
                         }
@@ -618,6 +628,7 @@ Window {
                         Component.onCompleted: {
                             responseText.textDocument = textDocument
                             responseText.setLinkColor(theme.linkColor);
+                            responseText.setHeaderColor(theme.backgroundLight);
                         }
 
                         Accessible.role: Accessible.Paragraph
