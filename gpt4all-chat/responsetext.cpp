@@ -10,7 +10,9 @@
 
 enum Language {
     None,
-    Python
+    Python,
+    Cpp,
+    Bash
 };
 
 static QColor keywordColor      = "#2e95d3"; // blue
@@ -19,11 +21,20 @@ static QColor functionCallColor = "#e9950c"; // orange
 static QColor commentColor      = "#808080"; // gray
 static QColor stringColor       = "#00a37d"; // green
 static QColor numberColor       = "#df3079"; // fuchsia
+static QColor preprocessorColor = keywordColor;
 
 static Language stringToLanguage(const QString &language)
 {
     if (language == "python")
         return Python;
+    if (language == "cpp")
+        return Cpp;
+    if (language == "c++")
+        return Cpp;
+    if (language == "c")
+        return Cpp;
+    if (language == "bash")
+        return Cpp;
     return None;
 }
 
@@ -92,6 +103,93 @@ static QVector<HighlightingRule> pythonHighlightingRules()
     return highlightingRules;
 }
 
+static QVector<HighlightingRule> cppHighlightingRules()
+{
+    static QVector<HighlightingRule> highlightingRules;
+    if (highlightingRules.isEmpty()) {
+
+        HighlightingRule rule;
+
+        QTextCharFormat functionCallFormat;
+        functionCallFormat.setForeground(functionCallColor);
+        rule.pattern = QRegularExpression("\\b(\\w+)\\s*(?=\\()");
+        rule.format = functionCallFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat functionFormat;
+        functionFormat.setForeground(functionColor);
+        rule.pattern = QRegularExpression("\\b[a-zA-Z_][a-zA-Z0-9_]*\\s+(\\w+)\\s*\\(");
+        rule.format = functionFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat numberFormat;
+        numberFormat.setForeground(numberColor);
+        rule.pattern = QRegularExpression("\\b[0-9]*\\.?[0-9]+\\b");
+        rule.format = numberFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat keywordFormat;
+        keywordFormat.setForeground(keywordColor);
+        QStringList keywordPatterns = {
+            "\\bauto\\b", "\\bbool\\b", "\\bbreak\\b", "\\bcase\\b", "\\bcatch\\b",
+            "\\bchar\\b", "\\bclass\\b", "\\bconst\\b", "\\bconstexpr\\b", "\\bcontinue\\b",
+            "\\bdefault\\b", "\\bdelete\\b", "\\bdo\\b", "\\bdouble\\b", "\\belse\\b",
+            "\\benum\\b", "\\bexplicit\\b", "\\bextern\\b", "\\bfalse\\b", "\\bfloat\\b",
+            "\\bfor\\b", "\\bfriend\\b", "\\bgoto\\b", "\\bif\\b", "\\binline\\b",
+            "\\bint\\b", "\\blong\\b", "\\bmutable\\b", "\\bnamespace\\b", "\\bnew\\b",
+            "\\bnoexcept\\b", "\\bnullptr\\b", "\\boperator\\b", "\\boverride\\b", "\\bprivate\\b",
+            "\\bprotected\\b", "\\bpublic\\b", "\\bregister\\b", "\\breinterpret_cast\\b", "\\breturn\\b",
+            "\\bshort\\b", "\\bsigned\\b", "\\bsizeof\\b", "\\bstatic\\b", "\\bstatic_assert\\b",
+            "\\bstatic_cast\\b", "\\bstruct\\b", "\\bswitch\\b", "\\btemplate\\b", "\\bthis\\b",
+            "\\bthrow\\b", "\\btrue\\b", "\\btry\\b", "\\btypedef\\b", "\\btypeid\\b", "\\btypename\\b",
+            "\\bunion\\b", "\\bunsigned\\b", "\\busing\\b", "\\bvirtual\\b", "\\bvoid\\b",
+            "\\bvolatile\\b", "\\bwchar_t\\b", "\\bwhile\\b"
+        };
+
+        for (const QString &pattern : keywordPatterns) {
+            rule.pattern = QRegularExpression(pattern);
+            rule.format = keywordFormat;
+            highlightingRules.append(rule);
+        }
+
+        QTextCharFormat stringFormat;
+        stringFormat.setForeground(stringColor);
+        rule.pattern = QRegularExpression("\".*?\"");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        rule.pattern = QRegularExpression("\'.*?\'");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat commentFormat;
+        commentFormat.setForeground(commentColor);
+        rule.pattern = QRegularExpression("//[^\n]*");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
+        rule.pattern = QRegularExpression("/\\*.*?\\*/");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat preprocessorFormat;
+        preprocessorFormat.setForeground(preprocessorColor);
+        rule.pattern = QRegularExpression("#(?:include|define|undef|ifdef|ifndef|if|else|elif|endif|error|pragma)\\b.*");
+        rule.format = preprocessorFormat;
+        highlightingRules.append(rule);
+    }
+    return highlightingRules;
+}
+
+static QVector<HighlightingRule> bashHighlightingRules()
+{
+    static QVector<HighlightingRule> highlightingRules;
+    if (highlightingRules.isEmpty()) {
+        // FIXME
+    }
+    return highlightingRules;
+}
+
 SyntaxHighlighter::SyntaxHighlighter(QObject *parent)
     : QSyntaxHighlighter(parent)
 {
@@ -108,6 +206,10 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
     QVector<HighlightingRule> rules;
     if (block.userState() == Python)
         rules = pythonHighlightingRules();
+    else if (block.userState() == Cpp)
+        rules = cppHighlightingRules();
+    else if (block.userState() == Bash)
+        rules = bashHighlightingRules();
 
     for (const HighlightingRule &rule : qAsConst(rules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
@@ -286,12 +388,21 @@ void ResponseText::handleCodeBlocks()
         cursor.setPosition(matchesCode[index].capturedEnd(), QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
 
-        // Check if the first word in the code block is "python"
         QTextFrameFormat frameFormat = frameFormatBase;
         QStringList lines = matchesCode[index].captured(1).split('\n');
         QString codeLanguage;
-        if (!lines.empty() && lines[0].trimmed() == "python")
-            codeLanguage = lines.takeFirst().trimmed();
+        if (!lines.empty()) {
+            if (lines[0].trimmed() == "python")
+                codeLanguage = lines.takeFirst().trimmed();
+            else if (lines[0].trimmed() == "cpp")
+                codeLanguage = lines.takeFirst().trimmed();
+            else if (lines[0].trimmed() == "c++")
+                codeLanguage = lines.takeFirst().trimmed();
+            else if (lines[0].trimmed() == "c")
+                codeLanguage = lines.takeFirst().trimmed();
+            else if (lines[0].trimmed() == "bash")
+                codeLanguage = lines.takeFirst().trimmed();
+        }
 \
         QTextFrame *mainFrame = cursor.currentFrame();
         cursor.setCharFormat(textFormat);
