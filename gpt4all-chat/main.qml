@@ -598,20 +598,16 @@ Window {
                                 ? (currentChat.isServer ? theme.backgroundDarkest : theme.backgroundLighter)
                                 : (currentChat.isServer ? theme.backgroundDark : theme.backgroundLight)
                         }
-
-                        MouseArea {
-                            id: mouseArea
-                            anchors.fill: parent
-                            propagateComposedEvents: true
-                            onClicked: function(mouse) {
-                                var clickedPos = myTextArea.positionAt(mouse.x, mouse.y);
+                        TapHandler {
+                            id: tapHandler
+                            onTapped: function(eventPoint, button) {
+                                var clickedPos = myTextArea.positionAt(eventPoint.position.x, eventPoint.position.y);
                                 var link = responseText.getLinkAtPosition(clickedPos);
-                                if (!link.startsWith("context://"))
-                                    return
-                                var integer = parseInt(link.split("://")[1]);
-                                referenceContextDialog.text = referencesContext[integer - 1];
-                                referenceContextDialog.open();
-                                mouse.accepted = true;
+                                if (link.startsWith("context://")) {
+                                    var integer = parseInt(link.split("://")[1]);
+                                    referenceContextDialog.text = referencesContext[integer - 1];
+                                    referenceContextDialog.open();
+                                }
                             }
                         }
 
