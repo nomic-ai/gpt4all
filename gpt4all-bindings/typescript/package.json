@@ -12,6 +12,7 @@
     "docs:build": "documentation build ./src/gpt4all.d.ts --parse-extension d.ts --format md --output docs/api.md"
   },
   "dependencies": {
+    "mkdirp": "^3.0.1",
     "node-addon-api": "^6.1.0",
     "node-gyp-build": "^4.6.0"
   },

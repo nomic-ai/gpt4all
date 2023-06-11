@@ -15,20 +15,20 @@ declare module "gpt4all";
  * const controller = download('ggml-gpt4all-j-v1.3-groovy.bin')
  * controller.promise().then(() => console.log('Downloaded!'))
  */
-declare function download(
-    model: ModelFile[ModelType],
-    options?: DownloadOptions
+declare function downloadModel(
+    modelName: string,
+    options?: DownloadModelOptions
 ): DownloadController;
 
 /**
  * Options for the model download process.
  */
-export interface DownloadOptions {
+export interface DownloadModelOptions {
     /**
      * location to download the model.
      * Default is process.cwd(), or the current working directory
      */
-    location?: string;
+    modelPath?: string;
 
     /**
      * Debug mode -- check how long it took to download in seconds
@@ -43,7 +43,18 @@ export interface DownloadOptions {
     url?: string;
 }
 
-declare function listModels(): Record<string, string>[];
+declare function listModels(): Promise<Record<string, string>[]>;
+
+interface RetrieveModelOptions {
+    allowDownload?: boolean;
+    verbose?: boolean;
+    modelPath?: string;
+}
+
+declare async function retrieveModel(
+    model: string,
+    options?: RetrieveModelOptions
+): Promise<string>;
 
 /**
  * Model download controller.
@@ -55,4 +66,4 @@ interface DownloadController {
     promise: () => Promise<void>;
 }
 
-export { download, listModels, DownloadController };
+export { downloadModel, DownloadModelOptions, DownloadController, listModels, retrieveModel, RetrieveModelOptions };

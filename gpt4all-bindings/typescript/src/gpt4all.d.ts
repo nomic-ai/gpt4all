@@ -91,7 +91,7 @@ declare class LLModel {
      * @param params Optional parameters for the prompt context.
      * @returns The result of the model prompt.
      */
-    raw_prompt(q: string, params?: Partial<LLModelPromptContext>): unknown; // TODO work on return type
+    raw_prompt(q: string, params: Partial<LLModelPromptContext>, callback: (res: string) => void): void; // TODO work on return type
 
     /**
      * Whether the model is loaded or not.
@@ -107,6 +107,18 @@ declare class LLModel {
      */
     getLibraryPath(): string;
 }
+
+interface LoadModelOptions {
+    modelPath?: string;
+    librariesPath?: string;
+    allowDownload?: boolean;
+    verbose?: boolean;
+}
+
+declare function loadModel(
+    modelName: string,
+    options?: LoadModelOptions
+): Promise<LLModel>;
 
 /**
  * The nodejs equivalent to python binding's chat_completion
@@ -289,6 +301,8 @@ export {
     LLModelPromptContext,
     PromptMessage,
     CompletionOptions,
+    LoadModelOptions,
+    loadModel,
     createCompletion,
     createTokenStream,
     DEFAULT_DIRECTORY,

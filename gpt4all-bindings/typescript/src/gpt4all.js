@@ -2,24 +2,55 @@
 
 /// This file implements the gpt4all.d.ts file endings.
 /// Written in commonjs to support both ESM and CJS projects.
+const { existsSync } = require("fs");
 const path = require("node:path");
-const os = require("node:os");
 const { LLModel } = require("node-gyp-build")(path.resolve(__dirname, ".."));
-const util = require("./util.js");
-const DEFAULT_DIRECTORY = path.join(os.homedir(), "cache", "gpt4all");
+const {
+    retrieveModel,
+    downloadModel,
+    appendBinSuffixIfMissing,
+} = require("./util.js");
+const config = require("./config.js");
 
-exports.download = util.download;
-exports.listModels = util.listModels;
+async function loadModel(modelName, options = {}) {
+    const loadOptions = {
+        modelPath: config.DEFAULT_DIRECTORY,
+        librariesPath: config.DEFAULT_LIBRARIES_DIRECTORY,
+        allowDownload: true,
+        verbose: true,
+        ...options,
+    };
 
-exports.LLModel = LLModel;
-exports.DEFAULT_DIRECTORY = DEFAULT_DIRECTORY;
+    await retrieveModel(modelName, {
+        modelPath: loadOptions.modelPath,
+        allowDownload: loadOptions.allowDownload,
+        verbose: loadOptions.verbose,
+    });
 
-const librarySearchPaths = [
-    path.join(DEFAULT_DIRECTORY, "libraries"),
-    path.resolve("./libraries"),
-    process.cwd(),
-];
-exports.DEFAULT_LIBRARIES_DIRECTORY = librarySearchPaths.join(";");
+    const libSearchPaths = loadOptions.librariesPath.split(";");
+
+    let libPath = null;
+
+    for (const searchPath of libSearchPaths) {
+        if (existsSync(searchPath)) {
+            libPath = searchPath;
+            break;
+        }
+    }
+
+    const llmOptions = {
+        model_name: appendBinSuffixIfMissing(modelName),
+        model_path: loadOptions.modelPath,
+        library_path: libPath,
+    };
+
+    if (loadOptions.verbose) {
+        console.log("Creating LLModel with options:", llmOptions);
+    }
+    const llmodel = new LLModel(llmOptions);
+
+    return llmodel;
+}
 
 function createPrompt(messages, hasDefaultHeader, hasDefaultFooter) {
     let fullPrompt = "";
@@ -54,7 +85,7 @@ function createPrompt(messages, hasDefaultHeader, hasDefaultFooter) {
     return fullPrompt;
 }
 
-exports.createCompletion = async function (
+async function createCompletion(
     llmodel,
     messages,
     options = {
@@ -95,4 +126,13 @@ exports.createCompletion = async function (
             ],
         };
     });
+}
+
+module.exports = {
+    ...config,
+    LLModel,
+    createCompletion,
+    downloadModel,
+    retrieveModel,
+    loadModel,
 };
