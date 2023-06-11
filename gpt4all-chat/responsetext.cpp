@@ -18,7 +18,7 @@ static QColor functionColor     = "#f22c3d"; // red
 static QColor functionCallColor = "#e9950c"; // orange
 static QColor commentColor      = "#808080"; // gray
 static QColor stringColor       = "#00a37d"; // green
-static QColor numberColor       = "#df3079"; // fuschia
+static QColor numberColor       = "#df3079"; // fuchsia
 
 static Language stringToLanguage(const QString &language)
 {
