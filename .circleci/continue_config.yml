@@ -338,7 +338,6 @@ workflows:
               only:
                 - main
   build-py-deploy:
-    when: << pipeline.parameters.run-python-workflow >>
     jobs:
       - build-py-linux:
           filters:
