@@ -337,26 +337,28 @@ workflows:
             branches:
               only:
                 - main
+  build-py-deploy:
+    when: << pipeline.parameters.run-python-workflow >>
+    jobs:
+      - build-py-linux:
+          filters:
+            branches:
+              only:
+      - build-py-macos:
+          filters:
+            branches:
+              only:
+      - build-py-windows:
+          filters:
+            branches:
+              only:
+      - store-and-upload-wheels:
+          filters:
+            branches:
+              only:
+                - main
                 - rguo123/*
-  # build-py-deploy:
-  #   jobs:
-  #     - build-py-linux:
-  #         filters:
-  #           branches:
-  #             only:
-  #     - build-py-macos:
-  #         filters:
-  #           branches:
-  #             only:
-  #     - build-py-windows:
-  #         filters:
-  #           branches:
-  #             only:
-  #     - store-and-upload-wheels:
-  #         filters:
-  #           branches:
-  #             only:
-  #         requires:
-  #           - build-py-windows
-  #           - build-py-linux
-  #           - build-py-macos
+          requires:
+            - build-py-windows
+            - build-py-linux
+            - build-py-macos
