@@ -7,6 +7,7 @@ import Qt5Compat.GraphicalEffects
 import llm
 import download
 import network
+import gpt4all
 
 Window {
     id: window
@@ -378,6 +379,12 @@ Window {
     }
 
     PopupDialog {
+        id: copyCodeMessage
+        anchors.centerIn: parent
+        text: qsTr("Code copied to clipboard.")
+    }
+
+    PopupDialog {
         id: healthCheckFailed
         anchors.centerIn: parent
         text: qsTr("Connection to datalake failed.")
@@ -580,11 +587,12 @@ Window {
                     Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
 
                     delegate: TextArea {
+                        id: myTextArea
                         text: value + references
                         width: listView.width
                         color: theme.textColor
                         wrapMode: Text.WordWrap
-                        textFormat: TextEdit.MarkdownText
+                        textFormat: TextEdit.PlainText
                         focus: false
                         readOnly: true
                         font.pixelSize: theme.fontSizeLarge
@@ -596,6 +604,32 @@ Window {
                                 ? (currentChat.isServer ? theme.backgroundDarkest : theme.backgroundLighter)
                                 : (currentChat.isServer ? theme.backgroundDark : theme.backgroundLight)
                         }
+                        TapHandler {
+                            id: tapHandler
+                            onTapped: function(eventPoint, button) {
+                                var clickedPos = myTextArea.positionAt(eventPoint.position.x, eventPoint.position.y);
+                                var link = responseText.getLinkAtPosition(clickedPos);
+                                if (link.startsWith("context://")) {
+                                    var integer = parseInt(link.split("://")[1]);
+                                    referenceContextDialog.text = referencesContext[integer - 1];
+                                    referenceContextDialog.open();
+                                } else {
+                                    var success = responseText.tryCopyAtPosition(clickedPos);
+                                    if (success)
+                                        copyCodeMessage.open();
+                                }
+                            }
+                        }
+
+                        ResponseText {
+                            id: responseText
+                        }
+
+                        Component.onCompleted: {
+                            responseText.setLinkColor(theme.linkColor);
+                            responseText.setHeaderColor(name === qsTr("Response: ") ? theme.backgroundLight : theme.backgroundLighter);
+                            responseText.textDocument = textDocument
+                        }
 
                         Accessible.role: Accessible.Paragraph
                         Accessible.name: name
@@ -605,14 +639,6 @@ Window {
                         bottomPadding: 20
                         leftPadding: 70
                         rightPadding: 100
-
-                        onLinkActivated: function (link) {
-                            if (!link.startsWith("context://"))
-                                return
-                            var integer = parseInt(link.split("://")[1]);
-                            referenceContextDialog.text = referencesContext[integer - 1];
-                            referenceContextDialog.open();
-                        }
 
                         Item {
                             anchors.left: parent.left

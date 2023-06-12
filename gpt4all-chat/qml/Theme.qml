@@ -18,8 +18,8 @@ QtObject {
     property color dialogBorder: "#d1d5db"
     property color userColor: "#ec86bf"
     property color assistantColor: "#10a37f"
-    property color linkColor: "white"
-    property color tabBorder: "#2C2D35"
+    property color linkColor: "#55aaff"
+    property color tabBorder: "#2c2d35"
     property real  fontSizeLarge: Qt.application.font.pixelSize
     property real  fontSizeLarger: Qt.application.font.pixelSize + 2
 }
