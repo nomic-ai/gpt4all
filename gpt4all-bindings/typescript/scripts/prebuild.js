@@ -33,17 +33,21 @@ function createPrebuild(opts) {
     });
 }
 
-const prebuildConfigs = [
-    { platform: "win32", arch: "x64" },
-    { platform: "win32", arch: "arm64" },
-    // { platform: 'win32', arch: 'armv7' },
-    { platform: "darwin", arch: "x64" },
-    { platform: "darwin", arch: "arm64" },
-    // { platform: 'darwin', arch: 'armv7' },
+let prebuildConfigs;
+if(process.platform === 'win32') {
+   prebuildConfigs = [
+    { platform: "win32", arch: "x64", }
+   ];
+} else {
+   //Unsure if darwin works, need mac tester!
+   prebuildConfigs = [
     { platform: "linux", arch: "x64" },
     { platform: "linux", arch: "arm64" },
     { platform: "linux", arch: "armv7" },
-];
+    { platform: "darwin", arch: "x64" },
+    { platform: "darwin", arch: "arm64" },
+   ]
+}
 
 createPrebuilds(prebuildConfigs)
     .then(() => console.log("All builds succeeded"))
