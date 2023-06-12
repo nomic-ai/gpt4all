@@ -193,7 +193,16 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
 
 bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
-    return llama_eval(d_ptr->ctx, tokens.data(), tokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
+    // When we recalculate context we could have erased the original BOS token... we need to replace it
+    const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos());
+    if (useBOS) {
+        std::vector<int32_t> myTokens;
+        myTokens.push_back(llama_token_bos());
+        myTokens.insert(myTokens.end(), tokens.begin(), tokens.end());
+        ctx.n_past += 1;
+        return llama_eval(d_ptr->ctx, myTokens.data(), myTokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
+    } else
+        return llama_eval(d_ptr->ctx, tokens.data(), tokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
 }
 
 int32_t LLamaModel::contextLength() const
