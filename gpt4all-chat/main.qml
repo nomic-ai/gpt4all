@@ -626,9 +626,9 @@ Window {
                         }
 
                         Component.onCompleted: {
-                            responseText.textDocument = textDocument
                             responseText.setLinkColor(theme.linkColor);
-                            responseText.setHeaderColor(theme.backgroundLight);
+                            responseText.setHeaderColor(name === qsTr("Response: ") ? theme.backgroundLight : theme.backgroundLighter);
+                            responseText.textDocument = textDocument
                         }
 
                         Accessible.role: Accessible.Paragraph
