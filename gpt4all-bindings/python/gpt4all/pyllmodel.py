@@ -22,7 +22,6 @@ class DualStreamProcessor:
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
 MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
-print(MODEL_LIB_PATH)
 
 def load_llmodel_library():
     system = platform.system()
