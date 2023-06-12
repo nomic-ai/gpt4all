@@ -1,112 +1,138 @@
+"use strict";
+
 /// This file implements the gpt4all.d.ts file endings.
 /// Written in commonjs to support both ESM and CJS projects.
+const { existsSync } = require("fs");
+const path = require("node:path");
+const { LLModel } = require("node-gyp-build")(path.resolve(__dirname, ".."));
+const {
+    retrieveModel,
+    downloadModel,
+    appendBinSuffixIfMissing,
+} = require("./util.js");
+const config = require("./config.js");
 
-const { LLModel } = require('bindings')('../build/Release/gpt4allts');
-const { createWriteStream, existsSync } = require('fs');
-const { join } = require('path');
-const { performance } = require('node:perf_hooks');
-
-
-
-// readChunks() reads from the provided reader and yields the results into an async iterable
-// https://css-tricks.com/web-streams-everywhere-and-fetch-for-node-js/
-function readChunks(reader) {
-    return {
-        async* [Symbol.asyncIterator]() {
-            let readResult = await reader.read();
-            while (!readResult.done) {
-                yield readResult.value;
-                readResult = await reader.read();
-            }
-        },
+async function loadModel(modelName, options = {}) {
+    const loadOptions = {
+        modelPath: config.DEFAULT_DIRECTORY,
+        librariesPath: config.DEFAULT_LIBRARIES_DIRECTORY,
+        allowDownload: true,
+        verbose: true,
+        ...options,
     };
+
+    await retrieveModel(modelName, {
+        modelPath: loadOptions.modelPath,
+        allowDownload: loadOptions.allowDownload,
+        verbose: loadOptions.verbose,
+    });
+
+    const libSearchPaths = loadOptions.librariesPath.split(";");
+
+    let libPath = null;
+
+    for (const searchPath of libSearchPaths) {
+        if (existsSync(searchPath)) {
+            libPath = searchPath;
+            break;
+        }
+    }
+
+    const llmOptions = {
+        model_name: appendBinSuffixIfMissing(modelName),
+        model_path: loadOptions.modelPath,
+        library_path: libPath,
+    };
+
+    if (loadOptions.verbose) {
+        console.log("Creating LLModel with options:", llmOptions);
+    }
+    const llmodel = new LLModel(llmOptions);
+
+    return llmodel;
 }
 
-exports.LLModel = LLModel;
+function createPrompt(messages, hasDefaultHeader, hasDefaultFooter) {
+    let fullPrompt = "";
 
+    for (const message of messages) {
+        if (message.role === "system") {
+            const systemMessage = message.content + "\n";
+            fullPrompt += systemMessage;
+        }
+    }
+    if (hasDefaultHeader) {
+        fullPrompt += `### Instruction: 
+        The prompt below is a question to answer, a task to complete, or a conversation 
+        to respond to; decide which and write an appropriate response.
+        \n### Prompt: 
+        `;
+    }
+    for (const message of messages) {
+        if (message.role === "user") {
+            const user_message = "\n" + message["content"];
+            fullPrompt += user_message;
+        }
+        if (message["role"] == "assistant") {
+            const assistant_message = "\nResponse: " + message["content"];
+            fullPrompt += assistant_message;
+        }
+    }
+    if (hasDefaultFooter) {
+        fullPrompt += "\n### Response:";
+    }
 
-exports.download = function (
-    name,
-    options = { debug: false, location: process.cwd(), link: undefined }
+    return fullPrompt;
+}
+
+async function createCompletion(
+    llmodel,
+    messages,
+    options = {
+        hasDefaultHeader: true,
+        hasDefaultFooter: false,
+        verbose: true,
+    }
 ) {
-    const abortController = new AbortController();
-    const signal = abortController.signal;
-
-    const pathToModel = join(options.location, name);
-    if(existsSync(pathToModel)) {
-        throw Error("Path to model already exists");
-    }
-
-    //wrapper function to get the readable stream from request
-    const fetcher = (name) => fetch(options.link ?? `https://gpt4all.io/models/${name}`, {
-        signal,
-    })
-    .then(res => {
-         if(!res.ok) {
-            throw Error("Could not find "+ name + " from " + `https://gpt4all.io/models/` )
-         }
-         return res.body.getReader()
-    })
-    
-    //a promise that executes and writes to a stream. Resolves when done writing.
-    const res = new Promise((resolve, reject) => {
-        fetcher(name)
-            //Resolves an array of a reader and writestream.
-            .then(reader => [reader, createWriteStream(pathToModel)])
-            .then( 
-            async ([readable, wstream]) => {
-                console.log('(CLI might hang) Downloading @ ', pathToModel);
-                let perf;
-                if(options.debug) {
-                   perf = performance.now(); 
-                }
-                for await (const chunk of readChunks(readable)) {
-                    wstream.write(chunk);
-                }
-                if(options.debug) {
-                    console.log("Time taken: ", (performance.now()-perf).toFixed(2), " ms"); 
-                }
-                resolve();
-            }
-        ).catch(reject);
-    });
-    
-    return {
-        cancel : () => abortController.abort(),
-        promise: () => res
-    }
-}
-
-
-//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates
-exports.prompt = function prompt(strings, ...keys) {
-  return (...values) => {
-    const dict = values[values.length - 1] || {};
-    const result = [strings[0]];
-    keys.forEach((key, i) => {
-      const value = Number.isInteger(key) ? values[key] : dict[key];
-      result.push(value, strings[i + 1]);
-    });
-    return result.join("");
-  };
-}
-
-
-
-exports.createCompletion = function (llmodel, promptMaker, options) {
     //creating the keys to insert into promptMaker.
-    const entries = { 
-        system: options.system ?? '',
-        header: options.header ?? "### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.\n### Prompt: ",
-        prompt: options.prompt,
-        ...(options.promptEntries ?? {})
-    };
-    
-    const fullPrompt = promptMaker(entries)+'\n### Response:';
-
-    if(options.verbose) {
-       console.log("sending prompt: " + `"${fullPrompt}"`) 
+    const fullPrompt = createPrompt(
+        messages,
+        options.hasDefaultHeader ?? true,
+        options.hasDefaultFooter
+    );
+    if (options.verbose) {
+        console.log("Sent: " + fullPrompt);
     }
-    
-    return llmodel.raw_prompt(fullPrompt, options);
+    const promisifiedRawPrompt = new Promise((resolve, rej) => {
+        llmodel.raw_prompt(fullPrompt, options, (s) => {
+            resolve(s);
+        });
+    });
+    return promisifiedRawPrompt.then((response) => {
+        return {
+            llmodel: llmodel.name(),
+            usage: {
+                prompt_tokens: fullPrompt.length,
+                completion_tokens: response.length, //TODO
+                total_tokens: fullPrompt.length + response.length, //TODO
+            },
+            choices: [
+                {
+                    message: {
+                        role: "assistant",
+                        content: response,
+                    },
+                },
+            ],
+        };
+    });
 }
+
+module.exports = {
+    ...config,
+    LLModel,
+    createCompletion,
+    downloadModel,
+    retrieveModel,
+    loadModel,
+};
