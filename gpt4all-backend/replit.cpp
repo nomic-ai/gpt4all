@@ -999,7 +999,28 @@ DLL_EXPORT const char *get_build_variant() {
 DLL_EXPORT bool magic_match(std::istream& f) {
     uint32_t magic = 0;
     f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
-    return magic == 0x7265706c;
+    if (magic != 0x7265706c) return false;
+    #ifdef GGML_USE_METAL
+    off_t offset = sizeof(uint32_t) * 5; // n_vocab, n_ctx, n_embd, n_head, n_layer
+    f.seekg(offset, std::ios_base::cur);
+    uint32_t ftype;
+    f.read(reinterpret_cast<char*>(&ftype), sizeof(ftype)); // ftype
+    const int32_t qntvr = ftype / GGML_QNT_VERSION_FACTOR;
+    ftype %= GGML_QNT_VERSION_FACTOR;
+    switch (ftype) {
+        case 1: return true; // GGML_TYPE_F16
+        case 2: // GGML_TYPE_Q4_0
+            if (qntvr != GGML_QNT_VERSION)
+            {
+                std::cerr << "replit: not using metal (unsupported qnt ver)" << std::endl;
+                return false;
+            }
+            return true;
+        default: return false;
+    }
+    #else
+    return true;
+    #endif
 }
 
 DLL_EXPORT LLModel *construct() {
