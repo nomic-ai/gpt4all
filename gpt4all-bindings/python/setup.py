@@ -2,7 +2,6 @@ from setuptools import setup, find_packages
 import os
 import platform
 import shutil
-import time
 
 package_name = "gpt4all"
 
@@ -59,7 +58,6 @@ def copy_prebuilt_C_lib(src_dir, dest_dir, dest_build_dir):
 copy_prebuilt_C_lib(SRC_CLIB_DIRECtORY,
                     DEST_CLIB_DIRECTORY,
                     DEST_CLIB_BUILD_DIRECTORY)
-time.sleep(5)
 
 setup(
     name=package_name,
