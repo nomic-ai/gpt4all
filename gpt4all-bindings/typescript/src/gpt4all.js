@@ -10,7 +10,7 @@ const {
     downloadModel,
     appendBinSuffixIfMissing,
 } = require("./util.js");
-const config = require("./config.js");
+const { DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } = require("./config.js");
 
 async function loadModel(modelName, options = {}) {
     const loadOptions = {
@@ -129,7 +129,8 @@ async function createCompletion(
 }
 
 module.exports = {
-    ...config,
+    DEFAULT_LIBRARIES_DIRECTORY,
+    DEFAULT_DIRECTORY,
     LLModel,
     createCompletion,
     downloadModel,
