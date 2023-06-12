@@ -357,7 +357,7 @@ workflows:
             branches:
               only:
                 - main
-                - rguo123/*
+                - rguo123/windows-debug
           requires:
             - build-py-windows
             - build-py-linux
