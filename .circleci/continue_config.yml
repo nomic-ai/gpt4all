@@ -197,8 +197,8 @@ jobs:
       - run:
           name: Build C library
           command: |
-            git submodule init
-            git submodule update
+            git submodule sync
+            git submodule update --init --recursive
             cd gpt4all-backend
             mkdir build
             cd build
@@ -228,8 +228,8 @@ jobs:
       - run:
           name: Build C library
           command: |
-            git submodule init
-            git submodule update
+            git submodule sync
+            git submodule update --init --recursive
             cd gpt4all-backend
             mkdir build
             cd build
@@ -265,8 +265,8 @@ jobs:
       - run:
           name: Build C library
           command: |
-            git submodule init
-            git submodule update
+            git submodule sync
+            git submodule update --init --recursive
             cd gpt4all-backend
             mkdir build
             cd build
