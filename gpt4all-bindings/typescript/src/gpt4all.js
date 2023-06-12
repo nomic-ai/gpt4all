@@ -14,8 +14,8 @@ const { DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } = require("./config.js"
 
 async function loadModel(modelName, options = {}) {
     const loadOptions = {
-        modelPath: config.DEFAULT_DIRECTORY,
-        librariesPath: config.DEFAULT_LIBRARIES_DIRECTORY,
+        modelPath: DEFAULT_DIRECTORY,
+        librariesPath: DEFAULT_LIBRARIES_DIRECTORY,
         allowDownload: true,
         verbose: true,
         ...options,
