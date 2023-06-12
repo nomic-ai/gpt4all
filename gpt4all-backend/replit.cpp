@@ -229,9 +229,12 @@ struct replit_model {
     struct replit_kv_cache kv_self;
 
     struct ggml_context * ctx;
-    struct ggml_context * eval_ctx;
     void * eval_buf;
     size_t eval_buf_size;
+    void * scr0_buf;
+    size_t scr0_buf_size;
+    void * scr1_buf;
+    size_t scr1_buf_size;
     #ifdef GGML_USE_METAL
     struct ggml_metal_context * ctx_metal;
     #endif
@@ -504,8 +507,12 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size / 1024.0 / 1024.0, n_tensors);
     }
 
-   model.eval_buf_size = 2048u * 1024 * 1024;
+   model.eval_buf_size = 256u * 1024 * 1024;
    model.eval_buf = malloc(model.eval_buf_size);
+   model.scr0_buf_size = 256u * 1024 * 1024;
+   model.scr0_buf = malloc(model.scr0_buf_size);
+   model.scr1_buf_size = 256u * 1024 * 1024;
+   model.scr1_buf = malloc(model.scr1_buf_size);
 
 #ifdef GGML_USE_METAL
     model.ctx_metal = ggml_metal_init();
@@ -515,7 +522,6 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
     #define GGML_CHECK_BUF(result) if (!(result)) {                     \
         std::cerr << __func__ << ": failed to add buffer" << std::endl; \
         ggml_free(model.ctx);                                           \
-        ggml_free(model.eval_ctx);                                      \
         return false;                                                   \
     }
 
@@ -523,6 +529,8 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "kv", ggml_get_mem_buffer(model.kv_self.ctx), 
                                                                 ggml_get_mem_size(model.kv_self.ctx)));
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "eval", model.eval_buf, model.eval_buf_size));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr0", model.scr0_buf, model.scr0_buf_size));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr1", model.scr1_buf, model.scr1_buf_size));
 #endif
 
     return true;
@@ -576,7 +584,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
     struct ggml_tensor * inpL = ggml_get_rows(ctx0, model.wte_weight, embd);
 
     for (int il = 0; il < n_layer; ++il) {
-
+        ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
         struct ggml_tensor * cur;
 
         // a = self.ln_1(x)
@@ -667,6 +675,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
             // projection
             { cur = ggml_mul_mat(ctx0, model.layers[il].c_attn_out_proj_weight, cur); }
         }
+        ggml_set_scratch(ctx0, {0, model.scr1_buf_size, model.scr1_buf, });
 
         inpL = ggml_add(ctx0, inpL, cur);
 
@@ -693,7 +702,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
         // x = x + n
         inpL = ggml_add(ctx0, inpL, cur);
     }
-
+    ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
     // norm
     {
         inpL = ggml_norm(ctx0, inpL);
@@ -701,6 +710,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
         inpL = ggml_mul(ctx0, ggml_repeat(ctx0, model.ln_f_weight, inpL), inpL);
     }
 
+    ggml_set_scratch(ctx0, {0, 0, nullptr, });
     // output embedding weight tied to input embedding
     inpL = ggml_mul_mat(ctx0, model.wte_weight, inpL);
 
@@ -912,9 +922,14 @@ Replit::~Replit()
         ggml_free(d_ptr->model->ctx);
         d_ptr->model->ctx = nullptr;
     }
-    if(d_ptr->model->eval_ctx) {
-        ggml_free(d_ptr->model->eval_ctx);
-        d_ptr->model->eval_ctx = nullptr;
+    if(d_ptr->model->eval_buf) {
+        free(d_ptr->model->eval_buf);
+    }
+    if(d_ptr->model->scr0_buf) {
+        free(d_ptr->model->scr0_buf);
+    }
+    if(d_ptr->model->scr1_buf) {
+        free(d_ptr->model->scr1_buf);
     }
     delete d_ptr->model;
 }
