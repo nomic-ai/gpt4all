@@ -322,7 +322,7 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
             set(LLAMA_UTIL_SOURCE_FILE llama_util.h)
         endif()
 
-        add_library(llama${SUFFIX}
+        add_library(llama${SUFFIX} STATIC
                     ${DIRECTORY}/llama.cpp
                     ${DIRECTORY}/llama.h
                     ${DIRECTORY}/${LLAMA_UTIL_SOURCE_FILE})
