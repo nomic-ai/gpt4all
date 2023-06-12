@@ -243,6 +243,7 @@ void ResponseText::setTextDocument(QQuickTextDocument* textDocument)
     m_textDocument = textDocument;
     m_syntaxHighlighter->setDocument(m_textDocument->textDocument());
     connect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ResponseText::handleTextChanged);
+    handleTextChanged();
 }
 
 QString ResponseText::getLinkAtPosition(int position) const
@@ -288,7 +289,7 @@ void ResponseText::handleContextLinks()
     linkFormat.setFontUnderline(true);
 
     // Regex for context links
-    QRegularExpression reLink("\\[Context\\]\\((context://\\d+)\\)");
+    static const QRegularExpression reLink("\\[Context\\]\\((context://\\d+)\\)");
     QRegularExpressionMatchIterator iLink = reLink.globalMatch(doc->toPlainText());
 
     QList<QRegularExpressionMatch> matchesLink;
@@ -374,8 +375,10 @@ void ResponseText::handleCodeBlocks()
     copyImageFormat.setName("qrc:/gpt4all/icons/copy.svg");
 
     // Regex for code blocks
-    QRegularExpression reCode("```(.*?)(```|$)", QRegularExpression::DotMatchesEverythingOption);
+    static const QRegularExpression reCode("```(.*?)(```|$)", QRegularExpression::DotMatchesEverythingOption);
     QRegularExpressionMatchIterator iCode = reCode.globalMatch(doc->toPlainText());
+
+    static const QRegularExpression reWhitespace("^\\s*(\\w+)");
 
     QList<QRegularExpressionMatch> matchesCode;
     while (iCode.hasNext())
@@ -389,21 +392,24 @@ void ResponseText::handleCodeBlocks()
         cursor.removeSelectedText();
 
         QTextFrameFormat frameFormat = frameFormatBase;
-        QStringList lines = matchesCode[index].captured(1).split('\n');
+        QString capturedText = matchesCode[index].captured(1);
         QString codeLanguage;
-        if (!lines.empty()) {
-            if (lines[0].trimmed() == "python")
-                codeLanguage = lines.takeFirst().trimmed();
-            else if (lines[0].trimmed() == "cpp")
-                codeLanguage = lines.takeFirst().trimmed();
-            else if (lines[0].trimmed() == "c++")
-                codeLanguage = lines.takeFirst().trimmed();
-            else if (lines[0].trimmed() == "c")
-                codeLanguage = lines.takeFirst().trimmed();
-            else if (lines[0].trimmed() == "bash")
-                codeLanguage = lines.takeFirst().trimmed();
+
+        QRegularExpressionMatch match = reWhitespace.match(capturedText);
+        if (match.hasMatch()) {
+            const QString firstWord = match.captured(1).trimmed();
+            if (firstWord == "python"
+                || firstWord == "cpp"
+                || firstWord == "c++"
+                || firstWord == "c"
+                || firstWord == "bash") {
+                codeLanguage = firstWord;
+                capturedText.remove(0, match.captured(0).length());
+            }
         }
-\
+
+        const QStringList lines = capturedText.split('\n');
+
         QTextFrame *mainFrame = cursor.currentFrame();
         cursor.setCharFormat(textFormat);
 
