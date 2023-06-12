@@ -34,7 +34,7 @@ static Language stringToLanguage(const QString &language)
     if (language == "c")
         return Cpp;
     if (language == "bash")
-        return Cpp;
+        return Bash;
     return None;
 }
 
@@ -134,12 +134,12 @@ static QVector<HighlightingRule> cppHighlightingRules()
             "\\bauto\\b", "\\bbool\\b", "\\bbreak\\b", "\\bcase\\b", "\\bcatch\\b",
             "\\bchar\\b", "\\bclass\\b", "\\bconst\\b", "\\bconstexpr\\b", "\\bcontinue\\b",
             "\\bdefault\\b", "\\bdelete\\b", "\\bdo\\b", "\\bdouble\\b", "\\belse\\b",
-            "\\benum\\b", "\\bexplicit\\b", "\\bextern\\b", "\\bfalse\\b", "\\bfloat\\b",
-            "\\bfor\\b", "\\bfriend\\b", "\\bgoto\\b", "\\bif\\b", "\\binline\\b",
-            "\\bint\\b", "\\blong\\b", "\\bmutable\\b", "\\bnamespace\\b", "\\bnew\\b",
-            "\\bnoexcept\\b", "\\bnullptr\\b", "\\boperator\\b", "\\boverride\\b", "\\bprivate\\b",
-            "\\bprotected\\b", "\\bpublic\\b", "\\bregister\\b", "\\breinterpret_cast\\b", "\\breturn\\b",
-            "\\bshort\\b", "\\bsigned\\b", "\\bsizeof\\b", "\\bstatic\\b", "\\bstatic_assert\\b",
+            "\\belifdef\\b", "\\belifndef\\b", "\\bembed\\b", "\\benum\\b", "\\bexplicit\\b",
+            "\\bextern\\b", "\\bfalse\\b", "\\bfloat\\b", "\\bfor\\b", "\\bfriend\\b", "\\bgoto\\b",
+            "\\bif\\b", "\\binline\\b", "\\bint\\b", "\\blong\\b", "\\bmutable\\b", "\\bnamespace\\b",
+            "\\bnew\\b", "\\bnoexcept\\b", "\\bnullptr\\b", "\\boperator\\b", "\\boverride\\b",
+            "\\bprivate\\b", "\\bprotected\\b", "\\bpublic\\b", "\\bregister\\b", "\\breinterpret_cast\\b",
+            "\\breturn\\b", "\\bshort\\b", "\\bsigned\\b", "\\bsizeof\\b", "\\bstatic\\b", "\\bstatic_assert\\b",
             "\\bstatic_cast\\b", "\\bstruct\\b", "\\bswitch\\b", "\\btemplate\\b", "\\bthis\\b",
             "\\bthrow\\b", "\\btrue\\b", "\\btry\\b", "\\btypedef\\b", "\\btypeid\\b", "\\btypename\\b",
             "\\bunion\\b", "\\bunsigned\\b", "\\busing\\b", "\\bvirtual\\b", "\\bvoid\\b",
