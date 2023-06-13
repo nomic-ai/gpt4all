@@ -121,7 +121,7 @@ void LLModel::prompt(const std::string &prompt,
             if (id == token) return;
         }
 
-        const std::string_view str = tokenToString(id);
+        const std::string str = tokenToString(id);
 
         // Check if the provided str is part of our reverse prompts
         bool foundPartialReversePrompt = false;

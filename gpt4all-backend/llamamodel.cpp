@@ -177,7 +177,7 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
     return fres;
 }
 
-std::string_view LLamaModel::tokenToString(Token id) const
+std::string LLamaModel::tokenToString(Token id) const
 {
     return llama_token_to_str(d_ptr->ctx, id);
 }
