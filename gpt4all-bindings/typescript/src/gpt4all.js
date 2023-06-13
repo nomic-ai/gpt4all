@@ -105,11 +105,7 @@ async function createCompletion(
     if (options.verbose) {
         console.log("Sent: " + fullPrompt);
     }
-    const promisifiedRawPrompt = new Promise((resolve, rej) => {
-        llmodel.raw_prompt(fullPrompt, options, (s) => {
-            resolve(s);
-        });
-    });
+    const promisifiedRawPrompt = llmodel.raw_prompt(fullPrompt, options, (s) => {});
     return promisifiedRawPrompt.then((response) => {
         return {
             llmodel: llmodel.name(),

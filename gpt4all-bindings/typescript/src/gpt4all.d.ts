@@ -1,7 +1,7 @@
 /// <reference types="node" />
 declare module "gpt4all";
 
-export * from "./util.d.ts";
+export * from "./util.js";
 
 /** Type of the model */
 type ModelType = "gptj" | "llama" | "mpt" | "replit";
@@ -115,10 +115,19 @@ interface LoadModelOptions {
     verbose?: boolean;
 }
 
+/**
+ * Loads a machine learning model with the specified name. The defacto way to create a model.
+ * By default this will download a model from the official GPT4ALL website, if a model is not present at given path.
+ *
+ * @param {string} modelName - The name of the model to load.
+ * @param {LoadModelOptions|undefined} [options] - (Optional) Additional options for loading the model.
+ * @returns {Promise<LLModel>} A promise that resolves to an instance of the loaded LLModel.
+ */
 declare function loadModel(
     modelName: string,
     options?: LoadModelOptions
 ): Promise<LLModel>;
+
 
 /**
  * The nodejs equivalent to python binding's chat_completion
