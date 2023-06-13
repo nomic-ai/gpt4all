@@ -32,6 +32,9 @@
 #include <vector>
 #include <regex>
 #include <ggml.h>
+#ifdef GGML_USE_METAL
+#include <ggml-metal.h>
+#endif
 
 /**
 IMPORTANT: This model backend and convert script were developed for the original Huggingface
@@ -226,6 +229,15 @@ struct replit_model {
     struct replit_kv_cache kv_self;
 
     struct ggml_context * ctx;
+    void * eval_buf;
+    size_t eval_buf_size;
+    void * scr0_buf;
+    size_t scr0_buf_size;
+    void * scr1_buf;
+    size_t scr1_buf_size;
+    #ifdef GGML_USE_METAL
+    struct ggml_metal_context * ctx_metal;
+    #endif
     std::map<std::string, struct ggml_tensor *> tensors;
 };
 
@@ -304,7 +316,6 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         case 1: wtype = GGML_TYPE_F16;  break;
         case 2: wtype = GGML_TYPE_Q4_0; break;
         case 3: wtype = GGML_TYPE_Q4_1; break;
-        case 5: wtype = GGML_TYPE_Q4_2; break;
         default:
                 {
                     fprintf(stderr, "%s: invalid model file '%s' (bad f16 value %d)\n",
@@ -496,6 +507,32 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size / 1024.0 / 1024.0, n_tensors);
     }
 
+   model.eval_buf_size = 256u * 1024 * 1024;
+   model.eval_buf = malloc(model.eval_buf_size);
+   model.scr0_buf_size = 256u * 1024 * 1024;
+   model.scr0_buf = malloc(model.scr0_buf_size);
+   model.scr1_buf_size = 256u * 1024 * 1024;
+   model.scr1_buf = malloc(model.scr1_buf_size);
+
+#ifdef GGML_USE_METAL
+    model.ctx_metal = ggml_metal_init();
+    void* data_ptr = ggml_get_mem_buffer(model.ctx);
+    size_t data_size = ggml_get_mem_size(model.ctx);
+
+    #define GGML_CHECK_BUF(result) if (!(result)) {                     \
+        std::cerr << __func__ << ": failed to add buffer" << std::endl; \
+        ggml_free(model.ctx);                                           \
+        return false;                                                   \
+    }
+
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "data", data_ptr, data_size));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "kv", ggml_get_mem_buffer(model.kv_self.ctx), 
+                                                                ggml_get_mem_size(model.kv_self.ctx)));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "eval", model.eval_buf, model.eval_buf_size));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr0", model.scr0_buf, model.scr0_buf_size));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr1", model.scr1_buf, model.scr1_buf_size));
+#endif
+
     return true;
 }
 
@@ -533,30 +570,12 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
     const int n_head = hparams.n_head;
     const int n_vocab = hparams.n_vocab;
 
-    static size_t buf_size = 256u * 1024 * 1024;
-    static void * buf = malloc(buf_size);
-
-    if (mem_per_token > 0 && mem_per_token * N > buf_size) {
-        const size_t buf_size_new = 1.1 * (mem_per_token * N); // add 10% to account for ggml object overhead
-        // printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__,
-        // buf_size, buf_size_new);
-
-        // reallocate
-        buf_size = buf_size_new;
-        buf = realloc(buf, buf_size);
-        if (buf == nullptr) {
-            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, buf_size);
-            return false;
-        }
-    }
-
-    struct ggml_init_params params = {
-        .mem_size = buf_size,
-        .mem_buffer = buf,
+   struct ggml_init_params eval_ctx_params = {
+        .mem_size = model.eval_buf_size,
+        .mem_buffer = model.eval_buf,
         .no_alloc = false,
     };
-
-    struct ggml_context * ctx0 = ggml_init(params);
+    struct ggml_context * ctx0 = ggml_init(eval_ctx_params);
     struct ggml_cgraph gf = {.n_threads = n_threads};
 
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
@@ -565,7 +584,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
     struct ggml_tensor * inpL = ggml_get_rows(ctx0, model.wte_weight, embd);
 
     for (int il = 0; il < n_layer; ++il) {
-
+        ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
         struct ggml_tensor * cur;
 
         // a = self.ln_1(x)
@@ -624,7 +643,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
                 ggml_scale(ctx0, KQ, ggml_new_f32(ctx0, 1.0f / sqrt(float(n_embd) / n_head)));
 
             // Alibi
-            struct ggml_tensor * KQ_scaled_alibi = ggml_alibi(ctx0, ggml_cont(ctx0, KQ_scaled), n_past, n_head);
+            struct ggml_tensor * KQ_scaled_alibi = ggml_alibi(ctx0, KQ_scaled, n_past, n_head, 8.0f);
 
             // KQ_masked = mask_past(KQ_scaled)
             struct ggml_tensor * KQ_masked = ggml_diag_mask_inf(ctx0, KQ_scaled_alibi, n_past);
@@ -656,6 +675,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
             // projection
             { cur = ggml_mul_mat(ctx0, model.layers[il].c_attn_out_proj_weight, cur); }
         }
+        ggml_set_scratch(ctx0, {0, model.scr1_buf_size, model.scr1_buf, });
 
         inpL = ggml_add(ctx0, inpL, cur);
 
@@ -682,7 +702,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
         // x = x + n
         inpL = ggml_add(ctx0, inpL, cur);
     }
-
+    ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
     // norm
     {
         inpL = ggml_norm(ctx0, inpL);
@@ -690,6 +710,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
         inpL = ggml_mul(ctx0, ggml_repeat(ctx0, model.ln_f_weight, inpL), inpL);
     }
 
+    ggml_set_scratch(ctx0, {0, 0, nullptr, });
     // output embedding weight tied to input embedding
     inpL = ggml_mul_mat(ctx0, model.wte_weight, inpL);
 
@@ -698,7 +719,22 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
 
     // run the computation
     ggml_build_forward_expand(&gf, inpL);
+#ifdef GGML_USE_METAL
+    if (N == 1) {
+        // llama.cpp doesn't use metal for batch/prompt processing presently
+        // pending changes to the metal matmul kernel - only use it for generation (N=1)
+        ggml_metal_graph_compute(model.ctx_metal, &gf);
+        ggml_metal_get_tensor(model.ctx_metal, inpL);
+    } else {
+        // We need to sync the GPU KV cache with the CPU KV cache
+        ggml_metal_get_tensor(model.ctx_metal, model.kv_self.k);
+        ggml_metal_get_tensor(model.ctx_metal, model.kv_self.v);
+
+        ggml_graph_compute(ctx0, &gf);
+    }
+#else
     ggml_graph_compute(ctx0, &gf);
+#endif
 
     // std::cout << "Qcur" << std::endl;
     // print_tensor(Qcur);
@@ -882,6 +918,19 @@ int32_t Replit::threadCount() const
 
 Replit::~Replit()
 {
+    if(d_ptr->model->ctx) {
+        ggml_free(d_ptr->model->ctx);
+        d_ptr->model->ctx = nullptr;
+    }
+    if(d_ptr->model->eval_buf) {
+        free(d_ptr->model->eval_buf);
+    }
+    if(d_ptr->model->scr0_buf) {
+        free(d_ptr->model->scr0_buf);
+    }
+    if(d_ptr->model->scr1_buf) {
+        free(d_ptr->model->scr1_buf);
+    }
     delete d_ptr->model;
 }
 
@@ -965,7 +1014,28 @@ DLL_EXPORT const char *get_build_variant() {
 DLL_EXPORT bool magic_match(std::istream& f) {
     uint32_t magic = 0;
     f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
-    return magic == 0x7265706c;
+    if (magic != 0x7265706c) return false;
+    #ifdef GGML_USE_METAL
+    off_t offset = sizeof(uint32_t) * 5; // n_vocab, n_ctx, n_embd, n_head, n_layer
+    f.seekg(offset, std::ios_base::cur);
+    uint32_t ftype;
+    f.read(reinterpret_cast<char*>(&ftype), sizeof(ftype)); // ftype
+    const int32_t qntvr = ftype / GGML_QNT_VERSION_FACTOR;
+    ftype %= GGML_QNT_VERSION_FACTOR;
+    switch (ftype) {
+        case 1: return true; // GGML_TYPE_F16
+        case 2: // GGML_TYPE_Q4_0
+            if (qntvr != GGML_QNT_VERSION)
+            {
+                std::cerr << "replit: not using metal (unsupported qnt ver)" << std::endl;
+                return false;
+            }
+            return true;
+        default: return false;
+    }
+    #else
+    return true;
+    #endif
 }
 
 DLL_EXPORT LLModel *construct() {
