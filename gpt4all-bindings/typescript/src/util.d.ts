@@ -51,7 +51,7 @@ interface RetrieveModelOptions {
     modelPath?: string;
 }
 
-declare async function retrieveModel(
+declare function retrieveModel(
     model: string,
     options?: RetrieveModelOptions
 ): Promise<string>;

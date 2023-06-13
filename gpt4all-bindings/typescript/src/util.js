@@ -1,4 +1,4 @@
-const { createWriteStream, existsSync } = require("fs");
+const { createWriteStream, existsSync, unlink } = require("fs");
 const { performance } = require("node:perf_hooks");
 const path = require("node:path");
 const {mkdirp} = require("mkdirp");
@@ -76,16 +76,25 @@ function downloadModel(
                 if (options.debug) {
                     perf = performance.now();
                 }
+                wstream.on('finish', () => {
+                    if (options.debug) {
+                        console.log(
+                            "Time taken: ",
+                            (performance.now() - perf).toFixed(2),
+                            " ms"
+                        );
+                    }
+                    wstream.close();
+                });
+                wstream.on('error', (e) => {
+                    unlink(fullModelPath);
+                    wstream.close();
+                    reject(e);
+                })
                 for await (const chunk of readChunks(readable)) {
                     wstream.write(chunk);
                 }
-                if (options.debug) {
-                    console.log(
-                        "Time taken: ",
-                        (performance.now() - perf).toFixed(2),
-                        " ms"
-                    );
-                }
+                
                 resolve(fullModelPath);
             })
             .catch(reject);
