@@ -16,19 +16,11 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         _logger = _loggerFactory.CreateLogger<Gpt4AllModelFactory>();
     }
 
-    private IGpt4AllModel CreateModel(string modelPath, ModelType? modelType = null)
+    private unsafe IGpt4AllModel CreateModel(string modelPath)
     {
-        var modelType_ = modelType ?? ModelFileUtils.GetModelTypeFromModelFileHeader(modelPath);
+        _logger.LogInformation("Creating model path={ModelPath}", modelPath);
 
-        _logger.LogInformation("Creating model path={ModelPath} type={ModelType}", modelPath, modelType_);
-
-        var handle = modelType_ switch
-        {
-            ModelType.LLAMA => NativeMethods.llmodel_llama_create(),
-            ModelType.GPTJ => NativeMethods.llmodel_gptj_create(),
-            ModelType.MPT => NativeMethods.llmodel_mpt_create(),
-            _ => NativeMethods.llmodel_model_create(modelPath),
-        };
+        var handle = NativeMethods.llmodel_model_create(modelPath);
 
         _logger.LogDebug("Model created handle=0x{ModelHandle:X8}", handle);
         _logger.LogInformation("Model loading started");
@@ -44,18 +36,12 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
 
         var logger = _loggerFactory.CreateLogger<LLModel>();
 
-        var underlyingModel = LLModel.Create(handle, modelType_, logger: logger);
+        var underlyingModel = LLModel.Create(handle, logger: logger);
 
         Debug.Assert(underlyingModel.IsLoaded());
 
         return new Gpt4All(underlyingModel, logger: logger);
     }
 
-    public IGpt4AllModel LoadModel(string modelPath) => CreateModel(modelPath, modelType: null);
-
-    public IGpt4AllModel LoadMptModel(string modelPath) => CreateModel(modelPath, ModelType.MPT);
-
-    public IGpt4AllModel LoadGptjModel(string modelPath) => CreateModel(modelPath, ModelType.GPTJ);
-
-    public IGpt4AllModel LoadLlamaModel(string modelPath) => CreateModel(modelPath, ModelType.LLAMA);
+    public IGpt4AllModel LoadModel(string modelPath) => CreateModel(modelPath);
 }

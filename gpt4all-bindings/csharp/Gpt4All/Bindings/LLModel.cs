@@ -42,16 +42,12 @@ public record ModelRecalculatingEventArgs(bool IsRecalculating);
 public class LLModel : ILLModel
 {
     protected readonly IntPtr _handle;
-    private readonly ModelType _modelType;
     private readonly ILogger _logger;
     private bool _disposed;
 
-    public ModelType ModelType => _modelType;
-
-    internal LLModel(IntPtr handle, ModelType modelType, ILogger? logger = null)
+    internal LLModel(IntPtr handle, ILogger? logger = null)
     {
         _handle = handle;
-        _modelType = modelType;
         _logger = logger ?? NullLogger.Instance;
     }
 
@@ -60,9 +56,9 @@ public class LLModel : ILLModel
     /// </summary>
     /// <param name="handle">Pointer to underlying model</param>
     /// <param name="modelType">The model type</param>
-    public static LLModel Create(IntPtr handle, ModelType modelType, ILogger? logger = null)
+    public static LLModel Create(IntPtr handle, ILogger? logger = null)
     {
-        return new LLModel(handle, modelType, logger: logger);
+        return new LLModel(handle, logger: logger);
     }
 
     /// <summary>
@@ -196,21 +192,6 @@ public class LLModel : ILLModel
         NativeMethods.llmodel_model_destroy(_handle);
     }
 
-    protected void DestroyLLama()
-    {
-        NativeMethods.llmodel_llama_destroy(_handle);
-    }
-
-    protected void DestroyGptj()
-    {
-        NativeMethods.llmodel_gptj_destroy(_handle);
-    }
-
-    protected void DestroyMtp()
-    {
-        NativeMethods.llmodel_mpt_destroy(_handle);
-    }
-
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed) return;
@@ -220,21 +201,7 @@ public class LLModel : ILLModel
             // dispose managed state
         }
 
-        switch (_modelType)
-        {
-            case ModelType.LLAMA:
-                DestroyLLama();
-                break;
-            case ModelType.GPTJ:
-                DestroyGptj();
-                break;
-            case ModelType.MPT:
-                DestroyMtp();
-                break;
-            default:
-                Destroy();
-                break;
-        }
+        Destroy();
 
         _disposed = true;
     }
