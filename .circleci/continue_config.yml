@@ -335,7 +335,7 @@ workflows:
               only:
                 - main
   build-py-deploy:
-    #when: << pipeline.parameters.run-python-workflow >>
+    when: << pipeline.parameters.run-python-workflow >>
     jobs:
       - pypi-hold:
           type: approval
