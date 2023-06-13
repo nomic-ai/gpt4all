@@ -7,5 +7,4 @@ edition = "2021"
 links = "llmodel"
 
 [build-dependencies]
-pkg-config = "0.3.26"
 bindgen = "0.65.1"
