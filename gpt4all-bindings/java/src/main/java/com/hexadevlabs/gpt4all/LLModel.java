@@ -108,7 +108,7 @@ public  class LLModel implements AutoCloseable {
     }
 
     /**
-     * This may be set before any Model instance classe are instantiated to
+     * This may be set before any Model instance classes are instantiated to
      * set where the model may be found. This may be needed if setting
      * library search path by standard means is not available.
      */
