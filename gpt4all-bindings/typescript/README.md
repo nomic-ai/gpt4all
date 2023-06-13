@@ -35,7 +35,10 @@ const response = await createCompletion(ll, [
 - [yarn](https://yarnpkg.com/)
 - [node-gyp](https://github.com/nodejs/node-gyp)
     - all of its requirements.
-
+- (unix) gcc version 12
+    - These bindings use the C++ 20 standard.
+- (win) msvc version 143
+    - Can be obtained with visual studio 2022 build tools
 ### Build
 ```sh
 git clone https://github.com/nomic-ai/gpt4all.git
