@@ -59,10 +59,9 @@ use gpt4all_sys::{
 };
 use std::ffi::{c_int, CStr, CString};
 use std::fmt::Debug;
-use std::os::raw::c_char;
 use std::ptr::{addr_of_mut, null_mut};
+use std::slice;
 use std::str::Utf8Error;
-use std::{slice};
 
 /// A gpt4all model. This will have to be initialized via a call to [`Model::initialize`] to be
 /// useful.
@@ -85,8 +84,8 @@ impl Drop for Model {
     }
 }
 
-
 /// An initialized model. Obtained by calling [`Model::initialize`] on a [`Model`].
+#[derive(Debug)]
 pub struct InitModel {
     model: llmodel_model,
 }
@@ -224,9 +223,6 @@ impl Model {
 
         let error = ModelError::try_from(*error)?;
 
-        println!("model: {:?}", model);
-        println!("error: {:?}", error);
-
         match (error, model) {
             (
                 ModelError {
@@ -236,8 +232,10 @@ impl Model {
                 },
                 Some(model),
             ) => {
-                println!("model: {:?}", model);
-                Ok(Model { model_path: model_path_string, model: Some(model) })
+                Ok(Model {
+                    model_path: model_path_string,
+                    model: Some(model),
+                })
             }
             (
                 err @ ModelError {
@@ -249,11 +247,9 @@ impl Model {
                 unreachable!("model is null but error is {err}")
             }
             (model_error, None) => {
-                println!("model_error: {:?}", model_error);
                 Err(model_error.into())
             }
             (model_error, Some(_)) => {
-                println!("model_error: {:?}", model_error);
                 unreachable!("model is not null but error is not 0: {:?}", model_error)
             }
         }
@@ -276,17 +272,15 @@ impl Model {
     /// model.initialize()?;
     /// # Ok(())
     /// # }
-    pub fn initialize(self) -> Result<InitModel, InitError> {
-        if let Some(model) = self.model {
+    pub fn initialize(mut self) -> Result<InitModel, InitError> {
+        if let Some(model) = self.model.take() {
             let model_path = self.model_path.as_ptr();
 
             // Safety: FFI
             let load_model_success = unsafe { llmodel_loadModel(model, model_path) };
 
             if load_model_success {
-                Ok(InitModel {
-                    model,
-                })
+                Ok(InitModel { model })
             } else {
                 Err(InitError::Gpt4allError)
             }
