@@ -37,7 +37,9 @@ async function loadModel(modelName, options = {}) {
             break;
         }
     }
-
+    if(!libPath) {
+        throw Error("Could not find a valid path from " + libSearchPaths);
+    }
     const llmOptions = {
         model_name: appendBinSuffixIfMissing(modelName),
         model_path: loadOptions.modelPath,
