@@ -1,10 +1,9 @@
-import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } from '../src/gpt4all.js'
+import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
-const ll = new LLModel({
-    model_name: 'ggml-vicuna-7b-1.1-q4_2.bin',
-    model_path: './', 
-    library_path: DEFAULT_LIBRARIES_DIRECTORY
-});
+const ll = await loadModel(
+    'ggml-gpt4all-j-v1.3-groovy.bin',
+    { verbose: true }
+);
 
 try {
    class Extended extends LLModel {
@@ -26,21 +25,15 @@ console.log("type: " + ll.type());
 console.log("Default directory for models", DEFAULT_DIRECTORY);
 console.log("Default directory for libraries", DEFAULT_LIBRARIES_DIRECTORY);
 
-console.log(await createCompletion(
-    ll,
-    [
-        { role : 'system', content: 'You are a girl who likes playing league of legends.'  },
-        { role : 'user', content: 'What is the best top laner to play right now?'  }, 
-    ],
-    { verbose: false}
-));
+const completion1 = await createCompletion(ll, [ 
+    { role : 'system', content: 'You are a girl who likes playing league of legends.'  },
+    { role : 'user', content: 'What is the best top laner to play right now?'  }, 
+])
+console.log(completion1.choices[0].message)
 
+const completion2 = await createCompletion(ll, [
+    { role : 'system', content: 'You are a girl who likes playing league of legends.'  },
+    { role : 'user', content: 'What is the best bottom laner to play right now?'  }, 
+])
 
-console.log(await createCompletion(
-    ll,
-    [
-        { role : 'user', content: 'What is the best bottom laner to play right now?'  }, 
-    ],
-))
-
-
+ console.log(completion2.choices[0].message)

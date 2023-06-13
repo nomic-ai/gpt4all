@@ -6,6 +6,7 @@ async function createPrebuilds(combinations) {
             platform,
             arch,
             napi: true,
+            target: ["18.15.0"]
         };
         try {
             await createPrebuild(opts);
@@ -36,7 +37,7 @@ function createPrebuild(opts) {
 let prebuildConfigs;
 if(process.platform === 'win32') {
    prebuildConfigs = [
-    { platform: "win32", arch: "x64", }
+    { platform: "win32", arch: "x64" }
    ];
 } else {
    //Unsure if darwin works, need mac tester!
