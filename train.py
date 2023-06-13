@@ -1,5 +1,5 @@
 import os
-from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler, LlamaForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler
 import torch
 from torch.optim import AdamW
 from argparse import ArgumentParser
@@ -53,6 +53,7 @@ def train(accelerator, config):
 
 
     checkpoint = config["gradient_checkpointing"]
+
     model = AutoModelForCausalLM.from_pretrained(config["model_name"], 
                                                     use_cache=False if checkpoint else True,
                                                     trust_remote_code=True) 
@@ -117,11 +118,13 @@ def train(accelerator, config):
     if config["checkpoint"]:
         accelerator.load_state(config["checkpoint"])
         accelerator.print(f"Resumed from checkpoint: {config['checkpoint']}")
-        path = os.path.basename(config["train_args"]["resume_from_checkpoint"])
+        path = os.path.basename(config["checkpoint"])
         training_difference = os.path.splitext(path)[0]
         resume_step = int(training_difference.replace("step_", ""))
-        accelerator.skip_first_batches(train_dataloader, resume_step)
+        train_dataloader = accelerator.skip_first_batches(train_dataloader, resume_step)
         accelerator.print(f"Resuming from step {resume_step}")
+    else:
+        resume_step = 0
 
 
     # log gradients
@@ -131,12 +134,14 @@ def train(accelerator, config):
     for epoch in range(config["num_epochs"]):
         train_loss = MeanMetric(nan_strategy="error").to(model.device)
         for step, batch in enumerate(tqdm(train_dataloader)):
+            curr_step = epoch * len(train_dataloader) + step
             model.train()
             outputs = model(**batch)
             loss = outputs.loss
 
             # gather loss before backprop in case of gradient accumulation
             loss_values = accelerator.gather_for_metrics({"loss": loss.detach().float()})
+            accelerator.log({"loss": torch.mean(loss_values["loss"]).item()}, step=curr_step)
             train_loss.update(loss_values["loss"])
 
             loss = loss / gradient_accumulation_steps
@@ -146,7 +151,6 @@ def train(accelerator, config):
             # log LR in case something weird happens 
             if step > 0 and step % (config["eval_every"] // 10) == 0:
                 if config["wandb"]:
-                    curr_step = step + epoch * len(train_dataloader)
                     accelerator.log({"lr": scheduler.get_last_lr()[0]}, step=curr_step)
 
             if (step + 1) % gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
@@ -156,7 +160,6 @@ def train(accelerator, config):
 
 
             if step > 0 and step % config["save_every"] == 0:
-                curr_step = step + epoch * len(train_dataloader)
                 accelerator.save_state(f"{config['output_dir']}/step_{curr_step}")
 
             if step > 0 and (step % config["eval_every"] == 0 or step == len(train_dataloader) - 1):
@@ -170,7 +173,6 @@ def train(accelerator, config):
                 }
 
                 if config["wandb"]:
-                    curr_step = step + epoch * len(train_dataloader)
                     accelerator.log({**log_train, **log_val}, step=curr_step)
 
                 accelerator.print(f"Current LR: {scheduler.get_last_lr()[0]}")
