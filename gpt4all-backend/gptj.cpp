@@ -907,7 +907,7 @@ LLModel::Token GPTJ::sampleToken(PromptContext &promptCtx) const
         d_ptr->rng);
 }
 
-std::string_view GPTJ::tokenToString(Token id) const
+std::string GPTJ::tokenToString(Token id) const
 {
     return d_ptr->vocab.id_to_token[id];
 }
