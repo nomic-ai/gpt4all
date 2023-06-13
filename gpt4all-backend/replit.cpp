@@ -910,7 +910,7 @@ std::vector<LLModel::Token> Replit::tokenize(PromptContext &, const std::string 
     return replit_tokenizer_tokenize(d_ptr->vocab, str);
 }
 
-std::string_view Replit::tokenToString(LLModel::Token id) const
+std::string Replit::tokenToString(LLModel::Token id) const
 {
     return replit_tokenizer_detokenize(d_ptr->vocab, {id});
 }

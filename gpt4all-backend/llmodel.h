@@ -86,7 +86,7 @@ protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
     virtual std::vector<Token> tokenize(PromptContext &, const std::string&) const = 0;
-    virtual std::string_view tokenToString(Token) const = 0;
+    virtual std::string tokenToString(Token) const = 0;
     virtual Token sampleToken(PromptContext &ctx) const = 0;
     virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const = 0;
     virtual int32_t contextLength() const = 0;

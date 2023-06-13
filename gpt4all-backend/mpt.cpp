@@ -820,7 +820,7 @@ std::vector<LLModel::Token> MPT::tokenize(PromptContext &, const std::string &st
     return ::gpt_tokenize(d_ptr->vocab, str);
 }
 
-std::string_view MPT::tokenToString(Token id) const
+std::string MPT::tokenToString(Token id) const
 {
     return d_ptr->vocab.id_to_token[id];
 }
