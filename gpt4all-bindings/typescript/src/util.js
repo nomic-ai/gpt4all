@@ -1,4 +1,4 @@
-const { createWriteStream, existsSync, unlink } = require("fs");
+const { createWriteStream, existsSync, unlink } = require("node:fs");
 const { performance } = require("node:perf_hooks");
 const path = require("node:path");
 const {mkdirp} = require("mkdirp");
@@ -162,4 +162,5 @@ module.exports = {
     appendBinSuffixIfMissing,
     downloadModel,
     retrieveModel,
+    listModels
 };
