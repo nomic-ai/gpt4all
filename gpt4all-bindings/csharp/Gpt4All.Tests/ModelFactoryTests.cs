@@ -1,3 +1,4 @@
+﻿using System.IO;
 using Xunit;
 
 namespace Gpt4All.Tests;
@@ -11,21 +12,14 @@ public class ModelFactoryTests
         _modelFactory = new Gpt4AllModelFactory();
     }
 
-    [Fact]
-    public void CanLoadLlamaModel()
-    {
-        using var model = _modelFactory.LoadLlamaModel(Constants.LLAMA_MODEL_PATH);
-    }
 
-    [Fact]
-    public void CanLoadGptjModel()
+    [Theory]
+    [InlineData(Constants.GPTJ_MODEL_PATH)]
+    [InlineData(Constants.MPT_MODEL_PATH)]
+    [InlineData(Constants.LLAMA_MODEL_PATH)]
+    public void CanLoadModel(string modelFilename)
     {
-        using var model = _modelFactory.LoadGptjModel(Constants.GPTJ_MODEL_PATH);
-    }
-
-    [Fact]
-    public void CanLoadMptModel()
-    {
-        using var model = _modelFactory.LoadMptModel(Constants.MPT_MODEL_PATH);
+        var modelPath = Path.Join(Constants.MODELS_BASE_DIR, modelFilename);
+        using var model = _modelFactory.LoadModel(modelPath);
     }
 }
