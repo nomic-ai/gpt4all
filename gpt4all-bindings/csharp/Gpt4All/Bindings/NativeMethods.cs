@@ -56,31 +56,12 @@ internal static unsafe partial class NativeMethods
     [return: MarshalAs(UnmanagedType.I1)]
     public delegate bool LlmodelRecalculateCallback(bool isRecalculating);
 
-    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    [return: NativeTypeName("llmodel_model")]
-    public static extern IntPtr llmodel_gptj_create();
-
-    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern void llmodel_gptj_destroy([NativeTypeName("llmodel_model")] IntPtr gptj);
-
-    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    [return: NativeTypeName("llmodel_model")]
-    public static extern IntPtr llmodel_mpt_create();
-
-    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern void llmodel_mpt_destroy([NativeTypeName("llmodel_model")] IntPtr mpt);
-
-    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    [return: NativeTypeName("llmodel_model")]
-    public static extern IntPtr llmodel_llama_create();
-
-    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern void llmodel_llama_destroy([NativeTypeName("llmodel_model")] IntPtr llama);
-
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
     [return: NativeTypeName("llmodel_model")]
-    public static extern IntPtr llmodel_model_create(
-        [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string model_path);
+    public static extern IntPtr llmodel_model_create2(
+        [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string model_path,
+        [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string build_variant,
+        out IntPtr error);
 
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern void llmodel_model_destroy([NativeTypeName("llmodel_model")] IntPtr model);
