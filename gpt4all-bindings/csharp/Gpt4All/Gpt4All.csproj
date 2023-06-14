@@ -8,4 +8,21 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     </ItemGroup>
+    <ItemGroup>
+        <!-- Windows -->
+        <None Include="..\lib\*.dll" Pack="true" PackagePath="runtimes\win-x64\native\%(Filename)%(Extension)" />
+        <!-- Linux -->
+        <None Include="..\lib\*.so" Pack="true" PackagePath="runtimes\linux-x64\native\%(Filename)%(Extension)" />
+        <!-- MacOS -->
+        <None Include="..\lib\*.dylib" Pack="true" PackagePath="runtimes\osx\native\%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Windows -->
+        <None Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="..\lib\*.dll" Visible="False" CopyToOutputDirectory="PreserveNewest" />
+        <!-- Linux -->
+        <None Condition="$([MSBuild]::IsOSPlatform('Linux'))" Include="..\lib\*.so" Visible="False" CopyToOutputDirectory="PreserveNewest" />
+         <!-- MacOS -->
+        <None Condition="$([MSBuild]::IsOSPlatform('OSX'))" Include="..\lib\*.dylib" Visible="False" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
 </Project>
