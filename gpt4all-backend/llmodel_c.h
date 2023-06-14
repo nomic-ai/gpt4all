@@ -41,20 +41,21 @@ typedef struct llmodel_error llmodel_error;
  * behavior.
  */
 struct llmodel_prompt_context {
-    float *logits;          // logits of current context
-    size_t logits_size;     // the size of the raw logits vector
-    int32_t *tokens;        // current tokens in the context window
-    size_t tokens_size;     // the size of the raw tokens vector
-    int32_t n_past;         // number of tokens in past conversation
-    int32_t n_ctx;          // number of tokens possible in context window
-    int32_t n_predict;      // number of tokens to predict
-    int32_t top_k;          // top k logits to sample from
-    float top_p;            // nucleus sampling probability threshold
-    float temp;             // temperature to adjust model's output distribution
-    int32_t n_batch;        // number of predictions to generate in parallel
-    float repeat_penalty;   // penalty factor for repeated tokens
-    int32_t repeat_last_n;  // last n tokens to penalize
-    float context_erase;    // percent of context to erase if we exceed the context window
+    float *logits;               // logits of current context
+    size_t logits_size;          // the size of the raw logits vector
+    int32_t *tokens;             // current tokens in the context window
+    size_t tokens_size;          // the size of the raw tokens vector
+    const char **reversePrompts; // A NULL pointer terminated list of reverse prompts represented as strings.
+    int32_t n_past;              // number of tokens in past conversation
+    int32_t n_ctx;               // number of tokens possible in context window
+    int32_t n_predict;           // number of tokens to predict
+    int32_t top_k;               // top k logits to sample from
+    float top_p;                 // nucleus sampling probability threshold
+    float temp;                  // temperature to adjust model's output distribution
+    int32_t n_batch;             // number of predictions to generate in parallel
+    float repeat_penalty;        // penalty factor for repeated tokens
+    int32_t repeat_last_n;       // last n tokens to penalize
+    float context_erase;         // percent of context to erase if we exceed the context window
 };
 #ifndef __cplusplus
 typedef struct llmodel_prompt_context llmodel_prompt_context;

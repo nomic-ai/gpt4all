@@ -3,6 +3,8 @@
 
 #include <cstring>
 #include <cerrno>
+#include <string>
+#include <string_view>
 #include <utility>
 
 
@@ -115,33 +117,33 @@ bool recalculate_wrapper2(bool is_recalculating, void *user_data) {
     return callback(is_recalculating);
 }
 
-static LLModel::PromptContext CToCppPromptContext(llmodel_prompt_context *ctx) {
-    LLModel::PromptContext fres;
-    fres.n_past = ctx->n_past;
-    fres.n_ctx = ctx->n_ctx;
-    fres.n_predict = ctx->n_predict;
-    fres.top_k = ctx->top_k;
-    fres.top_p = ctx->top_p;
-    fres.temp = ctx->temp;
-    fres.n_batch = ctx->n_batch;
-    fres.repeat_penalty = ctx->repeat_penalty;
-    fres.repeat_last_n = ctx->repeat_last_n;
-    fres.contextErase = ctx->context_erase;
-    return fres;
+static void CToCppPromptContext(llmodel_prompt_context *input, LLModel::PromptContext& output) {
+    output.n_past = input->n_past;
+    output.n_ctx = input->n_ctx;
+    output.n_predict = input->n_predict;
+    output.top_k = input->top_k;
+    output.top_p = input->top_p;
+    output.temp = input->temp;
+    output.n_batch = input->n_batch;
+    output.repeat_penalty = input->repeat_penalty;
+    output.repeat_last_n = input->repeat_last_n;
+    output.contextErase = input->context_erase;
+    std::unordered_set<std::string_view> cppReversePrompts;
+    for (const char **reversePrompt = input->reversePrompts; *reversePrompt; reversePrompt++) {
+        cppReversePrompts.emplace(*reversePrompt);
+    }
 }
-static llmodel_prompt_context CppToCPromptContext(LLModel::PromptContext &ctx) {
-    llmodel_prompt_context fres;
-    fres.n_past = ctx.n_past;
-    fres.n_ctx = ctx.n_ctx;
-    fres.n_predict = ctx.n_predict;
-    fres.top_k = ctx.top_k;
-    fres.top_p = ctx.top_p;
-    fres.temp = ctx.temp;
-    fres.n_batch = ctx.n_batch;
-    fres.repeat_penalty = ctx.repeat_penalty;
-    fres.repeat_last_n = ctx.repeat_last_n;
-    fres.context_erase = ctx.contextErase;
-    return fres;
+static void CppToCPromptContext(LLModel::PromptContext &input, llmodel_prompt_context *output) {
+    output->n_past = input.n_past;
+    output->n_ctx = input.n_ctx;
+    output->n_predict = input.n_predict;
+    output->top_k = input.top_k;
+    output->top_p = input.top_p;
+    output->temp = input.temp;
+    output->n_batch = input.n_batch;
+    output->repeat_penalty = input.repeat_penalty;
+    output->repeat_last_n = input.repeat_last_n;
+    output->context_erase = input.contextErase;
 }
 
 void llmodel_prompt(llmodel_model model, const char *prompt,
@@ -161,7 +163,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
         std::bind(&recalculate_wrapper, std::placeholders::_1, reinterpret_cast<void*>(recalculate_callback));
 
     // Copy the C prompt context
-    wrapper->promptContext = CToCppPromptContext(ctx);
+    CToCppPromptContext(ctx, wrapper->promptContext);
 
     // Call the C++ prompt method
     wrapper->llModel->prompt(prompt, prompt_func, response_func, recalc_func, wrapper->promptContext);
@@ -174,7 +176,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     ctx->tokens_size = wrapper->promptContext.tokens.size();
 
     // Update the rest of the C prompt context
-    *ctx = CppToCPromptContext(wrapper->promptContext);
+    CppToCPromptContext(wrapper->promptContext, ctx);
 }
 
 bool llmodel_prompt2(llmodel_model model, const char *prompt,
@@ -195,7 +197,7 @@ bool llmodel_prompt2(llmodel_model model, const char *prompt,
         std::bind(&recalculate_wrapper2, std::placeholders::_1, reinterpret_cast<void*>(recalculate_callback));
 
     // Copy the C prompt context
-    wrapper->promptContext = CToCppPromptContext(ctx);
+    CToCppPromptContext(ctx, wrapper->promptContext);
 
     // Call the C++ prompt method
     try {
@@ -215,7 +217,7 @@ bool llmodel_prompt2(llmodel_model model, const char *prompt,
     ctx->tokens_size = wrapper->promptContext.tokens.size();
 
     // Update the rest of the C prompt context
-    *ctx = CppToCPromptContext(wrapper->promptContext);
+    CppToCPromptContext(wrapper->promptContext, ctx);
 
     return fres;
 }

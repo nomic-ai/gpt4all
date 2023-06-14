@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <iostream>
-#include <unordered_set>
 #include <tuple>
 #include <initializer_list>
 
@@ -98,8 +97,6 @@ void LLModel::prompt(const std::string &templatePrefix,
 
     std::string cachedResponse;
     std::vector<Token> cachedTokens;
-    std::unordered_set<std::string> reversePrompts
-        = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context" };
 
     // predict next tokens
     for (int i = 0; i < promptCtx.n_predict; i++) {
@@ -135,11 +132,11 @@ void LLModel::prompt(const std::string &templatePrefix,
         // Check if the provided str is part of our reverse prompts
         bool foundPartialReversePrompt = false;
         const std::string completed = cachedResponse + std::string(str);
-        if (reversePrompts.find(completed) != reversePrompts.end())
+        if (promptCtx.reversePrompts.find(completed) != promptCtx.reversePrompts.end())
             return;
 
         // Check if it partially matches our reverse prompts and if so, cache
-        for (const auto& s : reversePrompts) {
+        for (const auto& s : promptCtx.reversePrompts) {
             if (s.compare(0, completed.size(), completed) == 0) {
                 foundPartialReversePrompt = true;
                 cachedResponse = completed;

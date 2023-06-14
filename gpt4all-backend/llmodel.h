@@ -8,6 +8,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <limits>
+#include <unordered_set>
 #include <cstdint>
 #include <cmath>
 
@@ -50,6 +51,7 @@ public:
     struct PromptContext {
         std::vector<float> logits;      // logits of current context
         std::vector<int32_t> tokens;    // current tokens in the context window
+        std::unordered_set<std::string> reversePrompts = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context" };
         int32_t n_past = 0;             // number of tokens in past conversation
         int32_t n_ctx = 0;              // number of tokens possible in context window
         int32_t n_predict = 200;
