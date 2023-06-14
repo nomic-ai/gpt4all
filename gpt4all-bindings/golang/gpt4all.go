@@ -10,6 +10,7 @@ package gpt4all
 //                            float top_p, float temp, int n_batch,float ctx_erase);
 // void free_model(void *state_ptr);
 // extern unsigned char getTokenCallback(void *, char *);
+// void llmodel_set_implementation_search_path(const char *path);
 import "C"
 import (
 	"fmt"
@@ -26,6 +27,10 @@ type Model struct {
 
 func New(model string, opts ...ModelOption) (*Model, error) {
 	ops := NewModelOptions(opts...)
+
+	if ops.LibrarySearchPath != "" {
+		C.llmodel_set_implementation_search_path(C.CString(ops.LibrarySearchPath))
+	}
 
 	state := C.load_model(C.CString(model), C.int(ops.Threads))
 
