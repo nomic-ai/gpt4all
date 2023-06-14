@@ -19,11 +19,13 @@ public:
     size_t stateSize() const override;
     size_t saveState(uint8_t *dest) const override;
     size_t restoreState(const uint8_t *src) override;
-    void prompt(const std::string &prompt,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &ctx) override;
+    void prompt(const std::string &templatePrefix,
+                const std::string &templateSuffix,
+                const std::string &mainPrompt,
+                PromptCallback promptCallback,
+                ResponseCallback responseCallback,
+                RecalculateCallback recalculateCallback,
+                PromptContext &promptCtx) override;
 
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
@@ -52,7 +54,7 @@ private Q_SLOTS:
 
 private:
     PromptContext *m_ctx;
-    std::function<bool(int32_t, const std::string&)> m_responseCallback;
+    LLModel::ResponseCallback m_responseCallback;
     QString m_modelName;
     QString m_apiKey;
     QList<QString> m_context;

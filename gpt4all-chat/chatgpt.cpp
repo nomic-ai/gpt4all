@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 #include <QThread>
 #include <QEventLoop>
@@ -64,11 +65,13 @@ size_t ChatGPT::restoreState(const uint8_t *src)
     return 0;
 }
 
-void ChatGPT::prompt(const std::string &prompt,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &promptCtx) {
+void ChatGPT::prompt(const std::string &templatePrefix,
+                     const std::string &templateSuffix,
+                     const std::string &mainPrompt,
+                     PromptCallback promptCallback,
+                     ResponseCallback responseCallback,
+                     RecalculateCallback recalculateCallback,
+                     PromptContext &promptCtx) {
 
     Q_UNUSED(promptCallback);
     Q_UNUSED(recalculateCallback);
@@ -102,7 +105,7 @@ void ChatGPT::prompt(const std::string &prompt,
 
     QJsonObject promptObject;
     promptObject.insert("role", "user");
-    promptObject.insert("content", QString::fromStdString(prompt));
+    promptObject.insert("content", QString::fromStdString(mainPrompt));
     messages.append(promptObject);
     root.insert("messages", messages);
 
@@ -129,7 +132,7 @@ void ChatGPT::prompt(const std::string &prompt,
 #endif
 
     m_ctx->n_past += 1;
-    m_context.append(QString::fromStdString(prompt));
+    m_context.append(QString::fromStdString(mainPrompt));
     m_context.append(m_currentResponse);
 
     m_ctx = nullptr;
@@ -165,8 +168,8 @@ void ChatGPT::handleReadyRead()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        m_responseCallback(-1, QString("\nERROR: 2 ChatGPT responded with error code \"%1-%2\" %3\n")
-            .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
+        throw Exception(QString("\nERROR: 2 ChatGPT responded with error code \"%1-%2\" %3\n")
+                        .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
         return;
     }
 
@@ -185,8 +188,8 @@ void ChatGPT::handleReadyRead()
         QJsonParseError err;
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
         if (err.error != QJsonParseError::NoError) {
-            m_responseCallback(-1, QString("\nERROR: ChatGPT responded with invalid json \"%1\"\n")
-                .arg(err.errorString()).toStdString());
+            throw Exception(QString("\nERROR: ChatGPT responded with invalid json \"%1\"\n")
+                            .arg(err.errorString()).toStdString());
             continue;
         }
 
@@ -198,7 +201,7 @@ void ChatGPT::handleReadyRead()
         Q_ASSERT(m_ctx);
         Q_ASSERT(m_responseCallback);
         m_currentResponse += content;
-        if (!m_responseCallback(0, content.toStdString())) {
+        if (!m_responseCallback(content.toStdString(), NAN)) {
             reply->abort();
             return;
         }

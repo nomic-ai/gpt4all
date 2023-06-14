@@ -33,6 +33,7 @@ protected:
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
     int32_t contextLength() const override;
     const std::vector<Token>& endTokens() const override;
+    float getLastLogit(PromptContext &ctx, size_t tokenCount) const override;
 };
 
 #endif // MPT_H

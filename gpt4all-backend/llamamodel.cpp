@@ -201,6 +201,11 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
     return fres;
 }
 
+float LLamaModel::getLastLogit(PromptContext &, size_t tokenCount) const
+{
+    return llama_get_logits(d_ptr->ctx)[tokenCount];
+}
+
 #if defined(_WIN32)
 #define DLL_EXPORT __declspec(dllexport)
 #else

@@ -3,6 +3,8 @@
 #include <cassert>
 #include <iostream>
 #include <unordered_set>
+#include <tuple>
+#include <initializer_list>
 
 void LLModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {
     size_t i = 0;
@@ -26,10 +28,12 @@ stop_generating:
     recalculate(false);
 }
 
-void LLModel::prompt(const std::string &prompt,
-                     std::function<bool(int32_t)> promptCallback,
-                     std::function<bool(int32_t, const std::string&)> responseCallback,
-                     std::function<bool(bool)> recalculateCallback,
+void LLModel::prompt(const std::string &templatePrefix,
+                     const std::string &templateSuffix,
+                     const std::string &mainPrompt,
+                     PromptCallback promptCallback,
+                     ResponseCallback responseCallback,
+                     RecalculateCallback recalculateCallback,
                      PromptContext &promptCtx)
 {
     if (!isModelLoaded()) {
@@ -37,54 +41,59 @@ void LLModel::prompt(const std::string &prompt,
         return;
     }
 
-    // tokenize the prompt
-    std::vector<Token> embd_inp = tokenize(promptCtx, prompt);
+    using PromptList = std::initializer_list<std::tuple<const std::string&, bool>>;
+    for (const auto& [prompt, isPromptTemplate] : PromptList{{templatePrefix, true}, {mainPrompt, false}, {templateSuffix, true}}) {
+        if (prompt.empty()) continue;
 
-    // save the context size
-    promptCtx.n_ctx = contextLength();
+        // tokenize the prompt
+        std::vector<Token> embd_inp = tokenize(promptCtx, prompt);
 
-    if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
-        responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
-        std::cerr << implementation().modelType << " ERROR: The prompt is" << embd_inp.size() <<
-            "tokens and the context window is" << promptCtx.n_ctx << "!\n";
-        return;
-    }
+        // save the context size
+        promptCtx.n_ctx = contextLength();
 
-    promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
-    promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
-
-    // process the prompt in batches
-    size_t i = 0;
-    while (i < embd_inp.size()) {
-        size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
-        std::vector<Token> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
-
-        // Check if the context has run out...
-        if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
-            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
-            // Erase the first percentage of context from the tokens...
-            std::cerr << implementation().modelType << ": reached the end of the context window so resizing\n";
-            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
-            promptCtx.n_past = promptCtx.tokens.size();
-            recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
-        }
-
-        if (!evalTokens(promptCtx, batch)) {
-            std::cerr << implementation().modelType << " ERROR: Failed to process prompt\n";
+        if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
+            throw Exception("ERROR: The prompt size exceeds the context window size and cannot be processed.");
+            std::cerr << implementation().modelType << " ERROR: The prompt is" << embd_inp.size() <<
+                "tokens and the context window is" << promptCtx.n_ctx << "!\n";
             return;
         }
 
-        size_t tokens = batch_end - i;
-        for (size_t t = 0; t < tokens; ++t) {
-            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
-                promptCtx.tokens.erase(promptCtx.tokens.begin());
-            promptCtx.tokens.push_back(batch.at(t));
-            if (!promptCallback(batch.at(t)))
+        promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
+        promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
+
+        // process the prompt in batches
+        size_t i = 0;
+        while (i < embd_inp.size()) {
+            size_t batch_end = std::min(i + promptCtx.n_batch, embd_inp.size());
+            std::vector<Token> batch(embd_inp.begin() + i, embd_inp.begin() + batch_end);
+
+            // Check if the context has run out...
+            if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
+                const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
+                // Erase the first percentage of context from the tokens...
+                std::cerr << implementation().modelType << ": reached the end of the context window so resizing\n";
+                promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
+                promptCtx.n_past = promptCtx.tokens.size();
+                recalculateContext(promptCtx, recalculateCallback);
+                assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
+            }
+
+            if (!evalTokens(promptCtx, batch)) {
+                std::cerr << implementation().modelType << " ERROR: Failed to process prompt\n";
                 return;
+            }
+
+            size_t tokens = batch_end - i;
+            for (size_t t = 0; t < tokens; ++t) {
+                if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
+                    promptCtx.tokens.erase(promptCtx.tokens.begin());
+                promptCtx.tokens.push_back(batch.at(t));
+                if (!promptCallback(tokenToString(batch.at(t)), 0.0f/*TODO*/, isPromptTemplate))
+                    return;
+            }
+            promptCtx.n_past += batch.size();
+            i = batch_end;
         }
-        promptCtx.n_past += batch.size();
-        i = batch_end;
     }
 
     std::string cachedResponse;
@@ -151,7 +160,7 @@ void LLModel::prompt(const std::string &prompt,
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
             //TODO: Conversion to std::string can be avoided here...
-            if (!responseCallback(t, std::string(tokenToString(t))))
+            if (!responseCallback(tokenToString(t), getLastLogit(promptCtx, promptCtx.tokens.size())))
                 return;
         }
         cachedTokens.clear();

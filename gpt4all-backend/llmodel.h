@@ -6,8 +6,10 @@
 #include <vector>
 #include <string_view>
 #include <fstream>
-#include <cstdint>
+#include <stdexcept>
 #include <limits>
+#include <cstdint>
+#include <cmath>
 
 class Dlhandle;
 
@@ -17,6 +19,10 @@ public:
     using PromptCallback = std::function<bool(std::string_view token, float logit, bool isPartOfTemplate)>;
     using ResponseCallback = std::function<bool(std::string_view token, float logit)>;
     using RecalculateCallback = std::function<bool(bool isRecalculating)>;
+
+    struct Exception : public std::runtime_error::runtime_error {
+        using std::runtime_error::runtime_error;
+    };
 
     class Implementation {
         LLModel *(*construct_)();
@@ -65,11 +71,12 @@ public:
     virtual size_t stateSize() const { return 0; }
     virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
     virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
-    virtual void prompt(const std::string &prompt,
-                        std::function<bool(int32_t)> promptCallback,
-                        std::function<bool(int32_t, const std::string&)> responseCallback,
-                        std::function<bool(bool)> recalculateCallback,
-                        PromptContext &ctx);
+    [[deprecated("Please use the new prompt() overload with the new callbacks!")]]
+    void prompt(const std::string &prompt,
+                std::function<bool(int32_t)> promptCallback,
+                std::function<bool(int32_t, const std::string&)> responseCallback,
+                std::function<bool(bool)> recalculateCallback,
+                PromptContext &ctx);
     virtual void prompt(const std::string &templatePrefix,
                         const std::string &templateSuffix,
                         const std::string &prompt,
@@ -101,6 +108,7 @@ protected:
     virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const = 0;
     virtual int32_t contextLength() const = 0;
     virtual const std::vector<Token>& endTokens() const = 0;
+    virtual float getLastLogit(PromptContext &/*ctx*/, size_t /*tokenCount*/) const {return NAN;};
 
     // This is a helper function called from the default implementation of 'prompt' but it can be
     // shared by all base classes so it isn't virtual

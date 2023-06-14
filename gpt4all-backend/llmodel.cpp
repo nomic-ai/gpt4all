@@ -147,3 +147,27 @@ void LLModel::setImplementationsSearchPath(const std::string& path) {
 const std::string& LLModel::implementationsSearchPath() {
     return s_implementations_search_path;
 }
+
+void LLModel::prompt(const std::string &mainPrompt,
+                     std::function<bool(int32_t)> promptCallback,
+                     std::function<bool(int32_t, const std::string&)> responseCallback,
+                     std::function<bool(bool)> recalculateCallback,
+                     PromptContext &promptCtx)
+{
+    // Definitely not meant to be efficient, just a temporary redirect to the new prompt function
+    try {
+        const auto toToken = [this, &promptCtx] (std::string_view token) {
+            return tokenize(promptCtx, std::string(token))[0];
+        };
+        prompt("", "", mainPrompt,
+           [&] (std::string_view token, float, bool) {
+            return promptCallback(toToken(token));
+        }, [&] (std::string_view token, float) {
+            return responseCallback(toToken(token), std::string(token));
+        }, [&] (bool isRecalculating) {
+            return recalculateCallback(isRecalculating);
+        }, promptCtx);
+    } catch (const Exception& e) {
+        responseCallback(-1, e.what());
+    }
+}

@@ -943,6 +943,11 @@ const std::vector<LLModel::Token> &Replit::endTokens() const
     return fres;
 }
 
+float Replit::getLastLogit(PromptContext &promptCtx, size_t) const
+{
+    return promptCtx.logits.back();
+}
+
 #if defined(_WIN32)
 #define DLL_EXPORT __declspec(dllexport)
 #else

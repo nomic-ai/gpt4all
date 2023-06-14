@@ -936,6 +936,11 @@ const std::vector<LLModel::Token> &GPTJ::endTokens() const
     return fres;
 }
 
+float GPTJ::getLastLogit(PromptContext &promptCtx, size_t) const
+{
+    return promptCtx.logits.back();
+}
+
 #if defined(_WIN32)
 #define DLL_EXPORT __declspec(dllexport)
 #else
