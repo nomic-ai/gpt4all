@@ -348,7 +348,7 @@ void ChatLLM::modelNameChangeRequested(const QString &modelName)
     loadModel(modelName);
 }
 
-bool ChatLLM::handlePrompt(int32_t token)
+bool ChatLLM::handlePrompt(std::string_view, float, bool)
 {
     // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
@@ -360,19 +360,12 @@ bool ChatLLM::handlePrompt(int32_t token)
     return !m_stopGenerating;
 }
 
-bool ChatLLM::handleResponse(int32_t token, const std::string &response)
+bool ChatLLM::handleResponse(std::string_view response, float)
 {
 #if defined(DEBUG)
     printf("%s", response.c_str());
     fflush(stdout);
 #endif
-
-    // check for error
-    if (token < 0) {
-        m_response.append(response);
-        emit responseChanged();
-        return false;
-    }
 
     // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
@@ -413,7 +406,8 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     QString instructPrompt = augmentedTemplate.join("\n").arg(prompt);
 
     m_stopGenerating = false;
-    auto promptFunc = std::bind(&ChatLLM::handlePrompt, this, std::placeholders::_1);
+    auto promptFunc = std::bind(&ChatLLM::handlePrompt, this, std::placeholders::_1,
+                                std::placeholders::_2, std::placeholders::_3);
     auto responseFunc = std::bind(&ChatLLM::handleResponse, this, std::placeholders::_1,
         std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleRecalculate, this, std::placeholders::_1);
@@ -431,7 +425,11 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     printf("%s", qPrintable(instructPrompt));
     fflush(stdout);
 #endif
-    m_modelInfo.model->prompt(instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
+    try {
+        m_modelInfo.model->prompt("", "", instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
+    } catch (const LLModel::Exception& e) {
+        m_response.append(e.what());
+    }
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
@@ -507,16 +505,21 @@ void ChatLLM::generateName()
     QString instructPrompt("### Instruction:\n"
                            "Describe response above in three words.\n"
                            "### Response:\n");
-    auto promptFunc = std::bind(&ChatLLM::handleNamePrompt, this, std::placeholders::_1);
+    auto promptFunc = std::bind(&ChatLLM::handleNamePrompt, this, std::placeholders::_1,
+                                std::placeholders::_2, std::placeholders::_3);
     auto responseFunc = std::bind(&ChatLLM::handleNameResponse, this, std::placeholders::_1,
-        std::placeholders::_2);
+                                  std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleNameRecalculate, this, std::placeholders::_1);
     LLModel::PromptContext ctx = m_ctx;
 #if defined(DEBUG)
     printf("%s", qPrintable(instructPrompt));
     fflush(stdout);
 #endif
-    m_modelInfo.model->prompt(instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, ctx);
+    try {
+       m_modelInfo.model->prompt("", "", instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, ctx);
+    } catch (const LLModel::Exception& e) {
+        m_response.append(e.what());
+    }
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
@@ -533,17 +536,14 @@ void ChatLLM::handleChatIdChanged()
     m_llmThread.setObjectName(m_chat->id());
 }
 
-bool ChatLLM::handleNamePrompt(int32_t token)
+bool ChatLLM::handleNamePrompt(std::string_view, float, bool)
 {
-    Q_UNUSED(token);
     qt_noop();
     return true;
 }
 
-bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
+bool ChatLLM::handleNameResponse(std::string_view response, float)
 {
-    Q_UNUSED(token);
-
     m_nameResponse.append(response);
     emit generatedNameChanged();
     QString gen = QString::fromStdString(m_nameResponse).simplified();

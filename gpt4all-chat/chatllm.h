@@ -92,11 +92,11 @@ Q_SIGNALS:
 
 
 protected:
-    bool handlePrompt(int32_t token);
-    bool handleResponse(int32_t token, const std::string &response);
+    bool handlePrompt(std::string_view token, float logit, bool isPartOfTemplate);
+    bool handleResponse(std::string_view token, float logit);
     bool handleRecalculate(bool isRecalc);
-    bool handleNamePrompt(int32_t token);
-    bool handleNameResponse(int32_t token, const std::string &response);
+    bool handleNamePrompt(std::string_view token, float logit, bool isPartOfTemplate);
+    bool handleNameResponse(std::string_view token, float logit);
     bool handleNameRecalculate(bool isRecalc);
     void saveState();
     void restoreState();
