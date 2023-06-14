@@ -265,15 +265,14 @@ bool ChatLLM::loadModel(const QString &modelName)
         setModelName(m_isChatGPT ? basename : basename.remove(0, 5)); // remove the ggml- prefix
     }
 
-    m_modelPromptTemplate.clear();
+    m_modelPromptTemplate = "### Human:\n%1\n### Assistant:\n";
     if (!m_isServer) {
         QFile modelInfoFile(filePath+".json");
         if (modelInfoFile.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text)) {
-            QJsonDocument doc;
-            doc.fromJson(modelInfoFile.readAll());
+            auto doc = QJsonDocument::fromJson(modelInfoFile.readAll());
             auto obj = doc.object();
             if (obj.contains("prompt_format"))
-                m_modelPromptTemplate = doc["prompt_format"].toString();
+                m_modelPromptTemplate = obj["prompt_format"].toString();
         }
     }
 
