@@ -337,26 +337,36 @@ Dialog {
                                 let progressBar = delegateItem.children.find(child => child.objectName === "itemProgressBar");
                                 progressBar.value = bytesReceived / bytesTotal;
 
+                                let updated = false;
+
                                 // Calculate the download speed
                                 if (lastUpdate[modelName] && lastUpdate[modelName].timestamp) {
                                     let timeDifference = currentTime - lastUpdate[modelName].timestamp;
-                                    let bytesDifference = bytesReceived - lastUpdate[modelName].bytesReceived;
-                                    let speed = (bytesDifference / timeDifference) * 1000; // bytes per second
-                                    delegateItem.downloading = true
+                                    if (timeDifference >= 1500) {
+                                        let bytesDifference = bytesReceived - lastUpdate[modelName].bytesReceived;
+                                        let speed = (bytesDifference / timeDifference) * 1000; // bytes per second
+                                        delegateItem.downloading = true
 
-                                    // Update the speed label
-                                    let speedLabel = delegateItem.children.find(child => child.objectName === "speedLabel");
-                                    if (speed < 1024) {
-                                        speedLabel.text = speed.toFixed(2) + " B/s";
-                                    } else if (speed < 1024 * 1024) {
-                                        speedLabel.text = (speed / 1024).toFixed(2) + " KB/s";
-                                    } else {
-                                        speedLabel.text = (speed / (1024 * 1024)).toFixed(2) + " MB/s";
+                                        // Update the speed label
+                                        let speedLabel = delegateItem.children.find(child => child.objectName === "speedLabel");
+                                        if (speed < 1024) {
+                                            speedLabel.text = speed.toFixed(2) + " B/s";
+                                        } else if (speed < 1024 * 1024) {
+                                            speedLabel.text = (speed / 1024).toFixed(2) + " KB/s";
+                                        } else {
+                                            speedLabel.text = (speed / (1024 * 1024)).toFixed(2) + " MB/s";
+                                        }
+
+                                        updated = true;
                                     }
+                                } else {
+                                    updated = true; // To get an initial entry in lastUpdate
                                 }
 
                                 // Update the lastUpdate object for the current model
-                                lastUpdate[modelName] = {"timestamp": currentTime, "bytesReceived": bytesReceived};
+                                if (updated) {
+                                    lastUpdate[modelName] = {"timestamp": currentTime, "bytesReceived": bytesReceived};
+                                }
                                 break;
                             }
                         }
