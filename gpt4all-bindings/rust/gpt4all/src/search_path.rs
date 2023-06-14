@@ -33,8 +33,8 @@ use std::ffi::{CStr, CString, NulError};
 use std::sync::RwLock;
 
 /// A unit struct used to represent access to the global search path.
-/// This struct is not constructable, and can only be obtained by calling `SearchPath::get()` which
-/// will return the global lock.
+/// This struct is not constructable, and can only be accessed through a guard by calling
+/// `SearchPath::get_static()` which will return the global lock.
 pub struct SearchPath {
     /// the underlying rust memory for the search path, set to none if the search path has not been
     /// set yet.
