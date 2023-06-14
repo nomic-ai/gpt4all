@@ -124,6 +124,7 @@ Q_SIGNALS:
 
 private:
     void parseModelsJsonFile(const QByteArray &jsonData);
+    void parseModelJsonFile(const QJsonObject &obj, QString &defaultModel);
     void parseReleaseJsonFile(const QByteArray &jsonData);
     QString incompleteDownloadPath(const QString &modelFile);
 

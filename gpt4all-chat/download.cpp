@@ -30,13 +30,15 @@ Download::Download()
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Download::handleSslErrors);
     connect(this, &Download::downloadLocalModelsPathChanged, this, &Download::updateModelList);
-    updateModelList();
-    updateReleaseNotes();
+
     QSettings settings;
     settings.sync();
     m_downloadLocalModelsPath = settings.value("modelPath",
         defaultLocalModelsPath()).toString();
     m_startTime = QDateTime::currentDateTime();
+
+    updateModelList();
+    updateReleaseNotes();
 }
 
 bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
@@ -184,6 +186,23 @@ QString Download::defaultLocalModelsPath() const
 
 void Download::updateModelList()
 {
+    // Locally
+    QDir dir(downloadLocalModelsPath());
+    dir.setNameFilters(QStringList() << "ggml-*.bin");
+    QStringList fileNames = dir.entryList();
+    QString defaultModel;
+    qDebug() << "Discovering local models in" << dir << ":" << fileNames;
+    for (const QString &f : fileNames) {
+        qDebug() << "Discovered local model: " << f;
+        QFile modelInfoFile(dir.filePath(f+".json"));
+        if (!modelInfoFile.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text)) continue;
+        qDebug() << "Parsing local model: " << f;
+        auto doc = QJsonDocument::fromJson(modelInfoFile.readAll());
+        parseModelJsonFile(doc.object(), defaultModel);
+    }
+    emit modelListChanged();
+
+    // From network
     QUrl jsonUrl("http://gpt4all.io/models/models.json");
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
@@ -368,58 +387,9 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
 
     QString defaultModel;
     QJsonArray jsonArray = document.array();
-    const QString currentVersion = QCoreApplication::applicationVersion();
 
-    m_modelMap.clear();
     for (const QJsonValue &value : jsonArray) {
-        QJsonObject obj = value.toObject();
-
-        QString modelFilename = obj["filename"].toString();
-        QString modelFilesize = obj["filesize"].toString();
-        QString requiresVersion = obj["requires"].toString();
-        QString url = obj["url"].toString();
-        QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
-        bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
-        bool bestGPTJ = obj.contains("bestGPTJ") && obj["bestGPTJ"] == QString("true");
-        bool bestLlama = obj.contains("bestLlama") && obj["bestLlama"] == QString("true");
-        bool bestMPT = obj.contains("bestMPT") && obj["bestMPT"] == QString("true");
-        QString description = obj["description"].toString();
-
-        if (!requiresVersion.isEmpty()
-            && requiresVersion != currentVersion
-            && compareVersions(requiresVersion, currentVersion)) {
-            continue;
-        }
-
-        if (isDefault)
-            defaultModel = modelFilename;
-        quint64 sz = modelFilesize.toULongLong();
-        if (sz < 1024) {
-            modelFilesize = QString("%1 bytes").arg(sz);
-        } else if (sz < 1024 * 1024) {
-            modelFilesize = QString("%1 KB").arg(qreal(sz) / 1024, 0, 'g', 3);
-        } else if (sz < 1024 * 1024 * 1024) {
-            modelFilesize = QString("%1 MB").arg(qreal(sz) / (1024 * 1024), 0, 'g', 3);
-        } else {
-            modelFilesize = QString("%1 GB").arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
-        }
-
-        QString filePath = downloadLocalModelsPath() + modelFilename;
-        QFileInfo info(filePath);
-        ModelInfo modelInfo;
-        modelInfo.filename = modelFilename;
-        modelInfo.filesize = modelFilesize;
-        modelInfo.md5sum = modelMd5sum;
-        modelInfo.installed = info.exists();
-        modelInfo.isDefault = isDefault;
-        modelInfo.bestGPTJ = bestGPTJ;
-        modelInfo.bestLlama = bestLlama;
-        modelInfo.bestMPT = bestMPT;
-        modelInfo.description = description;
-        modelInfo.requiresVersion = requiresVersion;
-        modelInfo.url = url;
-        modelInfo.jsonData = obj;
-        m_modelMap.insert(modelInfo.filename, modelInfo);
+        parseModelJsonFile(value.toObject(), defaultModel);
     }
 
     const QString chatGPTDesc = tr("WARNING: requires personal OpenAI API key and usage of this "
@@ -462,6 +432,59 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
     settings.setValue("defaultModel", defaultModel);
     settings.sync();
     emit modelListChanged();
+}
+
+void Download::parseModelJsonFile(const QJsonObject &obj, QString &defaultModel)
+{
+    const static QString currentVersion = QCoreApplication::applicationVersion();
+
+    QString modelFilename = obj["filename"].toString();
+    QString modelFilesize = obj["filesize"].toString();
+    QString requiresVersion = obj["requires"].toString();
+    QString url = obj["url"].toString();
+    QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
+    bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
+    bool bestGPTJ = obj.contains("bestGPTJ") && obj["bestGPTJ"] == QString("true");
+    bool bestLlama = obj.contains("bestLlama") && obj["bestLlama"] == QString("true");
+    bool bestMPT = obj.contains("bestMPT") && obj["bestMPT"] == QString("true");
+    QString description = obj["description"].toString();
+
+    if (!requiresVersion.isEmpty()
+        && requiresVersion != currentVersion
+        && compareVersions(requiresVersion, currentVersion)) {
+        return;
+    }
+
+    if (isDefault)
+        defaultModel = modelFilename;
+    quint64 sz = modelFilesize.toULongLong();
+    if (sz < 1024) {
+        modelFilesize = QString("%1 bytes").arg(sz);
+    } else if (sz < 1024 * 1024) {
+        modelFilesize = QString("%1 KB").arg(qreal(sz) / 1024, 0, 'g', 3);
+    } else if (sz < 1024 * 1024 * 1024) {
+        modelFilesize = QString("%1 MB").arg(qreal(sz) / (1024 * 1024), 0, 'g', 3);
+    } else {
+        modelFilesize = QString("%1 GB").arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
+    }
+
+    QString filePath = downloadLocalModelsPath() + modelFilename;
+    QFileInfo info(filePath);
+    ModelInfo modelInfo;
+    modelInfo.filename = modelFilename;
+    modelInfo.filesize = modelFilesize;
+    modelInfo.md5sum = modelMd5sum;
+    modelInfo.installed = info.exists();
+    modelInfo.isDefault = isDefault;
+    modelInfo.bestGPTJ = bestGPTJ;
+    modelInfo.bestLlama = bestLlama;
+    modelInfo.bestMPT = bestMPT;
+    modelInfo.description = description;
+    modelInfo.requiresVersion = requiresVersion;
+    modelInfo.url = url;
+    modelInfo.jsonData = obj;
+    m_modelMap.insert(modelInfo.filename, modelInfo);
+
 }
 
 void Download::handleReleaseJsonDownloadFinished()
