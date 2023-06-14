@@ -305,8 +305,7 @@ Window {
         height: 40
         z: 200
         padding: 15
-        checkable: true
-        checked: Network.isActive
+        toggled: Network.isActive
         source: "qrc:/gpt4all/icons/network.svg"
         Accessible.name: qsTr("Network button")
         Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
@@ -342,8 +341,7 @@ Window {
         height: 40
         z: 200
         padding: 15
-        checkable: true
-        checked: currentChat.collectionList.length
+        toggled: currentChat.collectionList.length
         source: "qrc:/gpt4all/icons/db.svg"
         Accessible.name: qsTr("Add collections of documents to the chat")
         Accessible.description: qsTr("Provides a button to add collections of documents to the chat")
