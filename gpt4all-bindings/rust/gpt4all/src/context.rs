@@ -1,20 +1,23 @@
-//! Context for prompts. Obtain a context using [`Context::default`].
+//! Context for prompts.
 
 use gpt4all_sys::llmodel_prompt_context;
 use std::slice;
-use std::ptr::null_mut;
+use std::ptr::{NonNull};
 
+/// Obtain a context using [`Context::default`].
 #[derive(Debug)]
 pub struct Context {
     pub(crate) content: llmodel_prompt_context,
 }
 
 impl Context {
+    /// Get the logits from the context - will be empty unless passed to [`InitModel::prompt`].
     pub fn logits(&self) -> &[f32] {
         // Safety: we assume that gpt4all has given us a valid pointer to contiguous memory of at
         // least logits_size elements
         unsafe { slice::from_raw_parts(self.content.logits, self.content.logits_size) }
     }
+    /// Get the logits from the context - will be empty unless passed to [`InitModel::prompt`].
     pub fn tokens(&self) -> &[i32] {
         // Safety: we assume that gpt4all has given us a valid pointer to contiguous memory of at
         // least tokens_size elements
@@ -53,13 +56,14 @@ impl Context {
 }
 
 impl Default for Context {
+    // defaults have been stolen from the python bindings.
     fn default() -> Self {
         Self {
             content: llmodel_prompt_context {
                 // The python bindings seem to do this? (not super familiar with python ffi)
-                logits: null_mut(),
+                logits: NonNull::dangling().as_ptr(),
                 // The python bindings seem to do this? (not super familiar with python ffi)
-                tokens: null_mut(),
+                tokens: NonNull::dangling().as_ptr(),
                 logits_size: 0,
                 tokens_size: 0,
                 n_past: 0,
@@ -74,5 +78,17 @@ impl Default for Context {
                 context_erase: 0.5,
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn check_read_empty_logits_and_tokens() {
+        let context = Context::default();
+        assert_eq!(context.logits(), &[]);
+        assert_eq!(context.tokens(), &[]);
     }
 }
