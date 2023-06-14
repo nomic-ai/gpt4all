@@ -1,4 +1,5 @@
-use gpt4all::{Context, Model};
+use gpt4all::{Model};
+use gpt4all::context::Context;
 
 #[no_mangle]
 extern "C" fn prompt_callback(_: i32) -> bool {

@@ -12,9 +12,8 @@
 //! ## Examples
 //!
 //! ```no_run
-//!
-//!
-//! use gpt4all::{Context, Model};
+//! use gpt4all::{ Model};
+//! use gpt4all::context::Context;
 //!
 //! #[no_mangle]
 //! extern "C" fn prompt_callback(token_id: i32) -> bool {
@@ -53,15 +52,16 @@
 //! }
 //! ```
 
-use gpt4all_sys::{
-    llmodel_error, llmodel_loadModel, llmodel_model, llmodel_model_create2, llmodel_model_destroy,
-    llmodel_prompt, llmodel_prompt_context,
-};
+use gpt4all_sys::{llmodel_error, llmodel_loadModel, llmodel_model, llmodel_model_create2, llmodel_model_destroy, llmodel_prompt, llmodel_setThreadCount, llmodel_threadCount};
 use std::ffi::{c_int, CStr, CString};
 use std::fmt::Debug;
-use std::ptr::{addr_of_mut, null_mut};
-use std::slice;
+use std::ptr::addr_of_mut;
 use std::str::Utf8Error;
+use std::sync::{RwLockReadGuard, TryLockError};
+use crate::search_path::SearchPath;
+
+pub mod context;
+pub mod search_path;
 
 /// A gpt4all model. This will have to be initialized via a call to [`Model::initialize`] to be
 /// useful.
@@ -110,12 +110,12 @@ pub struct ModelError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum ModelErrorFromLLModelErrorError {
-    /// The message returned by gpt4all was null.
+    /// The message returned by gpt4all was null. contains the original error.
     #[error("Null message")]
-    NullMessage,
-    /// The string returned by gpt4all was not valid utf8.
+    NullMessage(llmodel_error),
+    /// The string returned by gpt4all was not valid utf8. contains the original error.
     #[error("{0}")]
-    Utf8Error(#[from] Utf8Error),
+    Utf8Error(Utf8Error, llmodel_error),
 }
 
 impl TryFrom<llmodel_error> for ModelError {
@@ -123,14 +123,20 @@ impl TryFrom<llmodel_error> for ModelError {
 
     fn try_from(value: llmodel_error) -> Result<Self, Self::Error> {
         if value.message.is_null() {
-            return Err(ModelErrorFromLLModelErrorError::NullMessage);
+            return Err(ModelErrorFromLLModelErrorError::NullMessage(value));
         }
         // Safety:
         // - 1) message is not null and
         // - 2) we assume that gpt4all returns a valid null terminated string
         // - 3) this is never mutated on either side of the ffi boundary
         let message = unsafe { CStr::from_ptr(value.message) };
-        let message = message.to_str()?.to_string();
+
+        let message = match message.to_str() {
+            Ok(message) => String::from(message),
+            Err(err) => {
+                return Err(ModelErrorFromLLModelErrorError::Utf8Error(err, value));
+            }
+        };
         Ok(ModelError {
             message,
             code: value.code,
@@ -154,8 +160,12 @@ pub enum CreateModelError {
     /// the model path is invalid, but is not guaranteed to be the only cause.
     #[error("Unknown error")]
     Unknown,
+    /// there was an error converting a model error to a rust error.
     #[error("{0}")]
     ModelErrorFromLLModelErrorError(#[from] ModelErrorFromLLModelErrorError),
+    /// A lock was being held that may have lead to a data race.
+    #[error("could not obtain read access to the search path: {0}")]
+    SearchPathConcurrencyError(#[from] TryLockError<RwLockReadGuard<'static, SearchPath>>),
 }
 
 /// Errors that can occur when prompting a model.
@@ -208,9 +218,14 @@ impl Model {
 
         let error = addr_of_mut!(error);
 
+        // obtain a read lock to the search path to make the call to llmodel_model_create2 safe.
+        let _search_path_lock = SearchPath::get_static().try_read()?;
+
         // Safety: model_path and build_variant are not written to. and llmodel_model_create2 has
         // been at least a little checked.
-        let model: llmodel_model =
+        // we currently hold onto a read lock to the implementation path - this is to prevent a data
+        // race
+        let model =
             unsafe { llmodel_model_create2(model_path, build_variant, error) };
 
         // Safety: Model is either null or upholds the invariants of as_mut.
@@ -317,7 +332,7 @@ impl InitModel {
     ///
     /// ```no_run
     ///use gpt4all::Model;
-    ///use gpt4all::Context;
+    ///use gpt4all::context::Context;
     ///
     /// #[no_mangle]
     /// extern "C" fn prompt_callback(token_id: i32) -> bool {
@@ -357,7 +372,7 @@ impl InitModel {
         prompt_callback: extern "C" fn(token_id: i32) -> bool,
         response_callback: extern "C" fn(token_id: i32, response: *const std::ffi::c_char) -> bool,
         recalculate_callback: extern "C" fn(is_recalculating: bool) -> bool,
-        context: &mut Context,
+        context: &mut context::Context,
     ) -> Result<(), PromptError> {
         let prompt = CString::new(prompt)?;
         let prompt = prompt.as_ptr();
@@ -378,75 +393,18 @@ impl InitModel {
     }
 }
 
-#[derive(Debug)]
-pub struct Context {
-    content: llmodel_prompt_context,
-}
+impl Model {
+    pub fn set_thread_count(&mut self, n_threads: i32) {
+        // Safety: FFI + we have exclusive access to self which contains n_threads
+        unsafe {
+            llmodel_setThreadCount(self.model.expect("the model only null after `initialize` has been called"), n_threads)
+        }
+    }
 
-impl Context {
-    pub fn logits(&self) -> &[f32] {
-        // Safety: we assume that gpt4all has given us a valid pointer to contiguous memory of at
-        // least logits_size elements
-        unsafe { slice::from_raw_parts(self.content.logits, self.content.logits_size) }
-    }
-    pub fn tokens(&self) -> &[i32] {
-        // Safety: we assume that gpt4all has given us a valid pointer to contiguous memory of at
-        // least tokens_size elements
-        unsafe { slice::from_raw_parts(self.content.tokens, self.content.tokens_size) }
-    }
-    pub fn n_past(&self) -> i32 {
-        self.content.n_past
-    }
-    pub fn n_ctx(&self) -> i32 {
-        self.content.n_ctx
-    }
-    pub fn n_predict(&self) -> i32 {
-        self.content.n_predict
-    }
-    pub fn top_k(&self) -> i32 {
-        self.content.top_k
-    }
-    pub fn top_p(&self) -> f32 {
-        self.content.top_p
-    }
-    pub fn temp(&self) -> f32 {
-        self.content.temp
-    }
-    pub fn n_batch(&self) -> i32 {
-        self.content.n_batch
-    }
-    pub fn repeat_penalty(&self) -> f32 {
-        self.content.repeat_penalty
-    }
-    pub fn repeat_last_n(&self) -> i32 {
-        self.content.repeat_last_n
-    }
-    pub fn context_erase(&self) -> f32 {
-        self.content.context_erase
-    }
-}
-
-impl Default for Context {
-    fn default() -> Self {
-        Self {
-            content: llmodel_prompt_context {
-                // The python bindings seem to do this? (not super familiar with python ffi)
-                logits: null_mut(),
-                // The python bindings seem to do this? (not super familiar with python ffi)
-                tokens: null_mut(),
-                logits_size: 0,
-                tokens_size: 0,
-                n_past: 0,
-                n_ctx: 1024,
-                n_predict: 128,
-                top_k: 40,
-                top_p: 0.9,
-                temp: 0.1,
-                n_batch: 8,
-                repeat_penalty: 1.2,
-                repeat_last_n: 10,
-                context_erase: 0.5,
-            },
+    pub fn thread_count(&self) -> i32 {
+        // Safety: FFI + we have shared access to self which contains n_threads
+        unsafe {
+            llmodel_threadCount(self.model.expect("the model only null after `initialize` has been called"))
         }
     }
 }
