@@ -100,6 +100,50 @@ bool recalculate_wrapper(bool is_recalculating, void *user_data) {
     return callback(is_recalculating);
 }
 
+bool prompt_wrapper2(std::string_view token, float logit, bool isPartOfTemplate, void *user_data) {
+    llmodel_prompt_callback2 callback = reinterpret_cast<llmodel_prompt_callback2>(user_data);
+    return callback(token.data()/*Potentially unsafe*/, logit, isPartOfTemplate);
+}
+
+bool response_wrapper2(std::string_view token, float logit, void *user_data) {
+    llmodel_response_callback2 callback = reinterpret_cast<llmodel_response_callback2>(user_data);
+    return callback(token.data()/*Potentially unsafe*/, logit);
+}
+
+bool recalculate_wrapper2(bool is_recalculating, void *user_data) {
+    llmodel_recalculate_callback2 callback = reinterpret_cast<llmodel_recalculate_callback2>(user_data);
+    return callback(is_recalculating);
+}
+
+static LLModel::PromptContext CToCppPromptContext(llmodel_prompt_context *ctx) {
+    LLModel::PromptContext fres;
+    fres.n_past = ctx->n_past;
+    fres.n_ctx = ctx->n_ctx;
+    fres.n_predict = ctx->n_predict;
+    fres.top_k = ctx->top_k;
+    fres.top_p = ctx->top_p;
+    fres.temp = ctx->temp;
+    fres.n_batch = ctx->n_batch;
+    fres.repeat_penalty = ctx->repeat_penalty;
+    fres.repeat_last_n = ctx->repeat_last_n;
+    fres.contextErase = ctx->context_erase;
+    return fres;
+}
+static llmodel_prompt_context CppToCPromptContext(LLModel::PromptContext &ctx) {
+    llmodel_prompt_context fres;
+    fres.n_past = ctx.n_past;
+    fres.n_ctx = ctx.n_ctx;
+    fres.n_predict = ctx.n_predict;
+    fres.top_k = ctx.top_k;
+    fres.top_p = ctx.top_p;
+    fres.temp = ctx.temp;
+    fres.n_batch = ctx.n_batch;
+    fres.repeat_penalty = ctx.repeat_penalty;
+    fres.repeat_last_n = ctx.repeat_last_n;
+    fres.context_erase = ctx.contextErase;
+    return fres;
+}
+
 void llmodel_prompt(llmodel_model model, const char *prompt,
                     llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
@@ -117,16 +161,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
         std::bind(&recalculate_wrapper, std::placeholders::_1, reinterpret_cast<void*>(recalculate_callback));
 
     // Copy the C prompt context
-    wrapper->promptContext.n_past = ctx->n_past;
-    wrapper->promptContext.n_ctx = ctx->n_ctx;
-    wrapper->promptContext.n_predict = ctx->n_predict;
-    wrapper->promptContext.top_k = ctx->top_k;
-    wrapper->promptContext.top_p = ctx->top_p;
-    wrapper->promptContext.temp = ctx->temp;
-    wrapper->promptContext.n_batch = ctx->n_batch;
-    wrapper->promptContext.repeat_penalty = ctx->repeat_penalty;
-    wrapper->promptContext.repeat_last_n = ctx->repeat_last_n;
-    wrapper->promptContext.contextErase = ctx->context_erase;
+    wrapper->promptContext = CToCppPromptContext(ctx);
 
     // Call the C++ prompt method
     wrapper->llModel->prompt(prompt, prompt_func, response_func, recalc_func, wrapper->promptContext);
@@ -139,16 +174,50 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     ctx->tokens_size = wrapper->promptContext.tokens.size();
 
     // Update the rest of the C prompt context
-    ctx->n_past = wrapper->promptContext.n_past;
-    ctx->n_ctx = wrapper->promptContext.n_ctx;
-    ctx->n_predict = wrapper->promptContext.n_predict;
-    ctx->top_k = wrapper->promptContext.top_k;
-    ctx->top_p = wrapper->promptContext.top_p;
-    ctx->temp = wrapper->promptContext.temp;
-    ctx->n_batch = wrapper->promptContext.n_batch;
-    ctx->repeat_penalty = wrapper->promptContext.repeat_penalty;
-    ctx->repeat_last_n = wrapper->promptContext.repeat_last_n;
-    ctx->context_erase = wrapper->promptContext.contextErase;
+    *ctx = CppToCPromptContext(wrapper->promptContext);
+}
+
+bool llmodel_prompt2(llmodel_model model, const char *prompt,
+                     const char *template_prefix, const char *template_suffix,
+                     llmodel_prompt_callback2 prompt_callback,
+                     llmodel_response_callback2 response_callback,
+                     llmodel_recalculate_callback2 recalculate_callback,
+                     llmodel_prompt_context *ctx, llmodel_error *error) {
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    bool fres = true;
+
+    // Create std::function wrappers that call the C function pointers
+    LLModel::PromptCallback prompt_func =
+        std::bind(&prompt_wrapper2, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, reinterpret_cast<void*>(prompt_callback));
+    LLModel::ResponseCallback response_func =
+        std::bind(&response_wrapper2, std::placeholders::_1, std::placeholders::_2, reinterpret_cast<void*>(response_callback));
+    LLModel::RecalculateCallback recalc_func =
+        std::bind(&recalculate_wrapper2, std::placeholders::_1, reinterpret_cast<void*>(recalculate_callback));
+
+    // Copy the C prompt context
+    wrapper->promptContext = CToCppPromptContext(ctx);
+
+    // Call the C++ prompt method
+    try {
+        wrapper->llModel->prompt(template_prefix, template_suffix, prompt, prompt_func, response_func, recalc_func, wrapper->promptContext);
+    } catch (const LLModel::Exception& e) {
+        error->code = -1;
+        last_error_message = e.what();
+        error->message = last_error_message.c_str();
+        fres = false;
+    }
+
+    // Update the C context by giving access to the wrappers raw pointers to std::vector data
+    // which involves no copies
+    ctx->logits = wrapper->promptContext.logits.data();
+    ctx->logits_size = wrapper->promptContext.logits.size();
+    ctx->tokens = wrapper->promptContext.tokens.data();
+    ctx->tokens_size = wrapper->promptContext.tokens.size();
+
+    // Update the rest of the C prompt context
+    *ctx = CppToCPromptContext(wrapper->promptContext);
+
+    return fres;
 }
 
 void llmodel_setThreadCount(llmodel_model model, int32_t n_threads)
@@ -172,3 +241,4 @@ const char *llmodel_get_implementation_search_path()
 {
     return LLModel::implementationsSearchPath().c_str();
 }
+
