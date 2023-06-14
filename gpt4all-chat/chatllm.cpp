@@ -416,9 +416,6 @@ bool ChatLLM::handleRecalculate(bool isRecalc)
 bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k,
     float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens, int n_threads)
 {
-#warning Note to myself: remove that line before pushing :-)
-    qDebug() << "Prompted with template:" << prompt_template;
-
     if (!isModelLoaded())
         return false;
 
@@ -432,7 +429,7 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
         augmentedTemplate.append("### Context:");
     for (const ResultInfo &info : m_databaseResults)
         augmentedTemplate.append(info.text);
-    augmentedTemplate.append(prompt_template);
+    augmentedTemplate.append(prompt_template.isEmpty()?m_modelPromptTemplate:prompt_template);
 
     QString instructPrompt = augmentedTemplate.join("\n").arg(prompt);
 

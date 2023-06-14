@@ -534,8 +534,8 @@ Dialog {
                             visible: settings.promptTemplate.indexOf(
                                          "%1") === -1
                             font.bold: true
-                            color: theme.textErrorColor
-                            text: qsTr("Prompt template must contain %1 to be replaced with the user's input.")
+                            color: theme.textAccent
+                            text: qsTr("Prompt template must contain %1 to be replaced with the user's input.\nLeave empty to use models recommended prompt")
                             anchors.fill: templateScrollView
                             z: 200
                             padding: 10
