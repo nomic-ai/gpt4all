@@ -409,9 +409,9 @@ workflows:
             - build-py-windows
             - build-py-linux
             - build-py-macos
-    build-csharp-deploy:
-      when: << pipeline.parameters.run-csharp-workflow >>
-      jobs:
+  build-csharp-deploy:
+    when: << pipeline.parameters.run-csharp-workflow >>
+    jobs:
       - nuget-hold:
           type: approval
       - hold:
@@ -420,3 +420,5 @@ workflows:
           filters:
             branches:
               only:
+          requires:
+            - hold
