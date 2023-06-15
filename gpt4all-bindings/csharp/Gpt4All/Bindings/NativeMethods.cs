@@ -41,7 +41,7 @@ public unsafe partial struct llmodel_prompt_context
 
     public float context_erase;
 }
-
+#pragma warning disable CA2101
 internal static unsafe partial class NativeMethods
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -105,3 +105,4 @@ internal static unsafe partial class NativeMethods
     [return: NativeTypeName("int32_t")]
     public static extern int llmodel_threadCount([NativeTypeName("llmodel_model")] IntPtr model);
 }
+#pragma warning restore CA2101
