@@ -49,7 +49,7 @@ def tokenize_inputs(config, tokenizer, examples):
             print(response)
             raise
 
-        padded = tokenizer.pad({"input_ids": input_tokens}, padding="max_length", max_length=max_length)
+        padded = tokenizer.pad({"input_ids": input_tokens}, padding="max_length", max_length=max_length, return_tensors="pt")
         out["labels"].append(labels)
         out["input_ids"].append(padded["input_ids"])
         out["attention_mask"].append(padded["attention_mask"])
