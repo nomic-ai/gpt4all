@@ -13,6 +13,9 @@ parameters:
   run-chat-workflow:
     type: boolean
     default: false
+  run-csharp-workflow:
+    type: boolean
+    default: false
 
 jobs:
   default-job:
@@ -306,6 +309,46 @@ jobs:
       - store_artifacts:
           path: /tmp/workspace
 
+  build-csharp-linux:
+    working_directory: ~/gpt4all-bindings/csharp
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gpt4all-csharp-bindings
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y cmake build-essential
+      - run:
+          name: Build C library
+          command: |
+            git submodule init
+            git submodule update
+            ./build_linux.sh
+      - run:
+          name: "Install project dependencies"
+          command: |
+            dotnet.exe restore Gpt4All
+      - save_cache:
+          paths:
+            - ~/.nuget/packages
+          key: gpt4all-csharp-bindings
+      - run:
+          name: "Run C# Tests"
+          command: |
+            dotnet.exe test -v n --filter --filter SKIP_ON_CI=False
+      - run:
+          name: Build C# Project
+          command: |
+            dotnet build Gpt4All --configuration Release
+      - persist_to_workspace:
+          root: gpt4all-bindings/csharp/runtimes/linux-x64/native
+          paths:
+            - "gpt4all-bindings/csharp/runtimes/linux-x64/native/*.so"
 workflows:
   version: 2
   default:
@@ -366,3 +409,14 @@ workflows:
             - build-py-windows
             - build-py-linux
             - build-py-macos
+    build-csharp-deploy:
+      when: << pipeline.parameters.run-csharp-workflow >>
+      jobs:
+      - nuget-hold:
+          type: approval
+      - hold:
+          type: approval
+      - build-csharp-linux:
+          filters:
+            branches:
+              only:
