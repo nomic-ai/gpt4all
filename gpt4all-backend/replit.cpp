@@ -146,12 +146,13 @@ std::vector<LLModel::Token> replit_tokenizer_tokenize(replit_tokenizer & tokeniz
     return tokenized.first;
 }
 
-std::string replit_tokenizer_detokenize(replit_tokenizer & tokenizer, const std::vector<LLModel::Token> & tokens) {
+std::string_view replit_tokenizer_detokenize(replit_tokenizer & tokenizer, const std::vector<LLModel::Token> & tokens) {
     std::string text;
     for (auto token : tokens) {
         text += tokenizer.raw_vocab.id_to_token[token];
     }
-    auto denormalized_text = replace_all(text, ws_symbol, " ");
+    static std::string denormalized_text;
+    denormalized_text = replace_all(text, ws_symbol, " ");
     return denormalized_text;
 }
 
@@ -424,7 +425,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
 
         const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
 
-        printf("%s: memory_size = %8.2f MB, n_mem = %lld\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
+        printf("%s: memory_size = %8.2f MB, n_mem = %ld\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
     }
 
     // load weights
@@ -813,7 +814,7 @@ size_t replit_copy_state_data(const replit_model &model, const std::mt19937 &rng
     }
 
     const size_t written  = out - dest;
-    const size_t expected = replit_get_state_size(model);
+    const size_t expected [[maybe_unused]] = replit_get_state_size(model);
     assert(written == expected);
     fflush(stdout);
     return written;
@@ -863,7 +864,7 @@ size_t replit_set_state_data(replit_model *model, std::mt19937 *rng, const uint8
     }
 
     const size_t nread    = in - src;
-    const size_t expected = replit_get_state_size(*model);
+    const size_t expected [[maybe_unused]] = replit_get_state_size(*model);
     assert(nread == expected);
     fflush(stdout);
     return nread;
