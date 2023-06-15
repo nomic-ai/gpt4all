@@ -273,6 +273,7 @@ bool ChatLLM::loadModel(const QString &modelName)
             auto obj = doc.object();
             if (obj.contains("prompt_format"))
                 m_modelPromptTemplate = obj["prompt_format"].toString();
+            m_modelInfo.info = std::move(obj);
         }
     }
 

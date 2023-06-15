@@ -19,6 +19,7 @@ enum LLModelType {
 struct LLModelInfo {
     LLModel *model = nullptr;
     QFileInfo fileInfo;
+    QJsonObject info;
     // NOTE: This does not store the model type or name on purpose as this is left for ChatLLM which
     // must be able to serialize the information even if it is in the unloaded state
 };
