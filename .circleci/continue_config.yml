@@ -311,7 +311,7 @@ jobs:
 
   build-csharp-linux:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy # Ubuntu 22.04
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
     steps:
       - checkout
       - restore_cache:
@@ -342,7 +342,7 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet test . --filter SKIP_ON_CI=False
+            dotnet test Gtp4All.Tests --filter SKIP_ON_CI=False
       - run:
           name: Build C# Project
           command: |
