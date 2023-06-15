@@ -332,7 +332,8 @@ jobs:
       - run:
           name: "Install project dependencies"
           command: |
-            dotnet.exe restore Gpt4All
+            cd gpt4all-bindings/csharp
+            dotnet restore Gpt4All
       - save_cache:
           paths:
             - ~/.nuget/packages
@@ -340,10 +341,12 @@ jobs:
       - run:
           name: "Run C# Tests"
           command: |
-            dotnet.exe test -v n --filter --filter SKIP_ON_CI=False
+            cd gpt4all-bindings/csharp
+            dotnet test -v n --filter --filter SKIP_ON_CI=False
       - run:
           name: Build C# Project
           command: |
+            cd gpt4all-bindings/csharp
             dotnet build Gpt4All --configuration Release
       - persist_to_workspace:
           root: gpt4all-bindings/csharp/runtimes/linux-x64/native
