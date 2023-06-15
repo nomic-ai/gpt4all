@@ -342,7 +342,7 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet test -v n --filter --filter SKIP_ON_CI=False
+            dotnet test . --filter --filter SKIP_ON_CI=False
       - run:
           name: Build C# Project
           command: |
