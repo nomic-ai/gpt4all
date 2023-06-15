@@ -2,11 +2,11 @@
 <p align="center">Open-source assistant-style large language models that run locally on your CPU</p>
 
 <p align="center">
-<a href="https://gpt4all.io">GPT4All Website 💻</a>
+<a href="https://gpt4all.io">💻 GPT4All Website </a>
 </p>
 
 <p align="center">
-<a href="https://docs.gpt4all.io">GPT4All Documentation 📝</a>
+<a href="https://docs.gpt4all.io">📝 GPT4All Documentation </a>
 </p>
 
 
