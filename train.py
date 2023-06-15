@@ -42,7 +42,7 @@ def train(accelerator, config):
     accelerator.print(config)
     accelerator.print(f"Using {accelerator.num_processes} GPUs")
 
-    tokenizer = AutoTokenizer.from_pretrained(config['tokenizer_name'], model_max_length=config['max_length'])
+    tokenizer = AutoTokenizer.from_pretrained(config['tokenizer_name'], model_max_length=config['max_length'], use_fast=False)
     # if no pad token, set it to eos
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -87,7 +87,7 @@ def train(accelerator, config):
     # decay to min_lr instead of 0
     lr_ratio = config["min_lr"] / config["lr"]
     accelerator.print(f"Len of train_dataloader: {len(train_dataloader)}")
-    total_num_steps = (len(train_dataloader) / gradient_accumulation_steps) * config["num_epochs"]
+    total_num_steps = (len(train_dataloader) / gradient_accumulation_steps) * (config["num_epochs"])
     # instead of decaying to zero, decay to ratio of min_lr / lr
     total_num_steps += int(total_num_steps * lr_ratio) + config["warmup_steps"]
     accelerator.print(f"Total training steps: {total_num_steps}")
@@ -105,7 +105,7 @@ def train(accelerator, config):
         )
     else:
         scheduler = DummyScheduler(
-            optimizer, total_num_steps=config["warmup_steps"], warmup_num_steps=config["warmup_steps"]
+            optimizer, total_num_steps=total_num_steps, warmup_num_steps=config["warmup_steps"]
         )
 
     model, optimizer, train_dataloader, val_dataloader, scheduler = accelerator.prepare(
@@ -131,7 +131,10 @@ def train(accelerator, config):
     if accelerator.is_main_process and config["wandb"]:
         wandb.watch(model, log_freq=config["log_grads_every"], log="all")
 
-    for epoch in range(config["num_epochs"]):
+
+    accelerator.wait_for_everyone()
+
+    for epoch in range(0, config["num_epochs"]):
         train_loss = MeanMetric(nan_strategy="error").to(model.device)
         for step, batch in enumerate(tqdm(train_dataloader)):
             curr_step = epoch * len(train_dataloader) + step
@@ -141,7 +144,8 @@ def train(accelerator, config):
 
             # gather loss before backprop in case of gradient accumulation
             loss_values = accelerator.gather_for_metrics({"loss": loss.detach().float()})
-            accelerator.log({"loss": torch.mean(loss_values["loss"]).item()}, step=curr_step)
+            if config["wandb"]:
+                accelerator.log({"loss": torch.mean(loss_values["loss"]).item()}, step=curr_step)
             train_loss.update(loss_values["loss"])
 
             loss = loss / gradient_accumulation_steps
@@ -149,7 +153,7 @@ def train(accelerator, config):
             # get gradient norm of all params
 
             # log LR in case something weird happens 
-            if step > 0 and step % (config["eval_every"] // 10) == 0:
+            if step > 0 and step % (config["log_every"]) == 0:
                 if config["wandb"]:
                     accelerator.log({"lr": scheduler.get_last_lr()[0]}, step=curr_step)
 
@@ -199,6 +203,7 @@ def train(accelerator, config):
             save_function=accelerator.save,
             state_dict=accelerator.get_state_dict(model),
         )
+        accelerator.wait_for_everyone()
             
     accelerator.wait_for_everyone()
     unwrapped_model = accelerator.unwrap_model(model)
