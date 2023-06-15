@@ -715,8 +715,7 @@ bool gptj_eval(
 
 #define GPTJ_MAX_RNG_STATE 64*1024
 
-size_t gptj_get_state_size(const gptj_model &model)
-{
+size_t gptj_get_state_size(const gptj_model &model) {
     // we don't know size of rng until we actually serialize it. so reserve more than enough memory for its serialized state.
     // for reference, std::mt19937(1337) serializes to 6701 bytes.
     const size_t s_rng_size        = sizeof(size_t);
@@ -735,8 +734,7 @@ size_t gptj_get_state_size(const gptj_model &model)
     return s_total;
 }
 
-size_t gptj_copy_state_data(const gptj_model &model, const std::mt19937 &rng, uint8_t *dest)
-{
+size_t gptj_copy_state_data(const gptj_model &model, const std::mt19937 &rng, uint8_t *dest) {
     uint8_t * out = dest;
     fflush(stdout);
     // copy rng
@@ -773,8 +771,7 @@ size_t gptj_copy_state_data(const gptj_model &model, const std::mt19937 &rng, ui
     return written;
 }
 
-size_t gptj_set_state_data(gptj_model *model, std::mt19937 *rng, const uint8_t *src)
-{
+size_t gptj_set_state_data(gptj_model *model, std::mt19937 *rng, const uint8_t *src) {
     const uint8_t * in = src;
 
     // set rng
@@ -860,43 +857,35 @@ void GPTJ::setThreadCount(int32_t n_threads) {
     d_ptr->n_threads = n_threads;
 }
 
-int32_t GPTJ::threadCount() const
-{
+int32_t GPTJ::threadCount() const {
     return d_ptr->n_threads;
 }
 
-GPTJ::~GPTJ()
-{
+GPTJ::~GPTJ() {
     delete d_ptr->model;
 }
 
-bool GPTJ::isModelLoaded() const
-{
+bool GPTJ::isModelLoaded() const {
     return d_ptr->modelLoaded;
 }
 
-size_t GPTJ::stateSize() const
-{
+size_t GPTJ::stateSize() const {
     return gptj_get_state_size(*d_ptr->model);
 }
 
-size_t GPTJ::saveState(uint8_t *dest) const
-{
+size_t GPTJ::saveState(uint8_t *dest) const {
     return gptj_copy_state_data(*d_ptr->model, d_ptr->rng, dest);
 }
 
-size_t GPTJ::restoreState(const uint8_t *src)
-{
+size_t GPTJ::restoreState(const uint8_t *src) {
     return gptj_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-std::vector<LLModel::Token> GPTJ::tokenize(PromptContext &, const std::string &str) const
-{
+std::vector<LLModel::Token> GPTJ::tokenize(PromptContext &, const std::string &str) const {
     return ::gpt_tokenize(d_ptr->vocab, str);
 }
 
-LLModel::Token GPTJ::sampleToken(PromptContext &promptCtx) const
-{
+LLModel::Token GPTJ::sampleToken(PromptContext &promptCtx) const {
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return gpt_sample_top_k_top_p(d_ptr->model->hparams.n_vocab,
         promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
@@ -907,13 +896,11 @@ LLModel::Token GPTJ::sampleToken(PromptContext &promptCtx) const
         d_ptr->rng);
 }
 
-std::string GPTJ::tokenToString(Token id) const
-{
+std::string GPTJ::tokenToString(Token id) const {
     return d_ptr->vocab.id_to_token[id];
 }
 
-bool GPTJ::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
-{
+bool GPTJ::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const {
     // determine the required inference memory per token:
     static bool initialized = false;
     if (!initialized) {
@@ -925,13 +912,11 @@ bool GPTJ::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) co
     return gptj_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
 }
 
-int32_t GPTJ::contextLength() const
-{
+int32_t GPTJ::contextLength() const {
     return d_ptr->model->hparams.n_ctx;
 }
 
-const std::vector<LLModel::Token> &GPTJ::endTokens() const
-{
+const std::vector<LLModel::Token> &GPTJ::endTokens() const {
     static const std::vector<LLModel::Token> fres = {50256};
     return fres;
 }

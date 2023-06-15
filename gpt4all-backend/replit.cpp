@@ -126,7 +126,7 @@ bool replit_tokenizer_load(replit_tokenizer & tokenizer, std::istream & fin, int
 std::string replace_all(const std::string & str,    // where to work
                         const std::string & find,   // substitute 'find'
                         const std::string & replace //      by 'replace'
-) {
+                        ) {
     std::string result;
     size_t find_len = find.size();
     size_t pos, from = 0;
@@ -538,7 +538,6 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
 
 // load the model's weights from a file path
 bool replit_model_load(const std::string & fname, replit_model & model, replit_tokenizer & vocab) {
-
     auto fin = std::ifstream(fname, std::ios::binary);
     if (!fin) {
         fprintf(stderr, "%s: failed to open '%s'\n", __func__, fname.c_str());
@@ -761,8 +760,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
 
 #define REPLIT_MAX_RNG_STATE 64*1024
 
-size_t replit_get_state_size(const replit_model &model)
-{
+size_t replit_get_state_size(const replit_model &model) {
     // we don't know size of rng until we actually serialize it. so reserve more than enough memory for its serialized state.
     // for reference, std::mt19937(1337) serializes to 6701 bytes.
     const size_t s_rng_size        = sizeof(size_t);
@@ -781,8 +779,7 @@ size_t replit_get_state_size(const replit_model &model)
     return s_total;
 }
 
-size_t replit_copy_state_data(const replit_model &model, const std::mt19937 &rng, uint8_t *dest)
-{
+size_t replit_copy_state_data(const replit_model &model, const std::mt19937 &rng, uint8_t *dest) {
     uint8_t * out = dest;
     fflush(stdout);
     // copy rng
@@ -820,8 +817,7 @@ size_t replit_copy_state_data(const replit_model &model, const std::mt19937 &rng
     return written;
 }
 
-size_t replit_set_state_data(replit_model *model, std::mt19937 *rng, const uint8_t *src)
-{
+size_t replit_set_state_data(replit_model *model, std::mt19937 *rng, const uint8_t *src) {
     const uint8_t * in = src;
 
     // set rng
@@ -911,13 +907,11 @@ void Replit::setThreadCount(int32_t n_threads) {
     d_ptr->n_threads = n_threads;
 }
 
-int32_t Replit::threadCount() const
-{
+int32_t Replit::threadCount() const {
     return d_ptr->n_threads;
 }
 
-Replit::~Replit()
-{
+Replit::~Replit() {
     if(d_ptr->model->ctx) {
         ggml_free(d_ptr->model->ctx);
         d_ptr->model->ctx = nullptr;
@@ -934,38 +928,31 @@ Replit::~Replit()
     delete d_ptr->model;
 }
 
-bool Replit::isModelLoaded() const
-{
+bool Replit::isModelLoaded() const {
     return d_ptr->modelLoaded;
 }
 
-size_t Replit::stateSize() const
-{
+size_t Replit::stateSize() const {
     return replit_get_state_size(*d_ptr->model);
 }
 
-size_t Replit::saveState(uint8_t *dest) const
-{
+size_t Replit::saveState(uint8_t *dest) const {
     return replit_copy_state_data(*d_ptr->model, d_ptr->rng, dest);
 }
 
-size_t Replit::restoreState(const uint8_t *src)
-{
+size_t Replit::restoreState(const uint8_t *src) {
     return replit_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-std::vector<LLModel::Token> Replit::tokenize(PromptContext &, const std::string &str) const
-{
+std::vector<LLModel::Token> Replit::tokenize(PromptContext &, const std::string &str) const {
     return replit_tokenizer_tokenize(d_ptr->vocab, str);
 }
 
-std::string Replit::tokenToString(LLModel::Token id) const
-{
+std::string Replit::tokenToString(LLModel::Token id) const {
     return replit_tokenizer_detokenize(d_ptr->vocab, {id});
 }
 
-LLModel::Token Replit::sampleToken(PromptContext &promptCtx) const
-{
+LLModel::Token Replit::sampleToken(PromptContext &promptCtx) const {
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return gpt_sample_top_k_top_p(d_ptr->model->hparams.n_vocab,
         promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
@@ -976,18 +963,15 @@ LLModel::Token Replit::sampleToken(PromptContext &promptCtx) const
         d_ptr->rng);
 }
 
-bool Replit::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
-{
+bool Replit::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const {
     return replit_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
 }
 
-int32_t Replit::contextLength() const
-{
+int32_t Replit::contextLength() const {
     return d_ptr->model->hparams.n_ctx;
 }
 
-const std::vector<LLModel::Token> &Replit::endTokens() const
-{
+const std::vector<LLModel::Token> &Replit::endTokens() const {
     static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.raw_vocab.token_to_id["<|endoftext|>"]};
     return fres;
 }

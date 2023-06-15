@@ -97,8 +97,7 @@ LLamaModel::LLamaModel()
     d_ptr->modelLoaded = false;
 }
 
-bool LLamaModel::loadModel(const std::string &modelPath)
-{
+bool LLamaModel::loadModel(const std::string &modelPath) {
     // load the model
     d_ptr->params = llama_context_default_params();
 
@@ -142,34 +141,28 @@ int32_t LLamaModel::threadCount() const {
     return d_ptr->n_threads;
 }
 
-LLamaModel::~LLamaModel()
-{
+LLamaModel::~LLamaModel() {
     llama_free(d_ptr->ctx);
 }
 
-bool LLamaModel::isModelLoaded() const
-{
+bool LLamaModel::isModelLoaded() const {
     return d_ptr->modelLoaded;
 }
 
-size_t LLamaModel::stateSize() const
-{
+size_t LLamaModel::stateSize() const {
     return llama_get_state_size(d_ptr->ctx);
 }
 
-size_t LLamaModel::saveState(uint8_t *dest) const
-{
+size_t LLamaModel::saveState(uint8_t *dest) const {
     return llama_copy_state_data(d_ptr->ctx, dest);
 }
 
-size_t LLamaModel::restoreState(const uint8_t *src)
-{
+size_t LLamaModel::restoreState(const uint8_t *src) {
     // const_cast is required, see: https://github.com/ggerganov/llama.cpp/pull/1540
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
-std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str) const
-{
+std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str) const {
     const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos());
     std::vector<LLModel::Token> fres(str.size()+4);
     auto fres_len = llama_tokenize(d_ptr->ctx, str.c_str(), fres.data(), fres.size(), useBOS);
@@ -177,13 +170,12 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
     return fres;
 }
 
-std::string LLamaModel::tokenToString(Token id) const
-{
+
+std::string LLamaModel::tokenToString(Token id) const {
     return llama_token_to_str(d_ptr->ctx, id);
 }
 
-LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
-{
+LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const {
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return llama_sample_top_p_top_k(d_ptr->ctx,
         promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
@@ -191,8 +183,7 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
         promptCtx.repeat_penalty);
 }
 
-bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
-{
+bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const {
     // When we recalculate context we could have erased the original BOS token... we need to replace it
     const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos());
     if (useBOS) {
@@ -205,13 +196,11 @@ bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &toke
         return llama_eval(d_ptr->ctx, tokens.data(), tokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
 }
 
-int32_t LLamaModel::contextLength() const
-{
+int32_t LLamaModel::contextLength() const {
     return llama_n_ctx(d_ptr->ctx);
 }
 
-const std::vector<LLModel::Token> &LLamaModel::endTokens() const
-{
+const std::vector<LLModel::Token> &LLamaModel::endTokens() const {
     static const std::vector<LLModel::Token> fres = {llama_token_eos()};
     return fres;
 }

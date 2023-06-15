@@ -30,8 +30,7 @@ void LLModel::prompt(const std::string &prompt,
                      std::function<bool(int32_t)> promptCallback,
                      std::function<bool(int32_t, const std::string&)> responseCallback,
                      std::function<bool(bool)> recalculateCallback,
-                     PromptContext &promptCtx)
-{
+                     PromptContext &promptCtx) {
     if (!isModelLoaded()) {
         std::cerr << implementation().modelType << " ERROR: prompt won't work with an unloaded model!\n";
         return;

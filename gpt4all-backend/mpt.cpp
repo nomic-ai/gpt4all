@@ -638,8 +638,7 @@ bool mpt_eval(
 
 #define MPT_MAX_RNG_STATE 64*1024
 
-size_t mpt_get_state_size(const mpt_model &model)
-{
+size_t mpt_get_state_size(const mpt_model &model) {
     // we don't know size of rng until we actually serialize it. so reserve more than enough memory for its serialized state.
     // for reference, std::mt19937(1337) serializes to 6701 bytes.
     const size_t s_rng_size        = sizeof(size_t);
@@ -658,8 +657,7 @@ size_t mpt_get_state_size(const mpt_model &model)
     return s_total;
 }
 
-size_t mpt_copy_state_data(const mpt_model &model, const std::mt19937 &rng, uint8_t *dest)
-{
+size_t mpt_copy_state_data(const mpt_model &model, const std::mt19937 &rng, uint8_t *dest) {
     uint8_t * out = dest;
     fflush(stdout);
     // copy rng
@@ -696,8 +694,7 @@ size_t mpt_copy_state_data(const mpt_model &model, const std::mt19937 &rng, uint
     return written;
 }
 
-size_t mpt_set_state_data(mpt_model *model, std::mt19937 *rng, const uint8_t *src)
-{
+size_t mpt_set_state_data(mpt_model *model, std::mt19937 *rng, const uint8_t *src) {
     const uint8_t * in = src;
 
     // set rng
@@ -785,48 +782,39 @@ void MPT::setThreadCount(int32_t n_threads) {
     d_ptr->n_threads = n_threads;
 }
 
-int32_t MPT::threadCount() const
-{
+int32_t MPT::threadCount() const {
     return d_ptr->n_threads;
 }
 
-MPT::~MPT()
-{
+MPT::~MPT() {
     delete d_ptr->model;
 }
 
-bool MPT::isModelLoaded() const
-{
+bool MPT::isModelLoaded() const {
     return d_ptr->modelLoaded;
 }
 
-size_t MPT::stateSize() const
-{
+size_t MPT::stateSize() const {
     return mpt_get_state_size(*d_ptr->model);
 }
 
-size_t MPT::saveState(uint8_t *dest) const
-{
+size_t MPT::saveState(uint8_t *dest) const {
     return mpt_copy_state_data(*d_ptr->model, d_ptr->rng, dest);
 }
 
-size_t MPT::restoreState(const uint8_t *src)
-{
+size_t MPT::restoreState(const uint8_t *src) {
     return mpt_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-std::vector<LLModel::Token> MPT::tokenize(PromptContext &, const std::string &str) const
-{
+std::vector<LLModel::Token> MPT::tokenize(PromptContext &, const std::string &str) const {
     return ::gpt_tokenize(d_ptr->vocab, str);
 }
 
-std::string MPT::tokenToString(Token id) const
-{
+std::string MPT::tokenToString(Token id) const {
     return d_ptr->vocab.id_to_token[id];
 }
 
-LLModel::Token MPT::sampleToken(PromptContext &promptCtx) const
-{
+LLModel::Token MPT::sampleToken(PromptContext &promptCtx) const {
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return gpt_sample_top_k_top_p(d_ptr->model->hparams.n_vocab,
         promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
@@ -837,8 +825,7 @@ LLModel::Token MPT::sampleToken(PromptContext &promptCtx) const
         d_ptr->rng);
 }
 
-bool MPT::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
-{
+bool MPT::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const {
     // determine the required inference memory per token:
     static bool initialized = false;
     if (!initialized) {
@@ -850,13 +837,11 @@ bool MPT::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) con
     return mpt_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
 }
 
-int32_t MPT::contextLength() const
-{
+int32_t MPT::contextLength() const {
     return d_ptr->model->hparams.n_ctx;
 }
 
-const std::vector<LLModel::Token> &MPT::endTokens() const
-{
+const std::vector<LLModel::Token> &MPT::endTokens() const {
     static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.token_to_id["<|im_end|>"]};
     return fres;
 }
