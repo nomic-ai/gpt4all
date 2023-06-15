@@ -7,7 +7,8 @@
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
 
-class SyntaxHighlighter : public QSyntaxHighlighter {
+class SyntaxHighlighter : public QSyntaxHighlighter
+{
     Q_OBJECT
 public:
     SyntaxHighlighter(QObject *parent);
@@ -15,14 +16,16 @@ public:
     void highlightBlock(const QString &text) override;
 };
 
-struct ContextLink {
+struct ContextLink
+{
     int startPos = -1;
     int endPos = -1;
     QString text;
     QString href;
 };
 
-struct CodeCopy {
+struct CodeCopy
+{
     int startPos = -1;
     int endPos = -1;
     QString text;

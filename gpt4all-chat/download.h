@@ -9,7 +9,8 @@
 #include <QTemporaryFile>
 #include <QThread>
 
-struct ModelInfo {
+struct ModelInfo
+{
     Q_GADGET
     Q_PROPERTY(QString filename MEMBER filename)
     Q_PROPERTY(QString filesize MEMBER filesize)
@@ -42,7 +43,8 @@ public:
 };
 Q_DECLARE_METATYPE(ModelInfo)
 
-struct ReleaseInfo {
+struct ReleaseInfo
+{
     Q_GADGET
     Q_PROPERTY(QString version MEMBER version)
     Q_PROPERTY(QString notes MEMBER notes)
@@ -135,7 +137,9 @@ private:
 
 private:
     explicit Download();
-    ~Download() {}
+    ~Download()
+    {
+    }
     friend class MyDownload;
 };
 

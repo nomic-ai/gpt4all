@@ -45,7 +45,9 @@ private:
 
 private:
     explicit LLM();
-    ~LLM() {}
+    ~LLM()
+    {
+    }
     friend class MyLLM;
 };
 

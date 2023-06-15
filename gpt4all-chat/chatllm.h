@@ -8,7 +8,8 @@
 #include "localdocs.h"
 #include "../gpt4all-backend/llmodel.h"
 
-enum LLModelType {
+enum LLModelType
+{
     MPT_,
     GPTJ_,
     LLAMA_,
@@ -16,7 +17,8 @@ enum LLModelType {
     REPLIT_
 };
 
-struct LLModelInfo {
+struct LLModelInfo
+{
     LLModel *model = nullptr;
     QFileInfo fileInfo;
     // NOTE: This does not store the model type or name on purpose as this is left for ChatLLM which

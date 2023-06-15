@@ -29,7 +29,8 @@ class Chat : public QObject
     QML_UNCREATABLE("Only creatable from c++!")
 
 public:
-    enum ResponseState {
+    enum ResponseState
+    {
         ResponseStopped,
         LocalDocsRetrieval,
         LocalDocsProcessing,

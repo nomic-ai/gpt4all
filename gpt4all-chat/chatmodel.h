@@ -41,9 +41,12 @@ class ChatModel : public QAbstractListModel
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    explicit ChatModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
+    explicit ChatModel(QObject *parent = nullptr) : QAbstractListModel(parent)
+    {
+    }
 
-    enum Roles {
+    enum Roles
+    {
         IdRole = Qt::UserRole + 1,
         NameRole,
         ValueRole,

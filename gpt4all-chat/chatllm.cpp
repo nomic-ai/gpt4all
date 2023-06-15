@@ -49,7 +49,9 @@ private:
         // seed with empty model
         m_availableModels.append(LLModelInfo());
     }
-    ~LLModelStore() {}
+    ~LLModelStore()
+    {
+    }
     QVector<LLModelInfo> m_availableModels;
     QMutex m_mutex;
     QWaitCondition m_condition;
@@ -307,7 +309,8 @@ void ChatLLM::resetContext()
     m_ctx = LLModel::PromptContext();
 }
 
-std::string remove_leading_whitespace(const std::string& input) {
+std::string remove_leading_whitespace(const std::string& input)
+{
     auto first_non_whitespace = std::find_if(input.begin(), input.end(), [](unsigned char c) {
         return !std::isspace(c);
     });
@@ -315,7 +318,8 @@ std::string remove_leading_whitespace(const std::string& input) {
     return std::string(first_non_whitespace, input.end());
 }
 
-std::string trim_whitespace(const std::string& input) {
+std::string trim_whitespace(const std::string& input)
+{
     auto first_non_whitespace = std::find_if(input.begin(), input.end(), [](unsigned char c) {
         return !std::isspace(c);
     });

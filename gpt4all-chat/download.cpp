@@ -39,15 +39,18 @@ Download::Download()
     m_startTime = QDateTime::currentDateTime();
 }
 
-bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
+bool operator==(const ModelInfo& lhs, const ModelInfo& rhs)
+{
     return lhs.filename == rhs.filename && lhs.md5sum == rhs.md5sum;
 }
 
-bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs) {
+bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs)
+{
     return lhs.version == rhs.version;
 }
 
-bool compareVersions(const QString &a, const QString &b) {
+bool compareVersions(const QString &a, const QString &b)
+{
     QStringList aParts = a.split('.');
     QStringList bParts = b.split('.');
 
@@ -124,11 +127,13 @@ bool Download::hasNewerRelease() const
     return compareVersions(versions.first(), currentVersion);
 }
 
-QString Download::downloadLocalModelsPath() const {
+QString Download::downloadLocalModelsPath() const
+{
     return m_downloadLocalModelsPath;
 }
 
-void Download::setDownloadLocalModelsPath(const QString &modelPath) {
+void Download::setDownloadLocalModelsPath(const QString &modelPath)
+{
     QString filePath = (modelPath.startsWith("file://") ?
                         QUrl(modelPath).toLocalFile() : modelPath);
     QString canonical = QFileInfo(filePath).canonicalFilePath() + "/";
@@ -149,7 +154,8 @@ bool Download::isFirstStart() const
     return first;
 }
 
-QString Download::incompleteDownloadPath(const QString &modelFile) {
+QString Download::incompleteDownloadPath(const QString &modelFile)
+{
     QString downloadPath = downloadLocalModelsPath() + "incomplete-" +
                            modelFile;
     return downloadPath;

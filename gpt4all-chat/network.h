@@ -6,7 +6,8 @@
 #include <QNetworkReply>
 #include <QJsonValue>
 
-struct KeyValue {
+struct KeyValue
+{
     QString key;
     QJsonValue value;
 };
@@ -82,7 +83,9 @@ private:
 
 private:
     explicit Network();
-    ~Network() {}
+    ~Network()
+    {
+    }
     friend class MyNetwork;
 };
 

@@ -8,7 +8,8 @@
 #include <QGuiApplication>
 #include <QClipboard>
 
-enum Language {
+enum Language
+{
     None,
     Python,
     Cpp,
@@ -38,7 +39,8 @@ static Language stringToLanguage(const QString &language)
     return None;
 }
 
-struct HighlightingRule {
+struct HighlightingRule
+{
     QRegularExpression pattern;
     QTextCharFormat format;
 };

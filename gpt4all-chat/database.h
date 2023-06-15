@@ -14,7 +14,8 @@ struct DocumentInfo
     QFileInfo doc;
 };
 
-struct ResultInfo {
+struct ResultInfo
+{
     QString file;   // [Required] The name of the file, but not the full path
     QString title;  // [Optional] The title of the document
     QString author; // [Optional] The author of the document
@@ -25,7 +26,8 @@ struct ResultInfo {
     int to = -1;    // [Optional] The line number where the text ends
 };
 
-struct CollectionItem {
+struct CollectionItem
+{
     QString collection;
     QString folder_path;
     int folder_id = -1;

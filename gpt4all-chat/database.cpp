@@ -217,7 +217,8 @@ bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_i
     return q.exec();
 }
 
-bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<int> *folderIds) {
+bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<int> *folderIds)
+{
     if (!q.prepare(SELECT_FOLDERS_FROM_COLLECTIONS_SQL))
         return false;
     q.addBindValue(collection_name);
@@ -228,7 +229,8 @@ bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, Q
     return true;
 }
 
-bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *collections) {
+bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *collections)
+{
     if (!q.prepare(SELECT_COLLECTIONS_FROM_FOLDER_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -239,7 +241,8 @@ bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *co
     return true;
 }
 
-bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collections) {
+bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collections)
+{
     if (!q.prepare(SELECT_COLLECTIONS_SQL))
         return false;
     if (!q.exec())
@@ -290,14 +293,16 @@ bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
     return true;
 }
 
-bool removeFolderFromDB(QSqlQuery &q, int folder_id) {
+bool removeFolderFromDB(QSqlQuery &q, int folder_id)
+{
     if (!q.prepare(DELETE_FOLDERS_SQL))
         return false;
     q.addBindValue(folder_id);
     return q.exec();
 }
 
-bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
+bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id)
+{
     if (!q.prepare(SELECT_FOLDERS_FROM_PATH_SQL))
         return false;
     q.addBindValue(folder_path);
@@ -309,7 +314,8 @@ bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
     return true;
 }
 
-bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
+bool selectFolder(QSqlQuery &q, int id, QString *folder_path)
+{
     if (!q.prepare(SELECT_FOLDERS_FROM_ID_SQL))
         return false;
     q.addBindValue(id);
@@ -321,7 +327,8 @@ bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
     return true;
 }
 
-bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
+bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths)
+{
     if (!q.prepare(SELECT_ALL_FOLDERPATHS_SQL))
         return false;
     if (!q.exec())
@@ -372,7 +379,8 @@ bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QStrin
     return true;
 }
 
-bool removeDocument(QSqlQuery &q, int document_id) {
+bool removeDocument(QSqlQuery &q, int document_id)
+{
     if (!q.prepare(DELETE_DOCUMENTS_SQL))
         return false;
     q.addBindValue(document_id);
@@ -388,7 +396,8 @@ bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
     return q.exec();
 }
 
-bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 *document_time) {
+bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 *document_time)
+{
     if (!q.prepare(SELECT_DOCUMENT_SQL))
         return false;
     q.addBindValue(document_path);
@@ -402,7 +411,8 @@ bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 
     return true;
 }
 
-bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
+bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds)
+{
     if (!q.prepare(SELECT_DOCUMENTS_SQL))
         return false;
     q.addBindValue(folder_id);

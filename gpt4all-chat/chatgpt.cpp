@@ -68,7 +68,8 @@ void ChatGPT::prompt(const std::string &prompt,
         std::function<bool(int32_t)> promptCallback,
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
-        PromptContext &promptCtx) {
+        PromptContext &promptCtx)
+{
 
     Q_UNUSED(promptCallback);
     Q_UNUSED(recalculateCallback);

@@ -8,7 +8,9 @@
 #include "../gpt4all-backend/llmodel.h"
 
 class ChatGPTPrivate;
-class ChatGPT : public QObject, public LLModel {
+
+class ChatGPT : public QObject, public LLModel
+{
     Q_OBJECT
 public:
     ChatGPT();

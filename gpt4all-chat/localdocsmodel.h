@@ -9,7 +9,8 @@ class LocalDocsModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    enum Roles {
+    enum Roles
+    {
         CollectionRole = Qt::UserRole + 1,
         FolderPathRole,
         InstalledRole
