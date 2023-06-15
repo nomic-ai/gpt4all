@@ -1,5 +1,4 @@
 *.arrow
-*.json
 squad_*
 *sbert_embedded*
 *.pkl
