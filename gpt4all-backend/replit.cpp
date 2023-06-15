@@ -47,7 +47,6 @@ using piece_map_t = std::unordered_map<std::string, piece_t>;
 namespace {
 const char *modelType_ = "Replit";
 
-const size_t MB = 1024*1024;
 const std::string ws_symbol = "\342\226\201";
 }
 
@@ -251,7 +250,7 @@ static bool kv_cache_init(
 
     const int64_t n_mem      = (int64_t)n_layer*n_ctx;
     const int64_t n_elements = n_embd*n_mem;
-    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2u*MB);
+    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2_MiB);
     struct ggml_init_params params;
     params.mem_size   = cache.buf.size;
     params.mem_buffer = cache.buf.addr;
