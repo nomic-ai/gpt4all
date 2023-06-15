@@ -270,7 +270,7 @@ static bool kv_cache_init(
 
 // load the model's weights from a stream
 bool replit_model_load(const std::string & fname, std::istream &fin, replit_model & model, replit_tokenizer & vocab) {
-    printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
+    // printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
 
     // verify magic
     {
@@ -293,13 +293,13 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         fin.read((char *) &hparams.ftype,       sizeof(hparams.ftype));
 
         const int32_t qntvr = hparams.ftype / GGML_QNT_VERSION_FACTOR;
-        printf("%s: n_vocab    = %d\n", __func__, hparams.n_vocab);
-        printf("%s: n_ctx      = %d\n", __func__, hparams.n_ctx);
-        printf("%s: n_embd     = %d\n", __func__, hparams.n_embd);
-        printf("%s: n_head     = %d\n", __func__, hparams.n_head);
-        printf("%s: n_layer    = %d\n", __func__, hparams.n_layer);
-        printf("%s: ftype      = %d\n", __func__, hparams.ftype);
-        printf("%s: qntvr      = %d\n", __func__, qntvr);
+        // printf("%s: n_vocab    = %d\n", __func__, hparams.n_vocab);
+        // printf("%s: n_ctx      = %d\n", __func__, hparams.n_ctx);
+        // printf("%s: n_embd     = %d\n", __func__, hparams.n_embd);
+        // printf("%s: n_head     = %d\n", __func__, hparams.n_head);
+        // printf("%s: n_layer    = %d\n", __func__, hparams.n_layer);
+        // printf("%s: ftype      = %d\n", __func__, hparams.ftype);
+        // printf("%s: qntvr      = %d\n", __func__, qntvr);
 
         hparams.ftype %= GGML_QNT_VERSION_FACTOR;
     }
@@ -351,7 +351,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
 
         ctx_size += (1 + 6 * n_layer) * 512; // object overhead
 
-        printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size / (1024.0 * 1024.0));
+        // printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size / (1024.0 * 1024.0));
     }
 
     // create the ggml context
@@ -425,7 +425,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
 
         const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
 
-        printf("%s: memory_size = %8.2f MB, n_mem = %lld\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
+        // printf("%s: memory_size = %8.2f MB, n_mem = %lld\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
     }
 
     // load weights
@@ -433,7 +433,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         int n_tensors = 0;
         size_t total_size = 0;
 
-        printf("%s: ", __func__);
+        // printf("%s: ", __func__);
 
         while (true) {
             int32_t n_dims;
@@ -479,8 +479,8 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
 
             // for debugging
             if (0) {
-                printf("%24s - [%5d, %5d], type = %6s, %6.2f MB, %9zu bytes\n", name.data(), ne[0], ne[1],
-                       ggml_type_name(ggml_type(ttype)), ggml_nbytes(tensor) / 1024.0 / 1024.0, ggml_nbytes(tensor));
+                //printf("%24s - [%5d, %5d], type = %6s, %6.2f MB, %9zu bytes\n", name.data(), ne[0], ne[1],
+                //       ggml_type_name(ggml_type(ttype)), ggml_nbytes(tensor) / 1024.0 / 1024.0, ggml_nbytes(tensor));
             }
 
             const size_t bpe = ggml_type_size(ggml_type(ttype));
@@ -497,14 +497,14 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
 
             total_size += ggml_nbytes(tensor);
             if (++n_tensors % 8 == 0) {
-                printf(".");
-                fflush(stdout);
+                // printf(".");
+                // fflush(stdout);
             }
         }
 
-        printf(" done\n");
+        // printf(" done\n");
 
-        printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size / 1024.0 / 1024.0, n_tensors);
+        // printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size / 1024.0 / 1024.0, n_tensors);
     }
 
    model.eval_buf_size = 256u * 1024 * 1024;

@@ -161,7 +161,7 @@ static bool kv_cache_init(
 
 // load the model's weights from a stream
 bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & model, gpt_vocab & vocab) {
-    printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
+    // printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
 
     // verify magic
     {
@@ -185,13 +185,13 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
         fin.read((char *) &hparams.n_rot,   sizeof(hparams.n_rot));
         fin.read((char *) &hparams.f16,     sizeof(hparams.f16));
 
-        printf("%s: n_vocab = %d\n", __func__, hparams.n_vocab);
-        printf("%s: n_ctx   = %d\n", __func__, hparams.n_ctx);
-        printf("%s: n_embd  = %d\n", __func__, hparams.n_embd);
-        printf("%s: n_head  = %d\n", __func__, hparams.n_head);
-        printf("%s: n_layer = %d\n", __func__, hparams.n_layer);
-        printf("%s: n_rot   = %d\n", __func__, hparams.n_rot);
-        printf("%s: f16     = %d\n", __func__, hparams.f16);
+        // printf("%s: n_vocab = %d\n", __func__, hparams.n_vocab);
+        // printf("%s: n_ctx   = %d\n", __func__, hparams.n_ctx);
+        // printf("%s: n_embd  = %d\n", __func__, hparams.n_embd);
+        // printf("%s: n_head  = %d\n", __func__, hparams.n_head);
+        // printf("%s: n_layer = %d\n", __func__, hparams.n_layer);
+        // printf("%s: n_rot   = %d\n", __func__, hparams.n_rot);
+        // printf("%s: f16     = %d\n", __func__, hparams.f16);
     }
 
     // load vocab
@@ -275,7 +275,7 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
 
         ctx_size += (5 + 10*n_layer)*256; // object overhead
 
-        printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size/(1024.0*1024.0));
+        // printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size/(1024.0*1024.0));
     }
 
     // create the ggml context
@@ -366,7 +366,7 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
         }
 
         const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
-        printf("%s: kv self size  = %7.2f MB\n", __func__, memory_size / 1024.0 / 1024.0);
+        // printf("%s: kv self size  = %7.2f MB\n", __func__, memory_size / 1024.0 / 1024.0);
     }
 
     // load weights
@@ -374,7 +374,7 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
         int n_tensors = 0;
         size_t total_size = 0;
 
-        printf("%s: ", __func__);
+        // printf("%s: ", __func__);
 
         while (true) {
             int32_t n_dims;
@@ -418,7 +418,7 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
 
             if (0) {
                 static const char * ftype_str[] = { "f32", "f16", "q4_0", "q4_1", };
-                printf("%24s - [%5d, %5d], type = %6s, %6.2f MB, %9zu bytes\n", name.data(), ne[0], ne[1], ftype_str[ftype], ggml_nbytes(tensor)/1024.0/1024.0, ggml_nbytes(tensor));
+                // printf("%24s - [%5d, %5d], type = %6s, %6.2f MB, %9zu bytes\n", name.data(), ne[0], ne[1], ftype_str[ftype], ggml_nbytes(tensor)/1024.0/1024.0, ggml_nbytes(tensor));
             }
 
             size_t bpe = 0;
@@ -446,14 +446,14 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
             //printf("%42s - [%5d, %5d], type = %6s, %6.2f MB\n", name.data(), ne[0], ne[1], ftype == 0 ? "float" : "f16", ggml_nbytes(tensor)/1024.0/1024.0);
             total_size += ggml_nbytes(tensor);
             if (++n_tensors % 8 == 0) {
-                printf(".");
-                fflush(stdout);
+                // printf(".");
+                // fflush(stdout);
             }
         }
 
-        printf(" done\n");
+        // printf(" done\n");
 
-        printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size/1024.0/1024.0, n_tensors);
+        // printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size/1024.0/1024.0, n_tensors);
     }
 
     return true;
@@ -507,7 +507,7 @@ bool gptj_eval(
 
     if (mem_per_token > 0 && mem_per_token*N > model.buf.size) {
         const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
-        printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, model.buf.size, buf_size_new);
+        // printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, model.buf.size, buf_size_new);
 
         // reallocate
         model.buf.resize(buf_size_new);
@@ -706,7 +706,7 @@ bool gptj_eval(
     if (mem_per_token == 0) {
         mem_per_token = ggml_used_mem(ctx0)/N;
     }
-    //printf("used_mem = %zu\n", ggml_used_mem(ctx0));
+    // printf("used_mem = %zu\n", ggml_used_mem(ctx0));
 
     ggml_free(ctx0);
 

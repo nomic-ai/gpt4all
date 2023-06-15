@@ -156,7 +156,7 @@ static bool kv_cache_init(
 
 // load the model's weights from a stream
 bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & model, gpt_vocab & vocab) {
-    printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
+    // printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
 
     // verify magic
     {
@@ -181,14 +181,14 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         fin.read((char *) &hparams.clip_qkv,  sizeof(hparams.clip_qkv));
         fin.read((char *) &hparams.f16,   sizeof(hparams.f16));
 
-        printf("%s: n_vocab        = %d\n", __func__, hparams.n_vocab);
-        printf("%s: n_ctx          = %d\n", __func__, hparams.n_ctx);
-        printf("%s: n_embd         = %d\n", __func__, hparams.n_embd);
-        printf("%s: n_head         = %d\n", __func__, hparams.n_head);
-        printf("%s: n_layer        = %d\n", __func__, hparams.n_layer);
-        printf("%s: alibi_bias_max = %f\n", __func__, hparams.alibi_bias_max);
-        printf("%s: clip_qkv       = %f\n", __func__, hparams.clip_qkv);
-        printf("%s: ftype          = %d\n", __func__, hparams.f16);
+        // printf("%s: n_vocab        = %d\n", __func__, hparams.n_vocab);
+        // printf("%s: n_ctx          = %d\n", __func__, hparams.n_ctx);
+        // printf("%s: n_embd         = %d\n", __func__, hparams.n_embd);
+        // printf("%s: n_head         = %d\n", __func__, hparams.n_head);
+        // printf("%s: n_layer        = %d\n", __func__, hparams.n_layer);
+        // printf("%s: alibi_bias_max = %f\n", __func__, hparams.alibi_bias_max);
+        // printf("%s: clip_qkv       = %f\n", __func__, hparams.clip_qkv);
+        // printf("%s: ftype          = %d\n", __func__, hparams.f16);
     }
 
     // load vocab
@@ -275,7 +275,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         // TODO probably less now?
         ctx_size += (5 + 10*n_layer)*256; // object overhead
 
-        printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size/(1024.0*1024.0));
+        // printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size/(1024.0*1024.0));
     }
 
     // create the ggml context
@@ -343,7 +343,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         }
 
         const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
-        printf("%s: kv self size  = %7.2f MB\n", __func__, memory_size / 1024.0 / 1024.0);
+        // printf("%s: kv self size  = %7.2f MB\n", __func__, memory_size / 1024.0 / 1024.0);
     }
 
     // load weights
@@ -395,7 +395,7 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 
             // for debugging
             if (0) {
-                printf("%24s - [%5d, %5d], type = %6s, %6.2f MB, %9zu bytes\n", name.data(), ne[0], ne[1], ggml_type_name(ggml_type(ttype)), ggml_nbytes(tensor)/1024.0/1024.0, ggml_nbytes(tensor));
+                // printf("%24s - [%5d, %5d], type = %6s, %6.2f MB, %9zu bytes\n", name.data(), ne[0], ne[1], ggml_type_name(ggml_type(ttype)), ggml_nbytes(tensor)/1024.0/1024.0, ggml_nbytes(tensor));
             }
 
             const size_t bpe = ggml_type_size(ggml_type(ttype));
@@ -411,14 +411,14 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
             //printf("%42s - [%5d, %5d], type = %6s, %6.2f MB\n", name.data(), ne[0], ne[1], ttype == 0 ? "float" : "f16", ggml_nbytes(tensor)/1024.0/1024.0);
             total_size += ggml_nbytes(tensor);
             if (++n_tensors % 8 == 0) {
-                printf(".");
-                fflush(stdout);
+                // printf(".");
+                // fflush(stdout);
             }
         }
 
-        printf(" done\n");
+        // printf(" done\n");
 
-        printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size/1024.0/1024.0, n_tensors);
+        // printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size/1024.0/1024.0, n_tensors);
     }
 
     return true;

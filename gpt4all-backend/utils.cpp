@@ -199,7 +199,7 @@ std::vector<gpt_vocab::id> gpt_tokenize(const gpt_vocab & vocab, const std::stri
 
 
 bool gpt_vocab_init(const std::string & fname, gpt_vocab & vocab) {
-    printf("%s: loading vocab from '%s'\n", __func__, fname.c_str());
+    // printf("%s: loading vocab from '%s'\n", __func__, fname.c_str());
 
     vocab.token_to_id = ::json_parse(fname);
 
@@ -207,7 +207,7 @@ bool gpt_vocab_init(const std::string & fname, gpt_vocab & vocab) {
         vocab.id_to_token[kv.second] = kv.first;
     }
 
-    printf("%s: vocab size = %d\n", __func__, (int) vocab.token_to_id.size());
+    // printf("%s: vocab size = %d\n", __func__, (int) vocab.token_to_id.size());
 
     // print the vocabulary
     //for (auto kv : vocab.token_to_id) {

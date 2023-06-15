@@ -85,8 +85,8 @@ class GPT4All():
 
         model_dest = os.path.join(model_path, model_filename).replace("\\", "\\\\")
         if os.path.exists(model_dest):
-            if verbose:
-                print("Found model file at ", model_dest)
+            # if verbose:
+                # print("Found model file at ", model_dest)
             return model_dest
 
         # If model file does not exist, download
