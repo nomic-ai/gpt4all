@@ -426,7 +426,7 @@ jobs:
   build-csharp-macos:
     macos:
       xcode: "14.2.0"
-    resource_class: macos.m1.large.gen1
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - restore_cache:
