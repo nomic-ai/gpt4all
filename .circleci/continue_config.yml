@@ -311,7 +311,7 @@ jobs:
 
   build-csharp-linux:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
+      - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy # Ubuntu 22.04
     steps:
       - checkout
       - restore_cache:
@@ -433,7 +433,6 @@ jobs:
           name: Install dependencies
           command: |
             brew install cmake
-            brew install dotnet@6
             brew install dotnet@7
             dotnet --info
       - run:
