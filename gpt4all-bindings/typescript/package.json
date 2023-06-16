@@ -9,8 +9,9 @@
     "build:backend": "node scripts/build.js",
     "install": "node-gyp-build",
     "prebuild": "node scripts/prebuild.js",
-    "predocs:build": "node scripts/copyreadme.js",
-    "docs:build": "documentation readme ./src/gpt4all.d.ts --parse-extension d.ts --format md --section documentation --readme-file docs/api.md"
+    "predocs:build": "node scripts/docs.js",
+    "docs:build": "documentation readme ./src/gpt4all.d.ts --parse-extension d.ts --format md --section documentation --readme-file docs/api.md",
+    "postdocs:build": "node scripts/docs.js"
   },
   "dependencies": {
     "mkdirp": "^3.0.1",

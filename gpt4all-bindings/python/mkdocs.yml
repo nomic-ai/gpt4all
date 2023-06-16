@@ -11,6 +11,7 @@ nav:
     - 'index.md'
     - 'gpt4all_chat.md'
     - 'gpt4all_python.md'
+    - 'gpt4all_typescript.md'
     - 'Tutorials':
       - 'gpt4all_modal.md'
     - 'Wiki':

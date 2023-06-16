@@ -1,15 +1,23 @@
-### Javascript Bindings
+# GPT4All Node.js API
+
+```sh
+yarn install gpt4all@alpha
+
+npm install gpt4all@alpha
+
+pnpm install gpt4all@alpha
+```
 
 The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-ts) are now out of date.
 
-*   created by [jacoobes](https://github.com/jacoobes) and [nomic ai](https://home.nomic.ai) :D, for all to use.
-
+*   New bindings created by [jacoobes](https://github.com/jacoobes) and the [nomic ai community](https://home.nomic.ai) :D, for all to use.
+*   [Documentation](#Documentation)
 ### Code (alpha)
 
 ```js
-import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } from '../src/gpt4all.js'
+import { createCompletion, loadModel } from '../src/gpt4all.js'
 
-const ll = await createModel('ggml-vicuna-7b-1.1-q4_2.bin', { verbose: true });
+const ll = await loadModel('ggml-vicuna-7b-1.1-q4_2.bin', { verbose: true });
 
 const response = await createCompletion(ll, [
     { role : 'system', content: 'You are meant to be annoying and unhelpful.'  },

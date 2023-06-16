@@ -2,6 +2,7 @@ version: 2.1
 orbs:
   win: circleci/windows@5.0
   python: circleci/python@1.2
+  node: circleci/node@x.y
 
 parameters:
   run-default-workflow:
@@ -11,6 +12,9 @@ parameters:
     type: boolean
     default: false
   run-chat-workflow:
+    type: boolean
+    default: false
+  run-ts-workflow:
     type: boolean
     default: false
 
@@ -153,12 +157,24 @@ jobs:
               -S ../gpt4all-chat \
               -B .
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target all
-
+  build-ts-docs: 
+    docker: 
+      - image: cimg/base:stable
+    steps:
+      - node/install
+          install-yarn: true
+          node-version: "18.15"
+      - run: node --version
+      - node/install-packages:
+          pkg-manager: yarn
+      - run:
+        name: build docs
+        command: yarn docs:build
+      
   build-py-docs:
     docker:
       - image: circleci/python:3.8
     steps:
-      - checkout
       - run:
           name: Install dependencies
           command: |
@@ -329,6 +345,12 @@ workflows:
   deploy-docs:
     when: << pipeline.parameters.run-python-workflow >>
     jobs:
+      - checkout
+      - build-ts-docs:
+          filters:
+            branches:
+              only:
+                - main
       - build-py-docs:
           filters:
             branches:
