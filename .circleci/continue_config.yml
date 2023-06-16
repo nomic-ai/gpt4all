@@ -347,7 +347,7 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet test Gpt4All.Tests -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
+            dotnet test -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
       - run:
           name: test results
           when: always
@@ -407,7 +407,7 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet.exe test Gpt4All.Tests -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
+            dotnet.exe test -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
       - run:
           name: test results
           when: always
@@ -467,7 +467,7 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet test Gpt4All.Tests -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
+            dotnet test -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
       - run:
           name: test results
           when: always
