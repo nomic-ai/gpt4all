@@ -399,19 +399,29 @@ jobs:
             - C:\Users\circleci\.nuget\packages
           key: gpt4all-csharp-bindings
       - run:
-          name: "Run C# Tests"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet.exe test Gpt4All.Tests --filter SKIP_ON_CI!=True
-      - run:
           name: Build C# Project
           command: |
             cd gpt4all-bindings/csharp
             dotnet.exe build Gpt4All --configuration Release
+      - run:
+          name: "Run C# Tests"
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet.exe test Gpt4All.Tests --filter SKIP_ON_CI!=True --logger "trx"
+      - run:
+          name: test results
+          when: always
+          command: |
+              cd gpt4all-bindings/csharp/Gpt4All.Tests
+              dotnet tool install -g trx2junit
+              export $Env:Path += ";$Env:USERPROFILE\.dotnet\tools"
+              trx2junit TestResults/*.trx
+      - store_test_results:
+          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
       - persist_to_workspace:
-          root: gpt4all-bindings/csharp/runtimes/win-x64/native
+          root: gpt4all-bindings/csharp
           paths:
-            - "*.dll"
+            - runtimes/win-x64/native/
 
   store-and-upload-nupkgs:
     docker:
