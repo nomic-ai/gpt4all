@@ -55,36 +55,34 @@ async function loadModel(modelName, options = {}) {
 }
 
 function createPrompt(messages, hasDefaultHeader, hasDefaultFooter) {
-    let fullPrompt = "";
+    let fullPrompt = [];
 
     for (const message of messages) {
         if (message.role === "system") {
-            const systemMessage = message.content + "\n";
-            fullPrompt += systemMessage;
+            const systemMessage = message.content;
+            fullPrompt.push(systemMessage);
         }
     }
     if (hasDefaultHeader) {
-        fullPrompt += `### Instruction: 
-        The prompt below is a question to answer, a task to complete, or a conversation 
-        to respond to; decide which and write an appropriate response.
-        \n### Prompt: 
-        `;
+        fullPrompt.push(`### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.`);
     }
+    let prompt = "### Prompt:";
     for (const message of messages) {
         if (message.role === "user") {
-            const user_message = "\n" + message["content"];
-            fullPrompt += user_message;
+            const user_message = message["content"];
+            prompt += user_message;
         }
         if (message["role"] == "assistant") {
-            const assistant_message = "\nResponse: " + message["content"];
-            fullPrompt += assistant_message;
+            const assistant_message = "Response:" + message["content"];
+            prompt += assistant_message;
         }
     }
+    fullPrompt.push(prompt);
     if (hasDefaultFooter) {
-        fullPrompt += "\n### Response:";
+        fullPrompt.push("### Response:");
     }
 
-    return fullPrompt;
+    return fullPrompt.join('\n');
 }
 
 async function createCompletion(
@@ -100,7 +98,7 @@ async function createCompletion(
     const fullPrompt = createPrompt(
         messages,
         options.hasDefaultHeader ?? true,
-        options.hasDefaultFooter
+        options.hasDefaultFooter ?? true
     );
     if (options.verbose) {
         console.log("Sent: " + fullPrompt);
