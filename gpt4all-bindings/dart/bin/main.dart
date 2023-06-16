@@ -8,6 +8,8 @@ void main(List<String> arguments) async {
       modelPath: '', // TODO path
     );
   } finally {
-    model?.destroy(); // TODO use finalizer package
+    if (model?.isLoaded ?? false) {
+      model?.destroy(); // TODO use finalizer package
+    }
   }
 }
