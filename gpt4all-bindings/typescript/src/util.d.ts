@@ -41,6 +41,11 @@ export interface DownloadModelOptions {
      * @default https://gpt4all.io/models
      */
     url?: string;
+    /**
+     * Whether to verify the hash of the download to ensure a proper download occurred.
+     * @default false
+     */
+    md5?: boolean;
 }
 
 declare function listModels(): Promise<Record<string, string>[]>;

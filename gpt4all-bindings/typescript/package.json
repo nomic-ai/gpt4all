@@ -14,15 +14,16 @@
     "postdocs:build": "node scripts/docs.js"
   },
   "dependencies": {
+    "md5-file": "^5.0.0",
     "mkdirp": "^3.0.1",
     "node-addon-api": "^6.1.0",
-    "node-gyp-build": "^4.6.0",
-    "prebuildify": "^5.0.1"
+    "node-gyp-build": "^4.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.1.5",
     "documentation": "^14.0.2",
     "jest": "^29.5.0",
+    "prebuildify": "^5.0.1",
     "prettier": "^2.8.8"
   },
   "engines": {
