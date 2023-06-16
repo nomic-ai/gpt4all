@@ -435,7 +435,7 @@ jobs:
             brew install cmake
             curl https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
             chmod +x dotnet-install.sh
-            ./dotnet-install.sh -Channel 7.0.1xx --install-dir $HOME/cli-tools
+            ./dotnet-install.sh -Channel 7.0 --install-dir $HOME/cli-tools
             $HOME/cli-tools/dotnet --info
       - run:
           name: Build C library
