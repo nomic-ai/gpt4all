@@ -433,10 +433,11 @@ jobs:
           name: Install dependencies
           command: |
             brew install cmake
-            curl https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
-            chmod +x dotnet-install.sh
-            ./dotnet-install.sh -Channel 7.0 --install-dir $HOME/cli-tools
-            $HOME/cli-tools/dotnet --info
+            brew install --cask dotnet-sdk
+            # curl https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
+            # chmod +x dotnet-install.sh
+            # ./dotnet-install.sh -Channel 7.0 --install-dir $HOME/cli-tools
+            # $HOME/cli-tools/dotnet --info
       - run:
           name: Build C library
           command: |
@@ -454,7 +455,7 @@ jobs:
           name: "Install project dependencies"
           command: |
             cd gpt4all-bindings/csharp
-            $HOME/cli-tools/dotnet restore Gpt4All
+            dotnet restore Gpt4All
       - save_cache:
           paths:
             - ~/.nuget/packages
@@ -463,19 +464,18 @@ jobs:
           name: Build C# Project
           command: |
             cd gpt4all-bindings/csharp
-            $HOME/cli-tools/dotnet build Gpt4All --configuration Release --nologo
+            dotnet build Gpt4All --configuration Release --nologo
       - run:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            $HOME/cli-tools/dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
+            dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
       - run:
           name: Test results
           command: |
               cd gpt4all-bindings/csharp/Gpt4All.Tests
-              $HOME/cli-tools/dotnet tool install -g trx2junit
+              dotnet tool install -g trx2junit
               export PATH="$PATH:$HOME/.dotnet/tools"
-              export PATH="$PATH:$HOME/cli-tools"
               trx2junit TestResults/*.trx
       - store_test_results:
           path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
