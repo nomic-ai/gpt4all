@@ -14,7 +14,7 @@
     "requires": "2.4.7",
     "isDefault": "true",
     "bestLlama": "true",
-    "description": "LLaMA 13B finetuned by Nomic AI on the latest GPT4All dataset.<br>- Cannot be used commercially.<br>- Slower responses but higher quality.",,
+    "description": "LLaMA 13B finetuned by Nomic AI on the latest GPT4All dataset.<br>- Cannot be used commercially.<br>- Slower responses but higher quality.",
     "url": "https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML/resolve/main/GPT4All-13B-snoozy.ggmlv3.q4_0.bin"
   },
   {
