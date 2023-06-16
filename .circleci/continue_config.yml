@@ -441,6 +441,7 @@ jobs:
           command: |
             git submodule init
             git submodule update --recursive
+            cd gpt4all-bindings/csharp
             BASE_DIR="runtimes/osx-x64"  
             NATIVE_DIR="$BASE_DIR/native"
             BUILD_DIR="$BASE_DIR/build"
