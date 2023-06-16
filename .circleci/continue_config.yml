@@ -347,10 +347,9 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet test -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
+            dotnet test -v n --filter "SKIP_ON_CI!=True" --logger "trx"
       - run:
           name: test results
-          when: always
           command: |
               cd gpt4all-bindings/csharp/Gpt4All.Tests
               dotnet tool install -g trx2junit
@@ -407,10 +406,9 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet.exe test -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
+            dotnet.exe test -v n --filter "SKIP_ON_CI!=True" --logger "trx"
       - run:
           name: test results
-          when: always
           command: |
               cd gpt4all-bindings/csharp/Gpt4All.Tests
               dotnet tool install -g trx2junit
@@ -436,7 +434,7 @@ jobs:
           command: |
             brew install cmake
             curl https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
-            ./dotnet_install.sh -Channel 6.0.1xx
+            ./dotnet-install.sh -Channel 6.0.1xx
       - run:
           name: Build C library
           command: |
@@ -467,10 +465,9 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet test -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
+            dotnet test -v n --filter "SKIP_ON_CI!=True" --logger "trx"
       - run:
           name: test results
-          when: always
           command: |
               cd gpt4all-bindings/csharp/Gpt4All.Tests
               dotnet tool install -g trx2junit
