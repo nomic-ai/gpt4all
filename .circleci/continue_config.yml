@@ -161,6 +161,7 @@ jobs:
     docker: 
       - image: cimg/base:stable
     steps:
+      - checkout
       - node/install:
           install-yarn: true
           node-version: "18.15"
@@ -175,6 +176,7 @@ jobs:
     docker:
       - image: circleci/python:3.8
     steps:
+      - checkout 
       - run:
           name: Install dependencies
           command: |
@@ -345,7 +347,6 @@ workflows:
   deploy-docs:
     when: << pipeline.parameters.run-python-workflow >>
     jobs:
-      - checkout
       - build-ts-docs:
           filters:
             branches:
