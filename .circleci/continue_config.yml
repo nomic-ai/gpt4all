@@ -356,6 +356,7 @@ jobs:
   build-csharp-windows:
     executor:
       name: win/default
+      resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
       - checkout
