@@ -433,11 +433,8 @@ jobs:
           name: Install dependencies
           command: |
             brew install cmake
-            curl https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
-            chmod +x dotnet-install.sh
-            ./dotnet-install.sh --channel 7.0.1xx --install-dir $HOME/cli-tools
-            ls $HOME/cli-tools
-            $HOME/cli-tools/dotnet --info
+            brew install dotnet@6
+            brew install dotnet@7
       - run:
           name: Build C library
           command: |
