@@ -398,7 +398,7 @@ jobs:
             cd gpt4all-bindings/csharp
             dotnet.exe build Gpt4All --configuration Release
       - persist_to_workspace:
-          root: gpt4all-bindings/csharp/runtimes/windows-x64/native
+          root: gpt4all-bindings/csharp/runtimes/win-x64/native
           paths:
             - "*.dll"
 
