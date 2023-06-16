@@ -357,7 +357,7 @@ jobs:
               export PATH="$PATH:/root/.dotnet/tools"
               trx2junit TestResults/*.trx
       - store_test_results:
-          path: tests/TestResults
+          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
       - persist_to_workspace:
           root: gpt4all-bindings/csharp
           paths:
