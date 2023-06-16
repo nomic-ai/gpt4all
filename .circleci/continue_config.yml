@@ -498,5 +498,5 @@ workflows:
               only:
           requires:
             - nuget-hold
-            - build-py-windows
-            - build-py-linux
+            - build-csharp-windows
+            - build-csharp-linux
