@@ -435,6 +435,7 @@ jobs:
             brew install cmake
             brew install dotnet@6
             brew install dotnet@7
+            dotnet --info
       - run:
           name: Build C library
           command: |
