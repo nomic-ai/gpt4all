@@ -316,7 +316,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - gpt4all-csharp-bindings
+            - gpt4all-csharp-nuget-packages-nix
       - run:
           name: Install dependencies
           command: |
@@ -337,19 +337,19 @@ jobs:
       - save_cache:
           paths:
             - ~/.nuget/packages
-          key: gpt4all-csharp-bindings
+          key: gpt4all-csharp-nuget-packages-nix
       - run:
           name: Build C# Project
           command: |
             cd gpt4all-bindings/csharp
-            dotnet build Gpt4All --configuration Release
+            dotnet build Gpt4All --configuration Release --nologo
       - run:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet test Gpt4All.Tests -v n --filter "SKIP_ON_CI!=True" --logger "trx"
+            dotnet test Gpt4All.Tests -v n -c Release --no-build --filter "SKIP_ON_CI!=True" --logger "trx"
       - run:
-          name: test results
+          name: Test results
           command: |
               cd gpt4all-bindings/csharp/Gpt4All.Tests
               dotnet tool install -g trx2junit
@@ -401,14 +401,14 @@ jobs:
           name: Build C# Project
           command: |
             cd gpt4all-bindings/csharp
-            dotnet.exe build Gpt4All --configuration Release
+            dotnet.exe build Gpt4All --configuration Release --nologo
       - run:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet.exe test Gpt4All.Tests -v n --filter "SKIP_ON_CI!=True" --logger "trx"
+            dotnet.exe test Gpt4All.Tests -v n -c Release --no-build --filter "SKIP_ON_CI!=True" --logger "trx"
       - run:
-          name: test results
+          name: Test results
           command: |
               cd gpt4all-bindings/csharp/Gpt4All.Tests
               dotnet tool install -g trx2junit
@@ -428,7 +428,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - gpt4all-csharp-bindings
+            - gpt4all-csharp-nuget-packages-nix
       - run:
           name: Install dependencies
           command: |
@@ -458,24 +458,24 @@ jobs:
       - save_cache:
           paths:
             - ~/.nuget/packages
-          key: gpt4all-csharp-bindings
+          key: gpt4all-csharp-nuget-packages-nix
       - run:
           name: Build C# Project
           command: |
             cd gpt4all-bindings/csharp
-            $HOME/cli-tools/dotnet build Gpt4All --configuration Release
+            $HOME/cli-tools/dotnet build Gpt4All --configuration Release --nologo
       - run:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            $HOME/cli-tools/dotnet test Gpt4All.Tests -v n --filter "SKIP_ON_CI!=True" --logger "trx"
+            $HOME/cli-tools/dotnet test Gpt4All.Tests -v n -c Release --no-build --filter "SKIP_ON_CI!=True" --logger "trx"
       - run:
-          name: test results
+          name: Test results
           command: |
               cd gpt4all-bindings/csharp/Gpt4All.Tests
               $HOME/cli-tools/dotnet tool install -g trx2junit
               export PATH="$PATH:$HOME/.dotnet/tools"
-              ls $HOME/.dotnet/tools
+              export PATH="$PATH:$HOME/cli-tools"
               trx2junit TestResults/*.trx
       - store_test_results:
           path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
