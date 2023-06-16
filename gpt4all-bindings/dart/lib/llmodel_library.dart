@@ -6,21 +6,21 @@ typedef llmodel_isModelLoaded_func = ffi.Bool Function(ffi.Pointer);
 typedef LLModelIsModelLoaded = bool Function(ffi.Pointer);
 
 typedef llmodel_loadModel_func = ffi.Bool Function(
-    ffi.Pointer, ffi.Pointer<ffi.Char>);
-typedef LLModelLoadModel = bool Function(ffi.Pointer, ffi.Pointer<ffi.Char>);
+    ffi.Pointer, ffi.Pointer<Utf8>);
+typedef LLModelLoadModel = bool Function(ffi.Pointer, ffi.Pointer<Utf8>);
 
 typedef llmodel_model_create2_func = ffi.Pointer Function(
-    ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, LLModelError);
+    ffi.Pointer<Utf8>, ffi.Pointer<Utf8>, ffi.Pointer<LLModelError>);
 typedef LLModelModelCreate2 = ffi.Pointer Function(
-    ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, LLModelError);
+    ffi.Pointer<Utf8>, ffi.Pointer<Utf8>, ffi.Pointer<LLModelError>);
 
 typedef llmodel_model_destroy_func = ffi.Void Function(ffi.Pointer);
 typedef LLModelModelDestroy = void Function(ffi.Pointer);
 
 typedef llmodel_set_implementation_search_path_func = ffi.Void Function(
-    ffi.Pointer<ffi.Char>);
+    ffi.Pointer<Utf8>);
 typedef LLModelSetImplementationSearchPath = void Function(
-    ffi.Pointer<ffi.Char>);
+    ffi.Pointer<Utf8>);
 
 class LLModelLibrary {
   late final ffi.DynamicLibrary _dynamicLibrary;
@@ -37,7 +37,6 @@ class LLModelLibrary {
     required String pathToLibrary,
   }) {
     _dynamicLibrary = ffi.DynamicLibrary.open(pathToLibrary);
-
     _initializeMethodBindings();
   }
 
@@ -79,16 +78,23 @@ class LLModelLibrary {
     required ffi.Pointer model,
     required String modelPath,
   }) {
-    return _llModelLoadModel(model, modelPath.toNativeUtf8().cast<ffi.Char>());
+    final ffi.Pointer<Utf8> modelPathNative = modelPath.toNativeUtf8();
+    final bool result = _llModelLoadModel(model, modelPathNative);
+    malloc.free(modelPathNative);
+    return result;
   }
 
   ffi.Pointer modelCreate2({
     required String modelPath,
     required String buildVariant,
-    required LLModelError error,
+    required ffi.Pointer<LLModelError> error,
   }) {
-    return _llModelModelCreate2(modelPath.toNativeUtf8().cast<ffi.Char>(),
-        buildVariant.toNativeUtf8().cast<ffi.Char>(), error);
+    final ffi.Pointer<Utf8> modelPathNative = modelPath.toNativeUtf8();
+    final ffi.Pointer<Utf8> buildVariantNative = buildVariant.toNativeUtf8();
+    final ffi.Pointer result = _llModelModelCreate2(modelPath.toNativeUtf8(), buildVariant.toNativeUtf8(), error);
+    malloc.free(modelPathNative);
+    malloc.free(buildVariantNative);
+    return result;
   }
 
   void modelDestroy({
@@ -100,6 +106,8 @@ class LLModelLibrary {
   void setImplementationSearchPath({
     required String path,
   }) {
-    _llModelSetImplementationSearchPath(path.toNativeUtf8().cast<ffi.Char>());
+    final ffi.Pointer<Utf8> pathNative = path.toNativeUtf8();
+    _llModelSetImplementationSearchPath(path.toNativeUtf8());
+    malloc.free(pathNative);
   }
 }

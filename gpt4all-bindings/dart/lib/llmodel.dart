@@ -7,21 +7,24 @@ import 'package:gpt4all_dart_binding/llmodel_util.dart';
 
 class LLModel {
   bool _isLoaded = false;
+
   bool get isLoaded => _isLoaded;
 
-  final ffi.Pointer<LLModelError> _error = calloc<LLModelError>();
+  late final ffi.Pointer<LLModelError> _error;
 
   late final LLModelLibrary _library;
   late final ffi.Pointer _model;
 
   Future<void> load({
-    required String modelPath,
+    required final String modelPath,
   }) async {
     try {
-      String librarySearchPath = LLModelUtil.copySharedLibraries();
+      _error = calloc<LLModelError>();
+
+      final String librarySearchPath = LLModelUtil.copySharedLibraries();
 
       _library = LLModelLibrary(
-        pathToLibrary: librarySearchPath,
+        pathToLibrary: '$librarySearchPath/libllmodel.0.2.0.dylib', // TODO
       );
 
       _library.setImplementationSearchPath(
@@ -35,12 +38,12 @@ class LLModel {
       _model = _library.modelCreate2(
         modelPath: modelPath,
         buildVariant: "auto",
-        error: _error.ref,
+        error: _error,
       );
 
       if (_model.address == ffi.nullptr.address) {
-        throw Exception(
-            "Could not load gpt4all backend: ${_error.ref.message}");
+        final String errorMsg = _error.ref.message.toDartString();
+        throw Exception("Could not load gpt4all backend: $errorMsg");
       }
 
       _library.loadModel(

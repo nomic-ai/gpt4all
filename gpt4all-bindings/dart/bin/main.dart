@@ -5,7 +5,7 @@ void main(List<String> arguments) async {
   try {
     model = LLModel();
     await model.load(
-      modelPath: '', // TODO path
+      modelPath: '/Users/moritz.fink/Private/Coding/gpt4all/gpt4all-bindings/dart/model/ggml-gpt4all-j-v1.3-groovy.bin', // TODO path
     );
   } finally {
     if (model?.isLoaded ?? false) {
