@@ -8,11 +8,14 @@
     "description": "GPT-J 6B finetuned by Nomic AI on the latest GPT4All dataset.<br>- Licensed for commercial use.<br>- Fast responses."
   },
   {
-    "md5sum": "91f886b68fbce697e9a3cd501951e455",
-    "filename": "ggml-gpt4all-l13b-snoozy.bin",
+    "md5sum": "11d9f060ca24575a2c303bdc39952486",
+    "filename": "GPT4All-13B-snoozy.ggmlv3.q4_0.bin",
     "filesize": "8136770688",
+    "requires": "2.4.7",
+    "isDefault": "true",
     "bestLlama": "true",
-    "description": "LLaMA 13B finetuned by Nomic AI on the latest GPT4All dataset.<br>- Cannot be used commercially.<br>- Slower responses but higher quality."
+    "description": "LLaMA 13B finetuned by Nomic AI on the latest GPT4All dataset.<br>- Cannot be used commercially.<br>- Slower responses but higher quality.",,
+    "url": "https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML/resolve/main/GPT4All-13B-snoozy.ggmlv3.q4_0.bin"
   },
   {
     "md5sum": "756249d3d6abe23bde3b1ae272628640",
@@ -24,12 +27,12 @@
     "description": "MPT 7B chat model trained by Mosaic ML.<br>- Cannot be used commercially.<br>- Fast responses."
   },
   {
-    "md5sum": "f26b99c320ff358f4223a973217eb31e",
-    "filename": "ggml-v3-13b-hermes-q5_1.bin",
+    "md5sum": "4acc146dd43eb02845c233c29289c7c5",
+    "filename": "nous-hermes-13b.ggmlv3.q4_0.bin",
     "filesize": "8136777088",
-    "requires": "2.4.5",
+    "requires": "2.4.7",
     "description": "LLaMa 13B finetuned on over 300,000 curated and uncensored instructions instructions.<br>- Cannot be used commercially.<br>- Best finetuned LLaMA model.<br>- This model was fine-tuned by Nous Research, with Teknium and Karan4D leading the fine tuning process and dataset curation, Redmond AI sponsoring the compute, and several other contributors. The result is an enhanced Llama 13b model that rivals GPT-3.5-turbo in performance across a variety of tasks. This model stands out for its long responses, low hallucination rate, and absence of OpenAI censorship mechanisms.",
-    "url": "https://huggingface.co/eachadea/ggml-nous-hermes-13b/resolve/main/ggml-v3-13b-hermes-q5_1.bin"
+    "url": "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML/resolve/main/nous-hermes-13b.ggmlv3.q4_0.bin"
   },
   {
     "md5sum": "29119f8fa11712704c6b22ac5ab792ea",
@@ -76,10 +79,12 @@
     "description": "MPT 7B instruction finetuned by Mosaic ML.<br>- Licensed for commercial use."
   },
   {
-    "md5sum": "679fc463f01388ea2d339664af0a0836",
-    "filename": "ggml-wizard-13b-uncensored.bin",
+    "md5sum": "489d21fd48840dcb31e5f92f453f3a20",
+    "filename": "wizardLM-13B-Uncensored.ggmlv3.q4_0.bin",
     "filesize": "8136777088",
-    "description": "LLaMa 13B finetuned on the uncensored assistant and instruction data.<br>- Cannot be used commercially."
+    "requires": "2.4.7",
+    "description": "LLaMa 13B finetuned on the uncensored assistant and instruction data.<br>- Cannot be used commercially.",
+    "url": "https://huggingface.co/TheBloke/WizardLM-13B-Uncensored-GGML/resolve/main/wizardLM-13B-Uncensored.ggmlv3.q4_0.bin"
   },
   {
     "md5sum": "615890cb571fcaa0f70b2f8d15ef809e",
