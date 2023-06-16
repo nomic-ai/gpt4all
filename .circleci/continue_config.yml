@@ -365,17 +365,17 @@ jobs:
           name: Install MinGW64
           command: choco install -y mingw --force --no-progress
       - run:
-          name: Add MinGW64 to PATH
-          command: $env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
-      - run:
           name: Install dependencies
-          command: choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          command: |
+            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
       - run:
           name: Build C library
           command: |
             git submodule init
-            git submodule update
+            git submodule update --recursive
             cd gpt4all-bindings/csharp
+            $env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+            $env.Path += ";C:\Program Files\CMake\bin"
             ./build_win-mingw.ps1
       - run:
           name: "Install project dependencies"
@@ -400,6 +400,18 @@ jobs:
           root: gpt4all-bindings/csharp/runtimes/windows-x64/native
           paths:
             - "*.dll"
+
+  store-and-upload-nupkgs:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
+    steps:
+      - setup_remote_docker
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: TEST - list libraries
+          command: |
+            ls -R /tmp/workspace
 
 workflows:
   version: 2
@@ -480,3 +492,11 @@ workflows:
               only:
           requires:
             - hold
+      - store-and-upload-nupkgs:
+          filters:
+            branches:
+              only:
+          requires:
+            - nuget-hold
+            - build-py-windows
+            - build-py-linux
