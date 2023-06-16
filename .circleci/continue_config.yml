@@ -168,8 +168,8 @@ jobs:
       - node/install-packages:
           pkg-manager: yarn
       - run:
-        name: build docs
-        command: yarn docs:build
+          name: build docs ts yo
+          command: yarn docs:build
       
   build-py-docs:
     docker:
