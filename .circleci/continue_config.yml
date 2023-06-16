@@ -161,7 +161,7 @@ jobs:
     docker: 
       - image: cimg/base:stable
     steps:
-      - node/install
+      - node/install:
           install-yarn: true
           node-version: "18.15"
       - run: node --version
