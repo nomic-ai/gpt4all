@@ -435,8 +435,9 @@ jobs:
             brew install cmake
             curl https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
             chmod +x dotnet-install.sh
-            ./dotnet-install.sh -Channel 6.0.1xx
-            dotnet --version
+            ./dotnet-install.sh --channel 6.0.1xx --install-dir $HOME/cli-tools
+            ls $HOME/cli-tools
+            $HOME/cli-tools/dotnet --version
       - run:
           name: Build C library
           command: |
@@ -454,7 +455,7 @@ jobs:
           name: "Install project dependencies"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet restore Gpt4All
+            $HOME/cli-tools/dotnet restore Gpt4All
       - save_cache:
           paths:
             - ~/.nuget/packages
@@ -463,12 +464,12 @@ jobs:
           name: Build C# Project
           command: |
             cd gpt4all-bindings/csharp
-            dotnet build Gpt4All --configuration Release
+            $HOME/cli-tools/dotnet build Gpt4All --configuration Release
       - run:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet test Gpt4All.Tests -v n --filter "SKIP_ON_CI!=True" --logger "trx"
+            $HOME/cli-tools/dotnet test Gpt4All.Tests -v n --filter "SKIP_ON_CI!=True" --logger "trx"
       - run:
           name: test results
           command: |
