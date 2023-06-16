@@ -1,5 +1,5 @@
 import 'dart:ffi' as ffi;
-import 'dart:js_interop';
+import 'dart:io';
 import 'package:ffi/ffi.dart';
 import 'package:gpt4all_dart_binding/llmodel_error.dart';
 import 'package:gpt4all_dart_binding/llmodel_library.dart';
@@ -28,7 +28,9 @@ class LLModel {
         path: librarySearchPath,
       );
 
-      // TODO check if model file exists
+      if (!File(modelPath).existsSync()) {
+        throw Exception("Model file does not exist: $modelPath");
+      }
 
       _model = _library.modelCreate2(
         modelPath: modelPath,
@@ -36,7 +38,7 @@ class LLModel {
         error: _error.ref,
       );
 
-      if (_model.isUndefinedOrNull) {
+      if (_model.address == ffi.nullptr.address) {
         throw Exception(
             "Could not load gpt4all backend: ${_error.ref.message}");
       }
