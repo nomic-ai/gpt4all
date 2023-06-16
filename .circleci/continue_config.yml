@@ -347,7 +347,7 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet test Gpt4All.Tests --filter SKIP_ON_CI!=True --logger "trx"
+            dotnet test Gpt4All.Tests -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
       - run:
           name: test results
           when: always
@@ -407,7 +407,7 @@ jobs:
           name: "Run C# Tests"
           command: |
             cd gpt4all-bindings/csharp
-            dotnet.exe test Gpt4All.Tests --filter SKIP_ON_CI!=True --logger "trx"
+            dotnet.exe test Gpt4All.Tests -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
       - run:
           name: test results
           when: always
@@ -422,6 +422,67 @@ jobs:
           root: gpt4all-bindings/csharp
           paths:
             - runtimes/win-x64/native/
+
+  build-csharp-macos:
+    macos:
+      xcode: "14.2.0"
+    resource_class: macos.m1.large.gen1
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gpt4all-csharp-bindings
+      - run:
+          name: Install dependencies
+          command: |
+            brew install cmake
+            curl https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
+            ./dotnet_install.sh -Channel 6.0.1xx
+      - run:
+          name: Build C library
+          command: |
+            git submodule init
+            git submodule update --recursive
+            BASE_DIR="runtimes/osx-x64"  
+            NATIVE_DIR="$BASE_DIR/native"
+            BUILD_DIR="$BASE_DIR/build"
+            mkdir -p "$NATIVE_DIR" "$BUILD_DIR"
+            cmake -S ../../gpt4all-backend -B "$BUILD_DIR" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake --build "$BUILD_DIR" -j --config Release
+            cp "$BUILD_DIR"/*.dylib "$NATIVE_DIR"
+      - run:
+          name: "Install project dependencies"
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet restore Gpt4All
+      - save_cache:
+          paths:
+            - ~/.nuget/packages
+          key: gpt4all-csharp-bindings
+      - run:
+          name: Build C# Project
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet build Gpt4All --configuration Release
+      - run:
+          name: "Run C# Tests"
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet test Gpt4All.Tests -c Release --no-build --filter SKIP_ON_CI!=True --logger "trx"
+      - run:
+          name: test results
+          when: always
+          command: |
+              cd gpt4all-bindings/csharp/Gpt4All.Tests
+              dotnet tool install -g trx2junit
+              export PATH="$PATH:/root/.dotnet/tools"
+              trx2junit TestResults/*.trx
+      - store_test_results:
+          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
+      - persist_to_workspace:
+          root: gpt4all-bindings/csharp
+          paths:
+            - runtimes/osx-x64/native
 
   store-and-upload-nupkgs:
     docker:
@@ -514,6 +575,12 @@ workflows:
               only:
           requires:
             - hold
+      - build-csharp-macos:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
       - store-and-upload-nupkgs:
           filters:
             branches:
@@ -522,3 +589,4 @@ workflows:
             - nuget-hold
             - build-csharp-windows
             - build-csharp-linux
+            - build-csharp-macos
