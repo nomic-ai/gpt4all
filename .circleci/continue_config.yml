@@ -414,7 +414,7 @@ jobs:
           command: |
               cd gpt4all-bindings/csharp/Gpt4All.Tests
               dotnet tool install -g trx2junit
-              export $Env:Path += ";$Env:USERPROFILE\.dotnet\tools"
+              $Env:Path += ";$Env:USERPROFILE\.dotnet\tools"
               trx2junit TestResults/*.trx
       - store_test_results:
           path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
