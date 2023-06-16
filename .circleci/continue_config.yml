@@ -375,6 +375,7 @@ jobs:
           command: |
             git submodule init
             git submodule update
+            cd gpt4all-bindings/csharp
             ./build_win-mingw.ps1
       - run:
           name: "Install project dependencies"
