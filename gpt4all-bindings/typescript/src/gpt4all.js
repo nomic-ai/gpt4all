@@ -124,6 +124,10 @@ async function createCompletion(
     });
 }
 
+function createTokenStream() {
+    throw Error("This API has not been completed yet!")
+}
+
 module.exports = {
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_DIRECTORY,
@@ -132,4 +136,5 @@ module.exports = {
     downloadModel,
     retrieveModel,
     loadModel,
+    createTokenStream
 };
