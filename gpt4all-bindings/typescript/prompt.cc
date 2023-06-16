@@ -4,8 +4,9 @@
 TsfnContext::TsfnContext(Napi::Env env, const PromptWorkContext& pc) 
     : deferred_(Napi::Promise::Deferred::New(env)), pc(pc) {
 }
-
-static std::string *res;
+namespace {
+    static std::string *res;
+}
 
 bool response_callback(int32_t token_id, const char *response) {
    *res += response;
