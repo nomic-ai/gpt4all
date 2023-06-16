@@ -412,7 +412,8 @@ QList<QString> Chat::modelList() const
         for (const QString& f : fileNames) {
             QString filePath = exePath + f;
             QFileInfo info(filePath);
-            QString name = info.completeBaseName().remove(0, 5);
+            QString basename = info.completeBaseName();
+            QString name = basename.startsWith("ggml-") ? basename.remove(0, 5) : basename;
             if (info.exists()) {
                 if (name == currentModelName)
                     list.prepend(name);

@@ -83,7 +83,7 @@ Dialog {
                         id: modelName
                         objectName: "modelName"
                         property string filename: modelData.filename
-                        text: !modelData.isChatGPT ? filename.slice(5, filename.length - 4) : filename
+                        text: !modelData.isChatGPT ? (filename.startsWith("ggml-") ? filename.slice(5, filename.length - 4) : filename.slice(0, filename.length - 4)) : filename
                         padding: 20
                         anchors.top: parent.top
                         anchors.left: parent.left
