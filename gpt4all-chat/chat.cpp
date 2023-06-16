@@ -399,8 +399,16 @@ QList<QString> Chat::modelList() const
 
     {
         QDir dir(exePath);
-        dir.setNameFilters(QStringList() << "ggml-*.bin");
-        QStringList fileNames = dir.entryList();
+        QStringList allFiles = dir.entryList(QDir::Files);
+
+        // All files that end with .bin and have 'ggml' somewhere in the name
+        QStringList fileNames;
+        for(const QString& filename : allFiles) {
+            if (filename.endsWith(".bin") && filename.contains("ggml")) {
+                fileNames.append(filename);
+            }
+        }
+
         for (const QString& f : fileNames) {
             QString filePath = exePath + f;
             QFileInfo info(filePath);
@@ -416,8 +424,15 @@ QList<QString> Chat::modelList() const
 
     if (localPath != exePath) {
         QDir dir(localPath);
-        dir.setNameFilters(QStringList() << "ggml-*.bin" << "chatgpt-*.txt");
-        QStringList fileNames = dir.entryList();
+        QStringList allFiles = dir.entryList(QDir::Files);
+        QStringList fileNames;
+        for(const QString& filename : allFiles) {
+            if ((filename.endsWith(".bin") && filename.contains("ggml"))
+                || (filename.endsWith(".txt") && filename.startsWith("chatgpt-"))) {
+                fileNames.append(filename);
+            }
+        }
+
         for (const QString &f : fileNames) {
             QString filePath = localPath + f;
             QFileInfo info(filePath);

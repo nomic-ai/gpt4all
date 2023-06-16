@@ -23,16 +23,24 @@
 
 static QString modelFilePath(const QString &modelName, bool isChatGPT)
 {
-    QString modelFilename = isChatGPT ? modelName + ".txt" : "/ggml-" + modelName + ".bin";
-    QString appPath = QCoreApplication::applicationDirPath() + modelFilename;
-    QFileInfo infoAppPath(appPath);
-    if (infoAppPath.exists())
-        return appPath;
+    QVector<QString> possibleFilePaths;
+    if (isChatGPT)
+        possibleFilePaths << "/" + modelName + ".txt";
+    else {
+        possibleFilePaths << "/ggml-" + modelName + ".bin";
+        possibleFilePaths << "/" + modelName + ".bin";
+    }
+    for (const QString &modelFilename : possibleFilePaths) {
+        QString appPath = QCoreApplication::applicationDirPath() + modelFilename;
+        QFileInfo infoAppPath(appPath);
+        if (infoAppPath.exists())
+            return appPath;
 
-    QString downloadPath = Download::globalInstance()->downloadLocalModelsPath() + modelFilename;
-    QFileInfo infoLocalPath(downloadPath);
-    if (infoLocalPath.exists())
-        return downloadPath;
+        QString downloadPath = Download::globalInstance()->downloadLocalModelsPath() + modelFilename;
+        QFileInfo infoLocalPath(downloadPath);
+        if (infoLocalPath.exists())
+            return downloadPath;
+    }
     return QString();
 }
 
@@ -262,7 +270,9 @@ bool ChatLLM::loadModel(const QString &modelName)
 
     if (m_modelInfo.model) {
         QString basename = fileInfo.completeBaseName();
-        setModelName(m_isChatGPT ? basename : basename.remove(0, 5)); // remove the ggml- prefix
+        if (basename.startsWith("ggml-")) // remove the ggml- prefix
+            basename.remove(0, 5);
+        setModelName(basename);
     }
 
     return m_modelInfo.model;
