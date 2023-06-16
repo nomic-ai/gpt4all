@@ -45,7 +45,7 @@ export interface DownloadModelOptions {
      * Whether to verify the hash of the download to ensure a proper download occurred.
      * @default false
      */
-    md5?: boolean;
+    md5sum?: boolean;
 }
 
 declare function listModels(): Promise<Record<string, string>[]>;
