@@ -1,13 +1,9 @@
-import 'dart:ffi';
+import 'dart:ffi' as ffi;
 
-import 'package:ffi/ffi.dart';
+class LLModelError extends ffi.Struct {
 
-class LLModelError extends Struct {
+  external ffi.Pointer<ffi.Char> message;
 
-  external Pointer<Utf8> message; // TODO does this work?
-
-  @Int32()
+  @ffi.Int32()
   external int status;
-
-  // TODO constructor with runtime?
 }

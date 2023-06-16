@@ -6,14 +6,17 @@ import 'package:gpt4all_dart_binding/llmodel_library.dart';
 import 'package:gpt4all_dart_binding/llmodel_util.dart';
 
 class LLModel {
+  bool _isLoaded = false;
+  bool get isLoaded => _isLoaded;
+
   final ffi.Pointer<LLModelError> _error = calloc<LLModelError>();
 
   late final LLModelLibrary _library;
   late final ffi.Pointer _model;
 
-  LLModel({
+  Future<void> load({
     required String modelPath,
-  }) {
+  }) async {
     try {
       String librarySearchPath = LLModelUtil.copySharedLibraries();
 
@@ -43,7 +46,9 @@ class LLModel {
         modelPath: modelPath,
       );
 
-      if (!_library.isModelLoaded(model: _model)) {
+      if (_library.isModelLoaded(model: _model)) {
+        _isLoaded = true;
+      } else {
         throw Exception("The model could not be loaded");
       }
     } finally {
@@ -55,5 +60,6 @@ class LLModel {
     _library.modelDestroy(
       model: _model,
     );
+    _isLoaded = false;
   }
 }
