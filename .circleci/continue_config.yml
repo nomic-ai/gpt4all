@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   win: circleci/windows@5.0
   python: circleci/python@1.2
-  node: circleci/node@x.y
+  node: circleci/node@5.1
 
 parameters:
   run-default-workflow:
