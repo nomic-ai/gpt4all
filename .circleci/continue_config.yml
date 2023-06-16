@@ -433,9 +433,7 @@ jobs:
           name: Install dependencies
           command: |
             brew install cmake
-            curl https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
-            chmod +x dotnet-install.sh
-            ./dotnet-install.sh -Channel 6.0.1xx
+            brew install dotnet@6
       - run:
           name: Build C library
           command: |
