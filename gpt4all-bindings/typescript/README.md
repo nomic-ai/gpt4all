@@ -28,7 +28,7 @@ const response = await createCompletion(ll, [
 *   As of 05/21/2023, Tested on windows (MSVC). (somehow got it to work on MSVC 🤯)
     *   binding.gyp is compile config
 *   Tested on Ubuntu. Everything seems to work fine
-*   MingW works as well to build the gpt4all-backend. HOWEVER, this package works only with MSVC built dlls.
+*   MingW works as well to build the gpt4all-backend. **HOWEVER**, this package works only with MSVC built dlls.
 
 ### Requirements
 
