@@ -197,6 +197,17 @@ This package is in active development, and breaking changes may happen until the
     *   [Parameters](#parameters-6)
 *   [DEFAULT\_DIRECTORY](#default_directory)
 *   [DEFAULT\_LIBRARIES\_DIRECTORY](#default_libraries_directory)
+*   [downloadModel](#downloadmodel)
+    *   [Parameters](#parameters-7)
+    *   [Examples](#examples-1)
+*   [DownloadModelOptions](#downloadmodeloptions)
+    *   [modelPath](#modelpath)
+    *   [debug](#debug)
+    *   [url](#url)
+    *   [md5](#md5)
+*   [DownloadController](#downloadcontroller)
+    *   [cancel](#cancel)
+    *   [promise](#promise)
 
 #### ModelType
 
@@ -559,3 +570,71 @@ You may separate paths by a semicolon to search in multiple areas.
 This searches DEFAULT\_DIRECTORY/libraries, cwd/libraries, and finally cwd.
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### downloadModel
+
+Initiates the download of a model file of a specific model type.
+By default this downloads without waiting. use the controller returned to alter this behavior.
+
+##### Parameters
+
+*   `modelName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+*   `options` **DownloadOptions** to pass into the downloader. Default is { location: (cwd), debug: false }.
+*   `model` **[ModelFile](#modelfile)** The model file to be downloaded.
+
+##### Examples
+
+```javascript
+const controller = download('ggml-gpt4all-j-v1.3-groovy.bin')
+controller.promise().then(() => console.log('Downloaded!'))
+```
+
+*   Throws **[Error](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error)** If the model already exists in the specified location.
+*   Throws **[Error](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error)** If the model cannot be found at the specified url.
+
+Returns **[DownloadController](#downloadcontroller)** object that allows controlling the download process.
+
+#### DownloadModelOptions
+
+Options for the model download process.
+
+##### modelPath
+
+location to download the model.
+Default is process.cwd(), or the current working directory
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+##### debug
+
+Debug mode -- check how long it took to download in seconds
+
+Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
+##### url
+
+Remote download url. Defaults to `https://gpt4all.io/models`
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+##### md5
+
+Whether to verify the hash of the download to ensure a proper download occurred.
+
+Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
+#### DownloadController
+
+Model download controller.
+
+##### cancel
+
+Cancel the request to download from gpt4all website if this is called.
+
+Type: function (): void
+
+##### promise
+
+Convert the downloader into a promise, allowing people to await and manage its lifetime
+
+Type: function (): [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<void>

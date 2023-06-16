@@ -1,14 +1,10 @@
 import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
-//const ll = await loadModel(
-//    'ggml-gpt4all-j-v1.3-groovy.bin',
-//    { verbose: true }
-//);
-const ll = new LLModel({
-    model_name: 'ggml-gpt4all-j-v1.3-groovy.bin',
-    model_path: DEFAULT_DIRECTORY,
-    library_path: DEFAULT_LIBRARIES_DIRECTORY.split(';')[2]
-})
+const ll = await loadModel(
+    'ggml-gpt4all-j-v1.3-groovy.bin',
+    { verbose: true }
+);
+
 try {
    class Extended extends LLModel {
    }
