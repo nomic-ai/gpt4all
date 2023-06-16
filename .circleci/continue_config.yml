@@ -356,6 +356,7 @@ jobs:
   build-csharp-windows:
     executor:
       name: win/default
+      shell: powershell.exe -ExecutionPolicy Bypass
     steps:
       - checkout
       - restore_cache:
@@ -374,8 +375,8 @@ jobs:
             git submodule init
             git submodule update --recursive
             cd gpt4all-bindings/csharp
-            $env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
-            $env.Path += ";C:\Program Files\CMake\bin"
+            $Env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+            $Env:Path += ";C:\Program Files\CMake\bin"
             ./build_win-mingw.ps1
       - run:
           name: "Install project dependencies"
