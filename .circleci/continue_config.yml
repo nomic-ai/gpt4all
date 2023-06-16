@@ -352,6 +352,54 @@ jobs:
           root: gpt4all-bindings/csharp/runtimes/linux-x64/native
           paths:
             - "*.so"
+
+  build-csharp-windows:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gpt4all-csharp-bindings
+      - run:
+          name: Install MinGW64
+          command: choco install -y mingw --force --no-progress
+      - run:
+          name: Add MinGW64 to PATH
+          command: $env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+      - run:
+          name: Install dependencies
+          command: choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      - run:
+          name: Build C library
+          command: |
+            git submodule init
+            git submodule update
+            ./build_win-mingw.ps1
+      - run:
+          name: "Install project dependencies"
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet.exe restore Gpt4All
+      - save_cache:
+          paths:
+            - C:\Users\circleci\.nuget\packages
+          key: gpt4all-csharp-bindings
+      - run:
+          name: "Run C# Tests"
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet.exe test Gpt4All.Tests --filter SKIP_ON_CI=False
+      - run:
+          name: Build C# Project
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet.exe build Gpt4All --configuration Release
+      - persist_to_workspace:
+          root: gpt4all-bindings/csharp/runtimes/windows-x64/native
+          paths:
+            - "*.dll"
+
 workflows:
   version: 2
   default:
@@ -420,6 +468,12 @@ workflows:
       - hold:
           type: approval
       - build-csharp-linux:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      - build-csharp-windows:
           filters:
             branches:
               only:
