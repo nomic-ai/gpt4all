@@ -156,12 +156,12 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
             promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
     }
     //copy to protect llmodel resources when splitting to new thread
-
     llmodel_prompt_context copiedPrompt = promptContext;
+
     std::string copiedQuestion = question;
     PromptWorkContext pc = {
         copiedQuestion,
-        inference_.load(),
+        std::ref(inference_),
         copiedPrompt,
     };
     auto threadSafeContext = new TsfnContext(env, pc);
