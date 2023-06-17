@@ -7,5 +7,5 @@ class LLModelError extends ffi.Struct {
   external ffi.Pointer<Utf8> message;
 
   @ffi.Int32()
-  external int status;
+  external int code;
 }
