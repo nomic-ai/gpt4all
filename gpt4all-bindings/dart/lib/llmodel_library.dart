@@ -1,6 +1,8 @@
 import 'dart:ffi' as ffi;
+import 'dart:io';
 import 'package:ffi/ffi.dart';
 import 'package:gpt4all_dart_binding/llmodel_error.dart';
+import 'package:gpt4all_dart_binding/llmodel_prompt_context.dart';
 
 typedef llmodel_isModelLoaded_func = ffi.Bool Function(ffi.Pointer);
 typedef LLModelIsModelLoaded = bool Function(ffi.Pointer);
@@ -17,12 +19,38 @@ typedef LLModelModelCreate2 = ffi.Pointer Function(
 typedef llmodel_model_destroy_func = ffi.Void Function(ffi.Pointer);
 typedef LLModelModelDestroy = void Function(ffi.Pointer);
 
+typedef llmodel_prompt_callback_func = ffi.Bool Function(ffi.Int32);
+typedef LLModelPromptCallback = bool Function(int);
+
+typedef llmodel_response_callback_func = ffi.Bool Function(
+    ffi.Int32, ffi.Pointer<Utf8>);
+typedef LLModelResponseCallback = bool Function(int, ffi.Pointer<Utf8>);
+
+typedef llmodel_recalculate_callback_func = ffi.Bool Function(ffi.Bool);
+typedef LLModelRecalculateCallback = bool Function(bool);
+
+typedef llmodel_prompt_func = ffi.Void Function(
+    ffi.Pointer,
+    ffi.Pointer<Utf8>,
+    ffi.Pointer<ffi.NativeFunction<llmodel_prompt_callback_func>>,
+    ffi.Pointer<ffi.NativeFunction<llmodel_response_callback_func>>,
+    ffi.Pointer<ffi.NativeFunction<llmodel_recalculate_callback_func>>,
+    ffi.Pointer<LLModelPromptContext>);
+typedef LLModelPrompt = void Function(
+    ffi.Pointer,
+    ffi.Pointer<Utf8>,
+    ffi.Pointer<ffi.NativeFunction<llmodel_prompt_callback_func>>,
+    ffi.Pointer<ffi.NativeFunction<llmodel_response_callback_func>>,
+    ffi.Pointer<ffi.NativeFunction<llmodel_recalculate_callback_func>>,
+    ffi.Pointer<LLModelPromptContext>);
+
 typedef llmodel_set_implementation_search_path_func = ffi.Void Function(
     ffi.Pointer<Utf8>);
-typedef LLModelSetImplementationSearchPath = void Function(
-    ffi.Pointer<Utf8>);
+typedef LLModelSetImplementationSearchPath = void Function(ffi.Pointer<Utf8>);
 
 class LLModelLibrary {
+  static const bool except = false;
+
   late final ffi.DynamicLibrary _dynamicLibrary;
 
   // Dart methods binding to native methods
@@ -30,6 +58,7 @@ class LLModelLibrary {
   late final LLModelLoadModel _llModelLoadModel;
   late final LLModelModelCreate2 _llModelModelCreate2;
   late final LLModelModelDestroy _llModelModelDestroy;
+  late final LLModelPrompt _llModelPrompt;
   late final LLModelSetImplementationSearchPath
       _llModelSetImplementationSearchPath;
 
@@ -60,6 +89,10 @@ class LLModelLibrary {
             'llmodel_model_destroy')
         .asFunction();
 
+    _llModelPrompt = _dynamicLibrary
+        .lookup<ffi.NativeFunction<llmodel_prompt_func>>('llmodel_prompt')
+        .asFunction();
+
     _llModelSetImplementationSearchPath = _dynamicLibrary
         .lookup<
                 ffi.NativeFunction<
@@ -70,7 +103,7 @@ class LLModelLibrary {
 
   bool isModelLoaded({
     required ffi.Pointer model,
-}) {
+  }) {
     return _llModelIsModelLoaded(model);
   }
 
@@ -91,7 +124,8 @@ class LLModelLibrary {
   }) {
     final ffi.Pointer<Utf8> modelPathNative = modelPath.toNativeUtf8();
     final ffi.Pointer<Utf8> buildVariantNative = buildVariant.toNativeUtf8();
-    final ffi.Pointer result = _llModelModelCreate2(modelPath.toNativeUtf8(), buildVariant.toNativeUtf8(), error);
+    final ffi.Pointer result = _llModelModelCreate2(
+        modelPath.toNativeUtf8(), buildVariant.toNativeUtf8(), error);
     malloc.free(modelPathNative);
     malloc.free(buildVariantNative);
     return result;
@@ -101,6 +135,35 @@ class LLModelLibrary {
     required ffi.Pointer model,
   }) {
     _llModelModelDestroy(model);
+  }
+
+  void prompt({
+    required ffi.Pointer model,
+    required String prompt,
+    required ffi.Pointer<LLModelPromptContext> promptContext,
+  }) {
+    final ffi.Pointer<Utf8> promptNative = prompt.toNativeUtf8();
+    _llModelPrompt(
+      model,
+      promptNative,
+      ffi.Pointer.fromFunction<llmodel_prompt_callback_func>(
+          _promptCallback, except),
+      ffi.Pointer.fromFunction<llmodel_response_callback_func>(
+          _responseCallback, except),
+      ffi.Pointer.fromFunction<llmodel_recalculate_callback_func>(
+          _recalculateCallback, except),
+      promptContext,
+    );
+    malloc.free(promptNative);
+  }
+
+  static bool _promptCallback(int _) => true;
+
+  static bool _recalculateCallback(bool isRecalculating) => isRecalculating;
+
+  static bool _responseCallback(int _, ffi.Pointer<Utf8> responsePart) {
+    stdout.write(responsePart.toDartString()); // TODO find a way to define outstreams
+    return true;
   }
 
   void setImplementationSearchPath({

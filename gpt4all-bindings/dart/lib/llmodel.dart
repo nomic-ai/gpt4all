@@ -1,8 +1,10 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'package:ffi/ffi.dart';
+import 'package:gpt4all_dart_binding/generation_config.dart';
 import 'package:gpt4all_dart_binding/llmodel_error.dart';
 import 'package:gpt4all_dart_binding/llmodel_library.dart';
+import 'package:gpt4all_dart_binding/llmodel_prompt_context.dart';
 import 'package:gpt4all_dart_binding/llmodel_util.dart';
 
 class LLModel {
@@ -58,6 +60,38 @@ class LLModel {
       }
     } finally {
       calloc.free(_error);
+    }
+  }
+
+  void generate({
+    required String prompt,
+    required GenerationConfig generationConfig,
+  }) {
+    final promptContextPtr = calloc<LLModelPromptContext>();
+    promptContextPtr.ref
+      //TODO logits
+      ..logits_size = generationConfig.logits.length
+      //TODO tokens
+      ..tokens_size = generationConfig.tokens.length
+      ..n_past = generationConfig.nPast
+      ..n_ctx = generationConfig.nCtx
+      ..n_predict = generationConfig.nPredict
+      ..top_k = generationConfig.topK
+      ..top_p = generationConfig.topP
+      ..temp = generationConfig.temp
+      ..n_batch = generationConfig.nBatch
+      ..repeat_penalty = generationConfig.repeatPenalty
+      ..repeat_last_n = generationConfig.repeatLastN
+      ..context_erase = generationConfig.contextErase;
+
+    try {
+      _library.prompt(
+        model: _model,
+        prompt: prompt,
+        promptContext: promptContextPtr,
+      );
+    } finally {
+      calloc.free(promptContextPtr);
     }
   }
 
