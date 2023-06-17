@@ -23,4 +23,19 @@ internal static class LLPromptContextExtensions
             context_erase = {ctx.context_erase}
         }}";
     }
+
+    public static void ApplyOptions(this LLModelPromptContext context, PredictRequestOptions opts)
+    {
+        context.TokensToPredict = opts.TokensToPredict;
+        context.PastNum = opts.PastConversationTokensNum;
+        context.TopK = opts.TopK;
+        context.TopP = opts.TopP;
+        context.Temperature = opts.Temperature;
+        context.Batches = opts.Batches;
+        context.RepeatLastN = opts.RepeatLastN;
+        context.RepeatPenalty = opts.RepeatPenalty;
+        context.Batches = opts.Batches;
+        context.ContextErase = opts.ContextErase;
+        context.ContextSize = opts.ContextSize;
+    }
 }

@@ -7,4 +7,10 @@ public interface IGpt4AllModel : ITextPrediction, IDisposable
     /// feeding it to the model, if null no transformation is applied
     /// </summary>
     IPromptFormatter? PromptFormatter { get; set; }
+
+    /// <summary>
+    /// Reset the model context
+    /// </summary>
+    /// <param name="opts">optional parameters used to initialized the new context</param>
+    void ResetContext(PredictRequestOptions? opts);
 }

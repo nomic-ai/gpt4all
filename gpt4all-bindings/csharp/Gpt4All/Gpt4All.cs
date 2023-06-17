@@ -9,6 +9,7 @@ public class Gpt4All : IGpt4AllModel
 {
     private readonly ILLModel _model;
     private readonly ILogger _logger;
+    private LLModelPromptContext _context;
 
     private const string ResponseErrorMessage =
         "The model reported an error during token generation error={ResponseError}";
@@ -21,6 +22,7 @@ public class Gpt4All : IGpt4AllModel
         _model = model;
         _logger = logger ?? NullLogger.Instance;
         PromptFormatter = new DefaultPromptFormatter();
+        _context = PredictRequestOptions.Defaults.ToPromptContext();
     }
 
     private string FormatPrompt(string prompt)
@@ -30,9 +32,19 @@ public class Gpt4All : IGpt4AllModel
         return PromptFormatter.FormatPrompt(prompt);
     }
 
-    public Task<ITextPredictionResult> GetPredictionAsync(string text, PredictRequestOptions opts, CancellationToken cancellationToken = default)
+    public void ResetContext(PredictRequestOptions? opts)
+    {
+        _context = (opts ?? PredictRequestOptions.Defaults).ToPromptContext();
+    }
+
+    public Task<ITextPredictionResult> GetPredictionAsync(string text, PredictRequestOptions? opts = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(text);
+
+        if (opts != null)
+        {
+            _context.ApplyOptions(opts);
+        }
 
         return Task.Run(() =>
         {
@@ -40,12 +52,11 @@ public class Gpt4All : IGpt4AllModel
 
             var sw = Stopwatch.StartNew();
             var result = new TextPredictionResult();
-            var context = opts.ToPromptContext();
             var prompt = FormatPrompt(text);
 
             try
             {
-                _model.Prompt(prompt, context, responseCallback: e =>
+                _model.Prompt(prompt, _context, responseCallback: e =>
                 {
                     if (e.IsError)
                     {
@@ -71,9 +82,14 @@ public class Gpt4All : IGpt4AllModel
         }, CancellationToken.None);
     }
 
-    public Task<ITextPredictionStreamingResult> GetStreamingPredictionAsync(string text, PredictRequestOptions opts, CancellationToken cancellationToken = default)
+    public Task<ITextPredictionStreamingResult> GetStreamingPredictionAsync(string text, PredictRequestOptions? opts = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(text);
+
+        if (opts != null)
+        {
+            _context.ApplyOptions(opts);
+        }
 
         var result = new TextPredictionStreamingResult();
 
@@ -84,10 +100,9 @@ public class Gpt4All : IGpt4AllModel
 
             try
             {
-                var context = opts.ToPromptContext();
                 var prompt = FormatPrompt(text);
 
-                _model.Prompt(prompt, context, responseCallback: e =>
+                _model.Prompt(prompt, _context, responseCallback: e =>
                 {
                     if (e.IsError)
                     {
