@@ -1,4 +1,6 @@
-﻿namespace Gpt4All;
+﻿using Gpt4All.Bindings;
+
+namespace Gpt4All;
 
 public interface IGpt4AllModel : ITextPrediction, IDisposable
 {
@@ -9,8 +11,7 @@ public interface IGpt4AllModel : ITextPrediction, IDisposable
     IPromptFormatter? PromptFormatter { get; set; }
 
     /// <summary>
-    /// Reset the model context
+    /// The model context
     /// </summary>
-    /// <param name="opts">optional parameters used to initialized the new context</param>
-    void ResetContext(PredictRequestOptions? opts);
+    LLModelPromptContext Context { get; set; }
 }

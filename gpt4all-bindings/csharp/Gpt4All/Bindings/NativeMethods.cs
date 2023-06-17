@@ -2,7 +2,7 @@
 
 namespace Gpt4All.Bindings;
 
-public unsafe partial struct llmodel_prompt_context
+public unsafe struct llmodel_prompt_context
 {
     public float* logits;
 
@@ -42,7 +42,7 @@ public unsafe partial struct llmodel_prompt_context
     public float context_erase;
 }
 
-internal static unsafe partial class NativeMethods
+internal static unsafe class NativeMethods
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
