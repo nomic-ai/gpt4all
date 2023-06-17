@@ -17,7 +17,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 4)
-set(APP_VERSION_PATCH 7)
+set(APP_VERSION_PATCH 9)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -175,8 +175,16 @@ install(TARGETS llamamodel-230519-avxonly DESTINATION lib COMPONENT ${COMPONENT_
 install(TARGETS llamamodel-230519-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llamamodel-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llamamodel-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+if(APPLE)
+install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+endif()
 install(TARGETS mpt-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS mpt-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS replit-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS replit-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+if(APPLE)
+install(TARGETS replit-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+endif()
 
 set(CPACK_GENERATOR "IFW")
 set(CPACK_VERBATIM_VARIABLES YES)

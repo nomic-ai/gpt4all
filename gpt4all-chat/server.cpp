@@ -13,10 +13,10 @@
 static inline QString modelToName(const ModelInfo &info)
 {
     QString modelName = info.filename;
-    Q_ASSERT(modelName.startsWith("ggml-"));
-    modelName = modelName.remove(0, 5);
-    Q_ASSERT(modelName.endsWith(".bin"));
-    modelName.chop(4);
+    if (modelName.startsWith("ggml-"))
+        modelName = modelName.remove(0, 5);
+    if (modelName.endsWith(".bin"))
+        modelName.chop(4);
     return modelName;
 }
 
