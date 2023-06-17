@@ -30,6 +30,7 @@ const response = await createCompletion(ll, [
 ### API
 
 *   The nodejs api has made strides to mirror the python api. It is not 100% mirrored, but many pieces of the api resemble its python counterpart.
+*   Everything should work out the box.
 *   [docs](./docs/api.md)
 
 ### Build Instructions
@@ -204,7 +205,7 @@ This package is in active development, and breaking changes may happen until the
     *   [modelPath](#modelpath)
     *   [debug](#debug)
     *   [url](#url)
-    *   [md5](#md5)
+    *   [md5sum](#md5sum)
 *   [DownloadController](#downloadcontroller)
     *   [cancel](#cancel)
     *   [promise](#promise)
@@ -617,7 +618,7 @@ Remote download url. Defaults to `https://gpt4all.io/models`
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-##### md5
+##### md5sum
 
 Whether to verify the hash of the download to ensure a proper download occurred.
 

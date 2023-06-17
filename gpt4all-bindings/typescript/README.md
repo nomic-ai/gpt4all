@@ -29,6 +29,7 @@ const response = await createCompletion(ll, [
 ### API
 
 *   The nodejs api has made strides to mirror the python api. It is not 100% mirrored, but many pieces of the api resemble its python counterpart.
+*   Everything should work out the box.
 *   [docs](./docs/api.md)
 
 ### Build Instructions

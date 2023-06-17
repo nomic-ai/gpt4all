@@ -36,6 +36,7 @@ function downloadModel(modelName, options = {}) {
         modelPath: DEFAULT_DIRECTORY,
         debug: false,
         url: "https://gpt4all.io/models",
+        md5sum: true,
         ...options,
     };
 
