@@ -13,9 +13,6 @@ parameters:
   run-chat-workflow:
     type: boolean
     default: false
-  run-bindings-workflow:
-    type: boolean
-    default: false
   run-csharp-workflow:
     type: boolean
     default: false
@@ -687,35 +684,6 @@ workflows:
             - build-py-windows
             - build-py-linux
             - build-py-macos
-  build-bindings-backend:
-    when: << pipeline.parameters.run-bindings-workflow >>
-    jobs:
-      - hold:
-          type: approval
-      - build-bindings-backend-linux:
-          filters:
-            branches:
-              only:
-          requires:
-            - hold
-      - build-bindings-backend-macos:
-          filters:
-            branches:
-              only:
-          requires:
-            - hold
-      - build-bindings-backend-windows:
-          filters:
-            branches:
-              only:
-          requires:
-            - hold
-      - build-bindings-backend-windows-msvc:
-          filters:
-            branches:
-              only:
-          requires:
-            - hold
   build-csharp-deploy:
     when: << pipeline.parameters.run-csharp-workflow >>
     jobs:
@@ -750,3 +718,35 @@ workflows:
             - build-csharp-windows
             - build-csharp-linux
             - build-csharp-macos
+  build-bindings-backend:
+    when: 
+        or:
+         - << pipeline.parameters.run-python-workflow >>
+         - << pipeline.parameters.run-csharp-workflow >>
+    jobs:
+      - hold:
+          type: approval
+      - build-bindings-backend-linux:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      - build-bindings-backend-macos:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      - build-bindings-backend-windows:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      - build-bindings-backend-windows-msvc:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
