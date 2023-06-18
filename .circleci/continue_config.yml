@@ -417,8 +417,13 @@ jobs:
             git submodule sync
             git submodule update --init --recursive
       - run:
+          name: Install dependencies
+          command: |
+            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'  
+      - run:
           name: Build Libraries
           command: |
+            $Env:Path += ";C:\Program Files\CMake\bin"
             cd gpt4all-backend
             mkdir win-x64_msvc
             cd win-x64_msvc
