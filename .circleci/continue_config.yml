@@ -688,19 +688,19 @@ workflows:
       - hold:
           type: approval
       - build-bindings-backend-linux:
-          filter:
+          filters:
             branches:
               only:
       - build-bindings-backend-macos:
-          filter:
+          filters:
             branches:
               only:
       - build-bindings-backend-windows:
-          filter:
+          filters:
             branches:
               only:
       - build-bindings-backend-windows-msvc:
-          filter:
+          filters:
             branches:
               only:
   build-csharp-deploy:
