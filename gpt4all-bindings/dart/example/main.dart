@@ -8,20 +8,18 @@ void main() async {
   try {
     // Always load the model before performing any other work.
     await model.load(
-      // Path to the model file (*.bin)
-      modelPath:
-          '/Users/moritz.fink/Private/Coding/gpt4all/gpt4all-bindings/dart/model/ggml-gpt4all-j-v1.3-groovy.bin',
-      // Path to the library folder including *.dll (Windows), *.dylib (Mac) or
+      // Path to the downloaded model file (*.bin)
+      modelPath: '/some/path/to/ggml-gpt4all-j-v1.3-groovy.bin',
+      // Path to the library folder including compiled *.dll (Windows), *.dylib (Mac) or
       // *.so (Linux) files
-      librarySearchPath:
-          '/Users/moritz.fink/Private/Coding/gpt4all/gpt4all-bindings/dart/shared_libs',
+      librarySearchPath: '/some/path/gpt4all-backend/build',
     );
 
     // Optional: Define what to do with prompt responses
     // Prints to stdout if not defined
     // For demo purposes we print to stderr here
     LLModel.setResponseCallback(
-      (int tokenId, String response) {
+          (int tokenId, String response) {
         stderr.write(response);
         return true;
       },

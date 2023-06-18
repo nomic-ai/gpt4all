@@ -1,5 +1,6 @@
 /// Container for model prompt parameters
-/// <p>**Attention**: _logits_ and _tokens_ has currently no effect!
+///
+/// **Attention**: _logits_ and _tokens_ has currently no effect!
 class LLModelGenerationConfig {
 
   /// logits of current context

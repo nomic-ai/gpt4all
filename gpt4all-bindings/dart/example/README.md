@@ -1,32 +1,10 @@
-# GPT4All Dart Binding
-
-## Getting started
-
-1. Compile `llmodel` C/C++ libraries
-
 ```
-git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
-cd gpt4all/gpt4all-backend/
-mkdir build
-cd build
-cmake ..
-cmake --build . --parallel
-```
-Confirm that `libllmodel.*` exists in `gpt4all-backend/build`.
+import 'dart:io';
 
-Those build artifacts contain all libraries required later in step 3.
+import 'package:gpt4all_dart_binding/llmodel_generation_config.dart';
+import 'package:gpt4all_dart_binding/llmodel.dart';
 
-2. Download model
-
-Visit the [GPT4All Website](https://gpt4all.io/index.html) and use the Model Explorer
-to find and download your model of choice (e.g. ggml-gpt4all-j-v1.3-groovy.bin).
-
-3. Run the Dart code
-
-Use the downloaded model and compiled libraries in your Dart code.
-Have a look at the example implementation in [main.dart](example/main.dart):
-
-```
+void main() async {
   LLModel model = LLModel();
   try {
     // Always load the model before performing any other work.
@@ -42,7 +20,7 @@ Have a look at the example implementation in [main.dart](example/main.dart):
     // Prints to stdout if not defined
     // For demo purposes we print to stderr here
     LLModel.setResponseCallback(
-      (int tokenId, String response) {
+          (int tokenId, String response) {
         stderr.write(response);
         return true;
       },
@@ -57,4 +35,5 @@ Have a look at the example implementation in [main.dart](example/main.dart):
     // Always destroy the model after calling the load(..) method
     model.destroy();
   }
+}
 ```

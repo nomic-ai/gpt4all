@@ -1,8 +1,8 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'package:ffi/ffi.dart';
-import 'package:gpt4all_dart_binding/llmodel_error.dart';
-import 'package:gpt4all_dart_binding/llmodel_prompt_context.dart';
+import 'package:gpt4all_dart_binding/src/llmodel_error.dart';
+import 'package:gpt4all_dart_binding/src/llmodel_prompt_context.dart';
 
 typedef llmodel_isModelLoaded_func = ffi.Bool Function(ffi.Pointer);
 typedef LLModelIsModelLoaded = bool Function(ffi.Pointer);
