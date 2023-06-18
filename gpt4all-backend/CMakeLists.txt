@@ -60,16 +60,16 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     set(LLAMA_FMA  ${GPT4ALL_ALLOW_NON_AVX})
 
     if (BUILD_VARIANT STREQUAL metal)
-        set(LLAMA_K_QUANTS YES)
         set(LLAMA_METAL YES)
     else()
-        set(LLAMA_K_QUANTS NO)
         set(LLAMA_METAL NO)
     endif()
 
     # Include GGML
+    set(LLAMA_K_QUANTS YES)
     include_ggml(llama.cpp-mainline -mainline-${BUILD_VARIANT} ON)
     if (NOT LLAMA_METAL)
+        set(LLAMA_K_QUANTS NO)
         include_ggml(llama.cpp-230511 -230511-${BUILD_VARIANT} ON)
         include_ggml(llama.cpp-230519 -230519-${BUILD_VARIANT} ON)
     endif()
