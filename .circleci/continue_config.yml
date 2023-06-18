@@ -13,7 +13,7 @@ parameters:
   run-chat-workflow:
     type: boolean
     default: false
-  run-bindings-backend-workflow:
+  run-bindings-workflow:
     type: boolean
     default: false
   run-csharp-workflow:
@@ -683,10 +683,10 @@ workflows:
             - build-py-linux
             - build-py-macos
   build-bindings-backend:
-    when: << pipeline.parameters.run-bindings-backend-workflow >>
+    when: << pipeline.parameters.run-bindings-workflow >>
     jobs:
       - hold:
-        type: approval
+          type: approval
       - build-bindings-backend-linux:
           filter:
             branches:
