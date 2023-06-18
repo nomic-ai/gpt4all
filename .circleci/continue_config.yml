@@ -361,8 +361,8 @@ jobs:
             cd gpt4all-backend
             mkdir osx-x64
             cd osx-x64
-            cmake ..
-            cmake --build . --parallel --config Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake --build . --parallel --config Release
             cp *.dylib "$NATIVE_DIR"
       - persist_to_workspace:
           root: gpt4all-backend
