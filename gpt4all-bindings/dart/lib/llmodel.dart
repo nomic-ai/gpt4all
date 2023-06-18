@@ -1,10 +1,10 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'package:ffi/ffi.dart';
-import 'package:gpt4all_dart_binding/llmodel_generation_config.dart';
-import 'package:gpt4all_dart_binding/src/llmodel_error.dart';
-import 'package:gpt4all_dart_binding/src/llmodel_library.dart';
-import 'package:gpt4all_dart_binding/src/llmodel_prompt_context.dart';
+import 'package:gpt4all/llmodel_generation_config.dart';
+import 'package:gpt4all/src/llmodel_error.dart';
+import 'package:gpt4all/src/llmodel_library.dart';
+import 'package:gpt4all/src/llmodel_prompt_context.dart';
 
 class LLModel {
   bool _isLoaded = false;

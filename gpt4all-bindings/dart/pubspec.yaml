@@ -1,4 +1,4 @@
-name: gpt4all_dart_binding
+name: gpt4all
 description: Dart binding for the GPT4All C/C++ libraries and models.
 version: 0.1.0
 

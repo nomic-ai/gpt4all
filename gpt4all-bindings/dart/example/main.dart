@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:gpt4all_dart_binding/llmodel_generation_config.dart';
-import 'package:gpt4all_dart_binding/llmodel.dart';
+import 'package:gpt4all/llmodel_generation_config.dart';
+import 'package:gpt4all/llmodel.dart';
 
 void main() async {
   LLModel model = LLModel();
