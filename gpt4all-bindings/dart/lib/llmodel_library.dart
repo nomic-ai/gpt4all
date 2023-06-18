@@ -51,6 +51,15 @@ typedef LLModelSetImplementationSearchPath = void Function(ffi.Pointer<Utf8>);
 class LLModelLibrary {
   static const bool except = false;
 
+  static bool Function(int) promptCallback = (int tokenId) => true;
+  static bool Function(int, String) responseCallback =
+      (int tokenId, String response) {
+    stdout.write(response);
+    return true;
+  };
+  static bool Function(bool) recalculateCallback =
+      (bool isRecalculating) => isRecalculating;
+
   late final ffi.DynamicLibrary _dynamicLibrary;
 
   // Dart methods binding to native methods
@@ -157,14 +166,14 @@ class LLModelLibrary {
     malloc.free(promptNative);
   }
 
-  static bool _promptCallback(int _) => true;
+  static bool _promptCallback(int tokenId) => promptCallback(tokenId);
 
-  static bool _recalculateCallback(bool isRecalculating) => isRecalculating;
-
-  static bool _responseCallback(int _, ffi.Pointer<Utf8> responsePart) {
-    stdout.write(responsePart.toDartString()); // TODO find a way to define outstreams
-    return true;
+  static bool _responseCallback(int tokenId, ffi.Pointer<Utf8> responsePart) {
+    return responseCallback(tokenId, responsePart.toDartString());
   }
+
+  static bool _recalculateCallback(bool isRecalculating) =>
+      recalculateCallback(isRecalculating);
 
   void setImplementationSearchPath({
     required String path,

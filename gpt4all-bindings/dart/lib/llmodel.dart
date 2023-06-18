@@ -9,10 +9,30 @@ import 'package:gpt4all_dart_binding/llmodel_prompt_context.dart';
 class LLModel {
   bool _isLoaded = false;
 
-  late final ffi.Pointer<LLModelError> _error;
-
   late final LLModelLibrary _library;
   late final ffi.Pointer _model;
+
+  /// Define a [callback] function for prompts, which returns a bool
+  /// indicating whether the model should keep processing based on a
+  /// given [tokenId].
+  static void setPromptCallback(bool Function(int tokenId) callback) =>
+      LLModelLibrary.promptCallback = callback;
+
+  /// Define a [callback] function for responses, which returns a bool
+  /// indicating whether the model should keep processing based on a
+  /// given [tokenId] and [response] string.
+  ///
+  /// A [tokenId] of -1 indicates the string is an error string.
+  static void setResponseCallback(
+          bool Function(int tokenId, String response) callback) =>
+      LLModelLibrary.responseCallback = callback;
+
+  /// Define a [callback] function for recalculation, which returns a bool
+  /// indicating whether the model should keep processing based on whether
+  /// the model [isRecalculating] the context.
+  static void setRecalculateCallback(
+          bool Function(bool isRecalculating) callback) =>
+      LLModelLibrary.recalculateCallback = callback;
 
   /// Load the model (.bin) from the [modelPath] and loads required libraries
   /// (.dll/.dylib/.so) from the [librarySearchPath] folder.
@@ -24,9 +44,8 @@ class LLModel {
     required final String modelPath,
     required final String librarySearchPath,
   }) async {
+    final ffi.Pointer<LLModelError> _error = calloc<LLModelError>();
     try {
-      _error = calloc<LLModelError>();
-
       _library = LLModelLibrary(
         pathToLibrary: '$librarySearchPath/libllmodel${_getFileSuffix()}',
       );

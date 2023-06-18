@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:gpt4all_dart_binding/llmodel_generation_config.dart';
 import 'package:gpt4all_dart_binding/llmodel.dart';
 
@@ -13,6 +15,16 @@ void main() async {
       // *.so (Linux) files
       librarySearchPath:
           '/Users/moritz.fink/Private/Coding/gpt4all/gpt4all-bindings/dart/shared_libs',
+    );
+
+    // Optional: Define what to do with prompt responses
+    // Prints to stdout if not defined
+    // For demo purposes we print to stderr here
+    LLModel.setResponseCallback(
+      (int tokenId, String response) {
+        stderr.write(response);
+        return true;
+      },
     );
 
     // Generate a response to the given prompt

@@ -33,6 +33,16 @@ Have a look at the example implementation in [main.dart](bin/main.dart):
           '/Users/moritz.fink/Private/Coding/gpt4all/gpt4all-bindings/dart/shared_libs',
     );
 
+    // Optional: Define what to do with prompt responses
+    // Prints to stdout if not defined
+    // For demo purposes we print to stderr here
+    LLModel.setResponseCallback(
+      (int tokenId, String response) {
+        stderr.write(response);
+        return true;
+      },
+    );
+
     // Generate a response to the given prompt
     await model.generate(
       prompt: "### Human:\nWhat is the meaning of life?\n### Assistant:",
