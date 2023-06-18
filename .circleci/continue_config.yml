@@ -661,6 +661,8 @@ workflows:
           filters:
             branches:
               only:
+          requires:
+            - hold
       - build-py-macos:
           filters:
             branches:
