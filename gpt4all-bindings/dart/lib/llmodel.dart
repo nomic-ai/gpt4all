@@ -14,6 +14,12 @@ class LLModel {
   late final LLModelLibrary _library;
   late final ffi.Pointer _model;
 
+  /// Load the model (.bin) from the [modelPath] and loads required libraries
+  /// (.dll/.dylib/.so) from the [librarySearchPath] folder.
+  ///
+  /// This method must be called before any other interaction with the [LLModel].
+  ///
+  /// Make sure to call the [destroy] method once the work is performed.
   Future<void> load({
     required final String modelPath,
     required final String librarySearchPath,
@@ -71,16 +77,20 @@ class LLModel {
     }
   }
 
+  /// Generate a response to the [prompt] using the model. The
+  /// [LLModelGenerationConfig] can be used to optimize the model invocation.
   Future<void> generate({
     required String prompt,
     required LLModelGenerationConfig generationConfig,
   }) async {
+    final logitsPtr = calloc<ffi.Pointer<ffi.Float>>();
+    final tokensPtr = calloc<ffi.Pointer<ffi.Int32>>();
     final promptContextPtr = calloc<llmodel_prompt_context>();
     promptContextPtr.ref
-      //TODO logits
-      ..logits_size = generationConfig.logits.length
-      //TODO tokens
-      ..tokens_size = generationConfig.tokens.length
+      ..logits = logitsPtr.value // TODO generationConfig.logits
+      ..logits_size = 0 // TODO generationConfig.logits.length
+      ..tokens = tokensPtr.value // TODO generationConfig.tokens
+      ..tokens_size = 0 // TODO generationConfig.tokens.length
       ..n_past = generationConfig.nPast
       ..n_ctx = generationConfig.nCtx
       ..n_predict = generationConfig.nPredict
@@ -100,9 +110,14 @@ class LLModel {
       );
     } finally {
       calloc.free(promptContextPtr);
+      calloc.free(logitsPtr);
+      calloc.free(tokensPtr);
     }
   }
 
+  /// Destroy the model instance.
+  ///
+  /// Make sure to invoke this method once the model is no longer needed.
   void destroy() {
     if (_isLoaded) {
       _library.modelDestroy(
