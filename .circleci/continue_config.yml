@@ -340,7 +340,6 @@ jobs:
           command: |
             cd gpt4all-bindings/csharp
             dotnet restore Gpt4All
-            dotnet restore Gpt4All.Tests
       - save_cache:
           paths:
             - ~/.nuget/packages
@@ -396,15 +395,10 @@ jobs:
             $Env:Path += ";C:\Program Files\CMake\bin"
             ./build_win-mingw.ps1
       - run:
-         name: TEST bash under windows
-         command: echo $(uname)
-         shell: bash.exe
-      - run:
           name: "Install project dependencies"
           command: |
             cd gpt4all-bindings/csharp
             dotnet.exe restore Gpt4All
-            dotnet.exe restore Gpt4All.Tests
       - save_cache:
           paths:
             - C:\Users\circleci\.nuget\packages
@@ -468,7 +462,6 @@ jobs:
           command: |
             cd gpt4all-bindings/csharp
             dotnet restore Gpt4All
-            dotnet restore Gpt4All.Tests
       - save_cache:
           paths:
             - ~/.nuget/packages
