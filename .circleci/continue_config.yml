@@ -427,7 +427,7 @@ jobs:
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
-            - win-x64_msvc/*.dll
+            - win-x64_msvc/Release/*.dll
 
   build-csharp-linux:
     docker:
