@@ -120,7 +120,7 @@ class LLModel:
     model_name: str
         Model name
     """
-    buffer = ''
+    buffer = bytearray()
     def __init__(self):
         self.model = None
         self.model_name = None
@@ -247,14 +247,10 @@ class LLModel:
     # Empty response callback method that just prints response to be collected
     @staticmethod
     def _response_callback(token_id, response):
+        LLModel.buffer += response
         try:
-            if LLModel.buffer != '':
-                LLModel.buffer = bytes(LLModel.buffer + response)
-            else:
-                LLModel.buffer = response
-            val = LLModel.buffer
-            print(val.decode('utf-8'))
-            LLModel.buffer = ''
+            print(LLModel.buffer.decode('utf-8'), end='')
+            LLModel.buffer.clear()
         except:
             pass
         return True
