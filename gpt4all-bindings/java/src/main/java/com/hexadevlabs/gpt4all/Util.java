@@ -52,7 +52,8 @@ public class Util {
     /**
      * Copy over shared library files from resource package to
      * target Temp directory.
-     * Returns Path to the temp directory holding the shared libraries
+     *
+     * @return Path path to the temp directory holding the shared libraries
      */
     public static Path copySharedLibraries() {
         try {
@@ -78,15 +79,26 @@ public class Util {
                     "mpt-default",
                     "llamamodel-230511-default",
                     "llamamodel-230519-default",
-                    "llamamodel-mainline-default"
+                    "llamamodel-mainline-default",
+                    "llamamodel-mainline-metal",
+                    "replit-mainline-default",
+                    "replit-mainline-metal",
+                    "ggml-metal.metal"
             };
 
             for (String libraryName : libraryNames) {
 
+                if(!isMac && (
+                        libraryName.equals("replit-mainline-metal")
+                                || libraryName.equals("llamamodel-mainline-metal")
+                                || libraryName.equals("ggml-metal.metal"))
+                ) continue;
+
                 if(isWindows){
                     libraryName = libraryName + ".dll";
                 } else if(isMac){
-                    libraryName = "lib" + libraryName + ".dylib";
+                    if(!libraryName.equals("ggml-metal.metal"))
+                        libraryName = "lib" + libraryName + ".dylib";
                 } else if(isLinux) {
                     libraryName = "lib"+ libraryName + ".so";
                 }

@@ -12,12 +12,12 @@ You can add Java bindings into your Java project by adding the following depende
 <dependency>
     <groupId>com.hexadevlabs</groupId>
     <artifactId>gpt4all-java-binding</artifactId>
-    <version>1.1.2</version>
+    <version>1.1.3</version>
 </dependency>
 ```
 **Gradle**
 ```
-implementation 'com.hexadevlabs:gpt4all-java-binding:1.1.2'
+implementation 'com.hexadevlabs:gpt4all-java-binding:1.1.3'
 ```
 
 To add the library dependency for another build system see [Maven Central Java bindings](https://central.sonatype.com/artifact/com.hexadevlabs/gpt4all-java-binding/).
@@ -103,3 +103,17 @@ class Example {
 ```
 2. Not every AVX-only shared library is bundled with the JAR right now to reduce size. Only libgptj-avx is included.
 If you are running into issues please let us know using the [gpt4all project issue tracker](https://github.com/nomic-ai/gpt4all/issues).
+
+3. For Windows the native library included in jar depends on specific Microsoft C and C++ (MSVC) runtime libraries which may not be installed on your system.
+If this is the case you can easily download and install the latest x64 Microsoft Visual C++ Redistributable package from https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170
+
+## Version history
+1. Version **1.1.2**:
+   - Java bindings is compatible with gpt4ll version 2.4.6
+   - Initial stable release with the initial feature set
+2. Version **1.1.3**:
+   - Java bindings is compatible with gpt4all version 2.4.8
+   - Add static GPT4ALL_VERSION to signify gpt4all version of the bindings
+   - Add PromptIsTooLongException for prompts that are longer than context size.
+   - Replit model support to include Metal Mac hardware support.
+   

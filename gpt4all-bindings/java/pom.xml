@@ -6,7 +6,7 @@
 
     <groupId>com.hexadevlabs</groupId>
     <artifactId>gpt4all-java-binding</artifactId>
-    <version>1.1.2</version>
+    <version>1.1.3</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -56,6 +56,20 @@
             <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.4.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.4.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <distributionManagement>
@@ -103,7 +117,7 @@
                             <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>C:\Users\felix\dev\gpt4all_java_bins\release_1_1_1_Jun8_2023</directory>
+                                    <directory>C:\Users\felix\dev\gpt4all_java_bins\release_1_1_3_Jun22_2023</directory>
                                 </resource>
                             </resources>
                         </configuration>
