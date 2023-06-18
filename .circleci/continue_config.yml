@@ -698,18 +698,26 @@ workflows:
           filters:
             branches:
               only:
+          requires:
+            - hold
       - build-bindings-backend-macos:
           filters:
             branches:
               only:
+          requires:
+            - hold
       - build-bindings-backend-windows:
           filters:
             branches:
               only:
+          requires:
+            - hold
       - build-bindings-backend-windows-msvc:
           filters:
             branches:
               only:
+          requires:
+            - hold
   build-csharp-deploy:
     when: << pipeline.parameters.run-csharp-workflow >>
     jobs:
