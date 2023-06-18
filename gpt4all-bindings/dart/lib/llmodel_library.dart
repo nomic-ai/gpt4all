@@ -35,14 +35,14 @@ typedef llmodel_prompt_func = ffi.Void Function(
     ffi.Pointer<ffi.NativeFunction<llmodel_prompt_callback_func>>,
     ffi.Pointer<ffi.NativeFunction<llmodel_response_callback_func>>,
     ffi.Pointer<ffi.NativeFunction<llmodel_recalculate_callback_func>>,
-    ffi.Pointer<LLModelPromptContext>);
+    ffi.Pointer<llmodel_prompt_context>);
 typedef LLModelPrompt = void Function(
     ffi.Pointer,
     ffi.Pointer<Utf8>,
     ffi.Pointer<ffi.NativeFunction<llmodel_prompt_callback_func>>,
     ffi.Pointer<ffi.NativeFunction<llmodel_response_callback_func>>,
     ffi.Pointer<ffi.NativeFunction<llmodel_recalculate_callback_func>>,
-    ffi.Pointer<LLModelPromptContext>);
+    ffi.Pointer<llmodel_prompt_context>);
 
 typedef llmodel_set_implementation_search_path_func = ffi.Void Function(
     ffi.Pointer<Utf8>);
@@ -140,7 +140,7 @@ class LLModelLibrary {
   void prompt({
     required ffi.Pointer model,
     required String prompt,
-    required ffi.Pointer<LLModelPromptContext> promptContext,
+    required ffi.Pointer<llmodel_prompt_context> promptContext,
   }) {
     final ffi.Pointer<Utf8> promptNative = prompt.toNativeUtf8();
     _llModelPrompt(

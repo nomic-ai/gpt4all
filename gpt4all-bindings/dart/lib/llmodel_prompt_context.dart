@@ -1,15 +1,15 @@
 import 'dart:ffi' as ffi;
 
-class LLModelPromptContext extends ffi.Struct {
+class llmodel_prompt_context extends ffi.Struct {
 
   external ffi.Pointer<ffi.Float> logits;
 
-  @ffi.Size() // TODO or ffi.IntPtr ?
+  @ffi.Size()
   external int logits_size;
 
   external ffi.Pointer<ffi.Int32> tokens;
 
-  @ffi.Size() // TODO or ffi.IntPtr ?
+  @ffi.Size()
   external int tokens_size;
 
   @ffi.Int32()

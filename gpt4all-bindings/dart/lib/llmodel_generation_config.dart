@@ -1,4 +1,4 @@
-class GenerationConfig {
+class LLModelGenerationConfig {
 
   List<double> logits = [];
   List<int> tokens = [];

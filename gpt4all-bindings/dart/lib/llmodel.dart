@@ -1,16 +1,13 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'package:ffi/ffi.dart';
-import 'package:gpt4all_dart_binding/generation_config.dart';
+import 'package:gpt4all_dart_binding/llmodel_generation_config.dart';
 import 'package:gpt4all_dart_binding/llmodel_error.dart';
 import 'package:gpt4all_dart_binding/llmodel_library.dart';
 import 'package:gpt4all_dart_binding/llmodel_prompt_context.dart';
-import 'package:gpt4all_dart_binding/llmodel_util.dart';
 
 class LLModel {
   bool _isLoaded = false;
-
-  bool get isLoaded => _isLoaded;
 
   late final ffi.Pointer<LLModelError> _error;
 
@@ -19,14 +16,13 @@ class LLModel {
 
   Future<void> load({
     required final String modelPath,
+    required final String librarySearchPath,
   }) async {
     try {
       _error = calloc<LLModelError>();
 
-      final String librarySearchPath = LLModelUtil.copySharedLibraries();
-
       _library = LLModelLibrary(
-        pathToLibrary: '$librarySearchPath/libllmodel.0.2.0.dylib', // TODO
+        pathToLibrary: '$librarySearchPath/libllmodel${_getFileSuffix()}',
       );
 
       _library.setImplementationSearchPath(
@@ -63,11 +59,23 @@ class LLModel {
     }
   }
 
-  void generate({
+  String _getFileSuffix() {
+    if (Platform.isWindows) {
+      return '.dll';
+    } else if (Platform.isMacOS) {
+      return '.dylib';
+    } else if (Platform.isLinux) {
+      return '.so';
+    } else {
+      throw Exception('Unsupported device');
+    }
+  }
+
+  Future<void> generate({
     required String prompt,
-    required GenerationConfig generationConfig,
-  }) {
-    final promptContextPtr = calloc<LLModelPromptContext>();
+    required LLModelGenerationConfig generationConfig,
+  }) async {
+    final promptContextPtr = calloc<llmodel_prompt_context>();
     promptContextPtr.ref
       //TODO logits
       ..logits_size = generationConfig.logits.length
@@ -96,9 +104,11 @@ class LLModel {
   }
 
   void destroy() {
-    _library.modelDestroy(
-      model: _model,
-    );
-    _isLoaded = false;
+    if (_isLoaded) {
+      _library.modelDestroy(
+        model: _model,
+      );
+      _isLoaded = false;
+    }
   }
 }
