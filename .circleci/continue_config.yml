@@ -10,6 +10,9 @@ parameters:
   run-python-workflow:
     type: boolean
     default: false
+  run-java-workflow:
+    type: boolean
+    default: false
   run-chat-workflow:
     type: boolean
     default: false
@@ -305,6 +308,18 @@ jobs:
             twine upload /tmp/workspace/*.whl --username __token__ --password $PYPI_CRED
       - store_artifacts:
           path: /tmp/workspace
+  build-java-binding:
+    docker:
+      - image: maven:3.9.2-eclipse-temurin-17
+    steps:
+      - checkout
+      - run:
+          name: Build the project run Junit tests
+          command: |
+            cd ~/project/gpt4all-bindings/java
+            mvn test
+      - store_test_results:
+          path: ~/project/gpt4all-bindings/java/target/surefire-reports
 
 workflows:
   version: 2
@@ -366,3 +381,7 @@ workflows:
             - build-py-windows
             - build-py-linux
             - build-py-macos
+  build-java-deploy:
+    when: << pipeline.parameters.run-java-workflow >>
+    jobs:
+      - build-java-binding

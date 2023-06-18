@@ -52,7 +52,8 @@ public class Util {
     /**
      * Copy over shared library files from resource package to
      * target Temp directory.
-     * Returns Path to the temp directory holding the shared libraries
+     *
+     * @return Path path to the temp directory holding the shared libraries
      */
     public static Path copySharedLibraries() {
         try {

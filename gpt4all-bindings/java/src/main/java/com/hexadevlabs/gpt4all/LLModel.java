@@ -94,6 +94,10 @@ public  class LLModel implements AutoCloseable {
                 return this;
             }
 
+            /**
+             *
+             * @return GenerationConfig build instance of the config
+             */
             public GenerationConfig build() {
                 return configToBuild;
             }
@@ -102,6 +106,8 @@ public  class LLModel implements AutoCloseable {
 
     /**
      * Shortcut for making GenerativeConfig builder.
+     *
+     * @return GenerationConfig.Builder - builder that can be used to make a GenerationConfig
      */
     public static GenerationConfig.Builder config(){
         return new GenerationConfig.Builder();
@@ -127,6 +133,12 @@ public  class LLModel implements AutoCloseable {
     protected Pointer model;
 
     protected String modelName;
+
+    /**
+     * Package private default constructor, for testing purposes.
+     */
+    LLModel(){
+    }
 
     public LLModel(Path modelPath) {
 
@@ -202,7 +214,36 @@ public  class LLModel implements AutoCloseable {
         ByteArrayOutputStream bufferingForStdOutStream = new ByteArrayOutputStream();
         ByteArrayOutputStream bufferingForWholeGeneration = new ByteArrayOutputStream();
 
-        LLModelLibrary.ResponseCallback responseCallback = (int tokenID, Pointer response) -> {
+        LLModelLibrary.ResponseCallback responseCallback = getResponseCallback(streamToStdOut, bufferingForStdOutStream, bufferingForWholeGeneration);
+
+        library.llmodel_prompt(this.model,
+                prompt,
+                 (int tokenID) -> {
+                    if(LLModel.OUTPUT_DEBUG)
+                        System.out.println("token " + tokenID);
+                    return true; // continue processing
+                },
+                responseCallback,
+                (boolean isRecalculating) -> {
+                    if(LLModel.OUTPUT_DEBUG)
+                        System.out.println("recalculating");
+                    return isRecalculating; // continue generating
+                },
+                generationConfig);
+
+        return bufferingForWholeGeneration.toString(StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Callback method to be used by prompt method as text is generated.
+     *
+     * @param streamToStdOut Should send generated text to standard out.
+     * @param bufferingForStdOutStream Output stream used for buffering bytes for standard output.
+     * @param bufferingForWholeGeneration Output stream used for buffering a complete generation.
+     * @return LLModelLibrary.ResponseCallback lambda function that is invoked by response callback.
+     */
+    static LLModelLibrary.ResponseCallback getResponseCallback(boolean streamToStdOut, ByteArrayOutputStream bufferingForStdOutStream, ByteArrayOutputStream bufferingForWholeGeneration) {
+        return (int tokenID, Pointer response) -> {
 
             if(LLModel.OUTPUT_DEBUG)
                 System.out.print("Response token " + tokenID + " " );
@@ -210,6 +251,9 @@ public  class LLModel implements AutoCloseable {
             long len = 0;
             byte nextByte;
             do{
+                if(len==response.arrayLength()){
+                    throw new RuntimeException("Empty array or not null terminated");
+                }
                 nextByte= response.getByte(len);
                 len++;
                 if(nextByte!=0) {
@@ -230,25 +274,7 @@ public  class LLModel implements AutoCloseable {
 
             return true; // continue generating
         };
-
-        library.llmodel_prompt(this.model,
-                prompt,
-                 (int tokenID) -> {
-                    if(LLModel.OUTPUT_DEBUG)
-                        System.out.println("token " + tokenID);
-                    return true; // continue processing
-                },
-                responseCallback,
-                (boolean isRecalculating) -> {
-                    if(LLModel.OUTPUT_DEBUG)
-                        System.out.println("recalculating");
-                    return isRecalculating; // continue generating
-                },
-                generationConfig);
-
-        return bufferingForWholeGeneration.toString(StandardCharsets.UTF_8);
     }
-
 
 
     public static class ChatCompletionResponse {
@@ -277,7 +303,7 @@ public  class LLModel implements AutoCloseable {
      * easier to process for chat UIs. It is not absolutely necessary as generate method
      * may be directly used to make generations with gpt models.
      *
-     * @param messages List of Maps "role"->"user", "content"->"...", "role"-> "assistant"->"..."
+     * @param messages List of Maps "role"-&gt;"user", "content"-&gt;"...", "role"-&gt; "assistant"-&gt;"..."
      * @param generationConfig How to decode/process the generation.
      * @param streamToStdOut Send tokens as they are calculated Standard output.
      * @param outputFullPromptToStdOut Should full prompt built out of messages be sent to Standard output.

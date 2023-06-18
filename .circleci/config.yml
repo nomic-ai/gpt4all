@@ -12,6 +12,7 @@ workflows:
           config-path: .circleci/continue_config.yml
           mapping: |
             gpt4all-bindings/python/.* run-python-workflow true
+            gpt4all-bindings/java/.* run-java-workflow true
             gpt4all-backend/.* run-chat-workflow true
             gpt4all-chat/.* run-chat-workflow true
             .* run-default-workflow true
