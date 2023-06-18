@@ -424,10 +424,23 @@ jobs:
             cd win-x64_msvc
             cmake -G "Visual Studio 17 2022" -A X64 ..
             cmake --build . --parallel --config Release
+            cp bin/Release/*.dll .
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
-            - win-x64_msvc/Release/*.dll
+            - win-x64_msvc/*.dll
+
+  build-bindings-backend-debug:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
+    steps:
+      - setup_remote_docker
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: TEST - list libraries
+          command: |
+            ls -R /tmp/workspace
 
   build-csharp-linux:
     docker:
@@ -718,6 +731,7 @@ workflows:
             - build-csharp-windows
             - build-csharp-linux
             - build-csharp-macos
+
   build-bindings-backend:
     when: 
         or:
@@ -750,3 +764,13 @@ workflows:
               only:
           requires:
             - hold
+      - build-bindings-backend-debug:
+          filters:
+            branches:
+              only:
+          requires:
+            - build-bindings-backend-linux
+            - build-bindings-backend-macos
+            - build-bindings-backend-windows
+            - build-bindings-backend-windows-msvc
+        
