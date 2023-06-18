@@ -1,13 +1,12 @@
 name: gpt4all_dart_binding
-description: A sample command-line application.
-version: 1.0.0
+description: Dart binding for the GPT4All C/C++ libraries and models.
+version: 0.1.0
 
 environment:
   sdk: ^2.18.1
 
 dependencies:
   ffi: ^2.0.2
-  path: ^1.8.0
 
 dev_dependencies:
   lints: ^2.0.0
