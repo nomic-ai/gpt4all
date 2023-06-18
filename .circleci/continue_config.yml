@@ -394,6 +394,7 @@ jobs:
             cmake -G "MinGW Makefiles" ..
             cmake --build . --parallel --config Release
             cp "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll" .
+            cp bin/*.dll .
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
