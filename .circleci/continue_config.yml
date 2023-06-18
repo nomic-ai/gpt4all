@@ -13,10 +13,13 @@ parameters:
   run-chat-workflow:
     type: boolean
     default: false
+  run-bindings-backend-workflow:
+    type: boolean
+    default: false
   run-csharp-workflow:
     type: boolean
     default: false
-    
+
 jobs:
   default-job:
     docker:
@@ -309,6 +312,123 @@ jobs:
       - store_artifacts:
           path: /tmp/workspace
 
+  build-bindings-backend-linux:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install -y cmake build-essential
+      - run:
+          name: Build Libraries
+          command: |
+            cd gpt4all-backend
+            mkdir linux-x64
+            cd linux-x64
+            cmake ..
+            cmake --build . --parallel --config Release
+            cp *.so "$NATIVE_DIR"
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - linux-x64/*.so
+
+  build-bindings-backend-macos:
+    macos:
+      xcode: "14.0.0"
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - run:
+          name: Install dependencies
+          command: |
+            brew install cmake
+      - run:
+          name: Build Libraries
+          command: |
+            cd gpt4all-backend
+            mkdir osx-x64
+            cd osx-x64
+            cmake ..
+            cmake --build . --parallel --config Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cp *.dylib "$NATIVE_DIR"
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - osx-x64/*.dylib
+
+  build-bindings-backend-windows:
+    executor:
+      name: win/default
+      size: large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - run:
+          name: Install MinGW64
+          command: choco install -y mingw --force --no-progress
+      - run:
+          name: Install dependencies
+          command: |
+            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      - run:
+          name: Build Libraries
+          command: |
+            $Env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+            $Env:Path += ";C:\Program Files\CMake\bin"
+            cd gpt4all-backend
+            mkdir win-x64
+            cd win-x64
+            cmake -G "MinGW Makefiles" ..
+            cmake --build . --parallel --config Release
+            cp "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll" .
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - win-x64/*.dll
+
+  build-bindings-backend-windows-msvc:
+    machine:
+      image: 'windows-server-2022-gui:2023.03.1'
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - run:
+          name: Build Libraries
+          command: |
+            cd gpt4all-backend
+            mkdir win-x64_msvc
+            cd win-x64_msvc
+            cmake -G "Visual Studio 17 2022" -A X64 ..
+            cmake --build . --parallel --config Release
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - win-x64_msvc/*.dll
+
   build-csharp-linux:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy # Ubuntu 22.04
@@ -562,6 +682,27 @@ workflows:
             - build-py-windows
             - build-py-linux
             - build-py-macos
+  build-bindings-backend:
+    when: << pipeline.parameters.run-bindings-backend-workflow >>
+    jobs:
+      - hold:
+        type: approval
+      - build-bindings-backend-linux:
+          filter:
+            branches:
+              only:
+      - build-bindings-backend-macos:
+          filter:
+            branches:
+              only:
+      - build-bindings-backend-windows:
+          filter:
+            branches:
+              only:
+      - build-bindings-backend-windows-msvc:
+          filter:
+            branches:
+              only:
   build-csharp-deploy:
     when: << pipeline.parameters.run-csharp-workflow >>
     jobs:
