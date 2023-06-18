@@ -325,8 +325,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apt-get update
-            apt-get install -y cmake build-essential
+            sudo apt-get update
+            sudo apt-get install -y cmake build-essential
       - run:
           name: Build Libraries
           command: |
