@@ -11,6 +11,7 @@ workflows:
           base-revision: main
           config-path: .circleci/continue_config.yml
           mapping: |
+            gpt4all-bindigs/* run-bindings-workflow true
             gpt4all-bindings/python/.* run-python-workflow true
             gpt4all-bindings/csharp/.* run-csharp-workflow true
             gpt4all-backend/.* run-chat-workflow true
