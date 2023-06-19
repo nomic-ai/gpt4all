@@ -1,8 +1,8 @@
 name: gpt4all
 description: Dart binding for the GPT4All C/C++ libraries and models.
 version: 0.1.0
-repository: https://github.com/finkmoritz/gpt4all
-documentation: https://github.com/finkmoritz/gpt4all/blob/main/README.md
+repository: https://github.com/finkmoritz/gpt4all/tree/feature/dart-binding/gpt4all-bindings/dart
+documentation: https://github.com/finkmoritz/gpt4all/blob/feature/dart-binding/gpt4all-bindings/dart/README.md
 
 environment:
   sdk: ^3.0.0
