@@ -58,6 +58,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
     connect(this, &Chat::modelNameChangeRequested, m_llmodel, &ChatLLM::modelNameChangeRequested, Qt::QueuedConnection);
@@ -175,11 +176,6 @@ void Chat::handleModelLoadedChanged()
 {
     if (m_shouldDeleteLater)
         deleteLater();
-}
-
-QList<ResultInfo> Chat::databaseResults() const
-{
-    return m_llmodel->databaseResults();
 }
 
 void Chat::promptProcessing()
@@ -346,6 +342,11 @@ void Chat::handleTokenSpeedChanged(const QString &tokenSpeed)
 {
     m_tokenSpeed = tokenSpeed;
     emit tokenSpeedChanged();
+}
+
+void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
+{
+    m_databaseResults = results;
 }
 
 bool Chat::serialize(QDataStream &stream, int version) const

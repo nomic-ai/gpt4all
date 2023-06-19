@@ -81,7 +81,6 @@ public:
     void regenerateResponse();
     void resetResponse();
     void resetContext();
-    QList<ResultInfo> databaseResults() const { return m_databaseResults; }
 
     void stopGenerating() { m_stopGenerating = true; }
 
@@ -131,6 +130,7 @@ Q_SIGNALS:
     void shouldBeLoadedChanged();
     void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void reportSpeed(const QString &speed);
+    void databaseResultsChanged(const QList<ResultInfo>&);
 
 protected:
     bool handlePrompt(int32_t token);
@@ -157,7 +157,6 @@ protected:
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;
-    QList<ResultInfo> m_databaseResults;
     bool m_isRecalc;
     bool m_isServer;
     bool m_isChatGPT;

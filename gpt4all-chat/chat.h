@@ -61,7 +61,7 @@ public:
     Q_INVOKABLE void stopGenerating();
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
 
-    QList<ResultInfo> databaseResults() const;
+    QList<ResultInfo> databaseResults() const { return m_databaseResults; }
 
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
@@ -133,6 +133,7 @@ private Q_SLOTS:
     void handleModelNameChanged();
     void handleModelLoadingError(const QString &error);
     void handleTokenSpeedChanged(const QString &tokenSpeed);
+    void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
 
 private:
     QString m_id;
@@ -147,6 +148,7 @@ private:
     ResponseState m_responseState;
     qint64 m_creationDate;
     ChatLLM *m_llmodel;
+    QList<ResultInfo> m_databaseResults;
     bool m_isServer;
     bool m_shouldDeleteLater;
 };
