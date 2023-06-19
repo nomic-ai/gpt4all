@@ -19,9 +19,10 @@ include: package:lints/recommended.yaml
 #   rules:
 #     - camel_case_types
 
-# analyzer:
-#   exclude:
-#     - path/to/excluded/files/**
+analyzer:
+  exclude:
+    - lib/src/llmodel_library.dart # C-like identifiers kept on purpose
+    - lib/src/llmodel_prompt_context.dart # C-like identifiers kept on purpose
 
 # For more information about the core and recommended set of lints, see
 # https://dart.dev/go/core-lints

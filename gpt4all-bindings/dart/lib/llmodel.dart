@@ -44,7 +44,7 @@ class LLModel {
     required final String modelPath,
     required final String librarySearchPath,
   }) async {
-    final ffi.Pointer<LLModelError> _error = calloc<LLModelError>();
+    final ffi.Pointer<LLModelError> error = calloc<LLModelError>();
     try {
       _library = LLModelLibrary(
         pathToLibrary: '$librarySearchPath/libllmodel${_getFileSuffix()}',
@@ -61,11 +61,11 @@ class LLModel {
       _model = _library.modelCreate2(
         modelPath: modelPath,
         buildVariant: "auto",
-        error: _error,
+        error: error,
       );
 
       if (_model.address == ffi.nullptr.address) {
-        final String errorMsg = _error.ref.message.toDartString();
+        final String errorMsg = error.ref.message.toDartString();
         throw Exception("Could not load gpt4all backend: $errorMsg");
       }
 
@@ -80,7 +80,7 @@ class LLModel {
         throw Exception("The model could not be loaded");
       }
     } finally {
-      calloc.free(_error);
+      calloc.free(error);
     }
   }
 
