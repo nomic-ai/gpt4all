@@ -91,7 +91,6 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     : QObject{nullptr}
     , m_promptResponseTokens(0)
     , m_promptTokens(0)
-    , m_responseLogits(0)
     , m_isRecalc(false)
     , m_chat(parent)
     , m_timer(nullptr)
@@ -300,12 +299,9 @@ void ChatLLM::regenerateResponse()
     else
         m_ctx.n_past -= m_promptResponseTokens;
     m_ctx.n_past = std::max(0, m_ctx.n_past);
-    // FIXME: This does not seem to be needed in my testing and llama models don't to it. Remove?
-    m_ctx.logits.erase(m_ctx.logits.end() -= m_responseLogits, m_ctx.logits.end());
     m_ctx.tokens.erase(m_ctx.tokens.end() -= m_promptResponseTokens, m_ctx.tokens.end());
     m_promptResponseTokens = 0;
     m_promptTokens = 0;
-    m_responseLogits = 0;
     m_response = std::string();
     emit responseChanged();
 }
@@ -314,7 +310,6 @@ void ChatLLM::resetResponse()
 {
     m_promptTokens = 0;
     m_promptResponseTokens = 0;
-    m_responseLogits = 0;
     m_response = std::string();
     emit responseChanged();
 }
@@ -368,7 +363,7 @@ void ChatLLM::modelNameChangeRequested(const QString &modelName)
 
 bool ChatLLM::handlePrompt(int32_t token)
 {
-    // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
+    // m_promptResponseTokens is related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
 #if defined(DEBUG)
     qDebug() << "prompt process" << m_chat->id() << token;
@@ -393,7 +388,7 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
         return false;
     }
 
-    // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
+    // m_promptResponseTokens is related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
     ++m_promptResponseTokens;
     m_timer->inc();
@@ -458,7 +453,6 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     fflush(stdout);
 #endif
     m_timer->stop();
-    m_responseLogits += m_ctx.logits.size() - logitsBefore;
     std::string trimmed = trim_whitespace(m_response);
     if (trimmed != m_response) {
         m_response = trimmed;
@@ -595,7 +589,10 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
     stream << response();
     stream << generatedName();
     stream << m_promptResponseTokens;
-    stream << m_responseLogits;
+    if (version <= 3) {
+        int responseLogits;
+        stream << responseLogits;
+    }
     stream << m_ctx.n_past;
     stream << quint64(m_ctx.logits.size());
     stream.writeRawData(reinterpret_cast<const char*>(m_ctx.logits.data()), m_ctx.logits.size() * sizeof(float));
@@ -624,7 +621,10 @@ bool ChatLLM::deserialize(QDataStream &stream, int version)
     stream >> nameResponse;
     m_nameResponse = nameResponse.toStdString();
     stream >> m_promptResponseTokens;
-    stream >> m_responseLogits;
+    if (version <= 3) {
+        int responseLogits;
+        stream >> responseLogits;
+    }
     stream >> m_ctx.n_past;
     quint64 logitsSize;
     stream >> logitsSize;
@@ -639,7 +639,6 @@ bool ChatLLM::deserialize(QDataStream &stream, int version)
         stream >> compressed;
         m_state = qUncompress(compressed);
     } else {
-
         stream >> m_state;
     }
 #if defined(DEBUG)
