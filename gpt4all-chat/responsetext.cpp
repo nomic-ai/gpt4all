@@ -367,9 +367,14 @@ void ResponseText::handleTextChanged()
         return;
 
     m_isProcessingText = true;
-    QTextDocument* doc = m_textDocument->textDocument();
     handleContextLinks();
     handleCodeBlocks();
+    // We insert an invisible char at the end to make sure the document goes back to the default
+    // text format
+    QTextDocument* doc = m_textDocument->textDocument();
+    QTextCursor cursor(doc);
+    QString invisibleCharacter = QString(QChar(0xFEFF));
+    cursor.insertText(invisibleCharacter, QTextCharFormat());
     m_isProcessingText = false;
 }
 
