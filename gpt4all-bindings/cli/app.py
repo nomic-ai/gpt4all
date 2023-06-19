@@ -1,8 +1,10 @@
 import sys
 import typer
 
+from collections import namedtuple
 from typing_extensions import Annotated
 from gpt4all import GPT4All
+
 
 MESSAGES = [
     {"role": "system", "content": "You are a helpful assistant."},
@@ -17,7 +19,9 @@ SPECIAL_COMMANDS = {
     "/help": lambda _: print("Special commands: /reset, /exit, /help and /clear"),
 }
 
-VERSION = "0.3.4"
+VersionInfo = namedtuple('VersionInfo', ['major', 'minor', 'micro'])
+VERSION_INFO = VersionInfo(0, 3, 4)
+VERSION = '.'.join(map(str, VERSION_INFO))  # convert to string form, like: '1.2.3'
 
 CLI_START_MESSAGE = f"""
     
@@ -103,7 +107,7 @@ def repl(
 
 @app.command()
 def version():
-    print("gpt4all-cli v0.3.4")
+    print(f"gpt4all-cli v{VERSION}")
 
 
 if __name__ == "__main__":
