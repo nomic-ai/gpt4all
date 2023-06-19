@@ -25,7 +25,7 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
   <img width="600" height="365" src="https://user-images.githubusercontent.com/13879686/231876409-e3de1934-93bb-4b4b-9013-b491a969ebbc.gif">
 </p>
 <p align="center">
-Run on an M1 Mac (not sped up!)
+Run on an M1 macOS Device (not sped up!)
 </p>
 
 ## GPT4All: An ecosystem of open-source on-edge large language models.
@@ -43,7 +43,7 @@ Run any GPT4All model natively on your home desktop with the auto-updating deskt
 
 Direct Installer Links:
 
-* [Mac/OSX](https://gpt4all.io/installers/gpt4all-installer-darwin.dmg)
+* [macOS](https://gpt4all.io/installers/gpt4all-installer-darwin.dmg)
 
 * [Windows](https://gpt4all.io/installers/gpt4all-installer-win64.exe)
 
