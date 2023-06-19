@@ -157,7 +157,7 @@ protected:
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;
-    bool m_isRecalc;
+    std::atomic<bool> m_isRecalc;
     bool m_isServer;
     bool m_isChatGPT;
 };
