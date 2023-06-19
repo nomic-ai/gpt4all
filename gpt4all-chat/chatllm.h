@@ -150,7 +150,6 @@ protected:
     LLModelType m_modelType;
     std::string m_response;
     std::string m_nameResponse;
-    quint32 m_responseLogits;
     QString m_modelName;
     Chat *m_chat;
     TokenTimer *m_timer;
