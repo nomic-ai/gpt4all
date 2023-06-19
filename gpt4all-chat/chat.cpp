@@ -43,9 +43,16 @@ Chat::~Chat()
 
 void Chat::connectLLM()
 {
+    const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
+    const QString localPath = Download::globalInstance()->downloadLocalModelsPath();
+    m_watcher = new QFileSystemWatcher(this);
+    m_watcher->addPath(exePath);
+    m_watcher->addPath(localPath);
+
     // Should be in same thread
-    connect(Download::globalInstance(), &Download::modelListChanged, this, &Chat::modelListChanged, Qt::DirectConnection);
-    connect(this, &Chat::modelNameChanged, this, &Chat::modelListChanged, Qt::DirectConnection);
+    connect(Download::globalInstance(), &Download::modelListChanged, this, &Chat::handleModelListChanged, Qt::DirectConnection);
+    connect(this, &Chat::modelNameChanged, this, &Chat::handleModelListChanged, Qt::DirectConnection);
+    connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Chat::handleModelListChanged);
 
     // Should be in different threads
     connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::isModelLoadedChanged, Qt::QueuedConnection);
@@ -71,6 +78,8 @@ void Chat::connectLLM()
     // to respond to
     connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::BlockingQueuedConnection);
     connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::BlockingQueuedConnection);
+
+    emit defaultModelChanged(modelList().first());
 }
 
 void Chat::reset()
@@ -80,7 +89,7 @@ void Chat::reset()
     LLM::globalInstance()->chatListModel()->removeChatFile(this);
     emit resetContextRequested(); // blocking queued connection
     m_id = Network::globalInstance()->generateUniqueId();
-    emit idChanged();
+    emit idChanged(m_id);
     // NOTE: We deliberately do no reset the name or creation date to indictate that this was originally
     // an older chat that was reset for another purpose. Resetting this data will lead to the chat
     // name label changing back to 'New Chat' and showing up in the chat model list as a 'New Chat'
@@ -118,6 +127,7 @@ void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t
 {
     resetResponseState();
     emit promptRequested(
+        m_collections,
         prompt,
         prompt_template,
         n_predict,
@@ -275,6 +285,7 @@ bool Chat::isRecalc() const
 
 void Chat::loadDefaultModel()
 {
+    emit defaultModelChanged(modelList().first());
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();
     emit loadDefaultModelRequested();
@@ -369,7 +380,7 @@ bool Chat::deserialize(QDataStream &stream, int version)
 {
     stream >> m_creationDate;
     stream >> m_id;
-    emit idChanged();
+    emit idChanged(m_id);
     stream >> m_name;
     stream >> m_userName;
     emit nameChanged();
@@ -380,7 +391,7 @@ bool Chat::deserialize(QDataStream &stream, int version)
         return false;
     if (version > 2) {
         stream >> m_collections;
-        emit collectionListChanged();
+        emit collectionListChanged(m_collections);
     }
     m_llmodel->setModelName(m_savedModelName);
     if (!m_llmodel->deserialize(stream, version))
@@ -475,6 +486,19 @@ QList<QString> Chat::modelList() const
     return list;
 }
 
+void Chat::handleModelListChanged()
+{
+    emit modelListChanged();
+    emit defaultModelChanged(modelList().first());
+}
+
+void Chat::handleDownloadLocalModelsPathChanged()
+{
+    emit modelListChanged();
+    emit defaultModelChanged(modelList().first());
+    m_watcher->addPath(Download::globalInstance()->downloadLocalModelsPath());
+}
+
 QList<QString> Chat::collectionList() const
 {
     return m_collections;
@@ -491,7 +515,7 @@ void Chat::addCollection(const QString &collection)
         return;
 
     m_collections.append(collection);
-    emit collectionListChanged();
+    emit collectionListChanged(m_collections);
 }
 
 void Chat::removeCollection(const QString &collection)
@@ -500,5 +524,5 @@ void Chat::removeCollection(const QString &collection)
         return;
 
     m_collections.removeAll(collection);
-    emit collectionListChanged();
+    emit collectionListChanged(m_collections);
 }
