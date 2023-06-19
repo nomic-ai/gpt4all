@@ -12,7 +12,8 @@ enum Language {
     None,
     Python,
     Cpp,
-    Bash
+    Bash,
+    TypeScript
 };
 
 static QColor keywordColor      = "#2e95d3"; // blue
@@ -22,6 +23,8 @@ static QColor commentColor      = "#808080"; // gray
 static QColor stringColor       = "#00a37d"; // green
 static QColor numberColor       = "#df3079"; // fuchsia
 static QColor preprocessorColor = keywordColor;
+static QColor typeColor = numberColor;
+static QColor arrowColor = functionColor;
 
 static Language stringToLanguage(const QString &language)
 {
@@ -35,6 +38,10 @@ static Language stringToLanguage(const QString &language)
         return Cpp;
     if (language == "bash")
         return Bash;
+    if (language == "javascript")
+        return TypeScript;
+    if (language == "typescript")
+        return TypeScript;
     return None;
 }
 
@@ -181,6 +188,90 @@ static QVector<HighlightingRule> cppHighlightingRules()
     return highlightingRules;
 }
 
+static QVector<HighlightingRule> typescriptHighlightingRules()
+{
+    static QVector<HighlightingRule> highlightingRules;
+    if (highlightingRules.isEmpty()) {
+
+        HighlightingRule rule;
+
+        QTextCharFormat functionCallFormat;
+        functionCallFormat.setForeground(functionCallColor);
+        rule.pattern = QRegularExpression("\\b(\\w+)\\s*(?=\\()");
+        rule.format = functionCallFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat functionFormat;
+        functionFormat.setForeground(functionColor);
+        rule.pattern = QRegularExpression("\\bfunction\\s+(\\w+)\\b");
+        rule.format = functionFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat numberFormat;
+        numberFormat.setForeground(numberColor);
+        rule.pattern = QRegularExpression("\\b[0-9]*\\.?[0-9]+\\b");
+        rule.format = numberFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat keywordFormat;
+        keywordFormat.setForeground(keywordColor);
+        QStringList keywordPatterns = {
+            "\\bfunction\\b", "\\bvar\\b", "\\blet\\b", "\\bconst\\b", "\\bif\\b", "\\belse\\b",
+            "\\bfor\\b", "\\bwhile\\b", "\\breturn\\b", "\\btry\\b", "\\bcatch\\b", "\\bfinally\\b",
+            "\\bthrow\\b", "\\bnew\\b", "\\bdelete\\b", "\\btypeof\\b", "\\binstanceof\\b",
+            "\\bdo\\b", "\\bswitch\\b", "\\bcase\\b", "\\bbreak\\b", "\\bcontinue\\b",
+            "\\bpublic\\b", "\\bprivate\\b", "\\bprotected\\b", "\\bstatic\\b", "\\breadonly\\b",
+            "\\benum\\b", "\\binterface\\b", "\\bextends\\b", "\\bimplements\\b", "\\bexport\\b",
+            "\\bimport\\b", "\\btype\\b", "\\bnamespace\\b", "\\babstract\\b", "\\bas\\b",
+            "\\basync\\b", "\\bawait\\b", "\\bclass\\b", "\\bconstructor\\b", "\\bget\\b",
+            "\\bset\\b", "\\bnull\\b", "\\bundefined\\b", "\\btrue\\b", "\\bfalse\\b"
+        };
+
+        for (const QString &pattern : keywordPatterns) {
+            rule.pattern = QRegularExpression(pattern);
+            rule.format = keywordFormat;
+            highlightingRules.append(rule);
+        }
+
+        QTextCharFormat typeFormat;
+        typeFormat.setForeground(typeColor);
+        QStringList typePatterns = {
+            "\\bstring\\b", "\\bnumber\\b", "\\bboolean\\b", "\\bany\\b", "\\bvoid\\b",
+            "\\bnever\\b", "\\bunknown\\b", "\\bObject\\b", "\\bArray\\b"
+        };
+
+        for (const QString &pattern : typePatterns) {
+            rule.pattern = QRegularExpression(pattern);
+            rule.format = typeFormat;
+            highlightingRules.append(rule);
+        }
+
+        QTextCharFormat stringFormat;
+        stringFormat.setForeground(stringColor);
+        rule.pattern = QRegularExpression("\".*?\"|'.*?'|`.*?`");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat commentFormat;
+        commentFormat.setForeground(commentColor);
+        rule.pattern = QRegularExpression("//[^\n]*");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
+        rule.pattern = QRegularExpression("/\\*.*?\\*/");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat arrowFormat;
+        arrowFormat.setForeground(arrowColor);
+        rule.pattern = QRegularExpression("=>");
+        rule.format = arrowFormat;
+        highlightingRules.append(rule);
+
+    }
+    return highlightingRules;
+}
+
 static QVector<HighlightingRule> bashHighlightingRules()
 {
     static QVector<HighlightingRule> highlightingRules;
@@ -210,6 +301,8 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
         rules = cppHighlightingRules();
     else if (block.userState() == Bash)
         rules = bashHighlightingRules();
+    else if (block.userState() == TypeScript)
+        rules = typescriptHighlightingRules();
 
     for (const HighlightingRule &rule : qAsConst(rules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
@@ -402,7 +495,9 @@ void ResponseText::handleCodeBlocks()
                 || firstWord == "cpp"
                 || firstWord == "c++"
                 || firstWord == "c"
-                || firstWord == "bash") {
+                || firstWord == "bash"
+                || firstWord == "javascript"
+                || firstWord == "typescript") {
                 codeLanguage = firstWord;
                 capturedText.remove(0, match.captured(0).length());
             }
