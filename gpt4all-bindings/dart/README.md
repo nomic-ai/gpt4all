@@ -2,6 +2,8 @@
 
 Dart bindings for the GPT4All C/C++ libraries and models.
 
+https://pub.dev/packages/gpt4all
+
 **Target platforms:**
 - Windows
 - macOS
