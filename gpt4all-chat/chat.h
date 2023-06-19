@@ -25,6 +25,7 @@ class Chat : public QObject
     Q_PROPERTY(QString responseState READ responseState NOTIFY responseStateChanged)
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
     Q_PROPERTY(QString modelLoadingError READ modelLoadingError NOTIFY modelLoadingErrorChanged)
+    Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged);
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -91,6 +92,8 @@ public:
 
     QString modelLoadingError() const { return m_modelLoadingError; }
 
+    QString tokenSpeed() const { return m_tokenSpeed; }
+
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt);
 
@@ -118,6 +121,7 @@ Q_SIGNALS:
     void modelLoadingErrorChanged();
     void isServerChanged();
     void collectionListChanged();
+    void tokenSpeedChanged();
 
 private Q_SLOTS:
     void handleResponseChanged();
@@ -128,6 +132,7 @@ private Q_SLOTS:
     void handleRecalculating();
     void handleModelNameChanged();
     void handleModelLoadingError(const QString &error);
+    void handleTokenSpeedChanged(const QString &tokenSpeed);
 
 private:
     QString m_id;
@@ -135,6 +140,7 @@ private:
     QString m_userName;
     QString m_savedModelName;
     QString m_modelLoadingError;
+    QString m_tokenSpeed;
     QList<QString> m_collections;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
