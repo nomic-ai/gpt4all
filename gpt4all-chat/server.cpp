@@ -71,6 +71,7 @@ Server::Server(Chat *chat)
     , m_server(nullptr)
 {
     connect(this, &Server::threadStarted, this, &Server::start);
+    connect(this, &Server::databaseResultsChanged, this, &Server::handleDatabaseResultsChanged);
 }
 
 Server::~Server()
