@@ -23,6 +23,46 @@ struct LLModelInfo {
     // must be able to serialize the information even if it is in the unloaded state
 };
 
+class TokenTimer : public QObject {
+    Q_OBJECT
+public:
+    explicit TokenTimer(QObject *parent)
+        : QObject(parent)
+        , m_elapsed(0) {}
+
+    static int rollingAverage(int oldAvg, int newNumber, int n)
+    {
+        // i.e. to calculate the new average after then nth number,
+        // you multiply the old average by n−1, add the new number, and divide the total by n.
+        return qRound(((float(oldAvg) * (n - 1)) + newNumber) / float(n));
+    }
+
+    void start() { m_tokens = 0; m_elapsed = 0; m_time.invalidate(); }
+    void stop() { handleTimeout(); }
+    void inc() {
+        if (!m_time.isValid())
+            m_time.start();
+        ++m_tokens;
+        if (m_time.elapsed() > 999)
+            handleTimeout();
+    }
+
+Q_SIGNALS:
+    void report(const QString &speed);
+
+private Q_SLOTS:
+    void handleTimeout()
+    {
+        m_elapsed += m_time.restart();
+        emit report(QString("%1 tokens/sec").arg(m_tokens / float(m_elapsed / 1000.0f), 0, 'g', 2));
+    }
+
+private:
+    QElapsedTimer m_time;
+    qint64 m_elapsed;
+    quint32 m_tokens;
+};
+
 class Chat;
 class ChatLLM : public QObject
 {
@@ -73,6 +113,7 @@ public Q_SLOTS:
     void generateName();
     void handleChatIdChanged();
     void handleShouldBeLoadedChanged();
+    void handleThreadStarted();
 
 Q_SIGNALS:
     void isModelLoadedChanged();
@@ -89,7 +130,7 @@ Q_SIGNALS:
     void threadStarted();
     void shouldBeLoadedChanged();
     void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
-
+    void reportSpeed(const QString &speed);
 
 protected:
     bool handlePrompt(int32_t token);
@@ -112,6 +153,7 @@ protected:
     quint32 m_responseLogits;
     QString m_modelName;
     Chat *m_chat;
+    TokenTimer *m_timer;
     QByteArray m_state;
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;

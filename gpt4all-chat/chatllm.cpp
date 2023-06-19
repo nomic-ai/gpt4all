@@ -94,6 +94,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_responseLogits(0)
     , m_isRecalc(false)
     , m_chat(parent)
+    , m_timer(nullptr)
     , m_isServer(isServer)
     , m_isChatGPT(false)
 {
@@ -103,7 +104,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
         Qt::QueuedConnection); // explicitly queued
     connect(m_chat, &Chat::idChanged, this, &ChatLLM::handleChatIdChanged);
-    connect(&m_llmThread, &QThread::started, this, &ChatLLM::threadStarted);
+    connect(&m_llmThread, &QThread::started, this, &ChatLLM::handleThreadStarted);
 
     // The following are blocking operations and will block the llm thread
     connect(this, &ChatLLM::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
@@ -124,6 +125,13 @@ ChatLLM::~ChatLLM()
         delete m_modelInfo.model;
         m_modelInfo.model = nullptr;
     }
+}
+
+void ChatLLM::handleThreadStarted()
+{
+    m_timer = new TokenTimer(this);
+    connect(m_timer, &TokenTimer::report, this, &ChatLLM::reportSpeed);
+    emit threadStarted();
 }
 
 bool ChatLLM::loadDefaultModel()
@@ -367,6 +375,7 @@ bool ChatLLM::handlePrompt(int32_t token)
 #endif
     ++m_promptTokens;
     ++m_promptResponseTokens;
+    m_timer->inc();
     return !m_stopGenerating;
 }
 
@@ -387,6 +396,7 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
     // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
     ++m_promptResponseTokens;
+    m_timer->inc();
     Q_ASSERT(!response.empty());
     m_response.append(response);
     emit responseChanged();
@@ -441,11 +451,13 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     printf("%s", qPrintable(instructPrompt));
     fflush(stdout);
 #endif
+    m_timer->start();
     m_modelInfo.model->prompt(instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
 #endif
+    m_timer->stop();
     m_responseLogits += m_ctx.logits.size() - logitsBefore;
     std::string trimmed = trim_whitespace(m_response);
     if (trimmed != m_response) {

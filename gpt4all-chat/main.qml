@@ -845,6 +845,16 @@ Window {
             Accessible.description: qsTr("Controls generation of the response")
         }
 
+        Text {
+            id: speed
+            anchors.bottom: textInputView.top
+            anchors.bottomMargin: 20
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            color: theme.mutedTextColor
+            text: currentChat.tokenSpeed
+        }
+
         RectangularGlow {
             id: effect
             anchors.fill: textInputView
