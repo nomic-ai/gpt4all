@@ -54,7 +54,11 @@ class LLModelLibrary {
   static bool Function(int) promptCallback = (int tokenId) => true;
   static bool Function(int, String) responseCallback =
       (int tokenId, String response) {
-    stdout.write(response);
+    if (tokenId == -1) {
+      stderr.write(response);
+    } else {
+      stdout.write(response);
+    }
     return true;
   };
   static bool Function(bool) recalculateCallback =
