@@ -1,7 +1,7 @@
 import 'dart:ffi' as ffi;
 
 /// llmodel\_prompt\_context structure for holding the prompt context.
-class llmodel_prompt_context extends ffi.Struct {
+final class llmodel_prompt_context extends ffi.Struct {
 
   /// logits of current context
   external ffi.Pointer<ffi.Float> logits;

@@ -1,5 +1,12 @@
 # GPT4All Dart Binding
 
+Dart bindings for the GPT4All C/C++ libraries and models.
+
+**Target platforms:**
+- Windows
+- macOS
+- Linux
+
 ## Getting started
 
 1. Compile `llmodel` C/C++ libraries
