@@ -18,7 +18,7 @@ DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").re
 class GPT4All():
     """Python API for retrieving and interacting with GPT4All models.
     
-    Attribuies:
+    Attributes:
         model: Pointer to underlying C model.
     """
 
@@ -257,7 +257,7 @@ class GPT4All():
                       default_prompt_header=True,
                       default_prompt_footer=True) -> str:
         """
-        Helper method for buildilng a prompt using template from list of messages.
+        Helper method for building a prompt using template from list of messages.
 
         Args:
             messages:  List of dictionaries. Each dictionary should have a "role" key
