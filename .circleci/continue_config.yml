@@ -330,7 +330,7 @@ jobs:
             cd gpt4all-backend
             mkdir -p runtimes/linux-x64
             cd runtimes/linux-x64
-            cmake ..
+            cmake ../..
             cmake --build . --parallel --config Release
       - persist_to_workspace:
           root: gpt4all-backend
@@ -357,7 +357,7 @@ jobs:
             cd gpt4all-backend
             mkdir -p runtimes/osx-x64
             cd runtimes/osx-x64
-            cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake ../.. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             cmake --build . --parallel --config Release
       - persist_to_workspace:
           root: gpt4all-backend
@@ -392,7 +392,7 @@ jobs:
             cd gpt4all-backend
             mkdir runtimes/win-x64
             cd runtimes/win-x64
-            cmake -G "MinGW Makefiles" .. &&
+            cmake -G "MinGW Makefiles" ../..
             cmake --build . --parallel --config Release
             cp "$MinGWBin\libgcc*.dll" .
             cp "$MinGWBin\libstdc++*.dll" .
@@ -426,7 +426,7 @@ jobs:
             cd gpt4all-backend
             mkdir runtimes/win-x64_msvc
             cd runtimes/win-x64_msvc
-            cmake -G "Visual Studio 17 2022" -A X64 ..
+            cmake -G "Visual Studio 17 2022" -A X64 ../..
             cmake --build . --parallel --config Release
             cp bin/Release/*.dll .
       - persist_to_workspace:
