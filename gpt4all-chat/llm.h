@@ -34,9 +34,6 @@ Q_SIGNALS:
     void serverEnabledChanged();
     void compatHardwareChanged();
 
-private Q_SLOTS:
-    void aboutToQuit();
-
 private:
     ChatListModel *m_chatListModel;
     int32_t m_threadCount;
