@@ -462,6 +462,7 @@ jobs:
             cd gpt4all-bindings/csharp
             mkdir -p runtimes/linux-x64/native
             cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
+            ls -R runtimes
       - run:
           name: "Install project dependencies"
           command: |
