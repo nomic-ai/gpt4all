@@ -367,8 +367,8 @@ void ResponseText::handleTextChanged()
         return;
 
     m_isProcessingText = true;
-    handleContextLinks();
     handleCodeBlocks();
+    handleContextLinks();
     // We insert an invisible char at the end to make sure the document goes back to the default
     // text format
     QTextDocument* doc = m_textDocument->textDocument();
