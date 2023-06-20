@@ -386,14 +386,17 @@ jobs:
       - run:
           name: Build Libraries
           command: |
-            $Env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+            $MinGWBin = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+            $Env:Path += ";$MinGwBin"
             $Env:Path += ";C:\Program Files\CMake\bin"
             cd gpt4all-backend
             mkdir win-x64
             cd win-x64
-            cmake -G "MinGW Makefiles" ..
+            cmake -G "MinGW Makefiles" .. &&
             cmake --build . --parallel --config Release
-            cp "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll" .
+            cp "$MinGWBin\libgcc*.dll" .
+            cp "$MinGWBin\libstdc++*.dll" .
+            cp "$MinGWBin\libwinpthread*.dll" .
             cp bin/*.dll .
       - persist_to_workspace:
           root: gpt4all-backend
