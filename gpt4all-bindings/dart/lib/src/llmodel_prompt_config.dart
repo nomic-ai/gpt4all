@@ -1,7 +1,7 @@
 /// Container for model prompt parameters
 ///
 /// **Attention**: _logits_ and _tokens_ has currently no effect!
-class LLModelGenerationConfig {
+class LLModelPromptConfig {
 
   /// logits of current context
   List<double> logits = [];

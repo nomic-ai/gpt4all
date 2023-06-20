@@ -1,7 +1,7 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'package:ffi/ffi.dart';
-import 'package:gpt4all/src/llmodel_generation_config.dart';
+import 'package:gpt4all/src/llmodel_prompt_config.dart';
 import 'package:gpt4all/src/llmodel_error.dart';
 import 'package:gpt4all/src/llmodel_library.dart';
 import 'package:gpt4all/src/llmodel_prompt_context.dart';
@@ -11,6 +11,10 @@ class LLModel {
 
   late final LLModelLibrary _library;
   late final ffi.Pointer _model;
+
+  late final ffi.Pointer<ffi.Pointer<ffi.Float>> _logits;
+  late final ffi.Pointer<ffi.Pointer<ffi.Int32>> _tokens;
+  late final ffi.Pointer<llmodel_prompt_context> _promptContext;
 
   /// Define a [callback] function for prompts, which returns a bool
   /// indicating whether the model should keep processing based on a
@@ -43,9 +47,32 @@ class LLModel {
   Future<void> load({
     required final String modelPath,
     required final String librarySearchPath,
+    LLModelPromptConfig? promptConfig,
   }) async {
+    promptConfig ??= LLModelPromptConfig();
+
     final ffi.Pointer<LLModelError> error = calloc<LLModelError>();
+
     try {
+      _logits = calloc<ffi.Pointer<ffi.Float>>();
+      _tokens = calloc<ffi.Pointer<ffi.Int32>>();
+      _promptContext = calloc<llmodel_prompt_context>();
+      _promptContext.ref
+        ..logits = _logits.value // TODO generationConfig.logits
+        ..logits_size = 0 // TODO generationConfig.logits.length
+        ..tokens = _tokens.value // TODO generationConfig.tokens
+        ..tokens_size = 0 // TODO generationConfig.tokens.length
+        ..n_past = promptConfig.nPast
+        ..n_ctx = promptConfig.nCtx
+        ..n_predict = promptConfig.nPredict
+        ..top_k = promptConfig.topK
+        ..top_p = promptConfig.topP
+        ..temp = promptConfig.temp
+        ..n_batch = promptConfig.nBatch
+        ..repeat_penalty = promptConfig.repeatPenalty
+        ..repeat_last_n = promptConfig.repeatLastN
+        ..context_erase = promptConfig.contextErase;
+
       _library = LLModelLibrary(
         pathToLibrary: '$librarySearchPath/libllmodel${_getFileSuffix()}',
       );
@@ -97,41 +124,15 @@ class LLModel {
   }
 
   /// Generate a response to the [prompt] using the model. The
-  /// [LLModelGenerationConfig] can be used to optimize the model invocation.
+  /// [LLModelPromptConfig] can be used to optimize the model invocation.
   Future<void> generate({
     required String prompt,
-    required LLModelGenerationConfig generationConfig,
   }) async {
-    final logitsPtr = calloc<ffi.Pointer<ffi.Float>>();
-    final tokensPtr = calloc<ffi.Pointer<ffi.Int32>>();
-    final promptContextPtr = calloc<llmodel_prompt_context>();
-    promptContextPtr.ref
-      ..logits = logitsPtr.value // TODO generationConfig.logits
-      ..logits_size = 0 // TODO generationConfig.logits.length
-      ..tokens = tokensPtr.value // TODO generationConfig.tokens
-      ..tokens_size = 0 // TODO generationConfig.tokens.length
-      ..n_past = generationConfig.nPast
-      ..n_ctx = generationConfig.nCtx
-      ..n_predict = generationConfig.nPredict
-      ..top_k = generationConfig.topK
-      ..top_p = generationConfig.topP
-      ..temp = generationConfig.temp
-      ..n_batch = generationConfig.nBatch
-      ..repeat_penalty = generationConfig.repeatPenalty
-      ..repeat_last_n = generationConfig.repeatLastN
-      ..context_erase = generationConfig.contextErase;
-
-    try {
-      _library.prompt(
-        model: _model,
-        prompt: prompt,
-        promptContext: promptContextPtr,
-      );
-    } finally {
-      calloc.free(promptContextPtr);
-      calloc.free(logitsPtr);
-      calloc.free(tokensPtr);
-    }
+    _library.prompt(
+      model: _model,
+      prompt: prompt,
+      promptContext: _promptContext,
+    );
   }
 
   /// Destroy the model instance.
@@ -144,5 +145,8 @@ class LLModel {
       );
       _isLoaded = false;
     }
+    calloc.free(_promptContext);
+    calloc.free(_tokens);
+    calloc.free(_logits);
   }
 }

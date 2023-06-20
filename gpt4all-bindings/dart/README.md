@@ -45,12 +45,13 @@ Have a look at the example implementation in [main.dart](example/main.dart):
       // Path to the library folder including compiled *.dll (Windows), *.dylib (Mac) or
       // *.so (Linux) files
       librarySearchPath: '/some/path/gpt4all-backend/build',
+      // Optionally fine-tune the default configuration
+      promptConfig: LLModelPromptConfig()..nPredict = 256,
     );
 
     // Generate a response to the given prompt
     await model.generate(
       prompt: "### Human:\nWhat is the meaning of life?\n### Assistant:",
-      generationConfig: LLModelGenerationConfig()..nPredict = 256,
     );
   } finally {
     // Always destroy the model after calling the load(..) method
