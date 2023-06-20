@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
- * These tests only test the Java implementation as the underlying llmodel can't be mocked.
+ * These tests only test the Java implementation as the underlying backend can't be mocked.
  * These tests do serve the purpose of validating the java bits that do
  * not directly have to do with the function of the underlying gp4all library.
  */
@@ -142,7 +142,7 @@ public class BasicTests {
 
         assertEquals("Empty array or not null terminated", exception.getMessage());
 
-        // With empty aray
+        // With empty array
         utf8ByteArray = new byte[0];
         pointer.put(0, utf8ByteArray, 0, utf8ByteArray.length);
 
