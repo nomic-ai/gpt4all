@@ -491,10 +491,6 @@ jobs:
               trx2junit TestResults/*.trx
       - store_test_results:
           path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-      - persist_to_workspace:
-          root: gpt4all-bindings/csharp
-          paths:
-            - runtimes/linux-x64/native
 
   build-csharp-windows:
     executor:
@@ -506,22 +502,15 @@ jobs:
       - restore_cache:
           keys:
             - gpt4all-csharp-nuget-packages-win
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
-          name: Install MinGW64
-          command: choco install -y mingw --force --no-progress
-      - run:
-          name: Install dependencies
+          name: "Prepare Native Libs"
           command: |
-            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-      - run:
-          name: Build C library
-          command: |
-            git submodule init
-            git submodule update --recursive
             cd gpt4all-bindings/csharp
-            $Env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
-            $Env:Path += ";C:\Program Files\CMake\bin"
-            ./build_win-mingw.ps1
+            mkdir -p runtimes/win-x64/native
+            cp /tmp/workspace/runtimes/win-x64/*.dll runtimes/win-x64/native/
+            ls -R runtimes
       - run:
           name: "Install project dependencies"
           command: |
@@ -550,10 +539,6 @@ jobs:
               trx2junit TestResults/*.trx
       - store_test_results:
           path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-      - persist_to_workspace:
-          root: gpt4all-bindings/csharp
-          paths:
-            - runtimes/win-x64/native/
 
   build-csharp-macos:
     macos:
@@ -566,25 +551,16 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            brew install cmake
             brew install --cask dotnet-sdk
-            # curl https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -o dotnet-install.sh
-            # chmod +x dotnet-install.sh
-            # ./dotnet-install.sh -Channel 7.0 --install-dir $HOME/cli-tools
-            # $HOME/cli-tools/dotnet --info
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
-          name: Build C library
+          name: "Prepare Native Libs"
           command: |
-            git submodule init
-            git submodule update --recursive
             cd gpt4all-bindings/csharp
-            BASE_DIR="runtimes/osx-x64"  
-            NATIVE_DIR="$BASE_DIR/native"
-            BUILD_DIR="$BASE_DIR/build"
-            mkdir -p "$NATIVE_DIR" "$BUILD_DIR"
-            cmake -S ../../gpt4all-backend -B "$BUILD_DIR" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
-            cmake --build "$BUILD_DIR" -j --config Release
-            cp "$BUILD_DIR"/*.dylib "$NATIVE_DIR"
+            mkdir -p runtimes/osx-x64/native
+            cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/win-x64/native/
+            ls -R runtimes
       - run:
           name: "Install project dependencies"
           command: |
@@ -613,10 +589,6 @@ jobs:
               trx2junit TestResults/*.trx
       - store_test_results:
           path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-      - persist_to_workspace:
-          root: gpt4all-bindings/csharp
-          paths:
-            - runtimes/osx-x64/native
 
   store-and-upload-nupkgs:
     docker:
@@ -705,18 +677,21 @@ workflows:
               only:
           requires:
             - hold
+            - build-bindings-backend-linux
       - build-csharp-windows:
           filters:
             branches:
               only:
           requires:
             - hold
+            - build-bindings-backend-windows
       - build-csharp-macos:
           filters:
             branches:
               only:
           requires:
             - hold
+            - build-bindings-backend-macos
       - store-and-upload-nupkgs:
           filters:
             branches:
