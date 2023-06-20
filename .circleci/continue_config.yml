@@ -328,14 +328,14 @@ jobs:
           name: Build Libraries
           command: |
             cd gpt4all-backend
-            mkdir linux-x64
-            cd linux-x64
+            mkdir -p runtimes/linux-x64
+            cd runtimes/linux-x64
             cmake ..
             cmake --build . --parallel --config Release
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
-            - linux-x64/*.so
+            - runtimes/linux-x64/*.so
 
   build-bindings-backend-macos:
     macos:
@@ -355,14 +355,14 @@ jobs:
           name: Build Libraries
           command: |
             cd gpt4all-backend
-            mkdir osx-x64
-            cd osx-x64
+            mkdir -p runtimes/osx-x64
+            cd runtimes/osx-x64
             cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             cmake --build . --parallel --config Release
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
-            - osx-x64/*.dylib
+            - runtimes/osx-x64/*.dylib
 
   build-bindings-backend-windows:
     executor:
@@ -390,8 +390,8 @@ jobs:
             $Env:Path += ";$MinGwBin"
             $Env:Path += ";C:\Program Files\CMake\bin"
             cd gpt4all-backend
-            mkdir win-x64
-            cd win-x64
+            mkdir runtimes/win-x64
+            cd runtimes/win-x64
             cmake -G "MinGW Makefiles" .. &&
             cmake --build . --parallel --config Release
             cp "$MinGWBin\libgcc*.dll" .
@@ -401,7 +401,7 @@ jobs:
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
-            - win-x64/*.dll
+            - runtimes/win-x64/*.dll
 
   build-bindings-backend-windows-msvc:
     machine:
@@ -424,15 +424,15 @@ jobs:
           command: |
             $Env:Path += ";C:\Program Files\CMake\bin"
             cd gpt4all-backend
-            mkdir win-x64_msvc
-            cd win-x64_msvc
+            mkdir runtimes/win-x64_msvc
+            cd runtimes/win-x64_msvc
             cmake -G "Visual Studio 17 2022" -A X64 ..
             cmake --build . --parallel --config Release
             cp bin/Release/*.dll .
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
-            - win-x64_msvc/*.dll
+            - runtimes/win-x64_msvc/*.dll
 
   build-bindings-backend-debug:
     docker:
@@ -444,7 +444,7 @@ jobs:
       - run:
           name: TEST - list libraries
           command: |
-            ls -R /tmp/workspace
+            ls -R /tmp/workspace/runtimes
 
   build-csharp-linux:
     docker:
@@ -454,24 +454,14 @@ jobs:
       - restore_cache:
           keys:
             - gpt4all-csharp-nuget-packages-nix
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
-          name: Install dependencies
+          name: "Prepare Native Libs"
           command: |
-            apt-get update
-            apt-get install -y cmake build-essential
-      - run:
-          name: Build C library
-          command: |
-            git submodule init
-            git submodule update --recursive
             cd gpt4all-bindings/csharp
-            BASE_DIR="runtimes/linux-x64"  
-            NATIVE_DIR="$BASE_DIR/native"
-            BUILD_DIR="$BASE_DIR/build"
-            mkdir -p "$NATIVE_DIR" "$BUILD_DIR"
-            cmake -S ../../gpt4all-backend -B "$BUILD_DIR"
-            cmake --build "$BUILD_DIR" -j --config Release
-            cp "$BUILD_DIR"/*.so "$NATIVE_DIR"
+            mkdir -p runtimes/linux-x64/native
+            cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
       - run:
           name: "Install project dependencies"
           command: |
