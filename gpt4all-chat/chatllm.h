@@ -116,16 +116,16 @@ public Q_SLOTS:
     void handleThreadStarted();
 
 Q_SIGNALS:
-    void isModelLoadedChanged();
+    void isModelLoadedChanged(bool);
     void modelLoadingError(const QString &error);
-    void responseChanged();
+    void responseChanged(const QString &response);
     void promptProcessing();
     void responseStopped();
     void modelNameChanged();
     void recalcChanged();
     void sendStartup();
     void sendModelLoaded();
-    void generatedNameChanged();
+    void generatedNameChanged(const QString &name);
     void stateChanged();
     void threadStarted();
     void shouldBeLoadedChanged();
@@ -144,22 +144,16 @@ protected:
     void restoreState();
 
 protected:
-    // The following are all accessed by multiple threads and are thus guarded with thread protection
-    // mechanisms
     LLModel::PromptContext m_ctx;
     quint32 m_promptTokens;
     quint32 m_promptResponseTokens;
 
 private:
-    // The following are all accessed by multiple threads and are thus guarded with thread protection
-    // mechanisms
     std::string m_response;
     std::string m_nameResponse;
     LLModelInfo m_modelInfo;
     LLModelType m_modelType;
     QString m_modelName;
-
-    // The following are only accessed by this thread
     QString m_defaultModel;
     TokenTimer *m_timer;
     QByteArray m_state;
