@@ -31,7 +31,7 @@
     "filename": "nous-hermes-13b.ggmlv3.q4_0.bin",
     "filesize": "8136777088",
     "requires": "2.4.7",
-    "description": "LLaMa 13B finetuned on over 300,000 curated and uncensored instructions instructions.<br>- Cannot be used commercially.<br>- Best finetuned LLaMA model.<br>- This model was fine-tuned by Nous Research, with Teknium and Karan4D leading the fine tuning process and dataset curation, Redmond AI sponsoring the compute, and several other contributors. The result is an enhanced Llama 13b model that rivals GPT-3.5-turbo in performance across a variety of tasks. This model stands out for its long responses, low hallucination rate, and absence of OpenAI censorship mechanisms.",
+    "description": "LLaMa 13B finetuned on over 300,000 curated and uncensored instructions.<br>- Cannot be used commercially.<br>- Best finetuned LLaMA model.<br>- This model was fine-tuned by Nous Research, with Teknium and Karan4D leading the fine tuning process and dataset curation, Redmond AI sponsoring the compute, and several other contributors. The result is an enhanced Llama 13b model that rivals GPT-3.5-turbo in performance across a variety of tasks. This model stands out for its long responses, low hallucination rate, and absence of OpenAI censorship mechanisms.",
     "url": "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML/resolve/main/nous-hermes-13b.ggmlv3.q4_0.bin"
   },
   {
@@ -44,7 +44,7 @@
     "md5sum": "95999b7b0699e2070af63bf5d34101a8",
     "filename": "ggml-vicuna-13b-1.1-q4_2.bin",
     "filesize": "8136770688",
-    "description": "LLaMA 13B and trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego.<br>- Cannot be used commercially."
+    "description": "LLaMA 13B trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego.<br>- Cannot be used commercially."
   },
   {
     "md5sum": "99e6d129745a3f1fb1121abed747b05a",
@@ -91,7 +91,7 @@
     "filename": "ggml-replit-code-v1-3b.bin",
     "filesize": "5202046853",
     "requires": "2.4.7",
-    "description": "Replit 3B code model trained on subset of the Stack. Licensed for commercial use.",
+    "description": "Replit 3B code model trained on subset of the Stack.<br>- Licensed for commercial use.",
     "url": "https://huggingface.co/nomic-ai/ggml-replit-code-v1-3b/resolve/main/ggml-replit-code-v1-3b.bin"
   }
 ]
