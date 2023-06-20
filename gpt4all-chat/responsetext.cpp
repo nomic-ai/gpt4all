@@ -352,7 +352,7 @@ QString ResponseText::getLinkAtPosition(int position) const
 bool ResponseText::tryCopyAtPosition(int position) const
 {
     for (const auto &copy : m_copies) {
-        if (position >= copy.startPos && position < copy.endPos) {
+        if (position >= copy.startPos && position <= copy.endPos) {
             QClipboard *clipboard = QGuiApplication::clipboard();
             clipboard->setText(copy.text);
             return true;
