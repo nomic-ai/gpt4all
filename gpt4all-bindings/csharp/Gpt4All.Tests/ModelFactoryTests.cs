@@ -31,9 +31,4 @@ public class ModelFactoryTests
     {
         using var model = _modelFactory.LoadModel(Constants.MPT_MODEL_PATH);
     }
-
-    [Fact]
-    public void DummyTest()
-    {
-    }
 }

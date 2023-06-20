@@ -1,7 +1,10 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Gpt4All.Bindings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+
+[assembly: InternalsVisibleTo("Gpt4All.Tests")]
 
 namespace Gpt4All;
 
