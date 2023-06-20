@@ -125,13 +125,12 @@ Q_SIGNALS:
     void defaultModelChanged(const QString &defaultModel);
 
 private Q_SLOTS:
-    void handleResponseChanged();
-    void handleModelLoadedChanged();
+    void handleResponseChanged(const QString &response);
+    void handleModelLoadedChanged(bool);
     void promptProcessing();
     void responseStopped();
-    void generatedNameChanged();
+    void generatedNameChanged(const QString &name);
     void handleRecalculating();
-    void handleModelNameChanged();
     void handleModelLoadingError(const QString &error);
     void handleTokenSpeedChanged(const QString &tokenSpeed);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
@@ -141,10 +140,12 @@ private Q_SLOTS:
 private:
     QString m_id;
     QString m_name;
+    QString m_generatedName;
     QString m_userName;
-    QString m_savedModelName;
+    QString m_modelName;
     QString m_modelLoadingError;
     QString m_tokenSpeed;
+    QString m_response;
     QList<QString> m_collections;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
@@ -154,6 +155,7 @@ private:
     QList<ResultInfo> m_databaseResults;
     bool m_isServer;
     bool m_shouldDeleteLater;
+    bool m_isModelLoaded;
     QFileSystemWatcher *m_watcher;
 };
 

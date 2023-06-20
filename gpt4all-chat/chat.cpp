@@ -16,6 +16,7 @@ Chat::Chat(QObject *parent)
     , m_llmodel(new ChatLLM(this))
     , m_isServer(false)
     , m_shouldDeleteLater(false)
+    , m_isModelLoaded(false)
 {
     connectLLM();
 }
@@ -31,6 +32,7 @@ Chat::Chat(bool isServer, QObject *parent)
     , m_llmodel(new Server(this))
     , m_isServer(true)
     , m_shouldDeleteLater(false)
+    , m_isModelLoaded(false)
 {
     connectLLM();
 }
@@ -55,12 +57,10 @@ void Chat::connectLLM()
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Chat::handleModelListChanged);
 
     // Should be in different threads
-    connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::isModelLoadedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::handleModelLoadedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::modelNameChanged, this, &Chat::handleModelNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
@@ -73,11 +73,8 @@ void Chat::connectLLM()
     connect(this, &Chat::loadModelRequested, m_llmodel, &ChatLLM::loadModel, Qt::QueuedConnection);
     connect(this, &Chat::generateNameRequested, m_llmodel, &ChatLLM::generateName, Qt::QueuedConnection);
     connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::QueuedConnection);
-
-    // The following are blocking operations and will block the gui thread, therefore must be fast
-    // to respond to
-    connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::BlockingQueuedConnection);
-    connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::BlockingQueuedConnection);
+    connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::QueuedConnection);
+    connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
 
     emit defaultModelChanged(modelList().first());
 }
@@ -87,7 +84,7 @@ void Chat::reset()
     stopGenerating();
     // Erase our current on disk representation as we're completely resetting the chat along with id
     LLM::globalInstance()->chatListModel()->removeChatFile(this);
-    emit resetContextRequested(); // blocking queued connection
+    emit resetContextRequested();
     m_id = Network::globalInstance()->generateUniqueId();
     emit idChanged(m_id);
     // NOTE: We deliberately do no reset the name or creation date to indictate that this was originally
@@ -105,7 +102,7 @@ void Chat::reset()
 
 bool Chat::isModelLoaded() const
 {
-    return m_llmodel->isModelLoaded();
+    return m_isModelLoaded;
 }
 
 void Chat::resetResponseState()
@@ -154,7 +151,7 @@ void Chat::stopGenerating()
 
 QString Chat::response() const
 {
-    return m_llmodel->response();
+    return m_response;
 }
 
 QString Chat::responseState() const
@@ -170,22 +167,29 @@ QString Chat::responseState() const
     return QString();
 }
 
-void Chat::handleResponseChanged()
+void Chat::handleResponseChanged(const QString &response)
 {
     if (m_responseState != Chat::ResponseGeneration) {
         m_responseState = Chat::ResponseGeneration;
         emit responseStateChanged();
     }
 
+    m_response = response;
     const int index = m_chatModel->count() - 1;
-    m_chatModel->updateValue(index, response());
+    m_chatModel->updateValue(index, this->response());
     emit responseChanged();
 }
 
-void Chat::handleModelLoadedChanged()
+void Chat::handleModelLoadedChanged(bool loaded)
 {
     if (m_shouldDeleteLater)
         deleteLater();
+
+    if (loaded == m_isModelLoaded)
+        return;
+
+    m_isModelLoaded = loaded;
+    emit isModelLoadedChanged();
 }
 
 void Chat::promptProcessing()
@@ -241,7 +245,7 @@ void Chat::responseStopped()
     m_responseState = Chat::ResponseStopped;
     emit responseInProgressChanged();
     emit responseStateChanged();
-    if (m_llmodel->generatedName().isEmpty())
+    if (m_generatedName.isEmpty())
         emit generateNameRequested();
     if (chatModel()->count() < 3)
         Network::globalInstance()->sendChatStarted();
@@ -249,15 +253,18 @@ void Chat::responseStopped()
 
 QString Chat::modelName() const
 {
-    return m_llmodel->modelName();
+    return m_modelName;
 }
 
 void Chat::setModelName(const QString &modelName)
 {
-    // doesn't block but will unload old model and load new one which the gui can see through changes
-    // to the isModelLoaded property
+    if (m_modelName == modelName)
+        return;
+
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();
+    m_modelName = modelName;
+    emit modelNameChanged();
     emit modelNameChangeRequested(modelName);
 }
 
@@ -267,7 +274,7 @@ void Chat::newPromptResponsePair(const QString &prompt)
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
     m_chatModel->appendPrompt(tr("Prompt: "), prompt);
     m_chatModel->appendResponse(tr("Response: "), prompt);
-    emit resetResponseRequested(); // blocking queued connection
+    emit resetResponseRequested();
 }
 
 void Chat::serverNewPromptResponsePair(const QString &prompt)
@@ -320,11 +327,11 @@ void Chat::reloadModel()
     m_llmodel->setShouldBeLoaded(true);
 }
 
-void Chat::generatedNameChanged()
+void Chat::generatedNameChanged(const QString &name)
 {
     // Only use the first three words maximum and remove newlines and extra spaces
-    QString gen = m_llmodel->generatedName().simplified();
-    QStringList words = gen.split(' ', Qt::SkipEmptyParts);
+    m_generatedName = name.simplified();
+    QStringList words = m_generatedName.split(' ', Qt::SkipEmptyParts);
     int wordCount = qMin(3, words.size());
     m_name = words.mid(0, wordCount).join(' ');
     emit nameChanged();
@@ -334,12 +341,6 @@ void Chat::handleRecalculating()
 {
     Network::globalInstance()->sendRecalculatingContext(m_chatModel->count());
     emit recalcChanged();
-}
-
-void Chat::handleModelNameChanged()
-{
-    m_savedModelName = modelName();
-    emit modelNameChanged();
 }
 
 void Chat::handleModelLoadingError(const QString &error)
@@ -366,7 +367,7 @@ bool Chat::serialize(QDataStream &stream, int version) const
     stream << m_id;
     stream << m_name;
     stream << m_userName;
-    stream << m_savedModelName;
+    stream << m_modelName;
     if (version > 2)
         stream << m_collections;
     if (!m_llmodel->serialize(stream, version))
@@ -384,16 +385,17 @@ bool Chat::deserialize(QDataStream &stream, int version)
     stream >> m_name;
     stream >> m_userName;
     emit nameChanged();
-    stream >> m_savedModelName;
+    stream >> m_modelName;
+    emit modelNameChanged();
     // Prior to version 2 gptj models had a bug that fixed the kv_cache to F32 instead of F16 so
     // unfortunately, we cannot deserialize these
-    if (version < 2 && m_savedModelName.contains("gpt4all-j"))
+    if (version < 2 && m_modelName.contains("gpt4all-j"))
         return false;
     if (version > 2) {
         stream >> m_collections;
         emit collectionListChanged(m_collections);
     }
-    m_llmodel->setModelName(m_savedModelName);
+    m_llmodel->setModelName(m_modelName);
     if (!m_llmodel->deserialize(stream, version))
         return false;
     if (!m_chatModel->deserialize(stream, version))

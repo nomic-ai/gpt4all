@@ -11,7 +11,6 @@
 #include <QProcess>
 #include <QResource>
 #include <QSettings>
-#include <fstream>
 
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
@@ -154,7 +153,7 @@ bool ChatLLM::loadModel(const QString &modelName)
     // to provide an overview of what we're doing here.
 
     // We're already loaded with this model
-    if (isModelLoaded() && m_modelName == modelName)
+    if (isModelLoaded() && this->modelName() == modelName)
         return true;
 
     bool isChatGPT = modelName.startsWith("chatgpt-");
@@ -170,7 +169,7 @@ bool ChatLLM::loadModel(const QString &modelName)
 #endif
         delete m_modelInfo.model;
         m_modelInfo.model = nullptr;
-        emit isModelLoadedChanged();
+        emit isModelLoadedChanged(false);
     } else if (!m_isServer) {
         // This is a blocking call that tries to retrieve the model we need from the model store.
         // If it succeeds, then we just have to restore state. If the store has never had a model
@@ -188,7 +187,7 @@ bool ChatLLM::loadModel(const QString &modelName)
 #endif
             LLModelStore::globalInstance()->releaseModel(m_modelInfo);
             m_modelInfo = LLModelInfo();
-            emit isModelLoadedChanged();
+            emit isModelLoadedChanged(false);
             return false;
         }
 
@@ -198,7 +197,7 @@ bool ChatLLM::loadModel(const QString &modelName)
             qDebug() << "store had our model" << m_llmThread.objectName() << m_modelInfo.model;
 #endif
             restoreState();
-            emit isModelLoadedChanged();
+            emit isModelLoadedChanged(true);
             return true;
         } else {
             // Release the memory since we have to switch to a different model.
@@ -273,7 +272,7 @@ bool ChatLLM::loadModel(const QString &modelName)
         qDebug() << "modelLoadedChanged" << m_llmThread.objectName();
         fflush(stdout);
 #endif
-        emit isModelLoadedChanged();
+        emit isModelLoadedChanged(isModelLoaded());
 
         static bool isFirstLoad = true;
         if (isFirstLoad) {
@@ -316,7 +315,7 @@ void ChatLLM::regenerateResponse()
     m_promptResponseTokens = 0;
     m_promptTokens = 0;
     m_response = std::string();
-    emit responseChanged();
+    emit responseChanged(QString::fromStdString(m_response));
 }
 
 void ChatLLM::resetResponse()
@@ -324,7 +323,7 @@ void ChatLLM::resetResponse()
     m_promptTokens = 0;
     m_promptResponseTokens = 0;
     m_response = std::string();
-    emit responseChanged();
+    emit responseChanged(QString::fromStdString(m_response));
 }
 
 void ChatLLM::resetContext()
@@ -397,7 +396,7 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
     // check for error
     if (token < 0) {
         m_response.append(response);
-        emit responseChanged();
+        emit responseChanged(QString::fromStdString(m_response));
         return false;
     }
 
@@ -407,7 +406,7 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
     m_timer->inc();
     Q_ASSERT(!response.empty());
     m_response.append(response);
-    emit responseChanged();
+    emit responseChanged(QString::fromStdString(m_response));
     return !m_stopGenerating;
 }
 
@@ -470,7 +469,7 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
     std::string trimmed = trim_whitespace(m_response);
     if (trimmed != m_response) {
         m_response = trimmed;
-        emit responseChanged();
+        emit responseChanged(QString::fromStdString(m_response));
     }
     emit responseStopped();
     return true;
@@ -510,7 +509,7 @@ void ChatLLM::unloadModel()
 #endif
     LLModelStore::globalInstance()->releaseModel(m_modelInfo);
     m_modelInfo = LLModelInfo();
-    emit isModelLoadedChanged();
+    emit isModelLoadedChanged(false);
 }
 
 void ChatLLM::reloadModel()
@@ -521,11 +520,11 @@ void ChatLLM::reloadModel()
 #if defined(DEBUG_MODEL_LOADING)
     qDebug() << "reloadModel" << m_llmThread.objectName() << m_modelInfo.model;
 #endif
-    if (m_modelName.isEmpty()) {
+    const QString m = modelName();
+    if (m.isEmpty())
         loadDefaultModel();
-    } else {
-        loadModel(m_modelName);
-    }
+    else
+        loadModel(m);
 }
 
 void ChatLLM::generateName()
@@ -554,7 +553,7 @@ void ChatLLM::generateName()
     std::string trimmed = trim_whitespace(m_nameResponse);
     if (trimmed != m_nameResponse) {
         m_nameResponse = trimmed;
-        emit generatedNameChanged();
+        emit generatedNameChanged(QString::fromStdString(m_nameResponse));
     }
 }
 
@@ -580,7 +579,7 @@ bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
     Q_UNUSED(token);
 
     m_nameResponse.append(response);
-    emit generatedNameChanged();
+    emit generatedNameChanged(QString::fromStdString(m_nameResponse));
     QString gen = QString::fromStdString(m_nameResponse).simplified();
     QStringList words = gen.split(' ', Qt::SkipEmptyParts);
     return words.size() <= 3;
