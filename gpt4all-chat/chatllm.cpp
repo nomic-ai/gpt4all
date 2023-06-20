@@ -18,20 +18,29 @@
 
 #define MPT_INTERNAL_STATE_VERSION 0
 #define GPTJ_INTERNAL_STATE_VERSION 0
+#define REPLIT_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
 
 static QString modelFilePath(const QString &modelName, bool isChatGPT)
 {
-    QString modelFilename = isChatGPT ? modelName + ".txt" : "/ggml-" + modelName + ".bin";
-    QString appPath = QCoreApplication::applicationDirPath() + modelFilename;
-    QFileInfo infoAppPath(appPath);
-    if (infoAppPath.exists())
-        return appPath;
+    QVector<QString> possibleFilePaths;
+    if (isChatGPT)
+        possibleFilePaths << "/" + modelName + ".txt";
+    else {
+        possibleFilePaths << "/ggml-" + modelName + ".bin";
+        possibleFilePaths << "/" + modelName + ".bin";
+    }
+    for (const QString &modelFilename : possibleFilePaths) {
+        QString appPath = QCoreApplication::applicationDirPath() + modelFilename;
+        QFileInfo infoAppPath(appPath);
+        if (infoAppPath.exists())
+            return appPath;
 
-    QString downloadPath = Download::globalInstance()->downloadLocalModelsPath() + modelFilename;
-    QFileInfo infoLocalPath(downloadPath);
-    if (infoLocalPath.exists())
-        return downloadPath;
+        QString downloadPath = Download::globalInstance()->downloadLocalModelsPath() + modelFilename;
+        QFileInfo infoLocalPath(downloadPath);
+        if (infoLocalPath.exists())
+            return downloadPath;
+    }
     return QString();
 }
 
@@ -82,9 +91,11 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     : QObject{nullptr}
     , m_promptResponseTokens(0)
     , m_promptTokens(0)
-    , m_responseLogits(0)
     , m_isRecalc(false)
+    , m_shouldBeLoaded(true)
+    , m_stopGenerating(false)
     , m_chat(parent)
+    , m_timer(nullptr)
     , m_isServer(isServer)
     , m_isChatGPT(false)
 {
@@ -94,7 +105,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
         Qt::QueuedConnection); // explicitly queued
     connect(m_chat, &Chat::idChanged, this, &ChatLLM::handleChatIdChanged);
-    connect(&m_llmThread, &QThread::started, this, &ChatLLM::threadStarted);
+    connect(&m_llmThread, &QThread::started, this, &ChatLLM::handleThreadStarted);
 
     // The following are blocking operations and will block the llm thread
     connect(this, &ChatLLM::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
@@ -115,6 +126,13 @@ ChatLLM::~ChatLLM()
         delete m_modelInfo.model;
         m_modelInfo.model = nullptr;
     }
+}
+
+void ChatLLM::handleThreadStarted()
+{
+    m_timer = new TokenTimer(this);
+    connect(m_timer, &TokenTimer::report, this, &ChatLLM::reportSpeed);
+    emit threadStarted();
 }
 
 bool ChatLLM::loadDefaultModel()
@@ -226,6 +244,7 @@ bool ChatLLM::loadModel(const QString &modelName)
                 case 'L': m_modelType = LLModelType::LLAMA_; break;
                 case 'G': m_modelType = LLModelType::GPTJ_; break;
                 case 'M': m_modelType = LLModelType::MPT_; break;
+                case 'R': m_modelType = LLModelType::REPLIT_; break;
                 default: delete std::exchange(m_modelInfo.model, nullptr);
                 }
             } else {
@@ -260,7 +279,9 @@ bool ChatLLM::loadModel(const QString &modelName)
 
     if (m_modelInfo.model) {
         QString basename = fileInfo.completeBaseName();
-        setModelName(m_isChatGPT ? basename : basename.remove(0, 5)); // remove the ggml- prefix
+        if (basename.startsWith("ggml-")) // remove the ggml- prefix
+            basename.remove(0, 5);
+        setModelName(basename);
     }
 
     return m_modelInfo.model;
@@ -280,12 +301,9 @@ void ChatLLM::regenerateResponse()
     else
         m_ctx.n_past -= m_promptResponseTokens;
     m_ctx.n_past = std::max(0, m_ctx.n_past);
-    // FIXME: This does not seem to be needed in my testing and llama models don't to it. Remove?
-    m_ctx.logits.erase(m_ctx.logits.end() -= m_responseLogits, m_ctx.logits.end());
     m_ctx.tokens.erase(m_ctx.tokens.end() -= m_promptResponseTokens, m_ctx.tokens.end());
     m_promptResponseTokens = 0;
     m_promptTokens = 0;
-    m_responseLogits = 0;
     m_response = std::string();
     emit responseChanged();
 }
@@ -294,7 +312,6 @@ void ChatLLM::resetResponse()
 {
     m_promptTokens = 0;
     m_promptResponseTokens = 0;
-    m_responseLogits = 0;
     m_response = std::string();
     emit responseChanged();
 }
@@ -348,13 +365,14 @@ void ChatLLM::modelNameChangeRequested(const QString &modelName)
 
 bool ChatLLM::handlePrompt(int32_t token)
 {
-    // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
+    // m_promptResponseTokens is related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
 #if defined(DEBUG)
     qDebug() << "prompt process" << m_chat->id() << token;
 #endif
     ++m_promptTokens;
     ++m_promptResponseTokens;
+    m_timer->inc();
     return !m_stopGenerating;
 }
 
@@ -372,9 +390,10 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
         return false;
     }
 
-    // m_promptResponseTokens and m_responseLogits are related to last prompt/response not
+    // m_promptResponseTokens is related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
     ++m_promptResponseTokens;
+    m_timer->inc();
     Q_ASSERT(!response.empty());
     m_response.append(response);
     emit responseChanged();
@@ -396,15 +415,16 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     if (!isModelLoaded())
         return false;
 
-    m_databaseResults.clear();
+    QList<ResultInfo> databaseResults;
     const int retrievalSize = LocalDocs::globalInstance()->retrievalSize();
-    emit requestRetrieveFromDB(m_chat->collectionList(), prompt, retrievalSize, &m_databaseResults); // blocks
+    emit requestRetrieveFromDB(m_chat->collectionList(), prompt, retrievalSize, &databaseResults); // blocks
+    emit databaseResultsChanged(databaseResults);
 
     // Augment the prompt template with the results if any
     QList<QString> augmentedTemplate;
-    if (!m_databaseResults.isEmpty())
+    if (!databaseResults.isEmpty())
         augmentedTemplate.append("### Context:");
-    for (const ResultInfo &info : m_databaseResults)
+    for (const ResultInfo &info : databaseResults)
         augmentedTemplate.append(info.text);
     augmentedTemplate.append(prompt_template);
 
@@ -429,12 +449,13 @@ bool ChatLLM::prompt(const QString &prompt, const QString &prompt_template, int3
     printf("%s", qPrintable(instructPrompt));
     fflush(stdout);
 #endif
+    m_timer->start();
     m_modelInfo.model->prompt(instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
 #endif
-    m_responseLogits += m_ctx.logits.size() - logitsBefore;
+    m_timer->stop();
     std::string trimmed = trim_whitespace(m_response);
     if (trimmed != m_response) {
         m_response = trimmed;
@@ -561,6 +582,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
     if (version > 1) {
         stream << m_modelType;
         switch (m_modelType) {
+        case REPLIT_: stream << REPLIT_INTERNAL_STATE_VERSION; break;
         case MPT_: stream << MPT_INTERNAL_STATE_VERSION; break;
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
@@ -570,7 +592,10 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
     stream << response();
     stream << generatedName();
     stream << m_promptResponseTokens;
-    stream << m_responseLogits;
+    if (version <= 3) {
+        int responseLogits;
+        stream << responseLogits;
+    }
     stream << m_ctx.n_past;
     stream << quint64(m_ctx.logits.size());
     stream.writeRawData(reinterpret_cast<const char*>(m_ctx.logits.data()), m_ctx.logits.size() * sizeof(float));
@@ -599,7 +624,10 @@ bool ChatLLM::deserialize(QDataStream &stream, int version)
     stream >> nameResponse;
     m_nameResponse = nameResponse.toStdString();
     stream >> m_promptResponseTokens;
-    stream >> m_responseLogits;
+    if (version <= 3) {
+        int responseLogits;
+        stream >> responseLogits;
+    }
     stream >> m_ctx.n_past;
     quint64 logitsSize;
     stream >> logitsSize;
@@ -614,7 +642,6 @@ bool ChatLLM::deserialize(QDataStream &stream, int version)
         stream >> compressed;
         m_state = qUncompress(compressed);
     } else {
-
         stream >> m_state;
     }
 #if defined(DEBUG)

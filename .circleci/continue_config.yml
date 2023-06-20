@@ -1,0 +1,368 @@
+version: 2.1
+orbs:
+  win: circleci/windows@5.0
+  python: circleci/python@1.2
+
+parameters:
+  run-default-workflow:
+    type: boolean
+    default: false
+  run-python-workflow:
+    type: boolean
+    default: false
+  run-chat-workflow:
+    type: boolean
+    default: false
+
+jobs:
+  default-job:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - run: echo "CircleCI pipeline triggered"
+
+  build-gpt4all-chat-linux:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - restore_cache:  # this is the new step to restore cache
+          keys:
+            - linux-qt-cache
+      - run: 
+          name: Setup Linux and Dependencies
+          command: |
+            sudo apt install -y libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxext6 libxfixes3 libxi6 libxrender1 libxcb1 libxcb-cursor0 libxcb-glx0 libxcb-keysyms1 libxcb-image0 libxcb-shm0 libxcb-icccm4 libxcb-sync1 libxcb-xfixes0 libxcb-shape0 libxcb-randr0 libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 bison build-essential flex gperf python3 gcc g++ libgl1-mesa-dev
+      - run:
+          name: Installing Qt
+          command: |
+            if [ ! -d ~/Qt ]; then
+              wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
+              chmod +x qt-unified-linux-x64-4.6.0-online.run
+              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.46 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            fi
+      - save_cache:  # this is the new step to save cache
+          key: linux-qt-cache
+          paths:
+            - ~/Qt
+      - run:
+          name: Build
+          command: |
+            export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
+            mkdir build
+            cd build
+            ~/Qt/Tools/CMake/bin/cmake -DCMAKE_BUILD_TYPE=Release -S ../gpt4all-chat -B .
+            ~/Qt/Tools/CMake/bin/cmake --build . --target all
+
+  build-gpt4all-chat-windows:
+    machine:
+      image: 'windows-server-2019-vs2019:2022.08.1'
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - restore_cache:  # this is the new step to restore cache
+          keys:
+            - windows-qt-cache
+      - run:
+          name: Installing Qt
+          command: |
+            if (-not (Test-Path C:\Qt)) {
+              Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
+              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.46 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            }
+      - save_cache:  # this is the new step to save cache
+          key: windows-qt-cache
+          paths:
+            - C:\Qt
+      - run:
+          name: Build
+          command: |
+            $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\x64"
+            $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
+            $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64"
+            $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\ucrt\x64"
+            $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x64"
+            $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64"
+            $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\lib\x64"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\ucrt"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\um"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\shared"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\winrt"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\cppwinrt"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\VS\include"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\include"
+            mkdir build
+            cd build
+            & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
+              "-DCMAKE_GENERATOR:STRING=Ninja" `
+              "-DCMAKE_BUILD_TYPE=Release" `
+              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
+              "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
+              "-S ..\gpt4all-chat" `
+              "-B ."
+            & "C:\Qt\Tools\Ninja\ninja.exe"
+
+  build-gpt4all-chat-macos:
+    macos:
+      xcode: 14.0.0
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - restore_cache:  # this is the new step to restore cache
+          keys:
+            - macos-qt-cache_v2
+      - run:
+          name: Installing Qt
+          command: |
+            if [ ! -d ~/Qt ]; then
+              curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
+              hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
+              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.46 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
+            fi
+      - save_cache:  # this is the new step to save cache
+          key: macos-qt-cache_v2
+          paths:
+            - ~/Qt
+      - run:
+          name: Build
+          command: |
+            mkdir build
+            cd build
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
+              -DCMAKE_GENERATOR:STRING=Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
+              -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
+              -S ../gpt4all-chat \
+              -B .
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target all
+
+  build-py-docs:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get -y install python3 python3-pip
+            sudo pip3 install awscli --upgrade
+            sudo pip3 install mkdocs mkdocs-material mkautodoc 'mkdocstrings[python]'
+      - run:
+          name: Make Documentation
+          command: |
+            cd gpt4all-bindings/python/
+            mkdocs build
+      - run:
+          name: Deploy Documentation
+          command: |
+            cd gpt4all-bindings/python/
+            aws s3 cp ./site s3://docs.gpt4all.io/ --recursive | cat
+      - run:
+          name: Invalidate docs.gpt4all.io cloudfront
+          command: aws cloudfront create-invalidation --distribution-id E1STQOW63QL2OH --paths "/*"
+
+  build-py-linux:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y cmake build-essential
+            pip install setuptools wheel cmake
+      - run:
+          name: Build C library
+          command: |
+            git submodule init
+            git submodule update
+            cd gpt4all-backend
+            mkdir build
+            cd build
+            cmake ..
+            cmake --build . --parallel
+      - run:
+          name: Build wheel
+          command: |
+            cd gpt4all-bindings/python/
+            python setup.py bdist_wheel --plat-name=manylinux1_x86_64
+      - persist_to_workspace:
+          root: gpt4all-bindings/python/dist
+          paths:
+            - "*.whl"
+
+  build-py-macos:
+    macos:
+      xcode: "14.2.0"
+    resource_class: macos.m1.large.gen1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            brew install cmake
+            pip install setuptools wheel cmake
+      - run:
+          name: Build C library
+          command: |
+            git submodule init
+            git submodule update
+            cd gpt4all-backend
+            mkdir build
+            cd build
+            cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake --build . --parallel
+      - run:
+          name: Build wheel
+          command: |
+            cd gpt4all-bindings/python
+            python setup.py bdist_wheel --plat-name=macosx_10_9_universal2
+      - persist_to_workspace:
+          root: gpt4all-bindings/python/dist
+          paths:
+            - "*.whl"
+
+  build-py-windows:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - run:
+          name: Install MinGW64
+          command: choco install -y mingw --force --no-progress
+      - run:
+          name: Add MinGW64 to PATH
+          command: $env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+      - run:
+          name: Install dependencies
+          command: choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      - run:
+          name: Install Python dependencies
+          command: pip install setuptools wheel cmake
+      - run:
+          name: Build C library
+          command: |
+            git submodule init
+            git submodule update
+            cd gpt4all-backend
+            mkdir build
+            cd build
+            cmake -G "MinGW Makefiles" .. 
+            cmake --build . --parallel
+      - run:
+          name: Build wheel
+          # TODO: As part of this task, we need to move mingw64 binaries into package.
+          # This is terrible and needs a more robust solution eventually.
+          command: |
+            cd gpt4all-bindings/python
+            cd gpt4all
+            mkdir llmodel_DO_NOT_MODIFY
+            mkdir llmodel_DO_NOT_MODIFY/build/
+            cp 'C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll' 'llmodel_DO_NOT_MODIFY/build/'
+            cd ..
+            python setup.py bdist_wheel --plat-name=win_amd64
+      - persist_to_workspace:
+          root: gpt4all-bindings/python/dist
+          paths:
+            - "*.whl"
+
+  store-and-upload-wheels:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - setup_remote_docker
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y cmake build-essential
+            pip install setuptools wheel twine
+      - run:
+          name: Upload Python package
+          command: |
+            twine upload /tmp/workspace/*.whl --username __token__ --password $PYPI_CRED
+      - store_artifacts:
+          path: /tmp/workspace
+
+workflows:
+  version: 2
+  default:
+    when: << pipeline.parameters.run-default-workflow >>
+    jobs:
+      - default-job
+  build-and-test-gpt4all-chat:
+    when: << pipeline.parameters.run-chat-workflow >>
+    jobs:
+      - hold:
+          type: approval
+      - build-gpt4all-chat-linux:
+          requires:
+            - hold
+      - build-gpt4all-chat-windows:
+          requires:
+            - hold
+      - build-gpt4all-chat-macos:
+          requires:
+            - hold
+  deploy-docs:
+    when: << pipeline.parameters.run-python-workflow >>
+    jobs:
+      - build-py-docs:
+          filters:
+            branches:
+              only:
+                - main
+  build-py-deploy:
+    when: << pipeline.parameters.run-python-workflow >>
+    jobs:
+      - pypi-hold:
+          type: approval
+      - hold:
+          type: approval
+      - build-py-linux:
+          filters:
+            branches:
+              only:
+      - build-py-macos:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      - build-py-windows:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      - store-and-upload-wheels:
+          filters:
+            branches:
+              only:
+          requires:
+            - pypi-hold
+            - build-py-windows
+            - build-py-linux
+            - build-py-macos

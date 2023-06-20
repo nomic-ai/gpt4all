@@ -6,7 +6,7 @@
 #include <QDataStream>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
-#define CHAT_FORMAT_VERSION 3
+#define CHAT_FORMAT_VERSION 4
 
 ChatListModel::ChatListModel(QObject *parent)
     : QAbstractListModel(parent)

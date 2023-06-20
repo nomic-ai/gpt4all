@@ -1,68 +1,95 @@
-#include <napi.h>
-#include <iostream>
-#include "llmodel_c.h" 
-#include "llmodel.h"
-#include "gptj.h"
-#include "llamamodel.h"
-#include "mpt.h"
-#include "stdcapture.h"
+#include "index.h"
 
-class NodeModelWrapper : public Napi::ObjectWrap<NodeModelWrapper> {
-public:
-  static Napi::Object Init(Napi::Env env, Napi::Object exports) {
-    Napi::Function func = DefineClass(env, "LLModel", {
-      InstanceMethod("type",  &NodeModelWrapper::getType),
-      InstanceMethod("name", &NodeModelWrapper::getName),
-      InstanceMethod("stateSize", &NodeModelWrapper::StateSize),
-      InstanceMethod("raw_prompt", &NodeModelWrapper::Prompt),
-      InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
-      InstanceMethod("threadCount", &NodeModelWrapper::ThreadCount),
+Napi::FunctionReference NodeModelWrapper::constructor;
+
+Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
+    Napi::Function self = DefineClass(env, "LLModel", {
+       InstanceMethod("type",  &NodeModelWrapper::getType),
+       InstanceMethod("isModelLoaded", &NodeModelWrapper::IsModelLoaded),
+       InstanceMethod("name", &NodeModelWrapper::getName),
+       InstanceMethod("stateSize", &NodeModelWrapper::StateSize),
+       InstanceMethod("raw_prompt", &NodeModelWrapper::Prompt),
+       InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
+       InstanceMethod("threadCount", &NodeModelWrapper::ThreadCount),
+       InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
     });
-
-    Napi::FunctionReference* constructor = new Napi::FunctionReference();
-    *constructor = Napi::Persistent(func);
-    env.SetInstanceData(constructor);
-
-    exports.Set("LLModel", func);
-    return exports;
+    // Keep a static reference to the constructor
+    //
+    constructor = Napi::Persistent(self);
+    constructor.SuppressDestruct();
+    return self;
   }
-
-  Napi::Value getType(const Napi::CallbackInfo& info) 
+ 
+  Napi::Value NodeModelWrapper::getType(const Napi::CallbackInfo& info) 
   {
+    if(type.empty()) {
+        return info.Env().Undefined();
+    } 
     return Napi::String::New(info.Env(), type);
   }
 
-  NodeModelWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<NodeModelWrapper>(info) 
+  NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<NodeModelWrapper>(info) 
   {
     auto env = info.Env();
-    std::string weights_path = info[0].As<Napi::String>().Utf8Value();
+    fs::path model_path;
 
-    const char *c_weights_path = weights_path.c_str();
-    
-    inference_ = create_model_set_type(c_weights_path);
+    std::string full_weight_path;
+    //todo
+    std::string library_path = ".";
+    std::string model_name;
+    if(info[0].IsString()) {
+        model_path = info[0].As<Napi::String>().Utf8Value();
+        full_weight_path = model_path.string();
+        std::cout << "DEPRECATION: constructor accepts object now. Check docs for more.\n";
+    } else {
+        auto config_object = info[0].As<Napi::Object>();
+        model_name = config_object.Get("model_name").As<Napi::String>();
+        model_path = config_object.Get("model_path").As<Napi::String>().Utf8Value(); 
+        if(config_object.Has("model_type")) {
+            type = config_object.Get("model_type").As<Napi::String>(); 
+        }
+        full_weight_path = (model_path / fs::path(model_name)).string();
+        
+        if(config_object.Has("library_path")) {
+            library_path = config_object.Get("library_path").As<Napi::String>(); 
+        } else {
+            library_path = ".";
+        }
+    }
+    llmodel_set_implementation_search_path(library_path.c_str());
+    llmodel_error* e = nullptr;
+    inference_ = std::make_shared<llmodel_model>(llmodel_model_create2(full_weight_path.c_str(), "auto", e));
+    if(e != nullptr) {
+       Napi::Error::New(env, e->message).ThrowAsJavaScriptException(); 
+       return;
+    }
+    if(GetInference() == nullptr) {
+       std::cerr << "Tried searching libraries in \"" << library_path << "\"" <<  std::endl;
+       std::cerr << "Tried searching for model weight in \"" << full_weight_path << "\"" << std::endl;
+       Napi::Error::New(env, "Had an issue creating llmodel object, inference is null").ThrowAsJavaScriptException(); 
+       return;
+    }
 
-    auto success = llmodel_loadModel(inference_, c_weights_path);
+    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str());
     if(!success) {
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
         return;
     }
-    name = weights_path.substr(weights_path.find_last_of("/\\") + 1);
-    
+    name = model_name.empty() ? model_path.filename().string() : model_name;
   };
-  ~NodeModelWrapper() {
-    // destroying the model manually causes exit code 3221226505, why?
-    // However, bindings seem to operate fine without destructing pointer
-    //llmodel_model_destroy(inference_);
+  //NodeModelWrapper::~NodeModelWrapper() {
+    //GetInference().reset();
+  //}
+
+  Napi::Value NodeModelWrapper::IsModelLoaded(const Napi::CallbackInfo& info) {
+    return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(GetInference()));
   }
 
-  Napi::Value IsModelLoaded(const Napi::CallbackInfo& info) {
-    return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(inference_));
-  }
-
-  Napi::Value StateSize(const Napi::CallbackInfo& info) {
+  Napi::Value NodeModelWrapper::StateSize(const Napi::CallbackInfo& info) {
     // Implement the binding for the stateSize method
-    return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(inference_)));
+    return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(GetInference())));
   }
+  
 
 /**
  * Generate a response using the model.
@@ -73,16 +100,14 @@ public:
  * @param recalculate_callback A callback function for handling recalculation requests.
  * @param ctx A pointer to the llmodel_prompt_context structure.
  */
-  Napi::Value Prompt(const Napi::CallbackInfo& info) {
-
+  Napi::Value NodeModelWrapper::Prompt(const Napi::CallbackInfo& info) {
     auto env = info.Env();
-
     std::string question;
     if(info[0].IsString()) {
         question = info[0].As<Napi::String>().Utf8Value();
     } else {
-        Napi::Error::New(env, "invalid string argument").ThrowAsJavaScriptException();
-        return env.Undefined();
+        Napi::Error::New(info.Env(), "invalid string argument").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
     }
     //defaults copied from python bindings
     llmodel_prompt_context promptContext = {
@@ -101,127 +126,90 @@ public:
          };
     if(info[1].IsObject())
     {
-        auto inputObject = info[1].As<Napi::Object>();
+       auto inputObject = info[1].As<Napi::Object>();
              
         // Extract and assign the properties
-        if (inputObject.Has("logits") || inputObject.Has("tokens")) {
-            Napi::Error::New(env, "Invalid input: 'logits' or 'tokens' properties are not allowed").ThrowAsJavaScriptException();
-            return env.Undefined();
-        }
+       if (inputObject.Has("logits") || inputObject.Has("tokens")) {
+           Napi::Error::New(info.Env(), "Invalid input: 'logits' or 'tokens' properties are not allowed").ThrowAsJavaScriptException();
+           return info.Env().Undefined();
+       }
              // Assign the remaining properties
-             if(inputObject.Has("n_past")) {
-                 promptContext.n_past = inputObject.Get("n_past").As<Napi::Number>().Int32Value();
-             }
-             if(inputObject.Has("n_ctx")) {
-                 promptContext.n_ctx = inputObject.Get("n_ctx").As<Napi::Number>().Int32Value();
-             }
-             if(inputObject.Has("n_predict")) {
-                 promptContext.n_predict = inputObject.Get("n_predict").As<Napi::Number>().Int32Value();
-             }
-             if(inputObject.Has("top_k")) {
-                 promptContext.top_k = inputObject.Get("top_k").As<Napi::Number>().Int32Value();
-             }
-             if(inputObject.Has("top_p")) {
-                 promptContext.top_p = inputObject.Get("top_p").As<Napi::Number>().FloatValue();
-             }
-             if(inputObject.Has("temp")) {
-                 promptContext.temp = inputObject.Get("temp").As<Napi::Number>().FloatValue();
-             }
-             if(inputObject.Has("n_batch")) {
-                 promptContext.n_batch = inputObject.Get("n_batch").As<Napi::Number>().Int32Value();
-             }
-             if(inputObject.Has("repeat_penalty")) {
-                 promptContext.repeat_penalty = inputObject.Get("repeat_penalty").As<Napi::Number>().FloatValue();
-             }
-             if(inputObject.Has("repeat_last_n")) {
-                 promptContext.repeat_last_n = inputObject.Get("repeat_last_n").As<Napi::Number>().Int32Value();
-             }
-             if(inputObject.Has("context_erase")) {
-                 promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
-             }
+       if(inputObject.Has("n_past")) 
+            promptContext.n_past = inputObject.Get("n_past").As<Napi::Number>().Int32Value();
+       if(inputObject.Has("n_ctx")) 
+            promptContext.n_ctx = inputObject.Get("n_ctx").As<Napi::Number>().Int32Value();
+       if(inputObject.Has("n_predict"))
+            promptContext.n_predict = inputObject.Get("n_predict").As<Napi::Number>().Int32Value();
+       if(inputObject.Has("top_k"))
+            promptContext.top_k = inputObject.Get("top_k").As<Napi::Number>().Int32Value();
+       if(inputObject.Has("top_p")) 
+            promptContext.top_p = inputObject.Get("top_p").As<Napi::Number>().FloatValue();
+       if(inputObject.Has("temp")) 
+            promptContext.temp = inputObject.Get("temp").As<Napi::Number>().FloatValue();
+       if(inputObject.Has("n_batch")) 
+            promptContext.n_batch = inputObject.Get("n_batch").As<Napi::Number>().Int32Value();
+       if(inputObject.Has("repeat_penalty")) 
+            promptContext.repeat_penalty = inputObject.Get("repeat_penalty").As<Napi::Number>().FloatValue();
+       if(inputObject.Has("repeat_last_n")) 
+            promptContext.repeat_last_n = inputObject.Get("repeat_last_n").As<Napi::Number>().Int32Value();
+       if(inputObject.Has("context_erase")) 
+            promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
     }
-    //    custom callbacks are weird with the gpt4all c bindings: I need to turn Napi::Functions into  raw c function pointers,
-    //    but it doesn't seem like its possible? (TODO, is it possible?)
+    //copy to protect llmodel resources when splitting to new thread
 
-    //    if(info[1].IsFunction()) {
-    //        Napi::Callback cb = *info[1].As<Napi::Function>();
-    //    }
-
-
-    // For now, simple capture of stdout
-    // possible TODO: put this on a libuv async thread. (AsyncWorker)
-    CoutRedirect cr;
-    llmodel_prompt(inference_, question.c_str(), &prompt_callback, &response_callback, &recalculate_callback,  &promptContext);
-    return Napi::String::New(env, cr.getString());
+    llmodel_prompt_context copiedPrompt = promptContext;
+    std::string copiedQuestion = question;
+    PromptWorkContext pc = {
+        copiedQuestion,
+        inference_.load(),
+        copiedPrompt,
+    };
+    auto threadSafeContext = new TsfnContext(env, pc);
+    threadSafeContext->tsfn = Napi::ThreadSafeFunction::New(
+        env,                                    // Environment
+        info[2].As<Napi::Function>(),           // JS function from caller
+        "PromptCallback",                       // Resource name
+        0,                                      // Max queue size (0 = unlimited).
+        1,                                      // Initial thread count
+        threadSafeContext,                      // Context,
+        FinalizerCallback,                      // Finalizer
+        (void*)nullptr                          // Finalizer data
+    );
+    threadSafeContext->nativeThread = std::thread(threadEntry, threadSafeContext);
+    return threadSafeContext->deferred_.Promise();
   }
 
-  void SetThreadCount(const Napi::CallbackInfo& info) {
+  void NodeModelWrapper::SetThreadCount(const Napi::CallbackInfo& info) {
     if(info[0].IsNumber()) {
-        llmodel_setThreadCount(inference_, info[0].As<Napi::Number>().Int64Value());
+        llmodel_setThreadCount(GetInference(), info[0].As<Napi::Number>().Int64Value());
     } else {
         Napi::Error::New(info.Env(), "Could not set thread count: argument 1 is NaN").ThrowAsJavaScriptException(); 
         return;
     }
   }
-  Napi::Value getName(const Napi::CallbackInfo& info) {
+
+  Napi::Value NodeModelWrapper::getName(const Napi::CallbackInfo& info) {
     return Napi::String::New(info.Env(), name);
   }
-  Napi::Value ThreadCount(const Napi::CallbackInfo& info) {
-    return Napi::Number::New(info.Env(), llmodel_threadCount(inference_));
+  Napi::Value NodeModelWrapper::ThreadCount(const Napi::CallbackInfo& info) {
+    return Napi::Number::New(info.Env(), llmodel_threadCount(GetInference()));
   }
 
-private:
-  llmodel_model inference_;
-  std::string type;
-  std::string name;
-
-
-  //wrapper cb to capture output into stdout.then, CoutRedirect captures this 
-  // and writes it to a file
-  static bool response_callback(int32_t tid, const char* resp) 
-  {
-    if(tid != -1) {
-        std::cout<<std::string(resp);
-        return true;
-    }
-    return false;
+  Napi::Value NodeModelWrapper::GetLibraryPath(const Napi::CallbackInfo& info) {
+      return Napi::String::New(info.Env(),
+        llmodel_get_implementation_search_path());
   }
 
-  static bool prompt_callback(int32_t tid) { return true; }
-  static bool recalculate_callback(bool isrecalculating) { return  isrecalculating; }
-  // Had to use this instead of the c library in order 
-  // set the type of the model loaded.
-  // causes side effect: type is mutated;
-  llmodel_model create_model_set_type(const char* c_weights_path) 
-  {
-
-    uint32_t magic;
-    llmodel_model model;
-    FILE *f = fopen(c_weights_path, "rb");
-    fread(&magic, sizeof(magic), 1, f);
-
-    if (magic == 0x67676d6c) {
-        model = llmodel_gptj_create();  
-        type = "gptj";
-    }
-    else if (magic == 0x67676a74) {
-        model = llmodel_llama_create(); 
-        type = "llama";
-    }
-    else if (magic == 0x67676d6d) {
-        model = llmodel_mpt_create();   
-        type = "mpt";
-    }
-    else  {fprintf(stderr, "Invalid model file\n");}
-    fclose(f);
-    
-    return model;
+  llmodel_model NodeModelWrapper::GetInference() {
+    return *inference_.load();
   }
-};
 
 //Exports Bindings
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
-  return NodeModelWrapper::Init(env, exports);
+  exports["LLModel"] = NodeModelWrapper::GetClass(env);
+  return exports;
 }
+
+
 
 NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init)

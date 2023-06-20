@@ -33,8 +33,6 @@
 
 namespace {
 const char *modelType_ = "MPT";
-
-static const size_t MB = 1024*1024;
 }
 
 // default hparams (MPT 7B)
@@ -134,7 +132,7 @@ static bool kv_cache_init(
     const int64_t n_mem      = (int64_t)n_layer*n_ctx;
     const int64_t n_elements = n_embd*n_mem;
 
-    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2u*MB);
+    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2_MiB);
 
     struct ggml_init_params params;
     params.mem_size   = cache.buf.size;
@@ -455,7 +453,7 @@ bool mpt_eval(
     const int n_head  = hparams.n_head;
     const int n_vocab = hparams.n_vocab;
 
-    const size_t init_buf_size = 1024u*MB;
+    const size_t init_buf_size = 1024_MiB;
     if (!model.buf.addr || model.buf.size < init_buf_size)
         model.buf.resize(init_buf_size);
 
@@ -770,7 +768,7 @@ bool MPT::loadModel(const std::string &modelPath) {
 
     // load the model
     if (!mpt_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab)) {
-        std::cerr << "GPT-J ERROR: failed to load model from " <<  modelPath;
+        std::cerr << "MPT ERROR: failed to load model from " <<  modelPath;
         return false;
     }
 
@@ -820,7 +818,7 @@ std::vector<LLModel::Token> MPT::tokenize(PromptContext &, const std::string &st
     return ::gpt_tokenize(d_ptr->vocab, str);
 }
 
-std::string_view MPT::tokenToString(Token id) const
+std::string MPT::tokenToString(Token id) const
 {
     return d_ptr->vocab.id_to_token[id];
 }

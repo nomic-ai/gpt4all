@@ -17,7 +17,7 @@ SPECIAL_COMMANDS = {
     "/help": lambda _: print("Special commands: /reset, /exit, /help and /clear"),
 }
 
-VERSION = "0.1.0"
+VERSION = "0.3.4"
 
 CLI_START_MESSAGE = f"""
     
@@ -32,12 +32,6 @@ Welcome to the GPT4All CLI! Version {VERSION}
 Type /help for special commands.
                                                     
 """
-
-def _cli_override_response_callback(token_id, response):
-    resp = response.decode("utf-8")
-    print(resp, end="", flush=True)
-    return True
-
 
 # create typer app
 app = typer.Typer()
@@ -67,9 +61,6 @@ def repl(
         print(f" {num_threads} threads", end="", flush=True)
     else:
         print(f"\nUsing {gpt4all_instance.model.thread_count()} threads", end="")
-
-    # overwrite _response_callback on model
-    gpt4all_instance.model._response_callback = _cli_override_response_callback
 
     print(CLI_START_MESSAGE)
 
@@ -103,7 +94,7 @@ def repl(
             context_erase=0.0,
             # required kwargs for cli ux (incremental response)
             verbose=False,
-            std_passthrough=True,
+            streaming=True,
         )
         # record assistant's response to messages
         MESSAGES.append(full_response.get("choices")[0].get("message"))
@@ -112,7 +103,7 @@ def repl(
 
 @app.command()
 def version():
-    print("gpt4all-cli v0.1.0")
+    print("gpt4all-cli v0.3.4")
 
 
 if __name__ == "__main__":

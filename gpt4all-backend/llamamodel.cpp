@@ -115,6 +115,12 @@ bool LLamaModel::loadModel(const std::string &modelPath)
 #if LLAMA_DATE <= 230511
     d_ptr->params.n_parts  = params.n_parts;
 #endif
+#ifdef GGML_USE_METAL
+    std::cerr << "llama.cpp: using Metal" << std::endl;
+    // metal always runs the whole model if n_gpu_layers is not 0, at least
+    // currently
+    d_ptr->params.n_gpu_layers = 1;
+#endif
 
     d_ptr->ctx = llama_init_from_file(modelPath.c_str(), d_ptr->params);
     if (!d_ptr->ctx) {
@@ -171,7 +177,7 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
     return fres;
 }
 
-std::string_view LLamaModel::tokenToString(Token id) const
+std::string LLamaModel::tokenToString(Token id) const
 {
     return llama_token_to_str(d_ptr->ctx, id);
 }
@@ -187,7 +193,16 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
 
 bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
-    return llama_eval(d_ptr->ctx, tokens.data(), tokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
+    // When we recalculate context we could have erased the original BOS token... we need to replace it
+    const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos());
+    if (useBOS) {
+        std::vector<int32_t> myTokens;
+        myTokens.push_back(llama_token_bos());
+        myTokens.insert(myTokens.end(), tokens.begin(), tokens.end());
+        ctx.n_past += 1;
+        return llama_eval(d_ptr->ctx, myTokens.data(), myTokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
+    } else
+        return llama_eval(d_ptr->ctx, tokens.data(), tokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
 }
 
 int32_t LLamaModel::contextLength() const
@@ -228,7 +243,30 @@ DLL_EXPORT bool magic_match(std::istream& f) {
     // Check version
     uint32_t version = 0;
     f.read(reinterpret_cast<char*>(&version), sizeof(version));
-    return version LLAMA_VERSIONS;
+    if (!(version LLAMA_VERSIONS)) {
+        return false;
+    }
+#ifdef GGML_USE_METAL
+    // Check quant supported on metal
+    // skip fields
+    off_t offset = sizeof(uint32_t) * 6; // n_vocab, n_embd, n_mult, n_head, n_layer, n_rot
+    f.seekg(offset, std::ios_base::cur);
+    uint32_t ftype;
+    f.read(reinterpret_cast<char*>(&ftype), sizeof(ftype)); // ftype
+    switch((enum llama_ftype) ftype) {
+        // currently supported on Metal https://github.com/ggerganov/llama.cpp/blob/ae9663f1887513e152839e91f61c513075a19422/ggml-metal.m#L51-L55
+        case LLAMA_FTYPE_MOSTLY_F16:
+        case LLAMA_FTYPE_MOSTLY_Q2_K:
+        case LLAMA_FTYPE_MOSTLY_Q4_0:
+        case LLAMA_FTYPE_MOSTLY_Q6_K:
+        case LLAMA_FTYPE_MOSTLY_Q4_K_S:
+        case LLAMA_FTYPE_MOSTLY_Q4_K_M:
+            return true;
+        default: // unsupported quant-type for Metal
+            return false;
+    }
+#endif
+    return true;
 }
 
 DLL_EXPORT LLModel *construct() {

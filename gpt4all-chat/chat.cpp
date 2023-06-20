@@ -57,6 +57,8 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
     connect(this, &Chat::modelNameChangeRequested, m_llmodel, &ChatLLM::modelNameChangeRequested, Qt::QueuedConnection);
@@ -102,6 +104,8 @@ void Chat::resetResponseState()
     if (m_responseInProgress && m_responseState == Chat::LocalDocsRetrieval)
         return;
 
+    m_tokenSpeed = QString();
+    emit tokenSpeedChanged();
     m_responseInProgress = true;
     m_responseState = Chat::LocalDocsRetrieval;
     emit responseInProgressChanged();
@@ -174,11 +178,6 @@ void Chat::handleModelLoadedChanged()
         deleteLater();
 }
 
-QList<ResultInfo> Chat::databaseResults() const
-{
-    return m_llmodel->databaseResults();
-}
-
 void Chat::promptProcessing()
 {
     m_responseState = !databaseResults().isEmpty() ? Chat::LocalDocsProcessing : Chat::PromptProcessing;
@@ -187,6 +186,9 @@ void Chat::promptProcessing()
 
 void Chat::responseStopped()
 {
+    m_tokenSpeed = QString();
+    emit tokenSpeedChanged();
+
     const QString chatResponse = response();
     QList<QString> references;
     QList<QString> referencesContext;
@@ -336,6 +338,17 @@ void Chat::handleModelLoadingError(const QString &error)
     emit modelLoadingErrorChanged();
 }
 
+void Chat::handleTokenSpeedChanged(const QString &tokenSpeed)
+{
+    m_tokenSpeed = tokenSpeed;
+    emit tokenSpeedChanged();
+}
+
+void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
+{
+    m_databaseResults = results;
+}
+
 bool Chat::serialize(QDataStream &stream, int version) const
 {
     stream << m_creationDate;
@@ -399,12 +412,21 @@ QList<QString> Chat::modelList() const
 
     {
         QDir dir(exePath);
-        dir.setNameFilters(QStringList() << "ggml-*.bin");
-        QStringList fileNames = dir.entryList();
+        QStringList allFiles = dir.entryList(QDir::Files);
+
+        // All files that end with .bin and have 'ggml' somewhere in the name
+        QStringList fileNames;
+        for(const QString& filename : allFiles) {
+            if (filename.endsWith(".bin") && filename.contains("ggml")) {
+                fileNames.append(filename);
+            }
+        }
+
         for (const QString& f : fileNames) {
             QString filePath = exePath + f;
             QFileInfo info(filePath);
-            QString name = info.completeBaseName().remove(0, 5);
+            QString basename = info.completeBaseName();
+            QString name = basename.startsWith("ggml-") ? basename.remove(0, 5) : basename;
             if (info.exists()) {
                 if (name == currentModelName)
                     list.prepend(name);
@@ -416,8 +438,15 @@ QList<QString> Chat::modelList() const
 
     if (localPath != exePath) {
         QDir dir(localPath);
-        dir.setNameFilters(QStringList() << "ggml-*.bin" << "chatgpt-*.txt");
-        QStringList fileNames = dir.entryList();
+        QStringList allFiles = dir.entryList(QDir::Files);
+        QStringList fileNames;
+        for(const QString& filename : allFiles) {
+            if ((filename.endsWith(".bin") && filename.contains("ggml"))
+                || (filename.endsWith(".txt") && filename.startsWith("chatgpt-"))) {
+                fileNames.append(filename);
+            }
+        }
+
         for (const QString &f : fileNames) {
             QString filePath = localPath + f;
             QFileInfo info(filePath);

@@ -17,7 +17,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 4)
-set(APP_VERSION_PATCH 6)
+set(APP_VERSION_PATCH 9)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -58,6 +58,11 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(../gpt4all-backend llmodel)
 
+set(METAL_SHADER_FILE)
+if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+  set(METAL_SHADER_FILE ../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal)
+endif()
+
 qt_add_executable(chat
     main.cpp
     chat.h chat.cpp
@@ -71,7 +76,9 @@ qt_add_executable(chat
     llm.h llm.cpp
     server.h server.cpp
     logger.h logger.cpp
+    responsetext.h responsetext.cpp
     sysinfo.h
+    ${METAL_SHADER_FILE}
 )
 
 qt_add_qml_module(chat
@@ -132,6 +139,13 @@ if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     )
 endif()
 
+if(METAL_SHADER_FILE)
+    set_target_properties(chat PROPERTIES
+        RESOURCE ${METAL_SHADER_FILE}
+    )
+    configure_file(${METAL_SHADER_FILE} bin/ggml-metal.metal COPYONLY)
+endif()
+
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(chat
@@ -161,8 +175,16 @@ install(TARGETS llamamodel-230519-avxonly DESTINATION lib COMPONENT ${COMPONENT_
 install(TARGETS llamamodel-230519-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llamamodel-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llamamodel-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+if(APPLE)
+install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+endif()
 install(TARGETS mpt-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS mpt-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS replit-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS replit-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+if(APPLE)
+install(TARGETS replit-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+endif()
 
 set(CPACK_GENERATOR "IFW")
 set(CPACK_VERBATIM_VARIABLES YES)
