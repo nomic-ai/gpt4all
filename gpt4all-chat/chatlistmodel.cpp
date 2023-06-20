@@ -84,8 +84,10 @@ void ChatListModel::saveChats()
             continue;
         toSave.append(chat);
     }
-    if (toSave.isEmpty())
+    if (toSave.isEmpty()) {
+        emit saveChatsFinished();
         return;
+    }
 
     ChatSaver *saver = new ChatSaver;
     connect(this, &ChatListModel::requestSaveChats, saver, &ChatSaver::saveChats, Qt::QueuedConnection);
