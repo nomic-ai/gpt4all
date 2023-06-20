@@ -158,7 +158,6 @@ private:
     LLModelInfo m_modelInfo;
     LLModelType m_modelType;
     QString m_modelName;
-    bool m_isChatGPT;
 
     // The following are only accessed by this thread
     QString m_defaultModel;

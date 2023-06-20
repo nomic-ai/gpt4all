@@ -96,7 +96,6 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_stopGenerating(false)
     , m_timer(nullptr)
     , m_isServer(isServer)
-    , m_isChatGPT(false)
 {
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
@@ -158,8 +157,8 @@ bool ChatLLM::loadModel(const QString &modelName)
     if (isModelLoaded() && m_modelName == modelName)
         return true;
 
-    m_isChatGPT = modelName.startsWith("chatgpt-");
-    QString filePath = modelFilePath(modelName, m_isChatGPT);
+    bool isChatGPT = modelName.startsWith("chatgpt-");
+    QString filePath = modelFilePath(modelName, isChatGPT);
     QFileInfo fileInfo(filePath);
 
     // We have a live model, but it isn't the one we want
@@ -218,7 +217,7 @@ bool ChatLLM::loadModel(const QString &modelName)
     m_modelInfo.fileInfo = fileInfo;
 
     if (fileInfo.exists()) {
-        if (m_isChatGPT) {
+        if (isChatGPT) {
             QString apiKey;
             QString chatGPTModel = fileInfo.completeBaseName().remove(0, 8); // remove the chatgpt- prefix
             {
@@ -308,7 +307,7 @@ void ChatLLM::regenerateResponse()
 {
     // ChatGPT uses a different semantic meaning for n_past than local models. For ChatGPT, the meaning
     // of n_past is of the number of prompt/response pairs, rather than for total tokens.
-    if (m_isChatGPT)
+    if (m_modelType == LLModelType::CHATGPT_)
         m_ctx.n_past -= 1;
     else
         m_ctx.n_past -= m_promptResponseTokens;
@@ -672,7 +671,7 @@ void ChatLLM::saveState()
     if (!isModelLoaded())
         return;
 
-    if (m_isChatGPT) {
+    if (m_modelType == LLModelType::CHATGPT_) {
         m_state.clear();
         QDataStream stream(&m_state, QIODeviceBase::WriteOnly);
         stream.setVersion(QDataStream::Qt_6_5);
@@ -694,7 +693,7 @@ void ChatLLM::restoreState()
     if (!isModelLoaded() || m_state.isEmpty())
         return;
 
-    if (m_isChatGPT) {
+    if (m_modelType == LLModelType::CHATGPT_) {
         QDataStream stream(&m_state, QIODeviceBase::ReadOnly);
         stream.setVersion(QDataStream::Qt_6_5);
         ChatGPT *chatGPT = static_cast<ChatGPT*>(m_modelInfo.model);
