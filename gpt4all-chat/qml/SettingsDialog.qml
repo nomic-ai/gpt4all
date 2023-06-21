@@ -767,7 +767,7 @@ Dialog {
                     }
                     Label {
                         id: serverChatLabel
-                        text: qsTr("Enable web server:")
+                        text: qsTr("Enable API server:")
                         color: theme.textColor
                         Layout.row: 6
                         Layout.column: 0
