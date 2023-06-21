@@ -454,6 +454,7 @@ jobs:
           condition: << pipeline.parameters.run-csharp-workflow >>
           steps:
             - checkout
+            - setup_remote_docker
             - restore_cache:
                 keys:
                   - gpt4all-csharp-nuget-packages-nix
@@ -465,7 +466,7 @@ jobs:
                   cd gpt4all-bindings/csharp
                   mkdir -p runtimes/linux-x64/native
                   ls -R /tmp/workspace
-                  cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
+                  cp /tmp/workspace/runtimes/linux-x64/* runtimes/linux-x64/native/
                   ls -R runtimes
             - run:
                 name: "Install project dependencies"
