@@ -49,10 +49,20 @@ Dialog {
 
         Label {
             id: listLabel
-            text: "Available Models:"
+            text: qsTr("Available Models:")
             Layout.alignment: Qt.AlignLeft
             Layout.fillWidth: true
             color: theme.textColor
+        }
+
+        Label {
+            visible: !Download.modelList.length
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            horizontalAlignment: Qt.AlignHCenter
+            verticalAlignment: Qt.AlignVCenter
+            text: qsTr("Network error: could not retrieve http://gpt4all.io/models/models.json")
+            color: theme.mutedTextColor
         }
 
         ScrollView {

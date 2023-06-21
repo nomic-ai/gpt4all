@@ -757,6 +757,7 @@ struct MPTPrivate {
 MPT::MPT()
     : d_ptr(new MPTPrivate) {
     d_ptr->model = new mpt_model;
+    d_ptr->model->ctx = nullptr;
     d_ptr->modelLoaded = false;
 }
 

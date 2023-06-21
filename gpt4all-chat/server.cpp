@@ -71,6 +71,8 @@ Server::Server(Chat *chat)
     , m_server(nullptr)
 {
     connect(this, &Server::threadStarted, this, &Server::start);
+    connect(this, &Server::databaseResultsChanged, this, &Server::handleDatabaseResultsChanged);
+    connect(chat, &Chat::collectionListChanged, this, &Server::handleCollectionListChanged, Qt::QueuedConnection);
 }
 
 Server::~Server()
@@ -314,7 +316,9 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     int responseTokens = 0;
     QList<QPair<QString, QList<ResultInfo>>> responses;
     for (int i = 0; i < n; ++i) {
-        if (!prompt(actualPrompt,
+        if (!prompt(
+            m_collections,
+            actualPrompt,
             promptTemplate,
             max_tokens /*n_predict*/,
             top_k,

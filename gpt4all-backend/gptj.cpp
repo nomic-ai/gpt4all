@@ -833,6 +833,7 @@ struct GPTJPrivate {
 GPTJ::GPTJ()
     : d_ptr(new GPTJPrivate) {
     d_ptr->model = new gptj_model;
+    d_ptr->model->ctx = nullptr;
     d_ptr->modelLoaded = false;
 }
 

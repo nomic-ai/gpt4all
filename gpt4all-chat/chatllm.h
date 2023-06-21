@@ -100,9 +100,9 @@ public:
     bool deserialize(QDataStream &stream, int version);
 
 public Q_SLOTS:
-    bool prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict,
-        int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens,
-        int32_t n_threads);
+    bool prompt(const QList<QString> &collectionList, const QString &prompt, const QString &prompt_template,
+        int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
+        int32_t repeat_penalty_tokens, int32_t n_threads);
     bool loadDefaultModel();
     bool loadModel(const QString &modelName);
     void modelNameChangeRequested(const QString &modelName);
@@ -110,21 +110,22 @@ public Q_SLOTS:
     void unloadModel();
     void reloadModel();
     void generateName();
-    void handleChatIdChanged();
+    void handleChatIdChanged(const QString &id);
+    void handleDefaultModelChanged(const QString &defaultModel);
     void handleShouldBeLoadedChanged();
     void handleThreadStarted();
 
 Q_SIGNALS:
-    void isModelLoadedChanged();
+    void isModelLoadedChanged(bool);
     void modelLoadingError(const QString &error);
-    void responseChanged();
+    void responseChanged(const QString &response);
     void promptProcessing();
     void responseStopped();
     void modelNameChanged();
     void recalcChanged();
     void sendStartup();
     void sendModelLoaded();
-    void generatedNameChanged();
+    void generatedNameChanged(const QString &name);
     void stateChanged();
     void threadStarted();
     void shouldBeLoadedChanged();
@@ -146,12 +147,14 @@ protected:
     LLModel::PromptContext m_ctx;
     quint32 m_promptTokens;
     quint32 m_promptResponseTokens;
-    LLModelInfo m_modelInfo;
-    LLModelType m_modelType;
+
+private:
     std::string m_response;
     std::string m_nameResponse;
+    LLModelInfo m_modelInfo;
+    LLModelType m_modelType;
     QString m_modelName;
-    Chat *m_chat;
+    QString m_defaultModel;
     TokenTimer *m_timer;
     QByteArray m_state;
     QThread m_llmThread;
@@ -159,7 +162,6 @@ protected:
     std::atomic<bool> m_shouldBeLoaded;
     std::atomic<bool> m_isRecalc;
     bool m_isServer;
-    bool m_isChatGPT;
 };
 
 #endif // CHATLLM_H

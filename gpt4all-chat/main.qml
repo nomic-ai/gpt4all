@@ -24,6 +24,25 @@ Window {
 
     property var currentChat: LLM.chatListModel.currentChat
     property var chatModel: currentChat.chatModel
+    property bool hasSaved: false
+
+    onClosing: function(close) {
+        if (window.hasSaved)
+            return;
+
+        savingPopup.open();
+        LLM.chatListModel.saveChats();
+        close.accepted = false
+    }
+
+    Connections {
+        target: LLM.chatListModel
+        function onSaveChatsFinished() {
+            window.hasSaved = true;
+            savingPopup.close();
+            window.close()
+        }
+    }
 
     color: theme.backgroundDarkest
 
@@ -404,6 +423,14 @@ Window {
                     recalcPopup.close()
             }
         }
+    }
+
+    PopupDialog {
+        id: savingPopup
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: true
+        text: qsTr("Saving chats.")
     }
 
     MyToolButton {

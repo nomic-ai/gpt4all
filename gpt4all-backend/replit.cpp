@@ -884,6 +884,7 @@ Replit::Replit()
     : d_ptr(new ReplitPrivate) {
 
     d_ptr->model = new replit_model;
+    d_ptr->model->ctx = nullptr;
     d_ptr->modelLoaded = false;
 }
 

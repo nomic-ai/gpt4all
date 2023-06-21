@@ -352,7 +352,7 @@ QString ResponseText::getLinkAtPosition(int position) const
 bool ResponseText::tryCopyAtPosition(int position) const
 {
     for (const auto &copy : m_copies) {
-        if (position >= copy.startPos && position < copy.endPos) {
+        if (position >= copy.startPos && position <= copy.endPos) {
             QClipboard *clipboard = QGuiApplication::clipboard();
             clipboard->setText(copy.text);
             return true;
@@ -367,8 +367,8 @@ void ResponseText::handleTextChanged()
         return;
 
     m_isProcessingText = true;
-    handleContextLinks();
     handleCodeBlocks();
+    handleContextLinks();
     // We insert an invisible char at the end to make sure the document goes back to the default
     // text format
     QTextDocument* doc = m_textDocument->textDocument();
