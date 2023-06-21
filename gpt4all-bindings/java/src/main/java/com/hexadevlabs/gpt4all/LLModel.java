@@ -1,6 +1,8 @@
 package com.hexadevlabs.gpt4all;
 
 import jnr.ffi.Pointer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -128,6 +130,8 @@ public  class LLModel implements AutoCloseable {
      */
     public static boolean OUTPUT_DEBUG = false;
 
+    private static final Logger logger = LoggerFactory.getLogger(LLModel.class);
+
     /**
      * Which version of GPT4ALL that this binding is built for.
      * The binding is guaranteed to work with this version of
@@ -149,6 +153,8 @@ public  class LLModel implements AutoCloseable {
     }
 
     public LLModel(Path modelPath) {
+
+        logger.info("Java bindings for gpt4all version: " + GPT4ALL_VERSION);
 
         if(library==null) {
 
