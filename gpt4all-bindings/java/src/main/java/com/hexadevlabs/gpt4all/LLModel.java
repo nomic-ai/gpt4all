@@ -128,6 +128,14 @@ public  class LLModel implements AutoCloseable {
      */
     public static boolean OUTPUT_DEBUG = false;
 
+    /**
+     * Which version of GPT4ALL that this binding is built for.
+     * The binding is guaranteed to work with this version of
+     * GPT4ALL native libraries. The binding may work for older
+     * versions but that is not guaranteed.
+     */
+    public static final String GPT4ALL_VERSION = "2.4.8";
+
     protected static LLModelLibrary library;
 
     protected Pointer model;

@@ -103,3 +103,6 @@ class Example {
 ```
 2. Not every avx only shared library is bundled with the jar right now to reduce size. Only the libgptj-avx is included.
 If you are running into issues please let us know using the gpt4all project issue tracker https://github.com/nomic-ai/gpt4all/issues.
+
+3. For Windows the native library included in jar depends on specific Microsoft C and C++ (MSVC) runtime libraries which may not be installed on your system.
+If this is the case you can easily download and install the latest x64 Microsoft Visual C++ Redistributable package from https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170
