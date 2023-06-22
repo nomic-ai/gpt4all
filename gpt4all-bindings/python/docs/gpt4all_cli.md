@@ -54,7 +54,7 @@ You can name your _virtual environment_ folder for the CLI whatever you like. In
 
 ##### macOS
 
-There are at least three ways to have a Python istallation on _macOS_, and possibly not all of them
+There are at least three ways to have a Python installation on _macOS_, and possibly not all of them
 provide a full installation of Python and its tools. When in doubt, try the following:
 ```shell
 python3 -m venv --help
@@ -105,7 +105,7 @@ You'll have to look it up in the documentation, software directory, or package s
 #### User Installation
 ##### macOS
 
-There are at least three ways to have a Python istallation on _macOS_, and possibly not all of them
+There are at least three ways to have a Python installation on _macOS_, and possibly not all of them
 provide a full installation of Python and its tools. When in doubt, try the following:
 ```shell
 python3 -m pip --help
@@ -189,7 +189,7 @@ That also makes it easy to set an alias e.g. in [Bash][bash-aliases] or [PowerSh
   Set-Alias -Name gpt4all -Value GPT4All-Venv-CLI
   ```
 
-Don't forget to save these in the startup file of your shell.
+Don't forget to save these in the start-up file of your shell.
 
 [bash-aliases]: https://www.gnu.org/software/bash/manual/html_node/Aliases.html
 [posh-aliases]: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/set-alias

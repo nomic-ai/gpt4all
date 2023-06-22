@@ -1,9 +1,9 @@
 # Developing the CLI
 ## Documentation
 Documentation can be found in three places:
-- `app.py` docstrings [TODO]
+- `app.py` docstrings & comments
 - a Readme: `gpt4all-bindings/cli/README.md`
-- the actual CLI documentation: `gpt4all-bindings/python/docs/[TODO]`
+- the actual CLI documentation: `gpt4all-bindings/python/docs/gpt4all_cli.md`
 
 The _docstrings_ are meant for programmatic use. Since the CLI is primarily geared towards users and
 not to build on top, they're kept terse.
@@ -16,7 +16,7 @@ The _CLI documentation_ and other documentation are located in the above mention
 They're in Markdown format and built for the [website]. Of the three, they should be the most
 detailed.
 
-[website]: TODO
+[website]: https://docs.gpt4all.io/gpt4all_cli.html
 
 
 ## Versioning

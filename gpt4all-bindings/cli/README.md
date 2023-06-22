@@ -1,10 +1,12 @@
 # GPT4All Command-Line Interface (CLI)
+
 GPT4All on the command-line.
 
 ## Documentation
-`[TODO]` <https://docs.gpt4all.io/gpt4all_cli.html>
+<https://docs.gpt4all.io/gpt4all_cli.html>
 
 ## Quickstart
+
 The CLI is based on the `gpt4all` Python bindings and the `typer` package.
 
 The following shows one way to get started with the CLI, the documentation has more information.
@@ -21,7 +23,7 @@ its package dependencies are present, you can download and run it from wherever 
 # optional but recommended: create and use a virtual environment
 python -m venv gpt4all-cli
 ```
-_Windows_ and _Unix-like_ systems are slightly different in how you activate a virtual environment:
+_Windows_ and _Unix-like_ systems differ slightly in how you activate a _virtual environment_:
 - _Unix-like_, typically: `. gpt4all-cli/bin/activate`
 - _Windows_: `gpt4all-cli\Scripts\activate`
 
@@ -38,5 +40,5 @@ directory, if necessary.
 If you have already saved a model beforehand, specify its path with the `-m`/`--model` argument,
 for example:
 ```shell
-python app.py repl --model /home/user/gpt4all-models/GPT4All-13B-snoozy.ggmlv3.q4_0.bin
+python app.py repl --model /home/user/my-gpt4all-models/GPT4All-13B-snoozy.ggmlv3.q4_0.bin
 ```
