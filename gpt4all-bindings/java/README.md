@@ -1,11 +1,11 @@
 # Java bindings
 
 Java bindings let you load a gpt4all library into your Java application and execute text 
-generation using an intuitive and easy to use API. No GPU is required because gpt4all system executes on the cpu.
+generation using an intuitive and easy to use API. No GPU is required because gpt4all executes on the CPU.
 The gpt4all models are quantized to easily fit into system RAM and use about 4 to 7GB of system RAM.
 
 ## Getting Started
-You can add Java bindings into your Java project by adding dependency to your project:
+You can add Java bindings into your Java project by adding the following dependency to your project:
 
 **Maven**
 ```
@@ -22,9 +22,9 @@ implementation 'com.hexadevlabs:gpt4all-java-binding:1.1.2'
 
 To add the library dependency for another build system see [Maven Central Java bindings](https://central.sonatype.com/artifact/com.hexadevlabs/gpt4all-java-binding/).
 
-To download a model binary weights file use an url such as https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin. 
+To download model binary weights file use a URL such as [`https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin`](https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin).
 
-For information about other models available see [Model file list](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-chat#manual-download-of-models).
+For information about other models available see the [model file list](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-chat#manual-download-of-models).
 
 ### Sample code
 ```java
@@ -42,40 +42,40 @@ public class Example {
             LLModel.GenerationConfig config = LLModel.config()
                     .withNPredict(4096).build();
 
-            // Will also stream to Standard out
+            // Will also stream to standard output
             String fullGeneration = model.generate(prompt, config, true);
 
         } catch (Exception e) {
-            // Exception generally may happen if model file fails to load 
-            // for a number of reasons such as file not found. 
+            // Exceptions generally may happen if the model file fails to load 
+            // for a number of reasons such as a file not found. 
             // It is possible that Java may not be able to dynamically load the native shared library or 
             // the llmodel shared library may not be able to dynamically load the backend 
             // implementation for the model file you provided.
             // 
             // Once the LLModel class is successfully loaded into memory the text generation calls 
             // generally should not throw exceptions.
-            e.printStackTrace(); // Printing here but in production system you may want to take some action.
+            e.printStackTrace(); // Printing here but in a production system you may want to take some action.
         }
     }
 
 }
 ```
 
-For a maven based sample project that uses this library see [Sample project](https://github.com/felix-zaslavskiy/gpt4all-java-bindings-sample)
+For a Maven-based sample project that uses this library see this [sample project](https://github.com/felix-zaslavskiy/gpt4all-java-bindings-sample)
 
 ### Additional considerations
 #### Logger warnings
-The Java bindings library may produce a warning:
+The Java bindings library may produce a warning if you don't have a SLF4J binding included in your project:
 ```
 SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
 SLF4J: Defaulting to no-operation (NOP) logger implementation
 SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
 ```
-If you don't have a SLF4J binding included in your project. Java bindings only use logging for informational 
-purposes, so logger is not essential to correctly use the library. You can ignore this warning if you don't have SLF4J bindings
+The Java bindings only use logging for informational 
+purposes, so a logger is not essential to correctly use the library. You can ignore this warning if you don't have SLF4J bindings
 in your project.
 
-To add a simple logger using maven dependency you may use:
+To add a simple logger using a Maven dependency you may use:
 ```
 <dependency>
     <groupId>org.slf4j</groupId>
@@ -85,9 +85,9 @@ To add a simple logger using maven dependency you may use:
 ```
 
 #### Loading your native libraries
-1. Java bindings package jar comes bundled with native library files for Windows, macOS and Linux. These library files are 
+1. the Java bindings package JAR comes bundled with a native library files for Windows, macOS and Linux. These library files are 
 copied to a temporary directory and loaded at runtime. For advanced users who may want to package shared libraries into Docker containers 
-or want to use a custom build of the shared libraries and ignore the once bundled with the java package they have option 
+or want to use a custom build of the shared libraries and ignore the once bundled with the Java package they have option 
 to load libraries from your local directory by setting a static property to the location of library files.
 There are no guarantees of compatibility if used in such a way so be careful if you really want to do it.
 
@@ -101,5 +101,5 @@ class Example {
     }
 }
 ```
-2. Not every avx only shared library is bundled with the jar right now to reduce size. Only the libgptj-avx is included.
-If you are running into issues please let us know using the gpt4all project issue tracker https://github.com/nomic-ai/gpt4all/issues.
+2. Not every AVX-only shared library is bundled with the JAR right now to reduce size. Only libgptj-avx is included.
+If you are running into issues please let us know using the [gpt4all project issue tracker](https://github.com/nomic-ai/gpt4all/issues).
