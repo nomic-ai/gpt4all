@@ -146,14 +146,12 @@ std::vector<LLModel::Token> replit_tokenizer_tokenize(replit_tokenizer & tokeniz
     return tokenized.first;
 }
 
-std::string_view replit_tokenizer_detokenize(replit_tokenizer & tokenizer, const std::vector<LLModel::Token> & tokens) {
+std::string replit_tokenizer_detokenize(replit_tokenizer & tokenizer, const std::vector<LLModel::Token> & tokens) {
     std::string text;
     for (auto token : tokens) {
         text += tokenizer.raw_vocab.id_to_token[token];
     }
-    static std::string denormalized_text;
-    denormalized_text = replace_all(text, ws_symbol, " ");
-    return denormalized_text;
+    return replace_all(text, ws_symbol, " ");
 }
 
 // no defaults for now
