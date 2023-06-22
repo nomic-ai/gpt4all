@@ -143,6 +143,11 @@ void Server::start()
         }
     );
 
+    m_server->afterRequest([] (QHttpServerResponse &&resp) {
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        return std::move(resp);
+    });
+
     connect(this, &Server::requestServerNewPromptResponsePair, m_chat,
         &Chat::serverNewPromptResponsePair, Qt::BlockingQueuedConnection);
 }
