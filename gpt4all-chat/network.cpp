@@ -1,5 +1,5 @@
 #include "network.h"
-#include "llm.h"
+#include "chatlistmodel.h"
 #include "sysinfo.h"
 
 #include <QCoreApplication>
@@ -97,10 +97,10 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     }
 
     Q_ASSERT(doc.isObject());
-    Q_ASSERT(LLM::globalInstance()->chatListModel()->currentChat());
+    Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject object = doc.object();
     object.insert("source", "gpt4all-chat");
-    object.insert("agent_id", LLM::globalInstance()->chatListModel()->currentChat()->modelName());
+    object.insert("agent_id", ChatListModel::globalInstance()->currentChat()->modelInfo().filename);
     object.insert("submitter_id", m_uniqueId);
     object.insert("ingest_id", ingestId);
 
@@ -394,7 +394,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
     if (!m_usageStatsActive)
         return;
 
-    Q_ASSERT(LLM::globalInstance()->chatListModel()->currentChat());
+    Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject properties;
     properties.insert("token", "ce362e568ddaee16ed243eaffb5860a2");
     properties.insert("time", QDateTime::currentSecsSinceEpoch());
@@ -405,13 +405,13 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
         properties.insert("ip", m_ipify);
     properties.insert("name", QCoreApplication::applicationName() + " v"
         + QCoreApplication::applicationVersion());
-    properties.insert("model", LLM::globalInstance()->chatListModel()->currentChat()->modelName());
+    properties.insert("model", ChatListModel::globalInstance()->currentChat()->modelInfo().filename);
 
     // Some additional startup information
     if (ev == "startup") {
         const QSize display = QGuiApplication::primaryScreen()->size();
         properties.insert("display", QString("%1x%2").arg(display.width()).arg(display.height()));
-        properties.insert("ram", getSystemTotalRAM());
+        properties.insert("ram", getSystemTotalRAMInGB());
 #if defined(Q_OS_MAC)
         properties.insert("cpu", QString::fromStdString(getCPUModel()));
 #endif

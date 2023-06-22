@@ -1,49 +1,61 @@
-#include <QtCore/QCoreApplication>
-#include <QDebug>
-#include <QFile>
-#include <QTextStream>
-#include <QRegularExpression>
+#ifndef SYSINFO_H
+#define SYSINFO_H
 
-#if defined(Q_OS_MAC)
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <iomanip>
+
+#if defined(__linux__)
+#include <unistd.h>
+#elif defined(__APPLE__)
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#elif defined(_WIN32)
+#include <windows.h>
 #endif
 
-#if defined(Q_OS_WIN)
-#include <Windows.h>
-#endif
-
-QString getSystemTotalRAM()
+static long long getSystemTotalRAMInBytes()
 {
-    qint64 totalRAM = 0;
+    long long totalRAM = 0;
 
-#if defined(Q_OS_LINUX)
-    QFile file("/proc/meminfo");
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&file);
-        QString line = in.readLine();
-        while (!line.isNull()) {
-            if (line.startsWith("MemTotal")) {
-                static QRegularExpression spaces("\\s+");
-                QStringList parts = line.split(spaces);
-                totalRAM = parts[1].toLongLong() * 1024; // Convert from KB to bytes
-                break;
-            }
-            line = in.readLine();
+#if defined(__linux__)
+    std::ifstream file("/proc/meminfo");
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.find("MemTotal") != std::string::npos) {
+            std::string memTotalStr = line.substr(line.find(":") + 1);
+            memTotalStr.erase(0, memTotalStr.find_first_not_of(" "));
+            memTotalStr = memTotalStr.substr(0, memTotalStr.find(" "));
+            totalRAM = std::stoll(memTotalStr) * 1024;  // Convert from KB to bytes
+            break;
         }
-        file.close();
     }
-#elif defined(Q_OS_MAC)
+    file.close();
+#elif defined(__APPLE__)
     int mib[2] = {CTL_HW, HW_MEMSIZE};
     size_t length = sizeof(totalRAM);
     sysctl(mib, 2, &totalRAM, &length, NULL, 0);
-#elif defined(Q_OS_WIN)
+#elif defined(_WIN32)
     MEMORYSTATUSEX memoryStatus;
     memoryStatus.dwLength = sizeof(memoryStatus);
     GlobalMemoryStatusEx(&memoryStatus);
     totalRAM = memoryStatus.ullTotalPhys;
 #endif
 
-    double totalRAM_GB = static_cast<double>(totalRAM) / (1024 * 1024 * 1024);
-    return QString::number(totalRAM_GB, 'f', 2) + " GB";
+    return totalRAM;
 }
+
+static double getSystemTotalRAMInGB()
+{
+    return static_cast<double>(getSystemTotalRAMInBytes()) / (1024 * 1024 * 1024);
+}
+
+static std::string getSystemTotalRAMInGBString()
+{
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2) << getSystemTotalRAMInGB() << " GB";
+    return ss.str();
+}
+
+#endif // SYSINFO_H

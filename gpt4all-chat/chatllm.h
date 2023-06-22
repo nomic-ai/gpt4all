@@ -6,6 +6,7 @@
 #include <QFileInfo>
 
 #include "localdocs.h"
+#include "modellist.h"
 #include "../gpt4all-backend/llmodel.h"
 
 enum LLModelType {
@@ -67,12 +68,7 @@ class Chat;
 class ChatLLM : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
-    Q_PROPERTY(QString response READ response NOTIFY responseChanged)
-    Q_PROPERTY(QString modelName READ modelName WRITE setModelName NOTIFY modelNameChanged)
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
-    Q_PROPERTY(QString generatedName READ generatedName NOTIFY generatedNameChanged)
-
 public:
     ChatLLM(Chat *parent, bool isServer = false);
     virtual ~ChatLLM();
@@ -88,9 +84,9 @@ public:
     void setShouldBeLoaded(bool b);
 
     QString response() const;
-    QString modelName() const;
 
-    void setModelName(const QString &modelName);
+    ModelInfo modelInfo() const;
+    void setModelInfo(const ModelInfo &info);
 
     bool isRecalc() const { return m_isRecalc; }
 
@@ -104,25 +100,23 @@ public Q_SLOTS:
         int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
         int32_t repeat_penalty_tokens, int32_t n_threads);
     bool loadDefaultModel();
-    bool loadModel(const QString &modelName);
-    void modelNameChangeRequested(const QString &modelName);
+    bool loadModel(const ModelInfo &modelInfo);
+    void modelChangeRequested(const ModelInfo &modelInfo);
     void forceUnloadModel();
     void unloadModel();
     void reloadModel();
     void generateName();
     void handleChatIdChanged(const QString &id);
-    void handleDefaultModelChanged(const QString &defaultModel);
     void handleShouldBeLoadedChanged();
     void handleThreadStarted();
 
 Q_SIGNALS:
+    void recalcChanged();
     void isModelLoadedChanged(bool);
     void modelLoadingError(const QString &error);
     void responseChanged(const QString &response);
     void promptProcessing();
     void responseStopped();
-    void modelNameChanged();
-    void recalcChanged();
     void sendStartup();
     void sendModelLoaded();
     void generatedNameChanged(const QString &name);
@@ -132,6 +126,7 @@ Q_SIGNALS:
     void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void reportSpeed(const QString &speed);
     void databaseResultsChanged(const QList<ResultInfo>&);
+    void modelInfoChanged(const ModelInfo &modelInfo);
 
 protected:
     bool handlePrompt(int32_t token);
@@ -151,10 +146,9 @@ protected:
 private:
     std::string m_response;
     std::string m_nameResponse;
-    LLModelInfo m_modelInfo;
-    LLModelType m_modelType;
-    QString m_modelName;
-    QString m_defaultModel;
+    LLModelInfo m_llModelInfo;
+    LLModelType m_llModelType;
+    ModelInfo m_modelInfo;
     TokenTimer *m_timer;
     QByteArray m_state;
     QThread m_llmThread;

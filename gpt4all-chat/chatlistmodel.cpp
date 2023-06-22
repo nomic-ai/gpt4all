@@ -1,5 +1,4 @@
 #include "chatlistmodel.h"
-#include "download.h"
 #include "llm.h"
 
 #include <QFile>
@@ -8,8 +7,15 @@
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
 #define CHAT_FORMAT_VERSION 4
 
-ChatListModel::ChatListModel(QObject *parent)
-    : QAbstractListModel(parent)
+class MyChatListModel: public ChatListModel { };
+Q_GLOBAL_STATIC(MyChatListModel, chatListModelInstance)
+ChatListModel *ChatListModel::globalInstance()
+{
+    return chatListModelInstance();
+}
+
+ChatListModel::ChatListModel()
+    : QAbstractListModel(nullptr)
     , m_newChat(nullptr)
     , m_dummyChat(nullptr)
     , m_serverChat(nullptr)
@@ -54,7 +60,7 @@ void ChatListModel::setShouldSaveChatGPTChats(bool b)
 void ChatListModel::removeChatFile(Chat *chat) const
 {
     Q_ASSERT(chat != m_serverChat);
-    const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
+    const QString savePath = ModelList::globalInstance()->localModelsPath();
     QFile file(savePath + "/gpt4all-" + chat->id() + ".chat");
     if (!file.exists())
         return;
@@ -72,12 +78,12 @@ ChatSaver::ChatSaver()
 
 void ChatListModel::saveChats()
 {
-    const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
+    const QString savePath = ModelList::globalInstance()->localModelsPath();
     QVector<Chat*> toSave;
     for (Chat *chat : m_chats) {
         if (chat == m_serverChat)
             continue;
-        const bool isChatGPT = chat->modelName().startsWith("chatgpt-");
+        const bool isChatGPT = chat->modelInfo().isChatGPT;
         if (!isChatGPT && !m_shouldSaveChats)
             continue;
         if (isChatGPT && !m_shouldSaveChatGPTChats)
@@ -99,7 +105,7 @@ void ChatSaver::saveChats(const QVector<Chat *> &chats)
 {
     QElapsedTimer timer;
     timer.start();
-    const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
+    const QString savePath = ModelList::globalInstance()->localModelsPath();
     for (Chat *chat : chats) {
         QString fileName = "gpt4all-" + chat->id() + ".chat";
         QFile file(savePath + "/" + fileName);
@@ -162,7 +168,7 @@ void ChatsRestoreThread::run()
         }
     }
     {
-        const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
+        const QString savePath = ModelList::globalInstance()->localModelsPath();
         QDir dir(savePath);
         dir.setNameFilters(QStringList() << "gpt4all-*.chat");
         QStringList fileNames = dir.entryList();

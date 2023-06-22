@@ -23,18 +23,21 @@ Dialog {
         anchors.centerIn: parent
         spacing: 20
 
-        Text {
+        Label {
             id: textField
             width: Math.min(1024, implicitWidth)
             height: Math.min(600, implicitHeight)
             anchors.verticalCenter: shouldShowBusy ? busyIndicator.verticalCenter : parent.verticalCenter
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
+            textFormat: Text.StyledText
             wrapMode: Text.WordWrap
             color: theme.textColor
+            linkColor: theme.linkColor
             Accessible.role: Accessible.HelpBalloon
             Accessible.name: text
             Accessible.description: qsTr("Reveals a shortlived help balloon")
+            onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
         }
 
         MyBusyIndicator {
