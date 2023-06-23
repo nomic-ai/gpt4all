@@ -767,7 +767,7 @@ Dialog {
                     }
                     Label {
                         id: serverChatLabel
-                        text: qsTr("Enable OpenAPI server:")
+                        text: qsTr("Enable API server:")
                         color: theme.textColor
                         Layout.row: 6
                         Layout.column: 0
@@ -782,7 +782,7 @@ Dialog {
                             LLM.serverEnabled = serverChatBox.checked
                             settings.sync()
                         }
-                        ToolTip.text: qsTr("WARNING: This enables the gui to act as a local web server for AI API requests and will increase your RAM usage as well")
+                        ToolTip.text: qsTr("WARNING: This enables the gui to act as a local REST web server(OpenAI API compliant) for API requests and will increase your RAM usage as well")
                         ToolTip.visible: hovered
                     }
                     MyButton {
