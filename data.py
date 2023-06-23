@@ -97,7 +97,6 @@ def load_data(config, tokenizer):
     val_dataset = val_dataset.map(
         lambda ele: tokenize_inputs(config, tokenizer, ele),
         batched=True,
-        remove_columns=["source", "prompt", "id"],
         **kwargs
     )
     remove_cols = [col for col in val_dataset.column_names if col not in cols_to_keep]
