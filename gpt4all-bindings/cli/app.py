@@ -114,7 +114,7 @@ def repl(
 
 @app.command()
 def version():
-    """The CLI version commmand."""
+    """The CLI version command."""
     print(f"gpt4all-cli v{VERSION}")
 
 

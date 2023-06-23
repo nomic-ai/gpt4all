@@ -160,7 +160,7 @@ python app.py repl
 This automatically selects the [groovy] model and downloads it into the `.cache/gpt4all/` folder
 of your home directory, if not already present.
 
-[groovy]: https://github.com/nomic-ai/gpt4all/blob/2b6cc99a31a124f1f27f2dc6515b94b84d35b254/gpt4all-chat/metadata/models.json#L3-L8
+[groovy]: https://huggingface.co/nomic-ai/gpt4all-j#model-details
 
 If you want to use a different model, you can do so with the `-m`/`--model` parameter. If only a
 model file name is provided, it will again check in `.cache/gpt4all/` and might start downloading.
