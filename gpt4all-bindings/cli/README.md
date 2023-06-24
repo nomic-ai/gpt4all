@@ -42,3 +42,11 @@ for example:
 ```shell
 python app.py repl --model /home/user/my-gpt4all-models/GPT4All-13B-snoozy.ggmlv3.q4_0.bin
 ```
+
+## Local Build Instructions
+
+The [app.py] script itself is written in pure Python and can be used as-is. If you want to use a
+locally built version of the `gpt4all` Python bindings, follow the instructions in the respective
+[README][bindings-readme].
+
+[bindings-readme]: https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-bindings/python/README.md#local-build-instructions
