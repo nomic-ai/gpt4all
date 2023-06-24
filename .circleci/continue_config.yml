@@ -328,10 +328,12 @@ jobs:
           name: Build Libraries
           command: |
             cd gpt4all-backend
-            mkdir -p runtimes/linux-x64
-            cd runtimes/linux-x64
+            mkdir -p runtimes/build
+            cd runtimes/build
             cmake ../..
             cmake --build . --parallel --config Release
+            mkdir ../linux-x64
+            cp -L *.so ../linux-x64 # otherwise persist_to_workspace seems to mess symlinks
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
@@ -355,10 +357,12 @@ jobs:
           name: Build Libraries
           command: |
             cd gpt4all-backend
-            mkdir -p runtimes/osx-x64
-            cd runtimes/osx-x64
+            mkdir -p runtimes/build
+            cd runtimes/build
             cmake ../.. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             cmake --build . --parallel --config Release
+            mkdir ../osx-x64
+            cp -L *.dylib ../osx-x64
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
@@ -434,18 +438,6 @@ jobs:
           paths:
             - runtimes/win-x64_msvc/*.dll
 
-  build-bindings-backend-debug:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
-    steps:
-      - setup_remote_docker
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: TEST - list libraries
-          command: |
-            ls -R /tmp/workspace
-
   build-csharp-linux:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy # Ubuntu 22.04
@@ -454,10 +446,6 @@ jobs:
           condition: << pipeline.parameters.run-csharp-workflow >>
           steps:
             - checkout
-            - setup_remote_docker
-            - restore_cache:
-                keys:
-                  - gpt4all-csharp-nuget-packages-nix
             - attach_workspace:
                 at: /tmp/workspace
             - run:
@@ -468,6 +456,9 @@ jobs:
                   ls -R /tmp/workspace
                   cp /tmp/workspace/runtimes/linux-x64/* runtimes/linux-x64/native/
                   ls -R runtimes
+            - restore_cache:
+                keys:
+                  - gpt4all-csharp-nuget-packages-nix
             - run:
                 name: "Install project dependencies"
                 command: |
@@ -511,13 +502,13 @@ jobs:
                 keys:
                   - gpt4all-csharp-nuget-packages-win
             - attach_workspace:
-                at: /tmp/workspace
+                at: C:\Users\circleci\workspace
             - run:
                 name: "Prepare Native Libs"
                 command: |
                   cd gpt4all-bindings/csharp
-                  mkdir -p runtimes/win-x64/native
-                  cp /tmp/workspace/runtimes/win-x64/*.dll runtimes/win-x64/native/
+                  mkdir -p runtimes\win-x64\native
+                  cp C:\Users\circleci\workspace\runtimes\win-x64\*.dll runtimes\win-x64\native\
                   ls -R runtimes
             - run:
                 name: "Install project dependencies"
@@ -569,8 +560,8 @@ jobs:
                 name: "Prepare Native Libs"
                 command: |
                   cd gpt4all-bindings/csharp
-                  mkdir -p runtimes/osx-x64/native
-                  cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/win-x64/native/
+                  mkdir -p runtimes/osx/native
+                  cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
                   ls -R runtimes
             - run:
                 name: "Install project dependencies"
@@ -709,15 +700,6 @@ workflows:
               only:
           requires:
             - hold
-      - build-bindings-backend-debug:
-          filters:
-            branches:
-              only:
-          requires:
-            - build-bindings-backend-linux
-            - build-bindings-backend-macos
-            - build-bindings-backend-windows
-            - build-bindings-backend-windows-msvc
       # CSharp Jobs
       - build-csharp-linux:
           filters:
