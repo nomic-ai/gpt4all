@@ -1,8 +1,16 @@
+"""GPT4All CLI
+
+The GPT4All CLI is a self-contained script based on the `gpt4all` and `typer` packages. It offers a
+REPL to communicate with a language model similar to the chat GUI application, but more basic.
+"""
+
 import sys
 import typer
 
+from collections import namedtuple
 from typing_extensions import Annotated
 from gpt4all import GPT4All
+
 
 MESSAGES = [
     {"role": "system", "content": "You are a helpful assistant."},
@@ -17,7 +25,9 @@ SPECIAL_COMMANDS = {
     "/help": lambda _: print("Special commands: /reset, /exit, /help and /clear"),
 }
 
-VERSION = "0.3.4"
+VersionInfo = namedtuple('VersionInfo', ['major', 'minor', 'micro'])
+VERSION_INFO = VersionInfo(0, 3, 5)
+VERSION = '.'.join(map(str, VERSION_INFO))  # convert to string form, like: '1.2.3'
 
 CLI_START_MESSAGE = f"""
     
@@ -47,6 +57,7 @@ def repl(
         typer.Option("--n-threads", "-t", help="Number of threads to use for chatbot"),
     ] = None,
 ):
+    """The CLI read-eval-print loop."""
     gpt4all_instance = GPT4All(model)
 
     # if threads are passed, set them
@@ -103,7 +114,8 @@ def repl(
 
 @app.command()
 def version():
-    print("gpt4all-cli v0.3.4")
+    """The CLI version command."""
+    print(f"gpt4all-cli v{VERSION}")
 
 
 if __name__ == "__main__":
