@@ -6,6 +6,7 @@ REPL to communicate with a language model similar to the chat GUI application, b
 
 import io
 import pkg_resources  # should be present as a dependency of gpt4all
+import signal
 import sys
 import typer
 
@@ -74,6 +75,7 @@ def repl(
         print(f" {num_threads} threads", end="", flush=True)
     else:
         print(f"\nUsing {gpt4all_instance.model.thread_count()} threads", end="")
+    _setup_signal_handler(gpt4all_instance)
 
     print(CLI_START_MESSAGE)
 
@@ -103,6 +105,9 @@ def _old_loop(gpt4all_instance):
         # if regular message, append to messages
         MESSAGES.append({"role": "user", "content": message})
 
+        # handle SIGINT gracefully during chat_completion
+        _activate_response_sigint_handler()
+
         # execute chat completion and ignore the full response since 
         # we are outputting it incrementally
         full_response = gpt4all_instance.chat_completion(
@@ -124,6 +129,10 @@ def _old_loop(gpt4all_instance):
             verbose=False,
             streaming=True,
         )
+
+        # revert to default SIGINT
+        _deactivate_response_sigint_handler()
+
         # record assistant's response to messages
         MESSAGES.append(full_response.get("choices")[0].get("message"))
         print() # newline before next prompt
@@ -176,5 +185,50 @@ def version():
     print(f"gpt4all-cli v{VERSION}")
 
 
+
+###################
+# Signal Handling #
+###################
+
+# proof of concept
+# TODO:
+# - turn it into a context manager
+# - may want to refactor the CLI itself instead of messing around with globals
+# - may want to find a better way to change the '_response_callback'
+
+_keep_generating = False
+_old_sigint_handler = None
+
+def _response_callback(token_id, response):
+    sys.stdout.write(response.decode('utf-8', 'replace'))
+    global _keep_generating
+    return _keep_generating
+
+def _setup_signal_handler(gpt4all_instance):
+    # overriding the callback in an ugly hack because the API is not very flexible:
+    gpt4all_instance.model._response_callback = _response_callback
+    global _old_sigint_handler
+    _old_sigint_handler = signal.getsignal(signal.SIGINT)
+
+def _halt_response_sigint_handler(signal, frame):
+    global _keep_generating
+    _keep_generating = False
+
+def _activate_response_sigint_handler():
+    signal.signal(signal.SIGINT, _halt_response_sigint_handler)
+    global _keep_generating
+    _keep_generating = True
+
+def _deactivate_response_sigint_handler():
+    global _old_sigint_handler
+    signal.signal(signal.SIGINT, _old_sigint_handler)
+
+
+
 if __name__ == "__main__":
-    app()
+    try:
+        app()
+    except KeyboardInterrupt:
+        print("\n\nKeyboard interrupt received, exiting.")
+    except Exception as exc:
+        sys.exit(exc)
