@@ -153,7 +153,7 @@ def train(accelerator, config):
             # get gradient norm of all params
 
             # log LR in case something weird happens 
-            if step > 0 and step % (config["log_every"]) == 0:
+            if step > 0 and step % (config["log_lr_every"]) == 0:
                 if config["wandb"]:
                     accelerator.log({"lr": scheduler.get_last_lr()[0]}, step=curr_step)
 
@@ -187,8 +187,14 @@ def train(accelerator, config):
 
         accelerator.print(f"Epoch {epoch} finished")
         accelerator.print(f"Pushing to HF hub")
-        accelerator.wait_for_everyone()
         unwrapped_model = accelerator.unwrap_model(model)
+
+        unwrapped_model.save_pretrained(
+            f"{config['output_dir']}/epoch_{epoch}",
+            is_main_process=accelerator.is_main_process,
+            save_function=accelerator.save,
+            state_dict=accelerator.get_state_dict(model),
+        )
         try:
             if accelerator.is_main_process:
                 unwrapped_model.push_to_hub(config["save_name"] + f"-epoch_{epoch}", private=True)
@@ -197,22 +203,16 @@ def train(accelerator, config):
             accelerator.print(e)
             accelerator.print(f"Failed to push to hub")
 
+            
+    if config["num_epochs"] > 1:
+        accelerator.wait_for_everyone()
+        unwrapped_model = accelerator.unwrap_model(model)
         unwrapped_model.save_pretrained(
-            f"{config['output_dir']}/epoch_{epoch}",
+            f"{config['output_dir']}/final",
             is_main_process=accelerator.is_main_process,
             save_function=accelerator.save,
             state_dict=accelerator.get_state_dict(model),
         )
-        accelerator.wait_for_everyone()
-            
-    accelerator.wait_for_everyone()
-    unwrapped_model = accelerator.unwrap_model(model)
-    unwrapped_model.save_pretrained(
-        f"{config['output_dir']}/final",
-        is_main_process=accelerator.is_main_process,
-        save_function=accelerator.save,
-        state_dict=accelerator.get_state_dict(model),
-    )
 
     accelerator.end_training()
 
