@@ -223,6 +223,93 @@ def _deactivate_response_sigint_handler():
     global _old_sigint_handler
     signal.signal(signal.SIGINT, _old_sigint_handler)
 
+class ResponseSigintManager:
+    # TODO: docstrings; should care be taken for it to be reentrant?
+
+    def __init__(self, gpt4all: GPT4All):
+        if not isinstance(gpt4all, GPT4All):
+            raise TypeError(f"'gpt4all' must be of type 'gpt4all.GPT4All', but is '{type(gpt4all)}'.")
+        self._gpt4all = gpt4all
+        self._is_response_handler_patched = False
+        self._old_response_callback = None
+        self._old_sigint_handler = None
+
+    @property
+    def gpt4all(self):
+        return self._gpt4all
+
+    @property
+    def is_managing_sigint(self):
+        # invariant: storing old handler <-> activating own handler
+        return self._old_sigint_handler is not None
+
+    def __enter__(self):
+        if not self.gpt4all:
+            raise RuntimeError()
+        if not self._is_response_handler_patched:
+            self._patch_response_handler()  # TODO maybe handle returned value
+        self._activate_response_sigint_handler()
+        # TODO return anything for the 'as' clause?
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.is_managing_sigint:
+            self._deactivate_response_sigint_handler()
+
+    def _patch_response_handler(self):
+        try:
+            self.gpt4all.model._response_callback = self._response_callback
+            self._is_response_handler_patched = True
+            return True
+        except Exception:
+            return False
+    
+    def _revert_response_handler(self):
+        if self._is_response_handler_patched:
+            try:
+                self.gpt4all.model._response_callback = self._old_response_callback
+            finally:
+                self._old_response_callback = None
+                self._is_response_handler_patched = False  # on a best-effort basis
+
+    def _response_callback(self, token_id, response):
+        sys.stdout.write(response.decode('utf-8', 'replace'))
+        return self._keep_generating
+
+    def _activate_response_sigint_handler(self):
+        if self._is_response_handler_patched and self._old_sigint_handler is None:
+            try:
+                self._old_sigint_handler = signal.signal(signal.SIGINT, self._halt_response_sigint_handler)  # TODO
+            except:
+                pass  # TODO might want to log sth
+    
+    def _deactivate_response_sigint_handler(self):
+        if self.is_managing_sigint:
+            assert self._old_sigint_handler is not None
+            try:
+                signal.signal(signal.SIGINT, self._old_sigint_handler)
+                self._old_sigint_handler = None
+            except:
+                pass  # TODO might want to log sth
+    
+    def _halt_response_sigint_handler(signal_, frame):
+        assert signal_ == signal.SIGINT, f"expected signal.SIGINT ({signal.SIGINT}) but got {signal_.name} ({signal_})"
+        self._keep_generating = False
+    
+    def __del__(self):
+        if self.gpt4all:
+            self._revert_response_handler()
+        self._gpt4all = None
+        if self.is_managing_sigint:
+            self._deactivate_response_sigint_handler()
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}(gpt4all={self.gpt4all})>'
+    
+    def __str__(self):
+        return (f"{self.__class__.__name__} for {self.gpt4all};"
+                f" '_response_handler()' patched: {'yes' if self._is_response_handler_patched else 'no'};"
+                f"currently managing SIGINT: {'yes' if self.is_managing_sigint else 'no'}")
+
 
 
 if __name__ == "__main__":
