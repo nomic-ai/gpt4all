@@ -38,7 +38,7 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
-find_package(Qt6 6.5 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+find_package(Qt6 6.5 COMPONENTS Core Quick QuickDialogs2 WaylandClient Svg HttpServer Sql Pdf REQUIRED)
 
 # Get the Qt6Core target properties
 get_target_property(Qt6Core_INCLUDE_DIRS Qt6::Core INTERFACE_INCLUDE_DIRECTORIES)
@@ -149,7 +149,7 @@ endif()
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(chat
-    PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
+    PRIVATE Qt6::Quick Qt6::Svg Qt6::WaylandClient Qt6::HttpServer Qt6::Sql Qt6::Pdf)
 target_link_libraries(chat
     PRIVATE llmodel)
 
