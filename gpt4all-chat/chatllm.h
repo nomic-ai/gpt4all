@@ -23,6 +23,46 @@ struct LLModelInfo {
     // must be able to serialize the information even if it is in the unloaded state
 };
 
+class TokenTimer : public QObject {
+    Q_OBJECT
+public:
+    explicit TokenTimer(QObject *parent)
+        : QObject(parent)
+        , m_elapsed(0) {}
+
+    static int rollingAverage(int oldAvg, int newNumber, int n)
+    {
+        // i.e. to calculate the new average after then nth number,
+        // you multiply the old average by n−1, add the new number, and divide the total by n.
+        return qRound(((float(oldAvg) * (n - 1)) + newNumber) / float(n));
+    }
+
+    void start() { m_tokens = 0; m_elapsed = 0; m_time.invalidate(); }
+    void stop() { handleTimeout(); }
+    void inc() {
+        if (!m_time.isValid())
+            m_time.start();
+        ++m_tokens;
+        if (m_time.elapsed() > 999)
+            handleTimeout();
+    }
+
+Q_SIGNALS:
+    void report(const QString &speed);
+
+private Q_SLOTS:
+    void handleTimeout()
+    {
+        m_elapsed += m_time.restart();
+        emit report(QString("%1 tokens/sec").arg(m_tokens / float(m_elapsed / 1000.0f), 0, 'g', 2));
+    }
+
+private:
+    QElapsedTimer m_time;
+    qint64 m_elapsed;
+    quint32 m_tokens;
+};
+
 class Chat;
 class ChatLLM : public QObject
 {
@@ -41,7 +81,6 @@ public:
     void regenerateResponse();
     void resetResponse();
     void resetContext();
-    QList<ResultInfo> databaseResults() const { return m_databaseResults; }
 
     void stopGenerating() { m_stopGenerating = true; }
 
@@ -61,9 +100,9 @@ public:
     bool deserialize(QDataStream &stream, int version);
 
 public Q_SLOTS:
-    bool prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict,
-        int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens,
-        int32_t n_threads);
+    bool prompt(const QList<QString> &collectionList, const QString &prompt, const QString &prompt_template,
+        int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
+        int32_t repeat_penalty_tokens, int32_t n_threads);
     bool loadDefaultModel();
     bool loadModel(const QString &modelName);
     void modelNameChangeRequested(const QString &modelName);
@@ -71,25 +110,28 @@ public Q_SLOTS:
     void unloadModel();
     void reloadModel();
     void generateName();
-    void handleChatIdChanged();
+    void handleChatIdChanged(const QString &id);
+    void handleDefaultModelChanged(const QString &defaultModel);
     void handleShouldBeLoadedChanged();
+    void handleThreadStarted();
 
 Q_SIGNALS:
-    void isModelLoadedChanged();
+    void isModelLoadedChanged(bool);
     void modelLoadingError(const QString &error);
-    void responseChanged();
+    void responseChanged(const QString &response);
     void promptProcessing();
     void responseStopped();
     void modelNameChanged();
     void recalcChanged();
     void sendStartup();
     void sendModelLoaded();
-    void generatedNameChanged();
+    void generatedNameChanged(const QString &name);
     void stateChanged();
     void threadStarted();
     void shouldBeLoadedChanged();
     void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
-
+    void reportSpeed(const QString &speed);
+    void databaseResultsChanged(const QList<ResultInfo>&);
 
 protected:
     bool handlePrompt(int32_t token);
@@ -105,21 +147,21 @@ protected:
     LLModel::PromptContext m_ctx;
     quint32 m_promptTokens;
     quint32 m_promptResponseTokens;
-    LLModelInfo m_modelInfo;
-    LLModelType m_modelType;
+
+private:
     std::string m_response;
     std::string m_nameResponse;
-    quint32 m_responseLogits;
+    LLModelInfo m_modelInfo;
+    LLModelType m_modelType;
     QString m_modelName;
-    Chat *m_chat;
+    QString m_defaultModel;
+    TokenTimer *m_timer;
     QByteArray m_state;
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;
-    QList<ResultInfo> m_databaseResults;
-    bool m_isRecalc;
+    std::atomic<bool> m_isRecalc;
     bool m_isServer;
-    bool m_isChatGPT;
 };
 
 #endif // CHATLLM_H

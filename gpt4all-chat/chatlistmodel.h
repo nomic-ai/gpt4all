@@ -14,6 +14,23 @@ Q_SIGNALS:
     void chatRestored(Chat *chat);
 };
 
+class ChatSaver : public QObject
+{
+    Q_OBJECT
+public:
+    explicit ChatSaver();
+    void stop();
+
+Q_SIGNALS:
+    void saveChatsFinished();
+
+public Q_SLOTS:
+    void saveChats(const QVector<Chat*> &chats);
+
+private:
+    QThread m_thread;
+};
+
 class ChatListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -122,8 +139,6 @@ public:
             this, &ChatListModel::newChatCountChanged);
         connect(m_newChat, &Chat::nameChanged,
             this, &ChatListModel::nameChanged);
-        connect(m_newChat, &Chat::modelLoadingError,
-            this, &ChatListModel::handleModelLoadingError);
         setCurrentChat(m_newChat);
     }
 
@@ -192,7 +207,7 @@ public:
     int count() const { return m_chats.size(); }
 
     void removeChatFile(Chat *chat) const;
-    void saveChats() const;
+    Q_INVOKABLE void saveChats();
     void restoreChat(Chat *chat);
     void chatsRestoredFinished();
 
@@ -204,6 +219,9 @@ Q_SIGNALS:
     void currentChatChanged();
     void shouldSaveChatsChanged();
     void shouldSaveChatGPTChatsChanged();
+    void chatsSavedFinished();
+    void requestSaveChats(const QVector<Chat*> &);
+    void saveChatsFinished();
 
 private Q_SLOTS:
     void newChatCountChanged()
@@ -225,12 +243,6 @@ private Q_SLOTS:
 
         QModelIndex index = createIndex(row, 0);
         emit dataChanged(index, index, {NameRole});
-    }
-
-    void handleModelLoadingError()
-    {
-        Chat *chat = qobject_cast<Chat *>(sender());
-        removeChat(chat);
     }
 
     void printChats()

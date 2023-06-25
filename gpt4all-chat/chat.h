@@ -25,6 +25,7 @@ class Chat : public QObject
     Q_PROPERTY(QString responseState READ responseState NOTIFY responseStateChanged)
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
     Q_PROPERTY(QString modelLoadingError READ modelLoadingError NOTIFY modelLoadingErrorChanged)
+    Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged);
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -60,7 +61,7 @@ public:
     Q_INVOKABLE void stopGenerating();
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
 
-    QList<ResultInfo> databaseResults() const;
+    QList<ResultInfo> databaseResults() const { return m_databaseResults; }
 
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
@@ -91,20 +92,22 @@ public:
 
     QString modelLoadingError() const { return m_modelLoadingError; }
 
+    QString tokenSpeed() const { return m_tokenSpeed; }
+
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt);
 
 Q_SIGNALS:
-    void idChanged();
+    void idChanged(const QString &id);
     void nameChanged();
     void chatModelChanged();
     void isModelLoadedChanged();
     void responseChanged();
     void responseInProgressChanged();
     void responseStateChanged();
-    void promptRequested(const QString &prompt, const QString &prompt_template, int32_t n_predict,
-        int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens,
-        int32_t n_threads);
+    void promptRequested(const QList<QString> &collectionList, const QString &prompt, const QString &prompt_template,
+        int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
+        int32_t repeat_penalty_tokens, int32_t n_threads);
     void regenerateResponseRequested();
     void resetResponseRequested();
     void resetContextRequested();
@@ -117,32 +120,43 @@ Q_SIGNALS:
     void modelListChanged();
     void modelLoadingErrorChanged();
     void isServerChanged();
-    void collectionListChanged();
+    void collectionListChanged(const QList<QString> &collectionList);
+    void tokenSpeedChanged();
+    void defaultModelChanged(const QString &defaultModel);
 
 private Q_SLOTS:
-    void handleResponseChanged();
-    void handleModelLoadedChanged();
+    void handleResponseChanged(const QString &response);
+    void handleModelLoadedChanged(bool);
     void promptProcessing();
     void responseStopped();
-    void generatedNameChanged();
+    void generatedNameChanged(const QString &name);
     void handleRecalculating();
-    void handleModelNameChanged();
     void handleModelLoadingError(const QString &error);
+    void handleTokenSpeedChanged(const QString &tokenSpeed);
+    void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
+    void handleModelListChanged();
+    void handleDownloadLocalModelsPathChanged();
 
 private:
     QString m_id;
     QString m_name;
+    QString m_generatedName;
     QString m_userName;
-    QString m_savedModelName;
+    QString m_modelName;
     QString m_modelLoadingError;
+    QString m_tokenSpeed;
+    QString m_response;
     QList<QString> m_collections;
     ChatModel *m_chatModel;
     bool m_responseInProgress;
     ResponseState m_responseState;
     qint64 m_creationDate;
     ChatLLM *m_llmodel;
+    QList<ResultInfo> m_databaseResults;
     bool m_isServer;
     bool m_shouldDeleteLater;
+    bool m_isModelLoaded;
+    QFileSystemWatcher *m_watcher;
 };
 
 #endif // CHAT_H
