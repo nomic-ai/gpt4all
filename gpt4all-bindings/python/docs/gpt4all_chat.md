@@ -14,7 +14,7 @@ If a model is compatible with the gpt4all-backend, you can sideload it into GPT4
 
 1. Downloading your model in GGML format. It should be a 3-8 GB file similar to the ones [here](https://huggingface.co/TheBloke/Samantha-7B-GGML/tree/main).
 2. Identifying your GPT4All model downloads folder. This is the path listed at the bottom of the downloads dialog(Three lines in top left>Downloads).
-3. Prefixing your downloaded model with string `ggml-` and placing it inside the GPT4All's model downloads folder.
+3. Placing your downloaded model inside the GPT4All's model downloads folder.
 4. Restarting your GPT4ALL app. Your model should appear in the model selection list.
 
 ## Plugins
