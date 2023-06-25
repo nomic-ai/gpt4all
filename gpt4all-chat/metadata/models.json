@@ -93,5 +93,29 @@
     "requires": "2.4.7",
     "description": "Replit 3B code model trained on subset of the Stack.<br>- Licensed for commercial use.",
     "url": "https://huggingface.co/nomic-ai/ggml-replit-code-v1-3b/resolve/main/ggml-replit-code-v1-3b.bin"
+  },
+  {
+    "md5sum": "959b7f65b2d12fd1e3ff99e7493c7a3a",
+    "filename": "orca-mini-13b.ggmlv3.q4_0.bin",
+    "filesize": "7323329152",
+    "requires": "2.4.7",
+    "description": "OpenLLaMa models trained on explain tuned datasets, created using Instructions and Input from WizardLM, Alpaca & Dolly-V2 datasets and applying Orca Research Paper dataset construction approaches.<br>- Licensed for commercial use.",
+    "url": "https://huggingface.co/TheBloke/orca_mini_13B-GGML/resolve/main/orca-mini-13b.ggmlv3.q4_0.bin"
+  },
+  {
+    "md5sum": "e64e74375ce9d36a3d0af3db1523fd0a",
+    "filename": "orca-mini-7b.ggmlv3.q4_0.bin",
+    "filesize": "3791749248",
+    "requires": "2.4.7",
+    "description": "OpenLLaMa models trained on explain tuned datasets, created using Instructions and Input from WizardLM, Alpaca & Dolly-V2 datasets and applying Orca Research Paper dataset construction approaches.<br>- Licensed for commercial use.",
+    "url": "https://huggingface.co/TheBloke/orca_mini_7B-GGML/resolve/main/orca-mini-7b.ggmlv3.q4_0.bin"
+  },
+  {
+    "md5sum": "8bacb7a80f1e328e4e52ff6a2e8a0bdc",
+    "filename": "orca-mini-3b.ggmlv3.q5_0.bin",
+    "filesize": "2356734208",
+    "requires": "2.4.7",
+    "description": "OpenLLaMa models trained on explain tuned datasets, created using Instructions and Input from WizardLM, Alpaca & Dolly-V2 datasets and applying Orca Research Paper dataset construction approaches.<br>- Licensed for commercial use.",
+    "url": "https://huggingface.co/TheBloke/orca_mini_3B-GGML/resolve/main/orca-mini-3b.ggmlv3.q5_0.bin"
   }
 ]
