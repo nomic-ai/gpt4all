@@ -453,8 +453,7 @@ jobs:
                 command: |
                   cd gpt4all-bindings/csharp
                   mkdir -p runtimes/linux-x64/native
-                  ls -R /tmp/workspace
-                  cp /tmp/workspace/runtimes/linux-x64/* runtimes/linux-x64/native/
+                  cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
                   ls -R runtimes
             - restore_cache:
                 keys:
@@ -596,13 +595,26 @@ jobs:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
     steps:
-      - setup_remote_docker
       - attach_workspace:
           at: /tmp/workspace
+      - checkout
+      - restore_cache:
+           keys:
+             - gpt4all-csharp-nuget-packages-nix
       - run:
-          name: TEST - list libraries
+          name: NuGet Pack
           command: |
-            ls -R /tmp/workspace
+            cd gpt4all-bindings/csharp
+            mkdir -p runtimes/linux-x64/native
+            cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
+            mkdir -p runtimes/win-x64/native
+            cp /tmp/workspace/runtimes/win-x64/*.dll runtimes/win-x64/native/
+            mkdir -p runtimes/osx/native
+            cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
+            dotnet pack ./Gpt4All/Gpt4All.csproj -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -c Release
+            dotnet nuget push ./Gpt4All/bin/Release/Gpt4All.*.nupkg -s $NUGET_URL -k $NUGET_TOKEN --skip-duplicate
+      - store_artifacts:
+          path: gpt4all-bindings/csharp/Gpt4All/bin/Release
 
 workflows:
   version: 2
