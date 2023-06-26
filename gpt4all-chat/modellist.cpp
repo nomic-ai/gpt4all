@@ -166,23 +166,26 @@ bool ModelList::lessThan(const ModelInfo* a, const ModelInfo* b)
 
 void ModelList::addModel(const QString &filename)
 {
-    QMutexLocker locker(&m_mutex);
-    Q_ASSERT(!m_modelMap.contains(filename));
-    if (m_modelMap.contains(filename)) {
+    const bool hasModel = contains(filename);
+    Q_ASSERT(!hasModel);
+    if (hasModel) {
         qWarning() << "ERROR: model list already contains" << filename;
         return;
     }
 
     beginInsertRows(QModelIndex(), m_models.size(), m_models.size());
-    ModelInfo *info = new ModelInfo;
-    info->filename = filename;
-    m_models.append(info);
-    m_modelMap.insert(filename, info);
+    int modelSizeAfter = 0;
+    {
+        QMutexLocker locker(&m_mutex);
+        ModelInfo *info = new ModelInfo;
+        info->filename = filename;
+        m_models.append(info);
+        m_modelMap.insert(filename, info);
+        std::stable_sort(m_models.begin(), m_models.end(), ModelList::lessThan);
+        modelSizeAfter = m_models.size();
+    }
     endInsertRows();
-
-    std::stable_sort(m_models.begin(), m_models.end(), ModelList::lessThan);
-    emit dataChanged(index(0, 0), index(m_models.size() - 1, 0));
-
+    emit dataChanged(index(0, 0), index(modelSizeAfter - 1, 0));
     emit userDefaultModelListChanged();
 }
 
@@ -271,88 +274,95 @@ QVariant ModelList::data(const QModelIndex &index, int role) const
 
 void ModelList::updateData(const QString &filename, int role, const QVariant &value)
 {
-    QMutexLocker locker(&m_mutex);
-    if (!m_modelMap.contains(filename)) {
-        qWarning() << "ERROR: cannot update as model map does not contain" << filename;
-        return;
-    }
+    int modelSize;
+    bool updateInstalled;
+    bool updateIncomplete;
+    int index;
+    {
+        QMutexLocker locker(&m_mutex);
+        if (!m_modelMap.contains(filename)) {
+            qWarning() << "ERROR: cannot update as model map does not contain" << filename;
+            return;
+        }
 
-    ModelInfo *info = m_modelMap.value(filename);
-    const int index = m_models.indexOf(info);
-    if (index == -1) {
-        qWarning() << "ERROR: cannot update as model list does not contain" << filename;
-        return;
-    }
+        ModelInfo *info = m_modelMap.value(filename);
+        index = m_models.indexOf(info);
+        if (index == -1) {
+            qWarning() << "ERROR: cannot update as model list does not contain" << filename;
+            return;
+        }
 
-    switch (role) {
-    case NameRole:
-        info->name = value.toString(); break;
-    case FilenameRole:
-        info->filename = value.toString(); break;
-    case DirpathRole:
-        info->dirpath = value.toString(); break;
-    case FilesizeRole:
-        info->filesize = value.toString(); break;
-    case Md5sumRole:
-        info->md5sum = value.toByteArray(); break;
-    case CalcHashRole:
-        info->calcHash = value.toBool(); break;
-    case InstalledRole:
-        info->installed = value.toBool(); break;
-    case DefaultRole:
-        info->isDefault = value.toBool(); break;
-    case ChatGPTRole:
-        info->isChatGPT = value.toBool(); break;
-    case DisableGUIRole:
-        info->disableGUI = value.toBool(); break;
-    case DescriptionRole:
-        info->description = value.toString(); break;
-    case RequiresVersionRole:
-        info->requiresVersion = value.toString(); break;
-    case DeprecatedVersionRole:
-        info->deprecatedVersion = value.toString(); break;
-    case UrlRole:
-        info->url = value.toString(); break;
-    case BytesReceivedRole:
-        info->bytesReceived = value.toLongLong(); break;
-    case BytesTotalRole:
-        info->bytesTotal = value.toLongLong(); break;
-    case TimestampRole:
-        info->timestamp = value.toLongLong(); break;
-    case SpeedRole:
-        info->speed = value.toString(); break;
-    case DownloadingRole:
-        info->isDownloading = value.toBool(); break;
-    case IncompleteRole:
-        info->isIncomplete = value.toBool(); break;
-    case DownloadErrorRole:
-        info->downloadError = value.toString(); break;
-    case OrderRole:
-        info->order = value.toString(); break;
-    case RamrequiredRole:
-        info->ramrequired = value.toInt(); break;
-    case ParametersRole:
-        info->parameters = value.toString(); break;
-    case QuantRole:
-        info->quant = value.toString(); break;
-    case TypeRole:
-        info->type = value.toString(); break;
-    }
+        switch (role) {
+        case NameRole:
+            info->name = value.toString(); break;
+        case FilenameRole:
+            info->filename = value.toString(); break;
+        case DirpathRole:
+            info->dirpath = value.toString(); break;
+        case FilesizeRole:
+            info->filesize = value.toString(); break;
+        case Md5sumRole:
+            info->md5sum = value.toByteArray(); break;
+        case CalcHashRole:
+            info->calcHash = value.toBool(); break;
+        case InstalledRole:
+            info->installed = value.toBool(); break;
+        case DefaultRole:
+            info->isDefault = value.toBool(); break;
+        case ChatGPTRole:
+            info->isChatGPT = value.toBool(); break;
+        case DisableGUIRole:
+            info->disableGUI = value.toBool(); break;
+        case DescriptionRole:
+            info->description = value.toString(); break;
+        case RequiresVersionRole:
+            info->requiresVersion = value.toString(); break;
+        case DeprecatedVersionRole:
+            info->deprecatedVersion = value.toString(); break;
+        case UrlRole:
+            info->url = value.toString(); break;
+        case BytesReceivedRole:
+            info->bytesReceived = value.toLongLong(); break;
+        case BytesTotalRole:
+            info->bytesTotal = value.toLongLong(); break;
+        case TimestampRole:
+            info->timestamp = value.toLongLong(); break;
+        case SpeedRole:
+            info->speed = value.toString(); break;
+        case DownloadingRole:
+            info->isDownloading = value.toBool(); break;
+        case IncompleteRole:
+            info->isIncomplete = value.toBool(); break;
+        case DownloadErrorRole:
+            info->downloadError = value.toString(); break;
+        case OrderRole:
+            info->order = value.toString(); break;
+        case RamrequiredRole:
+            info->ramrequired = value.toInt(); break;
+        case ParametersRole:
+            info->parameters = value.toString(); break;
+        case QuantRole:
+            info->quant = value.toString(); break;
+        case TypeRole:
+            info->type = value.toString(); break;
+        }
 
-    // Extra guarantee that these always remains in sync with filesystem
-    QFileInfo fileInfo(info->dirpath + info->filename);
-    if (info->installed != fileInfo.exists()) {
-        info->installed = fileInfo.exists();
-        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {InstalledRole});
-    }
-    QFileInfo incompleteInfo(incompleteDownloadPath(info->filename));
-    if (info->isIncomplete != incompleteInfo.exists()) {
-        info->isIncomplete = incompleteInfo.exists();
-        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {IncompleteRole});
-    }
+        // Extra guarantee that these always remains in sync with filesystem
+        QFileInfo fileInfo(info->dirpath + info->filename);
+        if (info->installed != fileInfo.exists()) {
+            info->installed = fileInfo.exists();
+            updateInstalled = true;
+        }
+        QFileInfo incompleteInfo(incompleteDownloadPath(info->filename));
+        if (info->isIncomplete != incompleteInfo.exists()) {
+            info->isIncomplete = incompleteInfo.exists();
+            updateIncomplete = true;
+        }
 
-    std::stable_sort(m_models.begin(), m_models.end(), ModelList::lessThan);
-    emit dataChanged(createIndex(0, 0), createIndex(m_models.size() - 1, 0));
+        std::stable_sort(m_models.begin(), m_models.end(), ModelList::lessThan);
+        modelSize = m_models.size();
+    }
+    emit dataChanged(createIndex(0, 0), createIndex(modelSize - 1, 0));
     emit userDefaultModelListChanged();
 }
 

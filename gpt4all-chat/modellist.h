@@ -229,7 +229,7 @@ private:
     static bool lessThan(const ModelInfo* a, const ModelInfo* b);
 
 private:
-    mutable QRecursiveMutex m_mutex;
+    mutable QMutex m_mutex;
     InstalledModels *m_installedModels;
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;
