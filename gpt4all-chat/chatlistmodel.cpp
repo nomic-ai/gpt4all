@@ -6,7 +6,7 @@
 #include <QDataStream>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
-#define CHAT_FORMAT_VERSION 3
+#define CHAT_FORMAT_VERSION 4
 
 ChatListModel::ChatListModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -63,11 +63,17 @@ void ChatListModel::removeChatFile(Chat *chat) const
         qWarning() << "ERROR: Couldn't remove chat file:" << file.fileName();
 }
 
-void ChatListModel::saveChats() const
+ChatSaver::ChatSaver()
+    : QObject(nullptr)
 {
-    QElapsedTimer timer;
-    timer.start();
+    moveToThread(&m_thread);
+    m_thread.start();
+}
+
+void ChatListModel::saveChats()
+{
     const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
+    QVector<Chat*> toSave;
     for (Chat *chat : m_chats) {
         if (chat == m_serverChat)
             continue;
@@ -76,6 +82,25 @@ void ChatListModel::saveChats() const
             continue;
         if (isChatGPT && !m_shouldSaveChatGPTChats)
             continue;
+        toSave.append(chat);
+    }
+    if (toSave.isEmpty()) {
+        emit saveChatsFinished();
+        return;
+    }
+
+    ChatSaver *saver = new ChatSaver;
+    connect(this, &ChatListModel::requestSaveChats, saver, &ChatSaver::saveChats, Qt::QueuedConnection);
+    connect(saver, &ChatSaver::saveChatsFinished, this, &ChatListModel::saveChatsFinished, Qt::QueuedConnection);
+    emit requestSaveChats(toSave);
+}
+
+void ChatSaver::saveChats(const QVector<Chat *> &chats)
+{
+    QElapsedTimer timer;
+    timer.start();
+    const QString savePath = Download::globalInstance()->downloadLocalModelsPath();
+    for (Chat *chat : chats) {
         QString fileName = "gpt4all-" + chat->id() + ".chat";
         QFile file(savePath + "/" + fileName);
         bool success = file.open(QIODevice::WriteOnly);
@@ -98,6 +123,7 @@ void ChatListModel::saveChats() const
     }
     qint64 elapsedTime = timer.elapsed();
     qDebug() << "serializing chats took:" << elapsedTime << "ms";
+    emit saveChatsFinished();
 }
 
 void ChatsRestoreThread::run()
@@ -233,7 +259,6 @@ void ChatListModel::restoreChat(Chat *chat)
 {
     chat->setParent(this);
     connect(chat, &Chat::nameChanged, this, &ChatListModel::nameChanged);
-    connect(chat, &Chat::modelLoadingErrorChanged, this, &ChatListModel::handleModelLoadingError);
 
     if (m_dummyChat) {
         beginResetModel();

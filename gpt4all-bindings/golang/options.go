@@ -24,7 +24,8 @@ var DefaultModelOptions ModelOptions = ModelOptions{
 }
 
 type ModelOptions struct {
-	Threads int
+	Threads           int
+	LibrarySearchPath string
 }
 type ModelOption func(p *ModelOptions)
 
@@ -97,6 +98,13 @@ func NewPredictOptions(opts ...PredictOption) PredictOptions {
 func SetThreads(c int) ModelOption {
 	return func(p *ModelOptions) {
 		p.Threads = c
+	}
+}
+
+// SetLibrarySearchPath sets the dynamic libraries used by gpt4all for the various ggml implementations.
+func SetLibrarySearchPath(t string) ModelOption {
+	return func(p *ModelOptions) {
+		p.LibrarySearchPath = t
 	}
 }
 

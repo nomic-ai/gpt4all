@@ -18,7 +18,7 @@ public:
     };
 
     Dlhandle() : chandle(nullptr) {}
-    Dlhandle(const std::string& fpath, int flags = RTLD_LAZY) {
+    Dlhandle(const std::string& fpath, int flags = RTLD_LAZY | RTLD_LOCAL) {
         chandle = dlopen(fpath.c_str(), flags);
         if (!chandle) {
             throw Exception("dlopen(\""+fpath+"\"): "+dlerror());

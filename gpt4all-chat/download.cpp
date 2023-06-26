@@ -373,6 +373,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         QString modelFilename = obj["filename"].toString();
         QString modelFilesize = obj["filesize"].toString();
         QString requiresVersion = obj["requires"].toString();
+        QString deprecatedVersion = obj["deprecated"].toString();
         QString url = obj["url"].toString();
         QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
         bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
@@ -381,9 +382,16 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         bool bestMPT = obj.contains("bestMPT") && obj["bestMPT"] == QString("true");
         QString description = obj["description"].toString();
 
+        // If the currentVersion version is strictly less than required version, then continue
         if (!requiresVersion.isEmpty()
             && requiresVersion != currentVersion
             && compareVersions(requiresVersion, currentVersion)) {
+            continue;
+        }
+
+        // If the current version is strictly greater than the deprecated version, then continue
+        if (!deprecatedVersion.isEmpty()
+            && compareVersions(currentVersion, deprecatedVersion)) {
             continue;
         }
 
@@ -413,6 +421,7 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         modelInfo.bestMPT = bestMPT;
         modelInfo.description = description;
         modelInfo.requiresVersion = requiresVersion;
+        modelInfo.deprecatedVersion = deprecatedVersion;
         modelInfo.url = url;
         m_modelMap.insert(modelInfo.filename, modelInfo);
     }
@@ -447,10 +456,10 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
     }
 
     // remove ggml- prefix and .bin suffix
-    Q_ASSERT(defaultModel.startsWith("ggml-"));
-    defaultModel = defaultModel.remove(0, 5);
-    Q_ASSERT(defaultModel.endsWith(".bin"));
-    defaultModel.chop(4);
+    if (defaultModel.startsWith("ggml-"))
+        defaultModel = defaultModel.remove(0, 5);
+    if (defaultModel.endsWith(".bin"))
+        defaultModel.chop(4);
 
     QSettings settings;
     settings.sync();

@@ -13,10 +13,10 @@
 static inline QString modelToName(const ModelInfo &info)
 {
     QString modelName = info.filename;
-    Q_ASSERT(modelName.startsWith("ggml-"));
-    modelName = modelName.remove(0, 5);
-    Q_ASSERT(modelName.endsWith(".bin"));
-    modelName.chop(4);
+    if (modelName.startsWith("ggml-"))
+        modelName = modelName.remove(0, 5);
+    if (modelName.endsWith(".bin"))
+        modelName.chop(4);
     return modelName;
 }
 
@@ -71,6 +71,8 @@ Server::Server(Chat *chat)
     , m_server(nullptr)
 {
     connect(this, &Server::threadStarted, this, &Server::start);
+    connect(this, &Server::databaseResultsChanged, this, &Server::handleDatabaseResultsChanged);
+    connect(chat, &Chat::collectionListChanged, this, &Server::handleCollectionListChanged, Qt::QueuedConnection);
 }
 
 Server::~Server()
@@ -140,6 +142,11 @@ void Server::start()
             return handleCompletionRequest(request, true);
         }
     );
+
+    m_server->afterRequest([] (QHttpServerResponse &&resp) {
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        return std::move(resp);
+    });
 
     connect(this, &Server::requestServerNewPromptResponsePair, m_chat,
         &Chat::serverNewPromptResponsePair, Qt::BlockingQueuedConnection);
@@ -314,7 +321,9 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     int responseTokens = 0;
     QList<QPair<QString, QList<ResultInfo>>> responses;
     for (int i = 0; i < n; ++i) {
-        if (!prompt(actualPrompt,
+        if (!prompt(
+            m_collections,
+            actualPrompt,
             promptTemplate,
             max_tokens /*n_predict*/,
             top_k,

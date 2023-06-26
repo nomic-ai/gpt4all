@@ -24,6 +24,25 @@ Window {
 
     property var currentChat: LLM.chatListModel.currentChat
     property var chatModel: currentChat.chatModel
+    property bool hasSaved: false
+
+    onClosing: function(close) {
+        if (window.hasSaved)
+            return;
+
+        savingPopup.open();
+        LLM.chatListModel.saveChats();
+        close.accepted = false
+    }
+
+    Connections {
+        target: LLM.chatListModel
+        function onSaveChatsFinished() {
+            window.hasSaved = true;
+            savingPopup.close();
+            window.close()
+        }
+    }
 
     color: theme.backgroundDarkest
 
@@ -305,8 +324,7 @@ Window {
         height: 40
         z: 200
         padding: 15
-        checkable: true
-        checked: Network.isActive
+        toggled: Network.isActive
         source: "qrc:/gpt4all/icons/network.svg"
         Accessible.name: qsTr("Network button")
         Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
@@ -342,8 +360,7 @@ Window {
         height: 40
         z: 200
         padding: 15
-        checkable: true
-        checked: currentChat.collectionList.length
+        toggled: currentChat.collectionList.length
         source: "qrc:/gpt4all/icons/db.svg"
         Accessible.name: qsTr("Add collections of documents to the chat")
         Accessible.description: qsTr("Provides a button to add collections of documents to the chat")
@@ -406,6 +423,14 @@ Window {
                     recalcPopup.close()
             }
         }
+    }
+
+    PopupDialog {
+        id: savingPopup
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: true
+        text: qsTr("Saving chats.")
     }
 
     MyToolButton {
@@ -845,6 +870,16 @@ Window {
             padding: 15
             text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
             Accessible.description: qsTr("Controls generation of the response")
+        }
+
+        Text {
+            id: speed
+            anchors.bottom: textInputView.top
+            anchors.bottomMargin: 20
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            color: theme.mutedTextColor
+            text: currentChat.tokenSpeed
         }
 
         RectangularGlow {

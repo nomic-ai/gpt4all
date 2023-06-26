@@ -38,9 +38,6 @@ LLM::LLM()
         llmodelSearchPaths += ";" + frameworksDir;
 #endif
     LLModel::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
-
-    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
-        this, &LLM::aboutToQuit);
     connect(this, &LLM::serverEnabledChanged,
         m_chatListModel, &ChatListModel::handleServerEnabledChanged);
 
@@ -122,9 +119,4 @@ void LLM::setServerEnabled(bool enabled)
         return;
     m_serverEnabled = enabled;
     emit serverEnabledChanged();
-}
-
-void LLM::aboutToQuit()
-{
-    m_chatListModel->saveChats();
 }
