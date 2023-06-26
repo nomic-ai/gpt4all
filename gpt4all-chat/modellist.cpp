@@ -451,7 +451,7 @@ void ModelList::updateModelsFromDirectory()
         // All files that end with .bin and have 'ggml' somewhere in the name
         QStringList fileNames;
         for(const QString& filename : allFiles) {
-            if (filename.endsWith(".bin") && filename.contains("ggml")) {
+            if (filename.endsWith(".bin") && filename.contains("ggml") && !filename.startsWith("incomplete")) {
                 fileNames.append(filename);
             }
         }
@@ -473,7 +473,7 @@ void ModelList::updateModelsFromDirectory()
         QStringList allFiles = dir.entryList(QDir::Files);
         QStringList fileNames;
         for(const QString& filename : allFiles) {
-            if ((filename.endsWith(".bin") && filename.contains("ggml"))
+            if ((filename.endsWith(".bin") && filename.contains("ggml") && !filename.startsWith("incomplete"))
                 || (filename.endsWith(".txt") && filename.startsWith("chatgpt-"))) {
                 fileNames.append(filename);
             }
