@@ -148,7 +148,7 @@ ModelInfo ModelList::defaultModelInfo() const
         if (!info->installed)
             continue;
         defaultModel = info;
-        if (!hasDefaultName && defaultModel->isDefault) break;
+        if (!hasDefaultName) break;
         if (hasDefaultName && (defaultModel->name == defaultModelName || defaultModel->filename == defaultModelName)) break;
     }
     if (defaultModel)

@@ -78,7 +78,6 @@ qt_add_executable(chat
     server.h server.cpp
     logger.h logger.cpp
     responsetext.h responsetext.cpp
-    sysinfo.h
     ${METAL_SHADER_FILE}
 )
 

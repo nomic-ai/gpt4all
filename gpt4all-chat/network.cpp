@@ -1,6 +1,6 @@
 #include "network.h"
+#include "llm.h"
 #include "chatlistmodel.h"
-#include "sysinfo.h"
 
 #include <QCoreApplication>
 #include <QGuiApplication>
@@ -411,7 +411,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
     if (ev == "startup") {
         const QSize display = QGuiApplication::primaryScreen()->size();
         properties.insert("display", QString("%1x%2").arg(display.width()).arg(display.height()));
-        properties.insert("ram", getSystemTotalRAMInGB());
+        properties.insert("ram", LLM::globalInstance()->systemTotalRAMInGB());
 #if defined(Q_OS_MAC)
         properties.insert("cpu", QString::fromStdString(getCPUModel()));
 #endif
