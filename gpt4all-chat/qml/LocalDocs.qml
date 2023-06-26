@@ -63,6 +63,12 @@ Item {
             Accessible.role: Accessible.EditableText
             Accessible.name: collection.text
             Accessible.description: ToolTip.text
+            function showError() {
+                collection.placeholderTextColor = theme.textErrorColor
+            }
+            onTextChanged: {
+                collection.placeholderTextColor = theme.mutedTextColor
+            }
         }
 
         MyDirectoryField {
@@ -77,6 +83,12 @@ Item {
             placeholderTextColor: theme.mutedTextColor
             ToolTip.text: qsTr("Folder path to documents (Required)")
             ToolTip.visible: hovered
+            function showError() {
+                folderEdit.placeholderTextColor = theme.textErrorColor
+            }
+            onTextChanged: {
+                folderEdit.placeholderTextColor = theme.mutedTextColor
+            }
         }
 
         MyButton {
@@ -95,11 +107,21 @@ Item {
             text: qsTr("Add")
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            enabled: root.collection !== "" && root.folder_path !== "" && folderEdit.isValid
             Accessible.role: Accessible.Button
             Accessible.name: text
             Accessible.description: qsTr("Add button")
             onClicked: {
+                var isError = false;
+                if (root.collection === "") {
+                    isError = true;
+                    collection.showError();
+                }
+                if (root.folder_path === "" || !folderEdit.isValid) {
+                    isError = true;
+                    folderEdit.showError();
+                }
+                if (isError)
+                    return;
                 LocalDocs.addFolder(root.collection, root.folder_path)
                 root.collection = ""
                 root.folder_path = ""
