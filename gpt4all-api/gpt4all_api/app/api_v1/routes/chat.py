@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Response, Security, status
 from pydantic import BaseModel, Field
 from typing import List, Dict
 import logging
+import time
 from api_v1.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -46,8 +47,17 @@ async def chat_completion(request: ChatCompletionRequest):
     '''
     Completes a GPT4All model response.
     '''
-    raise NotImplementedError()
 
-    return ChatCompletionResponse()
+    return ChatCompletionResponse(
+        id='asdf',
+        created=time.time(),
+        model=request.model,
+        choices=[{}],
+        usage={
+            'prompt_tokens': 0,
+            'completion_tokens': 0,
+            'total_tokens': 0
+        }
+    )
 
 

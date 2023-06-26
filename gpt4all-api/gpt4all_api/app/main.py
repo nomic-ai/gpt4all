@@ -29,13 +29,16 @@ app.include_router(v1_router, prefix='/v1')
 app.add_event_handler('startup', events.startup_event_handler(app))
 app.add_exception_handler(HTTPException, events.on_http_error)
 
+global model
+model = None
 
 @app.on_event("startup")
 async def startup():
+    global model
     logger.info(f"Downloading/fetching model: {os.path.join(settings.gpt4all_path, settings.model)}")
     from gpt4all import GPT4All
     model = GPT4All(model_name=settings.model, model_path=settings.gpt4all_path)
-    del model
+
     logger.info("GPT4All API is ready.")
 
 @app.on_event("shutdown")

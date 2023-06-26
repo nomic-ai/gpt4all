@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from typing import List, Dict
 import logging
 from api_v1.settings import settings
+import time
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -45,8 +46,18 @@ async def completions(request: CompletionRequest):
     '''
     Completes a GPT4All model response.
     '''
-    raise NotImplementedError()
 
-    return CompletionResponse()
+
+    return CompletionResponse(
+        id='asdf',
+        created=time.time(),
+        model=request.model,
+        choices=[],
+        usage={
+            'prompt_tokens': 0,
+            'completion_tokens': 0,
+            'total_tokens': 0
+        }
+    )
 
 
