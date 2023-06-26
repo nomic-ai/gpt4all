@@ -125,8 +125,8 @@ Window {
             + qsTr("this program. In particular, it does not support AVX intrinsics which this ")
             + qsTr("program requires to successfully run a modern large language model. ")
             + qsTr("The only solution at this time is to upgrade your hardware to a more modern CPU.")
-            + qsTr("<br><br>See here for more information: ")
-            + qsTr("https://en.wikipedia.org/wiki/Advanced_Vector_Extensions")
+            + qsTr("<br><br>See here for more information: <a href=\"https://en.wikipedia.org/wiki/Advanced_Vector_Extensions\">")
+            + qsTr("https://en.wikipedia.org/wiki/Advanced_Vector_Extensions</a>")
     }
 
     StartupDialog {
@@ -165,6 +165,7 @@ Window {
             + "<li>Check the model file is complete in the download folder"
             + "<li>You can find the download folder in the settings dialog"
             + "<li>If you've sideloaded the model ensure the file is not corrupt by checking md5sum"
+            + "<li>Read more about what models are supported in our <a href=\"https://docs.gpt4all.io/gpt4all_chat.html\">documentation</a> for the gui"
             + "<li>Check out our <a href=\"https://discord.gg/4M2QFmTt2k\">discord channel</a> for help")
     }
 

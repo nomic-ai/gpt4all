@@ -782,9 +782,53 @@ Dialog {
                         ToolTip.text: qsTr("WARNING: This enables the gui to act as a local REST web server(OpenAI API compliant) for API requests and will increase your RAM usage as well")
                         ToolTip.visible: hovered
                     }
-                    MyButton {
+                    Rectangle {
                         Layout.row: 7
+                        Layout.column: 0
+                        Layout.columnSpan: 3
+                        Layout.fillWidth: true
+                        height: 1
+                        color: theme.dialogBorder
+                    }
+                    Rectangle {
+                        Layout.row: 9
+                        Layout.column: 0
+                        Layout.fillWidth: true
+                        Layout.columnSpan: 3
+                        height: 1
+                        color: theme.dialogBorder
+                    }
+                    Label {
+                        id: gpuOverrideLabel
+                        text: qsTr("Force GPU if detected:")
+                        color: theme.textColor
+                        Layout.row: 8
+                        Layout.column: 0
+                    }
+                    RowLayout {
+                        Layout.row: 8
                         Layout.column: 1
+                        Layout.columnSpan: 2
+                        MyCheckBox {
+                            id: gpuOverrideBox
+                            checked: false
+                            onClicked: {
+                                // fixme
+                            }
+                        }
+                        Label {
+                            id: warningLabel
+                            Layout.maximumWidth: 730
+                            Layout.alignment: Qt.AlignTop
+                            color: theme.textErrorColor
+                            wrapMode: Text.WordWrap
+                            text: qsTr("WARNING: This setting forces usage of the GPU if it is detected. Can cause a crash if the model requires more RAM than the OS + GPU supports.")
+                        }
+                    }
+                    MyButton {
+                        Layout.row: 10
+                        Layout.column: 1
+                        Layout.columnSpan: 2
                         Layout.fillWidth: true
                         text: qsTr("Restore Defaults")
                         Accessible.description: qsTr("Restores the settings dialog to a default state")

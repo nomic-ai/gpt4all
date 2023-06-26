@@ -37,7 +37,7 @@ Dialog {
             Accessible.role: Accessible.HelpBalloon
             Accessible.name: text
             Accessible.description: qsTr("Reveals a shortlived help balloon")
-            onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
+            onLinkActivated: function(link) { Qt.openUrlExternally(link) }
         }
 
         MyBusyIndicator {
