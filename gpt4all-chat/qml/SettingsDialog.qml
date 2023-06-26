@@ -800,7 +800,7 @@ Dialog {
                     }
                     Label {
                         id: gpuOverrideLabel
-                        text: qsTr("Force GPU if detected:")
+                        text: qsTr("Force Metal (macOS+arm):")
                         color: theme.textColor
                         Layout.row: 8
                         Layout.column: 0
