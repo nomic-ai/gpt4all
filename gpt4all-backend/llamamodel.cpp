@@ -178,7 +178,9 @@ int32_t LLamaModel::threadCount() const {
 
 LLamaModel::~LLamaModel()
 {
-    llama_free(d_ptr->ctx);
+    if(d_ptr->ctx) {
+        llama_free(d_ptr->ctx);
+    }
 }
 
 bool LLamaModel::isModelLoaded() const

@@ -1,5 +1,6 @@
 #include "llmodel.h"
 #include "dlhandle.h"
+#include "sysinfo.h"
 
 #include <iostream>
 #include <string>
@@ -129,7 +130,20 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
 
     #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
         if (buildVariant == "auto") {
+            size_t total_mem = getSystemTotalRAMInBytes();
             impl = implementation(f, "metal");
+            if(impl) {
+                LLModel* metalimpl = impl->construct();
+                size_t req_mem = metalimpl->requiredMem(modelPath);
+                float req_to_total = (float) req_mem / (float) total_mem;
+                // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
+                if (req_to_total >= 0.53) {
+                    delete metalimpl;
+                    impl = nullptr;
+                } else {
+                    return metalimpl;
+                }
+            }
         }
     #endif
 
