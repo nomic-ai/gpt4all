@@ -108,7 +108,7 @@ Dialog {
         LLM.threadCount = settings.threadCount
         LLM.serverEnabled = settings.serverChat
         ChatListModel.shouldSaveChats = settings.saveChats
-        chatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
+        ChatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
         settings.sync()
     }
 
