@@ -282,8 +282,8 @@ Window {
     SettingsDialog {
         id: settingsDialog
         anchors.centerIn: parent
-        width: Math.min(1024, window.width - (window.width * .2))
-        height: Math.min(600, window.height - (window.height * .2))
+        width: Math.min(1280, window.width - (window.width * .1))
+        height: window.height - (window.height * .1)
     }
 
     Button {
@@ -589,8 +589,8 @@ Window {
     ModelDownloaderDialog {
         id: downloadNewModels
         anchors.centerIn: parent
-        width: Math.min(1024, window.width - (window.width * .2))
-        height: window.height - (window.height * .2)
+        width: Math.min(1280, window.width - (window.width * .1))
+        height: window.height - (window.height * .1)
         Item {
             Accessible.role: Accessible.Dialog
             Accessible.name: qsTr("Download new models dialog")
@@ -601,7 +601,7 @@ Window {
     ChatDrawer {
         id: drawer
         y: header.height
-        width: 0.3 * window.width
+        width: Math.min(600, 0.3 * window.width)
         height: window.height - y
         onDownloadClicked: {
             downloadNewModels.open()

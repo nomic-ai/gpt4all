@@ -49,83 +49,78 @@ Item {
         height: collection.height + 20
         color: theme.backgroundDark
 
-        MyTextField {
-            id: collection
+        RowLayout {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
-            width: 225
-            horizontalAlignment: Text.AlignJustify
-            color: theme.textColor
-            placeholderText: qsTr("Collection name...")
-            placeholderTextColor: theme.mutedTextColor
-            ToolTip.text: qsTr("Name of the collection to add (Required)")
-            ToolTip.visible: hovered
-            Accessible.role: Accessible.EditableText
-            Accessible.name: collection.text
-            Accessible.description: ToolTip.text
-            function showError() {
-                collection.placeholderTextColor = theme.textErrorColor
-            }
-            onTextChanged: {
-                collection.placeholderTextColor = theme.mutedTextColor
-            }
-        }
-
-        MyDirectoryField {
-            id: folderEdit
-            anchors.left: collection.right
-            anchors.leftMargin: 10
-            anchors.right: browseButton.left
-            anchors.rightMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.folder_path
-            placeholderText: qsTr("Folder path...")
-            placeholderTextColor: theme.mutedTextColor
-            ToolTip.text: qsTr("Folder path to documents (Required)")
-            ToolTip.visible: hovered
-            function showError() {
-                folderEdit.placeholderTextColor = theme.textErrorColor
-            }
-            onTextChanged: {
-                folderEdit.placeholderTextColor = theme.mutedTextColor
-            }
-        }
-
-        MyButton {
-            id: browseButton
-            text: qsTr("Browse")
-            anchors.right: addButton.left
-            anchors.rightMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-            onClicked: {
-                folderDialog.open();
-            }
-        }
-
-        MyButton {
-            id: addButton
-            text: qsTr("Add")
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            Accessible.role: Accessible.Button
-            Accessible.name: text
-            Accessible.description: qsTr("Add button")
-            onClicked: {
-                var isError = false;
-                if (root.collection === "") {
-                    isError = true;
-                    collection.showError();
+            spacing: 10
+            MyTextField {
+                id: collection
+                width: 225
+                horizontalAlignment: Text.AlignJustify
+                color: theme.textColor
+                placeholderText: qsTr("Collection name...")
+                placeholderTextColor: theme.mutedTextColor
+                ToolTip.text: qsTr("Name of the collection to add (Required)")
+                ToolTip.visible: hovered
+                Accessible.role: Accessible.EditableText
+                Accessible.name: collection.text
+                Accessible.description: ToolTip.text
+                function showError() {
+                    collection.placeholderTextColor = theme.textErrorColor
                 }
-                if (root.folder_path === "" || !folderEdit.isValid) {
-                    isError = true;
-                    folderEdit.showError();
+                onTextChanged: {
+                    collection.placeholderTextColor = theme.mutedTextColor
                 }
-                if (isError)
-                    return;
-                LocalDocs.addFolder(root.collection, root.folder_path)
-                root.collection = ""
-                root.folder_path = ""
-                collection.clear()
+            }
+
+            MyDirectoryField {
+                id: folderEdit
+                Layout.fillWidth: true
+                text: root.folder_path
+                placeholderText: qsTr("Folder path...")
+                placeholderTextColor: theme.mutedTextColor
+                ToolTip.text: qsTr("Folder path to documents (Required)")
+                ToolTip.visible: hovered
+                function showError() {
+                    folderEdit.placeholderTextColor = theme.textErrorColor
+                }
+                onTextChanged: {
+                    folderEdit.placeholderTextColor = theme.mutedTextColor
+                }
+            }
+
+            MyButton {
+                id: browseButton
+                text: qsTr("Browse")
+                onClicked: {
+                    folderDialog.open();
+                }
+            }
+
+            MyButton {
+                id: addButton
+                text: qsTr("Add")
+                Accessible.role: Accessible.Button
+                Accessible.name: text
+                Accessible.description: qsTr("Add button")
+                onClicked: {
+                    var isError = false;
+                    if (root.collection === "") {
+                        isError = true;
+                        collection.showError();
+                    }
+                    if (root.folder_path === "" || !folderEdit.isValid) {
+                        isError = true;
+                        folderEdit.showError();
+                    }
+                    if (isError)
+                        return;
+                    LocalDocs.addFolder(root.collection, root.folder_path)
+                    root.collection = ""
+                    root.folder_path = ""
+                    collection.clear()
+                }
             }
         }
     }
@@ -213,9 +208,27 @@ Item {
         rowSpacing: 10
         columnSpacing: 10
 
+        Rectangle {
+            Layout.row: 0
+            Layout.column: 0
+            Layout.fillWidth: true
+            Layout.columnSpan: 3
+            height: 1
+            color: theme.dialogBorder
+        }
+
+        Rectangle {
+            Layout.row: 3
+            Layout.column: 0
+            Layout.fillWidth: true
+            Layout.columnSpan: 3
+            height: 1
+            color: theme.dialogBorder
+        }
+
         Label {
             id: chunkLabel
-            Layout.row: 0
+            Layout.row: 1
             Layout.column: 0
             color: theme.textColor
             text: qsTr("Document snippet size (characters):")
@@ -223,7 +236,7 @@ Item {
 
         MyTextField {
             id: chunkSizeTextField
-            Layout.row: 0
+            Layout.row: 1
             Layout.column: 1
             ToolTip.text: qsTr("Number of characters per document snippet.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
             ToolTip.visible: hovered
@@ -246,14 +259,14 @@ Item {
 
         Label {
             id: contextItemsPerPrompt
-            Layout.row: 1
+            Layout.row: 2
             Layout.column: 0
             color: theme.textColor
-            text: qsTr("Document snippets to process per prompt:")
+            text: qsTr("Document snippets per prompt:")
         }
 
         MyTextField {
-            Layout.row: 1
+            Layout.row: 2
             Layout.column: 1
             ToolTip.text: qsTr("Best N matches of retrieved document snippets to add to the context for prompt.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
             ToolTip.visible: hovered
@@ -274,10 +287,23 @@ Item {
             }
         }
 
+        Label {
+            id: warningLabel
+            Layout.row: 1
+            Layout.column: 2
+            Layout.rowSpan: 2
+            Layout.maximumWidth: 330
+            Layout.alignment: Qt.AlignTop
+            color: theme.textErrorColor
+            wrapMode: Text.WordWrap
+            text: qsTr("Warning: Advanced users only. Values too large may cause localdocs to fail or result in extremely slow responses.")
+        }
+
         MyButton {
             id: restoreDefaultsButton
-            Layout.row: 2
+            Layout.row: 4
             Layout.column: 1
+            Layout.columnSpan: 2
             Layout.fillWidth: true
             text: qsTr("Restore Defaults")
             Accessible.role: Accessible.Button
