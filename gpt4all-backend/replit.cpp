@@ -267,8 +267,11 @@ static bool kv_cache_init(
 }
 
 // load the model's weights from a stream
-bool replit_model_load(const std::string & fname, std::istream &fin, replit_model & model, replit_tokenizer & vocab) {
+bool replit_model_load(const std::string & fname, std::istream &fin, replit_model & model, replit_tokenizer & vocab, size_t *mem_req) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
+    if (mem_req != nullptr) {
+        *mem_req = 0;
+    }
 
     // verify magic
     {
@@ -350,6 +353,18 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         ctx_size += (1 + 6 * n_layer) * 512; // object overhead
 
         printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size / (1024.0 * 1024.0));
+    }
+
+    if (mem_req != nullptr) {
+        *mem_req += ctx_size;
+        const int n_embd  = model.hparams.n_embd;
+        const int n_layer = model.hparams.n_layer;
+
+        const int64_t n_mem      = (int64_t)n_layer*model.hparams.n_ctx;
+        const int64_t n_elements = n_embd*n_mem;
+
+        *mem_req += (2u*n_elements*ggml_type_size(wtype) + 2_MiB);
+        return false;
     }
 
     // create the ggml context
@@ -544,7 +559,7 @@ bool replit_model_load(const std::string & fname, replit_model & model, replit_t
         return false;
     }
 
-    bool loaded = replit_model_load(fname, fin, model, vocab);
+    bool loaded = replit_model_load(fname, fin, model, vocab, nullptr);
     fin.close();
     return loaded;
 }
@@ -888,6 +903,15 @@ Replit::Replit()
     d_ptr->modelLoaded = false;
 }
 
+size_t Replit::requiredMem(const std::string &modelPath) {
+    replit_model dummy_model;
+    replit_tokenizer dummy_vocab;
+    size_t mem_req;
+    auto fin = std::ifstream(modelPath, std::ios::binary);
+    replit_model_load(modelPath, fin, dummy_model, dummy_vocab, &mem_req);
+    return mem_req;
+}
+
 bool Replit::loadModel(const std::string &modelPath) {
     std::mt19937 rng(time(NULL));
     d_ptr->rng = rng;
@@ -895,7 +919,7 @@ bool Replit::loadModel(const std::string &modelPath) {
     auto fin = std::ifstream(modelPath, std::ios::binary);
 
     // load the model
-    if (!replit_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab)) {
+    if (!replit_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab, nullptr)) {
         std::cerr << "Replit ERROR: failed to load model from " <<  modelPath;
         return false;
     }
