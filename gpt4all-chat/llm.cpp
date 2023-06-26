@@ -1,8 +1,8 @@
 #include "llm.h"
+#include "../gpt4all-backend/sysinfo.h"
 #include "config.h"
 #include "chatlistmodel.h"
 #include "../gpt4all-backend/llmodel.h"
-#include "../gpt4all-backend/sysinfo.h"
 #include "network.h"
 
 #include <QCoreApplication>
