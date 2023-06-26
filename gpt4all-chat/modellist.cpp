@@ -458,51 +458,37 @@ void ModelList::updateModelsFromDirectory()
 {
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     const QString localPath = localModelsPath();
-    {
-        QDir dir(exePath);
-        QStringList allFiles = dir.entryList(QDir::Files);
 
-        // All files that end with .bin and have 'ggml' somewhere in the name
-        QStringList fileNames;
-        for(const QString& filename : allFiles) {
-            if (filename.endsWith(".bin") && filename.contains("ggml") && !filename.startsWith("incomplete")) {
-                fileNames.append(filename);
+    auto processDirectory = [&](const QString& path) {
+        QDirIterator it(path, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+
+            if (!it.fileInfo().isDir()) {
+                QString filename = it.fileName();
+
+                // All files that end with .bin and have 'ggml' somewhere in the name
+                if ((filename.endsWith(".bin") && filename.contains("ggml") && !filename.startsWith("incomplete"))
+                    || (filename.endsWith(".txt") && filename.startsWith("chatgpt-"))) {
+
+                    QString filePath = it.filePath();
+                    QFileInfo info(filePath);
+
+                    if (!info.exists())
+                        continue;
+
+                    if (!contains(filename))
+                        addModel(filename);
+
+                    updateData(filename, ChatGPTRole, filename.startsWith("chatgpt-"));
+                    updateData(filename, DirpathRole, path);
+                    updateData(filename, FilesizeRole, toFileSize(info.size()));
+                }
             }
         }
+    };
 
-        for (const QString& f : fileNames) {
-            QString filePath = exePath + f;
-            QFileInfo info(filePath);
-            if (!info.exists())
-                continue;
-            if (!contains(f))
-                addModel(f);
-            updateData(f, DirpathRole, exePath);
-            updateData(f, FilesizeRole, toFileSize(info.size()));
-        }
-    }
-
-    if (localPath != exePath) {
-        QDir dir(localPath);
-        QStringList allFiles = dir.entryList(QDir::Files);
-        QStringList fileNames;
-        for(const QString& filename : allFiles) {
-            if ((filename.endsWith(".bin") && filename.contains("ggml") && !filename.startsWith("incomplete"))
-                || (filename.endsWith(".txt") && filename.startsWith("chatgpt-"))) {
-                fileNames.append(filename);
-            }
-        }
-
-        for (const QString& f : fileNames) {
-            QString filePath = localPath + f;
-            QFileInfo info(filePath);
-            if (!info.exists())
-                continue;
-            if (!contains(f))
-                addModel(f);
-            updateData(f, ChatGPTRole, f.startsWith("chatgpt-"));
-            updateData(f, DirpathRole, localPath);
-            updateData(f, FilesizeRole, toFileSize(info.size()));
-        }
-    }
+    processDirectory(exePath);
+    if (localPath != exePath)
+        processDirectory(localPath);
 }

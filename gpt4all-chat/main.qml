@@ -214,11 +214,13 @@ Window {
                     anchors.horizontalCenter: parent.horizontalCenter
                     leftPadding: 10
                     rightPadding: 20
-                    text: ModelList.installedModels.count
+                    text: (ModelList.installedModels.count > 0
                         ? currentChat.modelLoadingError !== "" ? qsTr("Model loading error...")
-                        : (comboBox.textAt(comboBox.currentIndex) !== "" ? comboBox.textAt(comboBox.currentIndex)
-                        : comboBox.valueAt(comboBox.currentIndex))
-                        : ""
+                        : (comboBox.textAt(comboBox.currentIndex) !== ""
+                        ? comboBox.textAt(comboBox.currentIndex)
+                        : (comboBox.valueAt(comboBox.currentIndex) !== "undefined" ? ""
+                        : comboBox.valueAt(comboBox.currentIndex)))
+                        : "")
                     font: comboBox.font
                     color: theme.textColor
                     verticalAlignment: Text.AlignVCenter
