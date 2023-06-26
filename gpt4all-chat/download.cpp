@@ -343,6 +343,15 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         ModelList::globalInstance()->updateData(modelFilename, ModelList::QuantRole, "NA");
         ModelList::globalInstance()->updateData(modelFilename, ModelList::TypeRole, "GPT");
     }
+
+    if (ModelList::globalInstance()->installedModels()->count()) {
+        const QString firstModel =
+            ModelList::globalInstance()->installedModels()->firstFilename();
+        QSettings settings;
+        settings.sync();
+        settings.setValue("defaultModel", firstModel);
+        settings.sync();
+    }
 }
 
 void Download::handleReleaseJsonDownloadFinished()

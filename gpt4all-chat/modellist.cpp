@@ -24,6 +24,16 @@ int InstalledModels::count() const
     return rowCount();
 }
 
+QString InstalledModels::firstFilename() const
+{
+    if (rowCount() > 0) {
+        QModelIndex firstIndex = index(0, 0);
+        return sourceModel()->data(firstIndex, ModelList::FilenameRole).toString();
+    } else {
+        return QString();
+    }
+}
+
 DownloadableModels::DownloadableModels(QObject *parent)
     : QSortFilterProxyModel(parent)
     , m_expanded(false)
@@ -141,15 +151,28 @@ ModelInfo ModelList::defaultModelInfo() const
     // The user default model can be set by the user in the settings dialog. The "default" user
     // default model is "Application default" which signals we should use the default model that was
     // specified by the models.json file.
-    const QString defaultModelName = settings.value("userDefaultModel").toString();
-    const bool hasDefaultName = !defaultModelName.isEmpty() && defaultModelName != "Application default";
+    const QString userDefaultModelName = settings.value("userDefaultModel").toString();
+    const bool hasUserDefaultName = !userDefaultModelName.isEmpty() && userDefaultModelName != "Application default";
+    const QString defaultModelName = settings.value("defaultModel").toString();
+    const bool hasDefaultName = hasUserDefaultName ? false : !defaultModelName.isEmpty();
+
     ModelInfo *defaultModel = nullptr;
     for (ModelInfo *info : m_models) {
         if (!info->installed)
             continue;
         defaultModel = info;
-        if (!hasDefaultName) break;
-        if (hasDefaultName && (defaultModel->name == defaultModelName || defaultModel->filename == defaultModelName)) break;
+
+        // If we don't have either setting, then just use the first model that is installed
+        if (!hasUserDefaultName && !hasDefaultName)
+            break;
+
+        // If we don't have a user specified default, but *do* have a default setting and match, then use it
+        if (!hasUserDefaultName && hasDefaultName && (defaultModel->name == defaultModelName || defaultModel->filename == defaultModelName))
+            break;
+
+        // If we have a user specified default and match, then use it
+        if (hasUserDefaultName && (defaultModel->name == userDefaultModelName || defaultModel->filename == userDefaultModelName))
+            break;
     }
     if (defaultModel)
         return *defaultModel;

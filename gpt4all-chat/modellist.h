@@ -73,6 +73,7 @@ class InstalledModels : public QSortFilterProxyModel
 public:
     explicit InstalledModels(QObject *parent);
     int count() const;
+    QString firstFilename() const;
 
 Q_SIGNALS:
     void countChanged();
