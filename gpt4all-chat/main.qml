@@ -50,11 +50,7 @@ Window {
 
     // Startup code
     Component.onCompleted: {
-        if (!LLM.compatHardware) {
-            Network.sendNonCompatHardware();
-            errorCompatHardware.open();
-        } else
-            startupDialogs();
+        startupDialogs();
     }
 
     Connections {
@@ -91,6 +87,12 @@ Window {
     }
 
     function startupDialogs() {
+        if (!LLM.compatHardware) {
+            Network.sendNonCompatHardware();
+            errorCompatHardware.open();
+            return;
+        }
+
         // check for first time start of this version
         if (Download.isFirstStart()) {
             firstStartDialog.open();
@@ -98,7 +100,7 @@ Window {
         }
 
         // check for any current models and if not, open download dialog
-        if (ModelList.count === 0 && !firstStartDialog.opened) {
+        if (ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
             downloadNewModels.open();
             return;
         }
@@ -117,7 +119,14 @@ Window {
         shouldShowBusy: false
         closePolicy: Popup.NoAutoClose
         modal: true
-        text: qsTr("Incompatible hardware detected. Your hardware does not meet the minimal requirements to run GPT4All. In particular, it does not seem to support AVX intrinsics. See here for more: https://en.wikipedia.org/wiki/Advanced_Vector_Extensions")
+        text: qsTr("<h3>Encountered an error starting up:</h3><br>")
+            + qsTr("<i>\"Incompatible hardware detected.\"</i>")
+            + qsTr("<br><br>Unfortunately, your CPU does not meet the minimal requirements to run ")
+            + qsTr("this program. In particular, it does not support AVX intrinsics which this ")
+            + qsTr("program requires to successfully run a modern large language model. ")
+            + qsTr("The only solution at this time is to upgrade your hardware to a more modern CPU.")
+            + qsTr("<br><br>See here for more information: ")
+            + qsTr("https://en.wikipedia.org/wiki/Advanced_Vector_Extensions")
     }
 
     StartupDialog {
@@ -205,9 +214,11 @@ Window {
                     anchors.horizontalCenter: parent.horizontalCenter
                     leftPadding: 10
                     rightPadding: 20
-                    text: currentChat.modelLoadingError !== "" ? qsTr("Model loading error...")
+                    text: ModelList.installedModels.count
+                        ? currentChat.modelLoadingError !== "" ? qsTr("Model loading error...")
                         : (comboBox.textAt(comboBox.currentIndex) !== "" ? comboBox.textAt(comboBox.currentIndex)
                         : comboBox.valueAt(comboBox.currentIndex))
+                        : ""
                     font: comboBox.font
                     color: theme.textColor
                     verticalAlignment: Text.AlignVCenter
@@ -241,7 +252,10 @@ Window {
 
         Item {
             anchors.centerIn: parent
-            visible: !currentChat.isModelLoaded && currentChat.modelLoadingError === "" && !currentChat.isServer
+            visible: ModelList.installedModels.count
+                && !currentChat.isModelLoaded
+                && currentChat.modelLoadingError === ""
+                && !currentChat.isServer
             width: childrenRect.width
             height: childrenRect.height
             Row {

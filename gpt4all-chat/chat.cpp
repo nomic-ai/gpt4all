@@ -17,6 +17,7 @@ Chat::Chat(QObject *parent)
     , m_isServer(false)
     , m_shouldDeleteLater(false)
     , m_isModelLoaded(false)
+    , m_shouldLoadModelWhenInstalled(false)
 {
     connectLLM();
 }
@@ -33,6 +34,7 @@ Chat::Chat(bool isServer, QObject *parent)
     , m_isServer(true)
     , m_shouldDeleteLater(false)
     , m_isModelLoaded(false)
+    , m_shouldLoadModelWhenInstalled(false)
 {
     connectLLM();
 }
@@ -65,6 +67,9 @@ void Chat::connectLLM()
     connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::QueuedConnection);
     connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::QueuedConnection);
     connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
+
+    connect(ModelList::globalInstance()->installedModels(), &InstalledModels::countChanged,
+        this, &Chat::handleModelInstalled, Qt::QueuedConnection);
 }
 
 void Chat::reset()
@@ -311,7 +316,21 @@ void Chat::unloadModel()
 
 void Chat::reloadModel()
 {
+    // If the installed model list is empty, then we mark a special flag and monitor for when a model
+    // is installed
+    if (!ModelList::globalInstance()->installedModels()->count()) {
+        m_shouldLoadModelWhenInstalled = true;
+        return;
+    }
     m_llmodel->setShouldBeLoaded(true);
+}
+
+void Chat::handleModelInstalled()
+{
+    if (!m_shouldLoadModelWhenInstalled)
+        return;
+    m_shouldLoadModelWhenInstalled = false;
+    reloadModel();
 }
 
 void Chat::generatedNameChanged(const QString &name)

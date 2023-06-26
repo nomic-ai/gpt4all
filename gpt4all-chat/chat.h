@@ -130,6 +130,7 @@ private Q_SLOTS:
     void handleTokenSpeedChanged(const QString &tokenSpeed);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
     void handleModelInfoChanged(const ModelInfo &modelInfo);
+    void handleModelInstalled();
 
 private:
     QString m_id;
@@ -150,6 +151,7 @@ private:
     bool m_isServer;
     bool m_shouldDeleteLater;
     bool m_isModelLoaded;
+    bool m_shouldLoadModelWhenInstalled;
 };
 
 #endif // CHAT_H

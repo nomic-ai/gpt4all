@@ -2,12 +2,26 @@
 
 #include <algorithm>
 
+InstalledModels::InstalledModels(QObject *parent)
+    : QSortFilterProxyModel(parent)
+{
+    connect(this, &InstalledModels::rowsInserted, this, &InstalledModels::countChanged);
+    connect(this, &InstalledModels::rowsRemoved, this, &InstalledModels::countChanged);
+    connect(this, &InstalledModels::modelReset, this, &InstalledModels::countChanged);
+    connect(this, &InstalledModels::layoutChanged, this, &InstalledModels::countChanged);
+}
+
 bool InstalledModels::filterAcceptsRow(int sourceRow,
                                        const QModelIndex &sourceParent) const
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
     return isInstalled;
+}
+
+int InstalledModels::count() const
+{
+    return rowCount();
 }
 
 DownloadableModels::DownloadableModels(QObject *parent)

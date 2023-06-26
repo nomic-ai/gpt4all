@@ -513,7 +513,7 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, const QString &sa
     } else {
         QFile::FileError error = file.error();
         const QString errorString
-            = QString("ERROR: Could not save model to location: %1 failed with code %2").arg(saveFilePath).arg(error);
+            = QString("ERROR: Could not save model to location: %1 failed with code %1").arg(saveFilePath).arg(error);
         qWarning() << errorString;
         tempFile->close();
         emit hashAndSaveFinished(false, errorString, tempFile, modelReply);
@@ -532,11 +532,13 @@ void Download::handleModelDownloadFinished()
     m_activeDownloads.remove(modelReply);
 
     if (modelReply->error()) {
-        qWarning() << "ERROR: downloading:" << modelReply->errorString();
+        const QString errorString
+            = QString("ERROR: Downloading failed with code %1 \"%2\"").arg(modelReply->error()).arg(modelReply->errorString());
+        qWarning() << errorString;
         modelReply->deleteLater();
         tempFile->deleteLater();
         ModelList::globalInstance()->updateData(modelFilename, ModelList::DownloadingRole, false);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::DownloadErrorRole, modelReply->errorString());
+        ModelList::globalInstance()->updateData(modelFilename, ModelList::DownloadErrorRole, errorString);
         return;
     }
 

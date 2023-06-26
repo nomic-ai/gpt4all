@@ -69,8 +69,13 @@ Q_DECLARE_METATYPE(ModelInfo)
 class InstalledModels : public QSortFilterProxyModel
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
-    explicit InstalledModels(QObject *parent) : QSortFilterProxyModel(parent) {}
+    explicit InstalledModels(QObject *parent);
+    int count() const;
+
+Q_SIGNALS:
+    void countChanged();
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
