@@ -93,8 +93,7 @@ bool Download::isFirstStart() const
 
 void Download::updateModelList()
 {
-//    QUrl jsonUrl("http://gpt4all.io/models/models.json");
-    QUrl jsonUrl("file:///home/atreat/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
+    QUrl jsonUrl("http://gpt4all.io/models/models.json");
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
