@@ -97,6 +97,40 @@ LLamaModel::LLamaModel()
     d_ptr->modelLoaded = false;
 }
 
+// default hparams (LLaMA 7B)
+struct llama_file_hparams {
+    uint32_t n_vocab = 32000;
+    uint32_t n_embd  = 4096;
+    uint32_t n_mult  = 256;
+    uint32_t n_head  = 32;
+    uint32_t n_layer = 32;
+    uint32_t n_rot   = 64;
+    enum llama_ftype ftype = LLAMA_FTYPE_MOSTLY_F16;
+};
+
+size_t LLamaModel::requiredMem(const std::string &modelPath) {
+    auto fin = std::ifstream(modelPath, std::ios::binary);
+    fin.seekg(0, std::ios_base::end);
+    size_t filesize = fin.tellg();
+    fin.seekg(0, std::ios_base::beg);
+    uint32_t magic = 0;
+    fin.read(reinterpret_cast<char*>(&magic), sizeof(magic));
+    if (magic != 0x67676a74) return 0;
+    uint32_t version = 0;
+    fin.read(reinterpret_cast<char*>(&version), sizeof(version));
+    llama_file_hparams hparams;
+    fin.read(reinterpret_cast<char*>(&hparams.n_vocab), sizeof(hparams.n_vocab));
+    fin.read(reinterpret_cast<char*>(&hparams.n_embd), sizeof(hparams.n_embd));
+    fin.read(reinterpret_cast<char*>(&hparams.n_head), sizeof(hparams.n_head));
+    fin.read(reinterpret_cast<char*>(&hparams.n_layer), sizeof(hparams.n_layer));
+    fin.read(reinterpret_cast<char*>(&hparams.n_rot), sizeof(hparams.n_rot));
+    fin.read(reinterpret_cast<char*>(&hparams.ftype), sizeof(hparams.ftype));
+    const size_t n_ctx = 2048;
+    const size_t kvcache_element_size = 2; // fp16
+    const size_t est_kvcache_size = hparams.n_embd * hparams.n_layer * 2u * n_ctx * kvcache_element_size;
+    return filesize + est_kvcache_size;
+}
+
 bool LLamaModel::loadModel(const std::string &modelPath)
 {
     // load the model

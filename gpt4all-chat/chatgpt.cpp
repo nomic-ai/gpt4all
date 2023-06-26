@@ -20,6 +20,12 @@ ChatGPT::ChatGPT()
 {
 }
 
+size_t ChatGPT::requiredMem(const std::string &modelPath)
+{
+    Q_UNUSED(modelPath);
+    return 0;
+}
+
 bool ChatGPT::loadModel(const std::string &modelPath)
 {
     Q_UNUSED(modelPath);

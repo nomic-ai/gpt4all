@@ -60,6 +60,12 @@ void llmodel_model_destroy(llmodel_model model) {
     delete reinterpret_cast<LLModelWrapper*>(model);
 }
 
+size_t llmodel_required_mem(llmodel_model model, const char *model_path)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->requiredMem(model_path);
+}
+
 bool llmodel_loadModel(llmodel_model model, const char *model_path)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
