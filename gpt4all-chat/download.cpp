@@ -13,7 +13,7 @@
 #include <QStandardPaths>
 #include <QSettings>
 
-#define USE_LOCAL_MODELSJSON
+//#define USE_LOCAL_MODELSJSON
 
 class MyDownload: public Download { };
 Q_GLOBAL_STATIC(MyDownload, downloadInstance)
