@@ -305,5 +305,37 @@
 * Tim Miller
 * Community (beta testers, bug reporters)
 "
+  },
+  {
+    "version": "2.4.9",
+    "notes":
+"
+* New GPT4All Falcon model
+* New Orca models
+* Token generation speed is now reported in GUI
+* Bugfix for localdocs references when regenerating
+* General fixes for thread safety
+* Many fixes to UI to add descriptions for error conditions
+* Fixes for saving/reloading chats
+* Complete refactor of the model download dialog with metadata about models available
+* Resume downloads bugfix
+* CORS fix
+* Documentation fixes and typos
+* Latest llama.cpp update
+* Update of replit
+* Force metal setting
+* Fixes for model loading with metal on macOS
+",
+    "contributors":
+"
+* Nils Sauer (Nomic AI)
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Richard Guo (Nomic AI)
+* Andriy Mulyar (Nomic AI)
+* cosmic-snow
+* AMOGUS
+* Community (beta testers, bug reporters)
+"
   }
 ]
