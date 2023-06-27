@@ -11,6 +11,7 @@
 #include "localdocs.h"
 #include "download.h"
 #include "network.h"
+#include "mysettings.h"
 #include "config.h"
 #include "logger.h"
 
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
+    qmlRegisterSingletonInstance("mysettings", 1, 0, "MySettings", MySettings::globalInstance());
     qmlRegisterSingletonInstance("modellist", 1, 0, "ModelList", ModelList::globalInstance());
     qmlRegisterSingletonInstance("chatlistmodel", 1, 0, "ChatListModel", ChatListModel::globalInstance());
     qmlRegisterSingletonInstance("llm", 1, 0, "LLM", LLM::globalInstance());

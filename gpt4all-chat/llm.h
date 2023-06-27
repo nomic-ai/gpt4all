@@ -13,6 +13,7 @@ class LLM : public QObject
 public:
     static LLM *globalInstance();
 
+    // FIXME: Move all settings to the new settings singleton
     int32_t threadCount() const;
     void setThreadCount(int32_t n_threads);
     bool serverEnabled() const;
