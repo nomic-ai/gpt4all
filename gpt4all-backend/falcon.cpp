@@ -93,6 +93,13 @@ struct falcon_model {
 
     struct ggml_context* ctx;
     std::map<std::string, struct ggml_tensor*> tensors;
+
+    void * eval_buf;
+    size_t eval_buf_size;
+    void * scr0_buf;
+    size_t scr0_buf_size;
+    void * scr1_buf;
+    size_t scr1_buf_size;
 };
 
 static bool kv_cache_init(
@@ -457,6 +464,12 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
 
     fin.close();
 
+    model.eval_buf_size = 256u * 1024 * 1024;
+    model.eval_buf = malloc(model.eval_buf_size);
+    model.scr0_buf_size = 256u * 1024 * 1024;
+    model.scr0_buf = malloc(model.scr0_buf_size);
+    model.scr1_buf_size = 256u * 1024 * 1024;
+    model.scr1_buf = malloc(model.scr1_buf_size);
     return true;
 }
 
@@ -489,37 +502,13 @@ bool falcon_eval(
     const int version = hparams.falcon_version;
     const size_t head_dim = n_embd / n_head;
 
-    static size_t buf_size = 256u*1024*1024;
-    static void * buf = malloc(buf_size);
-
-    // use 2 scratch buffers
-    // TODO: very hacky solution - reimplement in a more elegant way
-    static size_t scr0_size = 256u*1024*1024;
-    static void * scr0 = malloc(scr0_size);
-
-    static size_t scr1_size = 256u*1024*1024;
-    static void * scr1 = malloc(scr1_size);
-
-    if (mem_per_token > 0 && mem_per_token*N > buf_size) {
-        const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
-        //printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, buf_size, buf_size_new);
-
-        // reallocate
-        buf_size = buf_size_new;
-        buf = realloc(buf, buf_size);
-        if (buf == nullptr) {
-            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, buf_size);
-            return false;
-        }
-    }
-
-    struct ggml_init_params params = {
-        .mem_size   = buf_size,
-        .mem_buffer = buf,
-        .no_alloc   = false,
+   struct ggml_init_params eval_ctx_params = {
+        .mem_size = model.eval_buf_size,
+        .mem_buffer = model.eval_buf,
+        .no_alloc = false,
     };
 
-    struct ggml_context * ctx0 = ggml_init(params);
+    struct ggml_context * ctx0 = ggml_init(eval_ctx_params);
     struct ggml_cgraph gf = {};
     gf.n_threads = n_threads;
 
@@ -537,7 +526,7 @@ bool falcon_eval(
         struct ggml_tensor * cur;
         struct ggml_tensor * layernorm_output;
 
-        ggml_set_scratch(ctx0, { 0, scr0_size, scr0, });
+        ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
 
         // self-attention
         {
@@ -678,7 +667,7 @@ bool falcon_eval(
             }
         }
 
-        ggml_set_scratch(ctx0, { 0, scr1_size, scr1, });
+        ggml_set_scratch(ctx0, {0, model.scr1_buf_size, model.scr1_buf, });
 
         struct ggml_tensor* inpFF = layernorm_output;
         struct ggml_tensor* attn_out = ggml_cpy(
@@ -696,7 +685,7 @@ bool falcon_eval(
         inpL = cur;
     }
 
-    ggml_set_scratch(ctx0, { 0, scr0_size, scr0, });
+    ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
 
     // norm
     {
@@ -871,9 +860,20 @@ Falcon::Falcon() : d_ptr(new FalconPrivate) {
 }
 
 Falcon::~Falcon() {
-    if (d_ptr->model) {
-        delete d_ptr->model;
+    if(d_ptr->model->ctx) {
+        ggml_free(d_ptr->model->ctx);
+        d_ptr->model->ctx = nullptr;
     }
+    if(d_ptr->model->eval_buf) {
+        free(d_ptr->model->eval_buf);
+    }
+    if(d_ptr->model->scr0_buf) {
+        free(d_ptr->model->scr0_buf);
+    }
+    if(d_ptr->model->scr1_buf) {
+        free(d_ptr->model->scr1_buf);
+    }
+    delete d_ptr->model;
 }
 
 bool Falcon::loadModel(const std::string &modelPath)
@@ -1024,7 +1024,6 @@ DLL_EXPORT bool magic_match(std::istream& f) {
 }
 
 DLL_EXPORT LLModel *construct() {
-    std::cerr << "Falcon construct" << std::endl;
     return new Falcon;
 }
 }
