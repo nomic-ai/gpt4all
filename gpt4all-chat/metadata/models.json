@@ -10,16 +10,7 @@
     "parameters": "13 billion",
     "quant": "q4_0",
     "type": "LLaMA",
-    "description": "
-      <strong>Best overall model</strong>
-      <br>
-      <ul>
-        <li>Instruction based
-        <li>Gives long responses
-        <li>Curated with 300,000 uncensored instructions
-        <li>Trained by Nous Research
-        <li>Cannot be used commercially
-      </ul>",
+    "description": "<strong>Best overall model</strong><br><ul><li>Instruction based<li>Gives long responses<li>Curated with 300,000 uncensored instructions<li>Trained by Nous Research<li>Cannot be used commercially</ul>",
     "url": "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML/resolve/main/nous-hermes-13b.ggmlv3.q4_0.bin"
   },
   {
@@ -33,15 +24,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "MPT",
-    "description": "
-      <strong>Best overall smaller model</strong>
-      <br>
-      <ul>
-        <li>Fast responses
-        <li>Chat based
-        <li>Trained by Mosaic ML
-        <li>Cannot be used commercially
-      </ul>"
+    "description": "<strong>Best overall smaller model</strong><br><ul><li>Fast responses<li>Chat based<li>Trained by Mosaic ML<li>Cannot be used commercially</ul>"
   },
   {
     "order": "c",
@@ -53,16 +36,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "GPT-J",
-    "description": "
-      <strong>Best overall for commercial usage</strong>
-      <br>
-      <ul>
-        <li>Fast responses
-        <li>Creative responses</li>
-        <li>Instruction based</li>
-        <li>Trained by Nomic ML
-        <li>Licensed for commercial use
-      </ul>"
+    "description": "<strong>Best overall for commercial usage</strong><br><ul><li>Fast responses<li>Creative responses</li><li>Instruction based</li><li>Trained by Nomic ML<li>Licensed for commercial use</ul>"
   },
   {
     "order": "d",
@@ -75,16 +49,7 @@
     "parameters": "13 billion",
     "quant": "q4_0",
     "type": "LLaMA",
-    "description": "
-      <strong>Very good overall model</strong>
-      <br>
-      <ul>
-        <li>Instruction based
-        <li>Based on the same dataset as Groovy
-        <li>Slower than Groovy, with higher quality responses
-        <li>Trained by Nomic AI
-        <li>Cannot be used commercially
-      </ul>",
+    "description": "<strong>Very good overall model</strong><br><ul><li>Instruction based<li>Based on the same dataset as Groovy<li>Slower than Groovy, with higher quality responses<li>Trained by Nomic AI<li>Cannot be used commercially</ul>",
     "url": "https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML/resolve/main/GPT4All-13B-snoozy.ggmlv3.q4_0.bin"
   },
   {
@@ -97,13 +62,7 @@
     "parameters": "7 billion",
     "quant": "q4_2",
     "type": "LLaMA",
-    "description": "
-      <strong>Good small model - trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego</strong>
-      <br>
-      <ul>
-        <li>Instruction based
-        <li>Cannot be used commercially
-      </ul>"
+    "description": "<strong>Good small model - trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>"
   },
   {
     "order": "f",
@@ -115,13 +74,7 @@
     "parameters": "13 billion",
     "quant": "q4_2",
     "type": "LLaMA",
-    "description": "
-      <strong>Good larger model - trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego</strong>
-      <br>
-      <ul>
-        <li>Instruction based
-        <li>Cannot be used commercially
-      </ul>"
+    "description": "<strong>Good larger model - trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>"
   },
   {
     "order": "g",
@@ -133,13 +86,7 @@
     "parameters": "7 billion",
     "quant": "q4_2",
     "type": "LLaMA",
-    "description": "
-      <strong>Good small model - trained by by Microsoft and Peking University</strong>
-      <br>
-      <ul>
-        <li>Instruction based
-        <li>Cannot be used commercially
-      </ul>"
+    "description": "<strong>Good small model - trained by by Microsoft and Peking University</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>"
   },
   {
     "order": "h",
@@ -151,13 +98,7 @@
     "parameters": "13 billion",
     "quant": "q4_2",
     "type": "LLaMA",
-    "description": "
-      <strong>Trained with RHLF by Stability AI</strong>
-      <br>
-      <ul>
-        <li>Instruction based
-        <li>Cannot be used commercially
-      </ul>"
+    "description": "<strong>Trained with RHLF by Stability AI</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>"
   },
   {
     "order": "i",
@@ -170,14 +111,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "MPT",
-    "description": "
-      <strong>Mosaic's instruction model</strong>
-      <br>
-      <ul>
-        <li>Instruction based
-        <li>Trained by Mosaic ML
-        <li>Licensed for commercial use
-      </ul>"
+    "description": "<strong>Mosaic's instruction model</strong><br><ul><li>Instruction based<li>Trained by Mosaic ML<li>Licensed for commercial use</ul>"
   },
   {
     "order": "j",
@@ -190,14 +124,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "MPT",
-    "description": "
-      <strong>Trained for text completion with no assistant finetuning</strong>
-      <br>
-      <ul>
-        <li>Completion based
-        <li>Trained by Mosaic ML
-        <li>Licensed for commercial use
-      </ul>"
+    "description": "<strong>Trained for text completion with no assistant finetuning</strong><br><ul><li>Completion based<li>Trained by Mosaic ML<li>Licensed for commercial use</ul>"
   },
   {
     "order": "k",
@@ -209,14 +136,7 @@
     "parameters": "13 billion",
     "quant": "q4_0",
     "type": "LLaMA",
-    "description": "
-      <strong>Trained on ~180,000 instructions</strong>
-      <br>
-      <ul>
-        <li>Instruction based
-        <li>Trained by Nous Research
-        <li>Cannot be used commercially
-      </ul>"
+    "description": "<strong>Trained on ~180,000 instructions</strong><br><ul><li>Instruction based<li>Trained by Nous Research<li>Cannot be used commercially</ul>"
   },
   {
     "order": "l",
@@ -229,13 +149,7 @@
     "parameters": "13 billion",
     "quant": "q4_0",
     "type": "LLaMA",
-    "description": "
-      <strong>Trained on uncensored assistant data and instruction data</strong>
-      <br>
-      <ul>
-        <li>Instruction based
-        <li>Cannot be used commercially
-      </ul>",
+    "description": "<strong>Trained on uncensored assistant data and instruction data</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>",
     "url": "https://huggingface.co/TheBloke/WizardLM-13B-Uncensored-GGML/resolve/main/wizardLM-13B-Uncensored.ggmlv3.q4_0.bin"
   },
   {
@@ -250,13 +164,7 @@
     "parameters": "3 billion",
     "quant": "f16",
     "type": "Replit",
-    "description": "
-      <strong>Trained on subset of the Stack</strong>
-      <br>
-      <ul>
-        <li>Code completion based
-        <li>Licensed for commercial use
-      </ul>",
+    "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>Licensed for commercial use</ul>",
     "url": "https://huggingface.co/nomic-ai/ggml-replit-code-v1-3b/resolve/main/ggml-replit-code-v1-3b.bin"
   }
 ]
