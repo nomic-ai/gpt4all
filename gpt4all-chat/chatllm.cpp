@@ -224,6 +224,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;
                     case 'M': m_llModelType = LLModelType::MPT_; break;
                     case 'R': m_llModelType = LLModelType::REPLIT_; break;
+                    case 'F': m_llModelType = LLModelType::FALCON_; break;
                     default:
                         {
                             delete std::exchange(m_llModelInfo.model, nullptr);
