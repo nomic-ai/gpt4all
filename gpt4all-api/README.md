@@ -31,6 +31,12 @@ docker compose up --build
 ```
 and edit files in the `api` directory. The api will hot-reload on changes.
 
+You can run the unittests with
+
+```bash
+make test
+```
+
 #### Viewing API documentation
 
 Once the FastAPI ap is started you can access its documentation and test the search endpoint by going to:

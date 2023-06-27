@@ -20,14 +20,15 @@ def test_completion():
         echo=True,
         stream=False
     )
+    print(response)
 
-def test_chat_completions():
-    model = "gpt4all-j-v1.3-groovy"
-    prompt = "Who is Michael Jordan?"
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=[]
-    )
+# def test_chat_completions():
+#     model = "gpt4all-j-v1.3-groovy"
+#     prompt = "Who is Michael Jordan?"
+#     response = openai.ChatCompletion.create(
+#         model=model,
+#         messages=[]
+#     )
 
 
 
