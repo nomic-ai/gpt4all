@@ -19,6 +19,7 @@
 #define GPTJ_INTERNAL_STATE_VERSION 0
 #define REPLIT_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
+#define FALCON_INTERNAL_STATE_VERSION 0
 
 class LLModelStore {
 public:
@@ -570,6 +571,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
         case MPT_: stream << MPT_INTERNAL_STATE_VERSION; break;
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
+        case FALCON_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
         default: Q_UNREACHABLE();
         }
     }
