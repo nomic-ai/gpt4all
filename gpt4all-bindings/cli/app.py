@@ -6,6 +6,7 @@ REPL to communicate with a language model similar to the chat GUI application, b
 
 import io
 import pkg_resources  # should be present as a dependency of gpt4all
+import logging
 import signal
 import sys
 import typer
@@ -14,6 +15,8 @@ from collections import namedtuple
 from typing_extensions import Annotated
 from gpt4all import GPT4All
 
+
+logging.basicConfig()
 
 MESSAGES = [
     {"role": "system", "content": "You are a helpful assistant."},
@@ -75,7 +78,8 @@ def repl(
         print(f" {num_threads} threads", end="", flush=True)
     else:
         print(f"\nUsing {gpt4all_instance.model.thread_count()} threads", end="")
-    _setup_signal_handler(gpt4all_instance)
+    #_setup_signal_handler(gpt4all_instance)
+    manage_sigint = ResponseSigintManager(gpt4all_instance)
 
     print(CLI_START_MESSAGE)
 
@@ -106,32 +110,33 @@ def _old_loop(gpt4all_instance):
         MESSAGES.append({"role": "user", "content": message})
 
         # handle SIGINT gracefully during chat_completion
-        _activate_response_sigint_handler()
+        #_activate_response_sigint_handler()
+        with manage_sigint:
 
-        # execute chat completion and ignore the full response since 
-        # we are outputting it incrementally
-        full_response = gpt4all_instance.chat_completion(
-            MESSAGES,
-            # preferential kwargs for chat ux
-            logits_size=0,
-            tokens_size=0,
-            n_past=0,
-            n_ctx=0,
-            n_predict=200,
-            top_k=40,
-            top_p=0.9,
-            temp=0.9,
-            n_batch=9,
-            repeat_penalty=1.1,
-            repeat_last_n=64,
-            context_erase=0.0,
-            # required kwargs for cli ux (incremental response)
-            verbose=False,
-            streaming=True,
-        )
+            # execute chat completion and ignore the full response since
+            # we are outputting it incrementally
+            full_response = gpt4all_instance.chat_completion(
+                MESSAGES,
+                # preferential kwargs for chat ux
+                logits_size=0,
+                tokens_size=0,
+                n_past=0,
+                n_ctx=0,
+                n_predict=200,
+                top_k=40,
+                top_p=0.9,
+                temp=0.9,
+                n_batch=9,
+                repeat_penalty=1.1,
+                repeat_last_n=64,
+                context_erase=0.0,
+                # required kwargs for cli ux (incremental response)
+                verbose=False,
+                streaming=True,
+            )
 
         # revert to default SIGINT
-        _deactivate_response_sigint_handler()
+        #_deactivate_response_sigint_handler()
 
         # record assistant's response to messages
         MESSAGES.append(full_response.get("choices")[0].get("message"))
@@ -225,14 +230,18 @@ def _deactivate_response_sigint_handler():
 
 class ResponseSigintManager:
     # TODO: docstrings; should care be taken for it to be reentrant?
+    # TODO: might also have to make sure that the terminal prompt is reset properly
+    # note: the default behaviour if something goes wrong with patching/activating is to let the
+    #       response keep generating
 
     def __init__(self, gpt4all: GPT4All):
         if not isinstance(gpt4all, GPT4All):
             raise TypeError(f"'gpt4all' must be of type 'gpt4all.GPT4All', but is '{type(gpt4all)}'.")
         self._gpt4all = gpt4all
-        self._is_response_handler_patched = False
+        self._is_response_callback_patched = False
         self._old_response_callback = None
         self._old_sigint_handler = None
+        self._keep_generating_response = True
 
     @property
     def gpt4all(self):
@@ -240,75 +249,89 @@ class ResponseSigintManager:
 
     @property
     def is_managing_sigint(self):
-        # invariant: storing old handler <-> activating own handler
+        # invariant: old handler is stored <-> own handler is active
         return self._old_sigint_handler is not None
+
+    @property
+    def keep_generating_response(self):
+        return self._keep_generating
 
     def __enter__(self):
         if not self.gpt4all:
             raise RuntimeError()
-        if not self._is_response_handler_patched:
-            self._patch_response_handler()  # TODO maybe handle returned value
+        if not self._is_response_callback_patched:
+            self._patch_response_callback()
         self._activate_response_sigint_handler()
-        # TODO return anything for the 'as' clause?
     
     def __exit__(self, exc_type, exc_value, traceback):
-        if self.is_managing_sigint:
-            self._deactivate_response_sigint_handler()
+        self._deactivate_response_sigint_handler()
+        self._revert_response_callback()
 
-    def _patch_response_handler(self):
+    def _patch_response_callback(self):
         try:
             self.gpt4all.model._response_callback = self._response_callback
-            self._is_response_handler_patched = True
+            self._is_response_callback_patched = True
             return True
-        except Exception:
+        except Exception as exc:
+            logging.warn("Unable to patch '_response_callback'. SIGINT will not be handled. Cause: {exc}")
             return False
     
-    def _revert_response_handler(self):
-        if self._is_response_handler_patched:
+    def _revert_response_callback(self):
+        if self._is_response_callback_patched:
             try:
                 self.gpt4all.model._response_callback = self._old_response_callback
+            except Exception as exc:
+                logging.warn("Unable to revert '_response_callback'. The GPT4All API"
+                             " might remain in an inconsistent state. Cause: {exc}")
             finally:
+                # revert state on a best-effort basis; reversal shouldn't fail under normal circumstances:
                 self._old_response_callback = None
-                self._is_response_handler_patched = False  # on a best-effort basis
+                self._is_response_callback_patched = False
 
     def _response_callback(self, token_id, response):
         sys.stdout.write(response.decode('utf-8', 'replace'))
-        return self._keep_generating
+        return self.keep_generating
 
     def _activate_response_sigint_handler(self):
-        if self._is_response_handler_patched and self._old_sigint_handler is None:
+        if self._is_response_callback_patched and self._old_sigint_handler is None:
             try:
                 self._old_sigint_handler = signal.signal(signal.SIGINT, self._halt_response_sigint_handler)  # TODO
-            except:
-                pass  # TODO might want to log sth
+                return True
+            except Exception as exc:
+                logging.warn("Unable to activate the response SIGINT handler. Cause: {exc}")
+                return False
     
     def _deactivate_response_sigint_handler(self):
+        self._keep_generating_response = True
         if self.is_managing_sigint:
-            assert self._old_sigint_handler is not None
             try:
                 signal.signal(signal.SIGINT, self._old_sigint_handler)
                 self._old_sigint_handler = None
-            except:
-                pass  # TODO might want to log sth
+            except Exception as exc:
+                logging.warn("Unable to deactivate the response SIGINT handler. The handling"
+                             " of SIGINT might remain in an inconsistent state. Cause: {exc}")
     
     def _halt_response_sigint_handler(signal_, frame):
         assert signal_ == signal.SIGINT, f"expected signal.SIGINT ({signal.SIGINT}) but got {signal_.name} ({signal_})"
-        self._keep_generating = False
+        self._keep_generating_response = False
     
     def __del__(self):
-        if self.gpt4all:
-            self._revert_response_handler()
-        self._gpt4all = None
         if self.is_managing_sigint:
             self._deactivate_response_sigint_handler()
+        if self.gpt4all:
+            self._revert_response_callback()
+        self._gpt4all = None
 
     def __repr__(self):
         return f'<{self.__class__.__name__}(gpt4all={self.gpt4all})>'
     
     def __str__(self):
-        return (f"{self.__class__.__name__} for {self.gpt4all};"
-                f" '_response_handler()' patched: {'yes' if self._is_response_handler_patched else 'no'};"
-                f"currently managing SIGINT: {'yes' if self.is_managing_sigint else 'no'}")
+        return ("{class_name} for {gpt4all}; '_response_handler()' patched: {is_patched};"
+                " currently managing SIGINT: {is_managing_sigint}").format(
+                    class_name=self.__class__.__name__,
+                    gpt4all=self.gpt4all,
+                    is_patched=('yes' if self._is_response_callback_patched else 'no'),
+                    is_managing_sigint=('yes' if self.is_managing_sigint else 'no'))
 
 
 
