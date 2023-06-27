@@ -19,8 +19,8 @@ DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").re
 
 class GPT4All():
     """Python API for retrieving and interacting with GPT4All models.
-
-    Attribuies:
+    
+    Attributes:
         model: Pointer to underlying C model.
     """
     def __init__(self, model_name: str, api_key: str = None, model_path: str = None, model_type: str = None, allow_download = True):
