@@ -1,6 +1,8 @@
 #include "llm.h"
+#include "../gpt4all-backend/sysinfo.h"
 #include "config.h"
-#include "download.h"
+#include "chatlistmodel.h"
+#include "../gpt4all-backend/llmodel.h"
 #include "network.h"
 
 #include <QCoreApplication>
@@ -20,7 +22,6 @@ LLM *LLM::globalInstance()
 
 LLM::LLM()
     : QObject{nullptr}
-    , m_chatListModel(new ChatListModel(this))
     , m_threadCount(std::min(4, (int32_t) std::thread::hardware_concurrency()))
     , m_serverEnabled(false)
     , m_compatHardware(true)
@@ -38,11 +39,8 @@ LLM::LLM()
         llmodelSearchPaths += ";" + frameworksDir;
 #endif
     LLModel::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
-
-    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
-        this, &LLM::aboutToQuit);
     connect(this, &LLM::serverEnabledChanged,
-        m_chatListModel, &ChatListModel::handleServerEnabledChanged);
+        ChatListModel::globalInstance(), &ChatListModel::handleServerEnabledChanged);
 
 #if defined(__x86_64__)
     #ifndef _MSC_VER
@@ -98,6 +96,16 @@ bool LLM::fileExists(const QString &path) const
     return info.exists() && info.isFile();
 }
 
+qint64 LLM::systemTotalRAMInGB() const
+{
+    return getSystemTotalRAMInGB();
+}
+
+QString LLM::systemTotalRAMInGBString() const
+{
+    return QString::fromStdString(getSystemTotalRAMInGBString());
+}
+
 int32_t LLM::threadCount() const
 {
     return m_threadCount;
@@ -122,9 +130,4 @@ void LLM::setServerEnabled(bool enabled)
         return;
     m_serverEnabled = enabled;
     emit serverEnabledChanged();
-}
-
-void LLM::aboutToQuit()
-{
-    m_chatListModel->saveChats();
 }

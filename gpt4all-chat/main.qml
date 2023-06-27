@@ -5,7 +5,9 @@ import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import llm
+import chatlistmodel
 import download
+import modellist
 import network
 import gpt4all
 
@@ -22,18 +24,33 @@ Window {
         id: theme
     }
 
-    property var currentChat: LLM.chatListModel.currentChat
+    property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
+    property bool hasSaved: false
+
+    onClosing: function(close) {
+        if (window.hasSaved)
+            return;
+
+        savingPopup.open();
+        ChatListModel.saveChats();
+        close.accepted = false
+    }
+
+    Connections {
+        target: ChatListModel
+        function onSaveChatsFinished() {
+            window.hasSaved = true;
+            savingPopup.close();
+            window.close()
+        }
+    }
 
     color: theme.backgroundDarkest
 
     // Startup code
     Component.onCompleted: {
-        if (!LLM.compatHardware) {
-            Network.sendNonCompatHardware();
-            errorCompatHardware.open();
-        } else
-            startupDialogs();
+        startupDialogs();
     }
 
     Connections {
@@ -70,6 +87,12 @@ Window {
     }
 
     function startupDialogs() {
+        if (!LLM.compatHardware) {
+            Network.sendNonCompatHardware();
+            errorCompatHardware.open();
+            return;
+        }
+
         // check for first time start of this version
         if (Download.isFirstStart()) {
             firstStartDialog.open();
@@ -77,7 +100,7 @@ Window {
         }
 
         // check for any current models and if not, open download dialog
-        if (currentChat.modelList.length === 0 && !firstStartDialog.opened) {
+        if (ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
             downloadNewModels.open();
             return;
         }
@@ -96,7 +119,14 @@ Window {
         shouldShowBusy: false
         closePolicy: Popup.NoAutoClose
         modal: true
-        text: qsTr("Incompatible hardware detected. Your hardware does not meet the minimal requirements to run GPT4All. In particular, it does not seem to support AVX intrinsics. See here for more: https://en.wikipedia.org/wiki/Advanced_Vector_Extensions")
+        text: qsTr("<h3>Encountered an error starting up:</h3><br>")
+            + qsTr("<i>\"Incompatible hardware detected.\"</i>")
+            + qsTr("<br><br>Unfortunately, your CPU does not meet the minimal requirements to run ")
+            + qsTr("this program. In particular, it does not support AVX intrinsics which this ")
+            + qsTr("program requires to successfully run a modern large language model. ")
+            + qsTr("The only solution at this time is to upgrade your hardware to a more modern CPU.")
+            + qsTr("<br><br>See here for more information: <a href=\"https://en.wikipedia.org/wiki/Advanced_Vector_Extensions\">")
+            + qsTr("https://en.wikipedia.org/wiki/Advanced_Vector_Extensions</a>")
     }
 
     StartupDialog {
@@ -125,7 +155,18 @@ Window {
         id: modelLoadingErrorPopup
         anchors.centerIn: parent
         shouldTimeOut: false
-        text: currentChat.modelLoadingError
+        text: qsTr("<h3>Encountered an error loading model:</h3><br>")
+            + "<i>\"" + currentChat.modelLoadingError + "\"</i>"
+            + qsTr("<br><br>Model loading failures can happen for a variety of reasons, but the most common "
+            + "causes include a bad file format, an incomplete or corrupted download, the wrong file "
+            + "type or an incompatible model type. Here are some suggestions for resolving the problem:"
+            + "<br><ul>"
+            + "<li>Ensure the model file has a compatible ggml format and type"
+            + "<li>Check the model file is complete in the download folder"
+            + "<li>You can find the download folder in the settings dialog"
+            + "<li>If you've sideloaded the model ensure the file is not corrupt by checking md5sum"
+            + "<li>Read more about what models are supported in our <a href=\"https://docs.gpt4all.io/gpt4all_chat.html\">documentation</a> for the gui"
+            + "<li>Check out our <a href=\"https://discord.gg/4M2QFmTt2k\">discord channel</a> for help")
     }
 
     Rectangle {
@@ -161,12 +202,46 @@ Window {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.horizontalCenterOffset: window.width >= 950 ? 0 : Math.max(-((950 - window.width) / 2), -99.5)
                 enabled: !currentChat.isServer
-                model: currentChat.modelList
+                model: ModelList.installedModels
+                valueRole: "filename"
+                textRole: "name"
+                property string currentModelName: ""
+                function updateCurrentModelName() {
+                    // During application startup the model names might not be processed yet, so don't
+                    // set the combobox text until this is done OR the timer has timed out
+                    if (!ModelList.modelHasNames && startupTimer.running)
+                        return
+                    var info = ModelList.modelInfo(currentChat.modelInfo.filename);
+                    comboBox.currentModelName = info.name !== "" ? info.name : info.filename;
+                }
+                Timer {
+                    id: startupTimer
+                    interval: 3000 // 3 seconds
+                    running: true
+                    repeat: false
+                    onTriggered: {
+                        comboBox.updateCurrentModelName();
+                    }
+                }
+                Connections {
+                    target: ModelList
+                    function onModelHasNamesChanged() {
+                        comboBox.updateCurrentModelName();
+                    }
+                }
+                Connections {
+                    target: currentChat
+                    function onModelInfoChanged() {
+                        comboBox.updateCurrentModelName();
+                    }
+                }
                 contentItem: Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     leftPadding: 10
                     rightPadding: 20
-                    text: currentChat.modelLoadingError !== "" ? "Model loading error..." : comboBox.displayText
+                    text: currentChat.modelLoadingError !== ""
+                        ? qsTr("Model loading error...")
+                        : comboBox.currentModelName
                     font: comboBox.font
                     color: theme.textColor
                     verticalAlignment: Text.AlignVCenter
@@ -176,7 +251,7 @@ Window {
                 delegate: ItemDelegate {
                     width: comboBox.width
                     contentItem: Text {
-                        text: modelData
+                        text: name !== "" ? name : filename
                         color: theme.textColor
                         font: comboBox.font
                         elide: Text.ElideRight
@@ -190,17 +265,20 @@ Window {
                 Accessible.role: Accessible.ComboBox
                 Accessible.name: qsTr("ComboBox for displaying/picking the current model")
                 Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
-                onActivated: {
+                onActivated: function (index) {
                     currentChat.stopGenerating()
                     currentChat.reset();
-                    currentChat.modelName = comboBox.currentText
+                    currentChat.modelInfo = ModelList.modelInfo(comboBox.valueAt(index))
                 }
             }
         }
 
         Item {
             anchors.centerIn: parent
-            visible: !currentChat.isModelLoaded && currentChat.modelLoadingError === "" && !currentChat.isServer
+            visible: ModelList.installedModels.count
+                && !currentChat.isModelLoaded
+                && currentChat.modelLoadingError === ""
+                && !currentChat.isServer
             width: childrenRect.width
             height: childrenRect.height
             Row {
@@ -225,8 +303,8 @@ Window {
     SettingsDialog {
         id: settingsDialog
         anchors.centerIn: parent
-        width: Math.min(1024, window.width - (window.width * .2))
-        height: Math.min(600, window.height - (window.height * .2))
+        width: Math.min(1280, window.width - (window.width * .1))
+        height: window.height - (window.height * .1)
     }
 
     Button {
@@ -406,6 +484,14 @@ Window {
         }
     }
 
+    PopupDialog {
+        id: savingPopup
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: true
+        text: qsTr("Saving chats.")
+    }
+
     MyToolButton {
         id: copyButton
         anchors.right: settingsButton.left
@@ -524,8 +610,8 @@ Window {
     ModelDownloaderDialog {
         id: downloadNewModels
         anchors.centerIn: parent
-        width: Math.min(1024, window.width - (window.width * .2))
-        height: Math.min(600, window.height - (window.height * .2))
+        width: Math.min(1280, window.width - (window.width * .1))
+        height: window.height - (window.height * .1)
         Item {
             Accessible.role: Accessible.Dialog
             Accessible.name: qsTr("Download new models dialog")
@@ -536,7 +622,7 @@ Window {
     ChatDrawer {
         id: drawer
         y: header.height
-        width: 0.3 * window.width
+        width: Math.min(600, 0.3 * window.width)
         height: window.height - y
         onDownloadClicked: {
             downloadNewModels.open()
@@ -790,7 +876,7 @@ Window {
                 }
 
                 Image {
-                    visible: currentChat.isServer || currentChat.modelName.startsWith("chatgpt-")
+                    visible: currentChat.isServer || currentChat.modelInfo.isChatGPT
                     anchors.fill: parent
                     sourceSize.width: 1024
                     sourceSize.height: 1024
@@ -843,6 +929,16 @@ Window {
             padding: 15
             text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
             Accessible.description: qsTr("Controls generation of the response")
+        }
+
+        Text {
+            id: speed
+            anchors.bottom: textInputView.top
+            anchors.bottomMargin: 20
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            color: theme.mutedTextColor
+            text: currentChat.tokenSpeed
         }
 
         RectangularGlow {

@@ -81,6 +81,8 @@ llmodel.llmodel_model_destroy.restype = None
 
 llmodel.llmodel_loadModel.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 llmodel.llmodel_loadModel.restype = ctypes.c_bool
+llmodel.llmodel_required_mem.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+llmodel.llmodel_required_mem.restype = ctypes.c_size_t
 llmodel.llmodel_isModelLoaded.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_isModelLoaded.restype = ctypes.c_bool
 
@@ -130,6 +132,16 @@ class LLModel:
     def __del__(self):
         if self.model is not None:
             llmodel.llmodel_model_destroy(self.model)
+
+    def memory_needed(self, model_path: str) -> int:
+        model_path_enc = model_path.encode("utf-8")
+        self.model = llmodel.llmodel_model_create(model_path_enc)
+
+        if self.model is not None:
+            return llmodel.llmodel_required_mem(self.model, model_path_enc)
+        else:
+            raise ValueError("Unable to instantiate model")
+
 
     def load_model(self, model_path: str) -> bool:
         """

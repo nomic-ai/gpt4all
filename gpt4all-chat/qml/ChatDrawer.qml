@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import chatlistmodel
 import llm
 import download
 import network
@@ -48,8 +49,8 @@ Drawer {
                 color: newChat.hovered ? theme.backgroundDark : theme.backgroundDarkest
             }
             onClicked: {
-                LLM.chatListModel.addChat();
-                Network.sendNewChat(LLM.chatListModel.count)
+                ChatListModel.addChat();
+                Network.sendNewChat(ChatListModel.count)
             }
         }
 
@@ -69,15 +70,15 @@ Drawer {
                 anchors.fill: parent
                 anchors.rightMargin: 10
 
-                model: LLM.chatListModel
+                model: ChatListModel
 
                 delegate: Rectangle {
                     id: chatRectangle
                     width: conversationList.width
                     height: chatName.height
                     opacity: 0.9
-                    property bool isCurrent: LLM.chatListModel.currentChat === LLM.chatListModel.get(index)
-                    property bool isServer: LLM.chatListModel.get(index) && LLM.chatListModel.get(index).isServer
+                    property bool isCurrent: ChatListModel.currentChat === ChatListModel.get(index)
+                    property bool isServer: ChatListModel.get(index) && ChatListModel.get(index).isServer
                     property bool trashQuestionDisplayed: false
                     visible: !isServer || LLM.serverEnabled
                     z: isCurrent ? 199 : 1
@@ -119,7 +120,7 @@ Drawer {
                             Network.sendRenameChat()
                         }
                         function changeName() {
-                            LLM.chatListModel.get(index).name = chatName.text
+                            ChatListModel.get(index).name = chatName.text
                             chatName.focus = false
                             chatName.readOnly = true
                             chatName.selectByMouse = false
@@ -128,7 +129,7 @@ Drawer {
                             onTapped: {
                                 if (isCurrent)
                                     return;
-                                LLM.chatListModel.currentChat = LLM.chatListModel.get(index);
+                                ChatListModel.currentChat = ChatListModel.get(index);
                             }
                         }
                         Accessible.role: Accessible.Button
@@ -201,7 +202,7 @@ Drawer {
                                     color: "transparent"
                                 }
                                 onClicked: {
-                                    LLM.chatListModel.removeChat(LLM.chatListModel.get(index))
+                                    ChatListModel.removeChat(ChatListModel.get(index))
                                     Network.sendRemoveChat()
                                 }
                                 Accessible.role: Accessible.Button

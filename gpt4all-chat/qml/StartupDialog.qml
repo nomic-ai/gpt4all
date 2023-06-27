@@ -146,13 +146,12 @@ model release that uses your data!")
                 Layout.alignment: Qt.AlignVCenter
                 Layout.row: 0
                 Layout.column: 1
-                property bool defaultChecked: Network.usageStatsActive
                 property alias checked: optInStatisticsRadioYes.checked
                 property bool choiceMade: optInStatisticsRadioYes.checked || optInStatisticsRadioNo.checked
 
                 RadioButton {
                     id: optInStatisticsRadioYes
-                    checked: optInStatisticsRadio.defaultChecked
+                    checked: false
                     text: qsTr("Yes")
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-in for anonymous usage statistics")
@@ -258,13 +257,12 @@ model release that uses your data!")
                 Layout.alignment: Qt.AlignVCenter
                 Layout.row: 1
                 Layout.column: 1
-                property bool defaultChecked: Network.isActive
                 property alias checked: optInNetworkRadioYes.checked
                 property bool choiceMade: optInNetworkRadioYes.checked || optInNetworkRadioNo.checked
 
                 RadioButton {
                     id: optInNetworkRadioYes
-                    checked: optInNetworkRadio.defaultChecked
+                    checked: false
                     text: qsTr("Yes")
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-in for network")

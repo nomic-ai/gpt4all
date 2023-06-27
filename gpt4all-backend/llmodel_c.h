@@ -108,6 +108,14 @@ llmodel_model llmodel_model_create2(const char *model_path, const char *build_va
 void llmodel_model_destroy(llmodel_model model);
 
 /**
+ * Estimate RAM requirement for a model file
+ * @param model A pointer to the llmodel_model instance.
+ * @param model_path A string representing the path to the model file.
+ * @return size greater than 0 if the model was parsed successfully, 0 if file could not be parsed.
+ */
+size_t llmodel_required_mem(llmodel_model model, const char *model_path);
+
+/**
  * Load a model from a file.
  * @param model A pointer to the llmodel_model instance.
  * @param model_path A string representing the path to the model file.

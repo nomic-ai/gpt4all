@@ -22,10 +22,14 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     QHttpServerResponse handleCompletionRequest(const QHttpServerRequest &request, bool isChat);
+    void handleDatabaseResultsChanged(const QList<ResultInfo> &results) { m_databaseResults = results; }
+    void handleCollectionListChanged(const QList<QString> &collectionList) { m_collections = collectionList; }
 
 private:
     Chat *m_chat;
     QHttpServer *m_server;
+    QList<ResultInfo> m_databaseResults;
+    QList<QString> m_collections;
 };
 
 #endif // SERVER_H

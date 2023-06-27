@@ -1,5 +1,5 @@
 #include "database.h"
-#include "download.h"
+#include "modellist.h"
 
 #include <QTimer>
 #include <QPdfDocument>
@@ -415,7 +415,7 @@ bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
 
 QSqlError initDb()
 {
-    QString dbPath = Download::globalInstance()->downloadLocalModelsPath()
+    QString dbPath = ModelList::globalInstance()->localModelsPath()
         + QString("localdocs_v%1.db").arg(LOCALDOCS_VERSION);
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(dbPath);
@@ -674,7 +674,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
 #endif
 
     static const QList<QString> extensions { "txt", "doc", "docx", "pdf", "rtf", "odt", "html", "htm",
-    "xls", "xlsx", "csv", "ods", "ppt", "pptx", "odp", "xml", "json", "log", "md", "tex", "asc", "wks",
+    "xls", "xlsx", "csv", "ods", "ppt", "pptx", "odp", "xml", "json", "log", "md", "org", "tex", "asc", "wks",
     "wpd", "wps", "wri", "xhtml", "xht", "xslt", "yaml", "yml", "dtd", "sgml", "tsv", "strings", "resx",
     "plist", "properties", "ini", "config", "bat", "sh", "ps1", "cmd", "awk", "sed", "vbs", "ics", "mht",
     "mhtml", "epub", "djvu", "azw", "azw3", "mobi", "fb2", "prc", "lit", "lrf", "tcr", "pdb", "oxps",
