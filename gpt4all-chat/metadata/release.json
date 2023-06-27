@@ -251,5 +251,123 @@
 * Peter Gagarinov
 * Community (beta testers, bug reporters)
 "
+  },
+  {
+    "version": "2.4.7",
+    "notes":
+"
+* replit model support
+* macos metal accelerated support
+* fix markdown for localdocs references
+* inline syntax highlighting for python and cpp with more languages coming
+* synced with upstream llama.cpp
+* ui fixes and default generation settings changes
+* backend bugfixes
+* allow for loading files directly from huggingface via TheBloke without name changes
+",
+    "contributors":
+"
+* Nils Sauer (Nomic AI)
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Richard Guo (Nomic AI)
+* Andriy Mulyar (Nomic AI)
+* Ettore Di Giacinto
+* AMOGUS
+* Felix Zaslavskiy
+* Tim Miller
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.8",
+    "notes":
+"
+* replit model support
+* macos metal accelerated support
+* fix markdown for localdocs references
+* inline syntax highlighting for python and cpp with more languages coming
+* synced with upstream llama.cpp
+* ui fixes and default generation settings changes
+* backend bugfixes
+* allow for loading files directly from huggingface via TheBloke without name changes
+",
+    "contributors":
+"
+* Nils Sauer (Nomic AI)
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Richard Guo (Nomic AI)
+* Andriy Mulyar (Nomic AI)
+* Ettore Di Giacinto
+* AMOGUS
+* Felix Zaslavskiy
+* Tim Miller
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.9",
+    "notes":
+"
+* New GPT4All Falcon model
+* New Orca models
+* Token generation speed is now reported in GUI
+* Bugfix for localdocs references when regenerating
+* General fixes for thread safety
+* Many fixes to UI to add descriptions for error conditions
+* Fixes for saving/reloading chats
+* Complete refactor of the model download dialog with metadata about models available
+* Resume downloads bugfix
+* CORS fix
+* Documentation fixes and typos
+* Latest llama.cpp update
+* Update of replit
+* Force metal setting
+* Fixes for model loading with metal on macOS
+",
+    "contributors":
+"
+* Nils Sauer (Nomic AI)
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Richard Guo (Nomic AI)
+* Andriy Mulyar (Nomic AI)
+* cosmic-snow
+* AMOGUS
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.10",
+    "notes":
+"
+* New GPT4All Falcon model
+* New Orca models
+* Token generation speed is now reported in GUI
+* Bugfix for localdocs references when regenerating
+* General fixes for thread safety
+* Many fixes to UI to add descriptions for error conditions
+* Fixes for saving/reloading chats
+* Complete refactor of the model download dialog with metadata about models available
+* Resume downloads bugfix
+* CORS fix
+* Documentation fixes and typos
+* Latest llama.cpp update
+* Update of replit
+* Force metal setting
+* Fixes for model loading with metal on macOS
+",
+    "contributors":
+"
+* Nils Sauer (Nomic AI)
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Richard Guo (Nomic AI)
+* Andriy Mulyar (Nomic AI)
+* cosmic-snow
+* AMOGUS
+* Community (beta testers, bug reporters)
+"
   }
 ]

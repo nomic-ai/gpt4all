@@ -7,6 +7,7 @@ import Qt5Compat.GraphicalEffects
 Button {
     id: myButton
     padding: 10
+    property bool toggled: false
     property alias source: image.source
     contentItem: Text {
         text: myButton.text
@@ -21,7 +22,7 @@ Button {
         Rectangle {
             anchors.fill: parent
             color: "transparent"
-            visible: myButton.checkable && myButton.checked
+            visible: myButton.toggled
             border.color: theme.backgroundLightest
             border.width: 1
             radius: 10

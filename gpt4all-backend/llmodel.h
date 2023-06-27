@@ -59,6 +59,7 @@ public:
 
     virtual bool loadModel(const std::string &modelPath) = 0;
     virtual bool isModelLoaded() const = 0;
+    virtual size_t requiredMem(const std::string &modelPath) = 0;
     virtual size_t stateSize() const { return 0; }
     virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
     virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
@@ -86,7 +87,7 @@ protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
     virtual std::vector<Token> tokenize(PromptContext &, const std::string&) const = 0;
-    virtual std::string_view tokenToString(Token) const = 0;
+    virtual std::string tokenToString(Token) const = 0;
     virtual Token sampleToken(PromptContext &ctx) const = 0;
     virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const = 0;
     virtual int32_t contextLength() const = 0;

@@ -39,8 +39,13 @@ llmodel_model llmodel_model_create2(const char *model_path, const char *build_va
         delete std::exchange(wrapper, nullptr);
         // Get errno and error message if none
         if (error_code == 0) {
-            error_code = errno;
-            last_error_message = std::strerror(error_code);
+            if (errno != 0) {
+                error_code = errno;
+                last_error_message = std::strerror(error_code);
+            } else {
+                error_code = ENOTSUP;
+                last_error_message = "Model format not supported (no matching implementation found)";
+            }
         }
         // Set error argument
         if (error) {
@@ -53,6 +58,12 @@ llmodel_model llmodel_model_create2(const char *model_path, const char *build_va
 
 void llmodel_model_destroy(llmodel_model model) {
     delete reinterpret_cast<LLModelWrapper*>(model);
+}
+
+size_t llmodel_required_mem(llmodel_model model, const char *model_path)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->requiredMem(model_path);
 }
 
 bool llmodel_loadModel(llmodel_model model, const char *model_path)

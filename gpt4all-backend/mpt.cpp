@@ -33,8 +33,6 @@
 
 namespace {
 const char *modelType_ = "MPT";
-
-static const size_t MB = 1024*1024;
 }
 
 // default hparams (MPT 7B)
@@ -134,7 +132,7 @@ static bool kv_cache_init(
     const int64_t n_mem      = (int64_t)n_layer*n_ctx;
     const int64_t n_elements = n_embd*n_mem;
 
-    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2u*MB);
+    cache.buf.resize(2u*n_elements*ggml_type_size(wtype) + 2_MiB);
 
     struct ggml_init_params params;
     params.mem_size   = cache.buf.size;
@@ -154,9 +152,13 @@ static bool kv_cache_init(
     return true;
 }
 
-// load the model's weights from a stream
-bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & model, gpt_vocab & vocab) {
+// load the model's weights from a stream. if mem_req ptr is passed the model is
+// only partially parsed to estimate required memory
+bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & model, gpt_vocab & vocab, size_t * mem_req) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
+    if (mem_req != nullptr) {
+        *mem_req = 0;
+    }
 
     // verify magic
     {
@@ -276,6 +278,18 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         ctx_size += (5 + 10*n_layer)*256; // object overhead
 
         printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size/(1024.0*1024.0));
+    }
+
+    if (mem_req != nullptr) {
+        *mem_req += ctx_size;
+        const int n_embd  = model.hparams.n_embd;
+        const int n_layer = model.hparams.n_layer;
+
+        const int64_t n_mem      = (int64_t)n_layer*model.hparams.n_ctx;
+        const int64_t n_elements = n_embd*n_mem;
+
+        *mem_req += (2u*n_elements*ggml_type_size(wtype) + 2_MiB);
+        return false;
     }
 
     // create the ggml context
@@ -433,7 +447,7 @@ bool mpt_model_load(const std::string & fname, mpt_model & model, gpt_vocab & vo
         return false;
     }
 
-    bool loaded = mpt_model_load(fname, fin, model, vocab);
+    bool loaded = mpt_model_load(fname, fin, model, vocab, nullptr);
     fin.close();
     return loaded;
 }
@@ -455,7 +469,7 @@ bool mpt_eval(
     const int n_head  = hparams.n_head;
     const int n_vocab = hparams.n_vocab;
 
-    const size_t init_buf_size = 1024u*MB;
+    const size_t init_buf_size = 1024_MiB;
     if (!model.buf.addr || model.buf.size < init_buf_size)
         model.buf.resize(init_buf_size);
 
@@ -759,7 +773,17 @@ struct MPTPrivate {
 MPT::MPT()
     : d_ptr(new MPTPrivate) {
     d_ptr->model = new mpt_model;
+    d_ptr->model->ctx = nullptr;
     d_ptr->modelLoaded = false;
+}
+
+size_t MPT::requiredMem(const std::string &modelPath) {
+    mpt_model dummy_model;
+    gpt_vocab dummy_vocab;
+    size_t mem_req;
+    auto fin = std::ifstream(modelPath, std::ios::binary);
+    mpt_model_load(modelPath, fin, dummy_model, dummy_vocab, &mem_req);
+    return mem_req;
 }
 
 bool MPT::loadModel(const std::string &modelPath) {
@@ -769,7 +793,7 @@ bool MPT::loadModel(const std::string &modelPath) {
     auto fin = std::ifstream(modelPath, std::ios::binary);
 
     // load the model
-    if (!mpt_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab)) {
+    if (!mpt_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab, nullptr)) {
         std::cerr << "MPT ERROR: failed to load model from " <<  modelPath;
         return false;
     }
@@ -820,7 +844,7 @@ std::vector<LLModel::Token> MPT::tokenize(PromptContext &, const std::string &st
     return ::gpt_tokenize(d_ptr->vocab, str);
 }
 
-std::string_view MPT::tokenToString(Token id) const
+std::string MPT::tokenToString(Token id) const
 {
     return d_ptr->vocab.id_to_token[id];
 }

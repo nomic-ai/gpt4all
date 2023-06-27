@@ -19,6 +19,7 @@ public:
 
     bool loadModel(const std::string &modelPath) override;
     bool isModelLoaded() const override;
+    size_t requiredMem(const std::string & modelPath) override;
     size_t stateSize() const override;
     size_t saveState(uint8_t *dest) const override;
     size_t restoreState(const uint8_t *src) override;
@@ -30,7 +31,7 @@ private:
 
 protected:
     std::vector<Token> tokenize(PromptContext &, const std::string&) const override;
-    std::string_view tokenToString(Token) const override;
+    std::string tokenToString(Token) const override;
     Token sampleToken(PromptContext &ctx) const override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
     int32_t contextLength() const override;

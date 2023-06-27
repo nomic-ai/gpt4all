@@ -81,6 +81,8 @@ llmodel.llmodel_model_destroy.restype = None
 
 llmodel.llmodel_loadModel.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 llmodel.llmodel_loadModel.restype = ctypes.c_bool
+llmodel.llmodel_required_mem.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+llmodel.llmodel_required_mem.restype = ctypes.c_size_t
 llmodel.llmodel_isModelLoaded.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_isModelLoaded.restype = ctypes.c_bool
 
@@ -125,10 +127,21 @@ class LLModel:
     def __init__(self):
         self.model = None
         self.model_name = None
+        self.context = None
 
     def __del__(self):
         if self.model is not None:
             llmodel.llmodel_model_destroy(self.model)
+
+    def memory_needed(self, model_path: str) -> int:
+        model_path_enc = model_path.encode("utf-8")
+        self.model = llmodel.llmodel_model_create(model_path_enc)
+
+        if self.model is not None:
+            return llmodel.llmodel_required_mem(self.model, model_path_enc)
+        else:
+            raise ValueError("Unable to instantiate model")
+
 
     def load_model(self, model_path: str) -> bool:
         """
@@ -211,27 +224,29 @@ class LLModel:
         
         sys.stdout = stream_processor
 
-        context = LLModelPromptContext(
-            logits_size=logits_size, 
-            tokens_size=tokens_size, 
-            n_past=n_past, 
-            n_ctx=n_ctx, 
-            n_predict=n_predict, 
-            top_k=top_k, 
-            top_p=top_p, 
-            temp=temp, 
-            n_batch=n_batch, 
-            repeat_penalty=repeat_penalty, 
-            repeat_last_n=repeat_last_n, 
-            context_erase=context_erase
-        )
+
+        if self.context is None:
+            self.context = LLModelPromptContext(
+                logits_size=logits_size, 
+                tokens_size=tokens_size, 
+                n_past=n_past, 
+                n_ctx=n_ctx, 
+                n_predict=n_predict, 
+                top_k=top_k, 
+                top_p=top_p, 
+                temp=temp, 
+                n_batch=n_batch, 
+                repeat_penalty=repeat_penalty, 
+                repeat_last_n=repeat_last_n, 
+                context_erase=context_erase
+            )
 
         llmodel.llmodel_prompt(self.model, 
                                prompt, 
                                PromptCallback(self._prompt_callback),
                                ResponseCallback(self._response_callback), 
                                RecalculateCallback(self._recalculate_callback), 
-                               context)
+                               self.context)
 
         # Revert to old stdout
         sys.stdout = old_stdout
@@ -262,20 +277,21 @@ class LLModel:
         prompt = prompt.encode('utf-8')
         prompt = ctypes.c_char_p(prompt)
 
-        context = LLModelPromptContext(
-            logits_size=logits_size, 
-            tokens_size=tokens_size, 
-            n_past=n_past, 
-            n_ctx=n_ctx, 
-            n_predict=n_predict, 
-            top_k=top_k, 
-            top_p=top_p, 
-            temp=temp, 
-            n_batch=n_batch, 
-            repeat_penalty=repeat_penalty, 
-            repeat_last_n=repeat_last_n, 
-            context_erase=context_erase
-        )
+        if self.context is None:
+            self.context = LLModelPromptContext(
+                logits_size=logits_size, 
+                tokens_size=tokens_size, 
+                n_past=n_past, 
+                n_ctx=n_ctx, 
+                n_predict=n_predict, 
+                top_k=top_k, 
+                top_p=top_p, 
+                temp=temp, 
+                n_batch=n_batch, 
+                repeat_penalty=repeat_penalty, 
+                repeat_last_n=repeat_last_n, 
+                context_erase=context_erase
+            )
 
         # Put response tokens into an output queue
         def _generator_response_callback(token_id, response):
@@ -305,7 +321,7 @@ class LLModel:
                                         PromptCallback(self._prompt_callback),
                                         ResponseCallback(_generator_response_callback), 
                                         RecalculateCallback(self._recalculate_callback), 
-                                        context))
+                                        self.context))
         thread.start()
 
         # Generator
