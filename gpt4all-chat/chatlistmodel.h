@@ -40,7 +40,7 @@ class ChatListModel : public QAbstractListModel
     Q_PROPERTY(bool shouldSaveChatGPTChats READ shouldSaveChatGPTChats WRITE setShouldSaveChatGPTChats NOTIFY shouldSaveChatGPTChatsChanged)
 
 public:
-    explicit ChatListModel(QObject *parent = nullptr);
+    static ChatListModel *globalInstance();
 
     enum Roles {
         IdRole = Qt::UserRole + 1,
@@ -262,6 +262,11 @@ private:
     Chat* m_serverChat;
     Chat* m_currentChat;
     QList<Chat*> m_chats;
+
+private:
+    explicit ChatListModel();
+    ~ChatListModel() {}
+    friend class MyChatListModel;
 };
 
 #endif // CHATITEMMODEL_H

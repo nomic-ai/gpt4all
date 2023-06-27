@@ -151,8 +151,7 @@ std::string replit_tokenizer_detokenize(replit_tokenizer & tokenizer, const std:
     for (auto token : tokens) {
         text += tokenizer.raw_vocab.id_to_token[token];
     }
-    auto denormalized_text = replace_all(text, ws_symbol, " ");
-    return denormalized_text;
+    return replace_all(text, ws_symbol, " ");
 }
 
 // no defaults for now
@@ -268,8 +267,11 @@ static bool kv_cache_init(
 }
 
 // load the model's weights from a stream
-bool replit_model_load(const std::string & fname, std::istream &fin, replit_model & model, replit_tokenizer & vocab) {
+bool replit_model_load(const std::string & fname, std::istream &fin, replit_model & model, replit_tokenizer & vocab, size_t *mem_req) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
+    if (mem_req != nullptr) {
+        *mem_req = 0;
+    }
 
     // verify magic
     {
@@ -353,6 +355,18 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size / (1024.0 * 1024.0));
     }
 
+    if (mem_req != nullptr) {
+        *mem_req += ctx_size;
+        const int n_embd  = model.hparams.n_embd;
+        const int n_layer = model.hparams.n_layer;
+
+        const int64_t n_mem      = (int64_t)n_layer*model.hparams.n_ctx;
+        const int64_t n_elements = n_embd*n_mem;
+
+        *mem_req += (2u*n_elements*ggml_type_size(wtype) + 2_MiB);
+        return false;
+    }
+
     // create the ggml context
     {
         struct ggml_init_params params = {
@@ -424,7 +438,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
 
         const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
 
-        printf("%s: memory_size = %8.2f MB, n_mem = %lld\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
+        printf("%s: memory_size = %8.2f MB, n_mem = %ld\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
     }
 
     // load weights
@@ -517,6 +531,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
     model.ctx_metal = ggml_metal_init();
     void* data_ptr = ggml_get_mem_buffer(model.ctx);
     size_t data_size = ggml_get_mem_size(model.ctx);
+    const size_t max_size = ggml_get_max_tensor_size(model.ctx);
 
     #define GGML_CHECK_BUF(result) if (!(result)) {                     \
         std::cerr << __func__ << ": failed to add buffer" << std::endl; \
@@ -524,12 +539,12 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         return false;                                                   \
     }
 
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "data", data_ptr, data_size));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "data", data_ptr, data_size, max_size));
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "kv", ggml_get_mem_buffer(model.kv_self.ctx), 
-                                                                ggml_get_mem_size(model.kv_self.ctx)));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "eval", model.eval_buf, model.eval_buf_size));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr0", model.scr0_buf, model.scr0_buf_size));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr1", model.scr1_buf, model.scr1_buf_size));
+                                                                ggml_get_mem_size(model.kv_self.ctx), 0));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "eval", model.eval_buf, model.eval_buf_size, 0));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr0", model.scr0_buf, model.scr0_buf_size, 0));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr1", model.scr1_buf, model.scr1_buf_size, 0));
 #endif
 
     return true;
@@ -544,7 +559,7 @@ bool replit_model_load(const std::string & fname, replit_model & model, replit_t
         return false;
     }
 
-    bool loaded = replit_model_load(fname, fin, model, vocab);
+    bool loaded = replit_model_load(fname, fin, model, vocab, nullptr);
     fin.close();
     return loaded;
 }
@@ -813,7 +828,7 @@ size_t replit_copy_state_data(const replit_model &model, const std::mt19937 &rng
     }
 
     const size_t written  = out - dest;
-    const size_t expected = replit_get_state_size(model);
+    const size_t expected [[maybe_unused]] = replit_get_state_size(model);
     assert(written == expected);
     fflush(stdout);
     return written;
@@ -863,7 +878,7 @@ size_t replit_set_state_data(replit_model *model, std::mt19937 *rng, const uint8
     }
 
     const size_t nread    = in - src;
-    const size_t expected = replit_get_state_size(*model);
+    const size_t expected [[maybe_unused]] = replit_get_state_size(*model);
     assert(nread == expected);
     fflush(stdout);
     return nread;
@@ -888,6 +903,15 @@ Replit::Replit()
     d_ptr->modelLoaded = false;
 }
 
+size_t Replit::requiredMem(const std::string &modelPath) {
+    replit_model dummy_model;
+    replit_tokenizer dummy_vocab;
+    size_t mem_req;
+    auto fin = std::ifstream(modelPath, std::ios::binary);
+    replit_model_load(modelPath, fin, dummy_model, dummy_vocab, &mem_req);
+    return mem_req;
+}
+
 bool Replit::loadModel(const std::string &modelPath) {
     std::mt19937 rng(time(NULL));
     d_ptr->rng = rng;
@@ -895,7 +919,7 @@ bool Replit::loadModel(const std::string &modelPath) {
     auto fin = std::ifstream(modelPath, std::ios::binary);
 
     // load the model
-    if (!replit_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab)) {
+    if (!replit_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab, nullptr)) {
         std::cerr << "Replit ERROR: failed to load model from " <<  modelPath;
         return false;
     }

@@ -71,13 +71,13 @@ qt_add_executable(chat
     chatgpt.h chatgpt.cpp
     database.h database.cpp
     download.h download.cpp
-    network.h network.cpp
     localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
     llm.h llm.cpp
+    modellist.h modellist.cpp
+    network.h network.cpp
     server.h server.cpp
     logger.h logger.cpp
     responsetext.h responsetext.cpp
-    sysinfo.h
     ${METAL_SHADER_FILE}
 )
 

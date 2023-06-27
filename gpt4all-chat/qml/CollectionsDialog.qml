@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import chatlistmodel
 import localdocs
 import llm
 
@@ -15,7 +16,7 @@ Dialog {
     width: 480
     height: 640
 
-    property var currentChat: LLM.chatListModel.currentChat
+    property var currentChat: ChatListModel.currentChat
 
     background: Rectangle {
         anchors.fill: parent
