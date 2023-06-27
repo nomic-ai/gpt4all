@@ -254,7 +254,7 @@ class ResponseSigintManager:
 
     @property
     def keep_generating_response(self):
-        return self._keep_generating
+        return self._keep_generating_response
 
     def __enter__(self):
         if not self.gpt4all:
@@ -290,7 +290,7 @@ class ResponseSigintManager:
 
     def _response_callback(self, token_id, response):
         sys.stdout.write(response.decode('utf-8', 'replace'))
-        return self.keep_generating
+        return self.keep_generating_response
 
     def _activate_response_sigint_handler(self):
         if self._is_response_callback_patched and self._old_sigint_handler is None:
@@ -311,7 +311,7 @@ class ResponseSigintManager:
                 logging.warn("Unable to deactivate the response SIGINT handler. The handling"
                              " of SIGINT might remain in an inconsistent state. Cause: {exc}")
     
-    def _halt_response_sigint_handler(signal_, frame):
+    def _halt_response_sigint_handler(self, signal_, frame):
         assert signal_ == signal.SIGINT, f"expected signal.SIGINT ({signal.SIGINT}) but got {signal_.name} ({signal_})"
         self._keep_generating_response = False
     
