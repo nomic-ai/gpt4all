@@ -66,6 +66,15 @@ public class LLModel : ILLModel
     }
 
     /// <summary>
+    /// Sets the path where the model implementation libraries are expected to be found
+    /// </summary>
+    /// <param name="implSearchPath"></param>
+    public static void SetImplementationSearchPath(string implSearchPath)
+    {
+        NativeMethods.llmodel_set_implementation_search_path(implSearchPath);
+    }
+
+    /// <summary>
     /// Generate a response using the model
     /// </summary>
     /// <param name="text">The input promp</param>

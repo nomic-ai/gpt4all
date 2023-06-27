@@ -5,7 +5,8 @@
 /// </summary>
 public enum ModelType
 {
-    LLAMA = 0,
+    UNKNOWN = 0,
+    LLAMA,
     GPTJ,
-    MPT
+    MPT,
 }
