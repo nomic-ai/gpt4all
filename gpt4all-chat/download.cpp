@@ -352,6 +352,8 @@ void Download::parseModelsJsonFile(const QByteArray &jsonData)
         settings.setValue("defaultModel", firstModel);
         settings.sync();
     }
+
+    ModelList::globalInstance()->updateModelHasNames();
 }
 
 void Download::handleReleaseJsonDownloadFinished()

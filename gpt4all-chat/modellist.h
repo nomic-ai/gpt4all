@@ -116,6 +116,7 @@ class ModelList : public QAbstractListModel
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
+    Q_PROPERTY(bool modelHasNames READ modelHasNames NOTIFY modelHasNamesChanged)
 
 public:
     static ModelList *globalInstance();
@@ -218,12 +219,16 @@ public:
 
     QString incompleteDownloadPath(const QString &modelFile);
 
+    bool modelHasNames() const { return m_modelHasNames; }
+    void updateModelHasNames() { m_modelHasNames = true; emit modelHasNamesChanged(); }
+
 Q_SIGNALS:
     void countChanged();
     void localModelsPathChanged();
     void installedModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
+    void modelHasNamesChanged();
 
 private Q_SLOTS:
     void updateModelsFromDirectory();
@@ -242,6 +247,7 @@ private:
     QHash<QString, ModelInfo*> m_modelMap;
     QString m_localModelsPath;
     QFileSystemWatcher *m_watcher;
+    bool m_modelHasNames;
 
 private:
     explicit ModelList();

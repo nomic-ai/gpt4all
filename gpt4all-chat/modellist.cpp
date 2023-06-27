@@ -85,6 +85,7 @@ ModelList::ModelList()
     : QAbstractListModel(nullptr)
     , m_installedModels(new InstalledModels(this))
     , m_downloadableModels(new DownloadableModels(this))
+    , m_modelHasNames(false)
 {
     m_installedModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);

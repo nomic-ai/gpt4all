@@ -205,23 +205,40 @@ Window {
                 model: ModelList.installedModels
                 valueRole: "filename"
                 textRole: "name"
+                property string currentModelName: ""
+                Timer {
+                    id: startupTimer
+                    interval: 3000 // 3 seconds
+                    running: true
+                    repeat: false
+                }
+                function updateCurrentModelName() {
+                    // During application startup the model names might not be processed yet, so don't
+                    // set the combobox text until this is done OR the timer has timed out
+                    if (!ModelList.modelHasNames && startupTimer.running)
+                        return
+                    var info = ModelList.modelInfo(currentChat.modelInfo.filename);
+                    comboBox.currentModelName = info.name !== "" ? info.name : info.filename;
+                }
+                Connections {
+                    target: ModelList
+                    function onModelHasNamesChanged() {
+                        comboBox.updateCurrentModelName();
+                    }
+                }
                 Connections {
                     target: currentChat
                     function onModelInfoChanged() {
-                        comboBox.currentIndex = comboBox.indexOfValue(currentChat.modelInfo.filename)
+                        comboBox.updateCurrentModelName();
                     }
                 }
                 contentItem: Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     leftPadding: 10
                     rightPadding: 20
-                    text: (ModelList.installedModels.count > 0
-                        ? currentChat.modelLoadingError !== "" ? qsTr("Model loading error...")
-                        : (comboBox.textAt(comboBox.currentIndex) !== ""
-                        ? comboBox.textAt(comboBox.currentIndex)
-                        : (comboBox.valueAt(comboBox.currentIndex) !== "undefined" ? ""
-                        : comboBox.valueAt(comboBox.currentIndex)))
-                        : "")
+                    text: currentChat.modelLoadingError !== ""
+                        ? qsTr("Model loading error...")
+                        : comboBox.currentModelName
                     font: comboBox.font
                     color: theme.textColor
                     verticalAlignment: Text.AlignVCenter
@@ -245,10 +262,10 @@ Window {
                 Accessible.role: Accessible.ComboBox
                 Accessible.name: qsTr("ComboBox for displaying/picking the current model")
                 Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
-                onActivated: {
+                onActivated: function (index) {
                     currentChat.stopGenerating()
                     currentChat.reset();
-                    currentChat.modelInfo = ModelList.modelInfo(comboBox.valueAt(comboBox.currentIndex))
+                    currentChat.modelInfo = ModelList.modelInfo(comboBox.valueAt(index))
                 }
             }
         }
