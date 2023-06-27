@@ -824,7 +824,7 @@ Dialog {
                             Layout.alignment: Qt.AlignTop
                             color: theme.textErrorColor
                             wrapMode: Text.WordWrap
-                            text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibilty the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
+                            text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibility the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
                         }
                     }
                     MyButton {
