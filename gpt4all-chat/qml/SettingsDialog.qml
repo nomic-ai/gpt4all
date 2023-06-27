@@ -10,6 +10,7 @@ import download
 import modellist
 import network
 import llm
+import mysettings
 
 Dialog {
     id: settingsDialog
@@ -51,6 +52,7 @@ Dialog {
 ### Assistant:\n"
     property string defaultModelPath: ModelList.defaultLocalModelsPath()
     property string defaultUserDefaultModel: "Application default"
+    property bool defaultForceMetal: false
 
     property alias temperature: settings.temperature
     property alias topP: settings.topP
@@ -66,6 +68,7 @@ Dialog {
     property alias serverChat: settings.serverChat
     property alias modelPath: settings.modelPath
     property alias userDefaultModel: settings.userDefaultModel
+    property alias forceMetal: settings.forceMetal
 
     Settings {
         id: settings
@@ -83,6 +86,7 @@ Dialog {
         property string promptTemplate: settingsDialog.defaultPromptTemplate
         property string modelPath: settingsDialog.defaultModelPath
         property string userDefaultModel: settingsDialog.defaultUserDefaultModel
+        property bool forceMetal: settingsDialog.defaultForceMetal
     }
 
     function restoreGenerationDefaults() {
@@ -109,6 +113,7 @@ Dialog {
         LLM.serverEnabled = settings.serverChat
         ChatListModel.shouldSaveChats = settings.saveChats
         ChatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
+        MySettings.forceMetal = settings.forceMetal
         settings.sync()
     }
 
@@ -118,6 +123,7 @@ Dialog {
         ChatListModel.shouldSaveChats = settings.saveChats
         ChatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
         ModelList.localModelsPath = settings.modelPath
+        MySettings.forceMetal = settings.forceMetal
     }
 
     Connections {
@@ -811,9 +817,11 @@ Dialog {
                         Layout.columnSpan: 2
                         MyCheckBox {
                             id: gpuOverrideBox
-                            checked: false
+                            checked: settings.forceMetal
                             onClicked: {
-                                // fixme
+                                settingsDialog.forceMetal = gpuOverrideBox.checked
+                                MySettings.forceMetal = gpuOverrideBox.checked
+                                settings.sync()
                             }
                         }
                         Label {
@@ -822,7 +830,7 @@ Dialog {
                             Layout.alignment: Qt.AlignTop
                             color: theme.textErrorColor
                             wrapMode: Text.WordWrap
-                            text: qsTr("WARNING: This setting forces usage of the GPU if it is detected. Can cause a crash if the model requires more RAM than the OS + GPU supports.")
+                            text: qsTr("WARNING: On macOS with arm architecture (M1+), this setting forces usage of the GPU if it is detected. Can cause a crash if the model requires more RAM than the OS + GPU supports. Setting has no effect on non-macs or intel macs.")
                         }
                     }
                     MyButton {

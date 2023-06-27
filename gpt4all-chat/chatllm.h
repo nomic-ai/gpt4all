@@ -109,6 +109,7 @@ public Q_SLOTS:
     void handleChatIdChanged(const QString &id);
     void handleShouldBeLoadedChanged();
     void handleThreadStarted();
+    void handleForceMetalChanged(bool forceMetal);
 
 Q_SIGNALS:
     void recalcChanged();
@@ -156,6 +157,8 @@ private:
     std::atomic<bool> m_shouldBeLoaded;
     std::atomic<bool> m_isRecalc;
     bool m_isServer;
+    bool m_forceMetal;
+    bool m_reloadingToChangeVariant;
 };
 
 #endif // CHATLLM_H
