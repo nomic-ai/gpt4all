@@ -31,7 +31,7 @@ docker compose up --build
 ```
 and edit files in the `api` directory. The api will hot-reload on changes.
 
-You can run the unittests with
+You can run the unit tests with
 
 ```bash
 make test

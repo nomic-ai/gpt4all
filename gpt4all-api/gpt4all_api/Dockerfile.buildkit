@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.0.0-experimental
 FROM tiangolo/uvicorn-gunicorn:python3.11
 
-ARG MODEL_BIN=ggml-gpt4all-j-v1.3-groovy.bin
+ARG MODEL_BIN=ggml-mpt-7b-chat.bin
 
 # Put first so anytime this file changes other cached layers are invalidated.
 COPY gpt4all_api/requirements.txt /requirements.txt

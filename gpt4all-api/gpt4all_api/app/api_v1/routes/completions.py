@@ -49,6 +49,7 @@ async def completions(request: CompletionRequest):
     Completes a GPT4All model response.
     '''
 
+    # global model
     if request.stream:
         raise NotImplementedError("Streaming is not yet implements")
 
