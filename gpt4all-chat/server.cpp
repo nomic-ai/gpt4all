@@ -284,7 +284,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     // load the new model if necessary
     setShouldBeLoaded(true);
 
-    if (!modelInfo.name.isEmpty()) {
+    if (modelInfo.filename.isEmpty()) {
         std::cerr << "ERROR: couldn't load default model " << modelRequested.toStdString() << std::endl;
         return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
     } else if (!loadModel(modelInfo)) {
