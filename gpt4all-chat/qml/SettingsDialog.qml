@@ -93,6 +93,7 @@ Dialog {
         settings.maxLength = defaultMaxLength
         settings.promptBatchSize = defaultPromptBatchSize
         settings.promptTemplate = defaultPromptTemplate
+        templateTextArea.text = defaultPromptTemplate
         settings.repeatPenalty = defaultRepeatPenalty
         settings.repeatPenaltyTokens = defaultRepeatPenaltyTokens
         settings.sync()
@@ -535,7 +536,7 @@ Dialog {
                         Label {
                             id: promptTemplateLabelHelp
                             Layout.maximumWidth: promptTemplateLabel.width
-                            visible: settings.promptTemplate.indexOf(
+                            visible: templateTextArea.text.indexOf(
                                          "%1") === -1
                             color: theme.textErrorColor
                             text: qsTr("Must contain the string \"%1\" to be replaced with the user's input.")
@@ -556,6 +557,7 @@ Dialog {
                             id: templateScrollView
                             anchors.fill: parent
                             TextArea {
+                                id: templateTextArea
                                 text: settings.promptTemplate
                                 color: theme.textColor
                                 background: Rectangle {
@@ -566,10 +568,10 @@ Dialog {
                                 padding: 10
                                 wrapMode: TextArea.Wrap
                                 onTextChanged: {
-                                    if (settings.promptTemplate.indexOf("%1") === -1)
-                                        return;
-                                    settings.promptTemplate = text
-                                    settings.sync()
+                                    if (templateTextArea.text.indexOf("%1") !== -1) {
+                                        settings.promptTemplate = text
+                                        settings.sync()
+                                    }
                                 }
                                 bottomPadding: 10
                                 Accessible.role: Accessible.EditableText
