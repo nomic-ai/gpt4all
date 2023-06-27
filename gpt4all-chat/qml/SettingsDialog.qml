@@ -566,6 +566,8 @@ Dialog {
                                 padding: 10
                                 wrapMode: TextArea.Wrap
                                 onTextChanged: {
+                                    if (settings.promptTemplate.indexOf("%1") === -1)
+                                        return;
                                     settings.promptTemplate = text
                                     settings.sync()
                                 }
