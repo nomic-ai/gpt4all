@@ -12,9 +12,6 @@ MySettings *MySettings::globalInstance()
 MySettings::MySettings()
     : QObject{nullptr}
 {
-    QSettings settings;
-    settings.sync();
-    m_forceMetal = settings.value("forceMetal", false).toBool();
 }
 
 bool MySettings::forceMetal() const
