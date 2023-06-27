@@ -20,6 +20,7 @@ def test_completion():
         echo=True,
         stream=False
     )
+    assert len(response['choices'][0]['text']) > len(prompt)
     print(response)
 
 # def test_chat_completions():
