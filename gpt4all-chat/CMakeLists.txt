@@ -178,6 +178,8 @@ install(TARGETS llamamodel-mainline-default DESTINATION lib COMPONENT ${COMPONEN
 if(APPLE)
 install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
+install(TARGETS falcon-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS falcon-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS mpt-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS mpt-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS replit-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
