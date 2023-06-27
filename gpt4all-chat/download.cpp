@@ -13,6 +13,8 @@
 #include <QStandardPaths>
 #include <QSettings>
 
+#define USE_LOCAL_MODELSJSON
+
 class MyDownload: public Download { };
 Q_GLOBAL_STATIC(MyDownload, downloadInstance)
 Download *Download::globalInstance()
@@ -93,7 +95,11 @@ bool Download::isFirstStart() const
 
 void Download::updateModelList()
 {
+#if defined(USE_LOCAL_MODELSJSON)
+    QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
+#else
     QUrl jsonUrl("http://gpt4all.io/models/models.json");
+#endif
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
