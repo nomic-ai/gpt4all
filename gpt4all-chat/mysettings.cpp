@@ -97,8 +97,8 @@ void MySettings::setTemperature(double t)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("temperature", t);
+    setting.sync();
     emit temperatureChanged();
 }
 
@@ -115,8 +115,8 @@ void MySettings::setTopP(double p)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("topP", p);
+    setting.sync();
     emit topPChanged();
 }
 
@@ -133,8 +133,8 @@ void MySettings::setTopK(int k)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("topK", k);
+    setting.sync();
     emit topKChanged();
 }
 
@@ -151,8 +151,8 @@ void MySettings::setMaxLength(int l)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("maxLength", l);
+    setting.sync();
     emit maxLengthChanged();
 }
 
@@ -169,8 +169,8 @@ void MySettings::setPromptBatchSize(int s)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("promptBatchSize", s);
+    setting.sync();
     emit promptBatchSizeChanged();
 }
 
@@ -187,8 +187,8 @@ void MySettings::setRepeatPenalty(double p)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("repeatPenalty", p);
+    setting.sync();
     emit repeatPenaltyChanged();
 }
 
@@ -205,8 +205,8 @@ void MySettings::setRepeatPenaltyTokens(int t)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("repeatPenaltyTokens", t);
+    setting.sync();
     emit repeatPenaltyTokensChanged();
 }
 
@@ -223,8 +223,8 @@ void MySettings::setPromptTemplate(const QString &t)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("promptTemplate", t);
+    setting.sync();
     emit promptTemplateChanged();
 }
 
@@ -241,8 +241,8 @@ void MySettings::setThreadCount(int c)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("threadCount", c);
+    setting.sync();
     emit threadCountChanged();
 }
 
@@ -259,8 +259,8 @@ void MySettings::setSaveChats(bool b)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("saveChats", b);
+    setting.sync();
     emit saveChatsChanged();
 }
 
@@ -277,8 +277,8 @@ void MySettings::setSaveChatGPTChats(bool b)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("saveChatGPTChats", b);
+    setting.sync();
     emit saveChatGPTChatsChanged();
 }
 
@@ -295,8 +295,8 @@ void MySettings::setServerChat(bool b)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("serverChat", b);
+    setting.sync();
     emit serverChatChanged();
 }
 
@@ -313,8 +313,8 @@ void MySettings::setModelPath(const QString &p)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("modelPath", p);
+    setting.sync();
     emit modelPathChanged();
 }
 
@@ -331,8 +331,8 @@ void MySettings::setUserDefaultModel(const QString &u)
         return;
 
     QSettings setting;
-    setting.sync();
     setting.setValue("userDefaultModel", u);
+    setting.sync();
     emit userDefaultModelChanged();
 }
 
