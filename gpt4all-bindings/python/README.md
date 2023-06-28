@@ -20,7 +20,7 @@ pip install gpt4all
 1. Setup `llmodel`
 
 ```
-git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
+git clone --recurse-submodules git@github.com:nomic-ai/gpt4all.git
 cd gpt4all/gpt4all-backend/
 mkdir build
 cd build
