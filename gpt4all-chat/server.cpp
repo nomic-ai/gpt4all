@@ -1,6 +1,6 @@
 #include "server.h"
 #include "chat.h"
-#include "llm.h"
+#include "mysettings.h"
 #include "modellist.h"
 
 #include <QJsonDocument>
@@ -78,7 +78,7 @@ void Server::start()
 
     m_server->route("/v1/models", QHttpServerRequest::Method::Get,
         [](const QHttpServerRequest &request) {
-            if (!LLM::globalInstance()->serverEnabled())
+            if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
             const QList<ModelInfo> modelList = ModelList::globalInstance()->exportModelList();
@@ -97,7 +97,7 @@ void Server::start()
 
     m_server->route("/v1/models/<arg>", QHttpServerRequest::Method::Get,
         [](const QString &model, const QHttpServerRequest &request) {
-            if (!LLM::globalInstance()->serverEnabled())
+            if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
             const QList<ModelInfo> modelList = ModelList::globalInstance()->exportModelList();
@@ -117,7 +117,7 @@ void Server::start()
 
     m_server->route("/v1/completions", QHttpServerRequest::Method::Post,
         [this](const QHttpServerRequest &request) {
-            if (!LLM::globalInstance()->serverEnabled())
+            if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return handleCompletionRequest(request, false);
         }
@@ -125,7 +125,7 @@ void Server::start()
 
     m_server->route("/v1/chat/completions", QHttpServerRequest::Method::Post,
         [this](const QHttpServerRequest &request) {
-            if (!LLM::globalInstance()->serverEnabled())
+            if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return handleCompletionRequest(request, true);
         }
@@ -303,6 +303,10 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     const float repeat_penalty = settings.value("repeatPenalty", m_ctx.repeat_penalty).toDouble();
     const int repeat_last_n = settings.value("repeatPenaltyTokens", m_ctx.repeat_last_n).toInt();
 
+    int threadCount = MySettings::globalInstance()->threadCount();
+    if (threadCount <= 0)
+      threadCount = std::min(4, (int32_t) std::thread::hardware_concurrency());
+
     int promptTokens = 0;
     int responseTokens = 0;
     QList<QPair<QString, QList<ResultInfo>>> responses;
@@ -318,7 +322,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             n_batch,
             repeat_penalty,
             repeat_last_n,
-            LLM::globalInstance()->threadCount())) {
+            threadCount)) {
 
             std::cerr << "ERROR: couldn't prompt model " << modelInfo.name.toStdString() << std::endl;
             return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);

@@ -112,7 +112,6 @@ class ModelList : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
-    Q_PROPERTY(QString localModelsPath READ localModelsPath WRITE setLocalModelsPath NOTIFY localModelsPathChanged)
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
@@ -194,10 +193,6 @@ public:
 
     void addModel(const QString &filename);
 
-    Q_INVOKABLE QString defaultLocalModelsPath() const;
-    Q_INVOKABLE QString localModelsPath() const;
-    Q_INVOKABLE void setLocalModelsPath(const QString &modelPath);
-
     const QList<ModelInfo> exportModelList() const;
     const QList<QString> userDefaultModelList() const;
 
@@ -220,7 +215,6 @@ public:
 
 Q_SIGNALS:
     void countChanged();
-    void localModelsPathChanged();
     void installedModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
@@ -243,7 +237,6 @@ private:
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;
     QHash<QString, ModelInfo*> m_modelMap;
-    QString m_localModelsPath;
     QFileSystemWatcher *m_watcher;
 
 private:

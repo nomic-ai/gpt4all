@@ -9,6 +9,7 @@ import download
 import llm
 import modellist
 import network
+import mysettings
 
 Dialog {
     id: modelDownloaderDialog
@@ -27,21 +28,6 @@ Dialog {
 
     onOpened: {
         Network.sendModelDownloaderDialog();
-    }
-
-    property string defaultModelPath: ModelList.defaultLocalModelsPath()
-    property alias modelPath: settings.modelPath
-    Settings {
-        id: settings
-        property string modelPath: modelDownloaderDialog.defaultModelPath
-    }
-
-    Component.onCompleted: {
-        ModelList.localModelsPath = settings.modelPath
-    }
-
-    Component.onDestruction: {
-        settings.sync()
     }
 
     PopupDialog {
@@ -416,12 +402,9 @@ Dialog {
             FolderDialog {
                 id: modelPathDialog
                 title: "Please choose a directory"
-                currentFolder: "file://" + ModelList.localModelsPath
+                currentFolder: "file://" + MySettings.modelsPath
                 onAccepted: {
-                    modelPathDisplayField.text = selectedFolder
-                    ModelList.localModelsPath = modelPathDisplayField.text
-                    settings.modelPath = ModelList.localModelsPath
-                    settings.sync()
+                    MySettings.modelsPath = selectedFolder
                 }
             }
             Label {
@@ -433,7 +416,7 @@ Dialog {
             }
             MyDirectoryField {
                 id: modelPathDisplayField
-                text: ModelList.localModelsPath
+                text: MySettings.modelPath
                 Layout.fillWidth: true
                 ToolTip.text: qsTr("Path where model files will be downloaded to")
                 ToolTip.visible: hovered
@@ -442,11 +425,9 @@ Dialog {
                 Accessible.description: ToolTip.text
                 onEditingFinished: {
                     if (isValid) {
-                        ModelList.localModelsPath = modelPathDisplayField.text
-                        settings.modelPath = ModelList.localModelsPath
-                        settings.sync()
+                        MySettings.modelsPath = modelPathDisplayField.text
                     } else {
-                        text = ModelList.localModelsPath
+                        text = MySettings.modelPath
                     }
                 }
             }

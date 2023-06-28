@@ -43,20 +43,6 @@ Dialog {
 
     function restoreApplicationDefaults() {
         MySettings.restoreApplicationDefaults();
-        ModelList.localModelsPath = MySettings.modelPath
-        LLM.threadCount = MySettings.threadCount
-        LLM.serverEnabled = MySettings.serverChat
-        ChatListModel.shouldSaveChats = MySettings.saveChats
-        ChatListModel.shouldSaveChatGPTChats = MySettings.saveChatGPTChats
-        MySettings.forceMetal = false
-    }
-
-    Component.onCompleted: {
-        LLM.threadCount = MySettings.threadCount
-        LLM.serverEnabled = MySettings.serverChat
-        ChatListModel.shouldSaveChats = MySettings.saveChats
-        ChatListModel.shouldSaveChatGPTChats = MySettings.saveChatGPTChats
-        ModelList.localModelsPath = MySettings.modelPath
     }
 
     Item {
@@ -572,11 +558,9 @@ Dialog {
                     FolderDialog {
                         id: modelPathDialog
                         title: "Please choose a directory"
-                        currentFolder: "file://" + ModelList.localModelsPath
+                        currentFolder: "file://" + MySettings.modelPath
                         onAccepted: {
-                            modelPathDisplayField.text = selectedFolder
-                            ModelList.localModelsPath = modelPathDisplayField.text
-                            MySettings.modelPath = ModelList.localModelsPath
+                            MySettings.modelPath = selectedFolder
                         }
                     }
                     Label {
@@ -588,7 +572,7 @@ Dialog {
                     }
                     MyDirectoryField {
                         id: modelPathDisplayField
-                        text: ModelList.localModelsPath
+                        text: MySettings.modelPath
                         implicitWidth: 300
                         Layout.row: 2
                         Layout.column: 1
@@ -600,10 +584,9 @@ Dialog {
                         Accessible.description: ToolTip.text
                         onEditingFinished: {
                             if (isValid) {
-                                ModelList.localModelsPath = modelPathDisplayField.text
-                                MySettings.modelPath = ModelList.localModelsPath
+                                MySettings.modelPath = modelPathDisplayField.text
                             } else {
-                                text = ModelList.localModelsPath
+                                text = MySettings.modelPath
                             }
                         }
                     }
@@ -635,7 +618,6 @@ Dialog {
                             var val = parseInt(text)
                             if (!isNaN(val)) {
                                 MySettings.threadCount = val
-                                LLM.threadCount = val
                                 focus = false
                             } else {
                                 text = MySettings.threadCount
@@ -660,7 +642,6 @@ Dialog {
                         onClicked: {
                             Network.sendSaveChatsToggled(saveChatsBox.checked);
                             MySettings.saveChats = !MySettings.saveChats
-                            ChatListModel.shouldSaveChats = saveChatsBox.checked
                         }
                         ToolTip.text: qsTr("WARNING: Saving chats to disk can be ~2GB per chat")
                         ToolTip.visible: hovered
@@ -679,7 +660,6 @@ Dialog {
                         checked: MySettings.saveChatGPTChats
                         onClicked: {
                             MySettings.saveChatGPTChats = !MySettings.saveChatGPTChats
-                            ChatListModel.shouldSaveChatGPTChats = saveChatGPTChatsBox.checked
                         }
                     }
                     Label {
@@ -696,7 +676,6 @@ Dialog {
                         checked: MySettings.serverChat
                         onClicked: {
                             MySettings.serverChat = !MySettings.serverChat
-                            LLM.serverEnabled = serverChatBox.checked
                         }
                         ToolTip.text: qsTr("WARNING: This enables the gui to act as a local REST web server(OpenAI API compliant) for API requests and will increase your RAM usage as well")
                         ToolTip.visible: hovered
