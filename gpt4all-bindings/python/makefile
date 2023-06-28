@@ -14,3 +14,9 @@ wheel:
 clean:
 	rm -rf {.pytest_cache,env,gpt4all.egg-info}
 	find . | grep -E "(__pycache__|\.pyc|\.pyo$\)" | xargs rm -rf
+
+black:
+	source env/bin/activate; black -l 120 -S --target-version py36 gpt4all
+
+isort:
+	source env/bin/activate; isort  --ignore-whitespace --atomic -w 120 gpt4all

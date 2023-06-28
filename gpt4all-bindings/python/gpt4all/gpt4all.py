@@ -15,11 +15,9 @@ from . import pyllmodel
 DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
 
 
-class GPT4All():
-    """Python API for retrieving and interacting with GPT4All models.
-    
-    Attributes:
-        model: Pointer to underlying C model.
+class GPT4All:
+    """
+    Run GPT4All models in Python.
     """
 
     def __init__(self, model_name: str, model_path: str = None, model_type: str = None, allow_download = True, n_threads = None):
@@ -41,7 +39,7 @@ class GPT4All():
         model_dest = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
         self.model.load_model(model_dest)
         # Set n_threads
-        if n_threads != None:
+        if n_threads is not None:
             self.model.set_thread_count(n_threads)
 
     @staticmethod

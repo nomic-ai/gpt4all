@@ -83,7 +83,9 @@ setup(
             'mkdocs-material',
             'mkautodoc',
             'mkdocstrings[python]',
-            'mkdocs-jupyter'
+            'mkdocs-jupyter',
+            'black',
+            'isort'
         ]
     },
     package_data={'llmodel': [os.path.join(DEST_CLIB_DIRECTORY, "*")]},
