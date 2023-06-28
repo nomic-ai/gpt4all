@@ -36,98 +36,27 @@ Dialog {
         id: theme
     }
 
-    property real defaultTemperature: 0.7
-    property real defaultTopP: 0.1
-    property int defaultTopK: 40
-    property int defaultMaxLength: 4096
-    property int defaultPromptBatchSize: 128
-    property real defaultRepeatPenalty: 1.18
-    property int defaultRepeatPenaltyTokens: 64
-    property int defaultThreadCount: 0
-    property bool defaultSaveChats: false
-    property bool defaultSaveChatGPTChats: true
-    property bool defaultServerChat: false
-    property string defaultPromptTemplate: "### Human:
-%1
-### Assistant:\n"
-    property string defaultModelPath: ModelList.defaultLocalModelsPath()
-    property string defaultUserDefaultModel: "Application default"
-
-    property alias temperature: settings.temperature
-    property alias topP: settings.topP
-    property alias topK: settings.topK
-    property alias maxLength: settings.maxLength
-    property alias promptBatchSize: settings.promptBatchSize
-    property alias promptTemplate: settings.promptTemplate
-    property alias repeatPenalty: settings.repeatPenalty
-    property alias repeatPenaltyTokens: settings.repeatPenaltyTokens
-    property alias threadCount: settings.threadCount
-    property alias saveChats: settings.saveChats
-    property alias saveChatGPTChats: settings.saveChatGPTChats
-    property alias serverChat: settings.serverChat
-    property alias modelPath: settings.modelPath
-    property alias userDefaultModel: settings.userDefaultModel
-
-    Settings {
-        id: settings
-        property real temperature: settingsDialog.defaultTemperature
-        property real topP: settingsDialog.defaultTopP
-        property int topK: settingsDialog.defaultTopK
-        property int maxLength: settingsDialog.defaultMaxLength
-        property int promptBatchSize: settingsDialog.defaultPromptBatchSize
-        property int threadCount: settingsDialog.defaultThreadCount
-        property bool saveChats: settingsDialog.defaultSaveChats
-        property bool saveChatGPTChats: settingsDialog.defaultSaveChatGPTChats
-        property bool serverChat: settingsDialog.defaultServerChat
-        property real repeatPenalty: settingsDialog.defaultRepeatPenalty
-        property int repeatPenaltyTokens: settingsDialog.defaultRepeatPenaltyTokens
-        property string promptTemplate: settingsDialog.defaultPromptTemplate
-        property string modelPath: settingsDialog.defaultModelPath
-        property string userDefaultModel: settingsDialog.defaultUserDefaultModel
-    }
-
     function restoreGenerationDefaults() {
-        settings.temperature = defaultTemperature
-        settings.topP = defaultTopP
-        settings.topK = defaultTopK
-        settings.maxLength = defaultMaxLength
-        settings.promptBatchSize = defaultPromptBatchSize
-        settings.promptTemplate = defaultPromptTemplate
-        templateTextArea.text = defaultPromptTemplate
-        settings.repeatPenalty = defaultRepeatPenalty
-        settings.repeatPenaltyTokens = defaultRepeatPenaltyTokens
-        settings.sync()
+        MySettings.restoreGenerationDefaults();
+        templateTextArea.text = MySettings.promptTemplate
     }
 
     function restoreApplicationDefaults() {
-        settings.modelPath = settingsDialog.defaultModelPath
-        settings.threadCount = defaultThreadCount
-        settings.saveChats = defaultSaveChats
-        settings.saveChatGPTChats = defaultSaveChatGPTChats
-        settings.serverChat = defaultServerChat
-        settings.userDefaultModel = defaultUserDefaultModel
-        ModelList.localModelsPath = settings.modelPath
-        LLM.threadCount = settings.threadCount
-        LLM.serverEnabled = settings.serverChat
-        ChatListModel.shouldSaveChats = settings.saveChats
-        ChatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
+        MySettings.restoreApplicationDefaults();
+        ModelList.localModelsPath = MySettings.modelPath
+        LLM.threadCount = MySettings.threadCount
+        LLM.serverEnabled = MySettings.serverChat
+        ChatListModel.shouldSaveChats = MySettings.saveChats
+        ChatListModel.shouldSaveChatGPTChats = MySettings.saveChatGPTChats
         MySettings.forceMetal = false
-        settings.sync()
     }
 
     Component.onCompleted: {
-        LLM.threadCount = settings.threadCount
-        LLM.serverEnabled = settings.serverChat
-        ChatListModel.shouldSaveChats = settings.saveChats
-        ChatListModel.shouldSaveChatGPTChats = settings.saveChatGPTChats
-        ModelList.localModelsPath = settings.modelPath
-    }
-
-    Connections {
-        target: settingsDialog
-        function onClosed() {
-            settings.sync()
-        }
+        LLM.threadCount = MySettings.threadCount
+        LLM.serverEnabled = MySettings.serverChat
+        ChatListModel.shouldSaveChats = MySettings.saveChats
+        ChatListModel.shouldSaveChatGPTChats = MySettings.saveChatGPTChats
+        ModelList.localModelsPath = MySettings.modelPath
     }
 
     Item {
@@ -309,7 +238,7 @@ Dialog {
                         Layout.column: 0
                     }
                     MyTextField {
-                        text: settings.temperature.toString()
+                        text: MySettings.temperature
                         color: theme.textColor
                         ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens.\nNOTE: Higher temperature gives more creative but less predictable outputs.")
                         ToolTip.visible: hovered
@@ -321,11 +250,10 @@ Dialog {
                         onEditingFinished: {
                             var val = parseFloat(text)
                             if (!isNaN(val)) {
-                                settings.temperature = val
-                                settings.sync()
+                                MySettings.temperature = val
                                 focus = false
                             } else {
-                                text = settings.temperature.toString()
+                                text = MySettings.temperature
                             }
                         }
                         Accessible.role: Accessible.EditableText
@@ -340,7 +268,7 @@ Dialog {
                         Layout.column: 0
                     }
                     MyTextField {
-                        text: settings.topP.toString()
+                        text: MySettings.topP
                         color: theme.textColor
                         ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen.\nNOTE: Prevents choosing highly unlikely tokens, aka Nucleus Sampling")
                         ToolTip.visible: hovered
@@ -352,11 +280,10 @@ Dialog {
                         onEditingFinished: {
                             var val = parseFloat(text)
                             if (!isNaN(val)) {
-                                settings.topP = val
-                                settings.sync()
+                                MySettings.topP = val
                                 focus = false
                             } else {
-                                text = settings.topP.toString()
+                                text = MySettings.topP
                             }
                         }
                         Accessible.role: Accessible.EditableText
@@ -371,7 +298,7 @@ Dialog {
                         Layout.column: 0
                     }
                     MyTextField {
-                        text: settings.topK.toString()
+                        text: MySettings.topK
                         color: theme.textColor
                         ToolTip.text: qsTr("Only the top K most likely tokens will be chosen from")
                         ToolTip.visible: hovered
@@ -383,11 +310,10 @@ Dialog {
                         onEditingFinished: {
                             var val = parseInt(text)
                             if (!isNaN(val)) {
-                                settings.topK = val
-                                settings.sync()
+                                MySettings.topK = val
                                 focus = false
                             } else {
-                                text = settings.topK.toString()
+                                text = MySettings.topK
                             }
                         }
                         Accessible.role: Accessible.EditableText
@@ -402,7 +328,7 @@ Dialog {
                         Layout.column: 0
                     }
                     MyTextField {
-                        text: settings.maxLength.toString()
+                        text: MySettings.maxLength
                         color: theme.textColor
                         ToolTip.text: qsTr("Maximum length of response in tokens")
                         ToolTip.visible: hovered
@@ -414,11 +340,10 @@ Dialog {
                         onEditingFinished: {
                             var val = parseInt(text)
                             if (!isNaN(val)) {
-                                settings.maxLength = val
-                                settings.sync()
+                                MySettings.maxLength = val
                                 focus = false
                             } else {
-                                text = settings.maxLength.toString()
+                                text = MySettings.maxLength
                             }
                         }
                         Accessible.role: Accessible.EditableText
@@ -434,7 +359,7 @@ Dialog {
                         Layout.column: 0
                     }
                     MyTextField {
-                        text: settings.promptBatchSize.toString()
+                        text: MySettings.promptBatchSize
                         color: theme.textColor
                         ToolTip.text: qsTr("Amount of prompt tokens to process at once.\nNOTE: Higher values can speed up reading prompts but will use more RAM")
                         ToolTip.visible: hovered
@@ -446,11 +371,10 @@ Dialog {
                         onEditingFinished: {
                             var val = parseInt(text)
                             if (!isNaN(val)) {
-                                settings.promptBatchSize = val
-                                settings.sync()
+                                MySettings.promptBatchSize = val
                                 focus = false
                             } else {
-                                text = settings.promptBatchSize.toString()
+                                text = MySettings.promptBatchSize
                             }
                         }
                         Accessible.role: Accessible.EditableText
@@ -465,7 +389,7 @@ Dialog {
                         Layout.column: 0
                     }
                     MyTextField {
-                        text: settings.repeatPenalty.toString()
+                        text: MySettings.repeatPenalty
                         color: theme.textColor
                         ToolTip.text: qsTr("Amount to penalize repetitiveness of the output")
                         ToolTip.visible: hovered
@@ -477,11 +401,10 @@ Dialog {
                         onEditingFinished: {
                             var val = parseFloat(text)
                             if (!isNaN(val)) {
-                                settings.repeatPenalty = val
-                                settings.sync()
+                                MySettings.repeatPenalty = val
                                 focus = false
                             } else {
-                                text = settings.repeatPenalty.toString()
+                                text = MySettings.repeatPenalty
                             }
                         }
                         Accessible.role: Accessible.EditableText
@@ -496,7 +419,7 @@ Dialog {
                         Layout.column: 0
                     }
                     MyTextField {
-                        text: settings.repeatPenaltyTokens.toString()
+                        text: MySettings.repeatPenaltyTokens
                         color: theme.textColor
                         ToolTip.text: qsTr("How far back in output to apply repeat penalty")
                         ToolTip.visible: hovered
@@ -508,11 +431,10 @@ Dialog {
                         onEditingFinished: {
                             var val = parseInt(text)
                             if (!isNaN(val)) {
-                                settings.repeatPenaltyTokens = val
-                                settings.sync()
+                                MySettings.repeatPenaltyTokens = val
                                 focus = false
                             } else {
-                                text = settings.repeatPenaltyTokens.toString()
+                                text = MySettings.repeatPenaltyTokens
                             }
                         }
                         Accessible.role: Accessible.EditableText
@@ -558,7 +480,7 @@ Dialog {
                             anchors.fill: parent
                             TextArea {
                                 id: templateTextArea
-                                text: settings.promptTemplate
+                                text: MySettings.promptTemplate
                                 color: theme.textColor
                                 background: Rectangle {
                                     implicitWidth: 150
@@ -569,8 +491,7 @@ Dialog {
                                 wrapMode: TextArea.Wrap
                                 onTextChanged: {
                                     if (templateTextArea.text.indexOf("%1") !== -1) {
-                                        settings.promptTemplate = text
-                                        settings.sync()
+                                        MySettings.promptTemplate = text
                                     }
                                 }
                                 bottomPadding: 10
@@ -633,21 +554,19 @@ Dialog {
                         Accessible.name: qsTr("ComboBox for displaying/picking the default model")
                         Accessible.description: qsTr("Use this for picking the default model to use; the first item is the current default model")
                         function updateModel() {
-                            settings.sync();
-                            comboBox.currentIndex = comboBox.indexOfValue(settingsDialog.userDefaultModel);
+                            comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
                         }
                         Component.onCompleted: {
                             comboBox.updateModel()
                         }
                         Connections {
-                            target: settings
+                            target: MySettings
                             function onUserDefaultModelChanged() {
                                 comboBox.updateModel()
                             }
                         }
                         onActivated: {
-                            settingsDialog.userDefaultModel = comboBox.currentText
-                            settings.sync()
+                            MySettings.userDefaultModel = comboBox.currentText
                         }
                     }
                     FolderDialog {
@@ -657,8 +576,7 @@ Dialog {
                         onAccepted: {
                             modelPathDisplayField.text = selectedFolder
                             ModelList.localModelsPath = modelPathDisplayField.text
-                            settings.modelPath = ModelList.localModelsPath
-                            settings.sync()
+                            MySettings.modelPath = ModelList.localModelsPath
                         }
                     }
                     Label {
@@ -683,8 +601,7 @@ Dialog {
                         onEditingFinished: {
                             if (isValid) {
                                 ModelList.localModelsPath = modelPathDisplayField.text
-                                settings.modelPath = ModelList.localModelsPath
-                                settings.sync()
+                                MySettings.modelPath = ModelList.localModelsPath
                             } else {
                                 text = ModelList.localModelsPath
                             }
@@ -705,7 +622,7 @@ Dialog {
                         Layout.column: 0
                     }
                     MyTextField {
-                        text: settingsDialog.threadCount.toString()
+                        text: MySettings.threadCount
                         color: theme.textColor
                         ToolTip.text: qsTr("Amount of processing threads to use, a setting of 0 will use the lesser of 4 or your number of CPU threads")
                         ToolTip.visible: hovered
@@ -717,12 +634,11 @@ Dialog {
                         onEditingFinished: {
                             var val = parseInt(text)
                             if (!isNaN(val)) {
-                                settingsDialog.threadCount = val
+                                MySettings.threadCount = val
                                 LLM.threadCount = val
-                                settings.sync()
                                 focus = false
                             } else {
-                                text = settingsDialog.threadCount.toString()
+                                text = MySettings.threadCount
                             }
                         }
                         Accessible.role: Accessible.EditableText
@@ -740,12 +656,11 @@ Dialog {
                         id: saveChatsBox
                         Layout.row: 4
                         Layout.column: 1
-                        checked: settingsDialog.saveChats
+                        checked: MySettings.saveChats
                         onClicked: {
                             Network.sendSaveChatsToggled(saveChatsBox.checked);
-                            settingsDialog.saveChats = saveChatsBox.checked
+                            MySettings.saveChats = !MySettings.saveChats
                             ChatListModel.shouldSaveChats = saveChatsBox.checked
-                            settings.sync()
                         }
                         ToolTip.text: qsTr("WARNING: Saving chats to disk can be ~2GB per chat")
                         ToolTip.visible: hovered
@@ -761,11 +676,10 @@ Dialog {
                         id: saveChatGPTChatsBox
                         Layout.row: 5
                         Layout.column: 1
-                        checked: settingsDialog.saveChatGPTChats
+                        checked: MySettings.saveChatGPTChats
                         onClicked: {
-                            settingsDialog.saveChatGPTChats = saveChatGPTChatsBox.checked
+                            MySettings.saveChatGPTChats = !MySettings.saveChatGPTChats
                             ChatListModel.shouldSaveChatGPTChats = saveChatGPTChatsBox.checked
-                            settings.sync()
                         }
                     }
                     Label {
@@ -779,11 +693,10 @@ Dialog {
                         id: serverChatBox
                         Layout.row: 6
                         Layout.column: 1
-                        checked: settings.serverChat
+                        checked: MySettings.serverChat
                         onClicked: {
-                            settingsDialog.serverChat = serverChatBox.checked
+                            MySettings.serverChat = !MySettings.serverChat
                             LLM.serverEnabled = serverChatBox.checked
-                            settings.sync()
                         }
                         ToolTip.text: qsTr("WARNING: This enables the gui to act as a local REST web server(OpenAI API compliant) for API requests and will increase your RAM usage as well")
                         ToolTip.visible: hovered
