@@ -2,6 +2,7 @@
 #include "replit_impl.h"
 
 #include "utils.h"
+#include "llmodel_shared.h"
 
 #include <cassert>
 #include <cmath>
@@ -181,40 +182,6 @@ struct replit_layer {
 
     struct ggml_tensor * c_mlp_mlp_down_weight;
 };
-
-struct replit_buffer {
-    uint8_t * addr = NULL;
-    size_t size = 0;
-
-    void resize(size_t size) {
-        delete[] addr;
-        addr = new uint8_t[size];
-        this->size = size;
-    }
-
-    ~replit_buffer() {
-        fflush(stdout);
-        delete[] addr;
-    }
-};
-
-struct replit_kv_cache {
-    struct ggml_tensor * k;
-    struct ggml_tensor * v;
-
-    struct ggml_context * ctx = NULL;
-
-    replit_buffer buf;
-
-    int n; // number of tokens currently in the cache
-
-    ~replit_kv_cache() {
-        if (ctx) {
-            ggml_free(ctx);
-        }
-    }
-};
-
 struct replit_model {
     mpt_hparams hparams;
 
@@ -224,7 +191,7 @@ struct replit_model {
     std::vector<replit_layer> layers;
 
     // key + value memory
-    struct replit_kv_cache kv_self;
+    struct llm_kv_cache kv_self;
 
     struct ggml_context * ctx;
     void * eval_buf;
@@ -241,7 +208,7 @@ struct replit_model {
 
 static bool kv_cache_init(
         const struct mpt_hparams & hparams,
-             struct replit_kv_cache & cache,
+             struct llm_kv_cache & cache,
                          ggml_type   wtype,
                                int   n_ctx) {
     const int n_embd  = hparams.n_embd;

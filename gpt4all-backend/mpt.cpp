@@ -2,6 +2,7 @@
 #include "mpt_impl.h"
 
 #include "utils.h"
+#include "llmodel_shared.h"
 
 #include <cassert>
 #include <cmath>
@@ -62,39 +63,6 @@ struct mpt_layer {
     struct ggml_tensor * ffn_down_proj_w;
 };
 
-struct mpt_buffer {
-    uint8_t * addr = NULL;
-    size_t size = 0;
-
-    void resize(size_t size) {
-        delete[] addr;
-        addr = new uint8_t[size];
-        this->size = size;
-    }
-
-    ~mpt_buffer() {
-        fflush(stdout);
-        delete[] addr;
-    }
-};
-
-struct mpt_kv_cache {
-    struct ggml_tensor * k;
-    struct ggml_tensor * v;
-
-    struct ggml_context * ctx = NULL;
-
-    mpt_buffer buf;
-
-    int n; // number of tokens currently in the cache
-
-    ~mpt_kv_cache() {
-        if (ctx) {
-            ggml_free(ctx);
-        }
-    }
-};
-
 struct mpt_model {
     mpt_hparams hparams;
 
@@ -107,12 +75,12 @@ struct mpt_model {
 
     std::vector<mpt_layer> layers;
 
-    struct mpt_kv_cache kv_self;
+    struct llm_kv_cache kv_self;
     struct ggml_context * ctx;
     std::map<std::string, struct ggml_tensor *> tensors;
 
 
-    mpt_buffer buf;
+    llm_buffer buf;
 
     ~mpt_model() {
         if (ctx) {
@@ -123,7 +91,7 @@ struct mpt_model {
 
 static bool kv_cache_init(
         const struct mpt_hparams & hparams,
-             struct mpt_kv_cache & cache,
+             struct llm_kv_cache & cache,
                          ggml_type   wtype,
                                int   n_ctx) {
     const int n_embd  = hparams.n_embd;

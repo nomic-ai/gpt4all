@@ -3,6 +3,7 @@
 #include "llama.h"
 #include "llama-util.h"
 #include "utils.h"
+#include "llmodel_shared.h"
 
 #include <cassert>
 #include <cinttypes>
@@ -46,38 +47,6 @@ struct falcon_layer {
     struct ggml_tensor* ffn_down;
 };
 
-struct falcon_buffer {
-    uint8_t * addr = NULL;
-    size_t size = 0;
-
-    void resize(size_t size) {
-        delete[] addr;
-        addr = new uint8_t[size];
-        this->size = size;
-    }
-
-    ~falcon_buffer() {
-        delete[] addr;
-    }
-};
-
-struct falcon_kv_cache {
-    struct ggml_tensor * k;
-    struct ggml_tensor * v;
-
-    struct ggml_context * ctx = NULL;
-
-    falcon_buffer buf;
-
-    int n; // number of tokens currently in the cache
-
-    ~falcon_kv_cache() {
-        if (ctx) {
-            ggml_free(ctx);
-        }
-    }
-};
-
 struct falcon_model {
     falcon_hparams hparams;
 
@@ -89,7 +58,7 @@ struct falcon_model {
     std::vector<falcon_layer> layers;
 
     // key + value memory
-    falcon_kv_cache kv_self;
+    llm_kv_cache kv_self;
 
     struct ggml_context* ctx;
     std::map<std::string, struct ggml_tensor*> tensors;
@@ -104,7 +73,7 @@ struct falcon_model {
 
 static bool kv_cache_init(
         const struct falcon_hparams & hparams,
-             struct falcon_kv_cache & cache,
+              struct llm_kv_cache & cache,
                          ggml_type   wtype,
                                int   n_ctx) {
     const int n_embd  = hparams.n_embd;
