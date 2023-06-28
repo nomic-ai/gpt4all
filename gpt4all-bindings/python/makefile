@@ -20,3 +20,6 @@ black:
 
 isort:
 	source env/bin/activate; isort  --ignore-whitespace --atomic -w 120 gpt4all
+
+test:
+	source env/bin/activate;  pytest -s gpt4all/tests

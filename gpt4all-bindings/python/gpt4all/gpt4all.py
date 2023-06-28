@@ -2,8 +2,8 @@
 Python only API for running all GPT4All models.
 """
 import os
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Dict, List
 
 import requests
@@ -20,7 +20,9 @@ class GPT4All:
     Run GPT4All models in Python.
     """
 
-    def __init__(self, model_name: str, model_path: str = None, model_type: str = None, allow_download = True, n_threads = None):
+    def __init__(
+        self, model_name: str, model_path: str = None, model_type: str = None, allow_download=True, n_threads=None
+    ):
         """
         Constructor
 
@@ -30,7 +32,7 @@ class GPT4All:
                 Default is None, in which case models will be stored in `~/.cache/gpt4all/`.
             model_type: Model architecture. This argument currently does not have any functionality and is just used as
                 descriptive identifier for user. Default is None.
-            allow_download: Allow API to download models from gpt4all.io. Default is True. 
+            allow_download: Allow API to download models from gpt4all.io. Default is True.
             n_threads: number of CPU threads used by GPT4All. Default is None, than the number of threads are determined automatically.
         """
         self.model_type = model_type
@@ -53,8 +55,9 @@ class GPT4All:
         return requests.get("https://gpt4all.io/models/models.json").json()
 
     @staticmethod
-    def retrieve_model(model_name: str, model_path: str = None, allow_download: bool = True,
-                       verbose: bool = True) -> str:
+    def retrieve_model(
+        model_name: str, model_path: str = None, allow_download: bool = True, verbose: bool = True
+    ) -> str:
         """
         Find model file, and if it doesn't exist, download the model.
 
@@ -76,8 +79,10 @@ class GPT4All:
             try:
                 os.makedirs(DEFAULT_MODEL_DIRECTORY, exist_ok=True)
             except OSError as exc:
-                raise ValueError(f"Failed to create model download directory at {DEFAULT_MODEL_DIRECTORY}: {exc}. "
-                                 "Please specify model_path.")
+                raise ValueError(
+                    f"Failed to create model download directory at {DEFAULT_MODEL_DIRECTORY}: {exc}. "
+                    "Please specify model_path."
+                )
             model_path = DEFAULT_MODEL_DIRECTORY
         else:
             model_path = model_path.replace("\\", "\\\\")
@@ -106,7 +111,7 @@ class GPT4All:
                 raise ValueError(f"Model filename not in model list: {model_filename}")
             url = selected_model.pop('url', None)
 
-            return GPT4All.download_model(model_filename, model_path, verbose = verbose, url=url)
+            return GPT4All.download_model(model_filename, model_path, verbose=verbose, url=url)
         else:
             raise ValueError("Failed to retrieve model")
 
@@ -124,6 +129,7 @@ class GPT4All:
         Returns:
             Model file destination.
         """
+
         def get_download_url(model_filename):
             if url:
                 return url
@@ -135,7 +141,7 @@ class GPT4All:
 
         response = requests.get(download_url, stream=True)
         total_size_in_bytes = int(response.headers.get("content-length", 0))
-        block_size = 2 ** 20  # 1 MB
+        block_size = 2**20  # 1 MB
 
         with tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True) as progress_bar:
             try:
@@ -152,9 +158,7 @@ class GPT4All:
 
         # Validate download was successful
         if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
-            raise RuntimeError(
-                "An error occurred during download. Downloaded file may not work."
-            )
+            raise RuntimeError("An error occurred during download. Downloaded file may not work.")
 
         # Sleep for a little bit so OS can remove file lock
         time.sleep(2)
@@ -163,43 +167,49 @@ class GPT4All:
             print("Model downloaded at: ", download_path)
         return download_path
 
-    # TODO: this naming is just confusing now and needs to be deprecated now that we have generator
-    # Need to better consolidate all these different model response methods
-    def generate(self, prompt: str, streaming: bool = True, **generate_kwargs) -> str:
+    def generate(
+        self,
+        prompt: str,
+        logits_size: int = 0,
+        tokens_size: int = 0,
+        n_past: int = 0,
+        n_ctx: int = 1024,
+        n_predict: int = 128,
+        top_k: int = 40,
+        top_p: float = 0.9,
+        temp: float = 0.1,
+        n_batch: int = 8,
+        repeat_penalty: float = 1.2,
+        repeat_last_n: int = 10,
+        context_erase: float = 0.5,
+        streaming: bool = True,
+    ) -> str:
         """
         Surfaced method of running generate without accessing model object.
 
         Args:
-            prompt: Raw string to be passed to model.
-            streaming: True if want output streamed to stdout.
-            **generate_kwargs: Optional kwargs to pass to prompt context.
-        
+            prompt: The prompt for the model the complete.
+
         Returns:
-            Raw string of generated model response.
+            Either the entire completion or a generator that yields the completion token by token.
         """
+        generate_kwargs = locals().keys()
+
+        if streaming:
+            return self.model.generator(prompt, **generate_kwargs)
+
         return self.model.prompt_model(prompt, streaming=streaming, **generate_kwargs)
 
-    def generator(self, prompt: str, **generate_kwargs) -> str:
-        """
-        Surfaced method of running generate without accessing model object.
-
-        Args:
-            prompt: Raw string to be passed to model.
-            streaming: True if want output streamed to stdout.
-            **generate_kwargs: Optional kwargs to pass to prompt context.
-        
-        Returns:
-            Raw string of generated model response.
-        """
-        return self.model.generator(prompt, **generate_kwargs)
-
-    def chat_completion(self,
-                        messages: List[Dict],
-                        default_prompt_header: bool = True,
-                        default_prompt_footer: bool = True,
-                        verbose: bool = True,
-                        streaming: bool = True,
-                        **generate_kwargs) -> dict:
+    ## TODO needs to stop based on model response.
+    def chat_completion(
+        self,
+        messages: List[Dict],
+        default_prompt_header: bool = True,
+        default_prompt_footer: bool = True,
+        verbose: bool = True,
+        streaming: bool = True,
+        **generate_kwargs,
+    ) -> dict:
         """
         Format list of message dictionaries into a prompt and call model
         generate on prompt. Returns a response dictionary with metadata and
@@ -210,54 +220,44 @@ class GPT4All:
                 with value of "system", "assistant", or "user" and a "content" key with a
                 string value. Messages are organized such that "system" messages are at top of prompt,
                 and "user" and "assistant" messages are displayed in order. Assistant messages get formatted as
-                "Response: {content}". 
+                "Response: {content}".
             default_prompt_header: If True (default), add default prompt header after any system role messages and
                 before user/assistant role messages.
             default_prompt_footer: If True (default), add default footer at end of prompt.
             verbose: If True (default), print full prompt and generated response.
-            streaming: True if want output streamed to stdout.
+            streaming: Return a generator that yields the output token by token.
             **generate_kwargs: Optional kwargs to pass to prompt context.
 
         Returns:
-            Response dictionary with:  
-                "model": name of model.  
-                "usage": a dictionary with number of full prompt tokens, number of 
-                    generated tokens in response, and total tokens.  
+            Response dictionary with:
+                "model": name of model.
+                "usage": a dictionary with number of full prompt tokens, number of
+                    generated tokens in response, and total tokens.
                 "choices": List of message dictionary where "content" is generated response and "role" is set
                 as "assistant". Right now, only one choice is returned by model.
         """
-        full_prompt = self._build_prompt(messages,
-                                         default_prompt_header=default_prompt_header,
-                                         default_prompt_footer=default_prompt_footer)
+        full_prompt = self._build_prompt(
+            messages, default_prompt_header=default_prompt_header, default_prompt_footer=default_prompt_footer
+        )
         if verbose:
             print(full_prompt)
 
-        response = self.model.prompt_model(full_prompt, streaming=streaming, **generate_kwargs)
-
-        if verbose and not streaming:
-            print(response)
+        response = self.generate(prompt=full_prompt, streaming=streaming, **generate_kwargs)
 
         response_dict = {
             "model": self.model.model_name,
-            "usage": {"prompt_tokens": len(full_prompt),
-                      "completion_tokens": len(response),
-                      "total_tokens": len(full_prompt) + len(response)},
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": response
-                    }
-                }
-            ]
+            "usage": {
+                "prompt_tokens": len(full_prompt),
+                "completion_tokens": len(response),
+                "total_tokens": len(full_prompt) + len(response),
+            },
+            "choices": [{"message": {"role": "assistant", "content": response}}],
         }
 
         return response_dict
 
     @staticmethod
-    def _build_prompt(messages: List[Dict],
-                      default_prompt_header=True,
-                      default_prompt_footer=True) -> str:
+    def _build_prompt(messages: List[Dict], default_prompt_header=True, default_prompt_footer=True) -> str:
         """
         Helper method for building a prompt using template from list of messages.
 
@@ -270,7 +270,7 @@ class GPT4All:
             default_prompt_header: If True (default), add default prompt header after any system role messages and
                 before user/assistant role messages.
             default_prompt_footer: If True (default), add default footer at end of prompt.
-        
+
         Returns:
             Formatted prompt.
         """
