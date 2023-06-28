@@ -207,27 +207,8 @@ Window {
                 textRole: "name"
                 property string currentModelName: ""
                 function updateCurrentModelName() {
-                    // During application startup the model names might not be processed yet, so don't
-                    // set the combobox text until this is done OR the timer has timed out
-                    if (!ModelList.modelHasNames && startupTimer.running)
-                        return
                     var info = ModelList.modelInfo(currentChat.modelInfo.filename);
                     comboBox.currentModelName = info.name !== "" ? info.name : info.filename;
-                }
-                Timer {
-                    id: startupTimer
-                    interval: 3000 // 3 seconds
-                    running: true
-                    repeat: false
-                    onTriggered: {
-                        comboBox.updateCurrentModelName();
-                    }
-                }
-                Connections {
-                    target: ModelList
-                    function onModelHasNamesChanged() {
-                        comboBox.updateCurrentModelName();
-                    }
                 }
                 Connections {
                     target: currentChat

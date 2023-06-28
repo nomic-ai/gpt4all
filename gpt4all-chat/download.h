@@ -57,12 +57,10 @@ public:
     Q_INVOKABLE bool isFirstStart() const;
 
 public Q_SLOTS:
-    void updateModelList();
     void updateReleaseNotes();
 
 private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
-    void handleModelsJsonDownloadFinished();
     void handleReleaseJsonDownloadFinished();
     void handleErrorOccurred(QNetworkReply::NetworkError code);
     void handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
@@ -78,7 +76,6 @@ Q_SIGNALS:
         QFile *tempFile, QNetworkReply *modelReply);
 
 private:
-    void parseModelsJsonFile(const QByteArray &jsonData);
     void parseReleaseJsonFile(const QByteArray &jsonData);
     QString incompleteDownloadPath(const QString &modelFile);
 

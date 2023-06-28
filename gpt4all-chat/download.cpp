@@ -13,8 +13,6 @@
 #include <QStandardPaths>
 #include <QSettings>
 
-//#define USE_LOCAL_MODELSJSON
-
 class MyDownload: public Download { };
 Q_GLOBAL_STATIC(MyDownload, downloadInstance)
 Download *Download::globalInstance()
@@ -32,21 +30,15 @@ Download::Download()
         &Download::handleHashAndSaveFinished, Qt::QueuedConnection);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Download::handleSslErrors);
-    connect(ModelList::globalInstance(), &ModelList::localModelsPathChanged, this, &Download::updateModelList);
-    updateModelList();
     updateReleaseNotes();
     m_startTime = QDateTime::currentDateTime();
 }
 
-bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
-    return lhs.filename == rhs.filename && lhs.md5sum == rhs.md5sum;
-}
-
-bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs) {
+static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs) {
     return lhs.version == rhs.version;
 }
 
-bool compareVersions(const QString &a, const QString &b) {
+static bool compareVersions(const QString &a, const QString &b) {
     QStringList aParts = a.split('.');
     QStringList bParts = b.split('.');
 
@@ -91,21 +83,6 @@ bool Download::isFirstStart() const
     settings.setValue("download/lastVersionStarted", QCoreApplication::applicationVersion());
     settings.sync();
     return first;
-}
-
-void Download::updateModelList()
-{
-#if defined(USE_LOCAL_MODELSJSON)
-    QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
-#else
-    QUrl jsonUrl("http://gpt4all.io/models/models.json");
-#endif
-    QNetworkRequest request(jsonUrl);
-    QSslConfiguration conf = request.sslConfiguration();
-    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-    request.setSslConfiguration(conf);
-    QNetworkReply *jsonReply = m_networkManager.get(request);
-    connect(jsonReply, &QNetworkReply::finished, this, &Download::handleModelsJsonDownloadFinished);
 }
 
 void Download::updateReleaseNotes()
@@ -232,134 +209,6 @@ void Download::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &err
     QUrl url = reply->request().url();
     for (const auto &e : errors)
         qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
-}
-
-void Download::handleModelsJsonDownloadFinished()
-{
-    QNetworkReply *jsonReply = qobject_cast<QNetworkReply *>(sender());
-    if (!jsonReply)
-        return;
-
-    QByteArray jsonData = jsonReply->readAll();
-    jsonReply->deleteLater();
-    parseModelsJsonFile(jsonData);
-}
-
-void Download::parseModelsJsonFile(const QByteArray &jsonData)
-{
-    QJsonParseError err;
-    QJsonDocument document = QJsonDocument::fromJson(jsonData, &err);
-    if (err.error != QJsonParseError::NoError) {
-        qWarning() << "ERROR: Couldn't parse: " << jsonData << err.errorString();
-        return;
-    }
-
-    QJsonArray jsonArray = document.array();
-    const QString currentVersion = QCoreApplication::applicationVersion();
-
-    for (const QJsonValue &value : jsonArray) {
-        QJsonObject obj = value.toObject();
-
-        QString modelName = obj["name"].toString();
-        QString modelFilename = obj["filename"].toString();
-        QString modelFilesize = obj["filesize"].toString();
-        QString requiresVersion = obj["requires"].toString();
-        QString deprecatedVersion = obj["deprecated"].toString();
-        QString url = obj["url"].toString();
-        QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
-        bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
-        bool disableGUI = obj.contains("disableGUI") && obj["disableGUI"] == QString("true");
-        QString description = obj["description"].toString();
-        QString order = obj["order"].toString();
-        int ramrequired = obj["ramrequired"].toString().toInt();
-        QString parameters = obj["parameters"].toString();
-        QString quant = obj["quant"].toString();
-        QString type = obj["type"].toString();
-
-        // If the currentVersion version is strictly less than required version, then continue
-        if (!requiresVersion.isEmpty()
-            && requiresVersion != currentVersion
-            && compareVersions(requiresVersion, currentVersion)) {
-            continue;
-        }
-
-        // If the current version is strictly greater than the deprecated version, then continue
-        if (!deprecatedVersion.isEmpty()
-            && compareVersions(currentVersion, deprecatedVersion)) {
-            continue;
-        }
-
-        modelFilesize = ModelList::toFileSize(modelFilesize.toULongLong());
-
-        if (!ModelList::globalInstance()->contains(modelFilename))
-            ModelList::globalInstance()->addModel(modelFilename);
-
-        if (!modelName.isEmpty())
-            ModelList::globalInstance()->updateData(modelFilename, ModelList::NameRole, modelName);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::FilesizeRole, modelFilesize);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::Md5sumRole, modelMd5sum);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::DefaultRole, isDefault);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::DescriptionRole, description);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::RequiresVersionRole, requiresVersion);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::DeprecatedVersionRole, deprecatedVersion);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::UrlRole, url);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::DisableGUIRole, disableGUI);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::OrderRole, order);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::RamrequiredRole, ramrequired);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::ParametersRole, parameters);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::QuantRole, quant);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::TypeRole, type);
-    }
-
-    const QString chatGPTDesc = tr("<ul><li>Requires personal OpenAI API key.</li><li>WARNING: Will send"
-        " your chats to OpenAI!</li><li>Your API key will be stored on disk</li><li>Will only be used"
-        " to communicate with OpenAI</li><li>You can apply for an API key"
-        " <a href=\"https://platform.openai.com/account/api-keys\">here.</a></li>");
-
-    {
-        const QString modelFilename = "chatgpt-gpt-3.5-turbo.txt";
-        if (!ModelList::globalInstance()->contains(modelFilename))
-            ModelList::globalInstance()->addModel(modelFilename);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::NameRole, "ChatGPT-3.5 Turbo");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::FilesizeRole, "minimal");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::ChatGPTRole, true);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::DescriptionRole,
-            tr("<strong>OpenAI's ChatGPT model GPT-3.5 Turbo</strong><br>") + chatGPTDesc);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::RequiresVersionRole, "2.4.2");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::OrderRole, "ca");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::RamrequiredRole, 0);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::ParametersRole, "?");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::QuantRole, "NA");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::TypeRole, "GPT");
-    }
-
-    {
-        const QString modelFilename = "chatgpt-gpt-4.txt";
-        if (!ModelList::globalInstance()->contains(modelFilename))
-            ModelList::globalInstance()->addModel(modelFilename);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::NameRole, "ChatGPT-4");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::FilesizeRole, "minimal");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::ChatGPTRole, true);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::DescriptionRole,
-            tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::RequiresVersionRole, "2.4.2");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::OrderRole, "cb");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::RamrequiredRole, 0);
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::ParametersRole, "?");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::QuantRole, "NA");
-        ModelList::globalInstance()->updateData(modelFilename, ModelList::TypeRole, "GPT");
-    }
-
-    if (ModelList::globalInstance()->installedModels()->count()) {
-        const QString firstModel =
-            ModelList::globalInstance()->installedModels()->firstFilename();
-        QSettings settings;
-        settings.sync();
-        settings.setValue("defaultModel", firstModel);
-        settings.sync();
-    }
-
-    ModelList::globalInstance()->updateModelHasNames();
 }
 
 void Download::handleReleaseJsonDownloadFinished()
