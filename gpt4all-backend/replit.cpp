@@ -5,6 +5,7 @@
 #include "llmodel_shared.h"
 
 #include <cassert>
+#include <cinttypes>
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
@@ -402,7 +403,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
 
         const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
 
-        printf("%s: memory_size = %8.2f MB, n_mem = %ld\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
+        printf("%s: memory_size = %8.2f MB, n_mem = %" PRId64 "\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
     }
 
     // load weights
