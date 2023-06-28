@@ -2,9 +2,9 @@
 
 namespace Gpt4All;
 
-internal static class LLPromptContextExtensions
+public static class LLPromptContextExtensions
 {
-    public static string Dump(this LLModelPromptContext context)
+    internal static string Dump(this LLModelPromptContext context)
     {
         var ctx = context.UnderlyingContext;
         return @$"

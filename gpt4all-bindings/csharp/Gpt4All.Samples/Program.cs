@@ -22,10 +22,3 @@ await foreach (var token in result.GetPredictionStreamingAsync())
 }
 
 Console.WriteLine();
-
-result = await model.GetStreamingPredictionAsync(prompt);
-
-await foreach (var token in result.GetPredictionStreamingAsync())
-{
-    Console.Write(token);
-}
