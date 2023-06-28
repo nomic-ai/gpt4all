@@ -173,7 +173,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     for (const ModelInfo &info : modelList) {
         if (!info.installed)
             continue;
-        if (modelRequested == info.name) {
+        if (modelRequested == info.name || modelRequested == info.filename) {
             modelInfo = info;
             break;
         }
