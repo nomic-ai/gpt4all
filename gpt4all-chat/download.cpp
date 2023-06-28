@@ -1,6 +1,7 @@
 #include "download.h"
 #include "network.h"
 #include "modellist.h"
+#include "mysettings.h"
 
 #include <QCoreApplication>
 #include <QNetworkRequest>
@@ -174,7 +175,7 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
         return;
 
     Network::globalInstance()->sendInstallModel(modelFile);
-    QString filePath = ModelList::globalInstance()->localModelsPath() + modelFile + ".txt";
+    QString filePath = MySettings::globalInstance()->modelPath() + modelFile + ".txt";
     QFile file(filePath);
     if (file.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
         QTextStream stream(&file);
@@ -185,7 +186,7 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
 
 void Download::removeModel(const QString &modelFile)
 {
-    const QString filePath = ModelList::globalInstance()->localModelsPath() + modelFile;
+    const QString filePath = MySettings::globalInstance()->modelPath() + modelFile;
     QFile incompleteFile(ModelList::globalInstance()->incompleteDownloadPath(modelFile));
     if (incompleteFile.exists()) {
         incompleteFile.remove();
@@ -420,7 +421,7 @@ void Download::handleModelDownloadFinished()
     // Notify that we are calculating hash
     ModelList::globalInstance()->updateData(modelFilename, ModelList::CalcHashRole, true);
     QByteArray md5sum =  ModelList::globalInstance()->modelInfo(modelFilename).md5sum;
-    const QString saveFilePath = ModelList::globalInstance()->localModelsPath() + modelFilename;
+    const QString saveFilePath = MySettings::globalInstance()->modelPath() + modelFilename;
     emit requestHashAndSave(md5sum, saveFilePath, tempFile, modelReply);
 }
 

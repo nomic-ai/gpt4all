@@ -1,4 +1,5 @@
 #include "modellist.h"
+#include "mysettings.h"
 
 #include <algorithm>
 
@@ -93,19 +94,18 @@ ModelList::ModelList()
     m_watcher = new QFileSystemWatcher(this);
     QSettings settings;
     settings.sync();
-    m_localModelsPath = settings.value("modelPath", defaultLocalModelsPath()).toString();
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     m_watcher->addPath(exePath);
-    m_watcher->addPath(m_localModelsPath);
+    m_watcher->addPath(MySettings::globalInstance()->modelPath());
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &ModelList::updateModelsFromDirectory);
-    connect(this, &ModelList::localModelsPathChanged, this, &ModelList::updateModelList);
+    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelList);
     updateModelsFromDirectory();
     updateModelList();
 }
 
 QString ModelList::incompleteDownloadPath(const QString &modelFile)
 {
-    return localModelsPath() + "incomplete-" + modelFile;
+    return MySettings::globalInstance()->modelPath() + "incomplete-" + modelFile;
 }
 
 const QList<ModelInfo> ModelList::exportModelList() const
@@ -415,49 +415,6 @@ ModelInfo ModelList::modelInfo(const QString &filename) const
     return *m_modelMap.value(filename);
 }
 
-QString ModelList::defaultLocalModelsPath() const
-{
-    QString localPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
-        + "/";
-    QString testWritePath = localPath + QString("test_write.txt");
-    QString canonicalLocalPath = QFileInfo(localPath).canonicalFilePath() + "/";
-    QDir localDir(localPath);
-    if (!localDir.exists()) {
-        if (!localDir.mkpath(localPath)) {
-            qWarning() << "ERROR: Local download directory can't be created:" << canonicalLocalPath;
-            return canonicalLocalPath;
-        }
-    }
-
-    if (QFileInfo::exists(testWritePath))
-        return canonicalLocalPath;
-
-    QFile testWriteFile(testWritePath);
-    if (testWriteFile.open(QIODeviceBase::ReadWrite)) {
-        testWriteFile.close();
-        return canonicalLocalPath;
-    }
-
-    qWarning() << "ERROR: Local download path appears not writeable:" << canonicalLocalPath;
-    return canonicalLocalPath;
-}
-
-QString ModelList::localModelsPath() const
-{
-    return m_localModelsPath;
-}
-
-void ModelList::setLocalModelsPath(const QString &modelPath)
-{
-    QString filePath = (modelPath.startsWith("file://") ?
-                        QUrl(modelPath).toLocalFile() : modelPath);
-    QString canonical = QFileInfo(filePath).canonicalFilePath() + "/";
-    if (m_localModelsPath != canonical) {
-        m_localModelsPath = canonical;
-        emit localModelsPathChanged();
-    }
-}
-
 QString ModelList::modelDirPath(const QString &modelName, bool isChatGPT)
 {
     QVector<QString> possibleFilePaths;
@@ -473,10 +430,10 @@ QString ModelList::modelDirPath(const QString &modelName, bool isChatGPT)
         if (infoAppPath.exists())
             return QCoreApplication::applicationDirPath();
 
-        QString downloadPath = localModelsPath() + modelFilename;
+        QString downloadPath = MySettings::globalInstance()->modelPath() + modelFilename;
         QFileInfo infoLocalPath(downloadPath);
         if (infoLocalPath.exists())
-            return localModelsPath();
+            return MySettings::globalInstance()->modelPath();
     }
     return QString();
 }
@@ -484,7 +441,7 @@ QString ModelList::modelDirPath(const QString &modelName, bool isChatGPT)
 void ModelList::updateModelsFromDirectory()
 {
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
-    const QString localPath = localModelsPath();
+    const QString localPath = MySettings::globalInstance()->modelPath();
 
     auto processDirectory = [&](const QString& path) {
         QDirIterator it(path, QDirIterator::Subdirectories);

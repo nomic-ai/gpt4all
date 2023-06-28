@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QUrl>
 
 static double   default_temperature         = 0.7;
 static double   default_topP                = 0.1;
@@ -309,11 +310,13 @@ QString MySettings::modelPath() const
 
 void MySettings::setModelPath(const QString &p)
 {
-    if (modelPath() == p)
+    QString filePath = (p.startsWith("file://") ?
+                        QUrl(p).toLocalFile() : p);
+    QString canonical = QFileInfo(filePath).canonicalFilePath() + "/";
+    if (modelPath() == canonical)
         return;
-
     QSettings setting;
-    setting.setValue("modelPath", p);
+    setting.setValue("modelPath", canonical);
     setting.sync();
     emit modelPathChanged();
 }
