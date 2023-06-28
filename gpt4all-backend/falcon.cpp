@@ -63,12 +63,9 @@ struct falcon_model {
     struct ggml_context* ctx;
     std::map<std::string, struct ggml_tensor*> tensors;
 
-    void * eval_buf;
-    size_t eval_buf_size;
-    void * scr0_buf;
-    size_t scr0_buf_size;
-    void * scr1_buf;
-    size_t scr1_buf_size;
+    llm_buffer eval_buf;
+    llm_buffer scr0_buf;
+    llm_buffer scr1_buf;
 };
 
 static bool kv_cache_init(
@@ -433,12 +430,9 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
 
     fin.close();
 
-    model.eval_buf_size = 256u * 1024 * 1024;
-    model.eval_buf = malloc(model.eval_buf_size);
-    model.scr0_buf_size = 256u * 1024 * 1024;
-    model.scr0_buf = malloc(model.scr0_buf_size);
-    model.scr1_buf_size = 256u * 1024 * 1024;
-    model.scr1_buf = malloc(model.scr1_buf_size);
+    model.eval_buf.resize(256u * 1024 * 1024);
+    model.scr0_buf.resize(256u * 1024 * 1024);
+    model.scr1_buf.resize(256u * 1024 * 1024);
     return true;
 }
 
@@ -472,8 +466,8 @@ bool falcon_eval(
     const size_t head_dim = n_embd / n_head;
 
    struct ggml_init_params eval_ctx_params = {
-        .mem_size = model.eval_buf_size,
-        .mem_buffer = model.eval_buf,
+        .mem_size = model.eval_buf.size,
+        .mem_buffer = model.eval_buf.addr,
         .no_alloc = false,
     };
 
@@ -495,7 +489,7 @@ bool falcon_eval(
         struct ggml_tensor * cur;
         struct ggml_tensor * layernorm_output;
 
-        ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
+        ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
 
         // self-attention
         {
@@ -636,7 +630,7 @@ bool falcon_eval(
             }
         }
 
-        ggml_set_scratch(ctx0, {0, model.scr1_buf_size, model.scr1_buf, });
+        ggml_set_scratch(ctx0, {0, model.scr1_buf.size, model.scr1_buf.addr, });
 
         struct ggml_tensor* inpFF = layernorm_output;
         struct ggml_tensor* attn_out = ggml_cpy(
@@ -654,7 +648,7 @@ bool falcon_eval(
         inpL = cur;
     }
 
-    ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
+    ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
 
     // norm
     {
@@ -832,15 +826,6 @@ Falcon::~Falcon() {
     if(d_ptr->model->ctx) {
         ggml_free(d_ptr->model->ctx);
         d_ptr->model->ctx = nullptr;
-    }
-    if(d_ptr->model->eval_buf) {
-        free(d_ptr->model->eval_buf);
-    }
-    if(d_ptr->model->scr0_buf) {
-        free(d_ptr->model->scr0_buf);
-    }
-    if(d_ptr->model->scr1_buf) {
-        free(d_ptr->model->scr1_buf);
     }
     delete d_ptr->model;
 }

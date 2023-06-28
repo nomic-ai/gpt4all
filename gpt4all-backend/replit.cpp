@@ -194,12 +194,9 @@ struct replit_model {
     struct llm_kv_cache kv_self;
 
     struct ggml_context * ctx;
-    void * eval_buf;
-    size_t eval_buf_size;
-    void * scr0_buf;
-    size_t scr0_buf_size;
-    void * scr1_buf;
-    size_t scr1_buf_size;
+    llm_buffer eval_buf;
+    llm_buffer scr0_buf;
+    llm_buffer scr1_buf;
     #ifdef GGML_USE_METAL
     struct ggml_metal_context * ctx_metal;
     #endif
@@ -487,12 +484,9 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size / 1024.0 / 1024.0, n_tensors);
     }
 
-   model.eval_buf_size = 256u * 1024 * 1024;
-   model.eval_buf = malloc(model.eval_buf_size);
-   model.scr0_buf_size = 256u * 1024 * 1024;
-   model.scr0_buf = malloc(model.scr0_buf_size);
-   model.scr1_buf_size = 256u * 1024 * 1024;
-   model.scr1_buf = malloc(model.scr1_buf_size);
+   model.eval_buf.resize(256u * 1024 * 1024);
+   model.scr0_buf.resize(256u * 1024 * 1024);
+   model.scr1_buf.resize(256u * 1024 * 1024);
 
 #ifdef GGML_USE_METAL
     model.ctx_metal = ggml_metal_init();
@@ -509,9 +503,9 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "data", data_ptr, data_size, max_size));
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "kv", ggml_get_mem_buffer(model.kv_self.ctx), 
                                                                 ggml_get_mem_size(model.kv_self.ctx), 0));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "eval", model.eval_buf, model.eval_buf_size, 0));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr0", model.scr0_buf, model.scr0_buf_size, 0));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr1", model.scr1_buf, model.scr1_buf_size, 0));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "eval", model.eval_buf.addr, model.eval_buf.size, 0));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr0", model.scr0_buf.addr, model.scr0_buf.size, 0));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr1", model.scr1_buf.addr, model.scr1_buf.size, 0));
 #endif
 
     return true;
@@ -552,8 +546,8 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
     const int n_vocab = hparams.n_vocab;
 
    struct ggml_init_params eval_ctx_params = {
-        .mem_size = model.eval_buf_size,
-        .mem_buffer = model.eval_buf,
+        .mem_size = model.eval_buf.size,
+        .mem_buffer = model.eval_buf.addr,
         .no_alloc = false,
     };
     struct ggml_context * ctx0 = ggml_init(eval_ctx_params);
@@ -565,7 +559,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
     struct ggml_tensor * inpL = ggml_get_rows(ctx0, model.wte_weight, embd);
 
     for (int il = 0; il < n_layer; ++il) {
-        ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
+        ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
         struct ggml_tensor * cur;
 
         // a = self.ln_1(x)
@@ -656,7 +650,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
             // projection
             { cur = ggml_mul_mat(ctx0, model.layers[il].c_attn_out_proj_weight, cur); }
         }
-        ggml_set_scratch(ctx0, {0, model.scr1_buf_size, model.scr1_buf, });
+        ggml_set_scratch(ctx0, {0, model.scr1_buf.size, model.scr1_buf.addr, });
 
         inpL = ggml_add(ctx0, inpL, cur);
 
@@ -683,7 +677,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
         // x = x + n
         inpL = ggml_add(ctx0, inpL, cur);
     }
-    ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
+    ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
     // norm
     {
         inpL = ggml_norm(ctx0, inpL);
@@ -912,15 +906,6 @@ Replit::~Replit()
     if(d_ptr->model->ctx) {
         ggml_free(d_ptr->model->ctx);
         d_ptr->model->ctx = nullptr;
-    }
-    if(d_ptr->model->eval_buf) {
-        free(d_ptr->model->eval_buf);
-    }
-    if(d_ptr->model->scr0_buf) {
-        free(d_ptr->model->scr0_buf);
-    }
-    if(d_ptr->model->scr1_buf) {
-        free(d_ptr->model->scr1_buf);
     }
     delete d_ptr->model;
 }
