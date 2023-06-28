@@ -10,6 +10,7 @@ import download
 import modellist
 import network
 import gpt4all
+import mysettings
 
 Window {
     id: window
@@ -893,13 +894,15 @@ Window {
                             chatModel.updateThumbsUpState(index, false);
                             chatModel.updateThumbsDownState(index, false);
                             chatModel.updateNewResponse(index, "");
-                            currentChat.prompt(listElement.prompt, settingsDialog.promptTemplate,
-                                       settingsDialog.maxLength,
-                                       settingsDialog.topK, settingsDialog.topP,
-                                       settingsDialog.temperature,
-                                       settingsDialog.promptBatchSize,
-                                       settingsDialog.repeatPenalty,
-                                       settingsDialog.repeatPenaltyTokens)
+                            currentChat.prompt(listElement.prompt,
+                                       MySettings.promptTemplate,
+                                       MySettings.maxLength,
+                                       MySettings.topK,
+                                       MySettings.topP,
+                                       MySettings.temperature,
+                                       MySettings.promptBatchSize,
+                                       MySettings.repeatPenalty,
+                                       MySettings.repeatPenaltyTokens)
                         }
                     }
                 }
@@ -973,14 +976,15 @@ Window {
 
                     currentChat.stopGenerating()
                     currentChat.newPromptResponsePair(textInput.text);
-                    currentChat.prompt(textInput.text, settingsDialog.promptTemplate,
-                               settingsDialog.maxLength,
-                               settingsDialog.topK,
-                               settingsDialog.topP,
-                               settingsDialog.temperature,
-                               settingsDialog.promptBatchSize,
-                               settingsDialog.repeatPenalty,
-                               settingsDialog.repeatPenaltyTokens)
+                    currentChat.prompt(textInput.text,
+                               MySettings.promptTemplate,
+                               MySettings.maxLength,
+                               MySettings.topK,
+                               MySettings.topP,
+                               MySettings.temperature,
+                               MySettings.promptBatchSize,
+                               MySettings.repeatPenalty,
+                               MySettings.repeatPenaltyTokens)
                     textInput.text = ""
                 }
             }
