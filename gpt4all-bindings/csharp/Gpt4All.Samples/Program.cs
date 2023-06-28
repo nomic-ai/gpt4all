@@ -12,8 +12,6 @@ var prompt = args[1];
 
 using var model = modelFactory.LoadModel(modelPath);
 
-model.Context.Temperature = 0.9f;
-
 var result = await model.GetStreamingPredictionAsync(prompt);
 
 await foreach (var token in result.GetPredictionStreamingAsync())
