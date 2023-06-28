@@ -464,7 +464,7 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
 
     fin.close();
 
-    model.eval_buf_size = 256u * 1024 * 1024;
+    model.eval_buf_size = 1536u * 1024 * 1024;
     model.eval_buf = malloc(model.eval_buf_size);
     model.scr0_buf_size = 256u * 1024 * 1024;
     model.scr0_buf = malloc(model.scr0_buf_size);
