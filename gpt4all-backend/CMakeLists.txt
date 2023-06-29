@@ -138,12 +138,13 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     replit.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
     prepare_target(replit-mainline llama-mainline)
 
-    if (NOT GPU)
+    if (NOT LLAMA_GPU)
         add_library(llamamodel-230519-${BUILD_VARIANT} SHARED
             llamamodel.cpp llmodel_shared.cpp)
         target_compile_definitions(llamamodel-230519-${BUILD_VARIANT} PRIVATE
             LLAMA_VERSIONS===2 LLAMA_DATE=230519)
         prepare_target(llamamodel-230519 llama-230519)
+
         add_library(llamamodel-230511-${BUILD_VARIANT} SHARED
             llamamodel.cpp llmodel_shared.cpp)
         target_compile_definitions(llamamodel-230511-${BUILD_VARIANT} PRIVATE
