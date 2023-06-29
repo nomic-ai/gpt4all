@@ -89,7 +89,6 @@ qt_add_qml_module(chat
       main.qml
       qml/ChatDrawer.qml
       qml/CollectionsDialog.qml
-      qml/LocalDocs.qml
       qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
@@ -99,6 +98,10 @@ qt_add_qml_module(chat
       qml/PopupDialog.qml
       qml/AboutDialog.qml
       qml/Theme.qml
+      qml/GenerationSettings.qml
+      qml/ApplicationSettings.qml
+      qml/LocalDocsSettings.qml
+      qml/MySettingsTab.qml
       qml/MyButton.qml
       qml/MyComboBox.qml
       qml/MyDirectoryField.qml
