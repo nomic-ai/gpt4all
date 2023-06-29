@@ -2,3 +2,4 @@ transformers
 triton
 einops
 pandas
+sentencepiece
