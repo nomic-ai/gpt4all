@@ -102,7 +102,7 @@ MySettingsTab {
         ScrollView {
             id: scrollView
             Layout.fillWidth: true
-            Layout.bottomMargin: 20
+            Layout.bottomMargin: 10
             clip: true
             contentHeight: 300
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
