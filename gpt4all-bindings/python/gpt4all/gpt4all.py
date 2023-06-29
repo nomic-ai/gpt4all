@@ -4,7 +4,7 @@ Python only API for running all GPT4All models.
 import os
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Iterable, Union
 
 import requests
 from tqdm import tqdm
@@ -170,35 +170,42 @@ class GPT4All:
     def generate(
         self,
         prompt: str,
-        logits_size: int = 0,
-        tokens_size: int = 0,
-        n_past: int = 0,
-        n_ctx: int = 1024,
-        n_predict: int = 128,
+        max_tokens: int = 200,
+        temp: float = 0.7,
         top_k: int = 40,
-        top_p: float = 0.9,
-        temp: float = 0.1,
-        n_batch: int = 8,
-        repeat_penalty: float = 1.2,
-        repeat_last_n: int = 10,
-        context_erase: float = 0.5,
-        streaming: bool = True,
-    ) -> str:
+        top_p: float = 0.1,
+        repeat_penalty: float = 1.18,
+        repeat_last_n: int = 64,
+        n_batch: int = 128,
+        streaming: bool = False
+    ) -> Union[str, Iterable]:
         """
-        Surfaced method of running generate without accessing model object.
+        Sample outputs from any GPT4All model.
 
         Args:
             prompt: The prompt for the model the complete.
+            max_tokens: The maximum number of tokens to
+            temp: The model temperature. Larger values increase creativity but decrease factuality.
+            top_k: Randomly sample from the top_k most likely tokens at each generation step. Set this to 1 for greedy decoding.
+            top_p: Randomly sample at each generation step from the top most likely tokens whose probabilities add up to top_p.
+            repeat_penalty: Penalize the model for repetition. Higher values result in less repetition.
+            repeat_last_n: How far in the models generation history to apply the repeat penalty.
+            n_batch: Number of prompt tokens processed in parallel. Larger values decrease latency but increase resource requirements.
+            streaming: If True, this method will instead return a generator that yields tokens as the model generates them.
 
         Returns:
             Either the entire completion or a generator that yields the completion token by token.
         """
-        generate_kwargs = locals().keys()
+        generate_kwargs = locals()
+        generate_kwargs.pop('self')
+        generate_kwargs.pop('max_tokens')
+        generate_kwargs['n_predict'] = max_tokens
+        generate_kwargs['n_past'] = 0
 
         if streaming:
-            return self.model.generator(prompt, **generate_kwargs)
+            return self.model.generator(**generate_kwargs)
 
-        return self.model.prompt_model(prompt, streaming=streaming, **generate_kwargs)
+        return self.model.prompt_model(**generate_kwargs)
 
     ## TODO needs to stop based on model response.
     def chat_completion(
