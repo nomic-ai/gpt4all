@@ -8,18 +8,17 @@ def test_inference():
     model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
     prompt = 'hello'
 
-    # tokens = []
-    # for token in model.generate(prompt, streaming=True):
-    #     tokens.append(token)
-    #
-    # print(tokens)
-    # assert len(tokens) > 0
+    print(model.generate(prompt))
 
     with model.chat_session():
         response = model.generate(prompt='hello')
         response = model.generate(prompt='write me a short poem')
         response = model.generate(prompt='thank you')
         print(model.current_chat_session)
+
+    # print(model.generate(prompt))
+
+
 
 
 # def test_inference_falcon():

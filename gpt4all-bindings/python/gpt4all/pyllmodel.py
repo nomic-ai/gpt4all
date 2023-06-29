@@ -252,6 +252,7 @@ class LLModel:
             )
 
         if reset_n_past:
+            print("resetting npast")
             self.context.n_past = 0
 
         llmodel.llmodel_prompt(
