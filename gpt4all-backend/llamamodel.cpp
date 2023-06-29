@@ -148,6 +148,7 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->params.use_mlock  = true;
 #else
     d_ptr->params.use_mlock  = params.use_mlock;
+#endif
 #if LLAMA_DATE > 230519
     d_ptr->params.n_gpu_layers = params.n_gpu_layers;
 #endif
