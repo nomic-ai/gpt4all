@@ -102,6 +102,7 @@ qt_add_qml_module(chat
       qml/ApplicationSettings.qml
       qml/LocalDocsSettings.qml
       qml/MySettingsTab.qml
+      qml/MySettingsStack.qml
       qml/MyButton.qml
       qml/MyComboBox.qml
       qml/MyDirectoryField.qml
