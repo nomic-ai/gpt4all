@@ -52,6 +52,7 @@ endif()
 # Detect CUDA
 find_package(CUDAToolkit)
 if (CUDAToolkit_FOUND)
+    enable_language(CUDA)
     list(APPEND BUILD_VARIANTS cuda)
 endif()
 
