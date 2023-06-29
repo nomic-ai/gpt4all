@@ -5,33 +5,13 @@ import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import localdocs
+import mysettings
 
 Item {
     id: root
 
     property alias collection: collection.text
     property alias folder_path: folderEdit.text
-
-    property int defaultChunkSize: 256
-    property int defaultRetrievalSize: 3
-
-    property alias chunkSize: settings.chunkSize
-    property alias retrievalSize: settings.retrievalSize
-
-    Settings {
-        id: settings
-        category: "localdocs"
-        property int chunkSize: root.defaultChunkSize
-        property int retrievalSize: root.defaultRetrievalSize
-    }
-
-    function restoreLocalDocsDefaults() {
-        settings.chunkSize = root.defaultChunkSize
-        settings.retrievalSize = root.defaultRetrievalSize
-        LocalDocs.chunkSize = settings.chunkSize
-        LocalDocs.retrievalSize = settings.retrievalSize
-        settings.sync()
-    }
 
     FolderDialog {
         id: folderDialog
@@ -240,19 +220,17 @@ Item {
             Layout.column: 1
             ToolTip.text: qsTr("Number of characters per document snippet.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
             ToolTip.visible: hovered
-            text: settings.chunkSize.toString()
+            text: MySettings.localDocsChunkSize
             validator: IntValidator {
                 bottom: 1
             }
             onEditingFinished: {
                 var val = parseInt(text)
                 if (!isNaN(val)) {
-                    settings.chunkSize = val
-                    settings.sync()
+                    MySettings.localDocsChunkSize = val
                     focus = false
-                    LocalDocs.chunkSize = settings.chunkSize
                 } else {
-                    text = settings.chunkSize.toString()
+                    text = MySettings.localDocsChunkSize
                 }
             }
         }
@@ -270,19 +248,17 @@ Item {
             Layout.column: 1
             ToolTip.text: qsTr("Best N matches of retrieved document snippets to add to the context for prompt.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
             ToolTip.visible: hovered
-            text: settings.retrievalSize.toString()
+            text: MySettings.localDocsRetrievalSize
             validator: IntValidator {
                 bottom: 1
             }
             onEditingFinished: {
                 var val = parseInt(text)
                 if (!isNaN(val)) {
-                    settings.retrievalSize = val
-                    settings.sync()
+                    MySettings.localDocsRetrievalSize = val
                     focus = false
-                    LocalDocs.retrievalSize = settings.retrievalSize
                 } else {
-                    text = settings.retrievalSize.toString()
+                    text = MySettings.localDocsRetrievalSize
                 }
             }
         }
@@ -311,7 +287,7 @@ Item {
             Accessible.name: text
             Accessible.description: qsTr("Restores the settings dialog to a default state")
             onClicked: {
-                root.restoreLocalDocsDefaults();
+                MySettings.restoreLocalDocsDefaults();
             }
         }
     }

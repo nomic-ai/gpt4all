@@ -1,4 +1,5 @@
 #include "localdocs.h"
+#include "mysettings.h"
 
 class MyLocalDocs: public LocalDocs { };
 Q_GLOBAL_STATIC(MyLocalDocs, localDocsInstance)
@@ -12,13 +13,10 @@ LocalDocs::LocalDocs()
     , m_localDocsModel(new LocalDocsModel(this))
     , m_database(nullptr)
 {
-    QSettings settings;
-    settings.sync();
-    m_chunkSize = settings.value("localdocs/chunkSize", 256).toInt();
-    m_retrievalSize = settings.value("localdocs/retrievalSize", 3).toInt();
+    connect(MySettings::globalInstance(), &MySettings::localDocsChunkSizeChanged, this, &LocalDocs::handleChunkSizeChanged);
 
     // Create the DB with the chunk size from settings
-    m_database = new Database(m_chunkSize);
+    m_database = new Database(MySettings::globalInstance()->localDocsChunkSize());
 
     connect(this, &LocalDocs::requestAddFolder, m_database,
         &Database::addFolder, Qt::QueuedConnection);
@@ -47,31 +45,7 @@ void LocalDocs::removeFolder(const QString &collection, const QString &path)
     emit requestRemoveFolder(collection, path);
 }
 
-int LocalDocs::chunkSize() const
+void LocalDocs::handleChunkSizeChanged()
 {
-    return m_chunkSize;
-}
-
-void LocalDocs::setChunkSize(int chunkSize)
-{
-    if (m_chunkSize == chunkSize)
-        return;
-
-    m_chunkSize = chunkSize;
-    emit chunkSizeChanged();
-    emit requestChunkSizeChange(chunkSize);
-}
-
-int LocalDocs::retrievalSize() const
-{
-    return m_retrievalSize;
-}
-
-void LocalDocs::setRetrievalSize(int retrievalSize)
-{
-    if (m_retrievalSize == retrievalSize)
-        return;
-
-    m_retrievalSize = retrievalSize;
-    emit retrievalSizeChanged();
+    emit requestChunkSizeChange(MySettings::globalInstance()->localDocsChunkSize());
 }

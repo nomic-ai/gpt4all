@@ -92,8 +92,6 @@ ModelList::ModelList()
     m_installedModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
     m_watcher = new QFileSystemWatcher(this);
-    QSettings settings;
-    settings.sync();
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     m_watcher->addPath(exePath);
     m_watcher->addPath(MySettings::globalInstance()->modelPath());
@@ -122,10 +120,7 @@ const QList<QString> ModelList::userDefaultModelList() const
 {
     QMutexLocker locker(&m_mutex);
 
-    QSettings settings;
-    settings.sync();
-
-    const QString userDefaultModelName = settings.value("userDefaultModel").toString();
+    const QString userDefaultModelName = MySettings::globalInstance()->userDefaultModel();
     QList<QString> models;
     bool foundUserDefault = false;
     for (ModelInfo *info : m_models) {
@@ -155,7 +150,7 @@ ModelInfo ModelList::defaultModelInfo() const
     // The user default model can be set by the user in the settings dialog. The "default" user
     // default model is "Application default" which signals we should use the default model that was
     // specified by the models.json file.
-    const QString userDefaultModelName = settings.value("userDefaultModel").toString();
+    const QString userDefaultModelName = MySettings::globalInstance()->userDefaultModel();
     const bool hasUserDefaultName = !userDefaultModelName.isEmpty() && userDefaultModelName != "Application default";
     const QString defaultModelName = settings.value("defaultModel").toString();
     const bool hasDefaultName = hasUserDefaultName ? false : !defaultModelName.isEmpty();
@@ -634,7 +629,6 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
         const QString firstModel =
             installedModels()->firstFilename();
         QSettings settings;
-        settings.sync();
         settings.setValue("defaultModel", firstModel);
         settings.sync();
     }

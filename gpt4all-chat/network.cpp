@@ -1,6 +1,7 @@
 #include "network.h"
 #include "llm.h"
 #include "chatlistmodel.h"
+#include "mysettings.h"
 
 #include <QCoreApplication>
 #include <QGuiApplication>
@@ -8,7 +9,6 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
-#include <QSettings>
 #include <QNetworkRequest>
 #include <QScreen>
 
@@ -33,8 +33,6 @@ Network *Network::globalInstance()
 
 Network::Network()
     : QObject{nullptr}
-    , m_isActive(false)
-    , m_usageStatsActive(false)
     , m_shouldSendStartup(false)
 {
     QSettings settings;
@@ -42,35 +40,25 @@ Network::Network()
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
     settings.sync();
-    m_isActive = settings.value("network/isActive", false).toBool();
-    if (m_isActive)
+    connect(MySettings::globalInstance(), &MySettings::networkIsActiveChanged, this, &Network::handleIsActiveChanged);
+    connect(MySettings::globalInstance(), &MySettings::networkUsageStatsActiveChanged, this, &Network::handleUsageStatsActiveChanged);
+    if (MySettings::globalInstance()->networkIsActive())
         sendHealth();
-    m_usageStatsActive = settings.value("network/usageStatsActive", false).toBool();
-    if (m_usageStatsActive)
+    if (MySettings::globalInstance()->networkUsageStatsActive())
         sendIpify();
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Network::handleSslErrors);
 }
 
-void Network::setActive(bool b)
+void Network::handleIsActiveChanged()
 {
-    QSettings settings;
-    settings.setValue("network/isActive", b);
-    settings.sync();
-    m_isActive = b;
-    emit activeChanged();
-    if (m_isActive)
+    if (MySettings::globalInstance()->networkUsageStatsActive())
         sendHealth();
 }
 
-void Network::setUsageStatsActive(bool b)
+void Network::handleUsageStatsActiveChanged()
 {
-    QSettings settings;
-    settings.setValue("network/usageStatsActive", b);
-    settings.sync();
-    m_usageStatsActive = b;
-    emit usageStatsActiveChanged();
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         sendOptOut();
     else {
         // model might be loaded already when user opt-in for first time
@@ -86,7 +74,7 @@ QString Network::generateUniqueId() const
 
 bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
 {
-    if (!m_isActive)
+    if (!MySettings::globalInstance()->networkIsActive())
         return false;
 
     QJsonParseError err;
@@ -104,13 +92,11 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     object.insert("submitter_id", m_uniqueId);
     object.insert("ingest_id", ingestId);
 
-    QSettings settings;
-    settings.sync();
-    QString attribution = settings.value("network/attribution", QString()).toString();
+    QString attribution = MySettings::globalInstance()->networkAttribution();
     if (!attribution.isEmpty())
         object.insert("network/attribution", attribution);
 
-    QString promptTemplate = settings.value("promptTemplate", QString()).toString();
+    QString promptTemplate = MySettings::globalInstance()->promptTemplate();
     object.insert("prompt_template", promptTemplate);
 
     QJsonDocument newDoc;
@@ -204,14 +190,14 @@ void Network::sendOptOut()
 
 void Network::sendModelLoaded()
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     sendMixpanelEvent("model_load");
 }
 
 void Network::sendResetContext(int conversationLength)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
 
     KeyValue kv;
@@ -222,7 +208,7 @@ void Network::sendResetContext(int conversationLength)
 
 void Network::sendStartup()
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     m_shouldSendStartup = true;
     if (m_ipify.isEmpty())
@@ -232,21 +218,21 @@ void Network::sendStartup()
 
 void Network::sendCheckForUpdates()
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     sendMixpanelEvent("check_for_updates");
 }
 
 void Network::sendModelDownloaderDialog()
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     sendMixpanelEvent("download_dialog");
 }
 
 void Network::sendInstallModel(const QString &model)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     KeyValue kv;
     kv.key = QString("model");
@@ -256,7 +242,7 @@ void Network::sendInstallModel(const QString &model)
 
 void Network::sendRemoveModel(const QString &model)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     KeyValue kv;
     kv.key = QString("model");
@@ -266,7 +252,7 @@ void Network::sendRemoveModel(const QString &model)
 
 void Network::sendDownloadStarted(const QString &model)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     KeyValue kv;
     kv.key = QString("model");
@@ -276,7 +262,7 @@ void Network::sendDownloadStarted(const QString &model)
 
 void Network::sendDownloadCanceled(const QString &model)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     KeyValue kv;
     kv.key = QString("model");
@@ -286,7 +272,7 @@ void Network::sendDownloadCanceled(const QString &model)
 
 void Network::sendDownloadError(const QString &model, int code, const QString &errorString)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     KeyValue kv;
     kv.key = QString("model");
@@ -302,7 +288,7 @@ void Network::sendDownloadError(const QString &model, int code, const QString &e
 
 void Network::sendDownloadFinished(const QString &model, bool success)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     KeyValue kv;
     kv.key = QString("model");
@@ -315,14 +301,14 @@ void Network::sendDownloadFinished(const QString &model, bool success)
 
 void Network::sendSettingsDialog()
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     sendMixpanelEvent("settings_dialog");
 }
 
 void Network::sendNetworkToggled(bool isActive)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     KeyValue kv;
     kv.key = QString("isActive");
@@ -332,7 +318,7 @@ void Network::sendNetworkToggled(bool isActive)
 
 void Network::sendSaveChatsToggled(bool isActive)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     KeyValue kv;
     kv.key = QString("isActive");
@@ -342,7 +328,7 @@ void Network::sendSaveChatsToggled(bool isActive)
 
 void Network::sendNewChat(int count)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     KeyValue kv;
     kv.key = QString("number_of_chats");
@@ -352,28 +338,28 @@ void Network::sendNewChat(int count)
 
 void Network::sendRemoveChat()
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     sendMixpanelEvent("remove_chat");
 }
 
 void Network::sendRenameChat()
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     sendMixpanelEvent("rename_chat");
 }
 
 void Network::sendChatStarted()
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     sendMixpanelEvent("chat_started");
 }
 
 void Network::sendRecalculatingContext(int conversationLength)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
 
     KeyValue kv;
@@ -384,14 +370,14 @@ void Network::sendRecalculatingContext(int conversationLength)
 
 void Network::sendNonCompatHardware()
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
     sendMixpanelEvent("noncompat_hardware");
 }
 
 void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &values)
 {
-    if (!m_usageStatsActive)
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
 
     Q_ASSERT(ChatListModel::globalInstance()->currentChat());
@@ -439,7 +425,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
 
 void Network::sendIpify()
 {
-    if (!m_usageStatsActive || !m_ipify.isEmpty())
+    if (!MySettings::globalInstance()->networkUsageStatsActive() || !m_ipify.isEmpty())
         return;
 
     QUrl ipifyUrl("https://api.ipify.org");
@@ -453,7 +439,7 @@ void Network::sendIpify()
 
 void Network::sendMixpanel(const QByteArray &json, bool isOptOut)
 {
-    if (!m_usageStatsActive && !isOptOut)
+    if (!MySettings::globalInstance()->networkUsageStatsActive() && !isOptOut)
         return;
 
     QUrl trackUrl("https://api.mixpanel.com/track");
@@ -468,7 +454,7 @@ void Network::sendMixpanel(const QByteArray &json, bool isOptOut)
 
 void Network::handleIpifyFinished()
 {
-    Q_ASSERT(m_usageStatsActive);
+    Q_ASSERT(MySettings::globalInstance()->networkUsageStatsActive());
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply)
         return;
@@ -544,7 +530,7 @@ void Network::handleHealthFinished()
     if (code != 200) {
         qWarning() << "ERROR: health response != 200 code:" << code;
         emit healthCheckFailed(code);
-        setActive(false);
+        MySettings::globalInstance()->setNetworkIsActive(false);
     }
     healthReply->deleteLater();
 }
