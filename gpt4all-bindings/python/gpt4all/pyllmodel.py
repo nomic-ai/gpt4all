@@ -197,10 +197,6 @@ class LLModel:
     def prompt_model(
         self,
         prompt: str,
-        logits_size: int = 0,
-        tokens_size: int = 0,
-        n_past: int = 0,
-        n_ctx: int = 1024,
         n_predict: int = 128,
         top_k: int = 40,
         top_p: float = 0.9,
@@ -209,7 +205,8 @@ class LLModel:
         repeat_penalty: float = 1.2,
         repeat_last_n: int = 10,
         context_erase: float = 0.5,
-        streaming: bool = True,
+        streaming: bool = False,
+        reset_n_past: bool = False
     ) -> str:
         """
         Generate response from model from a prompt.
@@ -240,10 +237,10 @@ class LLModel:
 
         if self.context is None:
             self.context = LLModelPromptContext(
-                logits_size=logits_size,
-                tokens_size=tokens_size,
-                n_past=n_past,
-                n_ctx=n_ctx,
+                logits_size=0,
+                tokens_size=0,
+                n_past=0,
+                n_ctx=0,
                 n_predict=n_predict,
                 top_k=top_k,
                 top_p=top_p,
@@ -253,6 +250,9 @@ class LLModel:
                 repeat_last_n=repeat_last_n,
                 context_erase=context_erase,
             )
+
+        if reset_n_past:
+            self.context.n_past = 0
 
         llmodel.llmodel_prompt(
             self.model,
@@ -272,10 +272,6 @@ class LLModel:
     def generator(
         self,
         prompt: str,
-        logits_size: int = 0,
-        tokens_size: int = 0,
-        n_past: int = 0,
-        n_ctx: int = 1024,
         n_predict: int = 128,
         top_k: int = 40,
         top_p: float = 0.9,
@@ -284,6 +280,7 @@ class LLModel:
         repeat_penalty: float = 1.2,
         repeat_last_n: int = 10,
         context_erase: float = 0.5,
+        reset_n_past: bool = False
     ) -> Iterable:
         # Symbol to terminate from generator
         TERMINATING_SYMBOL = "#TERMINATE#"
@@ -295,10 +292,10 @@ class LLModel:
 
         if self.context is None:
             self.context = LLModelPromptContext(
-                logits_size=logits_size,
-                tokens_size=tokens_size,
-                n_past=n_past,
-                n_ctx=n_ctx,
+                logits_size=0,
+                tokens_size=0,
+                n_past=0,
+                n_ctx=0,
                 n_predict=n_predict,
                 top_k=top_k,
                 top_p=top_p,
@@ -308,6 +305,9 @@ class LLModel:
                 repeat_last_n=repeat_last_n,
                 context_erase=context_erase,
             )
+
+        if reset_n_past:
+            self.context.n_past = 0
 
         # Put response tokens into an output queue
         def _generator_response_callback(token_id, response):

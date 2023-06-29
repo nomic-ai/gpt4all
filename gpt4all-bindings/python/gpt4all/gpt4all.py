@@ -5,6 +5,7 @@ import os
 import time
 from pathlib import Path
 from typing import Dict, List, Iterable, Union
+from contextlib import contextmanager
 
 import requests
 from tqdm import tqdm
@@ -43,6 +44,9 @@ class GPT4All:
         # Set n_threads
         if n_threads is not None:
             self.model.set_thread_count(n_threads)
+
+        self._is_chat_session_activated = False
+        self.current_chat_session = []
 
     @staticmethod
     def list_models():
@@ -176,15 +180,15 @@ class GPT4All:
         top_p: float = 0.1,
         repeat_penalty: float = 1.18,
         repeat_last_n: int = 64,
-        n_batch: int = 128,
+        n_batch: int = 8,
         streaming: bool = False
     ) -> Union[str, Iterable]:
         """
-        Sample outputs from any GPT4All model.
+        Generate outputs from any GPT4All model.
 
         Args:
             prompt: The prompt for the model the complete.
-            max_tokens: The maximum number of tokens to
+            max_tokens: The maximum number of tokens to generate.
             temp: The model temperature. Larger values increase creativity but decrease factuality.
             top_k: Randomly sample from the top_k most likely tokens at each generation step. Set this to 1 for greedy decoding.
             top_p: Randomly sample at each generation step from the top most likely tokens whose probabilities add up to top_p.
@@ -199,72 +203,43 @@ class GPT4All:
         generate_kwargs = locals()
         generate_kwargs.pop('self')
         generate_kwargs.pop('max_tokens')
+        generate_kwargs.pop('streaming')
         generate_kwargs['n_predict'] = max_tokens
-        generate_kwargs['n_past'] = 0
+
+        if self._is_chat_session_activated:
+            self.current_chat_session.append({'role': 'user', 'content': prompt})
+            generate_kwargs['prompt'] = self._format_chat_prompt_template(messages=self.current_chat_session)
+
+        else:
+            generate_kwargs['reset_n_past'] = True
 
         if streaming:
             return self.model.generator(**generate_kwargs)
 
-        return self.model.prompt_model(**generate_kwargs)
+        output = self.model.prompt_model(**generate_kwargs)
 
-    ## TODO needs to stop based on model response.
-    def chat_completion(
-        self,
-        messages: List[Dict],
-        default_prompt_header: bool = True,
-        default_prompt_footer: bool = True,
-        verbose: bool = True,
-        streaming: bool = True,
-        **generate_kwargs,
-    ) -> dict:
-        """
-        Format list of message dictionaries into a prompt and call model
-        generate on prompt. Returns a response dictionary with metadata and
-        generated content.
+        if self._is_chat_session_activated:
+            self.current_chat_session.append({'role': 'assistant', 'content': output})
+        return output
 
-        Args:
-            messages: List of dictionaries. Each dictionary should have a "role" key
-                with value of "system", "assistant", or "user" and a "content" key with a
-                string value. Messages are organized such that "system" messages are at top of prompt,
-                and "user" and "assistant" messages are displayed in order. Assistant messages get formatted as
-                "Response: {content}".
-            default_prompt_header: If True (default), add default prompt header after any system role messages and
-                before user/assistant role messages.
-            default_prompt_footer: If True (default), add default footer at end of prompt.
-            verbose: If True (default), print full prompt and generated response.
-            streaming: Return a generator that yields the output token by token.
-            **generate_kwargs: Optional kwargs to pass to prompt context.
+    @contextmanager
+    def chat_session(self):
+        '''
+        Hold an inference optimized chat session with a GPT4All model.
 
-        Returns:
-            Response dictionary with:
-                "model": name of model.
-                "usage": a dictionary with number of full prompt tokens, number of
-                    generated tokens in response, and total tokens.
-                "choices": List of message dictionary where "content" is generated response and "role" is set
-                as "assistant". Right now, only one choice is returned by model.
-        """
-        full_prompt = self._build_prompt(
-            messages, default_prompt_header=default_prompt_header, default_prompt_footer=default_prompt_footer
-        )
-        if verbose:
-            print(full_prompt)
+        Handles history in a chat session
+        '''
+        # Code to acquire resource, e.g.:
+        self._is_chat_session_activated = True
+        self._current_chat_session = []
+        try:
+            yield self
+        finally:
+            # Code to release resource, e.g.:
+            self._is_chat_session_activated = False
+            self._current_chat_session = []
 
-        response = self.generate(prompt=full_prompt, streaming=streaming, **generate_kwargs)
-
-        response_dict = {
-            "model": self.model.model_name,
-            "usage": {
-                "prompt_tokens": len(full_prompt),
-                "completion_tokens": len(response),
-                "total_tokens": len(full_prompt) + len(response),
-            },
-            "choices": [{"message": {"role": "assistant", "content": response}}],
-        }
-
-        return response_dict
-
-    @staticmethod
-    def _build_prompt(messages: List[Dict], default_prompt_header=True, default_prompt_footer=True) -> str:
+    def _format_chat_prompt_template(self, messages: List[Dict], default_prompt_header=True, default_prompt_footer=True) -> str:
         """
         Helper method for building a prompt using template from list of messages.
 
@@ -274,9 +249,6 @@ class GPT4All:
                 string value. Messages are organized such that "system" messages are at top of prompt,
                 and "user" and "assistant" messages are displayed in order. Assistant messages get formatted as
                 "Response: {content}".
-            default_prompt_header: If True (default), add default prompt header after any system role messages and
-                before user/assistant role messages.
-            default_prompt_footer: If True (default), add default footer at end of prompt.
 
         Returns:
             Formatted prompt.
@@ -284,26 +256,12 @@ class GPT4All:
         full_prompt = ""
 
         for message in messages:
-            if message["role"] == "system":
-                system_message = message["content"] + "\n"
-                full_prompt += system_message
-
-        if default_prompt_header:
-            full_prompt += """### Instruction: 
-            The prompt below is a question to answer, a task to complete, or a conversation 
-            to respond to; decide which and write an appropriate response.
-            \n### Prompt: """
-
-        for message in messages:
             if message["role"] == "user":
-                user_message = "\n" + message["content"]
+                user_message = "### Human: \n" + message["content"] + '\n### Assistant:\n'
                 full_prompt += user_message
             if message["role"] == "assistant":
-                assistant_message = "\n### Response: " + message["content"]
+                assistant_message = message["content"] + '\n'
                 full_prompt += assistant_message
-
-        if default_prompt_footer:
-            full_prompt += "\n### Response:"
 
         return full_prompt
 
