@@ -44,7 +44,7 @@ set(LLAMA_LTO ${IPO_SUPPORTED})
 include(llama.cpp.cmake)
 
 # Build variant list
-set(BUILD_VARIANTS default avxonly cuda opencl)
+set(BUILD_VARIANTS default avxonly)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(BUILD_VARIANTS ${BUILD_VARIANTS} metal)
 endif()
