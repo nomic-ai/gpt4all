@@ -1,6 +1,5 @@
 #include "llm.h"
 #include "../gpt4all-backend/sysinfo.h"
-#include "chatlistmodel.h"
 #include "../gpt4all-backend/llmodel.h"
 #include "network.h"
 
@@ -9,7 +8,6 @@
 #include <QFile>
 #include <QProcess>
 #include <QResource>
-#include <QSettings>
 #include <fstream>
 
 class MyLLM: public LLM { };

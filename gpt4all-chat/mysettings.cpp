@@ -21,6 +21,12 @@ static bool     default_saveChatGPTChats    = true;
 static bool     default_serverChat          = false;
 static QString  default_userDefaultModel    = "Application default";
 static bool     default_forceMetal          = false;
+static QString  default_lastVersionStarted  = "";
+static int      default_localDocsChunkSize  = 256;
+static int      default_localDocsRetrievalSize  = 3;
+static QString  default_networkAttribution      = "";
+static bool     default_networkIsActive         = false;
+static bool     default_networkUsageStatsActive = false;
 
 static QString defaultLocalModelsPath()
 {
@@ -83,6 +89,12 @@ void MySettings::restoreApplicationDefaults()
     setModelPath(defaultLocalModelsPath());
     setUserDefaultModel(default_userDefaultModel);
     setForceMetal(default_forceMetal);
+}
+
+void MySettings::restoreLocalDocsDefaults()
+{
+    setLocalDocsChunkSize(default_localDocsChunkSize);
+    setLocalDocsRetrievalSize(default_localDocsRetrievalSize);
 }
 
 double MySettings::temperature() const
@@ -350,4 +362,112 @@ void MySettings::setForceMetal(bool b)
         return;
     m_forceMetal = b;
     emit forceMetalChanged(b);
+}
+
+QString MySettings::lastVersionStarted() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("lastVersionStarted", default_lastVersionStarted).toString();
+}
+
+void MySettings::setLastVersionStarted(const QString &v)
+{
+    if (lastVersionStarted() == v)
+        return;
+
+    QSettings setting;
+    setting.setValue("lastVersionStarted", v);
+    setting.sync();
+    emit lastVersionStartedChanged();
+}
+
+int MySettings::localDocsChunkSize() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("localdocs/chunkSize", default_localDocsChunkSize).toInt();
+}
+
+void MySettings::setLocalDocsChunkSize(int s)
+{
+    if (localDocsChunkSize() == s)
+        return;
+
+    QSettings setting;
+    setting.setValue("localdocs/chunkSize", s);
+    setting.sync();
+    emit localDocsChunkSizeChanged();
+}
+
+int MySettings::localDocsRetrievalSize() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("localdocs/retrievalSize", default_localDocsRetrievalSize).toInt();
+}
+
+void MySettings::setLocalDocsRetrievalSize(int s)
+{
+    if (localDocsRetrievalSize() == s)
+        return;
+
+    QSettings setting;
+    setting.setValue("localdocs/retrievalSize", s);
+    setting.sync();
+    emit localDocsRetrievalSizeChanged();
+}
+
+QString MySettings::networkAttribution() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("network/attribution", default_networkAttribution).toString();
+}
+
+void MySettings::setNetworkAttribution(const QString &a)
+{
+    if (networkAttribution() == a)
+        return;
+
+    QSettings setting;
+    setting.setValue("network/attribution", a);
+    setting.sync();
+    emit networkAttributionChanged();
+}
+
+bool MySettings::networkIsActive() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("network/isActive", default_networkIsActive).toBool();
+}
+
+void MySettings::setNetworkIsActive(bool b)
+{
+    if (networkIsActive() == b)
+        return;
+
+    QSettings setting;
+    setting.setValue("network/isActive", b);
+    setting.sync();
+    emit networkIsActiveChanged();
+}
+
+bool MySettings::networkUsageStatsActive() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("network/usageStatsActive", default_networkUsageStatsActive).toBool();
+}
+
+void MySettings::setNetworkUsageStatsActive(bool b)
+{
+    if (networkUsageStatsActive() == b)
+        return;
+
+    QSettings setting;
+    setting.setValue("network/usageStatsActive", b);
+    setting.sync();
+    emit networkUsageStatsActiveChanged();
 }

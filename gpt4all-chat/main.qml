@@ -78,7 +78,7 @@ Window {
     Connections {
         target: currentChat
         function onResponseInProgressChanged() {
-            if (Network.isActive && !currentChat.responseInProgress)
+            if (MySettings.networkIsActive && !currentChat.responseInProgress)
                 Network.sendConversation(currentChat.id, getConversationJson());
         }
         function onModelLoadingErrorChanged() {
@@ -365,14 +365,14 @@ Window {
         height: 40
         z: 200
         padding: 15
-        toggled: Network.isActive
+        toggled: MySettings.networkIsActive
         source: "qrc:/gpt4all/icons/network.svg"
         Accessible.name: qsTr("Network button")
         Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
 
         onClicked: {
-            if (Network.isActive) {
-                Network.isActive = false
+            if (MySettings.networkIsActive) {
+                MySettings.networkIsActive = false
                 Network.sendNetworkToggled(false);
             } else
                 networkDialog.open()
@@ -769,7 +769,7 @@ Window {
 
                         Column {
                             visible: name === qsTr("Response: ") &&
-                                (!currentResponse || !currentChat.responseInProgress) && Network.isActive
+                                (!currentResponse || !currentChat.responseInProgress) && MySettings.networkIsActive
                             anchors.right: parent.right
                             anchors.rightMargin: 20
                             y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)

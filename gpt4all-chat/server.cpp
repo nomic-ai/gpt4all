@@ -295,13 +295,11 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     // don't remember any context
     resetContext();
 
-    QSettings settings;
-    settings.sync();
-    const QString promptTemplate = settings.value("promptTemplate", "%1").toString();
-    const float top_k = settings.value("topK", m_ctx.top_k).toDouble();
-    const int n_batch = settings.value("promptBatchSize", m_ctx.n_batch).toInt();
-    const float repeat_penalty = settings.value("repeatPenalty", m_ctx.repeat_penalty).toDouble();
-    const int repeat_last_n = settings.value("repeatPenaltyTokens", m_ctx.repeat_last_n).toInt();
+    const QString promptTemplate    = MySettings::globalInstance()->promptTemplate();
+    const float top_k               = MySettings::globalInstance()->topK();
+    const int n_batch               = MySettings::globalInstance()->promptBatchSize();
+    const float repeat_penalty      = MySettings::globalInstance()->repeatPenalty();
+    const int repeat_last_n         = MySettings::globalInstance()->repeatPenaltyTokens();
 
     int threadCount = MySettings::globalInstance()->threadCount();
     if (threadCount <= 0)

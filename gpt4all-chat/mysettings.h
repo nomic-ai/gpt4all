@@ -22,6 +22,12 @@ class MySettings : public QObject
     Q_PROPERTY(QString modelPath READ modelPath WRITE setModelPath NOTIFY modelPathChanged)
     Q_PROPERTY(QString userDefaultModel READ userDefaultModel WRITE setUserDefaultModel NOTIFY userDefaultModelChanged)
     Q_PROPERTY(bool forceMetal READ forceMetal WRITE setForceMetal NOTIFY forceMetalChanged)
+    Q_PROPERTY(QString lastVersionStarted READ lastVersionStarted WRITE setLastVersionStarted NOTIFY lastVersionStartedChanged)
+    Q_PROPERTY(int localDocsChunkSize READ localDocsChunkSize WRITE setLocalDocsChunkSize NOTIFY localDocsChunkSizeChanged)
+    Q_PROPERTY(int localDocsRetrievalSize READ localDocsRetrievalSize WRITE setLocalDocsRetrievalSize NOTIFY localDocsRetrievalSizeChanged)
+    Q_PROPERTY(QString networkAttribution READ networkAttribution WRITE setNetworkAttribution NOTIFY networkAttributionChanged)
+    Q_PROPERTY(bool networkIsActive READ networkIsActive WRITE setNetworkIsActive NOTIFY networkIsActiveChanged)
+    Q_PROPERTY(bool networkUsageStatsActive READ networkUsageStatsActive WRITE setNetworkUsageStatsActive NOTIFY networkUsageStatsActiveChanged)
 
 public:
     static MySettings *globalInstance();
@@ -29,6 +35,7 @@ public:
     // Restore methods
     Q_INVOKABLE void restoreGenerationDefaults();
     Q_INVOKABLE void restoreApplicationDefaults();
+    Q_INVOKABLE void restoreLocalDocsDefaults();
 
     // Generation settings
     double temperature() const;
@@ -64,6 +71,24 @@ public:
     bool forceMetal() const;
     void setForceMetal(bool b);
 
+    // Release/Download settings
+    QString lastVersionStarted() const;
+    void setLastVersionStarted(const QString &v);
+
+    // Localdocs settings
+    int localDocsChunkSize() const;
+    void setLocalDocsChunkSize(int s);
+    int localDocsRetrievalSize() const;
+    void setLocalDocsRetrievalSize(int s);
+
+    // Network settings
+    QString networkAttribution() const;
+    void setNetworkAttribution(const QString &a);
+    bool networkIsActive() const;
+    void setNetworkIsActive(bool b);
+    bool networkUsageStatsActive() const;
+    void setNetworkUsageStatsActive(bool b);
+
 Q_SIGNALS:
     void temperatureChanged();
     void topPChanged();
@@ -80,6 +105,12 @@ Q_SIGNALS:
     void modelPathChanged();
     void userDefaultModelChanged();
     void forceMetalChanged(bool);
+    void lastVersionStartedChanged();
+    void localDocsChunkSizeChanged();
+    void localDocsRetrievalSizeChanged();
+    void networkAttributionChanged();
+    void networkIsActiveChanged();
+    void networkUsageStatsActiveChanged();
 
 private:
     bool m_forceMetal;

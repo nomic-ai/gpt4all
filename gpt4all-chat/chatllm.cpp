@@ -6,13 +6,6 @@
 #include "mysettings.h"
 #include "../gpt4all-backend/llmodel.h"
 
-#include <QCoreApplication>
-#include <QDir>
-#include <QFile>
-#include <QProcess>
-#include <QResource>
-#include <QSettings>
-
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
 
@@ -427,7 +420,7 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
         return false;
 
     QList<ResultInfo> databaseResults;
-    const int retrievalSize = LocalDocs::globalInstance()->retrievalSize();
+    const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
     emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
     emit databaseResultsChanged(databaseResults);
 

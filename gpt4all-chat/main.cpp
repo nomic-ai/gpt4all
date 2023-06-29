@@ -3,7 +3,6 @@
 #include <QQmlContext>
 
 #include <QDirIterator>
-#include <QSettings>
 
 #include "llm.h"
 #include "modellist.h"

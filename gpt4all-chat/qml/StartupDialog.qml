@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import download
 import network
 import llm
+import mysettings
 
 Dialog {
     id: startupDialog
@@ -135,7 +136,7 @@ model release that uses your data!")
             ButtonGroup {
                 buttons: optInStatisticsRadio.children
                 onClicked: {
-                    Network.usageStatsActive = optInStatisticsRadio.checked
+                    MySettings.networkUsageStatsActive = optInStatisticsRadio.checked
                     if (optInNetworkRadio.choiceMade && optInStatisticsRadio.choiceMade)
                         startupDialog.close();
                 }
@@ -246,7 +247,7 @@ model release that uses your data!")
             ButtonGroup {
                 buttons: optInNetworkRadio.children
                 onClicked: {
-                    Network.isActive = optInNetworkRadio.checked
+                    MySettings.networkIsActive = optInNetworkRadio.checked
                     if (optInNetworkRadio.choiceMade && optInStatisticsRadio.choiceMade)
                         startupDialog.close();
                 }
