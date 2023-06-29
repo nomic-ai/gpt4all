@@ -1,5 +1,4 @@
 transformers
 triton
-triton-client
 einops
 pandas

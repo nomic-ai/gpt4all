@@ -3,7 +3,8 @@ backend: "pytorch"
 default_model_filename: "traced-model.pt"
 max_batch_size: ${max_batch_size}
 
-dynamic_batching { }
+dynamic_batching {
+}
 
 parameters {
   key: "model_name"
@@ -33,16 +34,6 @@ input [
   },
   {
     name: "temperature"
-    data_type: TYPE_FP32
-    dims: [-1]
-  },
-  {
-    name: "top_k"
-    data_type: TYPE_INT32
-    dims: [-1]
-  },
-  {
-    name: "top_p"
     data_type: TYPE_FP32
     dims: [-1]
   }

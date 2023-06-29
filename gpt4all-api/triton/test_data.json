@@ -1,0 +1,34 @@
+{
+    "data":
+      [
+        {
+          "input_ids": {
+            "content": [17250, 11, 703, 389, 345, 30],
+            "shape": [6]
+          },
+          "tensor_of_seq_len": {
+            "content": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "shape": [17]
+          },
+          "temperature": {
+            "content": [1.0],
+            "shape": [1]
+          }
+        },
+        {
+            "input_ids": {
+              "content": [17250, 11, 703, 389, 345, 30],
+              "shape": [6]
+            },
+            "tensor_of_seq_len": {
+              "content": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              "shape": [17]
+            },
+            "temperature": {
+              "content": [1.0],
+              "shape": [1]
+            }
+          }
+
+      ]
+  }

@@ -3,7 +3,7 @@ import tritonclient.grpc.aio as grpcclient
 
 
 def prepare_inference_inputs(
-    inputs_ids: torch.IntTensor, new_tokens: int = 1, temperature: float = 1.0, top_k: int = 0, top_p: float = 1.0
+    inputs_ids: torch.IntTensor, new_tokens: int = 1, temperature: float = 1.0
 ):
     batch_size = inputs_ids.shape[0]
 
@@ -22,17 +22,7 @@ def prepare_inference_inputs(
         torch.full([batch_size, 1], temperature, dtype=torch.float32).cpu().numpy()
     )
 
-    top_k_input = grpcclient.InferInput("top_k", [batch_size, 1], "INT32")
-    top_k_input.set_data_from_numpy(
-        torch.full([batch_size, 1], top_k, dtype=torch.int32).cpu().numpy()
-    )
-
-    top_p_input = grpcclient.InferInput("top_p", [batch_size, 1], "FP32")
-    top_p_input.set_data_from_numpy(
-        torch.full([batch_size, 1], top_p, dtype=torch.float32).cpu().numpy()
-    )
-
-    inputs = [input_ids_input, new_tokens_input, temperature_input, top_k_input, top_p_input]
+    inputs = [input_ids_input, new_tokens_input, temperature_input]
     outputs = [
         grpcclient.InferRequestedOutput("logits"),
         grpcclient.InferRequestedOutput("output_ids"),
@@ -41,9 +31,9 @@ def prepare_inference_inputs(
 
 
 async def infer(
-    triton_client, model_name, input_ids, new_tokens: int = 1, temperature: float = 1.0, top_k: int = 0, top_p: float = 1.0
+    triton_client, model_name, input_ids, new_tokens: int = 1, temperature: float = 1.0
 ):
-    inputs, outputs = prepare_inference_inputs(input_ids, new_tokens, temperature, top_k, top_p)
+    inputs, outputs = prepare_inference_inputs(input_ids, new_tokens, temperature)
 
     triton_model_name = model_name.replace("/", "--")
 
@@ -69,7 +59,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=False)
 
     async def main():
         async with Client(args.url) as triton_client:
@@ -77,7 +67,7 @@ if __name__ == "__main__":
                 prompt = input("Prompt: ")
                 input_ids = tokenizer.encode(prompt, return_tensors="pt")
                 last_logits, output_ids = await infer(
-                    triton_client, args.model, input_ids, new_tokens=128, temperature=1.0, top_k=0, top_p=0.9,
+                    triton_client, args.model, input_ids, new_tokens=256, temperature=1.0,
                 )
                 print(tokenizer.decode(output_ids[0]))
 

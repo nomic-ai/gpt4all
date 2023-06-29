@@ -5,7 +5,6 @@ from string import Template
 import torch
 from torch import nn
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from gpt4all.falcon.modelling_RW import RWForCausalLM
 
 parser = argparse.ArgumentParser()
 
@@ -14,7 +13,7 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--max-batch-size", type=int, default=4, help="Maximum batch size for inference"
+    "--max-batch-size", type=int, default=64, help="Maximum batch size for inference"
 )
 
 parser.add_argument(
@@ -51,91 +50,83 @@ class InferModel(nn.Module):
         input_ids: torch.Tensor,
         tensor_of_seq_len: torch.Tensor,
         temperature: torch.Tensor,
-        top_k: torch.Tensor,
-        top_p: torch.Tensor,
     ):
+        # this has mostly been adapted from huggingface generate
+        unfinished_sequences = torch.ones(input_ids.shape[0], dtype=torch.long, device=input_ids.device)
+        eos_token_id_tensor = torch.tensor([self.eos_token_id]).to(input_ids.device)
+
         with torch.no_grad():
             for _ in range(tensor_of_seq_len.shape[1] - 1):
                 logits = self.traced_model(input_ids).float()
                 next_token_logits = logits[:, -1, :]
                 next_token_logits = next_token_logits / temperature
-
-                next_token_logits = self.top_k(next_token_logits, top_k)
-                next_token_logits = self.top_p(next_token_logits, top_p)
                 
-                next_token = torch.multinomial(
-                    torch.softmax(next_token_logits, dim=-1), 1
-                ).squeeze(1)
-                # early break
-                if next_token.item() == self.eos_token_id:
+                next_tokens = torch.multinomial(
+                    torch.softmax(next_token_logits, dim=-1), input_ids.shape[0] 
+                )
+
+                next_tokens = next_tokens * unfinished_sequences + self.eos_token_id * (1 - unfinished_sequences)
+
+                unfinished_sequences = unfinished_sequences.mul(
+                    next_tokens.tile(eos_token_id_tensor.shape[0], 1).ne(eos_token_id_tensor.unsqueeze(1)).prod(dim=0)
+                )
+
+                # stop when each sentence is finished
+                if unfinished_sequences.max() == 0:
                     return input_ids.int(), logits
 
-                input_ids = torch.cat([input_ids, next_token.unsqueeze(1)], dim=1)
+                input_ids = torch.cat([input_ids, next_tokens], dim=-1)
+
+                unfinished_sequences = unfinished_sequences.mul(
+                    next_tokens.tile(eos_token_id_tensor.shape[0], 1).ne(eos_token_id_tensor.unsqueeze(1)).prod(dim=0)
+                )
 
             # in TorchScript, the above logits var lifetime doesn't escape the loop's scope
             logits = self.traced_model(input_ids).float()
             next_token_logits = logits[:, -1, :]
             next_token_logits = next_token_logits / temperature
 
-            next_token_logits = self.top_k(next_token_logits, top_k)
-            next_token_logits = self.top_p(next_token_logits, top_p)
+            next_tokens = torch.multinomial(
+                    torch.softmax(next_token_logits, dim=-1), input_ids.shape[0] 
+                )
 
-            next_token = torch.multinomial(
-                torch.softmax(next_token_logits, dim=-1), 1
-            ).squeeze(1)
+            next_tokens = next_tokens * unfinished_sequences + self.eos_token_id * (1 - unfinished_sequences)
 
-            input_ids = torch.cat([input_ids, next_token.unsqueeze(1)], dim=1)
+            input_ids = torch.cat([input_ids, next_tokens], dim=-1)
 
             return input_ids.int(), logits
             
-    def top_p(self, scores: torch.Tensor, top_p: torch.Tensor):
-        if top_p.squeeze().item() >= 1.0:
-            return scores
-        sorted_logits, sorted_indices = torch.sort(scores, descending=False)
-        cumulative_probs = sorted_logits.softmax(dim=-1).cumsum(dim=-1)
-
-        # Remove tokens with cumulative top_p above the threshold (token with 0 are kept)
-        sorted_indices_to_remove = cumulative_probs <= (1 - top_p)
-
-        # scatter sorted tensors to original indexing
-        indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
-        scores[indices_to_remove] = float("-inf")
-        return scores
-
-        
-    def top_k(self, scores: torch.Tensor, top_k: torch.Tensor):
-        if top_k.squeeze().item() <= 0:
-            return scores
-        # Remove all tokens with a probability less than the last token of the top-k
-        indices_to_remove = scores < torch.topk(scores, top_k.squeeze().item())[0][..., -1, None]
-        scores[indices_to_remove] = float("-inf")
-        return scores
-
 
 print(f"Converting {args.model} to TorchScript...")
-tokenizer = AutoTokenizer.from_pretrained(args.model)
-model = ModelLogits(AutoModelForCausalLM.from_pretrained(args.model, trust_remote_code=True, revision=args.revision))
+tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=False)
+model = ModelLogits(AutoModelForCausalLM.from_pretrained(args.model,
+                                                         trust_remote_code=True,
+                                                         revision=args.revision,
+                                                         torch_dtype=torch.float16,
+                                                         use_cache=False))
+
 model.eval()
 model.requires_grad_(False)
-model = model.half().to(device)
+model = model.to(device)
+
 
 input = tokenizer("annotator model's hash is 0x", return_tensors="pt").to(device)
 print(f"{model(input.input_ids)=}")
 
 traced_script_module = torch.jit.trace(model, input.input_ids)
-
+print("Tracing...")
 print(f"{traced_script_module(input.input_ids)=}")
 
 print("Scripting generation wrapper...")
-
 # need to script this as we have data conditional flow
 scripted_generator_model = torch.jit.script(InferModel(traced_script_module, tokenizer.eos_token_id))
 print(scripted_generator_model.code)
 
 print(f"{input.input_ids=}")
-x = input.input_ids, torch.empty(1, 5), torch.full([1, 1], 1.0).cuda(), torch.full([1, 1], len(tokenizer) // 2).cuda(), torch.full([1, 1], 0.9).cuda()
-# x = input.input_ids, torch.empty(1, 5), torch.full([1, 1], 1.0), torch.full([1, 1], len(tokenizer) // 2), torch.full([1, 1], 0.9)
-# print(f"{(scripted_generator_model(*x))=}")
+# x = input.input_ids, torch.empty(1, 5), torch.full([1, 1], 1.0).cuda(), torch.full([1, 1], len(tokenizer) // 2).cuda(), torch.full([1, 1], 0.9).cuda()
+x = input.input_ids, torch.empty(1, 5),  torch.full([1, 1], 0.9).cuda()
+print(x[0].shape)
+
 print(f"{tokenizer.decode(scripted_generator_model(*x)[0][0])=}")
 
 sanitized_name = args.model.replace("/", "--")
