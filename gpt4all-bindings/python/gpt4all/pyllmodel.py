@@ -235,9 +235,7 @@ class LLModel:
 
         sys.stdout = stream_processor
 
-        if self.context is None or reset_context:
-            print('resetting context')
-            self.context = None
+        if self.context is None:
             self.context = LLModelPromptContext(
                 logits_size=0,
                 tokens_size=0,
@@ -252,6 +250,8 @@ class LLModel:
                 repeat_last_n=repeat_last_n,
                 context_erase=context_erase,
             )
+        elif reset_context:
+            self.context.n_past = 0;
 
         llmodel.llmodel_prompt(
             self.model,
