@@ -87,7 +87,7 @@ def test_inference_falcon():
     model = GPT4All(model_name='ggml-model-gpt4all-falcon-q4_0.bin')
     prompt = 'hello'
     output = model.generate(prompt)
-
+    assert isinstance(output, str)
     assert len(output) > 0
 
 
@@ -95,4 +95,5 @@ def test_inference_mpt():
     model = GPT4All(model_name='ggml-mpt-7b-chat.bin')
     prompt = 'hello'
     output = model.generate(prompt)
+    assert isinstance(output, str)
     assert len(output) > 0
