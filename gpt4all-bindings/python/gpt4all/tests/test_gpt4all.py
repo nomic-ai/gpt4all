@@ -32,14 +32,11 @@ def test_inference():
             assert True
 
 
-
 def test_inference_hparams():
     model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
 
     output = model.generate("The capital of france is ", max_tokens=3)
     assert 'Paris' in output
-
-
 
 
 def test_inference_falcon():
@@ -48,6 +45,7 @@ def test_inference_falcon():
     output = model.generate(prompt)
 
     assert len(output) > 0
+
 
 def test_inference_mpt():
     model = GPT4All(model_name='ggml-mpt-7b-chat.bin')

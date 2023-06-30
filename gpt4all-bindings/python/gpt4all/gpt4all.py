@@ -3,9 +3,9 @@ Python only API for running all GPT4All models.
 """
 import os
 import time
-from pathlib import Path
-from typing import Dict, List, Iterable, Union
 from contextlib import contextmanager
+from pathlib import Path
+from typing import Dict, Iterable, List, Union
 
 import requests
 from tqdm import tqdm
@@ -181,7 +181,7 @@ class GPT4All:
         repeat_penalty: float = 1.18,
         repeat_last_n: int = 64,
         n_batch: int = 8,
-        streaming: bool = False
+        streaming: bool = False,
     ) -> Union[str, Iterable]:
         """
         Generate outputs from any GPT4All model.
@@ -241,7 +241,9 @@ class GPT4All:
             self._is_chat_session_activated = False
             self._current_chat_session = []
 
-    def _format_chat_prompt_template(self, messages: List[Dict], default_prompt_header=True, default_prompt_footer=True) -> str:
+    def _format_chat_prompt_template(
+        self, messages: List[Dict], default_prompt_header=True, default_prompt_footer=True
+    ) -> str:
         """
         Helper method for building a prompt using template from list of messages.
 

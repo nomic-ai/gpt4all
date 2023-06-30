@@ -194,19 +194,18 @@ class LLModel:
             raise Exception("Model not loaded")
         return llmodel.llmodel_threadCount(self.model)
 
-
-    def _set_context(self,
-                     n_predict: int = 4096,
-                     top_k: int = 40,
-                     top_p: float = 0.9,
-                     temp: float = 0.1,
-                     n_batch: int = 8,
-                     repeat_penalty: float = 1.2,
-                     repeat_last_n: int = 10,
-                     context_erase: float = 0.75,
-                     reset_context: bool = False
-                     ):
-
+    def _set_context(
+        self,
+        n_predict: int = 4096,
+        top_k: int = 40,
+        top_p: float = 0.9,
+        temp: float = 0.1,
+        n_batch: int = 8,
+        repeat_penalty: float = 1.2,
+        repeat_last_n: int = 10,
+        context_erase: float = 0.75,
+        reset_context: bool = False,
+    ):
         if self.context is None:
             self.context = LLModelPromptContext(
                 logits_size=0,
@@ -234,8 +233,6 @@ class LLModel:
         self.context.repeat_last_n = repeat_last_n
         self.context.context_erase = context_erase
 
-
-
     def prompt_model(
         self,
         prompt: str,
@@ -248,7 +245,7 @@ class LLModel:
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
         reset_context: bool = False,
-        streaming = False
+        streaming=False,
     ) -> str:
         """
         Generate response from model from a prompt.
@@ -277,16 +274,17 @@ class LLModel:
 
         sys.stdout = stream_processor
 
-        self._set_context(n_predict=n_predict,
-                          top_k=top_k,
-                          top_p=top_p,
-                          temp=temp,
-                          n_batch=n_batch,
-                          repeat_penalty=repeat_penalty,
-                          repeat_last_n=repeat_last_n,
-                          context_erase=context_erase,
-                          reset_context=reset_context
-                          )
+        self._set_context(
+            n_predict=n_predict,
+            top_k=top_k,
+            top_p=top_p,
+            temp=temp,
+            n_batch=n_batch,
+            repeat_penalty=repeat_penalty,
+            repeat_last_n=repeat_last_n,
+            context_erase=context_erase,
+            reset_context=reset_context,
+        )
 
         llmodel.llmodel_prompt(
             self.model,
@@ -313,7 +311,7 @@ class LLModel:
         repeat_penalty: float = 1.2,
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
-        reset_context: bool = False
+        reset_context: bool = False,
     ) -> Iterable:
         # Symbol to terminate from generator
         TERMINATING_SYMBOL = "#TERMINATE#"
@@ -323,16 +321,17 @@ class LLModel:
         prompt = prompt.encode('utf-8')
         prompt = ctypes.c_char_p(prompt)
 
-        self._set_context(n_predict=n_predict,
-                          top_k=top_k,
-                          top_p=top_p,
-                          temp=temp,
-                          n_batch=n_batch,
-                          repeat_penalty=repeat_penalty,
-                          repeat_last_n=repeat_last_n,
-                          context_erase=context_erase,
-                          reset_context=reset_context
-                          )
+        self._set_context(
+            n_predict=n_predict,
+            top_k=top_k,
+            top_p=top_p,
+            temp=temp,
+            n_batch=n_batch,
+            repeat_penalty=repeat_penalty,
+            repeat_last_n=repeat_last_n,
+            context_erase=context_erase,
+            reset_context=reset_context,
+        )
 
         # Put response tokens into an output queue
         def _generator_response_callback(token_id, response):
