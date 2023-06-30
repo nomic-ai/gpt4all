@@ -9,6 +9,8 @@
 #include <cstdint>
 #include <limits>
 
+#define LLMODEL_MAX_PROMPT_BATCH 128
+
 class Dlhandle;
 
 class LLModel {

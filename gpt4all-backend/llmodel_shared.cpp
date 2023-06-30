@@ -52,6 +52,7 @@ void LLModel::prompt(const std::string &prompt,
 
     promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
     promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
+    promptCtx.n_batch = std::min(promptCtx.n_batch, LLMODEL_MAX_PROMPT_BATCH);
 
     // process the prompt in batches
     size_t i = 0;
