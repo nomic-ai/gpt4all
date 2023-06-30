@@ -6,9 +6,12 @@ from gpt4all import GPT4All
 
 def test_inference():
     model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
-    prompt = 'hello'
-
-    print(model.generate(prompt))
+    # prompt = """### Human\nWho is michael jackson\n### Assistant\n"""
+    #
+    # output = model.generate(prompt)
+    # print(output)
+    # prompt = """### Human\nWhen did they die\n### Assistant\n"""
+    print(model.generate('hello', top_k=1))
 
     with model.chat_session():
         response = model.generate(prompt='hello')
