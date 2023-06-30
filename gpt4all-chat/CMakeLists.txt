@@ -98,6 +98,7 @@ qt_add_qml_module(chat
       qml/PopupDialog.qml
       qml/AboutDialog.qml
       qml/Theme.qml
+      qml/ModelSettings.qml
       qml/GenerationSettings.qml
       qml/ApplicationSettings.qml
       qml/LocalDocsSettings.qml
