@@ -181,6 +181,7 @@ class GPT4All:
         repeat_penalty: float = 1.18,
         repeat_last_n: int = 64,
         n_batch: int = 8,
+        n_predict: int = None,
         streaming: bool = False,
     ) -> Union[str, Iterable]:
         """
@@ -195,6 +196,7 @@ class GPT4All:
             repeat_penalty: Penalize the model for repetition. Higher values result in less repetition.
             repeat_last_n: How far in the models generation history to apply the repeat penalty.
             n_batch: Number of prompt tokens processed in parallel. Larger values decrease latency but increase resource requirements.
+            n_predict: Equivalent to max_tokens, exists for backwards compatability.
             streaming: If True, this method will instead return a generator that yields tokens as the model generates them.
 
         Returns:
@@ -205,6 +207,8 @@ class GPT4All:
         generate_kwargs.pop('max_tokens')
         generate_kwargs.pop('streaming')
         generate_kwargs['n_predict'] = max_tokens
+        if n_predict is not None:
+            generate_kwargs['n_predict'] = n_predict
 
         if streaming and self._is_chat_session_activated:
             raise NotImplementedError("Streaming tokens in a chat session is not currently supported.")
