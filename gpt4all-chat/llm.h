@@ -6,18 +6,10 @@
 class LLM : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int32_t threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
-    Q_PROPERTY(bool serverEnabled READ serverEnabled WRITE setServerEnabled NOTIFY serverEnabledChanged)
     Q_PROPERTY(bool compatHardware READ compatHardware NOTIFY compatHardwareChanged)
 
 public:
     static LLM *globalInstance();
-
-    // FIXME: Move all settings to the new settings singleton
-    int32_t threadCount() const;
-    void setThreadCount(int32_t n_threads);
-    bool serverEnabled() const;
-    void setServerEnabled(bool enabled);
 
     bool compatHardware() const { return m_compatHardware; }
 
@@ -30,13 +22,9 @@ public:
 Q_SIGNALS:
     void chatListModelChanged();
     void modelListChanged();
-    void threadCountChanged();
-    void serverEnabledChanged();
     void compatHardwareChanged();
 
 private:
-    int32_t m_threadCount;
-    bool m_serverEnabled;
     bool m_compatHardware;
 
 private:
