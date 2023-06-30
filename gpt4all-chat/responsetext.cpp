@@ -13,7 +13,8 @@ enum Language {
     Python,
     Cpp,
     Bash,
-    TypeScript
+    TypeScript,
+    Java
 };
 
 static QColor keywordColor      = "#2e95d3"; // blue
@@ -42,6 +43,8 @@ static Language stringToLanguage(const QString &language)
         return TypeScript;
     if (language == "typescript")
         return TypeScript;
+    if (language == "java")
+        return Java;
     return None;
 }
 
@@ -272,6 +275,75 @@ static QVector<HighlightingRule> typescriptHighlightingRules()
     return highlightingRules;
 }
 
+static QVector<HighlightingRule> javaHighlightingRules()
+{
+    static QVector<HighlightingRule> highlightingRules;
+    if (highlightingRules.isEmpty()) {
+
+        HighlightingRule rule;
+
+        QTextCharFormat functionCallFormat;
+        functionCallFormat.setForeground(functionCallColor);
+        rule.pattern = QRegularExpression("\\b(\\w+)\\s*(?=\\()");
+        rule.format = functionCallFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat functionFormat;
+        functionFormat.setForeground(functionColor);
+        rule.pattern = QRegularExpression("\\bvoid\\s+(\\w+)\\b");
+        rule.format = functionFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat numberFormat;
+        numberFormat.setForeground(numberColor);
+        rule.pattern = QRegularExpression("\\b[0-9]*\\.?[0-9]+\\b");
+        rule.format = numberFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat keywordFormat;
+        keywordFormat.setForeground(keywordColor);
+        QStringList keywordPatterns = {
+            "\\bpublic\\b", "\\bprivate\\b", "\\bprotected\\b", "\\bstatic\\b", "\\bfinal\\b",
+            "\\bclass\\b", "\\bif\\b", "\\belse\\b", "\\bwhile\\b", "\\bfor\\b",
+            "\\breturn\\b", "\\bnew\\b", "\\bimport\\b", "\\bpackage\\b", "\\btry\\b",
+            "\\bcatch\\b", "\\bthrow\\b", "\\bthrows\\b", "\\bfinally\\b", "\\binterface\\b",
+            "\\bextends\\b", "\\bimplements\\b", "\\bsuper\\b", "\\bthis\\b", "\\bvoid\\b",
+            "\\bboolean\\b", "\\bbyte\\b", "\\bchar\\b", "\\bdouble\\b", "\\bfloat\\b",
+            "\\bint\\b", "\\blong\\b", "\\bshort\\b", "\\bswitch\\b", "\\bcase\\b",
+            "\\bdefault\\b", "\\bcontinue\\b", "\\bbreak\\b", "\\babstract\\b", "\\bassert\\b",
+            "\\benum\\b", "\\binstanceof\\b", "\\bnative\\b", "\\bstrictfp\\b", "\\bsynchronized\\b",
+            "\\btransient\\b", "\\bvolatile\\b", "\\bconst\\b", "\\bgoto\\b"
+        };
+
+        for (const QString &pattern : keywordPatterns) {
+            rule.pattern = QRegularExpression(pattern);
+            rule.format = keywordFormat;
+            highlightingRules.append(rule);
+        }
+
+        QTextCharFormat stringFormat;
+        stringFormat.setForeground(stringColor);
+        rule.pattern = QRegularExpression("\".*?\"");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        rule.pattern = QRegularExpression("\'.*?\'");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat commentFormat;
+        commentFormat.setForeground(commentColor);
+        rule.pattern = QRegularExpression("//[^\n]*");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
+        rule.pattern = QRegularExpression("/\\*.*?\\*/");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+    }
+    return highlightingRules;
+}
+
 static QVector<HighlightingRule> bashHighlightingRules()
 {
     static QVector<HighlightingRule> highlightingRules;
@@ -303,6 +375,8 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
         rules = bashHighlightingRules();
     else if (block.userState() == TypeScript)
         rules = typescriptHighlightingRules();
+    else if (block.userState() == Java)
+        rules = javaHighlightingRules();
 
     for (const HighlightingRule &rule : qAsConst(rules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
@@ -502,7 +576,8 @@ void ResponseText::handleCodeBlocks()
                 || firstWord == "c"
                 || firstWord == "bash"
                 || firstWord == "javascript"
-                || firstWord == "typescript") {
+                || firstWord == "typescript"
+                || firstWord == "java") {
                 codeLanguage = firstWord;
                 capturedText.remove(0, match.captured(0).length());
             }

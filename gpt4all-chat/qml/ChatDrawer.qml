@@ -7,6 +7,7 @@ import chatlistmodel
 import llm
 import download
 import network
+import mysettings
 
 Drawer {
     id: chatDrawer
@@ -80,7 +81,7 @@ Drawer {
                     property bool isCurrent: ChatListModel.currentChat === ChatListModel.get(index)
                     property bool isServer: ChatListModel.get(index) && ChatListModel.get(index).isServer
                     property bool trashQuestionDisplayed: false
-                    visible: !isServer || LLM.serverEnabled
+                    visible: !isServer || MySettings.serverChat
                     z: isCurrent ? 199 : 1
                     color: isServer ? theme.backgroundDarkest : (index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter)
                     border.width: isCurrent

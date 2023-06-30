@@ -1,5 +1,5 @@
 #include "database.h"
-#include "modellist.h"
+#include "mysettings.h"
 
 #include <QTimer>
 #include <QPdfDocument>
@@ -415,7 +415,7 @@ bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
 
 QSqlError initDb()
 {
-    QString dbPath = ModelList::globalInstance()->localModelsPath()
+    QString dbPath = MySettings::globalInstance()->modelPath()
         + QString("localdocs_v%1.db").arg(LOCALDOCS_VERSION);
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(dbPath);

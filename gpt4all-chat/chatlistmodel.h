@@ -36,8 +36,6 @@ class ChatListModel : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(Chat *currentChat READ currentChat WRITE setCurrentChat NOTIFY currentChatChanged)
-    Q_PROPERTY(bool shouldSaveChats READ shouldSaveChats WRITE setShouldSaveChats NOTIFY shouldSaveChatsChanged)
-    Q_PROPERTY(bool shouldSaveChatGPTChats READ shouldSaveChatGPTChats WRITE setShouldSaveChatGPTChats NOTIFY shouldSaveChatGPTChatsChanged)
 
 public:
     static ChatListModel *globalInstance();
@@ -217,8 +215,6 @@ public Q_SLOTS:
 Q_SIGNALS:
     void countChanged();
     void currentChatChanged();
-    void shouldSaveChatsChanged();
-    void shouldSaveChatGPTChatsChanged();
     void chatsSavedFinished();
     void requestSaveChats(const QVector<Chat*> &);
     void saveChatsFinished();
@@ -255,8 +251,6 @@ private Q_SLOTS:
     }
 
 private:
-    bool m_shouldSaveChats;
-    bool m_shouldSaveChatGPTChats;
     Chat* m_newChat;
     Chat* m_dummyChat;
     Chat* m_serverChat;
