@@ -8,3 +8,5 @@ Jinja2>=3.0
 gpt4all==0.2.3
 pytest
 openai
+black
+isort

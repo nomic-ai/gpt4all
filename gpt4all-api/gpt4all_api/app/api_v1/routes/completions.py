@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Depends, Response, Security, status
-from pydantic import BaseModel, Field
-from typing import List, Dict
 import logging
-from uuid import uuid4
-from api_v1.settings import settings
-from gpt4all import GPT4All
 import time
+from typing import Dict, List
+from uuid import uuid4
+
+from api_v1.settings import settings
+from fastapi import APIRouter, Depends, Response, Security, status
+from gpt4all import GPT4All
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 ### This should follow https://github.com/openai/openai-openapi/blob/master/openapi.yaml
+
 
 class CompletionRequest(BaseModel):
     model: str = Field(..., description='The model to generate a completion from.')
@@ -28,10 +30,13 @@ class CompletionChoice(BaseModel):
     logprobs: float
     finish_reason: str
 
+
 class CompletionUsage(BaseModel):
     prompt_tokens: int
     completion_tokens: int
     total_tokens: int
+
+
 class CompletionResponse(BaseModel):
     id: str
     object: str = 'text_completion'
@@ -42,6 +47,7 @@ class CompletionResponse(BaseModel):
 
 
 router = APIRouter(prefix="/completions", tags=["Completion Endpoints"])
+
 
 @router.post("/", response_model=CompletionResponse)
 async def completions(request: CompletionRequest):
@@ -55,32 +61,22 @@ async def completions(request: CompletionRequest):
 
     model = GPT4All(model_name=settings.model, model_path=settings.gpt4all_path)
 
-    output = model.generate(prompt=request.prompt,
-                     n_predict = request.max_tokens,
-                     top_k = 20,
-                     top_p = request.top_p,
-                     temp=request.temperature,
-                     n_batch = 1024,
-                     repeat_penalty = 1.2,
-                     repeat_last_n = 10,
-                     context_erase = 0)
-
+    output = model.generate(
+        prompt=request.prompt,
+        n_predict=request.max_tokens,
+        top_k=20,
+        top_p=request.top_p,
+        temp=request.temperature,
+        n_batch=1024,
+        repeat_penalty=1.2,
+        repeat_last_n=10,
+        context_erase=0,
+    )
 
     return CompletionResponse(
         id=str(uuid4()),
         created=time.time(),
         model=request.model,
-        choices=[dict(CompletionChoice(
-            text=output,
-            index=0,
-            logprobs=-1,
-            finish_reason='stop'
-        ))],
-        usage={
-            'prompt_tokens': 0, #TODO how to compute this?
-            'completion_tokens': 0,
-            'total_tokens': 0
-        }
+        choices=[dict(CompletionChoice(text=output, index=0, logprobs=-1, finish_reason='stop'))],
+        usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},  # TODO how to compute this?
     )
-
-
