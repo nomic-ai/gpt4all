@@ -33,12 +33,17 @@ app.add_exception_handler(HTTPException, events.on_http_error)
 @app.on_event("startup")
 async def startup():
     global model
-    logger.info(f"Downloading/fetching model: {os.path.join(settings.gpt4all_path, settings.model)}")
-    from gpt4all import GPT4All
+    if settings.inference_mode == "cpu":
+        logger.info(f"Downloading/fetching model: {os.path.join(settings.gpt4all_path, settings.model)}")
+        from gpt4all import GPT4All
 
-    model = GPT4All(model_name=settings.model, model_path=settings.gpt4all_path)
+        model = GPT4All(model_name=settings.model, model_path=settings.gpt4all_path)
 
-    logger.info("GPT4All API is ready.")
+        logger.info("GPT4All API is ready.")
+
+    else:
+        # is it possible to do this once the server is up?
+        logger.info("Running in GPU mode")
 
 
 @app.on_event("shutdown")
