@@ -430,7 +430,7 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
 
     fin.close();
 
-    model.eval_buf.resize(256u * 1024 * 1024);
+    model.eval_buf.resize(1280u * 1024 * 1024);
     model.scr0_buf.resize(256u * 1024 * 1024);
     model.scr1_buf.resize(256u * 1024 * 1024);
     return true;
