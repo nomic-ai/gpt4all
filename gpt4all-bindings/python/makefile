@@ -2,8 +2,11 @@ SHELL:=/bin/bash -o pipefail
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PYTHON:=python3
 
-venv:
+env:
 	if [ ! -d $(ROOT_DIR)/env ]; then $(PYTHON) -m venv $(ROOT_DIR)/env; fi
+
+dev: env
+	source env/bin/activate; pip install black isort pytest; pip install -e .
 
 documentation:
 	rm -rf ./site && mkdocs build
