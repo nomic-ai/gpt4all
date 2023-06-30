@@ -84,7 +84,7 @@ To interact with GPT4All responses as the model generates, use the `streaming = 
     from gpt4all import GPT4All
     model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin")
     tokens = []
-    for token in model.generate("The capital of France is", max_tokens= 20):
+    for token in model.generate("The capital of France is", max_tokens=20, streaming=True):
         tokens.append(token)
     print(tokens)
     ```

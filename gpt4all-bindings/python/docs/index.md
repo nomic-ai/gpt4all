@@ -6,6 +6,19 @@ Nomic AI oversees contributions to the open-source ecosystem ensuring quality, s
 
 GPT4All software is optimized to run inference of 7-13 billion parameter large language models on the CPUs of laptops, desktops and servers.
 
+=== "GPT4All Example"
+    ``` py
+    from gpt4all import GPT4All
+    model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin")
+    output = model.generate("The capital of France is ", max_tokens=3)
+    print(output)
+    ```
+=== "Output"
+    ```
+    1. Paris
+    ```
+See [Python Bindings](gpt4all_python.md) to use GPT4All.
+
 ### Navigating the Documentation
 In an effort to ensure cross-operating system and cross-language compatibility, the [GPT4All software ecosystem](https://github.com/nomic-ai/gpt4all)
 is organized as a monorepo with the following structure:

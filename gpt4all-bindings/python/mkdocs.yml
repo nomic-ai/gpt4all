@@ -11,7 +11,7 @@ nav:
     - 'index.md'
     - 'Bindings':
       - 'GPT4All in Python': 'gpt4all_python.md'
-      - 'GPT4All Chat Client': '  gpt4all_chat.md'
+      - 'GPT4All Chat Client': 'gpt4all_chat.md'
       - 'gpt4all_cli.md'
 #    - 'Tutorials':
 #      - 'gpt4all_modal.md'
