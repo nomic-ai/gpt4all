@@ -35,12 +35,88 @@ Dialog {
         Accessible.description: qsTr("Dialog containing various application settings")
     }
 
-    MySettingsStack {
-        anchors.fill: parent
-        tabs: [
-            Component { GenerationSettings { } },
-            Component { ApplicationSettings { } },
-            Component { LocalDocsSettings { } }
-        ]
+    ListModel {
+        id: stacksModel
+        ListElement {
+            title: "Generation"
+        }
+        ListElement {
+            title: "Application"
+        }
+        ListElement {
+            title: "Plugins"
+        }
+    }
+
+    ScrollView {
+        id: stackList
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        width: 200
+        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+        clip: true
+
+        ListView {
+            id: listView
+            anchors.fill: parent
+            anchors.rightMargin: 10
+            model: stacksModel
+
+            delegate: Rectangle {
+                id: item
+                width: listView.width
+                height: titleLabel.height + 25
+//                color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
+                color: "transparent"
+                border.color: theme.backgroundLighter
+                border.width: index == listView.currentIndex ? 1 : 0
+                radius: 10
+
+                Text {
+                    id: titleLabel
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.margins: 20
+                    text: title
+                    elide: Text.ElideRight
+                    color: theme.textColor
+                    width: 200
+                    TapHandler {
+                        onTapped: {
+                            listView.currentIndex = index
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    StackLayout {
+        id: stackLayout
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: stackList.right
+        anchors.right: parent.right
+        currentIndex: listView.currentIndex
+
+        MySettingsStack {
+            tabs: [
+                Component { ModelSettings { } },
+                Component { GenerationSettings { } }
+            ]
+        }
+
+        MySettingsStack {
+            tabs: [
+                Component { ApplicationSettings { } }
+            ]
+        }
+
+        MySettingsStack {
+            tabs: [
+                Component { LocalDocsSettings { } }
+            ]
+        }
     }
 }

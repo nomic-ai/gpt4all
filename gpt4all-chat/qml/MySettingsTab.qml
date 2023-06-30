@@ -30,12 +30,12 @@ Item {
             id: theme
         }
 
-        background: Rectangle {
-            color: 'transparent'
-            border.color: theme.tabBorder
-            border.width: 1
-            radius: 2
-        }
+//        background: Rectangle {
+//            color: 'transparent'
+//            border.color: theme.tabBorder
+//            border.width: 1
+//            radius: 10
+//        }
 
         Column {
             id: tabInner

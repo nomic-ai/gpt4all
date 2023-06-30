@@ -7,7 +7,7 @@ import localdocs
 import mysettings
 
 MySettingsTab {
-    title: qsTr("Generation")
+    title: qsTr("Presets")
     contentItem: GridLayout {
         id: generationSettingsTabInner
         columns: 2
