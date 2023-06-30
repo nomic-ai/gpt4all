@@ -904,6 +904,11 @@ int32_t Replit::threadCount() const
 
 Replit::~Replit()
 {
+    #ifdef GGML_USE_METAL
+    if (d_ptr->model->ctx_metal) {
+        ggml_metal_free(d_ptr->model->ctx_metal);
+    }
+    #endif
     if(d_ptr->model->ctx) {
         ggml_free(d_ptr->model->ctx);
         d_ptr->model->ctx = nullptr;
