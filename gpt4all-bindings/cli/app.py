@@ -197,9 +197,7 @@ def version():
 
 # proof of concept
 # TODO:
-# - turn it into a context manager
 # - may want to refactor the CLI itself instead of messing around with globals
-# - may want to find a better way to change the '_response_callback'
 
 _keep_generating = False
 _old_sigint_handler = None
@@ -229,7 +227,7 @@ def _deactivate_response_sigint_handler():
     signal.signal(signal.SIGINT, _old_sigint_handler)
 
 class ResponseSigintManager:
-    # TODO: docstrings; should care be taken for it to be reentrant?
+    # TODO: docstrings
     # TODO: might also have to make sure that the terminal prompt is reset properly
     # note: the default behaviour if something goes wrong with patching/activating is to let the
     #       response keep generating
@@ -268,13 +266,15 @@ class ResponseSigintManager:
         self._revert_response_callback()
 
     def _patch_response_callback(self):
-        try:
-            self.gpt4all.model._response_callback = self._response_callback
-            self._is_response_callback_patched = True
-            return True
-        except Exception as exc:
-            logging.warn("Unable to patch '_response_callback'. SIGINT will not be handled. Cause: {exc}")
-            return False
+        # return True only if _response_callback has changed
+        if not self._is_response_callback_patched:
+            try:
+                self.gpt4all.model._response_callback = self._response_callback
+                self._is_response_callback_patched = True
+                return True
+            except Exception as exc:
+                logging.warn("Unable to patch '_response_callback'. SIGINT will not be handled. Cause: {exc}")
+        return False  # _response_callback has not changed
     
     def _revert_response_callback(self):
         if self._is_response_callback_patched:
@@ -293,13 +293,14 @@ class ResponseSigintManager:
         return self.keep_generating_response
 
     def _activate_response_sigint_handler(self):
-        if self._is_response_callback_patched and self._old_sigint_handler is None:
+        # Return True only if SIGINT handler has changed
+        if self._is_response_callback_patched and not self.is_managing_sigint:
             try:
                 self._old_sigint_handler = signal.signal(signal.SIGINT, self._halt_response_sigint_handler)  # TODO
                 return True
             except Exception as exc:
                 logging.warn("Unable to activate the response SIGINT handler. Cause: {exc}")
-                return False
+        return False  # SIGINT handler has not changed
     
     def _deactivate_response_sigint_handler(self):
         self._keep_generating_response = True
