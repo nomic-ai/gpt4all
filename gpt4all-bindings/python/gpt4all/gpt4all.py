@@ -206,6 +206,9 @@ class GPT4All:
         generate_kwargs.pop('streaming')
         generate_kwargs['n_predict'] = max_tokens
 
+        if streaming and self._is_chat_session_activated:
+            raise NotImplementedError("Streaming tokens in a chat session is not currently supported.")
+
         if self._is_chat_session_activated:
             self.current_chat_session.append({"role": "user", "content": prompt})
             generate_kwargs['prompt'] = self._format_chat_prompt_template(messages=self.current_chat_session)
@@ -220,6 +223,7 @@ class GPT4All:
 
         if self._is_chat_session_activated:
             self.current_chat_session.append({"role": "assistant", "content": output})
+
         return output
 
     @contextmanager

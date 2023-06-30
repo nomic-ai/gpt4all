@@ -13,7 +13,6 @@ def test_inference():
         response = model.generate(prompt='write me a short poem', top_k=1)
         response = model.generate(prompt='thank you', top_k=1)
         print(model.current_chat_session)
-        print(model._format_chat_prompt_template(model.current_chat_session))
 
     output_2 = model.generate('hello', top_k=1)
 
@@ -24,6 +23,14 @@ def test_inference():
         tokens.append(token)
 
     assert len(tokens) > 0
+
+    with model.chat_session():
+        try:
+            response = model.generate(prompt='hello', top_k=1, streaming=True)
+            assert False
+        except NotImplementedError:
+            assert True
+
 
 
 def test_inference_hparams():

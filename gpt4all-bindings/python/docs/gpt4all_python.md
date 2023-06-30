@@ -65,7 +65,7 @@ Use the GPT4All `chat_session` context manager to hold chat conversations with t
     ]
     ```
 
-When using GPT4All models in the chat_conversation context:
+When using GPT4All models in the chat_session context:
 
 - The model is given a prompt template which makes it chatty.
 - Internal K/V caches are preserved from previous conversation history speeding up inference.
