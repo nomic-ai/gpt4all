@@ -1,19 +1,19 @@
-import os
-import docs
 import logging
-from fastapi import FastAPI, HTTPException, Request
-from starlette.middleware.cors import CORSMiddleware
-from fastapi.logger import logger as fastapi_logger
-from api_v1.settings import settings
-from api_v1.api import router as v1_router
-from api_v1 import events
 import os
+
+import docs
+from api_v1 import events
+from api_v1.api import router as v1_router
+from api_v1.settings import settings
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.logger import logger as fastapi_logger
+from starlette.middleware.cors import CORSMiddleware
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title='GPT4All API', description=docs.desc)
 
-#CORS Configuration (in-case you want to deploy)
+# CORS Configuration (in-case you want to deploy)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,14 +29,17 @@ app.include_router(v1_router, prefix='/v1')
 app.add_event_handler('startup', events.startup_event_handler(app))
 app.add_exception_handler(HTTPException, events.on_http_error)
 
+
 @app.on_event("startup")
 async def startup():
     global model
     logger.info(f"Downloading/fetching model: {os.path.join(settings.gpt4all_path, settings.model)}")
     from gpt4all import GPT4All
+
     model = GPT4All(model_name=settings.model, model_path=settings.gpt4all_path)
 
     logger.info("GPT4All API is ready.")
+
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -57,5 +60,7 @@ if "gunicorn" in os.environ.get("SERVER_SOFTWARE", ""):
     uvicorn_logger.handlers = gunicorn_error_logger.handlers
 else:
     # https://github.com/tiangolo/fastapi/issues/2019
-    LOG_FORMAT2 = "[%(asctime)s %(process)d:%(threadName)s] %(name)s - %(levelname)s - %(message)s | %(filename)s:%(lineno)d"
+    LOG_FORMAT2 = (
+        "[%(asctime)s %(process)d:%(threadName)s] %(name)s - %(levelname)s - %(message)s | %(filename)s:%(lineno)d"
+    )
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT2)

@@ -1,20 +1,28 @@
+<<<<<<< HEAD
 import json
 
 from fastapi import APIRouter, Depends, Response, Security, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from typing import List, Dict, Iterable, AsyncIterable
+=======
+>>>>>>> 929f3f1 (chore: isort and black)
 import logging
-from uuid import uuid4
-from api_v1.settings import settings
-from gpt4all import GPT4All
 import time
+from typing import Dict, List
+from uuid import uuid4
+
+from api_v1.settings import settings
+from fastapi import APIRouter, Depends, Response, Security, status
+from gpt4all import GPT4All
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
 ### This should follow https://github.com/openai/openai-openapi/blob/master/openapi.yaml
+
 
 class CompletionRequest(BaseModel):
     model: str = Field(..., description='The model to generate a completion from.')
