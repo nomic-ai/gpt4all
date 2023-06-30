@@ -28,7 +28,7 @@ venv:
 	if [ ! -d $(ROOT_DIR)/env ]; then $(PYTHON) -m venv $(ROOT_DIR)/env; fi
 
 dependencies: venv
-	source $(ROOT_DIR)/env/bin/activate; yes w | $(PYTHON) -m pip install -r $(ROOT_DIR)/$(APP_NAME)/requirements.txt
+	source $(ROOT_DIR)/env/bin/activate; $(PYTHON) -m pip install -r $(ROOT_DIR)/$(APP_NAME)/requirements.txt
 
 clean: clean_testenv
 	# Remove existing environment

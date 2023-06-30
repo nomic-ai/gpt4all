@@ -1,6 +1,6 @@
 aiohttp>=3.6.2
 aiofiles
-pydantic>=1.4.0
+pydantic>=1.4.0,<2.0.0
 requests>=2.24.0
 ujson>=2.0.2
 fastapi>=0.95.0
