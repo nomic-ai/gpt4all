@@ -214,7 +214,7 @@ class GPT4All:
             generate_kwargs['reset_context'] = True
 
         if streaming:
-            return self.model.generator(**generate_kwargs)
+            return self.model.prompt_model_streaming(**generate_kwargs)
 
         output = self.model.prompt_model(**generate_kwargs)
 

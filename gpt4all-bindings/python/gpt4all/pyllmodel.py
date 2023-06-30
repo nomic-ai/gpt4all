@@ -251,7 +251,7 @@ class LLModel:
                 context_erase=context_erase,
             )
         elif reset_context:
-            self.context.n_past = 0;
+            self.context.n_past = 0
 
         llmodel.llmodel_prompt(
             self.model,
@@ -265,10 +265,9 @@ class LLModel:
         # Revert to old stdout
         sys.stdout = old_stdout
         # Force new line
-        print()
         return stream_processor.output
 
-    def generator(
+    def prompt_model_streaming(
         self,
         prompt: str,
         n_predict: int = 4096,
@@ -289,11 +288,9 @@ class LLModel:
         prompt = prompt.encode('utf-8')
         prompt = ctypes.c_char_p(prompt)
 
-        if self.context is None or reset_context:
+        if self.context is None:
             self.context = LLModelPromptContext(
-                logits=0,
                 logits_size=0,
-                tokens=0,
                 tokens_size=0,
                 n_past=0,
                 n_ctx=0,
@@ -306,6 +303,8 @@ class LLModel:
                 repeat_last_n=repeat_last_n,
                 context_erase=context_erase,
             )
+        elif reset_context:
+            self.context.n_past = 0
 
         # Put response tokens into an output queue
         def _generator_response_callback(token_id, response):
