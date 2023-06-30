@@ -194,6 +194,48 @@ class LLModel:
             raise Exception("Model not loaded")
         return llmodel.llmodel_threadCount(self.model)
 
+
+    def _set_context(self,
+                     n_predict: int = 4096,
+                     top_k: int = 40,
+                     top_p: float = 0.9,
+                     temp: float = 0.1,
+                     n_batch: int = 8,
+                     repeat_penalty: float = 1.2,
+                     repeat_last_n: int = 10,
+                     context_erase: float = 0.75,
+                     reset_context: bool = False
+                     ):
+
+        if self.context is None:
+            self.context = LLModelPromptContext(
+                logits_size=0,
+                tokens_size=0,
+                n_past=0,
+                n_ctx=0,
+                n_predict=n_predict,
+                top_k=top_k,
+                top_p=top_p,
+                temp=temp,
+                n_batch=n_batch,
+                repeat_penalty=repeat_penalty,
+                repeat_last_n=repeat_last_n,
+                context_erase=context_erase,
+            )
+        elif reset_context:
+            self.context.n_past = 0
+
+        self.context.n_predict = n_predict
+        self.context.top_k = top_k
+        self.context.top_p = top_p
+        self.context.temp = temp
+        self.context.n_batch = n_batch
+        self.context.repeat_penalty = repeat_penalty
+        self.context.repeat_last_n = repeat_last_n
+        self.context.context_erase = context_erase
+
+
+
     def prompt_model(
         self,
         prompt: str,
@@ -205,8 +247,8 @@ class LLModel:
         repeat_penalty: float = 1.2,
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
-        streaming: bool = False,
-        reset_context: bool = False
+        reset_context: bool = False,
+        streaming = False
     ) -> str:
         """
         Generate response from model from a prompt.
@@ -235,23 +277,16 @@ class LLModel:
 
         sys.stdout = stream_processor
 
-        if self.context is None:
-            self.context = LLModelPromptContext(
-                logits_size=0,
-                tokens_size=0,
-                n_past=0,
-                n_ctx=0,
-                n_predict=n_predict,
-                top_k=top_k,
-                top_p=top_p,
-                temp=temp,
-                n_batch=n_batch,
-                repeat_penalty=repeat_penalty,
-                repeat_last_n=repeat_last_n,
-                context_erase=context_erase,
-            )
-        elif reset_context:
-            self.context.n_past = 0
+        self._set_context(n_predict=n_predict,
+                          top_k=top_k,
+                          top_p=top_p,
+                          temp=temp,
+                          n_batch=n_batch,
+                          repeat_penalty=repeat_penalty,
+                          repeat_last_n=repeat_last_n,
+                          context_erase=context_erase,
+                          reset_context=reset_context
+                          )
 
         llmodel.llmodel_prompt(
             self.model,
@@ -288,23 +323,16 @@ class LLModel:
         prompt = prompt.encode('utf-8')
         prompt = ctypes.c_char_p(prompt)
 
-        if self.context is None:
-            self.context = LLModelPromptContext(
-                logits_size=0,
-                tokens_size=0,
-                n_past=0,
-                n_ctx=0,
-                n_predict=n_predict,
-                top_k=top_k,
-                top_p=top_p,
-                temp=temp,
-                n_batch=n_batch,
-                repeat_penalty=repeat_penalty,
-                repeat_last_n=repeat_last_n,
-                context_erase=context_erase,
-            )
-        elif reset_context:
-            self.context.n_past = 0
+        self._set_context(n_predict=n_predict,
+                          top_k=top_k,
+                          top_p=top_p,
+                          temp=temp,
+                          n_batch=n_batch,
+                          repeat_penalty=repeat_penalty,
+                          repeat_last_n=repeat_last_n,
+                          context_erase=context_erase,
+                          reset_context=reset_context
+                          )
 
         # Put response tokens into an output queue
         def _generator_response_callback(token_id, response):

@@ -18,23 +18,23 @@ This C API is then bound to any higher level programming language such as C++, P
 
 Explore detailed documentation for the backend, bindings and chat client in the sidebar.
 ## Models
+The GPT4All software ecosystem is compatible with the following Transformer architectures:
+
+- `Falcon`
+- `LLaMA` (including `OpenLLaMA`)
+- `MPT` (including `Replit`)
+- `GPTJ`
+
+You can find an exhaustive list of supported models on the [website](https://gpt4all.io) or in the [models directory](https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/metadata/models.json)
+
+
 GPT4All models are artifacts produced through a process known as neural network quantization.
 A multi-billion parameter transformer decoder usually takes 30+ GB of VRAM to execute a forward pass.
 Most people do not have such a powerful computer or access to GPU hardware. By running trained LLMs through quantization algorithms, 
-GPT4All models can run on your laptop using only 4-8GB of RAM enabling their wide-spread utility.
-
-The GPT4All software ecosystem is currently compatible with three variants of the Transformer neural network architecture:
-
-- LLaMa
-
-- GPT-J
-
-- MPT
+GPT4All models can run on your laptop using only 4-8GB of RAM enabling their wide-spread usage.
 
 Any model trained with one of these architectures can be quantized and run locally with all GPT4All bindings and in the
 chat client. You can add new variants by contributing the gpt4all-backend.
-
-You can find an exhaustive list of pre-quantized models on the [website](https://gpt4all.io) or in the download pane of the chat client.
 
 ## Frequently Asked Questions
 Find answers to frequently asked questions by searching the [Github issues](https://github.com/nomic-ai/gpt4all/issues) or in the [documentation FAQ](gpt4all_faq.md).
@@ -42,7 +42,7 @@ Find answers to frequently asked questions by searching the [Github issues](http
 ## Getting the most of your local LLM
 
 **Inference Speed**
-Inference speed of a local LLM depends on two factors: model size and the number of tokens given as input. 
+of a local LLM depends on two factors: model size and the number of tokens given as input. 
 It is not advised to prompt local LLMs with large chunks of context as their inference speed will heavily degrade.
 You will likely want to run GPT4All models on GPU if you would like to utilize context windows larger than 750 tokens. Native GPU support for GPT4All models is planned.
 

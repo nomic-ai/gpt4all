@@ -18,7 +18,7 @@ DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").re
 
 class GPT4All:
     """
-    Run GPT4All models in Python.
+    Python class that handles instantiation, downloading, generation and chat with GPT4All models.
     """
 
     def __init__(
@@ -49,7 +49,7 @@ class GPT4All:
         self.current_chat_session = []
 
     @staticmethod
-    def list_models():
+    def list_models() -> Dict:
         """
         Fetch model list from https://gpt4all.io/models/models.json.
 
@@ -207,7 +207,7 @@ class GPT4All:
         generate_kwargs['n_predict'] = max_tokens
 
         if self._is_chat_session_activated:
-            self.current_chat_session.append({'role': 'user', 'content': prompt})
+            self.current_chat_session.append({"role": "user", "content": prompt})
             generate_kwargs['prompt'] = self._format_chat_prompt_template(messages=self.current_chat_session)
             generate_kwargs['reset_context'] = len(self.current_chat_session) == 1
         else:
@@ -219,15 +219,13 @@ class GPT4All:
         output = self.model.prompt_model(**generate_kwargs)
 
         if self._is_chat_session_activated:
-            self.current_chat_session.append({'role': 'assistant', 'content': output})
+            self.current_chat_session.append({"role": "assistant", "content": output})
         return output
 
     @contextmanager
     def chat_session(self):
         '''
-        Hold an inference optimized chat session with a GPT4All model.
-
-        Handles history in a chat session
+        Context manager to hold an inference optimized chat session with a GPT4All model.
         '''
         # Code to acquire resource, e.g.:
         self._is_chat_session_activated = True
@@ -257,7 +255,7 @@ class GPT4All:
 
         for message in messages:
             if message["role"] == "user":
-                user_message = "### Human: \n" + message["content"] + '\n### Assistant:\n'
+                user_message = "### Human: \n" + message["content"] + "\n### Assistant:\n"
                 full_prompt += user_message
             if message["role"] == "assistant":
                 assistant_message = message["content"] + '\n'
