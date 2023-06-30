@@ -1,11 +1,11 @@
+import asyncio
+import json
 import logging
 import time
 from typing import Dict, List, Union
 from uuid import uuid4
 
 import aiohttp
-import asyncio
-import json
 from api_v1.settings import settings
 from fastapi import APIRouter, Depends, Response, Security, status
 from gpt4all import GPT4All
@@ -59,23 +59,25 @@ router = APIRouter(prefix="/completions", tags=["Completion Endpoints"])
 
 async def infer(payload, header):
     async with aiohttp.ClientSession() as session:
-            try:
-                async with session.post(settings.hf_inference_server_host, headers=header, data=json.dumps(payload)) as response:
-                    resp = await response.json()
-                return resp
+        try:
+            async with session.post(
+                settings.hf_inference_server_host, headers=header, data=json.dumps(payload)
+            ) as response:
+                resp = await response.json()
+            return resp
 
-            except aiohttp.ClientError as e:
-                # Handle client-side errors (e.g., connection error, invalid URL)
-                logger.error(f"Client error: {e}")
-            except aiohttp.ServerError as e:
-                # Handle server-side errors (e.g., internal server error)
-                logger.error(f"Server error: {e}")
-            except json.JSONDecodeError as e:
-                # Handle JSON decoding errors
-                logger.error(f"JSON decoding error: {e}")
-            except Exception as e:
-                # Handle other unexpected exceptions
-                logger.error(f"Unexpected error: {e}")
+        except aiohttp.ClientError as e:
+            # Handle client-side errors (e.g., connection error, invalid URL)
+            logger.error(f"Client error: {e}")
+        except aiohttp.ServerError as e:
+            # Handle server-side errors (e.g., internal server error)
+            logger.error(f"Server error: {e}")
+        except json.JSONDecodeError as e:
+            # Handle JSON decoding errors
+            logger.error(f"JSON decoding error: {e}")
+        except Exception as e:
+            # Handle other unexpected exceptions
+            logger.error(f"Unexpected error: {e}")
 
 
 @router.post("/", response_model=CompletionResponse)
@@ -107,17 +109,22 @@ async def completions(request: CompletionRequest):
             choices = []
             for response in results:
                 scores = response["scores"] if "scores" in response else -1.0
-                choices.append(dict(CompletionChoice(text=response["generated_text"], index=0, logprobs=scores, finish_reason='stop'))) 
+                choices.append(
+                    dict(
+                        CompletionChoice(
+                            text=response["generated_text"], index=0, logprobs=scores, finish_reason='stop'
+                        )
+                    )
+                )
 
             return CompletionResponse(
                 id=str(uuid4()),
                 created=time.time(),
                 model=request.model,
                 choices=choices,
-                usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0}, 
+                usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},
             )
-                 
-            
+
         else:
             payload["inputs"] = request.prompt
 
@@ -132,9 +139,9 @@ async def completions(request: CompletionRequest):
                 created=time.time(),
                 model=request.model,
                 choices=[dict(CompletionChoice(text=output, index=0, logprobs=scores, finish_reason='stop'))],
-                usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0}, 
+                usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},
             )
-        
+
     else:
         model = GPT4All(model_name=settings.model, model_path=settings.gpt4all_path)
 
@@ -159,8 +166,8 @@ async def completions(request: CompletionRequest):
                 created=time.time(),
                 model=request.model,
                 choices=choices,
-                usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0}, 
-            ) 
+                usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},
+            )
 
         else:
             output = model.generate(
@@ -180,5 +187,5 @@ async def completions(request: CompletionRequest):
                 created=time.time(),
                 model=request.model,
                 choices=[dict(CompletionChoice(text=output, index=0, logprobs=-1, finish_reason='stop'))],
-                usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},  
+                usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},
             )

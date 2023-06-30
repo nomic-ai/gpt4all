@@ -17,7 +17,7 @@ def test_completion():
     assert len(response['choices'][0]['text']) > len(prompt)
     print(response)
 
-    
+
 def test_batched_completion():
     model = "ggml-mpt-7b-chat"
     prompt = "Who is Michael Jordan?"
@@ -25,5 +25,5 @@ def test_batched_completion():
         model=model, prompt=[prompt] * 3, max_tokens=50, temperature=0.28, top_p=0.95, n=1, echo=True, stream=False
     )
     assert len(response['choices'][0]['text']) > len(prompt)
-    assert len(response['choices']) == 3 
+    assert len(response['choices']) == 3
     print(response)
