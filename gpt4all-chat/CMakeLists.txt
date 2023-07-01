@@ -39,7 +39,7 @@ configure_file(
 )
 
 if(LINUX)
-  find_package(Qt6 6.5 COMPONENTS Core Quick WaylandClient QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+  find_package(Qt6 6.5 COMPONENTS Core Quick WaylandCompositor QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
 else()
   find_package(Qt6 6.5 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
 endif()
@@ -162,7 +162,7 @@ target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 if(LINUX)
   target_link_libraries(chat
-      PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf Qt6::WaylandClient)
+      PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf Qt6::WaylandCompositor)
 else()
   target_link_libraries(chat
     PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
