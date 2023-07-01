@@ -88,7 +88,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject object = doc.object();
     object.insert("source", "gpt4all-chat");
-    object.insert("agent_id", ChatListModel::globalInstance()->currentChat()->modelInfo().filename);
+    object.insert("agent_id", ChatListModel::globalInstance()->currentChat()->modelInfo().filename());
     object.insert("submitter_id", m_uniqueId);
     object.insert("ingest_id", ingestId);
 
@@ -96,7 +96,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     if (!attribution.isEmpty())
         object.insert("network/attribution", attribution);
 
-    QString promptTemplate = MySettings::globalInstance()->promptTemplate();
+    QString promptTemplate = ChatListModel::globalInstance()->currentChat()->modelInfo().promptTemplate();
     object.insert("prompt_template", promptTemplate);
 
     QJsonDocument newDoc;
@@ -391,7 +391,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
         properties.insert("ip", m_ipify);
     properties.insert("name", QCoreApplication::applicationName() + " v"
         + QCoreApplication::applicationVersion());
-    properties.insert("model", ChatListModel::globalInstance()->currentChat()->modelInfo().filename);
+    properties.insert("model", ChatListModel::globalInstance()->currentChat()->modelInfo().filename());
 
     // Some additional startup information
     if (ev == "startup") {

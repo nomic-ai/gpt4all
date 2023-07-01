@@ -67,6 +67,7 @@ void Chat::connectLLM()
     connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::QueuedConnection);
     connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::QueuedConnection);
     connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
+    connect(this, &Chat::processSystemPromptRequested, m_llmodel, &ChatLLM::processSystemPrompt, Qt::QueuedConnection);
 
     connect(ModelList::globalInstance()->installedModels(), &InstalledModels::countChanged,
         this, &Chat::handleModelInstalled, Qt::QueuedConnection);
@@ -93,6 +94,11 @@ void Chat::reset()
     m_chatModel->clear();
 }
 
+void Chat::processSystemPrompt()
+{
+    emit processSystemPromptRequested();
+}
+
 bool Chat::isModelLoaded() const
 {
     return m_isModelLoaded;
@@ -111,27 +117,10 @@ void Chat::resetResponseState()
     emit responseStateChanged();
 }
 
-void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict,
-    int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
-    int32_t repeat_penalty_tokens)
+void Chat::prompt(const QString &prompt)
 {
     resetResponseState();
-    int threadCount = MySettings::globalInstance()->threadCount();
-    if (threadCount <= 0)
-      threadCount = std::min(4, (int32_t) std::thread::hardware_concurrency());
-
-    emit promptRequested(
-        m_collections,
-        prompt,
-        prompt_template,
-        n_predict,
-        top_k,
-        top_p,
-        temp,
-        n_batch,
-        repeat_penalty,
-        repeat_penalty_tokens,
-        threadCount);
+    emit promptRequested( m_collections, prompt);
 }
 
 void Chat::regenerateResponse()
@@ -386,7 +375,10 @@ bool Chat::serialize(QDataStream &stream, int version) const
     stream << m_id;
     stream << m_name;
     stream << m_userName;
-    stream << m_modelInfo.filename;
+    if (version > 4)
+        stream << m_modelInfo.id();
+    else
+        stream << m_modelInfo.filename();
     if (version > 2)
         stream << m_collections;
     if (!m_llmodel->serialize(stream, version))
@@ -405,16 +397,22 @@ bool Chat::deserialize(QDataStream &stream, int version)
     stream >> m_userName;
     emit nameChanged();
 
-    QString filename;
-    stream >> filename;
-    if (!ModelList::globalInstance()->contains(filename))
-        return false;
-    m_modelInfo = ModelList::globalInstance()->modelInfo(filename);
+    QString modelId;
+    stream >> modelId;
+    if (version > 4) {
+        if (!ModelList::globalInstance()->contains(modelId))
+            return false;
+        m_modelInfo = ModelList::globalInstance()->modelInfo(modelId);
+    } else {
+        if (!ModelList::globalInstance()->containsByFilename(modelId))
+            return false;
+        m_modelInfo = ModelList::globalInstance()->modelInfoByFilename(modelId);
+    }
     emit modelInfoChanged();
 
     // Prior to version 2 gptj models had a bug that fixed the kv_cache to F32 instead of F16 so
     // unfortunately, we cannot deserialize these
-    if (version < 2 && m_modelInfo.filename.contains("gpt4all-j"))
+    if (version < 2 && m_modelInfo.filename().contains("gpt4all-j"))
         return false;
     if (version > 2) {
         stream >> m_collections;

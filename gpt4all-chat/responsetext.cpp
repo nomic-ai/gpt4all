@@ -120,6 +120,74 @@ static QVector<HighlightingRule> pythonHighlightingRules()
     return highlightingRules;
 }
 
+static QVector<HighlightingRule> csharpHighlightingRules()
+{
+    static QVector<HighlightingRule> highlightingRules;
+    if (highlightingRules.isEmpty()) {
+
+        HighlightingRule rule;
+
+        // Function call highlighting
+        QTextCharFormat functionCallFormat;
+        functionCallFormat.setForeground(functionCallColor);
+        rule.pattern = QRegularExpression("\\b(\\w+)\\s*(?=\\()");
+        rule.format = functionCallFormat;
+        highlightingRules.append(rule);
+
+        // Function definition highlighting
+        QTextCharFormat functionFormat;
+        functionFormat.setForeground(functionColor);
+        rule.pattern = QRegularExpression("\\bvoid|int|double|string|bool\\s+(\\w+)\\s*(?=\\()");
+        rule.format = functionFormat;
+        highlightingRules.append(rule);
+
+        // Number highlighting
+        QTextCharFormat numberFormat;
+        numberFormat.setForeground(numberColor);
+        rule.pattern = QRegularExpression("\\b[0-9]*\\.?[0-9]+\\b");
+        rule.format = numberFormat;
+        highlightingRules.append(rule);
+
+        // Keyword highlighting
+        QTextCharFormat keywordFormat;
+        keywordFormat.setForeground(keywordColor);
+        QStringList keywordPatterns = {
+            "\\bvoid\\b", "\\bint\\b", "\\bdouble\\b", "\\bstring\\b", "\\bbool\\b",
+            "\\bclass\\b", "\\bif\\b", "\\belse\\b", "\\bwhile\\b", "\\bfor\\b",
+            "\\breturn\\b", "\\bnew\\b", "\\bthis\\b", "\\bpublic\\b", "\\bprivate\\b",
+            "\\bprotected\\b", "\\bstatic\\b", "\\btrue\\b", "\\bfalse\\b", "\\bnull\\b",
+            "\\bnamespace\\b", "\\busing\\b", "\\btry\\b", "\\bcatch\\b", "\\bfinally\\b",
+            "\\bthrow\\b", "\\bvar\\b"
+        };
+
+        for (const QString &pattern : keywordPatterns) {
+            rule.pattern = QRegularExpression(pattern);
+            rule.format = keywordFormat;
+            highlightingRules.append(rule);
+        }
+
+        // String highlighting
+        QTextCharFormat stringFormat;
+        stringFormat.setForeground(stringColor);
+        rule.pattern = QRegularExpression("\".*?\"");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        // Single-line comment highlighting
+        QTextCharFormat commentFormat;
+        commentFormat.setForeground(commentColor);
+        rule.pattern = QRegularExpression("//[^\n]*");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
+        // Multi-line comment highlighting
+        rule.pattern = QRegularExpression("/\\*.*?\\*/");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+    }
+    return highlightingRules;
+}
+
 static QVector<HighlightingRule> cppHighlightingRules()
 {
     static QVector<HighlightingRule> highlightingRules;

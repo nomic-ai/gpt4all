@@ -11,7 +11,7 @@ TextField {
     color: text === "" || isValid ? theme.textColor : theme.textErrorColor
     background: Rectangle {
         implicitWidth: 150
-        color: theme.backgroundLighter
+        color: theme.backgroundDark
         radius: 10
     }
 }

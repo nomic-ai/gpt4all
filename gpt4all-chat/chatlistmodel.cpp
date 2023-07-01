@@ -5,7 +5,7 @@
 #include <QDataStream>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
-#define CHAT_FORMAT_VERSION 4
+#define CHAT_FORMAT_VERSION 5
 
 class MyChatListModel: public ChatListModel { };
 Q_GLOBAL_STATIC(MyChatListModel, chatListModelInstance)

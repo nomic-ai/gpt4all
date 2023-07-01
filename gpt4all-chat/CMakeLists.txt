@@ -99,7 +99,6 @@ qt_add_qml_module(chat
       qml/AboutDialog.qml
       qml/Theme.qml
       qml/ModelSettings.qml
-      qml/GenerationSettings.qml
       qml/ApplicationSettings.qml
       qml/LocalDocsSettings.qml
       qml/MySettingsTab.qml
@@ -119,6 +118,7 @@ qt_add_qml_module(chat
       icons/db.svg
       icons/settings.svg
       icons/edit.svg
+      icons/image.svg
       icons/trash.svg
       icons/network.svg
       icons/thumbs_up.svg
