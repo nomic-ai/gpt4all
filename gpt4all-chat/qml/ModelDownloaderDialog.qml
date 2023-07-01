@@ -83,7 +83,7 @@ Dialog {
 
                         Text {
                             textFormat: Text.StyledText
-                            text: "<h2>" + (name !== "" ? name : filename) + "</h2>"
+                            text: "<h2>" + name + "</h2>"
                             Layout.row: 0
                             Layout.column: 0
                             Layout.topMargin: 20
@@ -329,12 +329,14 @@ Dialog {
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
                                     Layout.minimumWidth: 150
+                                    Layout.maximumWidth: textMetrics.width + 25
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     color: theme.textColor
                                     background: Rectangle {
                                         color: theme.backgroundLighter
                                         radius: 10
                                     }
+                                    wrapMode: Text.WrapAnywhere
                                     function showError() {
                                         openaiKey.placeholderTextColor = theme.textErrorColor
                                     }
@@ -346,6 +348,11 @@ Dialog {
                                     Accessible.role: Accessible.EditableText
                                     Accessible.name: placeholderText
                                     Accessible.description: qsTr("Whether the file hash is being calculated")
+                                    TextMetrics {
+                                        id: textMetrics
+                                        font: openaiKey.font
+                                        text: openaiKey.placeholderText
+                                    }
                                 }
                             }
                         }

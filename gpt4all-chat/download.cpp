@@ -175,7 +175,7 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
         return;
 
     Network::globalInstance()->sendInstallModel(modelFile);
-    QString filePath = MySettings::globalInstance()->modelPath() + modelFile + ".txt";
+    QString filePath = MySettings::globalInstance()->modelPath() + modelFile;
     QFile file(filePath);
     if (file.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
         QTextStream stream(&file);

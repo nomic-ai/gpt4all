@@ -14,7 +14,6 @@ import mysettings
 Dialog {
     id: settingsDialog
     modal: true
-    opacity: 0.9
     padding: 20
     bottomPadding: 30
     background: Rectangle {
@@ -38,7 +37,7 @@ Dialog {
     ListModel {
         id: stacksModel
         ListElement {
-            title: "Generation"
+            title: "Models"
         }
         ListElement {
             title: "Application"
@@ -67,7 +66,6 @@ Dialog {
                 id: item
                 width: listView.width
                 height: titleLabel.height + 25
-//                color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
                 color: "transparent"
                 border.color: theme.backgroundLighter
                 border.width: index == listView.currentIndex ? 1 : 0
@@ -78,6 +76,7 @@ Dialog {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.margins: 20
+                    font.bold: index == listView.currentIndex
                     text: title
                     elide: Text.ElideRight
                     color: theme.textColor
@@ -101,19 +100,21 @@ Dialog {
         currentIndex: listView.currentIndex
 
         MySettingsStack {
+            title: qsTr("Model/Character Settings")
             tabs: [
-                Component { ModelSettings { } },
-                Component { GenerationSettings { } }
+                Component { ModelSettings { } }
             ]
         }
 
         MySettingsStack {
+            title: qsTr("Application General Settings")
             tabs: [
                 Component { ApplicationSettings { } }
             ]
         }
 
         MySettingsStack {
+            title: qsTr("LocalDocs Plugin (BETA) Settings")
             tabs: [
                 Component { LocalDocsSettings { } }
             ]

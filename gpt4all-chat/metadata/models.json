@@ -64,7 +64,9 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "MPT",
-    "description": "<strong>Best overall smaller model</strong><br><ul><li>Fast responses<li>Chat based<li>Trained by Mosaic ML<li>Cannot be used commercially</ul>"
+    "description": "<strong>Best overall smaller model</strong><br><ul><li>Fast responses<li>Chat based<li>Trained by Mosaic ML<li>Cannot be used commercially</ul>",
+    "promptTemplate": "<|im_start|>user\n%1<|im_end|><|im_start|>assistant\n",
+    "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>"
   },
   {
     "order": "g",

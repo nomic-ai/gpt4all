@@ -1,4 +1,5 @@
 #include "mysettings.h"
+#include "modellist.h"
 
 #include <QDir>
 #include <QFile>
@@ -7,14 +8,6 @@
 #include <QStandardPaths>
 #include <QUrl>
 
-static double   default_temperature         = 0.7;
-static double   default_topP                = 0.1;
-static int      default_topK                = 40;
-static int      default_maxLength           = 4096;
-static int      default_promptBatchSize     = 128;
-static double   default_repeatPenalty       = 1.18;
-static int      default_repeatPenaltyTokens = 64;
-static QString  default_promptTemplate      = "### Human:\n%1\n### Assistant:\n";
 static int      default_threadCount         = 0;
 static bool     default_saveChats           = false;
 static bool     default_saveChatGPTChats    = true;
@@ -68,16 +61,17 @@ MySettings::MySettings()
     QSettings::setDefaultFormat(QSettings::IniFormat);
 }
 
-void MySettings::restoreGenerationDefaults()
+void MySettings::restoreModelDefaults(const ModelInfo &model)
 {
-    setTemperature(default_temperature);
-    setTopP(default_topP);
-    setTopK(default_topK);
-    setMaxLength(default_maxLength);
-    setPromptBatchSize(default_promptBatchSize);
-    setRepeatPenalty(default_repeatPenalty);
-    setRepeatPenaltyTokens(default_repeatPenaltyTokens);
-    setPromptTemplate(default_promptTemplate);
+    setModelTemperature(model, model.m_temperature);
+    setModelTopP(model, model.m_topP);
+    setModelTopK(model, model.m_topK);;
+    setModelMaxLength(model, model.m_maxLength);
+    setModelPromptBatchSize(model, model.m_promptBatchSize);
+    setModelRepeatPenalty(model, model.m_repeatPenalty);
+    setModelRepeatPenaltyTokens(model, model.m_repeatPenaltyTokens);
+    setModelPromptTemplate(model, model.m_promptTemplate);
+    setModelSystemPrompt(model, model.m_systemPrompt);
 }
 
 void MySettings::restoreApplicationDefaults()
@@ -97,148 +91,256 @@ void MySettings::restoreLocalDocsDefaults()
     setLocalDocsRetrievalSize(default_localDocsRetrievalSize);
 }
 
-double MySettings::temperature() const
+void MySettings::eraseModel(const ModelInfo &m)
+{
+    QSettings settings;
+    settings.remove(QString("model-%1").arg(m.id()));
+    settings.sync();
+}
+
+QString MySettings::modelName(const ModelInfo &m) const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("temperature", default_temperature).toDouble();
+    return setting.value(QString("model-%1").arg(m.id()) + "/name",
+        !m.m_name.isEmpty() ? m.m_name : m.m_filename).toString();
 }
 
-void MySettings::setTemperature(double t)
+void MySettings::setModelName(const ModelInfo &m, const QString &name, bool force)
 {
-    if (temperature() == t)
+    if ((modelName(m) == name || m.id().isEmpty()) && !force)
         return;
 
     QSettings setting;
-    setting.setValue("temperature", t);
+    if ((m.m_name == name || m.m_filename == name) && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/name");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/name", name);
+    if (m.isClone)
+        setting.setValue(QString("model-%1").arg(m.id()) + "/isClone", "true");
     setting.sync();
-    emit temperatureChanged();
+    if (!force)
+        emit nameChanged(m);
 }
 
-double MySettings::topP() const
+QString MySettings::modelFilename(const ModelInfo &m) const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("topP", default_topP).toDouble();
+    return setting.value(QString("model-%1").arg(m.id()) + "/filename", m.m_filename).toString();
 }
 
-void MySettings::setTopP(double p)
+void MySettings::setModelFilename(const ModelInfo &m, const QString &filename, bool force)
 {
-    if (topP() == p)
+    if ((modelFilename(m) == filename || m.id().isEmpty()) && !force)
         return;
 
     QSettings setting;
-    setting.setValue("topP", p);
+    if (m.m_filename == filename && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/filename");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/filename", filename);
     setting.sync();
-    emit topPChanged();
+    if (!force)
+        emit filenameChanged(m);
 }
 
-int MySettings::topK() const
+double MySettings::modelTemperature(const ModelInfo &m) const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("topK", default_topK).toInt();
+    return setting.value(QString("model-%1").arg(m.id()) + "/temperature", m.m_temperature).toDouble();
 }
 
-void MySettings::setTopK(int k)
+void MySettings::setModelTemperature(const ModelInfo &m, double t, bool force)
 {
-    if (topK() == k)
+    if (modelTemperature(m) == t && !force)
         return;
 
     QSettings setting;
-    setting.setValue("topK", k);
+    if (m.m_temperature == t && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/temperature");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/temperature", t);
     setting.sync();
-    emit topKChanged();
+    if (!force)
+        emit temperatureChanged(m);
 }
 
-int MySettings::maxLength() const
+double MySettings::modelTopP(const ModelInfo &m) const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("maxLength", default_maxLength).toInt();
+    return setting.value(QString("model-%1").arg(m.id()) + "/topP", m.m_topP).toDouble();
 }
 
-void MySettings::setMaxLength(int l)
+void MySettings::setModelTopP(const ModelInfo &m, double p, bool force)
 {
-    if (maxLength() == l)
+    if (modelTopP(m) == p && !force)
         return;
 
     QSettings setting;
-    setting.setValue("maxLength", l);
+    if (m.m_topP == p && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/topP");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/topP", p);
     setting.sync();
-    emit maxLengthChanged();
+    if (!force)
+        emit topPChanged(m);
 }
 
-int MySettings::promptBatchSize() const
+int MySettings::modelTopK(const ModelInfo &m) const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("promptBatchSize", default_promptBatchSize).toInt();
+    return setting.value(QString("model-%1").arg(m.id()) + "/topK", m.m_topK).toInt();
 }
 
-void MySettings::setPromptBatchSize(int s)
+void MySettings::setModelTopK(const ModelInfo &m, int k, bool force)
 {
-    if (promptBatchSize() == s)
+    if (modelTopK(m) == k && !force)
         return;
 
     QSettings setting;
-    setting.setValue("promptBatchSize", s);
+    if (m.m_topK == k && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/topK");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/topK", k);
     setting.sync();
-    emit promptBatchSizeChanged();
+    if (!force)
+        emit topKChanged(m);
 }
 
-double MySettings::repeatPenalty() const
+int MySettings::modelMaxLength(const ModelInfo &m) const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("repeatPenalty", default_repeatPenalty).toDouble();
+    return setting.value(QString("model-%1").arg(m.id()) + "/maxLength", m.m_maxLength).toInt();
 }
 
-void MySettings::setRepeatPenalty(double p)
+void MySettings::setModelMaxLength(const ModelInfo &m, int l, bool force)
 {
-    if (repeatPenalty() == p)
+    if (modelMaxLength(m) == l && !force)
         return;
 
     QSettings setting;
-    setting.setValue("repeatPenalty", p);
+    if (m.m_maxLength == l && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/maxLength");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/maxLength", l);
     setting.sync();
-    emit repeatPenaltyChanged();
+    if (!force)
+        emit maxLengthChanged(m);
 }
 
-int MySettings::repeatPenaltyTokens() const
+int MySettings::modelPromptBatchSize(const ModelInfo &m) const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("repeatPenaltyTokens", default_repeatPenaltyTokens).toInt();
+    return setting.value(QString("model-%1").arg(m.id()) + "/promptBatchSize", m.m_promptBatchSize).toInt();
 }
 
-void MySettings::setRepeatPenaltyTokens(int t)
+void MySettings::setModelPromptBatchSize(const ModelInfo &m, int s, bool force)
 {
-    if (repeatPenaltyTokens() == t)
+    if (modelPromptBatchSize(m) == s && !force)
         return;
 
     QSettings setting;
-    setting.setValue("repeatPenaltyTokens", t);
+    if (m.m_promptBatchSize == s && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/promptBatchSize");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/promptBatchSize", s);
     setting.sync();
-    emit repeatPenaltyTokensChanged();
+    if (!force)
+        emit promptBatchSizeChanged(m);
 }
 
-QString MySettings::promptTemplate() const
+double MySettings::modelRepeatPenalty(const ModelInfo &m) const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("promptTemplate", default_promptTemplate).toString();
+    return setting.value(QString("model-%1").arg(m.id()) + "/repeatPenalty", m.m_repeatPenalty).toDouble();
 }
 
-void MySettings::setPromptTemplate(const QString &t)
+void MySettings::setModelRepeatPenalty(const ModelInfo &m, double p, bool force)
 {
-    if (promptTemplate() == t)
+    if (modelRepeatPenalty(m) == p && !force)
         return;
 
     QSettings setting;
-    setting.setValue("promptTemplate", t);
+    if (m.m_repeatPenalty == p && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/repeatPenalty");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/repeatPenalty", p);
     setting.sync();
-    emit promptTemplateChanged();
+    if (!force)
+        emit repeatPenaltyChanged(m);
+}
+
+int MySettings::modelRepeatPenaltyTokens(const ModelInfo &m) const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens", m.m_repeatPenaltyTokens).toInt();
+}
+
+void MySettings::setModelRepeatPenaltyTokens(const ModelInfo &m, int t, bool force)
+{
+    if (modelRepeatPenaltyTokens(m) == t && !force)
+        return;
+
+    QSettings setting;
+    if (m.m_repeatPenaltyTokens == t && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens", t);
+    setting.sync();
+    if (!force)
+        emit repeatPenaltyTokensChanged(m);
+}
+
+QString MySettings::modelPromptTemplate(const ModelInfo &m) const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value(QString("model-%1").arg(m.id()) + "/promptTemplate", m.m_promptTemplate).toString();
+}
+
+void MySettings::setModelPromptTemplate(const ModelInfo &m, const QString &t, bool force)
+{
+    if (modelPromptTemplate(m) == t && !force)
+        return;
+
+    QSettings setting;
+    if (m.m_promptTemplate == t && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/promptTemplate");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/promptTemplate", t);
+    setting.sync();
+    if (!force)
+        emit promptTemplateChanged(m);
+}
+
+QString MySettings::modelSystemPrompt(const ModelInfo &m) const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value(QString("model-%1").arg(m.id()) + "/systemPrompt", m.m_systemPrompt).toString();
+}
+
+void MySettings::setModelSystemPrompt(const ModelInfo &m, const QString &p, bool force)
+{
+    if (modelSystemPrompt(m) == p && !force)
+        return;
+
+    QSettings setting;
+    if (m.m_systemPrompt == p && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/systemPrompt");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/systemPrompt", p);
+    setting.sync();
+    if (!force)
+        emit systemPromptChanged(m);
 }
 
 int MySettings::threadCount() const

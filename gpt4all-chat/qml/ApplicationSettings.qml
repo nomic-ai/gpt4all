@@ -6,8 +6,12 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import modellist
 import mysettings
+import network
 
 MySettingsTab {
+    onRestoreDefaultsClicked: {
+        MySettings.restoreApplicationDefaults();
+    }
     title: qsTr("Application")
     contentItem: GridLayout {
         id: applicationSettingsTabInner
@@ -26,7 +30,9 @@ MySettingsTab {
             id: comboBox
             Layout.row: 1
             Layout.column: 1
+            Layout.columnSpan: 2
             Layout.minimumWidth: 350
+            Layout.fillWidth: true
             model: ModelList.userDefaultModelList
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("ComboBox for displaying/picking the default model")
@@ -178,25 +184,30 @@ MySettingsTab {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             height: 1
-            color: theme.dialogBorder
+            color: theme.tabBorder
         }
+    }
+    advancedSettings: GridLayout {
+        columns: 3
+        rowSpacing: 10
+        columnSpacing: 10
         Rectangle {
-            Layout.row: 9
+            Layout.row: 2
             Layout.column: 0
             Layout.fillWidth: true
             Layout.columnSpan: 3
             height: 1
-            color: theme.dialogBorder
+            color: theme.tabBorder
         }
         Label {
             id: gpuOverrideLabel
             text: qsTr("Force Metal (macOS+arm):")
             color: theme.textColor
-            Layout.row: 8
+            Layout.row: 1
             Layout.column: 0
         }
         RowLayout {
-            Layout.row: 8
+            Layout.row: 1
             Layout.column: 1
             Layout.columnSpan: 2
             MyCheckBox {
@@ -206,24 +217,18 @@ MySettingsTab {
                     MySettings.forceMetal = !MySettings.forceMetal
                 }
             }
-            Label {
-                id: warningLabel
-                Layout.maximumWidth: 730
+
+            Item {
+                Layout.fillWidth: true
                 Layout.alignment: Qt.AlignTop
-                color: theme.textErrorColor
-                wrapMode: Text.WordWrap
-                text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibility the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
-            }
-        }
-        MyButton {
-            Layout.row: 10
-            Layout.column: 1
-            Layout.columnSpan: 2
-            Layout.fillWidth: true
-            text: qsTr("Restore Defaults")
-            Accessible.description: qsTr("Restores the settings dialog to a default state")
-            onClicked: {
-                MySettings.restoreApplicationDefaults();
+                Layout.minimumHeight: warningLabel.height
+                Label {
+                    id: warningLabel
+                    width: parent.width
+                    color: theme.textErrorColor
+                    wrapMode: Text.WordWrap
+                    text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibility the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
+                }
             }
         }
     }
