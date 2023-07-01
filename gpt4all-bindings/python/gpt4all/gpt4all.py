@@ -237,13 +237,13 @@ class GPT4All:
         '''
         # Code to acquire resource, e.g.:
         self._is_chat_session_activated = True
-        self._current_chat_session = []
+        self.current_chat_session = []
         try:
             yield self
         finally:
             # Code to release resource, e.g.:
             self._is_chat_session_activated = False
-            self._current_chat_session = []
+            self.current_chat_session = []
 
     def _format_chat_prompt_template(
         self, messages: List[Dict], default_prompt_header=True, default_prompt_footer=True
