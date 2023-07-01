@@ -27,7 +27,7 @@ venv:
 	if [ ! -d $(ROOT_DIR)/env ]; then $(PYTHON) -m venv $(ROOT_DIR)/env; fi
 
 dependencies: venv
-	source $(ROOT_DIR)/env/bin/activate; yes w | python -m pip install -r $(ROOT_DIR)/atlas_api/requirements.txt
+	source $(ROOT_DIR)/env/bin/activate; yes w | python -m pip install -r $(ROOT_DIR)/gpt4all_api/requirements.txt
 
 clean: clean_testenv
 	# Remove existing environment
