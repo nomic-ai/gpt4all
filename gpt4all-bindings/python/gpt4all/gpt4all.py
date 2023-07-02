@@ -264,11 +264,29 @@ class GPT4All:
         full_prompt = ""
 
         for message in messages:
+<<<<<<< HEAD
             if message["role"] == "user":
                 user_message = "### Human: \n" + message["content"] + "\n### Assistant:\n"
                 full_prompt += user_message
             if message["role"] == "assistant":
                 assistant_message = message["content"] + '\n'
+=======
+            if message["role"] == "system":
+                system_message = message["content"] + "\n"
+                full_prompt += system_message
+
+        if default_prompt_header:
+            full_prompt += """### Instruction: 
+            The prompt below is a question to answer, a task to complete, or a conversation 
+            to respond to; decide which and write an appropriate response.\n"""
+
+        for message in messages:
+            if message["role"] == "user":
+                user_message = "\n" + "### Prompt:\n" + message["content"]
+                full_prompt += user_message
+            if message["role"] == "assistant":
+                assistant_message = "\n### Response:\n" + message["content"]
+>>>>>>> pr/652
                 full_prompt += assistant_message
 
         return full_prompt
