@@ -1,8 +1,10 @@
 import logging
+
+from api_v1.settings import settings
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from starlette.requests import Request
-from api_v1.settings import settings
+
 log = logging.getLogger(__name__)
 
 
@@ -18,6 +20,7 @@ async def on_http_error(request: Request, exc: HTTPException):
 async def on_startup(app):
     startup_msg = startup_msg_fmt.format(settings=settings)
     log.info(startup_msg)
+
 
 def startup_event_handler(app):
     async def start_app() -> None:
