@@ -17,7 +17,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 4)
-set(APP_VERSION_PATCH 7)
+set(APP_VERSION_PATCH 11)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -71,13 +71,14 @@ qt_add_executable(chat
     chatgpt.h chatgpt.cpp
     database.h database.cpp
     download.h download.cpp
-    network.h network.cpp
     localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
     llm.h llm.cpp
+    modellist.h modellist.cpp
+    mysettings.h mysettings.cpp
+    network.h network.cpp
     server.h server.cpp
     logger.h logger.cpp
     responsetext.h responsetext.cpp
-    sysinfo.h
     ${METAL_SHADER_FILE}
 )
 
@@ -88,7 +89,6 @@ qt_add_qml_module(chat
       main.qml
       qml/ChatDrawer.qml
       qml/CollectionsDialog.qml
-      qml/LocalDocs.qml
       qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
@@ -98,6 +98,10 @@ qt_add_qml_module(chat
       qml/PopupDialog.qml
       qml/AboutDialog.qml
       qml/Theme.qml
+      qml/GenerationSettings.qml
+      qml/ApplicationSettings.qml
+      qml/LocalDocsSettings.qml
+      qml/MySettingsTab.qml
       qml/MyButton.qml
       qml/MyComboBox.qml
       qml/MyDirectoryField.qml
@@ -175,8 +179,18 @@ install(TARGETS llamamodel-230519-avxonly DESTINATION lib COMPONENT ${COMPONENT_
 install(TARGETS llamamodel-230519-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llamamodel-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llamamodel-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+if(APPLE)
+install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+endif()
+install(TARGETS falcon-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS falcon-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS mpt-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS mpt-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS replit-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS replit-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+if(APPLE)
+install(TARGETS replit-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+endif()
 
 set(CPACK_GENERATOR "IFW")
 set(CPACK_VERBATIM_VARIABLES YES)

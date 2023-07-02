@@ -1,6 +1,6 @@
 #include "llm.h"
-#include "config.h"
-#include "download.h"
+#include "../gpt4all-backend/sysinfo.h"
+#include "../gpt4all-backend/llmodel.h"
 #include "network.h"
 
 #include <QCoreApplication>
@@ -8,7 +8,6 @@
 #include <QFile>
 #include <QProcess>
 #include <QResource>
-#include <QSettings>
 #include <fstream>
 
 class MyLLM: public LLM { };
@@ -20,9 +19,6 @@ LLM *LLM::globalInstance()
 
 LLM::LLM()
     : QObject{nullptr}
-    , m_chatListModel(new ChatListModel(this))
-    , m_threadCount(std::min(4, (int32_t) std::thread::hardware_concurrency()))
-    , m_serverEnabled(false)
     , m_compatHardware(true)
 {
     QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
@@ -38,11 +34,6 @@ LLM::LLM()
         llmodelSearchPaths += ";" + frameworksDir;
 #endif
     LLModel::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
-
-    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
-        this, &LLM::aboutToQuit);
-    connect(this, &LLM::serverEnabledChanged,
-        m_chatListModel, &ChatListModel::handleServerEnabledChanged);
 
 #if defined(__x86_64__)
     #ifndef _MSC_VER
@@ -98,33 +89,12 @@ bool LLM::fileExists(const QString &path) const
     return info.exists() && info.isFile();
 }
 
-int32_t LLM::threadCount() const
+qint64 LLM::systemTotalRAMInGB() const
 {
-    return m_threadCount;
+    return getSystemTotalRAMInGB();
 }
 
-void LLM::setThreadCount(int32_t n_threads)
+QString LLM::systemTotalRAMInGBString() const
 {
-    if (n_threads <= 0)
-        n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
-    m_threadCount = n_threads;
-    emit threadCountChanged();
-}
-
-bool LLM::serverEnabled() const
-{
-    return m_serverEnabled;
-}
-
-void LLM::setServerEnabled(bool enabled)
-{
-    if (m_serverEnabled == enabled)
-        return;
-    m_serverEnabled = enabled;
-    emit serverEnabledChanged();
-}
-
-void LLM::aboutToQuit()
-{
-    m_chatListModel->saveChats();
+    return QString::fromStdString(getSystemTotalRAMInGBString());
 }

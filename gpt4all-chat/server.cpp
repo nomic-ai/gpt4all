@@ -1,6 +1,7 @@
 #include "server.h"
-#include "llm.h"
-#include "download.h"
+#include "chat.h"
+#include "mysettings.h"
+#include "modellist.h"
 
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -10,26 +11,14 @@
 
 //#define DEBUG
 
-static inline QString modelToName(const ModelInfo &info)
-{
-    QString modelName = info.filename;
-    Q_ASSERT(modelName.startsWith("ggml-"));
-    modelName = modelName.remove(0, 5);
-    Q_ASSERT(modelName.endsWith(".bin"));
-    modelName.chop(4);
-    return modelName;
-}
-
 static inline QJsonObject modelToJson(const ModelInfo &info)
 {
-    QString modelName = modelToName(info);
-
     QJsonObject model;
-    model.insert("id", modelName);
+    model.insert("id", info.name);
     model.insert("object", "model");
     model.insert("created", "who can keep track?");
     model.insert("owned_by", "humanity");
-    model.insert("root", modelName);
+    model.insert("root", info.name);
     model.insert("parent", QJsonValue::Null);
 
     QJsonArray permissions;
@@ -71,6 +60,8 @@ Server::Server(Chat *chat)
     , m_server(nullptr)
 {
     connect(this, &Server::threadStarted, this, &Server::start);
+    connect(this, &Server::databaseResultsChanged, this, &Server::handleDatabaseResultsChanged);
+    connect(chat, &Chat::collectionListChanged, this, &Server::handleCollectionListChanged, Qt::QueuedConnection);
 }
 
 Server::~Server()
@@ -87,10 +78,10 @@ void Server::start()
 
     m_server->route("/v1/models", QHttpServerRequest::Method::Get,
         [](const QHttpServerRequest &request) {
-            if (!LLM::globalInstance()->serverEnabled())
+            if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
-            const QList<ModelInfo> modelList = Download::globalInstance()->modelList();
+            const QList<ModelInfo> modelList = ModelList::globalInstance()->exportModelList();
             QJsonObject root;
             root.insert("object", "list");
             QJsonArray data;
@@ -106,17 +97,16 @@ void Server::start()
 
     m_server->route("/v1/models/<arg>", QHttpServerRequest::Method::Get,
         [](const QString &model, const QHttpServerRequest &request) {
-            if (!LLM::globalInstance()->serverEnabled())
+            if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
-            const QList<ModelInfo> modelList = Download::globalInstance()->modelList();
+            const QList<ModelInfo> modelList = ModelList::globalInstance()->exportModelList();
             QJsonObject object;
             for (const ModelInfo &info : modelList) {
                 if (!info.installed)
                     continue;
 
-                QString modelName = modelToName(info);
-                if (model == modelName) {
+                if (model == info.name) {
                     object = modelToJson(info);
                     break;
                 }
@@ -127,7 +117,7 @@ void Server::start()
 
     m_server->route("/v1/completions", QHttpServerRequest::Method::Post,
         [this](const QHttpServerRequest &request) {
-            if (!LLM::globalInstance()->serverEnabled())
+            if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return handleCompletionRequest(request, false);
         }
@@ -135,11 +125,16 @@ void Server::start()
 
     m_server->route("/v1/chat/completions", QHttpServerRequest::Method::Post,
         [this](const QHttpServerRequest &request) {
-            if (!LLM::globalInstance()->serverEnabled())
+            if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
             return handleCompletionRequest(request, true);
         }
     );
+
+    m_server->afterRequest([] (QHttpServerResponse &&resp) {
+        resp.addHeader("Access-Control-Allow-Origin", "*");
+        return std::move(resp);
+    });
 
     connect(this, &Server::requestServerNewPromptResponsePair, m_chat,
         &Chat::serverNewPromptResponsePair, Qt::BlockingQueuedConnection);
@@ -172,14 +167,14 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
         messages = body["messages"].toArray();
     }
 
-    const QString model = body["model"].toString();
-    bool foundModel = false;
-    const QList<ModelInfo> modelList = Download::globalInstance()->modelList();
+    const QString modelRequested = body["model"].toString();
+    ModelInfo modelInfo = ModelList::globalInstance()->defaultModelInfo();
+    const QList<ModelInfo> modelList = ModelList::globalInstance()->exportModelList();
     for (const ModelInfo &info : modelList) {
         if (!info.installed)
             continue;
-        if (model == modelToName(info)) {
-            foundModel = true;
+        if (modelRequested == info.name || modelRequested == info.filename) {
+            modelInfo = info;
             break;
         }
     }
@@ -289,32 +284,34 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     // load the new model if necessary
     setShouldBeLoaded(true);
 
-    if (!foundModel) {
-        if (!loadDefaultModel()) {
-            std::cerr << "ERROR: couldn't load default model " << model.toStdString() << std::endl;
-            return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
-        }
-    } else if (!loadModel(model)) {
-        std::cerr << "ERROR: couldn't load model " << model.toStdString() << std::endl;
+    if (modelInfo.filename.isEmpty()) {
+        std::cerr << "ERROR: couldn't load default model " << modelRequested.toStdString() << std::endl;
+        return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
+    } else if (!loadModel(modelInfo)) {
+        std::cerr << "ERROR: couldn't load model " << modelInfo.name.toStdString() << std::endl;
         return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
     // don't remember any context
     resetContext();
 
-    QSettings settings;
-    settings.sync();
-    const QString promptTemplate = settings.value("promptTemplate", "%1").toString();
-    const float top_k = settings.value("topK", m_ctx.top_k).toDouble();
-    const int n_batch = settings.value("promptBatchSize", m_ctx.n_batch).toInt();
-    const float repeat_penalty = settings.value("repeatPenalty", m_ctx.repeat_penalty).toDouble();
-    const int repeat_last_n = settings.value("repeatPenaltyTokens", m_ctx.repeat_last_n).toInt();
+    const QString promptTemplate    = MySettings::globalInstance()->promptTemplate();
+    const float top_k               = MySettings::globalInstance()->topK();
+    const int n_batch               = MySettings::globalInstance()->promptBatchSize();
+    const float repeat_penalty      = MySettings::globalInstance()->repeatPenalty();
+    const int repeat_last_n         = MySettings::globalInstance()->repeatPenaltyTokens();
+
+    int threadCount = MySettings::globalInstance()->threadCount();
+    if (threadCount <= 0)
+      threadCount = std::min(4, (int32_t) std::thread::hardware_concurrency());
 
     int promptTokens = 0;
     int responseTokens = 0;
     QList<QPair<QString, QList<ResultInfo>>> responses;
     for (int i = 0; i < n; ++i) {
-        if (!prompt(actualPrompt,
+        if (!prompt(
+            m_collections,
+            actualPrompt,
             promptTemplate,
             max_tokens /*n_predict*/,
             top_k,
@@ -323,9 +320,9 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             n_batch,
             repeat_penalty,
             repeat_last_n,
-            LLM::globalInstance()->threadCount())) {
+            threadCount)) {
 
-            std::cerr << "ERROR: couldn't prompt model " << model.toStdString() << std::endl;
+            std::cerr << "ERROR: couldn't prompt model " << modelInfo.name.toStdString() << std::endl;
             return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
         }
         QString echoedPrompt = actualPrompt;
@@ -343,7 +340,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     responseObject.insert("id", "foobarbaz");
     responseObject.insert("object", "text_completion");
     responseObject.insert("created", QDateTime::currentSecsSinceEpoch());
-    responseObject.insert("model", modelName());
+    responseObject.insert("model", modelInfo.name);
 
     QJsonArray choices;
 

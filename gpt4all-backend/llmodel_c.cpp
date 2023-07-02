@@ -39,8 +39,13 @@ llmodel_model llmodel_model_create2(const char *model_path, const char *build_va
         delete std::exchange(wrapper, nullptr);
         // Get errno and error message if none
         if (error_code == 0) {
-            error_code = errno;
-            last_error_message = std::strerror(error_code);
+            if (errno != 0) {
+                error_code = errno;
+                last_error_message = std::strerror(error_code);
+            } else {
+                error_code = ENOTSUP;
+                last_error_message = "Model format not supported (no matching implementation found)";
+            }
         }
         // Set error argument
         if (error) {
@@ -53,6 +58,12 @@ llmodel_model llmodel_model_create2(const char *model_path, const char *build_va
 
 void llmodel_model_destroy(llmodel_model model) {
     delete reinterpret_cast<LLModelWrapper*>(model);
+}
+
+size_t llmodel_required_mem(llmodel_model model, const char *model_path)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->requiredMem(model_path);
 }
 
 bool llmodel_loadModel(llmodel_model model, const char *model_path)
@@ -116,6 +127,9 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
         std::bind(&response_wrapper, std::placeholders::_1, std::placeholders::_2, reinterpret_cast<void*>(response_callback));
     std::function<bool(bool)> recalc_func =
         std::bind(&recalculate_wrapper, std::placeholders::_1, reinterpret_cast<void*>(recalculate_callback));
+
+    if (size_t(ctx->n_past) < wrapper->promptContext.tokens.size())
+        wrapper->promptContext.tokens.resize(ctx->n_past);
 
     // Copy the C prompt context
     wrapper->promptContext.n_past = ctx->n_past;
