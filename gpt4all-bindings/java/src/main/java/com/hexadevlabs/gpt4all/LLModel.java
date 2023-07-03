@@ -220,7 +220,7 @@ public  class LLModel implements AutoCloseable {
      *
      * @param prompt The text prompt to complete
      * @param generationConfig What generation settings to use while generating text
-     * @param stream The . Useful for troubleshooting.
+     * @param stream Stream where the generation will be printed to. Useful for troubleshooting.
      * @return String The complete generated text
      */
     public String generate(String prompt, GenerationConfig generationConfig, PrintStream stream, boolean enableStreaming) {
