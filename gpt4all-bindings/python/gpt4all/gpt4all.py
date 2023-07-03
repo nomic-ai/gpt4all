@@ -202,7 +202,7 @@ class GPT4All:
         Returns:
             Either the entire completion or a generator that yields the completion token by token.
         """
-        generate_kwargs = locals()
+        generate_kwargs = locals.copy()
         generate_kwargs.pop('self')
         generate_kwargs.pop('max_tokens')
         generate_kwargs.pop('streaming')
