@@ -28,7 +28,7 @@ SPECIAL_COMMANDS = {
 }
 
 VersionInfo = namedtuple('VersionInfo', ['major', 'minor', 'micro'])
-VERSION_INFO = VersionInfo(1, 0, 1)
+VERSION_INFO = VersionInfo(1, 0, 2)
 VERSION = '.'.join(map(str, VERSION_INFO))  # convert to string form, like: '1.2.3'
 
 CLI_START_MESSAGE = f"""
