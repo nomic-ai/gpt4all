@@ -17,7 +17,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 4)
-set(APP_VERSION_PATCH 9)
+set(APP_VERSION_PATCH 11)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -89,7 +89,6 @@ qt_add_qml_module(chat
       main.qml
       qml/ChatDrawer.qml
       qml/CollectionsDialog.qml
-      qml/LocalDocs.qml
       qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
@@ -99,6 +98,10 @@ qt_add_qml_module(chat
       qml/PopupDialog.qml
       qml/AboutDialog.qml
       qml/Theme.qml
+      qml/GenerationSettings.qml
+      qml/ApplicationSettings.qml
+      qml/LocalDocsSettings.qml
+      qml/MySettingsTab.qml
       qml/MyButton.qml
       qml/MyComboBox.qml
       qml/MyDirectoryField.qml

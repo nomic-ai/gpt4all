@@ -1,6 +1,9 @@
 #include "modellist.h"
+#include "mysettings.h"
 
 #include <algorithm>
+
+//#define USE_LOCAL_MODELSJSON
 
 InstalledModels::InstalledModels(QObject *parent)
     : QSortFilterProxyModel(parent)
@@ -85,24 +88,22 @@ ModelList::ModelList()
     : QAbstractListModel(nullptr)
     , m_installedModels(new InstalledModels(this))
     , m_downloadableModels(new DownloadableModels(this))
-    , m_modelHasNames(false)
 {
     m_installedModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
     m_watcher = new QFileSystemWatcher(this);
-    QSettings settings;
-    settings.sync();
-    m_localModelsPath = settings.value("modelPath", defaultLocalModelsPath()).toString();
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     m_watcher->addPath(exePath);
-    m_watcher->addPath(m_localModelsPath);
+    m_watcher->addPath(MySettings::globalInstance()->modelPath());
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &ModelList::updateModelsFromDirectory);
+    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelList);
     updateModelsFromDirectory();
+    updateModelList();
 }
 
 QString ModelList::incompleteDownloadPath(const QString &modelFile)
 {
-    return localModelsPath() + "incomplete-" + modelFile;
+    return MySettings::globalInstance()->modelPath() + "incomplete-" + modelFile;
 }
 
 const QList<ModelInfo> ModelList::exportModelList() const
@@ -119,10 +120,7 @@ const QList<QString> ModelList::userDefaultModelList() const
 {
     QMutexLocker locker(&m_mutex);
 
-    QSettings settings;
-    settings.sync();
-
-    const QString userDefaultModelName = settings.value("userDefaultModel").toString();
+    const QString userDefaultModelName = MySettings::globalInstance()->userDefaultModel();
     QList<QString> models;
     bool foundUserDefault = false;
     for (ModelInfo *info : m_models) {
@@ -152,7 +150,7 @@ ModelInfo ModelList::defaultModelInfo() const
     // The user default model can be set by the user in the settings dialog. The "default" user
     // default model is "Application default" which signals we should use the default model that was
     // specified by the models.json file.
-    const QString userDefaultModelName = settings.value("userDefaultModel").toString();
+    const QString userDefaultModelName = MySettings::globalInstance()->userDefaultModel();
     const bool hasUserDefaultName = !userDefaultModelName.isEmpty() && userDefaultModelName != "Application default";
     const QString defaultModelName = settings.value("defaultModel").toString();
     const bool hasDefaultName = hasUserDefaultName ? false : !defaultModelName.isEmpty();
@@ -412,49 +410,6 @@ ModelInfo ModelList::modelInfo(const QString &filename) const
     return *m_modelMap.value(filename);
 }
 
-QString ModelList::defaultLocalModelsPath() const
-{
-    QString localPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
-        + "/";
-    QString testWritePath = localPath + QString("test_write.txt");
-    QString canonicalLocalPath = QFileInfo(localPath).canonicalFilePath() + "/";
-    QDir localDir(localPath);
-    if (!localDir.exists()) {
-        if (!localDir.mkpath(localPath)) {
-            qWarning() << "ERROR: Local download directory can't be created:" << canonicalLocalPath;
-            return canonicalLocalPath;
-        }
-    }
-
-    if (QFileInfo::exists(testWritePath))
-        return canonicalLocalPath;
-
-    QFile testWriteFile(testWritePath);
-    if (testWriteFile.open(QIODeviceBase::ReadWrite)) {
-        testWriteFile.close();
-        return canonicalLocalPath;
-    }
-
-    qWarning() << "ERROR: Local download path appears not writeable:" << canonicalLocalPath;
-    return canonicalLocalPath;
-}
-
-QString ModelList::localModelsPath() const
-{
-    return m_localModelsPath;
-}
-
-void ModelList::setLocalModelsPath(const QString &modelPath)
-{
-    QString filePath = (modelPath.startsWith("file://") ?
-                        QUrl(modelPath).toLocalFile() : modelPath);
-    QString canonical = QFileInfo(filePath).canonicalFilePath() + "/";
-    if (m_localModelsPath != canonical) {
-        m_localModelsPath = canonical;
-        emit localModelsPathChanged();
-    }
-}
-
 QString ModelList::modelDirPath(const QString &modelName, bool isChatGPT)
 {
     QVector<QString> possibleFilePaths;
@@ -470,10 +425,10 @@ QString ModelList::modelDirPath(const QString &modelName, bool isChatGPT)
         if (infoAppPath.exists())
             return QCoreApplication::applicationDirPath();
 
-        QString downloadPath = localModelsPath() + modelFilename;
+        QString downloadPath = MySettings::globalInstance()->modelPath() + modelFilename;
         QFileInfo infoLocalPath(downloadPath);
         if (infoLocalPath.exists())
-            return localModelsPath();
+            return MySettings::globalInstance()->modelPath();
     }
     return QString();
 }
@@ -481,7 +436,7 @@ QString ModelList::modelDirPath(const QString &modelName, bool isChatGPT)
 void ModelList::updateModelsFromDirectory()
 {
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
-    const QString localPath = localModelsPath();
+    const QString localPath = MySettings::globalInstance()->modelPath();
 
     auto processDirectory = [&](const QString& path) {
         QDirIterator it(path, QDirIterator::Subdirectories);
@@ -515,4 +470,166 @@ void ModelList::updateModelsFromDirectory()
     processDirectory(exePath);
     if (localPath != exePath)
         processDirectory(localPath);
+}
+
+void ModelList::updateModelList()
+{
+#if defined(USE_LOCAL_MODELSJSON)
+    QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
+#else
+    QUrl jsonUrl("http://gpt4all.io/models/models.json");
+#endif
+    QNetworkRequest request(jsonUrl);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+    QNetworkReply *jsonReply = m_networkManager.get(request);
+    QEventLoop loop;
+    connect(jsonReply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    QTimer::singleShot(1500, &loop, &QEventLoop::quit);
+    loop.exec();
+    if (jsonReply->error() == QNetworkReply::NoError && jsonReply->isFinished()) {
+        QByteArray jsonData = jsonReply->readAll();
+        jsonReply->deleteLater();
+        parseModelsJsonFile(jsonData);
+    } else {
+        qWarning() << "Could not download models.json";
+    }
+    delete jsonReply;
+}
+
+static bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
+    return lhs.filename == rhs.filename && lhs.md5sum == rhs.md5sum;
+}
+
+static bool compareVersions(const QString &a, const QString &b) {
+    QStringList aParts = a.split('.');
+    QStringList bParts = b.split('.');
+
+    for (int i = 0; i < std::min(aParts.size(), bParts.size()); ++i) {
+        int aInt = aParts[i].toInt();
+        int bInt = bParts[i].toInt();
+
+        if (aInt > bInt) {
+            return true;
+        } else if (aInt < bInt) {
+            return false;
+        }
+    }
+
+    return aParts.size() > bParts.size();
+}
+
+void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
+{
+    QJsonParseError err;
+    QJsonDocument document = QJsonDocument::fromJson(jsonData, &err);
+    if (err.error != QJsonParseError::NoError) {
+        qWarning() << "ERROR: Couldn't parse: " << jsonData << err.errorString();
+        return;
+    }
+
+    QJsonArray jsonArray = document.array();
+    const QString currentVersion = QCoreApplication::applicationVersion();
+
+    for (const QJsonValue &value : jsonArray) {
+        QJsonObject obj = value.toObject();
+
+        QString modelName = obj["name"].toString();
+        QString modelFilename = obj["filename"].toString();
+        QString modelFilesize = obj["filesize"].toString();
+        QString requiresVersion = obj["requires"].toString();
+        QString deprecatedVersion = obj["deprecated"].toString();
+        QString url = obj["url"].toString();
+        QByteArray modelMd5sum = obj["md5sum"].toString().toLatin1().constData();
+        bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
+        bool disableGUI = obj.contains("disableGUI") && obj["disableGUI"] == QString("true");
+        QString description = obj["description"].toString();
+        QString order = obj["order"].toString();
+        int ramrequired = obj["ramrequired"].toString().toInt();
+        QString parameters = obj["parameters"].toString();
+        QString quant = obj["quant"].toString();
+        QString type = obj["type"].toString();
+
+        // If the currentVersion version is strictly less than required version, then continue
+        if (!requiresVersion.isEmpty()
+            && requiresVersion != currentVersion
+            && compareVersions(requiresVersion, currentVersion)) {
+            continue;
+        }
+
+        // If the current version is strictly greater than the deprecated version, then continue
+        if (!deprecatedVersion.isEmpty()
+            && compareVersions(currentVersion, deprecatedVersion)) {
+            continue;
+        }
+
+        modelFilesize = ModelList::toFileSize(modelFilesize.toULongLong());
+
+        if (!contains(modelFilename))
+            addModel(modelFilename);
+
+        if (!modelName.isEmpty())
+            updateData(modelFilename, ModelList::NameRole, modelName);
+        updateData(modelFilename, ModelList::FilesizeRole, modelFilesize);
+        updateData(modelFilename, ModelList::Md5sumRole, modelMd5sum);
+        updateData(modelFilename, ModelList::DefaultRole, isDefault);
+        updateData(modelFilename, ModelList::DescriptionRole, description);
+        updateData(modelFilename, ModelList::RequiresVersionRole, requiresVersion);
+        updateData(modelFilename, ModelList::DeprecatedVersionRole, deprecatedVersion);
+        updateData(modelFilename, ModelList::UrlRole, url);
+        updateData(modelFilename, ModelList::DisableGUIRole, disableGUI);
+        updateData(modelFilename, ModelList::OrderRole, order);
+        updateData(modelFilename, ModelList::RamrequiredRole, ramrequired);
+        updateData(modelFilename, ModelList::ParametersRole, parameters);
+        updateData(modelFilename, ModelList::QuantRole, quant);
+        updateData(modelFilename, ModelList::TypeRole, type);
+    }
+
+    const QString chatGPTDesc = tr("<ul><li>Requires personal OpenAI API key.</li><li>WARNING: Will send"
+        " your chats to OpenAI!</li><li>Your API key will be stored on disk</li><li>Will only be used"
+        " to communicate with OpenAI</li><li>You can apply for an API key"
+        " <a href=\"https://platform.openai.com/account/api-keys\">here.</a></li>");
+
+    {
+        const QString modelFilename = "chatgpt-gpt-3.5-turbo.txt";
+        if (!contains(modelFilename))
+            addModel(modelFilename);
+        updateData(modelFilename, ModelList::NameRole, "ChatGPT-3.5 Turbo");
+        updateData(modelFilename, ModelList::FilesizeRole, "minimal");
+        updateData(modelFilename, ModelList::ChatGPTRole, true);
+        updateData(modelFilename, ModelList::DescriptionRole,
+            tr("<strong>OpenAI's ChatGPT model GPT-3.5 Turbo</strong><br>") + chatGPTDesc);
+        updateData(modelFilename, ModelList::RequiresVersionRole, "2.4.2");
+        updateData(modelFilename, ModelList::OrderRole, "ca");
+        updateData(modelFilename, ModelList::RamrequiredRole, 0);
+        updateData(modelFilename, ModelList::ParametersRole, "?");
+        updateData(modelFilename, ModelList::QuantRole, "NA");
+        updateData(modelFilename, ModelList::TypeRole, "GPT");
+    }
+
+    {
+        const QString modelFilename = "chatgpt-gpt-4.txt";
+        if (!contains(modelFilename))
+            addModel(modelFilename);
+        updateData(modelFilename, ModelList::NameRole, "ChatGPT-4");
+        updateData(modelFilename, ModelList::FilesizeRole, "minimal");
+        updateData(modelFilename, ModelList::ChatGPTRole, true);
+        updateData(modelFilename, ModelList::DescriptionRole,
+            tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc);
+        updateData(modelFilename, ModelList::RequiresVersionRole, "2.4.2");
+        updateData(modelFilename, ModelList::OrderRole, "cb");
+        updateData(modelFilename, ModelList::RamrequiredRole, 0);
+        updateData(modelFilename, ModelList::ParametersRole, "?");
+        updateData(modelFilename, ModelList::QuantRole, "NA");
+        updateData(modelFilename, ModelList::TypeRole, "GPT");
+    }
+
+    if (installedModels()->count()) {
+        const QString firstModel =
+            installedModels()->firstFilename();
+        QSettings settings;
+        settings.setValue("defaultModel", firstModel);
+        settings.sync();
+    }
 }

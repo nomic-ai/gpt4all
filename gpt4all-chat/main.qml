@@ -10,6 +10,7 @@ import download
 import modellist
 import network
 import gpt4all
+import mysettings
 
 Window {
     id: window
@@ -77,7 +78,7 @@ Window {
     Connections {
         target: currentChat
         function onResponseInProgressChanged() {
-            if (Network.isActive && !currentChat.responseInProgress)
+            if (MySettings.networkIsActive && !currentChat.responseInProgress)
                 Network.sendConversation(currentChat.id, getConversationJson());
         }
         function onModelLoadingErrorChanged() {
@@ -207,27 +208,8 @@ Window {
                 textRole: "name"
                 property string currentModelName: ""
                 function updateCurrentModelName() {
-                    // During application startup the model names might not be processed yet, so don't
-                    // set the combobox text until this is done OR the timer has timed out
-                    if (!ModelList.modelHasNames && startupTimer.running)
-                        return
                     var info = ModelList.modelInfo(currentChat.modelInfo.filename);
                     comboBox.currentModelName = info.name !== "" ? info.name : info.filename;
-                }
-                Timer {
-                    id: startupTimer
-                    interval: 3000 // 3 seconds
-                    running: true
-                    repeat: false
-                    onTriggered: {
-                        comboBox.updateCurrentModelName();
-                    }
-                }
-                Connections {
-                    target: ModelList
-                    function onModelHasNamesChanged() {
-                        comboBox.updateCurrentModelName();
-                    }
                 }
                 Connections {
                     target: currentChat
@@ -383,14 +365,14 @@ Window {
         height: 40
         z: 200
         padding: 15
-        toggled: Network.isActive
+        toggled: MySettings.networkIsActive
         source: "qrc:/gpt4all/icons/network.svg"
         Accessible.name: qsTr("Network button")
         Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
 
         onClicked: {
-            if (Network.isActive) {
-                Network.isActive = false
+            if (MySettings.networkIsActive) {
+                MySettings.networkIsActive = false
                 Network.sendNetworkToggled(false);
             } else
                 networkDialog.open()
@@ -787,7 +769,7 @@ Window {
 
                         Column {
                             visible: name === qsTr("Response: ") &&
-                                (!currentResponse || !currentChat.responseInProgress) && Network.isActive
+                                (!currentResponse || !currentChat.responseInProgress) && MySettings.networkIsActive
                             anchors.right: parent.right
                             anchors.rightMargin: 20
                             y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
@@ -912,13 +894,15 @@ Window {
                             chatModel.updateThumbsUpState(index, false);
                             chatModel.updateThumbsDownState(index, false);
                             chatModel.updateNewResponse(index, "");
-                            currentChat.prompt(listElement.prompt, settingsDialog.promptTemplate,
-                                       settingsDialog.maxLength,
-                                       settingsDialog.topK, settingsDialog.topP,
-                                       settingsDialog.temperature,
-                                       settingsDialog.promptBatchSize,
-                                       settingsDialog.repeatPenalty,
-                                       settingsDialog.repeatPenaltyTokens)
+                            currentChat.prompt(listElement.prompt,
+                                       MySettings.promptTemplate,
+                                       MySettings.maxLength,
+                                       MySettings.topK,
+                                       MySettings.topP,
+                                       MySettings.temperature,
+                                       MySettings.promptBatchSize,
+                                       MySettings.repeatPenalty,
+                                       MySettings.repeatPenaltyTokens)
                         }
                     }
                 }
@@ -992,14 +976,15 @@ Window {
 
                     currentChat.stopGenerating()
                     currentChat.newPromptResponsePair(textInput.text);
-                    currentChat.prompt(textInput.text, settingsDialog.promptTemplate,
-                               settingsDialog.maxLength,
-                               settingsDialog.topK,
-                               settingsDialog.topP,
-                               settingsDialog.temperature,
-                               settingsDialog.promptBatchSize,
-                               settingsDialog.repeatPenalty,
-                               settingsDialog.repeatPenaltyTokens)
+                    currentChat.prompt(textInput.text,
+                               MySettings.promptTemplate,
+                               MySettings.maxLength,
+                               MySettings.topK,
+                               MySettings.topP,
+                               MySettings.temperature,
+                               MySettings.promptBatchSize,
+                               MySettings.repeatPenalty,
+                               MySettings.repeatPenaltyTokens)
                     textInput.text = ""
                 }
             }

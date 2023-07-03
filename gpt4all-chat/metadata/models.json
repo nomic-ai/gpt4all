@@ -16,9 +16,10 @@
   {
     "order": "b",
     "md5sum": "725f148218a65ce8ebcc724e52f31b49",
-    "name": "Falcon",
+    "name": "GPT4All Falcon",
     "filename": "ggml-model-gpt4all-falcon-q4_0.bin",
     "filesize": "4061641216",
+    "requires": "2.4.9",
     "ramrequired": "8",
     "parameters": "7 billion",
     "quant": "q4_0",

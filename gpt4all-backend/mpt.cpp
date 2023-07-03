@@ -2,8 +2,10 @@
 #include "mpt_impl.h"
 
 #include "utils.h"
+#include "llmodel_shared.h"
 
 #include <cassert>
+#include <cinttypes>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -62,39 +64,6 @@ struct mpt_layer {
     struct ggml_tensor * ffn_down_proj_w;
 };
 
-struct mpt_buffer {
-    uint8_t * addr = NULL;
-    size_t size = 0;
-
-    void resize(size_t size) {
-        delete[] addr;
-        addr = new uint8_t[size];
-        this->size = size;
-    }
-
-    ~mpt_buffer() {
-        fflush(stdout);
-        delete[] addr;
-    }
-};
-
-struct mpt_kv_cache {
-    struct ggml_tensor * k;
-    struct ggml_tensor * v;
-
-    struct ggml_context * ctx = NULL;
-
-    mpt_buffer buf;
-
-    int n; // number of tokens currently in the cache
-
-    ~mpt_kv_cache() {
-        if (ctx) {
-            ggml_free(ctx);
-        }
-    }
-};
-
 struct mpt_model {
     mpt_hparams hparams;
 
@@ -107,12 +76,14 @@ struct mpt_model {
 
     std::vector<mpt_layer> layers;
 
-    struct mpt_kv_cache kv_self;
+    struct llm_kv_cache kv_self;
     struct ggml_context * ctx;
     std::map<std::string, struct ggml_tensor *> tensors;
 
 
-    mpt_buffer buf;
+    llm_buffer eval_buf;
+    llm_buffer scr0_buf;
+    llm_buffer scr1_buf;
 
     ~mpt_model() {
         if (ctx) {
@@ -123,7 +94,7 @@ struct mpt_model {
 
 static bool kv_cache_init(
         const struct mpt_hparams & hparams,
-             struct mpt_kv_cache & cache,
+             struct llm_kv_cache & cache,
                          ggml_type   wtype,
                                int   n_ctx) {
     const int n_embd  = hparams.n_embd;
@@ -402,8 +373,8 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
             }
 
             if (tensor->ne[0] != ne[0] || tensor->ne[1] != ne[1]) {
-                fprintf(stderr, "%s: tensor '%s' has wrong shape in model file: got [%d, %d], expected [%d, %d]\n",
-                        __func__, name.data(), (int) tensor->ne[0], (int) tensor->ne[1], ne[0], ne[1]);
+                fprintf(stderr, "%s: tensor '%s' has wrong shape in model file: got [%" PRId64 ", %" PRId64 "], expected [%d, %d]\n",
+                        __func__, name.data(), tensor->ne[0], tensor->ne[1], ne[0], ne[1]);
                 return false;
             }
 
@@ -434,6 +405,9 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
 
         printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size/1024.0/1024.0, n_tensors);
     }
+
+    model.scr0_buf.resize(256u * 1024 * 1024);
+    model.scr1_buf.resize(256u * 1024 * 1024);
 
     return true;
 }
@@ -470,24 +444,24 @@ bool mpt_eval(
     const int n_vocab = hparams.n_vocab;
 
     const size_t init_buf_size = 1024_MiB;
-    if (!model.buf.addr || model.buf.size < init_buf_size)
-        model.buf.resize(init_buf_size);
+    if (!model.eval_buf.addr || model.eval_buf.size < init_buf_size)
+        model.eval_buf.resize(init_buf_size);
 
-    if (mem_per_token > 0 && mem_per_token*N > model.buf.size) {
+    if (mem_per_token > 0 && mem_per_token*N > model.eval_buf.size) {
         const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
         // printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, model.buf.size, buf_size_new);
 
         // reallocate
-        model.buf.resize(buf_size_new);
-        if (model.buf.addr == nullptr) {
-            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, model.buf.size);
+        model.eval_buf.resize(buf_size_new);
+        if (model.eval_buf.addr == nullptr) {
+            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, model.eval_buf.size);
             return false;
         }
     }
 
     struct ggml_init_params params = {
-        .mem_size   = model.buf.size,
-        .mem_buffer = model.buf.addr,
+        .mem_size   = model.eval_buf.size,
+        .mem_buffer = model.eval_buf.addr,
         .no_alloc = false
     };
 
@@ -502,6 +476,7 @@ bool mpt_eval(
     struct ggml_tensor * inpL = ggml_get_rows(ctx0, model.wte, embd);
 
     for (int il = 0; il < n_layer; ++il) {
+        ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
 
         struct ggml_tensor * inpSA = inpL;
         struct ggml_tensor * cur = inpSA;
@@ -593,7 +568,7 @@ bool mpt_eval(
                     cur);
         }
 
-
+        ggml_set_scratch(ctx0, {0, model.scr1_buf.size, model.scr1_buf.addr, });
         // residual
         struct ggml_tensor * resSA = ggml_add(ctx0, cur, inpSA);
         // feed-forward network
@@ -618,6 +593,7 @@ bool mpt_eval(
         // self-attention + FF
         inpL = ggml_add(ctx0, cur, resSA);
     }
+    ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
 
     struct ggml_tensor * out = inpL;
     // -> logits
@@ -626,6 +602,7 @@ bool mpt_eval(
         out = ggml_mul(ctx0,
                     ggml_repeat(ctx0, model.norm_f_w, out),
                     out);
+        ggml_set_scratch(ctx0, { 0, 0, nullptr, });
         out = ggml_mul_mat(ctx0, model.wte, out);
     }
 
