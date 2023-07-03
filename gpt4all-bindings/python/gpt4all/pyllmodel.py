@@ -314,7 +314,7 @@ class LLModel:
         reset_context: bool = False,
     ) -> Iterable:
         # Symbol to terminate from generator
-        TERMINATING_SYMBOL = "#TERMINATE#"
+        TERMINATING_SYMBOL = object()
 
         output_queue = queue.Queue()
 
@@ -360,7 +360,7 @@ class LLModel:
         # Generator
         while True:
             response = output_queue.get()
-            if response == TERMINATING_SYMBOL:
+            if response is TERMINATING_SYMBOL:
                 break
             yield response
 
