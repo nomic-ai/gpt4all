@@ -4,6 +4,7 @@ The GPT4All CLI is a self-contained script based on the `gpt4all` and `typer` pa
 REPL to communicate with a language model similar to the chat GUI application, but more basic.
 """
 
+import io
 import pkg_resources  # should be present as a dependency of gpt4all
 import sys
 import typer
@@ -143,8 +144,8 @@ def _new_loop(gpt4all_instance):
 
             # execute chat completion and ignore the full response since 
             # we are outputting it incrementally
-            full_response = gpt4all_instance.generate(
-                MESSAGES,
+            response_generator = gpt4all_instance.generate(
+                message,
                 # preferential kwargs for chat ux
                 max_tokens=200,
                 temp=0.9,
@@ -156,8 +157,16 @@ def _new_loop(gpt4all_instance):
                 # required kwargs for cli ux (incremental response)
                 streaming=True,
             )
+            response = io.StringIO()
+            for token in response_generator:
+                print(token, end='', flush=True)
+                response.write(token)
+
             # record assistant's response to messages
-            MESSAGES.append(full_response.get("choices")[0].get("message"))
+            response_message = {'role': 'assistant', 'content': response.getvalue()}
+            response.close()
+            gpt4all_instance.current_chat_session.append(response_message)
+            MESSAGES.append(response_message)
             print() # newline before next prompt
 
 
