@@ -1,8 +1,8 @@
 #include "chat.h"
-#include "llm.h"
-#include "localdocs.h"
+#include "chatlistmodel.h"
+#include "mysettings.h"
+#include "modellist.h"
 #include "network.h"
-#include "download.h"
 #include "server.h"
 
 Chat::Chat(QObject *parent)
@@ -17,6 +17,7 @@ Chat::Chat(QObject *parent)
     , m_isServer(false)
     , m_shouldDeleteLater(false)
     , m_isModelLoaded(false)
+    , m_shouldLoadModelWhenInstalled(false)
 {
     connectLLM();
 }
@@ -33,6 +34,7 @@ Chat::Chat(bool isServer, QObject *parent)
     , m_isServer(true)
     , m_shouldDeleteLater(false)
     , m_isModelLoaded(false)
+    , m_shouldLoadModelWhenInstalled(false)
 {
     connectLLM();
 }
@@ -45,17 +47,6 @@ Chat::~Chat()
 
 void Chat::connectLLM()
 {
-    const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
-    const QString localPath = Download::globalInstance()->downloadLocalModelsPath();
-    m_watcher = new QFileSystemWatcher(this);
-    m_watcher->addPath(exePath);
-    m_watcher->addPath(localPath);
-
-    // Should be in same thread
-    connect(Download::globalInstance(), &Download::modelListChanged, this, &Chat::handleModelListChanged, Qt::DirectConnection);
-    connect(this, &Chat::modelNameChanged, this, &Chat::handleModelListChanged, Qt::DirectConnection);
-    connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Chat::handleModelListChanged);
-
     // Should be in different threads
     connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::handleModelLoadedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
@@ -66,9 +57,10 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
-    connect(this, &Chat::modelNameChangeRequested, m_llmodel, &ChatLLM::modelNameChangeRequested, Qt::QueuedConnection);
+    connect(this, &Chat::modelChangeRequested, m_llmodel, &ChatLLM::modelChangeRequested, Qt::QueuedConnection);
     connect(this, &Chat::loadDefaultModelRequested, m_llmodel, &ChatLLM::loadDefaultModel, Qt::QueuedConnection);
     connect(this, &Chat::loadModelRequested, m_llmodel, &ChatLLM::loadModel, Qt::QueuedConnection);
     connect(this, &Chat::generateNameRequested, m_llmodel, &ChatLLM::generateName, Qt::QueuedConnection);
@@ -76,14 +68,15 @@ void Chat::connectLLM()
     connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::QueuedConnection);
     connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
 
-    emit defaultModelChanged(modelList().first());
+    connect(ModelList::globalInstance()->installedModels(), &InstalledModels::countChanged,
+        this, &Chat::handleModelInstalled, Qt::QueuedConnection);
 }
 
 void Chat::reset()
 {
     stopGenerating();
     // Erase our current on disk representation as we're completely resetting the chat along with id
-    LLM::globalInstance()->chatListModel()->removeChatFile(this);
+    ChatListModel::globalInstance()->removeChatFile(this);
     emit resetContextRequested();
     m_id = Network::globalInstance()->generateUniqueId();
     emit idChanged(m_id);
@@ -123,6 +116,10 @@ void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t
     int32_t repeat_penalty_tokens)
 {
     resetResponseState();
+    int threadCount = MySettings::globalInstance()->threadCount();
+    if (threadCount <= 0)
+      threadCount = std::min(4, (int32_t) std::thread::hardware_concurrency());
+
     emit promptRequested(
         m_collections,
         prompt,
@@ -134,7 +131,7 @@ void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t
         n_batch,
         repeat_penalty,
         repeat_penalty_tokens,
-        LLM::globalInstance()->threadCount());
+        threadCount);
 }
 
 void Chat::regenerateResponse()
@@ -251,21 +248,21 @@ void Chat::responseStopped()
         Network::globalInstance()->sendChatStarted();
 }
 
-QString Chat::modelName() const
+ModelInfo Chat::modelInfo() const
 {
-    return m_modelName;
+    return m_modelInfo;
 }
 
-void Chat::setModelName(const QString &modelName)
+void Chat::setModelInfo(const ModelInfo &modelInfo)
 {
-    if (m_modelName == modelName)
+    if (m_modelInfo == modelInfo)
         return;
 
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();
-    m_modelName = modelName;
-    emit modelNameChanged();
-    emit modelNameChangeRequested(modelName);
+    m_modelInfo = modelInfo;
+    emit modelInfoChanged();
+    emit modelChangeRequested(modelInfo);
 }
 
 void Chat::newPromptResponsePair(const QString &prompt)
@@ -292,17 +289,16 @@ bool Chat::isRecalc() const
 
 void Chat::loadDefaultModel()
 {
-    emit defaultModelChanged(modelList().first());
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();
     emit loadDefaultModelRequested();
 }
 
-void Chat::loadModel(const QString &modelName)
+void Chat::loadModel(const ModelInfo &modelInfo)
 {
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();
-    emit loadModelRequested(modelName);
+    emit loadModelRequested(modelInfo);
 }
 
 void Chat::unloadAndDeleteLater()
@@ -324,7 +320,21 @@ void Chat::unloadModel()
 
 void Chat::reloadModel()
 {
+    // If the installed model list is empty, then we mark a special flag and monitor for when a model
+    // is installed
+    if (!ModelList::globalInstance()->installedModels()->count()) {
+        m_shouldLoadModelWhenInstalled = true;
+        return;
+    }
     m_llmodel->setShouldBeLoaded(true);
+}
+
+void Chat::handleModelInstalled()
+{
+    if (!m_shouldLoadModelWhenInstalled)
+        return;
+    m_shouldLoadModelWhenInstalled = false;
+    reloadModel();
 }
 
 void Chat::generatedNameChanged(const QString &name)
@@ -361,13 +371,22 @@ void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
     m_databaseResults = results;
 }
 
+void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
+{
+    if (m_modelInfo == modelInfo)
+        return;
+
+    m_modelInfo = modelInfo;
+    emit modelInfoChanged();
+}
+
 bool Chat::serialize(QDataStream &stream, int version) const
 {
     stream << m_creationDate;
     stream << m_id;
     stream << m_name;
     stream << m_userName;
-    stream << m_modelName;
+    stream << m_modelInfo.filename;
     if (version > 2)
         stream << m_collections;
     if (!m_llmodel->serialize(stream, version))
@@ -385,120 +404,29 @@ bool Chat::deserialize(QDataStream &stream, int version)
     stream >> m_name;
     stream >> m_userName;
     emit nameChanged();
-    stream >> m_modelName;
-    emit modelNameChanged();
+
+    QString filename;
+    stream >> filename;
+    if (!ModelList::globalInstance()->contains(filename))
+        return false;
+    m_modelInfo = ModelList::globalInstance()->modelInfo(filename);
+    emit modelInfoChanged();
+
     // Prior to version 2 gptj models had a bug that fixed the kv_cache to F32 instead of F16 so
     // unfortunately, we cannot deserialize these
-    if (version < 2 && m_modelName.contains("gpt4all-j"))
+    if (version < 2 && m_modelInfo.filename.contains("gpt4all-j"))
         return false;
     if (version > 2) {
         stream >> m_collections;
         emit collectionListChanged(m_collections);
     }
-    m_llmodel->setModelName(m_modelName);
+    m_llmodel->setModelInfo(m_modelInfo);
     if (!m_llmodel->deserialize(stream, version))
         return false;
     if (!m_chatModel->deserialize(stream, version))
         return false;
     emit chatModelChanged();
     return stream.status() == QDataStream::Ok;
-}
-
-QList<QString> Chat::modelList() const
-{
-    // Build a model list from exepath and from the localpath
-    QList<QString> list;
-
-    QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
-    QString localPath = Download::globalInstance()->downloadLocalModelsPath();
-
-    QSettings settings;
-    settings.sync();
-    // The user default model can be set by the user in the settings dialog. The "default" user
-    // default model is "Application default" which signals we should use the default model that was
-    // specified by the models.json file.
-    QString defaultModel = settings.value("userDefaultModel").toString();
-    if (defaultModel.isEmpty() || defaultModel == "Application default")
-        defaultModel = settings.value("defaultModel").toString();
-
-    QString currentModelName = modelName().isEmpty() ? defaultModel : modelName();
-
-    {
-        QDir dir(exePath);
-        QStringList allFiles = dir.entryList(QDir::Files);
-
-        // All files that end with .bin and have 'ggml' somewhere in the name
-        QStringList fileNames;
-        for(const QString& filename : allFiles) {
-            if (filename.endsWith(".bin") && filename.contains("ggml")) {
-                fileNames.append(filename);
-            }
-        }
-
-        for (const QString& f : fileNames) {
-            QString filePath = exePath + f;
-            QFileInfo info(filePath);
-            QString basename = info.completeBaseName();
-            QString name = basename.startsWith("ggml-") ? basename.remove(0, 5) : basename;
-            if (info.exists()) {
-                if (name == currentModelName)
-                    list.prepend(name);
-                else
-                    list.append(name);
-            }
-        }
-    }
-
-    if (localPath != exePath) {
-        QDir dir(localPath);
-        QStringList allFiles = dir.entryList(QDir::Files);
-        QStringList fileNames;
-        for(const QString& filename : allFiles) {
-            if ((filename.endsWith(".bin") && filename.contains("ggml"))
-                || (filename.endsWith(".txt") && filename.startsWith("chatgpt-"))) {
-                fileNames.append(filename);
-            }
-        }
-
-        for (const QString &f : fileNames) {
-            QString filePath = localPath + f;
-            QFileInfo info(filePath);
-            QString basename = info.completeBaseName();
-            QString name = basename.startsWith("ggml-") ? basename.remove(0, 5) : basename;
-            if (info.exists() && !list.contains(name)) { // don't allow duplicates
-                if (name == currentModelName)
-                    list.prepend(name);
-                else
-                    list.append(name);
-            }
-        }
-    }
-
-    if (list.isEmpty()) {
-        if (exePath != localPath) {
-            qWarning() << "ERROR: Could not find any applicable models in"
-                       << exePath << "nor" << localPath;
-        } else {
-            qWarning() << "ERROR: Could not find any applicable models in"
-                       << exePath;
-        }
-        return QList<QString>();
-    }
-
-    return list;
-}
-
-void Chat::handleModelListChanged()
-{
-    emit modelListChanged();
-    emit defaultModelChanged(modelList().first());
-}
-
-void Chat::handleDownloadLocalModelsPathChanged()
-{
-    emit modelListChanged();
-    emit defaultModelChanged(modelList().first());
-    m_watcher->addPath(Download::globalInstance()->downloadLocalModelsPath());
 }
 
 QList<QString> Chat::collectionList() const

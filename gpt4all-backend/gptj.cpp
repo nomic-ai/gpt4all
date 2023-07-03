@@ -2,8 +2,10 @@
 #include "gptj_impl.h"
 
 #include "utils.h"
+#include "llmodel_shared.h"
 
 #include <cassert>
+#include <cinttypes>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -63,39 +65,6 @@ struct gptj_layer {
     struct ggml_tensor * c_mlp_proj_b;
 };
 
-struct gptj_buffer {
-    uint8_t * addr = NULL;
-    size_t size = 0;
-
-    void resize(size_t size) {
-        delete[] addr;
-        addr = new uint8_t[size];
-        this->size = size;
-    }
-
-    ~gptj_buffer() {
-        fflush(stdout);
-        delete[] addr;
-    }
-};
-
-struct gptj_kv_cache {
-    struct ggml_tensor * k;
-    struct ggml_tensor * v;
-
-    struct ggml_context * ctx = NULL;
-
-    gptj_buffer buf;
-
-    int n; // number of tokens currently in the cache
-
-    ~gptj_kv_cache() {
-        if (ctx) {
-            ggml_free(ctx);
-        }
-    }
-};
-
 struct gptj_model {
     gptj_hparams hparams;
 
@@ -111,13 +80,15 @@ struct gptj_model {
     std::vector<gptj_layer> layers;
 
     // key + value memory
-    struct gptj_kv_cache kv_self;
+    struct llm_kv_cache kv_self;
 
     //
     struct ggml_context * ctx;
     std::map<std::string, struct ggml_tensor *> tensors;
 
-    gptj_buffer buf;
+    llm_buffer eval_buf;
+    llm_buffer scr0_buf;
+    llm_buffer scr1_buf;
 
     ~gptj_model() {
         if (ctx) {
@@ -128,7 +99,7 @@ struct gptj_model {
 
 static bool kv_cache_init(
         const struct gptj_hparams & hparams,
-             struct gptj_kv_cache & cache,
+              struct llm_kv_cache & cache,
                          ggml_type   wtype,
                                int   n_ctx) {
     const int n_embd  = hparams.n_embd;
@@ -158,8 +129,11 @@ static bool kv_cache_init(
 }
 
 // load the model's weights from a stream
-bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & model, gpt_vocab & vocab) {
+bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & model, gpt_vocab & vocab, size_t * mem_req = nullptr) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
+    if(mem_req != nullptr) {
+        *mem_req = 0;
+    }
 
     // verify magic
     {
@@ -275,6 +249,19 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
 
         printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size/(1024.0*1024.0));
     }
+
+    if (mem_req != nullptr) {
+        *mem_req += ctx_size;
+        const int n_embd  = model.hparams.n_embd;
+        const int n_layer = model.hparams.n_layer;
+
+        const int64_t n_mem      = (int64_t)n_layer*model.hparams.n_ctx;
+        const int64_t n_elements = n_embd*n_mem;
+
+        *mem_req += (2u*n_elements*ggml_type_size(wtype) + 2_MiB);
+        return false;
+    }
+
 
     // create the ggml context
     {
@@ -409,7 +396,7 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
             }
 
             if (tensor->ne[0] != ne[0] || tensor->ne[1] != ne[1]) {
-                fprintf(stderr, "%s: tensor '%s' has wrong shape in model file: got [%lu, %lu], expected [%d, %d]\n",
+                fprintf(stderr, "%s: tensor '%s' has wrong shape in model file: got [%" PRId64 ", %" PRId64 "], expected [%d, %d]\n",
                         __func__, name.data(), tensor->ne[0], tensor->ne[1], ne[0], ne[1]);
                 return false;
             }
@@ -453,6 +440,9 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
 
         printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size/1024.0/1024.0, n_tensors);
     }
+
+    model.scr0_buf.resize(256u * 1024 * 1024);
+    model.scr1_buf.resize(256u * 1024 * 1024);
 
     return true;
 }
@@ -500,24 +490,24 @@ bool gptj_eval(
     const int n_rot   = hparams.n_rot;
 
     const size_t init_buf_size = 1024_MiB;
-    if (!model.buf.addr || model.buf.size < init_buf_size)
-        model.buf.resize(init_buf_size);
+    if (!model.eval_buf.addr || model.eval_buf.size < init_buf_size)
+        model.eval_buf.resize(init_buf_size);
 
-    if (mem_per_token > 0 && mem_per_token*N > model.buf.size) {
+    if (mem_per_token > 0 && mem_per_token*N > model.eval_buf.size) {
         const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
-        printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, model.buf.size, buf_size_new);
+        printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, model.eval_buf.size, buf_size_new);
 
         // reallocate
-        model.buf.resize(buf_size_new);
-        if (model.buf.addr == nullptr) {
-            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, model.buf.size);
+        model.eval_buf.resize(buf_size_new);
+        if (model.eval_buf.addr == nullptr) {
+            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, model.eval_buf.size);
             return false;
         }
     }
 
     struct ggml_init_params params = {
-        .mem_size   = model.buf.size,
-        .mem_buffer = model.buf.addr,
+        .mem_size   = model.eval_buf.size,
+        .mem_buffer = model.eval_buf.addr,
         .no_alloc = false
     };
 
@@ -533,7 +523,7 @@ bool gptj_eval(
 
     for (int il = 0; il < n_layer; ++il) {
         struct ggml_tensor * cur;
-
+        ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
         // norm
         {
             cur = ggml_norm(ctx0, inpL);
@@ -628,6 +618,7 @@ bool gptj_eval(
 
         struct ggml_tensor * inpFF = cur;
 
+        ggml_set_scratch(ctx0, {0, model.scr1_buf.size, model.scr1_buf.addr, });
         // feed-forward network
         // this is independent of the self-attention result, so it could be done in parallel to the self-attention
         {
@@ -661,6 +652,8 @@ bool gptj_eval(
         inpL = ggml_add(ctx0, cur, inpL);
     }
 
+    ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
+
     // norm
     {
         inpL = ggml_norm(ctx0, inpL);
@@ -672,6 +665,8 @@ bool gptj_eval(
                     inpL),
                 ggml_repeat(ctx0, model.ln_f_b, inpL));
     }
+
+    ggml_set_scratch(ctx0, { 0, 0, nullptr, });
 
     // lm_head
     {
@@ -835,6 +830,15 @@ GPTJ::GPTJ()
     d_ptr->model = new gptj_model;
     d_ptr->model->ctx = nullptr;
     d_ptr->modelLoaded = false;
+}
+
+size_t GPTJ::requiredMem(const std::string &modelPath) {
+    gptj_model dummy_model;
+    gpt_vocab dummy_vocab;
+    size_t mem_req;
+    auto fin = std::ifstream(modelPath, std::ios::binary);
+    gptj_model_load(modelPath, fin, dummy_model, dummy_vocab, &mem_req);
+    return mem_req;
 }
 
 bool GPTJ::loadModel(const std::string &modelPath) {

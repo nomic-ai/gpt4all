@@ -2,8 +2,10 @@
 #include "replit_impl.h"
 
 #include "utils.h"
+#include "llmodel_shared.h"
 
 #include <cassert>
+#include <cinttypes>
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
@@ -151,8 +153,7 @@ std::string replit_tokenizer_detokenize(replit_tokenizer & tokenizer, const std:
     for (auto token : tokens) {
         text += tokenizer.raw_vocab.id_to_token[token];
     }
-    auto denormalized_text = replace_all(text, ws_symbol, " ");
-    return denormalized_text;
+    return replace_all(text, ws_symbol, " ");
 }
 
 // no defaults for now
@@ -182,40 +183,6 @@ struct replit_layer {
 
     struct ggml_tensor * c_mlp_mlp_down_weight;
 };
-
-struct replit_buffer {
-    uint8_t * addr = NULL;
-    size_t size = 0;
-
-    void resize(size_t size) {
-        delete[] addr;
-        addr = new uint8_t[size];
-        this->size = size;
-    }
-
-    ~replit_buffer() {
-        fflush(stdout);
-        delete[] addr;
-    }
-};
-
-struct replit_kv_cache {
-    struct ggml_tensor * k;
-    struct ggml_tensor * v;
-
-    struct ggml_context * ctx = NULL;
-
-    replit_buffer buf;
-
-    int n; // number of tokens currently in the cache
-
-    ~replit_kv_cache() {
-        if (ctx) {
-            ggml_free(ctx);
-        }
-    }
-};
-
 struct replit_model {
     mpt_hparams hparams;
 
@@ -225,15 +192,12 @@ struct replit_model {
     std::vector<replit_layer> layers;
 
     // key + value memory
-    struct replit_kv_cache kv_self;
+    struct llm_kv_cache kv_self;
 
     struct ggml_context * ctx;
-    void * eval_buf;
-    size_t eval_buf_size;
-    void * scr0_buf;
-    size_t scr0_buf_size;
-    void * scr1_buf;
-    size_t scr1_buf_size;
+    llm_buffer eval_buf;
+    llm_buffer scr0_buf;
+    llm_buffer scr1_buf;
     #ifdef GGML_USE_METAL
     struct ggml_metal_context * ctx_metal;
     #endif
@@ -242,7 +206,7 @@ struct replit_model {
 
 static bool kv_cache_init(
         const struct mpt_hparams & hparams,
-             struct replit_kv_cache & cache,
+             struct llm_kv_cache & cache,
                          ggml_type   wtype,
                                int   n_ctx) {
     const int n_embd  = hparams.n_embd;
@@ -268,8 +232,11 @@ static bool kv_cache_init(
 }
 
 // load the model's weights from a stream
-bool replit_model_load(const std::string & fname, std::istream &fin, replit_model & model, replit_tokenizer & vocab) {
+bool replit_model_load(const std::string & fname, std::istream &fin, replit_model & model, replit_tokenizer & vocab, size_t *mem_req) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
+    if (mem_req != nullptr) {
+        *mem_req = 0;
+    }
 
     // verify magic
     {
@@ -353,6 +320,18 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size / (1024.0 * 1024.0));
     }
 
+    if (mem_req != nullptr) {
+        *mem_req += ctx_size;
+        const int n_embd  = model.hparams.n_embd;
+        const int n_layer = model.hparams.n_layer;
+
+        const int64_t n_mem      = (int64_t)n_layer*model.hparams.n_ctx;
+        const int64_t n_elements = n_embd*n_mem;
+
+        *mem_req += (2u*n_elements*ggml_type_size(wtype) + 2_MiB);
+        return false;
+    }
+
     // create the ggml context
     {
         struct ggml_init_params params = {
@@ -424,7 +403,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
 
         const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
 
-        printf("%s: memory_size = %8.2f MB, n_mem = %lld\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
+        printf("%s: memory_size = %8.2f MB, n_mem = %" PRId64 "\n", __func__, memory_size / 1024.0 / 1024.0, n_mem);
     }
 
     // load weights
@@ -506,17 +485,15 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size / 1024.0 / 1024.0, n_tensors);
     }
 
-   model.eval_buf_size = 256u * 1024 * 1024;
-   model.eval_buf = malloc(model.eval_buf_size);
-   model.scr0_buf_size = 256u * 1024 * 1024;
-   model.scr0_buf = malloc(model.scr0_buf_size);
-   model.scr1_buf_size = 256u * 1024 * 1024;
-   model.scr1_buf = malloc(model.scr1_buf_size);
+   model.eval_buf.resize(512u * 1024 * 1024);
+   model.scr0_buf.resize(256u * 1024 * 1024);
+   model.scr1_buf.resize(256u * 1024 * 1024);
 
 #ifdef GGML_USE_METAL
     model.ctx_metal = ggml_metal_init();
     void* data_ptr = ggml_get_mem_buffer(model.ctx);
     size_t data_size = ggml_get_mem_size(model.ctx);
+    const size_t max_size = ggml_get_max_tensor_size(model.ctx);
 
     #define GGML_CHECK_BUF(result) if (!(result)) {                     \
         std::cerr << __func__ << ": failed to add buffer" << std::endl; \
@@ -524,12 +501,12 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         return false;                                                   \
     }
 
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "data", data_ptr, data_size));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "data", data_ptr, data_size, max_size));
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "kv", ggml_get_mem_buffer(model.kv_self.ctx), 
-                                                                ggml_get_mem_size(model.kv_self.ctx)));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "eval", model.eval_buf, model.eval_buf_size));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr0", model.scr0_buf, model.scr0_buf_size));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr1", model.scr1_buf, model.scr1_buf_size));
+                                                                ggml_get_mem_size(model.kv_self.ctx), 0));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "eval", model.eval_buf.addr, model.eval_buf.size, 0));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr0", model.scr0_buf.addr, model.scr0_buf.size, 0));
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr1", model.scr1_buf.addr, model.scr1_buf.size, 0));
 #endif
 
     return true;
@@ -544,7 +521,7 @@ bool replit_model_load(const std::string & fname, replit_model & model, replit_t
         return false;
     }
 
-    bool loaded = replit_model_load(fname, fin, model, vocab);
+    bool loaded = replit_model_load(fname, fin, model, vocab, nullptr);
     fin.close();
     return loaded;
 }
@@ -570,8 +547,8 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
     const int n_vocab = hparams.n_vocab;
 
    struct ggml_init_params eval_ctx_params = {
-        .mem_size = model.eval_buf_size,
-        .mem_buffer = model.eval_buf,
+        .mem_size = model.eval_buf.size,
+        .mem_buffer = model.eval_buf.addr,
         .no_alloc = false,
     };
     struct ggml_context * ctx0 = ggml_init(eval_ctx_params);
@@ -583,7 +560,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
     struct ggml_tensor * inpL = ggml_get_rows(ctx0, model.wte_weight, embd);
 
     for (int il = 0; il < n_layer; ++il) {
-        ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
+        ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
         struct ggml_tensor * cur;
 
         // a = self.ln_1(x)
@@ -674,7 +651,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
             // projection
             { cur = ggml_mul_mat(ctx0, model.layers[il].c_attn_out_proj_weight, cur); }
         }
-        ggml_set_scratch(ctx0, {0, model.scr1_buf_size, model.scr1_buf, });
+        ggml_set_scratch(ctx0, {0, model.scr1_buf.size, model.scr1_buf.addr, });
 
         inpL = ggml_add(ctx0, inpL, cur);
 
@@ -701,7 +678,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
         // x = x + n
         inpL = ggml_add(ctx0, inpL, cur);
     }
-    ggml_set_scratch(ctx0, {0, model.scr0_buf_size, model.scr0_buf, });
+    ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
     // norm
     {
         inpL = ggml_norm(ctx0, inpL);
@@ -813,7 +790,7 @@ size_t replit_copy_state_data(const replit_model &model, const std::mt19937 &rng
     }
 
     const size_t written  = out - dest;
-    const size_t expected = replit_get_state_size(model);
+    const size_t expected [[maybe_unused]] = replit_get_state_size(model);
     assert(written == expected);
     fflush(stdout);
     return written;
@@ -863,7 +840,7 @@ size_t replit_set_state_data(replit_model *model, std::mt19937 *rng, const uint8
     }
 
     const size_t nread    = in - src;
-    const size_t expected = replit_get_state_size(*model);
+    const size_t expected [[maybe_unused]] = replit_get_state_size(*model);
     assert(nread == expected);
     fflush(stdout);
     return nread;
@@ -888,6 +865,15 @@ Replit::Replit()
     d_ptr->modelLoaded = false;
 }
 
+size_t Replit::requiredMem(const std::string &modelPath) {
+    replit_model dummy_model;
+    replit_tokenizer dummy_vocab;
+    size_t mem_req;
+    auto fin = std::ifstream(modelPath, std::ios::binary);
+    replit_model_load(modelPath, fin, dummy_model, dummy_vocab, &mem_req);
+    return mem_req;
+}
+
 bool Replit::loadModel(const std::string &modelPath) {
     std::mt19937 rng(time(NULL));
     d_ptr->rng = rng;
@@ -895,7 +881,7 @@ bool Replit::loadModel(const std::string &modelPath) {
     auto fin = std::ifstream(modelPath, std::ios::binary);
 
     // load the model
-    if (!replit_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab)) {
+    if (!replit_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab, nullptr)) {
         std::cerr << "Replit ERROR: failed to load model from " <<  modelPath;
         return false;
     }
@@ -918,18 +904,14 @@ int32_t Replit::threadCount() const
 
 Replit::~Replit()
 {
+    #ifdef GGML_USE_METAL
+    if (d_ptr->model->ctx_metal) {
+        ggml_metal_free(d_ptr->model->ctx_metal);
+    }
+    #endif
     if(d_ptr->model->ctx) {
         ggml_free(d_ptr->model->ctx);
         d_ptr->model->ctx = nullptr;
-    }
-    if(d_ptr->model->eval_buf) {
-        free(d_ptr->model->eval_buf);
-    }
-    if(d_ptr->model->scr0_buf) {
-        free(d_ptr->model->scr0_buf);
-    }
-    if(d_ptr->model->scr1_buf) {
-        free(d_ptr->model->scr1_buf);
     }
     delete d_ptr->model;
 }

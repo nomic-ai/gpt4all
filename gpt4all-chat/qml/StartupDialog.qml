@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import download
 import network
 import llm
+import mysettings
 
 Dialog {
     id: startupDialog
@@ -135,7 +136,7 @@ model release that uses your data!")
             ButtonGroup {
                 buttons: optInStatisticsRadio.children
                 onClicked: {
-                    Network.usageStatsActive = optInStatisticsRadio.checked
+                    MySettings.networkUsageStatsActive = optInStatisticsRadio.checked
                     if (optInNetworkRadio.choiceMade && optInStatisticsRadio.choiceMade)
                         startupDialog.close();
                 }
@@ -146,13 +147,12 @@ model release that uses your data!")
                 Layout.alignment: Qt.AlignVCenter
                 Layout.row: 0
                 Layout.column: 1
-                property bool defaultChecked: Network.usageStatsActive
                 property alias checked: optInStatisticsRadioYes.checked
                 property bool choiceMade: optInStatisticsRadioYes.checked || optInStatisticsRadioNo.checked
 
                 RadioButton {
                     id: optInStatisticsRadioYes
-                    checked: optInStatisticsRadio.defaultChecked
+                    checked: false
                     text: qsTr("Yes")
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-in for anonymous usage statistics")
@@ -247,7 +247,7 @@ model release that uses your data!")
             ButtonGroup {
                 buttons: optInNetworkRadio.children
                 onClicked: {
-                    Network.isActive = optInNetworkRadio.checked
+                    MySettings.networkIsActive = optInNetworkRadio.checked
                     if (optInNetworkRadio.choiceMade && optInStatisticsRadio.choiceMade)
                         startupDialog.close();
                 }
@@ -258,13 +258,12 @@ model release that uses your data!")
                 Layout.alignment: Qt.AlignVCenter
                 Layout.row: 1
                 Layout.column: 1
-                property bool defaultChecked: Network.isActive
                 property alias checked: optInNetworkRadioYes.checked
                 property bool choiceMade: optInNetworkRadioYes.checked || optInNetworkRadioNo.checked
 
                 RadioButton {
                     id: optInNetworkRadioYes
-                    checked: optInNetworkRadio.defaultChecked
+                    checked: false
                     text: qsTr("Yes")
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-in for network")
