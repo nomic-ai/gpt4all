@@ -262,8 +262,8 @@ class LLModel:
         Model response str
         """
 
-        prompt = prompt.encode('utf-8')
-        prompt = ctypes.c_char_p(prompt)
+        prompt_bytes = prompt.encode('utf-8')
+        prompt_ptr = ctypes.c_char_p(prompt_bytes)
 
         old_stdout = sys.stdout
 
@@ -288,7 +288,7 @@ class LLModel:
 
         llmodel.llmodel_prompt(
             self.model,
-            prompt,
+            prompt_ptr,
             PromptCallback(self._prompt_callback),
             ResponseCallback(self._response_callback),
             RecalculateCallback(self._recalculate_callback),
@@ -318,8 +318,8 @@ class LLModel:
 
         output_queue = queue.Queue()
 
-        prompt = prompt.encode('utf-8')
-        prompt = ctypes.c_char_p(prompt)
+        prompt_bytes = prompt.encode('utf-8')
+        prompt_ptr = ctypes.c_char_p(prompt_bytes)
 
         self._set_context(
             n_predict=n_predict,
@@ -348,7 +348,7 @@ class LLModel:
             target=run_llmodel_prompt,
             args=(
                 self.model,
-                prompt,
+                prompt_ptr,
                 PromptCallback(self._prompt_callback),
                 ResponseCallback(_generator_response_callback),
                 RecalculateCallback(self._recalculate_callback),
