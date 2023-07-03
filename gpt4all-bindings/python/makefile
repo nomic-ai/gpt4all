@@ -25,4 +25,7 @@ isort:
 	source env/bin/activate; isort  --ignore-whitespace --atomic -w 120 gpt4all
 
 test:
+	source env/bin/activate;  pytest -s gpt4all/tests -k "not test_inference_long"
+
+test_all:
 	source env/bin/activate;  pytest -s gpt4all/tests
