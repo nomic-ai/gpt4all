@@ -25,11 +25,13 @@ def test_inference():
     assert len(tokens) > 0
 
     with model.chat_session():
-        try:
-            response = model.generate(prompt='hello', top_k=1, streaming=True)
-            assert False
-        except NotImplementedError:
-            assert True
+        tokens = list(model.generate(prompt='hello', top_k=1, streaming=True))
+        model.current_chat_session.append({'role': 'assistant', 'content': ''.join(tokens)})
+
+        tokens = list(model.generate(prompt='write me a poem about dogs', top_k=1, streaming=True))
+        model.current_chat_session.append({'role': 'assistant', 'content': ''.join(tokens)})
+
+        print(model.current_chat_session)
 
 
 def do_long_input(model):

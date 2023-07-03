@@ -64,7 +64,6 @@ Use the GPT4All `chat_session` context manager to hold chat conversations with t
        }
     ]
     ```
-
 When using GPT4All models in the chat_session context:
 
 - The model is given a prompt template which makes it chatty.
@@ -79,7 +78,7 @@ When using GPT4All models in the chat_session context:
 ### Streaming Generations
 To interact with GPT4All responses as the model generates, use the `streaming = True` flag during generation.
 
-=== "GPT4All Example"
+=== "GPT4All Streaming Example"
     ``` py
     from gpt4all import GPT4All
     model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin")
@@ -92,5 +91,23 @@ To interact with GPT4All responses as the model generates, use the `streaming = 
     ```
     [' Paris', ' is', ' a', ' city', ' that', ' has', ' been', ' a', ' major', ' cultural', ' and', ' economic', ' center', ' for', ' over', ' ', '2', ',', '0', '0']
     ```
+
+#### Streaming and Chat Sessions
+When streaming tokens in a chat session, you must manually handle collection and updating of the chat history.
+
+```python
+from gpt4all import GPT4All
+model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin")
+
+with model.chat_session():
+    tokens = list(model.generate(prompt='hello', top_k=1, streaming=True))
+    model.current_chat_session.append({'role': 'assistant', 'content': ''.join(tokens)})
+
+    tokens = list(model.generate(prompt='write me a poem about dogs', top_k=1, streaming=True))
+    model.current_chat_session.append({'role': 'assistant', 'content': ''.join(tokens)})
+
+    print(model.current_chat_session)
+```
+
 
 ::: gpt4all.gpt4all.GPT4All

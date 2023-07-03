@@ -210,9 +210,6 @@ class GPT4All:
         if n_predict is not None:
             generate_kwargs['n_predict'] = n_predict
 
-        if streaming and self._is_chat_session_activated:
-            raise NotImplementedError("Streaming tokens in a chat session is not currently supported.")
-
         if self._is_chat_session_activated:
             self.current_chat_session.append({"role": "user", "content": prompt})
             generate_kwargs['prompt'] = self._format_chat_prompt_template(messages=self.current_chat_session)
