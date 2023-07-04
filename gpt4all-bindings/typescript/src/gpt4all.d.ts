@@ -306,7 +306,7 @@ interface PromptMessage {
 /**
  * Initiates the download of a model file of a specific model type.
  * By default this downloads without waiting. use the controller returned to alter this behavior.
- * @param {ModelFile} model - The model file to be downloaded.
+ * @param {ModelFile} modelName - The model file to be downloaded.
  * @param {DownloadOptions} options - to pass into the downloader. Default is { location: (cwd), debug: false }.
  * @returns {DownloadController} object that allows controlling the download process.
  *
