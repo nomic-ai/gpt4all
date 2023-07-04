@@ -112,11 +112,9 @@ class ModelList : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
-    Q_PROPERTY(QString localModelsPath READ localModelsPath WRITE setLocalModelsPath NOTIFY localModelsPathChanged)
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
-    Q_PROPERTY(bool modelHasNames READ modelHasNames NOTIFY modelHasNamesChanged)
 
 public:
     static ModelList *globalInstance();
@@ -195,10 +193,6 @@ public:
 
     void addModel(const QString &filename);
 
-    Q_INVOKABLE QString defaultLocalModelsPath() const;
-    Q_INVOKABLE QString localModelsPath() const;
-    Q_INVOKABLE void setLocalModelsPath(const QString &modelPath);
-
     const QList<ModelInfo> exportModelList() const;
     const QList<QString> userDefaultModelList() const;
 
@@ -219,35 +213,31 @@ public:
 
     QString incompleteDownloadPath(const QString &modelFile);
 
-    bool modelHasNames() const { return m_modelHasNames; }
-    void updateModelHasNames() { m_modelHasNames = true; emit modelHasNamesChanged(); }
-
 Q_SIGNALS:
     void countChanged();
-    void localModelsPathChanged();
     void installedModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
-    void modelHasNamesChanged();
 
 private Q_SLOTS:
     void updateModelsFromDirectory();
+    void updateModelList();
 
 private:
     QString modelDirPath(const QString &modelName, bool isChatGPT);
     int indexForModel(ModelInfo *model);
     QVariant dataInternal(const ModelInfo *info, int role) const;
     static bool lessThan(const ModelInfo* a, const ModelInfo* b);
+    void parseModelsJsonFile(const QByteArray &jsonData);
 
 private:
     mutable QMutex m_mutex;
+    QNetworkAccessManager m_networkManager;
     InstalledModels *m_installedModels;
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;
     QHash<QString, ModelInfo*> m_modelMap;
-    QString m_localModelsPath;
     QFileSystemWatcher *m_watcher;
-    bool m_modelHasNames;
 
 private:
     explicit ModelList();

@@ -98,7 +98,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     prepare_target(llamamodel-mainline llama-mainline)
 
     add_library(replit-mainline-${BUILD_VARIANT} SHARED
-    replit.cpp utils.h utils.cpp llmodel_shared.cpp)
+    replit.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
     prepare_target(replit-mainline llama-mainline)
 
     if (NOT LLAMA_METAL)
@@ -114,11 +114,15 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         prepare_target(llamamodel-230511 llama-230511)
 
         add_library(gptj-${BUILD_VARIANT} SHARED
-            gptj.cpp utils.h utils.cpp llmodel_shared.cpp)
+            gptj.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
         prepare_target(gptj ggml-230511)
 
+        add_library(falcon-${BUILD_VARIANT} SHARED
+            falcon.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
+        prepare_target(falcon llama-mainline)
+
         add_library(mpt-${BUILD_VARIANT} SHARED
-            mpt.cpp utils.h utils.cpp llmodel_shared.cpp)
+            mpt.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
         prepare_target(mpt ggml-230511)
     endif()
 endforeach()

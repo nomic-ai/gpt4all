@@ -1,6 +1,6 @@
 #include "chat.h"
 #include "chatlistmodel.h"
-#include "llm.h"
+#include "mysettings.h"
 #include "modellist.h"
 #include "network.h"
 #include "server.h"
@@ -116,6 +116,10 @@ void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t
     int32_t repeat_penalty_tokens)
 {
     resetResponseState();
+    int threadCount = MySettings::globalInstance()->threadCount();
+    if (threadCount <= 0)
+      threadCount = std::min(4, (int32_t) std::thread::hardware_concurrency());
+
     emit promptRequested(
         m_collections,
         prompt,
@@ -127,7 +131,7 @@ void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t
         n_batch,
         repeat_penalty,
         repeat_penalty_tokens,
-        LLM::globalInstance()->threadCount());
+        threadCount);
 }
 
 void Chat::regenerateResponse()

@@ -3,14 +3,8 @@
 #include "chatgpt.h"
 #include "modellist.h"
 #include "network.h"
+#include "mysettings.h"
 #include "../gpt4all-backend/llmodel.h"
-
-#include <QCoreApplication>
-#include <QDir>
-#include <QFile>
-#include <QProcess>
-#include <QResource>
-#include <QSettings>
 
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
@@ -19,6 +13,7 @@
 #define GPTJ_INTERNAL_STATE_VERSION 0
 #define REPLIT_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
+#define FALCON_INTERNAL_STATE_VERSION 0
 
 class LLModelStore {
 public:
@@ -72,6 +67,8 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_stopGenerating(false)
     , m_timer(nullptr)
     , m_isServer(isServer)
+    , m_forceMetal(MySettings::globalInstance()->forceMetal())
+    , m_reloadingToChangeVariant(false)
 {
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
@@ -80,6 +77,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
         Qt::QueuedConnection); // explicitly queued
     connect(parent, &Chat::idChanged, this, &ChatLLM::handleChatIdChanged);
     connect(&m_llmThread, &QThread::started, this, &ChatLLM::handleThreadStarted);
+    connect(MySettings::globalInstance(), &MySettings::forceMetalChanged, this, &ChatLLM::handleForceMetalChanged);
 
     // The following are blocking operations and will block the llm thread
     connect(this, &ChatLLM::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
@@ -107,6 +105,19 @@ void ChatLLM::handleThreadStarted()
     m_timer = new TokenTimer(this);
     connect(m_timer, &TokenTimer::report, this, &ChatLLM::reportSpeed);
     emit threadStarted();
+}
+
+void ChatLLM::handleForceMetalChanged(bool forceMetal)
+{
+#if defined(Q_OS_MAC) && defined(__arm__)
+    m_forceMetal = forceMetal;
+    if (isModelLoaded() && m_shouldBeLoaded) {
+        m_reloadingToChangeVariant = true;
+        unloadModel();
+        reloadModel();
+        m_reloadingToChangeVariant = false;
+    }
+#endif
 }
 
 bool ChatLLM::loadDefaultModel()
@@ -153,7 +164,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         // returned to it, then the modelInfo.model pointer should be null which will happen on startup
         m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
 #if defined(DEBUG_MODEL_LOADING)
-        qDebug() << "acquired model from store" << m_llmThread.objectName() << m_llModelInfo3.model;
+        qDebug() << "acquired model from store" << m_llmThread.objectName() << m_llModelInfo.model;
 #endif
         // At this point it is possible that while we were blocked waiting to acquire the model from the
         // store, that our state was changed to not be loaded. If this is the case, release the model
@@ -169,7 +180,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         }
 
         // Check if the store just gave us exactly the model we were looking for
-        if (m_llModelInfo.model && m_llModelInfo.fileInfo == fileInfo) {
+        if (m_llModelInfo.model && m_llModelInfo.fileInfo == fileInfo && !m_reloadingToChangeVariant) {
 #if defined(DEBUG_MODEL_LOADING)
             qDebug() << "store had our model" << m_llmThread.objectName() << m_llModelInfo.model;
 #endif
@@ -209,7 +220,16 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             model->setAPIKey(apiKey);
             m_llModelInfo.model = model;
         } else {
-            m_llModelInfo.model = LLModel::construct(filePath.toStdString());
+
+#if defined(Q_OS_MAC) && defined(__arm__)
+            if (m_forceMetal)
+                m_llModelInfo.model = LLModel::construct(filePath.toStdString(), "metal");
+            else
+                m_llModelInfo.model = LLModel::construct(filePath.toStdString(), "auto");
+#else
+            m_llModelInfo.model = LLModel::construct(filePath.toStdString(), "auto");
+#endif
+
             if (m_llModelInfo.model) {
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString());
                 if (!success) {
@@ -224,6 +244,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;
                     case 'M': m_llModelType = LLModelType::MPT_; break;
                     case 'R': m_llModelType = LLModelType::REPLIT_; break;
+                    case 'F': m_llModelType = LLModelType::FALCON_; break;
                     default:
                         {
                             delete std::exchange(m_llModelInfo.model, nullptr);
@@ -399,7 +420,7 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
         return false;
 
     QList<ResultInfo> databaseResults;
-    const int retrievalSize = LocalDocs::globalInstance()->retrievalSize();
+    const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
     emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
     emit databaseResultsChanged(databaseResults);
 
@@ -569,6 +590,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
         case MPT_: stream << MPT_INTERNAL_STATE_VERSION; break;
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
+        case FALCON_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
         default: Q_UNREACHABLE();
         }
     }

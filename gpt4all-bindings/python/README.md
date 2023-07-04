@@ -20,7 +20,7 @@ pip install gpt4all
 1. Setup `llmodel`
 
 ```
-git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
+git clone --recurse-submodules git@github.com:nomic-ai/gpt4all.git
 cd gpt4all/gpt4all-backend/
 mkdir build
 cd build
@@ -41,13 +41,10 @@ pip3 install -e .
 Test it out! In a Python script or console:
 
 ```python
-
 from gpt4all import GPT4All
-
-gptj = GPT4All("ggml-gpt4all-j-v1.3-groovy")
-messages = [{"role": "user", "content": "Name 3 colors"}]
-gptj.chat_completion(messages)
-
+model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin")
+output = model.generate("The capital of France is ", max_tokens=3)
+print(output)
 ```
 
 ## Troubleshooting a Local Build

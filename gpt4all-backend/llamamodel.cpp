@@ -282,14 +282,15 @@ DLL_EXPORT bool magic_match(std::istream& f) {
     if (!(version LLAMA_VERSIONS)) {
         return false;
     }
+    llama_file_hparams hparams;
+    f.read(reinterpret_cast<char*>(&hparams), sizeof(hparams));
+    if (!(hparams.n_vocab >= 32000 && hparams.n_vocab <= 32100)) {
+        return false; // not a llama.
+    }
 #ifdef GGML_USE_METAL
     // Check quant supported on metal
     // skip fields
-    off_t offset = sizeof(uint32_t) * 6; // n_vocab, n_embd, n_mult, n_head, n_layer, n_rot
-    f.seekg(offset, std::ios_base::cur);
-    uint32_t ftype;
-    f.read(reinterpret_cast<char*>(&ftype), sizeof(ftype)); // ftype
-    switch((enum llama_ftype) ftype) {
+    switch(hparams.ftype) {
         // currently supported on Metal https://github.com/ggerganov/llama.cpp/blob/ae9663f1887513e152839e91f61c513075a19422/ggml-metal.m#L51-L55
         case LLAMA_FTYPE_MOSTLY_F16:
         case LLAMA_FTYPE_MOSTLY_Q2_K:
