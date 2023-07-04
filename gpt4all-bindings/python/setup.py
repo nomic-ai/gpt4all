@@ -61,7 +61,7 @@ copy_prebuilt_C_lib(SRC_CLIB_DIRECtORY,
 
 setup(
     name=package_name,
-    version="0.3.6",
+    version="1.0.1",
     description="Python bindings for GPT4All",
     author="Richard Guo",
     author_email="richard@nomic.ai",
@@ -83,7 +83,9 @@ setup(
             'mkdocs-material',
             'mkautodoc',
             'mkdocstrings[python]',
-            'mkdocs-jupyter'
+            'mkdocs-jupyter',
+            'black',
+            'isort'
         ]
     },
     package_data={'llmodel': [os.path.join(DEST_CLIB_DIRECTORY, "*")]},

@@ -128,6 +128,9 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     std::function<bool(bool)> recalc_func =
         std::bind(&recalculate_wrapper, std::placeholders::_1, reinterpret_cast<void*>(recalculate_callback));
 
+    if (size_t(ctx->n_past) < wrapper->promptContext.tokens.size())
+        wrapper->promptContext.tokens.resize(ctx->n_past);
+
     // Copy the C prompt context
     wrapper->promptContext.n_past = ctx->n_past;
     wrapper->promptContext.n_ctx = ctx->n_ctx;

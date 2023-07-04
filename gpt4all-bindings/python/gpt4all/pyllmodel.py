@@ -1,4 +1,3 @@
-import pkg_resources
 import ctypes
 import os
 import platform
@@ -7,6 +6,10 @@ import re
 import subprocess
 import sys
 import threading
+from typing import Iterable
+
+import pkg_resources
+
 
 class DualStreamProcessor:
     def __init__(self, stream=None):
@@ -19,9 +22,11 @@ class DualStreamProcessor:
             self.stream.flush()
         self.output += text
 
+
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
 MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
+
 
 def load_llmodel_library():
     system = platform.system()
@@ -40,34 +45,40 @@ def load_llmodel_library():
 
     llmodel_file = "libllmodel" + '.' + c_lib_ext
 
-    llmodel_dir = str(pkg_resources.resource_filename('gpt4all', \
-        os.path.join(LLMODEL_PATH, llmodel_file))).replace("\\", "\\\\")
+    llmodel_dir = str(pkg_resources.resource_filename('gpt4all', os.path.join(LLMODEL_PATH, llmodel_file))).replace(
+        "\\", "\\\\"
+    )
 
     llmodel_lib = ctypes.CDLL(llmodel_dir)
 
     return llmodel_lib
 
+
 llmodel = load_llmodel_library()
 
+
 class LLModelError(ctypes.Structure):
-    _fields_ = [("message", ctypes.c_char_p),
-                ("code", ctypes.c_int32)]
+    _fields_ = [("message", ctypes.c_char_p), ("code", ctypes.c_int32)]
+
 
 class LLModelPromptContext(ctypes.Structure):
-    _fields_ = [("logits", ctypes.POINTER(ctypes.c_float)),
-                ("logits_size", ctypes.c_size_t),
-                ("tokens", ctypes.POINTER(ctypes.c_int32)),
-                ("tokens_size", ctypes.c_size_t),
-                ("n_past", ctypes.c_int32),
-                ("n_ctx", ctypes.c_int32),
-                ("n_predict", ctypes.c_int32),
-                ("top_k", ctypes.c_int32),
-                ("top_p", ctypes.c_float),
-                ("temp", ctypes.c_float),
-                ("n_batch", ctypes.c_int32),
-                ("repeat_penalty", ctypes.c_float),
-                ("repeat_last_n", ctypes.c_int32),
-                ("context_erase", ctypes.c_float)]
+    _fields_ = [
+        ("logits", ctypes.POINTER(ctypes.c_float)),
+        ("logits_size", ctypes.c_size_t),
+        ("tokens", ctypes.POINTER(ctypes.c_int32)),
+        ("tokens_size", ctypes.c_size_t),
+        ("n_past", ctypes.c_int32),
+        ("n_ctx", ctypes.c_int32),
+        ("n_predict", ctypes.c_int32),
+        ("top_k", ctypes.c_int32),
+        ("top_p", ctypes.c_float),
+        ("temp", ctypes.c_float),
+        ("n_batch", ctypes.c_int32),
+        ("repeat_penalty", ctypes.c_float),
+        ("repeat_last_n", ctypes.c_int32),
+        ("context_erase", ctypes.c_float),
+    ]
+
 
 # Define C function signatures using ctypes
 llmodel.llmodel_model_create.argtypes = [ctypes.c_char_p]
@@ -90,12 +101,14 @@ PromptCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32)
 ResponseCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32, ctypes.c_char_p)
 RecalculateCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_bool)
 
-llmodel.llmodel_prompt.argtypes = [ctypes.c_void_p, 
-                                   ctypes.c_char_p, 
-                                   PromptCallback,
-                                   ResponseCallback, 
-                                   RecalculateCallback, 
-                                   ctypes.POINTER(LLModelPromptContext)]
+llmodel.llmodel_prompt.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_char_p,
+    PromptCallback,
+    ResponseCallback,
+    RecalculateCallback,
+    ctypes.POINTER(LLModelPromptContext),
+]
 
 llmodel.llmodel_prompt.restype = None
 
@@ -142,7 +155,6 @@ class LLModel:
         else:
             raise ValueError("Unable to instantiate model")
 
-
     def load_model(self, model_path: str) -> bool:
         """
         Load model from a file.
@@ -182,21 +194,59 @@ class LLModel:
             raise Exception("Model not loaded")
         return llmodel.llmodel_threadCount(self.model)
 
-    def prompt_model(self, 
-                     prompt: str,
-                     logits_size: int = 0, 
-                     tokens_size: int = 0, 
-                     n_past: int = 0, 
-                     n_ctx: int = 1024, 
-                     n_predict: int = 128, 
-                     top_k: int = 40, 
-                     top_p: float = .9, 
-                     temp: float = .1, 
-                     n_batch: int = 8, 
-                     repeat_penalty: float = 1.2, 
-                     repeat_last_n: int = 10, 
-                     context_erase: float = .5,
-                     streaming: bool = True) -> str:
+    def _set_context(
+        self,
+        n_predict: int = 4096,
+        top_k: int = 40,
+        top_p: float = 0.9,
+        temp: float = 0.1,
+        n_batch: int = 8,
+        repeat_penalty: float = 1.2,
+        repeat_last_n: int = 10,
+        context_erase: float = 0.75,
+        reset_context: bool = False,
+    ):
+        if self.context is None:
+            self.context = LLModelPromptContext(
+                logits_size=0,
+                tokens_size=0,
+                n_past=0,
+                n_ctx=0,
+                n_predict=n_predict,
+                top_k=top_k,
+                top_p=top_p,
+                temp=temp,
+                n_batch=n_batch,
+                repeat_penalty=repeat_penalty,
+                repeat_last_n=repeat_last_n,
+                context_erase=context_erase,
+            )
+        elif reset_context:
+            self.context.n_past = 0
+
+        self.context.n_predict = n_predict
+        self.context.top_k = top_k
+        self.context.top_p = top_p
+        self.context.temp = temp
+        self.context.n_batch = n_batch
+        self.context.repeat_penalty = repeat_penalty
+        self.context.repeat_last_n = repeat_last_n
+        self.context.context_erase = context_erase
+
+    def prompt_model(
+        self,
+        prompt: str,
+        n_predict: int = 4096,
+        top_k: int = 40,
+        top_p: float = 0.9,
+        temp: float = 0.1,
+        n_batch: int = 8,
+        repeat_penalty: float = 1.2,
+        repeat_last_n: int = 10,
+        context_erase: float = 0.75,
+        reset_context: bool = False,
+        streaming=False,
+    ) -> str:
         """
         Generate response from model from a prompt.
 
@@ -211,123 +261,106 @@ class LLModel:
         -------
         Model response str
         """
-        
-        prompt = prompt.encode('utf-8')
-        prompt = ctypes.c_char_p(prompt)
 
-        old_stdout = sys.stdout 
+        prompt_bytes = prompt.encode('utf-8')
+        prompt_ptr = ctypes.c_char_p(prompt_bytes)
+
+        old_stdout = sys.stdout
 
         stream_processor = DualStreamProcessor()
-    
+
         if streaming:
             stream_processor.stream = sys.stdout
-        
+
         sys.stdout = stream_processor
 
+        self._set_context(
+            n_predict=n_predict,
+            top_k=top_k,
+            top_p=top_p,
+            temp=temp,
+            n_batch=n_batch,
+            repeat_penalty=repeat_penalty,
+            repeat_last_n=repeat_last_n,
+            context_erase=context_erase,
+            reset_context=reset_context,
+        )
 
-        if self.context is None:
-            self.context = LLModelPromptContext(
-                logits_size=logits_size, 
-                tokens_size=tokens_size, 
-                n_past=n_past, 
-                n_ctx=n_ctx, 
-                n_predict=n_predict, 
-                top_k=top_k, 
-                top_p=top_p, 
-                temp=temp, 
-                n_batch=n_batch, 
-                repeat_penalty=repeat_penalty, 
-                repeat_last_n=repeat_last_n, 
-                context_erase=context_erase
-            )
-
-        llmodel.llmodel_prompt(self.model, 
-                               prompt, 
-                               PromptCallback(self._prompt_callback),
-                               ResponseCallback(self._response_callback), 
-                               RecalculateCallback(self._recalculate_callback), 
-                               self.context)
+        llmodel.llmodel_prompt(
+            self.model,
+            prompt_ptr,
+            PromptCallback(self._prompt_callback),
+            ResponseCallback(self._response_callback),
+            RecalculateCallback(self._recalculate_callback),
+            self.context,
+        )
 
         # Revert to old stdout
         sys.stdout = old_stdout
         # Force new line
-        print()
         return stream_processor.output
 
-    def generator(self, 
-                  prompt: str,
-                  logits_size: int = 0, 
-                  tokens_size: int = 0, 
-                  n_past: int = 0, 
-                  n_ctx: int = 1024, 
-                  n_predict: int = 128, 
-                  top_k: int = 40, 
-                  top_p: float = .9, 
-                  temp: float = .1, 
-                  n_batch: int = 8, 
-                  repeat_penalty: float = 1.2, 
-                  repeat_last_n: int = 10, 
-                  context_erase: float = .5) -> str:
-
+    def prompt_model_streaming(
+        self,
+        prompt: str,
+        n_predict: int = 4096,
+        top_k: int = 40,
+        top_p: float = 0.9,
+        temp: float = 0.1,
+        n_batch: int = 8,
+        repeat_penalty: float = 1.2,
+        repeat_last_n: int = 10,
+        context_erase: float = 0.75,
+        reset_context: bool = False,
+    ) -> Iterable:
         # Symbol to terminate from generator
-        TERMINATING_SYMBOL = "#TERMINATE#"
-        
+        TERMINATING_SYMBOL = object()
+
         output_queue = queue.Queue()
 
-        prompt = prompt.encode('utf-8')
-        prompt = ctypes.c_char_p(prompt)
+        prompt_bytes = prompt.encode('utf-8')
+        prompt_ptr = ctypes.c_char_p(prompt_bytes)
 
-        if self.context is None:
-            self.context = LLModelPromptContext(
-                logits_size=logits_size, 
-                tokens_size=tokens_size, 
-                n_past=n_past, 
-                n_ctx=n_ctx, 
-                n_predict=n_predict, 
-                top_k=top_k, 
-                top_p=top_p, 
-                temp=temp, 
-                n_batch=n_batch, 
-                repeat_penalty=repeat_penalty, 
-                repeat_last_n=repeat_last_n, 
-                context_erase=context_erase
-            )
+        self._set_context(
+            n_predict=n_predict,
+            top_k=top_k,
+            top_p=top_p,
+            temp=temp,
+            n_batch=n_batch,
+            repeat_penalty=repeat_penalty,
+            repeat_last_n=repeat_last_n,
+            context_erase=context_erase,
+            reset_context=reset_context,
+        )
 
         # Put response tokens into an output queue
         def _generator_response_callback(token_id, response):
             output_queue.put(response.decode('utf-8', 'replace'))
             return True
 
-        def run_llmodel_prompt(model, 
-                               prompt,
-                               prompt_callback,
-                               response_callback,
-                               recalculate_callback,
-                               context):
-            llmodel.llmodel_prompt(model, 
-                                   prompt, 
-                                   prompt_callback,
-                                   response_callback, 
-                                   recalculate_callback, 
-                                   context)
+        def run_llmodel_prompt(model, prompt, prompt_callback, response_callback, recalculate_callback, context):
+            llmodel.llmodel_prompt(model, prompt, prompt_callback, response_callback, recalculate_callback, context)
             output_queue.put(TERMINATING_SYMBOL)
-            
 
         # Kick off llmodel_prompt in separate thread so we can return generator
         # immediately
-        thread = threading.Thread(target=run_llmodel_prompt,
-                                  args=(self.model, 
-                                        prompt, 
-                                        PromptCallback(self._prompt_callback),
-                                        ResponseCallback(_generator_response_callback), 
-                                        RecalculateCallback(self._recalculate_callback), 
-                                        self.context))
+        thread = threading.Thread(
+            target=run_llmodel_prompt,
+            args=(
+                self.model,
+                prompt_ptr,
+                PromptCallback(self._prompt_callback),
+                ResponseCallback(_generator_response_callback),
+                RecalculateCallback(self._recalculate_callback),
+                self.context,
+            ),
+        )
         thread.start()
 
         # Generator
         while True:
             response = output_queue.get()
-            if response == TERMINATING_SYMBOL:
+            if response is TERMINATING_SYMBOL:
                 break
             yield response
 
