@@ -1,3 +1,3 @@
 [codespell]
-ignore-words-list = blong, belong, afterall
+ignore-words-list = blong, belong, afterall, crate
 skip = .git,*.pdf,*.svg,*.lock
