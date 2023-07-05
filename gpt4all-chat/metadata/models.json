@@ -11,7 +11,8 @@
     "quant": "q4_0",
     "type": "LLaMA",
     "description": "<strong>Best overall model</strong><br><ul><li>Instruction based<li>Gives long responses<li>Curated with 300,000 uncensored instructions<li>Trained by Nous Research<li>Cannot be used commercially</ul>",
-    "url": "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML/resolve/main/nous-hermes-13b.ggmlv3.q4_0.bin"
+    "url": "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML/resolve/main/nous-hermes-13b.ggmlv3.q4_0.bin",
+    "promptTemplate": "### Instruction:\n%1\n### Response:\n"
   },
   {
     "order": "b",
@@ -25,7 +26,8 @@
     "quant": "q4_0",
     "type": "Falcon",
     "description": "<strong>Best overall smaller model</strong><br><ul><li>Fast responses</li><li>Instruction based</li><li>Trained by TII<li>Finetuned by Nomic AI<li>Licensed for commercial use</ul>",
-    "url": "https://huggingface.co/nomic-ai/gpt4all-falcon-ggml/resolve/main/ggml-model-gpt4all-falcon-q4_0.bin"
+    "url": "https://huggingface.co/nomic-ai/gpt4all-falcon-ggml/resolve/main/ggml-model-gpt4all-falcon-q4_0.bin",
+    "promptTemplate": "### Instruction:\n%1\n### Response:\n"
   },
   {
     "order": "c",
@@ -80,7 +82,9 @@
     "quant": "q4_0",
     "type": "OpenLLaMa",
     "description": "<strong>New model with novel dataset</strong><br><ul><li>Instruction based<li>Explain tuned datasets<li>Orca Research Paper dataset construction approaches<li>Licensed for commercial use</ul>",
-    "url": "https://huggingface.co/TheBloke/orca_mini_7B-GGML/resolve/main/orca-mini-7b.ggmlv3.q4_0.bin"
+    "url": "https://huggingface.co/TheBloke/orca_mini_7B-GGML/resolve/main/orca-mini-7b.ggmlv3.q4_0.bin",
+    "promptTemplate": "### User:\n%1\n### Response:\n",
+    "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
     "order": "h",
@@ -94,7 +98,9 @@
     "quant": "q4_0",
     "type": "OpenLLaMa",
     "description": "<strong>Small version of new model with novel dataset</strong><br><ul><li>Instruction based<li>Explain tuned datasets<li>Orca Research Paper dataset construction approaches<li>Licensed for commercial use</ul>",
-    "url": "https://huggingface.co/TheBloke/orca_mini_3B-GGML/resolve/main/orca-mini-3b.ggmlv3.q4_0.bin"
+    "url": "https://huggingface.co/TheBloke/orca_mini_3B-GGML/resolve/main/orca-mini-3b.ggmlv3.q4_0.bin",
+    "promptTemplate": "### User:\n%1\n### Response:\n",
+    "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
     "order": "i",
@@ -108,7 +114,9 @@
     "quant": "q4_0",
     "type": "OpenLLaMa",
     "description": "<strong>Largest version of new model with novel dataset</strong><br><ul><li>Instruction based<li>Explain tuned datasets<li>Orca Research Paper dataset construction approaches<li>Licensed for commercial use</ul>",
-    "url": "https://huggingface.co/TheBloke/orca_mini_13B-GGML/resolve/main/orca-mini-13b.ggmlv3.q4_0.bin"
+    "url": "https://huggingface.co/TheBloke/orca_mini_13B-GGML/resolve/main/orca-mini-13b.ggmlv3.q4_0.bin",
+    "promptTemplate": "### User:\n%1\n### Response:\n",
+    "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
     "order": "j",
@@ -156,7 +164,8 @@
     "parameters": "13 billion",
     "quant": "q4_2",
     "type": "LLaMA",
-    "description": "<strong>Trained with RHLF by Stability AI</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>"
+    "description": "<strong>Trained with RHLF by Stability AI</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>",
+    "systemPrompt": "## Assistant: I am StableVicuna, a large language model created by CarperAI. I am here to chat!\n\n"
   },
   {
     "order": "n",
