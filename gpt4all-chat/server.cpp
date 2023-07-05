@@ -351,10 +351,12 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             message.insert("role", "assistant");
             message.insert("content", result);
             choice.insert("message", message);
-            QJsonArray references;
-            for (const auto &ref : infos)
-                references.append(resultToJson(ref));
-            choice.insert("references", references);
+            if (MySettings::globalInstance()->localDocsShowReferences()) {
+                QJsonArray references;
+                for (const auto &ref : infos)
+                    references.append(resultToJson(ref));
+                choice.insert("references", references);
+            }
             choices.append(choice);
         }
     } else {
@@ -367,10 +369,12 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             choice.insert("index", index++);
             choice.insert("logprobs", QJsonValue::Null); // We don't support
             choice.insert("finish_reason", responseTokens == max_tokens ? "length" : "stop");
-            QJsonArray references;
-            for (const auto &ref : infos)
-                references.append(resultToJson(ref));
-            choice.insert("references", references);
+            if (MySettings::globalInstance()->localDocsShowReferences()) {
+                QJsonArray references;
+                for (const auto &ref : infos)
+                    references.append(resultToJson(ref));
+                choice.insert("references", references);
+            }
             choices.append(choice);
         }
     }

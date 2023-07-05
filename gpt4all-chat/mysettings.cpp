@@ -17,6 +17,7 @@ static bool     default_forceMetal          = false;
 static QString  default_lastVersionStarted  = "";
 static int      default_localDocsChunkSize  = 256;
 static int      default_localDocsRetrievalSize  = 3;
+static bool     default_localDocsShowReferences = true;
 static QString  default_networkAttribution      = "";
 static bool     default_networkIsActive         = false;
 static bool     default_networkUsageStatsActive = false;
@@ -89,6 +90,7 @@ void MySettings::restoreLocalDocsDefaults()
 {
     setLocalDocsChunkSize(default_localDocsChunkSize);
     setLocalDocsRetrievalSize(default_localDocsRetrievalSize);
+    setLocalDocsShowReferences(default_localDocsShowReferences);
 }
 
 void MySettings::eraseModel(const ModelInfo &m)
@@ -518,6 +520,24 @@ void MySettings::setLocalDocsRetrievalSize(int s)
     setting.setValue("localdocs/retrievalSize", s);
     setting.sync();
     emit localDocsRetrievalSizeChanged();
+}
+
+bool MySettings::localDocsShowReferences() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("localdocs/showReferences", default_localDocsShowReferences).toBool();
+}
+
+void MySettings::setLocalDocsShowReferences(bool b)
+{
+    if (localDocsShowReferences() == b)
+        return;
+
+    QSettings setting;
+    setting.setValue("localdocs/showReferences", b);
+    setting.sync();
+    emit localDocsShowReferencesChanged();
 }
 
 QString MySettings::networkAttribution() const

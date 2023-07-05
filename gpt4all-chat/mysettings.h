@@ -19,6 +19,7 @@ class MySettings : public QObject
     Q_PROPERTY(QString lastVersionStarted READ lastVersionStarted WRITE setLastVersionStarted NOTIFY lastVersionStartedChanged)
     Q_PROPERTY(int localDocsChunkSize READ localDocsChunkSize WRITE setLocalDocsChunkSize NOTIFY localDocsChunkSizeChanged)
     Q_PROPERTY(int localDocsRetrievalSize READ localDocsRetrievalSize WRITE setLocalDocsRetrievalSize NOTIFY localDocsRetrievalSizeChanged)
+    Q_PROPERTY(bool localDocsShowReferences READ localDocsShowReferences WRITE setLocalDocsShowReferences NOTIFY localDocsShowReferencesChanged)
     Q_PROPERTY(QString networkAttribution READ networkAttribution WRITE setNetworkAttribution NOTIFY networkAttributionChanged)
     Q_PROPERTY(bool networkIsActive READ networkIsActive WRITE setNetworkIsActive NOTIFY networkIsActiveChanged)
     Q_PROPERTY(bool networkUsageStatsActive READ networkUsageStatsActive WRITE setNetworkUsageStatsActive NOTIFY networkUsageStatsActiveChanged)
@@ -81,6 +82,8 @@ public:
     void setLocalDocsChunkSize(int s);
     int localDocsRetrievalSize() const;
     void setLocalDocsRetrievalSize(int s);
+    bool localDocsShowReferences() const;
+    void setLocalDocsShowReferences(bool b);
 
     // Network settings
     QString networkAttribution() const;
@@ -112,6 +115,7 @@ Q_SIGNALS:
     void lastVersionStartedChanged();
     void localDocsChunkSizeChanged();
     void localDocsRetrievalSizeChanged();
+    void localDocsShowReferencesChanged();
     void networkAttributionChanged();
     void networkIsActiveChanged();
     void networkUsageStatsActiveChanged();

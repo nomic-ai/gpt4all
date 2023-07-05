@@ -164,7 +164,7 @@
     "parameters": "13 billion",
     "quant": "q4_2",
     "type": "LLaMA",
-    "description": "<strong>Trained with RHLF by Stability AI</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>",
+    "description": "<strong>Trained with RLHF by Stability AI</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>",
     "systemPrompt": "## Assistant: I am StableVicuna, a large language model created by CarperAI. I am here to chat!\n\n"
   },
   {
