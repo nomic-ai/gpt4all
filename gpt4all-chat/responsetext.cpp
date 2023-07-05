@@ -14,7 +14,8 @@ enum Language {
     Cpp,
     Bash,
     TypeScript,
-    Java
+    Java,
+    Go
 };
 
 static QColor keywordColor      = "#2e95d3"; // blue
@@ -26,6 +27,8 @@ static QColor numberColor       = "#df3079"; // fuchsia
 static QColor preprocessorColor = keywordColor;
 static QColor typeColor = numberColor;
 static QColor arrowColor = functionColor;
+static QColor commandColor = functionCallColor;
+static QColor variableColor = numberColor;
 
 static Language stringToLanguage(const QString &language)
 {
@@ -45,6 +48,10 @@ static Language stringToLanguage(const QString &language)
         return TypeScript;
     if (language == "java")
         return Java;
+    if (language == "go")
+        return Go;
+    if (language == "golang")
+        return Go;
     return None;
 }
 
@@ -344,11 +351,134 @@ static QVector<HighlightingRule> javaHighlightingRules()
     return highlightingRules;
 }
 
+static QVector<HighlightingRule> goHighlightingRules()
+{
+    static QVector<HighlightingRule> highlightingRules;
+    if (highlightingRules.isEmpty()) {
+
+        HighlightingRule rule;
+
+        QTextCharFormat functionCallFormat;
+        functionCallFormat.setForeground(functionCallColor);
+        rule.pattern = QRegularExpression("\\b(\\w+)\\s*(?=\\()");
+        rule.format = functionCallFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat functionFormat;
+        functionFormat.setForeground(functionColor);
+        rule.pattern = QRegularExpression("\\bfunc\\s+(\\w+)\\b");
+        rule.format = functionFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat numberFormat;
+        numberFormat.setForeground(numberColor);
+        rule.pattern = QRegularExpression("\\b[0-9]*\\.?[0-9]+\\b");
+        rule.format = numberFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat keywordFormat;
+        keywordFormat.setForeground(keywordColor);
+        QStringList keywordPatterns = {
+            "\\bfunc\\b", "\\bpackage\\b", "\\bimport\\b", "\\bvar\\b", "\\bconst\\b",
+            "\\btype\\b", "\\bstruct\\b", "\\binterface\\b", "\\bfor\\b", "\\bif\\b",
+            "\\belse\\b", "\\bswitch\\b", "\\bcase\\b", "\\bdefault\\b", "\\breturn\\b",
+            "\\bbreak\\b", "\\bcontinue\\b", "\\bgoto\\b", "\\bfallthrough\\b",
+            "\\bdefer\\b", "\\bchan\\b", "\\bmap\\b", "\\brange\\b"
+        };
+
+        for (const QString &pattern : keywordPatterns) {
+            rule.pattern = QRegularExpression(pattern);
+            rule.format = keywordFormat;
+            highlightingRules.append(rule);
+        }
+
+        QTextCharFormat stringFormat;
+        stringFormat.setForeground(stringColor);
+        rule.pattern = QRegularExpression("\".*?\"");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        rule.pattern = QRegularExpression("`.*?`");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat commentFormat;
+        commentFormat.setForeground(commentColor);
+        rule.pattern = QRegularExpression("//[^\n]*");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
+        rule.pattern = QRegularExpression("/\\*.*?\\*/");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
+    }
+    return highlightingRules;
+}
+
 static QVector<HighlightingRule> bashHighlightingRules()
 {
     static QVector<HighlightingRule> highlightingRules;
     if (highlightingRules.isEmpty()) {
-        // FIXME
+
+        HighlightingRule rule;
+
+        QTextCharFormat commandFormat;
+        commandFormat.setForeground(commandColor);
+        QStringList commandPatterns = {
+            "\\b(grep|awk|sed|ls|cat|echo|rm|mkdir|cp|break|alias|eval|cd|exec|head|tail|strings|printf|touch|mv|chmod)\\b"
+        };
+
+        for (const QString &pattern : commandPatterns) {
+            rule.pattern = QRegularExpression(pattern);
+            rule.format = commandFormat;
+            highlightingRules.append(rule);
+        }
+
+        QTextCharFormat numberFormat;
+        numberFormat.setForeground(numberColor);
+        rule.pattern = QRegularExpression("\\b[0-9]*\\.?[0-9]+\\b");
+        rule.format = numberFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat keywordFormat;
+        keywordFormat.setForeground(keywordColor);
+        QStringList keywordPatterns = {
+            "\\bif\\b", "\\bthen\\b", "\\belse\\b", "\\bfi\\b", "\\bfor\\b",
+            "\\bin\\b", "\\bdo\\b", "\\bdone\\b", "\\bwhile\\b", "\\buntil\\b",
+            "\\bcase\\b", "\\besac\\b", "\\bfunction\\b", "\\breturn\\b",
+            "\\blocal\\b", "\\bdeclare\\b", "\\bunset\\b", "\\bexport\\b",
+            "\\breadonly\\b", "\\bshift\\b", "\\bexit\\b"
+        };
+
+        for (const QString &pattern : keywordPatterns) {
+            rule.pattern = QRegularExpression(pattern);
+            rule.format = keywordFormat;
+            highlightingRules.append(rule);
+        }
+
+        QTextCharFormat stringFormat;
+        stringFormat.setForeground(stringColor);
+        rule.pattern = QRegularExpression("\".*?\"");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        rule.pattern = QRegularExpression("\'.*?\'");
+        rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat variableFormat;
+        variableFormat.setForeground(variableColor);
+        rule.pattern = QRegularExpression("\\$(\\w+|\\{[^}]+\\})");
+        rule.format = variableFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat commentFormat;
+        commentFormat.setForeground(commentColor);
+        rule.pattern = QRegularExpression("#[^\n]*");
+        rule.format = commentFormat;
+        highlightingRules.append(rule);
+
     }
     return highlightingRules;
 }
@@ -376,6 +506,8 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
     else if (block.userState() == TypeScript)
         rules = typescriptHighlightingRules();
     else if (block.userState() == Java)
+        rules = javaHighlightingRules();
+    else if (block.userState() == Go)
         rules = javaHighlightingRules();
 
     for (const HighlightingRule &rule : qAsConst(rules)) {
@@ -577,7 +709,9 @@ void ResponseText::handleCodeBlocks()
                 || firstWord == "bash"
                 || firstWord == "javascript"
                 || firstWord == "typescript"
-                || firstWord == "java") {
+                || firstWord == "java"
+                || firstWord == "go"
+                || firstWord == "golang") {
                 codeLanguage = firstWord;
                 capturedText.remove(0, match.captured(0).length());
             }
