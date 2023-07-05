@@ -175,5 +175,10 @@ set_target_properties(llmodel PROPERTIES
                               VERSION ${PROJECT_VERSION}
                               SOVERSION ${PROJECT_VERSION_MAJOR})
 
+if (CUDAToolkit_FOUND)
+    target_compile_definitions(llmodel PRIVATE LLMODEL_CUDA)
+    target_link_libraries(llmodel PRIVATE cudart)
+endif()
+
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)

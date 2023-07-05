@@ -7,9 +7,11 @@
 #include <vector>
 #include <fstream>
 #include <filesystem>
+#include <sstream>
 #include <cassert>
 #include <cstdlib>
-#include <sstream>
+#include <cuda_runtime.h>
+
 
 std::string s_implementations_search_path = ".";
 
@@ -148,13 +150,21 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     #endif
 
     if (!impl) {
-        //TODO: Auto-detect CUDA/OpenCL
+        // Auto-detect avxonly requirement
         if (buildVariant == "auto") {
             if (requires_avxonly()) {
                 buildVariant = "avxonly";
             } else {
                 buildVariant = "default";
             }
+            // Auto-detect CUDA
+#ifdef LLMODEL_CUDA
+            int cudaDeviceCount;
+            if (cudaGetDeviceCount(&cudaDeviceCount) == cudaSuccess
+                && cudaDeviceCount != 0) {
+                buildVariant = "cuda";
+            }
+#endif
         }
         impl = implementation(f, buildVariant);
         if (!impl) return nullptr;
