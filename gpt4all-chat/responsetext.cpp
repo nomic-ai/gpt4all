@@ -432,7 +432,7 @@ static QVector<HighlightingRule> bashHighlightingRules()
         QTextCharFormat commandFormat;
         commandFormat.setForeground(commandColor);
         QStringList commandPatterns = {
-            "\\b(grep|awk|sed|ls|cat|echo|rm|mkdir|cp|break|alias|eval|cd|exec|head|tail|strings|printf)\\b"
+            "\\b(grep|awk|sed|ls|cat|echo|rm|mkdir|cp|break|alias|eval|cd|exec|head|tail|strings|printf|touch|mv|chmod)\\b"
         };
 
         for (const QString &pattern : commandPatterns) {
