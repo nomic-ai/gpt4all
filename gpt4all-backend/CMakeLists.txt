@@ -181,5 +181,10 @@ if (CUDAToolkit_FOUND)
     target_link_libraries(llmodel PRIVATE cudart)
 endif()
 
+if (CLBlast_FOUND)
+    target_compile_definitions(llmodel PRIVATE LLMODEL_OPENCL)
+    target_link_libraries(llmodel PRIVATE clblast)
+endif()
+
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)

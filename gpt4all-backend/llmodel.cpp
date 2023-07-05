@@ -10,7 +10,12 @@
 #include <sstream>
 #include <cassert>
 #include <cstdlib>
+#ifdef LLMODEL_CUDA
 #include <cuda_runtime.h>
+#endif
+#ifdef LLMODEL_OPENCL
+#include <clblast.h>
+#endif
 
 
 std::string s_implementations_search_path = ".";
@@ -163,6 +168,15 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
             if (cudaGetDeviceCount(&cudaDeviceCount) == cudaSuccess
                 && cudaDeviceCount != 0) {
                 buildVariant = "cuda";
+            }
+#endif
+#ifdef LLMODEL_OPENCL
+            // Auto-detect OpenCL
+            unsigned clPlatformCount;
+            cl_platform_id platform_ids[16];
+            if (clGetPlatformIDs(16, platform_ids, &clPlatformCount) == CL_SUCCESS
+                && clPlatformCount != 0) {
+                buildVariant = "opencl";
             }
 #endif
         }
