@@ -616,7 +616,17 @@ void ResponseText::handleCodeBlocks()
         QTextCursor codeCellCursor = codeCell.firstCursorPosition();
         QTextTable *codeTable = codeCellCursor.insertTable(1, 1, codeBlockTableFormat);
         QTextTableCell code = codeTable->cellAt(0, 0);
+
+        QTextCharFormat codeBlockCharFormat;
+        QFont monospaceFont("Courier");
+        if (monospaceFont.family() != "Courier") {
+            monospaceFont.setFamily("Monospace"); // Fallback if Courier isn't available
+        }
+
         QTextCursor codeCursor = code.firstCursorPosition();
+        codeBlockCharFormat.setFont(monospaceFont); // Update the font for the codeblock
+        codeCursor.setCharFormat(codeBlockCharFormat);
+
         if (!codeLanguage.isEmpty()) {
             codeCursor.block().setUserState(stringToLanguage(codeLanguage));
             for (const QString &line : lines) {
