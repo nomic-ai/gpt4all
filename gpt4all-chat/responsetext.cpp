@@ -494,14 +494,13 @@ void ResponseText::handleContextLinks()
 
     m_links = newLinks;
 }
-
 void ResponseText::handleCodeBlocks()
 {
     QTextDocument* doc = m_textDocument->textDocument();
     QTextCursor cursor(doc);
 
     QTextCharFormat textFormat;
-    textFormat.setFontFamilies(QStringList() << "Monospace");
+    textFormat.setFontFamilies(QStringList() << "Courier");
     textFormat.setForeground(QColor("white"));
 
     QTextFrameFormat frameFormatBase;
@@ -539,6 +538,7 @@ void ResponseText::handleCodeBlocks()
     codeBlockTableFormat.setBottomMargin(30);
     codeBlockTableFormat.setLeftMargin(30);
     codeBlockTableFormat.setRightMargin(30);
+
     codeBlockTableFormat.setColumnWidthConstraints(constraints);
 
     QTextImageFormat copyImageFormat;
@@ -546,7 +546,6 @@ void ResponseText::handleCodeBlocks()
     copyImageFormat.setHeight(30);
     copyImageFormat.setName("qrc:/gpt4all/icons/copy.svg");
 
-    // Regex for code blocks
     static const QRegularExpression reCode("```(.*?)(```|$)", QRegularExpression::DotMatchesEverythingOption);
     QRegularExpressionMatchIterator iCode = reCode.globalMatch(doc->toPlainText());
 
@@ -570,14 +569,15 @@ void ResponseText::handleCodeBlocks()
         QRegularExpressionMatch match = reWhitespace.match(capturedText);
         if (match.hasMatch()) {
             const QString firstWord = match.captured(1).trimmed();
-            if (firstWord == "python"
-                || firstWord == "cpp"
-                || firstWord == "c++"
+            if (firstWord == "bash"
                 || firstWord == "c"
-                || firstWord == "bash"
+                || firstWord == "c++"
+                || firstWord == "cpp"
+                || firstWord == "java"
                 || firstWord == "javascript"
-                || firstWord == "typescript"
-                || firstWord == "java") {
+                || firstWord == "php"
+                || firstWord == "python"
+                || firstWord == "typescript") {
                 codeLanguage = firstWord;
                 capturedText.remove(0, match.captured(0).length());
             }
@@ -617,6 +617,11 @@ void ResponseText::handleCodeBlocks()
         QTextTable *codeTable = codeCellCursor.insertTable(1, 1, codeBlockTableFormat);
         QTextTableCell code = codeTable->cellAt(0, 0);
         QTextCursor codeCursor = code.firstCursorPosition();
+        QTextCharFormat codeBlockCharFormat;
+        QFont monospaceFont("Courier");  // use "Monospace" if "Courier" is not available
+        codeBlockCharFormat.setFont(monospaceFont);
+        codeCursor.setCharFormat(codeBlockCharFormat);
+
         if (!codeLanguage.isEmpty()) {
             codeCursor.block().setUserState(stringToLanguage(codeLanguage));
             for (const QString &line : lines) {
@@ -633,7 +638,7 @@ void ResponseText::handleCodeBlocks()
         }
 
         cursor = mainFrame->lastCursorPosition();
-        cursor.setCharFormat(QTextCharFormat());
+        cursor.setCharFormat(textFormat);
     }
 
     m_copies = newCopies;
