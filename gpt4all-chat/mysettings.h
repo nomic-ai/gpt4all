@@ -4,7 +4,8 @@
 #include <QObject>
 #include <QMutex>
 
-class ModelInfo;
+#include "modellist.h"
+
 class MySettings : public QObject
 {
     Q_OBJECT
