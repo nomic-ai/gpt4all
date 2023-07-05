@@ -107,6 +107,8 @@ If you are running into issues please let us know using the [gpt4all project iss
 3. For Windows the native library included in jar depends on specific Microsoft C and C++ (MSVC) runtime libraries which may not be installed on your system.
 If this is the case you can easily download and install the latest x64 Microsoft Visual C++ Redistributable package from https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170
 
+4. When running Java in a Docker container it is advised to use eclipse-temurin:17-jre parent image. Alpine based parent images don't work due to the native library dependencies.
+
 ## Version history
 1. Version **1.1.2**:
    - Java bindings is compatible with gpt4ll version 2.4.6
