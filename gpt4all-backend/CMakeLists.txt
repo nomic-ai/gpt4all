@@ -41,7 +41,6 @@ else()
 endif()
 
 # llama.cpp base configuration
-set(LLAMA_LTO ${IPO_SUPPORTED})
 include(llama.cpp.cmake)
 
 # Build variant list
