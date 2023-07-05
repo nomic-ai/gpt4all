@@ -423,12 +423,6 @@ static QVector<HighlightingRule> bashHighlightingRules()
 
         HighlightingRule rule;
 
-        QTextCharFormat variableFormat;
-        variableFormat.setForeground(variableColor);
-        rule.pattern = QRegularExpression("\\$(\\w+|\\{[^}]+\\})");
-        rule.format = variableFormat;
-        highlightingRules.append(rule);
-
         QTextCharFormat commandFormat;
         commandFormat.setForeground(commandColor);
         QStringList commandPatterns = {
@@ -471,6 +465,12 @@ static QVector<HighlightingRule> bashHighlightingRules()
 
         rule.pattern = QRegularExpression("\'.*?\'");
         rule.format = stringFormat;
+        highlightingRules.append(rule);
+
+        QTextCharFormat variableFormat;
+        variableFormat.setForeground(variableColor);
+        rule.pattern = QRegularExpression("\\$(\\w+|\\{[^}]+\\})");
+        rule.format = variableFormat;
         highlightingRules.append(rule);
 
         QTextCharFormat commentFormat;
