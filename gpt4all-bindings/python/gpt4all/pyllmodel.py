@@ -112,6 +112,10 @@ llmodel.llmodel_threadCount.restype = ctypes.c_int32
 llmodel.llmodel_set_implementation_search_path(MODEL_LIB_PATH.encode('utf-8'))
 
 
+def _empty_response_callback(token_id, response):
+        return True
+
+
 class LLModel:
     """
     Base class and universal wrapper for GPT4All language models
@@ -291,7 +295,7 @@ class LLModel:
 
     def prompt_model_streaming(self, 
         prompt: str, 
-        callback: callable = None, 
+        callback: callable = _empty_response_callback, 
         **kwargs) -> Iterable:
         # Symbol to terminate from generator
         TERMINATING_SYMBOL = object()
@@ -305,10 +309,7 @@ class LLModel:
 
                 output_queue.put(response)
 
-                if callback is not None:
-                    return callback(token_id, response)
-
-                return True
+                return callback(token_id, response)
 
             return _generator_callback
                 
@@ -340,6 +341,11 @@ class LLModel:
     @staticmethod
     def _prompt_callback(token_id):
         return True
+
+
+    # Empty response callback
+    @staticmethod
+    
 
     # Empty recalculate callback
     @staticmethod
