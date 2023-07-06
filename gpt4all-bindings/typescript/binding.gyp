@@ -19,6 +19,9 @@
        ],
       "conditions": [
         ['OS=="mac"', {
+            'xcode_settings': {
+                'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+            },
             'defines': [
                 'LIB_FILE_EXT=".dylib"',
                 'NAPI_CPP_EXCEPTIONS',

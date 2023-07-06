@@ -48,6 +48,8 @@ const response = await createCompletion(ll, [
     *   all of its requirements.
 *   (unix) gcc version 12
     *   These bindings use the C++ 20 standard.
+*   clang does not seem to work, no work around has been discovered 
+    *   Reason being is that the frontend for this library uses a cpp 20 standard construct (shared atomic ptrs)
 *   (win) msvc version 143
     *   Can be obtained with visual studio 2022 build tools
 
@@ -61,6 +63,14 @@ cd gpt4all-bindings/typescript
 *   The below shell commands assume the current working directory is `typescript`.
 
 *   To Build and Rebuild:
+
+Also if you do not have cpp 20 standard on gcc:
+Tested on Ubuntu
+
+```sh 
+sudo apt install g++-12 gcc-12
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 --slave /usr/bin/g++ g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12
+```
 
 ```sh
 yarn
