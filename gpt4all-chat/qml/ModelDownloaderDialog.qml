@@ -197,6 +197,7 @@ Dialog {
                                             : (isDownloading ? qsTr("Downloading") : qsTr("Available")))))
                                             + "</strong></font>"
                                         color: theme.textColor
+                                        linkColor: theme.textErrorColor
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: text
                                         Accessible.description: qsTr("Whether the file is already installed on your system")

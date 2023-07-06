@@ -486,6 +486,15 @@ QVariant ModelList::data(const QString &id, int role) const
     return dataInternal(info, role);
 }
 
+QVariant ModelList::dataByFilename(const QString &filename, int role) const
+{
+    QMutexLocker locker(&m_mutex);
+    for (ModelInfo *info : m_models)
+        if (info->filename() == filename)
+            return dataInternal(info, role);
+    return QVariant();
+}
+
 QVariant ModelList::data(const QModelIndex &index, int role) const
 {
     QMutexLocker locker(&m_mutex);
@@ -609,6 +618,25 @@ void ModelList::updateData(const QString &id, int role, const QVariant &value)
     }
     emit dataChanged(createIndex(0, 0), createIndex(modelSize - 1, 0));
     emit userDefaultModelListChanged();
+}
+
+void ModelList::updateDataByFilename(const QString &filename, int role, const QVariant &value)
+{
+    QVector<QString> modelsById;
+    {
+        QMutexLocker locker(&m_mutex);
+        for (ModelInfo *info : m_models)
+            if (info->filename() == filename)
+                modelsById.append(info->id());
+    }
+
+    if (modelsById.isEmpty()) {
+        qWarning() << "ERROR: cannot update model as list does not contain file" << filename;
+        return;
+    }
+
+    for (const QString &id : modelsById)
+        updateData(id, role, value);;
 }
 
 ModelInfo ModelList::modelInfo(const QString &id) const
