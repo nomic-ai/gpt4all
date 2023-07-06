@@ -129,6 +129,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         add_library(bert-${BUILD_VARIANT} SHARED
             bert.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
         prepare_target(bert llama-mainline)
+
+        add_library(starcoder-${BUILD_VARIANT} SHARED
+            starcoder.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
+        prepare_target(starcoder llama-mainline)
     endif()
 endforeach()
 
