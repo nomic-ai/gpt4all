@@ -11,18 +11,6 @@ from typing import Iterable
 import pkg_resources
 
 
-class DualStreamProcessor:
-    def __init__(self, stream=None):
-        self.stream = stream
-        self.output = ""
-
-    def write(self, text):
-        if self.stream is not None:
-            self.stream.write(text)
-            self.stream.flush()
-        self.output += text
-
-
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
 MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
@@ -236,6 +224,7 @@ class LLModel:
     def prompt_model(
         self,
         prompt: str,
+        callback: callable,
         n_predict: int = 4096,
         top_k: int = 40,
         top_p: float = 0.9,
@@ -245,7 +234,7 @@ class LLModel:
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
         reset_context: bool = False,
-        streaming=False,
+        verbose: bool = False,
     ) -> str:
         """
         Generate response from model from a prompt.
@@ -254,26 +243,31 @@ class LLModel:
         ----------
         prompt: str
             Question, task, or conversation for model to respond to
-        streaming: bool
-            Stream response to stdout
+        callback(token_id:int, response:str): bool
+            The model sends response tokens to callback
 
         Returns
         -------
-        Model response str
+        None
         """
+
+        if verbose:
+            print('====VERBOSE====')
+            print(prompt)
+            print('===/VERBOSE/===')
+
 
         prompt_bytes = prompt.encode('utf-8')
         prompt_ptr = ctypes.c_char_p(prompt_bytes)
 
-        old_stdout = sys.stdout
+        def _callback_wrapper(callback):
+            
+            def _callback(token_id, response):
+                nonlocal callback
+                return callback(token_id, response.decode('utf-8', 'replace'))
 
-        stream_processor = DualStreamProcessor()
-
-        if streaming:
-            stream_processor.stream = sys.stdout
-
-        sys.stdout = stream_processor
-
+            return _callback
+            
         self._set_context(
             n_predict=n_predict,
             top_k=top_k,
@@ -290,56 +284,37 @@ class LLModel:
             self.model,
             prompt_ptr,
             PromptCallback(self._prompt_callback),
-            ResponseCallback(self._response_callback),
+            ResponseCallback( _callback_wrapper( callback ) ),
             RecalculateCallback(self._recalculate_callback),
             self.context,
         )
 
-        # Revert to old stdout
-        sys.stdout = old_stdout
-        # Force new line
-        return stream_processor.output
-
-    def prompt_model_streaming(
-        self,
-        prompt: str,
-        n_predict: int = 4096,
-        top_k: int = 40,
-        top_p: float = 0.9,
-        temp: float = 0.1,
-        n_batch: int = 8,
-        repeat_penalty: float = 1.2,
-        repeat_last_n: int = 10,
-        context_erase: float = 0.75,
-        reset_context: bool = False,
-    ) -> Iterable:
+    def prompt_model_streaming(self, 
+        prompt: str, 
+        callback: callable = None, 
+        **kwargs) -> Iterable:
         # Symbol to terminate from generator
         TERMINATING_SYMBOL = object()
 
         output_queue = queue.Queue()
-
-        prompt_bytes = prompt.encode('utf-8')
-        prompt_ptr = ctypes.c_char_p(prompt_bytes)
-
-        self._set_context(
-            n_predict=n_predict,
-            top_k=top_k,
-            top_p=top_p,
-            temp=temp,
-            n_batch=n_batch,
-            repeat_penalty=repeat_penalty,
-            repeat_last_n=repeat_last_n,
-            context_erase=context_erase,
-            reset_context=reset_context,
-        )
-
+        
         # Put response tokens into an output queue
-        def _generator_response_callback(token_id, response):
-            output_queue.put(response.decode('utf-8', 'replace'))
-            return True
+        def _generator_callback_wrapper(callback):
+            def _generator_callback(token_id, response):
+                nonlocal callback
 
-        def run_llmodel_prompt(model, prompt, prompt_callback, response_callback, recalculate_callback, context):
-            llmodel.llmodel_prompt(model, prompt, prompt_callback, response_callback, recalculate_callback, context)
+                output_queue.put(response)
+
+                if callback is not None:
+                    return callback(token_id, response)
+
+                return True
+
+            return _generator_callback
+                
+
+        def run_llmodel_prompt(prompt, callback, **kwargs):
+            self.prompt_model(prompt, callback, **kwargs)
             output_queue.put(TERMINATING_SYMBOL)
 
         # Kick off llmodel_prompt in separate thread so we can return generator
@@ -347,13 +322,10 @@ class LLModel:
         thread = threading.Thread(
             target=run_llmodel_prompt,
             args=(
-                self.model,
-                prompt_ptr,
-                PromptCallback(self._prompt_callback),
-                ResponseCallback(_generator_response_callback),
-                RecalculateCallback(self._recalculate_callback),
-                self.context,
+                prompt,
+                _generator_callback_wrapper( callback )
             ),
+            kwargs=kwargs
         )
         thread.start()
 
@@ -367,12 +339,6 @@ class LLModel:
     # Empty prompt callback
     @staticmethod
     def _prompt_callback(token_id):
-        return True
-
-    # Empty response callback method that just prints response to be collected
-    @staticmethod
-    def _response_callback(token_id, response):
-        sys.stdout.write(response.decode('utf-8', 'replace'))
         return True
 
     # Empty recalculate callback
