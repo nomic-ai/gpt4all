@@ -173,7 +173,7 @@ MySettingsTab {
             Layout.columnSpan: 2
             Layout.fillWidth: true
             color: "transparent"
-            Layout.minimumHeight: Math.max(150, systemPromptArea.contentHeight + 20)
+            Layout.minimumHeight: Math.max(100, systemPromptArea.contentHeight + 20)
             TextArea {
                 id: systemPromptArea
                 anchors.fill: parent
@@ -234,7 +234,7 @@ MySettingsTab {
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
-            Layout.minimumHeight: Math.max(150, templateTextArea.contentHeight + 20)
+            Layout.minimumHeight: Math.max(100, templateTextArea.contentHeight + 20)
             color: "transparent"
             clip: true
             TextArea {
