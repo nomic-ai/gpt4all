@@ -208,6 +208,8 @@ class GPT4All:
             n_batch: Number of prompt tokens processed in parallel. Larger values decrease latency but increase resource requirements.
             n_predict: Equivalent to max_tokens, exists for backwards compatibility.
             streaming: If True, this method will instead return a generator that yields tokens as the model generates them.
+            callback: A function with arguments token_id:int and response:str, which receives the tokens from the model as they are generated and stops the generation by returning False.
+            verbose: If True, prints out the final prompt before it is passed to the model.
 
         Returns:
             Either the entire completion or a generator that yields the completion token by token.
@@ -260,6 +262,9 @@ class GPT4All:
     def chat_session(self, header: str = ""):
         '''
         Context manager to hold an inference optimized chat session with a GPT4All model.
+
+        Args:
+            header: An initial instruction. It is inserted before the transcript of the conversation.
         '''
         # Code to acquire resource, e.g.:
         self._is_chat_session_activated = True
