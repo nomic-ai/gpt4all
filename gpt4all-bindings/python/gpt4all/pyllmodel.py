@@ -306,10 +306,12 @@ class LLModel:
         def _generator_callback_wrapper(callback):
             def _generator_callback(token_id, response):
                 nonlocal callback
+                
+                if callback(token_id, response):
+                    output_queue.put(response)
+                    return True
 
-                output_queue.put(response)
-
-                return callback(token_id, response)
+                return False
 
             return _generator_callback
                 
