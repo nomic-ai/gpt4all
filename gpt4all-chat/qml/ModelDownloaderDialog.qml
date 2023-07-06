@@ -11,20 +11,11 @@ import modellist
 import network
 import mysettings
 
-Dialog {
+MyDialog {
     id: modelDownloaderDialog
     modal: true
-    opacity: 0.9
     closePolicy: ModelList.installedModels.count === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
-    padding: 20
-    bottomPadding: 30
-    background: Rectangle {
-        anchors.fill: parent
-        color: theme.backgroundDarkest
-        border.width: 1
-        border.color: theme.dialogBorder
-        radius: 10
-    }
+    padding: 10
 
     onOpened: {
         Network.sendModelDownloaderDialog();
@@ -38,7 +29,7 @@ Dialog {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 20
+        anchors.margins: 10
         spacing: 30
 
         Label {

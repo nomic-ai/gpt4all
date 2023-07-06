@@ -105,6 +105,7 @@ qt_add_qml_module(chat
       qml/MySettingsStack.qml
       qml/MyButton.qml
       qml/MyComboBox.qml
+      qml/MyDialog.qml
       qml/MyDirectoryField.qml
       qml/MyTextField.qml
       qml/MyCheckBox.qml
@@ -114,6 +115,7 @@ qt_add_qml_module(chat
       icons/send_message.svg
       icons/stop_generating.svg
       icons/regenerate.svg
+      icons/close.svg
       icons/copy.svg
       icons/db.svg
       icons/settings.svg
