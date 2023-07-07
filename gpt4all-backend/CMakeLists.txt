@@ -125,6 +125,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         add_library(mpt-${BUILD_VARIANT} SHARED
             mpt.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
         prepare_target(mpt ggml-230511)
+
+        add_library(bert-${BUILD_VARIANT} SHARED
+            bert.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
+        prepare_target(bert llama-mainline)
     endif()
 endforeach()
 
