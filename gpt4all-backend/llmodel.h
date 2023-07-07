@@ -12,33 +12,10 @@
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
 class Dlhandle;
-
+class LLImplementation;
 class LLModel {
 public:
     using Token = int32_t;
-
-    class Implementation {
-        LLModel *(*construct_)();
-
-    public:
-        Implementation(Dlhandle&&);
-        Implementation(const Implementation&) = delete;
-        Implementation(Implementation&&);
-        ~Implementation();
-
-        static bool isImplementation(const Dlhandle&);
-
-        std::string_view modelType, buildVariant;
-        bool (*magicMatch)(std::ifstream& f);
-        Dlhandle *dlhandle;
-
-        // The only way an implementation should be constructed
-        LLModel *construct() const {
-            auto fres = construct_();
-            fres->m_implementation = this;
-            return fres;
-        }
-    };
 
     struct PromptContext {
         std::vector<float> logits;      // logits of current context
@@ -74,12 +51,12 @@ public:
     virtual void setThreadCount(int32_t /*n_threads*/) {}
     virtual int32_t threadCount() const { return 1; }
 
-    const Implementation& implementation() const {
+    const LLImplementation& implementation() const {
         return *m_implementation;
     }
 
-    static const std::vector<Implementation>& implementationList();
-    static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
+    static const std::vector<LLImplementation>& implementationList();
+    static const LLImplementation *implementation(std::ifstream& f, const std::string& buildVariant);
     static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
 
     static void setImplementationsSearchPath(const std::string& path);
@@ -99,6 +76,33 @@ protected:
     // shared by all base classes so it isn't virtual
     void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 
-    const Implementation *m_implementation = nullptr;
+    const LLImplementation *m_implementation = nullptr;
+
+private:
+    friend class LLImplementation;
 };
+
+class LLImplementation {
+    LLModel *(*construct_)();
+
+public:
+    LLImplementation(Dlhandle&&);
+    LLImplementation(const LLImplementation&) = delete;
+    LLImplementation(LLImplementation&&);
+    ~LLImplementation();
+
+    static bool isImplementation(const Dlhandle&);
+
+    std::string_view modelType, buildVariant;
+    bool (*magicMatch)(std::ifstream& f);
+    Dlhandle *dlhandle;
+
+    // The only way an implementation should be constructed
+    LLModel *construct() const {
+        auto fres = construct_();
+        fres->m_implementation = this;
+        return fres;
+    }
+};
+
 #endif // LLMODEL_H
