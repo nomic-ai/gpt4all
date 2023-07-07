@@ -41,7 +41,7 @@ static bool requires_avxonly() {
 #endif
 }
 
-LLModel::Implementation::Implementation(Dlhandle &&dlhandle_) : dlhandle(new Dlhandle(std::move(dlhandle_))) {
+LLImplementation::LLImplementation(Dlhandle &&dlhandle_) : dlhandle(new Dlhandle(std::move(dlhandle_))) {
     auto get_model_type = dlhandle->get<const char *()>("get_model_type");
     assert(get_model_type);
     modelType = get_model_type();
@@ -54,7 +54,7 @@ LLModel::Implementation::Implementation(Dlhandle &&dlhandle_) : dlhandle(new Dlh
     assert(construct_);
 }
 
-LLModel::Implementation::Implementation(Implementation &&o)
+LLImplementation::LLImplementation(LLImplementation &&o)
     : construct_(o.construct_)
     , modelType(o.modelType)
     , buildVariant(o.buildVariant)
@@ -63,19 +63,19 @@ LLModel::Implementation::Implementation(Implementation &&o)
     o.dlhandle = nullptr;
 }
 
-LLModel::Implementation::~Implementation() {
+LLImplementation::~LLImplementation() {
     if (dlhandle) delete dlhandle;
 }
 
-bool LLModel::Implementation::isImplementation(const Dlhandle &dl) {
+bool LLImplementation::isImplementation(const Dlhandle &dl) {
     return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
-const std::vector<LLModel::Implementation> &LLModel::implementationList() {
+const std::vector<LLImplementation> &LLModel::implementationList() {
     // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
     // individual models without the cleanup of the static list interfering
-    static auto* libs = new std::vector<LLModel::Implementation>([] () {
-        std::vector<LLModel::Implementation> fres;
+    static auto* libs = new std::vector<LLImplementation>([] () {
+        std::vector<LLImplementation> fres;
 
         auto search_in_directory = [&](const std::string& paths) {
             std::stringstream ss(paths);
@@ -90,10 +90,10 @@ const std::vector<LLModel::Implementation> &LLModel::implementationList() {
                     // Add to list if model implementation
                     try {
                         Dlhandle dl(p.string());
-                        if (!Implementation::isImplementation(dl)) {
+                        if (!LLImplementation::isImplementation(dl)) {
                             continue;
                         }
-                        fres.emplace_back(Implementation(std::move(dl)));
+                        fres.emplace_back(LLImplementation(std::move(dl)));
                     } catch (...) {}
                 }
             }
@@ -107,7 +107,7 @@ const std::vector<LLModel::Implementation> &LLModel::implementationList() {
     return *libs;
 }
 
-const LLModel::Implementation* LLModel::implementation(std::ifstream& f, const std::string& buildVariant) {
+const LLImplementation* LLModel::implementation(std::ifstream& f, const std::string& buildVariant) {
     for (const auto& i : implementationList()) {
         f.seekg(0);
         if (!i.magicMatch(f)) continue;
@@ -126,7 +126,7 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     std::ifstream f(modelPath, std::ios::binary);
     if (!f) return nullptr;
     // Get correct implementation
-    const LLModel::Implementation* impl = nullptr;
+    const LLImplementation* impl = nullptr;
 
     #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
         if (buildVariant == "auto") {
