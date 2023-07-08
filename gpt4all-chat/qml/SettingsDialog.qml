@@ -11,19 +11,10 @@ import network
 import llm
 import mysettings
 
-Dialog {
+MyDialog {
     id: settingsDialog
     modal: true
     padding: 20
-    bottomPadding: 30
-    background: Rectangle {
-        anchors.fill: parent
-        color: theme.backgroundDarkest
-        border.width: 1
-        border.color: theme.dialogBorder
-        radius: 10
-    }
-
     onOpened: {
         Network.sendSettingsDialog();
     }
