@@ -6,7 +6,7 @@ import re
 import subprocess
 import sys
 import threading
-from typing import Iterable
+from typing import Iterable, Callable
 
 import pkg_resources
 
@@ -112,7 +112,9 @@ llmodel.llmodel_threadCount.restype = ctypes.c_int32
 llmodel.llmodel_set_implementation_search_path(MODEL_LIB_PATH.encode('utf-8'))
 
 
-def _empty_response_callback(token_id, response):
+ResponseCallbackType = Callable[[int, str], bool]
+
+def empty_response_callback(token_id: int, response: str) -> bool:
         return True
 
 
@@ -228,7 +230,7 @@ class LLModel:
     def prompt_model(
         self,
         prompt: str,
-        callback: callable,
+        callback: ResponseCallbackType,
         n_predict: int = 4096,
         top_k: int = 40,
         top_p: float = 0.9,
@@ -239,7 +241,7 @@ class LLModel:
         context_erase: float = 0.75,
         reset_context: bool = False,
         verbose: bool = False,
-    ) -> str:
+    ):
         """
         Generate response from model from a prompt.
 
@@ -295,7 +297,7 @@ class LLModel:
 
     def prompt_model_streaming(self, 
         prompt: str, 
-        callback: callable = _empty_response_callback, 
+        callback: ResponseCallbackType = empty_response_callback, 
         **kwargs) -> Iterable:
         # Symbol to terminate from generator
         TERMINATING_SYMBOL = object()
@@ -303,8 +305,8 @@ class LLModel:
         output_queue = queue.Queue()
         
         # Put response tokens into an output queue
-        def _generator_callback_wrapper(callback):
-            def _generator_callback(token_id, response):
+        def _generator_callback_wrapper(callback: ResponseCallbackType) -> ResponseCallbackType:
+            def _generator_callback(token_id: int, response: str):
                 nonlocal callback
                 
                 if callback(token_id, response):
@@ -316,7 +318,7 @@ class LLModel:
             return _generator_callback
                 
 
-        def run_llmodel_prompt(prompt, callback, **kwargs):
+        def run_llmodel_prompt(prompt: str, callback: ResponseCallbackType, **kwargs):
             self.prompt_model(prompt, callback, **kwargs)
             output_queue.put(TERMINATING_SYMBOL)
 
@@ -344,10 +346,6 @@ class LLModel:
     def _prompt_callback(token_id):
         return True
 
-
-    # Empty response callback
-    @staticmethod
-    
 
     # Empty recalculate callback
     @staticmethod

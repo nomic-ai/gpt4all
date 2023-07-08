@@ -15,8 +15,7 @@ from . import pyllmodel
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
 
-def empty_callback(token_id, response):
-    return True
+MessageType = Dict[str, str]
 
 class GPT4All:
     """
@@ -52,9 +51,8 @@ class GPT4All:
         if n_threads is not None:
             self.model.set_thread_count(n_threads)
 
-        self._is_chat_session_activated = False
-        self.current_chat_session = []
-        self.chat_session_header = ""
+        self._is_chat_session_activated: bool = False
+        self.current_chat_session: List[MessageType] = empty_chat_session() 
 
     @staticmethod
     def list_models() -> Dict:
@@ -191,7 +189,7 @@ class GPT4All:
         n_batch: int = 8,
         n_predict: Optional[int] = None,
         streaming: bool = False,
-        callback: callable = empty_callback,
+        callback: pyllmodel.ResponseCallbackType = pyllmodel.empty_response_callback,
         verbose: bool = False,
     ) -> Union[str, Iterable]:
         """
@@ -226,23 +224,23 @@ class GPT4All:
         )
 
         if self._is_chat_session_activated:
+            generate_kwargs['reset_context'] = len(self.current_chat_session) == 1 # check if there is only one message, i.e. system prompt
             self.current_chat_session.append({"role": "user", "content": prompt})
             prompt = self._format_chat_prompt_template(
-                         messages = self.current_chat_session[-1:],
-                         default_prompt_header = self.chat_session_header
-                     )
-            generate_kwargs['reset_context'] = len(self.current_chat_session) == 1
+                                messages = self.current_chat_session[-1:],
+                                default_prompt_header = self.current_chat_session[0]["content"] if generate_kwargs['reset_context'] else ""
+                            )
         else:
             generate_kwargs['reset_context'] = True
         
-        output_collector = [{"content": ""}]
+        output_collector: List[MessageList] = [{"content": ""}] # placeholder for the self.current_chat_session if chat session is not activated
 
         if self._is_chat_session_activated:
             self.current_chat_session.append({"role": "assistant", "content": ""})
             output_collector = self.current_chat_session
 
-        def _callback_wrapper(callback, output_collector):
-            def _callback(token_id, response):
+        def _callback_wrapper(callback: pyllmodel.ResponseCallbackType, output_collector: List[MessageType]) -> pyllmodel.ResponseCallbackType:
+            def _callback(token_id: int, response: str) -> bool:
                 nonlocal callback, output_collector
 
                 output_collector[-1]["content"] += response
@@ -259,7 +257,7 @@ class GPT4All:
         return output_collector[-1]["content"]
 
     @contextmanager
-    def chat_session(self, header: str = ""):
+    def chat_session(self, system_prompt: str = ""):
         '''
         Context manager to hold an inference optimized chat session with a GPT4All model.
 
@@ -268,18 +266,18 @@ class GPT4All:
         '''
         # Code to acquire resource, e.g.:
         self._is_chat_session_activated = True
-        self.current_chat_session = []
-        self.chat_session_header = header
+        self.current_chat_session = empty_chat_session(system_prompt)
         try:
             yield self
         finally:
             # Code to release resource, e.g.:
             self._is_chat_session_activated = False
-            self.current_chat_session = []
-            self.chat_session_header = ""
+            self.current_chat_session = empty_chat_session()
 
-    def _format_chat_prompt_template(
-        self, messages: List[Dict], default_prompt_header: str = "", default_prompt_footer: str = ""
+    def _format_chat_prompt_template(self, 
+        messages: List[MessageType], 
+        default_prompt_header: str = "", 
+        default_prompt_footer: str = "",
     ) -> str:
         """
         Helper method for building a prompt using template from list of messages.
@@ -294,6 +292,7 @@ class GPT4All:
         Returns:
             Formatted prompt.
         """
+
         full_prompt = default_prompt_header + "\n\n" if default_prompt_header != "" else ""
 
         for message in messages:
@@ -307,6 +306,9 @@ class GPT4All:
         full_prompt += "\n\n" + default_prompt_footer if default_prompt_footer != "" else ""
 
         return full_prompt
+
+def empty_chat_session(system_prompt: str = "") -> List[MessageType]:
+    return [{"role": "system", "content": system_prompt}]
 
 def append_bin_suffix_if_missing(model_name):
     if not model_name.endswith(".bin"):
