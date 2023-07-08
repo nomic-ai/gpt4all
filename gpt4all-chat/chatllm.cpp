@@ -229,11 +229,11 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
 #if defined(Q_OS_MAC) && defined(__arm__)
             if (m_forceMetal)
-                m_llModelInfo.model = LLModel::construct(filePath.toStdString(), "metal");
+                m_llModelInfo.model = LLMImplementation::construct(filePath.toStdString(), "metal");
             else
-                m_llModelInfo.model = LLModel::construct(filePath.toStdString(), "auto");
+                m_llModelInfo.model = LLMImplementation::construct(filePath.toStdString(), "auto");
 #else
-            m_llModelInfo.model = LLModel::construct(filePath.toStdString(), "auto");
+            m_llModelInfo.model = LLMImplementation::construct(filePath.toStdString(), "auto");
 #endif
 
             if (m_llModelInfo.model) {
@@ -245,7 +245,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     m_llModelInfo = LLModelInfo();
                     emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename()));
                 } else {
-                    switch (m_llModelInfo.model->implementation().modelType[0]) {
+                    switch (m_llModelInfo.model->implementation().modelType()[0]) {
                     case 'L': m_llModelType = LLModelType::LLAMA_; break;
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;
                     case 'M': m_llModelType = LLModelType::MPT_; break;

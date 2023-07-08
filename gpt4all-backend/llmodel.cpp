@@ -41,41 +41,42 @@ static bool requires_avxonly() {
 #endif
 }
 
-LLImplementation::LLImplementation(Dlhandle &&dlhandle_) : dlhandle(new Dlhandle(std::move(dlhandle_))) {
-    auto get_model_type = dlhandle->get<const char *()>("get_model_type");
+LLMImplementation::LLMImplementation(Dlhandle &&dlhandle_)
+    : m_dlhandle(new Dlhandle(std::move(dlhandle_))) {
+    auto get_model_type = m_dlhandle->get<const char *()>("get_model_type");
     assert(get_model_type);
-    modelType = get_model_type();
-    auto get_build_variant = dlhandle->get<const char *()>("get_build_variant");
+    m_modelType = get_model_type();
+    auto get_build_variant = m_dlhandle->get<const char *()>("get_build_variant");
     assert(get_build_variant);
-    buildVariant = get_build_variant();
-    magicMatch = dlhandle->get<bool(std::ifstream&)>("magic_match");
+    m_buildVariant = get_build_variant();
+    m_magicMatch = m_dlhandle->get<bool(std::ifstream&)>("magic_match");
     assert(magicMatch);
-    construct_ = dlhandle->get<LLModel *()>("construct");
+    m_construct = m_dlhandle->get<LLModel *()>("construct");
     assert(construct_);
 }
 
-LLImplementation::LLImplementation(LLImplementation &&o)
-    : construct_(o.construct_)
-    , modelType(o.modelType)
-    , buildVariant(o.buildVariant)
-    , magicMatch(o.magicMatch)
-    , dlhandle(o.dlhandle) {
-    o.dlhandle = nullptr;
+LLMImplementation::LLMImplementation(LLMImplementation &&o)
+    : m_magicMatch(o.m_magicMatch)
+    , m_construct(o.m_construct)
+    , m_modelType(o.m_modelType)
+    , m_buildVariant(o.m_buildVariant)
+    , m_dlhandle(o.m_dlhandle) {
+    o.m_dlhandle = nullptr;
 }
 
-LLImplementation::~LLImplementation() {
-    if (dlhandle) delete dlhandle;
+LLMImplementation::~LLMImplementation() {
+    if (m_dlhandle) delete m_dlhandle;
 }
 
-bool LLImplementation::isImplementation(const Dlhandle &dl) {
+bool LLMImplementation::isImplementation(const Dlhandle &dl) {
     return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
-const std::vector<LLImplementation> &LLModel::implementationList() {
+const std::vector<LLMImplementation> &LLMImplementation::implementationList() {
     // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
     // individual models without the cleanup of the static list interfering
-    static auto* libs = new std::vector<LLImplementation>([] () {
-        std::vector<LLImplementation> fres;
+    static auto* libs = new std::vector<LLMImplementation>([] () {
+        std::vector<LLMImplementation> fres;
 
         auto search_in_directory = [&](const std::string& paths) {
             std::stringstream ss(paths);
@@ -90,10 +91,10 @@ const std::vector<LLImplementation> &LLModel::implementationList() {
                     // Add to list if model implementation
                     try {
                         Dlhandle dl(p.string());
-                        if (!LLImplementation::isImplementation(dl)) {
+                        if (!LLMImplementation::isImplementation(dl)) {
                             continue;
                         }
-                        fres.emplace_back(LLImplementation(std::move(dl)));
+                        fres.emplace_back(LLMImplementation(std::move(dl)));
                     } catch (...) {}
                 }
             }
@@ -107,17 +108,17 @@ const std::vector<LLImplementation> &LLModel::implementationList() {
     return *libs;
 }
 
-const LLImplementation* LLModel::implementation(std::ifstream& f, const std::string& buildVariant) {
+const LLMImplementation* LLMImplementation::implementation(std::ifstream& f, const std::string& buildVariant) {
     for (const auto& i : implementationList()) {
         f.seekg(0);
-        if (!i.magicMatch(f)) continue;
-        if (buildVariant != i.buildVariant) continue;
+        if (!i.m_magicMatch(f)) continue;
+        if (buildVariant != i.m_buildVariant) continue;
         return &i;
     }
     return nullptr;
 }
 
-LLModel *LLModel::construct(const std::string &modelPath, std::string buildVariant) {
+LLModel *LLMImplementation::construct(const std::string &modelPath, std::string buildVariant) {
 
     if (!has_at_least_minimal_hardware())
         return nullptr;
@@ -126,7 +127,7 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     std::ifstream f(modelPath, std::ios::binary);
     if (!f) return nullptr;
     // Get correct implementation
-    const LLImplementation* impl = nullptr;
+    const LLMImplementation* impl = nullptr;
 
     #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
         if (buildVariant == "auto") {
@@ -160,14 +161,17 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
         if (!impl) return nullptr;
     }
     f.close();
+
     // Construct and return llmodel implementation
-    return impl->construct();
+    auto fres = impl->m_construct();
+    fres->m_implementation = impl;
+    return fres;
 }
 
-void LLModel::setImplementationsSearchPath(const std::string& path) {
+void LLMImplementation::setImplementationsSearchPath(const std::string& path) {
     s_implementations_search_path = path;
 }
 
-const std::string& LLModel::implementationsSearchPath() {
+const std::string& LLMImplementation::implementationsSearchPath() {
     return s_implementations_search_path;
 }
