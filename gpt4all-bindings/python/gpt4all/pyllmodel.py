@@ -266,9 +266,9 @@ class LLModel:
         prompt_bytes = prompt.encode('utf-8')
         prompt_ptr = ctypes.c_char_p(prompt_bytes)
 
-        def _callback_wrapper(callback):
+        def _callback_wrapper(callback: ResponseCallbackType) -> ResponseCallbackType:
             
-            def _callback(token_id, response):
+            def _callback(token_id: int, response: str) -> bool:
                 nonlocal callback
                 return callback(token_id, response.decode('utf-8', 'replace'))
 
@@ -343,11 +343,11 @@ class LLModel:
 
     # Empty prompt callback
     @staticmethod
-    def _prompt_callback(token_id):
+    def _prompt_callback(token_id: int) -> bool:
         return True
 
 
     # Empty recalculate callback
     @staticmethod
-    def _recalculate_callback(is_recalculating):
+    def _recalculate_callback(is_recalculating: bool) -> bool:
         return is_recalculating
