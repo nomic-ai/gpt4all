@@ -29,7 +29,7 @@ llmodel_model llmodel_model_create2(const char *model_path, const char *build_va
     int error_code = 0;
 
     try {
-        wrapper->llModel = LLModel::construct(model_path, build_variant);
+        wrapper->llModel = LLMImplementation::construct(model_path, build_variant);
     } catch (const std::exception& e) {
         error_code = EINVAL;
         last_error_message = e.what();
@@ -180,10 +180,10 @@ int32_t llmodel_threadCount(llmodel_model model)
 
 void llmodel_set_implementation_search_path(const char *path)
 {
-    LLModel::setImplementationsSearchPath(path);
+    LLMImplementation::setImplementationsSearchPath(path);
 }
 
 const char *llmodel_get_implementation_search_path()
 {
-    return LLModel::implementationsSearchPath().c_str();
+    return LLMImplementation::implementationsSearchPath().c_str();
 }

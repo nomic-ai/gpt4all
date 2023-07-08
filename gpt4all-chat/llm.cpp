@@ -34,7 +34,7 @@ LLM::LLM()
     if (directoryExists(frameworksDir))
         llmodelSearchPaths += ";" + frameworksDir;
 #endif
-    LLModel::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
+    LLMImplementation::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
 
 #if defined(__x86_64__)
     #ifndef _MSC_VER
