@@ -90,6 +90,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
 
 ChatLLM::~ChatLLM()
 {
+    m_stopGenerating = true;
     m_llmThread.quit();
     m_llmThread.wait();
 
@@ -588,7 +589,7 @@ bool ChatLLM::handleNamePrompt(int32_t token)
 {
     Q_UNUSED(token);
     qt_noop();
-    return true;
+    return !m_stopGenerating;
 }
 
 bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
@@ -606,28 +607,26 @@ bool ChatLLM::handleNameRecalculate(bool isRecalc)
 {
     Q_UNUSED(isRecalc);
     Q_UNREACHABLE();
-    return true;
+    return !m_stopGenerating;
 }
 
 bool ChatLLM::handleSystemPrompt(int32_t token)
 {
     Q_UNUSED(token);
-    qt_noop();
-    return true;
+    return !m_stopGenerating;
 }
 
 bool ChatLLM::handleSystemResponse(int32_t token, const std::string &response)
 {
     Q_UNUSED(token);
     Q_UNUSED(response);
-    return false;
+    return !m_stopGenerating;
 }
 
 bool ChatLLM::handleSystemRecalculate(bool isRecalc)
 {
     Q_UNUSED(isRecalc);
-    Q_UNREACHABLE();
-    return true;
+    return !m_stopGenerating;
 }
 
 bool ChatLLM::serialize(QDataStream &stream, int version)
@@ -757,6 +756,7 @@ void ChatLLM::processSystemPrompt()
     if (!isModelLoaded() || m_processedSystemPrompt || m_isServer)
         return;
 
+    m_stopGenerating = false;
     auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
     auto responseFunc = std::bind(&ChatLLM::handleSystemResponse, this, std::placeholders::_1,
         std::placeholders::_2);
