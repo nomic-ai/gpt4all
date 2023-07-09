@@ -564,6 +564,7 @@ jobs:
                   cd gpt4all-bindings/csharp
                   mkdir -p runtimes/osx/native
                   cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
+                  cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
                   ls -R runtimes
             - run:
                 name: "Install project dependencies"
@@ -614,6 +615,7 @@ jobs:
             cp /tmp/workspace/runtimes/win-x64/*.dll runtimes/win-x64/native/
             mkdir -p runtimes/osx/native
             cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
+            cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
             dotnet pack ./Gpt4All/Gpt4All.csproj -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -c Release
             dotnet nuget push ./Gpt4All/bin/Release/Gpt4All.*.nupkg -s $NUGET_URL -k $NUGET_TOKEN --skip-duplicate
       - store_artifacts:
