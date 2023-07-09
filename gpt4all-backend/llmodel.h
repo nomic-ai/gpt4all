@@ -12,10 +12,35 @@
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
 class Dlhandle;
-class LLMImplementation;
 class LLModel {
 public:
     using Token = int32_t;
+    class Implementation {
+    public:
+        Implementation(Dlhandle&&);
+        Implementation(const Implementation&) = delete;
+        Implementation(Implementation&&);
+        ~Implementation();
+
+        std::string_view modelType() const { return m_modelType; }
+        std::string_view buildVariant() const { return m_buildVariant; }
+
+        static bool isImplementation(const Dlhandle&);
+        static const std::vector<Implementation>& implementationList();
+        static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
+        static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
+        static void setImplementationsSearchPath(const std::string& path);
+        static const std::string& implementationsSearchPath();
+
+    private:
+        bool (*m_magicMatch)(std::ifstream& f);
+        LLModel *(*m_construct)();
+
+    private:
+        std::string_view m_modelType;
+        std::string_view m_buildVariant;
+        Dlhandle *m_dlhandle;
+    };
 
     struct PromptContext {
         std::vector<float> logits;      // logits of current context
@@ -51,7 +76,7 @@ public:
     virtual void setThreadCount(int32_t /*n_threads*/) {}
     virtual int32_t threadCount() const { return 1; }
 
-    const LLMImplementation& implementation() const {
+    const Implementation& implementation() const {
         return *m_implementation;
     }
 
@@ -69,37 +94,10 @@ protected:
     // shared by all base classes so it isn't virtual
     void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 
-    const LLMImplementation *m_implementation = nullptr;
+    const Implementation *m_implementation = nullptr;
 
 private:
     friend class LLMImplementation;
-};
-
-class LLMImplementation {
-public:
-    LLMImplementation(Dlhandle&&);
-    LLMImplementation(const LLMImplementation&) = delete;
-    LLMImplementation(LLMImplementation&&);
-    ~LLMImplementation();
-
-    std::string_view modelType() const { return m_modelType; }
-    std::string_view buildVariant() const { return m_buildVariant; }
-
-    static bool isImplementation(const Dlhandle&);
-    static const std::vector<LLMImplementation>& implementationList();
-    static const LLMImplementation *implementation(std::ifstream& f, const std::string& buildVariant);
-    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
-    static void setImplementationsSearchPath(const std::string& path);
-    static const std::string& implementationsSearchPath();
-
-private:
-    bool (*m_magicMatch)(std::ifstream& f);
-    LLModel *(*m_construct)();
-
-private:
-    std::string_view m_modelType;
-    std::string_view m_buildVariant;
-    Dlhandle *m_dlhandle;
 };
 
 #endif // LLMODEL_H

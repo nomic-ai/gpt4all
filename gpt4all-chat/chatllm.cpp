@@ -233,7 +233,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             else
                 m_llModelInfo.model = LLMImplementation::construct(filePath.toStdString(), "auto");
 #else
-            m_llModelInfo.model = LLMImplementation::construct(filePath.toStdString(), "auto");
+            m_llModelInfo.model = LLModel::Implementation::construct(filePath.toStdString(), "auto");
 #endif
 
             if (m_llModelInfo.model) {
