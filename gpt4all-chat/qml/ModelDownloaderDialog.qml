@@ -401,9 +401,9 @@ MyDialog {
             FolderDialog {
                 id: modelPathDialog
                 title: "Please choose a directory"
-                currentFolder: "file://" + MySettings.modelsPath
+                currentFolder: "file://" + MySettings.modelPath
                 onAccepted: {
-                    MySettings.modelsPath = selectedFolder
+                    MySettings.modelPath = selectedFolder
                 }
             }
             Label {
@@ -424,7 +424,7 @@ MyDialog {
                 Accessible.description: ToolTip.text
                 onEditingFinished: {
                     if (isValid) {
-                        MySettings.modelsPath = modelPathDisplayField.text
+                        MySettings.modelPath = modelPathDisplayField.text
                     } else {
                         text = MySettings.modelPath
                     }
