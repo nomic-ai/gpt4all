@@ -363,10 +363,13 @@ jobs:
             cmake --build . --parallel --config Release
             mkdir ../osx-x64
             cp -L *.dylib ../osx-x64
+            cp ../../llama.cpp-mainline/*.metal ../osx-x64
+            ls ../osx-x64
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
             - runtimes/osx-x64/*.dylib
+            - runtimes/osx-x64/*.metal
 
   build-bindings-backend-windows:
     executor:
