@@ -7,25 +7,16 @@ import download
 import network
 import llm
 
-Dialog {
+MyDialog {
     id: newVerionDialog
     anchors.centerIn: parent
     modal: true
-    opacity: 0.9
     width: contentItem.width
     height: contentItem.height
-    padding: 20
+    padding: 10
 
     Theme {
         id: theme
-    }
-
-    background: Rectangle {
-        anchors.fill: parent
-        color: theme.backgroundDarkest
-        border.width: 1
-        border.color: theme.dialogBorder
-        radius: 10
     }
 
     Item {

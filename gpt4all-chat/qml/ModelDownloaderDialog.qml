@@ -11,20 +11,11 @@ import modellist
 import network
 import mysettings
 
-Dialog {
+MyDialog {
     id: modelDownloaderDialog
     modal: true
-    opacity: 0.9
     closePolicy: ModelList.installedModels.count === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
-    padding: 20
-    bottomPadding: 30
-    background: Rectangle {
-        anchors.fill: parent
-        color: theme.backgroundDarkest
-        border.width: 1
-        border.color: theme.dialogBorder
-        radius: 10
-    }
+    padding: 10
 
     onOpened: {
         Network.sendModelDownloaderDialog();
@@ -38,7 +29,7 @@ Dialog {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 20
+        anchors.margins: 10
         spacing: 30
 
         Label {
@@ -83,7 +74,7 @@ Dialog {
 
                         Text {
                             textFormat: Text.StyledText
-                            text: "<h2>" + (name !== "" ? name : filename) + "</h2>"
+                            text: "<h2>" + name + "</h2>"
                             Layout.row: 0
                             Layout.column: 0
                             Layout.topMargin: 20
@@ -197,6 +188,7 @@ Dialog {
                                             : (isDownloading ? qsTr("Downloading") : qsTr("Available")))))
                                             + "</strong></font>"
                                         color: theme.textColor
+                                        linkColor: theme.textErrorColor
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: text
                                         Accessible.description: qsTr("Whether the file is already installed on your system")
@@ -329,12 +321,14 @@ Dialog {
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
                                     Layout.minimumWidth: 150
+                                    Layout.maximumWidth: textMetrics.width + 25
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     color: theme.textColor
                                     background: Rectangle {
                                         color: theme.backgroundLighter
                                         radius: 10
                                     }
+                                    wrapMode: Text.WrapAnywhere
                                     function showError() {
                                         openaiKey.placeholderTextColor = theme.textErrorColor
                                     }
@@ -346,6 +340,11 @@ Dialog {
                                     Accessible.role: Accessible.EditableText
                                     Accessible.name: placeholderText
                                     Accessible.description: qsTr("Whether the file hash is being calculated")
+                                    TextMetrics {
+                                        id: textMetrics
+                                        font: openaiKey.font
+                                        text: openaiKey.placeholderText
+                                    }
                                 }
                             }
                         }
@@ -402,9 +401,9 @@ Dialog {
             FolderDialog {
                 id: modelPathDialog
                 title: "Please choose a directory"
-                currentFolder: "file://" + MySettings.modelsPath
+                currentFolder: "file://" + MySettings.modelPath
                 onAccepted: {
-                    MySettings.modelsPath = selectedFolder
+                    MySettings.modelPath = selectedFolder
                 }
             }
             Label {
@@ -425,7 +424,7 @@ Dialog {
                 Accessible.description: ToolTip.text
                 onEditingFinished: {
                     if (isValid) {
-                        MySettings.modelsPath = modelPathDisplayField.text
+                        MySettings.modelPath = modelPathDisplayField.text
                     } else {
                         text = MySettings.modelPath
                     }

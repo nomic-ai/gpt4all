@@ -6,8 +6,13 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import localdocs
 import mysettings
+import network
 
 MySettingsTab {
+    onRestoreDefaultsClicked: {
+        MySettings.restoreLocalDocsDefaults();
+    }
+
     title: qsTr("LocalDocs Plugin (BETA)")
     contentItem: ColumnLayout {
         id: root
@@ -25,101 +30,95 @@ MySettingsTab {
             }
         }
 
-        RowLayout {
+        Item {
             Layout.fillWidth: true
-            height: collection.height + 20
-            spacing: 10
-            MyTextField {
-                id: collection
-                width: 225
-                horizontalAlignment: Text.AlignJustify
-                color: theme.textColor
-                placeholderText: qsTr("Collection name...")
-                placeholderTextColor: theme.mutedTextColor
-                ToolTip.text: qsTr("Name of the collection to add (Required)")
-                ToolTip.visible: hovered
-                Accessible.role: Accessible.EditableText
-                Accessible.name: collection.text
-                Accessible.description: ToolTip.text
-                function showError() {
-                    collection.placeholderTextColor = theme.textErrorColor
-                }
-                onTextChanged: {
-                    collection.placeholderTextColor = theme.mutedTextColor
-                }
-            }
-
-            MyDirectoryField {
-                id: folderEdit
-                Layout.fillWidth: true
-                text: root.folder_path
-                placeholderText: qsTr("Folder path...")
-                placeholderTextColor: theme.mutedTextColor
-                ToolTip.text: qsTr("Folder path to documents (Required)")
-                ToolTip.visible: hovered
-                function showError() {
-                    folderEdit.placeholderTextColor = theme.textErrorColor
-                }
-                onTextChanged: {
-                    folderEdit.placeholderTextColor = theme.mutedTextColor
-                }
-            }
-
-            MyButton {
-                id: browseButton
-                text: qsTr("Browse")
-                onClicked: {
-                    folderDialog.open();
-                }
-            }
-
-            MyButton {
-                id: addButton
-                text: qsTr("Add")
-                Accessible.role: Accessible.Button
-                Accessible.name: text
-                Accessible.description: qsTr("Add button")
-                onClicked: {
-                    var isError = false;
-                    if (root.collection === "") {
-                        isError = true;
-                        collection.showError();
+            height: row.height
+            RowLayout {
+                id: row
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: collection.height
+                spacing: 10
+                MyTextField {
+                    id: collection
+                    width: 225
+                    horizontalAlignment: Text.AlignJustify
+                    color: theme.textColor
+                    placeholderText: qsTr("Collection name...")
+                    placeholderTextColor: theme.mutedTextColor
+                    ToolTip.text: qsTr("Name of the collection to add (Required)")
+                    ToolTip.visible: hovered
+                    Accessible.role: Accessible.EditableText
+                    Accessible.name: collection.text
+                    Accessible.description: ToolTip.text
+                    function showError() {
+                        collection.placeholderTextColor = theme.textErrorColor
                     }
-                    if (root.folder_path === "" || !folderEdit.isValid) {
-                        isError = true;
-                        folderEdit.showError();
+                    onTextChanged: {
+                        collection.placeholderTextColor = theme.mutedTextColor
                     }
-                    if (isError)
-                        return;
-                    LocalDocs.addFolder(root.collection, root.folder_path)
-                    root.collection = ""
-                    root.folder_path = ""
-                    collection.clear()
+                }
+
+                MyDirectoryField {
+                    id: folderEdit
+                    Layout.fillWidth: true
+                    text: root.folder_path
+                    placeholderText: qsTr("Folder path...")
+                    placeholderTextColor: theme.mutedTextColor
+                    ToolTip.text: qsTr("Folder path to documents (Required)")
+                    ToolTip.visible: hovered
+                    function showError() {
+                        folderEdit.placeholderTextColor = theme.textErrorColor
+                    }
+                    onTextChanged: {
+                        folderEdit.placeholderTextColor = theme.mutedTextColor
+                    }
+                }
+
+                MyButton {
+                    id: browseButton
+                    text: qsTr("Browse")
+                    onClicked: {
+                        folderDialog.open();
+                    }
+                }
+
+                MyButton {
+                    id: addButton
+                    text: qsTr("Add")
+                    Accessible.role: Accessible.Button
+                    Accessible.name: text
+                    Accessible.description: qsTr("Add button")
+                    onClicked: {
+                        var isError = false;
+                        if (root.collection === "") {
+                            isError = true;
+                            collection.showError();
+                        }
+                        if (root.folder_path === "" || !folderEdit.isValid) {
+                            isError = true;
+                            folderEdit.showError();
+                        }
+                        if (isError)
+                            return;
+                        LocalDocs.addFolder(root.collection, root.folder_path)
+                        root.collection = ""
+                        root.folder_path = ""
+                        collection.clear()
+                    }
                 }
             }
         }
 
-        ScrollView {
-            id: scrollView
-            Layout.fillWidth: true
-            Layout.bottomMargin: 20
-            clip: true
-            contentHeight: 300
-            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-
-            background: Rectangle {
-                color: theme.backgroundLighter
-            }
-
-            ListView {
-                id: listView
+        ColumnLayout {
+            spacing: 0
+            Repeater {
                 model: LocalDocs.localDocsModel
-                boundsBehavior: Flickable.StopAtBounds
                 delegate: Rectangle {
                     id: item
-                    width: listView.width
+                    Layout.fillWidth: true
                     height: buttons.height + 20
-                    color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
+                    color: index % 2 === 0 ? theme.backgroundDark : theme.backgroundDarker
                     property bool removing: false
 
                     Text {
@@ -136,6 +135,7 @@ MySettingsTab {
                     Text {
                         id: folderId
                         anchors.left: collectionId.right
+                        anchors.right: buttons.left
                         anchors.margins: 20
                         anchors.verticalCenter: parent.verticalCenter
                         text: folder_path
@@ -170,123 +170,115 @@ MySettingsTab {
             }
         }
 
-        GridLayout {
-            id: gridLayout
+        RowLayout {
+            Label {
+                id: showReferencesLabel
+                text: qsTr("Show references:")
+                color: theme.textColor
+            }
+            MyCheckBox {
+                id: showReferencesBox
+                checked: MySettings.localDocsShowReferences
+                onClicked: {
+                    MySettings.localDocsShowReferences = !MySettings.localDocsShowReferences
+                }
+                ToolTip.text: qsTr("Shows any references in GUI generated by localdocs")
+                ToolTip.visible: hovered
+            }
+        }
+
+        Rectangle {
             Layout.fillWidth: true
-            columns: 3
-            rowSpacing: 10
-            columnSpacing: 10
+            height: 1
+            color: theme.tabBorder
+        }
+    }
+    advancedSettings: GridLayout {
+        id: gridLayout
+        columns: 3
+        rowSpacing: 10
+        columnSpacing: 10
 
-            Rectangle {
-                Layout.row: 0
-                Layout.column: 0
-                Layout.fillWidth: true
-                Layout.columnSpan: 3
-                height: 1
-                color: theme.dialogBorder
+        Rectangle {
+            Layout.row: 3
+            Layout.column: 0
+            Layout.fillWidth: true
+            Layout.columnSpan: 3
+            height: 1
+            color: theme.tabBorder
+        }
+
+        Label {
+            id: chunkLabel
+            Layout.row: 1
+            Layout.column: 0
+            color: theme.textColor
+            text: qsTr("Document snippet size (characters):")
+        }
+
+        MyTextField {
+            id: chunkSizeTextField
+            Layout.row: 1
+            Layout.column: 1
+            ToolTip.text: qsTr("Number of characters per document snippet.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
+            ToolTip.visible: hovered
+            text: MySettings.localDocsChunkSize
+            validator: IntValidator {
+                bottom: 1
             }
-
-            Rectangle {
-                Layout.row: 3
-                Layout.column: 0
-                Layout.fillWidth: true
-                Layout.columnSpan: 3
-                height: 1
-                color: theme.dialogBorder
-            }
-
-            // This is here just to stretch out the third column
-            Rectangle {
-                Layout.row: 3
-                Layout.column: 2
-                Layout.fillWidth: true
-                height: 1
-                color: theme.dialogBorder
-            }
-
-            Label {
-                id: chunkLabel
-                Layout.row: 1
-                Layout.column: 0
-                color: theme.textColor
-                text: qsTr("Document snippet size (characters):")
-            }
-
-            MyTextField {
-                id: chunkSizeTextField
-                Layout.row: 1
-                Layout.column: 1
-                ToolTip.text: qsTr("Number of characters per document snippet.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
-                ToolTip.visible: hovered
-                text: MySettings.localDocsChunkSize
-                validator: IntValidator {
-                    bottom: 1
-                }
-                onEditingFinished: {
-                    var val = parseInt(text)
-                    if (!isNaN(val)) {
-                        MySettings.localDocsChunkSize = val
-                        focus = false
-                    } else {
-                        text = MySettings.localDocsChunkSize
-                    }
+            onEditingFinished: {
+                var val = parseInt(text)
+                if (!isNaN(val)) {
+                    MySettings.localDocsChunkSize = val
+                    focus = false
+                } else {
+                    text = MySettings.localDocsChunkSize
                 }
             }
+        }
 
-            Label {
-                id: contextItemsPerPrompt
-                Layout.row: 2
-                Layout.column: 0
-                color: theme.textColor
-                text: qsTr("Document snippets per prompt:")
+        Label {
+            id: contextItemsPerPrompt
+            Layout.row: 2
+            Layout.column: 0
+            color: theme.textColor
+            text: qsTr("Document snippets per prompt:")
+        }
+
+        MyTextField {
+            Layout.row: 2
+            Layout.column: 1
+            ToolTip.text: qsTr("Best N matches of retrieved document snippets to add to the context for prompt.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
+            ToolTip.visible: hovered
+            text: MySettings.localDocsRetrievalSize
+            validator: IntValidator {
+                bottom: 1
             }
-
-            MyTextField {
-                Layout.row: 2
-                Layout.column: 1
-                ToolTip.text: qsTr("Best N matches of retrieved document snippets to add to the context for prompt.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
-                ToolTip.visible: hovered
-                text: MySettings.localDocsRetrievalSize
-                validator: IntValidator {
-                    bottom: 1
-                }
-                onEditingFinished: {
-                    var val = parseInt(text)
-                    if (!isNaN(val)) {
-                        MySettings.localDocsRetrievalSize = val
-                        focus = false
-                    } else {
-                        text = MySettings.localDocsRetrievalSize
-                    }
+            onEditingFinished: {
+                var val = parseInt(text)
+                if (!isNaN(val)) {
+                    MySettings.localDocsRetrievalSize = val
+                    focus = false
+                } else {
+                    text = MySettings.localDocsRetrievalSize
                 }
             }
+        }
 
+        Item {
+            Layout.row: 1
+            Layout.column: 2
+            Layout.rowSpan: 2
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignTop
+            Layout.minimumHeight: warningLabel.height
             Label {
                 id: warningLabel
-                Layout.row: 1
-                Layout.column: 2
-                Layout.rowSpan: 2
-                Layout.maximumWidth: 520
-                Layout.alignment: Qt.AlignTop
+                width: parent.width
                 color: theme.textErrorColor
                 wrapMode: Text.WordWrap
                 text: qsTr("Warning: Advanced usage only. Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model's context window. More info <a href=\"https://docs.gpt4all.io/gpt4all_chat.html#localdocs-beta-plugin-chat-with-your-data\">here.</a>")
                 onLinkActivated: function(link) { Qt.openUrlExternally(link) }
-            }
-
-            MyButton {
-                id: restoreDefaultsButton
-                Layout.row: 4
-                Layout.column: 1
-                Layout.columnSpan: 2
-                Layout.fillWidth: true
-                text: qsTr("Restore Defaults")
-                Accessible.role: Accessible.Button
-                Accessible.name: text
-                Accessible.description: qsTr("Restores the settings dialog to a default state")
-                onClicked: {
-                    MySettings.restoreLocalDocsDefaults();
-                }
             }
         }
     }

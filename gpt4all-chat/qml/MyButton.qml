@@ -17,7 +17,7 @@ Button {
         border.color: myButton.down ? theme.backgroundLightest : theme.buttonBorder
         border.width: 2
         radius: 10
-        color: myButton.hovered ? theme.backgroundLighter : theme.backgroundLight
+        color: myButton.hovered ? theme.backgroundDark : theme.backgroundDarkest
     }
     Accessible.role: Accessible.Button
     Accessible.name: text

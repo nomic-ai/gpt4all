@@ -4,6 +4,8 @@ The GPT4All CLI is a self-contained script based on the `gpt4all` and `typer` pa
 REPL to communicate with a language model similar to the chat GUI application, but more basic.
 """
 
+import io
+import pkg_resources  # should be present as a dependency of gpt4all
 import sys
 import typer
 
@@ -26,7 +28,7 @@ SPECIAL_COMMANDS = {
 }
 
 VersionInfo = namedtuple('VersionInfo', ['major', 'minor', 'micro'])
-VERSION_INFO = VersionInfo(0, 3, 5)
+VERSION_INFO = VersionInfo(1, 0, 2)
 VERSION = '.'.join(map(str, VERSION_INFO))  # convert to string form, like: '1.2.3'
 
 CLI_START_MESSAGE = f"""
@@ -75,6 +77,21 @@ def repl(
 
     print(CLI_START_MESSAGE)
 
+    use_new_loop = False
+    try:
+        version = pkg_resources.Environment()['gpt4all'][0].version
+        version_major = int(version.split('.')[0])
+        if version_major >= 1:
+            use_new_loop = True
+    except:
+        pass  # fall back to old loop
+    if use_new_loop:
+        _new_loop(gpt4all_instance)
+    else:
+        _old_loop(gpt4all_instance)
+
+
+def _old_loop(gpt4all_instance):
     while True:
         message = input(" ⇢  ")
 
@@ -110,6 +127,47 @@ def repl(
         # record assistant's response to messages
         MESSAGES.append(full_response.get("choices")[0].get("message"))
         print() # newline before next prompt
+
+
+def _new_loop(gpt4all_instance):
+    with gpt4all_instance.chat_session():
+        while True:
+            message = input(" ⇢  ")
+
+            # Check if special command and take action
+            if message in SPECIAL_COMMANDS:
+                SPECIAL_COMMANDS[message](MESSAGES)
+                continue
+
+            # if regular message, append to messages
+            MESSAGES.append({"role": "user", "content": message})
+
+            # execute chat completion and ignore the full response since 
+            # we are outputting it incrementally
+            response_generator = gpt4all_instance.generate(
+                message,
+                # preferential kwargs for chat ux
+                max_tokens=200,
+                temp=0.9,
+                top_k=40,
+                top_p=0.9,
+                repeat_penalty=1.1,
+                repeat_last_n=64,
+                n_batch=9,
+                # required kwargs for cli ux (incremental response)
+                streaming=True,
+            )
+            response = io.StringIO()
+            for token in response_generator:
+                print(token, end='', flush=True)
+                response.write(token)
+
+            # record assistant's response to messages
+            response_message = {'role': 'assistant', 'content': response.getvalue()}
+            response.close()
+            gpt4all_instance.current_chat_session.append(response_message)
+            MESSAGES.append(response_message)
+            print() # newline before next prompt
 
 
 @app.command()

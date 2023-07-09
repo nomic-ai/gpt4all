@@ -204,18 +204,28 @@ Window {
                 anchors.horizontalCenterOffset: window.width >= 950 ? 0 : Math.max(-((950 - window.width) / 2), -99.5)
                 enabled: !currentChat.isServer
                 model: ModelList.installedModels
-                valueRole: "filename"
+                valueRole: "id"
                 textRole: "name"
                 property string currentModelName: ""
                 function updateCurrentModelName() {
-                    var info = ModelList.modelInfo(currentChat.modelInfo.filename);
-                    comboBox.currentModelName = info.name !== "" ? info.name : info.filename;
+                    var info = ModelList.modelInfo(currentChat.modelInfo.id);
+                    comboBox.currentModelName = info.name;
                 }
                 Connections {
                     target: currentChat
                     function onModelInfoChanged() {
                         comboBox.updateCurrentModelName();
                     }
+                }
+                Connections {
+                    target: window
+                    function onCurrentChatChanged() {
+                        comboBox.updateCurrentModelName();
+                    }
+                }
+                background: Rectangle {
+                    color: theme.backgroundDark
+                    radius: 10
                 }
                 contentItem: Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -233,7 +243,7 @@ Window {
                 delegate: ItemDelegate {
                     width: comboBox.width
                     contentItem: Text {
-                        text: name !== "" ? name : filename
+                        text: name
                         color: theme.textColor
                         font: comboBox.font
                         elide: Text.ElideRight
@@ -557,6 +567,7 @@ Window {
         onClicked: {
             Network.sendResetContext(chatModel.count)
             currentChat.reset();
+            currentChat.processSystemPrompt();
         }
     }
 
@@ -870,6 +881,7 @@ Window {
         }
 
         MyButton {
+            id: myButton
             visible: chatModel.count && !currentChat.isServer
             Image {
                 anchors.verticalCenter: parent.verticalCenter
@@ -894,18 +906,16 @@ Window {
                             chatModel.updateThumbsUpState(index, false);
                             chatModel.updateThumbsDownState(index, false);
                             chatModel.updateNewResponse(index, "");
-                            currentChat.prompt(listElement.prompt,
-                                       MySettings.promptTemplate,
-                                       MySettings.maxLength,
-                                       MySettings.topK,
-                                       MySettings.topP,
-                                       MySettings.temperature,
-                                       MySettings.promptBatchSize,
-                                       MySettings.repeatPenalty,
-                                       MySettings.repeatPenaltyTokens)
+                            currentChat.prompt(listElement.prompt)
                         }
                     }
                 }
+            }
+            background: Rectangle {
+                border.color: myButton.down ? theme.backgroundLightest : theme.buttonBorder
+                border.width: 2
+                radius: 10
+                color: myButton.hovered ? theme.backgroundLighter : theme.backgroundLight
             }
             anchors.bottom: textInputView.top
             anchors.horizontalCenter: textInputView.horizontalCenter

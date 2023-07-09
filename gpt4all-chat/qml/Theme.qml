@@ -7,9 +7,9 @@ QtObject {
     property color textAccent: "#8e8ea0"
     property color mutedTextColor: backgroundLightest
     property color textErrorColor: "red"
-    property color backgroundDarkest: "#202123"
-    property color backgroundDarker: "#222326"
-    property color backgroundDark: "#242528"
+    property color backgroundDarkest: "#1c1f21"
+    property color backgroundDarker: "#1e2123"
+    property color backgroundDark: "#222527"
     property color backgroundLight: "#343541"
     property color backgroundLighter: "#444654"
     property color backgroundLightest: "#7d7d8e"
@@ -19,7 +19,7 @@ QtObject {
     property color userColor: "#ec86bf"
     property color assistantColor: "#10a37f"
     property color linkColor: "#55aaff"
-    property color tabBorder: "#2c2d35"
+    property color tabBorder: backgroundLight
     property real  fontSizeLarge: Qt.application.font.pixelSize
     property real  fontSizeLarger: Qt.application.font.pixelSize + 2
 }
