@@ -14,7 +14,7 @@ import mysettings
 MyDialog {
     id: modelDownloaderDialog
     modal: true
-    closePolicy: ModelList.installedModels.count === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     padding: 10
 
     onOpened: {
