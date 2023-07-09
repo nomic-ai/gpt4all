@@ -14,6 +14,7 @@
 #define REPLIT_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
 #define FALCON_INTERNAL_STATE_VERSION 0
+#define BERT_INTERNAL_STATE_VERSION 0
 
 class LLModelStore {
 public:
@@ -264,6 +265,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     case 'M': m_llModelType = LLModelType::MPT_; break;
                     case 'R': m_llModelType = LLModelType::REPLIT_; break;
                     case 'F': m_llModelType = LLModelType::FALCON_; break;
+                    case 'B': m_llModelType = LLModelType::BERT_; break;
                     default:
                         {
                             delete std::exchange(m_llModelInfo.model, nullptr);
@@ -628,8 +630,8 @@ bool ChatLLM::handleNameRecalculate(bool isRecalc)
     qDebug() << "name recalc" << m_llmThread.objectName() << isRecalc;
 #endif
     Q_UNUSED(isRecalc);
-    Q_UNREACHABLE();
-    return false;
+    qt_noop();
+    return true;
 }
 
 bool ChatLLM::handleSystemPrompt(int32_t token)
@@ -669,7 +671,8 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
         case MPT_: stream << MPT_INTERNAL_STATE_VERSION; break;
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
-        case FALCON_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
+        case FALCON_: stream << FALCON_INTERNAL_STATE_VERSION; break;
+        case BERT_: stream << BERT_INTERNAL_STATE_VERSION; break;
         default: Q_UNREACHABLE();
         }
     }

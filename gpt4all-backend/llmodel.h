@@ -61,17 +61,24 @@ public:
     explicit LLModel() {}
     virtual ~LLModel() {}
 
+    virtual bool supportsEmbedding() const = 0;
+    virtual bool supportsCompletion() const = 0;
     virtual bool loadModel(const std::string &modelPath) = 0;
     virtual bool isModelLoaded() const = 0;
     virtual size_t requiredMem(const std::string &modelPath) = 0;
     virtual size_t stateSize() const { return 0; }
     virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
     virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
+
+    // This method requires the model to return true from supportsCompletion otherwise it will throw
+    // an error
     virtual void prompt(const std::string &prompt,
                         std::function<bool(int32_t)> promptCallback,
                         std::function<bool(int32_t, const std::string&)> responseCallback,
                         std::function<bool(bool)> recalculateCallback,
                         PromptContext &ctx);
+
+    virtual std::vector<float> embedding(const std::string &text);
 
     virtual void setThreadCount(int32_t /*n_threads*/) {}
     virtual int32_t threadCount() const { return 1; }

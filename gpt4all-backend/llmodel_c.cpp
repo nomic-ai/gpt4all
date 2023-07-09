@@ -166,6 +166,25 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     ctx->context_erase = wrapper->promptContext.contextErase;
 }
 
+float *llmodel_embedding(llmodel_model model, const char *text, size_t *embedding_size)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    std::vector<float> embeddingVector = wrapper->llModel->embedding(text);
+    float *embedding = (float *)malloc(embeddingVector.size() * sizeof(float));
+    if(embedding == nullptr) {
+        *embedding_size = 0;
+        return nullptr;
+    }
+    std::copy(embeddingVector.begin(), embeddingVector.end(), embedding);
+    *embedding_size = embeddingVector.size();
+    return embedding;
+}
+
+void llmodel_free_embedding(float *ptr)
+{
+    free(ptr);
+}
+
 void llmodel_setThreadCount(llmodel_model model, int32_t n_threads)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
