@@ -37,6 +37,13 @@ void LLModel::prompt(const std::string &prompt,
         return;
     }
 
+    if (!supportsCompletion()) {
+        std::string errorMessage = "ERROR: this model does not support text completion or chat!\n";
+        responseCallback(-1, errorMessage);
+        std::cerr << implementation().modelType() << errorMessage;
+        return;
+    }
+
     // tokenize the prompt
     std::vector<Token> embd_inp = tokenize(promptCtx, prompt);
 
@@ -157,4 +164,13 @@ void LLModel::prompt(const std::string &prompt,
         }
         cachedTokens.clear();
     }
+}
+
+std::vector<float> LLModel::embedding(const std::string &/*text*/)
+{
+    if (!supportsCompletion()) {
+        std::string errorMessage = "ERROR: this model does not support generating embeddings!\n";
+        std::cerr << implementation().modelType() << errorMessage;
+    }
+    return std::vector<float>();
 }

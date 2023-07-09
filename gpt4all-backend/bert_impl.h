@@ -1,8 +1,8 @@
-#ifndef FALCON_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
-#error This file is NOT meant to be included outside of falcon.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define FALCON_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#ifndef BERT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#error This file is NOT meant to be included outside of bert.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define BERT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #endif
-#ifndef FALCON_H
-#define FALCON_H
+#ifndef BERT_H
+#define BERT_H
 
 #include <string>
 #include <functional>
@@ -10,13 +10,13 @@
 #include <memory>
 #include "llmodel.h"
 
-struct FalconPrivate;
-class Falcon : public LLModel {
+struct BertPrivate;
+class Bert : public LLModel {
 public:
-    Falcon();
-    ~Falcon();
+    Bert();
+    ~Bert();
 
-    bool supportsEmbedding() const override { return false; }
+    bool supportsEmbedding() const override { return true; }
     bool supportsCompletion() const override { return true; }
     bool loadModel(const std::string &modelPath) override;
     bool isModelLoaded() const override;
@@ -27,8 +27,10 @@ public:
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
 
+    std::vector<float> embedding(const std::string &text) override;
+
 private:
-    std::unique_ptr<FalconPrivate> d_ptr;
+    std::unique_ptr<BertPrivate> d_ptr;
 
 protected:
     std::vector<Token> tokenize(PromptContext &, const std::string&) const override;
@@ -39,4 +41,4 @@ protected:
     const std::vector<Token>& endTokens() const override;
 };
 
-#endif // Falcon_H
+#endif // BERT_H

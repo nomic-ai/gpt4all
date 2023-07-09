@@ -112,6 +112,19 @@ llmodel.llmodel_prompt.argtypes = [
 
 llmodel.llmodel_prompt.restype = None
 
+llmodel.llmodel_embedding.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_char_p,
+    ctypes.POINTER(ctypes.c_size_t),
+]
+
+llmodel.llmodel_embedding.restype = ctypes.POINTER(ctypes.c_float)
+
+llmodel.llmodel_free_embedding.argtypes = [
+    ctypes.POINTER(ctypes.c_float)
+]
+llmodel.llmodel_free_embedding.restype = None
+
 llmodel.llmodel_setThreadCount.argtypes = [ctypes.c_void_p, ctypes.c_int32]
 llmodel.llmodel_setThreadCount.restype = None
 
@@ -232,6 +245,17 @@ class LLModel:
         self.context.repeat_penalty = repeat_penalty
         self.context.repeat_last_n = repeat_last_n
         self.context.context_erase = context_erase
+
+    def generate_embedding(
+        self,
+        text: str
+    ) -> list[float]:
+        embedding_size = ctypes.c_size_t()
+        c_text = ctypes.c_char_p(text.encode('utf-8'))
+        embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
+        embedding_array = ctypes.cast(embedding_ptr, ctypes.POINTER(ctypes.c_float * embedding_size.value)).contents
+        llmodel.llmodel_free_embedding(embedding_ptr)
+        return list(embedding_array)
 
     def prompt_model(
         self,
