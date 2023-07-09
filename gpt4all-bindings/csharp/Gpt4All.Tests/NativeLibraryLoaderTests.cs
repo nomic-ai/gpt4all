@@ -31,7 +31,7 @@ public class NativeLibraryLoaderTests
     [PlatformSpecificFact(Platforms.Linux)]
     public void NativeLibraryShouldLoad_Linux()
     {
-        var libraryLoader = new WindowsLibraryLoader();
+        var libraryLoader = new LinuxLibraryLoader();
 
         var libraryPath = Path.Combine(
             Environment.CurrentDirectory,
@@ -44,7 +44,7 @@ public class NativeLibraryLoaderTests
     [PlatformSpecificFact(Platforms.MacOS)]
     public void NativeLibraryShouldLoad_MacOS()
     {
-        var libraryLoader = new WindowsLibraryLoader();
+        var libraryLoader = new MacOsLibraryLoader();
 
         var libraryPath = Path.Combine(
             Environment.CurrentDirectory,
