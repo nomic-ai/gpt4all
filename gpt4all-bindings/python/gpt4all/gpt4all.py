@@ -45,8 +45,8 @@ class GPT4All:
         self.model_type = model_type
         self.model = pyllmodel.LLModel()
         # Retrieve model and download if allowed
-        model_dest = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
-        self.model.load_model(model_dest)
+        self.config: Dict[str, str] = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
+        self.model.load_model(self.config["path"])
         # Set n_threads
         if n_threads is not None:
             self.model.set_thread_count(n_threads)
@@ -54,6 +54,7 @@ class GPT4All:
         self._is_chat_session_activated: bool = False
         self.current_chat_session: List[MessageType] = empty_chat_session() 
 
+        
     @staticmethod
     def list_models() -> Dict:
         """
@@ -84,6 +85,16 @@ class GPT4All:
 
         model_filename = append_bin_suffix_if_missing(model_name)
 
+        # get the config for the model
+        config = {}
+        if allow_download:
+            available_models = GPT4All.list_models()
+
+            for m in available_models:
+                if model_filename == m['filename']:
+                    config = m
+                    break
+
         # Validate download directory
         if model_path is None:
             try:
@@ -102,28 +113,24 @@ class GPT4All:
 
         model_dest = os.path.join(model_path, model_filename).replace("\\", "\\\\")
         if os.path.exists(model_dest):
+            config.pop("url", None)
+            config["path"] = model_dest
             if verbose:
                 print("Found model file at ", model_dest)
-            return model_dest
 
         # If model file does not exist, download
         elif allow_download:
             # Make sure valid model filename before attempting download
-            available_models = GPT4All.list_models()
 
-            selected_model = None
-            for m in available_models:
-                if model_filename == m['filename']:
-                    selected_model = m
-                    break
-
-            if selected_model is None:
+            if "url" not in config:
                 raise ValueError(f"Model filename not in model list: {model_filename}")
-            url = selected_model.pop('url', None)
+            url = config.pop('url', None)
 
-            return GPT4All.download_model(model_filename, model_path, verbose=verbose, url=url)
+            config["path"] = GPT4All.download_model(model_filename, model_path, verbose=verbose, url=url)
         else:
             raise ValueError("Failed to retrieve model")
+
+        return config
 
     @staticmethod
     def download_model(model_filename: str, model_path: str, verbose: bool = True, url: Optional[str] = None) -> str:

@@ -6,6 +6,7 @@ import re
 import subprocess
 import sys
 import threading
+import logging
 from typing import Iterable, Callable
 
 import pkg_resources
@@ -257,10 +258,9 @@ class LLModel:
         None
         """
 
-        if verbose:
-            print('====VERBOSE====')
-            print(prompt)
-            print('===/VERBOSE/===')
+        logging.info("pyllmodel.py: LLModel.prompt_model -- prompt:\n" +
+                     "%s\n" +
+                     "===/pyllmodel.py: LLModel.prompt_model -- prompt/===", prompt)
 
 
         prompt_bytes = prompt.encode('utf-8')
