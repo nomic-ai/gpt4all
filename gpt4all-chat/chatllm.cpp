@@ -188,6 +188,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #endif
             restoreState();
             emit isModelLoadedChanged(true);
+            setModelInfo(modelInfo);
             Q_ASSERT(!m_modelInfo.filename().isEmpty());
             if (m_modelInfo.filename().isEmpty())
                 emit modelLoadingError(QString("Modelinfo is left null for %1").arg(modelInfo.filename()));
