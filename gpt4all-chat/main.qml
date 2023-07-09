@@ -87,6 +87,8 @@ Window {
         }
     }
 
+    property bool hasShownModelDownload: false
+
     function startupDialogs() {
         if (!LLM.compatHardware) {
             Network.sendNonCompatHardware();
@@ -100,9 +102,10 @@ Window {
             return;
         }
 
-        // check for any current models and if not, open download dialog
-        if (ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
+        // check for any current models and if not, open download dialog once
+        if (!hasShownModelDownload && ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
             downloadNewModels.open();
+            hasShownModelDownload = true;
             return;
         }
 
@@ -654,8 +657,18 @@ Window {
                 anchors.fill: parent
                 color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLight
 
+                Text {
+                    text: qsTr("You must install a model via the download dialog to continue. The download dialog can be accessed via the drawer button in the top left corner and then clicking the 'Downloads' button.")
+                    color: theme.textColor
+                    width: 500
+                    wrapMode: Text.WordWrap
+                    anchors.centerIn: parent
+                    visible: ModelList.installedModels.count === 0
+                }
+
                 ListView {
                     id: listView
+                    visible: ModelList.installedModels.count !== 0
                     anchors.fill: parent
                     model: chatModel
 
