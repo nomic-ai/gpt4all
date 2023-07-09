@@ -53,14 +53,6 @@ MySettingsTab {
                 MySettings.userDefaultModel = comboBox.currentText
             }
         }
-        FolderDialog {
-            id: modelPathDialog
-            title: "Please choose a directory"
-            currentFolder: "file://" + MySettings.modelPath
-            onAccepted: {
-                MySettings.modelPath = selectedFolder
-            }
-        }
         Label {
             id: modelPathLabel
             text: qsTr("Download path:")
@@ -93,7 +85,11 @@ MySettingsTab {
             Layout.column: 2
             text: qsTr("Browse")
             Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
-            onClicked: modelPathDialog.open()
+            onClicked: {
+                openFolderDialog("file://" + MySettings.modelPath, function(selectedFolder) {
+                    MySettings.modelPath = selectedFolder
+                })
+            }
         }
         Label {
             id: nThreadsLabel

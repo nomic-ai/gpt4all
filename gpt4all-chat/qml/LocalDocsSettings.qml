@@ -21,15 +21,6 @@ MySettingsTab {
         property alias collection: collection.text
         property alias folder_path: folderEdit.text
 
-        FolderDialog {
-            id: folderDialog
-            title: "Please choose a directory"
-            currentFolder: StandardPaths.writableLocation(StandardPaths.HomeLocation)
-            onAccepted: {
-                root.folder_path = selectedFolder
-            }
-        }
-
         Item {
             Layout.fillWidth: true
             height: row.height
@@ -79,7 +70,9 @@ MySettingsTab {
                     id: browseButton
                     text: qsTr("Browse")
                     onClicked: {
-                        folderDialog.open();
+                        openFolderDialog(StandardPaths.writableLocation(StandardPaths.HomeLocation), function(selectedFolder) {
+                            root.folder_path = selectedFolder
+                        })
                     }
                 }
 
