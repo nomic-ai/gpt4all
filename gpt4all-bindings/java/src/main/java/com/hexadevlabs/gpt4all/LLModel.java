@@ -117,8 +117,10 @@ public  class LLModel implements AutoCloseable {
 
     /**
      * This may be set before any Model instance classes are instantiated to
-     * set where the model may be found. This may be needed if setting
-     * library search path by standard means is not available.
+     * set where the native shared libraries are to be found.
+     * <p>
+     * This may be needed if setting library search path by standard means is not available
+     * or the libraries loaded from the temp folder bundled with the binding jar is not desirable.
      */
     public static String LIBRARY_SEARCH_PATH;
 
@@ -138,7 +140,7 @@ public  class LLModel implements AutoCloseable {
      * GPT4ALL native libraries. The binding may work for older
      * versions but that is not guaranteed.
      */
-    public static final String GPT4ALL_VERSION = "2.4.8";
+    public static final String GPT4ALL_VERSION = "2.4.11";
 
     protected static LLModelLibrary library;
 

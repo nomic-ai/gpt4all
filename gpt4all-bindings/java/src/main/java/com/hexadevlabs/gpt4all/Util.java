@@ -83,7 +83,8 @@ public class Util {
                     "llamamodel-mainline-metal",
                     "replit-mainline-default",
                     "replit-mainline-metal",
-                    "ggml-metal.metal"
+                    "ggml-metal.metal",
+                    "falcon-default"
             };
 
             for (String libraryName : libraryNames) {
