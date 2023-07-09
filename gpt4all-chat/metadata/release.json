@@ -401,5 +401,21 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters)
 "
+  },
+  {
+    "version": "2.4.12",
+    "notes":
+"
+* Fix bad bug that was breaking numerous current installs (sorry folks!)
+* Fix bug with 'browse' button in settings dialog
+* Wayland support on linux
+* Reduce template ui size in settings dialog
+",
+    "contributors":
+"
+* Akarshan Biswas
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters)
+"
   }
 ]
