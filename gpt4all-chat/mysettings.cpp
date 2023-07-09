@@ -421,6 +421,16 @@ QString MySettings::modelPath() const
 {
     QSettings setting;
     setting.sync();
+    // We have to migrate the old setting because I changed the setting key recklessly in v2.4.11
+    // which broke a lot of existing installs
+    const bool containsOldSetting = setting.contains("modelPaths");
+    if (containsOldSetting) {
+        const bool containsNewSetting = setting.contains("modelPath");
+        if (!containsNewSetting)
+            setting.setValue("modelPath", setting.value("modelPaths"));
+        setting.remove("modelPaths");
+        setting.sync();
+    }
     return setting.value("modelPath", defaultLocalModelsPath()).toString();
 }
 
