@@ -658,12 +658,46 @@ Window {
                 color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLight
 
                 Text {
-                    text: qsTr("You must install a model via the download dialog to continue. The download dialog can be accessed via the drawer button in the top left corner and then clicking the 'Downloads' button.")
+                    id: warningLabel
+                    text: qsTr("You must install a model to continue. Models are available via the download dialog or you can install them manually by downloading from <a href=\"https://gpt4all.io\">the GPT4All website</a> (look for the Models Explorer) and placing them in the model folder. The model folder can be found in the settings dialog under the application tab.")
                     color: theme.textColor
-                    width: 500
+                    width: 600
+                    linkColor: theme.linkColor
                     wrapMode: Text.WordWrap
                     anchors.centerIn: parent
                     visible: ModelList.installedModels.count === 0
+                    onLinkActivated: function(link) {
+                        Qt.openUrlExternally(link)
+                    }
+                }
+
+                MyButton {
+                    id: downloadButton
+                    text: qsTr("Download models")
+                    visible: ModelList.installedModels.count === 0
+                    anchors.top: warningLabel.bottom
+                    anchors.topMargin: 20
+                    anchors.horizontalCenter: warningLabel.horizontalCenter
+                    padding: 15
+                    leftPadding: 50
+                    Image {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 15
+                        width: 24
+                        height: 24
+                        mipmap: true
+                        source: "qrc:/gpt4all/icons/download.svg"
+                    }
+                    background: Rectangle {
+                        border.color: downloadButton.down ? theme.backgroundLightest : theme.buttonBorder
+                        border.width: 2
+                        radius: 10
+                        color: downloadButton.hovered ? theme.backgroundLighter : theme.backgroundLight
+                    }
+                    onClicked: {
+                        downloadNewModels.open();
+                    }
                 }
 
                 ListView {

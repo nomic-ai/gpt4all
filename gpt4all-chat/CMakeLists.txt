@@ -122,6 +122,7 @@ qt_add_qml_module(chat
       icons/close.svg
       icons/copy.svg
       icons/db.svg
+      icons/download.svg
       icons/settings.svg
       icons/edit.svg
       icons/image.svg
