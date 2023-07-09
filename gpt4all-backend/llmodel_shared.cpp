@@ -45,8 +45,8 @@ void LLModel::prompt(const std::string &prompt,
 
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
-        std::cerr << implementation().modelType() << " ERROR: The prompt is" << embd_inp.size() <<
-            "tokens and the context window is" << promptCtx.n_ctx << "!\n";
+        std::cerr << implementation().modelType() << " ERROR: The prompt is " << embd_inp.size() <<
+            " tokens and the context window is " << promptCtx.n_ctx << "!\n";
         return;
     }
 
