@@ -41,7 +41,7 @@ static bool requires_avxonly() {
 #endif
 }
 
-LLMImplementation::LLMImplementation(Dlhandle &&dlhandle_)
+LLModel::Implementation::Implementation(Dlhandle &&dlhandle_)
     : m_dlhandle(new Dlhandle(std::move(dlhandle_))) {
     auto get_model_type = m_dlhandle->get<const char *()>("get_model_type");
     assert(get_model_type);
@@ -50,12 +50,12 @@ LLMImplementation::LLMImplementation(Dlhandle &&dlhandle_)
     assert(get_build_variant);
     m_buildVariant = get_build_variant();
     m_magicMatch = m_dlhandle->get<bool(std::ifstream&)>("magic_match");
-    assert(magicMatch);
+    assert(m_magicMatch);
     m_construct = m_dlhandle->get<LLModel *()>("construct");
-    assert(construct_);
+    assert(m_construct);
 }
 
-LLMImplementation::LLMImplementation(LLMImplementation &&o)
+LLModel::Implementation::Implementation(Implementation &&o)
     : m_magicMatch(o.m_magicMatch)
     , m_construct(o.m_construct)
     , m_modelType(o.m_modelType)
@@ -64,19 +64,19 @@ LLMImplementation::LLMImplementation(LLMImplementation &&o)
     o.m_dlhandle = nullptr;
 }
 
-LLMImplementation::~LLMImplementation() {
+LLModel::Implementation::~Implementation() {
     if (m_dlhandle) delete m_dlhandle;
 }
 
-bool LLMImplementation::isImplementation(const Dlhandle &dl) {
+bool LLModel::Implementation::isImplementation(const Dlhandle &dl) {
     return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
-const std::vector<LLMImplementation> &LLMImplementation::implementationList() {
+const std::vector<LLModel::Implementation> &LLModel::Implementation::implementationList() {
     // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
     // individual models without the cleanup of the static list interfering
-    static auto* libs = new std::vector<LLMImplementation>([] () {
-        std::vector<LLMImplementation> fres;
+    static auto* libs = new std::vector<Implementation>([] () {
+        std::vector<Implementation> fres;
 
         auto search_in_directory = [&](const std::string& paths) {
             std::stringstream ss(paths);
@@ -91,10 +91,10 @@ const std::vector<LLMImplementation> &LLMImplementation::implementationList() {
                     // Add to list if model implementation
                     try {
                         Dlhandle dl(p.string());
-                        if (!LLMImplementation::isImplementation(dl)) {
+                        if (!Implementation::isImplementation(dl)) {
                             continue;
                         }
-                        fres.emplace_back(LLMImplementation(std::move(dl)));
+                        fres.emplace_back(Implementation(std::move(dl)));
                     } catch (...) {}
                 }
             }
@@ -108,7 +108,7 @@ const std::vector<LLMImplementation> &LLMImplementation::implementationList() {
     return *libs;
 }
 
-const LLMImplementation* LLMImplementation::implementation(std::ifstream& f, const std::string& buildVariant) {
+const LLModel::Implementation* LLModel::Implementation::implementation(std::ifstream& f, const std::string& buildVariant) {
     for (const auto& i : implementationList()) {
         f.seekg(0);
         if (!i.m_magicMatch(f)) continue;
@@ -118,7 +118,7 @@ const LLMImplementation* LLMImplementation::implementation(std::ifstream& f, con
     return nullptr;
 }
 
-LLModel *LLMImplementation::construct(const std::string &modelPath, std::string buildVariant) {
+LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant) {
 
     if (!has_at_least_minimal_hardware())
         return nullptr;
@@ -127,14 +127,15 @@ LLModel *LLMImplementation::construct(const std::string &modelPath, std::string 
     std::ifstream f(modelPath, std::ios::binary);
     if (!f) return nullptr;
     // Get correct implementation
-    const LLMImplementation* impl = nullptr;
+    const Implementation* impl = nullptr;
 
     #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
         if (buildVariant == "auto") {
             size_t total_mem = getSystemTotalRAMInBytes();
             impl = implementation(f, "metal");
             if(impl) {
-                LLModel* metalimpl = impl->construct();
+                LLModel* metalimpl = impl->m_construct();
+                metalimpl->m_implementation = impl;
                 size_t req_mem = metalimpl->requiredMem(modelPath);
                 float req_to_total = (float) req_mem / (float) total_mem;
                 // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
@@ -168,10 +169,10 @@ LLModel *LLMImplementation::construct(const std::string &modelPath, std::string 
     return fres;
 }
 
-void LLMImplementation::setImplementationsSearchPath(const std::string& path) {
+void LLModel::Implementation::setImplementationsSearchPath(const std::string& path) {
     s_implementations_search_path = path;
 }
 
-const std::string& LLMImplementation::implementationsSearchPath() {
+const std::string& LLModel::Implementation::implementationsSearchPath() {
     return s_implementations_search_path;
 }
