@@ -1,0 +1,4 @@
+BasedOnStyle: google
+IndentWidth: 4
+IndentAccessModifiers: false
+AccessModifierOffset: -4
