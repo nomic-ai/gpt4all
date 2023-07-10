@@ -80,7 +80,7 @@ struct gptj_model {
     std::vector<gptj_layer> layers;
 
     // key + value memory
-    struct llm_kv_cache kv_self;
+    std::shared_ptr<llm_kv_cache> kv_self;
 
     //
     struct ggml_context * ctx;
@@ -344,13 +344,14 @@ bool gptj_model_load(const std::string &fname, std::istream &fin, gptj_model & m
     // key + value memory
     {
         const auto & hparams = model.hparams;
-        if (!kv_cache_init(hparams, model.kv_self, GGML_TYPE_F16, model.hparams.n_ctx)) {
+        model.kv_self = std::make_shared<llm_kv_cache>();
+        if (!kv_cache_init(hparams, *model.kv_self, GGML_TYPE_F16, model.hparams.n_ctx)) {
             fprintf(stderr, "%s: kv_cache_init() failed for self-attention cache\n", __func__);
             ggml_free(ctx);
             return false;
         }
 
-        const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
+        const size_t memory_size = ggml_nbytes(model.kv_self->k) + ggml_nbytes(model.kv_self->v);
         printf("%s: kv self size  = %7.2f MB\n", __func__, memory_size / 1024.0 / 1024.0);
     }
 
@@ -515,7 +516,7 @@ bool gptj_eval(
     struct ggml_cgraph gf = {};
     gf.n_threads = n_threads;
 
-    model.kv_self.n = N + n_past;
+    model.kv_self->n = N + n_past;
 
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     memcpy(embd->data, embd_inp.data(), N*ggml_element_size(embd));
@@ -548,8 +549,8 @@ bool gptj_eval(
 
             // store key and value to memory
             {
-                struct ggml_tensor * k = ggml_view_1d(ctx0, model.kv_self.k, N*n_embd, (ggml_element_size(model.kv_self.k)*n_embd)*(il*n_ctx + n_past));
-                struct ggml_tensor * v = ggml_view_1d(ctx0, model.kv_self.v, N*n_embd, (ggml_element_size(model.kv_self.v)*n_embd)*(il*n_ctx + n_past));
+                struct ggml_tensor * k = ggml_view_1d(ctx0, model.kv_self->k, N*n_embd, (ggml_element_size(model.kv_self->k)*n_embd)*(il*n_ctx + n_past));
+                struct ggml_tensor * v = ggml_view_1d(ctx0, model.kv_self->v, N*n_embd, (ggml_element_size(model.kv_self->v)*n_embd)*(il*n_ctx + n_past));
 
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Kcur, k));
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Vcur, v));
@@ -570,7 +571,7 @@ bool gptj_eval(
                 ggml_permute(ctx0,
                         ggml_rope(ctx0,
                             ggml_reshape_3d(ctx0,
-                                ggml_view_1d(ctx0, model.kv_self.k, (n_past + N)*n_embd, il*n_ctx*ggml_element_size(model.kv_self.k)*n_embd),
+                                ggml_view_1d(ctx0, model.kv_self->k, (n_past + N)*n_embd, il*n_ctx*ggml_element_size(model.kv_self->k)*n_embd),
                                 n_embd/n_head, n_head, n_past + N),
                             n_past, n_rot, 1),
                         0, 2, 1, 3);
@@ -596,10 +597,10 @@ bool gptj_eval(
                 ggml_cpy(ctx0,
                         ggml_permute(ctx0,
                             ggml_reshape_3d(ctx0,
-                                ggml_view_1d(ctx0, model.kv_self.v, (n_past + N)*n_embd, il*n_ctx*ggml_element_size(model.kv_self.v)*n_embd),
+                                ggml_view_1d(ctx0, model.kv_self->v, (n_past + N)*n_embd, il*n_ctx*ggml_element_size(model.kv_self->v)*n_embd),
                                 n_embd/n_head, n_head, n_past + N),
                             1, 2, 0, 3),
-                        ggml_new_tensor_3d(ctx0, model.kv_self.v->type, n_past + N, n_embd/n_head, n_head));
+                        ggml_new_tensor_3d(ctx0, model.kv_self->v->type, n_past + N, n_embd/n_head, n_head));
 
             // KQV = transpose(V) * KQ_soft_max
             struct ggml_tensor * KQV = ggml_mul_mat(ctx0, V_trans, KQ_soft_max);
@@ -718,7 +719,7 @@ size_t gptj_get_state_size(const gptj_model &model)
     const size_t s_rng             = GPTJ_MAX_RNG_STATE;
     const size_t s_kv_size         = sizeof(size_t);
     const size_t s_kv_ntok         = sizeof(int);
-    const size_t s_kv              = model.kv_self.buf.size;
+    const size_t s_kv              = model.kv_self->buf.size;
     const size_t s_total = (
         + s_rng_size
         + s_rng
@@ -751,14 +752,14 @@ size_t gptj_copy_state_data(const gptj_model &model, const std::mt19937 &rng, ui
 
     // copy kv cache
     {
-        const size_t kv_size = model.kv_self.buf.size;
-        const int    kv_ntok = model.kv_self.n;
+        const size_t kv_size = model.kv_self->buf.size;
+        const int    kv_ntok = model.kv_self->n;
 
         memcpy(out, &kv_size, sizeof(kv_size)); out += sizeof(kv_size);
         memcpy(out, &kv_ntok, sizeof(kv_ntok)); out += sizeof(kv_ntok);
 
         if (kv_size) {
-            memcpy(out, model.kv_self.buf.addr, kv_size); out += kv_size;
+            memcpy(out, model.kv_self->buf.addr, kv_size); out += kv_size;
         }
     }
 
@@ -798,17 +799,17 @@ size_t gptj_set_state_data(gptj_model *model, std::mt19937 *rng, const uint8_t *
         if (kv_size) {
             assert(model->kv_self.buf.size == kv_size);
 
-            void * k_data = model->kv_self.k->data; // remember data pointers
-            void * v_data = model->kv_self.v->data; // because their value is stored in buf and overwritten by memcpy
+            void * k_data = model->kv_self->k->data; // remember data pointers
+            void * v_data = model->kv_self->v->data; // because their value is stored in buf and overwritten by memcpy
 
-            memcpy(model->kv_self.buf.addr, in, kv_size); in += kv_size;
+            memcpy(model->kv_self->buf.addr, in, kv_size); in += kv_size;
 
-            model->kv_self.k->data = k_data; // restore correct data pointers
-            model->kv_self.v->data = v_data;
+            model->kv_self->k->data = k_data; // restore correct data pointers
+            model->kv_self->v->data = v_data;
 
         }
 
-        model->kv_self.n = kv_ntok;
+        model->kv_self->n = kv_ntok;
     }
 
     const size_t nread    = in - src;
@@ -942,16 +943,21 @@ const std::vector<LLModel::Token> &GPTJ::endTokens() const
 }
 
 std::shared_ptr<llm_kv_cache> GPTJ::getKvCache() {
-  throw std::runtime_error("kvcache swapping not supported for gptj models");
+    return d_ptr->model->kv_self;
 }
 
 std::shared_ptr<llm_kv_cache> GPTJ::copyKvCache() {
-  throw std::runtime_error("kvcache swapping not supported for gptj models");
+    auto newcache = std::make_shared<llm_kv_cache>();
+    kv_cache_init(d_ptr->model->hparams, *newcache, GGML_TYPE_F16,
+                  d_ptr->model->hparams.n_ctx);
+    memcpy(newcache->k->data, getKvCache()->k->data, ggml_nbytes(newcache->k));
+    memcpy(newcache->v->data, getKvCache()->v->data, ggml_nbytes(newcache->v));
+    return newcache;
 }
 
 size_t GPTJ::setKvCache(std::shared_ptr<llm_kv_cache> other) {
-  (void) other;
-  throw std::runtime_error("kvcache swapping not supported for gptj models");
+    d_ptr->model->kv_self = other;
+    return d_ptr->model->kv_self->n;
 }
 
 #if defined(_WIN32)
