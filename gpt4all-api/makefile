@@ -8,7 +8,10 @@ all: dependencies
 fresh: clean dependencies
 
 testenv: clean_testenv test_build
-	docker compose up --build
+	docker compose -f docker-compose.yaml up --build
+
+testenv_gpu: clean_testenv test_build
+	docker compose -f docker-compose.yaml -f docker-compose.gpu.yaml up --build
 
 testenv_d: clean_testenv test_build
 	docker compose up --build -d
