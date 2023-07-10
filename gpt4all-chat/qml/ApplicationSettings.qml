@@ -101,7 +101,7 @@ MySettingsTab {
         MyTextField {
             text: MySettings.threadCount
             color: theme.textColor
-            ToolTip.text: qsTr("Amount of processing threads to use, a setting of 0 will use the lesser of 4 or your number of CPU threads")
+            ToolTip.text: qsTr("Amount of processing threads to use bounded by 1 and number of logical processors")
             ToolTip.visible: hovered
             Layout.row: 3
             Layout.column: 1
