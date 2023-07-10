@@ -12,11 +12,11 @@ var prompt = args[1];
 
 using var model = modelFactory.LoadModel(modelPath);
 
-var result = await model.GetStreamingPredictionAsync(
-    prompt,
-    PredictRequestOptions.Defaults);
+var result = await model.GetStreamingPredictionAsync(prompt);
 
 await foreach (var token in result.GetPredictionStreamingAsync())
 {
     Console.Write(token);
 }
+
+Console.WriteLine();

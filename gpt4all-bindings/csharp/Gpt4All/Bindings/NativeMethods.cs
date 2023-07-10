@@ -2,7 +2,7 @@
 
 namespace Gpt4All.Bindings;
 
-public unsafe partial struct llmodel_prompt_context
+public unsafe struct llmodel_prompt_context
 {
     public float* logits;
 
@@ -42,7 +42,14 @@ public unsafe partial struct llmodel_prompt_context
     public float context_erase;
 }
 
-internal static unsafe partial class NativeMethods
+internal unsafe struct llmodel_error
+{
+    public IntPtr message;
+
+    public int error;
+}
+
+internal static unsafe class NativeMethods
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
@@ -61,7 +68,7 @@ internal static unsafe partial class NativeMethods
     public static extern IntPtr llmodel_model_create2(
         [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string model_path,
         [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string build_variant,
-        out IntPtr error);
+        ref llmodel_error error);
 
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern void llmodel_model_destroy([NativeTypeName("llmodel_model")] IntPtr model);
@@ -104,4 +111,7 @@ internal static unsafe partial class NativeMethods
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     [return: NativeTypeName("int32_t")]
     public static extern int llmodel_threadCount([NativeTypeName("llmodel_model")] IntPtr model);
+
+    [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    public static extern void llmodel_set_implementation_search_path([MarshalAs(UnmanagedType.LPUTF8Str)] string implementationsPath);
 }

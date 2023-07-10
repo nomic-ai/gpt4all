@@ -2,9 +2,9 @@
 
 namespace Gpt4All;
 
-internal static class LLPromptContextExtensions
+public static class LLPromptContextExtensions
 {
-    public static string Dump(this LLModelPromptContext context)
+    internal static string Dump(this LLModelPromptContext context)
     {
         var ctx = context.UnderlyingContext;
         return @$"
@@ -22,5 +22,20 @@ internal static class LLPromptContextExtensions
             repeat_last_n = {ctx.repeat_last_n}
             context_erase = {ctx.context_erase}
         }}";
+    }
+
+    public static void ApplyOptions(this LLModelPromptContext context, PredictRequestOptions opts)
+    {
+        context.TokensToPredict = opts.TokensToPredict;
+        context.PastNum = opts.PastConversationTokensNum;
+        context.TopK = opts.TopK;
+        context.TopP = opts.TopP;
+        context.Temperature = opts.Temperature;
+        context.Batches = opts.Batches;
+        context.RepeatLastN = opts.RepeatLastN;
+        context.RepeatPenalty = opts.RepeatPenalty;
+        context.Batches = opts.Batches;
+        context.ContextErase = opts.ContextErase;
+        context.ContextSize = opts.ContextSize;
     }
 }

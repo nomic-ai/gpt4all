@@ -9,12 +9,23 @@ public class Gpt4All : IGpt4AllModel
 {
     private readonly ILLModel _model;
     private readonly ILogger _logger;
+    private Lazy<LLModelPromptContext> _context = new(PredictRequestOptions.Defaults.ToPromptContext);
 
     private const string ResponseErrorMessage =
         "The model reported an error during token generation error={ResponseError}";
 
     /// <inheritdoc/>
     public IPromptFormatter? PromptFormatter { get; set; }
+
+    public LLModelPromptContext Context
+    {
+        get => _context.Value;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            _context = new(value);
+        }
+    }
 
     internal Gpt4All(ILLModel model, ILogger? logger = null)
     {
@@ -30,7 +41,7 @@ public class Gpt4All : IGpt4AllModel
         return PromptFormatter.FormatPrompt(prompt);
     }
 
-    public Task<ITextPredictionResult> GetPredictionAsync(string text, PredictRequestOptions opts, CancellationToken cancellationToken = default)
+    public Task<ITextPredictionResult> GetPredictionAsync(string text, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(text);
 
@@ -40,12 +51,11 @@ public class Gpt4All : IGpt4AllModel
 
             var sw = Stopwatch.StartNew();
             var result = new TextPredictionResult();
-            var context = opts.ToPromptContext();
             var prompt = FormatPrompt(text);
 
             try
             {
-                _model.Prompt(prompt, context, responseCallback: e =>
+                _model.Prompt(prompt, Context, responseCallback: e =>
                 {
                     if (e.IsError)
                     {
@@ -71,7 +81,7 @@ public class Gpt4All : IGpt4AllModel
         }, CancellationToken.None);
     }
 
-    public Task<ITextPredictionStreamingResult> GetStreamingPredictionAsync(string text, PredictRequestOptions opts, CancellationToken cancellationToken = default)
+    public Task<ITextPredictionStreamingResult> GetStreamingPredictionAsync(string text, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(text);
 
@@ -84,10 +94,9 @@ public class Gpt4All : IGpt4AllModel
 
             try
             {
-                var context = opts.ToPromptContext();
                 var prompt = FormatPrompt(text);
 
-                _model.Prompt(prompt, context, responseCallback: e =>
+                _model.Prompt(prompt, Context, responseCallback: e =>
                 {
                     if (e.IsError)
                     {

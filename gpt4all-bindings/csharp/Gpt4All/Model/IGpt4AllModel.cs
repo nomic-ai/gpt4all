@@ -1,4 +1,6 @@
-﻿namespace Gpt4All;
+﻿using Gpt4All.Bindings;
+
+namespace Gpt4All;
 
 public interface IGpt4AllModel : ITextPrediction, IDisposable
 {
@@ -7,4 +9,9 @@ public interface IGpt4AllModel : ITextPrediction, IDisposable
     /// feeding it to the model, if null no transformation is applied
     /// </summary>
     IPromptFormatter? PromptFormatter { get; set; }
+
+    /// <summary>
+    /// The model context
+    /// </summary>
+    LLModelPromptContext Context { get; set; }
 }
