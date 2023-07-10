@@ -275,6 +275,7 @@ public:
     ModelInfo defaultModelInfo() const;
 
     void addModel(const QString &id);
+    void changeId(const QString &oldId, const QString &newId);
 
     const QList<ModelInfo> exportModelList() const;
     const QList<QString> userDefaultModelList() const;
@@ -304,16 +305,19 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void updateModelsFromJson();
+    void updateModelsFromJsonAsync();
     void updateModelsFromSettings();
     void updateModelsFromDirectory();
     void updateDataForSettings();
+    void handleModelsJsonDownloadFinished();
+    void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
     QString modelDirPath(const QString &modelName, bool isChatGPT);
     int indexForModel(ModelInfo *model);
     QVariant dataInternal(const ModelInfo *info, int role) const;
     static bool lessThan(const ModelInfo* a, const ModelInfo* b);
-    void parseModelsJsonFile(const QByteArray &jsonData);
+    void parseModelsJsonFile(const QByteArray &jsonData, bool save);
     QString uniqueModelName(const ModelInfo &model) const;
 
 private:
