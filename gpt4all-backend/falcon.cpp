@@ -56,7 +56,7 @@ struct falcon_model {
     std::vector<falcon_layer> layers;
 
     // key + value memory
-    llm_kv_cache kv_self;
+    std::shared_ptr<llm_kv_cache> kv_self;
 
     struct ggml_context* ctx;
     std::map<std::string, struct ggml_tensor*> tensors;
@@ -336,12 +336,13 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
         const int n_ctx   = hparams.n_ctx;
         const int64_t n_mem      = n_layer*n_ctx;
 
-        if (!kv_cache_init(hparams, model.kv_self, GGML_TYPE_F32, model.hparams.n_ctx)) {
+        model.kv_self = std::make_shared<llm_kv_cache>();
+        if (!kv_cache_init(hparams, *model.kv_self, GGML_TYPE_F32, model.hparams.n_ctx)) {
             fprintf(stderr, "%s: kv_cache_init() failed for self-attention cache\n", __func__);
             ggml_free(ctx);
             return false;
         }
-        const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
+        const size_t memory_size = ggml_nbytes(model.kv_self->k) + ggml_nbytes(model.kv_self->v);
 
         printf("%s: memory_size = %8.2f MB, n_mem = %" PRId64 "\n", __func__, memory_size/1024.0/1024.0, n_mem);
     }
@@ -467,7 +468,7 @@ bool falcon_eval(
     struct ggml_cgraph gf = {};
     gf.n_threads = n_threads;
 
-    model.kv_self.n = N + n_past;
+    model.kv_self->n = N + n_past;
 
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     memcpy(embd->data, embd_inp.data(), N*ggml_element_size(embd));
@@ -546,12 +547,12 @@ bool falcon_eval(
             // store key and value to memory
             {
                 struct ggml_tensor* k = ggml_view_1d(
-                    ctx0, model.kv_self.k, N * n_head_kv * head_dim,
-                    (ggml_element_size(model.kv_self.k) * n_head_kv * head_dim) *
+                    ctx0, model.kv_self->k, N * n_head_kv * head_dim,
+                    (ggml_element_size(model.kv_self->k) * n_head_kv * head_dim) *
                         (il * n_ctx + n_past));
                 struct ggml_tensor* v = ggml_view_1d(
-                    ctx0, model.kv_self.v, N * n_head_kv * head_dim,
-                    (ggml_element_size(model.kv_self.v) * n_head_kv * head_dim) *
+                    ctx0, model.kv_self->v, N * n_head_kv * head_dim,
+                    (ggml_element_size(model.kv_self->v) * n_head_kv * head_dim) *
                         (il * n_ctx + n_past));
 
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Kcur, k));
@@ -562,11 +563,11 @@ bool falcon_eval(
                 ctx0,
                 ggml_view_3d(
                     ctx0,
-                    model.kv_self.k,
+                    model.kv_self->k,
                     head_dim, n_head_kv, n_past + N,
                     head_dim * sizeof_wtype,
                     head_dim * n_head_kv * sizeof_wtype,
-                    il * n_ctx * ggml_element_size(model.kv_self.k) * n_head_kv * head_dim),
+                    il * n_ctx * ggml_element_size(model.kv_self->k) * n_head_kv * head_dim),
                 0, 2, 1, 3);
 
             // K * Q
@@ -595,11 +596,11 @@ bool falcon_eval(
                 ctx0,
                 ggml_view_3d(
                     ctx0,
-                    model.kv_self.v,
+                    model.kv_self->v,
                     head_dim, n_head_kv, n_past + N,
                     head_dim * sizeof_wtype,
                     head_dim * n_head_kv * sizeof_wtype,
-                    il * n_ctx * ggml_element_size(model.kv_self.v) * n_head_kv * head_dim),
+                    il * n_ctx * ggml_element_size(model.kv_self->v) * n_head_kv * head_dim),
                 0, 2, 1, 3);
 
             // changed from repeat2 back to repeat, will not support 40B!
@@ -703,7 +704,7 @@ size_t falcon_get_state_size(const falcon_model &model) {
     const size_t s_rng             = MAX_RNG_STATE;
     const size_t s_kv_size         = sizeof(size_t);
     const size_t s_kv_ntok         = sizeof(int);
-    const size_t s_kv              = model.kv_self.buf.size;
+    const size_t s_kv              = model.kv_self->buf.size;
     const size_t s_total = (
         + s_rng_size
         + s_rng
@@ -734,14 +735,14 @@ size_t falcon_copy_state_data(const falcon_model &model, const std::mt19937 &rng
 
     // copy kv cache
     {
-        const size_t kv_size = model.kv_self.buf.size;
-        const int    kv_ntok = model.kv_self.n;
+        const size_t kv_size = model.kv_self->buf.size;
+        const int    kv_ntok = model.kv_self->n;
 
         memcpy(out, &kv_size, sizeof(kv_size)); out += sizeof(kv_size);
         memcpy(out, &kv_ntok, sizeof(kv_ntok)); out += sizeof(kv_ntok);
 
         if (kv_size) {
-            memcpy(out, model.kv_self.buf.addr, kv_size); out += kv_size;
+            memcpy(out, model.kv_self->buf.addr, kv_size); out += kv_size;
         }
     }
 
@@ -781,17 +782,17 @@ size_t falcon_set_state_data(falcon_model *model, std::mt19937 *rng, const uint8
         if (kv_size) {
             assert(model->kv_self.buf.size == kv_size);
 
-            void * k_data = model->kv_self.k->data; // remember data pointers
-            void * v_data = model->kv_self.v->data; // because their value is stored in buf and overwritten by memcpy
+            void * k_data = model->kv_self->k->data; // remember data pointers
+            void * v_data = model->kv_self->v->data; // because their value is stored in buf and overwritten by memcpy
 
-            memcpy(model->kv_self.buf.addr, in, kv_size); in += kv_size;
+            memcpy(model->kv_self->buf.addr, in, kv_size); in += kv_size;
 
-            model->kv_self.k->data = k_data; // restore correct data pointers
-            model->kv_self.v->data = v_data;
+            model->kv_self->k->data = k_data; // restore correct data pointers
+            model->kv_self->v->data = v_data;
 
         }
 
-        model->kv_self.n = kv_ntok;
+        model->kv_self->n = kv_ntok;
     }
 
     const size_t nread    = in - src;
@@ -928,16 +929,21 @@ const std::vector<LLModel::Token> &Falcon::endTokens() const
 }
 
 std::shared_ptr<llm_kv_cache> Falcon::getKvCache() {
-  throw std::runtime_error("kvcache swapping not supported for falcon models");
+    return d_ptr->model->kv_self;
 }
 
 std::shared_ptr<llm_kv_cache> Falcon::copyKvCache() {
-  throw std::runtime_error("kvcache swapping not supported for falcon models");
+    auto newcache = std::make_shared<llm_kv_cache>();
+    kv_cache_init(d_ptr->model->hparams, *newcache, GGML_TYPE_F16,
+                  d_ptr->model->hparams.n_ctx);
+    memcpy(newcache->k->data, getKvCache()->k->data, ggml_nbytes(newcache->k));
+    memcpy(newcache->v->data, getKvCache()->v->data, ggml_nbytes(newcache->v));
+    return newcache;
 }
 
 size_t Falcon::setKvCache(std::shared_ptr<llm_kv_cache> other) {
-  (void) other;
-  throw std::runtime_error("kvcache swapping not supported for falcon models");
+    d_ptr->model->kv_self = other;
+    return d_ptr->model->kv_self->n;
 }
 
 #if defined(_WIN32)
