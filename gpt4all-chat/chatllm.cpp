@@ -461,8 +461,6 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     QString instructPrompt = augmentedTemplate.join("\n").arg(prompt);
 
     int n_threads = MySettings::globalInstance()->threadCount();
-    if (n_threads <= 0)
-        n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
 
     m_stopGenerating = false;
     auto promptFunc = std::bind(&ChatLLM::handlePrompt, this, std::placeholders::_1);
@@ -773,8 +771,6 @@ void ChatLLM::processSystemPrompt()
     const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
     const int32_t repeat_penalty_tokens = MySettings::globalInstance()->modelRepeatPenaltyTokens(m_modelInfo);
     int n_threads = MySettings::globalInstance()->threadCount();
-    if (n_threads <= 0)
-        n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     m_ctx.n_predict = n_predict;
     m_ctx.top_k = top_k;
     m_ctx.top_p = top_p;
