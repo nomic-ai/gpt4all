@@ -746,6 +746,7 @@ void ChatLLM::restoreState()
 #if defined(DEBUG)
     qDebug() << "restoreState" << m_llmThread.objectName() << "size:" << m_state.size();
 #endif
+    m_processedSystemPrompt = true;
     m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
     m_state.clear();
     m_state.resize(0);
