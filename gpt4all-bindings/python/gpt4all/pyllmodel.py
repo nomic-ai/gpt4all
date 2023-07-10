@@ -79,6 +79,10 @@ class LLModelPromptContext(ctypes.Structure):
         ("context_erase", ctypes.c_float),
     ]
 
+class KVCacheHandle(ctypes.Structure):
+    _fields_ = [("ptr", ctypes.c_void_p)]
+    def __del__(self):
+        llmodel.llmodel_kvcache_destroy(self.ptr)
 
 # Define C function signatures using ctypes
 llmodel.llmodel_model_create.argtypes = [ctypes.c_char_p]
@@ -96,6 +100,15 @@ llmodel.llmodel_required_mem.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 llmodel.llmodel_required_mem.restype = ctypes.c_size_t
 llmodel.llmodel_isModelLoaded.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_isModelLoaded.restype = ctypes.c_bool
+
+llmodel.llmodel_kvcache_get.argtypes = [ctypes.c_void_p, ctypes.POINTER(KVCacheHandle), ctypes.POINTER(LLModelError)]
+llmodel.llmodel_kvcache_get.restype = ctypes.c_bool
+llmodel.llmodel_kvcache_copy.argtypes = [ctypes.c_void_p, ctypes.POINTER(KVCacheHandle), ctypes.POINTER(LLModelError)]
+llmodel.llmodel_kvcache_copy.restype = ctypes.c_bool
+llmodel.llmodel_kvcache_set.argtypes = [ctypes.c_void_p, KVCacheHandle, ctypes.POINTER(LLModelError)]
+llmodel.llmodel_kvcache_set.restype = ctypes.c_bool
+llmodel.llmodel_kvcache_destroy.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_kvcache_destroy.restype = None
 
 PromptCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32)
 ResponseCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32, ctypes.c_char_p)
@@ -193,6 +206,39 @@ class LLModel:
         if not llmodel.llmodel_isModelLoaded(self.model):
             raise Exception("Model not loaded")
         return llmodel.llmodel_threadCount(self.model)
+
+    def get_kv_cache(self) -> KVCacheHandle:
+        """
+        Take a reference to the current kvcache
+        """
+        handle = KVCacheHandle()
+        error = LLModelError()
+        if llmodel.llmodel_kvcache_get(self.model, handle, error):
+            return handle
+        else:
+            raise Exception(error.message)
+
+    def copy_kv_cache(self) -> KVCacheHandle:
+        """
+        Create a copy of the current kvcache
+        """
+        handle = KVCacheHandle()
+        error = LLModelError()
+        if llmodel.llmodel_kvcache_copy(self.model, handle, error):
+            return handle
+        else:
+            raise Exception(error.message)
+
+    def set_kv_cache(self, handle: KVCacheHandle):
+        """
+        Replace the current kvcache (will change `n_past`!)
+        """
+        error = LLModelError()
+        if llmodel.llmodel_kvcache_set(self.model, handle, error):
+            return True
+        else:
+            raise Exception(error.message)
+
 
     def _set_context(
         self,
