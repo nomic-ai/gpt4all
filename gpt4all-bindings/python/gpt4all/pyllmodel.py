@@ -241,7 +241,6 @@ class LLModel:
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
         reset_context: bool = False,
-        verbose: bool = False,
     ):
         """
         Generate response from model from a prompt.

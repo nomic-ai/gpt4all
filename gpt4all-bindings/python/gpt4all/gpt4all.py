@@ -15,6 +15,11 @@ from . import pyllmodel
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
 
+DEFAULT_MODEL_CONFIG = {  
+        "systemPrompt": "",
+        "promptTemplate": "### Human: \n{0}\n### Assistant:\n"
+    }
+
 MessageType = Dict[str, str]
 
 class GPT4All:
@@ -53,6 +58,7 @@ class GPT4All:
 
         self._is_chat_session_activated: bool = False
         self.current_chat_session: List[MessageType] = empty_chat_session() 
+        self.current_prompt_template: str = "{0}"
 
         
     @staticmethod
@@ -68,7 +74,7 @@ class GPT4All:
     @staticmethod
     def retrieve_model(
         model_name: str, model_path: Optional[str] = None, allow_download: bool = True, verbose: bool = True
-    ) -> str:
+    ) -> Dict[str, str]:
         """
         Find model file, and if it doesn't exist, download the model.
 
@@ -80,19 +86,20 @@ class GPT4All:
             verbose: If True (default), print debug messages.
 
         Returns:
-            Model file destination.
+            Model config.
         """
 
         model_filename = append_bin_suffix_if_missing(model_name)
 
         # get the config for the model
-        config = {}
+        config = DEFAULT_MODEL_CONFIG
         if allow_download:
             available_models = GPT4All.list_models()
 
             for m in available_models:
                 if model_filename == m['filename']:
-                    config = m
+                    config.update(m)
+                    config["promptTemplate"] = config["promptTemplate"].replace("%1","{0}",1) # change to Python-style formatting
                     break
 
         # Validate download directory
@@ -197,7 +204,6 @@ class GPT4All:
         n_predict: Optional[int] = None,
         streaming: bool = False,
         callback: pyllmodel.ResponseCallbackType = pyllmodel.empty_response_callback,
-        verbose: bool = False,
     ) -> Union[str, Iterable]:
         """
         Generate outputs from any GPT4All model.
@@ -214,7 +220,6 @@ class GPT4All:
             n_predict: Equivalent to max_tokens, exists for backwards compatibility.
             streaming: If True, this method will instead return a generator that yields tokens as the model generates them.
             callback: A function with arguments token_id:int and response:str, which receives the tokens from the model as they are generated and stops the generation by returning False.
-            verbose: If True, prints out the final prompt before it is passed to the model.
 
         Returns:
             Either the entire completion or a generator that yields the completion token by token.
@@ -227,7 +232,6 @@ class GPT4All:
             repeat_last_n=repeat_last_n,
             n_batch=n_batch,
             n_predict=n_predict if n_predict is not None else max_tokens,
-            verbose=verbose,
         )
 
         if self._is_chat_session_activated:
@@ -264,22 +268,28 @@ class GPT4All:
         return output_collector[-1]["content"]
 
     @contextmanager
-    def chat_session(self, system_prompt: str = ""):
+    def chat_session(self, 
+            system_prompt: str = "",
+            prompt_template: str = "",
+        ):
         '''
         Context manager to hold an inference optimized chat session with a GPT4All model.
 
         Args:
-            header: An initial instruction. It is inserted before the transcript of the conversation.
+            system_prompt: An initial instruction for the model.
+            prompt_template: Template for the prompts with {0} being replaced by the user message.
         '''
         # Code to acquire resource, e.g.:
         self._is_chat_session_activated = True
-        self.current_chat_session = empty_chat_session(system_prompt)
+        self.current_chat_session = empty_chat_session(system_prompt or self.config["systemPrompt"])
+        self.current_prompt_template = prompt_template or self.config["promptTemplate"]
         try:
             yield self
         finally:
             # Code to release resource, e.g.:
             self._is_chat_session_activated = False
             self.current_chat_session = empty_chat_session()
+            self.current_prompt_template = "{0}"
 
     def _format_chat_prompt_template(self, 
         messages: List[MessageType], 
@@ -287,7 +297,7 @@ class GPT4All:
         default_prompt_footer: str = "",
     ) -> str:
         """
-        Helper method for building a prompt using template from list of messages.
+        Helper method for building a prompt from list of messages using the self.current_prompt_template as a template for each message.
 
         Args:
             messages:  List of dictionaries. Each dictionary should have a "role" key
@@ -304,7 +314,7 @@ class GPT4All:
 
         for message in messages:
             if message["role"] == "user":
-                user_message = "### Human: \n" + message["content"] + "\n### Assistant:\n"
+                user_message = self.current_prompt_template.format(message["content"])
                 full_prompt += user_message
             if message["role"] == "assistant":
                 assistant_message = message["content"] + '\n'
