@@ -211,6 +211,19 @@ void ChatGPT::handleReadyRead()
     }
 }
 
+std::shared_ptr<llm_kv_cache> ChatGPT::getKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for non-local models");
+}
+
+std::shared_ptr<llm_kv_cache> ChatGPT::copyKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for non-local models");
+}
+
+size_t ChatGPT::setKvCache(std::shared_ptr<llm_kv_cache> other) {
+  (void) other;
+  throw std::runtime_error("kvcache swapping not supported for non-local models");
+}
+
 void ChatGPT::handleErrorOccurred(QNetworkReply::NetworkError code)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());

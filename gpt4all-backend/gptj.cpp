@@ -515,6 +515,8 @@ bool gptj_eval(
     struct ggml_cgraph gf = {};
     gf.n_threads = n_threads;
 
+    model.kv_self.n = N + n_past;
+
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     memcpy(embd->data, embd_inp.data(), N*ggml_element_size(embd));
 
@@ -937,6 +939,19 @@ const std::vector<LLModel::Token> &GPTJ::endTokens() const
 {
     static const std::vector<LLModel::Token> fres = {50256};
     return fres;
+}
+
+std::shared_ptr<llm_kv_cache> GPTJ::getKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for gptj models");
+}
+
+std::shared_ptr<llm_kv_cache> GPTJ::copyKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for gptj models");
+}
+
+size_t GPTJ::setKvCache(std::shared_ptr<llm_kv_cache> other) {
+  (void) other;
+  throw std::runtime_error("kvcache swapping not supported for gptj models");
 }
 
 #if defined(_WIN32)

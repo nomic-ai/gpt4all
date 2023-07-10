@@ -1,3 +1,4 @@
+#include <stdexcept>
 #define LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "llamamodel_impl.h"
 
@@ -250,6 +251,19 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
 {
     static const std::vector<LLModel::Token> fres = {llama_token_eos()};
     return fres;
+}
+
+std::shared_ptr<llm_kv_cache> LLamaModel::getKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for llama models");
+}
+
+std::shared_ptr<llm_kv_cache> LLamaModel::copyKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for llama models");
+}
+
+size_t LLamaModel::setKvCache(std::shared_ptr<llm_kv_cache> other) {
+  (void) other;
+  throw std::runtime_error("kvcache swapping not supported for llama models");
 }
 
 #if defined(_WIN32)

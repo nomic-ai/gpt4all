@@ -1,6 +1,7 @@
 #ifndef LLMODEL_H
 #define LLMODEL_H
 
+#include <memory>
 #include <string>
 #include <functional>
 #include <vector>
@@ -12,6 +13,7 @@
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
 class Dlhandle;
+struct llm_kv_cache;
 class LLModel {
 public:
     using Token = int32_t;
@@ -61,12 +63,18 @@ public:
     explicit LLModel() {}
     virtual ~LLModel() {}
 
+    // get the current kv cache
+    virtual std::shared_ptr<llm_kv_cache> getKvCache() = 0;
+    // get a copy of the current kv cache
+    virtual std::shared_ptr<llm_kv_cache> copyKvCache() = 0;
+    // set the kv cache this model will read/write from, returns # of populated tokens (n_past)
+    virtual size_t setKvCache(std::shared_ptr<llm_kv_cache> kvcache) = 0;
     virtual bool loadModel(const std::string &modelPath) = 0;
     virtual bool isModelLoaded() const = 0;
     virtual size_t requiredMem(const std::string &modelPath) = 0;
     virtual size_t stateSize() const { return 0; }
-    virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
-    virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
+    virtual size_t saveState(uint8_t * /*dest*/) const { return 0; }
+    virtual size_t restoreState(const uint8_t * /*src*/) { return 0; }
     virtual void prompt(const std::string &prompt,
                         std::function<bool(int32_t)> promptCallback,
                         std::function<bool(int32_t, const std::string&)> responseCallback,

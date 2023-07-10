@@ -534,7 +534,7 @@ bool replit_model_load(const std::string & fname, replit_model & model, replit_t
 //   - embd_inp:  the embeddings of the tokens in the context
 //   - embd_w:    the predicted logits for the next token
 //
-bool replit_eval(const replit_model & model, const int n_threads, const int n_past,
+bool replit_eval(replit_model & model, const int n_threads, const int n_past,
                  const std::vector<gpt_vocab::id> & embd_inp, std::vector<float> & embd_w, size_t & mem_per_token) {
     const int N = embd_inp.size();
 
@@ -553,6 +553,8 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
     };
     struct ggml_context * ctx0 = ggml_init(eval_ctx_params);
     struct ggml_cgraph gf = {.n_threads = n_threads};
+
+    model.kv_self.n = N + n_past;
 
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     memcpy(embd->data, embd_inp.data(), N * ggml_element_size(embd));
@@ -972,6 +974,19 @@ const std::vector<LLModel::Token> &Replit::endTokens() const
 {
     static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.raw_vocab.token_to_id["<|endoftext|>"]};
     return fres;
+}
+
+std::shared_ptr<llm_kv_cache> Replit::getKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for replit models");
+}
+
+std::shared_ptr<llm_kv_cache> Replit::copyKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for replit models");
+}
+
+size_t Replit::setKvCache(std::shared_ptr<llm_kv_cache> other) {
+  (void) other;
+  throw std::runtime_error("kvcache swapping not supported for replit models");
 }
 
 #if defined(_WIN32)

@@ -3,6 +3,8 @@
 
 #include <cstring>
 #include <cerrno>
+#include <exception>
+#include <memory>
 #include <utility>
 
 
@@ -22,6 +24,73 @@ llmodel_model llmodel_model_create(const char *model_path) {
         fprintf(stderr, "Invalid model file\n");
     }
     return fres;
+}
+
+// gets a reference to the current kv cache
+// must be dropped with `llmodel_kvcache_destroy` to be freed!
+bool llmodel_kvcache_get(llmodel_model model, void **handle_ptr,
+                         llmodel_error *error) {
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper *>(model);
+    auto sptr = new std::shared_ptr<llm_kv_cache>();
+    try {
+        *sptr = wrapper->llModel->getKvCache();
+        *handle_ptr = sptr;
+    } catch (const std::exception &e) {
+        if (error) {
+            error->code = ENOTSUP;
+            error->message = "Could not get kv cache from model";
+        }
+        delete sptr;
+        return false;
+    }
+    return true;
+}
+
+// gets a copy of the current kv cache
+// must be dropped with `llmodel_kvcache_destroy` to be freed!
+bool llmodel_kvcache_copy(llmodel_model model, void **handle_ptr,
+                          llmodel_error *error) {
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper *>(model);
+    auto sptr = new std::shared_ptr<llm_kv_cache>();
+    try {
+        *sptr = wrapper->llModel->copyKvCache();
+        *handle_ptr = sptr;
+    } catch (const std::exception &e) {
+        if (error) {
+            error->code = ENOTSUP;
+            error->message = "Could not get kv cache from model";
+        }
+        delete sptr;
+        return false;
+    }
+    return true;
+}
+
+// sets this kvcache handle to be the model's current one
+// model will drop held reference to its current kvcache
+bool llmodel_kvcache_set(llmodel_model model, void *handle_ptr,
+                          llmodel_error *error) {
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper *>(model);
+    auto sptr = reinterpret_cast<std::shared_ptr<llm_kv_cache> *>(handle_ptr);
+    try {
+      size_t n_past = wrapper->llModel->setKvCache(*sptr);
+      wrapper->promptContext.n_past = n_past;
+    } catch (const std::exception &e) {
+        if (error) {
+            error->code = ENOTSUP;
+            error->message = "Could not get set cache on model";
+        }
+        return false;
+    }
+    return true;
+}
+
+// drops a reference to a kvcache - *MUST* be called on any handles obtained
+// with `llmodel_kvcache_get` or `llmodel_kvcache_copy` or the corresponding memory
+// will *never* be freed!
+void llmodel_kvcache_destroy(void *handle_ptr) {
+    auto sptr = reinterpret_cast<std::shared_ptr<llm_kv_cache> *>(handle_ptr);
+    delete sptr;
 }
 
 llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, llmodel_error *error) {

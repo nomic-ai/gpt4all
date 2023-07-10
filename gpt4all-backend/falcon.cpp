@@ -439,7 +439,7 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
 //   - embd_w:    the predicted logits for the next token
 //
 bool falcon_eval(
-        const falcon_model & model,
+        falcon_model & model,
         const int n_threads,
         const int n_past,
         const std::vector<gpt_vocab::id> & embd_inp,
@@ -466,6 +466,8 @@ bool falcon_eval(
     struct ggml_context * ctx0 = ggml_init(eval_ctx_params);
     struct ggml_cgraph gf = {};
     gf.n_threads = n_threads;
+
+    model.kv_self.n = N + n_past;
 
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     memcpy(embd->data, embd_inp.data(), N*ggml_element_size(embd));
@@ -923,6 +925,19 @@ const std::vector<LLModel::Token> &Falcon::endTokens() const
 {
     static const std::vector<LLModel::Token> out = { 11 };
     return out;
+}
+
+std::shared_ptr<llm_kv_cache> Falcon::getKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for falcon models");
+}
+
+std::shared_ptr<llm_kv_cache> Falcon::copyKvCache() {
+  throw std::runtime_error("kvcache swapping not supported for falcon models");
+}
+
+size_t Falcon::setKvCache(std::shared_ptr<llm_kv_cache> other) {
+  (void) other;
+  throw std::runtime_error("kvcache swapping not supported for falcon models");
 }
 
 #if defined(_WIN32)

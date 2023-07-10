@@ -14,6 +14,12 @@ public:
     ChatGPT();
     virtual ~ChatGPT();
 
+    // get the current kv cache
+    virtual std::shared_ptr<llm_kv_cache> getKvCache() override;
+    // get a copy of the current kv cache
+    virtual std::shared_ptr<llm_kv_cache> copyKvCache() override;
+    // set the kv cache this model will read/write from, returns # of populated tokens (n_past)
+    virtual size_t setKvCache(std::shared_ptr<llm_kv_cache> kvcache) override;
     bool loadModel(const std::string &modelPath) override;
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath) override;
