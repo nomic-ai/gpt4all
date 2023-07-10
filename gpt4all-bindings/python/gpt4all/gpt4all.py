@@ -220,7 +220,7 @@ class GPT4All:
 
         if self._is_chat_session_activated:
             self.current_chat_session.append({"role": "user", "content": prompt})
-            generate_kwargs['prompt'] = self._format_chat_prompt_template(messages=self.current_chat_session)
+            generate_kwargs['prompt'] = self._format_chat_prompt_template(messages=self.current_chat_session[-1:])
             generate_kwargs['reset_context'] = len(self.current_chat_session) == 1
         else:
             generate_kwargs['reset_context'] = True

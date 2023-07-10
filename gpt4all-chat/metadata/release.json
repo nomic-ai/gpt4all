@@ -369,5 +369,53 @@
 * AMOGUS
 * Community (beta testers, bug reporters)
 "
+  },
+  {
+    "version": "2.4.11",
+    "notes":
+"
+* Per model settings
+* Character settings
+* Adding a system prompt
+* Important bugfix for chatgpt install
+* Complete refactor and revamp of settings dialog
+* New syntax highlighting for java, bash, go
+* Use monospace font for syntax highlighting of codeblocks
+* New setting for turning off references in localdocs
+* Fix memory leaks in falcon model
+* Fix for backend memory handling
+* Server mode bugfix
+* Models.json retrieve bugfix
+* Free metal context bugfix
+* Add a close dialog feature to all chat dialogs
+",
+    "contributors":
+"
+* Lakshay Kansal (Nomic AI)
+* Matthew Gill
+* Brandon Beiler
+* cosmic-snow
+* Felix Zaslavskiy
+* Andriy Mulyar (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.12",
+    "notes":
+"
+* Fix bad bug that was breaking numerous current installs (sorry folks!)
+* Fix bug with 'browse' button in settings dialog
+* Wayland support on linux
+* Reduce template ui size in settings dialog
+",
+    "contributors":
+"
+* Akarshan Biswas
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters)
+"
   }
 ]

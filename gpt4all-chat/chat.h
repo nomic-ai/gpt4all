@@ -53,9 +53,9 @@ public:
     ChatModel *chatModel() { return m_chatModel; }
 
     Q_INVOKABLE void reset();
+    Q_INVOKABLE void processSystemPrompt();
     Q_INVOKABLE bool isModelLoaded() const;
-    Q_INVOKABLE void prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict,
-        int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens);
+    Q_INVOKABLE void prompt(const QString &prompt);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void stopGenerating();
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
@@ -102,12 +102,11 @@ Q_SIGNALS:
     void responseChanged();
     void responseInProgressChanged();
     void responseStateChanged();
-    void promptRequested(const QList<QString> &collectionList, const QString &prompt, const QString &prompt_template,
-        int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
-        int32_t repeat_penalty_tokens, int32_t n_threads);
+    void promptRequested(const QList<QString> &collectionList, const QString &prompt);
     void regenerateResponseRequested();
     void resetResponseRequested();
     void resetContextRequested();
+    void processSystemPromptRequested();
     void modelChangeRequested(const ModelInfo &modelInfo);
     void modelInfoChanged();
     void recalcChanged();

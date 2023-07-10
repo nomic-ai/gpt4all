@@ -87,6 +87,8 @@ Window {
         }
     }
 
+    property bool hasShownModelDownload: false
+
     function startupDialogs() {
         if (!LLM.compatHardware) {
             Network.sendNonCompatHardware();
@@ -100,9 +102,10 @@ Window {
             return;
         }
 
-        // check for any current models and if not, open download dialog
-        if (ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
+        // check for any current models and if not, open download dialog once
+        if (!hasShownModelDownload && ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
             downloadNewModels.open();
+            hasShownModelDownload = true;
             return;
         }
 
@@ -204,18 +207,28 @@ Window {
                 anchors.horizontalCenterOffset: window.width >= 950 ? 0 : Math.max(-((950 - window.width) / 2), -99.5)
                 enabled: !currentChat.isServer
                 model: ModelList.installedModels
-                valueRole: "filename"
+                valueRole: "id"
                 textRole: "name"
                 property string currentModelName: ""
                 function updateCurrentModelName() {
-                    var info = ModelList.modelInfo(currentChat.modelInfo.filename);
-                    comboBox.currentModelName = info.name !== "" ? info.name : info.filename;
+                    var info = ModelList.modelInfo(currentChat.modelInfo.id);
+                    comboBox.currentModelName = info.name;
                 }
                 Connections {
                     target: currentChat
                     function onModelInfoChanged() {
                         comboBox.updateCurrentModelName();
                     }
+                }
+                Connections {
+                    target: window
+                    function onCurrentChatChanged() {
+                        comboBox.updateCurrentModelName();
+                    }
+                }
+                background: Rectangle {
+                    color: theme.backgroundDark
+                    radius: 10
                 }
                 contentItem: Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -233,7 +246,7 @@ Window {
                 delegate: ItemDelegate {
                     width: comboBox.width
                     contentItem: Text {
-                        text: name !== "" ? name : filename
+                        text: name
                         color: theme.textColor
                         font: comboBox.font
                         elide: Text.ElideRight
@@ -557,6 +570,7 @@ Window {
         onClicked: {
             Network.sendResetContext(chatModel.count)
             currentChat.reset();
+            currentChat.processSystemPrompt();
         }
     }
 
@@ -643,8 +657,52 @@ Window {
                 anchors.fill: parent
                 color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLight
 
+                Text {
+                    id: warningLabel
+                    text: qsTr("You must install a model to continue. Models are available via the download dialog or you can install them manually by downloading from <a href=\"https://gpt4all.io\">the GPT4All website</a> (look for the Models Explorer) and placing them in the model folder. The model folder can be found in the settings dialog under the application tab.")
+                    color: theme.textColor
+                    width: 600
+                    linkColor: theme.linkColor
+                    wrapMode: Text.WordWrap
+                    anchors.centerIn: parent
+                    visible: ModelList.installedModels.count === 0
+                    onLinkActivated: function(link) {
+                        Qt.openUrlExternally(link)
+                    }
+                }
+
+                MyButton {
+                    id: downloadButton
+                    text: qsTr("Download models")
+                    visible: ModelList.installedModels.count === 0
+                    anchors.top: warningLabel.bottom
+                    anchors.topMargin: 20
+                    anchors.horizontalCenter: warningLabel.horizontalCenter
+                    padding: 15
+                    leftPadding: 50
+                    Image {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 15
+                        width: 24
+                        height: 24
+                        mipmap: true
+                        source: "qrc:/gpt4all/icons/download.svg"
+                    }
+                    background: Rectangle {
+                        border.color: downloadButton.down ? theme.backgroundLightest : theme.buttonBorder
+                        border.width: 2
+                        radius: 10
+                        color: downloadButton.hovered ? theme.backgroundLighter : theme.backgroundLight
+                    }
+                    onClicked: {
+                        downloadNewModels.open();
+                    }
+                }
+
                 ListView {
                     id: listView
+                    visible: ModelList.installedModels.count !== 0
                     anchors.fill: parent
                     model: chatModel
 
@@ -870,6 +928,7 @@ Window {
         }
 
         MyButton {
+            id: myButton
             visible: chatModel.count && !currentChat.isServer
             Image {
                 anchors.verticalCenter: parent.verticalCenter
@@ -894,18 +953,16 @@ Window {
                             chatModel.updateThumbsUpState(index, false);
                             chatModel.updateThumbsDownState(index, false);
                             chatModel.updateNewResponse(index, "");
-                            currentChat.prompt(listElement.prompt,
-                                       MySettings.promptTemplate,
-                                       MySettings.maxLength,
-                                       MySettings.topK,
-                                       MySettings.topP,
-                                       MySettings.temperature,
-                                       MySettings.promptBatchSize,
-                                       MySettings.repeatPenalty,
-                                       MySettings.repeatPenaltyTokens)
+                            currentChat.prompt(listElement.prompt)
                         }
                     }
                 }
+            }
+            background: Rectangle {
+                border.color: myButton.down ? theme.backgroundLightest : theme.buttonBorder
+                border.width: 2
+                radius: 10
+                color: myButton.hovered ? theme.backgroundLighter : theme.backgroundLight
             }
             anchors.bottom: textInputView.top
             anchors.horizontalCenter: textInputView.horizontalCenter

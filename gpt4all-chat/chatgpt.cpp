@@ -134,7 +134,8 @@ void ChatGPT::prompt(const std::string &prompt,
     qDebug() << "ChatGPT::prompt end network request";
 #endif
 
-    m_ctx->n_past += 1;
+    if (m_ctx)
+        m_ctx->n_past += 1;
     m_context.append(QString::fromStdString(prompt));
     m_context.append(m_currentResponse);
 
