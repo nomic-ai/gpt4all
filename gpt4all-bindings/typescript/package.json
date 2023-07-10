@@ -1,0 +1,32 @@
+{
+  "name": "gpt4all",
+  "version": "2.0.0",
+  "packageManager": "yarn@3.5.1",
+  "main": "src/gpt4all.js",
+  "repository": "nomic-ai/gpt4all",
+  "scripts": {
+    "test": "node ./test/index.mjs",
+    "build:backend": "node scripts/build.js",
+    "install": "node-gyp-build",
+    "prebuild": "node scripts/prebuild.js",
+    "docs:build": "documentation build ./src/gpt4all.d.ts --parse-extension d.ts --format md --output docs/api.md"
+  },
+  "dependencies": {
+    "mkdirp": "^3.0.1",
+    "node-addon-api": "^6.1.0",
+    "node-gyp-build": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.1.5",
+    "documentation": "^14.0.2",
+    "prebuildify": "^5.0.1",
+    "prettier": "^2.8.8"
+  },
+  "engines": {
+    "node": ">= 18.x.x"
+  },
+  "prettier": {
+    "endOfLine": "lf",
+    "tabWidth": 4
+  }
+}

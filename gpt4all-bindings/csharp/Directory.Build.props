@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+    <PropertyGroup>
+        <Company></Company>
+        <Copyright></Copyright>
+        <NeutralLanguage>en-US</NeutralLanguage>
+        <Version>0.6.1-alpha</Version>
+        <VersionSuffix>$(VersionSuffix)</VersionSuffix>
+        <Version Condition=" '$(VersionSuffix)' != '' ">$(Version)$(VersionSuffix)</Version>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <RepositoryUrl></RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <IncludeSource>true</IncludeSource>
+        <AnalysisLevel>latest-minimum</AnalysisLevel>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="System"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <LangVersion>preview</LangVersion>
+        <Features>strict</Features>
+    </PropertyGroup>
+	
+	<ItemGroup>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.2.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.2.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.2.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+</Project>

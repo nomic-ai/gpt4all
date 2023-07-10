@@ -1,0 +1,33 @@
+# This workflow will close issues that do not have labels or additional comments.
+# Trigger manually.
+
+name: "Close Issues"
+on:
+  workflow_dispatch:
+
+jobs:
+  close_issues:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Close issues without label or comment
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const repo = context.repo;
+          let page = 1;
+          let issues = [];
+          while (true) {
+            const result = await github.issues.listForRepo({...repo, per_page: 100, page: page});
+            if (result.data.length === 0) break;
+            issues = issues.concat(result.data);
+            page += 1;
+          }
+          for (let { number } of issues) {
+            const issueData = await github.issues.get({...repo, issue_number: number});
+            const comments = await github.issues.listComments({...repo, issue_number: number});
+            if (issueData.data.labels.length === 0 && comments.data.length < 1) {
+              await github.issues.update({...repo, issue_number: number, state: 'closed'});
+              await github.issues.createComment({...repo, issue_number: number, body: 'Issue closed as it does not have any labels or comments.'});
+            }
+          }

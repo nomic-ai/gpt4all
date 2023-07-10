@@ -1,0 +1,2 @@
+# Make sure native directory never gets commited to git for the project.
+/src/main/resources/native

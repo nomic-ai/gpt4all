@@ -1,0 +1,17 @@
+version: 2.1
+setup: true
+orbs:
+  path-filtering: circleci/path-filtering@0.0.1
+
+workflows:
+  version: 2.1
+  generate-config:
+    jobs:
+      - path-filtering/filter:
+          base-revision: main
+          config-path: .circleci/continue_config.yml
+          mapping: |
+            gpt4all-bindings/python/.* run-python-workflow true
+            gpt4all-backend/.* run-chat-workflow true
+            gpt4all-chat/.* run-chat-workflow true
+            .* run-default-workflow true

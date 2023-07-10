@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Gpt4All\Gpt4All.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Windows -->
+        <None Include="..\runtimes\win-x64\native\*.dll" Pack="true" PackagePath="runtimes\win-x64\native\%(Filename)%(Extension)" />
+        <!-- Linux -->
+        <None Include="..\runtimes\linux-x64\native\*.so" Pack="true" PackagePath="runtimes\linux-x64\native\%(Filename)%(Extension)" />
+        <!-- MacOS -->
+        <None Include="..\runtimes\osx\native\*.dylib" Pack="true" PackagePath="runtimes\osx\native\%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Windows -->
+        <None Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="..\runtimes\win-x64\native\*.dll" Visible="False" CopyToOutputDirectory="PreserveNewest" />
+        <!-- Linux -->
+        <None Condition="$([MSBuild]::IsOSPlatform('Linux'))" Include="..\runtimes\linux-x64\native\*.so" Visible="False" CopyToOutputDirectory="PreserveNewest" />
+         <!-- MacOS -->
+        <None Condition="$([MSBuild]::IsOSPlatform('OSX'))" Include="..\runtimes\osx\native\*.dylib" Visible="False" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+</Project>
