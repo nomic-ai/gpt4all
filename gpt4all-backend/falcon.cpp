@@ -1,7 +1,5 @@
 #define FALCON_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "falcon_impl.h"
-#include "llama.h"
-#include "llama-util.h"
 #include "utils.h"
 #include "llmodel_shared.h"
 
@@ -196,7 +194,6 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
         const int n_head = hparams.n_head;
         const int n_head_kv = hparams.n_head_kv;
         const int n_layer = hparams.n_layer;
-        const int n_ctx = hparams.n_ctx;
         const int n_ff = 4 * model.hparams.n_embd;
         const int n_vocab = hparams.n_vocab;
         const int head_dim = hparams.n_embd / hparams.n_head;
@@ -337,11 +334,7 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
 
         const int n_layer = hparams.n_layer;
         const int n_ctx   = hparams.n_ctx;
-        const int n_head_kv = hparams.n_head_kv;
-        const int head_dim = hparams.n_embd / hparams.n_head;
-
         const int64_t n_mem      = n_layer*n_ctx;
-        const int64_t n_elements = head_dim*n_mem;
 
         if (!kv_cache_init(hparams, model.kv_self, GGML_TYPE_F32, model.hparams.n_ctx)) {
             fprintf(stderr, "%s: kv_cache_init() failed for self-attention cache\n", __func__);
@@ -462,7 +455,6 @@ bool falcon_eval(
     const int n_head  = hparams.n_head;
     const int n_head_kv = hparams.n_head_kv;
     const int n_vocab = hparams.n_vocab;
-    const int version = hparams.falcon_version;
     const size_t head_dim = n_embd / n_head;
 
    struct ggml_init_params eval_ctx_params = {
