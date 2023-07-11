@@ -1,0 +1,10 @@
+[package]
+name = "gpt4all-sys"
+description = "Raw Rust bindings for gpt4all"
+authors = ["Marcus Dunn"]
+version = "0.1.0"
+edition = "2021"
+links = "llmodel"
+
+[build-dependencies]
+bindgen = "0.65.1"
