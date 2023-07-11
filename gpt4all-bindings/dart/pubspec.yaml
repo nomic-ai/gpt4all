@@ -1,0 +1,15 @@
+name: gpt4all
+description: Dart wrapper API for the GPT4All open-source chatbot ecosystem.
+version: 0.1.1
+repository: https://github.com/finkmoritz/gpt4all/tree/feature/dart-binding/gpt4all-bindings/dart
+documentation: https://github.com/finkmoritz/gpt4all/blob/feature/dart-binding/gpt4all-bindings/dart/README.md
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  ffi: ^2.0.2
+
+dev_dependencies:
+  lints: ^2.0.0
+  test: ^1.21.0
