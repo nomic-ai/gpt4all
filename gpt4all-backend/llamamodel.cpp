@@ -1,3 +1,4 @@
+#include <memory>
 #define LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "llamamodel_impl.h"
 
@@ -28,6 +29,9 @@
 #include <llama.h>
 #include <ggml.h>
 
+#if LLAMA_DATE >= 230625
+#define LLAMA_STATELESS_MODEL
+#endif
 
 namespace {
 const char *modelType_ = "LLaMA";
@@ -84,9 +88,24 @@ static int llama_sample_top_p_top_k(
 }
 #endif
 
+#ifdef LLAMA_STATELESS_MODEL
+struct ModelWrap {
+  llama_model* ptr;
+  ModelWrap(llama_model* model) : ptr(model) {
+
+  }
+  ~ModelWrap() {
+    llama_free_model(ptr);
+  }
+};
+#endif
+
 struct LLamaPrivate {
     const std::string modelPath;
     bool modelLoaded;
+#ifdef LLAMA_STATELESS_MODEL
+    std::shared_ptr<ModelWrap> model;
+#endif
     llama_context *ctx = nullptr;
     llama_context_params params;
     int64_t n_threads = 0;
@@ -131,8 +150,18 @@ size_t LLamaModel::requiredMem(const std::string &modelPath) {
     return filesize + est_kvcache_size;
 }
 
-LLModel* LLamaModel::clone() {
-  return nullptr;
+LLModel *LLamaModel::clone() {
+#ifdef LLAMA_STATELESS_MODEL
+    LLamaModel *cloned = new LLamaModel();
+    cloned->d_ptr->model = d_ptr->model;
+    cloned->d_ptr->params = d_ptr->params;
+    cloned->d_ptr->ctx = llama_new_context_with_model(d_ptr->model->ptr, d_ptr->params);
+    cloned->d_ptr->n_threads = std::min(4, (int32_t)std::thread::hardware_concurrency());
+    cloned->d_ptr->modelLoaded = true;
+    return cloned;
+#else
+    return nullptr;  // not supported for older llama versions
+#endif
 }
 
 bool LLamaModel::loadModel(const std::string &modelPath)
@@ -150,21 +179,30 @@ bool LLamaModel::loadModel(const std::string &modelPath)
 #else
     d_ptr->params.use_mlock  = params.use_mlock;
 #endif
-#if LLAMA_DATE <= 230511
-    d_ptr->params.n_parts  = params.n_parts;
-#endif
 #ifdef GGML_USE_METAL
     std::cerr << "llama.cpp: using Metal" << std::endl;
     // metal always runs the whole model if n_gpu_layers is not 0, at least
     // currently
     d_ptr->params.n_gpu_layers = 1;
 #endif
-
+#if LLAMA_DATE <= 230511
+    d_ptr->params.n_parts  = params.n_parts;
+#endif
+#if LLAMA_DATE <= 230625
     d_ptr->ctx = llama_init_from_file(modelPath.c_str(), d_ptr->params);
     if (!d_ptr->ctx) {
         std::cerr << "LLAMA ERROR: failed to load model from " <<  modelPath << std::endl;
         return false;
     }
+#endif
+#ifdef LLAMA_STATELESS_MODEL
+    d_ptr->model = std::make_shared<ModelWrap>(llama_load_model_from_file(modelPath.c_str(), d_ptr->params));
+    d_ptr->ctx = llama_new_context_with_model(d_ptr->model->ptr, d_ptr->params);
+    if (!d_ptr->ctx) {
+        std::cerr << "LLAMA ERROR: failed to load model from " <<  modelPath << std::endl;
+        return false;
+    }
+#endif
 
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
