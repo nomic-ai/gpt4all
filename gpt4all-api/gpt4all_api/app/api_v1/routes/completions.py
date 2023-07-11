@@ -84,7 +84,7 @@ def stream_completion(output: Iterable, base_response: CompletionStreamResponse)
         ))]
         yield f"data: {json.dumps(dict(chunk))}\n\n"
 
-async def infer(payload, header):
+async def gpu_infer(payload, header):
     async with aiohttp.ClientSession() as session:
         try:
             async with session.post(
@@ -127,7 +127,7 @@ async def completions(request: CompletionRequest):
             tasks = []
             for prompt in request.prompt:
                 payload["inputs"] = prompt
-                task = infer(payload, header)
+                task = gpu_infer(payload, header)
                 tasks.append(task)
 
             results = await asyncio.gather(*tasks)
