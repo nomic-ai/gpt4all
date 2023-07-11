@@ -88,6 +88,7 @@ Window {
     }
 
     property bool hasShownModelDownload: false
+    property bool hasShownFirstStart: false
 
     function startupDialogs() {
         if (!LLM.compatHardware) {
@@ -97,8 +98,9 @@ Window {
         }
 
         // check for first time start of this version
-        if (Download.isFirstStart()) {
+        if (!hasShownFirstStart && Download.isFirstStart()) {
             firstStartDialog.open();
+            hasShownFirstStart = true;
             return;
         }
 
