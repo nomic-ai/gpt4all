@@ -17,7 +17,6 @@ def test_completion():
     assert len(response['choices'][0]['text']) > len(prompt)
     print(response)
 
-<<<<<<< HEAD
 def test_streaming_completion():
     model = "gpt4all-j-v1.3-groovy"
     prompt = "Who is Michael Jordan?"
@@ -36,10 +35,7 @@ def test_streaming_completion():
     assert (len(tokens) > 0)
     assert (len("".join(tokens)) > len(prompt))
 
-    
-=======
 
->>>>>>> 214bfef (chore: black + isort)
 def test_batched_completion():
     model = "ggml-mpt-7b-chat"
     prompt = "Who is Michael Jordan?"
@@ -47,9 +43,5 @@ def test_batched_completion():
         model=model, prompt=[prompt] * 3, max_tokens=50, temperature=0.28, top_p=0.95, n=1, echo=True, stream=False
     )
     assert len(response['choices'][0]['text']) > len(prompt)
-<<<<<<< HEAD
-    assert len(response['choices']) == 3 
-=======
     assert len(response['choices']) == 3
->>>>>>> 214bfef (chore: black + isort)
     print(response)
