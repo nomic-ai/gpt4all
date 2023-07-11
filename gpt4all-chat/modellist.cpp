@@ -1086,6 +1086,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     }
 
     {
+        const QString chatGPT4Warn = tr("<br><br><i>* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.");
+
         const QString modelName = "ChatGPT-4";
         const QString id = modelName;
         const QString modelFilename = "chatgpt-gpt-4.txt";
@@ -1098,7 +1100,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::FilesizeRole, "minimal");
         updateData(id, ModelList::ChatGPTRole, true);
         updateData(id, ModelList::DescriptionRole,
-            tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc);
+            tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc + chatGPT4Warn);
         updateData(id, ModelList::RequiresVersionRole, "2.4.2");
         updateData(id, ModelList::OrderRole, "cb");
         updateData(id, ModelList::RamrequiredRole, 0);
