@@ -350,6 +350,10 @@ int MySettings::threadCount() const
     QSettings setting;
     setting.sync();
     int c = setting.value("threadCount", default_threadCount).toInt();
+    // The old thread setting likely left many people with 0 in settings config file, which means
+    // we should reset it to the default going forward
+    if (c <= 0)
+        c = default_threadCount;
     c = std::max(c, 1);
     c = std::min(c, QThread::idealThreadCount());
     return c;
@@ -607,4 +611,25 @@ void MySettings::setNetworkUsageStatsActive(bool b)
     setting.setValue("network/usageStatsActive", b);
     setting.sync();
     emit networkUsageStatsActiveChanged();
+}
+
+QString MySettings::attemptModelLoad() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("attemptModelLoad", QString()).toString();
+}
+
+void MySettings::setAttemptModelLoad(const QString &modelFile)
+{
+    if (attemptModelLoad() == modelFile)
+        return;
+
+    QSettings setting;
+    if (modelFile.isEmpty())
+        setting.remove("attemptModelLoad");
+    else
+        setting.setValue("attemptModelLoad", modelFile);
+    setting.sync();
+    emit attemptModelLoadChanged();
 }

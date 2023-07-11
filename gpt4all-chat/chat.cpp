@@ -249,6 +249,8 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
     if (m_modelInfo == modelInfo)
         return;
 
+    m_isModelLoaded = false;
+    emit isModelLoadedChanged();
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();
     m_modelInfo = modelInfo;
@@ -276,20 +278,6 @@ void Chat::serverNewPromptResponsePair(const QString &prompt)
 bool Chat::isRecalc() const
 {
     return m_llmodel->isRecalc();
-}
-
-void Chat::loadDefaultModel()
-{
-    m_modelLoadingError = QString();
-    emit modelLoadingErrorChanged();
-    emit loadDefaultModelRequested();
-}
-
-void Chat::loadModel(const ModelInfo &modelInfo)
-{
-    m_modelLoadingError = QString();
-    emit modelLoadingErrorChanged();
-    emit loadModelRequested(modelInfo);
 }
 
 void Chat::unloadAndDeleteLater()

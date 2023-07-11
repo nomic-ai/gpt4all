@@ -94,6 +94,7 @@ void Download::updateReleaseNotes()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &Download::handleReleaseJsonDownloadFinished);
 }
 
@@ -137,6 +138,7 @@ void Download::downloadModel(const QString &modelFile)
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *modelReply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, modelReply, &QNetworkReply::abort);
     connect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
     connect(modelReply, &QNetworkReply::finished, this, &Download::handleModelDownloadFinished);
     connect(modelReply, &QNetworkReply::readyRead, this, &Download::handleReadyRead);

@@ -17,6 +17,9 @@ parameters:
   run-ts-workflow:
     type: boolean
     default: false
+  run-csharp-workflow:
+    type: boolean
+    default: false
 
 jobs:
   default-job:
@@ -324,6 +327,318 @@ jobs:
       - store_artifacts:
           path: /tmp/workspace
 
+  build-bindings-backend-linux:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y cmake build-essential
+      - run:
+          name: Build Libraries
+          command: |
+            cd gpt4all-backend
+            mkdir -p runtimes/build
+            cd runtimes/build
+            cmake ../..
+            cmake --build . --parallel --config Release
+            mkdir ../linux-x64
+            cp -L *.so ../linux-x64 # otherwise persist_to_workspace seems to mess symlinks
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - runtimes/linux-x64/*.so
+
+  build-bindings-backend-macos:
+    macos:
+      xcode: "14.0.0"
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - run:
+          name: Install dependencies
+          command: |
+            brew install cmake
+      - run:
+          name: Build Libraries
+          command: |
+            cd gpt4all-backend
+            mkdir -p runtimes/build
+            cd runtimes/build
+            cmake ../.. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake --build . --parallel --config Release
+            mkdir ../osx-x64
+            cp -L *.dylib ../osx-x64
+            cp ../../llama.cpp-mainline/*.metal ../osx-x64
+            ls ../osx-x64
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - runtimes/osx-x64/*.dylib
+            - runtimes/osx-x64/*.metal
+
+  build-bindings-backend-windows:
+    executor:
+      name: win/default
+      size: large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - run:
+          name: Install MinGW64
+          command: choco install -y mingw --force --no-progress
+      - run:
+          name: Install dependencies
+          command: |
+            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      - run:
+          name: Build Libraries
+          command: |
+            $MinGWBin = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+            $Env:Path += ";$MinGwBin"
+            $Env:Path += ";C:\Program Files\CMake\bin"
+            cd gpt4all-backend
+            mkdir runtimes/win-x64
+            cd runtimes/win-x64
+            cmake -G "MinGW Makefiles" ../..
+            cmake --build . --parallel --config Release
+            cp "$MinGWBin\libgcc*.dll" .
+            cp "$MinGWBin\libstdc++*.dll" .
+            cp "$MinGWBin\libwinpthread*.dll" .
+            cp bin/*.dll .
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - runtimes/win-x64/*.dll
+
+  build-bindings-backend-windows-msvc:
+    machine:
+      image: 'windows-server-2022-gui:2023.03.1'
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - run:
+          name: Install dependencies
+          command: |
+            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'  
+      - run:
+          name: Build Libraries
+          command: |
+            $Env:Path += ";C:\Program Files\CMake\bin"
+            cd gpt4all-backend
+            mkdir runtimes/win-x64_msvc
+            cd runtimes/win-x64_msvc
+            cmake -G "Visual Studio 17 2022" -A X64 ../..
+            cmake --build . --parallel --config Release
+            cp bin/Release/*.dll .
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - runtimes/win-x64_msvc/*.dll
+
+  build-csharp-linux:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy # Ubuntu 22.04
+    steps:
+      - when:
+          condition: << pipeline.parameters.run-csharp-workflow >>
+          steps:
+            - checkout
+            - attach_workspace:
+                at: /tmp/workspace
+            - run:
+                name: "Prepare Native Libs"
+                command: |
+                  cd gpt4all-bindings/csharp
+                  mkdir -p runtimes/linux-x64/native
+                  cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
+                  ls -R runtimes
+            - restore_cache:
+                keys:
+                  - gpt4all-csharp-nuget-packages-nix
+            - run:
+                name: "Install project dependencies"
+                command: |
+                  cd gpt4all-bindings/csharp
+                  dotnet restore Gpt4All
+            - save_cache:
+                paths:
+                  - ~/.nuget/packages
+                key: gpt4all-csharp-nuget-packages-nix
+            - run:
+                name: Build C# Project
+                command: |
+                  cd gpt4all-bindings/csharp
+                  dotnet build Gpt4All --configuration Release --nologo
+            - run:
+                name: "Run C# Tests"
+                command: |
+                  cd gpt4all-bindings/csharp
+                  dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
+            - run:
+                name: Test results
+                command: |
+                    cd gpt4all-bindings/csharp/Gpt4All.Tests
+                    dotnet tool install -g trx2junit
+                    export PATH="$PATH:$HOME/.dotnet/tools"
+                    trx2junit TestResults/*.trx
+            - store_test_results:
+                path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
+
+  build-csharp-windows:
+    executor:
+      name: win/default
+      size: large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - when:
+          condition: << pipeline.parameters.run-csharp-workflow >>
+          steps:
+            - checkout
+            - restore_cache:
+                keys:
+                  - gpt4all-csharp-nuget-packages-win
+            - attach_workspace:
+                at: C:\Users\circleci\workspace
+            - run:
+                name: "Prepare Native Libs"
+                command: |
+                  cd gpt4all-bindings/csharp
+                  mkdir -p runtimes\win-x64\native
+                  cp C:\Users\circleci\workspace\runtimes\win-x64\*.dll runtimes\win-x64\native\
+                  ls -R runtimes
+            - run:
+                name: "Install project dependencies"
+                command: |
+                  cd gpt4all-bindings/csharp
+                  dotnet.exe restore Gpt4All
+            - save_cache:
+                paths:
+                  - C:\Users\circleci\.nuget\packages
+                key: gpt4all-csharp-nuget-packages-win
+            - run:
+                name: Build C# Project
+                command: |
+                  cd gpt4all-bindings/csharp
+                  dotnet.exe build Gpt4All --configuration Release --nologo
+            - run:
+                name: "Run C# Tests"
+                command: |
+                  cd gpt4all-bindings/csharp
+                  dotnet.exe test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
+            - run:
+                name: Test results
+                command: |
+                    cd gpt4all-bindings/csharp/Gpt4All.Tests
+                    dotnet tool install -g trx2junit
+                    $Env:Path += ";$Env:USERPROFILE\.dotnet\tools"
+                    trx2junit TestResults/*.trx
+            - store_test_results:
+                path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
+
+  build-csharp-macos:
+    macos:
+      xcode: "14.0.0"
+    steps:
+      - when:
+          condition: << pipeline.parameters.run-csharp-workflow >>
+          steps:
+            - checkout
+            - restore_cache:
+                keys:
+                  - gpt4all-csharp-nuget-packages-nix
+            - run:
+                name: Install dependencies
+                command: |
+                  brew install --cask dotnet-sdk
+            - attach_workspace:
+                at: /tmp/workspace
+            - run:
+                name: "Prepare Native Libs"
+                command: |
+                  cd gpt4all-bindings/csharp
+                  mkdir -p runtimes/osx/native
+                  cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
+                  cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
+                  ls -R runtimes
+            - run:
+                name: "Install project dependencies"
+                command: |
+                  cd gpt4all-bindings/csharp
+                  dotnet restore Gpt4All
+            - save_cache:
+                paths:
+                  - ~/.nuget/packages
+                key: gpt4all-csharp-nuget-packages-nix
+            - run:
+                name: Build C# Project
+                command: |
+                  cd gpt4all-bindings/csharp
+                  dotnet build Gpt4All --configuration Release --nologo
+            - run:
+                name: "Run C# Tests"
+                command: |
+                  cd gpt4all-bindings/csharp
+                  dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
+            - run:
+                name: Test results
+                command: |
+                    cd gpt4all-bindings/csharp/Gpt4All.Tests
+                    dotnet tool install -g trx2junit
+                    export PATH="$PATH:$HOME/.dotnet/tools"
+                    trx2junit TestResults/*.trx
+            - store_test_results:
+                path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
+
+  store-and-upload-nupkgs:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - checkout
+      - restore_cache:
+           keys:
+             - gpt4all-csharp-nuget-packages-nix
+      - run:
+          name: NuGet Pack
+          command: |
+            cd gpt4all-bindings/csharp
+            mkdir -p runtimes/linux-x64/native
+            cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
+            mkdir -p runtimes/win-x64/native
+            cp /tmp/workspace/runtimes/win-x64/*.dll runtimes/win-x64/native/
+            mkdir -p runtimes/osx/native
+            cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
+            cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
+            dotnet pack ./Gpt4All/Gpt4All.csproj -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -c Release
+            dotnet nuget push ./Gpt4All/bin/Release/Gpt4All.*.nupkg -s $NUGET_URL -k $NUGET_TOKEN --skip-duplicate
+      - store_artifacts:
+          path: gpt4all-bindings/csharp/Gpt4All/bin/Release
+
 workflows:
   version: 2
   default:
@@ -368,6 +683,8 @@ workflows:
           filters:
             branches:
               only:
+          requires:
+            - hold
       - build-py-macos:
           filters:
             branches:
@@ -389,3 +706,66 @@ workflows:
             - build-py-windows
             - build-py-linux
             - build-py-macos
+  build-bindings:
+    when: 
+        or:
+         - << pipeline.parameters.run-python-workflow >>
+         - << pipeline.parameters.run-csharp-workflow >>
+    jobs:
+      - hold:
+          type: approval
+      - nuget-hold:
+          type: approval
+      - build-bindings-backend-linux:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      - build-bindings-backend-macos:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      - build-bindings-backend-windows:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      - build-bindings-backend-windows-msvc:
+          filters:
+            branches:
+              only:
+          requires:
+            - hold
+      # CSharp Jobs
+      - build-csharp-linux:
+          filters:
+            branches:
+              only:
+          requires:
+            - build-bindings-backend-linux
+      - build-csharp-windows:
+          filters:
+            branches:
+              only:
+          requires:
+            - build-bindings-backend-windows
+      - build-csharp-macos:
+          filters:
+            branches:
+              only:
+          requires:
+            - build-bindings-backend-macos
+      - store-and-upload-nupkgs:
+          filters:
+            branches:
+              only:
+          requires:
+            - nuget-hold
+            - build-csharp-windows
+            - build-csharp-linux
+            - build-csharp-macos
+        

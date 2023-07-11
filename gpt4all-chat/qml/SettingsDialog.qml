@@ -72,10 +72,11 @@ MyDialog {
                     elide: Text.ElideRight
                     color: theme.textColor
                     width: 200
-                    TapHandler {
-                        onTapped: {
-                            listView.currentIndex = index
-                        }
+                }
+
+                TapHandler {
+                    onTapped: {
+                        listView.currentIndex = index
                     }
                 }
             }

@@ -211,6 +211,15 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     // Store the file info in the modelInfo in case we have an error loading
     m_llModelInfo.fileInfo = fileInfo;
 
+    // Check if we've previously tried to load this file and failed/crashed
+    if (MySettings::globalInstance()->attemptModelLoad() == filePath) {
+        MySettings::globalInstance()->setAttemptModelLoad(QString()); // clear the flag
+        if (!m_isServer)
+            LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
+        m_llModelInfo = LLModelInfo();
+        emit modelLoadingError(QString("Previous attempt to load model resulted in crash for `%1` most likely due to out of memory. You should either remove this model or decrease your system RAM by closing other applications.").arg(modelInfo.filename()));
+    }
+
     if (fileInfo.exists()) {
         if (isChatGPT) {
             QString apiKey;
@@ -239,7 +248,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #endif
 
             if (m_llModelInfo.model) {
+                MySettings::globalInstance()->setAttemptModelLoad(filePath);
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString());
+                MySettings::globalInstance()->setAttemptModelLoad(QString());
                 if (!success) {
                     delete std::exchange(m_llModelInfo.model, nullptr);
                     if (!m_isServer)
@@ -416,6 +427,9 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
 
 bool ChatLLM::handleRecalculate(bool isRecalc)
 {
+#if defined(DEBUG)
+    qDebug() << "recalculate" << m_llmThread.objectName() << isRecalc;
+#endif
     if (m_isRecalc != isRecalc) {
         m_isRecalc = isRecalc;
         emit recalcChanged();
@@ -586,6 +600,9 @@ void ChatLLM::handleChatIdChanged(const QString &id)
 
 bool ChatLLM::handleNamePrompt(int32_t token)
 {
+#if defined(DEBUG)
+    qDebug() << "name prompt" << m_llmThread.objectName() << token;
+#endif
     Q_UNUSED(token);
     qt_noop();
     return !m_stopGenerating;
@@ -593,6 +610,9 @@ bool ChatLLM::handleNamePrompt(int32_t token)
 
 bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
 {
+#if defined(DEBUG)
+    qDebug() << "name response" << m_llmThread.objectName() << token << response;
+#endif
     Q_UNUSED(token);
 
     m_nameResponse.append(response);
@@ -604,28 +624,40 @@ bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
 
 bool ChatLLM::handleNameRecalculate(bool isRecalc)
 {
+#if defined(DEBUG)
+    qDebug() << "name recalc" << m_llmThread.objectName() << isRecalc;
+#endif
     Q_UNUSED(isRecalc);
     Q_UNREACHABLE();
-    return !m_stopGenerating;
+    return false;
 }
 
 bool ChatLLM::handleSystemPrompt(int32_t token)
 {
+#if defined(DEBUG)
+    qDebug() << "system prompt" << m_llmThread.objectName() << token << m_stopGenerating;
+#endif
     Q_UNUSED(token);
     return !m_stopGenerating;
 }
 
 bool ChatLLM::handleSystemResponse(int32_t token, const std::string &response)
 {
+#if defined(DEBUG)
+    qDebug() << "system response" << m_llmThread.objectName() << token << response << m_stopGenerating;
+#endif
     Q_UNUSED(token);
     Q_UNUSED(response);
-    return !m_stopGenerating;
+    return false;
 }
 
 bool ChatLLM::handleSystemRecalculate(bool isRecalc)
 {
+#if defined(DEBUG)
+    qDebug() << "system recalc" << m_llmThread.objectName() << isRecalc;
+#endif
     Q_UNUSED(isRecalc);
-    return !m_stopGenerating;
+    return false;
 }
 
 bool ChatLLM::serialize(QDataStream &stream, int version)
