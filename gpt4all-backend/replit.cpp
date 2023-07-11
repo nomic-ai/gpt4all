@@ -1,3 +1,4 @@
+#include "llmodel.h"
 #define REPLIT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "replit_impl.h"
 
@@ -872,6 +873,10 @@ size_t Replit::requiredMem(const std::string &modelPath) {
     auto fin = std::ifstream(modelPath, std::ios::binary);
     replit_model_load(modelPath, fin, dummy_model, dummy_vocab, &mem_req);
     return mem_req;
+}
+
+LLModel* Replit::clone() {
+  return nullptr;
 }
 
 bool Replit::loadModel(const std::string &modelPath) {

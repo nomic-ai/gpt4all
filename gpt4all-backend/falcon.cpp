@@ -1,3 +1,4 @@
+#include "llmodel.h"
 #define FALCON_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "falcon_impl.h"
 #include "llama.h"
@@ -828,6 +829,10 @@ Falcon::~Falcon() {
         d_ptr->model->ctx = nullptr;
     }
     delete d_ptr->model;
+}
+
+LLModel* Falcon::clone() {
+  return nullptr;
 }
 
 bool Falcon::loadModel(const std::string &modelPath)

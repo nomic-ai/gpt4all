@@ -1,3 +1,5 @@
+#include <memory>
+#include <stdexcept>
 #define MPT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "mpt_impl.h"
 
@@ -70,20 +72,13 @@ struct mpt_model {
     // normalization
     struct ggml_tensor * norm_f_w;
 
-    struct ggml_tensor * wte; // position embedding
-
     // mpt does weight tying
+    struct ggml_tensor * wte; // position embedding
 
     std::vector<mpt_layer> layers;
 
-    struct llm_kv_cache kv_self;
     struct ggml_context * ctx;
     std::map<std::string, struct ggml_tensor *> tensors;
-
-
-    llm_buffer eval_buf;
-    llm_buffer scr0_buf;
-    llm_buffer scr1_buf;
 
     ~mpt_model() {
         if (ctx) {
@@ -122,6 +117,35 @@ static bool kv_cache_init(
 
     return true;
 }
+
+struct mpt_session {
+    struct llm_kv_cache kv_self;
+    llm_buffer eval_buf;
+    llm_buffer scr0_buf;
+    llm_buffer scr1_buf;
+
+    void init(const mpt_model &model) {
+        // key + value memory
+        {
+            const auto &hparams = model.hparams;
+            if (!kv_cache_init(hparams, kv_self, GGML_TYPE_F16,
+                               model.hparams.n_ctx)) {
+                fprintf(stderr,
+                        "%s: kv_cache_init() failed for self-attention cache\n",
+                        __func__);
+                throw std::runtime_error("could not allocate session memory");
+            }
+
+            const size_t memory_size =
+                ggml_nbytes(kv_self.k) + ggml_nbytes(kv_self.v);
+            printf("%s: kv self size  = %7.2f MB\n", __func__,
+                   memory_size / 1024.0 / 1024.0);
+
+            scr0_buf.resize(256u * 1024 * 1024);
+            scr1_buf.resize(256u * 1024 * 1024);
+        }
+    }
+};
 
 // load the model's weights from a stream. if mem_req ptr is passed the model is
 // only partially parsed to estimate required memory
@@ -318,19 +342,6 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         }
     }
 
-    // key + value memory
-    {
-        const auto & hparams = model.hparams;
-        if (!kv_cache_init(hparams, model.kv_self, GGML_TYPE_F16, model.hparams.n_ctx)) {
-            fprintf(stderr, "%s: kv_cache_init() failed for self-attention cache\n", __func__);
-            ggml_free(ctx);
-            return false;
-        }
-
-        const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
-        printf("%s: kv self size  = %7.2f MB\n", __func__, memory_size / 1024.0 / 1024.0);
-    }
-
     // load weights
     {
         int n_tensors = 0;
@@ -406,9 +417,6 @@ bool mpt_model_load(const std::string &fname, std::istream &fin, mpt_model & mod
         printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size/1024.0/1024.0, n_tensors);
     }
 
-    model.scr0_buf.resize(256u * 1024 * 1024);
-    model.scr1_buf.resize(256u * 1024 * 1024);
-
     return true;
 }
 
@@ -427,7 +435,8 @@ bool mpt_model_load(const std::string & fname, mpt_model & model, gpt_vocab & vo
 }
 
 bool mpt_eval(
-        mpt_model & model,
+        const mpt_model & model,
+        mpt_session & session,
         const int n_threads,
         const int n_past,
         const std::vector<int>           & embd_inp,
@@ -444,24 +453,24 @@ bool mpt_eval(
     const int n_vocab = hparams.n_vocab;
 
     const size_t init_buf_size = 1024_MiB;
-    if (!model.eval_buf.addr || model.eval_buf.size < init_buf_size)
-        model.eval_buf.resize(init_buf_size);
+    if (!session.eval_buf.addr || session.eval_buf.size < init_buf_size)
+        session.eval_buf.resize(init_buf_size);
 
-    if (mem_per_token > 0 && mem_per_token*N > model.eval_buf.size) {
+    if (mem_per_token > 0 && mem_per_token*N > session.eval_buf.size) {
         const size_t buf_size_new = 1.1*(mem_per_token*N); // add 10% to account for ggml object overhead
         // printf("\n%s: reallocating buffer from %zu to %zu bytes\n", __func__, model.buf.size, buf_size_new);
 
         // reallocate
-        model.eval_buf.resize(buf_size_new);
-        if (model.eval_buf.addr == nullptr) {
-            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, model.eval_buf.size);
+        session.eval_buf.resize(buf_size_new);
+        if (session.eval_buf.addr == nullptr) {
+            fprintf(stderr, "%s: failed to allocate %zu bytes\n", __func__, session.eval_buf.size);
             return false;
         }
     }
 
     struct ggml_init_params params = {
-        .mem_size   = model.eval_buf.size,
-        .mem_buffer = model.eval_buf.addr,
+        .mem_size   = session.eval_buf.size,
+        .mem_buffer = session.eval_buf.addr,
         .no_alloc = false
     };
 
@@ -476,7 +485,7 @@ bool mpt_eval(
     struct ggml_tensor * inpL = ggml_get_rows(ctx0, model.wte, embd);
 
     for (int il = 0; il < n_layer; ++il) {
-        ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
+        ggml_set_scratch(ctx0, {0, session.scr0_buf.size, session.scr0_buf.addr, });
 
         struct ggml_tensor * inpSA = inpL;
         struct ggml_tensor * cur = inpSA;
@@ -502,10 +511,10 @@ bool mpt_eval(
             {
                 Vcur = ggml_transpose(ctx0, Vcur);
 
-                struct ggml_tensor * k = ggml_view_1d(ctx0, model.kv_self.k, N*n_embd, (ggml_element_size(model.kv_self.k)*n_embd)*(il*n_ctx + n_past));
-                struct ggml_tensor * v = ggml_view_2d(ctx0, model.kv_self.v, N, n_embd,
-                                        (   n_ctx)*ggml_element_size(model.kv_self.v),
-                                        (il*n_ctx)*ggml_element_size(model.kv_self.v)*n_embd + n_past*ggml_element_size(model.kv_self.v));
+                struct ggml_tensor * k = ggml_view_1d(ctx0, session.kv_self.k, N*n_embd, (ggml_element_size(session.kv_self.k)*n_embd)*(il*n_ctx + n_past));
+                struct ggml_tensor * v = ggml_view_2d(ctx0, session.kv_self.v, N, n_embd,
+                                        (   n_ctx)*ggml_element_size(session.kv_self.v),
+                                        (il*n_ctx)*ggml_element_size(session.kv_self.v)*n_embd + n_past*ggml_element_size(session.kv_self.v));
 
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Kcur, k));
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Vcur, v));
@@ -519,7 +528,7 @@ bool mpt_eval(
             struct ggml_tensor * K =
                 ggml_permute(ctx0,
                         ggml_reshape_3d(ctx0,
-                            ggml_view_1d(ctx0, model.kv_self.k, (n_past + N)*n_embd, il*n_ctx*ggml_element_size(model.kv_self.k)*n_embd),
+                            ggml_view_1d(ctx0, session.kv_self.k, (n_past + N)*n_embd, il*n_ctx*ggml_element_size(session.kv_self.k)*n_embd),
                             n_embd/n_head, n_head, n_past + N),
                         0, 2, 1, 3);
 
@@ -545,11 +554,11 @@ bool mpt_eval(
 
             // V_trans = Vmem.view(n_embd/n_head, n_head, n_past + N).permute(1, 2, 0, 3).contiguous()
             struct ggml_tensor * V =
-                ggml_view_3d(ctx0, model.kv_self.v,
+                ggml_view_3d(ctx0, session.kv_self.v,
                         n_past + N, n_embd/n_head, n_head,
-                        n_ctx*ggml_element_size(model.kv_self.v),
-                        n_ctx*ggml_element_size(model.kv_self.v)*n_embd/n_head,
-                        il*n_ctx*ggml_element_size(model.kv_self.v)*n_embd);
+                        n_ctx*ggml_element_size(session.kv_self.v),
+                        n_ctx*ggml_element_size(session.kv_self.v)*n_embd/n_head,
+                        il*n_ctx*ggml_element_size(session.kv_self.v)*n_embd);
 
             // KQV = transpose(V) * KQ_soft_max
             struct ggml_tensor * KQV = ggml_mul_mat(ctx0, V, KQ_soft_max);
@@ -568,7 +577,7 @@ bool mpt_eval(
                     cur);
         }
 
-        ggml_set_scratch(ctx0, {0, model.scr1_buf.size, model.scr1_buf.addr, });
+        ggml_set_scratch(ctx0, {0, session.scr1_buf.size, session.scr1_buf.addr, });
         // residual
         struct ggml_tensor * resSA = ggml_add(ctx0, cur, inpSA);
         // feed-forward network
@@ -593,7 +602,7 @@ bool mpt_eval(
         // self-attention + FF
         inpL = ggml_add(ctx0, cur, resSA);
     }
-    ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
+    ggml_set_scratch(ctx0, {0, session.scr0_buf.size, session.scr0_buf.addr, });
 
     struct ggml_tensor * out = inpL;
     // -> logits
@@ -629,7 +638,7 @@ bool mpt_eval(
 
 #define MPT_MAX_RNG_STATE 64*1024
 
-size_t mpt_get_state_size(const mpt_model &model)
+size_t mpt_get_state_size(mpt_session &session)
 {
     // we don't know size of rng until we actually serialize it. so reserve more than enough memory for its serialized state.
     // for reference, std::mt19937(1337) serializes to 6701 bytes.
@@ -637,7 +646,7 @@ size_t mpt_get_state_size(const mpt_model &model)
     const size_t s_rng             = MPT_MAX_RNG_STATE;
     const size_t s_kv_size         = sizeof(size_t);
     const size_t s_kv_ntok         = sizeof(int);
-    const size_t s_kv              = model.kv_self.buf.size;
+    const size_t s_kv              = session.kv_self.buf.size;
     const size_t s_total = (
         + s_rng_size
         + s_rng
@@ -649,7 +658,7 @@ size_t mpt_get_state_size(const mpt_model &model)
     return s_total;
 }
 
-size_t mpt_copy_state_data(const mpt_model &model, const std::mt19937 &rng, uint8_t *dest)
+size_t mpt_copy_state_data(mpt_session& session, const std::mt19937 &rng, uint8_t *dest)
 {
     uint8_t * out = dest;
     fflush(stdout);
@@ -670,24 +679,24 @@ size_t mpt_copy_state_data(const mpt_model &model, const std::mt19937 &rng, uint
 
     // copy kv cache
     {
-        const size_t kv_size = model.kv_self.buf.size;
-        const int    kv_ntok = model.kv_self.n;
+        const size_t kv_size = session.kv_self.buf.size;
+        const int    kv_ntok = session.kv_self.n;
 
         memcpy(out, &kv_size, sizeof(kv_size)); out += sizeof(kv_size);
         memcpy(out, &kv_ntok, sizeof(kv_ntok)); out += sizeof(kv_ntok);
 
         if (kv_size) {
-            memcpy(out, model.kv_self.buf.addr, kv_size); out += kv_size;
+            memcpy(out, session.kv_self.buf.addr, kv_size); out += kv_size;
         }
     }
 
     const size_t written  = out - dest;
-    assert(written == mpt_get_state_size(model));
+    assert(written == mpt_get_state_size(session));
     fflush(stdout);
     return written;
 }
 
-size_t mpt_set_state_data(mpt_model *model, std::mt19937 *rng, const uint8_t *src)
+size_t mpt_set_state_data(mpt_session &session, std::mt19937 *rng, const uint8_t *src)
 {
     const uint8_t * in = src;
 
@@ -715,23 +724,23 @@ size_t mpt_set_state_data(mpt_model *model, std::mt19937 *rng, const uint8_t *sr
         memcpy(&kv_ntok, in, sizeof(kv_ntok)); in += sizeof(kv_ntok);
 
         if (kv_size) {
-            assert(model->kv_self.buf.size == kv_size);
+            assert(session.kv_self.buf.size == kv_size);
 
-            void * k_data = model->kv_self.k->data; // remember data pointers
-            void * v_data = model->kv_self.v->data; // because their value is stored in buf and overwritten by memcpy
+            void * k_data = session.kv_self.k->data; // remember data pointers
+            void * v_data = session.kv_self.v->data; // because their value is stored in buf and overwritten by memcpy
 
-            memcpy(model->kv_self.buf.addr, in, kv_size); in += kv_size;
+            memcpy(session.kv_self.buf.addr, in, kv_size); in += kv_size;
 
-            model->kv_self.k->data = k_data; // restore correct data pointers
-            model->kv_self.v->data = v_data;
+            session.kv_self.k->data = k_data; // restore correct data pointers
+            session.kv_self.v->data = v_data;
 
         }
 
-        model->kv_self.n = kv_ntok;
+        session.kv_self.n = kv_ntok;
     }
 
     const size_t nread    = in - src;
-    assert(nread == mpt_get_state_size(*model));
+    assert(nread == mpt_get_state_size(session));
     fflush(stdout);
     return nread;
 }
@@ -739,8 +748,9 @@ size_t mpt_set_state_data(mpt_model *model, std::mt19937 *rng, const uint8_t *sr
 struct MPTPrivate {
     const std::string modelPath;
     bool modelLoaded;
-    gpt_vocab vocab;
-    mpt_model *model = nullptr;
+    std::shared_ptr<gpt_vocab> vocab;
+    std::shared_ptr<mpt_model> model;
+    std::unique_ptr<mpt_session> session;
     int64_t n_threads = 0;
     size_t mem_per_token = 0;
     std::mt19937 rng;
@@ -749,7 +759,9 @@ struct MPTPrivate {
 
 MPT::MPT()
     : d_ptr(new MPTPrivate) {
-    d_ptr->model = new mpt_model;
+    d_ptr->model = std::make_shared<mpt_model>();
+    d_ptr->vocab = std::make_shared<gpt_vocab>();
+    d_ptr->session = std::make_unique<mpt_session>();
     d_ptr->model->ctx = nullptr;
     d_ptr->modelLoaded = false;
 }
@@ -763,6 +775,18 @@ size_t MPT::requiredMem(const std::string &modelPath) {
     return mem_req;
 }
 
+LLModel* MPT::clone() {
+    MPT *cloned = new MPT();
+    cloned->d_ptr->vocab = d_ptr->vocab;
+    cloned->d_ptr->model = d_ptr->model;
+    cloned->d_ptr->session = std::make_unique<mpt_session>();
+    cloned->d_ptr->session->init(*d_ptr->model);
+    cloned->d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
+    cloned->d_ptr->has_im_end = cloned->d_ptr->vocab->token_to_id.find("<|im_end|>") != d_ptr->vocab->token_to_id.end();
+    cloned->d_ptr->modelLoaded = true;
+    return cloned;
+}
+
 bool MPT::loadModel(const std::string &modelPath) {
     std::mt19937 rng(time(NULL));
     d_ptr->rng = rng;
@@ -770,14 +794,15 @@ bool MPT::loadModel(const std::string &modelPath) {
     auto fin = std::ifstream(modelPath, std::ios::binary);
 
     // load the model
-    if (!mpt_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab, nullptr)) {
+    if (!mpt_model_load(modelPath, fin, *d_ptr->model, *d_ptr->vocab, nullptr)) {
         std::cerr << "MPT ERROR: failed to load model from " <<  modelPath;
         return false;
     }
 
+    d_ptr->session->init(*d_ptr->model);
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
-    d_ptr->has_im_end = d_ptr->vocab.token_to_id.find("<|im_end|>") != d_ptr->vocab.token_to_id.end();
+    d_ptr->has_im_end = d_ptr->vocab->token_to_id.find("<|im_end|>") != d_ptr->vocab->token_to_id.end();
     fflush(stdout);
     return true;
 }
@@ -793,7 +818,7 @@ int32_t MPT::threadCount() const
 
 MPT::~MPT()
 {
-    delete d_ptr->model;
+    //delete d_ptr->model;
 }
 
 bool MPT::isModelLoaded() const
@@ -803,27 +828,27 @@ bool MPT::isModelLoaded() const
 
 size_t MPT::stateSize() const
 {
-    return mpt_get_state_size(*d_ptr->model);
+    return mpt_get_state_size(*d_ptr->session);
 }
 
 size_t MPT::saveState(uint8_t *dest) const
 {
-    return mpt_copy_state_data(*d_ptr->model, d_ptr->rng, dest);
+    return mpt_copy_state_data(*d_ptr->session, d_ptr->rng, dest);
 }
 
 size_t MPT::restoreState(const uint8_t *src)
 {
-    return mpt_set_state_data(d_ptr->model, &d_ptr->rng, src);
+    return mpt_set_state_data(*d_ptr->session, &d_ptr->rng, src);
 }
 
 std::vector<LLModel::Token> MPT::tokenize(PromptContext &, const std::string &str) const
 {
-    return ::gpt_tokenize(d_ptr->vocab, str);
+    return ::gpt_tokenize(*d_ptr->vocab, str);
 }
 
 std::string MPT::tokenToString(Token id) const
 {
-    return d_ptr->vocab.id_to_token[id];
+    return d_ptr->vocab->id_to_token[id];
 }
 
 LLModel::Token MPT::sampleToken(PromptContext &promptCtx) const
@@ -843,12 +868,12 @@ bool MPT::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) con
     // determine the required inference memory per token:
     static bool initialized = false;
     if (!initialized) {
-        mpt_eval(*d_ptr->model, d_ptr->n_threads, 0, { 0, 1, 2, 3 }, ctx.logits,
+        mpt_eval(*d_ptr->model, *d_ptr->session, d_ptr->n_threads, 0, { 0, 1, 2, 3 }, ctx.logits,
             d_ptr->mem_per_token);
         initialized = true;
     }
 
-    return mpt_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
+    return mpt_eval(*d_ptr->model, *d_ptr->session, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
 }
 
 int32_t MPT::contextLength() const
@@ -858,7 +883,7 @@ int32_t MPT::contextLength() const
 
 const std::vector<LLModel::Token> &MPT::endTokens() const
 {
-    static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.token_to_id["<|im_end|>"]};
+    static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab->token_to_id["<|im_end|>"]};
     return fres;
 }
 

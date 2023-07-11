@@ -131,6 +131,10 @@ size_t LLamaModel::requiredMem(const std::string &modelPath) {
     return filesize + est_kvcache_size;
 }
 
+LLModel* LLamaModel::clone() {
+  return nullptr;
+}
+
 bool LLamaModel::loadModel(const std::string &modelPath)
 {
     // load the model

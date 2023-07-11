@@ -59,6 +59,7 @@ public:
     explicit LLModel() {}
     virtual ~LLModel() {}
 
+    virtual LLModel* clone() = 0;
     virtual bool loadModel(const std::string &modelPath) = 0;
     virtual bool isModelLoaded() const = 0;
     virtual size_t requiredMem(const std::string &modelPath) = 0;

@@ -841,6 +841,10 @@ size_t GPTJ::requiredMem(const std::string &modelPath) {
     return mem_req;
 }
 
+LLModel* GPTJ::clone() {
+  return nullptr;
+}
+
 bool GPTJ::loadModel(const std::string &modelPath) {
     std::mt19937 rng(time(NULL));
     d_ptr->rng = rng;

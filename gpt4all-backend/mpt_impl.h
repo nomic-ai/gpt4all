@@ -15,6 +15,7 @@ public:
     MPT();
     ~MPT();
 
+    LLModel* clone() override;
     bool loadModel(const std::string &modelPath) override;
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath) override;
