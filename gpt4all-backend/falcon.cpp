@@ -1,8 +1,7 @@
+#include <stdexcept>
 #include "llmodel.h"
 #define FALCON_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "falcon_impl.h"
-#include "llama.h"
-#include "llama-util.h"
 #include "utils.h"
 #include "llmodel_shared.h"
 
@@ -58,9 +57,6 @@ struct falcon_model {
 
     std::vector<falcon_layer> layers;
 
-    // key + value memory
-    llm_kv_cache kv_self;
-
     struct ggml_context* ctx;
     std::map<std::string, struct ggml_tensor*> tensors;
 
@@ -97,6 +93,38 @@ static bool kv_cache_init(
     cache.v = ggml_new_tensor_1d(cache.ctx, wtype, n_elements);
     return true;
 }
+
+struct falcon_session {
+    struct llm_kv_cache kv_self;
+    llm_buffer eval_buf;
+    llm_buffer scr0_buf;
+    llm_buffer scr1_buf;
+
+    void init(const falcon_model &model) {
+        // key + value memory
+        {
+            const auto &hparams = model.hparams;
+
+            const int n_layer = hparams.n_layer;
+            const int n_ctx = hparams.n_ctx;
+
+            const int64_t n_mem = n_layer * n_ctx;
+
+            if (!kv_cache_init(hparams, kv_self, GGML_TYPE_F32,
+                               model.hparams.n_ctx)) {
+                fprintf(stderr,
+                        "%s: kv_cache_init() failed for self-attention cache\n",
+                        __func__);
+                throw std::runtime_error("could not allocate memory for kv cache");
+            }
+            const size_t memory_size =
+                ggml_nbytes(kv_self.k) + ggml_nbytes(kv_self.v);
+
+            fprintf(stderr, "%s: memory_size = %8.2f MB, n_mem = %" PRId64 "\n",
+                   __func__, memory_size / 1024.0 / 1024.0, n_mem);
+        }
+    }
+};
 
 // load the model's weights from a file
 bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_vocab & vocab, size_t *mem_req) {
@@ -197,7 +225,6 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
         const int n_head = hparams.n_head;
         const int n_head_kv = hparams.n_head_kv;
         const int n_layer = hparams.n_layer;
-        const int n_ctx = hparams.n_ctx;
         const int n_ff = 4 * model.hparams.n_embd;
         const int n_vocab = hparams.n_vocab;
         const int head_dim = hparams.n_embd / hparams.n_head;
@@ -332,28 +359,6 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
         }
     }
 
-    // key + value memory
-    {
-        const auto & hparams = model.hparams;
-
-        const int n_layer = hparams.n_layer;
-        const int n_ctx   = hparams.n_ctx;
-        const int n_head_kv = hparams.n_head_kv;
-        const int head_dim = hparams.n_embd / hparams.n_head;
-
-        const int64_t n_mem      = n_layer*n_ctx;
-        const int64_t n_elements = head_dim*n_mem;
-
-        if (!kv_cache_init(hparams, model.kv_self, GGML_TYPE_F32, model.hparams.n_ctx)) {
-            fprintf(stderr, "%s: kv_cache_init() failed for self-attention cache\n", __func__);
-            ggml_free(ctx);
-            return false;
-        }
-        const size_t memory_size = ggml_nbytes(model.kv_self.k) + ggml_nbytes(model.kv_self.v);
-
-        printf("%s: memory_size = %8.2f MB, n_mem = %" PRId64 "\n", __func__, memory_size/1024.0/1024.0, n_mem);
-    }
-
     // load weights
     {
         int n_tensors = 0;
@@ -448,6 +453,7 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
 //
 bool falcon_eval(
         const falcon_model & model,
+        falcon_session & session,
         const int n_threads,
         const int n_past,
         const std::vector<gpt_vocab::id> & embd_inp,
@@ -463,7 +469,6 @@ bool falcon_eval(
     const int n_head  = hparams.n_head;
     const int n_head_kv = hparams.n_head_kv;
     const int n_vocab = hparams.n_vocab;
-    const int version = hparams.falcon_version;
     const size_t head_dim = n_embd / n_head;
 
    struct ggml_init_params eval_ctx_params = {
@@ -553,12 +558,12 @@ bool falcon_eval(
             // store key and value to memory
             {
                 struct ggml_tensor* k = ggml_view_1d(
-                    ctx0, model.kv_self.k, N * n_head_kv * head_dim,
-                    (ggml_element_size(model.kv_self.k) * n_head_kv * head_dim) *
+                    ctx0, session.kv_self.k, N * n_head_kv * head_dim,
+                    (ggml_element_size(session.kv_self.k) * n_head_kv * head_dim) *
                         (il * n_ctx + n_past));
                 struct ggml_tensor* v = ggml_view_1d(
-                    ctx0, model.kv_self.v, N * n_head_kv * head_dim,
-                    (ggml_element_size(model.kv_self.v) * n_head_kv * head_dim) *
+                    ctx0, session.kv_self.v, N * n_head_kv * head_dim,
+                    (ggml_element_size(session.kv_self.v) * n_head_kv * head_dim) *
                         (il * n_ctx + n_past));
 
                 ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Kcur, k));
@@ -569,11 +574,11 @@ bool falcon_eval(
                 ctx0,
                 ggml_view_3d(
                     ctx0,
-                    model.kv_self.k,
+                    session.kv_self.k,
                     head_dim, n_head_kv, n_past + N,
                     head_dim * sizeof_wtype,
                     head_dim * n_head_kv * sizeof_wtype,
-                    il * n_ctx * ggml_element_size(model.kv_self.k) * n_head_kv * head_dim),
+                    il * n_ctx * ggml_element_size(session.kv_self.k) * n_head_kv * head_dim),
                 0, 2, 1, 3);
 
             // K * Q
@@ -602,11 +607,11 @@ bool falcon_eval(
                 ctx0,
                 ggml_view_3d(
                     ctx0,
-                    model.kv_self.v,
+                    session.kv_self.v,
                     head_dim, n_head_kv, n_past + N,
                     head_dim * sizeof_wtype,
                     head_dim * n_head_kv * sizeof_wtype,
-                    il * n_ctx * ggml_element_size(model.kv_self.v) * n_head_kv * head_dim),
+                    il * n_ctx * ggml_element_size(session.kv_self.v) * n_head_kv * head_dim),
                 0, 2, 1, 3);
 
             // changed from repeat2 back to repeat, will not support 40B!
@@ -705,12 +710,12 @@ bool falcon_eval(
 
 
 #define MAX_RNG_STATE 64*1024
-size_t falcon_get_state_size(const falcon_model &model) {
+size_t falcon_get_state_size(const falcon_session &session) {
     const size_t s_rng_size        = sizeof(size_t);
     const size_t s_rng             = MAX_RNG_STATE;
     const size_t s_kv_size         = sizeof(size_t);
     const size_t s_kv_ntok         = sizeof(int);
-    const size_t s_kv              = model.kv_self.buf.size;
+    const size_t s_kv              = session.kv_self.buf.size;
     const size_t s_total = (
         + s_rng_size
         + s_rng
@@ -721,7 +726,7 @@ size_t falcon_get_state_size(const falcon_model &model) {
     return s_total;
 }
 
-size_t falcon_copy_state_data(const falcon_model &model, const std::mt19937 &rng, uint8_t *dest)
+size_t falcon_copy_state_data(const falcon_session &session, const std::mt19937 &rng, uint8_t *dest)
 {
     uint8_t * out = dest;
     // copy rng
@@ -741,24 +746,24 @@ size_t falcon_copy_state_data(const falcon_model &model, const std::mt19937 &rng
 
     // copy kv cache
     {
-        const size_t kv_size = model.kv_self.buf.size;
-        const int    kv_ntok = model.kv_self.n;
+        const size_t kv_size = session.kv_self.buf.size;
+        const int    kv_ntok = session.kv_self.n;
 
         memcpy(out, &kv_size, sizeof(kv_size)); out += sizeof(kv_size);
         memcpy(out, &kv_ntok, sizeof(kv_ntok)); out += sizeof(kv_ntok);
 
         if (kv_size) {
-            memcpy(out, model.kv_self.buf.addr, kv_size); out += kv_size;
+            memcpy(out, session.kv_self.buf.addr, kv_size); out += kv_size;
         }
     }
 
     const size_t written  = out - dest;
-    assert(written == falcon_get_state_size(model));
+    assert(written == falcon_get_state_size(session));
     fflush(stdout);
     return written;
 }
 
-size_t falcon_set_state_data(falcon_model *model, std::mt19937 *rng, const uint8_t *src)
+size_t falcon_set_state_data(falcon_session *session, std::mt19937 *rng, const uint8_t *src)
 {
     const uint8_t * in = src;
 
@@ -786,23 +791,23 @@ size_t falcon_set_state_data(falcon_model *model, std::mt19937 *rng, const uint8
         memcpy(&kv_ntok, in, sizeof(kv_ntok)); in += sizeof(kv_ntok);
 
         if (kv_size) {
-            assert(model->kv_self.buf.size == kv_size);
+            assert(session->kv_self.buf.size == kv_size);
 
-            void * k_data = model->kv_self.k->data; // remember data pointers
-            void * v_data = model->kv_self.v->data; // because their value is stored in buf and overwritten by memcpy
+            void * k_data = session->kv_self.k->data; // remember data pointers
+            void * v_data = session->kv_self.v->data; // because their value is stored in buf and overwritten by memcpy
 
-            memcpy(model->kv_self.buf.addr, in, kv_size); in += kv_size;
+            memcpy(session->kv_self.buf.addr, in, kv_size); in += kv_size;
 
-            model->kv_self.k->data = k_data; // restore correct data pointers
-            model->kv_self.v->data = v_data;
+            session->kv_self.k->data = k_data; // restore correct data pointers
+            session->kv_self.v->data = v_data;
 
         }
 
-        model->kv_self.n = kv_ntok;
+        session->kv_self.n = kv_ntok;
     }
 
     const size_t nread    = in - src;
-    assert(nread == falcon_get_state_size(*model));
+    assert(nread == falcon_get_state_size(*session));
     fflush(stdout);
     return nread;
 }
@@ -810,15 +815,18 @@ size_t falcon_set_state_data(falcon_model *model, std::mt19937 *rng, const uint8
 struct FalconPrivate {
     const std::string modelPath;
     bool modelLoaded;
-    gpt_vocab vocab;
-    falcon_model *model = nullptr;
+    std::shared_ptr<gpt_vocab> vocab;
+    std::shared_ptr<falcon_model> model;
+    std::unique_ptr<falcon_session> session;
     int64_t n_threads = 0;
     size_t mem_per_token = 0;
     std::mt19937 rng;
 };
 
 Falcon::Falcon() : d_ptr(new FalconPrivate) {
-    d_ptr->model = new falcon_model;
+    d_ptr->model = std::make_shared<falcon_model>();
+    d_ptr->vocab = std::make_shared<gpt_vocab>();
+    d_ptr->session = std::make_unique<falcon_session>();
     d_ptr->model->ctx = nullptr;
     d_ptr->modelLoaded = false;
 }
@@ -828,11 +836,18 @@ Falcon::~Falcon() {
         ggml_free(d_ptr->model->ctx);
         d_ptr->model->ctx = nullptr;
     }
-    delete d_ptr->model;
 }
 
 LLModel* Falcon::clone() {
-  return nullptr;
+    Falcon *cloned = new Falcon();
+    cloned->d_ptr->vocab = d_ptr->vocab;
+    cloned->d_ptr->model = d_ptr->model;
+    cloned->d_ptr->session = std::make_unique<falcon_session>();
+    cloned->d_ptr->session->init(*d_ptr->model);
+    cloned->d_ptr->n_threads =
+        std::min(4, (int32_t)std::thread::hardware_concurrency());
+    cloned->d_ptr->modelLoaded = true;
+    return cloned;
 }
 
 bool Falcon::loadModel(const std::string &modelPath)
@@ -841,7 +856,7 @@ bool Falcon::loadModel(const std::string &modelPath)
     d_ptr->rng = rng;
 
     // load the model
-    if (!falcon_model_load(modelPath, *d_ptr->model, d_ptr->vocab, nullptr)) {
+    if (!falcon_model_load(modelPath, *d_ptr->model, *d_ptr->vocab, nullptr)) {
         std::cerr << "FALCON ERROR: failed to load model from " <<  modelPath;
         return false;
     }
@@ -869,17 +884,17 @@ size_t Falcon::requiredMem(const std::string &modelPath)
 
 size_t Falcon::stateSize() const
 {
-    return falcon_get_state_size(*d_ptr->model);
+    return falcon_get_state_size(*d_ptr->session);
 }
 
 size_t Falcon::saveState(uint8_t *dest) const
 {
-    return falcon_copy_state_data(*d_ptr->model, d_ptr->rng, dest);
+    return falcon_copy_state_data(*d_ptr->session, d_ptr->rng, dest);
 }
 
 size_t Falcon::restoreState(const uint8_t *src)
 {
-    return falcon_set_state_data(d_ptr->model, &d_ptr->rng, src);
+    return falcon_set_state_data(d_ptr->session.get(), &d_ptr->rng, src);
 }
 
 void Falcon::setThreadCount(int32_t n_threads)
@@ -894,7 +909,7 @@ int32_t Falcon::threadCount() const
 
 std::vector<LLModel::Token> Falcon::tokenize(PromptContext &, const std::string &str) const
 {
-    return ::gpt_tokenize(d_ptr->vocab, str);
+    return ::gpt_tokenize(*d_ptr->vocab, str);
 }
 
 LLModel::Token Falcon::sampleToken(PromptContext &promptCtx) const
@@ -911,7 +926,7 @@ LLModel::Token Falcon::sampleToken(PromptContext &promptCtx) const
 
 std::string Falcon::tokenToString(Token id) const
 {
-    return d_ptr->vocab.id_to_token[id];
+    return d_ptr->vocab->id_to_token[id];
 }
 
 bool Falcon::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
@@ -919,12 +934,12 @@ bool Falcon::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) 
     // determine the required inference memory per token:
     static bool initialized = false;
     if (!initialized) {
-        falcon_eval(*d_ptr->model, d_ptr->n_threads, 0, { 0, 1, 2, 3 }, ctx.logits,
+        falcon_eval(*d_ptr->model, *d_ptr->session, d_ptr->n_threads, 0, { 0, 1, 2, 3 }, ctx.logits,
             d_ptr->mem_per_token);
         initialized = true;
     }
 
-    return falcon_eval(*d_ptr->model, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
+    return falcon_eval(*d_ptr->model, *d_ptr->session, d_ptr->n_threads, ctx.n_past, tokens, ctx.logits, d_ptr->mem_per_token);
 }
 
 int32_t Falcon::contextLength() const
