@@ -163,7 +163,7 @@ Window {
             + "<i>\"" + currentChat.modelLoadingError + "\"</i>"
             + qsTr("<br><br>Model loading failures can happen for a variety of reasons, but the most common "
             + "causes include a bad file format, an incomplete or corrupted download, the wrong file "
-            + "type or an incompatible model type. Here are some suggestions for resolving the problem:"
+            + "type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:"
             + "<br><ul>"
             + "<li>Ensure the model file has a compatible ggml format and type"
             + "<li>Check the model file is complete in the download folder"

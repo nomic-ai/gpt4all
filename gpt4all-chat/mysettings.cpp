@@ -608,3 +608,24 @@ void MySettings::setNetworkUsageStatsActive(bool b)
     setting.sync();
     emit networkUsageStatsActiveChanged();
 }
+
+QString MySettings::attemptModelLoad() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("attemptModelLoad", QString()).toString();
+}
+
+void MySettings::setAttemptModelLoad(const QString &modelFile)
+{
+    if (attemptModelLoad() == modelFile)
+        return;
+
+    QSettings setting;
+    if (modelFile.isEmpty())
+        setting.remove("attemptModelLoad");
+    else
+        setting.setValue("attemptModelLoad", modelFile);
+    setting.sync();
+    emit attemptModelLoadChanged();
+}

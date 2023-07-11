@@ -211,6 +211,15 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     // Store the file info in the modelInfo in case we have an error loading
     m_llModelInfo.fileInfo = fileInfo;
 
+    // Check if we've previously tried to load this file and failed/crashed
+    if (MySettings::globalInstance()->attemptModelLoad() == filePath) {
+        MySettings::globalInstance()->setAttemptModelLoad(QString()); // clear the flag
+        if (!m_isServer)
+            LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
+        m_llModelInfo = LLModelInfo();
+        emit modelLoadingError(QString("Previous attempt to load model resulted in crash for `%1` most likely due to out of memory. You should either remove this model or decrease your system RAM by closing other applications.").arg(modelInfo.filename()));
+    }
+
     if (fileInfo.exists()) {
         if (isChatGPT) {
             QString apiKey;
@@ -239,7 +248,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #endif
 
             if (m_llModelInfo.model) {
+                MySettings::globalInstance()->setAttemptModelLoad(filePath);
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString());
+                MySettings::globalInstance()->setAttemptModelLoad(QString());
                 if (!success) {
                     delete std::exchange(m_llModelInfo.model, nullptr);
                     if (!m_isServer)
