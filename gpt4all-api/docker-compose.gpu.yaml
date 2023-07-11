@@ -8,7 +8,9 @@ services:
     environment:
       - HUGGING_FACE_HUB_TOKEN=token
       - USE_FLASH_ATTENTION=false
-    command: --model-id ${MODEL_ID} --num-shard ${NUM_SHARD}
+      - MODEL_ID=''
+      - NUM_SHARD=1
+    command: --model-id $MODEL_ID --num-shard $NUM_SHARD
     volumes:
       - ./:/data
     ports:
