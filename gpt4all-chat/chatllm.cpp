@@ -427,6 +427,9 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
 
 bool ChatLLM::handleRecalculate(bool isRecalc)
 {
+#if defined(DEBUG)
+    qDebug() << "recalculate" << m_llmThread.objectName() << isRecalc;
+#endif
     if (m_isRecalc != isRecalc) {
         m_isRecalc = isRecalc;
         emit recalcChanged();
@@ -597,6 +600,9 @@ void ChatLLM::handleChatIdChanged(const QString &id)
 
 bool ChatLLM::handleNamePrompt(int32_t token)
 {
+#if defined(DEBUG)
+    qDebug() << "name prompt" << m_llmThread.objectName() << token;
+#endif
     Q_UNUSED(token);
     qt_noop();
     return !m_stopGenerating;
@@ -604,6 +610,9 @@ bool ChatLLM::handleNamePrompt(int32_t token)
 
 bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
 {
+#if defined(DEBUG)
+    qDebug() << "name response" << m_llmThread.objectName() << token << response;
+#endif
     Q_UNUSED(token);
 
     m_nameResponse.append(response);
@@ -615,28 +624,40 @@ bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
 
 bool ChatLLM::handleNameRecalculate(bool isRecalc)
 {
+#if defined(DEBUG)
+    qDebug() << "name recalc" << m_llmThread.objectName() << isRecalc;
+#endif
     Q_UNUSED(isRecalc);
     Q_UNREACHABLE();
-    return !m_stopGenerating;
+    return false;
 }
 
 bool ChatLLM::handleSystemPrompt(int32_t token)
 {
+#if defined(DEBUG)
+    qDebug() << "system prompt" << m_llmThread.objectName() << token << m_stopGenerating;
+#endif
     Q_UNUSED(token);
     return !m_stopGenerating;
 }
 
 bool ChatLLM::handleSystemResponse(int32_t token, const std::string &response)
 {
+#if defined(DEBUG)
+    qDebug() << "system response" << m_llmThread.objectName() << token << response << m_stopGenerating;
+#endif
     Q_UNUSED(token);
     Q_UNUSED(response);
-    return !m_stopGenerating;
+    return false;
 }
 
 bool ChatLLM::handleSystemRecalculate(bool isRecalc)
 {
+#if defined(DEBUG)
+    qDebug() << "system recalc" << m_llmThread.objectName() << isRecalc;
+#endif
     Q_UNUSED(isRecalc);
-    return !m_stopGenerating;
+    return false;
 }
 
 bool ChatLLM::serialize(QDataStream &stream, int version)

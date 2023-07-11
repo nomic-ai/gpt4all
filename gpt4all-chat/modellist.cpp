@@ -868,6 +868,7 @@ void ModelList::updateModelsFromJson()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     QEventLoop loop;
     connect(jsonReply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     QTimer::singleShot(1500, &loop, &QEventLoop::quit);
@@ -908,6 +909,7 @@ void ModelList::updateModelsFromJsonAsync()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &ModelList::handleModelsJsonDownloadFinished);
 }
 

@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 
+#include <QCoreApplication>
 #include <QThread>
 #include <QEventLoop>
 #include <QJsonDocument>
@@ -160,6 +161,7 @@ void ChatGPTWorker::request(const QString &apiKey,
     request.setRawHeader("Authorization", authorization.toUtf8());
     m_networkManager = new QNetworkAccessManager(this);
     QNetworkReply *reply = m_networkManager->post(request, array);
+    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &ChatGPTWorker::handleFinished);
     connect(reply, &QNetworkReply::readyRead, this, &ChatGPTWorker::handleReadyRead);
     connect(reply, &QNetworkReply::errorOccurred, this, &ChatGPTWorker::handleErrorOccurred);
