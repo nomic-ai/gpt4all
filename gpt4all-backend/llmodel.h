@@ -1,6 +1,7 @@
 #ifndef LLMODEL_H
 #define LLMODEL_H
 
+#include <memory>
 #include <string>
 #include <functional>
 #include <vector>
@@ -12,32 +13,35 @@
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
 class Dlhandle;
-
+struct llm_kv_cache;
 class LLModel {
 public:
     using Token = int32_t;
-
     class Implementation {
-        LLModel *(*construct_)();
-
     public:
         Implementation(Dlhandle&&);
         Implementation(const Implementation&) = delete;
         Implementation(Implementation&&);
         ~Implementation();
 
+        std::string_view modelType() const { return m_modelType; }
+        std::string_view buildVariant() const { return m_buildVariant; }
+
         static bool isImplementation(const Dlhandle&);
+        static const std::vector<Implementation>& implementationList();
+        static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
+        static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
+        static void setImplementationsSearchPath(const std::string& path);
+        static const std::string& implementationsSearchPath();
 
-        std::string_view modelType, buildVariant;
-        bool (*magicMatch)(std::ifstream& f);
-        Dlhandle *dlhandle;
+    private:
+        bool (*m_magicMatch)(std::ifstream& f);
+        LLModel *(*m_construct)();
 
-        // The only way an implementation should be constructed
-        LLModel *construct() const {
-            auto fres = construct_();
-            fres->m_implementation = this;
-            return fres;
-        }
+    private:
+        std::string_view m_modelType;
+        std::string_view m_buildVariant;
+        Dlhandle *m_dlhandle;
     };
 
     struct PromptContext {
@@ -59,12 +63,18 @@ public:
     explicit LLModel() {}
     virtual ~LLModel() {}
 
+    // get the current kv cache
+    virtual std::shared_ptr<llm_kv_cache> getKvCache() = 0;
+    // get a copy of the current kv cache
+    virtual std::shared_ptr<llm_kv_cache> copyKvCache() = 0;
+    // set the kv cache this model will read/write from, returns # of populated tokens (n_past)
+    virtual size_t setKvCache(std::shared_ptr<llm_kv_cache> kvcache) = 0;
     virtual bool loadModel(const std::string &modelPath) = 0;
     virtual bool isModelLoaded() const = 0;
     virtual size_t requiredMem(const std::string &modelPath) = 0;
     virtual size_t stateSize() const { return 0; }
-    virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
-    virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
+    virtual size_t saveState(uint8_t * /*dest*/) const { return 0; }
+    virtual size_t restoreState(const uint8_t * /*src*/) { return 0; }
     virtual void prompt(const std::string &prompt,
                         std::function<bool(int32_t)> promptCallback,
                         std::function<bool(int32_t, const std::string&)> responseCallback,
@@ -77,13 +87,6 @@ public:
     const Implementation& implementation() const {
         return *m_implementation;
     }
-
-    static const std::vector<Implementation>& implementationList();
-    static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
-    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
-
-    static void setImplementationsSearchPath(const std::string& path);
-    static const std::string& implementationsSearchPath();
 
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
@@ -100,5 +103,9 @@ protected:
     void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 
     const Implementation *m_implementation = nullptr;
+
+private:
+    friend class LLMImplementation;
 };
+
 #endif // LLMODEL_H

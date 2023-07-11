@@ -23,6 +23,9 @@ public:
     size_t restoreState(const uint8_t *src) override;
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
+    virtual std::shared_ptr<llm_kv_cache> getKvCache() override;
+    virtual std::shared_ptr<llm_kv_cache> copyKvCache() override;
+    virtual size_t setKvCache(std::shared_ptr<llm_kv_cache> kvcache) override;
 
 private:
     MPTPrivate *d_ptr;

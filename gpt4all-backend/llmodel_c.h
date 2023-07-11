@@ -199,6 +199,26 @@ void llmodel_set_implementation_search_path(const char *path);
  */
 const char *llmodel_get_implementation_search_path();
 
+// gets a reference to the current kv cache
+// must be dropped with `llmodel_kvcache_destroy` to be freed!
+bool llmodel_kvcache_get(llmodel_model model, void **handle_ptr,
+                         llmodel_error *error);
+
+// gets a copy of the current kv cache
+// must be dropped with `llmodel_kvcache_destroy` to be freed!
+bool llmodel_kvcache_copy(llmodel_model model, void **handle_ptr,
+                          llmodel_error *error);
+
+// sets this kvcache handle to be the model's current one
+// model will drop held reference to its current kvcache
+bool llmodel_kvcache_set(llmodel_model model, void *handle_ptr,
+                         llmodel_error *error);
+
+// drops a reference to a kvcache - *MUST* be called on any handles obtained
+// with `llmodel_kvcache_get` or `llmodel_kvcache_copy` or the corresponding
+// memory will *never* be freed!
+void llmodel_kvcache_destroy(void *handle_ptr);
+
 #ifdef __cplusplus
 }
 #endif
