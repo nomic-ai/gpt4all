@@ -1,7 +1,6 @@
 /// <reference types="node" />
 declare module "gpt4all";
 
-export * from "./util.d.ts";
 
 /** Type of the model */
 type ModelType = "gptj" | "llama" | "mpt" | "replit";
@@ -115,10 +114,19 @@ interface LoadModelOptions {
     verbose?: boolean;
 }
 
+/**
+ * Loads a machine learning model with the specified name. The defacto way to create a model.
+ * By default this will download a model from the official GPT4ALL website, if a model is not present at given path.
+ *
+ * @param {string} modelName - The name of the model to load.
+ * @param {LoadModelOptions|undefined} [options] - (Optional) Additional options for loading the model.
+ * @returns {Promise<LLModel>} A promise that resolves to an instance of the loaded LLModel.
+ */
 declare function loadModel(
     modelName: string,
     options?: LoadModelOptions
 ): Promise<LLModel>;
+
 
 /**
  * The nodejs equivalent to python binding's chat_completion
@@ -294,6 +302,77 @@ interface PromptMessage {
     role: "system" | "assistant" | "user";
     content: string;
 }
+
+/**
+ * Initiates the download of a model file of a specific model type.
+ * By default this downloads without waiting. use the controller returned to alter this behavior.
+ * @param {ModelFile} modelName - The model file to be downloaded.
+ * @param {DownloadOptions} options - to pass into the downloader. Default is { location: (cwd), debug: false }.
+ * @returns {DownloadController} object that allows controlling the download process.
+ *
+ * @throws {Error} If the model already exists in the specified location.
+ * @throws {Error} If the model cannot be found at the specified url.
+ *
+ * @example
+ * const controller = download('ggml-gpt4all-j-v1.3-groovy.bin')
+ * controller.promise().then(() => console.log('Downloaded!'))
+ */
+declare function downloadModel(
+    modelName: string,
+    options?: DownloadModelOptions
+): DownloadController;
+
+/**
+ * Options for the model download process.
+ */
+interface DownloadModelOptions {
+    /**
+     * location to download the model.
+     * Default is process.cwd(), or the current working directory
+     */
+    modelPath?: string;
+
+    /**
+     * Debug mode -- check how long it took to download in seconds
+     * @default false
+     */
+    debug?: boolean;
+
+    /**
+     * Remote download url. Defaults to `https://gpt4all.io/models`
+     * @default https://gpt4all.io/models
+     */
+    url?: string;
+    /**
+     * Whether to verify the hash of the download to ensure a proper download occurred.
+     * @default true
+     */
+    md5sum?: boolean;
+}
+
+declare function listModels(): Promise<Record<string, string>[]>;
+
+interface RetrieveModelOptions {
+    allowDownload?: boolean;
+    verbose?: boolean;
+    modelPath?: string;
+}
+
+declare function retrieveModel(
+    model: string,
+    options?: RetrieveModelOptions
+): Promise<string>;
+
+/**
+ * Model download controller.
+ */
+interface DownloadController {
+    /** Cancel the request to download from gpt4all website if this is called. */
+    cancel: () => void;
+    /** Convert the downloader into a promise, allowing people to await and manage its lifetime */
+    promise: () => Promise<void>;
+}
+
 export {
     ModelType,
     ModelFile,
@@ -307,4 +386,10 @@ export {
     createTokenStream,
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
+    downloadModel,
+    retrieveModel,
+    listModels,
+    DownloadController,
+    RetrieveModelOptions,
+    DownloadModelOptions
 };

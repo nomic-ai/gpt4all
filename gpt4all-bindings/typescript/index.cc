@@ -66,6 +66,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     if(GetInference() == nullptr) {
        std::cerr << "Tried searching libraries in \"" << library_path << "\"" <<  std::endl;
        std::cerr << "Tried searching for model weight in \"" << full_weight_path << "\"" << std::endl;
+       std::cerr << "Do you have runtime libraries installed?" << std::endl;
        Napi::Error::New(env, "Had an issue creating llmodel object, inference is null").ThrowAsJavaScriptException(); 
        return;
     }
@@ -156,12 +157,12 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
             promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
     }
     //copy to protect llmodel resources when splitting to new thread
-
     llmodel_prompt_context copiedPrompt = promptContext;
+
     std::string copiedQuestion = question;
     PromptWorkContext pc = {
         copiedQuestion,
-        inference_.load(),
+        std::ref(inference_),
         copiedPrompt,
     };
     auto threadSafeContext = new TsfnContext(env, pc);

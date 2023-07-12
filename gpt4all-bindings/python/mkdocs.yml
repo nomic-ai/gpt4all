@@ -11,6 +11,7 @@ nav:
     - 'index.md'
     - 'Bindings':
       - 'GPT4All in Python': 'gpt4all_python.md'
+      - 'GPT4ALL in NodeJs': 'gpt4all_typescript.md'
       - 'GPT4All Chat Client': 'gpt4all_chat.md'
       - 'gpt4all_cli.md'
 #    - 'Tutorials':
