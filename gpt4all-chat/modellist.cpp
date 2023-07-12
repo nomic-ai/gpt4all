@@ -222,6 +222,7 @@ ModelList::ModelList()
     : QAbstractListModel(nullptr)
     , m_installedModels(new InstalledModels(this))
     , m_downloadableModels(new DownloadableModels(this))
+    , m_asyncModelRequestOngoing(false)
 {
     m_installedModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
@@ -899,6 +900,9 @@ void ModelList::updateModelsFromJson()
 
 void ModelList::updateModelsFromJsonAsync()
 {
+    m_asyncModelRequestOngoing = true;
+    emit asyncModelRequestOngoingChanged();
+
 #if defined(USE_LOCAL_MODELSJSON)
     QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
 #else
@@ -911,17 +915,37 @@ void ModelList::updateModelsFromJsonAsync()
     QNetworkReply *jsonReply = m_networkManager.get(request);
     connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &ModelList::handleModelsJsonDownloadFinished);
+    connect(jsonReply, &QNetworkReply::errorOccurred, this, &ModelList::handleModelsJsonDownloadErrorOccurred);
 }
 
 void ModelList::handleModelsJsonDownloadFinished()
 {
     QNetworkReply *jsonReply = qobject_cast<QNetworkReply *>(sender());
-    if (!jsonReply)
+    if (!jsonReply) {
+        m_asyncModelRequestOngoing = false;
+        emit asyncModelRequestOngoingChanged();
         return;
+    }
 
     QByteArray jsonData = jsonReply->readAll();
     jsonReply->deleteLater();
     parseModelsJsonFile(jsonData, true);
+    m_asyncModelRequestOngoing = false;
+    emit asyncModelRequestOngoingChanged();
+}
+
+void ModelList::handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code)
+{
+    // TODO: Show what error occured in the GUI
+    m_asyncModelRequestOngoing = false;
+    emit asyncModelRequestOngoingChanged();
+
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply)
+        return;
+
+    qWarning() << QString("ERROR: Modellist download failed with error code \"%1-%2\"")
+                      .arg(code).arg(reply->errorString()).toStdString();
 }
 
 void ModelList::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)

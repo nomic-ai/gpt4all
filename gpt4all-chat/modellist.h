@@ -169,6 +169,7 @@ class ModelList : public QAbstractListModel
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
+    Q_PROPERTY(bool asyncModelRequestOngoing READ asyncModelRequestOngoing NOTIFY asyncModelRequestOngoingChanged)
 
 public:
     static ModelList *globalInstance();
@@ -296,12 +297,14 @@ public:
     }
 
     QString incompleteDownloadPath(const QString &modelFile);
+    bool asyncModelRequestOngoing() const { return m_asyncModelRequestOngoing; }
 
 Q_SIGNALS:
     void countChanged();
     void installedModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
+    void asyncModelRequestOngoingChanged();
 
 private Q_SLOTS:
     void updateModelsFromJson();
@@ -310,6 +313,7 @@ private Q_SLOTS:
     void updateModelsFromDirectory();
     void updateDataForSettings();
     void handleModelsJsonDownloadFinished();
+    void handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code);
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
@@ -328,6 +332,7 @@ private:
     QList<ModelInfo*> m_models;
     QHash<QString, ModelInfo*> m_modelMap;
     QFileSystemWatcher *m_watcher;
+    bool m_asyncModelRequestOngoing;
 
 private:
     explicit ModelList();
