@@ -167,7 +167,7 @@ jobs:
       - checkout
       - node/install:
           install-yarn: true
-          node-version: "18.15"
+          node-version: "18.16"
       - run: node --version
       - node/install-packages:
           pkg-manager: yarn
@@ -612,7 +612,13 @@ jobs:
                     trx2junit TestResults/*.trx
             - store_test_results:
                 path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-
+  build-nodejs-linux: 
+    docker:
+      - image: circleci/node:erbium-bullseye-browsers-legacy
+    steps:
+      - when:
+        condition: << pipeline.parameters.run-ts-workflow >> 
+          - checkout
   store-and-upload-nupkgs:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
@@ -638,6 +644,39 @@ jobs:
             dotnet nuget push ./Gpt4All/bin/Release/Gpt4All.*.nupkg -s $NUGET_URL -k $NUGET_TOKEN --skip-duplicate
       - store_artifacts:
           path: gpt4all-bindings/csharp/Gpt4All/bin/Release
+  prepare-npm-pkg:
+    docker: 
+      - image: cimg/base:stable
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - checkout
+      - node/install:
+          install-yarn: true
+          node-version: "18.16"
+      - run: node --version
+      - node/install-packages:
+          pkg-manager: yarn
+      - run:
+          command: yarn run test
+          name: Run YARN tests
+      - run: 
+        command: |
+          # excluding llmodel. nodejs bindings dont need llmodel.dll
+          cd gpt4all-bindings/typescript
+          mkdir -p runtimes/win32-x64/native
+          cp /tmp/workspace/runtimes/win-x64/*-*.dll runtimes/win-x64/native/ 
+          mkdir -p runtimes/linux-x64/native 
+          cp /tmp/workspace/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
+          mkdir -p runtimes/osx/native
+          cp /tmp/workspace/runtimes/osx-x64/*-*.dylib runtimes/osx/native/
+          cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
+
+      - run:
+          name: Publish to NPM
+          command: |
+            npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
+            npm publish 
 
 workflows:
   version: 2
@@ -711,6 +750,7 @@ workflows:
         or:
          - << pipeline.parameters.run-python-workflow >>
          - << pipeline.parameters.run-csharp-workflow >>
+         - <<   pipeline.parameters.run-ts-workflow   >>
     jobs:
       - hold:
           type: approval
@@ -740,6 +780,7 @@ workflows:
               only:
           requires:
             - hold
+      # NodeJs Jobs 
       # CSharp Jobs
       - build-csharp-linux:
           filters:
