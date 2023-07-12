@@ -1,14 +1,14 @@
 # GPT4All CLI
 
 The GPT4All command-line interface (CLI) is a Python script which is built on top of the
-[Python bindings][docs-bindings-python] ([repository][repo-bindings-python]) and the [typer]
+[Python bindings][docs-bindings-python] ([repository][repo-bindings-python]) and the [Typer]
 package. The source code, README, and local build instructions can be found
 [here][repo-bindings-cli].
 
 [docs-bindings-python]: gpt4all_python.html
 [repo-bindings-python]: https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python
 [repo-bindings-cli]: https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/cli
-[typer]: https://typer.tiangolo.com/
+[Typer]: https://typer.tiangolo.com/
 
 ## Installation
 ### The Short Version
@@ -34,6 +34,7 @@ In case you're wondering, _REPL_ is an acronym for [read-eval-print loop][wiki-r
 
 Especially if you have several applications/libraries which depend on Python, to avoid descending
 into dependency hell at some point, you should:
+
 - Consider to always install into some kind of [_virtual environment_][venv].
 - On a _Unix-like_ system, don't use `sudo` for anything other than packages provided by the system
   package manager, i.e. never with `pip`.
@@ -79,7 +80,7 @@ Download the [official installer from python.org][python.org-downloads] if Pytho
 present on your system.
 
 A _Windows_ installation should already provide all the components for a _virtual environment_. Run:
-```shell
+```
 py -3 -m venv gpt4all-cli
 gpt4all-cli\Scripts\activate
 py -m pip install gpt4all typer
@@ -149,7 +150,8 @@ and save it anywhere you like, as long as the Python interpreter has access to t
 dependencies.
 
 Note: different platforms can have slightly different ways to start Python. Whereas below the
-interpreter command is written as `python` you typically want to type instead:
+interpreter command is written as `python`, you typically want to type instead:
+
 - On _Unix-like_ systems: `python3`
 - On _Windows_: `py -3`
 
@@ -182,6 +184,7 @@ to activate that every time you want to run the CLI. Instead, you can just start
 interpreter in the folder `gpt4all-cli/bin/` (_Unix-like_) or `gpt4all-cli/Script/` (_Windows_).
 
 That also makes it easy to set an alias e.g. in [Bash][bash-aliases] or [PowerShell][posh-aliases]:
+
 - Bash: `alias gpt4all="'/full/path/to/gpt4all-cli/bin/python' '/full/path/to/app.py' repl"`
 - PowerShell:
   ```posh
