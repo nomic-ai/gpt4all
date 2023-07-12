@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <sstream>
 #ifdef _MSC_VER
+#include <windows.h>
 #include <processthreadsapi.h>
 #endif
 
