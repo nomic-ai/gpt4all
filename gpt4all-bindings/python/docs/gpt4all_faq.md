@@ -2,11 +2,13 @@
 
 ## What models are supported by the GPT4All ecosystem?
 
-Currently, there are three different model architectures that are supported:
+Currently, there are five different model architectures that are supported:
 
-1. GPTJ - Based off of the GPT-J architecture with examples found [here](https://huggingface.co/EleutherAI/gpt-j-6b)
-2. LLAMA - Based off of the LLAMA architecture with examples found [here](https://huggingface.co/models?sort=downloads&search=llama)
+1. GPT-J - Based off of the GPT-J architecture with examples found [here](https://huggingface.co/EleutherAI/gpt-j-6b)
+2. LLaMA - Based off of the LLaMA architecture with examples found [here](https://huggingface.co/models?sort=downloads&search=llama)
 3. MPT - Based off of Mosaic ML's MPT architecture with examples found [here](https://huggingface.co/mosaicml/mpt-7b)
+4. Replit - Based off of Replit Inc.'s Replit architecture with examples found [here](https://huggingface.co/replit/replit-code-v1-3b)
+5. Falcon - Based off of TII's Falcon architecture with examples found [here](https://huggingface.co/tiiuae/falcon-40b)
 
 ## Why so many different architectures? What differentiates them?
 
@@ -24,6 +26,10 @@ The upstream [llama.cpp](https://github.com/ggerganov/llama.cpp) project has int
 
 Fortunately, we have engineered a submoduling system allowing us to dynamically load different versions of the underlying library so that
 GPT4All just works.
+
+## What are the system requirements?
+
+Your CPU needs to support [AVX or AVX2 instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) and you need enough RAM to load a model into memory.
 
 ## What about GPU inference?
 
