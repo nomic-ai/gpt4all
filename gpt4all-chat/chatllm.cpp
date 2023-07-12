@@ -788,13 +788,18 @@ void ChatLLM::processSystemPrompt()
     if (!isModelLoaded() || m_processedSystemPrompt || m_isServer)
         return;
 
+    const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
+    if (systemPrompt.empty()) {
+        m_processedSystemPrompt = true;
+        return;
+    }
+
     m_stopGenerating = false;
     auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
     auto responseFunc = std::bind(&ChatLLM::handleSystemResponse, this, std::placeholders::_1,
         std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleSystemRecalculate, this, std::placeholders::_1);
 
-    const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
     const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
     const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
     const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
