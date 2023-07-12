@@ -12,32 +12,34 @@
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
 class Dlhandle;
-
 class LLModel {
 public:
     using Token = int32_t;
-
     class Implementation {
-        LLModel *(*construct_)();
-
     public:
         Implementation(Dlhandle&&);
         Implementation(const Implementation&) = delete;
         Implementation(Implementation&&);
         ~Implementation();
 
+        std::string_view modelType() const { return m_modelType; }
+        std::string_view buildVariant() const { return m_buildVariant; }
+
         static bool isImplementation(const Dlhandle&);
+        static const std::vector<Implementation>& implementationList();
+        static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
+        static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
+        static void setImplementationsSearchPath(const std::string& path);
+        static const std::string& implementationsSearchPath();
 
-        std::string_view modelType, buildVariant;
-        bool (*magicMatch)(std::ifstream& f);
-        Dlhandle *dlhandle;
+    private:
+        bool (*m_magicMatch)(std::ifstream& f);
+        LLModel *(*m_construct)();
 
-        // The only way an implementation should be constructed
-        LLModel *construct() const {
-            auto fres = construct_();
-            fres->m_implementation = this;
-            return fres;
-        }
+    private:
+        std::string_view m_modelType;
+        std::string_view m_buildVariant;
+        Dlhandle *m_dlhandle;
     };
 
     struct PromptContext {
@@ -78,13 +80,6 @@ public:
         return *m_implementation;
     }
 
-    static const std::vector<Implementation>& implementationList();
-    static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
-    static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
-
-    static void setImplementationsSearchPath(const std::string& path);
-    static const std::string& implementationsSearchPath();
-
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
@@ -100,5 +95,9 @@ protected:
     void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 
     const Implementation *m_implementation = nullptr;
+
+private:
+    friend class LLMImplementation;
 };
+
 #endif // LLMODEL_H
