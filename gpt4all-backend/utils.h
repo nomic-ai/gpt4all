@@ -58,7 +58,7 @@ struct gpt_vocab {
     }
 };
 
-void replace(std::string & str, const std::string & needle, const std::string & replacement);
+void replace(std::string & str, std::string_view needle, std::string_view replacement);
 
 // poor-man's JSON parsing
 std::map<std::string, int32_t> json_parse(const std::string & fname);

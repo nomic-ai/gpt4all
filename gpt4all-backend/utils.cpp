@@ -1,9 +1,10 @@
 #include "utils.h"
 
+#include <string_view>
 #include <fstream>
 #include <regex>
 
-void replace(std::string & str, const std::string & needle, const std::string & replacement) {
+void replace(std::string & str, std::string_view needle, std::string_view replacement) {
     size_t pos = 0;
     while ((pos = str.find(needle, pos)) != std::string::npos) {
         str.replace(pos, needle.length(), replacement);
