@@ -54,6 +54,7 @@ MyDialog {
             visible: !ModelList.downloadableModels.count && ModelList.asyncModelRequestOngoing
             running: ModelList.asyncModelRequestOngoing
             Accessible.role: Accessible.Animation
+            Layout.alignment: Qt.AlignCenter
             Accessible.name: qsTr("Busy indicator")
             Accessible.description: qsTr("Displayed when the models request is ongoing")
         }
