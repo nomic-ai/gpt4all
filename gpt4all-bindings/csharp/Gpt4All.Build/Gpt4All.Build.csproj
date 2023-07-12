@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Cake.FileHelpers" Version="6.1.3" />
+    <PackageReference Include="Cake.Frosting" Version="3.0.0" />
+  </ItemGroup>
+</Project>
