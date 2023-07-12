@@ -1,18 +1,15 @@
 [
   {
     "order": "a",
-    "md5sum": "4acc146dd43eb02845c233c29289c7c5",
-    "name": "Hermes",
-    "filename": "nous-hermes-13b.ggmlv3.q4_0.bin",
-    "filesize": "8136777088",
-    "requires": "2.4.7",
+    "md5sum": "e8d47924f433bd561cb5244557147793",
+    "name": "Wizard v1.1",
+    "filename": "wizardlm-13b-v1.1-superhot-8k.ggmlv3.q4_0.bin",
+    "filesize": "7323310848",
     "ramrequired": "16",
     "parameters": "13 billion",
     "quant": "q4_0",
     "type": "LLaMA",
-    "description": "<strong>Best overall model</strong><br><ul><li>Instruction based<li>Gives long responses<li>Curated with 300,000 uncensored instructions<li>Trained by Nous Research<li>Cannot be used commercially</ul>",
-    "url": "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML/resolve/main/nous-hermes-13b.ggmlv3.q4_0.bin",
-    "promptTemplate": "### Instruction:\n%1\n### Response:\n"
+    "description": "<strong>Best overall model</strong><br><ul><li>Instruction based<li>Gives very long responses<li>Finetuned with only 1k of high-quality data<li>Trained by Microsoft and Peking University<li>Cannot be used commercially</ul"
   },
   {
     "order": "b",
@@ -31,6 +28,21 @@
   },
   {
     "order": "c",
+    "md5sum": "4acc146dd43eb02845c233c29289c7c5",
+    "name": "Hermes",
+    "filename": "nous-hermes-13b.ggmlv3.q4_0.bin",
+    "filesize": "8136777088",
+    "requires": "2.4.7",
+    "ramrequired": "16",
+    "parameters": "13 billion",
+    "quant": "q4_0",
+    "type": "LLaMA",
+    "description": "<strong>Extremely good model</strong><br><ul><li>Instruction based<li>Gives long responses<li>Curated with 300,000 uncensored instructions<li>Trained by Nous Research<li>Cannot be used commercially</ul>",
+    "url": "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML/resolve/main/nous-hermes-13b.ggmlv3.q4_0.bin",
+    "promptTemplate": "### Instruction:\n%1\n### Response:\n"
+  },
+  {
+    "order": "e",
     "md5sum": "81a09a0ddf89690372fc296ff7f625af",
     "name": "Groovy",
     "filename": "ggml-gpt4all-j-v1.3-groovy.bin",
@@ -42,7 +54,7 @@
     "description": "<strong>Creative model can be used for commercial purposes</strong><br><ul><li>Fast responses<li>Creative responses</li><li>Instruction based</li><li>Trained by Nomic AI<li>Licensed for commercial use</ul>"
   },
   {
-    "order": "e",
+    "order": "f",
     "md5sum": "11d9f060ca24575a2c303bdc39952486",
     "name": "Snoozy",
     "filename": "GPT4All-13B-snoozy.ggmlv3.q4_0.bin",
@@ -56,7 +68,7 @@
     "url": "https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML/resolve/main/GPT4All-13B-snoozy.ggmlv3.q4_0.bin"
   },
   {
-    "order": "f",
+    "order": "g",
     "md5sum": "756249d3d6abe23bde3b1ae272628640",
     "name": "MPT Chat",
     "filename": "ggml-mpt-7b-chat.bin",
@@ -71,9 +83,9 @@
     "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>"
   },
   {
-    "order": "g",
+    "order": "h",
     "md5sum": "e64e74375ce9d36a3d0af3db1523fd0a",
-    "name": "Orca",
+    "name": "Mini Orca",
     "filename": "orca-mini-7b.ggmlv3.q4_0.bin",
     "filesize": "3791749248",
     "requires": "2.4.7",
@@ -87,9 +99,9 @@
     "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
-    "order": "h",
+    "order": "i",
     "md5sum": "6a087f7f4598fad0bb70e6cb4023645e",
-    "name": "Orca (Small)",
+    "name": "Mini Orca (Small)",
     "filename": "orca-mini-3b.ggmlv3.q4_0.bin",
     "filesize": "1928446208",
     "requires": "2.4.7",
@@ -103,9 +115,9 @@
     "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
-    "order": "i",
+    "order": "j",
     "md5sum": "959b7f65b2d12fd1e3ff99e7493c7a3a",
-    "name": "Orca (Large)",
+    "name": "Mini Orca (Large)",
     "filename": "orca-mini-13b.ggmlv3.q4_0.bin",
     "filesize": "7323329152",
     "requires": "2.4.7",
@@ -119,7 +131,7 @@
     "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
-    "order": "j",
+    "order": "k",
     "md5sum": "29119f8fa11712704c6b22ac5ab792ea",
     "name": "Vicuna",
     "filename": "ggml-vicuna-7b-1.1-q4_2.bin",
@@ -131,7 +143,7 @@
     "description": "<strong>Good small model - trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>"
   },
   {
-    "order": "k",
+    "order": "l",
     "md5sum": "95999b7b0699e2070af63bf5d34101a8",
     "name": "Vicuna (large)",
     "filename": "ggml-vicuna-13b-1.1-q4_2.bin",
@@ -143,7 +155,7 @@
     "description": "<strong>Good larger model - trained by teams from UC Berkeley, CMU, Stanford, MBZUAI, and UC San Diego</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>"
   },
   {
-    "order": "l",
+    "order": "m",
     "md5sum": "99e6d129745a3f1fb1121abed747b05a",
     "name": "Wizard",
     "filename": "ggml-wizardLM-7B.q4_2.bin",
@@ -155,7 +167,7 @@
     "description": "<strong>Good small model - trained by by Microsoft and Peking University</strong><br><ul><li>Instruction based<li>Cannot be used commercially</ul>"
   },
   {
-    "order": "m",
+    "order": "n",
     "md5sum": "6cb4ee297537c9133bddab9692879de0",
     "name": "Stable Vicuna",
     "filename": "ggml-stable-vicuna-13B.q4_2.bin",
@@ -168,7 +180,7 @@
     "systemPrompt": "## Assistant: I am StableVicuna, a large language model created by CarperAI. I am here to chat!\n\n"
   },
   {
-    "order": "n",
+    "order": "o",
     "md5sum": "1cfa4958f489f0a0d1ffdf6b37322809",
     "name": "MPT Instruct",
     "filename": "ggml-mpt-7b-instruct.bin",
@@ -181,7 +193,7 @@
     "description": "<strong>Mosaic's instruction model</strong><br><ul><li>Instruction based<li>Trained by Mosaic ML<li>Licensed for commercial use</ul>"
   },
   {
-    "order": "o",
+    "order": "p",
     "md5sum": "120c32a51d020066288df045ef5d52b9",
     "name": "MPT Base",
     "filename": "ggml-mpt-7b-base.bin",
@@ -194,7 +206,7 @@
     "description": "<strong>Trained for text completion with no assistant finetuning</strong><br><ul><li>Completion based<li>Trained by Mosaic ML<li>Licensed for commercial use</ul>"
   },
   {
-    "order": "p",
+    "order": "q",
     "md5sum": "d5eafd5b0bd0d615cfd5fd763f642dfe",
     "name": "Nous Vicuna",
     "filename": "ggml-nous-gpt4-vicuna-13b.bin",
@@ -206,7 +218,7 @@
     "description": "<strong>Trained on ~180,000 instructions</strong><br><ul><li>Instruction based<li>Trained by Nous Research<li>Cannot be used commercially</ul>"
   },
   {
-    "order": "q",
+    "order": "r",
     "md5sum": "489d21fd48840dcb31e5f92f453f3a20",
     "name": "Wizard Uncensored",
     "filename": "wizardLM-13B-Uncensored.ggmlv3.q4_0.bin",
@@ -220,7 +232,7 @@
     "url": "https://huggingface.co/TheBloke/WizardLM-13B-Uncensored-GGML/resolve/main/wizardLM-13B-Uncensored.ggmlv3.q4_0.bin"
   },
   {
-    "order": "r",
+    "order": "s",
     "md5sum": "615890cb571fcaa0f70b2f8d15ef809e",
     "disableGUI": "true",
     "name": "Replit",
