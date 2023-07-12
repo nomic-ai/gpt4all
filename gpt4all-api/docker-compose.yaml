@@ -1,4 +1,4 @@
-version: "3.5"
+version: "3.8"
 
 services:
   gpt4all_api:
@@ -13,6 +13,7 @@ services:
       - LOGLEVEL=debug
       - PORT=4891
       - model=ggml-mpt-7b-chat.bin
+      - inference_mode=cpu
     volumes:
       - './gpt4all_api/app:/app'
     command: ["/start-reload.sh"]

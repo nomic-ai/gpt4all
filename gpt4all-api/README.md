@@ -17,6 +17,18 @@ Then, start the backend with:
 docker compose up --build
 ```
 
+This will run both the API and locally hosted GPU inference server. If you want to run the API without the GPU inference server, you can run:
+
+```bash
+docker compose up --build gpt4all_api
+```
+
+To run the API with the GPU inference server, you will need to include environment variables (like the `MODEL_ID`). Edit the `.env` file and run
+```bash
+docker compose --env-file .env up --build
+```
+
+
 #### Spinning up your app
 Run `docker compose up` to spin up the backend. Monitor the logs for errors in-case you forgot to set an environment variable above.
 
