@@ -821,7 +821,7 @@ void ModelList::updateModelsFromDirectory()
                     for (const QString &id : modelsById) {
                         updateData(id, FilenameRole, filename);
                         updateData(id, ChatGPTRole, filename.startsWith("chatgpt-"));
-                        updateData(id, DirpathRole, path);
+                        updateData(id, DirpathRole, info.dir().absolutePath() + "/");
                         updateData(id, FilesizeRole, toFileSize(info.size()));
                     }
                 }
