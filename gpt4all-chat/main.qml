@@ -89,11 +89,19 @@ Window {
 
     property bool hasShownModelDownload: false
     property bool hasShownFirstStart: false
+    property bool hasShownSettingsAccess: false
 
     function startupDialogs() {
-        if (!LLM.compatHardware) {
+        if (!LLM.compatHardware()) {
             Network.sendNonCompatHardware();
             errorCompatHardware.open();
+            return;
+        }
+
+        // check if we have access to settings and if not show an error
+        if (!hasShownSettingsAccess && !LLM.hasSettingsAccess()) {
+            errorSettingsAccess.open();
+            hasShownSettingsAccess = true;
             return;
         }
 
@@ -133,6 +141,20 @@ Window {
             + qsTr("The only solution at this time is to upgrade your hardware to a more modern CPU.")
             + qsTr("<br><br>See here for more information: <a href=\"https://en.wikipedia.org/wiki/Advanced_Vector_Extensions\">")
             + qsTr("https://en.wikipedia.org/wiki/Advanced_Vector_Extensions</a>")
+    }
+
+    PopupDialog {
+        id: errorSettingsAccess
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: false
+        modal: true
+        text: qsTr("<h3>Encountered an error starting up:</h3><br>")
+            + qsTr("<i>\"Inability to access settings file.\"</i>")
+            + qsTr("<br><br>Unfortunately, something is preventing the program from accessing ")
+            + qsTr("the settings file. This could be caused by incorrect permissions in the local ")
+            + qsTr("app config directory where the settings file is located. ")
+            + qsTr("Check out our <a href=\"https://discord.gg/4M2QFmTt2k\">discord channel</a> for help.")
     }
 
     StartupDialog {

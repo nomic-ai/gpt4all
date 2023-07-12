@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QProcess>
 #include <QResource>
+#include <QSettings>
 #include <fstream>
 
 class MyLLM: public LLM { };
@@ -48,7 +49,13 @@ LLM::LLM()
 #endif
 
     m_compatHardware = minimal;
-    emit compatHardwareChanged();
+}
+
+bool LLM::hasSettingsAccess() const
+{
+    QSettings settings;
+    settings.sync();
+    return settings.status() == QSettings::NoError;
 }
 
 bool LLM::checkForUpdates() const
