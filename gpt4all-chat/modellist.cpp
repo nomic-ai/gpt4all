@@ -936,7 +936,7 @@ void ModelList::handleModelsJsonDownloadFinished()
 
 void ModelList::handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code)
 {
-    // TODO: Show what error occured in the GUI
+    // TODO: Show what error occurred in the GUI
     m_asyncModelRequestOngoing = false;
     emit asyncModelRequestOngoingChanged();
 
