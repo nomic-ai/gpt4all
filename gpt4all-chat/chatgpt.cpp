@@ -244,7 +244,7 @@ void ChatGPTWorker::handleReadyRead()
 void ChatGPTWorker::handleErrorOccurred(QNetworkReply::NetworkError code)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    if (!reply) {
+    if (!reply || reply->error() == QNetworkReply::OperationCanceledError /*when we call abort on purpose*/) {
         emit finished();
         return;
     }
