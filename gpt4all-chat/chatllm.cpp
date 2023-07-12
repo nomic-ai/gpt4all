@@ -789,7 +789,7 @@ void ChatLLM::processSystemPrompt()
         return;
 
     const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
-    if (systemPrompt.empty()) {
+    if (QString::fromStdString(systemPrompt).trimmed().isEmpty()) {
         m_processedSystemPrompt = true;
         return;
     }
