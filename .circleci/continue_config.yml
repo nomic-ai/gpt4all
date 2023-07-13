@@ -444,48 +444,48 @@ jobs:
   build-csharp-linux:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy # Ubuntu 22.04
-      steps:
-        - checkout
-        - attach_workspace:
-            at: /tmp/workspace
-        - run:
-            name: "Prepare Native Libs"
-            command: |
-              cd gpt4all-bindings/csharp
-              mkdir -p runtimes/linux-x64/native
-              cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
-              ls -R runtimes
-        - restore_cache:
-            keys:
-              - gpt4all-csharp-nuget-packages-nix
-        - run:
-            name: "Install project dependencies"
-            command: |
-              cd gpt4all-bindings/csharp
-              dotnet restore Gpt4All
-        - save_cache:
-            paths:
-              - ~/.nuget/packages
-            key: gpt4all-csharp-nuget-packages-nix
-        - run:
-            name: Build C# Project
-            command: |
-              cd gpt4all-bindings/csharp
-              dotnet build Gpt4All --configuration Release --nologo
-        - run:
-            name: "Run C# Tests"
-            command: |
-              cd gpt4all-bindings/csharp
-              dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
-        - run:
-            name: Test results
-            command: |
-                cd gpt4all-bindings/csharp/Gpt4All.Tests
-                dotnet tool install -g trx2junit
-                export PATH="$PATH:$HOME/.dotnet/tools"
-                trx2junit TestResults/*.trx
-        - store_test_results:
-            path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: "Prepare Native Libs"
+          command: |
+            cd gpt4all-bindings/csharp
+            mkdir -p runtimes/linux-x64/native
+            cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
+            ls -R runtimes
+      - restore_cache:
+          keys:
+            - gpt4all-csharp-nuget-packages-nix
+      - run:
+          name: "Install project dependencies"
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet restore Gpt4All
+      - save_cache:
+          paths:
+            - ~/.nuget/packages
+          key: gpt4all-csharp-nuget-packages-nix
+      - run:
+          name: Build C# Project
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet build Gpt4All --configuration Release --nologo
+      - run:
+          name: "Run C# Tests"
+          command: |
+            cd gpt4all-bindings/csharp
+            dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
+      - run:
+          name: Test results
+          command: |
+              cd gpt4all-bindings/csharp/Gpt4All.Tests
+              dotnet tool install -g trx2junit
+              export PATH="$PATH:$HOME/.dotnet/tools"
+              trx2junit TestResults/*.trx
+      - store_test_results:
+          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
 
   build-csharp-windows:
     executor:
