@@ -258,5 +258,20 @@
     "systemPrompt": " ",
     "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>Licensed for commercial use</ul>",
     "url": "https://huggingface.co/nomic-ai/ggml-replit-code-v1-3b/resolve/main/ggml-replit-code-v1-3b.bin"
+  },
+  {
+    "order": "t",
+    "md5sum": "031bb5d5722c08d13e3e8eaf55c37391",
+    "disableGUI": "true",
+    "name": "Bert",
+    "filename": "ggml-all-MiniLM-L6-v2-f16.bin",
+    "filesize": "45521167",
+    "requires": "2.4.14",
+    "ramrequired": "1",
+    "parameters": "1 million",
+    "quant": "f16",
+    "type": "Bert",
+    "systemPrompt": " ",
+    "description": "<strong>Sbert</strong><br><ul><li>For embeddings"
   }
 ]
