@@ -15,7 +15,7 @@ from . import pyllmodel
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
 
-class Embedder:
+class Embed4All:
     def __init__(
         self
     ):

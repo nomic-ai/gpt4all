@@ -1,7 +1,7 @@
 import sys
 from io import StringIO
 
-from gpt4all import GPT4All, Embedder
+from gpt4all import GPT4All, Embed4All
 import time
 
 def test_inference():
