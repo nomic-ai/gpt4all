@@ -154,10 +154,11 @@ class LLModel:
         self.model = None
         self.model_name = None
         self.context = None
+        self.llmodel_lib = llmodel
 
     def __del__(self):
         if self.model is not None:
-            llmodel.llmodel_model_destroy(self.model)
+            self.llmodel_lib.llmodel_model_destroy(self.model)
 
     def memory_needed(self, model_path: str) -> int:
         model_path_enc = model_path.encode("utf-8")
