@@ -253,7 +253,7 @@ class LLModel:
         embedding_size = ctypes.c_size_t()
         c_text = ctypes.c_char_p(text.encode('utf-8'))
         embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
-        embedding_array = ctypes.cast(embedding_ptr, ctypes.POINTER(ctypes.c_float * embedding_size.value)).contents
+        embedding_array = [embedding_ptr[i] for i in range(embedding_size.value)]
         llmodel.llmodel_free_embedding(embedding_ptr)
         return list(embedding_array)
 
