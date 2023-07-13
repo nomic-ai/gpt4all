@@ -717,7 +717,6 @@ workflows:
               only:
           requires:
             - hold
-      # CSharp Jobs
       - build-csharp-linux:
           filters:
             branches:
@@ -745,4 +744,3 @@ workflows:
             - build-csharp-windows
             - build-csharp-linux
             - build-csharp-macos
-        
