@@ -871,7 +871,7 @@ struct bert_ctx * bert_load_from_file(const char *fname)
 
         // TODO: Max tokens should be a param?
         int32_t N = new_bert->model.hparams.n_max_tokens;
-        new_bert->mem_per_input = 1.9 * (new_bert->mem_per_token * N); // add 10% to account for ggml object overhead
+        new_bert->mem_per_input = 2.2 * (new_bert->mem_per_token * N); // add 10% to account for ggml object overhead
 
     }
 #if defined(DEBUG_BERT)
