@@ -19,7 +19,7 @@ class Embed4All:
     def __init__(
         self
     ):
-        self.gpt4all = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin', n_threads=8)
+        self.gpt4all = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin')
 
     def embed(
         self,
