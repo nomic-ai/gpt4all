@@ -18,7 +18,7 @@
 std::string s_implementations_search_path = ".";
 
 static bool has_at_least_minimal_hardware() {
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(_M_X64)
     #ifndef _MSC_VER
         return __builtin_cpu_supports("avx");
     #else
@@ -30,7 +30,7 @@ static bool has_at_least_minimal_hardware() {
 }
 
 static bool requires_avxonly() {
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(_M_X64)
     #ifndef _MSC_VER
         return !__builtin_cpu_supports("avx2");
     #else
