@@ -2,6 +2,8 @@
 #include "mysettings.h"
 #include "network.h"
 
+#include <QFile>
+#include <QStandardPaths>
 #include <algorithm>
 
 //#define USE_LOCAL_MODELSJSON
@@ -159,16 +161,6 @@ int InstalledModels::count() const
     return rowCount();
 }
 
-QString InstalledModels::firstId() const
-{
-    if (rowCount() > 0) {
-        QModelIndex firstIndex = index(0, 0);
-        return sourceModel()->data(firstIndex, ModelList::IdRole).toString();
-    } else {
-        return QString();
-    }
-}
-
 DownloadableModels::DownloadableModels(QObject *parent)
     : QSortFilterProxyModel(parent)
     , m_expanded(false)
@@ -220,6 +212,7 @@ ModelList::ModelList()
     : QAbstractListModel(nullptr)
     , m_installedModels(new InstalledModels(this))
     , m_downloadableModels(new DownloadableModels(this))
+    , m_asyncModelRequestOngoing(false)
 {
     m_installedModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
@@ -241,6 +234,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
+    connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
 
     updateModelsFromJson();
     updateModelsFromSettings();
@@ -294,12 +288,9 @@ ModelInfo ModelList::defaultModelInfo() const
     settings.sync();
 
     // The user default model can be set by the user in the settings dialog. The "default" user
-    // default model is "Application default" which signals we should use the default model that was
-    // specified by the models.json file.
+    // default model is "Application default" which signals we should use the logic here.
     const QString userDefaultModelName = MySettings::globalInstance()->userDefaultModel();
     const bool hasUserDefaultName = !userDefaultModelName.isEmpty() && userDefaultModelName != "Application default";
-    const QString defaultModelName = settings.value("defaultModel").toString();
-    const bool hasDefaultName = hasUserDefaultName ? false : !defaultModelName.isEmpty();
 
     ModelInfo *defaultModel = nullptr;
     for (ModelInfo *info : m_models) {
@@ -307,12 +298,10 @@ ModelInfo ModelList::defaultModelInfo() const
             continue;
         defaultModel = info;
 
-        // If we don't have either setting, then just use the first model that is installed
-        if (!hasUserDefaultName && !hasDefaultName)
-            break;
+        const size_t ramrequired = defaultModel->ramrequired;
 
-        // If we don't have a user specified default, but *do* have a default setting and match, then use it
-        if (!hasUserDefaultName && hasDefaultName && (defaultModel->id() == defaultModelName))
+        // If we don't have either setting, then just use the first model that requires less than 16GB that is installed
+        if (!hasUserDefaultName && !info->isChatGPT && ramrequired > 0 && ramrequired < 16)
             break;
 
         // If we have a user specified default and match, then use it
@@ -388,6 +377,21 @@ void ModelList::addModel(const QString &id)
     endInsertRows();
     emit dataChanged(index(0, 0), index(modelSizeAfter - 1, 0));
     emit userDefaultModelListChanged();
+}
+
+void ModelList::changeId(const QString &oldId, const QString &newId)
+{
+    const bool hasModel = contains(oldId);
+    Q_ASSERT(hasModel);
+    if (!hasModel) {
+        qWarning() << "ERROR: model list does not contain" << oldId;
+        return;
+    }
+
+    QMutexLocker locker(&m_mutex);
+    ModelInfo *info = m_modelMap.take(oldId);
+    info->setId(newId);
+    m_modelMap.insert(newId, info);
 }
 
 int ModelList::rowCount(const QModelIndex &parent) const
@@ -817,7 +821,7 @@ void ModelList::updateModelsFromDirectory()
                     for (const QString &id : modelsById) {
                         updateData(id, FilenameRole, filename);
                         updateData(id, ChatGPTRole, filename.startsWith("chatgpt-"));
-                        updateData(id, DirpathRole, path);
+                        updateData(id, DirpathRole, info.dir().absolutePath() + "/");
                         updateData(id, FilesizeRole, toFileSize(info.size()));
                     }
                 }
@@ -828,14 +832,6 @@ void ModelList::updateModelsFromDirectory()
     processDirectory(exePath);
     if (localPath != exePath)
         processDirectory(localPath);
-
-    if (installedModels()->count()) {
-        const QString firstModel =
-            installedModels()->firstId();
-        QSettings settings;
-        settings.setValue("defaultModel", firstModel);
-        settings.sync();
-    }
 }
 
 void ModelList::updateModelsFromJson()
@@ -850,6 +846,7 @@ void ModelList::updateModelsFromJson()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     QEventLoop loop;
     connect(jsonReply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     QTimer::singleShot(1500, &loop, &QEventLoop::quit);
@@ -857,11 +854,82 @@ void ModelList::updateModelsFromJson()
     if (jsonReply->error() == QNetworkReply::NoError && jsonReply->isFinished()) {
         QByteArray jsonData = jsonReply->readAll();
         jsonReply->deleteLater();
-        parseModelsJsonFile(jsonData);
+        parseModelsJsonFile(jsonData, true);
     } else {
-        qWarning() << "Could not download models.json";
+        qWarning() << "WARNING: Could not download models.json synchronously";
+        updateModelsFromJsonAsync();
+
+        QSettings settings;
+        QFileInfo info(settings.fileName());
+        QString dirPath = info.canonicalPath();
+        const QString modelsConfig = dirPath + "/models.json";
+        QFile file(modelsConfig);
+        if (!file.open(QIODeviceBase::ReadOnly)) {
+            qWarning() << "ERROR: Couldn't read models config file: " << modelsConfig;
+        } else {
+            QByteArray jsonData = file.readAll();
+            file.close();
+            parseModelsJsonFile(jsonData, false);
+        }
     }
     delete jsonReply;
+}
+
+void ModelList::updateModelsFromJsonAsync()
+{
+    m_asyncModelRequestOngoing = true;
+    emit asyncModelRequestOngoingChanged();
+
+#if defined(USE_LOCAL_MODELSJSON)
+    QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
+#else
+    QUrl jsonUrl("http://gpt4all.io/models/models.json");
+#endif
+    QNetworkRequest request(jsonUrl);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+    QNetworkReply *jsonReply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
+    connect(jsonReply, &QNetworkReply::finished, this, &ModelList::handleModelsJsonDownloadFinished);
+    connect(jsonReply, &QNetworkReply::errorOccurred, this, &ModelList::handleModelsJsonDownloadErrorOccurred);
+}
+
+void ModelList::handleModelsJsonDownloadFinished()
+{
+    QNetworkReply *jsonReply = qobject_cast<QNetworkReply *>(sender());
+    if (!jsonReply) {
+        m_asyncModelRequestOngoing = false;
+        emit asyncModelRequestOngoingChanged();
+        return;
+    }
+
+    QByteArray jsonData = jsonReply->readAll();
+    jsonReply->deleteLater();
+    parseModelsJsonFile(jsonData, true);
+    m_asyncModelRequestOngoing = false;
+    emit asyncModelRequestOngoingChanged();
+}
+
+void ModelList::handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code)
+{
+    // TODO: Show what error occurred in the GUI
+    m_asyncModelRequestOngoing = false;
+    emit asyncModelRequestOngoingChanged();
+
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply)
+        return;
+
+    qWarning() << QString("ERROR: Modellist download failed with error code \"%1-%2\"")
+                      .arg(code).arg(reply->errorString()).toStdString();
+}
+
+void ModelList::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+{
+    QUrl url = reply->request().url();
+    for (const auto &e : errors)
+        qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
 }
 
 void ModelList::updateDataForSettings()
@@ -887,13 +955,27 @@ static bool compareVersions(const QString &a, const QString &b) {
     return aParts.size() > bParts.size();
 }
 
-void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
+void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
 {
     QJsonParseError err;
     QJsonDocument document = QJsonDocument::fromJson(jsonData, &err);
     if (err.error != QJsonParseError::NoError) {
         qWarning() << "ERROR: Couldn't parse: " << jsonData << err.errorString();
         return;
+    }
+
+    if (save) {
+        QSettings settings;
+        QFileInfo info(settings.fileName());
+        QString dirPath = info.canonicalPath();
+        const QString modelsConfig = dirPath + "/models.json";
+        QFile file(modelsConfig);
+        if (!file.open(QIODeviceBase::WriteOnly)) {
+            qWarning() << "ERROR: Couldn't write models config file: " << modelsConfig;
+        } else {
+            file.write(jsonData.constData());
+            file.close();
+        }
     }
 
     QJsonArray jsonArray = document.array();
@@ -935,6 +1017,9 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
 
         const QString id = modelName;
         Q_ASSERT(!id.isEmpty());
+
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
 
         if (!contains(id))
             addModel(id);
@@ -983,6 +1068,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
         const QString modelName = "ChatGPT-3.5 Turbo";
         const QString id = modelName;
         const QString modelFilename = "chatgpt-gpt-3.5-turbo.txt";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
         if (!contains(id))
             addModel(id);
         updateData(id, ModelList::NameRole, modelName);
@@ -1000,9 +1087,13 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
     }
 
     {
+        const QString chatGPT4Warn = tr("<br><br><i>* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.");
+
         const QString modelName = "ChatGPT-4";
         const QString id = modelName;
         const QString modelFilename = "chatgpt-gpt-4.txt";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
         if (!contains(id))
             addModel(id);
         updateData(id, ModelList::NameRole, modelName);
@@ -1010,21 +1101,13 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
         updateData(id, ModelList::FilesizeRole, "minimal");
         updateData(id, ModelList::ChatGPTRole, true);
         updateData(id, ModelList::DescriptionRole,
-            tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc);
+            tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc + chatGPT4Warn);
         updateData(id, ModelList::RequiresVersionRole, "2.4.2");
         updateData(id, ModelList::OrderRole, "cb");
         updateData(id, ModelList::RamrequiredRole, 0);
         updateData(id, ModelList::ParametersRole, "?");
         updateData(id, ModelList::QuantRole, "NA");
         updateData(id, ModelList::TypeRole, "GPT");
-    }
-
-    if (installedModels()->count()) {
-        const QString firstModel =
-            installedModels()->firstId();
-        QSettings settings;
-        settings.setValue("defaultModel", firstModel);
-        settings.sync();
     }
 }
 

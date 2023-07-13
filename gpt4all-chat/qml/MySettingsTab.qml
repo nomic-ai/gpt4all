@@ -9,6 +9,7 @@ Item {
     property string title: ""
     property Item contentItem: null
     property Item advancedSettings: null
+    property var openFolderDialog
     signal restoreDefaultsClicked
 
     onContentItemChanged: function() {

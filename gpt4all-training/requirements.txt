@@ -1,10 +1,10 @@
 accelerate
 datasets
+einops
 torchmetrics
 evaluate
 transformers>=4.28.0
 wandb
-pip
 peft
 nodelist-inflator
 deepspeed

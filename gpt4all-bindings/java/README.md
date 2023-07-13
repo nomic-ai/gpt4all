@@ -118,4 +118,7 @@ If this is the case you can easily download and install the latest x64 Microsoft
    - Add static GPT4ALL_VERSION to signify gpt4all version of the bindings
    - Add PromptIsTooLongException for prompts that are longer than context size.
    - Replit model support to include Metal Mac hardware support.
+3. Version **1.1.4**:
+   - Java bindings is compatible with gpt4all version 2.4.11
+   - Falcon model support included.
    

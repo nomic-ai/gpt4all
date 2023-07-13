@@ -69,8 +69,6 @@ public:
     void setModelInfo(const ModelInfo &modelInfo);
     bool isRecalc() const;
 
-    void loadDefaultModel();
-    void loadModel(const ModelInfo &modelInfo);
     void unloadModel();
     void reloadModel();
     void unloadAndDeleteLater();

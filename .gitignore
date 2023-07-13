@@ -1,3 +1,6 @@
+*.arrow
+squad_*
+*sbert_embedded*
 *.pkl
 ckpts*
 .deepspeed_env
@@ -178,3 +181,6 @@ CMakeLists.txt.user
 gpt4all-chat/models/*
 build_*
 build-*
+
+# IntelliJ
+.idea/

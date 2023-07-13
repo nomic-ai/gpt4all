@@ -53,14 +53,6 @@ MySettingsTab {
                 MySettings.userDefaultModel = comboBox.currentText
             }
         }
-        FolderDialog {
-            id: modelPathDialog
-            title: "Please choose a directory"
-            currentFolder: "file://" + MySettings.modelPath
-            onAccepted: {
-                MySettings.modelPath = selectedFolder
-            }
-        }
         Label {
             id: modelPathLabel
             text: qsTr("Download path:")
@@ -93,7 +85,11 @@ MySettingsTab {
             Layout.column: 2
             text: qsTr("Browse")
             Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
-            onClicked: modelPathDialog.open()
+            onClicked: {
+                openFolderDialog("file://" + MySettings.modelPath, function(selectedFolder) {
+                    MySettings.modelPath = selectedFolder
+                })
+            }
         }
         Label {
             id: nThreadsLabel
@@ -105,7 +101,7 @@ MySettingsTab {
         MyTextField {
             text: MySettings.threadCount
             color: theme.textColor
-            ToolTip.text: qsTr("Amount of processing threads to use, a setting of 0 will use the lesser of 4 or your number of CPU threads")
+            ToolTip.text: qsTr("Amount of processing threads to use bounded by 1 and number of logical processors")
             ToolTip.visible: hovered
             Layout.row: 3
             Layout.column: 1

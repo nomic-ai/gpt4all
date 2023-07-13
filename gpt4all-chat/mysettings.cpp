@@ -8,7 +8,7 @@
 #include <QStandardPaths>
 #include <QUrl>
 
-static int      default_threadCount         = 0;
+static int      default_threadCount         = std::min(4, (int32_t) std::thread::hardware_concurrency());
 static bool     default_saveChats           = false;
 static bool     default_saveChatGPTChats    = true;
 static bool     default_serverChat          = false;
@@ -349,7 +349,14 @@ int MySettings::threadCount() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("threadCount", default_threadCount).toInt();
+    int c = setting.value("threadCount", default_threadCount).toInt();
+    // The old thread setting likely left many people with 0 in settings config file, which means
+    // we should reset it to the default going forward
+    if (c <= 0)
+        c = default_threadCount;
+    c = std::max(c, 1);
+    c = std::min(c, QThread::idealThreadCount());
+    return c;
 }
 
 void MySettings::setThreadCount(int c)
@@ -357,6 +364,8 @@ void MySettings::setThreadCount(int c)
     if (threadCount() == c)
         return;
 
+    c = std::max(c, 1);
+    c = std::min(c, QThread::idealThreadCount());
     QSettings setting;
     setting.setValue("threadCount", c);
     setting.sync();
@@ -421,6 +430,16 @@ QString MySettings::modelPath() const
 {
     QSettings setting;
     setting.sync();
+    // We have to migrate the old setting because I changed the setting key recklessly in v2.4.11
+    // which broke a lot of existing installs
+    const bool containsOldSetting = setting.contains("modelPaths");
+    if (containsOldSetting) {
+        const bool containsNewSetting = setting.contains("modelPath");
+        if (!containsNewSetting)
+            setting.setValue("modelPath", setting.value("modelPaths"));
+        setting.remove("modelPaths");
+        setting.sync();
+    }
     return setting.value("modelPath", defaultLocalModelsPath()).toString();
 }
 
@@ -592,4 +611,25 @@ void MySettings::setNetworkUsageStatsActive(bool b)
     setting.setValue("network/usageStatsActive", b);
     setting.sync();
     emit networkUsageStatsActiveChanged();
+}
+
+QString MySettings::attemptModelLoad() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("attemptModelLoad", QString()).toString();
+}
+
+void MySettings::setAttemptModelLoad(const QString &modelFile)
+{
+    if (attemptModelLoad() == modelFile)
+        return;
+
+    QSettings setting;
+    if (modelFile.isEmpty())
+        setting.remove("attemptModelLoad");
+    else
+        setting.setValue("attemptModelLoad", modelFile);
+    setting.sync();
+    emit attemptModelLoadChanged();
 }

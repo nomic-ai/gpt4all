@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(APPLE)
   option(BUILD_UNIVERSAL "Build a Universal binary on macOS" ON)

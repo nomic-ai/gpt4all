@@ -7,6 +7,7 @@ import QtQuick.Layouts
 
 Dialog {
     id: myDialog
+    property alias closeButtonVisible: myCloseButton.visible
     background: Rectangle {
         width: parent.width
         height: parent.height
@@ -17,6 +18,7 @@ Dialog {
     }
 
     MyToolButton {
+        id: myCloseButton
         x: 0 + myDialog.width - myDialog.padding - width - 15
         y: 0 - myDialog.padding + 15
         z: 300

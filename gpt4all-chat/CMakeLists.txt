@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -17,7 +18,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 4)
-set(APP_VERSION_PATCH 12)
+set(APP_VERSION_PATCH 14)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -122,6 +123,7 @@ qt_add_qml_module(chat
       icons/close.svg
       icons/copy.svg
       icons/db.svg
+      icons/download.svg
       icons/settings.svg
       icons/edit.svg
       icons/image.svg

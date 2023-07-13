@@ -401,5 +401,55 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters)
 "
+  },
+  {
+    "version": "2.4.12",
+    "notes":
+"
+* Fix bad bug that was breaking numerous current installs (sorry folks!)
+* Fix bug with 'browse' button in settings dialog
+* Wayland support on linux
+* Reduce template ui size in settings dialog
+",
+    "contributors":
+"
+* Akarshan Biswas
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters)
+"
+  },
+  {
+    "version": "2.4.13",
+    "notes":
+"
+* Fix bug with prolonging shutdown with generation
+* Fix bug with update model info on deleting chats
+* Fix bug with preventing closing of model download dialog
+* Allows allow closing the model download dialog
+* Fix numerous bugs with download of models.json and provide backup option
+* Add json and c# highlighting
+* Fix bug with chatgpt crashing
+* Fix bug with chatgpt not working for some keys
+* Fix bug with mixpanel opt outs not counting
+* Fix problem with OOM errors causing crash and then repeating on next start
+* Fix default thread setting and provide guardrails
+* Fix tap handler in settings dialog for buttons
+* Fix color of some text fields on macOS for settings dialog
+* Fix problem with startup dialog not closing
+* Provide error dialog for settings file not accessible
+* Try and fix problems with avx-only detection
+* Fix showing error in model downloads unnecessarily
+* Prefer 7b models to load by default
+* Add Wizard v1.1 to download list
+* Rename Orca models to Mini Orca
+* Don't use a system prompt unless model was trained with one by default
+",
+    "contributors":
+"
+* Lakshay Kansal (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters)
+"
   }
 ]

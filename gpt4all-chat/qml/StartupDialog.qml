@@ -136,6 +136,8 @@ model release that uses your data!")
                 buttons: optInStatisticsRadio.children
                 onClicked: {
                     MySettings.networkUsageStatsActive = optInStatisticsRadio.checked
+                    if (!optInStatisticsRadio.checked)
+                        Network.sendOptOut();
                     if (optInNetworkRadio.choiceMade && optInStatisticsRadio.choiceMade)
                         startupDialog.close();
                 }

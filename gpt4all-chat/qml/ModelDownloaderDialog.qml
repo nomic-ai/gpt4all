@@ -14,7 +14,7 @@ import mysettings
 MyDialog {
     id: modelDownloaderDialog
     modal: true
-    closePolicy: ModelList.installedModels.count === 0 ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     padding: 10
 
     onOpened: {
@@ -41,13 +41,22 @@ MyDialog {
         }
 
         Label {
-            visible: !ModelList.downloadableModels.count
+            visible: !ModelList.downloadableModels.count && !ModelList.asyncModelRequestOngoing
             Layout.fillWidth: true
             Layout.fillHeight: true
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
             text: qsTr("Network error: could not retrieve http://gpt4all.io/models/models.json")
             color: theme.mutedTextColor
+        }
+
+        MyBusyIndicator {
+            visible: !ModelList.downloadableModels.count && ModelList.asyncModelRequestOngoing
+            running: ModelList.asyncModelRequestOngoing
+            Accessible.role: Accessible.Animation
+            Layout.alignment: Qt.AlignCenter
+            Accessible.name: qsTr("Busy indicator")
+            Accessible.description: qsTr("Displayed when the models request is ongoing")
         }
 
         ScrollView {
@@ -401,9 +410,9 @@ MyDialog {
             FolderDialog {
                 id: modelPathDialog
                 title: "Please choose a directory"
-                currentFolder: "file://" + MySettings.modelsPath
+                currentFolder: "file://" + MySettings.modelPath
                 onAccepted: {
-                    MySettings.modelsPath = selectedFolder
+                    MySettings.modelPath = selectedFolder
                 }
             }
             Label {
@@ -424,7 +433,7 @@ MyDialog {
                 Accessible.description: ToolTip.text
                 onEditingFinished: {
                     if (isValid) {
-                        MySettings.modelsPath = modelPathDisplayField.text
+                        MySettings.modelPath = modelPathDisplayField.text
                     } else {
                         text = MySettings.modelPath
                     }

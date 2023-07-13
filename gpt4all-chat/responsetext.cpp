@@ -15,7 +15,9 @@ enum Language {
     Bash,
     TypeScript,
     Java,
-    Go
+    Go,
+    Json,
+    Csharp,
 };
 
 static QColor keywordColor      = "#2e95d3"; // blue
@@ -29,6 +31,8 @@ static QColor typeColor = numberColor;
 static QColor arrowColor = functionColor;
 static QColor commandColor = functionCallColor;
 static QColor variableColor = numberColor;
+static QColor keyColor = functionColor;
+static QColor valueColor = stringColor;
 
 static Language stringToLanguage(const QString &language)
 {
@@ -38,6 +42,10 @@ static Language stringToLanguage(const QString &language)
         return Cpp;
     if (language == "c++")
         return Cpp;
+    if (language == "csharp")
+        return Csharp;
+    if (language == "c#")
+        return Csharp;
     if (language == "c")
         return Cpp;
     if (language == "bash")
@@ -52,6 +60,8 @@ static Language stringToLanguage(const QString &language)
         return Go;
     if (language == "golang")
         return Go;
+    if (language == "json")
+        return Json;
     return None;
 }
 
@@ -551,6 +561,31 @@ static QVector<HighlightingRule> bashHighlightingRules()
     return highlightingRules;
 }
 
+static QVector<HighlightingRule> jsonHighlightingRules()
+{
+    static QVector<HighlightingRule> highlightingRules;
+    if (highlightingRules.isEmpty()) {
+
+        HighlightingRule rule;
+
+        // Key string rule
+        QTextCharFormat keyFormat;
+        keyFormat.setForeground(keyColor);  // Assuming keyColor is defined
+        rule.pattern = QRegularExpression("\".*?\":");  // keys are typically in the "key": format
+        rule.format = keyFormat;
+        highlightingRules.append(rule);
+
+        // Value string rule
+        QTextCharFormat valueFormat;
+        valueFormat.setForeground(valueColor);  // Assuming valueColor is defined
+        rule.pattern = QRegularExpression(":\\s*(\".*?\")");  // values are typically in the : "value" format
+        rule.format = valueFormat;
+        highlightingRules.append(rule);
+    }
+    return highlightingRules;
+}
+
+
 SyntaxHighlighter::SyntaxHighlighter(QObject *parent)
     : QSyntaxHighlighter(parent)
 {
@@ -569,6 +604,8 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
         rules = pythonHighlightingRules();
     else if (block.userState() == Cpp)
         rules = cppHighlightingRules();
+    else if (block.userState() == Csharp)
+        rules = csharpHighlightingRules();
     else if (block.userState() == Bash)
         rules = bashHighlightingRules();
     else if (block.userState() == TypeScript)
@@ -577,6 +614,8 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
         rules = javaHighlightingRules();
     else if (block.userState() == Go)
         rules = javaHighlightingRules();
+    else if (block.userState() == Json)
+        rules = jsonHighlightingRules();
 
     for (const HighlightingRule &rule : qAsConst(rules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
@@ -773,13 +812,16 @@ void ResponseText::handleCodeBlocks()
             if (firstWord == "python"
                 || firstWord == "cpp"
                 || firstWord == "c++"
+                || firstWord == "csharp"
+                || firstWord == "c#"
                 || firstWord == "c"
                 || firstWord == "bash"
                 || firstWord == "javascript"
                 || firstWord == "typescript"
                 || firstWord == "java"
                 || firstWord == "go"
-                || firstWord == "golang") {
+                || firstWord == "golang"
+                || firstWord == "json") {
                 codeLanguage = firstWord;
                 capturedText.remove(0, match.captured(0).length());
             }

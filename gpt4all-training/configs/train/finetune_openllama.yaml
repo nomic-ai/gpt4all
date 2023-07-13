@@ -1,0 +1,34 @@
+# model/tokenizer
+model_name: "openlm-research/open_llama_7b"
+tokenizer_name: "openlm-research/open_llama_7b"
+gradient_checkpointing: true
+save_name: "nomic-ai/gpt4all-openllama"
+
+# dataset
+streaming: false
+num_proc: 64
+dataset_path: "nomic-ai/gpt4all-updated"
+revision: null
+max_length: 1024
+batch_size: 32
+
+# train dynamics
+lr: 2.0e-5
+min_lr: 0 
+weight_decay: 0.0
+eval_every: 500
+log_every: 10
+save_every: 1000
+log_grads_every: 500
+output_dir: "ckpts/falcon"
+checkpoint: null
+lora: false
+warmup_steps: 500
+num_epochs: 3 
+
+# logging
+wandb: true
+wandb_entity: "gpt4all"
+wandb_project_name: "gpt4all"
+seed: 42
+

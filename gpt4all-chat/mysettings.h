@@ -93,6 +93,9 @@ public:
     bool networkUsageStatsActive() const;
     void setNetworkUsageStatsActive(bool b);
 
+    QString attemptModelLoad() const;
+    void setAttemptModelLoad(const QString &modelFile);
+
 Q_SIGNALS:
     void nameChanged(const ModelInfo &model);
     void filenameChanged(const ModelInfo &model);
@@ -119,6 +122,7 @@ Q_SIGNALS:
     void networkAttributionChanged();
     void networkIsActiveChanged();
     void networkUsageStatsActiveChanged();
+    void attemptModelLoadChanged();
 
 private:
     bool m_forceMetal;

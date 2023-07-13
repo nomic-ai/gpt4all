@@ -11,4 +11,5 @@ TextField {
         color: theme.backgroundDark
         radius: 10
     }
+    color: theme.textColor
 }

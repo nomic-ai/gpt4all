@@ -13,7 +13,8 @@ MyDialog {
     modal: true
     width: contentItem.width
     height: contentItem.height
-    padding: 10
+    padding: 20
+    closeButtonVisible: false
 
     Theme {
         id: theme
