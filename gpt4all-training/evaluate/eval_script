@@ -1,0 +1,68 @@
+import pdb
+from tqdm import tqdm
+import evaluate
+import torch
+from torch.utils.data import DataLoader
+from transformers import DefaultDataCollator
+
+generated_summary = "I absolutely loved reading the Hunger Games"
+reference_summary = "I loved reading the Hunger Games"
+rouge_score = evaluate.load("rouge")
+
+scores = rouge_score.compute(
+    predictions=[generated_summary], references=[reference_summary]
+)
+
+# Testing with gpt2
+from datasets import load_dataset
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+model = AutoModelForCausalLM.from_pretrained("gpt2")
+tokenizer.pad_token = tokenizer.eos_token
+tokenizer.padding_side = "left"
+
+
+def prefix(x):
+    x["document"] = "Give a short summary: " + x["document"] + "\n"
+    return x
+
+
+dataset = load_dataset("gigaword", split="test[:50]")
+dataset = dataset.map(prefix)
+inputs = dataset.map(
+    lambda x: tokenizer(
+        x["document"],
+        padding="longest",
+        truncation=True,
+        return_tensors="pt",
+    ),
+    batched=True,
+    batch_size=10,
+)
+inputs.set_format(
+    type="torch",
+    columns=[
+        "input_ids",
+        "attention_mask",
+    ],
+)
+ids = inputs["input_ids"]
+length = max([len(i) for i in ids]) + 1
+masks = inputs["attention_mask"]
+dataloader = DataLoader(inputs, batch_size=10, collate_fn=DefaultDataCollator())
+
+
+sliced_seq = []
+for batch in tqdm(dataloader):
+    batch = {key: value.to(model.device) for key, value in batch.items()}
+    outputs = model.generate(
+        **batch,
+        max_new_tokens=100,
+    )
+    decoded = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+    jd = batch["input_ids"]
+    for j, seq in enumerate(decoded):
+        sliced_seq.append(seq[len(tokenizer.decode(jd[j], skip_special_tokens=True)) :])
+score = rouge_score.compute(predictions=sliced_seq, references=dataset["summary"])
+print(score)
