@@ -15,20 +15,26 @@ from . import pyllmodel
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
 
-def embed(
-    text: str
-) -> list[float]:
-    """
-    Generate an embedding for all GPT4All.
+class Embedder:
+    def __init__(
+        self
+    ):
+        self.gpt4all = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin', n_threads=8)
 
-    Args:
-        text: The text document to generate an embedding for.
+    def embed(
+        self,
+        text: str
+    ) -> list[float]:
+        """
+        Generate an embedding for all GPT4All.
 
-    Returns:
-        An embedding of your document of text.
-    """
-    model = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin')
-    return model.model.generate_embedding(text)
+        Args:
+            text: The text document to generate an embedding for.
+
+        Returns:
+            An embedding of your document of text.
+        """
+        return self.gpt4all.model.generate_embedding(text)
 
 class GPT4All:
     """
