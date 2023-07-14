@@ -22,7 +22,8 @@ DEFAULT_MODEL_CONFIG = {
     "promptTemplate": "### Human: \n{0}\n### Assistant:\n",
 }
 
-MessageType = Dict[str, str]
+ConfigType = Dict[str,str]
+MessageType = Dict[str, str | Dict]
 
 
 class GPT4All:
@@ -53,7 +54,7 @@ class GPT4All:
         self.model_type = model_type
         self.model = pyllmodel.LLModel()
         # Retrieve model and download if allowed
-        self.config: Dict[str, str] = self.retrieve_model(
+        self.config: ConfigType = self.retrieve_model(
             model_name, model_path=model_path, allow_download=allow_download
         )
         self.model.load_model(self.config["path"])
@@ -63,10 +64,11 @@ class GPT4All:
 
         self._is_chat_session_activated: bool = False
         self.current_chat_session: List[MessageType] = empty_chat_session()
-        self.current_prompt_template: str = "{0}"
+        self._current_prompt_template: str = "{0}"
+        self._old_prompt_template: str = "{0}"
 
     @staticmethod
-    def list_models() -> Dict:
+    def list_models() -> List[ConfigType]:
         """
         Fetch model list from https://gpt4all.io/models/models.json.
 
@@ -81,7 +83,7 @@ class GPT4All:
         model_path: Optional[str] = None,
         allow_download: bool = True,
         verbose: bool = True,
-    ) -> Dict[str, str]:
+    ) -> ConfigType:
         """
         Find model file, and if it doesn't exist, download the model.
 
@@ -99,7 +101,7 @@ class GPT4All:
         model_filename = append_bin_suffix_if_missing(model_name)
 
         # get the config for the model
-        config = DEFAULT_MODEL_CONFIG
+        config: ConfigType = DEFAULT_MODEL_CONFIG
         if allow_download:
             available_models = GPT4All.list_models()
 
@@ -210,7 +212,7 @@ class GPT4All:
 
     def generate(
         self,
-        prompt: str,
+        prompt: str | Dict,
         max_tokens: int = 200,
         temp: float = 0.7,
         top_k: int = 40,
@@ -241,6 +243,8 @@ class GPT4All:
         Returns:
             Either the entire completion or a generator that yields the completion token by token.
         """
+
+        # Preparing the model request
         generate_kwargs: Dict[str, Any] = dict(
             temp=temp,
             top_k=top_k,
@@ -254,13 +258,19 @@ class GPT4All:
         if self._is_chat_session_activated:
             generate_kwargs["reset_context"] = len(self.current_chat_session) == 1 # check if there is only one message, i.e. system prompt
             self.current_chat_session.append({"role": "user", "content": prompt})
+
+            assert isinstance(self.current_chat_session[0]["content"], str)
             prompt = self._format_chat_prompt_template(
                 messages = self.current_chat_session[-1:],
                 default_prompt_header = self.current_chat_session[0]["content"] if generate_kwargs["reset_context"] else "",
             )
         else:
+            prompt = self._format_chat_prompt_template(
+                messages = [{"role": "user", "content": prompt}],
+            )
             generate_kwargs["reset_context"] = True
 
+        # Pepare the callback, process the model response
         output_collector: List[MessageType]
         output_collector = [{"content": ""}]  # placeholder for the self.current_chat_session if chat session is not activated
 
@@ -276,12 +286,14 @@ class GPT4All:
             def _callback(token_id: int, response: str) -> bool:
                 nonlocal callback, output_collector
 
+                assert isinstance(output_collector[-1]["content"], str)
                 output_collector[-1]["content"] += response
 
                 return callback(token_id, response)
 
             return _callback
 
+        # Send the request to the model
         if streaming:
             return self.model.prompt_model_streaming(
                 prompt=prompt,
@@ -313,14 +325,15 @@ class GPT4All:
         # Code to acquire resource, e.g.:
         self._is_chat_session_activated = True
         self.current_chat_session = empty_chat_session(system_prompt or self.config["systemPrompt"])
-        self.current_prompt_template = prompt_template or self.config["promptTemplate"]
+        self._old_prompt_template = self.get_prompt_template()
+        self.set_prompt_template(prompt_template or self.config["promptTemplate"])
         try:
             yield self
         finally:
             # Code to release resource, e.g.:
             self._is_chat_session_activated = False
             self.current_chat_session = empty_chat_session()
-            self.current_prompt_template = "{0}"
+            self.set_prompt_template(self._old_prompt_template)
 
     def _format_chat_prompt_template(
         self,
@@ -329,7 +342,7 @@ class GPT4All:
         default_prompt_footer: str = "",
     ) -> str:
         """
-        Helper method for building a prompt from list of messages using the self.current_prompt_template as a template for each message.
+        Helper method for building a prompt from list of messages using the self._current_prompt_template as a template for each message.
 
         Args:
             messages:  List of dictionaries. Each dictionary should have a "role" key
@@ -364,15 +377,26 @@ class GPT4All:
 
         for message in messages:
             if message["role"] == "user":
-                user_message = self.current_prompt_template.format(message["content"])
+                if isinstance(message["content"], dict):
+                    user_message = self.get_prompt_template().format(**message["content"])
+                else:
+                    user_message = self.get_prompt_template().format(message["content"])
+
                 full_prompt += user_message
             if message["role"] == "assistant":
+                assert isinstance(message["content"], str)
                 assistant_message = message["content"] + "\n"
                 full_prompt += assistant_message
 
         full_prompt += "\n\n" + default_prompt_footer if default_prompt_footer != "" else ""
 
         return full_prompt
+
+    def set_prompt_template(self, prompt_template):
+        self._current_prompt_template = prompt_template
+
+    def get_prompt_template(self):
+        return self._current_prompt_template
 
 
 def empty_chat_session(system_prompt: str = "") -> List[MessageType]:

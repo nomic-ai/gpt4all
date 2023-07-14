@@ -341,12 +341,12 @@ class LLModel:
                 break
             yield response
 
-    def _callback_decoder(self, callback: RawResponseCallbackType) -> ResponseCallbackType:
-        def _callback(token_id: int, response: str) -> bool:
+    def _callback_decoder(self, callback: ResponseCallbackType) -> RawResponseCallbackType:
+        def _raw_callback(token_id: int, response: bytes) -> bool:
             nonlocal callback
             return callback(token_id, response.decode("utf-8", "replace"))
 
-        return _callback
+        return _raw_callback
 
     # Empty prompt callback
     @staticmethod
