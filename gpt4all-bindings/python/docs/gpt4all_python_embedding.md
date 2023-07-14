@@ -1,5 +1,5 @@
-# GPT4All Python Embedding API
-GPT4All includes a super simple means of generating embeddings for your text documents.
+# Embeddings
+GPT4All supports generating high quality embeddings of arbitrary length documents of text using a CPU optimized contrastively trained [Sentence Transformer](https://www.sbert.net/). These embeddings are comparable in quality for many tasks with OpenAI.
 
 ## Quickstart
 
@@ -25,7 +25,7 @@ The embedding model will automatically be downloaded if not installed.
 ### Speed of embedding generation
 The following table lists the generation speed for text documents of N tokens captured on an Intel i913900HX CPU with DDR5 5600 running with 8 threads under stable load.
 
-| Tokens          | 2^7  | 2^9  | 2^11 | 2^13 | 2^14 |
+| Tokens          | 128  | 512  | 2048 | 8129 | 2^14 |
 | --------------- | ---- | ---- | ---- | ---- | ---- |
 | Wall time (s)   | .02  | .08  | .24  | .96  | 1.9  |
 | Tokens / Second | 6508 | 6431 | 8622 | 8509 | 8369 |
