@@ -196,6 +196,7 @@ struct replit_model {
 
     struct ggml_context * ctx;
     llm_buffer eval_buf;
+    llm_buffer work_buf;
     llm_buffer scr0_buf;
     llm_buffer scr1_buf;
     #ifdef GGML_USE_METAL
@@ -490,7 +491,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
    model.scr1_buf.resize(256u * 1024 * 1024);
 
 #ifdef GGML_USE_METAL
-    model.ctx_metal = ggml_metal_init();
+    model.ctx_metal = ggml_metal_init(1);
     void* data_ptr = ggml_get_mem_buffer(model.ctx);
     size_t data_size = ggml_get_mem_size(model.ctx);
     const size_t max_size = ggml_get_max_tensor_size(model.ctx);
@@ -534,7 +535,7 @@ bool replit_model_load(const std::string & fname, replit_model & model, replit_t
 //   - embd_inp:  the embeddings of the tokens in the context
 //   - embd_w:    the predicted logits for the next token
 //
-bool replit_eval(const replit_model & model, const int n_threads, const int n_past,
+bool replit_eval(replit_model & model, const int n_threads, const int n_past,
                  const std::vector<gpt_vocab::id> & embd_inp, std::vector<float> & embd_w, size_t & mem_per_token) {
     const int N = embd_inp.size();
 
@@ -552,7 +553,7 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
         .no_alloc = false,
     };
     struct ggml_context * ctx0 = ggml_init(eval_ctx_params);
-    struct ggml_cgraph gf = {.n_threads = n_threads};
+    struct ggml_cgraph gf = {};
 
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     memcpy(embd->data, embd_inp.data(), N * ggml_element_size(embd));
@@ -706,10 +707,10 @@ bool replit_eval(const replit_model & model, const int n_threads, const int n_pa
         ggml_metal_get_tensor(model.ctx_metal, model.kv_self.k);
         ggml_metal_get_tensor(model.ctx_metal, model.kv_self.v);
 
-        ggml_graph_compute(ctx0, &gf);
+        ggml_graph_compute_g4a(model.work_buf, &gf, n_threads);
     }
 #else
-    ggml_graph_compute(ctx0, &gf);
+    ggml_graph_compute_g4a(model.work_buf, &gf, n_threads);
 #endif
 
     // std::cout << "Qcur" << std::endl;

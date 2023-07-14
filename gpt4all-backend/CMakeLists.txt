@@ -100,6 +100,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 
     add_library(replit-mainline-${BUILD_VARIANT} SHARED
     replit.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
+    target_compile_definitions(replit-mainline-${BUILD_VARIANT} PRIVATE LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     prepare_target(replit-mainline llama-mainline)
 
     if (NOT LLAMA_METAL)
@@ -120,6 +121,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 
         add_library(falcon-${BUILD_VARIANT} SHARED
             falcon.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
+        target_compile_definitions(falcon-${BUILD_VARIANT} PRIVATE LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
         prepare_target(falcon llama-mainline)
 
         add_library(mpt-${BUILD_VARIANT} SHARED
@@ -128,6 +130,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 
         add_library(bert-${BUILD_VARIANT} SHARED
             bert.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
+        target_compile_definitions(bert-${BUILD_VARIANT} PRIVATE LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
         prepare_target(bert llama-mainline)
 
         add_library(starcoder-${BUILD_VARIANT} SHARED

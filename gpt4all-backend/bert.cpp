@@ -1,5 +1,6 @@
 #define BERT_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "bert_impl.h"
+#include "llmodel_shared.h"
 #include "ggml.h"
 
 #include <cassert>
@@ -91,22 +92,6 @@ struct bert_model
 };
 
 // Replacement for std::vector<uint8_t> that doesn't require zero-initialization.
-struct bert_buffer {
-    uint8_t * data = NULL;
-    size_t size = 0;
-
-    void resize(size_t size) {
-        delete[] data;
-        data = new uint8_t[size];
-        this->size = size;
-    }
-
-    ~bert_buffer() {
-        delete[] data;
-    }
-};
-
-
 struct bert_ctx
 {
     bert_model model;
@@ -115,7 +100,8 @@ struct bert_ctx
     size_t mem_per_token;
     int64_t mem_per_input;
     int32_t max_batch_n;
-    bert_buffer buf_compute;
+    llm_buffer buf_compute;
+    llm_buffer work_buf;
 };
 
 int32_t bert_n_embd(bert_ctx * ctx)
@@ -328,13 +314,12 @@ void bert_eval(
 
     struct ggml_init_params params = {
         .mem_size = buf_compute.size,
-        .mem_buffer = buf_compute.data,
+        .mem_buffer = buf_compute.addr,
         .no_alloc = false,
     };
 
     struct ggml_context *ctx0 = ggml_init(params);
     struct ggml_cgraph gf = {};
-    gf.n_threads = n_threads;
 
     // Embeddings. word_embeddings + token_type_embeddings + position_embeddings
     struct ggml_tensor *token_layer = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
@@ -466,7 +451,9 @@ void bert_eval(
     ggml_tensor *output = inpL;
     // run the computation
     ggml_build_forward_expand(&gf, output);
-    ggml_graph_compute(ctx0, &gf);
+    //ggml_graph_compute_g4a()
+    ggml_graph_compute_g4a(ctx->work_buf, &gf, n_threads);
+    //ggml_graph_compute(ctx0, &gf);
 
 
     // float *dat = ggml_get_data_f32(output);
@@ -633,7 +620,7 @@ struct bert_ctx * bert_load_from_file(const char *fname)
         model_mem_req += n_layer * (n_intermediate * ggml_type_sizef(GGML_TYPE_F32)); // ff_i_b
         model_mem_req += n_layer * (n_embd * ggml_type_sizef(GGML_TYPE_F32)); // ff_o_b
 
-        model_mem_req += (5 + 16 * n_layer) * 256; // object overhead
+        model_mem_req += (5 + 16 * n_layer) * ggml_tensor_overhead(); // object overhead
 
 #if defined(DEBUG_BERT)
         printf("%s: ggml ctx size = %6.2f MB\n", __func__, model_mem_req / (1024.0 * 1024.0));
