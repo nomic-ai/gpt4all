@@ -112,6 +112,19 @@ llmodel.llmodel_prompt.argtypes = [
 
 llmodel.llmodel_prompt.restype = None
 
+llmodel.llmodel_embedding.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_char_p,
+    ctypes.POINTER(ctypes.c_size_t),
+]
+
+llmodel.llmodel_embedding.restype = ctypes.POINTER(ctypes.c_float)
+
+llmodel.llmodel_free_embedding.argtypes = [
+    ctypes.POINTER(ctypes.c_float)
+]
+llmodel.llmodel_free_embedding.restype = None
+
 llmodel.llmodel_setThreadCount.argtypes = [ctypes.c_void_p, ctypes.c_int32]
 llmodel.llmodel_setThreadCount.restype = None
 
@@ -141,10 +154,11 @@ class LLModel:
         self.model = None
         self.model_name = None
         self.context = None
+        self.llmodel_lib = llmodel
 
     def __del__(self):
         if self.model is not None:
-            llmodel.llmodel_model_destroy(self.model)
+            self.llmodel_lib.llmodel_model_destroy(self.model)
 
     def memory_needed(self, model_path: str) -> int:
         model_path_enc = model_path.encode("utf-8")
@@ -233,6 +247,17 @@ class LLModel:
         self.context.repeat_last_n = repeat_last_n
         self.context.context_erase = context_erase
 
+    def generate_embedding(
+        self,
+        text: str
+    ) -> list[float]:
+        embedding_size = ctypes.c_size_t()
+        c_text = ctypes.c_char_p(text.encode('utf-8'))
+        embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
+        embedding_array = [embedding_ptr[i] for i in range(embedding_size.value)]
+        llmodel.llmodel_free_embedding(embedding_ptr)
+        return list(embedding_array)
+
     def prompt_model(
         self,
         prompt: str,
@@ -262,8 +287,8 @@ class LLModel:
         Model response str
         """
 
-        prompt = prompt.encode('utf-8')
-        prompt = ctypes.c_char_p(prompt)
+        prompt_bytes = prompt.encode('utf-8')
+        prompt_ptr = ctypes.c_char_p(prompt_bytes)
 
         old_stdout = sys.stdout
 
@@ -288,7 +313,7 @@ class LLModel:
 
         llmodel.llmodel_prompt(
             self.model,
-            prompt,
+            prompt_ptr,
             PromptCallback(self._prompt_callback),
             ResponseCallback(self._response_callback),
             RecalculateCallback(self._recalculate_callback),
@@ -314,12 +339,12 @@ class LLModel:
         reset_context: bool = False,
     ) -> Iterable:
         # Symbol to terminate from generator
-        TERMINATING_SYMBOL = "#TERMINATE#"
+        TERMINATING_SYMBOL = object()
 
         output_queue = queue.Queue()
 
-        prompt = prompt.encode('utf-8')
-        prompt = ctypes.c_char_p(prompt)
+        prompt_bytes = prompt.encode('utf-8')
+        prompt_ptr = ctypes.c_char_p(prompt_bytes)
 
         self._set_context(
             n_predict=n_predict,
@@ -348,7 +373,7 @@ class LLModel:
             target=run_llmodel_prompt,
             args=(
                 self.model,
-                prompt,
+                prompt_ptr,
                 PromptCallback(self._prompt_callback),
                 ResponseCallback(_generator_response_callback),
                 RecalculateCallback(self._recalculate_callback),
@@ -360,7 +385,7 @@ class LLModel:
         # Generator
         while True:
             response = output_queue.get()
-            if response == TERMINATING_SYMBOL:
+            if response is TERMINATING_SYMBOL:
                 break
             yield response
 

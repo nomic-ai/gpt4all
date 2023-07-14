@@ -1,9 +1,143 @@
 #include "modellist.h"
 #include "mysettings.h"
+#include "network.h"
 
+#include <QFile>
+#include <QStandardPaths>
 #include <algorithm>
 
 //#define USE_LOCAL_MODELSJSON
+
+QString ModelInfo::id() const
+{
+    return m_id;
+}
+
+void ModelInfo::setId(const QString &id)
+{
+    m_id = id;
+}
+
+QString ModelInfo::name() const
+{
+    return MySettings::globalInstance()->modelName(*this);
+}
+
+void ModelInfo::setName(const QString &name)
+{
+    if (isClone) MySettings::globalInstance()->setModelName(*this, name, isClone /*force*/);
+    m_name = name;
+}
+
+QString ModelInfo::filename() const
+{
+    return MySettings::globalInstance()->modelFilename(*this);
+}
+
+void ModelInfo::setFilename(const QString &filename)
+{
+    if (isClone) MySettings::globalInstance()->setModelFilename(*this, filename, isClone /*force*/);
+    m_filename = filename;
+}
+
+double ModelInfo::temperature() const
+{
+    return MySettings::globalInstance()->modelTemperature(*this);
+}
+
+void ModelInfo::setTemperature(double t)
+{
+    if (isClone) MySettings::globalInstance()->setModelTemperature(*this, t, isClone /*force*/);
+    m_temperature = t;
+}
+
+double ModelInfo::topP() const
+{
+    return MySettings::globalInstance()->modelTopP(*this);
+}
+
+void ModelInfo::setTopP(double p)
+{
+    if (isClone) MySettings::globalInstance()->setModelTopP(*this, p, isClone /*force*/);
+    m_topP = p;
+}
+
+int ModelInfo::topK() const
+{
+    return MySettings::globalInstance()->modelTopK(*this);
+}
+
+void ModelInfo::setTopK(int k)
+{
+    if (isClone) MySettings::globalInstance()->setModelTopK(*this, k, isClone /*force*/);
+    m_topK = k;
+}
+
+int ModelInfo::maxLength() const
+{
+    return MySettings::globalInstance()->modelMaxLength(*this);
+}
+
+void ModelInfo::setMaxLength(int l)
+{
+    if (isClone) MySettings::globalInstance()->setModelMaxLength(*this, l, isClone /*force*/);
+    m_maxLength = l;
+}
+
+int ModelInfo::promptBatchSize() const
+{
+    return MySettings::globalInstance()->modelPromptBatchSize(*this);
+}
+
+void ModelInfo::setPromptBatchSize(int s)
+{
+    if (isClone) MySettings::globalInstance()->setModelPromptBatchSize(*this, s, isClone /*force*/);
+    m_promptBatchSize = s;
+}
+
+double ModelInfo::repeatPenalty() const
+{
+    return MySettings::globalInstance()->modelRepeatPenalty(*this);
+}
+
+void ModelInfo::setRepeatPenalty(double p)
+{
+    if (isClone) MySettings::globalInstance()->setModelRepeatPenalty(*this, p, isClone /*force*/);
+    m_repeatPenalty = p;
+}
+
+int ModelInfo::repeatPenaltyTokens() const
+{
+    return MySettings::globalInstance()->modelRepeatPenaltyTokens(*this);
+}
+
+void ModelInfo::setRepeatPenaltyTokens(int t)
+{
+    if (isClone) MySettings::globalInstance()->setModelRepeatPenaltyTokens(*this, t, isClone /*force*/);
+    m_repeatPenaltyTokens = t;
+}
+
+QString ModelInfo::promptTemplate() const
+{
+    return MySettings::globalInstance()->modelPromptTemplate(*this);
+}
+
+void ModelInfo::setPromptTemplate(const QString &t)
+{
+    if (isClone) MySettings::globalInstance()->setModelPromptTemplate(*this, t, isClone /*force*/);
+    m_promptTemplate = t;
+}
+
+QString ModelInfo::systemPrompt() const
+{
+    return MySettings::globalInstance()->modelSystemPrompt(*this);
+}
+
+void ModelInfo::setSystemPrompt(const QString &p)
+{
+    if (isClone) MySettings::globalInstance()->setModelSystemPrompt(*this, p, isClone /*force*/);
+    m_systemPrompt = p;
+}
 
 InstalledModels::InstalledModels(QObject *parent)
     : QSortFilterProxyModel(parent)
@@ -25,16 +159,6 @@ bool InstalledModels::filterAcceptsRow(int sourceRow,
 int InstalledModels::count() const
 {
     return rowCount();
-}
-
-QString InstalledModels::firstFilename() const
-{
-    if (rowCount() > 0) {
-        QModelIndex firstIndex = index(0, 0);
-        return sourceModel()->data(firstIndex, ModelList::FilenameRole).toString();
-    } else {
-        return QString();
-    }
 }
 
 DownloadableModels::DownloadableModels(QObject *parent)
@@ -88,6 +212,7 @@ ModelList::ModelList()
     : QAbstractListModel(nullptr)
     , m_installedModels(new InstalledModels(this))
     , m_downloadableModels(new DownloadableModels(this))
+    , m_asyncModelRequestOngoing(false)
 {
     m_installedModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
@@ -96,9 +221,24 @@ ModelList::ModelList()
     m_watcher->addPath(exePath);
     m_watcher->addPath(MySettings::globalInstance()->modelPath());
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &ModelList::updateModelsFromDirectory);
-    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelList);
+    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromDirectory);
+    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromJson);
+    connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromSettings);
+    connect(MySettings::globalInstance(), &MySettings::nameChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::temperatureChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::topPChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::topKChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::maxLengthChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::promptBatchSizeChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
+    connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
+    connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
+
+    updateModelsFromJson();
+    updateModelsFromSettings();
     updateModelsFromDirectory();
-    updateModelList();
 }
 
 QString ModelList::incompleteDownloadPath(const QString &modelFile)
@@ -124,19 +264,19 @@ const QList<QString> ModelList::userDefaultModelList() const
     QList<QString> models;
     bool foundUserDefault = false;
     for (ModelInfo *info : m_models) {
-        if (info->installed && (info->name == userDefaultModelName || info->filename == userDefaultModelName)) {
+        if (info->installed && info->id() == userDefaultModelName) {
             foundUserDefault = true;
-            models.prepend(info->name.isEmpty() ? info->filename : info->name);
+            models.prepend(info->name());
         } else if (info->installed) {
-            models.append(info->name.isEmpty() ? info->filename : info->name);
+            models.append(info->name());
         }
     }
 
-    const QString defaultFileName = "Application default";
+    const QString defaultId = "Application default";
     if (foundUserDefault)
-        models.append(defaultFileName);
+        models.append(defaultId);
     else
-        models.prepend(defaultFileName);
+        models.prepend(defaultId);
     return models;
 }
 
@@ -148,12 +288,9 @@ ModelInfo ModelList::defaultModelInfo() const
     settings.sync();
 
     // The user default model can be set by the user in the settings dialog. The "default" user
-    // default model is "Application default" which signals we should use the default model that was
-    // specified by the models.json file.
+    // default model is "Application default" which signals we should use the logic here.
     const QString userDefaultModelName = MySettings::globalInstance()->userDefaultModel();
     const bool hasUserDefaultName = !userDefaultModelName.isEmpty() && userDefaultModelName != "Application default";
-    const QString defaultModelName = settings.value("defaultModel").toString();
-    const bool hasDefaultName = hasUserDefaultName ? false : !defaultModelName.isEmpty();
 
     ModelInfo *defaultModel = nullptr;
     for (ModelInfo *info : m_models) {
@@ -161,16 +298,14 @@ ModelInfo ModelList::defaultModelInfo() const
             continue;
         defaultModel = info;
 
-        // If we don't have either setting, then just use the first model that is installed
-        if (!hasUserDefaultName && !hasDefaultName)
-            break;
+        const size_t ramrequired = defaultModel->ramrequired;
 
-        // If we don't have a user specified default, but *do* have a default setting and match, then use it
-        if (!hasUserDefaultName && hasDefaultName && (defaultModel->name == defaultModelName || defaultModel->filename == defaultModelName))
+        // If we don't have either setting, then just use the first model that requires less than 16GB that is installed
+        if (!hasUserDefaultName && !info->isChatGPT && ramrequired > 0 && ramrequired < 16)
             break;
 
         // If we have a user specified default and match, then use it
-        if (hasUserDefaultName && (defaultModel->name == userDefaultModelName || defaultModel->filename == userDefaultModelName))
+        if (hasUserDefaultName && (defaultModel->id() == userDefaultModelName))
             break;
     }
     if (defaultModel)
@@ -178,14 +313,28 @@ ModelInfo ModelList::defaultModelInfo() const
     return ModelInfo();
 }
 
-bool ModelList::contains(const QString &filename) const
+bool ModelList::contains(const QString &id) const
 {
     QMutexLocker locker(&m_mutex);
-    return m_modelMap.contains(filename);
+    return m_modelMap.contains(id);
+}
+
+bool ModelList::containsByFilename(const QString &filename) const
+{
+    QMutexLocker locker(&m_mutex);
+    for (ModelInfo *info : m_models)
+        if (info->filename() == filename)
+            return true;
+    return false;
 }
 
 bool ModelList::lessThan(const ModelInfo* a, const ModelInfo* b)
 {
+    // Rule 0: Non-clone before clone
+    if (a->isClone != b->isClone) {
+        return !a->isClone;
+    }
+
     // Rule 1: Non-empty 'order' before empty
     if (a->order.isEmpty() != b->order.isEmpty()) {
         return !a->order.isEmpty();
@@ -196,33 +345,53 @@ bool ModelList::lessThan(const ModelInfo* a, const ModelInfo* b)
         return a->order < b->order;
     }
 
-    // Rule 3: Both 'order' are empty, sort by filename
-    return a->filename < b->filename;
+    // Rule 3: Both 'order' are empty, sort by id
+    return a->id() < b->id();
 }
 
-void ModelList::addModel(const QString &filename)
+void ModelList::addModel(const QString &id)
 {
-    const bool hasModel = contains(filename);
+    const bool hasModel = contains(id);
     Q_ASSERT(!hasModel);
     if (hasModel) {
-        qWarning() << "ERROR: model list already contains" << filename;
+        qWarning() << "ERROR: model list already contains" << id;
         return;
     }
 
-    beginInsertRows(QModelIndex(), m_models.size(), m_models.size());
+    int modelSizeBefore = 0;
     int modelSizeAfter = 0;
     {
         QMutexLocker locker(&m_mutex);
+        modelSizeBefore = m_models.size();
+    }
+    beginInsertRows(QModelIndex(), modelSizeBefore, modelSizeBefore);
+    {
+        QMutexLocker locker(&m_mutex);
         ModelInfo *info = new ModelInfo;
-        info->filename = filename;
+        info->setId(id);
         m_models.append(info);
-        m_modelMap.insert(filename, info);
+        m_modelMap.insert(id, info);
         std::stable_sort(m_models.begin(), m_models.end(), ModelList::lessThan);
         modelSizeAfter = m_models.size();
     }
     endInsertRows();
     emit dataChanged(index(0, 0), index(modelSizeAfter - 1, 0));
     emit userDefaultModelListChanged();
+}
+
+void ModelList::changeId(const QString &oldId, const QString &newId)
+{
+    const bool hasModel = contains(oldId);
+    Q_ASSERT(hasModel);
+    if (!hasModel) {
+        qWarning() << "ERROR: model list does not contain" << oldId;
+        return;
+    }
+
+    QMutexLocker locker(&m_mutex);
+    ModelInfo *info = m_modelMap.take(oldId);
+    info->setId(newId);
+    m_modelMap.insert(newId, info);
 }
 
 int ModelList::rowCount(const QModelIndex &parent) const
@@ -235,10 +404,12 @@ int ModelList::rowCount(const QModelIndex &parent) const
 QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
 {
     switch (role) {
+        case IdRole:
+            return info->id();
         case NameRole:
-            return info->name;
+            return info->name();
         case FilenameRole:
-            return info->filename;
+            return info->filename();
         case DirpathRole:
             return info->dirpath;
         case FilesizeRole:
@@ -287,16 +458,45 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->quant;
         case TypeRole:
             return info->type;
+        case IsCloneRole:
+            return info->isClone;
+        case TemperatureRole:
+            return info->temperature();
+        case TopPRole:
+            return info->topP();
+        case TopKRole:
+            return info->topK();
+        case MaxLengthRole:
+            return info->maxLength();
+        case PromptBatchSizeRole:
+            return info->promptBatchSize();
+        case RepeatPenaltyRole:
+            return info->repeatPenalty();
+        case RepeatPenaltyTokensRole:
+            return info->repeatPenaltyTokens();
+        case PromptTemplateRole:
+            return info->promptTemplate();
+        case SystemPromptRole:
+            return info->systemPrompt();
     }
 
     return QVariant();
 }
 
-QVariant ModelList::data(const QString &filename, int role) const
+QVariant ModelList::data(const QString &id, int role) const
 {
     QMutexLocker locker(&m_mutex);
-    ModelInfo *info = m_modelMap.value(filename);
+    ModelInfo *info = m_modelMap.value(id);
     return dataInternal(info, role);
+}
+
+QVariant ModelList::dataByFilename(const QString &filename, int role) const
+{
+    QMutexLocker locker(&m_mutex);
+    for (ModelInfo *info : m_models)
+        if (info->filename() == filename)
+            return dataInternal(info, role);
+    return QVariant();
 }
 
 QVariant ModelList::data(const QModelIndex &index, int role) const
@@ -308,7 +508,7 @@ QVariant ModelList::data(const QModelIndex &index, int role) const
     return dataInternal(info, role);
 }
 
-void ModelList::updateData(const QString &filename, int role, const QVariant &value)
+void ModelList::updateData(const QString &id, int role, const QVariant &value)
 {
     int modelSize;
     bool updateInstalled;
@@ -316,23 +516,25 @@ void ModelList::updateData(const QString &filename, int role, const QVariant &va
     int index;
     {
         QMutexLocker locker(&m_mutex);
-        if (!m_modelMap.contains(filename)) {
-            qWarning() << "ERROR: cannot update as model map does not contain" << filename;
+        if (!m_modelMap.contains(id)) {
+            qWarning() << "ERROR: cannot update as model map does not contain" << id;
             return;
         }
 
-        ModelInfo *info = m_modelMap.value(filename);
+        ModelInfo *info = m_modelMap.value(id);
         index = m_models.indexOf(info);
         if (index == -1) {
-            qWarning() << "ERROR: cannot update as model list does not contain" << filename;
+            qWarning() << "ERROR: cannot update as model list does not contain" << id;
             return;
         }
 
         switch (role) {
+        case IdRole:
+            info->setId(value.toString()); break;
         case NameRole:
-            info->name = value.toString(); break;
+            info->setName(value.toString()); break;
         case FilenameRole:
-            info->filename = value.toString(); break;
+            info->setFilename(value.toString()); break;
         case DirpathRole:
             info->dirpath = value.toString(); break;
         case FilesizeRole:
@@ -381,15 +583,35 @@ void ModelList::updateData(const QString &filename, int role, const QVariant &va
             info->quant = value.toString(); break;
         case TypeRole:
             info->type = value.toString(); break;
+        case IsCloneRole:
+            info->isClone = value.toBool(); break;
+        case TemperatureRole:
+            info->setTemperature(value.toDouble()); break;
+        case TopPRole:
+            info->setTopP(value.toDouble()); break;
+        case TopKRole:
+            info->setTopK(value.toInt()); break;
+        case MaxLengthRole:
+            info->setMaxLength(value.toInt()); break;
+        case PromptBatchSizeRole:
+            info->setPromptBatchSize(value.toInt()); break;
+        case RepeatPenaltyRole:
+            info->setRepeatPenalty(value.toDouble()); break;
+        case RepeatPenaltyTokensRole:
+            info->setRepeatPenaltyTokens(value.toInt()); break;
+        case PromptTemplateRole:
+            info->setPromptTemplate(value.toString()); break;
+        case SystemPromptRole:
+            info->setSystemPrompt(value.toString()); break;
         }
 
         // Extra guarantee that these always remains in sync with filesystem
-        QFileInfo fileInfo(info->dirpath + info->filename);
+        QFileInfo fileInfo(info->dirpath + info->filename());
         if (info->installed != fileInfo.exists()) {
             info->installed = fileInfo.exists();
             updateInstalled = true;
         }
-        QFileInfo incompleteInfo(incompleteDownloadPath(info->filename));
+        QFileInfo incompleteInfo(incompleteDownloadPath(info->filename()));
         if (info->isIncomplete != incompleteInfo.exists()) {
             info->isIncomplete = incompleteInfo.exists();
             updateIncomplete = true;
@@ -402,12 +624,139 @@ void ModelList::updateData(const QString &filename, int role, const QVariant &va
     emit userDefaultModelListChanged();
 }
 
-ModelInfo ModelList::modelInfo(const QString &filename) const
+void ModelList::updateDataByFilename(const QString &filename, int role, const QVariant &value)
+{
+    QVector<QString> modelsById;
+    {
+        QMutexLocker locker(&m_mutex);
+        for (ModelInfo *info : m_models)
+            if (info->filename() == filename)
+                modelsById.append(info->id());
+    }
+
+    if (modelsById.isEmpty()) {
+        qWarning() << "ERROR: cannot update model as list does not contain file" << filename;
+        return;
+    }
+
+    for (const QString &id : modelsById)
+        updateData(id, role, value);;
+}
+
+ModelInfo ModelList::modelInfo(const QString &id) const
 {
     QMutexLocker locker(&m_mutex);
-    if (!m_modelMap.contains(filename))
+    if (!m_modelMap.contains(id))
         return ModelInfo();
-    return *m_modelMap.value(filename);
+    return *m_modelMap.value(id);
+}
+
+ModelInfo ModelList::modelInfoByFilename(const QString &filename) const
+{
+    QMutexLocker locker(&m_mutex);
+    for (ModelInfo *info : m_models)
+        if (info->filename() == filename)
+            return *info;
+    return ModelInfo();
+}
+
+bool ModelList::isUniqueName(const QString &name) const
+{
+    QMutexLocker locker(&m_mutex);
+    for (const ModelInfo *info : m_models) {
+        if(info->name() == name)
+            return false;
+    }
+    return true;
+}
+
+QString ModelList::clone(const ModelInfo &model)
+{
+    const QString id = Network::globalInstance()->generateUniqueId();
+    addModel(id);
+    updateData(id, ModelList::IsCloneRole, true);
+    updateData(id, ModelList::NameRole, uniqueModelName(model));
+    updateData(id, ModelList::FilenameRole, model.filename());
+    updateData(id, ModelList::DirpathRole, model.dirpath);
+    updateData(id, ModelList::InstalledRole, model.installed);
+    updateData(id, ModelList::ChatGPTRole, model.isChatGPT);
+    updateData(id, ModelList::TemperatureRole, model.temperature());
+    updateData(id, ModelList::TopPRole, model.topP());
+    updateData(id, ModelList::TopKRole, model.topK());
+    updateData(id, ModelList::MaxLengthRole, model.maxLength());
+    updateData(id, ModelList::PromptBatchSizeRole, model.promptBatchSize());
+    updateData(id, ModelList::RepeatPenaltyRole, model.repeatPenalty());
+    updateData(id, ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens());
+    updateData(id, ModelList::PromptTemplateRole, model.promptTemplate());
+    updateData(id, ModelList::SystemPromptRole, model.systemPrompt());
+    return id;
+}
+
+void ModelList::remove(const ModelInfo &model)
+{
+    Q_ASSERT(model.isClone);
+    if (!model.isClone)
+        return;
+
+    const bool hasModel = contains(model.id());
+    Q_ASSERT(hasModel);
+    if (!hasModel) {
+        qWarning() << "ERROR: model list does not contain" << model.id();
+        return;
+    }
+
+    int indexOfModel = 0;
+    int modelSizeAfter = 0;
+    {
+        QMutexLocker locker(&m_mutex);
+        ModelInfo *info = m_modelMap.value(model.id());
+        indexOfModel = m_models.indexOf(info);
+    }
+    beginRemoveRows(QModelIndex(), indexOfModel, indexOfModel);
+    {
+        QMutexLocker locker(&m_mutex);
+        ModelInfo *info = m_models.takeAt(indexOfModel);
+        m_modelMap.remove(info->id());
+        delete info;
+        modelSizeAfter = m_models.size();
+    }
+    endRemoveRows();
+    emit dataChanged(index(0, 0), index(modelSizeAfter - 1, 0));
+    emit userDefaultModelListChanged();
+    MySettings::globalInstance()->eraseModel(model);
+}
+
+QString ModelList::uniqueModelName(const ModelInfo &model) const
+{
+    QMutexLocker locker(&m_mutex);
+    QRegularExpression re("^(.*)~(\\d+)$");
+    QRegularExpressionMatch match = re.match(model.name());
+    QString baseName;
+    if (match.hasMatch())
+        baseName = match.captured(1);
+    else
+        baseName = model.name();
+
+    int maxSuffixNumber = 0;
+    bool baseNameExists = false;
+
+    for (const ModelInfo *info : m_models) {
+        if(info->name() == baseName)
+            baseNameExists = true;
+
+        QRegularExpressionMatch match = re.match(info->name());
+        if (match.hasMatch()) {
+            QString currentBaseName = match.captured(1);
+            int currentSuffixNumber = match.captured(2).toInt();
+            if (currentBaseName == baseName && currentSuffixNumber > maxSuffixNumber)
+                maxSuffixNumber = currentSuffixNumber;
+        }
+    }
+
+    if (baseNameExists)
+        return baseName + "~" + QString::number(maxSuffixNumber + 1);
+
+    return baseName;
 }
 
 QString ModelList::modelDirPath(const QString &modelName, bool isChatGPT)
@@ -456,12 +805,25 @@ void ModelList::updateModelsFromDirectory()
                     if (!info.exists())
                         continue;
 
-                    if (!contains(filename))
-                        addModel(filename);
+                    QVector<QString> modelsById;
+                    {
+                        QMutexLocker locker(&m_mutex);
+                        for (ModelInfo *info : m_models)
+                            if (info->filename() == filename)
+                                modelsById.append(info->id());
+                    }
 
-                    updateData(filename, ChatGPTRole, filename.startsWith("chatgpt-"));
-                    updateData(filename, DirpathRole, path);
-                    updateData(filename, FilesizeRole, toFileSize(info.size()));
+                    if (modelsById.isEmpty()) {
+                        addModel(filename);
+                        modelsById.append(filename);
+                    }
+
+                    for (const QString &id : modelsById) {
+                        updateData(id, FilenameRole, filename);
+                        updateData(id, ChatGPTRole, filename.startsWith("chatgpt-"));
+                        updateData(id, DirpathRole, info.dir().absolutePath() + "/");
+                        updateData(id, FilesizeRole, toFileSize(info.size()));
+                    }
                 }
             }
         }
@@ -472,7 +834,7 @@ void ModelList::updateModelsFromDirectory()
         processDirectory(localPath);
 }
 
-void ModelList::updateModelList()
+void ModelList::updateModelsFromJson()
 {
 #if defined(USE_LOCAL_MODELSJSON)
     QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
@@ -484,6 +846,7 @@ void ModelList::updateModelList()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     QEventLoop loop;
     connect(jsonReply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     QTimer::singleShot(1500, &loop, &QEventLoop::quit);
@@ -491,15 +854,87 @@ void ModelList::updateModelList()
     if (jsonReply->error() == QNetworkReply::NoError && jsonReply->isFinished()) {
         QByteArray jsonData = jsonReply->readAll();
         jsonReply->deleteLater();
-        parseModelsJsonFile(jsonData);
+        parseModelsJsonFile(jsonData, true);
     } else {
-        qWarning() << "Could not download models.json";
+        qWarning() << "WARNING: Could not download models.json synchronously";
+        updateModelsFromJsonAsync();
+
+        QSettings settings;
+        QFileInfo info(settings.fileName());
+        QString dirPath = info.canonicalPath();
+        const QString modelsConfig = dirPath + "/models.json";
+        QFile file(modelsConfig);
+        if (!file.open(QIODeviceBase::ReadOnly)) {
+            qWarning() << "ERROR: Couldn't read models config file: " << modelsConfig;
+        } else {
+            QByteArray jsonData = file.readAll();
+            file.close();
+            parseModelsJsonFile(jsonData, false);
+        }
     }
     delete jsonReply;
 }
 
-static bool operator==(const ModelInfo& lhs, const ModelInfo& rhs) {
-    return lhs.filename == rhs.filename && lhs.md5sum == rhs.md5sum;
+void ModelList::updateModelsFromJsonAsync()
+{
+    m_asyncModelRequestOngoing = true;
+    emit asyncModelRequestOngoingChanged();
+
+#if defined(USE_LOCAL_MODELSJSON)
+    QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
+#else
+    QUrl jsonUrl("http://gpt4all.io/models/models.json");
+#endif
+    QNetworkRequest request(jsonUrl);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+    QNetworkReply *jsonReply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
+    connect(jsonReply, &QNetworkReply::finished, this, &ModelList::handleModelsJsonDownloadFinished);
+    connect(jsonReply, &QNetworkReply::errorOccurred, this, &ModelList::handleModelsJsonDownloadErrorOccurred);
+}
+
+void ModelList::handleModelsJsonDownloadFinished()
+{
+    QNetworkReply *jsonReply = qobject_cast<QNetworkReply *>(sender());
+    if (!jsonReply) {
+        m_asyncModelRequestOngoing = false;
+        emit asyncModelRequestOngoingChanged();
+        return;
+    }
+
+    QByteArray jsonData = jsonReply->readAll();
+    jsonReply->deleteLater();
+    parseModelsJsonFile(jsonData, true);
+    m_asyncModelRequestOngoing = false;
+    emit asyncModelRequestOngoingChanged();
+}
+
+void ModelList::handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code)
+{
+    // TODO: Show what error occurred in the GUI
+    m_asyncModelRequestOngoing = false;
+    emit asyncModelRequestOngoingChanged();
+
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply)
+        return;
+
+    qWarning() << QString("ERROR: Modellist download failed with error code \"%1-%2\"")
+                      .arg(code).arg(reply->errorString()).toStdString();
+}
+
+void ModelList::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+{
+    QUrl url = reply->request().url();
+    for (const auto &e : errors)
+        qWarning() << "ERROR: Received ssl error:" << e.errorString() << "for" << url;
+}
+
+void ModelList::updateDataForSettings()
+{
+    emit dataChanged(index(0, 0), index(m_models.size() - 1, 0));
 }
 
 static bool compareVersions(const QString &a, const QString &b) {
@@ -520,13 +955,27 @@ static bool compareVersions(const QString &a, const QString &b) {
     return aParts.size() > bParts.size();
 }
 
-void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
+void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
 {
     QJsonParseError err;
     QJsonDocument document = QJsonDocument::fromJson(jsonData, &err);
     if (err.error != QJsonParseError::NoError) {
         qWarning() << "ERROR: Couldn't parse: " << jsonData << err.errorString();
         return;
+    }
+
+    if (save) {
+        QSettings settings;
+        QFileInfo info(settings.fileName());
+        QString dirPath = info.canonicalPath();
+        const QString modelsConfig = dirPath + "/models.json";
+        QFile file(modelsConfig);
+        if (!file.open(QIODeviceBase::WriteOnly)) {
+            qWarning() << "ERROR: Couldn't write models config file: " << modelsConfig;
+        } else {
+            file.write(jsonData.constData());
+            file.close();
+        }
     }
 
     QJsonArray jsonArray = document.array();
@@ -566,24 +1015,48 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
 
         modelFilesize = ModelList::toFileSize(modelFilesize.toULongLong());
 
-        if (!contains(modelFilename))
-            addModel(modelFilename);
+        const QString id = modelName;
+        Q_ASSERT(!id.isEmpty());
 
-        if (!modelName.isEmpty())
-            updateData(modelFilename, ModelList::NameRole, modelName);
-        updateData(modelFilename, ModelList::FilesizeRole, modelFilesize);
-        updateData(modelFilename, ModelList::Md5sumRole, modelMd5sum);
-        updateData(modelFilename, ModelList::DefaultRole, isDefault);
-        updateData(modelFilename, ModelList::DescriptionRole, description);
-        updateData(modelFilename, ModelList::RequiresVersionRole, requiresVersion);
-        updateData(modelFilename, ModelList::DeprecatedVersionRole, deprecatedVersion);
-        updateData(modelFilename, ModelList::UrlRole, url);
-        updateData(modelFilename, ModelList::DisableGUIRole, disableGUI);
-        updateData(modelFilename, ModelList::OrderRole, order);
-        updateData(modelFilename, ModelList::RamrequiredRole, ramrequired);
-        updateData(modelFilename, ModelList::ParametersRole, parameters);
-        updateData(modelFilename, ModelList::QuantRole, quant);
-        updateData(modelFilename, ModelList::TypeRole, type);
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+
+        if (!contains(id))
+            addModel(id);
+
+        updateData(id, ModelList::NameRole, modelName);
+        updateData(id, ModelList::FilenameRole, modelFilename);
+        updateData(id, ModelList::FilesizeRole, modelFilesize);
+        updateData(id, ModelList::Md5sumRole, modelMd5sum);
+        updateData(id, ModelList::DefaultRole, isDefault);
+        updateData(id, ModelList::DescriptionRole, description);
+        updateData(id, ModelList::RequiresVersionRole, requiresVersion);
+        updateData(id, ModelList::DeprecatedVersionRole, deprecatedVersion);
+        updateData(id, ModelList::UrlRole, url);
+        updateData(id, ModelList::DisableGUIRole, disableGUI);
+        updateData(id, ModelList::OrderRole, order);
+        updateData(id, ModelList::RamrequiredRole, ramrequired);
+        updateData(id, ModelList::ParametersRole, parameters);
+        updateData(id, ModelList::QuantRole, quant);
+        updateData(id, ModelList::TypeRole, type);
+        if (obj.contains("temperature"))
+            updateData(id, ModelList::TemperatureRole, obj["temperature"].toDouble());
+        if (obj.contains("topP"))
+            updateData(id, ModelList::TopPRole, obj["topP"].toDouble());
+        if (obj.contains("topK"))
+            updateData(id, ModelList::TopKRole, obj["topK"].toInt());
+        if (obj.contains("maxLength"))
+            updateData(id, ModelList::MaxLengthRole, obj["maxLength"].toInt());
+        if (obj.contains("promptBatchSize"))
+            updateData(id, ModelList::PromptBatchSizeRole, obj["promptBatchSize"].toInt());
+        if (obj.contains("repeatPenalty"))
+            updateData(id, ModelList::RepeatPenaltyRole, obj["repeatPenalty"].toDouble());
+        if (obj.contains("repeatPenaltyTokens"))
+            updateData(id, ModelList::RepeatPenaltyTokensRole, obj["repeatPenaltyTokens"].toInt());
+        if (obj.contains("promptTemplate"))
+            updateData(id, ModelList::PromptTemplateRole, obj["promptTemplate"].toString());
+        if (obj.contains("systemPrompt"))
+            updateData(id, ModelList::SystemPromptRole, obj["systemPrompt"].toString());
     }
 
     const QString chatGPTDesc = tr("<ul><li>Requires personal OpenAI API key.</li><li>WARNING: Will send"
@@ -592,44 +1065,103 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData)
         " <a href=\"https://platform.openai.com/account/api-keys\">here.</a></li>");
 
     {
+        const QString modelName = "ChatGPT-3.5 Turbo";
+        const QString id = modelName;
         const QString modelFilename = "chatgpt-gpt-3.5-turbo.txt";
-        if (!contains(modelFilename))
-            addModel(modelFilename);
-        updateData(modelFilename, ModelList::NameRole, "ChatGPT-3.5 Turbo");
-        updateData(modelFilename, ModelList::FilesizeRole, "minimal");
-        updateData(modelFilename, ModelList::ChatGPTRole, true);
-        updateData(modelFilename, ModelList::DescriptionRole,
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        updateData(id, ModelList::NameRole, modelName);
+        updateData(id, ModelList::FilenameRole, modelFilename);
+        updateData(id, ModelList::FilesizeRole, "minimal");
+        updateData(id, ModelList::ChatGPTRole, true);
+        updateData(id, ModelList::DescriptionRole,
             tr("<strong>OpenAI's ChatGPT model GPT-3.5 Turbo</strong><br>") + chatGPTDesc);
-        updateData(modelFilename, ModelList::RequiresVersionRole, "2.4.2");
-        updateData(modelFilename, ModelList::OrderRole, "ca");
-        updateData(modelFilename, ModelList::RamrequiredRole, 0);
-        updateData(modelFilename, ModelList::ParametersRole, "?");
-        updateData(modelFilename, ModelList::QuantRole, "NA");
-        updateData(modelFilename, ModelList::TypeRole, "GPT");
+        updateData(id, ModelList::RequiresVersionRole, "2.4.2");
+        updateData(id, ModelList::OrderRole, "ca");
+        updateData(id, ModelList::RamrequiredRole, 0);
+        updateData(id, ModelList::ParametersRole, "?");
+        updateData(id, ModelList::QuantRole, "NA");
+        updateData(id, ModelList::TypeRole, "GPT");
     }
 
     {
-        const QString modelFilename = "chatgpt-gpt-4.txt";
-        if (!contains(modelFilename))
-            addModel(modelFilename);
-        updateData(modelFilename, ModelList::NameRole, "ChatGPT-4");
-        updateData(modelFilename, ModelList::FilesizeRole, "minimal");
-        updateData(modelFilename, ModelList::ChatGPTRole, true);
-        updateData(modelFilename, ModelList::DescriptionRole,
-            tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc);
-        updateData(modelFilename, ModelList::RequiresVersionRole, "2.4.2");
-        updateData(modelFilename, ModelList::OrderRole, "cb");
-        updateData(modelFilename, ModelList::RamrequiredRole, 0);
-        updateData(modelFilename, ModelList::ParametersRole, "?");
-        updateData(modelFilename, ModelList::QuantRole, "NA");
-        updateData(modelFilename, ModelList::TypeRole, "GPT");
-    }
+        const QString chatGPT4Warn = tr("<br><br><i>* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.");
 
-    if (installedModels()->count()) {
-        const QString firstModel =
-            installedModels()->firstFilename();
-        QSettings settings;
-        settings.setValue("defaultModel", firstModel);
-        settings.sync();
+        const QString modelName = "ChatGPT-4";
+        const QString id = modelName;
+        const QString modelFilename = "chatgpt-gpt-4.txt";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        updateData(id, ModelList::NameRole, modelName);
+        updateData(id, ModelList::FilenameRole, modelFilename);
+        updateData(id, ModelList::FilesizeRole, "minimal");
+        updateData(id, ModelList::ChatGPTRole, true);
+        updateData(id, ModelList::DescriptionRole,
+            tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc + chatGPT4Warn);
+        updateData(id, ModelList::RequiresVersionRole, "2.4.2");
+        updateData(id, ModelList::OrderRole, "cb");
+        updateData(id, ModelList::RamrequiredRole, 0);
+        updateData(id, ModelList::ParametersRole, "?");
+        updateData(id, ModelList::QuantRole, "NA");
+        updateData(id, ModelList::TypeRole, "GPT");
+    }
+}
+
+void ModelList::updateModelsFromSettings()
+{
+    QSettings settings;
+    settings.sync();
+    QStringList groups = settings.childGroups();
+    for (const QString g : groups) {
+        if (!g.startsWith("model-"))
+            continue;
+
+        const QString id = g.sliced(6);
+        if (contains(id))
+            continue;
+
+        if (!settings.contains(g+ "/isClone"))
+            continue;
+
+        Q_ASSERT(settings.contains(g + "/name"));
+        const QString name = settings.value(g + "/name").toString();
+        Q_ASSERT(settings.contains(g + "/filename"));
+        const QString filename = settings.value(g + "/filename").toString();
+        Q_ASSERT(settings.contains(g + "/temperature"));
+        const double temperature = settings.value(g + "/temperature").toDouble();
+        Q_ASSERT(settings.contains(g + "/topP"));
+        const double topP = settings.value(g + "/topP").toDouble();
+        Q_ASSERT(settings.contains(g + "/topK"));
+        const int topK = settings.value(g + "/topK").toInt();
+        Q_ASSERT(settings.contains(g + "/maxLength"));
+        const int maxLength = settings.value(g + "/maxLength").toInt();
+        Q_ASSERT(settings.contains(g + "/promptBatchSize"));
+        const int promptBatchSize = settings.value(g + "/promptBatchSize").toInt();
+        Q_ASSERT(settings.contains(g + "/repeatPenalty"));
+        const double repeatPenalty = settings.value(g + "/repeatPenalty").toDouble();
+        Q_ASSERT(settings.contains(g + "/repeatPenaltyTokens"));
+        const int repeatPenaltyTokens = settings.value(g + "/repeatPenaltyTokens").toInt();
+        Q_ASSERT(settings.contains(g + "/promptTemplate"));
+        const QString promptTemplate = settings.value(g + "/promptTemplate").toString();
+        Q_ASSERT(settings.contains(g + "/systemPrompt"));
+        const QString systemPrompt = settings.value(g + "/systemPrompt").toString();
+
+        addModel(id);
+        updateData(id, ModelList::IsCloneRole, true);
+        updateData(id, ModelList::NameRole, name);
+        updateData(id, ModelList::FilenameRole, filename);
+        updateData(id, ModelList::TemperatureRole, temperature);
+        updateData(id, ModelList::TopPRole, topP);
+        updateData(id, ModelList::TopKRole, topK);
+        updateData(id, ModelList::MaxLengthRole, maxLength);
+        updateData(id, ModelList::PromptBatchSizeRole, promptBatchSize);
+        updateData(id, ModelList::RepeatPenaltyRole, repeatPenalty);
+        updateData(id, ModelList::RepeatPenaltyTokensRole, repeatPenaltyTokens);
+        updateData(id, ModelList::PromptTemplateRole, promptTemplate);
+        updateData(id, ModelList::SystemPromptRole, systemPrompt);
     }
 }

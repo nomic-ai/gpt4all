@@ -10,17 +10,19 @@
 #include <cassert>
 #include <cstdlib>
 #include <sstream>
+#ifdef _MSC_VER
+#include <windows.h>
+#include <processthreadsapi.h>
+#endif
 
 std::string s_implementations_search_path = ".";
 
 static bool has_at_least_minimal_hardware() {
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(_M_X64)
     #ifndef _MSC_VER
         return __builtin_cpu_supports("avx");
     #else
-        int cpuInfo[4];
-        __cpuid(cpuInfo, 1);
-        return cpuInfo[2] & (1 << 28);
+        return IsProcessorFeaturePresent(PF_AVX_INSTRUCTIONS_AVAILABLE);
     #endif
 #else
     return true; // Don't know how to handle non-x86_64
@@ -28,54 +30,53 @@ static bool has_at_least_minimal_hardware() {
 }
 
 static bool requires_avxonly() {
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(_M_X64)
     #ifndef _MSC_VER
         return !__builtin_cpu_supports("avx2");
     #else
-        int cpuInfo[4];
-        __cpuidex(cpuInfo, 7, 0);
-        return !(cpuInfo[1] & (1 << 5));
+        return !IsProcessorFeaturePresent(PF_AVX2_INSTRUCTIONS_AVAILABLE);
     #endif
 #else
     return false; // Don't know how to handle non-x86_64
 #endif
 }
 
-LLModel::Implementation::Implementation(Dlhandle &&dlhandle_) : dlhandle(new Dlhandle(std::move(dlhandle_))) {
-    auto get_model_type = dlhandle->get<const char *()>("get_model_type");
+LLModel::Implementation::Implementation(Dlhandle &&dlhandle_)
+    : m_dlhandle(new Dlhandle(std::move(dlhandle_))) {
+    auto get_model_type = m_dlhandle->get<const char *()>("get_model_type");
     assert(get_model_type);
-    modelType = get_model_type();
-    auto get_build_variant = dlhandle->get<const char *()>("get_build_variant");
+    m_modelType = get_model_type();
+    auto get_build_variant = m_dlhandle->get<const char *()>("get_build_variant");
     assert(get_build_variant);
-    buildVariant = get_build_variant();
-    magicMatch = dlhandle->get<bool(std::ifstream&)>("magic_match");
-    assert(magicMatch);
-    construct_ = dlhandle->get<LLModel *()>("construct");
-    assert(construct_);
+    m_buildVariant = get_build_variant();
+    m_magicMatch = m_dlhandle->get<bool(std::ifstream&)>("magic_match");
+    assert(m_magicMatch);
+    m_construct = m_dlhandle->get<LLModel *()>("construct");
+    assert(m_construct);
 }
 
 LLModel::Implementation::Implementation(Implementation &&o)
-    : construct_(o.construct_)
-    , modelType(o.modelType)
-    , buildVariant(o.buildVariant)
-    , magicMatch(o.magicMatch)
-    , dlhandle(o.dlhandle) {
-    o.dlhandle = nullptr;
+    : m_magicMatch(o.m_magicMatch)
+    , m_construct(o.m_construct)
+    , m_modelType(o.m_modelType)
+    , m_buildVariant(o.m_buildVariant)
+    , m_dlhandle(o.m_dlhandle) {
+    o.m_dlhandle = nullptr;
 }
 
 LLModel::Implementation::~Implementation() {
-    if (dlhandle) delete dlhandle;
+    if (m_dlhandle) delete m_dlhandle;
 }
 
 bool LLModel::Implementation::isImplementation(const Dlhandle &dl) {
     return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
-const std::vector<LLModel::Implementation> &LLModel::implementationList() {
+const std::vector<LLModel::Implementation> &LLModel::Implementation::implementationList() {
     // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
     // individual models without the cleanup of the static list interfering
-    static auto* libs = new std::vector<LLModel::Implementation>([] () {
-        std::vector<LLModel::Implementation> fres;
+    static auto* libs = new std::vector<Implementation>([] () {
+        std::vector<Implementation> fres;
 
         auto search_in_directory = [&](const std::string& paths) {
             std::stringstream ss(paths);
@@ -107,17 +108,17 @@ const std::vector<LLModel::Implementation> &LLModel::implementationList() {
     return *libs;
 }
 
-const LLModel::Implementation* LLModel::implementation(std::ifstream& f, const std::string& buildVariant) {
+const LLModel::Implementation* LLModel::Implementation::implementation(std::ifstream& f, const std::string& buildVariant) {
     for (const auto& i : implementationList()) {
         f.seekg(0);
-        if (!i.magicMatch(f)) continue;
-        if (buildVariant != i.buildVariant) continue;
+        if (!i.m_magicMatch(f)) continue;
+        if (buildVariant != i.m_buildVariant) continue;
         return &i;
     }
     return nullptr;
 }
 
-LLModel *LLModel::construct(const std::string &modelPath, std::string buildVariant) {
+LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant) {
 
     if (!has_at_least_minimal_hardware())
         return nullptr;
@@ -126,14 +127,15 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
     std::ifstream f(modelPath, std::ios::binary);
     if (!f) return nullptr;
     // Get correct implementation
-    const LLModel::Implementation* impl = nullptr;
+    const Implementation* impl = nullptr;
 
     #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
         if (buildVariant == "auto") {
             size_t total_mem = getSystemTotalRAMInBytes();
             impl = implementation(f, "metal");
             if(impl) {
-                LLModel* metalimpl = impl->construct();
+                LLModel* metalimpl = impl->m_construct();
+                metalimpl->m_implementation = impl;
                 size_t req_mem = metalimpl->requiredMem(modelPath);
                 float req_to_total = (float) req_mem / (float) total_mem;
                 // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
@@ -160,14 +162,17 @@ LLModel *LLModel::construct(const std::string &modelPath, std::string buildVaria
         if (!impl) return nullptr;
     }
     f.close();
+
     // Construct and return llmodel implementation
-    return impl->construct();
+    auto fres = impl->m_construct();
+    fres->m_implementation = impl;
+    return fres;
 }
 
-void LLModel::setImplementationsSearchPath(const std::string& path) {
+void LLModel::Implementation::setImplementationsSearchPath(const std::string& path) {
     s_implementations_search_path = path;
 }
 
-const std::string& LLModel::implementationsSearchPath() {
+const std::string& LLModel::Implementation::implementationsSearchPath() {
     return s_implementations_search_path;
 }

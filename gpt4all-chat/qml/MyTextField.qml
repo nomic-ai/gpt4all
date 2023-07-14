@@ -8,7 +8,8 @@ TextField {
     padding: 10
     background: Rectangle {
         implicitWidth: 150
-        color: theme.backgroundLighter
+        color: theme.backgroundDark
         radius: 10
     }
+    color: theme.textColor
 }

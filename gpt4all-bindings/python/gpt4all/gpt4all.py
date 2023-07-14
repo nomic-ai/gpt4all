@@ -5,7 +5,7 @@ import os
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Iterable, List, Union
+from typing import Dict, Iterable, List, Union, Optional
 
 import requests
 from tqdm import tqdm
@@ -15,6 +15,36 @@ from . import pyllmodel
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
 
+class Embed4All:
+    """
+    Python class that handles embeddings for GPT4All.
+    """
+    def __init__(
+        self,
+        n_threads: Optional[int] = None,
+    ):
+        """
+        Constructor
+
+        Args:
+            n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
+        """
+        self.gpt4all = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin', n_threads=n_threads)
+
+    def embed(
+        self,
+        text: str
+    ) -> list[float]:
+        """
+        Generate an embedding.
+
+        Args:
+            text: The text document to generate an embedding for.
+
+        Returns:
+            An embedding of your document of text.
+        """
+        return self.gpt4all.model.generate_embedding(text)
 
 class GPT4All:
     """
@@ -22,7 +52,12 @@ class GPT4All:
     """
 
     def __init__(
-        self, model_name: str, model_path: str = None, model_type: str = None, allow_download=True, n_threads=None
+        self,
+        model_name: str,
+        model_path: Optional[str] = None,
+        model_type: Optional[str] = None,
+        allow_download: bool = True,
+        n_threads: Optional[int] = None,
     ):
         """
         Constructor
@@ -34,7 +69,7 @@ class GPT4All:
             model_type: Model architecture. This argument currently does not have any functionality and is just used as
                 descriptive identifier for user. Default is None.
             allow_download: Allow API to download models from gpt4all.io. Default is True.
-            n_threads: number of CPU threads used by GPT4All. Default is None, than the number of threads are determined automatically.
+            n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
         """
         self.model_type = model_type
         self.model = pyllmodel.LLModel()
@@ -60,7 +95,7 @@ class GPT4All:
 
     @staticmethod
     def retrieve_model(
-        model_name: str, model_path: str = None, allow_download: bool = True, verbose: bool = True
+        model_name: str, model_path: Optional[str] = None, allow_download: bool = True, verbose: bool = True
     ) -> str:
         """
         Find model file, and if it doesn't exist, download the model.
@@ -120,7 +155,7 @@ class GPT4All:
             raise ValueError("Failed to retrieve model")
 
     @staticmethod
-    def download_model(model_filename: str, model_path: str, verbose: bool = True, url: str = None) -> str:
+    def download_model(model_filename: str, model_path: str, verbose: bool = True, url: Optional[str] = None) -> str:
         """
         Download model from https://gpt4all.io.
 
@@ -181,7 +216,7 @@ class GPT4All:
         repeat_penalty: float = 1.18,
         repeat_last_n: int = 64,
         n_batch: int = 8,
-        n_predict: int = None,
+        n_predict: Optional[int] = None,
         streaming: bool = False,
     ) -> Union[str, Iterable]:
         """
@@ -202,17 +237,20 @@ class GPT4All:
         Returns:
             Either the entire completion or a generator that yields the completion token by token.
         """
-        generate_kwargs = locals()
-        generate_kwargs.pop('self')
-        generate_kwargs.pop('max_tokens')
-        generate_kwargs.pop('streaming')
-        generate_kwargs['n_predict'] = max_tokens
-        if n_predict is not None:
-            generate_kwargs['n_predict'] = n_predict
+        generate_kwargs = dict(
+            prompt=prompt,
+            temp=temp,
+            top_k=top_k,
+            top_p=top_p,
+            repeat_penalty=repeat_penalty,
+            repeat_last_n=repeat_last_n,
+            n_batch=n_batch,
+            n_predict=n_predict if n_predict is not None else max_tokens,
+        )
 
         if self._is_chat_session_activated:
             self.current_chat_session.append({"role": "user", "content": prompt})
-            generate_kwargs['prompt'] = self._format_chat_prompt_template(messages=self.current_chat_session)
+            generate_kwargs['prompt'] = self._format_chat_prompt_template(messages=self.current_chat_session[-1:])
             generate_kwargs['reset_context'] = len(self.current_chat_session) == 1
         else:
             generate_kwargs['reset_context'] = True

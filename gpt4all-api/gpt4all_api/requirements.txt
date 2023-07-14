@@ -5,6 +5,6 @@ requests>=2.24.0
 ujson>=2.0.2
 fastapi>=0.95.0
 Jinja2>=3.0
-gpt4all==0.2.3
+gpt4all==1.0.1
 pytest
 openai

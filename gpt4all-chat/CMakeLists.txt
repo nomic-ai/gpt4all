@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -17,7 +18,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 4)
-set(APP_VERSION_PATCH 11)
+set(APP_VERSION_PATCH 14)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -38,7 +39,11 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
-find_package(Qt6 6.5 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+if(LINUX)
+  find_package(Qt6 6.5 COMPONENTS Core Quick WaylandCompositor QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+else()
+  find_package(Qt6 6.5 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+endif()
 
 # Get the Qt6Core target properties
 get_target_property(Qt6Core_INCLUDE_DIRS Qt6::Core INTERFACE_INCLUDE_DIRECTORIES)
@@ -98,12 +103,14 @@ qt_add_qml_module(chat
       qml/PopupDialog.qml
       qml/AboutDialog.qml
       qml/Theme.qml
-      qml/GenerationSettings.qml
+      qml/ModelSettings.qml
       qml/ApplicationSettings.qml
       qml/LocalDocsSettings.qml
       qml/MySettingsTab.qml
+      qml/MySettingsStack.qml
       qml/MyButton.qml
       qml/MyComboBox.qml
+      qml/MyDialog.qml
       qml/MyDirectoryField.qml
       qml/MyTextField.qml
       qml/MyCheckBox.qml
@@ -113,10 +120,13 @@ qt_add_qml_module(chat
       icons/send_message.svg
       icons/stop_generating.svg
       icons/regenerate.svg
+      icons/close.svg
       icons/copy.svg
       icons/db.svg
+      icons/download.svg
       icons/settings.svg
       icons/edit.svg
+      icons/image.svg
       icons/trash.svg
       icons/network.svg
       icons/thumbs_up.svg
@@ -152,8 +162,13 @@ endif()
 
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
-target_link_libraries(chat
+if(LINUX)
+  target_link_libraries(chat
+      PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf Qt6::WaylandCompositor)
+else()
+  target_link_libraries(chat
     PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
+endif()
 target_link_libraries(chat
     PRIVATE llmodel)
 
@@ -191,6 +206,8 @@ install(TARGETS replit-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NA
 if(APPLE)
 install(TARGETS replit-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
+install(TARGETS bert-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS bert-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
 set(CPACK_VERBATIM_VARIABLES YES)

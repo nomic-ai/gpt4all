@@ -7,7 +7,7 @@ import download
 import network
 import llm
 
-Dialog {
+MyDialog {
     id: abpoutDialog
     anchors.centerIn: parent
     modal: false
@@ -101,13 +101,5 @@ Dialog {
             Accessible.name: qsTr("Thank you blurb")
             Accessible.description: qsTr("Contains embedded link to https://home.nomic.ai")
         }
-    }
-
-    background: Rectangle {
-        anchors.fill: parent
-        color: theme.backgroundDarkest
-        border.width: 1
-        border.color: theme.dialogBorder
-        radius: 10
     }
 }

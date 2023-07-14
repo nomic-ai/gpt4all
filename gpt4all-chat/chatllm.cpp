@@ -14,6 +14,7 @@
 #define REPLIT_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
 #define FALCON_INTERNAL_STATE_VERSION 0
+#define BERT_INTERNAL_STATE_VERSION 0
 
 class LLModelStore {
 public:
@@ -69,6 +70,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_isServer(isServer)
     , m_forceMetal(MySettings::globalInstance()->forceMetal())
     , m_reloadingToChangeVariant(false)
+    , m_processedSystemPrompt(false)
 {
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
@@ -89,6 +91,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
 
 ChatLLM::~ChatLLM()
 {
+    m_stopGenerating = true;
     m_llmThread.quit();
     m_llmThread.wait();
 
@@ -123,7 +126,7 @@ void ChatLLM::handleForceMetalChanged(bool forceMetal)
 bool ChatLLM::loadDefaultModel()
 {
     ModelInfo defaultModel = ModelList::globalInstance()->defaultModelInfo();
-    if (defaultModel.filename.isEmpty()) {
+    if (defaultModel.filename().isEmpty()) {
         emit modelLoadingError(QString("Could not find any model to load"));
         return false;
     }
@@ -145,7 +148,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         return true;
 
     bool isChatGPT = modelInfo.isChatGPT;
-    QString filePath = modelInfo.dirpath + modelInfo.filename;
+    QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
 
     // We have a live model, but it isn't the one we want
@@ -186,6 +189,12 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #endif
             restoreState();
             emit isModelLoadedChanged(true);
+            setModelInfo(modelInfo);
+            Q_ASSERT(!m_modelInfo.filename().isEmpty());
+            if (m_modelInfo.filename().isEmpty())
+                emit modelLoadingError(QString("Modelinfo is left null for %1").arg(modelInfo.filename()));
+            else
+                processSystemPrompt();
             return true;
         } else {
             // Release the memory since we have to switch to a different model.
@@ -202,6 +211,15 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
     // Store the file info in the modelInfo in case we have an error loading
     m_llModelInfo.fileInfo = fileInfo;
+
+    // Check if we've previously tried to load this file and failed/crashed
+    if (MySettings::globalInstance()->attemptModelLoad() == filePath) {
+        MySettings::globalInstance()->setAttemptModelLoad(QString()); // clear the flag
+        if (!m_isServer)
+            LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
+        m_llModelInfo = LLModelInfo();
+        emit modelLoadingError(QString("Previous attempt to load model resulted in crash for `%1` most likely due to out of memory. You should either remove this model or decrease your system RAM by closing other applications.").arg(modelInfo.filename()));
+    }
 
     if (fileInfo.exists()) {
         if (isChatGPT) {
@@ -223,35 +241,38 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
 #if defined(Q_OS_MAC) && defined(__arm__)
             if (m_forceMetal)
-                m_llModelInfo.model = LLModel::construct(filePath.toStdString(), "metal");
+                m_llModelInfo.model = LLMImplementation::construct(filePath.toStdString(), "metal");
             else
-                m_llModelInfo.model = LLModel::construct(filePath.toStdString(), "auto");
+                m_llModelInfo.model = LLMImplementation::construct(filePath.toStdString(), "auto");
 #else
-            m_llModelInfo.model = LLModel::construct(filePath.toStdString(), "auto");
+            m_llModelInfo.model = LLModel::Implementation::construct(filePath.toStdString(), "auto");
 #endif
 
             if (m_llModelInfo.model) {
+                MySettings::globalInstance()->setAttemptModelLoad(filePath);
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString());
+                MySettings::globalInstance()->setAttemptModelLoad(QString());
                 if (!success) {
                     delete std::exchange(m_llModelInfo.model, nullptr);
                     if (!m_isServer)
                         LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
                     m_llModelInfo = LLModelInfo();
-                    emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename));
+                    emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename()));
                 } else {
-                    switch (m_llModelInfo.model->implementation().modelType[0]) {
+                    switch (m_llModelInfo.model->implementation().modelType()[0]) {
                     case 'L': m_llModelType = LLModelType::LLAMA_; break;
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;
                     case 'M': m_llModelType = LLModelType::MPT_; break;
                     case 'R': m_llModelType = LLModelType::REPLIT_; break;
                     case 'F': m_llModelType = LLModelType::FALCON_; break;
+                    case 'B': m_llModelType = LLModelType::BERT_; break;
                     default:
                         {
                             delete std::exchange(m_llModelInfo.model, nullptr);
                             if (!m_isServer)
                                 LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
                             m_llModelInfo = LLModelInfo();
-                            emit modelLoadingError(QString("Could not determine model type for %1").arg(modelInfo.filename));
+                            emit modelLoadingError(QString("Could not determine model type for %1").arg(modelInfo.filename()));
                         }
                     }
                 }
@@ -259,7 +280,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 if (!m_isServer)
                     LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
                 m_llModelInfo = LLModelInfo();
-                emit modelLoadingError(QString("Could not load model due to invalid format for %1").arg(modelInfo.filename));
+                emit modelLoadingError(QString("Could not load model due to invalid format for %1").arg(modelInfo.filename()));
             }
         }
 #if defined(DEBUG_MODEL_LOADING)
@@ -282,12 +303,13 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         if (!m_isServer)
             LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
         m_llModelInfo = LLModelInfo();
-        emit modelLoadingError(QString("Could not find file for model %1").arg(modelInfo.filename));
+        emit modelLoadingError(QString("Could not find file for model %1").arg(modelInfo.filename()));
     }
 
     if (m_llModelInfo.model)
         setModelInfo(modelInfo);
 
+    processSystemPrompt();
     return m_llModelInfo.model;
 }
 
@@ -323,6 +345,7 @@ void ChatLLM::resetResponse()
 void ChatLLM::resetContext()
 {
     regenerateResponse();
+    m_processedSystemPrompt = false;
     m_ctx = LLModel::PromptContext();
 }
 
@@ -406,15 +429,34 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
 
 bool ChatLLM::handleRecalculate(bool isRecalc)
 {
+#if defined(DEBUG)
+    qDebug() << "recalculate" << m_llmThread.objectName() << isRecalc;
+#endif
     if (m_isRecalc != isRecalc) {
         m_isRecalc = isRecalc;
         emit recalcChanged();
     }
     return !m_stopGenerating;
 }
+bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt)
+{
+    if (!m_processedSystemPrompt)
+        processSystemPrompt();
+    const QString promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
+    const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
+    const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
+    const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
+    const float temp = MySettings::globalInstance()->modelTemperature(m_modelInfo);
+    const int32_t n_batch = MySettings::globalInstance()->modelPromptBatchSize(m_modelInfo);
+    const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
+    const int32_t repeat_penalty_tokens = MySettings::globalInstance()->modelRepeatPenaltyTokens(m_modelInfo);
+    return promptInternal(collectionList, prompt, promptTemplate, n_predict, top_k, top_p, temp, n_batch,
+        repeat_penalty, repeat_penalty_tokens);
+}
 
-bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt, const QString &prompt_template, int32_t n_predict, int32_t top_k,
-    float top_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens, int n_threads)
+bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
+    int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
+    int32_t repeat_penalty_tokens)
 {
     if (!isModelLoaded())
         return false;
@@ -430,9 +472,11 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
         augmentedTemplate.append("### Context:");
     for (const ResultInfo &info : databaseResults)
         augmentedTemplate.append(info.text);
-    augmentedTemplate.append(prompt_template);
+    augmentedTemplate.append(promptTemplate);
 
     QString instructPrompt = augmentedTemplate.join("\n").arg(prompt);
+
+    int n_threads = MySettings::globalInstance()->threadCount();
 
     m_stopGenerating = false;
     auto promptFunc = std::bind(&ChatLLM::handlePrompt, this, std::placeholders::_1);
@@ -515,7 +559,7 @@ void ChatLLM::reloadModel()
     qDebug() << "reloadModel" << m_llmThread.objectName() << m_llModelInfo.model;
 #endif
     const ModelInfo m = modelInfo();
-    if (m.name.isEmpty())
+    if (m.name().isEmpty())
         loadDefaultModel();
     else
         loadModel(m);
@@ -558,13 +602,19 @@ void ChatLLM::handleChatIdChanged(const QString &id)
 
 bool ChatLLM::handleNamePrompt(int32_t token)
 {
+#if defined(DEBUG)
+    qDebug() << "name prompt" << m_llmThread.objectName() << token;
+#endif
     Q_UNUSED(token);
     qt_noop();
-    return true;
+    return !m_stopGenerating;
 }
 
 bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
 {
+#if defined(DEBUG)
+    qDebug() << "name response" << m_llmThread.objectName() << token << response;
+#endif
     Q_UNUSED(token);
 
     m_nameResponse.append(response);
@@ -576,9 +626,40 @@ bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
 
 bool ChatLLM::handleNameRecalculate(bool isRecalc)
 {
+#if defined(DEBUG)
+    qDebug() << "name recalc" << m_llmThread.objectName() << isRecalc;
+#endif
     Q_UNUSED(isRecalc);
-    Q_UNREACHABLE();
+    qt_noop();
     return true;
+}
+
+bool ChatLLM::handleSystemPrompt(int32_t token)
+{
+#if defined(DEBUG)
+    qDebug() << "system prompt" << m_llmThread.objectName() << token << m_stopGenerating;
+#endif
+    Q_UNUSED(token);
+    return !m_stopGenerating;
+}
+
+bool ChatLLM::handleSystemResponse(int32_t token, const std::string &response)
+{
+#if defined(DEBUG)
+    qDebug() << "system response" << m_llmThread.objectName() << token << response << m_stopGenerating;
+#endif
+    Q_UNUSED(token);
+    Q_UNUSED(response);
+    return false;
+}
+
+bool ChatLLM::handleSystemRecalculate(bool isRecalc)
+{
+#if defined(DEBUG)
+    qDebug() << "system recalc" << m_llmThread.objectName() << isRecalc;
+#endif
+    Q_UNUSED(isRecalc);
+    return false;
 }
 
 bool ChatLLM::serialize(QDataStream &stream, int version)
@@ -590,7 +671,8 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
         case MPT_: stream << MPT_INTERNAL_STATE_VERSION; break;
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
-        case FALCON_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
+        case FALCON_: stream << FALCON_INTERNAL_STATE_VERSION; break;
+        case BERT_: stream << BERT_INTERNAL_STATE_VERSION; break;
         default: Q_UNREACHABLE();
         }
     }
@@ -697,7 +779,54 @@ void ChatLLM::restoreState()
 #if defined(DEBUG)
     qDebug() << "restoreState" << m_llmThread.objectName() << "size:" << m_state.size();
 #endif
+    m_processedSystemPrompt = true;
     m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
     m_state.clear();
     m_state.resize(0);
+}
+
+void ChatLLM::processSystemPrompt()
+{
+    Q_ASSERT(isModelLoaded());
+    if (!isModelLoaded() || m_processedSystemPrompt || m_isServer)
+        return;
+
+    const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
+    if (QString::fromStdString(systemPrompt).trimmed().isEmpty()) {
+        m_processedSystemPrompt = true;
+        return;
+    }
+
+    m_stopGenerating = false;
+    auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
+    auto responseFunc = std::bind(&ChatLLM::handleSystemResponse, this, std::placeholders::_1,
+        std::placeholders::_2);
+    auto recalcFunc = std::bind(&ChatLLM::handleSystemRecalculate, this, std::placeholders::_1);
+
+    const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
+    const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
+    const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
+    const float temp = MySettings::globalInstance()->modelTemperature(m_modelInfo);
+    const int32_t n_batch = MySettings::globalInstance()->modelPromptBatchSize(m_modelInfo);
+    const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
+    const int32_t repeat_penalty_tokens = MySettings::globalInstance()->modelRepeatPenaltyTokens(m_modelInfo);
+    int n_threads = MySettings::globalInstance()->threadCount();
+    m_ctx.n_predict = n_predict;
+    m_ctx.top_k = top_k;
+    m_ctx.top_p = top_p;
+    m_ctx.temp = temp;
+    m_ctx.n_batch = n_batch;
+    m_ctx.repeat_penalty = repeat_penalty;
+    m_ctx.repeat_last_n = repeat_penalty_tokens;
+    m_llModelInfo.model->setThreadCount(n_threads);
+#if defined(DEBUG)
+    printf("%s", qPrintable(QString::fromStdString(systemPrompt)));
+    fflush(stdout);
+#endif
+    m_llModelInfo.model->prompt(systemPrompt, promptFunc, responseFunc, recalcFunc, m_ctx);
+#if defined(DEBUG)
+    printf("\n");
+    fflush(stdout);
+#endif
+    m_processedSystemPrompt = true;
 }

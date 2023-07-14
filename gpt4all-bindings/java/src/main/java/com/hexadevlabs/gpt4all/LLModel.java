@@ -1,6 +1,8 @@
 package com.hexadevlabs.gpt4all;
 
 import jnr.ffi.Pointer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -94,6 +96,10 @@ public  class LLModel implements AutoCloseable {
                 return this;
             }
 
+            /**
+             *
+             * @return GenerationConfig build instance of the config
+             */
             public GenerationConfig build() {
                 return configToBuild;
             }
@@ -102,6 +108,8 @@ public  class LLModel implements AutoCloseable {
 
     /**
      * Shortcut for making GenerativeConfig builder.
+     *
+     * @return GenerationConfig.Builder - builder that can be used to make a GenerationConfig
      */
     public static GenerationConfig.Builder config(){
         return new GenerationConfig.Builder();
@@ -109,8 +117,10 @@ public  class LLModel implements AutoCloseable {
 
     /**
      * This may be set before any Model instance classes are instantiated to
-     * set where the model may be found. This may be needed if setting
-     * library search path by standard means is not available.
+     * set where the native shared libraries are to be found.
+     * <p>
+     * This may be needed if setting library search path by standard means is not available
+     * or the libraries loaded from the temp folder bundled with the binding jar is not desirable.
      */
     public static String LIBRARY_SEARCH_PATH;
 
@@ -122,13 +132,31 @@ public  class LLModel implements AutoCloseable {
      */
     public static boolean OUTPUT_DEBUG = false;
 
+    private static final Logger logger = LoggerFactory.getLogger(LLModel.class);
+
+    /**
+     * Which version of GPT4ALL that this binding is built for.
+     * The binding is guaranteed to work with this version of
+     * GPT4ALL native libraries. The binding may work for older
+     * versions but that is not guaranteed.
+     */
+    public static final String GPT4ALL_VERSION = "2.4.11";
+
     protected static LLModelLibrary library;
 
     protected Pointer model;
 
     protected String modelName;
 
+    /**
+     * Package private default constructor, for testing purposes.
+     */
+    LLModel(){
+    }
+
     public LLModel(Path modelPath) {
+
+        logger.info("Java bindings for gpt4all version: " + GPT4ALL_VERSION);
 
         if(library==null) {
 
@@ -202,34 +230,7 @@ public  class LLModel implements AutoCloseable {
         ByteArrayOutputStream bufferingForStdOutStream = new ByteArrayOutputStream();
         ByteArrayOutputStream bufferingForWholeGeneration = new ByteArrayOutputStream();
 
-        LLModelLibrary.ResponseCallback responseCallback = (int tokenID, Pointer response) -> {
-
-            if(LLModel.OUTPUT_DEBUG)
-                System.out.print("Response token " + tokenID + " " );
-
-            long len = 0;
-            byte nextByte;
-            do{
-                nextByte= response.getByte(len);
-                len++;
-                if(nextByte!=0) {
-                    bufferingForWholeGeneration.write(nextByte);
-                    if(streamToStdOut){
-                        bufferingForStdOutStream.write(nextByte);
-                        // Test if Buffer is UTF8 valid string.
-                        byte[] currentBytes = bufferingForStdOutStream.toByteArray();
-                        String validString = Util.getValidUtf8(currentBytes);
-                        if(validString!=null){ // is valid string
-                            System.out.print(validString);
-                            // reset the buffer for next utf8 sequence to buffer
-                            bufferingForStdOutStream.reset();
-                        }
-                    }
-                }
-            } while(nextByte != 0);
-
-            return true; // continue generating
-        };
+        LLModelLibrary.ResponseCallback responseCallback = getResponseCallback(streamToStdOut, bufferingForStdOutStream, bufferingForWholeGeneration);
 
         library.llmodel_prompt(this.model,
                 prompt,
@@ -249,6 +250,56 @@ public  class LLModel implements AutoCloseable {
         return bufferingForWholeGeneration.toString(StandardCharsets.UTF_8);
     }
 
+    /**
+     * Callback method to be used by prompt method as text is generated.
+     *
+     * @param streamToStdOut Should send generated text to standard out.
+     * @param bufferingForStdOutStream Output stream used for buffering bytes for standard output.
+     * @param bufferingForWholeGeneration Output stream used for buffering a complete generation.
+     * @return LLModelLibrary.ResponseCallback lambda function that is invoked by response callback.
+     */
+    static LLModelLibrary.ResponseCallback getResponseCallback(boolean streamToStdOut, ByteArrayOutputStream bufferingForStdOutStream, ByteArrayOutputStream bufferingForWholeGeneration) {
+        return (int tokenID, Pointer response) -> {
+
+            if(LLModel.OUTPUT_DEBUG)
+                System.out.print("Response token " + tokenID + " " );
+
+            // For all models if input sequence in tokens is longer then model context length
+            // the error is generated.
+            if(tokenID==-1){
+                throw new PromptIsTooLongException(response.getString(0, 1000, StandardCharsets.UTF_8));
+            }
+
+            long len = 0;
+            byte nextByte;
+            do{
+                try {
+                    nextByte = response.getByte(len);
+                } catch(IndexOutOfBoundsException e){
+                    // Not sure if this can ever happen but just in case
+                    // the generation does not terminate in a Null (0) value.
+                    throw new RuntimeException("Empty array or not null terminated");
+                }
+                len++;
+                if(nextByte!=0) {
+                    bufferingForWholeGeneration.write(nextByte);
+                    if(streamToStdOut){
+                        bufferingForStdOutStream.write(nextByte);
+                        // Test if Buffer is UTF8 valid string.
+                        byte[] currentBytes = bufferingForStdOutStream.toByteArray();
+                        String validString = Util.getValidUtf8(currentBytes);
+                        if(validString!=null){ // is valid string
+                            System.out.print(validString);
+                            // reset the buffer for next utf8 sequence to buffer
+                            bufferingForStdOutStream.reset();
+                        }
+                    }
+                }
+            } while(nextByte != 0);
+
+            return true; // continue generating
+        };
+    }
 
 
     public static class ChatCompletionResponse {
@@ -277,7 +328,7 @@ public  class LLModel implements AutoCloseable {
      * easier to process for chat UIs. It is not absolutely necessary as generate method
      * may be directly used to make generations with gpt models.
      *
-     * @param messages List of Maps "role"->"user", "content"->"...", "role"-> "assistant"->"..."
+     * @param messages List of Maps "role"-&gt;"user", "content"-&gt;"...", "role"-&gt; "assistant"-&gt;"..."
      * @param generationConfig How to decode/process the generation.
      * @param streamToStdOut Send tokens as they are calculated Standard output.
      * @param outputFullPromptToStdOut Should full prompt built out of messages be sent to Standard output.

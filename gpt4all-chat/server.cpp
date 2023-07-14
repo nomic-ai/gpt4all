@@ -14,11 +14,11 @@
 static inline QJsonObject modelToJson(const ModelInfo &info)
 {
     QJsonObject model;
-    model.insert("id", info.name);
+    model.insert("id", info.name());
     model.insert("object", "model");
     model.insert("created", "who can keep track?");
     model.insert("owned_by", "humanity");
-    model.insert("root", info.name);
+    model.insert("root", info.name());
     model.insert("parent", QJsonValue::Null);
 
     QJsonArray permissions;
@@ -106,7 +106,7 @@ void Server::start()
                 if (!info.installed)
                     continue;
 
-                if (model == info.name) {
+                if (model == info.name()) {
                     object = modelToJson(info);
                     break;
                 }
@@ -173,7 +173,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     for (const ModelInfo &info : modelList) {
         if (!info.installed)
             continue;
-        if (modelRequested == info.name || modelRequested == info.filename) {
+        if (modelRequested == info.name() || modelRequested == info.filename()) {
             modelInfo = info;
             break;
         }
@@ -284,32 +284,28 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     // load the new model if necessary
     setShouldBeLoaded(true);
 
-    if (modelInfo.filename.isEmpty()) {
+    if (modelInfo.filename().isEmpty()) {
         std::cerr << "ERROR: couldn't load default model " << modelRequested.toStdString() << std::endl;
         return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
     } else if (!loadModel(modelInfo)) {
-        std::cerr << "ERROR: couldn't load model " << modelInfo.name.toStdString() << std::endl;
+        std::cerr << "ERROR: couldn't load model " << modelInfo.name().toStdString() << std::endl;
         return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
     }
 
     // don't remember any context
     resetContext();
 
-    const QString promptTemplate    = MySettings::globalInstance()->promptTemplate();
-    const float top_k               = MySettings::globalInstance()->topK();
-    const int n_batch               = MySettings::globalInstance()->promptBatchSize();
-    const float repeat_penalty      = MySettings::globalInstance()->repeatPenalty();
-    const int repeat_last_n         = MySettings::globalInstance()->repeatPenaltyTokens();
-
-    int threadCount = MySettings::globalInstance()->threadCount();
-    if (threadCount <= 0)
-      threadCount = std::min(4, (int32_t) std::thread::hardware_concurrency());
+    const QString promptTemplate    = modelInfo.promptTemplate();
+    const float top_k               = modelInfo.topK();
+    const int n_batch               = modelInfo.promptBatchSize();
+    const float repeat_penalty      = modelInfo.repeatPenalty();
+    const int repeat_last_n         = modelInfo.repeatPenaltyTokens();
 
     int promptTokens = 0;
     int responseTokens = 0;
     QList<QPair<QString, QList<ResultInfo>>> responses;
     for (int i = 0; i < n; ++i) {
-        if (!prompt(
+        if (!promptInternal(
             m_collections,
             actualPrompt,
             promptTemplate,
@@ -319,10 +315,9 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             temperature,
             n_batch,
             repeat_penalty,
-            repeat_last_n,
-            threadCount)) {
+            repeat_last_n)) {
 
-            std::cerr << "ERROR: couldn't prompt model " << modelInfo.name.toStdString() << std::endl;
+            std::cerr << "ERROR: couldn't prompt model " << modelInfo.name().toStdString() << std::endl;
             return QHttpServerResponse(QHttpServerResponder::StatusCode::InternalServerError);
         }
         QString echoedPrompt = actualPrompt;
@@ -340,7 +335,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     responseObject.insert("id", "foobarbaz");
     responseObject.insert("object", "text_completion");
     responseObject.insert("created", QDateTime::currentSecsSinceEpoch());
-    responseObject.insert("model", modelInfo.name);
+    responseObject.insert("model", modelInfo.name());
 
     QJsonArray choices;
 
@@ -356,10 +351,12 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             message.insert("role", "assistant");
             message.insert("content", result);
             choice.insert("message", message);
-            QJsonArray references;
-            for (const auto &ref : infos)
-                references.append(resultToJson(ref));
-            choice.insert("references", references);
+            if (MySettings::globalInstance()->localDocsShowReferences()) {
+                QJsonArray references;
+                for (const auto &ref : infos)
+                    references.append(resultToJson(ref));
+                choice.insert("references", references);
+            }
             choices.append(choice);
         }
     } else {
@@ -372,10 +369,12 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             choice.insert("index", index++);
             choice.insert("logprobs", QJsonValue::Null); // We don't support
             choice.insert("finish_reason", responseTokens == max_tokens ? "length" : "stop");
-            QJsonArray references;
-            for (const auto &ref : infos)
-                references.append(resultToJson(ref));
-            choice.insert("references", references);
+            if (MySettings::globalInstance()->localDocsShowReferences()) {
+                QJsonArray references;
+                for (const auto &ref : infos)
+                    references.append(resultToJson(ref));
+                choice.insert("references", references);
+            }
             choices.append(choice);
         }
     }

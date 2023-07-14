@@ -9,6 +9,7 @@ Button {
     padding: 10
     property bool toggled: false
     property alias source: image.source
+    property alias fillMode: image.fillMode
     contentItem: Text {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter

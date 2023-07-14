@@ -7,7 +7,7 @@ import download
 import network
 import llm
 
-Dialog {
+MyDialog {
     id: thumbsDownDialog
     modal: true
     opacity: 0.9
@@ -63,14 +63,6 @@ Dialog {
                 }
             }
         }
-    }
-
-    background: Rectangle {
-        anchors.fill: parent
-        color: theme.backgroundDarkest
-        border.width: 1
-        border.color: theme.dialogBorder
-        radius: 10
     }
 
     footer: DialogButtonBox {

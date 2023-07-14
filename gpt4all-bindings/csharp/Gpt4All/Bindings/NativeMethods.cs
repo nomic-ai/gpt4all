@@ -115,3 +115,4 @@ internal static unsafe class NativeMethods
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
     public static extern void llmodel_set_implementation_search_path([MarshalAs(UnmanagedType.LPUTF8Str)] string implementationsPath);
 }
+#pragma warning restore CA2101

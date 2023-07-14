@@ -87,22 +87,35 @@ Window {
         }
     }
 
+    property bool hasShownModelDownload: false
+    property bool hasShownFirstStart: false
+    property bool hasShownSettingsAccess: false
+
     function startupDialogs() {
-        if (!LLM.compatHardware) {
+        if (!LLM.compatHardware()) {
             Network.sendNonCompatHardware();
             errorCompatHardware.open();
             return;
         }
 
-        // check for first time start of this version
-        if (Download.isFirstStart()) {
-            firstStartDialog.open();
+        // check if we have access to settings and if not show an error
+        if (!hasShownSettingsAccess && !LLM.hasSettingsAccess()) {
+            errorSettingsAccess.open();
+            hasShownSettingsAccess = true;
             return;
         }
 
-        // check for any current models and if not, open download dialog
-        if (ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
+        // check for first time start of this version
+        if (!hasShownFirstStart && Download.isFirstStart()) {
+            firstStartDialog.open();
+            hasShownFirstStart = true;
+            return;
+        }
+
+        // check for any current models and if not, open download dialog once
+        if (!hasShownModelDownload && ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
             downloadNewModels.open();
+            hasShownModelDownload = true;
             return;
         }
 
@@ -128,6 +141,20 @@ Window {
             + qsTr("The only solution at this time is to upgrade your hardware to a more modern CPU.")
             + qsTr("<br><br>See here for more information: <a href=\"https://en.wikipedia.org/wiki/Advanced_Vector_Extensions\">")
             + qsTr("https://en.wikipedia.org/wiki/Advanced_Vector_Extensions</a>")
+    }
+
+    PopupDialog {
+        id: errorSettingsAccess
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        shouldShowBusy: false
+        modal: true
+        text: qsTr("<h3>Encountered an error starting up:</h3><br>")
+            + qsTr("<i>\"Inability to access settings file.\"</i>")
+            + qsTr("<br><br>Unfortunately, something is preventing the program from accessing ")
+            + qsTr("the settings file. This could be caused by incorrect permissions in the local ")
+            + qsTr("app config directory where the settings file is located. ")
+            + qsTr("Check out our <a href=\"https://discord.gg/4M2QFmTt2k\">discord channel</a> for help.")
     }
 
     StartupDialog {
@@ -160,7 +187,7 @@ Window {
             + "<i>\"" + currentChat.modelLoadingError + "\"</i>"
             + qsTr("<br><br>Model loading failures can happen for a variety of reasons, but the most common "
             + "causes include a bad file format, an incomplete or corrupted download, the wrong file "
-            + "type or an incompatible model type. Here are some suggestions for resolving the problem:"
+            + "type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:"
             + "<br><ul>"
             + "<li>Ensure the model file has a compatible ggml format and type"
             + "<li>Check the model file is complete in the download folder"
@@ -204,18 +231,28 @@ Window {
                 anchors.horizontalCenterOffset: window.width >= 950 ? 0 : Math.max(-((950 - window.width) / 2), -99.5)
                 enabled: !currentChat.isServer
                 model: ModelList.installedModels
-                valueRole: "filename"
+                valueRole: "id"
                 textRole: "name"
                 property string currentModelName: ""
                 function updateCurrentModelName() {
-                    var info = ModelList.modelInfo(currentChat.modelInfo.filename);
-                    comboBox.currentModelName = info.name !== "" ? info.name : info.filename;
+                    var info = ModelList.modelInfo(currentChat.modelInfo.id);
+                    comboBox.currentModelName = info.name;
                 }
                 Connections {
                     target: currentChat
                     function onModelInfoChanged() {
                         comboBox.updateCurrentModelName();
                     }
+                }
+                Connections {
+                    target: window
+                    function onCurrentChatChanged() {
+                        comboBox.updateCurrentModelName();
+                    }
+                }
+                background: Rectangle {
+                    color: theme.backgroundDark
+                    radius: 10
                 }
                 contentItem: Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -233,7 +270,7 @@ Window {
                 delegate: ItemDelegate {
                     width: comboBox.width
                     contentItem: Text {
-                        text: name !== "" ? name : filename
+                        text: name
                         color: theme.textColor
                         font: comboBox.font
                         elide: Text.ElideRight
@@ -557,6 +594,7 @@ Window {
         onClicked: {
             Network.sendResetContext(chatModel.count)
             currentChat.reset();
+            currentChat.processSystemPrompt();
         }
     }
 
@@ -643,8 +681,52 @@ Window {
                 anchors.fill: parent
                 color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLight
 
+                Text {
+                    id: warningLabel
+                    text: qsTr("You must install a model to continue. Models are available via the download dialog or you can install them manually by downloading from <a href=\"https://gpt4all.io\">the GPT4All website</a> (look for the Models Explorer) and placing them in the model folder. The model folder can be found in the settings dialog under the application tab.")
+                    color: theme.textColor
+                    width: 600
+                    linkColor: theme.linkColor
+                    wrapMode: Text.WordWrap
+                    anchors.centerIn: parent
+                    visible: ModelList.installedModels.count === 0
+                    onLinkActivated: function(link) {
+                        Qt.openUrlExternally(link)
+                    }
+                }
+
+                MyButton {
+                    id: downloadButton
+                    text: qsTr("Download models")
+                    visible: ModelList.installedModels.count === 0
+                    anchors.top: warningLabel.bottom
+                    anchors.topMargin: 20
+                    anchors.horizontalCenter: warningLabel.horizontalCenter
+                    padding: 15
+                    leftPadding: 50
+                    Image {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 15
+                        width: 24
+                        height: 24
+                        mipmap: true
+                        source: "qrc:/gpt4all/icons/download.svg"
+                    }
+                    background: Rectangle {
+                        border.color: downloadButton.down ? theme.backgroundLightest : theme.buttonBorder
+                        border.width: 2
+                        radius: 10
+                        color: downloadButton.hovered ? theme.backgroundLighter : theme.backgroundLight
+                    }
+                    onClicked: {
+                        downloadNewModels.open();
+                    }
+                }
+
                 ListView {
                     id: listView
+                    visible: ModelList.installedModels.count !== 0
                     anchors.fill: parent
                     model: chatModel
 
@@ -870,6 +952,7 @@ Window {
         }
 
         MyButton {
+            id: myButton
             visible: chatModel.count && !currentChat.isServer
             Image {
                 anchors.verticalCenter: parent.verticalCenter
@@ -894,18 +977,16 @@ Window {
                             chatModel.updateThumbsUpState(index, false);
                             chatModel.updateThumbsDownState(index, false);
                             chatModel.updateNewResponse(index, "");
-                            currentChat.prompt(listElement.prompt,
-                                       MySettings.promptTemplate,
-                                       MySettings.maxLength,
-                                       MySettings.topK,
-                                       MySettings.topP,
-                                       MySettings.temperature,
-                                       MySettings.promptBatchSize,
-                                       MySettings.repeatPenalty,
-                                       MySettings.repeatPenaltyTokens)
+                            currentChat.prompt(listElement.prompt)
                         }
                     }
                 }
+            }
+            background: Rectangle {
+                border.color: myButton.down ? theme.backgroundLightest : theme.buttonBorder
+                border.width: 2
+                radius: 10
+                color: myButton.hovered ? theme.backgroundLighter : theme.backgroundLight
             }
             anchors.bottom: textInputView.top
             anchors.horizontalCenter: textInputView.horizontalCenter
