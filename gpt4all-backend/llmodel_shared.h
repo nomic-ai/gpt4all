@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <cstddef>
+#include <vector>
 #include <ggml.h>
 
 struct llm_buffer {
@@ -34,3 +35,14 @@ struct llm_kv_cache {
         }
     }
 };
+
+#if LLAMA_DATE >= 230519
+inline void ggml_graph_compute_g4a(llm_buffer& buf, ggml_cgraph * graph, int n_threads) {
+    struct ggml_cplan plan = ggml_graph_plan(graph, n_threads);
+    if (plan.work_size > 0) {
+        buf.resize(plan.work_size);
+        plan.work_data = buf.addr;
+    }
+    ggml_graph_compute(graph, &plan);
+}
+#endif

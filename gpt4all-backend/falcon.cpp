@@ -1,3 +1,4 @@
+#include "ggml.h"
 #define FALCON_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "falcon_impl.h"
 #include "llama.h"
@@ -64,6 +65,7 @@ struct falcon_model {
     std::map<std::string, struct ggml_tensor*> tensors;
 
     llm_buffer eval_buf;
+    llm_buffer work_buf;
     llm_buffer scr0_buf;
     llm_buffer scr1_buf;
 };
@@ -446,7 +448,7 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
 //   - embd_w:    the predicted logits for the next token
 //
 bool falcon_eval(
-        const falcon_model & model,
+        falcon_model & model,
         const int n_threads,
         const int n_past,
         const std::vector<gpt_vocab::id> & embd_inp,
@@ -473,7 +475,6 @@ bool falcon_eval(
 
     struct ggml_context * ctx0 = ggml_init(eval_ctx_params);
     struct ggml_cgraph gf = {};
-    gf.n_threads = n_threads;
 
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     memcpy(embd->data, embd_inp.data(), N*ggml_element_size(embd));
@@ -546,8 +547,8 @@ bool falcon_eval(
                 head_dim * (n_head + n_head_kv) * sizeof_wtype);
 
             // using mode = 2 for neox mode
-            Qcur = ggml_rope_inplace(ctx0, Qcur, n_past, head_dim, 2);
-            Kcur = ggml_rope_inplace(ctx0, Kcur, n_past, head_dim, 2);
+            Qcur = ggml_rope_inplace(ctx0, Qcur, n_past, head_dim, 2, n_ctx);
+            Kcur = ggml_rope_inplace(ctx0, Kcur, n_past, head_dim, 2, n_ctx);
 
             // store key and value to memory
             {
@@ -678,7 +679,8 @@ bool falcon_eval(
 
     // run the computation
     ggml_build_forward_expand(&gf, inpL);
-    ggml_graph_compute       (ctx0, &gf);
+    ggml_graph_compute_g4a(model.work_buf, &gf, n_threads);
+  
 
     //if (n_past%100 == 0) {
     //    ggml_graph_print   (&gf);
