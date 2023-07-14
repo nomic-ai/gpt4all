@@ -17,6 +17,7 @@ nav:
       - 'gpt4all_cli.md'
 #    - 'Tutorials':
 #      - 'gpt4all_modal.md'
+      - 'GPT4All in C#': 'gpt4all_csharp.md'
     - 'Wiki':
       - 'gpt4all_faq.md'
 
