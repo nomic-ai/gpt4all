@@ -1,7 +1,6 @@
-# GPT4All Python API
+# GPT4All Python Generation API
 The `GPT4All` python package provides bindings to our C/C++ model backend libraries.
 The source code and local build instructions can be found [here](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python).
-
 
 ## Quickstart
 
@@ -109,22 +108,5 @@ with model.chat_session():
     print(model.current_chat_session)
 ```
 
-### Generating embeddings
-GPT4All includes a super simple means of generating embeddings for your text documents. The embedding model will automatically be downloaded if not installed.
-
-=== "Embed4All Example"
-    ``` py
-    from gpt4all import GPT4All, Embed4All
-    text = 'The quick brown fox jumps over the lazy dog'
-    embedder = Embed4All()
-    output = embedder.embed(text)
-    print(output)
-    ```
-=== "Output"
-    ```
-    [0.034696947783231735, -0.07192722707986832, 0.06923297047615051, ...]
-    ```
-
 ### API documentation
 ::: gpt4all.gpt4all.GPT4All
-::: gpt4all.gpt4all.Embed4All

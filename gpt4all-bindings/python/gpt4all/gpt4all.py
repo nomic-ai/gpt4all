@@ -20,12 +20,16 @@ class Embed4All:
     Python class that handles embeddings for GPT4All.
     """
     def __init__(
-        self
+        self,
+        n_threads: Optional[int] = None,
     ):
         """
         Constructor
+
+        Args:
+            n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
         """
-        self.gpt4all = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin')
+        self.gpt4all = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin', n_threads=n_threads)
 
     def embed(
         self,
@@ -65,7 +69,7 @@ class GPT4All:
             model_type: Model architecture. This argument currently does not have any functionality and is just used as
                 descriptive identifier for user. Default is None.
             allow_download: Allow API to download models from gpt4all.io. Default is True.
-            n_threads: number of CPU threads used by GPT4All. Default is None, than the number of threads are determined automatically.
+            n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
         """
         self.model_type = model_type
         self.model = pyllmodel.LLModel()
