@@ -102,7 +102,6 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     
     for (size_t i = 0; i < arr_size; ++i) {
         float element = *(arr + i);
-        // Do something with the element
         js_array[i] = element;
     }
 

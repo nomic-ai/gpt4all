@@ -641,27 +641,30 @@ jobs:
           node-version: "18.16"
       - run: node --version
       - node/install-packages:
+          app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
+          override-ci-command: yarn install
+      - run: cd gpt4all-bindings/typescript
       - run:
           command: yarn run test
           name: Run YARN tests
       - run: 
-        command: |
-          # excluding llmodel. nodejs bindings dont need llmodel.dll
-          cd gpt4all-bindings/typescript
-          mkdir -p runtimes/win32-x64/native
-          cp /tmp/workspace/runtimes/win-x64/*-*.dll runtimes/win-x64/native/ 
-          mkdir -p runtimes/linux-x64/native 
-          cp /tmp/workspace/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
-          mkdir -p runtimes/osx/native
-          cp /tmp/workspace/runtimes/osx-x64/*-*.dylib runtimes/osx/native/
-          cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
-
-      - run:
-          name: Publish to NPM
           command: |
-            npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
-            npm publish 
+            cd gpt4all-bindings/typescript
+            # excluding llmodel. nodejs bindings dont need llmodel.dll
+            mkdir -p runtimes/win32-x64/native
+            cp /tmp/workspace/runtimes/win-x64/*-*.dll runtimes/win-x64/native/ 
+            mkdir -p runtimes/linux-x64/native 
+            cp /tmp/workspace/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
+            mkdir -p runtimes/osx/native
+            cp /tmp/workspace/runtimes/osx-x64/*-*.dylib runtimes/osx/native/
+            cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
+            ls -Ra gpt4all-bindings/typescript/runtimes
+#     - run:
+#          name: Publish to NPM
+#          command: |
+#            npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
+#            npm publish 
 
 workflows:
   version: 2
@@ -741,6 +744,8 @@ workflows:
           type: approval
       - nuget-hold:
           type: approval
+      - npm-hold:
+          type: approval
       - build-bindings-backend-linux:
           filters:
             branches:
@@ -766,6 +771,15 @@ workflows:
           requires:
             - hold
       # NodeJs Jobs 
+      - prepare-npm-pkg: 
+          filters:
+            branches:
+              only:
+          requires:
+            - npm-hold
+#            - build-bindings-backend-linux
+#            - build-bindings-backend-windows-msvc
+#            - build-bindings-backend-macos
       # CSharp Jobs
       - build-csharp-linux:
           filters:
