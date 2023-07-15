@@ -646,17 +646,17 @@ jobs:
           command: yarn run test
           name: Run YARN tests
       - run: 
-        command: |
-          # excluding llmodel. nodejs bindings dont need llmodel.dll
-          cd gpt4all-bindings/typescript
-          mkdir -p runtimes/win32-x64/native
-          cp /tmp/workspace/runtimes/win-x64/*-*.dll runtimes/win-x64/native/ 
-          mkdir -p runtimes/linux-x64/native 
-          cp /tmp/workspace/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
-          mkdir -p runtimes/osx/native
-          cp /tmp/workspace/runtimes/osx-x64/*-*.dylib runtimes/osx/native/
-          cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
-          ls -Ra gpt4all-bindings/typescript/runtimes
+          command: |
+            # excluding llmodel. nodejs bindings dont need llmodel.dll
+            cd gpt4all-bindings/typescript
+            mkdir -p runtimes/win32-x64/native
+            cp /tmp/workspace/runtimes/win-x64/*-*.dll runtimes/win-x64/native/ 
+            mkdir -p runtimes/linux-x64/native 
+            cp /tmp/workspace/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
+            mkdir -p runtimes/osx/native
+            cp /tmp/workspace/runtimes/osx-x64/*-*.dylib runtimes/osx/native/
+            cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
+            ls -Ra gpt4all-bindings/typescript/runtimes
 #      - run:
 #          name: Publish to NPM
 #          command: |
