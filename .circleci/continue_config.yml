@@ -656,12 +656,12 @@ jobs:
           mkdir -p runtimes/osx/native
           cp /tmp/workspace/runtimes/osx-x64/*-*.dylib runtimes/osx/native/
           cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
-
-      - run:
-          name: Publish to NPM
-          command: |
-            npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
-            npm publish 
+          ls -Ra gpt4all-bindings/typescript/runtimes
+#      - run:
+#          name: Publish to NPM
+#          command: |
+#            npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
+#            npm publish 
 
 workflows:
   version: 2
@@ -766,6 +766,14 @@ workflows:
           requires:
             - hold
       # NodeJs Jobs 
+      - prepare-npm-pkg 
+          filters:
+            branches:
+              only:
+            requires:
+              - build-csharp-windows
+              - build-csharp-linux
+              - build-csharp-macos
       # CSharp Jobs
       - build-csharp-linux:
           filters:
