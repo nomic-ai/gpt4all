@@ -766,7 +766,7 @@ workflows:
           requires:
             - hold
       # NodeJs Jobs 
-      - prepare-npm-pkg 
+      - prepare-npm-pkg: 
           filters:
             branches:
               only:
