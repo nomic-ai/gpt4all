@@ -657,7 +657,7 @@ jobs:
             cp /tmp/workspace/runtimes/osx-x64/*-*.dylib runtimes/osx/native/
             cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
             ls -Ra gpt4all-bindings/typescript/runtimes
-#      - run:
+#     - run:
 #          name: Publish to NPM
 #          command: |
 #            npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
@@ -741,6 +741,8 @@ workflows:
           type: approval
       - nuget-hold:
           type: approval
+      - npm-hold:
+          type: approval
       - build-bindings-backend-linux:
           filters:
             branches:
@@ -771,9 +773,10 @@ workflows:
             branches:
               only:
           requires:
-            - build-csharp-windows
-            - build-csharp-linux
-            - build-csharp-macos
+            - npm-hold
+            - build-bindings-backend-linux
+            - build-bindings-backend-windows-msvc
+            - build-bindings-backend-macos
       # CSharp Jobs
       - build-csharp-linux:
           filters:
