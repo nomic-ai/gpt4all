@@ -41,13 +41,22 @@ MyDialog {
         }
 
         Label {
-            visible: !ModelList.downloadableModels.count
+            visible: !ModelList.downloadableModels.count && !ModelList.asyncModelRequestOngoing
             Layout.fillWidth: true
             Layout.fillHeight: true
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
             text: qsTr("Network error: could not retrieve http://gpt4all.io/models/models.json")
             color: theme.mutedTextColor
+        }
+
+        MyBusyIndicator {
+            visible: !ModelList.downloadableModels.count && ModelList.asyncModelRequestOngoing
+            running: ModelList.asyncModelRequestOngoing
+            Accessible.role: Accessible.Animation
+            Layout.alignment: Qt.AlignCenter
+            Accessible.name: qsTr("Busy indicator")
+            Accessible.description: qsTr("Displayed when the models request is ongoing")
         }
 
         ScrollView {

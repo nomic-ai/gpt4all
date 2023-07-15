@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(APPLE)
   option(BUILD_UNIVERSAL "Build a Universal binary on macOS" ON)
@@ -19,7 +20,7 @@ endif()
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 set(LLMODEL_VERSION_MAJOR 0)
-set(LLMODEL_VERSION_MINOR 2)
+set(LLMODEL_VERSION_MINOR 3)
 set(LLMODEL_VERSION_PATCH 0)
 set(LLMODEL_VERSION "${LLMODEL_VERSION_MAJOR}.${LLMODEL_VERSION_MINOR}.${LLMODEL_VERSION_PATCH}")
 project(llmodel VERSION ${LLMODEL_VERSION} LANGUAGES CXX C)
@@ -124,6 +125,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         add_library(mpt-${BUILD_VARIANT} SHARED
             mpt.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
         prepare_target(mpt ggml-230511)
+
+        add_library(bert-${BUILD_VARIANT} SHARED
+            bert.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
+        prepare_target(bert llama-mainline)
     endif()
 endforeach()
 

@@ -161,16 +161,6 @@ int InstalledModels::count() const
     return rowCount();
 }
 
-QString InstalledModels::firstId() const
-{
-    if (rowCount() > 0) {
-        QModelIndex firstIndex = index(0, 0);
-        return sourceModel()->data(firstIndex, ModelList::IdRole).toString();
-    } else {
-        return QString();
-    }
-}
-
 DownloadableModels::DownloadableModels(QObject *parent)
     : QSortFilterProxyModel(parent)
     , m_expanded(false)
@@ -222,6 +212,7 @@ ModelList::ModelList()
     : QAbstractListModel(nullptr)
     , m_installedModels(new InstalledModels(this))
     , m_downloadableModels(new DownloadableModels(this))
+    , m_asyncModelRequestOngoing(false)
 {
     m_installedModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
@@ -297,12 +288,9 @@ ModelInfo ModelList::defaultModelInfo() const
     settings.sync();
 
     // The user default model can be set by the user in the settings dialog. The "default" user
-    // default model is "Application default" which signals we should use the default model that was
-    // specified by the models.json file.
+    // default model is "Application default" which signals we should use the logic here.
     const QString userDefaultModelName = MySettings::globalInstance()->userDefaultModel();
     const bool hasUserDefaultName = !userDefaultModelName.isEmpty() && userDefaultModelName != "Application default";
-    const QString defaultModelName = settings.value("defaultModel").toString();
-    const bool hasDefaultName = hasUserDefaultName ? false : !defaultModelName.isEmpty();
 
     ModelInfo *defaultModel = nullptr;
     for (ModelInfo *info : m_models) {
@@ -310,12 +298,10 @@ ModelInfo ModelList::defaultModelInfo() const
             continue;
         defaultModel = info;
 
-        // If we don't have either setting, then just use the first model that is installed
-        if (!hasUserDefaultName && !hasDefaultName)
-            break;
+        const size_t ramrequired = defaultModel->ramrequired;
 
-        // If we don't have a user specified default, but *do* have a default setting and match, then use it
-        if (!hasUserDefaultName && hasDefaultName && (defaultModel->id() == defaultModelName))
+        // If we don't have either setting, then just use the first model that requires less than 16GB that is installed
+        if (!hasUserDefaultName && !info->isChatGPT && ramrequired > 0 && ramrequired < 16)
             break;
 
         // If we have a user specified default and match, then use it
@@ -835,7 +821,7 @@ void ModelList::updateModelsFromDirectory()
                     for (const QString &id : modelsById) {
                         updateData(id, FilenameRole, filename);
                         updateData(id, ChatGPTRole, filename.startsWith("chatgpt-"));
-                        updateData(id, DirpathRole, path);
+                        updateData(id, DirpathRole, info.dir().absolutePath() + "/");
                         updateData(id, FilesizeRole, toFileSize(info.size()));
                     }
                 }
@@ -846,14 +832,6 @@ void ModelList::updateModelsFromDirectory()
     processDirectory(exePath);
     if (localPath != exePath)
         processDirectory(localPath);
-
-    if (installedModels()->count()) {
-        const QString firstModel =
-            installedModels()->firstId();
-        QSettings settings;
-        settings.setValue("defaultModel", firstModel);
-        settings.sync();
-    }
 }
 
 void ModelList::updateModelsFromJson()
@@ -899,6 +877,9 @@ void ModelList::updateModelsFromJson()
 
 void ModelList::updateModelsFromJsonAsync()
 {
+    m_asyncModelRequestOngoing = true;
+    emit asyncModelRequestOngoingChanged();
+
 #if defined(USE_LOCAL_MODELSJSON)
     QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
 #else
@@ -911,17 +892,37 @@ void ModelList::updateModelsFromJsonAsync()
     QNetworkReply *jsonReply = m_networkManager.get(request);
     connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &ModelList::handleModelsJsonDownloadFinished);
+    connect(jsonReply, &QNetworkReply::errorOccurred, this, &ModelList::handleModelsJsonDownloadErrorOccurred);
 }
 
 void ModelList::handleModelsJsonDownloadFinished()
 {
     QNetworkReply *jsonReply = qobject_cast<QNetworkReply *>(sender());
-    if (!jsonReply)
+    if (!jsonReply) {
+        m_asyncModelRequestOngoing = false;
+        emit asyncModelRequestOngoingChanged();
         return;
+    }
 
     QByteArray jsonData = jsonReply->readAll();
     jsonReply->deleteLater();
     parseModelsJsonFile(jsonData, true);
+    m_asyncModelRequestOngoing = false;
+    emit asyncModelRequestOngoingChanged();
+}
+
+void ModelList::handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code)
+{
+    // TODO: Show what error occurred in the GUI
+    m_asyncModelRequestOngoing = false;
+    emit asyncModelRequestOngoingChanged();
+
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply)
+        return;
+
+    qWarning() << QString("ERROR: Modellist download failed with error code \"%1-%2\"")
+                      .arg(code).arg(reply->errorString()).toStdString();
 }
 
 void ModelList::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
@@ -1107,14 +1108,6 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::ParametersRole, "?");
         updateData(id, ModelList::QuantRole, "NA");
         updateData(id, ModelList::TypeRole, "GPT");
-    }
-
-    if (installedModels()->count()) {
-        const QString firstModel =
-            installedModels()->firstId();
-        QSettings settings;
-        settings.setValue("defaultModel", firstModel);
-        settings.sync();
     }
 }
 

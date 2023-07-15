@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QProcess>
 #include <QResource>
+#include <QSettings>
 #include <fstream>
 
 class MyLLM: public LLM { };
@@ -33,7 +34,7 @@ LLM::LLM()
     if (directoryExists(frameworksDir))
         llmodelSearchPaths += ";" + frameworksDir;
 #endif
-    LLModel::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
+    LLModel::Implementation::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
 
 #if defined(__x86_64__)
     #ifndef _MSC_VER
@@ -48,7 +49,13 @@ LLM::LLM()
 #endif
 
     m_compatHardware = minimal;
-    emit compatHardwareChanged();
+}
+
+bool LLM::hasSettingsAccess() const
+{
+    QSettings settings;
+    settings.sync();
+    return settings.status() == QSettings::NoError;
 }
 
 bool LLM::checkForUpdates() const
