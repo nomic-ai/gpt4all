@@ -770,10 +770,10 @@ workflows:
           filters:
             branches:
               only:
-            requires:
-              - build-csharp-windows
-              - build-csharp-linux
-              - build-csharp-macos
+          requires:
+            - build-csharp-windows
+            - build-csharp-linux
+            - build-csharp-macos
       # CSharp Jobs
       - build-csharp-linux:
           filters:
