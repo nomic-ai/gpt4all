@@ -53,7 +53,7 @@ const response = await createCompletion(ll, [
 *   (win) msvc version 143
     *   Can be obtained with visual studio 2022 build tools
 
-### Build
+### Build (from source)
 
 ```sh
 git clone https://github.com/nomic-ai/gpt4all.git
@@ -138,7 +138,7 @@ This package is in active development, and breaking changes may happen until the
 *   \[ ] createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)
 *   \[ ] proper unit testing (integrate with circle ci)
 *   \[ ] publish to npm under alpha tag `gpt4all@alpha`
-*   \[ ] have more people test on other platforms (mac tester needed)
+*   \[x] have more people test on other platforms (mac tester needed)
 *   \[x] switch to new pluggable backend
 
 ### Documentation

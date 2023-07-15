@@ -23,6 +23,7 @@ public:
   void SetThreadCount(const Napi::CallbackInfo& info);
   Napi::Value getName(const Napi::CallbackInfo& info);
   Napi::Value ThreadCount(const Napi::CallbackInfo& info);
+  Napi::Value GenerateEmbedding(const Napi::CallbackInfo& info);
   /*
    * The path that is used to search for the dynamic libraries
    */

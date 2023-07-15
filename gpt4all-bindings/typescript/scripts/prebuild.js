@@ -6,7 +6,7 @@ async function createPrebuilds(combinations) {
             platform,
             arch,
             napi: true,
-            targets: ["18.15.0"]
+            targets: ["18.16.0"]
         };
         try {
             await createPrebuild(opts);
