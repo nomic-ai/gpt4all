@@ -8,6 +8,7 @@
     "test": "jest",
     "build:backend": "node scripts/build.js",
     "build": "node-gyp-build",
+    "install" : "echo",
     "prebuild": "node scripts/prebuild.js",
     "predocs:build": "node scripts/docs.js",
     "docs:build": "documentation readme ./src/gpt4all.d.ts --parse-extension js d.ts --format md --section documentation --readme-file ../python/docs/gpt4all_typescript.md",
