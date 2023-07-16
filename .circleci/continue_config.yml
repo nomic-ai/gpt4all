@@ -639,6 +639,7 @@ jobs:
       - node/install:
           install-yarn: true
           node-version: "18.16"
+          yarn-version: "3.6.1"
       - run: node --version
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
@@ -776,9 +777,9 @@ workflows:
               only:
           requires:
             - npm-hold
-            - build-bindings-backend-linux
-            - build-bindings-backend-windows-msvc
-            - build-bindings-backend-macos
+#            - build-bindings-backend-linux
+#            - build-bindings-backend-windows-msvc
+#            - build-bindings-backend-macos
       # CSharp Jobs
       - build-csharp-linux:
           filters:
