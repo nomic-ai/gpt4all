@@ -643,6 +643,7 @@ jobs:
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
+          override-ci-command: yarn install
       - run: cd gpt4all-bindings/typescript
       - run:
           command: yarn run test
