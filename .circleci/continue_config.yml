@@ -643,8 +643,9 @@ jobs:
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
-      - node/test:
-          app-dir: gpt4all-bindings/typescript
+      - run: cd gpt4all-bindings/typescript
+      - run:
+          command: yarn run test
           name: Run YARN tests
       - run: 
           command: |
