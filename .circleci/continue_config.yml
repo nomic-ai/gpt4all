@@ -640,6 +640,7 @@ jobs:
           install-yarn: true
           node-version: "18.16"
       - run: node --version
+      - run: cd gpt4all-bindings/typescript
       - node/install-packages:
           pkg-manager: yarn
       - run:
@@ -648,7 +649,6 @@ jobs:
       - run: 
           command: |
             # excluding llmodel. nodejs bindings dont need llmodel.dll
-            cd gpt4all-bindings/typescript
             mkdir -p runtimes/win32-x64/native
             cp /tmp/workspace/runtimes/win-x64/*-*.dll runtimes/win-x64/native/ 
             mkdir -p runtimes/linux-x64/native 
