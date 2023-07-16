@@ -773,7 +773,6 @@ workflows:
             branches:
               only:
           requires:
-            - node/test
             - npm-hold
 #            - build-bindings-backend-linux
 #            - build-bindings-backend-windows-msvc
