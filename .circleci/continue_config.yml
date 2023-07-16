@@ -645,9 +645,6 @@ jobs:
           pkg-manager: yarn
           override-ci-command: yarn install
       - run: cd gpt4all-bindings/typescript
-      - run:
-          command: yarn run test
-          name: Run YARN tests
       - run: 
           command: |
             cd gpt4all-bindings/typescript
@@ -776,6 +773,7 @@ workflows:
             branches:
               only:
           requires:
+            - node/test
             - npm-hold
 #            - build-bindings-backend-linux
 #            - build-bindings-backend-windows-msvc
