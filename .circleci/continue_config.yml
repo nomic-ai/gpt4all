@@ -774,9 +774,9 @@ workflows:
               only:
           requires:
             - npm-hold
-#            - build-bindings-backend-linux
-#            - build-bindings-backend-windows-msvc
-#            - build-bindings-backend-macos
+            - build-bindings-backend-linux
+            - build-bindings-backend-windows-msvc
+            - build-bindings-backend-macos
       # CSharp Jobs
       - build-csharp-linux:
           filters:
