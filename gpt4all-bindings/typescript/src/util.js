@@ -1,4 +1,5 @@
-const { createWriteStream, existsSync, unlink } = require("node:fs");
+const { createWriteStream, existsSync, statSync } = require("node:fs");
+const fsp = require('node:fs/promises')
 const { performance } = require("node:perf_hooks");
 const path = require("node:path");
 const {mkdirp} = require("mkdirp");
@@ -122,7 +123,7 @@ function downloadModel(modelName, options = {}) {
                 if (options.md5sum) {
                     const fileHash = await md5File(partialModelPath);
                     if (fileHash !== options.md5sum) {
-                        await fs.unlink(partialModelPath);
+                        await fsp.unlink(partialModelPath);
                         return reject(
                             Error(`Model "${modelName}" failed verification: Hashes mismatch`)
                         );
@@ -132,7 +133,7 @@ function downloadModel(modelName, options = {}) {
                     }
                 }
 
-                await fs.rename(partialModelPath, finalModelPath);
+                await fsp.rename(partialModelPath, finalModelPath);
                 resolve(finalModelPath);
             })
             .catch(reject);
