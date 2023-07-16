@@ -97,10 +97,9 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     std::string text = info[0].As<Napi::String>().Utf8Value();
     size_t embedding_size = 0;
     float* arr = llmodel_embedding(GetInference(), text.c_str(), &embedding_size);
-    auto arr_size = sizeof(arr) / sizeof(float);
-    Napi::Float32Array js_array = Napi::Float32Array::New(info.Env(), arr_size);
+    Napi::Float32Array js_array = Napi::Float32Array::New(env, embedding_size);
     
-    for (size_t i = 0; i < arr_size; ++i) {
+    for (size_t i = 0; i < embedding_size; ++i) {
         float element = *(arr + i);
         js_array[i] = element;
     }
