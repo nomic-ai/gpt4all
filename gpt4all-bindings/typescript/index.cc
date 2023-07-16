@@ -220,7 +220,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
   }
 
   llmodel_model NodeModelWrapper::GetInference() {
-    return *inference_.load();
+    return *inference_;
   }
 
 //Exports Bindings
