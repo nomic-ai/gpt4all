@@ -1,7 +1,7 @@
 import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
 const ll = await loadModel(
-    'ggml-gpt4all-j-v1.3-groovy.bin',
+    'orca-mini-3b.ggmlv3.q4_0.bin',
     { verbose: true }
 );
 
@@ -37,4 +37,29 @@ const completion2 = await createCompletion(ll, [
     { role : 'user', content: 'What is two plus two?'  }, 
 ], {  verbose: true })
 
- console.log(completion2.choices[0].message)
+console.log(completion2.choices[0].message)
+
+// At the moment, from testing this code, concurrent model prompting is not possible. 
+// Behavior: The last prompt gets answered, but the rest are cancelled
+// my experience with threading is not the best, so if anyone who is good is willing to give this a shot,
+// maybe this is possible
+// afaik threading with llama.cpp is not the best, so this will be left here as reference
+
+//const responses = await Promise.all([
+//    createCompletion(ll, [ 
+//    { role : 'system', content: 'You are an advanced mathematician.'  },
+//    { role : 'user', content: 'What is 1 + 1?'  }, 
+//    ], { verbose: true }),
+//    createCompletion(ll, [ 
+//    { role : 'system', content: 'You are an advanced mathematician.'  },
+//    { role : 'user', content: 'What is 1 + 1?'  }, 
+//    ], { verbose: true }),
+//
+//createCompletion(ll, [ 
+//    { role : 'system', content: 'You are an advanced mathematician.'  },
+//    { role : 'user', content: 'What is 1 + 1?'  }, 
+//], { verbose: true })
+//
+//])
+//console.log(responses.map(s => s.choices[0].message))
+

@@ -30,7 +30,7 @@ void threadEntry(TsfnContext* context) {
     context->tsfn.BlockingCall(&context->pc,
     [](Napi::Env env, Napi::Function jsCallback, PromptWorkContext* pc) {
         llmodel_prompt(
-            *pc->inference_.load(),
+            *pc->inference_,
             pc->question.c_str(),
             &prompt_callback,
             &response_callback,
