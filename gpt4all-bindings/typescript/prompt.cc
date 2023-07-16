@@ -55,7 +55,6 @@ void FinalizerCallback(Napi::Env env,
   // Resolve the Promise previously returned to JS 
     context->deferred_.Resolve(Napi::String::New(env, context->pc.res));
     // Wait for the thread to finish executing before proceeding.
-    std::thread::id this_id = std::this_thread::get_id();
     context->nativeThread.join();
     delete context;
 }
