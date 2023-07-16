@@ -1,7 +1,6 @@
-# GPT4All Python API
+# GPT4All Python Generation API
 The `GPT4All` python package provides bindings to our C/C++ model backend libraries.
 The source code and local build instructions can be found [here](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python).
-
 
 ## Quickstart
 
