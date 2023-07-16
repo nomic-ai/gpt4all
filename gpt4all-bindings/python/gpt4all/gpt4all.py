@@ -44,7 +44,7 @@ class Embed4All:
     def embed(
         self,
         text: str
-    ) -> list[float]:
+    ) -> List[Float]:
         """
         Generate an embedding.
 
