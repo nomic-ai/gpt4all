@@ -295,7 +295,7 @@ class GPT4All:
         else:
             generate_kwargs["reset_context"] = True
 
-        # Pepare the callback, process the model response
+        # Prepare the callback, process the model response
         output_collector: List[MessageType]
         output_collector = [{"content": ""}]  # placeholder for the self.current_chat_session if chat session is not activated
 
