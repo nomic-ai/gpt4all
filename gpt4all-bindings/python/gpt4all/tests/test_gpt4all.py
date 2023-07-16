@@ -107,3 +107,9 @@ def test_embedding():
     #for i, value in enumerate(output):
         #print(f'Value at index {i}: {value}')
     assert len(output) == 384
+
+def test_empty_embedding():
+    text = ''
+    embedder = Embed4All()
+    output = embedder.embed(text)
+    assert len(output) == 0
