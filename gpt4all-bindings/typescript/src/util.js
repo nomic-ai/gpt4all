@@ -36,7 +36,6 @@ function downloadModel(modelName, options = {}) {
     const downloadOptions = {
         modelPath: DEFAULT_DIRECTORY,
         debug: false,
-        url: "https://gpt4all.io/models",
         md5sum: true,
         ...options,
     };
@@ -47,7 +46,7 @@ function downloadModel(modelName, options = {}) {
         modelName + ".part"
     );
     const finalModelPath = path.join(downloadOptions.modelPath, modelFileName);
-    const modelUrl = `${downloadOptions.url}/${modelFileName}`;
+    const modelUrl = downloadOptions.url ?? `https://gpt4all.io/models/${modelFileName}`;
 
     if (existsSync(finalModelPath)) {
         throw Error(`Model already exists at ${finalModelPath}`);
@@ -171,12 +170,13 @@ async function retrieveModel (
     }
 
     const availableModels = await listModels();
+    
     const foundModel = availableModels.find((model) => model.filename === modelFileName);
 
     if (!foundModel) {
         throw Error(`Model "${modelName}" is not available.`);
     }
-
+    //todo  
     if (retrieveOptions.verbose) {
         console.log(`Downloading ${modelName}...`);
     }
@@ -184,6 +184,7 @@ async function retrieveModel (
     const downloadController = downloadModel(modelName, {
         modelPath: retrieveOptions.modelPath,
         debug: retrieveOptions.verbose,
+        url: foundModel.url
     });
 
     const downloadPath = await downloadController.promise();

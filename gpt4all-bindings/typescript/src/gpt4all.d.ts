@@ -60,7 +60,7 @@ declare class LLModel {
     type(): ModelType | undefined;
 
     /** The name of the model. */
-    name(): ModelFile;
+    name(): string;
 
     /**
      * Get the size of the internal state of the model.
@@ -161,6 +161,14 @@ declare function createCompletion(
     options?: CompletionOptions
 ): Promise<CompletionReturn>;
 
+
+/**
+ * The nodejs moral equivalent to python binding's Embed4All().embed()
+ * meow
+ * @param {LLModel} llmodel - The language model object.
+ * @param {string} text - text to embed
+ * @returns {Float32Array} The completion result.
+ */
 declare function createEmbedding(
     llmodel: LLModel,
     text: string,

@@ -629,13 +629,14 @@ jobs:
             dotnet nuget push ./Gpt4All/bin/Release/Gpt4All.*.nupkg -s $NUGET_URL -k $NUGET_TOKEN --skip-duplicate
       - store_artifacts:
           path: gpt4all-bindings/csharp/Gpt4All/bin/Release
-  prepare-npm-pkg:
+
+  build-nodejs-linux: 
     docker: 
       - image: cimg/base:stable
     steps:
-      - attach_workspace:
-          at: /tmp/workspace
       - checkout
+      - attach_workspace:
+          at: /tmp/gpt4all-backend
       - node/install:
           install-yarn: true
           node-version: "18.16"
@@ -643,28 +644,145 @@ jobs:
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
-          override-ci-command: yarn install
+      - run:
+          command: | 
+            cd gpt4all-bindings/typescript
+            yarn prebuildify -t 18.16.0 --napi
       - run: 
-        command: | 
-          cd gpt4all-bindings/typescript
-          yarn run test
+          command: |
+            mkdir -p gpt4all-backend/prebuilds/linux-x64
+            mkdir -p gpt4all-backend/runtimes/linux-x64
+            cp /tmp/gpt4all-backend/runtimes/linux-x64/*-*.so gpt4all-backend/runtimes/linux-x64
+            cp gpt4all-bindings/typescript/prebuilds/linux-x64/*.node gpt4all-backend/prebuilds/linux-x64
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - prebuilds/linux-x64/*.node 
+            - runtimes/linux-x64/*-*.so
+  build-nodejs-macos: 
+    macos:
+      xcode: "14.0.0"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/gpt4all-backend
+      - node/install:
+          install-yarn: true
+          node-version: "18.16"
+      - run: node --version
+      - node/install-packages:
+          app-dir: gpt4all-bindings/typescript
+          pkg-manager: yarn
+      - run:
+          command: | 
+            cd gpt4all-bindings/typescript
+            yarn prebuildify -t 18.16.0 --napi
+      - run: 
+          name: "Persisting all necessary things to workspace"
+          command: |  
+            mkdir -p gpt4all-backend/prebuilds/darwin-x64
+            mkdir -p gpt4all-backend/runtimes/darwin-x64
+            cp /tmp/gpt4all-backend/runtimes/osx-x64/*-*.* gpt4all-backend/runtimes/darwin-x64
+            cp gpt4all-bindings/typescript/prebuilds/darwin-x64/*.node gpt4all-backend/prebuilds/darwin-x64
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - prebuilds/darwin-x64/*.node
+            - runtimes/darwin-x64/*-*.*
+
+  build-nodejs-windows: 
+    executor:
+      name: win/default
+      size: large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/gpt4all-backend
+      - run: choco install wget -y
+      - run:
+         command: wget https://nodejs.org/dist/v18.16.0/node-v18.16.0-x86.msi -P C:\Users\circleci\Downloads\
+         shell: cmd.exe
+      - run: MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.16.0-x86.msi /qn
+      - run: 
+          command: |
+              Start-Process powershell -verb runAs -Args "-start GeneralProfile"
+              nvm install 18.16.0
+              nvm use 18.16.0
+      - run: node --version 
+      - run:           
+          command: |
+            npm install -g yarn
+            cd gpt4all-bindings/typescript
+            yarn install
+      - run:
+          command: | 
+            cd gpt4all-bindings/typescript
+            yarn prebuildify -t 18.16.0 --napi 
+      - run: 
+          command: |
+            mkdir -p gpt4all-backend/prebuilds/win32-x64
+            mkdir -p gpt4all-backend/runtimes/win32-x64
+            cp /tmp/gpt4all-backend/runtimes/win-x64_msvc/*-*.dll gpt4all-backend/runtimes/win32-x64
+            cp gpt4all-bindings/typescript/prebuilds/win32-x64/*.node gpt4all-backend/prebuilds/win32-x64
+        
+      - persist_to_workspace:
+          root: gpt4all-backend
+          paths:
+            - prebuilds/win32-x64/*.node
+            - runtimes/win32-x64/*-*.dll
+
+  prepare-npm-pkg:
+    docker: 
+      - image: cimg/base:stable
+    steps:
+      - attach_workspace:
+          at: /tmp/gpt4all-backend
+      - checkout
+      - node/install:
+          install-yarn: true
+          node-version: "18.16"
+      - run: node --version
       - run: 
           command: |
             cd gpt4all-bindings/typescript
             # excluding llmodel. nodejs bindings dont need llmodel.dll
             mkdir -p runtimes/win32-x64/native
-            cp /tmp/workspace/runtimes/win-x64/*-*.dll runtimes/win-x64/native/ 
+            mkdir -p prebuilds/win32-x64/
+            cp /tmp/gpt4all-backend/runtimes/win-x64_msvc/*-*.dll runtimes/win32-x64/native/ 
+            cp /tmp/gpt4all-backend/prebuilds/win32-x64/*.node prebuilds/win32-x64/    
+
             mkdir -p runtimes/linux-x64/native 
-            cp /tmp/workspace/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
-            mkdir -p runtimes/osx/native
-            cp /tmp/workspace/runtimes/osx-x64/*-*.dylib runtimes/osx/native/
-            cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
-            ls -Ra gpt4all-bindings/typescript/runtimes
-#     - run:
-#          name: Publish to NPM
-#          command: |
-#            npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
-#            npm publish 
+            mkdir -p prebuilds/linux-x64/
+            cp /tmp/gpt4all-backend/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
+            cp /tmp/gpt4all-backend/prebuilds/linux-x64/*.node prebuilds/linux-x64/    
+
+            mkdir -p runtimes/darwin-x64/native
+            mkdir -p prebuilds/darwin-x64/
+            cp /tmp/gpt4all-backend/runtimes/darwin-x64/*-*.* runtimes/darwin-x64/native/
+            cp /tmp/gpt4all-backend/prebuilds/darwin-x64/*.node prebuilds/darwin-x64/    
+            
+            # Fallback build if user is not on above prebuilds
+            mv -f binding.ci.gyp binding.gyp
+
+            mkdir gpt4all-backend
+            cd ../../gpt4all-backend
+            mv llmodel.h llmodel.cpp llmodel_c.cpp llmodel_c.h sysinfo.h dlhandle.h ../gpt4all-bindings/typescript/gpt4all-backend/
+            
+      # Test install
+      - node/install-packages:
+          app-dir: gpt4all-bindings/typescript
+          pkg-manager: yarn
+          override-ci-command: yarn install
+      - run: 
+          command: | 
+            cd gpt4all-bindings/typescript
+            yarn run test
+      - run:
+          command: |
+            cd gpt4all-bindings/typescript
+            npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
+            npm publish --access public --tag alpha
 
 workflows:
   version: 2
@@ -770,6 +888,7 @@ workflows:
               only:
           requires:
             - hold
+
       # NodeJs Jobs 
       - prepare-npm-pkg: 
           filters:
@@ -777,9 +896,32 @@ workflows:
               only:
           requires:
             - npm-hold
+            - build-nodejs-linux
+            - build-nodejs-windows
+            - build-nodejs-macos
+      - build-nodejs-linux:
+          filters:
+            branches:
+              only:
+          requires:
+            - npm-hold
             - build-bindings-backend-linux
+      - build-nodejs-windows:
+          filters:
+            branches:
+              only:
+          requires:
+            - npm-hold
             - build-bindings-backend-windows-msvc
+      - build-nodejs-macos:
+          filters:
+            branches:
+              only:
+          requires:
+            - npm-hold
             - build-bindings-backend-macos
+
+
       # CSharp Jobs
       - build-csharp-linux:
           filters:
@@ -792,7 +934,7 @@ workflows:
             branches:
               only:
           requires:
-            - build-bindings-backend-windows
+              - build-bindings-backend-windows
       - build-csharp-macos:
           filters:
             branches:
