@@ -13,3 +13,6 @@ jsonlines
 nomic
 scikit-learn
 matplotlib
+absl-py
+rouge-score
+nltk
