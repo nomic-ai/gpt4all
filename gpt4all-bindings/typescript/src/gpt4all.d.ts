@@ -84,7 +84,7 @@ declare class LLModel {
 
     /**
      * Prompt the model with a given input and optional parameters.
-     * This is the raw output from std out.
+     * This is the raw output from model.
      * Use the prompt function exported for a value
      * @param q The prompt input.
      * @param params Optional parameters for the prompt context.
@@ -92,6 +92,15 @@ declare class LLModel {
      */
     raw_prompt(q: string, params: Partial<LLModelPromptContext>, callback: (res: string) => void): void; // TODO work on return type
 
+    /**
+     * Embed text with the model. Keep in mind that 
+     * not all models can embed text, (only bert can embed as of 07/16/2023 (mm/dd/yyyy))
+     * Use the prompt function exported for a value
+     * @param q The prompt input.
+     * @param params Optional parameters for the prompt context.
+     * @returns The result of the model prompt.
+     */
+    embed(text: string) : Float32Array
     /**
      * Whether the model is loaded or not.
      */
@@ -151,6 +160,11 @@ declare function createCompletion(
     messages: PromptMessage[],
     options?: CompletionOptions
 ): Promise<CompletionReturn>;
+
+declare function createEmbedding(
+    llmodel: LLModel,
+    text: string,
+): Float32Array
 
 /**
  * The options for creating the completion.
@@ -383,6 +397,7 @@ export {
     LoadModelOptions,
     loadModel,
     createCompletion,
+    createEmbedding,
     createTokenStream,
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,

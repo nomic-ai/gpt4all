@@ -85,6 +85,10 @@ function createPrompt(messages, hasDefaultHeader, hasDefaultFooter) {
     return fullPrompt.join('\n');
 }
 
+
+function createEmbedding(llmodel, text) {
+    return llmodel.embed(text)
+}
 async function createCompletion(
     llmodel,
     messages,
@@ -133,6 +137,7 @@ module.exports = {
     DEFAULT_DIRECTORY,
     LLModel,
     createCompletion,
+    createEmbedding,
     downloadModel,
     retrieveModel,
     loadModel,

@@ -1,4 +1,4 @@
-import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
+import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel, createEmbedding } from '../src/gpt4all.js'
 
 const ll = await loadModel(
     'orca-mini-3b.ggmlv3.q4_0.bin',
@@ -39,6 +39,9 @@ const completion2 = await createCompletion(ll, [
 
 console.log(completion2.choices[0].message)
 
+const embedder = await loadModel("ggml-all-MiniLM-L6-v2-f16.bin", { verbose: true })
+
+console.log(createEmbedding(embedder, "sdfdsfds"))
 // At the moment, from testing this code, concurrent model prompting is not possible. 
 // Behavior: The last prompt gets answered, but the rest are cancelled
 // my experience with threading is not the best, so if anyone who is good is willing to give this a shot,
