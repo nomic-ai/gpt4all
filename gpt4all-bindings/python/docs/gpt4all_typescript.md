@@ -156,15 +156,19 @@ This package is in active development, and breaking changes may happen until the
         *   [Parameters](#parameters-1)
     *   [raw\_prompt](#raw_prompt)
         *   [Parameters](#parameters-2)
+    *   [embed](#embed)
+        *   [Parameters](#parameters-3)
     *   [isModelLoaded](#ismodelloaded)
     *   [setLibraryPath](#setlibrarypath)
-        *   [Parameters](#parameters-3)
+        *   [Parameters](#parameters-4)
     *   [getLibraryPath](#getlibrarypath)
 *   [loadModel](#loadmodel)
-    *   [Parameters](#parameters-4)
-*   [createCompletion](#createcompletion)
     *   [Parameters](#parameters-5)
+*   [createCompletion](#createcompletion)
+    *   [Parameters](#parameters-6)
     *   [Examples](#examples)
+*   [createEmbedding](#createembedding)
+    *   [Parameters](#parameters-7)
 *   [CompletionOptions](#completionoptions)
     *   [verbose](#verbose)
     *   [hasDefaultHeader](#hasdefaultheader)
@@ -195,11 +199,11 @@ This package is in active development, and breaking changes may happen until the
     *   [repeat\_last\_n](#repeat_last_n)
     *   [context\_erase](#context_erase)
 *   [createTokenStream](#createtokenstream)
-    *   [Parameters](#parameters-6)
+    *   [Parameters](#parameters-8)
 *   [DEFAULT\_DIRECTORY](#default_directory)
 *   [DEFAULT\_LIBRARIES\_DIRECTORY](#default_libraries_directory)
 *   [downloadModel](#downloadmodel)
-    *   [Parameters](#parameters-7)
+    *   [Parameters](#parameters-9)
     *   [Examples](#examples-1)
 *   [DownloadModelOptions](#downloadmodeloptions)
     *   [modelPath](#modelpath)
@@ -277,7 +281,7 @@ Returns **([ModelType](#modeltype) | [undefined](https://developer.mozilla.org/d
 
 The name of the model.
 
-Returns **[ModelFile](#modelfile)**&#x20;
+Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
 
 ##### stateSize
 
@@ -306,7 +310,7 @@ Returns **void**&#x20;
 ##### raw\_prompt
 
 Prompt the model with a given input and optional parameters.
-This is the raw output from std out.
+This is the raw output from model.
 Use the prompt function exported for a value
 
 ###### Parameters
@@ -316,6 +320,20 @@ Use the prompt function exported for a value
 *   `callback` **function (res: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)): void**&#x20;
 
 Returns **void** The result of the model prompt.
+
+##### embed
+
+Embed text with the model. Keep in mind that
+not all models can embed text, (only bert can embed as of 07/16/2023 (mm/dd/yyyy))
+Use the prompt function exported for a value
+
+###### Parameters
+
+*   `text` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+*   `q`  The prompt input.
+*   `params`  Optional parameters for the prompt context.
+
+Returns **[Float32Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array)** The result of the model prompt.
 
 ##### isModelLoaded
 
@@ -377,6 +395,18 @@ console.log(completion.choices[0].message.content)
 ```
 
 Returns **[CompletionReturn](#completionreturn)** The completion result.
+
+#### createEmbedding
+
+The nodejs moral equivalent to python binding's Embed4All().embed()
+meow
+
+##### Parameters
+
+*   `llmodel` **[LLModel](#llmodel)** The language model object.
+*   `text` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** text to embed
+
+Returns **[Float32Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array)** The completion result.
 
 #### CompletionOptions
 
@@ -579,9 +609,8 @@ By default this downloads without waiting. use the controller returned to alter 
 
 ##### Parameters
 
-*   `modelName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+*   `modelName` **[ModelFile](#modelfile)** The model file to be downloaded.
 *   `options` **DownloadOptions** to pass into the downloader. Default is { location: (cwd), debug: false }.
-*   `model` **[ModelFile](#modelfile)** The model file to be downloaded.
 
 ##### Examples
 

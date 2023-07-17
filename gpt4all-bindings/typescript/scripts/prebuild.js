@@ -39,15 +39,18 @@ if(process.platform === 'win32') {
    prebuildConfigs = [
     { platform: "win32", arch: "x64" }
    ];
-} else {
+} else if(process.platform === 'linux') {
    //Unsure if darwin works, need mac tester!
    prebuildConfigs = [
     { platform: "linux", arch: "x64" },
-    { platform: "linux", arch: "arm64" },
-    { platform: "linux", arch: "armv7" },
-    { platform: "darwin", arch: "x64" },
-    { platform: "darwin", arch: "arm64" },
+    //{ platform: "linux", arch: "arm64" },
+    //{ platform: "linux", arch: "armv7" },
    ]
+} else if(process.platform === 'darwin') {
+    prebuildConfigs = [
+       { platform: "darwin", arch: "x64" },
+       { platform: "darwin", arch: "arm64" },
+    ]
 }
 
 createPrebuilds(prebuildConfigs)
