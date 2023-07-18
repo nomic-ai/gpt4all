@@ -212,7 +212,7 @@ class GPT4All:
         max_tokens: int = 200,
         temp: float = 0.7,
         top_k: int = 40,
-        top_p: float = 0.1,
+        top_p: float = 0.4,
         repeat_penalty: float = 1.18,
         repeat_last_n: int = 64,
         n_batch: int = 8,
