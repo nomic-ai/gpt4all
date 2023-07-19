@@ -6,26 +6,19 @@ import re
 import subprocess
 import sys
 import threading
-from typing import Iterable
+import logging
+from typing import Iterable, Callable, List
 
 import pkg_resources
 
-
-class DualStreamProcessor:
-    def __init__(self, stream=None):
-        self.stream = stream
-        self.output = ""
-
-    def write(self, text):
-        if self.stream is not None:
-            self.stream.write(text)
-            self.stream.flush()
-        self.output += text
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
-MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
+MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace(
+    "\\", "\\\\"
+)
 
 
 def load_llmodel_library():
@@ -43,9 +36,9 @@ def load_llmodel_library():
 
     c_lib_ext = get_c_shared_lib_extension()
 
-    llmodel_file = "libllmodel" + '.' + c_lib_ext
+    llmodel_file = "libllmodel" + "." + c_lib_ext
 
-    llmodel_dir = str(pkg_resources.resource_filename('gpt4all', os.path.join(LLMODEL_PATH, llmodel_file))).replace(
+    llmodel_dir = str(pkg_resources.resource_filename("gpt4all", os.path.join(LLMODEL_PATH, llmodel_file))).replace(
         "\\", "\\\\"
     )
 
@@ -134,7 +127,15 @@ llmodel.llmodel_set_implementation_search_path.restype = None
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
-llmodel.llmodel_set_implementation_search_path(MODEL_LIB_PATH.encode('utf-8'))
+llmodel.llmodel_set_implementation_search_path(MODEL_LIB_PATH.encode("utf-8"))
+
+
+ResponseCallbackType = Callable[[int, str], bool]
+RawResponseCallbackType = Callable[[int, bytes], bool]
+
+
+def empty_response_callback(token_id: int, response: str) -> bool:
+    return True
 
 
 class LLModel:
@@ -250,9 +251,10 @@ class LLModel:
     def generate_embedding(
         self,
         text: str
-    ) -> list[float]:
+    ) -> List[float]:
         if not text:
             raise ValueError("Text must not be None or empty")
+
         embedding_size = ctypes.c_size_t()
         c_text = ctypes.c_char_p(text.encode('utf-8'))
         embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
@@ -263,6 +265,7 @@ class LLModel:
     def prompt_model(
         self,
         prompt: str,
+        callback: ResponseCallbackType,
         n_predict: int = 4096,
         top_k: int = 40,
         top_p: float = 0.9,
@@ -272,8 +275,7 @@ class LLModel:
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
         reset_context: bool = False,
-        streaming=False,
-    ) -> str:
+    ):
         """
         Generate response from model from a prompt.
 
@@ -281,25 +283,23 @@ class LLModel:
         ----------
         prompt: str
             Question, task, or conversation for model to respond to
-        streaming: bool
-            Stream response to stdout
+        callback(token_id:int, response:str): bool
+            The model sends response tokens to callback
 
         Returns
         -------
-        Model response str
+        None
         """
 
-        prompt_bytes = prompt.encode('utf-8')
+        logger.info(
+            "LLModel.prompt_model -- prompt:\n"
+            + "%s\n"
+            + "===/LLModel.prompt_model -- prompt/===",
+            prompt,
+        )
+
+        prompt_bytes = prompt.encode("utf-8")
         prompt_ptr = ctypes.c_char_p(prompt_bytes)
-
-        old_stdout = sys.stdout
-
-        stream_processor = DualStreamProcessor()
-
-        if streaming:
-            stream_processor.stream = sys.stdout
-
-        sys.stdout = stream_processor
 
         self._set_context(
             n_predict=n_predict,
@@ -317,56 +317,37 @@ class LLModel:
             self.model,
             prompt_ptr,
             PromptCallback(self._prompt_callback),
-            ResponseCallback(self._response_callback),
+            ResponseCallback(self._callback_decoder(callback)),
             RecalculateCallback(self._recalculate_callback),
             self.context,
         )
 
-        # Revert to old stdout
-        sys.stdout = old_stdout
-        # Force new line
-        return stream_processor.output
-
     def prompt_model_streaming(
         self,
         prompt: str,
-        n_predict: int = 4096,
-        top_k: int = 40,
-        top_p: float = 0.9,
-        temp: float = 0.1,
-        n_batch: int = 8,
-        repeat_penalty: float = 1.2,
-        repeat_last_n: int = 10,
-        context_erase: float = 0.75,
-        reset_context: bool = False,
-    ) -> Iterable:
+        callback: ResponseCallbackType = empty_response_callback,
+        **kwargs
+    ) -> Iterable[str]:
         # Symbol to terminate from generator
         TERMINATING_SYMBOL = object()
 
         output_queue = queue.Queue()
 
-        prompt_bytes = prompt.encode('utf-8')
-        prompt_ptr = ctypes.c_char_p(prompt_bytes)
-
-        self._set_context(
-            n_predict=n_predict,
-            top_k=top_k,
-            top_p=top_p,
-            temp=temp,
-            n_batch=n_batch,
-            repeat_penalty=repeat_penalty,
-            repeat_last_n=repeat_last_n,
-            context_erase=context_erase,
-            reset_context=reset_context,
-        )
-
         # Put response tokens into an output queue
-        def _generator_response_callback(token_id, response):
-            output_queue.put(response.decode('utf-8', 'replace'))
-            return True
+        def _generator_callback_wrapper(callback: ResponseCallbackType) -> ResponseCallbackType:
+            def _generator_callback(token_id: int, response: str):
+                nonlocal callback
 
-        def run_llmodel_prompt(model, prompt, prompt_callback, response_callback, recalculate_callback, context):
-            llmodel.llmodel_prompt(model, prompt, prompt_callback, response_callback, recalculate_callback, context)
+                if callback(token_id, response):
+                    output_queue.put(response)
+                    return True
+
+                return False
+
+            return _generator_callback
+
+        def run_llmodel_prompt(prompt: str, callback: ResponseCallbackType, **kwargs):
+            self.prompt_model(prompt, callback, **kwargs)
             output_queue.put(TERMINATING_SYMBOL)
 
         # Kick off llmodel_prompt in separate thread so we can return generator
@@ -374,13 +355,10 @@ class LLModel:
         thread = threading.Thread(
             target=run_llmodel_prompt,
             args=(
-                self.model,
-                prompt_ptr,
-                PromptCallback(self._prompt_callback),
-                ResponseCallback(_generator_response_callback),
-                RecalculateCallback(self._recalculate_callback),
-                self.context,
+                prompt, 
+                _generator_callback_wrapper(callback)
             ),
+            kwargs=kwargs,
         )
         thread.start()
 
@@ -391,18 +369,19 @@ class LLModel:
                 break
             yield response
 
+    def _callback_decoder(self, callback: ResponseCallbackType) -> RawResponseCallbackType:
+        def _raw_callback(token_id: int, response: bytes) -> bool:
+            nonlocal callback
+            return callback(token_id, response.decode("utf-8", "replace"))
+
+        return _raw_callback
+
     # Empty prompt callback
     @staticmethod
-    def _prompt_callback(token_id):
-        return True
-
-    # Empty response callback method that just prints response to be collected
-    @staticmethod
-    def _response_callback(token_id, response):
-        sys.stdout.write(response.decode('utf-8', 'replace'))
+    def _prompt_callback(token_id: int) -> bool:
         return True
 
     # Empty recalculate callback
     @staticmethod
-    def _recalculate_callback(is_recalculating):
+    def _recalculate_callback(is_recalculating: bool) -> bool:
         return is_recalculating
