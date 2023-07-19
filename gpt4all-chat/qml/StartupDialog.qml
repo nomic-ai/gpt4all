@@ -8,14 +8,13 @@ import network
 import llm
 import mysettings
 
-Dialog {
+MyDialog {
     id: startupDialog
     anchors.centerIn: parent
     modal: true
-    opacity: 0.9
-    padding: 20
+    padding: 10
     width: 1024
-    height: column.height + 40
+    height: column.height + 20
     closePolicy: !optInStatisticsRadio.choiceMade || !optInNetworkRadio.choiceMade ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
 
     Theme {
@@ -137,6 +136,8 @@ model release that uses your data!")
                 buttons: optInStatisticsRadio.children
                 onClicked: {
                     MySettings.networkUsageStatsActive = optInStatisticsRadio.checked
+                    if (!optInStatisticsRadio.checked)
+                        Network.sendOptOut();
                     if (optInNetworkRadio.choiceMade && optInStatisticsRadio.choiceMade)
                         startupDialog.close();
                 }
@@ -344,13 +345,5 @@ model release that uses your data!")
                 }
             }
         }
-    }
-
-    background: Rectangle {
-        anchors.fill: parent
-        color: theme.backgroundDarkest
-        border.width: 1
-        border.color: theme.dialogBorder
-        radius: 10
     }
 }

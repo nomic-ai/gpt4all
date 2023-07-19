@@ -67,6 +67,7 @@ void Chat::connectLLM()
     connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::QueuedConnection);
     connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::QueuedConnection);
     connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
+    connect(this, &Chat::processSystemPromptRequested, m_llmodel, &ChatLLM::processSystemPrompt, Qt::QueuedConnection);
 
     connect(ModelList::globalInstance()->installedModels(), &InstalledModels::countChanged,
         this, &Chat::handleModelInstalled, Qt::QueuedConnection);
@@ -93,6 +94,11 @@ void Chat::reset()
     m_chatModel->clear();
 }
 
+void Chat::processSystemPrompt()
+{
+    emit processSystemPromptRequested();
+}
+
 bool Chat::isModelLoaded() const
 {
     return m_isModelLoaded;
@@ -111,27 +117,10 @@ void Chat::resetResponseState()
     emit responseStateChanged();
 }
 
-void Chat::prompt(const QString &prompt, const QString &prompt_template, int32_t n_predict,
-    int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
-    int32_t repeat_penalty_tokens)
+void Chat::prompt(const QString &prompt)
 {
     resetResponseState();
-    int threadCount = MySettings::globalInstance()->threadCount();
-    if (threadCount <= 0)
-      threadCount = std::min(4, (int32_t) std::thread::hardware_concurrency());
-
-    emit promptRequested(
-        m_collections,
-        prompt,
-        prompt_template,
-        n_predict,
-        top_k,
-        top_p,
-        temp,
-        n_batch,
-        repeat_penalty,
-        repeat_penalty_tokens,
-        threadCount);
+    emit promptRequested( m_collections, prompt);
 }
 
 void Chat::regenerateResponse()
@@ -200,43 +189,45 @@ void Chat::responseStopped()
     m_tokenSpeed = QString();
     emit tokenSpeedChanged();
 
-    const QString chatResponse = response();
-    QList<QString> references;
-    QList<QString> referencesContext;
-    int validReferenceNumber = 1;
-    for (const ResultInfo &info : databaseResults()) {
-        if (info.file.isEmpty())
-            continue;
-        if (validReferenceNumber == 1)
-            references.append((!chatResponse.endsWith("\n") ? "\n" : QString()) + QStringLiteral("\n---"));
-        QString reference;
-        {
-            QTextStream stream(&reference);
-            stream << (validReferenceNumber++) << ". ";
-            if (!info.title.isEmpty())
-                stream << "\"" << info.title << "\". ";
-            if (!info.author.isEmpty())
-                stream << "By " << info.author << ". ";
-            if (!info.date.isEmpty())
-                stream << "Date: " << info.date << ". ";
-            stream << "In " << info.file << ". ";
-            if (info.page != -1)
-                stream << "Page " << info.page << ". ";
-            if (info.from != -1) {
-                stream << "Lines " << info.from;
-                if (info.to != -1)
-                    stream << "-" << info.to;
-                stream << ". ";
+    if (MySettings::globalInstance()->localDocsShowReferences()) {
+        const QString chatResponse = response();
+        QList<QString> references;
+        QList<QString> referencesContext;
+        int validReferenceNumber = 1;
+        for (const ResultInfo &info : databaseResults()) {
+            if (info.file.isEmpty())
+                continue;
+            if (validReferenceNumber == 1)
+                references.append((!chatResponse.endsWith("\n") ? "\n" : QString()) + QStringLiteral("\n---"));
+            QString reference;
+            {
+                QTextStream stream(&reference);
+                stream << (validReferenceNumber++) << ". ";
+                if (!info.title.isEmpty())
+                    stream << "\"" << info.title << "\". ";
+                if (!info.author.isEmpty())
+                    stream << "By " << info.author << ". ";
+                if (!info.date.isEmpty())
+                    stream << "Date: " << info.date << ". ";
+                stream << "In " << info.file << ". ";
+                if (info.page != -1)
+                    stream << "Page " << info.page << ". ";
+                if (info.from != -1) {
+                    stream << "Lines " << info.from;
+                    if (info.to != -1)
+                        stream << "-" << info.to;
+                    stream << ". ";
+                }
+                stream << "[Context](context://" << validReferenceNumber - 1 << ")";
             }
-            stream << "[Context](context://" << validReferenceNumber - 1 << ")";
+            references.append(reference);
+            referencesContext.append(info.text);
         }
-        references.append(reference);
-        referencesContext.append(info.text);
-    }
 
-    const int index = m_chatModel->count() - 1;
-    m_chatModel->updateReferences(index, references.join("\n"), referencesContext);
-    emit responseChanged();
+        const int index = m_chatModel->count() - 1;
+        m_chatModel->updateReferences(index, references.join("\n"), referencesContext);
+        emit responseChanged();
+    }
 
     m_responseInProgress = false;
     m_responseState = Chat::ResponseStopped;
@@ -258,6 +249,8 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
     if (m_modelInfo == modelInfo)
         return;
 
+    m_isModelLoaded = false;
+    emit isModelLoadedChanged();
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();
     m_modelInfo = modelInfo;
@@ -285,20 +278,6 @@ void Chat::serverNewPromptResponsePair(const QString &prompt)
 bool Chat::isRecalc() const
 {
     return m_llmodel->isRecalc();
-}
-
-void Chat::loadDefaultModel()
-{
-    m_modelLoadingError = QString();
-    emit modelLoadingErrorChanged();
-    emit loadDefaultModelRequested();
-}
-
-void Chat::loadModel(const ModelInfo &modelInfo)
-{
-    m_modelLoadingError = QString();
-    emit modelLoadingErrorChanged();
-    emit loadModelRequested(modelInfo);
 }
 
 void Chat::unloadAndDeleteLater()
@@ -386,7 +365,10 @@ bool Chat::serialize(QDataStream &stream, int version) const
     stream << m_id;
     stream << m_name;
     stream << m_userName;
-    stream << m_modelInfo.filename;
+    if (version > 4)
+        stream << m_modelInfo.id();
+    else
+        stream << m_modelInfo.filename();
     if (version > 2)
         stream << m_collections;
     if (!m_llmodel->serialize(stream, version))
@@ -405,16 +387,22 @@ bool Chat::deserialize(QDataStream &stream, int version)
     stream >> m_userName;
     emit nameChanged();
 
-    QString filename;
-    stream >> filename;
-    if (!ModelList::globalInstance()->contains(filename))
-        return false;
-    m_modelInfo = ModelList::globalInstance()->modelInfo(filename);
+    QString modelId;
+    stream >> modelId;
+    if (version > 4) {
+        if (!ModelList::globalInstance()->contains(modelId))
+            return false;
+        m_modelInfo = ModelList::globalInstance()->modelInfo(modelId);
+    } else {
+        if (!ModelList::globalInstance()->containsByFilename(modelId))
+            return false;
+        m_modelInfo = ModelList::globalInstance()->modelInfoByFilename(modelId);
+    }
     emit modelInfoChanged();
 
     // Prior to version 2 gptj models had a bug that fixed the kv_cache to F32 instead of F16 so
     // unfortunately, we cannot deserialize these
-    if (version < 2 && m_modelInfo.filename.contains("gpt4all-j"))
+    if (version < 2 && m_modelInfo.filename().contains("gpt4all-j"))
         return false;
     if (version > 2) {
         stream >> m_collections;

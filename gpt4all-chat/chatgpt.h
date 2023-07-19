@@ -5,15 +5,49 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
+#include <QThread>
 #include "../gpt4all-backend/llmodel.h"
 
-class ChatGPTPrivate;
+class ChatGPT;
+class ChatGPTWorker : public QObject {
+    Q_OBJECT
+public:
+    ChatGPTWorker(ChatGPT *chatGPT)
+        : QObject(nullptr)
+        , m_ctx(nullptr)
+        , m_networkManager(nullptr)
+        , m_chat(chatGPT) {}
+    virtual ~ChatGPTWorker() {}
+
+    QString currentResponse() const { return m_currentResponse; }
+
+    void request(const QString &apiKey,
+        LLModel::PromptContext *promptCtx,
+        const QByteArray &array);
+
+Q_SIGNALS:
+    void finished();
+
+private Q_SLOTS:
+    void handleFinished();
+    void handleReadyRead();
+    void handleErrorOccurred(QNetworkReply::NetworkError code);
+
+private:
+    ChatGPT *m_chat;
+    LLModel::PromptContext *m_ctx;
+    QNetworkAccessManager *m_networkManager;
+    QString m_currentResponse;
+};
+
 class ChatGPT : public QObject, public LLModel {
     Q_OBJECT
 public:
     ChatGPT();
     virtual ~ChatGPT();
 
+    bool supportsEmbedding() const override { return false; }
+    bool supportsCompletion() const override { return true; }
     bool loadModel(const std::string &modelPath) override;
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath) override;
@@ -35,6 +69,13 @@ public:
     QList<QString> context() const { return m_context; }
     void setContext(const QList<QString> &context) { m_context = context; }
 
+    bool callResponse(int32_t token, const std::string& string);
+
+Q_SIGNALS:
+    void request(const QString &apiKey,
+        LLModel::PromptContext *ctx,
+        const QByteArray &array);
+
 protected:
     // We have to implement these as they are pure virtual in base class, but we don't actually use
     // them as they are only called from the default implementation of 'prompt' which we override and
@@ -46,19 +87,11 @@ protected:
     int32_t contextLength() const override { return -1; }
     const std::vector<Token>& endTokens() const override { static const std::vector<Token> fres; return fres; }
 
-private Q_SLOTS:
-    void handleFinished();
-    void handleReadyRead();
-    void handleErrorOccurred(QNetworkReply::NetworkError code);
-
 private:
-    PromptContext *m_ctx;
     std::function<bool(int32_t, const std::string&)> m_responseCallback;
     QString m_modelName;
     QString m_apiKey;
     QList<QString> m_context;
-    QString m_currentResponse;
-    QNetworkAccessManager m_networkManager;
 };
 
 #endif // CHATGPT_H

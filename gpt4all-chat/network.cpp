@@ -88,7 +88,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject object = doc.object();
     object.insert("source", "gpt4all-chat");
-    object.insert("agent_id", ChatListModel::globalInstance()->currentChat()->modelInfo().filename);
+    object.insert("agent_id", ChatListModel::globalInstance()->currentChat()->modelInfo().filename());
     object.insert("submitter_id", m_uniqueId);
     object.insert("ingest_id", ingestId);
 
@@ -96,7 +96,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     if (!attribution.isEmpty())
         object.insert("network/attribution", attribution);
 
-    QString promptTemplate = MySettings::globalInstance()->promptTemplate();
+    QString promptTemplate = ChatListModel::globalInstance()->currentChat()->modelInfo().promptTemplate();
     object.insert("prompt_template", promptTemplate);
 
     QJsonDocument newDoc;
@@ -115,6 +115,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     QByteArray body(newDoc.toJson(QJsonDocument::Compact));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *jsonReply = m_networkManager.post(request, body);
+    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &Network::handleJsonUploadFinished);
     m_activeUploads.append(jsonReply);
     return true;
@@ -391,7 +392,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
         properties.insert("ip", m_ipify);
     properties.insert("name", QCoreApplication::applicationName() + " v"
         + QCoreApplication::applicationVersion());
-    properties.insert("model", ChatListModel::globalInstance()->currentChat()->modelInfo().filename);
+    properties.insert("model", ChatListModel::globalInstance()->currentChat()->modelInfo().filename());
 
     // Some additional startup information
     if (ev == "startup") {
@@ -434,6 +435,7 @@ void Network::sendIpify()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *reply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &Network::handleIpifyFinished);
 }
 
@@ -449,6 +451,7 @@ void Network::sendMixpanel(const QByteArray &json, bool isOptOut)
     request.setSslConfiguration(conf);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *trackReply = m_networkManager.post(request, json);
+    connect(qApp, &QCoreApplication::aboutToQuit, trackReply, &QNetworkReply::abort);
     connect(trackReply, &QNetworkReply::finished, this, &Network::handleMixpanelFinished);
 }
 
@@ -512,6 +515,7 @@ void Network::sendHealth()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *healthReply = m_networkManager.get(request);
+    connect(qApp, &QCoreApplication::aboutToQuit, healthReply, &QNetworkReply::abort);
     connect(healthReply, &QNetworkReply::finished, this, &Network::handleHealthFinished);
 }
 

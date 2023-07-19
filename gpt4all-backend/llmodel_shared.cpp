@@ -33,7 +33,14 @@ void LLModel::prompt(const std::string &prompt,
                      PromptContext &promptCtx)
 {
     if (!isModelLoaded()) {
-        std::cerr << implementation().modelType << " ERROR: prompt won't work with an unloaded model!\n";
+        std::cerr << implementation().modelType() << " ERROR: prompt won't work with an unloaded model!\n";
+        return;
+    }
+
+    if (!supportsCompletion()) {
+        std::string errorMessage = "ERROR: this model does not support text completion or chat!\n";
+        responseCallback(-1, errorMessage);
+        std::cerr << implementation().modelType() << errorMessage;
         return;
     }
 
@@ -45,13 +52,14 @@ void LLModel::prompt(const std::string &prompt,
 
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
-        std::cerr << implementation().modelType << " ERROR: The prompt is" << embd_inp.size() <<
-            "tokens and the context window is" << promptCtx.n_ctx << "!\n";
+        std::cerr << implementation().modelType() << " ERROR: The prompt is " << embd_inp.size() <<
+            " tokens and the context window is " << promptCtx.n_ctx << "!\n";
         return;
     }
 
     promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
     promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
+    promptCtx.n_batch = std::min(promptCtx.n_batch, LLMODEL_MAX_PROMPT_BATCH);
 
     // process the prompt in batches
     size_t i = 0;
@@ -63,7 +71,7 @@ void LLModel::prompt(const std::string &prompt,
         if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
             const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
             // Erase the first percentage of context from the tokens...
-            std::cerr << implementation().modelType << ": reached the end of the context window so resizing\n";
+            std::cerr << implementation().modelType() << ": reached the end of the context window so resizing\n";
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
             recalculateContext(promptCtx, recalculateCallback);
@@ -71,7 +79,7 @@ void LLModel::prompt(const std::string &prompt,
         }
 
         if (!evalTokens(promptCtx, batch)) {
-            std::cerr << implementation().modelType << " ERROR: Failed to process prompt\n";
+            std::cerr << implementation().modelType() << " ERROR: Failed to process prompt\n";
             return;
         }
 
@@ -102,7 +110,7 @@ void LLModel::prompt(const std::string &prompt,
         if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
             const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
             // Erase the first percentage of context from the tokens...
-            std::cerr << implementation().modelType << ": reached the end of the context window so resizing\n";
+            std::cerr << implementation().modelType() << ": reached the end of the context window so resizing\n";
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
             recalculateContext(promptCtx, recalculateCallback);
@@ -110,7 +118,7 @@ void LLModel::prompt(const std::string &prompt,
         }
 
         if (!evalTokens(promptCtx, { id })) {
-            std::cerr << implementation().modelType << " ERROR: Failed to predict next token\n";
+            std::cerr << implementation().modelType() << " ERROR: Failed to predict next token\n";
             return;
         }
 
@@ -156,4 +164,13 @@ void LLModel::prompt(const std::string &prompt,
         }
         cachedTokens.clear();
     }
+}
+
+std::vector<float> LLModel::embedding(const std::string &/*text*/)
+{
+    if (!supportsCompletion()) {
+        std::string errorMessage = "ERROR: this model does not support generating embeddings!\n";
+        std::cerr << implementation().modelType() << errorMessage;
+    }
+    return std::vector<float>();
 }

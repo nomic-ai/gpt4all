@@ -9,14 +9,13 @@ ComboBox {
     padding: 10
     Accessible.role: Accessible.ComboBox
     contentItem: Text {
-        anchors.horizontalCenter: parent.horizontalCenter
+        id: text
         leftPadding: 10
         rightPadding: 20
         text: comboBox.displayText
         font: comboBox.font
         color: theme.textColor
         verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignHCenter
         elide: Text.ElideRight
     }
     delegate: ItemDelegate {

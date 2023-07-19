@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -27,5 +27,6 @@
         <None Condition="$([MSBuild]::IsOSPlatform('Linux'))" Include="..\runtimes\linux-x64\native\*.so" Visible="False" CopyToOutputDirectory="PreserveNewest" />
          <!-- MacOS -->
         <None Condition="$([MSBuild]::IsOSPlatform('OSX'))" Include="..\runtimes\osx\native\*.dylib" Visible="False" CopyToOutputDirectory="PreserveNewest" />
+        <Content Condition="$([MSBuild]::IsOSPlatform('OSX'))" Include="..\runtimes\osx\native\*.metal" Visible="False" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 </Project>

@@ -8,23 +8,14 @@ import chatlistmodel
 import localdocs
 import llm
 
-Dialog {
+MyDialog {
     id: collectionsDialog
     modal: true
-    opacity: 0.9
     padding: 20
     width: 480
     height: 640
 
     property var currentChat: ChatListModel.currentChat
-
-    background: Rectangle {
-        anchors.fill: parent
-        color: theme.backgroundDarkest
-        border.width: 1
-        border.color: theme.dialogBorder
-        radius: 10
-    }
 
     Label {
         id: listLabel

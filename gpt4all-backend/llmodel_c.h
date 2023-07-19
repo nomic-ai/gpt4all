@@ -172,6 +172,25 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
                     llmodel_prompt_context *ctx);
 
 /**
+ * Generate an embedding using the model.
+ * NOTE: If given NULL pointers for the model or text, or an empty text, a NULL pointer will be
+ * returned. Bindings should signal an error when NULL is the return value.
+ * @param model A pointer to the llmodel_model instance.
+ * @param text A string representing the text to generate an embedding for.
+ * @param embedding_size A pointer to a size_t type that will be set by the call indicating the length
+ * of the returned floating point array.
+ * @return A pointer to an array of floating point values passed to the calling method which then will
+ * be responsible for lifetime of this memory.
+ */
+float *llmodel_embedding(llmodel_model model, const char *text, size_t *embedding_size);
+
+/**
+ * Frees the memory allocated by the llmodel_embedding function.
+ * @param ptr A pointer to the embedding as returned from llmodel_embedding.
+ */
+void llmodel_free_embedding(float *ptr);
+
+/**
  * Set the number of threads to be used by the model.
  * @param model A pointer to the llmodel_model instance.
  * @param n_threads The number of threads to be used.

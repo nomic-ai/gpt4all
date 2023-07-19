@@ -15,6 +15,8 @@ public:
     GPTJ();
     ~GPTJ();
 
+    bool supportsEmbedding() const override { return false; }
+    bool supportsCompletion() const override { return true; }
     bool loadModel(const std::string &modelPath) override;
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath) override;

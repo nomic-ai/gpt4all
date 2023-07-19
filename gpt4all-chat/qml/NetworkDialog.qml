@@ -8,7 +8,7 @@ import network
 import llm
 import mysettings
 
-Dialog {
+MyDialog {
     id: networkDialog
     anchors.centerIn: parent
     modal: true
@@ -92,14 +92,6 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
                 MySettings.networkAttribution = attribution.text;
             }
         }
-    }
-
-    background: Rectangle {
-        anchors.fill: parent
-        color: theme.backgroundDarkest
-        border.width: 1
-        border.color: theme.dialogBorder
-        radius: 10
     }
 
     footer: DialogButtonBox {

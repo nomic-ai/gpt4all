@@ -6,13 +6,14 @@
 
     <groupId>com.hexadevlabs</groupId>
     <artifactId>gpt4all-java-binding</artifactId>
-    <version>1.1.2</version>
+    <version>1.1.5</version>
     <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <native.libs.location>C:\Users\felix\dev\gpt4all_java_bins\release_1_1_4_July8_2023</native.libs.location>
     </properties>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -54,6 +55,20 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.9.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.4.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -103,7 +118,7 @@
                             <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>C:\Users\felix\dev\gpt4all_java_bins\release_1_1_1_Jun8_2023</directory>
+                                    <directory>${native.libs.location}</directory>
                                 </resource>
                             </resources>
                         </configuration>
@@ -149,26 +164,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                        <!--
-                        <configuration>
-                            <keyname>${gpg.keyname}</keyname>
-                            <passphraseServerId>${gpg.keyname}</passphraseServerId>
-                        </configuration>
-                        -->
-                    </execution>
-                </executions>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -177,11 +173,6 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.hexadevlabs.gpt4allsample.Example4</mainClass>
-                        </manifest>
-                    </archive>
                 </configuration>
                 <executions>
                     <execution>
@@ -195,8 +186,31 @@
             </plugin>
          </plugins>
 
-
     </build>
 
+    <profiles>
+        <profile>
+        <id>signing-profile</id>
+        <!-- activation conditions here, if any -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
 
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

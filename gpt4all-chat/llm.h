@@ -6,12 +6,11 @@
 class LLM : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool compatHardware READ compatHardware NOTIFY compatHardwareChanged)
-
 public:
     static LLM *globalInstance();
 
-    bool compatHardware() const { return m_compatHardware; }
+    Q_INVOKABLE bool hasSettingsAccess() const;
+    Q_INVOKABLE bool compatHardware() const { return m_compatHardware; }
 
     Q_INVOKABLE bool checkForUpdates() const;
     Q_INVOKABLE bool directoryExists(const QString &path) const;
@@ -22,7 +21,6 @@ public:
 Q_SIGNALS:
     void chatListModelChanged();
     void modelListChanged();
-    void compatHardwareChanged();
 
 private:
     bool m_compatHardware;

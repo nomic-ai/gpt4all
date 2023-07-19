@@ -485,7 +485,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
         printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size / 1024.0 / 1024.0, n_tensors);
     }
 
-   model.eval_buf.resize(256u * 1024 * 1024);
+   model.eval_buf.resize(512u * 1024 * 1024);
    model.scr0_buf.resize(256u * 1024 * 1024);
    model.scr1_buf.resize(256u * 1024 * 1024);
 
@@ -904,6 +904,11 @@ int32_t Replit::threadCount() const
 
 Replit::~Replit()
 {
+    #ifdef GGML_USE_METAL
+    if (d_ptr->model->ctx_metal) {
+        ggml_metal_free(d_ptr->model->ctx_metal);
+    }
+    #endif
     if(d_ptr->model->ctx) {
         ggml_free(d_ptr->model->ctx);
         d_ptr->model->ctx = nullptr;

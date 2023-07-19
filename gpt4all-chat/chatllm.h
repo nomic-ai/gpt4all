@@ -16,6 +16,7 @@ enum LLModelType {
     CHATGPT_,
     REPLIT_,
     FALCON_,
+    BERT_
 };
 
 struct LLModelInfo {
@@ -97,9 +98,7 @@ public:
     bool deserialize(QDataStream &stream, int version);
 
 public Q_SLOTS:
-    bool prompt(const QList<QString> &collectionList, const QString &prompt, const QString &prompt_template,
-        int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
-        int32_t repeat_penalty_tokens, int32_t n_threads);
+    bool prompt(const QList<QString> &collectionList, const QString &prompt);
     bool loadDefaultModel();
     bool loadModel(const ModelInfo &modelInfo);
     void modelChangeRequested(const ModelInfo &modelInfo);
@@ -111,6 +110,7 @@ public Q_SLOTS:
     void handleShouldBeLoadedChanged();
     void handleThreadStarted();
     void handleForceMetalChanged(bool forceMetal);
+    void processSystemPrompt();
 
 Q_SIGNALS:
     void recalcChanged();
@@ -131,12 +131,18 @@ Q_SIGNALS:
     void modelInfoChanged(const ModelInfo &modelInfo);
 
 protected:
+    bool promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
+        int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
+        int32_t repeat_penalty_tokens);
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
     bool handleRecalculate(bool isRecalc);
     bool handleNamePrompt(int32_t token);
     bool handleNameResponse(int32_t token, const std::string &response);
     bool handleNameRecalculate(bool isRecalc);
+    bool handleSystemPrompt(int32_t token);
+    bool handleSystemResponse(int32_t token, const std::string &response);
+    bool handleSystemRecalculate(bool isRecalc);
     void saveState();
     void restoreState();
 
@@ -160,6 +166,7 @@ private:
     bool m_isServer;
     bool m_forceMetal;
     bool m_reloadingToChangeVariant;
+    bool m_processedSystemPrompt;
 };
 
 #endif // CHATLLM_H
