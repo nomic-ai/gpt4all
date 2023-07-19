@@ -55,6 +55,8 @@ Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io
 
 * Follow the visual instructions on the chat client [build_and_run](gpt4all-chat/build_and_run.md) page
 
+* Example of pipeline to build and run the chat client with own documentation and follow link for more details: <a href="https://github.com/vnk8071/E2E-AI-Chatbot">E2E-AI-Chatbot</a>  
+
 ### Bindings
 
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python/README.md">:snake: Official Python Bindings</a>
