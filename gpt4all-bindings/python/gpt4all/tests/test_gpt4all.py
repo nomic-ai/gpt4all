@@ -3,6 +3,7 @@ from io import StringIO
 
 from gpt4all import GPT4All, Embed4All
 import time
+import pytest
 
 def test_inference():
     model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
@@ -107,3 +108,9 @@ def test_embedding():
     #for i, value in enumerate(output):
         #print(f'Value at index {i}: {value}')
     assert len(output) == 384
+
+def test_empty_embedding():
+    text = ''
+    embedder = Embed4All()
+    with pytest.raises(ValueError):
+        output = embedder.embed(text)

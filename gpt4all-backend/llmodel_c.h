@@ -173,6 +173,8 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
 
 /**
  * Generate an embedding using the model.
+ * NOTE: If given NULL pointers for the model or text, or an empty text, a NULL pointer will be
+ * returned. Bindings should signal an error when NULL is the return value.
  * @param model A pointer to the llmodel_model instance.
  * @param text A string representing the text to generate an embedding for.
  * @param embedding_size A pointer to a size_t type that will be set by the call indicating the length

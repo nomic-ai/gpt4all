@@ -252,6 +252,9 @@ class LLModel:
         self,
         text: str
     ) -> List[float]:
+        if not text:
+            raise ValueError("Text must not be None or empty")
+
         embedding_size = ctypes.c_size_t()
         c_text = ctypes.c_char_p(text.encode('utf-8'))
         embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
