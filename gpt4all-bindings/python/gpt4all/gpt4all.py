@@ -252,6 +252,7 @@ class GPT4All:
         n_predict: Optional[int] = None,
         streaming: bool = False,
         callback: pyllmodel.ResponseCallbackType = pyllmodel.empty_response_callback,
+        reverse_prompts: List[str] = [],
     ) -> Union[str, Iterable[str]]:
         """
         Generate outputs from any GPT4All model.
@@ -268,6 +269,7 @@ class GPT4All:
             n_predict: Equivalent to max_tokens, exists for backwards compatibility.
             streaming: If True, this method will instead return a generator that yields tokens as the model generates them.
             callback: A function with arguments token_id:int and response:str, which receives the tokens from the model as they are generated and stops the generation by returning False.
+            reverse_prompts: A list of combinations of tokens which, when generated, stop the generation.
 
         Returns:
             Either the entire completion or a generator that yields the completion token by token.
@@ -308,12 +310,27 @@ class GPT4All:
             output_collector: List[MessageType],
         ) -> pyllmodel.ResponseCallbackType:
 
+            # Used for reverse prompts
+            token_cache:str = ""
+
             def _callback(token_id: int, response: str) -> bool:
-                nonlocal callback, output_collector
+                nonlocal callback, output_collector, token_cache
 
-                output_collector[-1]["content"] += response
+                token_cache += response
 
-                return callback(token_id, response)
+                if token_cache in reverse_prompts:
+                    token_cache = ""
+                    return False
+
+                if any(rp.startswith(token_cache) for rp in reverse_prompts):
+                    return True
+
+                token_passed = token_cache
+                token_cache = ""
+
+                output_collector[-1]["content"] += token_passed
+
+                return callback(token_id, token_passed)
 
             return _callback
 
