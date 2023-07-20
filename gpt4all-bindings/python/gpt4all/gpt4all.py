@@ -284,6 +284,7 @@ class GPT4All:
             repeat_last_n=repeat_last_n,
             n_batch=n_batch,
             n_predict=n_predict if n_predict is not None else max_tokens,
+            reverse_prompts=reverse_prompts,
         )
 
         if self._is_chat_session_activated:
@@ -310,27 +311,12 @@ class GPT4All:
             output_collector: List[MessageType],
         ) -> pyllmodel.ResponseCallbackType:
 
-            # Used for reverse prompts
-            token_cache:str = ""
-
             def _callback(token_id: int, response: str) -> bool:
-                nonlocal callback, output_collector, token_cache
+                nonlocal callback, output_collector
 
-                token_cache += response
+                output_collector[-1]["content"] += response
 
-                if token_cache in reverse_prompts:
-                    token_cache = ""
-                    return False
-
-                if any(rp.startswith(token_cache) for rp in reverse_prompts):
-                    return True
-
-                token_passed = token_cache
-                token_cache = ""
-
-                output_collector[-1]["content"] += token_passed
-
-                return callback(token_id, token_passed)
+                return callback(token_id, response)
 
             return _callback
 
