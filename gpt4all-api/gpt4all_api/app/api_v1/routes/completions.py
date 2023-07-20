@@ -115,7 +115,6 @@ async def completions(request: CompletionRequest):
     if request.model != settings.model:
         raise HTTPException(status_code=400, detail=f"The GPT4All inference server is booted to only infer: `{settings.model}`")
 
-
     if settings.inference_mode == "gpu":
         params = request.dict(exclude={'model', 'prompt', 'max_tokens', 'n'})
         params["max_new_tokens"] = request.max_tokens
@@ -152,9 +151,10 @@ async def completions(request: CompletionRequest):
             )
 
         else:
+            # If streaming, we need to return a StreamingResponse
             payload["inputs"] = request.prompt
 
-            resp = await infer(payload, header)
+            resp = await gpu_infer(payload, header)
 
             output = resp["generated_text"]
             # this returns all logprobs
