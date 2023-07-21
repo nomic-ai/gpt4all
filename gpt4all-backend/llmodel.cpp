@@ -120,8 +120,10 @@ const LLModel::Implementation* LLModel::Implementation::implementation(std::ifst
 
 LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant) {
 
-    if (!has_at_least_minimal_hardware())
+    if (!has_at_least_minimal_hardware()) {
+        fprintf(stderr, "has_at_least_minimal_hardware check failed\n");
         return nullptr;
+    }
 
     // Read magic
     std::ifstream f(modelPath, std::ios::binary);
@@ -159,7 +161,10 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
             }
         }
         impl = implementation(f, buildVariant);
-        if (!impl) return nullptr;
+        if (!impl) {
+            fprintf(stderr, "failed: implementation not found\n");
+            return nullptr;
+        }
     }
     f.close();
 
