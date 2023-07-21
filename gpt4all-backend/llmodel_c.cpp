@@ -17,9 +17,11 @@ thread_local static std::string last_error_message;
 
 
 llmodel_model llmodel_model_create(const char *model_path) {
-    auto fres = llmodel_model_create2(model_path, "auto", nullptr);
+    llmodel_error err = { 0 };
+    auto fres = llmodel_model_create2(model_path, "auto", &err);
     if (!fres) {
         fprintf(stderr, "Invalid model file\n");
+        fprintf(stderr, "Error code: %d Error: %s message: %s\n", err.code, strerror(err.code), err.message);
     }
     return fres;
 }
