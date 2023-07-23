@@ -25,7 +25,7 @@ cd gpt4all/gpt4all-backend/
 mkdir build
 cd build
 cmake ..
-cmake --build . --parallel
+cmake --build . --parallel  # optionally append: --config Release
 ```
 Confirm that `libllmodel.*` exists in `gpt4all-backend/build`.
 
