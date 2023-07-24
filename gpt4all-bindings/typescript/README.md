@@ -1,7 +1,7 @@
 # GPT4All Node.js API
 
 ```sh
-yarn install gpt4all@alpha
+yarn add gpt4all@alpha
 
 npm install gpt4all@alpha
 
