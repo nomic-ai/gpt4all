@@ -8,6 +8,8 @@ Following tutorial assumes that you are checked out this repo and cd into it.
 
 ### Starting the app
 
+`cwd: gpt4all/gpt4all-api`
+
 First build the FastAPI docker image. You only have to do this on initial build or when you add new dependencies to the requirements.txt file:
 ```bash
 DOCKER_BUILDKIT=1 docker build -t gpt4all_api --progress plain -f gpt4all_api/Dockerfile.buildkit .
