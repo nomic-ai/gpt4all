@@ -168,10 +168,6 @@ class GPT4All:
 
         # If model file does not exist, download
         elif allow_download:
-            # Make sure valid model filename before attempting download
-
-            if "url" not in config:
-                raise ValueError(f"Model filename not in model list: {model_filename}")
             url = config.pop("url", None)
 
             config["path"] = GPT4All.download_model(
