@@ -117,14 +117,13 @@ async def completions(request: CompletionRequest):
         params["num_return_sequences"] = request.n
 
         header = {"Content-Type": "application/json"}
-        payload = {"parameters": params}
         if isinstance(request.prompt, list):
             tasks = []
             for prompt in request.prompt:
+                payload = {"parameters": params}
                 payload["inputs"] = prompt
                 task = gpu_infer(payload, header)
                 tasks.append(task)
-
             results = await asyncio.gather(*tasks)
 
             choices = []
@@ -147,6 +146,7 @@ async def completions(request: CompletionRequest):
             )
 
         else:
+            payload = {"parameters": params}
             # If streaming, we need to return a StreamingResponse
             payload["inputs"] = request.prompt
 
