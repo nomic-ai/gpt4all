@@ -111,10 +111,6 @@ async def completions(request: CompletionRequest):
     '''
     Completes a GPT4All model response.
     '''
-
-    if request.model != settings.model:
-        raise HTTPException(status_code=400, detail=f"The GPT4All inference server is booted to only infer: `{settings.model}`")
-
     if settings.inference_mode == "gpu":
         params = request.dict(exclude={'model', 'prompt', 'max_tokens', 'n'})
         params["max_new_tokens"] = request.max_tokens
@@ -169,6 +165,10 @@ async def completions(request: CompletionRequest):
             )
 
     else:
+
+        if request.model != settings.model:
+            raise HTTPException(status_code=400,
+                                detail=f"The GPT4All inference server is booted to only infer: `{settings.model}`")
 
         if isinstance(request.prompt, list):
             if len(request.prompt) > 1:
