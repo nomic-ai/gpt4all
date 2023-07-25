@@ -47,10 +47,22 @@ async def startup():
         logger.info(f"GPT4All API is ready to infer from {settings.model} on CPU.")
 
 
+
 @app.on_event("shutdown")
 async def shutdown():
     logger.info("Shutting down API")
 
+
+if settings.sentry_dns is not None:
+    import sentry_sdk
+
+    def traces_sampler(sampling_context):
+        if 'health' in sampling_context['transaction_context']['name']:
+            return False
+
+    sentry_sdk.init(
+        dsn=settings.sentry_dns, traces_sample_rate=0.1, traces_sampler=traces_sampler, send_default_pii=False
+    )
 
 # This is needed to get logs to show up in the app
 if "gunicorn" in os.environ.get("SERVER_SOFTWARE", ""):
