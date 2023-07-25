@@ -171,10 +171,12 @@ jobs:
       - run: node --version
       - node/install-packages:
           pkg-manager: yarn
+          app-dir: gpt4all-bindings/typescript
       - run:
           name: build docs ts yo
-          command: yarn docs:build
-      
+          command: |
+            cd gpt4all-bindings/typescript
+            yarn docs:build
   build-py-docs:
     docker:
       - image: circleci/python:3.8
