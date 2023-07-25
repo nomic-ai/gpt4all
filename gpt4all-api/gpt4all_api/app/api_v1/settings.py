@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     gpt4all_path: str = '/models'
     inference_mode: str = "cpu"
     hf_inference_server_host: str = "http://gpt4all_gpu:80/generate"
+    sentry_dns: str = None
 
     temp: float = 0.18
     top_p: float = 1.0
