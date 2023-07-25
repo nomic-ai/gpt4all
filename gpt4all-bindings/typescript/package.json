@@ -1,17 +1,29 @@
 {
   "name": "gpt4all",
-  "version": "2.0.0",
-  "packageManager": "yarn@3.5.1",
+  "version": "2.1.0-alpha",
+  "packageManager": "yarn@3.6.1",
   "main": "src/gpt4all.js",
   "repository": "nomic-ai/gpt4all",
   "scripts": {
-    "test": "node ./test/index.mjs",
-    "build:backend": "node scripts/build.js",
     "install": "node-gyp-build",
-    "prebuild": "node scripts/prebuild.js",
-    "docs:build": "documentation build ./src/gpt4all.d.ts --parse-extension d.ts --format md --output docs/api.md"
+    "test": "jest",
+    "build:backend": "node scripts/build.js",
+    "build": "node-gyp-build",
+    "predocs:build": "node scripts/docs.js",
+    "docs:build": "documentation readme ./src/gpt4all.d.ts --parse-extension js d.ts --format md --section documentation --readme-file ../python/docs/gpt4all_typescript.md",
+    "postdocs:build": "node scripts/docs.js"
   },
+  "files": [
+    "src/**/*",
+    "runtimes/**/*",
+    "binding.gyp",
+    "prebuilds/**/*",
+    "*.h",
+    "*.cc",
+    "gpt4all-backend/**/*"
+  ],
   "dependencies": {
+    "md5-file": "^5.0.0",
     "mkdirp": "^3.0.1",
     "node-addon-api": "^6.1.0",
     "node-gyp-build": "^4.6.0"
@@ -19,8 +31,12 @@
   "devDependencies": {
     "@types/node": "^20.1.5",
     "documentation": "^14.0.2",
+    "jest": "^29.5.0",
     "prebuildify": "^5.0.1",
     "prettier": "^2.8.8"
+  },
+  "optionalDependencies": {
+    "node-gyp": "9.x.x"
   },
   "engines": {
     "node": ">= 18.x.x"
@@ -28,5 +44,8 @@
   "prettier": {
     "endOfLine": "lf",
     "tabWidth": 4
+  },
+  "jest": {
+    "verbose": true
   }
 }

@@ -10,6 +10,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("stateSize", &NodeModelWrapper::StateSize),
        InstanceMethod("raw_prompt", &NodeModelWrapper::Prompt),
        InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
+       InstanceMethod("embed", &NodeModelWrapper::GenerateEmbedding),
        InstanceMethod("threadCount", &NodeModelWrapper::ThreadCount),
        InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
     });
@@ -66,6 +67,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     if(GetInference() == nullptr) {
        std::cerr << "Tried searching libraries in \"" << library_path << "\"" <<  std::endl;
        std::cerr << "Tried searching for model weight in \"" << full_weight_path << "\"" << std::endl;
+       std::cerr << "Do you have runtime libraries installed?" << std::endl;
        Napi::Error::New(env, "Had an issue creating llmodel object, inference is null").ThrowAsJavaScriptException(); 
        return;
     }
@@ -90,6 +92,33 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(GetInference())));
   }
   
+  Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo& info) {
+    auto env = info.Env();
+    std::string text = info[0].As<Napi::String>().Utf8Value();
+    size_t embedding_size = 0;
+    float* arr = llmodel_embedding(GetInference(), text.c_str(), &embedding_size);
+    if(arr == nullptr) {
+        Napi::Error::New(
+            env, 
+            "Cannot embed. native embedder returned 'nullptr'"
+        ).ThrowAsJavaScriptException(); 
+        return env.Undefined();
+    }
+
+    if(embedding_size == 0 && text.size() != 0 ) {
+        std::cout << "Warning: embedding length 0 but input text length > 0" << std::endl;
+    }
+    Napi::Float32Array js_array = Napi::Float32Array::New(env, embedding_size);
+    
+    for (size_t i = 0; i < embedding_size; ++i) {
+        float element = *(arr + i);
+        js_array[i] = element;
+    }
+
+    llmodel_free_embedding(arr);
+
+    return js_array;
+  }
 
 /**
  * Generate a response using the model.
@@ -156,12 +185,12 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
             promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
     }
     //copy to protect llmodel resources when splitting to new thread
-
     llmodel_prompt_context copiedPrompt = promptContext;
+
     std::string copiedQuestion = question;
     PromptWorkContext pc = {
         copiedQuestion,
-        inference_.load(),
+        std::ref(inference_),
         copiedPrompt,
     };
     auto threadSafeContext = new TsfnContext(env, pc);
@@ -201,7 +230,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
   }
 
   llmodel_model NodeModelWrapper::GetInference() {
-    return *inference_.load();
+    return *inference_;
   }
 
 //Exports Bindings

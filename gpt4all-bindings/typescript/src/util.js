@@ -1,9 +1,10 @@
-const { createWriteStream, existsSync } = require("fs");
+const { createWriteStream, existsSync, statSync } = require("node:fs");
+const fsp = require('node:fs/promises')
 const { performance } = require("node:perf_hooks");
 const path = require("node:path");
 const {mkdirp} = require("mkdirp");
 const { DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } = require("./config.js");
-
+const md5File = require('md5-file');
 async function listModels() {
     const res = await fetch("https://gpt4all.io/models/models.json");
     const modelList = await res.json();
@@ -31,62 +32,108 @@ function readChunks(reader) {
     };
 }
 
-function downloadModel(
-    modelName,
-    options = {}
-) {
+function downloadModel(modelName, options = {}) {
     const downloadOptions = {
         modelPath: DEFAULT_DIRECTORY,
         debug: false,
-        url: "https://gpt4all.io/models",
+        md5sum: true,
         ...options,
     };
 
     const modelFileName = appendBinSuffixIfMissing(modelName);
-    const fullModelPath = path.join(downloadOptions.modelPath, modelFileName);
-    const modelUrl = `${downloadOptions.url}/${modelFileName}`
+    const partialModelPath = path.join(
+        downloadOptions.modelPath,
+        modelName + ".part"
+    );
+    const finalModelPath = path.join(downloadOptions.modelPath, modelFileName);
+    const modelUrl = downloadOptions.url ?? `https://gpt4all.io/models/${modelFileName}`;
 
-    if (existsSync(fullModelPath)) {
-        throw Error(`Model already exists at ${fullModelPath}`);
+    if (existsSync(finalModelPath)) {
+        throw Error(`Model already exists at ${finalModelPath}`);
+    }
+
+    const headers = {
+        "Accept-Ranges": "arraybuffer",
+        "Response-Type": "arraybuffer",
+    };
+
+    const writeStreamOpts = {};
+
+    if (existsSync(partialModelPath)) {
+        console.log("Partial model exists, resuming download...");
+        const startRange = statSync(partialModelPath).size;
+        headers["Range"] = `bytes=${startRange}-`;
+        writeStreamOpts.flags = "a";
     }
 
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    //wrapper function to get the readable stream from request
-    // const baseUrl = options.url ?? "https://gpt4all.io/models";
-    const fetchModel = () =>
+    // wrapper function to get the readable stream from request
+    const fetchModel = (fetchOpts = {}) =>
         fetch(modelUrl, {
             signal,
+            ...fetchOpts,
         }).then((res) => {
             if (!res.ok) {
-                throw Error(`Failed to download model from ${modelUrl} - ${res.statusText}`);
+                throw Error(
+                    `Failed to download model from ${modelUrl} - ${res.statusText}`
+                );
             }
             return res.body.getReader();
         });
 
-    //a promise that executes and writes to a stream. Resolves when done writing.
+    // a promise that executes and writes to a stream. Resolves when done writing.
     const res = new Promise((resolve, reject) => {
-        fetchModel()
-            //Resolves an array of a reader and writestream.
-            .then((reader) => [reader, createWriteStream(fullModelPath)])
+        fetchModel({ headers })
+            // Resolves an array of a reader and writestream.
+            .then((reader) => [
+                reader,
+                createWriteStream(partialModelPath, writeStreamOpts),
+            ])
             .then(async ([readable, wstream]) => {
-                console.log("Downloading @ ", fullModelPath);
+                console.log("Downloading @ ", partialModelPath);
                 let perf;
+
                 if (options.debug) {
                     perf = performance.now();
                 }
+
+                wstream.on("finish", () => {
+                    if (options.debug) {
+                        console.log(
+                            "Time taken: ",
+                            (performance.now() - perf).toFixed(2),
+                            " ms"
+                        );
+                    }
+                    wstream.close();
+                });
+
+                wstream.on("error", (e) => {
+                    wstream.close();
+                    reject(e);
+                });
+
                 for await (const chunk of readChunks(readable)) {
                     wstream.write(chunk);
                 }
-                if (options.debug) {
-                    console.log(
-                        "Time taken: ",
-                        (performance.now() - perf).toFixed(2),
-                        " ms"
-                    );
+
+                if (options.md5sum) {
+                    const fileHash = await md5File(partialModelPath);
+                    if (fileHash !== options.md5sum) {
+                        await fsp.unlink(partialModelPath);
+                        return reject(
+                            Error(`Model "${modelName}" failed verification: Hashes mismatch`)
+                        );
+                    }
+                    if (options.debug) {
+                        console.log("MD5 hash verified: ", fileHash);
+                    }
                 }
-                resolve(fullModelPath);
+
+                await fsp.rename(partialModelPath, finalModelPath);
+                resolve(finalModelPath);
             })
             .catch(reject);
     });
@@ -95,7 +142,7 @@ function downloadModel(
         cancel: () => abortController.abort(),
         promise: () => res,
     };
-};
+}
 
 async function retrieveModel (
     modelName,
@@ -123,12 +170,13 @@ async function retrieveModel (
     }
 
     const availableModels = await listModels();
+    
     const foundModel = availableModels.find((model) => model.filename === modelFileName);
 
     if (!foundModel) {
         throw Error(`Model "${modelName}" is not available.`);
     }
-
+    //todo  
     if (retrieveOptions.verbose) {
         console.log(`Downloading ${modelName}...`);
     }
@@ -136,6 +184,7 @@ async function retrieveModel (
     const downloadController = downloadModel(modelName, {
         modelPath: retrieveOptions.modelPath,
         debug: retrieveOptions.verbose,
+        url: foundModel.url
     });
 
     const downloadPath = await downloadController.promise();
@@ -153,4 +202,5 @@ module.exports = {
     appendBinSuffixIfMissing,
     downloadModel,
     retrieveModel,
+    listModels
 };

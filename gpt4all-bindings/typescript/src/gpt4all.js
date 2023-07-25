@@ -10,12 +10,12 @@ const {
     downloadModel,
     appendBinSuffixIfMissing,
 } = require("./util.js");
-const config = require("./config.js");
+const { DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } = require("./config.js");
 
 async function loadModel(modelName, options = {}) {
     const loadOptions = {
-        modelPath: config.DEFAULT_DIRECTORY,
-        librariesPath: config.DEFAULT_LIBRARIES_DIRECTORY,
+        modelPath: DEFAULT_DIRECTORY,
+        librariesPath: DEFAULT_LIBRARIES_DIRECTORY,
         allowDownload: true,
         verbose: true,
         ...options,
@@ -37,7 +37,9 @@ async function loadModel(modelName, options = {}) {
             break;
         }
     }
-
+    if(!libPath) {
+        throw Error("Could not find a valid path from " + libSearchPaths);
+    }
     const llmOptions = {
         model_name: appendBinSuffixIfMissing(modelName),
         model_path: loadOptions.modelPath,
@@ -53,38 +55,40 @@ async function loadModel(modelName, options = {}) {
 }
 
 function createPrompt(messages, hasDefaultHeader, hasDefaultFooter) {
-    let fullPrompt = "";
+    let fullPrompt = [];
 
     for (const message of messages) {
         if (message.role === "system") {
-            const systemMessage = message.content + "\n";
-            fullPrompt += systemMessage;
+            const systemMessage = message.content;
+            fullPrompt.push(systemMessage);
         }
     }
     if (hasDefaultHeader) {
-        fullPrompt += `### Instruction: 
-        The prompt below is a question to answer, a task to complete, or a conversation 
-        to respond to; decide which and write an appropriate response.
-        \n### Prompt: 
-        `;
+        fullPrompt.push(`### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.`);
     }
+    let prompt = "### Prompt:";
     for (const message of messages) {
         if (message.role === "user") {
-            const user_message = "\n" + message["content"];
-            fullPrompt += user_message;
+            const user_message = message["content"];
+            prompt += user_message;
         }
         if (message["role"] == "assistant") {
-            const assistant_message = "\nResponse: " + message["content"];
-            fullPrompt += assistant_message;
+            const assistant_message = "Response:" + message["content"];
+            prompt += assistant_message;
         }
     }
+    fullPrompt.push(prompt);
     if (hasDefaultFooter) {
-        fullPrompt += "\n### Response:";
+        fullPrompt.push("### Response:");
     }
 
-    return fullPrompt;
+    return fullPrompt.join('\n');
 }
 
+
+function createEmbedding(llmodel, text) {
+    return llmodel.embed(text)
+}
 async function createCompletion(
     llmodel,
     messages,
@@ -98,16 +102,12 @@ async function createCompletion(
     const fullPrompt = createPrompt(
         messages,
         options.hasDefaultHeader ?? true,
-        options.hasDefaultFooter
+        options.hasDefaultFooter ?? true
     );
     if (options.verbose) {
         console.log("Sent: " + fullPrompt);
     }
-    const promisifiedRawPrompt = new Promise((resolve, rej) => {
-        llmodel.raw_prompt(fullPrompt, options, (s) => {
-            resolve(s);
-        });
-    });
+    const promisifiedRawPrompt = llmodel.raw_prompt(fullPrompt, options, (s) => {});
     return promisifiedRawPrompt.then((response) => {
         return {
             llmodel: llmodel.name(),
@@ -128,11 +128,18 @@ async function createCompletion(
     });
 }
 
+function createTokenStream() {
+    throw Error("This API has not been completed yet!")
+}
+
 module.exports = {
-    ...config,
+    DEFAULT_LIBRARIES_DIRECTORY,
+    DEFAULT_DIRECTORY,
     LLModel,
     createCompletion,
+    createEmbedding,
     downloadModel,
     retrieveModel,
     loadModel,
+    createTokenStream
 };

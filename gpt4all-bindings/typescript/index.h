@@ -23,6 +23,7 @@ public:
   void SetThreadCount(const Napi::CallbackInfo& info);
   Napi::Value getName(const Napi::CallbackInfo& info);
   Napi::Value ThreadCount(const Napi::CallbackInfo& info);
+  Napi::Value GenerateEmbedding(const Napi::CallbackInfo& info);
   /*
    * The path that is used to search for the dynamic libraries
    */
@@ -36,7 +37,7 @@ private:
   /**
    * The underlying inference that interfaces with the C interface
    */
-  std::atomic<std::shared_ptr<llmodel_model>> inference_;
+  std::shared_ptr<llmodel_model> inference_;
 
   std::string type;
   // corresponds to LLModel::name() in typescript
