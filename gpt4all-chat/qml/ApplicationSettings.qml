@@ -18,17 +18,50 @@ MySettingsTab {
         columns: 3
         rowSpacing: 10
         columnSpacing: 10
-
         Label {
-            id: defaultModelLabel
-            text: qsTr("Default model:")
+            id: themeLabel
+            text: qsTr("Theme:")
             color: theme.textColor
             Layout.row: 1
             Layout.column: 0
         }
         MyComboBox {
-            id: comboBox
+            id: themeBox
             Layout.row: 1
+            Layout.column: 1
+            Layout.columnSpan: 1
+            Layout.minimumWidth: 50
+            Layout.fillWidth: false
+            model: ["Dark", "Light"]
+            Accessible.role: Accessible.ComboBox
+            Accessible.name: qsTr("ComboBox for displaying/picking the color theme")
+            Accessible.description: qsTr("Use this for picking the color them for the chat client to use")
+            function updateModel() {
+                themeBox.currentIndex = themeBox.indexOfValue(MySettings.chatTheme);
+            }
+            Component.onCompleted: {
+                themeBox.updateModel()
+            }
+            Connections {
+                target: MySettings
+                function onChatThemeChanged() {
+                    themeBox.updateModel()
+                }
+            }
+            onActivated: {
+                MySettings.chatTheme = themeBox.currentText
+            }
+        }
+        Label {
+            id: defaultModelLabel
+            text: qsTr("Default model:")
+            color: theme.textColor
+            Layout.row: 2
+            Layout.column: 0
+        }
+        MyComboBox {
+            id: comboBox
+            Layout.row: 2
             Layout.column: 1
             Layout.columnSpan: 2
             Layout.minimumWidth: 350
@@ -57,14 +90,14 @@ MySettingsTab {
             id: modelPathLabel
             text: qsTr("Download path:")
             color: theme.textColor
-            Layout.row: 2
+            Layout.row: 3
             Layout.column: 0
         }
         MyDirectoryField {
             id: modelPathDisplayField
             text: MySettings.modelPath
             implicitWidth: 300
-            Layout.row: 2
+            Layout.row: 3
             Layout.column: 1
             Layout.fillWidth: true
             ToolTip.text: qsTr("Path where model files will be downloaded to")
@@ -81,7 +114,7 @@ MySettingsTab {
             }
         }
         MyButton {
-            Layout.row: 2
+            Layout.row: 3
             Layout.column: 2
             text: qsTr("Browse")
             Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
@@ -95,7 +128,7 @@ MySettingsTab {
             id: nThreadsLabel
             text: qsTr("CPU Threads:")
             color: theme.textColor
-            Layout.row: 3
+            Layout.row: 4
             Layout.column: 0
         }
         MyTextField {
@@ -103,7 +136,7 @@ MySettingsTab {
             color: theme.textColor
             ToolTip.text: qsTr("Amount of processing threads to use bounded by 1 and number of logical processors")
             ToolTip.visible: hovered
-            Layout.row: 3
+            Layout.row: 4
             Layout.column: 1
             validator: IntValidator {
                 bottom: 1
@@ -125,12 +158,12 @@ MySettingsTab {
             id: saveChatsLabel
             text: qsTr("Save chats to disk:")
             color: theme.textColor
-            Layout.row: 4
+            Layout.row: 5
             Layout.column: 0
         }
         MyCheckBox {
             id: saveChatsBox
-            Layout.row: 4
+            Layout.row: 5
             Layout.column: 1
             checked: MySettings.saveChats
             onClicked: {
@@ -144,12 +177,12 @@ MySettingsTab {
             id: saveChatGPTChatsLabel
             text: qsTr("Save ChatGPT chats to disk:")
             color: theme.textColor
-            Layout.row: 5
+            Layout.row: 6
             Layout.column: 0
         }
         MyCheckBox {
             id: saveChatGPTChatsBox
-            Layout.row: 5
+            Layout.row: 6
             Layout.column: 1
             checked: MySettings.saveChatGPTChats
             onClicked: {
@@ -160,12 +193,12 @@ MySettingsTab {
             id: serverChatLabel
             text: qsTr("Enable API server:")
             color: theme.textColor
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 0
         }
         MyCheckBox {
             id: serverChatBox
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 1
             checked: MySettings.serverChat
             onClicked: {
@@ -175,7 +208,7 @@ MySettingsTab {
             ToolTip.visible: hovered
         }
         Rectangle {
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true

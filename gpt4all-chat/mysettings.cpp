@@ -16,6 +16,7 @@ static QString  default_userDefaultModel    = "Application default";
 static bool     default_forceMetal          = false;
 static QString  default_lastVersionStarted  = "";
 static int      default_localDocsChunkSize  = 256;
+static QString  default_chatTheme           = "Dark";
 static int      default_localDocsRetrievalSize  = 3;
 static bool     default_localDocsShowReferences = true;
 static QString  default_networkAttribution      = "";
@@ -472,6 +473,24 @@ void MySettings::setUserDefaultModel(const QString &u)
     setting.setValue("userDefaultModel", u);
     setting.sync();
     emit userDefaultModelChanged();
+}
+
+QString MySettings::chatTheme() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("chatTheme", default_chatTheme).toString();
+}
+
+void MySettings::setChatTheme(const QString &u)
+{
+    if(chatTheme() == u)
+        return;
+
+    QSettings setting;
+    setting.setValue("chatTheme", u);
+    setting.sync();
+    emit chatThemeChanged();
 }
 
 bool MySettings::forceMetal() const
