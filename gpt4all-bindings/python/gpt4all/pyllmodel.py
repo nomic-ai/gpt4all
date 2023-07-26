@@ -1,7 +1,7 @@
 import ctypes
 import os
 import platform
-import queue
+from queue import Queue
 import re
 import subprocess
 import sys
@@ -157,6 +157,9 @@ class LLModel:
         self.context = None
         self.llmodel_lib = llmodel
 
+        self.buffer = bytearray()
+        self.collector = bytearray()
+
     def __del__(self):
         if self.model is not None:
             self.llmodel_lib.llmodel_model_destroy(self.model)
@@ -291,6 +294,8 @@ class LLModel:
         None
         """
 
+        self.buffer.clear()
+
         logger.info(
             "LLModel.prompt_model -- prompt:\n"
             + "%s\n"
@@ -322,6 +327,14 @@ class LLModel:
             self.context,
         )
 
+        print("\n\n Undecoded buffer:\n")
+        print(self.buffer)
+
+       
+        print("\n\n All collected bytes:\n")
+        print(self.collector)
+
+
     def prompt_model_streaming(
         self,
         prompt: str,
@@ -331,7 +344,7 @@ class LLModel:
         # Symbol to terminate from generator
         TERMINATING_SYMBOL = object()
 
-        output_queue = queue.Queue()
+        output_queue: Queue = Queue()
 
         # Put response tokens into an output queue
         def _generator_callback_wrapper(callback: ResponseCallbackType) -> ResponseCallbackType:
@@ -371,8 +384,18 @@ class LLModel:
 
     def _callback_decoder(self, callback: ResponseCallbackType) -> RawResponseCallbackType:
         def _raw_callback(token_id: int, response: bytes) -> bool:
-            nonlocal callback
-            return callback(token_id, response.decode("utf-8", "replace"))
+            nonlocal self, callback
+            
+            self.buffer += response
+            self.collector += response
+            
+            try:
+                decoded = self.buffer.decode('utf-8', 'strict')
+                self.buffer.clear()
+
+                return callback(token_id, decoded)     
+            except ValueError:
+                return True
 
         return _raw_callback
 
