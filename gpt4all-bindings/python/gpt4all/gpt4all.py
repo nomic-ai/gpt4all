@@ -5,7 +5,7 @@ import os
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Union, Optional
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 import requests
 from tqdm import tqdm
@@ -13,22 +13,22 @@ from tqdm import tqdm
 from . import pyllmodel
 
 # TODO: move to config
-DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace(
-    "\\", "\\\\"
-)
+DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
 
 DEFAULT_MODEL_CONFIG = {
     "systemPrompt": "",
     "promptTemplate": "### Human: \n{0}\n### Assistant:\n",
 }
 
-ConfigType = Dict[str,str]
+ConfigType = Dict[str, str]
 MessageType = Dict[str, str]
+
 
 class Embed4All:
     """
     Python class that handles embeddings for GPT4All.
     """
+
     def __init__(
         self,
         n_threads: Optional[int] = None,
@@ -41,10 +41,7 @@ class Embed4All:
         """
         self.gpt4all = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin', n_threads=n_threads)
 
-    def embed(
-        self,
-        text: str
-    ) -> List[float]:
+    def embed(self, text: str) -> List[float]:
         """
         Generate an embedding.
 
@@ -55,6 +52,7 @@ class Embed4All:
             An embedding of your document of text.
         """
         return self.gpt4all.model.generate_embedding(text)
+
 
 class GPT4All:
     """
@@ -84,9 +82,7 @@ class GPT4All:
         self.model_type = model_type
         self.model = pyllmodel.LLModel()
         # Retrieve model and download if allowed
-        self.config: ConfigType = self.retrieve_model(
-            model_name, model_path=model_path, allow_download=allow_download
-        )
+        self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
         self.model.load_model(self.config["path"])
         # Set n_threads
         if n_threads is not None:
@@ -170,9 +166,7 @@ class GPT4All:
         elif allow_download:
             url = config.pop("url", None)
 
-            config["path"] = GPT4All.download_model(
-                model_filename, model_path, verbose=verbose, url=url
-            )
+            config["path"] = GPT4All.download_model(model_filename, model_path, verbose=verbose, url=url)
         else:
             raise ValueError("Failed to retrieve model")
 
@@ -281,19 +275,24 @@ class GPT4All:
         )
 
         if self._is_chat_session_activated:
-            generate_kwargs["reset_context"] = len(self.current_chat_session) == 1 # check if there is only one message, i.e. system prompt
+            # check if there is only one message, i.e. system prompt:
+            generate_kwargs["reset_context"] = len(self.current_chat_session) == 1
             self.current_chat_session.append({"role": "user", "content": prompt})
 
             prompt = self._format_chat_prompt_template(
-                messages = self.current_chat_session[-1:],
-                default_prompt_header = self.current_chat_session[0]["content"] if generate_kwargs["reset_context"] else "",
+                messages=self.current_chat_session[-1:],
+                default_prompt_header=self.current_chat_session[0]["content"]
+                if generate_kwargs["reset_context"]
+                else "",
             )
         else:
             generate_kwargs["reset_context"] = True
 
         # Prepare the callback, process the model response
         output_collector: List[MessageType]
-        output_collector = [{"content": ""}]  # placeholder for the self.current_chat_session if chat session is not activated
+        output_collector = [
+            {"content": ""}
+        ]  # placeholder for the self.current_chat_session if chat session is not activated
 
         if self._is_chat_session_activated:
             self.current_chat_session.append({"role": "assistant", "content": ""})
