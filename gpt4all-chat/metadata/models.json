@@ -289,6 +289,6 @@
     "type": "Starcoder",
     "systemPrompt": " ",
     "promptTemplate": "%1",
-    "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based</ul>",
+    "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based</ul>"
   }
 ]
