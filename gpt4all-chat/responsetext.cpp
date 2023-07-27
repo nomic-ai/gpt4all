@@ -1015,6 +1015,7 @@ void ResponseText::handleCodeBlocks()
 
         QTextCharFormat codeBlockCharFormat;
         QFont monospaceFont("Courier");
+        monospaceFont.setPointSize(QGuiApplication::font().pointSize() + 2);
         if (monospaceFont.family() != "Courier") {
             monospaceFont.setFamily("Monospace"); // Fallback if Courier isn't available
         }
