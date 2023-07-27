@@ -121,10 +121,11 @@ def train(accelerator, config):
         path = os.path.basename(config["checkpoint"])
         training_difference = os.path.splitext(path)[0]
         resume_step = int(training_difference.replace("step_", ""))
-        train_dataloader = accelerator.skip_first_batches(train_dataloader, resume_step)
-        accelerator.print(f"Resuming from step {resume_step}")
+        starting_epoch = resume_step // len(train_dataloader)
+        resume_step -= starting_epoch * len(train_dataloader)
     else:
         resume_step = 0
+        starting_epoch = 0
 
 
     # log gradients
@@ -134,10 +135,18 @@ def train(accelerator, config):
 
     accelerator.wait_for_everyone()
 
-    for epoch in range(0, config["num_epochs"]):
+    for epoch in range(starting_epoch, config["num_epochs"]):
         train_loss = MeanMetric(nan_strategy="error").to(model.device)
-        for step, batch in enumerate(tqdm(train_dataloader)):
-            curr_step = epoch * len(train_dataloader) + step
+
+        if config["checkpoint"] and epoch == starting_epoch:
+            # We need to skip steps until we reach the resumed step
+            active_dataloader = accelerator.skip_first_batches(train_dataloader, resume_step)
+        else:
+            # After the first iteration though, we need to go back to the original dataloader
+            active_dataloader = train_dataloader
+
+        for step, batch in enumerate(tqdm(active_dataloader)):
+            curr_step = epoch * len(active_dataloader) + step + resume_step
             model.train()
             outputs = model(**batch)
             loss = outputs.loss
@@ -157,7 +166,7 @@ def train(accelerator, config):
                 if config["wandb"]:
                     accelerator.log({"lr": scheduler.get_last_lr()[0]}, step=curr_step)
 
-            if (step + 1) % gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
+            if (step + 1) % gradient_accumulation_steps == 0 or step == len(active_dataloader) - 1:
                 optimizer.step()
                 scheduler.step()
                 optimizer.zero_grad()
@@ -166,7 +175,7 @@ def train(accelerator, config):
             if step > 0 and step % config["save_every"] == 0:
                 accelerator.save_state(f"{config['output_dir']}/step_{curr_step}")
 
-            if step > 0 and (step % config["eval_every"] == 0 or step == len(train_dataloader) - 1):
+            if step > 0 and (step % config["eval_every"] == 0 or step == len(active_dataloader) - 1):
                 val_loss = evaluate(model, val_dataloader)
 
                 log_train = {
@@ -238,3 +247,4 @@ if __name__ == "__main__":
         accelerator = Accelerator()
 
     train(accelerator, config=config)
+
