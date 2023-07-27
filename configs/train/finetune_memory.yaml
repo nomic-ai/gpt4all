@@ -5,7 +5,7 @@ version: null
 gradient_checkpointing: true
 save_name: "nomic-ai/lethe"
 push_to_hub: false
-memory_attn_layer: 12
+memory_attn_layer: [9, 12, 15]
 
 # dataset
 streaming: false
@@ -17,7 +17,7 @@ pct_test: 0.05
 q_column: "question"
 a_column: "answer"
 context_column: "text"
-num_memories_per_index: 2000000
+num_memories_per_index: 2048
 num_neighbors_to_retrieve: 2
 num_neighbors_to_store: 1 
 mem_chunk_size: 64
@@ -26,15 +26,15 @@ mem_chunk_size: 64
 lr: 1.0e-5
 min_lr: 0 
 weight_decay: 0.0
-eval_every: 100 
-save_every: 100
+eval_every: 250 
+save_every: 250
 log_grads_every: 100
 log_lr_every: 10
-output_dir: "ckpts/mem_attn_no_cosine_sim"
+output_dir: "ckpts/qk_no_norm"
 checkpoint: null
 lora: false
 warmup_steps: 200
-num_epochs: 5 
+num_epochs: 2 
 debug: false
 scheduler: false
 
@@ -43,4 +43,3 @@ wandb: true
 wandb_entity: gpt4all
 wandb_project_name: mem_attn
 seed: 42
-

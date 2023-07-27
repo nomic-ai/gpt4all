@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from gpt4all.models import LetheForCausalLM
-from gpt4all.models.lethe.modeling_lethe import MemoryIndex
+from gpt4all.models.lethe.modeling_lethe import BatchedMemory
 from gpt4all.data.retrieval_dataloader import load_memory_augmented_data
 from gpt4all.train.metrics import f1_score, exact_match_score
 from gpt4all.utils.read import read_config
@@ -28,17 +28,21 @@ def greedy_search(input_ids, model, tokenizer, max_new_tokens=100):
         while True:
             if num_new_tokens >= max_new_tokens:
                 break
-            outputs = model(input_ids, save_kv=False)
+            attention_mask = input_ids.ne(tokenizer.pad_token_id)
+            outputs = model(input_ids, attention_mask=attention_mask, save_kv=False)
 
-            new_tokens = torch.argmax(outputs.logits[:, -1, :], dim=-1)
+            next_token_idx = torch.argmax((input_ids == tokenizer.pad_token_id).type(torch.float32))
+            # -1 because logits at last position predict next token
+            new_token = torch.argmax(outputs.logits[:, next_token_idx - 1, :], dim=-1)
 
-            input_ids = torch.cat([input_ids, new_tokens.unsqueeze(1)], dim=-1)
+            input_ids[:, next_token_idx] = new_token
+
             num_new_tokens += 1
 
-            if torch.equal(input_ids[0, -1].cpu(), torch.tensor(tokenizer.eos_token_id)):
+            if torch.equal(new_token.cpu(), torch.tensor(tokenizer.eos_token_id)):
                 break
         
-    print(tokenizer.batch_decode(input_ids, skip_special_tokens=True))
+    print(f"GENERATED: {tokenizer.batch_decode(input_ids, skip_special_tokens=True)}")
 
     return input_ids
     
@@ -63,10 +67,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model_config = AutoConfig.from_pretrained(config["model_name"])
 
 head_size = model_config.hidden_size // model_config.num_attention_heads
-index = MemoryIndex(head_size,
-            config["num_memories_per_index"],
-            model_config.num_attention_heads
-)
+index = BatchedMemory(config["batch_size"],
+                        head_size,
+                        config["num_memories_per_index"],
+                        model_config.num_attention_heads,
+    )
 model = LetheForCausalLM.from_pretrained(config["model_name"], 
                                     revision=config['version'] if 'version' in config else None,
                                     memory_attn_layer=config["memory_attn_layer"],
@@ -90,16 +95,19 @@ with torch.no_grad():
                 mem_chunk = memories[chunk_start:chunk_end]
                 model(input_ids=mem_chunk.to(device))
 
-        del memories
         torch.cuda.empty_cache()
         qa_inputs = batch["input_ids"]
         qa_labels = batch["labels"]
         for i in range(qa_inputs.shape[0]):
             inputs = qa_inputs[i].to(device)
+            print(f"EXPECTED: {tokenizer.decode(inputs, skip_special_tokens=True)}")
             labels = qa_labels[i].to(device)
+
             cutoff = torch.argmax((labels != -100).type(torch.float32))
-            greedy_search(inputs[:cutoff.item()].unsqueeze(0).to(device), model, tokenizer)
-            print(tokenizer.decode(inputs, skip_special_tokens=True))
+            inputs[cutoff:] = tokenizer.pad_token_id
+            greedy_search(inputs.unsqueeze(0).to(device), model, tokenizer)
+            print(f"CONTEXT: {tokenizer.decode(memories[i], skip_special_tokens=True)}")
+            import pdb; pdb.set_trace()
 
 
         # batch_loss = calc_loss_per_item(outputs.logits, qa_labels.to(device))

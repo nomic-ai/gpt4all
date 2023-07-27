@@ -5,7 +5,7 @@ def tokenize_inputs(config, tokenizer, examples, input_col, target_col):
 
     # hacky backward compatible
     different_eos = tokenizer.eos_token != "</s>"
-    out = {"labels": [], "input_ids": []}
+    out = {"labels": [], "input_ids": [], "attention_mask": []}
     for prompt, response in zip(examples[input_col], examples[target_col]):
         if different_eos:
             if response.count("</s> \n") > 0:
@@ -42,9 +42,10 @@ def tokenize_inputs(config, tokenizer, examples, input_col, target_col):
             print(response)
             raise
 
-        input_tokens = tokenizer.pad({"input_ids": input_tokens}, padding="max_length", max_length=max_length)["input_ids"]
+        tokenized = tokenizer.pad({"input_ids": input_tokens}, padding="max_length", max_length=max_length)
         out["labels"].append(labels)
-        out["input_ids"].append(input_tokens)
+        out["input_ids"].append(tokenized["input_ids"])
+        out["attention_mask"].append(tokenized["attention_mask"])
 
     out = {k: torch.stack(v) if isinstance(v, list) else v for k, v in out.items()}
 

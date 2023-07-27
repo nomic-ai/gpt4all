@@ -116,6 +116,7 @@ def train(accelerator, config):
 
     if config["checkpoint"]:
         accelerator.load_state(config["checkpoint"])
+        import pdb; pdb.set_trace()
         accelerator.print(f"Resumed from checkpoint: {config['checkpoint']}")
         path = os.path.basename(config["train_args"]["resume_from_checkpoint"])
         training_difference = os.path.splitext(path)[0]
@@ -131,9 +132,12 @@ def train(accelerator, config):
     for epoch in range(config["num_epochs"]):
         train_loss = MeanMetric(nan_strategy="error").to(model.device)
         for step, batch in enumerate(tqdm(train_dataloader)):
+            curr_step = step + epoch * len(train_dataloader)
             model.train()
             outputs = model(**batch)
             loss = outputs.loss
+            if config["wandb"]:
+                accelerator.log({"loss": loss}, step=curr_step)
 
             # gather loss before backprop in case of gradient accumulation
             loss_values = accelerator.gather_for_metrics({"loss": loss.detach().float()})
@@ -157,7 +161,13 @@ def train(accelerator, config):
 
             if step > 0 and step % config["save_every"] == 0:
                 curr_step = step + epoch * len(train_dataloader)
-                accelerator.save_state(f"{config['output_dir']}/step_{curr_step}")
+                unwrapped_model = accelerator.unwrap_model(model)
+                unwrapped_model.save_pretrained(
+                    f"{config['output_dir']}/step_{curr_step}",
+                    is_main_process=accelerator.is_main_process,
+                    save_function=accelerator.save,
+                    state_dict=accelerator.get_state_dict(model),
+                )
 
             if step > 0 and (step % config["eval_every"] == 0 or step == len(train_dataloader) - 1):
                 val_loss = evaluate(model, val_dataloader)

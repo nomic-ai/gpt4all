@@ -7,14 +7,12 @@ from argparse import ArgumentParser
 from gpt4all.utils.read import read_config
 from accelerate import Accelerator
 from accelerate.utils import DummyScheduler, DummyOptim, set_seed
-from gpt4all.data.retrieval_dataloader import load_memory_augmented_data
+from gpt4all.data.enwik8 import load_enwik8_dataloader
 from torchmetrics import MeanMetric
 from tqdm import tqdm
-from gpt4all.models import LetheForCausalLM
+from gpt4all.models import LetheForCausalLM, LetheConfig
 from gpt4all.models.lethe.modeling_lethe import BatchedMemory
 import wandb
-import pyarrow as pa
-from pyarrow import feather
 
 torch.backends.cuda.matmul.allow_tf32 = True
 
@@ -25,60 +23,32 @@ def format_metrics(metrics, split, prefix=""):
     return log
 
 
-def calculate_per_example_loss(logits, labels):
-    lm_logits = logits[:, :-1, :].contiguous()
-    lm_labels = labels[:, 1:].contiguous()
-    loss = F.cross_entropy(lm_logits.view(-1, lm_logits.size(-1)), lm_labels.view(-1), reduction="none")
-    loss = loss.reshape(labels.shape[0], -1).mean(dim=-1)
-
-    # return tensor of shape (B,) where B is the batch size
-    return loss.cpu().tolist()
-
-
-def evaluate(model, index, config, val_dataloader, main_process=False):
+def evaluate(model, index, pad_token_id, config, val_dataloader, main_process=False):
     model.eval()
     val_loss = MeanMetric(nan_strategy="error").to(model.device)
 
-    ids = []
-    losses = []
+    chunk_size = config["seq_len"]
     with torch.no_grad():
         for batch in tqdm(val_dataloader, disable=not main_process):
-            batch["id"] = batch["id"].detach().cpu()
-            memories = batch["retrieved_context"]
+            seq_len = batch.shape[1]
+            for chunk_start in range(0, seq_len, chunk_size):
+                chunk_end = min(seq_len, chunk_start + chunk_size)
+                inputs = batch[:, chunk_start:chunk_end].to(model.device)
+                labels = inputs.clone()
+                outputs = model(input_ids=inputs, 
+                                attention_mask=inputs.ne(pad_token_id),
+                                labels=labels, 
+                                log_attn_scores=False,
+                                step=None,
+                                save_kv=True,
+                )
+                loss = outputs.loss / config["segments"]
+                loss_values = accelerator.gather_for_metrics({"loss": loss.item()})
+                val_loss.update(loss_values["loss"])
 
-            memories = memories[:, :config["num_neighbors_to_store"], :]
-            memories = memories.reshape(-1, memories.shape[-1])
+            index.reset()
 
-            for chunk_start in range(0, memories.shape[0], config["mem_chunk_size"]):
-                chunk_end = min(memories.shape[0], chunk_start + config["mem_chunk_size"])
-                mem_chunk = memories[chunk_start:chunk_end]
-                model(input_ids=mem_chunk)
-
-            qa_inputs = batch["input_ids"]
-            qa_labels = batch["labels"]
-            outputs = model(input_ids=qa_inputs, 
-                            labels=qa_labels, 
-                            save_kv=False
-            )
-
-            del memories
-            torch.cuda.empty_cache()
-            loss_values = accelerator.gather_for_metrics({"loss": outputs["loss"].detach()})
-
-            for ind in index.values():
-                ind.reset()
-            val_loss.update(loss_values["loss"])
-
-            per_example_loss = calculate_per_example_loss(outputs["logits"], qa_labels)
-
-            losses.extend(per_example_loss)
-            ids.extend(batch["id"].tolist())
-
-    ids = pa.array(ids)
-    losses = pa.array(losses)
-    schema = pa.schema([("loss", pa.float64()), ("id", pa.int32())])
-    table = pa.Table.from_arrays([losses, ids], schema=schema)
-    return val_loss, table
+    return val_loss
 
 
 def train(accelerator, config):
@@ -94,7 +64,7 @@ def train(accelerator, config):
 
         
     with accelerator.main_process_first():
-        train_dataloader, val_dataloader = load_memory_augmented_data(config, tokenizer) 
+        train_dataloader, val_dataloader = load_enwik8_dataloader(config, tokenizer)
 
 
     if accelerator.state.deepspeed_plugin is not None:
@@ -109,23 +79,21 @@ def train(accelerator, config):
 
     checkpoint = config["gradient_checkpointing"]
     
-    model_config = AutoConfig.from_pretrained(config["model_name"])
+    model_config = LetheConfig.from_pretrained(config["model_name"])
+    model_config.memory_attn_layer = config["memory_attn_layer"]
+    model_config.num_neighbors_to_retrieve = config["num_neighbors_to_retrieve"]
+    model_config.use_cache = False if checkpoint else True
 
     head_size = model_config.hidden_size // model_config.num_attention_heads
-    indices = {i - 1: BatchedMemory(config["batch_size"],
+    index = BatchedMemory(config["batch_size"],
                         head_size,
                         config["num_memories_per_index"],
                         model_config.num_attention_heads,
-    ) for i in config["memory_attn_layer"]}
-    
-    model = LetheForCausalLM.from_pretrained(config["model_name"], 
-                                             revision=config['version'] if 'version' in config else None,
-                                             use_cache=False if checkpoint else True,
-                                             memory_attn_layer=config["memory_attn_layer"],
-                                             num_neighbors_to_retrieve=config["num_neighbors_to_retrieve"],
-                                             index=indices,
-                                             tracker=accelerator.get_tracker("wandb"),
-                                            )
+    )
+
+    model = LetheForCausalLM(model_config, 
+                             index=index,
+                             tracker=accelerator.get_tracker("wandb"))
 
 
     accelerator.print(f"Training a {model.num_parameters():,} parameter model")
@@ -160,8 +128,8 @@ def train(accelerator, config):
             scheduler = DummyScheduler(
                 optimizer, total_num_steps=total_num_steps, warmup_num_steps=config["warmup_steps"]
             )
-        model, optimizer, train_dataloader, val_dataloader, scheduler = accelerator.prepare(
-                model, optimizer, train_dataloader, val_dataloader, scheduler
+        model, optimizer, scheduler, train_dataloader, val_dataloader = accelerator.prepare(
+                model, optimizer, scheduler, train_dataloader, val_dataloader
         )
         use_scheduler = True
     else:
@@ -189,63 +157,51 @@ def train(accelerator, config):
 
     main_process = accelerator.is_main_process
 
+    chunk_size = config["seq_len"]
     for epoch in range(config["num_epochs"]):
         train_loss = MeanMetric(nan_strategy="error").to(model.device)
         for step, batch in enumerate(tqdm(train_dataloader, disable=not main_process)):
-            curr_step = step + epoch * len(train_dataloader)
-            memories = batch["retrieved_context"]
-            memories = memories[:, :config["num_neighbors_to_store"], :]
-            memories = memories.reshape(-1, memories.shape[-1])
-
-            # need to set to eval so we don't do mem attn as it's slow
-            model.eval()
-            with torch.no_grad():
-                for chunk_start in range(0, memories.shape[0], config["mem_chunk_size"]):
-                    chunk_end = min(memories.shape[0], chunk_start + config["mem_chunk_size"])
-                    mem_chunk = memories[chunk_start:chunk_end]
-                    model(input_ids=mem_chunk)
-
-            del memories
-            torch.cuda.empty_cache()
-
+            epoch_step = epoch * len(train_dataloader) + step * config["segments"]
+            seq_len = batch["input_ids"].shape[1]
             model.train()
-            qa_inputs = batch["input_ids"]
-            attn_mask = batch["attention_mask"]
-            qa_labels = batch["labels"]
-            outputs = model(input_ids=qa_inputs, 
-                            attention_mask=attn_mask,
-                            labels=qa_labels, 
-                            log_attn_scores=True,
-                            step=curr_step,
-                            save_kv=False,
-            )
-            loss = outputs.loss
-            if config["wandb"]:
-                accelerator.log({"loss": loss}, step=curr_step)
+            for i, chunk_start in enumerate(range(0, seq_len, chunk_size)):
+                curr_step = epoch_step + i
+                chunk_end = min(seq_len, chunk_start + chunk_size)
+                inputs = batch["input_ids"][:, chunk_start:chunk_end]
+                labels = inputs.clone()
+                labels[labels == tokenizer.pad_token_id] = -100
+                outputs = model(input_ids=inputs, 
+                                attention_mask=inputs.ne(tokenizer.pad_token_id),
+                                labels=labels, 
+                                log_attn_scores=True,
+                                step=curr_step,
+                                save_kv=True,
+                )
+                loss = outputs.loss / config["segments"]
 
+                if config["wandb"]:
+                    accelerator.log({"loss": loss}, step=curr_step)
 
-            # gather loss before backprop in case of gradient accumulation
-            loss_values = accelerator.gather_for_metrics({"loss": loss.detach().float()})
-            train_loss.update(loss_values["loss"])
+                # gather loss before backprop in case of gradient accumulation
+                loss_values = accelerator.gather_for_metrics({"loss": loss.detach().float()})
+                train_loss.update(loss_values["loss"])
 
-            loss = loss / gradient_accumulation_steps
-            accelerator.backward(loss)
-            # !! don't reset index until after backwards pass
-            for index in indices.values():
-                index.reset()
-            # get gradient norm of all params
+                loss = loss / gradient_accumulation_steps
+                accelerator.backward(loss)
 
-            # log LR in case something weird happens 
-            if config["wandb"]:
-                if step > 0 and step % (config["log_lr_every"] ) == 0:
-                    lr = optimizer.param_groups[0]["lr"]
-                    accelerator.log({"lr": lr}, step=curr_step)
+                # log LR in case something weird happens 
+                if config["wandb"]:
+                    if step > 0 and step % (config["log_lr_every"] ) == 0:
+                        lr = optimizer.param_groups[0]["lr"]
+                        accelerator.log({"lr": lr}, step=curr_step)
 
-            if (step + 1) % gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
                 optimizer.step()
                 if use_scheduler:
                     scheduler.step()
                 optimizer.zero_grad()
+            
+            # reset index on batch end
+            index.reset()
 
             if step > 0 and config["save_every"] > 0 and step % config["save_every"] == 0:
                 # accelerator.save_state(f"{config['output_dir']}/step_{curr_step}")
@@ -258,10 +214,7 @@ def train(accelerator, config):
                 )
 
             if step > 0 and (step % config["eval_every"] == 0 or step == len(train_dataloader) - 1):
-                val_loss, loss_table = evaluate(model, indices, config, val_dataloader, main_process=main_process)
-
-                local_rank = accelerator.process_index
-                feather.write_feather(loss_table, f"{config['output_dir']}/val_losses_step_{curr_step}_rank_{local_rank}.feather")
+                val_loss = evaluate(model, index, tokenizer.pad_token_id, config, val_dataloader, main_process=main_process)
 
                 log_train = {
                         "train_loss": train_loss.compute()

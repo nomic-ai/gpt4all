@@ -18,6 +18,8 @@ import wandb
 import math
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+import plotly.express as px
+import pandas as pd
 from typing import Optional, Tuple, Union
 
 import torch
@@ -121,59 +123,105 @@ class MemoryIndex:
         # NOTE: we are storing kv pairs, instead indices for both keys and values
         self.key_indices = [HNSWIndex(num_mems, hidden_dim) for _ in range(nheads)]
 
-        shape = (num_mems, nheads, 2, hidden_dim)
+        shape = (nheads, num_mems, 2, hidden_dim)
         self.kv_pairs = np.zeros(shape, dtype=np.float32)
         self.idx_offset = 0
 
     def add(self, keys, values):
-        # k/v are (bs, num_attention_heads, seq_len, head_size)
-        reshaped_keys = keys.reshape(keys.shape[0] * keys.shape[2], keys.shape[1], keys.shape[3])
-        reshaped_values = values.reshape(values.shape[0] * values.shape[2], values.shape[1], values.shape[3])
+        # k/v are (num_attention_heads, seq_len, head_size)
+        # keys = keys.reshape(keys.shape[1], keys.shape[0], keys.shape[2])
+        # values = values.reshape(values.shape[1], values.shape[0], values.shape[2])
 
         for head in range(self.nheads):
-            self.key_indices[head].add(reshaped_keys[:, head, :])
+            self.key_indices[head].add(keys[head, :, :])
 
-        kv_pairs = np.stack((reshaped_keys, reshaped_values), axis=2)
+        kv_pairs = np.stack((keys, values), axis=2)
 
-        if self.idx_offset + kv_pairs.shape[0] > self.kv_pairs.shape[0]:
-            raise ValueError("Not enough memory!")
+        if self.idx_offset + kv_pairs.shape[1] > self.kv_pairs.shape[1]:
+            # reset to 0 to overwrite oldest memories
+            self.idx_offet = 0
 
-        self.kv_pairs[self.idx_offset:self.idx_offset + kv_pairs.shape[0]] = kv_pairs
-        self.idx_offset += kv_pairs.shape[0]
+        self.kv_pairs[:, self.idx_offset:self.idx_offset + kv_pairs.shape[1]] = kv_pairs
+        self.idx_offset += kv_pairs.shape[1]
 
     def knn_query(self, query, k=1):
-        reshaped_query = query.reshape(query.shape[0] * query.shape[2], query.shape[1], query.shape[3])
-
         mem_keys = []
         mem_values = []
         mem_indices = []
 
         # we can prob make this better
         for head in range(self.nheads):
-            knn_indices = self.key_indices[head].query(reshaped_query[:, head, :], k=k)
-            kv_pairs = self.kv_pairs[:, head, :, :][knn_indices]
+            knn_indices = self.key_indices[head].query(query[head, :, :], k=k)
+            kv_pairs = self.kv_pairs[head, :, :, :][knn_indices]
             
             mem_keys.append(kv_pairs[:, :, 0, :])
             mem_values.append(kv_pairs[:, :, 1, :])
             mem_indices.append(knn_indices)
 
-        mem_keys = torch.from_numpy(np.stack(mem_keys, axis=1))
-        # (bs, num_attention_heads, seq_len, k, head_size)
-        mem_keys = mem_keys.view(query.shape[:-1] + (k,) + (query.shape[-1],))
+        mem_keys = torch.from_numpy(np.stack(mem_keys, axis=0))
+        # (num_attention_heads, seq_len, k, head_size)
+        # mem_keys = mem_keys.view(query.shape[:-1] + (k,) + (query.shape[-1],))
 
-        mem_values = torch.from_numpy(np.stack(mem_values, axis=1))
-        # (bs, num_attention_heads, seq_len, k, head_size)
-        mem_values = mem_values.view(query.shape[:-1] + (k,) + (query.shape[-1],))
+        mem_values = torch.from_numpy(np.stack(mem_values, axis=0))
+        # (num_attention_heads, seq_len, k, head_size)
+        # mem_values = mem_values.view(query.shape[:-1] + (k,) + (query.shape[-1],))
 
-        return mem_keys, mem_values, np.stack(mem_indices, axis=1)
+        return mem_keys, mem_values, np.stack(mem_indices, axis=0)
         
 
     def reset(self):
         for head in range(self.nheads):
             self.key_indices[head].reset()
 
-        self.kv_pairs = np.zeros((self.kv_pairs.shape[0], self.nheads, 2, self.kv_pairs.shape[-1]), dtype=np.float32)
+        self.kv_pairs = np.zeros(self.kv_pairs.shape, dtype=np.float32)
+        self.idx_offset = 0
 
+
+class BatchedMemory:
+    def __init__(self, batch_size, hidden_dim, num_mems, nheads):
+        self.indices = [MemoryIndex(hidden_dim, num_mems, nheads) for _ in range(batch_size)]
+
+        
+    def add(self, keys, values):
+        for bs in range(len(self.indices)):
+            self.indices[bs].add(keys[bs], values[bs])
+
+            
+    def knn_query(self, query, k=1):
+        batched_mem_keys = []
+        batched_mem_values = []
+        batched_labels = []
+
+        for bs in range(len(self.indices)):
+            knn_keys, knn_values, knn_labels = self.indices[bs].knn_query(query[bs], k=k)
+            batched_mem_keys.append(knn_keys)
+            batched_mem_values.append(knn_values)
+            batched_labels.append(knn_labels)
+
+            
+        return torch.stack(batched_mem_keys, dim=0), torch.stack(batched_mem_values, dim=0), np.stack(batched_labels, axis=0)
+        
+    def reset(self):
+        for bs in range(len(self.indices)):
+            self.indices[bs].reset()
+            
+
+class BatchedStorage:
+    def __init__(self, batch_size, hidden_dim, nheads, seq_len):
+        self.indices = np.zeros((batch_size, nheads, seq_len, 2, hidden_dim), dtype=np.float32)
+
+    def knn_query(self, query, k=None):
+        return torch.from_numpy(self.indices[:, :, :, 0, :]), torch.from_numpy(self.indices[:, :, :, 1, :])
+
+        
+    def add(self, keys, values):
+        self.indices[:, :, :, 0, :] = keys
+        self.indices[:, :, :, 1, :] = values
+
+    def reset(self):
+        self.indices = np.zeros_like(self.indices)
+    
+        
 
 class LethePreTrainedModel(PreTrainedModel):
     """
@@ -206,12 +254,13 @@ class LethePreTrainedModel(PreTrainedModel):
 
 
 class LetheAttention(nn.Module):
-    def __init__(self, config, memory_attention=False, index=None, tracker=None):
+    def __init__(self, config, memory_attention=False, index=None, layer_idx=None, tracker=None):
         super().__init__()
         self.num_attention_heads = config.num_attention_heads
         self.hidden_size = config.hidden_size
         self.head_size = self.hidden_size // self.num_attention_heads
         self.rotary_ndims = int(self.head_size * config.rotary_pct)
+        self.layer_idx = layer_idx
         max_positions = config.max_position_embeddings
         self.register_buffer(
             "bias",
@@ -274,7 +323,6 @@ class LetheAttention(nn.Module):
         key = qkv[..., self.head_size : 2 * self.head_size].permute(0, 2, 1, 3)
         value = qkv[..., 2 * self.head_size :].permute(0, 2, 1, 3)
 
-        # if self.memory:
         if self.memory:
             # QKNorm: https://arxiv.org/abs/2010.04245
             query = F.normalize(query, dim=-1)
@@ -309,17 +357,28 @@ class LetheAttention(nn.Module):
                 self.index.add(key.cpu().detach().to(torch.float32).numpy(), value.cpu().detach().to(torch.float32).numpy())
 
             knn_keys, knn_values, knn_labels = self.index.knn_query(query.cpu().detach().to(torch.float32).numpy(), k=self.num_neighbors)
+            # if log_attn_scores:
+            #     batch_size = query.shape[0]
+            #     seq_len = query.shape[-2]
+
+            #     key_labels = knn_labels // seq_len
+            #     key_labels = key_labels.reshape(batch_size, seq_len, self.num_attention_heads, -1)
+            #     correct_keys = np.equal(key_labels, np.arange(batch_size)[:, np.newaxis, np.newaxis, np.newaxis])
+            #     # calculate the accuracy 
+            #     key_acc = np.sum(correct_keys) / np.prod(correct_keys.shape)
+
+            #     self.tracker.log({"retrieved_acc": key_acc}, step=step)
+
             if log_attn_scores:
-                batch_size = query.shape[0]
-                seq_len = query.shape[-2]
+                total_examples = 0
+                unique_examples = 0
+                for bs in range(query.shape[0]):
+                    for head in range(query.shape[1]):
+                        labels_per_head = knn_labels[bs, head, :, 0].tolist()
+                        total_examples += len(labels_per_head)
+                        unique_examples += len(set(labels_per_head))
 
-                key_labels = knn_labels // seq_len
-                key_labels = key_labels.reshape(batch_size, seq_len, self.num_attention_heads, -1)
-                correct_keys = np.equal(key_labels, np.arange(batch_size)[:, np.newaxis, np.newaxis, np.newaxis])
-                # calculate the accuracy 
-                key_acc = np.sum(correct_keys) / np.prod(correct_keys.shape)
-
-                self.tracker.log({"retrieved_acc": key_acc}, step=step)
+                self.tracker.log({"unique_retrieved_pct": unique_examples / total_examples}, step=step)
 
             attn_output = self._mem_attn(query,
                                     knn_keys.to(query.device).to(value.dtype),
@@ -407,6 +466,7 @@ class LetheAttention(nn.Module):
             local_attn_scores = local_attn_scores + attention_mask
 
         mem_attn_scores = torch.einsum("bhsd, bhsnd-> bhsn", query, knn_key)
+        # mem_attn_scores = torch.matmul(query, knn_key.transpose(-1, -2))
         # attn_scores: [bs, seq_len, num_attention_heads, knn]
         mem_attn_scores = mem_attn_scores * scale
 
@@ -417,48 +477,56 @@ class LetheAttention(nn.Module):
         attn_weights = attn_weights.to(local_value.dtype)
 
         mem_attn_weights, local_attn_weights = attn_weights.split([self.num_neighbors, local_attn_scores.size(-1)], dim=-1)
-        if log_attn_scores:
-            # (bs, seq_len, num_attention_heads, knn) probabilities
-            # curate (x,y) pairs
-            # where x is attention weight, y is accuracy of retrieved token
-            bs, seq_len = mem_attn_weights.size(0), mem_attn_weights.size(2)
-            key_labels = knn_labels // seq_len
-            key_labels = key_labels.reshape(bs, self.num_attention_heads, seq_len, -1)
-            correct_keys = np.equal(key_labels, np.arange(bs)[:, np.newaxis, np.newaxis, np.newaxis])
+        # mem_attn_weights, local_attn_weights = attn_weights.chunk(2, dim=-1)
 
-            bin_width = 0.05
 
-            # Calculate the number of bins
-            num_bins = int(1 / bin_width)
+        # if log_attn_scores:
+        #     # (bs, seq_len, num_attention_heads, knn) probabilities
+        #     # curate (x,y) pairs
+        #     # where x is attention weight, y is accuracy of retrieved token
+        #     bs, seq_len = mem_attn_weights.size(0), mem_attn_weights.size(2)
+        #     key_labels = knn_labels // seq_len
+        #     key_labels = key_labels.reshape(bs, self.num_attention_heads, seq_len, -1)
+        #     correct_keys = np.equal(key_labels, np.arange(bs)[:, np.newaxis, np.newaxis, np.newaxis])
 
-            # Create empty lists for storing bin probabilities and accuracies
-            bin_probabilities = []
-            bin_accuracies = []
+        #     bin_width = 0.05
 
-            probs = mem_attn_weights.clone().detach().cpu().numpy().reshape(-1).tolist()
-            correct_keys = correct_keys.reshape(-1).tolist()
+        #     # Calculate the number of bins
+        #     num_bins = int(1 / bin_width)
 
-            # Iterate over each bin
-            for i in range(num_bins):
-                bin_lower = i * bin_width
-                bin_upper = (i + 1) * bin_width
+        #     # Create empty lists for storing bin probabilities and accuracies
+        #     bin_probabilities = []
+        #     bin_accuracies = []
+        #     bin_sizes = []
 
-                # Filter data points within the current bin range
-                bin_x_values = [x for x in probs if bin_lower <= x < bin_upper]
-                bin_y_values = [y for j, y in enumerate(correct_keys) if bin_lower <= probs[j] < bin_upper]
+        #     probs = mem_attn_weights.clone().detach().cpu().numpy().reshape(-1).tolist()
+        #     correct_keys = correct_keys.reshape(-1).tolist()
 
-                # Calculate accuracy for the bin
-                total = len(bin_x_values)
-                correct = sum(bin_y_values)
-                accuracy = correct / total if total > 0 else 0
+        #     # Iterate over each bin
+        #     for i in range(num_bins):
+        #         bin_lower = i * bin_width
+        #         bin_upper = (i + 1) * bin_width
 
-                # Store the probability and accuracy for the bin
-                bin_probabilities.append((bin_lower + bin_upper) / 2)
-                bin_accuracies.append(accuracy)
+        #         # Filter data points within the current bin range
+        #         bin_x_values = [x for x in probs if bin_lower <= x < bin_upper]
+        #         bin_y_values = [y for j, y in enumerate(correct_keys) if bin_lower <= probs[j] < bin_upper]
 
-            data = [[x, y] for x, y in zip(bin_probabilities, bin_accuracies)]
-            table = wandb.Table(data=data, columns=["attn_prob", "retrieved_acc"])
-            self.tracker.log({"attn_vs_acc": wandb.plot.scatter(table, "attn_prob", "retrieved_acc")}, step=step)
+        #         # Calculate accuracy for the bin
+        #         total = len(bin_x_values)
+        #         correct = sum(bin_y_values)
+        #         accuracy = correct / total if total > 0 else 0
+
+        #         # Store the probability and accuracy for the bin
+        #         bin_probabilities.append((bin_lower + bin_upper) / 2)
+        #         bin_accuracies.append(accuracy)
+        #         bin_sizes.append(len(bin_x_values))
+
+        #     df = pd.DataFrame({"attn_prob": bin_probabilities, "retrieved_acc": bin_accuracies, "bin_size": bin_sizes})
+
+        #     fig = px.scatter(df, x="attn_prob", y="retrieved_acc", 
+        #                      color="bin_size", hover_data=["attn_prob", "retrieved_acc", "bin_size"],
+        #                      title="Attention Probability vs Retrieved Accuracy")
+        #     self.tracker.log({"attn_vs_acc": fig}, step=step)
 
 
         if log_attn_scores:
@@ -470,10 +538,10 @@ class LetheAttention(nn.Module):
                 mem_hist = torch.histc(mem_flat, bins=20, min=0, max=1)
                 mem_bins = torch.linspace(0, 1, steps=20 + 1)
                 plt.stairs(mem_hist.tolist(), mem_bins.tolist())
-                plt.title(f"mem_attn_score_{head}")
+                plt.title(f"mem_attn_score_{head}_layer_{self.layer_idx}")
                 # set arbitrarily but we want to see those peaks!!
                 plt.ylim((0, 1000))
-                self.tracker.log({f"mem_attn_score_{head}": wandb.Image(plt)}, step=step)
+                self.tracker.log({f"mem_attn_score_{head}_layer_{self.layer_idx}": wandb.Image(plt)}, step=step)
                 plt.close()
 
 
@@ -482,15 +550,16 @@ class LetheAttention(nn.Module):
                 local_hist = torch.histc(local_flat, bins=20, min=0, max=1)
                 local_bins = torch.linspace(0, 1, steps=20 + 1)
                 plt.stairs(local_hist.tolist(), local_bins.tolist())
-                plt.title(f"local_attn_score_{head}")
+                plt.title(f"local_attn_score_{head}_layer_{self.layer_idx}")
                 # set arbitrarily but we want to see those peaks!!
                 plt.ylim((0, 1000))
-                self.tracker.log({f"local_attn_score_{head}": wandb.Image(plt)}, step=step)
+                self.tracker.log({f"local_attn_score_{head}_layer_{self.layer_idx}": wandb.Image(plt)}, step=step)
                 plt.close()
 
 
         # attn_output: [bs, num_attention_heads, seq_len, attn_head_size]
         mem_attn_output = torch.einsum("bhsn, bhsnd-> bhsd", mem_attn_weights, knn_value)
+        # mem_attn_output = torch.matmul(mem_attn_weights, knn_value)
         local_attn_output = torch.matmul(local_attn_weights, local_value)
 
         # TODO: do we need flamingo style gating 
@@ -524,8 +593,6 @@ class LetheAttention(nn.Module):
             alpha=1.0 if self.memory else (torch.tensor(1.0, dtype=self.norm_factor.dtype, device=self.norm_factor.device) / self.norm_factor)
         )
         attn_scores = attn_scores.view(batch_size, num_attention_heads, query_length, key_length)
-        if self.memory:
-            attn_scores = attn_scores * self.scale.exp()
 
         mask_value = torch.finfo(attn_scores.dtype).min
         # Need to be a tensor, otherwise we get error: `RuntimeError: expected scalar type float but found double`.
@@ -610,12 +677,15 @@ class LetheMLP(nn.Module):
 
 
 class LetheLayer(nn.Module):
-    def __init__(self, config, memory_attention=False, index=None, tracker=None):
+    def __init__(self, config, memory_attention=False, layer_idx=None, index=None, tracker=None):
         super().__init__()
         self.use_parallel_residual = config.use_parallel_residual
         self.input_layernorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.post_attention_layernorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
-        self.attention = LetheAttention(config, memory_attention=memory_attention, index=index, tracker=tracker)
+        self.attention = LetheAttention(config, memory_attention=memory_attention,
+                                        layer_idx=layer_idx,
+                                        index=index[layer_idx] if memory_attention else None,
+                                        tracker=tracker)
         self.mlp = LetheMLP(config)
 
     def forward(
@@ -676,8 +746,9 @@ class LetheModel(LethePreTrainedModel):
         self.embed_in = nn.Embedding(config.vocab_size, config.hidden_size)
 
         self.layers = nn.ModuleList([LetheLayer(config,
-                                                memory_attention=i+1 == config.memory_attn_layer,
-                                                index=index if i+1 == config.memory_attn_layer else None,
+                                                memory_attention=i+1 in config.memory_attn_layer,
+                                                layer_idx=i,
+                                                index=index,
                                                 tracker=tracker) 
                                      for i in range(config.num_hidden_layers)])
         self.final_layer_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)

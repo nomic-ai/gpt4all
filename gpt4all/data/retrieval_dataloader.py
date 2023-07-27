@@ -41,7 +41,7 @@ def load_retrieval_augmented_data(config, tokenizer, split="train", split_datase
     if encoder_column != "encoder_hidden_states":
         dataset = dataset.rename_column(encoder_column, "encoder_hidden_states")
 
-    columns_to_keep = ["input_ids", "labels", "encoder_hidden_states"]
+    columns_to_keep = ["input_ids", "attention_mask", "labels", "encoder_hidden_states"]
 
     col_names_to_rm = [col for col in dataset.column_names if col not in columns_to_keep]
     dataset = dataset.remove_columns(col_names_to_rm)
@@ -115,7 +115,7 @@ def load_memory_augmented_data(config, tokenizer, split="train", split_dataset=T
         **kwargs
     )
 
-    columns_to_keep = ["id", "input_ids", "labels", "retrieved_context"]
+    columns_to_keep = ["id", "input_ids", "attention_mask", "labels", "retrieved_context"]
 
     col_names_to_rm = [col for col in dataset.column_names if col not in columns_to_keep]
     dataset = dataset.remove_columns(col_names_to_rm)
@@ -128,12 +128,16 @@ def load_memory_augmented_data(config, tokenizer, split="train", split_dataset=T
             train_dataset.remove_columns("id"),
             batch_size=config["batch_size"],
             collate_fn=DefaultDataCollator(),
+            shuffle=True,
+            drop_last=True,
         )
 
         val_dataloader = DataLoader(
             val_dataset,
             batch_size=config["batch_size"],
             collate_fn=DefaultDataCollator(),
+            shuffle=True,
+            drop_last=True,
         )
 
         return train_dataloader, val_dataloader 

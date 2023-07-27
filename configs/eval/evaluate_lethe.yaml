@@ -1,9 +1,10 @@
 # model/tokenizer
-model_name: "/home/paperspace/gpt4all/gpt4all/train/ckpts/mem_attn/step_1000"
+model_name: "/home/paperspace/gpt4all/gpt4all/train/ckpts/qk_no_norm/step_500"
 tokenizer_name: "EleutherAI/pythia-1b"
 version: null
-gradient_checkpointing: false
+gradient_checkpointing: true
 memory_attn_layer: 12
+seed: 42
 
 
 # dataset

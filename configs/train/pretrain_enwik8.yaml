@@ -10,20 +10,21 @@ memory_attn_layer: 12
 # dataset
 streaming: false
 num_proc: 64
-dataset_path: "JeanKaddour/minipile" 
+dataset_path: "pg19"
 max_length: 2048
-batch_size: 64
+seq_len: 512
+segments: 16
+batch_size: 16
 pct_test: 0.05
-num_memories_per_index: 5000000
+num_memories_per_index: 100000
 mem_chunk_size: 512
-num_chunks: 10
 num_neighbors_to_retrieve: 32
 
 # train dynamics
-lr: 1.0e-4
+lr: 2.0e-4
 min_lr: 0 
 weight_decay: 0.0
-eval_every: 100 
+eval_every: 250 
 save_every: -1
 log_grads_every: 100
 log_lr_every: 10
@@ -38,6 +39,6 @@ scheduler: false
 # logging
 wandb: true
 wandb_entity: gpt4all
-wandb_project_name: minipile
+wandb_project_name: enwik8
 seed: 42
 

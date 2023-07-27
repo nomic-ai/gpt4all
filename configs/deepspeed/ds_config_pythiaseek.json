@@ -14,7 +14,7 @@
 	},
 	"gradient_clipping": 1.0,
 	"zero_optimization": {
-	  "stage": 2,
+	  "stage": 1,
 	  "offload_param": {
 		"device": "none"
 	  },
@@ -34,6 +34,16 @@
 			0.999
 		  ],
 		  "eps": 1e-08
+		}
+	  },
+	  "scheduler": {
+		"type": "WarmupDecayLR",
+		"params": {
+		  "warmup_min_lr": 0,
+		  "warmup_max_lr": "auto",
+		  "warmup_num_steps": "auto",
+		  "warmup_type": "linear",
+		  "total_num_steps": "auto"
 		}
 	  }
 }
