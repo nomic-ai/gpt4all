@@ -256,6 +256,7 @@
     "quant": "f16",
     "type": "Replit",
     "systemPrompt": " ",
+    "promptTemplate": "%1",
     "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>Licensed for commercial use</ul>",
     "url": "https://huggingface.co/nomic-ai/ggml-replit-code-v1-3b/resolve/main/ggml-replit-code-v1-3b.bin"
   },
@@ -273,5 +274,21 @@
     "type": "Bert",
     "systemPrompt": " ",
     "description": "<strong>Sbert</strong><br><ul><li>For embeddings"
+  },
+  {
+    "order": "u",
+    "md5sum": "379ee1bab9a7a9c27c2314daa097528e",
+    "disableGUI": "true",
+    "name": "Starcoder (Small)",
+    "filename": "starcoderbase-3b-ggml.bin",
+    "filesize": "7503121552",
+    "requires": "2.4.14",
+    "ramrequired": "8",
+    "parameters": "3 billion",
+    "quant": "f16",
+    "type": "Starcoder",
+    "systemPrompt": " ",
+    "promptTemplate": "%1",
+    "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based</ul>",
   }
 ]

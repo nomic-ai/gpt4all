@@ -451,5 +451,19 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters)
 "
+  },
+  {
+    "version": "2.4.14",
+    "notes":
+"
+* Add starcoder model support
+* Add ability to switch between light mode/dark mode
+* Increase the size of fonts in monospace code blocks a bit
+",
+    "contributors":
+"
+* Lakshay Kansal (Nomic AI)
+* Adam Treat (Nomic AI)
+"
   }
 ]
