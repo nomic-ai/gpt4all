@@ -1,2 +1,2 @@
-from .gpt4all import GPT4All, Embed4All  # noqa
+from .gpt4all import Embed4All, GPT4All  # noqa
 from .pyllmodel import LLModel  # noqa

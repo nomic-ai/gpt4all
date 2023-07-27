@@ -1,4 +1,5 @@
 import ctypes
+import logging
 import os
 import platform
 from queue import Queue
@@ -6,8 +7,7 @@ import re
 import subprocess
 import sys
 import threading
-import logging
-from typing import Iterable, Callable, List
+from typing import Callable, Iterable, List
 
 import pkg_resources
 
@@ -16,9 +16,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
-MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace(
-    "\\", "\\\\"
-)
+MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
 
 
 def load_llmodel_library():
@@ -113,9 +111,7 @@ llmodel.llmodel_embedding.argtypes = [
 
 llmodel.llmodel_embedding.restype = ctypes.POINTER(ctypes.c_float)
 
-llmodel.llmodel_free_embedding.argtypes = [
-    ctypes.POINTER(ctypes.c_float)
-]
+llmodel.llmodel_free_embedding.argtypes = [ctypes.POINTER(ctypes.c_float)]
 llmodel.llmodel_free_embedding.restype = None
 
 llmodel.llmodel_setThreadCount.argtypes = [ctypes.c_void_p, ctypes.c_int32]
@@ -251,10 +247,7 @@ class LLModel:
         self.context.repeat_last_n = repeat_last_n
         self.context.context_erase = context_erase
 
-    def generate_embedding(
-        self,
-        text: str
-    ) -> List[float]:
+    def generate_embedding(self, text: str) -> List[float]:
         if not text:
             raise ValueError("Text must not be None or empty")
 
@@ -330,10 +323,7 @@ class LLModel:
 
 
     def prompt_model_streaming(
-        self,
-        prompt: str,
-        callback: ResponseCallbackType = empty_response_callback,
-        **kwargs
+        self, prompt: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
     ) -> Iterable[str]:
         # Symbol to terminate from generator
         TERMINATING_SYMBOL = object()
@@ -361,10 +351,7 @@ class LLModel:
         # immediately
         thread = threading.Thread(
             target=run_llmodel_prompt,
-            args=(
-                prompt, 
-                _generator_callback_wrapper(callback)
-            ),
+            args=(prompt, _generator_callback_wrapper(callback)),
             kwargs=kwargs,
         )
         thread.start()
