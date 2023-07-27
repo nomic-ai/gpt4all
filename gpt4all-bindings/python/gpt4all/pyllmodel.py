@@ -158,7 +158,6 @@ class LLModel:
         self.llmodel_lib = llmodel
 
         self.buffer = bytearray()
-        self.collector = bytearray()
 
     def __del__(self):
         if self.model is not None:
@@ -327,13 +326,6 @@ class LLModel:
             self.context,
         )
 
-        print("\n\n Undecoded buffer:\n")
-        print(self.buffer)
-
-       
-        print("\n\n All collected bytes:\n")
-        print(self.collector)
-
 
     def prompt_model_streaming(
         self,
@@ -387,10 +379,22 @@ class LLModel:
             nonlocal self, callback
             
             self.buffer += response
-            self.collector += response
             
             try:
-                decoded = self.buffer.decode('utf-8', 'strict')
+                byte_words = self.buffer.split(b" ")
+
+                # put back the spaces that were removed by .split(), discard the last chunk if its empty
+                byte_words = [w + b" " for w in byte_words[:-1]] + ([byte_words[-1]] if byte_words[-1] != b"" else [])
+
+                decoded = byte_words[-1].decode('utf-8', 'strict')
+
+                # words that have no chance of being decoded, replace them by U+FFFD and add to the output
+                undecoded_words = byte_words[:-1]
+                undecoded_words.reverse()
+
+                for byte_word in undecoded_words:
+                    decoded = byte_word.decode('utf-8', 'replace') + decoded
+
                 self.buffer.clear()
 
                 return callback(token_id, decoded)     
