@@ -58,10 +58,13 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
         }
     }
     llmodel_set_implementation_search_path(library_path.c_str());
-    llmodel_error* e = nullptr;
-    inference_ = std::make_shared<llmodel_model>(llmodel_model_create2(full_weight_path.c_str(), "auto", e));
-    if(e != nullptr) {
-       Napi::Error::New(env, e->message).ThrowAsJavaScriptException(); 
+    llmodel_error e = {
+        .message="looks good to me",
+        .code=0,
+    };
+    inference_ = std::make_shared<llmodel_model>(llmodel_model_create2(full_weight_path.c_str(), "auto", &e));
+    if(e.code != 0) {
+       Napi::Error::New(env, e.message).ThrowAsJavaScriptException(); 
        return;
     }
     if(GetInference() == nullptr) {
