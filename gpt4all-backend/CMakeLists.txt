@@ -132,6 +132,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 
         add_library(starcoder-${BUILD_VARIANT} SHARED
             starcoder.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
+        target_compile_definitions(starcoder-${BUILD_VARIANT} PRIVATE LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
         prepare_target(starcoder llama-mainline)
     endif()
 endforeach()
