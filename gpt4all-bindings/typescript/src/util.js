@@ -161,7 +161,7 @@ async function retrieveModel(modelName, options = {}) {
     const fullModelPath = path.join(retrieveOptions.modelPath, modelFileName);
     const modelExists = existsSync(fullModelPath);
 
-    let config = DEFAULT_MODEL_CONFIG;
+    let config = { ...DEFAULT_MODEL_CONFIG };
 
     if (retrieveOptions.allowDownload) {
         const availableModels = await listModels();
@@ -169,11 +169,15 @@ async function retrieveModel(modelName, options = {}) {
             (model) => model.filename === modelFileName
         );
         if (downloadedConfig) {
-            config = downloadedConfig;
-            config.systemPrompt = downloadedConfig.systemPrompt.trim();
-            config.promptTemplate = downloadedConfig.promptTemplate;
+            config = {
+                ...config,
+                ...downloadedConfig,
+            };
         }
     }
+    
+    config.systemPrompt = config.systemPrompt.trim();
+    // config.promptTemplate = config.promptTemplate;
 
     if (modelExists) {
         config.path = fullModelPath;
@@ -192,7 +196,7 @@ async function retrieveModel(modelName, options = {}) {
             url: config.url,
         });
 
-        const downloadPath = await downloadController.promise();
+        const downloadPath = await downloadController.promise;
         config.path = downloadPath;
 
         if (retrieveOptions.verbose) {

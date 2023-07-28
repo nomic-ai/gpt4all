@@ -18,7 +18,7 @@ const DEFAULT_LIBRARIES_DIRECTORY = librarySearchPaths.join(";");
 
 const DEFAULT_MODEL_CONFIG = {
     systemPrompt: "",
-    promptTemplate: "### Human: \n{0}\n### Assistant:\n",
+    promptTemplate: "### Human: \n%1\n### Assistant:\n",
 }
 
 module.exports = {

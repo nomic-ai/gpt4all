@@ -8,30 +8,30 @@ type ModelType = "gptj" | "llama" | "mpt" | "replit";
 /**
  * Full list of models available
  */
-interface ModelFile {
-    /** List of GPT-J Models */
-    gptj:
-        | "ggml-gpt4all-j-v1.3-groovy.bin"
-        | "ggml-gpt4all-j-v1.2-jazzy.bin"
-        | "ggml-gpt4all-j-v1.1-breezy.bin"
-        | "ggml-gpt4all-j.bin";
-    /** List Llama Models */
-    llama:
-        | "ggml-gpt4all-l13b-snoozy.bin"
-        | "ggml-vicuna-7b-1.1-q4_2.bin"
-        | "ggml-vicuna-13b-1.1-q4_2.bin"
-        | "ggml-wizardLM-7B.q4_2.bin"
-        | "ggml-stable-vicuna-13B.q4_2.bin"
-        | "ggml-nous-gpt4-vicuna-13b.bin"
-        | "ggml-v3-13b-hermes-q5_1.bin";
-    /** List of MPT Models */
-    mpt:
-        | "ggml-mpt-7b-base.bin"
-        | "ggml-mpt-7b-chat.bin"
-        | "ggml-mpt-7b-instruct.bin";
-    /** List of Replit Models */
-    replit: "ggml-replit-code-v1-3b.bin";
-}
+// interface ModelFile {
+//     /** List of GPT-J Models */
+//     gptj:
+//         | "ggml-gpt4all-j-v1.3-groovy.bin"
+//         | "ggml-gpt4all-j-v1.2-jazzy.bin"
+//         | "ggml-gpt4all-j-v1.1-breezy.bin"
+//         | "ggml-gpt4all-j.bin";
+//     /** List Llama Models */
+//     llama:
+//         | "ggml-gpt4all-l13b-snoozy.bin"
+//         | "ggml-vicuna-7b-1.1-q4_2.bin"
+//         | "ggml-vicuna-13b-1.1-q4_2.bin"
+//         | "ggml-wizardLM-7B.q4_2.bin"
+//         | "ggml-stable-vicuna-13B.q4_2.bin"
+//         | "ggml-nous-gpt4-vicuna-13b.bin"
+//         | "ggml-v3-13b-hermes-q5_1.bin";
+//     /** List of MPT Models */
+//     mpt:
+//         | "ggml-mpt-7b-base.bin"
+//         | "ggml-mpt-7b-chat.bin"
+//         | "ggml-mpt-7b-instruct.bin";
+//     /** List of Replit Models */
+//     replit: "ggml-replit-code-v1-3b.bin";
+// }
 
 //mirrors py options
 interface LLModelOptions {
@@ -39,10 +39,39 @@ interface LLModelOptions {
      * Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
      */
     type?: ModelType;
-    model_name: ModelFile[ModelType];
+    model_name: string;
     model_path: string;
     library_path?: string;
 }
+
+interface ModelConfig {
+    systemPrompt: string
+    promptTemplate: string
+    path: string
+    url?: string
+}
+
+declare class InferenceModel {
+    constructor(llm: LLModel, config: ModelConfig);
+    llm: LLModel;
+    config: ModelConfig;
+    
+    generate(
+        prompt: string,
+        options?: Partial<LLModelPromptContext>
+    ): Promise<string>;
+}
+
+declare class EmbeddingModel {
+    constructor(llm: LLModel, config: ModelConfig);
+    llm: LLModel;
+    config: ModelConfig;
+    
+    embed(
+        text: string,
+    ): Promise<Float32Array>;
+}
+
 /**
  * LLModel class representing a language model.
  * This is a base class that provides common functionality for different types of language models.
@@ -129,34 +158,23 @@ interface LoadModelOptions {
  *
  * @param {string} modelName - The name of the model to load.
  * @param {LoadModelOptions|undefined} [options] - (Optional) Additional options for loading the model.
- * @returns {Promise<LLModel>} A promise that resolves to an instance of the loaded LLModel.
+ * @returns {Promise<InferenceModel | EmbeddingModel>} A promise that resolves to an instance of the loaded LLModel.
  */
-declare function loadModel(
+declare function loadModel<TModel = InferenceModel>(
     modelName: string,
     options?: LoadModelOptions
-): Promise<LLModel>;
+): Promise<TModel>;
 
 
 /**
  * The nodejs equivalent to python binding's chat_completion
- * @param {LLModel} llmodel - The language model object.
+ * @param {InferenceModel} model - The language model object.
  * @param {PromptMessage[]} messages - The array of messages for the conversation.
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {CompletionReturn} The completion result.
- * @example
- * const llmodel = new LLModel(model)
- * const messages = [
- * { role: 'system', message: 'You are a weather forecaster.' },
- * { role: 'user', message: 'should i go out today?' } ]
- * const completion = await createCompletion(llmodel, messages, {
- *  verbose: true,
- *  temp: 0.9,
- * })
- * console.log(completion.choices[0].message.content)
- * // No, it's going to be cold and rainy.
  */
 declare function createCompletion(
-    llmodel: LLModel,
+    model: InferenceModel,
     messages: PromptMessage[],
     options?: CompletionOptions
 ): Promise<CompletionReturn>;
@@ -165,14 +183,14 @@ declare function createCompletion(
 /**
  * The nodejs moral equivalent to python binding's Embed4All().embed()
  * meow
- * @param {LLModel} llmodel - The language model object.
+ * @param {EmbeddingModel} model - The language model object.
  * @param {string} text - text to embed
  * @returns {Float32Array} The completion result.
  */
 declare function createEmbedding(
-    llmodel: LLModel,
+    model: EmbeddingModel,
     text: string,
-): Float32Array
+): Promise<Float32Array>
 
 /**
  * The options for creating the completion.
@@ -185,16 +203,14 @@ interface CompletionOptions extends Partial<LLModelPromptContext> {
     verbose?: boolean;
 
     /**
-     * Indicates if the default header is included in the prompt.
-     * @default true
+     * An initial instruction for the model.
      */
-    hasDefaultHeader?: boolean;
+    systemPrompt?: string;
 
     /**
-     * Indicates if the default footer is included in the prompt.
-     * @default true
+     * Template for the prompts with {0} being replaced by the user message.
      */
-    hasDefaultFooter?: boolean;
+    promptTemplate?: boolean;
 }
 
 /**
@@ -212,10 +228,8 @@ interface PromptMessage {
  * The result of the completion, similar to OpenAI's format.
  */
 interface CompletionReturn {
-    /** The model name.
-     * @type {ModelFile}
-     */
-    model: ModelFile[ModelType];
+    /** The model used for the completion. */
+    model: string;
 
     /** Token usage report. */
     usage: {
@@ -270,12 +284,12 @@ interface LLModelPromptContext {
     top_k: number;
 
     /** The nucleus sampling probability threshold.
-     * @default 0.9
+     * @default 0.4
      * */
     top_p: number;
 
     /** The temperature to adjust the model's output distribution.
-     * @default 0.72
+     * @default 0.7
      * */
     temp: number;
 
@@ -285,12 +299,12 @@ interface LLModelPromptContext {
     n_batch: number;
 
     /** The penalty factor for repeated tokens.
-     * @default 1
+     * @default 1.18
      * */
     repeat_penalty: number;
 
     /** The number of last tokens to penalize.
-     * @default 10
+     * @default 64
      * */
     repeat_last_n: number;
 
@@ -320,24 +334,25 @@ declare const DEFAULT_DIRECTORY: string;
  * This searches DEFAULT_DIRECTORY/libraries, cwd/libraries, and finally cwd.
  */
 declare const DEFAULT_LIBRARIES_DIRECTORY: string;
-interface PromptMessage {
-    role: "system" | "assistant" | "user";
-    content: string;
-}
 
 /**
- * Initiates the download of a model file of a specific model type.
+ * Default model configuration.
+ */
+declare const DEFAULT_MODEL_CONFIG: ModelConfig;
+
+/**
+ * Initiates the download of a model file.
  * By default this downloads without waiting. use the controller returned to alter this behavior.
- * @param {ModelFile} modelName - The model file to be downloaded.
- * @param {DownloadOptions} options - to pass into the downloader. Default is { location: (cwd), debug: false }.
+ * @param {string} modelName - The model to be downloaded.
+ * @param {DownloadOptions} options - to pass into the downloader. Default is { location: (cwd), verbose: false }.
  * @returns {DownloadController} object that allows controlling the download process.
  *
  * @throws {Error} If the model already exists in the specified location.
  * @throws {Error} If the model cannot be found at the specified url.
  *
  * @example
- * const controller = download('ggml-gpt4all-j-v1.3-groovy.bin')
- * controller.promise().then(() => console.log('Downloaded!'))
+ * const download = downloadModel('ggml-gpt4all-j-v1.3-groovy.bin')
+ * download.promise.then(() => console.log('Downloaded!'))
  */
 declare function downloadModel(
     modelName: string,
@@ -358,11 +373,11 @@ interface DownloadModelOptions {
      * Debug mode -- check how long it took to download in seconds
      * @default false
      */
-    debug?: boolean;
+    verbose?: boolean;
 
     /**
-     * Remote download url. Defaults to `https://gpt4all.io/models`
-     * @default https://gpt4all.io/models
+     * Remote download url. Defaults to `https://gpt4all.io/models/<modelName>`
+     * @default https://gpt4all.io/models/<modelName>
      */
     url?: string;
     /**
@@ -372,7 +387,7 @@ interface DownloadModelOptions {
     md5sum?: boolean;
 }
 
-declare function listModels(): Promise<Record<string, string>[]>;
+declare function listModels(): Promise<ModelConfig[]>;
 
 interface RetrieveModelOptions {
     allowDownload?: boolean;
@@ -381,23 +396,25 @@ interface RetrieveModelOptions {
 }
 
 declare function retrieveModel(
-    model: string,
+    modelName: string,
     options?: RetrieveModelOptions
-): Promise<string>;
+): Promise<ModelConfig>;
 
 /**
  * Model download controller.
  */
 interface DownloadController {
-    /** Cancel the request to download from gpt4all website if this is called. */
+    /** Cancel the request to download if this is called. */
     cancel: () => void;
-    /** Convert the downloader into a promise, allowing people to await and manage its lifetime */
-    promise: () => Promise<void>;
+    /** A promise resolving to the downloaded models config once the download is done */
+    promise: Promise<ModelConfig>;
 }
 
 export {
     ModelType,
-    ModelFile,
+    ModelConfig,
+    InferenceModel,
+    EmbeddingModel,
     LLModel,
     LLModelPromptContext,
     PromptMessage,
@@ -409,6 +426,7 @@ export {
     createTokenStream,
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
+    DEFAULT_MODEL_CONFIG,
     downloadModel,
     retrieveModel,
     listModels,
