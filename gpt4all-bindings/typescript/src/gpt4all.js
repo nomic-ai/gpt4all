@@ -11,17 +11,20 @@ const {
     appendBinSuffixIfMissing,
 } = require("./util.js");
 const { DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } = require("./config.js");
+const { InferenceModel } = require('./InferenceModel.js');
+// const { EmbeddingModel } = require('./EmbeddingModel.js');
 
 async function loadModel(modelName, options = {}) {
     const loadOptions = {
         modelPath: DEFAULT_DIRECTORY,
         librariesPath: DEFAULT_LIBRARIES_DIRECTORY,
+        type: 'inference',
         allowDownload: true,
         verbose: true,
         ...options,
     };
 
-    await retrieveModel(modelName, {
+    const modelConfig = await retrieveModel(modelName, {
         modelPath: loadOptions.modelPath,
         allowDownload: loadOptions.allowDownload,
         verbose: loadOptions.verbose,
@@ -51,81 +54,111 @@ async function loadModel(modelName, options = {}) {
     }
     const llmodel = new LLModel(llmOptions);
 
-    return llmodel;
+    if (loadOptions.type === 'embedding') {
+        return new EmbeddingModel(llmodel, modelConfig);
+    } else if (loadOptions.type === 'inference') {
+        return new InferenceModel(llmodel, modelConfig);
+    } else {
+        throw Error("Invalid model type: " + loadOptions.type);
+    }
+
 }
 
-function createPrompt(messages, hasDefaultHeader, hasDefaultFooter) {
+function formatChatPrompt(messages, systemPrompt = '', promptTemplate = '{0}') {
     let fullPrompt = [];
 
-    for (const message of messages) {
-        if (message.role === "system") {
-            const systemMessage = message.content;
-            fullPrompt.push(systemMessage);
-        }
+    // for (const message of messages) {
+    //     if (message.role === "system") {
+    //         const systemMessage = message.content;
+    //         fullPrompt.push(systemMessage);
+    //     }
+    // }
+    if (systemPrompt) {
+        // fullPrompt.push(`### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.`);
+        fullPrompt.push(systemPrompt + '\n');
     }
-    if (hasDefaultHeader) {
-        fullPrompt.push(`### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.`);
-    }
-    let prompt = "### Prompt:";
+    
     for (const message of messages) {
         if (message.role === "user") {
-            const user_message = message["content"];
-            prompt += user_message;
+            const userMessage = promptTemplate.replace('{0}', message["content"]);
+            fullPrompt.push(userMessage);
         }
         if (message["role"] == "assistant") {
-            const assistant_message = "Response:" + message["content"];
-            prompt += assistant_message;
+            // const assistantMessage = "### Response: " + message["content"];
+            const assistantMessage = message["content"];
+            fullPrompt.push(assistantMessage);
         }
     }
-    fullPrompt.push(prompt);
-    if (hasDefaultFooter) {
-        fullPrompt.push("### Response:");
-    }
+    // if (hasDefaultFooter) {
+    //     fullPrompt.push("### Response:");
+    // }
 
     return fullPrompt.join('\n');
-}
 
+}
 
 function createEmbedding(llmodel, text) {
     return llmodel.embed(text)
 }
+
 async function createCompletion(
-    llmodel,
+    model,
     messages,
     options = {
-        hasDefaultHeader: true,
-        hasDefaultFooter: false,
+        // systemPrompt: '',
+        // promptTemplate: '{0}',
         verbose: true,
     }
 ) {
-    //creating the keys to insert into promptMaker.
-    const fullPrompt = createPrompt(
+    
+    const formattedPrompt = formatChatPrompt(
         messages,
-        options.hasDefaultHeader ?? true,
-        options.hasDefaultFooter ?? true
+        options.systemPrompt || model.config.systemPrompt,
+        options.promptTemplate || model.config.promptTemplate,
     );
+    
     if (options.verbose) {
-        console.log("Sent: " + fullPrompt);
+        console.log("Sending Prompt: " + formattedPrompt);
     }
-    const promisifiedRawPrompt = llmodel.raw_prompt(fullPrompt, options, (s) => {});
-    return promisifiedRawPrompt.then((response) => {
-        return {
-            llmodel: llmodel.name(),
-            usage: {
-                prompt_tokens: fullPrompt.length,
-                completion_tokens: response.length, //TODO
-                total_tokens: fullPrompt.length + response.length, //TODO
-            },
-            choices: [
-                {
-                    message: {
-                        role: "assistant",
-                        content: response,
-                    },
+    
+    const response = await model.generate(formattedPrompt, options);
+    
+    return {
+        llmodel: model.llmodel.name(),
+        usage: {
+            prompt_tokens: formattedPrompt.length,
+            completion_tokens: response.length, //TODO
+            total_tokens: formattedPrompt.length + response.length, //TODO
+        },
+        choices: [
+            {
+                message: {
+                    role: "assistant",
+                    content: response,
                 },
-            ],
-        };
-    });
+            },
+        ],
+    };
+    
+    // const promisifiedRawPrompt = model.llmodel.raw_prompt(fullPrompt, options, (s) => {});
+    // return promisifiedRawPrompt.then((response) => {
+    //     return {
+    //         llmodel: llmodel.name(),
+    //         usage: {
+    //             prompt_tokens: fullPrompt.length,
+    //             completion_tokens: response.length, //TODO
+    //             total_tokens: fullPrompt.length + response.length, //TODO
+    //         },
+    //         choices: [
+    //             {
+    //                 message: {
+    //                     role: "assistant",
+    //                     content: response,
+    //                 },
+    //             },
+    //         ],
+    //     };
+    // });
 }
 
 function createTokenStream() {
