@@ -158,6 +158,7 @@ class LLModel:
         self.llmodel_lib = llmodel
 
         self.buffer = bytearray()
+        self.buff_expecting_cont_bytes: int = 0
 
     def __del__(self):
         if self.model is not None:
@@ -294,6 +295,7 @@ class LLModel:
         """
 
         self.buffer.clear()
+        self.buff_expecting_cont_bytes = 0
 
         logger.info(
             "LLModel.prompt_model -- prompt:\n"
@@ -377,29 +379,41 @@ class LLModel:
     def _callback_decoder(self, callback: ResponseCallbackType) -> RawResponseCallbackType:
         def _raw_callback(token_id: int, response: bytes) -> bool:
             nonlocal self, callback
-            
-            self.buffer += response
-            
-            try:
-                byte_words = self.buffer.split(b" ")
 
-                # put back the spaces that were removed by .split(), discard the last chunk if its empty
-                byte_words = [w + b" " for w in byte_words[:-1]] + ([byte_words[-1]] if byte_words[-1] != b"" else [])
+            decoded = []
 
-                decoded = byte_words[-1].decode('utf-8', 'strict')
+            for byte in response:
+                
+                bits = "{:08b}".format(byte)
+                (high_ones, _, _) = bits.partition('0')
 
-                # words that have no chance of being decoded, replace them by U+FFFD and add to the output
-                undecoded_words = byte_words[:-1]
-                undecoded_words.reverse()
+                if len(high_ones) == 1: 
+                    # continuation byte
+                    self.buffer.append(byte)
+                    self.buff_expecting_cont_bytes -= 1
 
-                for byte_word in undecoded_words:
-                    decoded = byte_word.decode('utf-8', 'replace') + decoded
+                else: 
+                    # beginning of a byte sequence
+                    if len(self.buffer) > 0:
+                        decoded.append(self.buffer.decode('utf-8', 'replace'))
 
-                self.buffer.clear()
+                        self.buffer.clear()
 
-                return callback(token_id, decoded)     
-            except ValueError:
+                    self.buffer.append(byte)
+                    self.buff_expecting_cont_bytes = max(0, len(high_ones) - 1)
+
+                if self.buff_expecting_cont_bytes <= 0: 
+                    # received the whole sequence or an out of place continuation byte
+                    decoded.append(self.buffer.decode('utf-8', 'replace'))
+
+                    self.buffer.clear()
+                    self.buff_expecting_cont_bytes = 0
+                    
+            if len(decoded) == 0 and self.buff_expecting_cont_bytes > 0:
+                # wait for more continuation bytes
                 return True
+            
+            return callback(token_id, ''.join(decoded))     
 
         return _raw_callback
 
