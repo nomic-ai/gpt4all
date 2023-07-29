@@ -24,6 +24,10 @@ black:
 isort:
 	source env/bin/activate; isort  --ignore-whitespace --atomic -w 120 gpt4all
 
+# for more fine-grained control, use marks (https://docs.pytest.org/en/7.4.x/how-to/mark.html), e.g.:
+#	pytest -m 'not inference'
+# recognised are, among others: inference, online, slow
+# run 'pytest --markers' for a full list
 test:
 	source env/bin/activate;  pytest -s gpt4all/tests -k "not test_inference_long"
 

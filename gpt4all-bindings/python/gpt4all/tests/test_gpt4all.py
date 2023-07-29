@@ -7,6 +7,9 @@ import time
 import pytest
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
 def test_inference():
     model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
     output_1 = model.generate('hello', top_k=1)
@@ -46,41 +49,65 @@ def do_long_input(model):
         print(model.current_chat_session)
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
 def test_inference_long_orca_3b():
     model = GPT4All(model_name="orca-mini-3b.ggmlv3.q4_0.bin")
     do_long_input(model)
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='7B', arch='falcon')
 def test_inference_long_falcon():
     model = GPT4All(model_name='ggml-model-gpt4all-falcon-q4_0.bin')
     do_long_input(model)
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='7B', arch='llama_1', release='orca_mini')
 def test_inference_long_llama_7b():
     model = GPT4All(model_name="orca-mini-7b.ggmlv3.q4_0.bin")
     do_long_input(model)
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='13B', arch='llama_1', release='nous_hermes')
 def test_inference_long_llama_13b():
     model = GPT4All(model_name='ggml-nous-hermes-13b.ggmlv3.q4_0.bin')
     do_long_input(model)
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='7B', arch='mpt', release='mpt_chat')
 def test_inference_long_mpt():
     model = GPT4All(model_name='ggml-mpt-7b-chat.bin')
     do_long_input(model)
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='3B', arch='replit', release='replit_code_v1')
 def test_inference_long_replit():
     model = GPT4All(model_name='ggml-replit-code-v1-3b.bin')
     do_long_input(model)
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='7B', arch='gptj', release='groovy')
 def test_inference_long_groovy():
     model = GPT4All(model_name='ggml-gpt4all-j-v1.3-groovy.bin')
     do_long_input(model)
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
 def test_inference_hparams():
     model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
 
@@ -88,6 +115,9 @@ def test_inference_hparams():
     assert 'Paris' in output
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='7B', arch='falcon')
 def test_inference_falcon():
     model = GPT4All(model_name='ggml-model-gpt4all-falcon-q4_0.bin')
     prompt = 'hello'
@@ -96,6 +126,9 @@ def test_inference_falcon():
     assert len(output) > 0
 
 
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.inference(params='7B', arch='mpt', release='mpt_chat')
 def test_inference_mpt():
     model = GPT4All(model_name='ggml-mpt-7b-chat.bin')
     prompt = 'hello'
@@ -104,6 +137,8 @@ def test_inference_mpt():
     assert len(output) > 0
 
 
+@pytest.mark.online
+@pytest.mark.inference(params='22M', arch='minilm', release='minilm_l6_v2')
 def test_embedding():
     text = 'The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox'
     embedder = Embed4All()
@@ -113,12 +148,15 @@ def test_embedding():
     assert len(output) == 384
 
 
+@pytest.mark.online
 def test_empty_embedding():
     text = ''
     embedder = Embed4All()
     with pytest.raises(ValueError):
         output = embedder.embed(text)
 
+
+@pytest.mark.online
 def test_download_model(tmp_path: Path):
     import gpt4all.gpt4all
     old_default_dir = gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY
