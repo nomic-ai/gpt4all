@@ -1,37 +1,37 @@
 /// <reference types="node" />
 declare module "gpt4all";
 
-
 /** Type of the model */
 type ModelType = "gptj" | "llama" | "mpt" | "replit";
 
 /**
  * Full list of models available
+ * @deprecated These model names are outdated and this type will not be maintained, please use a string literal instead
  */
-// interface ModelFile {
-//     /** List of GPT-J Models */
-//     gptj:
-//         | "ggml-gpt4all-j-v1.3-groovy.bin"
-//         | "ggml-gpt4all-j-v1.2-jazzy.bin"
-//         | "ggml-gpt4all-j-v1.1-breezy.bin"
-//         | "ggml-gpt4all-j.bin";
-//     /** List Llama Models */
-//     llama:
-//         | "ggml-gpt4all-l13b-snoozy.bin"
-//         | "ggml-vicuna-7b-1.1-q4_2.bin"
-//         | "ggml-vicuna-13b-1.1-q4_2.bin"
-//         | "ggml-wizardLM-7B.q4_2.bin"
-//         | "ggml-stable-vicuna-13B.q4_2.bin"
-//         | "ggml-nous-gpt4-vicuna-13b.bin"
-//         | "ggml-v3-13b-hermes-q5_1.bin";
-//     /** List of MPT Models */
-//     mpt:
-//         | "ggml-mpt-7b-base.bin"
-//         | "ggml-mpt-7b-chat.bin"
-//         | "ggml-mpt-7b-instruct.bin";
-//     /** List of Replit Models */
-//     replit: "ggml-replit-code-v1-3b.bin";
-// }
+interface ModelFile {
+    /** List of GPT-J Models */
+    gptj:
+        | "ggml-gpt4all-j-v1.3-groovy.bin"
+        | "ggml-gpt4all-j-v1.2-jazzy.bin"
+        | "ggml-gpt4all-j-v1.1-breezy.bin"
+        | "ggml-gpt4all-j.bin";
+    /** List Llama Models */
+    llama:
+        | "ggml-gpt4all-l13b-snoozy.bin"
+        | "ggml-vicuna-7b-1.1-q4_2.bin"
+        | "ggml-vicuna-13b-1.1-q4_2.bin"
+        | "ggml-wizardLM-7B.q4_2.bin"
+        | "ggml-stable-vicuna-13B.q4_2.bin"
+        | "ggml-nous-gpt4-vicuna-13b.bin"
+        | "ggml-v3-13b-hermes-q5_1.bin";
+    /** List of MPT Models */
+    mpt:
+        | "ggml-mpt-7b-base.bin"
+        | "ggml-mpt-7b-chat.bin"
+        | "ggml-mpt-7b-instruct.bin";
+    /** List of Replit Models */
+    replit: "ggml-replit-code-v1-3b.bin";
+}
 
 //mirrors py options
 interface LLModelOptions {
@@ -45,17 +45,17 @@ interface LLModelOptions {
 }
 
 interface ModelConfig {
-    systemPrompt: string
-    promptTemplate: string
-    path: string
-    url?: string
+    systemPrompt: string;
+    promptTemplate: string;
+    path: string;
+    url?: string;
 }
 
 declare class InferenceModel {
     constructor(llm: LLModel, config: ModelConfig);
     llm: LLModel;
     config: ModelConfig;
-    
+
     generate(
         prompt: string,
         options?: Partial<LLModelPromptContext>
@@ -66,10 +66,8 @@ declare class EmbeddingModel {
     constructor(llm: LLModel, config: ModelConfig);
     llm: LLModel;
     config: ModelConfig;
-    
-    embed(
-        text: string,
-    ): Promise<Float32Array>;
+
+    embed(text: string): Float32Array;
 }
 
 /**
@@ -119,17 +117,21 @@ declare class LLModel {
      * @param params Optional parameters for the prompt context.
      * @returns The result of the model prompt.
      */
-    raw_prompt(q: string, params: Partial<LLModelPromptContext>, callback: (res: string) => void): void; // TODO work on return type
+    raw_prompt(
+        q: string,
+        params: Partial<LLModelPromptContext>,
+        callback: (res: string) => void
+    ): void; // TODO work on return type
 
     /**
-     * Embed text with the model. Keep in mind that 
+     * Embed text with the model. Keep in mind that
      * not all models can embed text, (only bert can embed as of 07/16/2023 (mm/dd/yyyy))
      * Use the prompt function exported for a value
      * @param q The prompt input.
      * @param params Optional parameters for the prompt context.
      * @returns The result of the model prompt.
      */
-    embed(text: string) : Float32Array
+    embed(text: string): Float32Array;
     /**
      * Whether the model is loaded or not.
      */
@@ -152,6 +154,14 @@ interface LoadModelOptions {
     verbose?: boolean;
 }
 
+interface InferenceModelOptions extends LoadModelOptions {
+    type?: "inference";
+}
+
+interface EmbeddingModelOptions extends LoadModelOptions {
+    type: "embedding";
+}
+
 /**
  * Loads a machine learning model with the specified name. The defacto way to create a model.
  * By default this will download a model from the official GPT4ALL website, if a model is not present at given path.
@@ -160,11 +170,15 @@ interface LoadModelOptions {
  * @param {LoadModelOptions|undefined} [options] - (Optional) Additional options for loading the model.
  * @returns {Promise<InferenceModel | EmbeddingModel>} A promise that resolves to an instance of the loaded LLModel.
  */
-declare function loadModel<TModel = InferenceModel>(
+declare function loadModel(
     modelName: string,
-    options?: LoadModelOptions
-): Promise<TModel>;
+    options?: InferenceModelOptions
+): Promise<InferenceModel>;
 
+declare function loadModel(
+    modelName: string,
+    options?: EmbeddingModelOptions
+): Promise<EmbeddingModel>;
 
 /**
  * The nodejs equivalent to python binding's chat_completion
@@ -179,7 +193,6 @@ declare function createCompletion(
     options?: CompletionOptions
 ): Promise<CompletionReturn>;
 
-
 /**
  * The nodejs moral equivalent to python binding's Embed4All().embed()
  * meow
@@ -189,8 +202,8 @@ declare function createCompletion(
  */
 declare function createEmbedding(
     model: EmbeddingModel,
-    text: string,
-): Promise<Float32Array>
+    text: string
+): Float32Array;
 
 /**
  * The options for creating the completion.
@@ -201,16 +214,27 @@ interface CompletionOptions extends Partial<LLModelPromptContext> {
      * @default true
      */
     verbose?: boolean;
-
+    
     /**
-     * An initial instruction for the model.
+     * Template for the system message. Will be put before the conversation with %1 being replaced by all system messages.
+     * Note that if this is not defined, system messages will not be included in the prompt.
      */
-    systemPrompt?: string;
+    systemPromptTemplate?: string;
 
     /**
-     * Template for the prompts with {0} being replaced by the user message.
+     * Template for user messages, with %1 being replaced by the message.
      */
     promptTemplate?: boolean;
+    
+    /**
+     * The initial instruction for the model, on top of the prompt
+     */
+    promptHeader?: string;
+    
+    /**
+     * The last instruction for the model, appended to the end of the prompt.
+     */
+    promptFooter?: string;
 }
 
 /**
@@ -412,6 +436,7 @@ interface DownloadController {
 
 export {
     ModelType,
+    ModelFile,
     ModelConfig,
     InferenceModel,
     EmbeddingModel,
@@ -432,5 +457,5 @@ export {
     listModels,
     DownloadController,
     RetrieveModelOptions,
-    DownloadModelOptions
+    DownloadModelOptions,
 };

@@ -10,15 +10,25 @@ const {
     downloadModel,
     appendBinSuffixIfMissing,
 } = require("./util.js");
-const { DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } = require("./config.js");
-const { InferenceModel, EmbeddingModel } = require('./models.js');
+const {
+    DEFAULT_DIRECTORY,
+    DEFAULT_LIBRARIES_DIRECTORY,
+} = require("./config.js");
+const { InferenceModel, EmbeddingModel } = require("./models.js");
 
-
+/**
+ * Loads a machine learning model with the specified name. The defacto way to create a model.
+ * By default this will download a model from the official GPT4ALL website, if a model is not present at given path.
+ *
+ * @param {string} modelName - The name of the model to load.
+ * @param {LoadModelOptions|undefined} [options] - (Optional) Additional options for loading the model.
+ * @returns {Promise<InferenceModel | EmbeddingModel>} A promise that resolves to an instance of the loaded LLModel.
+ */
 async function loadModel(modelName, options = {}) {
     const loadOptions = {
         modelPath: DEFAULT_DIRECTORY,
         librariesPath: DEFAULT_LIBRARIES_DIRECTORY,
-        type: 'inference',
+        type: "inference",
         allowDownload: true,
         verbose: true,
         ...options,
@@ -40,7 +50,7 @@ async function loadModel(modelName, options = {}) {
             break;
         }
     }
-    if(!libPath) {
+    if (!libPath) {
         throw Error("Could not find a valid path from " + libSearchPaths);
     }
     const llmOptions = {
@@ -54,116 +64,146 @@ async function loadModel(modelName, options = {}) {
     }
     const llmodel = new LLModel(llmOptions);
 
-    if (loadOptions.type === 'embedding') {
+    if (loadOptions.type === "embedding") {
         return new EmbeddingModel(llmodel, modelConfig);
-    } else if (loadOptions.type === 'inference') {
+    } else if (loadOptions.type === "inference") {
         return new InferenceModel(llmodel, modelConfig);
     } else {
         throw Error("Invalid model type: " + loadOptions.type);
     }
-
 }
 
-function formatChatPrompt(messages, { systemPrompt, promptTemplate, promptFooter, promptHeader }) {
+function formatChatPrompt(
+    messages,
+    {
+        systemPromptTemplate,
+        defaultSystemPrompt,
+        promptTemplate,
+        promptFooter,
+        promptHeader,
+    }
+) {
+    const systemMessages = messages
+        .filter((message) => message.role === "system")
+        .map((message) => message.content);
 
-    const systemPromptLines = [];
-    
-    if (systemPrompt) {
-        systemPromptLines.push(systemPrompt);
-    }
-    for (const message of messages) {
-        if (message.role === "system") {
-            const systemMessage = message.content;
-            systemPromptLines.push(systemMessage);
-        }
-    }
-    
-    let fullPrompt = ""
-    
-    if (promptHeader || systemPromptLines.length > 0) {
-        if (promptHeader) {
-            fullPrompt += promptHeader;
-        }
-        if (systemPromptLines.length > 0) {
-            fullPrompt += systemPromptLines.join('\n');
-        }
-        
-        fullPrompt += '\n\n';
+    let fullPrompt = "";
+
+    if (promptHeader) {
+        fullPrompt += promptHeader + "\n\n";
     }
 
-    
+    if (systemPromptTemplate) {
+        // if user specified a template for the system prompt, put all system messages in the template
+        let systemPrompt = "";
+
+        if (systemMessages.length > 0) {
+            systemPrompt += systemMessages.join("\n");
+        }
+
+        if (systemPrompt) {
+            fullPrompt +=
+                systemPromptTemplate.replace("%1", systemPrompt) + "\n";
+        }
+    } else if (defaultSystemPrompt) {
+        // otherwise, use the system prompt from the model config and ignore system messages
+        fullPrompt += defaultSystemPrompt + "\n\n";
+    }
+
+    if (systemMessages.length > 0 && !systemPromptTemplate) {
+        console.warn(
+            "System messages were provided, but no systemPromptTemplate was specified. System messages will be ignored."
+        );
+    }
+
     for (const message of messages) {
         if (message.role === "user") {
-            const userMessage = promptTemplate.replace('%1', message["content"]);
+            const userMessage = promptTemplate.replace(
+                "%1",
+                message["content"]
+            );
             fullPrompt += userMessage;
         }
         if (message["role"] == "assistant") {
-            const assistantMessage = message["content"] + '\n';
+            const assistantMessage = message["content"] + "\n";
             fullPrompt += assistantMessage;
         }
     }
-    
-    if (promptFooter) {
-        fullPrompt += '\n\n' + promptFooter;
-    }
-    
-    return fullPrompt
 
+    if (promptFooter) {
+        fullPrompt += "\n\n" + promptFooter;
+    }
+
+    return fullPrompt;
 }
 
-async function createEmbedding(model, text) {
+function createEmbedding(model, text) {
     return model.embed(text);
 }
+
+const defaultCompletionOptions = {
+    verbose: false,
+    temp: 0.7,
+    top_p: 0.4,
+    top_k: 40,
+    repeat_penalty: 1.18,
+    repeat_last_n: 64,
+    n_batch: 8,
+};
 
 async function createCompletion(
     model,
     messages,
-    options = {
-        // systemPrompt: '',
-        // promptTemplate: '%1',
-        verbose: true,
-        max_tokens: 200,
-        temp: 0.7,
-        top_p: 0.4,
-        top_k: 40,
-        repeat_penalty: 1.18,
-        repeat_last_n: 64,
-        n_batch: 8,
-    }
+    options = defaultCompletionOptions
 ) {
-    
-    const prompt = formatChatPrompt(
-        messages,
-        {
-            systemPrompt: options.systemPrompt || model.config.systemPrompt,
-            // systemPromptTemplate: options.systemPromptTemplate || model.config.systemPromptTemplate,
-            promptTemplate: options.promptTemplate || model.config.promptTemplate || '%1',
-            promptHeader: options.promptHeader || '',
-            promptFooter: options.promptFooter || '',
-            // promptHeader: options.promptHeader || '### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.',
-           // promptFooter: options.promptFooter || '### Response:',
-        }
-    );
-    
-    if (options.verbose) {
+    if (options.hasDefaultHeader !== undefined) {
+        console.warn(
+            "hasDefaultHeader (bool) is deprecated and has no effect, use promptHeader (string) instead"
+        );
+    }
+
+    if (options.hasDefaultFooter !== undefined) {
+        console.warn(
+            "hasDefaultFooter (bool) is deprecated and has no effect, use promptFooter (string) instead"
+        );
+    }
+
+    const optionsWithDefaults = {
+        ...defaultCompletionOptions,
+        ...options,
+    };
+
+    const {
+        verbose,
+        systemPromptTemplate,
+        promptTemplate,
+        promptHeader,
+        promptFooter,
+        ...promptContext
+    } = optionsWithDefaults;
+
+    const prompt = formatChatPrompt(messages, {
+        systemPromptTemplate,
+        defaultSystemPrompt: model.config.systemPrompt,
+        promptTemplate: promptTemplate || model.config.promptTemplate || "%1",
+        promptHeader: promptHeader || "",
+        promptFooter: promptFooter || "",
+        // These were the default header/footer prompts used for non-chat completions.
+        // both seem to be working well still with some models, so keeping them here for reference.
+        // promptHeader: '### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.',
+        // promptFooter: '### Response:',
+    });
+
+    if (verbose) {
         console.log("Sending Prompt:\n" + prompt);
     }
-    
-    const response = await model.generate(prompt, {
-        max_tokens: 200,
-        temp: 0.7,
-        top_p: 0.4,
-        top_k: 40,
-        repeat_penalty: 1.18,
-        repeat_last_n: 64,
-        n_batch: 8,
-        ...options,
-    });
-    
-    if (options.verbose) {
-        console.log("Received Response:\n"+response);
+
+    const response = await model.generate(prompt, promptContext);
+
+    if (verbose) {
+        console.log("Received Response:\n" + response);
     }
-    
+
     return {
         llmodel: model.llm.name(),
         usage: {
@@ -180,11 +220,10 @@ async function createCompletion(
             },
         ],
     };
-
 }
 
 function createTokenStream() {
-    throw Error("This API has not been completed yet!")
+    throw Error("This API has not been completed yet!");
 }
 
 module.exports = {
@@ -198,5 +237,5 @@ module.exports = {
     downloadModel,
     retrieveModel,
     loadModel,
-    createTokenStream
+    createTokenStream,
 };

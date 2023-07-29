@@ -7,8 +7,8 @@ class InferenceModel {
         this.config = config;
     }
 
-    async generate(prompt, options) {
-        const result = this.llm.raw_prompt(prompt, options, () => {});
+    async generate(prompt, promptContext) {
+        const result = this.llm.raw_prompt(prompt, promptContext, () => {});
         return result;
     }
 }
@@ -22,7 +22,7 @@ class EmbeddingModel {
         this.config = config;
     }
 
-    async embed(text) {
+    embed(text) {
         return this.llm.embed(text)
     }
 }
