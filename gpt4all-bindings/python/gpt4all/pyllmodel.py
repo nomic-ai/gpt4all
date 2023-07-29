@@ -275,6 +275,7 @@ class LLModel:
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
         reset_context: bool = False,
+        reverse_prompts: List[str] = [],
     ):
         """
         Generate response from model from a prompt.
@@ -317,7 +318,7 @@ class LLModel:
             self.model,
             prompt_ptr,
             PromptCallback(self._prompt_callback),
-            ResponseCallback(self._callback_decoder(callback)),
+            ResponseCallback(self._callback_decoder(callback, reverse_prompts)),
             RecalculateCallback(self._recalculate_callback),
             self.context,
         )
@@ -369,10 +370,31 @@ class LLModel:
                 break
             yield response
 
-    def _callback_decoder(self, callback: ResponseCallbackType) -> RawResponseCallbackType:
+    def _callback_decoder(self, 
+            callback: ResponseCallbackType, 
+            reverse_prompts: List[str] = []
+        ) -> RawResponseCallbackType:
+
+        self.token_cache = ""
+
         def _raw_callback(token_id: int, response: bytes) -> bool:
-            nonlocal callback
-            return callback(token_id, response.decode("utf-8", "replace"))
+            nonlocal callback, reverse_prompts
+
+            response = response.decode("utf-8", "replace")
+
+            self.token_cache += response
+
+            if self.token_cache in reverse_prompts:
+                self.token_cache = ""
+                return False
+
+            if any(rp.startswith(self.token_cache) for rp in reverse_prompts):
+                return True
+
+            token_passed = self.token_cache
+            self.token_cache = ""
+
+            return callback(token_id, token_passed)
 
         return _raw_callback
 

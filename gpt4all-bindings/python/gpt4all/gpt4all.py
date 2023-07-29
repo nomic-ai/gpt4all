@@ -248,6 +248,7 @@ class GPT4All:
         n_predict: Optional[int] = None,
         streaming: bool = False,
         callback: pyllmodel.ResponseCallbackType = pyllmodel.empty_response_callback,
+        reverse_prompts: List[str] = [],
     ) -> Union[str, Iterable[str]]:
         """
         Generate outputs from any GPT4All model.
@@ -264,6 +265,7 @@ class GPT4All:
             n_predict: Equivalent to max_tokens, exists for backwards compatibility.
             streaming: If True, this method will instead return a generator that yields tokens as the model generates them.
             callback: A function with arguments token_id:int and response:str, which receives the tokens from the model as they are generated and stops the generation by returning False.
+            reverse_prompts: A list of combinations of tokens which, when generated, stop the generation.
 
         Returns:
             Either the entire completion or a generator that yields the completion token by token.
@@ -278,6 +280,7 @@ class GPT4All:
             repeat_last_n=repeat_last_n,
             n_batch=n_batch,
             n_predict=n_predict if n_predict is not None else max_tokens,
+            reverse_prompts=reverse_prompts,
         )
 
         if self._is_chat_session_activated:
