@@ -77,7 +77,7 @@ def test_inference_long_llama_7b():
 @pytest.mark.online
 @pytest.mark.inference(params='13B', arch='llama_1', release='nous_hermes')
 def test_inference_long_llama_13b():
-    model = GPT4All(model_name='ggml-nous-hermes-13b.ggmlv3.q4_0.bin')
+    model = GPT4All(model_name='nous-hermes-13b.ggmlv3.q4_0.bin')
     do_long_input(model)
 
 
