@@ -3,6 +3,7 @@ from io import StringIO
 from pathlib import Path
 
 from gpt4all import GPT4All, Embed4All
+from . import get_model_folder
 import time
 import pytest
 
@@ -11,7 +12,9 @@ import pytest
 @pytest.mark.online
 @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
 def test_inference():
-    model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
+    name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     output_1 = model.generate('hello', top_k=1)
 
     with model.chat_session():
@@ -53,7 +56,9 @@ def do_long_input(model):
 @pytest.mark.online
 @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
 def test_inference_long_orca_3b():
-    model = GPT4All(model_name="orca-mini-3b.ggmlv3.q4_0.bin")
+    name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
 
 
@@ -61,7 +66,9 @@ def test_inference_long_orca_3b():
 @pytest.mark.online
 @pytest.mark.inference(params='7B', arch='falcon')
 def test_inference_long_falcon():
-    model = GPT4All(model_name='ggml-model-gpt4all-falcon-q4_0.bin')
+    name = 'ggml-model-gpt4all-falcon-q4_0.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
 
 
@@ -69,7 +76,9 @@ def test_inference_long_falcon():
 @pytest.mark.online
 @pytest.mark.inference(params='7B', arch='llama_1', release='orca_mini')
 def test_inference_long_llama_7b():
-    model = GPT4All(model_name="orca-mini-7b.ggmlv3.q4_0.bin")
+    name = 'orca-mini-7b.ggmlv3.q4_0.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
 
 
@@ -77,7 +86,9 @@ def test_inference_long_llama_7b():
 @pytest.mark.online
 @pytest.mark.inference(params='13B', arch='llama_1', release='nous_hermes')
 def test_inference_long_llama_13b():
-    model = GPT4All(model_name='nous-hermes-13b.ggmlv3.q4_0.bin')
+    name = 'nous-hermes-13b.ggmlv3.q4_0.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
 
 
@@ -85,7 +96,9 @@ def test_inference_long_llama_13b():
 @pytest.mark.online
 @pytest.mark.inference(params='7B', arch='mpt', release='mpt_chat')
 def test_inference_long_mpt():
-    model = GPT4All(model_name='ggml-mpt-7b-chat.bin')
+    name = 'ggml-mpt-7b-chat.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
 
 
@@ -93,7 +106,9 @@ def test_inference_long_mpt():
 @pytest.mark.online
 @pytest.mark.inference(params='3B', arch='replit', release='replit_code_v1')
 def test_inference_long_replit():
-    model = GPT4All(model_name='ggml-replit-code-v1-3b.bin')
+    name = 'ggml-replit-code-v1-3b.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
 
 
@@ -101,7 +116,9 @@ def test_inference_long_replit():
 @pytest.mark.online
 @pytest.mark.inference(params='7B', arch='gptj', release='groovy')
 def test_inference_long_groovy():
-    model = GPT4All(model_name='ggml-gpt4all-j-v1.3-groovy.bin')
+    name = 'ggml-gpt4all-j-v1.3-groovy.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
 
 
@@ -109,7 +126,9 @@ def test_inference_long_groovy():
 @pytest.mark.online
 @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
 def test_inference_hparams():
-    model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
+    name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
 
     output = model.generate("The capital of france is ", max_tokens=3)
     assert 'Paris' in output
@@ -119,7 +138,9 @@ def test_inference_hparams():
 @pytest.mark.online
 @pytest.mark.inference(params='7B', arch='falcon')
 def test_inference_falcon():
-    model = GPT4All(model_name='ggml-model-gpt4all-falcon-q4_0.bin')
+    name = 'ggml-model-gpt4all-falcon-q4_0.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     prompt = 'hello'
     output = model.generate(prompt)
     assert isinstance(output, str)
@@ -130,7 +151,9 @@ def test_inference_falcon():
 @pytest.mark.online
 @pytest.mark.inference(params='7B', arch='mpt', release='mpt_chat')
 def test_inference_mpt():
-    model = GPT4All(model_name='ggml-mpt-7b-chat.bin')
+    name = 'ggml-mpt-7b-chat.bin'
+    folder = str(get_model_folder(name))
+    model = GPT4All(model_name=name, model_path=folder)
     prompt = 'hello'
     output = model.generate(prompt)
     assert isinstance(output, str)
