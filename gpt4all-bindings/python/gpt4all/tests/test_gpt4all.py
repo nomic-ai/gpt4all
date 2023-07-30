@@ -1,8 +1,11 @@
+import os
 import sys
 from io import StringIO
 from pathlib import Path
+from typing import Iterable
 
-from gpt4all import GPT4All, Embed4All
+from gpt4all import GPT4All, Embed4All, pyllmodel
+from gpt4all.gpt4all import empty_chat_session, append_bin_suffix_if_missing
 from . import get_model_folder
 import time
 import pytest
@@ -191,3 +194,274 @@ def test_download_model(tmp_path: Path):
         assert model_path.stat().st_size == int(model.config['filesize'])
     finally:
         gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY = old_default_dir
+
+
+
+class TestGPT4AllClass():
+    """GPT4All tests which can be run without an instance. This includes creation."""
+
+    @pytest.mark.online
+    def test_creation(self):
+        name = None
+        with pytest.raises(Exception):  # mustn't be None
+            GPT4All(name)
+        name = ''
+        with pytest.raises(ValueError):  # mustn't be empty
+            GPT4All(name)
+        name = ' \t '  # str.isspace()
+        with pytest.raises(Exception):  # mustn't be whitespace
+            GPT4All(name)
+        name = 'orca-mini-3b.ggmlv3.q4_0.bin'  # a valid model name
+        folder = str(get_model_folder(name))
+        model = GPT4All(name, folder)
+        assert model is not None
+
+
+    @pytest.mark.online
+    def test_list_models(self):
+        models_list = GPT4All.list_models()
+        assert models_list is not None
+        # 'models_list' is a list of config items:
+        assert isinstance(models_list, list)
+        # each config is a dict, with every key and value being a string:
+        assert all(isinstance(m, dict) for m in models_list)
+        assert all(isinstance(k, str) for m in models_list for k in m.keys())
+        assert all(isinstance(v, str) for m in models_list for v in m.values())
+
+
+    @pytest.mark.online
+    def test_retrieve_model_online(self):
+        with pytest.raises(Exception):
+            GPT4All.retrieve_model(None)
+        if sys.platform == 'win32':
+            with pytest.raises(Exception):
+                GPT4All.retrieve_model(' \t ')  # str.isspace()
+        name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+        folder = str(get_model_folder(name))
+        config = GPT4All.retrieve_model(name, folder)
+        # 'config' is a dict, with every key and value being a string:
+        assert isinstance(config, dict)
+        assert all(isinstance(k, str) for k in config.keys())
+        assert all(isinstance(v, str) for v in config.values())
+        assert 'path' in config.keys()
+        assert name in config['path']
+        assert 'systemPrompt' in config.keys()
+        assert 'promptTemplate' in config.keys()
+
+
+    def test_retrieve_model_offline(self):
+        with pytest.raises(Exception):
+            GPT4All.retrieve_model(None, allow_download=False)
+        if sys.platform == 'win32':
+            with pytest.raises(Exception):
+                GPT4All.retrieve_model(' \t ', allow_download=False)  # str.isspace()
+        name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+        folder = str(get_model_folder(name))
+        config = GPT4All.retrieve_model(name, folder, allow_download=False)
+        # 'config' is a dict, with every key and value being a string:
+        assert isinstance(config, dict)
+        assert all(isinstance(k, str) for k in config.keys())
+        assert all(isinstance(v, str) for v in config.values())
+        assert 'path' in config.keys()
+        assert name in config['path']
+        assert 'systemPrompt' in config.keys()
+        assert 'promptTemplate' in config.keys()
+
+
+    @pytest.mark.online
+    def test_download_model(self, tmp_path: Path):
+        with pytest.raises(TypeError):
+            GPT4All.download_model(None, None)
+        with pytest.raises(Exception):
+            GPT4All.download_model('', '')
+        with pytest.raises(Exception):
+            GPT4All.download_model(' \t ', ' \n  ')  # str.isspace()
+        name = 'ggml-all-MiniLM-L6-v2-f16.bin'
+        result = GPT4All.download_model(name, tmp_path)
+        assert isinstance(result, str)
+        assert name in result
+        model_file = Path(result)
+        assert model_file.exists()
+        assert os.access(model_file, os.R_OK)  # model_file is readable
+
+
+class TestGPT4AllMockInstance():
+
+    @pytest.fixture
+    def mock_model(self, monkeypatch) -> GPT4All:
+
+        class MockLLModel:  # pretend to be an LLModel with access to the backend
+            def __init__(self, *args, **kwargs): pass
+            def load_model(self, model_path): return True
+            def prompt_model(self, *args, **kwargs):
+                response_callback = kwargs['callback']
+                response_callback(7, 'eggs')
+                response_callback(6, ' and')
+                response_callback(42, ' spam.')
+            def prompt_model_streaming(self, *args, **kwargs): return ['eggs', ' and', ' spam.']
+
+        def mock_retrieve_model(*args, **kwargs):  # just the essentials, don't want file access here
+            return {'path': 'mock-model.bin', 'systemPrompt': '', 'promptTemplate': '{0}'}
+
+        monkeypatch.setattr(pyllmodel, 'LLModel', MockLLModel)
+        monkeypatch.setattr(GPT4All, 'retrieve_model', mock_retrieve_model)
+        name = 'mock-model.bin'
+        model = GPT4All(model_name=name, allow_download=False)
+        return model
+
+
+    def test_generate(self, mock_model):
+        prompt = "my 2 favorite fruits are"
+        expected = "eggs and spam."
+        response = mock_model.generate(prompt, temp=0)
+        assert isinstance(response, str)
+        assert response == expected
+
+
+    def test_generate_with_session(self, mock_model):
+        prompt1 = "name a color."
+        expected1 = "eggs and spam."
+        prompt2 = "now name a different color."
+        expected2 = "eggs and spam."
+        with mock_model.chat_session():
+            response1 = mock_model.generate(prompt1, temp=0)
+            assert isinstance(response1, str)
+            response2 = mock_model.generate(prompt2, temp=0)
+            assert isinstance(response2, str)
+        assert response1 == expected1
+        assert response2 == expected2
+
+
+    def test_generate_streaming(self, mock_model):
+        prompt = "my 2 favorite fruits are"
+        expected = "eggs and spam."
+        response = mock_model.generate(prompt, streaming=True, temp=0)
+        assert isinstance(response, Iterable)
+        response = list(response)
+        assert ''.join(response) == expected
+
+
+    def test_generate_streaming_with_session(self, mock_model):
+        prompt1 = "name a color."
+        expected1 = "eggs and spam."
+        prompt2 = "now name a different color."
+        expected2 = "eggs and spam."
+        with mock_model.chat_session():
+            response1 = mock_model.generate(prompt1, streaming=True, temp=0)
+            assert isinstance(response1, Iterable)
+            response1 = list(response1)
+            response2 = mock_model.generate(prompt2, streaming=True, temp=0)
+            assert isinstance(response2, Iterable)
+            response2 = list(response2)
+        assert ''.join(response1) == expected1
+        assert ''.join(response2) == expected2
+
+
+    def test_format_chat_prompt_template(self, mock_model):
+        messages = [{
+            'role': 'user',
+            'content': 'User: hello\n',
+        }, {
+            'role': 'assistant',
+            'content': 'Assistant: hello to you, too, good sir!'
+        }]
+        expected = "User: hello\nAssistant: hello to you, too, good sir!\n"
+        formatted_chat_prompt_template = mock_model._format_chat_prompt_template(messages)
+        assert isinstance(formatted_chat_prompt_template, str)
+        assert formatted_chat_prompt_template == expected
+
+
+
+class TestGPT4AllInstance():
+
+    @pytest.fixture
+    def model(self) -> GPT4All:
+        name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+        folder = str(get_model_folder(name))
+        model = GPT4All(model_name=name, model_path=folder)
+        yield model
+        del model.model  # making sure the memory gets freed asap
+        del model
+
+
+    @pytest.mark.slow
+    @pytest.mark.online
+    @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
+    def test_generate(self, model):
+        prompt = "my 2 favorite fruits are"
+        expected = " apples and bananas.\nI love to eat apples and bananas."
+        response = model.generate(prompt, temp=0)
+        assert isinstance(response, str)
+        assert response == expected
+
+
+    @pytest.mark.slow
+    @pytest.mark.online
+    @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
+    def test_generate_with_session(self, model):
+        prompt1 = "name a color."
+        expected1 = " Blue."
+        prompt2 = "now name a different color."
+        expected2 = " Green."
+        with model.chat_session():
+            response1 = model.generate(prompt1, temp=0)
+            assert isinstance(response1, str)
+            response2 = model.generate(prompt2, temp=0)
+            assert isinstance(response2, str)
+        assert response1 == expected1
+        assert response2 == expected2
+
+
+    @pytest.mark.slow
+    @pytest.mark.online
+    @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
+    def test_generate_streaming(self, model):
+        prompt = "my 2 favorite fruits are"
+        expected = " apples and bananas.\nI love to eat apples and bananas."
+        response = model.generate(prompt, streaming=True, temp=0)
+        assert isinstance(response, Iterable)
+        response = list(response)
+        print(response)
+        assert ''.join(response) == expected
+
+
+    @pytest.mark.slow
+    @pytest.mark.online
+    @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
+    def test_generate_streaming_with_session(self, model):
+        prompt1 = "name a color."
+        expected1 = " Blue."
+        prompt2 = "now name a different color."
+        expected2 = " Green."
+        with model.chat_session():
+            response1 = model.generate(prompt1, streaming=True, temp=0)
+            assert isinstance(response1, Iterable)
+            response1 = list(response1)
+            response2 = model.generate(prompt2, streaming=True, temp=0)
+            assert isinstance(response2, Iterable)
+            response2 = list(response2)
+        print(response1)
+        print(response2)
+        assert ''.join(response1) == expected1
+        assert ''.join(response2) == expected2
+
+
+
+@pytest.mark.parametrize('system_prompt', ['', 'System: Hi.', '### System: Be helpful, damnit.'])
+def test_empty_chat_session(system_prompt):
+    chat_session = empty_chat_session(system_prompt)
+    assert isinstance(chat_session, list)
+    len(chat_session) == 1
+    assert all(k in ('role', 'content') for k in chat_session[0].keys())
+    assert all(isinstance(v, str) for v in chat_session[0].values())
+    assert chat_session[0]['content'] == system_prompt
+
+
+@pytest.mark.parametrize('model_name', [None, '', 'mock-model.bin', 'orca-mini-3b.ggmlv3.q4_0'])
+def test_append_bin_suffix(model_name):
+    if not hasattr(model_name, 'endswith'):  # duck typing test
+        with pytest.raises(Exception):
+            append_bin_suffix_if_missing(model_name)
+    else:
+        new_model_name = append_bin_suffix_if_missing(model_name)
+        assert new_model_name[-4:] == '.bin'
