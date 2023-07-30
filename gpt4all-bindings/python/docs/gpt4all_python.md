@@ -433,33 +433,5 @@ If you know exactly when a model should stop responding, you can add a custom ca
     ```
 
 
-### FAQ
-#### There's a problem with the download
-If `allow_download=True` (default), a model is automatically downloaded into `.cache/gpt4all/` in the user's home
-folder, unless it already exists.
-
-In case of connection issues or errors during the download, you might want to manually verify the model file's MD5
-checksum by comparing it with the one listed in [models.json].
-
-As an alternative to the basic downloader built into the bindings, you can choose to download from the
-<https://gpt4all.io/> website instead. Scroll down to 'Model Explorer' and pick your preferred model.
-
-
-#### I need the chat GUI and bindings to behave the same
-The chat GUI and bindings are based on the same backend. You can make them behave the same way by following these steps:
-
-- First of all, ensure that all parameters in the chat GUI settings match those passed to `generate()`.
-
-- To make comparing the output easier, set _Temperature_ in both to 0 for now. This will make the output deterministic.
-
-- Next you'll have to compare the templates, adjusting them as necessary, based on how you're using the bindings:
-    - With simple `generate()` calls, the input has to be surrounded with system and prompt templates.
-    - When using a chat session, it depends on whether the bindings are allowed to download [models.json]. If yes, and
-      in the chat GUI the default templates are used, it'll be handled automatically. If no, use `chat_session()`
-      template parameters to customize them.
-
-- Once you're done, remember to reset _Temperature_ to its previous value in both chat GUI and your Python code.
-
-
 ## API Documentation
 ::: gpt4all.gpt4all.GPT4All
