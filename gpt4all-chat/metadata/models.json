@@ -296,7 +296,7 @@
     "md5sum": "c7ebc61eec1779bddae1f2bcbf2007cc",
     "name": "Llama-2-7B Chat",
     "filename": "llama-2-7b-chat.ggmlv3.q4_0.bin",
-    "filesize": "3790000000",
+    "filesize": "3791725184",
     "requires": "2.4.14",
     "ramrequired": "8",
     "parameters": "7 billion",
