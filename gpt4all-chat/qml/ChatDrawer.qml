@@ -63,15 +63,15 @@ Drawer {
             anchors.top: newChat.bottom
             anchors.bottom: checkForUpdatesButton.top
             anchors.bottomMargin: 10
-            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOff
             clip: true
 
             ListView {
                 id: conversationList
                 anchors.fill: parent
                 anchors.rightMargin: 10
-
                 model: ChatListModel
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
                 delegate: Rectangle {
                     id: chatRectangle
