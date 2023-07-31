@@ -675,7 +675,7 @@ Window {
             anchors.top: parent.top
             anchors.bottom: !currentChat.isServer ? textInputView.top : parent.bottom
             anchors.bottomMargin: !currentChat.isServer ? 30 : 0
-            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
             Rectangle {
                 anchors.fill: parent
@@ -729,6 +729,7 @@ Window {
                     visible: ModelList.installedModels.count !== 0
                     anchors.fill: parent
                     model: chatModel
+                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
                     Accessible.role: Accessible.List
                     Accessible.name: qsTr("List of prompt/response pairs")
