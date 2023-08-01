@@ -36,6 +36,7 @@ async function loadModel(modelName, options = {}) {
 
     const modelConfig = await retrieveModel(modelName, {
         modelPath: loadOptions.modelPath,
+        modelConfigFile: loadOptions.modelConfigFile,
         allowDownload: loadOptions.allowDownload,
         verbose: loadOptions.verbose,
     });

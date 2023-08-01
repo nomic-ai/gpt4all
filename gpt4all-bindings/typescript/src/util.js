@@ -34,18 +34,19 @@ function readChunks(reader) {
 }
 
 function normalizePromptContext(promptContext) {
-    
     const normalizedPromptContext = {};
-    
+
     for (const key in promptContext) {
         if (Object.prototype.hasOwnProperty.call(promptContext, key)) {
-            const snakeKey = key.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
+            const snakeKey = key.replace(
+                /[A-Z]/g,
+                (match) => `_${match.toLowerCase()}`
+            );
             normalizedPromptContext[snakeKey] = promptContext[key];
         }
     }
 
     return normalizedPromptContext;
-    
 }
 
 function downloadModel(modelName, options = {}) {
@@ -177,20 +178,34 @@ async function retrieveModel(modelName, options = {}) {
     const modelExists = existsSync(fullModelPath);
 
     let config = { ...DEFAULT_MODEL_CONFIG };
+    let availableModels = [];
 
-    if (retrieveOptions.allowDownload) {
-        const availableModels = await listModels();
-        const downloadedConfig = availableModels.find(
-            (model) => model.filename === modelFileName
+    const localConfigFile = retrieveOptions.modelConfigFile;
+    if (localConfigFile && existsSync(localConfigFile)) {
+        // if a local config file was specified, use that
+        availableModels = JSON.parse(
+            await fsp.readFile(localConfigFile, "utf-8")
         );
-        if (downloadedConfig) {
-            config = {
-                ...config,
-                ...downloadedConfig,
-            };
-        }
+    } else if (retrieveOptions.allowDownload) {
+        // otherwise attempt to download remote config
+        availableModels = await listModels();
     }
-    
+
+    const loadedModelConfig = availableModels.find(
+        (model) => model.filename === modelFileName
+    );
+
+    if (loadedModelConfig) {
+        config = {
+            ...config,
+            ...loadedModelConfig,
+        };
+    } else {
+        // if theres no local modelConfigFile specified, and allowDownload is false, defaults will be used.
+        // warning the user here because the model may not work as expected.
+        console.warn(`Failed to load model config for ${modelName}. Using defaults.`);
+    }
+
     config.systemPrompt = config.systemPrompt.trim();
 
     if (modelExists) {

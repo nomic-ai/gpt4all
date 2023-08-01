@@ -150,6 +150,7 @@ declare class LLModel {
 interface LoadModelOptions {
     modelPath?: string;
     librariesPath?: string;
+    modelConfigFile?: string;
     allowDownload?: boolean;
     verbose?: boolean;
 }
@@ -214,7 +215,7 @@ interface CompletionOptions extends Partial<LLModelPromptContext> {
      * @default true
      */
     verbose?: boolean;
-    
+
     /**
      * Template for the system message. Will be put before the conversation with %1 being replaced by all system messages.
      * Note that if this is not defined, system messages will not be included in the prompt.
@@ -225,12 +226,12 @@ interface CompletionOptions extends Partial<LLModelPromptContext> {
      * Template for user messages, with %1 being replaced by the message.
      */
     promptTemplate?: boolean;
-    
+
     /**
      * The initial instruction for the model, on top of the prompt
      */
     promptHeader?: string;
-    
+
     /**
      * The last instruction for the model, appended to the end of the prompt.
      */
@@ -303,31 +304,58 @@ interface LLModelPromptContext {
     nPredict: number;
 
     /** The top-k logits to sample from.
+     * Top-K sampling selects the next token only from the top K most likely tokens predicted by the model.
+     * It helps reduce the risk of generating low-probability or nonsensical tokens, but it may also limit
+     * the diversity of the output. A higher value for top-K (eg., 100) will consider more tokens and lead
+     * to more diverse text, while a lower value (eg., 10) will focus on the most probable tokens and generate
+     * more conservative text. 30 - 60 is a good range for most tasks.
      * @default 40
      * */
     topK: number;
 
     /** The nucleus sampling probability threshold.
+     * Top-P limits the selection of the next token to a subset of tokens with a cumulative probability 
+     * above a threshold P. This method, also known as nucleus sampling, finds a balance between diversity
+     * and quality by considering both token probabilities and the number of tokens available for sampling.
+     * When using a higher value for top-P (eg., 0.95), the generated text becomes more diverse.
+     * On the other hand, a lower value (eg., 0.1) produces more focused and conservative text.
+     * The default value is 0.4, which is aimed to be the middle ground between focus and diversity, but
+     * for more creative tasks a higher top-p value will be beneficial, about 0.5-0.9 is a good range for that.
      * @default 0.4
      * */
     topP: number;
 
     /** The temperature to adjust the model's output distribution.
+     * Temperature is like a knob that adjusts how creative or focused the output becomes. Higher temperatures
+     * (eg., 1.2) increase randomness, resulting in more imaginative and diverse text. Lower temperatures (eg., 0.5)
+     * make the output more focused, predictable, and conservative. When the temperature is set to 0, the output
+     * becomes completely deterministic, always selecting the most probable next token and producing identical results
+     * each time. A safe range would be around 0.6 - 0.85, but you are free to search what value fits best for you.
      * @default 0.7
      * */
     temp: number;
 
     /** The number of predictions to generate in parallel.
+     * By splitting the prompt every N tokens, prompt-batch-size reduces RAM usage during processing. However,
+     * this can increase the processing time as a trade-off. If the N value is set too low (e.g., 10), long prompts
+     * with 500+ tokens will be most affected, requiring numerous processing runs to complete the prompt processing.
+     * To ensure optimal performance, setting the prompt-batch-size to 2048 allows processing of all tokens in a single run.
      * @default 8
      * */
     nBatch: number;
 
     /** The penalty factor for repeated tokens.
+     * Repeat-penalty can help penalize tokens based on how frequently they occur in the text, including the input prompt.
+     * A token that has already appeared five times is penalized more heavily than a token that has appeared only one time.
+     * A value of 1 means that there is no penalty and values larger than 1 discourage repeated tokens.
      * @default 1.18
      * */
     repeatPenalty: number;
 
     /** The number of last tokens to penalize.
+     * The repeat-penalty-tokens N option controls the number of tokens in the history to consider for penalizing repetition.
+     * A larger value will look further back in the generated text to prevent repetitions, while a smaller value will only
+     * consider recent tokens.
      * @default 64
      * */
     repeatLastN: number;
@@ -417,6 +445,7 @@ interface RetrieveModelOptions {
     allowDownload?: boolean;
     verbose?: boolean;
     modelPath?: string;
+    modelConfigFile?: string;
 }
 
 declare function retrieveModel(
