@@ -33,6 +33,21 @@ function readChunks(reader) {
     };
 }
 
+function normalizePromptContext(promptContext) {
+    
+    const normalizedPromptContext = {};
+    
+    for (const key in promptContext) {
+        if (Object.prototype.hasOwnProperty.call(promptContext, key)) {
+            const snakeKey = key.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
+            normalizedPromptContext[snakeKey] = promptContext[key];
+        }
+    }
+
+    return normalizedPromptContext;
+    
+}
+
 function downloadModel(modelName, options = {}) {
     const downloadOptions = {
         modelPath: DEFAULT_DIRECTORY,
@@ -177,7 +192,6 @@ async function retrieveModel(modelName, options = {}) {
     }
     
     config.systemPrompt = config.systemPrompt.trim();
-    // config.promptTemplate = config.promptTemplate;
 
     if (modelExists) {
         config.path = fullModelPath;
@@ -214,4 +228,5 @@ module.exports = {
     downloadModel,
     retrieveModel,
     listModels,
+    normalizePromptContext,
 };

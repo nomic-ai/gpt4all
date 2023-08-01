@@ -144,11 +144,11 @@ function createEmbedding(model, text) {
 const defaultCompletionOptions = {
     verbose: false,
     temp: 0.7,
-    top_p: 0.4,
-    top_k: 40,
-    repeat_penalty: 1.18,
-    repeat_last_n: 64,
-    n_batch: 8,
+    topK: 40,
+    topP: 0.4,
+    repeatPenalty: 1.18,
+    repeatLastN: 64,
+    nBatch: 8,
 };
 
 async function createCompletion(
@@ -188,20 +188,20 @@ async function createCompletion(
         promptTemplate: promptTemplate || model.config.promptTemplate || "%1",
         promptHeader: promptHeader || "",
         promptFooter: promptFooter || "",
-        // These were the default header/footer prompts used for non-chat completions.
+        // These were the default header/footer prompts used for non-chat single turn completions.
         // both seem to be working well still with some models, so keeping them here for reference.
         // promptHeader: '### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.',
         // promptFooter: '### Response:',
     });
 
     if (verbose) {
-        console.log("Sending Prompt:\n" + prompt);
+        console.debug("Sending Prompt:\n" + prompt);
     }
 
     const response = await model.generate(prompt, promptContext);
 
     if (verbose) {
-        console.log("Received Response:\n" + response);
+        console.debug("Received Response:\n" + response);
     }
 
     return {

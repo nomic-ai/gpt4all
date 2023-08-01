@@ -1,3 +1,5 @@
+const { normalizePromptContext } = require('./util');
+
 class InferenceModel {
     llm;
     config;
@@ -8,7 +10,8 @@ class InferenceModel {
     }
 
     async generate(prompt, promptContext) {
-        const result = this.llm.raw_prompt(prompt, promptContext, () => {});
+        const normalizedPromptContext = normalizePromptContext(promptContext);
+        const result = this.llm.raw_prompt(prompt, normalizedPromptContext, () => {});
         return result;
     }
 }

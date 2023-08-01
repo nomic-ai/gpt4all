@@ -284,33 +284,33 @@ interface CompletionChoice {
  */
 interface LLModelPromptContext {
     /** The size of the raw logits vector. */
-    logits_size: number;
+    logitsSize: number;
 
     /** The size of the raw tokens vector. */
-    tokens_size: number;
+    tokensSize: number;
 
     /** The number of tokens in the past conversation. */
-    n_past: number;
+    nPast: number;
 
     /** The number of tokens possible in the context window.
      * @default 1024
      */
-    n_ctx: number;
+    nCtx: number;
 
     /** The number of tokens to predict.
      * @default 128
      * */
-    n_predict: number;
+    nPredict: number;
 
     /** The top-k logits to sample from.
      * @default 40
      * */
-    top_k: number;
+    topK: number;
 
     /** The nucleus sampling probability threshold.
      * @default 0.4
      * */
-    top_p: number;
+    topP: number;
 
     /** The temperature to adjust the model's output distribution.
      * @default 0.7
@@ -320,22 +320,22 @@ interface LLModelPromptContext {
     /** The number of predictions to generate in parallel.
      * @default 8
      * */
-    n_batch: number;
+    nBatch: number;
 
     /** The penalty factor for repeated tokens.
      * @default 1.18
      * */
-    repeat_penalty: number;
+    repeatPenalty: number;
 
     /** The number of last tokens to penalize.
      * @default 64
      * */
-    repeat_last_n: number;
+    repeatLastN: number;
 
     /** The percentage of context to erase if the context window is exceeded.
      * @default 0.5
      * */
-    context_erase: number;
+    contextErase: number;
 }
 
 /**
