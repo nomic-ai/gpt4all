@@ -26,7 +26,6 @@ tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "left"
 
 
-auth = "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"
 dataset = load_dataset(
     "lighteval/sacrebleu_manual",
     "wmt18_test-ts_de-en",
