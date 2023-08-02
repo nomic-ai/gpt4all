@@ -293,6 +293,22 @@
   },
   {
     "order": "v",
+    "md5sum": "c7ebc61eec1779bddae1f2bcbf2007cc",
+    "name": "Llama-2-7B Chat",
+    "filename": "llama-2-7b-chat.ggmlv3.q4_0.bin",
+    "filesize": "3791725184",
+    "requires": "2.4.14",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "LLaMA2",
+    "description": "<strong>New LLaMA2 model from Meta AI.</strong><br><ul><li>Fine-tuned for dialogue.<li>static model trained on an offline dataset<li>RLHF dataset<li>Licensed for commercial use</ul>",
+    "url": "https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML/resolve/main/llama-2-7b-chat.ggmlv3.q4_0.bin",
+    "promptTemplate": "[INST] %1 [/INST] ",
+    "systemPrompt": "[INST]<<SYS>>You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature. If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.<</SYS>>[/INST] "
+  },
+  {
+    "order": "w",
     "md5sum": "bc4016df14b894ff3ea73defbccfea02",
     "name": "Nous Redmond Puffin",
     "filename": "redmond-puffin-v1.3-13b-q4_k_m-ggml.bin",
