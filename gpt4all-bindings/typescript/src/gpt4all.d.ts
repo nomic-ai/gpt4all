@@ -393,6 +393,16 @@ declare const DEFAULT_LIBRARIES_DIRECTORY: string;
 declare const DEFAULT_MODEL_CONFIG: ModelConfig;
 
 /**
+ * Default prompt context.
+ */
+declare const DEFAULT_PROMT_CONTEXT: LLModelPromptContext;
+
+/**
+ * Default model list url.
+ */
+declare const DEFAULT_MODEL_LIST_URL: string;
+
+/**
  * Initiates the download of a model file.
  * By default this downloads without waiting. use the controller returned to alter this behavior.
  * @param {string} modelName - The model to be downloaded.
@@ -433,13 +443,18 @@ interface DownloadModelOptions {
      */
     url?: string;
     /**
-     * Whether to verify the hash of the download to ensure a proper download occurred.
-     * @default true
+     * MD5 sum of the model file. If this is provided, the downloaded file will be checked against this sum.
+     * If the sums do not match, an error will be thrown and the file will be deleted.
      */
-    md5sum?: boolean;
+    md5sum?: string;
 }
 
-declare function listModels(): Promise<ModelConfig[]>;
+interface ListModelsOptions {
+    url?: string;
+    file?: string;
+}
+
+declare function listModels(options?: ListModelsOptions): Promise<ModelConfig[]>;
 
 interface RetrieveModelOptions {
     allowDownload?: boolean;
@@ -481,6 +496,8 @@ export {
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_MODEL_CONFIG,
+    DEFAULT_PROMT_CONTEXT,
+    DEFAULT_MODEL_LIST_URL,
     downloadModel,
     retrieveModel,
     listModels,
