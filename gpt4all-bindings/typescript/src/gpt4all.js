@@ -13,6 +13,7 @@ const {
 const {
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
+    DEFAULT_PROMPT_CONTEXT,
 } = require("./config.js");
 const { InferenceModel, EmbeddingModel } = require("./models.js");
 
@@ -147,12 +148,7 @@ function createEmbedding(model, text) {
 
 const defaultCompletionOptions = {
     verbose: false,
-    temp: 0.7,
-    topK: 40,
-    topP: 0.4,
-    repeatPenalty: 1.18,
-    repeatLastN: 64,
-    nBatch: 8,
+    ...DEFAULT_PROMPT_CONTEXT,
 };
 
 async function createCompletion(
@@ -233,6 +229,9 @@ function createTokenStream() {
 module.exports = {
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_DIRECTORY,
+    DEFAULT_PROMPT_CONTEXT,
+    DEFAULT_MODEL_CONFIG,
+    DEFAULT_MODEL_LIST_URL,
     LLModel,
     InferenceModel,
     EmbeddingModel,

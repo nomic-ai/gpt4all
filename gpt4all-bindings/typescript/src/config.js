@@ -23,9 +23,19 @@ const DEFAULT_MODEL_CONFIG = {
 
 const DEFAULT_MODEL_LIST_URL = "https://gpt4all.io/models/models.json";
 
+const DEFAULT_PROMPT_CONTEXT = {
+    temp: 0.7,
+    topK: 40,
+    topP: 0.4,
+    repeatPenalty: 1.18,
+    repeatLastN: 64,
+    nBatch: 8,
+}
+
 module.exports = {
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_MODEL_CONFIG,
     DEFAULT_MODEL_LIST_URL,
+    DEFAULT_PROMPT_CONTEXT,
 };
