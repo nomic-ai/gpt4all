@@ -320,7 +320,7 @@
     "type": "LLaMA2",
     "description": "<strong>The first commercially available language model released by Nous Research!</strong><br><ul><li>Fine-tuned from 3,000 carefully curated GPT-4 examples<li>Additional data from sub sections of datasets such as CamelAI's Physics, Chemistry, Biology, and Math.<li>RLHF dataset<li>Licensed for commercial use</ul>",
     "url": "https://huggingface.co/NousResearch/Redmond-Puffin-13B-GGML/resolve/main/GGML-Redmond-Puffin-v1.3-13B-Q4_K_M.bin",
-    "promptTemplate": "### human:\n%1\n### response:\n",
-    "systemPrompt": "### system:\nYou are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature. If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.\n"
+    "promptTemplate": "### human: %1\n\n### response: ",
+    "systemPrompt": "### system: You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature. If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.\n\n"
   }
 ]
