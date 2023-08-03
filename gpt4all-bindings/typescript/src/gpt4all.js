@@ -14,6 +14,8 @@ const {
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_PROMPT_CONTEXT,
+    DEFAULT_MODEL_CONFIG,
+    DEFAULT_MODEL_LIST_URL,
 } = require("./config.js");
 const { InferenceModel, EmbeddingModel } = require("./models.js");
 

@@ -96,7 +96,6 @@ function downloadModel(modelName, options = {}) {
     const downloadOptions = {
         modelPath: DEFAULT_DIRECTORY,
         verbose: false,
-        md5sum: true,
         ...options,
     };
 
@@ -261,6 +260,7 @@ async function retrieveModel(modelName, options = {}) {
             modelPath: retrieveOptions.modelPath,
             verbose: retrieveOptions.verbose,
             url: config.url,
+            md5sum: config.md5sum,
         });
 
         const downloadPath = await downloadController.promise;

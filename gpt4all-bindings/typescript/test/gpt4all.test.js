@@ -18,6 +18,7 @@ const {
     createPrompt,
     createCompletion,
 } = require("../src/gpt4all.js");
+const { mock } = require("node:test");
 
 describe("config", () => {
     test("default paths constants are available and correct", () => {
@@ -89,21 +90,10 @@ describe("appendBinSuffixIfMissing", () => {
 });
 
 describe("downloadModel", () => {
-    let mockAbortController;
-    beforeEach(() => {
-        // Mocking the AbortController constructor
-        mockAbortController = jest.fn();
-        global.AbortController = mockAbortController;
-    });
+    let mockAbortController, mockFetch;
+    const fakeModelName = "fake-model";
 
-    afterEach(() => {
-        // Clean up mocks
-        mockAbortController.mockReset();
-    });
-
-    test("should successfully download a model file", async () => {
-        // Mock successful fetch with fake data
-        const fakeModelName = "fake-model";
+    const createMockFetch = () => {
         const mockData = new Uint8Array([1, 2, 3, 4]);
         const mockResponse = new ReadableStream({
             start(controller) {
@@ -117,21 +107,33 @@ describe("downloadModel", () => {
                 body: mockResponse,
             })
         );
+        return mockFetchImplementation;
+    };
 
-        jest.spyOn(global, "fetch").mockImplementation(mockFetchImplementation);
-
-        mockAbortController.mockReturnValueOnce({
+    beforeEach(() => {
+        // Mocking the AbortController constructor
+        mockAbortController = jest.fn();
+        global.AbortController = mockAbortController;
+        mockAbortController.mockReturnValue({
             signal: "signal",
             abort: jest.fn(),
         });
-        const result = downloadModel(fakeModelName, {
-            allowDownload: true,
-        });
+        mockFetch = createMockFetch();
+        jest.spyOn(global, "fetch").mockImplementation(mockFetch);
+    });
 
-        // await the download
-        const modelFilePath = await result.promise;
+    afterEach(() => {
+        // Clean up mocks
+        mockAbortController.mockReset();
+        mockFetch.mockClear();
+        global.fetch.mockRestore();
+    });
 
+    test("should successfully download a model file", async () => {
+        const downloadController = downloadModel(fakeModelName);
+        const modelFilePath = await downloadController.promise;
         expect(modelFilePath).toBe(`${DEFAULT_DIRECTORY}/${fakeModelName}.bin`);
+
         expect(global.fetch).toHaveBeenCalledTimes(1);
         expect(global.fetch).toHaveBeenCalledWith(
             "https://gpt4all.io/models/fake-model.bin",
@@ -144,17 +146,35 @@ describe("downloadModel", () => {
             }
         );
 
-        // Restore the original fetch implementation
-        global.fetch.mockRestore();
-        // Remove the created file
+        // final model file should be present
+        expect(fsp.access(modelFilePath)).resolves.not.toThrow();
+
+        // remove the testing model file
         await fsp.unlink(modelFilePath);
+    });
+
+    test("should error and cleanup if md5sum is not matching", async () => {
+        const downloadController = downloadModel(fakeModelName, {
+            md5sum: "wrong-md5sum",
+        });
+        // the promise should reject with a mismatch
+        await expect(downloadController.promise).rejects.toThrow(
+            `Model "${fakeModelName}" failed verification: Hashes mismatch.`
+        );
+        // fetch should have been called
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        // the file should be missing
+        expect(
+            fsp.access(`${DEFAULT_DIRECTORY}/${fakeModelName}.bin`)
+        ).rejects.toThrow();
+        // partial file should also be missing
+        expect(
+            fsp.access(`${DEFAULT_DIRECTORY}/${fakeModelName}.part`)
+        ).rejects.toThrow();
     });
 
     // TODO
     // test("should be able to cancel and resume a download", async () => {
-    // });
-
-    // test("should error and cleanup if md5sum is not matching", async () => {
     // });
 });
 
