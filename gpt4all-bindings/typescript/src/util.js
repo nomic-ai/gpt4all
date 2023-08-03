@@ -4,12 +4,35 @@ const { performance } = require("node:perf_hooks");
 const path = require("node:path");
 const { mkdirp } = require("mkdirp");
 const md5File = require("md5-file");
-const { DEFAULT_DIRECTORY, DEFAULT_MODEL_CONFIG } = require("./config.js");
+const {
+    DEFAULT_DIRECTORY,
+    DEFAULT_MODEL_CONFIG,
+    DEFAULT_MODEL_LIST_URL,
+} = require("./config.js");
 
-async function listModels() {
-    const res = await fetch("https://gpt4all.io/models/models.json");
-    const modelList = await res.json();
-    return modelList;
+async function listModels(
+    options = {
+        url: DEFAULT_MODEL_LIST_URL,
+    }
+) {
+    if (options.file && existsSync(options.file)) {
+        console.debug("exists", options.file);
+        const fileContents = await fsp.readFile(options.file, "utf-8");
+        const modelList = JSON.parse(fileContents);
+        return modelList;
+    } else if (options.url) {
+        const res = await fetch(options.url);
+
+        if (!res.ok) {
+            throw Error(
+                `Failed to retrieve model list from ${url} - ${res.status} ${res.statusText}`
+            );
+        }
+        const modelList = await res.json();
+        return modelList;
+    }
+
+    return [];
 }
 
 function appendBinSuffixIfMissing(name) {
@@ -33,11 +56,31 @@ function readChunks(reader) {
     };
 }
 
+/**
+ * Prints a warning if any keys in the prompt context are snake_case.
+ */
+function warnOnSnakeCaseKeys(promptContext) {
+    const snakeCaseKeys = Object.keys(promptContext).filter((key) =>
+        key.includes("_")
+    );
+
+    if (snakeCaseKeys.length > 0) {
+        console.warn(
+            "Prompt context keys should be camelCase. Support for snake_case might be removed in the future. Found keys: " +
+                snakeCaseKeys.join(", ")
+        );
+    }
+}
+
+/**
+ * Converts all keys in the prompt context to snake_case
+ * For duplicate definitions, the value of the last occurrence will be used.
+ */
 function normalizePromptContext(promptContext) {
     const normalizedPromptContext = {};
 
     for (const key in promptContext) {
-        if (Object.prototype.hasOwnProperty.call(promptContext, key)) {
+        if (promptContext.hasOwnProperty(key)) {
             const snakeKey = key.replace(
                 /[A-Z]/g,
                 (match) => `_${match.toLowerCase()}`
@@ -87,12 +130,53 @@ function downloadModel(modelName, options = {}) {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
+    const finalizeDownload = async () => {
+        if (options.md5sum) {
+            const fileHash = await md5File(partialModelPath);
+            if (fileHash !== options.md5sum) {
+                await fsp.unlink(partialModelPath);
+                const message = `Model "${modelName}" failed verification: Hashes mismatch. Expected ${options.md5sum}, got ${fileHash}`;
+                throw Error(message);
+            }
+            if (options.verbose) {
+                console.log(`MD5 hash verified: ${fileHash}`);
+            }
+        }
+
+        await fsp.rename(partialModelPath, finalModelPath);
+    };
+
     // a promise that executes and writes to a stream. Resolves to the path the model was downloaded to when done writing.
     const downloadPromise = new Promise((resolve, reject) => {
+        let timestampStart;
+
+        if (options.verbose) {
+            console.log(`Downloading @ ${partialModelPath} ...`);
+            timestampStart = performance.now();
+        }
+
         const writeStream = createWriteStream(
             partialModelPath,
             writeStreamOpts
         );
+
+        writeStream.on("error", (e) => {
+            writeStream.close();
+            reject(e);
+        });
+
+        writeStream.on("finish", () => {
+            if (options.verbose) {
+                const elapsed = performance.now() - timestampStart;
+                console.log(`Finished. Download took ${elapsed.toFixes(2)} ms`);
+            }
+
+            finalizeDownload()
+                .then(() => {
+                    resolve(finalModelPath);
+                })
+                .catch(reject);
+        });
 
         fetch(modelUrl, {
             signal,
@@ -100,59 +184,16 @@ function downloadModel(modelName, options = {}) {
         })
             .then((res) => {
                 if (!res.ok) {
-                    reject(
-                        Error(
-                            `Failed to download model from ${modelUrl} - ${res.statusText}`
-                        )
-                    );
+                    const message = `Failed to download model from ${modelUrl} - ${res.statusText}`;
+                    reject(Error(message));
                 }
                 return res.body.getReader();
             })
             .then(async (reader) => {
-                console.log("Downloading @ ", partialModelPath);
-                let perf;
-
-                if (options.verbose) {
-                    perf = performance.now();
-                }
-
-                writeStream.on("finish", () => {
-                    if (options.verbose) {
-                        console.log(
-                            "Time taken: ",
-                            (performance.now() - perf).toFixed(2),
-                            " ms"
-                        );
-                    }
-                    writeStream.close();
-                });
-
-                writeStream.on("error", (e) => {
-                    writeStream.close();
-                    reject(e);
-                });
-
                 for await (const chunk of readChunks(reader)) {
                     writeStream.write(chunk);
                 }
-
-                if (options.md5sum) {
-                    const fileHash = await md5File(partialModelPath);
-                    if (fileHash !== options.md5sum) {
-                        await fsp.unlink(partialModelPath);
-                        return reject(
-                            Error(
-                                `Model "${modelName}" failed verification: Hashes mismatch`
-                            )
-                        );
-                    }
-                    if (options.verbose) {
-                        console.log("MD5 hash verified: ", fileHash);
-                    }
-                }
-
-                await fsp.rename(partialModelPath, finalModelPath);
-                resolve(finalModelPath);
+                writeStream.end();
             })
             .catch(reject);
     });
@@ -178,18 +219,13 @@ async function retrieveModel(modelName, options = {}) {
     const modelExists = existsSync(fullModelPath);
 
     let config = { ...DEFAULT_MODEL_CONFIG };
-    let availableModels = [];
 
-    const localConfigFile = retrieveOptions.modelConfigFile;
-    if (localConfigFile && existsSync(localConfigFile)) {
-        // if a local config file was specified, use that
-        availableModels = JSON.parse(
-            await fsp.readFile(localConfigFile, "utf-8")
-        );
-    } else if (retrieveOptions.allowDownload) {
-        // otherwise attempt to download remote config
-        availableModels = await listModels();
-    }
+    const availableModels = await listModels({
+        file: retrieveOptions.modelConfigFile,
+        url:
+            retrieveOptions.allowDownload &&
+            "https://gpt4all.io/models/models.json",
+    });
 
     const loadedModelConfig = availableModels.find(
         (model) => model.filename === modelFileName
@@ -201,9 +237,11 @@ async function retrieveModel(modelName, options = {}) {
             ...loadedModelConfig,
         };
     } else {
-        // if theres no local modelConfigFile specified, and allowDownload is false, defaults will be used.
+        // if theres no local modelConfigFile specified, and allowDownload is false, the default model config will be used.
         // warning the user here because the model may not work as expected.
-        console.warn(`Failed to load model config for ${modelName}. Using defaults.`);
+        console.warn(
+            `Failed to load model config for ${modelName}. Using defaults.`
+        );
     }
 
     config.systemPrompt = config.systemPrompt.trim();
@@ -244,4 +282,5 @@ module.exports = {
     retrieveModel,
     listModels,
     normalizePromptContext,
+    warnOnSnakeCaseKeys,
 };

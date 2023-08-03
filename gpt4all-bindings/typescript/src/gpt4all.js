@@ -74,6 +74,9 @@ async function loadModel(modelName, options = {}) {
     }
 }
 
+/**
+ * Formats a list of messages into a single prompt string.
+ */
 function formatChatPrompt(
     messages,
     {

@@ -1,4 +1,4 @@
-const { normalizePromptContext } = require('./util');
+const { normalizePromptContext, warnOnSnakeCaseKeys } = require('./util');
 
 class InferenceModel {
     llm;
@@ -10,6 +10,7 @@ class InferenceModel {
     }
 
     async generate(prompt, promptContext) {
+        warnOnSnakeCaseKeys(promptContext);
         const normalizedPromptContext = normalizePromptContext(promptContext);
         const result = this.llm.raw_prompt(prompt, normalizedPromptContext, () => {});
         return result;
