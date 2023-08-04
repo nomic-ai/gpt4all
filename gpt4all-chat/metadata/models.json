@@ -320,7 +320,7 @@
     "type": "LLaMA2",
     "description": "<strong>The first commercially available language model released by Nous Research!</strong><br><ul><li>Fine-tuned from 3,000 carefully curated GPT-4 examples<li>Additional data from sub sections of datasets such as CamelAI's Physics, Chemistry, Biology, and Math.<li>RLHF dataset<li>Licensed for commercial use</ul>",
     "url": "https://huggingface.co/NousResearch/Redmond-Puffin-13B-GGML/resolve/main/GGML-Redmond-Puffin-v1.3-13B-Q4_K_M.bin",
-    "promptTemplate": "### human: %1\n\n### response: ",
-    "systemPrompt": "### human: Interact in conversation to the best of your ability, please be concise, logical, intelligent and coherent.\n\n### response: Sure! sounds good."
+    "promptTemplate": "### human: %1\n\n### response:",
+    "systemPrompt": "### human: Interact in conversation to the best of your ability, please be concise, logical, intelligent and coherent.\n\n### response: Sure! Sounds good.\n\n"
   }
 ]
