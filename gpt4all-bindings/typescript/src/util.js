@@ -15,8 +15,17 @@ async function listModels(
         url: DEFAULT_MODEL_LIST_URL,
     }
 ) {
-    if (options.file && existsSync(options.file)) {
-        console.debug("exists", options.file);
+    if (!options || (!options.url && !options.file)) {
+        throw new Error(
+            `No model list source specified. Please specify either a url or a file.`
+        );
+    }
+
+    if (options.file) {
+        if (!existsSync(options.file)) {
+            throw new Error(`Model list file ${options.file} does not exist.`);
+        }
+
         const fileContents = await fsp.readFile(options.file, "utf-8");
         const modelList = JSON.parse(fileContents);
         return modelList;
@@ -31,8 +40,6 @@ async function listModels(
         const modelList = await res.json();
         return modelList;
     }
-
-    return [];
 }
 
 function appendBinSuffixIfMissing(name) {
