@@ -4,11 +4,11 @@ for serving inference from GPT4All models. The API matches the OpenAI API spec.
 
 ## Tutorial
 
-Following tutorial assumes that you are checked out this repo and cd into it.
+The following tutorial assumes that you have checked out this repo and cd'd into it.
 
 ### Starting the app
 
-`cwd: gpt4all/gpt4all-api`
+`working directory: gpt4all/gpt4all-api`
 
 First build the FastAPI docker image. You only have to do this on initial build or when you add new dependencies to the requirements.txt file:
 ```bash
