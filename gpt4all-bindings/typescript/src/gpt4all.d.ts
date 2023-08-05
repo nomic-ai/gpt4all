@@ -6,7 +6,7 @@ type ModelType = "gptj" | "llama" | "mpt" | "replit";
 
 /**
  * Full list of models available
- * @deprecated These model names are outdated and this type will not be maintained, please use a string literal instead
+ * \@deprecated These model names are outdated and this type will not be maintained, please use a string literal instead
  */
 interface ModelFile {
     /** List of GPT-J Models */

@@ -10,8 +10,8 @@
     "build:backend": "node scripts/build.js",
     "build": "node-gyp-build",
     "predocs:build": "node scripts/docs.js",
-    "docs:build": "documentation readme ./src/gpt4all.d.ts --parse-extension js d.ts --format md --section documentation --readme-file ../python/docs/gpt4all_typescript.md",
-    "postdocs:build": "node scripts/docs.js"
+    "docs:build": "documentation readme ./src/gpt4all.d.ts --parse-extension js d.ts --format md --section \"API Reference\" --readme-file ../python/docs/gpt4all_typescript.md",
+    "postdocs:build": "documentation readme ./src/gpt4all.d.ts --parse-extension js d.ts --format md --section \"API Reference\" --readme-file README.md"
   },
   "files": [
     "src/**/*",
