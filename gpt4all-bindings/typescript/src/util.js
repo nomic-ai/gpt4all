@@ -118,6 +118,10 @@ function downloadModel(modelName, options = {}) {
     if (existsSync(finalModelPath)) {
         throw Error(`Model already exists at ${finalModelPath}`);
     }
+    
+    if (downloadOptions.verbose) {
+        console.log(`Downloading ${modelName} from ${modelUrl}`);
+    }
 
     const headers = {
         "Accept-Ranges": "arraybuffer",
@@ -174,7 +178,7 @@ function downloadModel(modelName, options = {}) {
         writeStream.on("finish", () => {
             if (options.verbose) {
                 const elapsed = performance.now() - timestampStart;
-                console.log(`Finished. Download took ${elapsed.toFixes(2)} ms`);
+                console.log(`Finished. Download took ${elapsed.toFixed(2)} ms`);
             }
 
             finalizeDownload()
@@ -190,7 +194,7 @@ function downloadModel(modelName, options = {}) {
         })
             .then((res) => {
                 if (!res.ok) {
-                    const message = `Failed to download model from ${modelUrl} - ${res.statusText}`;
+                    const message = `Failed to download model from ${modelUrl} - ${res.status} ${res.statusText}`;
                     reject(Error(message));
                 }
                 return res.body.getReader();
@@ -259,13 +263,11 @@ async function retrieveModel(modelName, options = {}) {
             console.log(`Found ${modelName} at ${fullModelPath}`);
         }
     } else if (retrieveOptions.allowDownload) {
-        if (retrieveOptions.verbose) {
-            console.log(`Downloading ${modelName} from ${config.url} ...`);
-        }
 
         const downloadController = downloadModel(modelName, {
             modelPath: retrieveOptions.modelPath,
             verbose: retrieveOptions.verbose,
+            filesize: config.filesize,
             url: config.url,
             md5sum: config.md5sum,
         });
