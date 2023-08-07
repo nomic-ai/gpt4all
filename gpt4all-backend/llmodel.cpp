@@ -11,8 +11,7 @@
 #include <cstdlib>
 #include <sstream>
 #ifdef _MSC_VER
-#include <windows.h>
-#include <processthreadsapi.h>
+#include <intrin.h>
 #endif
 
 std::string s_implementations_search_path = ".";
@@ -22,7 +21,9 @@ static bool has_at_least_minimal_hardware() {
     #ifndef _MSC_VER
         return __builtin_cpu_supports("avx");
     #else
-        return IsProcessorFeaturePresent(PF_AVX_INSTRUCTIONS_AVAILABLE);
+        int cpuInfo[4];
+        __cpuid(cpuInfo, 1);
+        return cpuInfo[2] & (1 << 28);
     #endif
 #else
     return true; // Don't know how to handle non-x86_64
@@ -34,7 +35,9 @@ static bool requires_avxonly() {
     #ifndef _MSC_VER
         return !__builtin_cpu_supports("avx2");
     #else
-        return !IsProcessorFeaturePresent(PF_AVX2_INSTRUCTIONS_AVAILABLE);
+        int cpuInfo[4];
+        __cpuidex(cpuInfo, 7, 0);
+        return !(cpuInfo[1] & (1 << 5));
     #endif
 #else
     return false; // Don't know how to handle non-x86_64
