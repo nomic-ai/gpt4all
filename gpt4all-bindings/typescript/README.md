@@ -15,7 +15,7 @@ The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-t
 *   Everything should work out the box.
 *   See [API Reference](#api-reference)
 
-### Chat Completion (alpha)
+### Chat Completion
 
 ```js
 import { createCompletion, loadModel } from '../src/gpt4all.js'
@@ -29,7 +29,7 @@ const response = await createCompletion(model, [
 
 ```
 
-### Embedding (alpha)
+### Embedding
 
 ```js
 import { createEmbedding, loadModel } from '../src/gpt4all.js'
