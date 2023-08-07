@@ -4,9 +4,10 @@ declare module "gpt4all";
 /** Type of the model */
 type ModelType = "gptj" | "llama" | "mpt" | "replit";
 
+// NOTE: "deprecated" tag in below comment breaks the doc generator https://github.com/documentationjs/documentation/issues/1596
 /**
  * Full list of models available
- * \@deprecated These model names are outdated and this type will not be maintained, please use a string literal instead
+ * @deprecated These model names are outdated and this type will not be maintained, please use a string literal instead
  */
 interface ModelFile {
     /** List of GPT-J Models */
@@ -180,6 +181,11 @@ declare function loadModel(
     modelName: string,
     options?: EmbeddingModelOptions
 ): Promise<EmbeddingModel>;
+
+declare function loadModel(
+    modelName: string,
+    options?: EmbeddingOptions | InferenceOptions
+): Promise<InferenceModel | EmbeddingModel>;
 
 /**
  * The nodejs equivalent to python binding's chat_completion
