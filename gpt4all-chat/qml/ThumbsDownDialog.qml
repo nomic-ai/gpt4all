@@ -39,6 +39,7 @@ MyDialog {
                 anchors.verticalCenter: img.verticalCenter
                 text: qsTr("Please edit the text below to provide a better response. (optional)")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
             }
         }
 
@@ -71,11 +72,13 @@ MyDialog {
         spacing: 10
         MyButton {
             text: qsTr("Submit")
+            font.pixelSize: theme.fontSizeLarge
             Accessible.description: qsTr("Submits the user's response")
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
         MyButton {
             text: qsTr("Cancel")
+            font.pixelSize: theme.fontSizeLarge
             Accessible.description: qsTr("Closes the response dialog")
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
         }
