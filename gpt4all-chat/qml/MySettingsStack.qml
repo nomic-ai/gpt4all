@@ -56,6 +56,7 @@ Item {
                 padding: 10
                 contentItem: IconLabel {
                     color: theme.textColor
+                    font.pixelSize: theme.fontSizeLarge
                     font.bold: tabButton.checked
                     text: model.title
                 }
