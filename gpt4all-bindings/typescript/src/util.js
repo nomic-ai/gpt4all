@@ -247,7 +247,7 @@ async function retrieveModel(modelName, options = {}) {
             ...loadedModelConfig,
         };
     } else {
-        // if theres no local modelConfigFile specified, and allowDownload is false, the default model config will be used.
+        // if there's no local modelConfigFile specified, and allowDownload is false, the default model config will be used.
         // warning the user here because the model may not work as expected.
         console.warn(
             `Failed to load model config for ${modelName}. Using defaults.`
