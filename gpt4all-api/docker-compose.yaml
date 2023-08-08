@@ -9,11 +9,12 @@ services:
       - "4891:4891"
     environment:
       - APP_ENVIRONMENT=dev
-      - WEB_CONCURRENCY=2
+      - WEB_CONCURRENCY=4
       - LOGLEVEL=debug
       - PORT=4891
-      - model=ggml-mpt-7b-chat.bin
+      - model=llama-2-7b-chat.ggmlv3.q8_0.bin
       - inference_mode=cpu
     volumes:
       - './gpt4all_api/app:/app'
+      - '${HOME}/models:/models'
     command: ["/start-reload.sh"]

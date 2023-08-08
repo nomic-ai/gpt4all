@@ -8,9 +8,15 @@ The following tutorial assumes that you have checked out this repo and cd'd into
 
 ### Starting the app
 
-First change your working directory to `gpt4all/gpt4all-api`.
+First, decide what LLM model you'll use in your API and be sure to download or setup your `~/models` folder with the LLM models you'd like to use with the API, like this:
+```bash
+export MODEL_BIN=llama-2-7b-chat.ggmlv3.q8_0.bin
+export MODEL_DIR=$HOME/models
+mkdir -p $MODEL_DIR
+wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML/resolve/main/${MODEL_BIN} -P $MODEL_DIR
+```
 
-Now you can build the FastAPI docker image. You only have to do this on initial build or when you add new dependencies to the requirements.txt file:
+Then, change your working directory to `gpt4all/gpt4all-api` and build the FastAPI docker image. You only have to do this on initial build or when you add new dependencies to the requirements.txt file:
 ```bash
 DOCKER_BUILDKIT=1 docker build -t gpt4all_api --progress plain -f gpt4all_api/Dockerfile.buildkit .
 ```

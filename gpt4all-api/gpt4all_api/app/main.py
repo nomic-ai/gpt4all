@@ -1,5 +1,6 @@
 import logging
 import os
+import multiprocessing
 
 import docs
 from api_v1 import events
@@ -37,7 +38,7 @@ async def startup():
         logger.info(f"Downloading/fetching model: {os.path.join(settings.gpt4all_path, settings.model)}")
         from gpt4all import GPT4All
 
-        model = GPT4All(model_name=settings.model, model_path=settings.gpt4all_path)
+        model = GPT4All(n_threads=multiprocessing.cpu_count(), model_name=settings.model, model_path=settings.gpt4all_path)
 
         logger.info(f"GPT4All API is ready to infer from {settings.model} on CPU.")
 

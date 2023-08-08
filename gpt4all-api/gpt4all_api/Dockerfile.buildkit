@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1.0.0-experimental
 FROM tiangolo/uvicorn-gunicorn:python3.11
 
-ARG MODEL_BIN=ggml-mpt-7b-chat.bin
+#ARG MODEL_BIN=ggml-mpt-7b-chat.bin
+ARG MODEL_BIN=llama-2-7b-chat.ggmlv3.q4_0.bin
 
 # Put first so anytime this file changes other cached layers are invalidated.
 COPY gpt4all_api/requirements.txt /requirements.txt
@@ -15,9 +16,14 @@ RUN --mount=type=ssh pip install -r /requirements.txt && \
 # Finally, copy app and client.
 COPY gpt4all_api/app /app
 
-RUN mkdir -p /models
+
+# STOP THIS. ALL MODELS SHOULD BE MOUNTED, NOT COPIED. SHIT.
+# RUN mkdir -p /models
 
 # Include the following line to bake a model into the image and not have to download it on API start.
-RUN wget -q --show-progress=off https://gpt4all.io/models/${MODEL_BIN} -P /models \
-  && md5sum /models/${MODEL_BIN}
+#RUN wget -q --show-progress=off https://gpt4all.io/models/${MODEL_BIN} -P /models \
+#  && md5sum /models/${MODEL_BIN}
+
+# ADD llama-2-7b-chat.ggmlv3.q8_0.bin /models/.
+# RUN md5sum /models/llama-2-7b-chat.ggmlv3.q8_0.bin
 
