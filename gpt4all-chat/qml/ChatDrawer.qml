@@ -255,6 +255,7 @@ Drawer {
             anchors.bottom: downloadButton.top
             anchors.bottomMargin: 10
             text: qsTr("Updates")
+            font.pixelSize: theme.fontSizeLarge
             Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
             onClicked: {
                 if (!LLM.checkForUpdates())

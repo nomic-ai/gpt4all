@@ -66,6 +66,7 @@ Item {
                     anchors.left: parent.left
                     width: implicitWidth
                     text: qsTr("Restore Defaults")
+                    font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.Button
                     Accessible.name: text
                     Accessible.description: qsTr("Restores the settings dialog to a default state")
@@ -79,6 +80,7 @@ Item {
                     visible: root.advancedSettings
                     width: implicitWidth
                     text: !advancedInner.visible ? qsTr("Advanced Settings") : qsTr("Hide Advanced Settings")
+                    font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.Button
                     Accessible.name: text
                     Accessible.description: qsTr("Shows/hides the advanced settings")

@@ -21,7 +21,7 @@ QtObject {
     property color tabBorder: MySettings.chatTheme == "Dark" ? backgroundLight : backgroundDark
     property color assistantColor: "#10a37f"
     property color textErrorColor: "red"
-    property real  fontSizeLarge: Qt.application.font.pixelSize
-    property real  fontSizeLarger: Qt.application.font.pixelSize + 2
+    property real  fontSizeLarge: MySettings.fontSize == "Small" ? Qt.application.font.pixelSize : MySettings.fontSize == "Medium" ? Qt.application.font.pixelSize + 5 : Qt.application.font.pixelSize + 10
+    property real  fontSizeLarger: MySettings.fontSize == "Small" ? Qt.application.font.pixelSize + 2 : MySettings.fontSize == "Medium" ? Qt.application.font.pixelSize + 7 : Qt.application.font.pixelSize + 12
 }
 

@@ -33,6 +33,7 @@ MyDialog {
             bottomPadding: 20
             text: qsTr("New version is available:")
             color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
         }
 
         MyButton {
@@ -42,6 +43,7 @@ MyDialog {
             anchors.verticalCenter: label.verticalCenter
             padding: 20
             text: qsTr("Update")
+            font.pixelSize: theme.fontSizeLarge
             Accessible.description: qsTr("Update to new version")
             onClicked: {
                 if (!LLM.checkForUpdates())

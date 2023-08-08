@@ -22,6 +22,7 @@ MySettingsTab {
             id: themeLabel
             text: qsTr("Theme:")
             color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
             Layout.row: 1
             Layout.column: 0
         }
@@ -35,7 +36,7 @@ MySettingsTab {
             model: ["Dark", "Light"]
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("ComboBox for displaying/picking the color theme")
-            Accessible.description: qsTr("Use this for picking the color them for the chat client to use")
+            Accessible.description: qsTr("Use this for picking the color theme for the chat client to use")
             function updateModel() {
                 themeBox.currentIndex = themeBox.indexOfValue(MySettings.chatTheme);
             }
@@ -53,15 +54,51 @@ MySettingsTab {
             }
         }
         Label {
-            id: defaultModelLabel
-            text: qsTr("Default model:")
+            id: fontLabel
+            text: qsTr("Font Size:")
             color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
             Layout.row: 2
             Layout.column: 0
         }
         MyComboBox {
-            id: comboBox
+            id: fontBox
             Layout.row: 2
+            Layout.column: 1
+            Layout.columnSpan: 1
+            Layout.minimumWidth: 100
+            Layout.fillWidth: false
+            model: ["Small", "Medium", "Large"]
+            Accessible.role: Accessible.ComboBox
+            Accessible.name: qsTr("ComboBox for displaying/picking the font size")
+            Accessible.description: qsTr("Use this for picking the font size of the chat client")
+            function updateModel() {
+                fontBox.currentIndex = fontBox.indexOfValue(MySettings.fontSize);
+            }
+            Component.onCompleted: {
+                fontBox.updateModel()
+            }
+            Connections {
+                target: MySettings
+                function onFontSizeChanged() {
+                    fontBox.updateModel()
+                }
+            }
+            onActivated: {
+                MySettings.fontSize = fontBox.currentText
+            }
+        }
+        Label {
+            id: defaultModelLabel
+            text: qsTr("Default model:")
+            color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
+            Layout.row: 3
+            Layout.column: 0
+        }
+        MyComboBox {
+            id: comboBox
+            Layout.row: 3
             Layout.column: 1
             Layout.columnSpan: 2
             Layout.minimumWidth: 350
@@ -90,14 +127,16 @@ MySettingsTab {
             id: modelPathLabel
             text: qsTr("Download path:")
             color: theme.textColor
-            Layout.row: 3
+            font.pixelSize: theme.fontSizeLarge
+            Layout.row: 4
             Layout.column: 0
         }
         MyDirectoryField {
             id: modelPathDisplayField
             text: MySettings.modelPath
+            font.pixelSize: theme.fontSizeLarge
             implicitWidth: 300
-            Layout.row: 3
+            Layout.row: 4
             Layout.column: 1
             Layout.fillWidth: true
             ToolTip.text: qsTr("Path where model files will be downloaded to")
@@ -114,7 +153,7 @@ MySettingsTab {
             }
         }
         MyButton {
-            Layout.row: 3
+            Layout.row: 4
             Layout.column: 2
             text: qsTr("Browse")
             Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
@@ -128,15 +167,17 @@ MySettingsTab {
             id: nThreadsLabel
             text: qsTr("CPU Threads:")
             color: theme.textColor
-            Layout.row: 4
+            font.pixelSize: theme.fontSizeLarge
+            Layout.row: 5
             Layout.column: 0
         }
         MyTextField {
             text: MySettings.threadCount
             color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
             ToolTip.text: qsTr("Amount of processing threads to use bounded by 1 and number of logical processors")
             ToolTip.visible: hovered
-            Layout.row: 4
+            Layout.row: 5
             Layout.column: 1
             validator: IntValidator {
                 bottom: 1
@@ -158,12 +199,13 @@ MySettingsTab {
             id: saveChatsLabel
             text: qsTr("Save chats to disk:")
             color: theme.textColor
-            Layout.row: 5
+            font.pixelSize: theme.fontSizeLarge
+            Layout.row: 6
             Layout.column: 0
         }
         MyCheckBox {
             id: saveChatsBox
-            Layout.row: 5
+            Layout.row: 6
             Layout.column: 1
             checked: MySettings.saveChats
             onClicked: {
@@ -177,12 +219,13 @@ MySettingsTab {
             id: saveChatGPTChatsLabel
             text: qsTr("Save ChatGPT chats to disk:")
             color: theme.textColor
-            Layout.row: 6
+            font.pixelSize: theme.fontSizeLarge
+            Layout.row: 7
             Layout.column: 0
         }
         MyCheckBox {
             id: saveChatGPTChatsBox
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 1
             checked: MySettings.saveChatGPTChats
             onClicked: {
@@ -193,12 +236,13 @@ MySettingsTab {
             id: serverChatLabel
             text: qsTr("Enable API server:")
             color: theme.textColor
-            Layout.row: 7
+            font.pixelSize: theme.fontSizeLarge
+            Layout.row: 8
             Layout.column: 0
         }
         MyCheckBox {
             id: serverChatBox
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 1
             checked: MySettings.serverChat
             onClicked: {
@@ -208,7 +252,7 @@ MySettingsTab {
             ToolTip.visible: hovered
         }
         Rectangle {
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
@@ -232,6 +276,7 @@ MySettingsTab {
             id: gpuOverrideLabel
             text: qsTr("Force Metal (macOS+arm):")
             color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
             Layout.row: 1
             Layout.column: 0
         }

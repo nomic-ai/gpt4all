@@ -27,6 +27,7 @@ MySettingsTab {
             Layout.column: 0
             text: qsTr("Model/Character:")
             color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
         }
 
         RowLayout {
@@ -98,12 +99,14 @@ MySettingsTab {
                 id: uniqueNameLabel
                 text: qsTr("Unique Name:")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
             }
             Label {
                 id: uniqueNameLabelHelp
                 visible: false
                 text: qsTr("Must contain a non-empty unique name that does not match any existing model/character.")
                 color: theme.textErrorColor
+                font.pixelSize: theme.fontSizeLarge
                 wrapMode: TextArea.Wrap
             }
         }
@@ -111,6 +114,7 @@ MySettingsTab {
         MyTextField {
             id: uniqueNameField
             text: root.currentModelName
+            font.pixelSize: theme.fontSizeLarge
             enabled: root.currentModelInfo.isClone || root.currentModelInfo.description === ""
             color: enabled ? theme.textColor : theme.mutedTextColor
             Layout.row: 3
@@ -141,6 +145,7 @@ MySettingsTab {
         Label {
             text: qsTr("Model File:")
             color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
             Layout.row: 4
             Layout.column: 0
             Layout.topMargin: 15
@@ -148,6 +153,7 @@ MySettingsTab {
 
         MyTextField {
             text: root.currentModelInfo.filename
+            font.pixelSize: theme.fontSizeLarge
             enabled: false
             color: enabled ? theme.textColor : theme.mutedTextColor
             Layout.row: 5
@@ -160,6 +166,7 @@ MySettingsTab {
             visible: !root.currentModelInfo.isChatGPT
             text: qsTr("System Prompt:")
             color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
             Layout.row: 6
             Layout.column: 0
             Layout.topMargin: 15
@@ -218,11 +225,13 @@ MySettingsTab {
                 id: promptTemplateLabel
                 text: qsTr("Prompt Template:")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
             }
             Label {
                 id: promptTemplateLabelHelp
                 text: qsTr("Must contain the string \"%1\" to be replaced with the user's input.")
                 color: theme.textErrorColor
+                font.pixelSize: theme.fontSizeLarge
                 visible: templateTextArea.text.indexOf("%1") === -1
                 wrapMode: TextArea.Wrap
             }
@@ -242,6 +251,7 @@ MySettingsTab {
                 anchors.fill: parent
                 text: root.currentModelInfo.promptTemplate
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 background: Rectangle {
                     implicitWidth: 150
                     color: theme.backgroundDark
@@ -304,6 +314,7 @@ MySettingsTab {
                 }
                 Text {
                     text: qsTr("Add\noptional image")
+                    font.pixelSize: theme.fontSizeLarge
                     anchors.top: img.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
                     wrapMode: TextArea.Wrap
@@ -342,6 +353,7 @@ MySettingsTab {
                 id: tempLabel
                 text: qsTr("Temperature:")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 Layout.row: 0
                 Layout.column: 0
             }
@@ -350,6 +362,7 @@ MySettingsTab {
                 id: temperatureField
                 text: root.currentModelInfo.temperature
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens.\nNOTE: Higher temperature gives more creative but less predictable outputs.")
                 ToolTip.visible: hovered
                 Layout.row: 0
@@ -386,6 +399,7 @@ MySettingsTab {
                 id: topPLabel
                 text: qsTr("Top P:")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 Layout.row: 0
                 Layout.column: 2
             }
@@ -393,6 +407,7 @@ MySettingsTab {
                 id: topPField
                 text: root.currentModelInfo.topP
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen.\nNOTE: Prevents choosing highly unlikely tokens, aka Nucleus Sampling")
                 ToolTip.visible: hovered
                 Layout.row: 0
@@ -430,6 +445,7 @@ MySettingsTab {
                 visible: !root.currentModelInfo.isChatGPT
                 text: qsTr("Top K:")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 Layout.row: 1
                 Layout.column: 0
             }
@@ -438,6 +454,7 @@ MySettingsTab {
                 visible: !root.currentModelInfo.isChatGPT
                 text: root.currentModelInfo.topK
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Only the top K most likely tokens will be chosen from")
                 ToolTip.visible: hovered
                 Layout.row: 1
@@ -475,6 +492,7 @@ MySettingsTab {
                 visible: !root.currentModelInfo.isChatGPT
                 text: qsTr("Max Length:")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 Layout.row: 1
                 Layout.column: 2
             }
@@ -483,6 +501,7 @@ MySettingsTab {
                 visible: !root.currentModelInfo.isChatGPT
                 text: root.currentModelInfo.maxLength
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Maximum length of response in tokens")
                 ToolTip.visible: hovered
                 Layout.row: 1
@@ -520,6 +539,7 @@ MySettingsTab {
                 id: batchSizeLabel
                 visible: !root.currentModelInfo.isChatGPT
                 text: qsTr("Prompt Batch Size:")
+                font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
                 Layout.row: 2
                 Layout.column: 0
@@ -529,6 +549,7 @@ MySettingsTab {
                 visible: !root.currentModelInfo.isChatGPT
                 text: root.currentModelInfo.promptBatchSize
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Amount of prompt tokens to process at once.\nNOTE: Higher values can speed up reading prompts but will use more RAM")
                 ToolTip.visible: hovered
                 Layout.row: 2
@@ -566,6 +587,7 @@ MySettingsTab {
                 visible: !root.currentModelInfo.isChatGPT
                 text: qsTr("Repeat Penalty:")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 Layout.row: 2
                 Layout.column: 2
             }
@@ -574,6 +596,7 @@ MySettingsTab {
                 visible: !root.currentModelInfo.isChatGPT
                 text: root.currentModelInfo.repeatPenalty
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Amount to penalize repetitiveness of the output")
                 ToolTip.visible: hovered
                 Layout.row: 2
@@ -611,6 +634,7 @@ MySettingsTab {
                 visible: !root.currentModelInfo.isChatGPT
                 text: qsTr("Repeat Penalty Tokens:")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 Layout.row: 3
                 Layout.column: 0
             }
@@ -619,6 +643,7 @@ MySettingsTab {
                 visible: !root.currentModelInfo.isChatGPT
                 text: root.currentModelInfo.repeatPenaltyTokens
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("How far back in output to apply repeat penalty")
                 ToolTip.visible: hovered
                 Layout.row: 3
