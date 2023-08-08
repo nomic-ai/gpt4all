@@ -1,9 +1,10 @@
 import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
-const ll = await loadModel(
+const model = await loadModel(
     'orca-mini-3b.ggmlv3.q4_0.bin',
     { verbose: true }
 );
+const ll = model.llm;
 
 try {
    class Extended extends LLModel {
@@ -26,13 +27,13 @@ console.log("type: " + ll.type());
 console.log("Default directory for models", DEFAULT_DIRECTORY);
 console.log("Default directory for libraries", DEFAULT_LIBRARIES_DIRECTORY);
 
-const completion1 = await createCompletion(ll, [ 
+const completion1 = await createCompletion(model, [ 
     { role : 'system', content: 'You are an advanced mathematician.'  },
     { role : 'user', content: 'What is 1 + 1?'  }, 
 ], { verbose: true })
 console.log(completion1.choices[0].message)
 
-const completion2 = await createCompletion(ll, [
+const completion2 = await createCompletion(model, [
     { role : 'system', content: 'You are an advanced mathematician.'  },
     { role : 'user', content: 'What is two plus two?'  }, 
 ], {  verbose: true })

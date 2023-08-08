@@ -1,79 +1,228 @@
-const path = require('node:path');
-const os = require('node:os');
-const { LLModel } = require('node-gyp-build')(path.resolve(__dirname, '..'));
+const path = require("node:path");
+const os = require("node:os");
+const fsp = require("node:fs/promises");
+const { LLModel } = require("node-gyp-build")(path.resolve(__dirname, ".."));
 const {
-  listModels,
-  downloadModel,
-  appendBinSuffixIfMissing,
-} = require('../src/util.js');
+    listModels,
+    downloadModel,
+    appendBinSuffixIfMissing,
+    normalizePromptContext,
+} = require("../src/util.js");
 const {
-  DEFAULT_DIRECTORY,
-  DEFAULT_LIBRARIES_DIRECTORY,
-} = require('../src/config.js');
+    DEFAULT_DIRECTORY,
+    DEFAULT_LIBRARIES_DIRECTORY,
+    DEFAULT_MODEL_LIST_URL,
+} = require("../src/config.js");
 const {
-  loadModel,
-  createPrompt,
-  createCompletion,
-} = require('../src/gpt4all.js');
+    loadModel,
+    createPrompt,
+    createCompletion,
+} = require("../src/gpt4all.js");
+const { mock } = require("node:test");
 
-
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    json: () => Promise.resolve([{}, {}, {}]),
-  })
-);
-
-jest.mock('../src/util.js', () => {
-    const actualModule = jest.requireActual('../src/util.js');
-    return {
-       ...actualModule,
-        downloadModel: jest.fn(() => 
-            ({ cancel: jest.fn(), promise: jest.fn() })
-        )
-
-    }
-})
-
-beforeEach(() => {
-  downloadModel.mockClear()
-});
-
-afterEach( () => {
-  fetch.mockClear();
-  jest.clearAllMocks()
-})
-
-describe('utils', () => {
-    test("appendBinSuffixIfMissing", () => {
-        expect(appendBinSuffixIfMissing("filename")).toBe("filename.bin")
-        expect(appendBinSuffixIfMissing("filename.bin")).toBe("filename.bin")
-    })
-    test("default paths", () => {
-        expect(DEFAULT_DIRECTORY).toBe(path.resolve(os.homedir(), ".cache/gpt4all"))
+describe("config", () => {
+    test("default paths constants are available and correct", () => {
+        expect(DEFAULT_DIRECTORY).toBe(
+            path.resolve(os.homedir(), ".cache/gpt4all")
+        );
         const paths = [
             path.join(DEFAULT_DIRECTORY, "libraries"),
             path.resolve("./libraries"),
             path.resolve(
-            __dirname,
-            "..",
-            `runtimes/${process.platform}-${process.arch}/native`
+                __dirname,
+                "..",
+                `runtimes/${process.platform}-${process.arch}/native`
             ),
             process.cwd(),
         ];
-        expect(typeof DEFAULT_LIBRARIES_DIRECTORY).toBe('string')
-        expect(DEFAULT_LIBRARIES_DIRECTORY).toBe(paths.join(';'))
-    })
+        expect(typeof DEFAULT_LIBRARIES_DIRECTORY).toBe("string");
+        expect(DEFAULT_LIBRARIES_DIRECTORY).toBe(paths.join(";"));
+    });
+});
 
-    test("listModels", async () => {
-        try { 
-            await listModels();
-        } catch(e) {}
-      
-        expect(fetch).toHaveBeenCalledTimes(1)
-        expect(fetch).toHaveBeenCalledWith(
-          "https://gpt4all.io/models/models.json"
+describe("listModels", () => {
+    const fakeModels = require("./models.json");
+    const fakeModel = fakeModels[0];
+    const mockResponse = JSON.stringify([fakeModel]);
+
+    let mockFetch, originalFetch;
+
+    beforeAll(() => {
+        // Mock the fetch function for all tests
+        mockFetch = jest.fn().mockResolvedValue({
+            ok: true,
+            json: () => JSON.parse(mockResponse),
+        });
+        originalFetch = global.fetch;
+        global.fetch = mockFetch;
+    });
+
+    afterEach(() => {
+        // Reset the fetch counter after each test
+        mockFetch.mockClear();
+    });
+    afterAll(() => {
+        // Restore fetch
+        global.fetch = originalFetch;
+    });
+
+    it("should load the model list from remote when called without args", async () => {
+        const models = await listModels();
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(fetch).toHaveBeenCalledWith(DEFAULT_MODEL_LIST_URL);
+        expect(models[0]).toEqual(fakeModel);
+    });
+
+    it("should load the model list from a local file, if specified", async () => {
+        const models = await listModels({
+            file: path.resolve(__dirname, "models.json"),
+        });
+        expect(fetch).toHaveBeenCalledTimes(0);
+        expect(models[0]).toEqual(fakeModel);
+    });
+    
+    it("should throw an error if neither url nor file is specified", async () => {
+        await expect(listModels(null)).rejects.toThrow(
+            "No model list source specified. Please specify either a url or a file."
         );
-        
-    })
+    });
+});
 
-})
+describe("appendBinSuffixIfMissing", () => {
+    it("should make sure the suffix is there", () => {
+        expect(appendBinSuffixIfMissing("filename")).toBe("filename.bin");
+        expect(appendBinSuffixIfMissing("filename.bin")).toBe("filename.bin");
+    });
+});
+
+describe("downloadModel", () => {
+    let mockAbortController, mockFetch;
+    const fakeModelName = "fake-model";
+
+    const createMockFetch = () => {
+        const mockData = new Uint8Array([1, 2, 3, 4]);
+        const mockResponse = new ReadableStream({
+            start(controller) {
+                controller.enqueue(mockData);
+                controller.close();
+            },
+        });
+        const mockFetchImplementation = jest.fn(() =>
+            Promise.resolve({
+                ok: true,
+                body: mockResponse,
+            })
+        );
+        return mockFetchImplementation;
+    };
+
+    beforeEach(() => {
+        // Mocking the AbortController constructor
+        mockAbortController = jest.fn();
+        global.AbortController = mockAbortController;
+        mockAbortController.mockReturnValue({
+            signal: "signal",
+            abort: jest.fn(),
+        });
+        mockFetch = createMockFetch();
+        jest.spyOn(global, "fetch").mockImplementation(mockFetch);
+    });
+
+    afterEach(() => {
+        // Clean up mocks
+        mockAbortController.mockReset();
+        mockFetch.mockClear();
+        global.fetch.mockRestore();
+    });
+
+    test("should successfully download a model file", async () => {
+        const downloadController = downloadModel(fakeModelName);
+        const modelFilePath = await downloadController.promise;
+        expect(modelFilePath).toBe(`${DEFAULT_DIRECTORY}/${fakeModelName}.bin`);
+
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(global.fetch).toHaveBeenCalledWith(
+            "https://gpt4all.io/models/fake-model.bin",
+            {
+                signal: "signal",
+                headers: {
+                    "Accept-Ranges": "arraybuffer",
+                    "Response-Type": "arraybuffer",
+                },
+            }
+        );
+
+        // final model file should be present
+        expect(fsp.access(modelFilePath)).resolves.not.toThrow();
+
+        // remove the testing model file
+        await fsp.unlink(modelFilePath);
+    });
+
+    test("should error and cleanup if md5sum is not matching", async () => {
+        const downloadController = downloadModel(fakeModelName, {
+            md5sum: "wrong-md5sum",
+        });
+        // the promise should reject with a mismatch
+        await expect(downloadController.promise).rejects.toThrow(
+            `Model "${fakeModelName}" failed verification: Hashes mismatch.`
+        );
+        // fetch should have been called
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        // the file should be missing
+        expect(
+            fsp.access(`${DEFAULT_DIRECTORY}/${fakeModelName}.bin`)
+        ).rejects.toThrow();
+        // partial file should also be missing
+        expect(
+            fsp.access(`${DEFAULT_DIRECTORY}/${fakeModelName}.part`)
+        ).rejects.toThrow();
+    });
+
+    // TODO
+    // test("should be able to cancel and resume a download", async () => {
+    // });
+});
+
+describe("normalizePromptContext", () => {
+    it("should convert a dict with camelCased keys to snake_case", () => {
+        const camelCased = {
+            topK: 20,
+            repeatLastN: 10,
+        };
+
+        const expectedSnakeCased = {
+            top_k: 20,
+            repeat_last_n: 10,
+        };
+
+        const result = normalizePromptContext(camelCased);
+        expect(result).toEqual(expectedSnakeCased);
+    });
+
+    it("should convert a mixed case dict to snake_case, last value taking precedence", () => {
+        const mixedCased = {
+            topK: 20,
+            top_k: 10,
+            repeatLastN: 10,
+        };
+
+        const expectedSnakeCased = {
+            top_k: 10,
+            repeat_last_n: 10,
+        };
+
+        const result = normalizePromptContext(mixedCased);
+        expect(result).toEqual(expectedSnakeCased);
+    });
+
+    it("should not modify already snake cased dict", () => {
+        const snakeCased = {
+            top_k: 10,
+            repeast_last_n: 10,
+        };
+
+        const result = normalizePromptContext(snakeCased);
+        expect(result).toEqual(snakeCased);
+    });
+});
