@@ -1,6 +1,8 @@
 """
 Use the OpenAI python API to test gpt4all models.
 """
+from typing import List, get_args
+
 import openai
 
 openai.api_base = "http://localhost:4891/v1"
@@ -43,3 +45,15 @@ def test_batched_completion():
     )
     assert len(response['choices'][0]['text']) > len(prompt)
     assert len(response['choices']) == 3
+
+
+def test_embedding():
+    model = "ggml-all-MiniLM-L6-v2-f16.bin"
+    prompt = "Who is Michael Jordan?"
+    response = openai.Embedding.create(model=model, input=prompt)
+    output = response["data"][0]["embedding"]
+    args = get_args(List[float])
+
+    assert response["model"] == model
+    assert isinstance(output, list)
+    assert all(isinstance(x, args) for x in output)
