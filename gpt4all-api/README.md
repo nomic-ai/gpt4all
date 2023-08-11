@@ -4,9 +4,13 @@ for serving inference from GPT4All models. The API matches the OpenAI API spec.
 
 ## Tutorial
 
+The following tutorial assumes that you have checked out this repo and cd'd into it.
+
 ### Starting the app
 
-First build the FastAPI docker image. You only have to do this on initial build or when you add new dependencies to the requirements.txt file:
+First change your working directory to `gpt4all/gpt4all-api`.
+
+Now you can build the FastAPI docker image. You only have to do this on initial build or when you add new dependencies to the requirements.txt file:
 ```bash
 DOCKER_BUILDKIT=1 docker build -t gpt4all_api --progress plain -f gpt4all_api/Dockerfile.buildkit .
 ```
