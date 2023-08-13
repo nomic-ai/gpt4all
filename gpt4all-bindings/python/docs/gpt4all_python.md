@@ -268,8 +268,8 @@ customized in a subclass. As an example:
         def _format_chat_prompt_template(
             self,
             messages: list,
-            default_prompt_header: str = "",
-            default_prompt_footer: str = "",
+            default_prompt_header: Union[str, bool] = "",
+            default_prompt_footer: Union[str, bool] = "",
         ) -> str:
             full_prompt = default_prompt_header + "\n\n" if default_prompt_header != "" else ""
             for message in messages:

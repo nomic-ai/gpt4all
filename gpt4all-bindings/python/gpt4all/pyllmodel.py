@@ -7,7 +7,7 @@ import re
 import subprocess
 import sys
 import threading
-from typing import Callable, Iterable, List
+from typing import Any, Callable, Iterable, List, Optional
 
 import pkg_resources
 
@@ -15,14 +15,14 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 # TODO: provide a config file to make this more robust
-LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
-MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
+LLMODEL_PATH: str = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
+MODEL_LIB_PATH: str = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
 
 
-def load_llmodel_library():
+def load_llmodel_library() -> ctypes.CDLL:
     system = platform.system()
 
-    def get_c_shared_lib_extension():
+    def get_c_shared_lib_extension() -> str:
         if system == "Darwin":
             return "dylib"
         elif system == "Linux":
@@ -45,7 +45,7 @@ def load_llmodel_library():
     return llmodel_lib
 
 
-llmodel = load_llmodel_library()
+llmodel: ctypes.CDLL = load_llmodel_library()
 
 
 class LLModelError(ctypes.Structure):
@@ -148,10 +148,10 @@ class LLModel:
     """
 
     def __init__(self):
-        self.model = None
-        self.model_name = None
-        self.context = None
-        self.llmodel_lib = llmodel
+        self.model: Optional[ctypes.c_void_p] = None
+        self.model_name: Optional[str] = None
+        self.context: Optional[LLModelPromptContext] = None
+        self.llmodel_lib: ctypes.CDLL = llmodel
 
         self.buffer = bytearray()
         self.buff_expecting_cont_bytes: int = 0
@@ -161,7 +161,7 @@ class LLModel:
             self.llmodel_lib.llmodel_model_destroy(self.model)
 
     def memory_needed(self, model_path: str) -> int:
-        model_path_enc = model_path.encode("utf-8")
+        model_path_enc: bytes = model_path.encode("utf-8")
         self.model = llmodel.llmodel_model_create(model_path_enc)
 
         if self.model is not None:
@@ -182,7 +182,7 @@ class LLModel:
         -------
         True if model loaded successfully, False otherwise
         """
-        model_path_enc = model_path.encode("utf-8")
+        model_path_enc: bytes = model_path.encode("utf-8")
         self.model = llmodel.llmodel_model_create(model_path_enc)
 
         if self.model is not None:
@@ -190,7 +190,7 @@ class LLModel:
         else:
             raise ValueError("Unable to instantiate model")
 
-        filename = os.path.basename(model_path)
+        filename: str = os.path.basename(model_path)
         self.model_name = os.path.splitext(filename)[0]
 
         if llmodel.llmodel_isModelLoaded(self.model):
@@ -198,12 +198,12 @@ class LLModel:
         else:
             return False
 
-    def set_thread_count(self, n_threads):
+    def set_thread_count(self, n_threads: int) -> None:
         if not llmodel.llmodel_isModelLoaded(self.model):
             raise Exception("Model not loaded")
         llmodel.llmodel_setThreadCount(self.model, n_threads)
 
-    def thread_count(self):
+    def thread_count(self) -> int:
         if not llmodel.llmodel_isModelLoaded(self.model):
             raise Exception("Model not loaded")
         return llmodel.llmodel_threadCount(self.model)
@@ -219,7 +219,7 @@ class LLModel:
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
         reset_context: bool = False,
-    ):
+    ) -> None:
         if self.context is None:
             self.context = LLModelPromptContext(
                 logits_size=0,
@@ -253,6 +253,7 @@ class LLModel:
 
         embedding_size = ctypes.c_size_t()
         c_text = ctypes.c_char_p(text.encode('utf-8'))
+        embedding_ptr: ctypes.POINTER(ctypes.c_float)
         embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
         embedding_array = [embedding_ptr[i] for i in range(embedding_size.value)]
         llmodel.llmodel_free_embedding(embedding_ptr)
@@ -271,7 +272,7 @@ class LLModel:
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
         reset_context: bool = False,
-    ):
+    ) -> None:
         """
         Generate response from model from a prompt.
 
@@ -323,7 +324,7 @@ class LLModel:
 
 
     def prompt_model_streaming(
-        self, prompt: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
+        self, prompt: str, callback: ResponseCallbackType = empty_response_callback, **kwargs: Any
     ) -> Iterable[str]:
         # Symbol to terminate from generator
         TERMINATING_SYMBOL = object()
@@ -332,7 +333,7 @@ class LLModel:
 
         # Put response tokens into an output queue
         def _generator_callback_wrapper(callback: ResponseCallbackType) -> ResponseCallbackType:
-            def _generator_callback(token_id: int, response: str):
+            def _generator_callback(token_id: int, response: str) -> bool:
                 nonlocal callback
 
                 if callback(token_id, response):
@@ -343,7 +344,7 @@ class LLModel:
 
             return _generator_callback
 
-        def run_llmodel_prompt(prompt: str, callback: ResponseCallbackType, **kwargs):
+        def run_llmodel_prompt(prompt: str, callback: ResponseCallbackType, **kwargs: Any) -> None:
             self.prompt_model(prompt, callback, **kwargs)
             output_queue.put(TERMINATING_SYMBOL)
 

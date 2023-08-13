@@ -313,7 +313,7 @@ class TestLLModelInstance:
     def test_set_thread_count_invalid(self, model):
         if IS_WINDOWS:
             with pytest.raises(OSError):
-              model.set_thread_count(12)  # needs to be loaded
+                model.set_thread_count(12)  # needs to be loaded
 
     def test_get_thread_count_valid(self, loaded_orca_mini_model):
         assert 0 <= loaded_orca_mini_model.thread_count() <= 4  # default; hardware dependent, but at most 4

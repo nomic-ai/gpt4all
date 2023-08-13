@@ -12,16 +12,17 @@ from tqdm import tqdm
 
 from . import pyllmodel
 
-# TODO: move to config
-DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
-
-DEFAULT_MODEL_CONFIG = {
-    "systemPrompt": "",
-    "promptTemplate": "### Human: \n{0}\n### Assistant:\n",
-}
 
 ConfigType = Dict[str, str]
 MessageType = Dict[str, str]
+
+# TODO: move to config
+DEFAULT_MODEL_DIRECTORY: str = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
+
+DEFAULT_MODEL_CONFIG: ConfigType = {
+    "systemPrompt": "",
+    "promptTemplate": "### Human: \n{0}\n### Assistant:\n",
+}
 
 
 class Embed4All:
@@ -79,8 +80,8 @@ class GPT4All:
             allow_download: Allow API to download models from gpt4all.io. Default is True.
             n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
         """
-        self.model_type = model_type
-        self.model = pyllmodel.LLModel()
+        self.model_type: Optional[str] = model_type
+        self.model: pyllmodel.LLModel = pyllmodel.LLModel()
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
         self.model.load_model(self.config["path"])
@@ -123,7 +124,7 @@ class GPT4All:
             Model config.
         """
 
-        model_filename = append_bin_suffix_if_missing(model_name)
+        model_filename: str = append_bin_suffix_if_missing(model_name)
 
         # get the config for the model
         config: ConfigType = DEFAULT_MODEL_CONFIG
@@ -192,16 +193,16 @@ class GPT4All:
             Model file destination.
         """
 
-        def get_download_url(model_filename):
+        def get_download_url(model_filename: str) -> str:
             if url:
                 return url
             return f"https://gpt4all.io/models/{model_filename}"
 
         # Download model
-        download_path = os.path.join(model_path, model_filename).replace("\\", "\\\\")
-        download_url = get_download_url(model_filename)
+        download_path: str = os.path.join(model_path, model_filename).replace("\\", "\\\\")
+        download_url: str = get_download_url(model_filename)
 
-        response = requests.get(download_url, stream=True)
+        response: requests.Response = requests.get(download_url, stream=True)
         total_size_in_bytes = int(response.headers.get("content-length", 0))
         block_size = 2**20  # 1 MB
 
@@ -356,8 +357,8 @@ class GPT4All:
     def _format_chat_prompt_template(
         self,
         messages: List[MessageType],
-        default_prompt_header: str = "",
-        default_prompt_footer: str = "",
+        default_prompt_header: Union[str, bool] = "",
+        default_prompt_footer: Union[str, bool] = "",
     ) -> str:
         """
         Helper method for building a prompt from list of messages using the self._current_prompt_template as a template for each message.
@@ -410,7 +411,7 @@ def empty_chat_session(system_prompt: str = "") -> List[MessageType]:
     return [{"role": "system", "content": system_prompt}]
 
 
-def append_bin_suffix_if_missing(model_name):
+def append_bin_suffix_if_missing(model_name: str) -> str:
     if not model_name.endswith(".bin"):
         model_name += ".bin"
     return model_name
