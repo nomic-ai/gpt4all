@@ -288,12 +288,12 @@ def test_llmodel_embedding(embeddings_model, embeddings_path_str):
     embedding_size = ctypes.c_size_t()
     is_loaded = llmodel.llmodel_loadModel(embeddings_model, embeddings_path_str.encode('utf-8'))
     assert is_loaded
-    embedding_ptr = llmodel.llmodel_embedding(embeddings_model, b'valid string', ctypes.byref(embedding_size))
-    assert embedding_ptr is not None  # address pointer, so the value can vary
+    embedding_c_array = llmodel.llmodel_embedding(embeddings_model, b'valid string', ctypes.byref(embedding_size))
+    assert embedding_c_array is not None  # address pointer, so the value can vary
     assert embedding_size.value == 384
-    embedding = [embedding_ptr[i] for i in range(embedding_size.value)]
+    embedding = [embedding_c_array[i] for i in range(embedding_size.value)]
     assert len(embedding) == 384
-    llmodel.llmodel_free_embedding(embedding_ptr)
+    llmodel.llmodel_free_embedding(embedding_c_array)
     assert True  # everything completed without errors
 
 

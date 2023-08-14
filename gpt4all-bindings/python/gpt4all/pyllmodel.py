@@ -250,14 +250,17 @@ class LLModel:
     def generate_embedding(self, text: str) -> List[float]:
         if not text:
             raise ValueError("Text must not be None or empty")
-
+        if self.model is None:
+            raise RuntimeError("Invalid state: no model")
         embedding_size = ctypes.c_size_t()
         c_text = ctypes.c_char_p(text.encode('utf-8'))
-        embedding_ptr: ctypes.POINTER(ctypes.c_float)
-        embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
-        embedding_array = [embedding_ptr[i] for i in range(embedding_size.value)]
-        llmodel.llmodel_free_embedding(embedding_ptr)
-        return list(embedding_array)
+        embedding_c_array: ctypes.Array
+        embedding_c_array = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
+        if embedding_c_array is None:
+            raise RuntimeError("Invalid state: embedding could not be produced")
+        embedding = embedding_c_array[: embedding_size.value]
+        llmodel.llmodel_free_embedding(embedding_c_array)
+        return embedding
 
     def prompt_model(
         self,
@@ -371,16 +374,16 @@ class LLModel:
             decoded = []
 
             for byte in response:
-                
+
                 bits = "{:08b}".format(byte)
                 (high_ones, _, _) = bits.partition('0')
 
-                if len(high_ones) == 1: 
+                if len(high_ones) == 1:
                     # continuation byte
                     self.buffer.append(byte)
                     self.buff_expecting_cont_bytes -= 1
 
-                else: 
+                else:
                     # beginning of a byte sequence
                     if len(self.buffer) > 0:
                         decoded.append(self.buffer.decode('utf-8', 'replace'))
@@ -390,18 +393,18 @@ class LLModel:
                     self.buffer.append(byte)
                     self.buff_expecting_cont_bytes = max(0, len(high_ones) - 1)
 
-                if self.buff_expecting_cont_bytes <= 0: 
+                if self.buff_expecting_cont_bytes <= 0:
                     # received the whole sequence or an out of place continuation byte
                     decoded.append(self.buffer.decode('utf-8', 'replace'))
 
                     self.buffer.clear()
                     self.buff_expecting_cont_bytes = 0
-                    
+
             if len(decoded) == 0 and self.buff_expecting_cont_bytes > 0:
                 # wait for more continuation bytes
                 return True
-            
-            return callback(token_id, ''.join(decoded))     
+
+            return callback(token_id, ''.join(decoded))
 
         return _raw_callback
 

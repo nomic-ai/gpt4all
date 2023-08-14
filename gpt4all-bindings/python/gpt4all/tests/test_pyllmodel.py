@@ -185,6 +185,8 @@ class TestLLModelMockInstance:
             mock_model.generate_embedding(None)  # mustn't be None
         with pytest.raises(ValueError):
             mock_model.generate_embedding("")  # mustn't be empty
+        with pytest.raises(RuntimeError):
+            mock_model.generate_embedding("some text")  # model not loaded
 
     def test_prompt_model(self, loaded_mock_model):
         response_tokens = []
@@ -355,6 +357,8 @@ class TestLLModelInstance:
             model.generate_embedding(None)  # mustn't be None
         with pytest.raises(ValueError):
             model.generate_embedding("")  # mustn't be empty
+        with pytest.raises(RuntimeError):
+            model.generate_embedding("some text")  # model not loaded
 
     @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
     def test_prompt_model(self, loaded_orca_mini_model):
