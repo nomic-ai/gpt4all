@@ -145,7 +145,7 @@ describe("downloadModel", () => {
             await fsp.rm(fullPath)
         }
         if(existsSync(partialPath)) {
-            await fsp.rm()
+            await fsp.rm(partialPath)
         }
     });
 
@@ -178,7 +178,7 @@ describe("downloadModel", () => {
             md5sum: "wrong-md5sum",
         });
         // the promise should reject with a mismatch
-        await expect(downloadController.promise).rejects.toThrow(
+        expect(await downloadController.promise).rejects.toThrow(
             `Model "${fakeModelName}" failed verification: Hashes mismatch.`
         );
         // fetch should have been called
