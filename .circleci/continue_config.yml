@@ -931,18 +931,21 @@ workflows:
             branches:
               only:
           requires:
+            - nuget-hold
             - build-bindings-backend-linux
       - build-csharp-windows:
           filters:
             branches:
               only:
           requires:
-              - build-bindings-backend-windows
+            - nuget-hold
+            - build-bindings-backend-windows
       - build-csharp-macos:
           filters:
             branches:
               only:
           requires:
+            - nuget-hold
             - build-bindings-backend-macos
       - store-and-upload-nupkgs:
           filters:
