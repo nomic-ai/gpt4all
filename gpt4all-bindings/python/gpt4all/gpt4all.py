@@ -342,14 +342,29 @@ class GPT4All:
             system_prompt: An initial instruction for the model.
             prompt_template: Template for the prompts with {0} being replaced by the user message.
         """
-        # Code to acquire resource, e.g.:
+        try:
+            self._open_chat_session(system_prompt, prompt_template)
+            yield self
+        finally:
+            self._close_chat_session()
+
+    def _open_chat_session(self, system_prompt: str = "", prompt_template: str = "") -> None:
+        """
+        Open an inference optimized chat session with a GPT4All model.
+
+        Args:
+            system_prompt: An initial instruction for the model.
+            prompt_template: Template for the prompts with {0} being replaced by the user message.
+        """
         self._is_chat_session_activated = True
         self.current_chat_session = empty_chat_session(system_prompt or self.config["systemPrompt"])
         self._current_prompt_template = prompt_template or self.config["promptTemplate"]
-        try:
-            yield self
-        finally:
-            # Code to release resource, e.g.:
+
+    def _close_chat_session(self) -> None:
+        """
+        Close an open chat session with a GPT4All model.
+        """
+        if self._is_chat_session_activated:
             self._is_chat_session_activated = False
             self.current_chat_session = empty_chat_session()
             self._current_prompt_template = "{0}"
