@@ -10,19 +10,36 @@ const {
     downloadModel,
     appendBinSuffixIfMissing,
 } = require("./util.js");
-const { DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY } = require("./config.js");
+const {
+    DEFAULT_DIRECTORY,
+    DEFAULT_LIBRARIES_DIRECTORY,
+    DEFAULT_PROMPT_CONTEXT,
+    DEFAULT_MODEL_CONFIG,
+    DEFAULT_MODEL_LIST_URL,
+} = require("./config.js");
+const { InferenceModel, EmbeddingModel } = require("./models.js");
 
+/**
+ * Loads a machine learning model with the specified name. The defacto way to create a model.
+ * By default this will download a model from the official GPT4ALL website, if a model is not present at given path.
+ *
+ * @param {string} modelName - The name of the model to load.
+ * @param {LoadModelOptions|undefined} [options] - (Optional) Additional options for loading the model.
+ * @returns {Promise<InferenceModel | EmbeddingModel>} A promise that resolves to an instance of the loaded LLModel.
+ */
 async function loadModel(modelName, options = {}) {
     const loadOptions = {
         modelPath: DEFAULT_DIRECTORY,
         librariesPath: DEFAULT_LIBRARIES_DIRECTORY,
+        type: "inference",
         allowDownload: true,
         verbose: true,
         ...options,
     };
 
-    await retrieveModel(modelName, {
+    const modelConfig = await retrieveModel(modelName, {
         modelPath: loadOptions.modelPath,
+        modelConfigFile: loadOptions.modelConfigFile,
         allowDownload: loadOptions.allowDownload,
         verbose: loadOptions.verbose,
     });
@@ -37,7 +54,7 @@ async function loadModel(modelName, options = {}) {
             break;
         }
     }
-    if(!libPath) {
+    if (!libPath) {
         throw Error("Could not find a valid path from " + libSearchPaths);
     }
     const llmOptions = {
@@ -47,99 +64,183 @@ async function loadModel(modelName, options = {}) {
     };
 
     if (loadOptions.verbose) {
-        console.log("Creating LLModel with options:", llmOptions);
+        console.debug("Creating LLModel with options:", llmOptions);
     }
     const llmodel = new LLModel(llmOptions);
 
-    return llmodel;
+    if (loadOptions.type === "embedding") {
+        return new EmbeddingModel(llmodel, modelConfig);
+    } else if (loadOptions.type === "inference") {
+        return new InferenceModel(llmodel, modelConfig);
+    } else {
+        throw Error("Invalid model type: " + loadOptions.type);
+    }
 }
 
-function createPrompt(messages, hasDefaultHeader, hasDefaultFooter) {
-    let fullPrompt = [];
-
-    for (const message of messages) {
-        if (message.role === "system") {
-            const systemMessage = message.content;
-            fullPrompt.push(systemMessage);
-        }
-    }
-    if (hasDefaultHeader) {
-        fullPrompt.push(`### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.`);
-    }
-    let prompt = "### Prompt:";
-    for (const message of messages) {
-        if (message.role === "user") {
-            const user_message = message["content"];
-            prompt += user_message;
-        }
-        if (message["role"] == "assistant") {
-            const assistant_message = "Response:" + message["content"];
-            prompt += assistant_message;
-        }
-    }
-    fullPrompt.push(prompt);
-    if (hasDefaultFooter) {
-        fullPrompt.push("### Response:");
-    }
-
-    return fullPrompt.join('\n');
-}
-
-
-function createEmbedding(llmodel, text) {
-    return llmodel.embed(text)
-}
-async function createCompletion(
-    llmodel,
+/**
+ * Formats a list of messages into a single prompt string.
+ */
+function formatChatPrompt(
     messages,
-    options = {
-        hasDefaultHeader: true,
-        hasDefaultFooter: false,
-        verbose: true,
+    {
+        systemPromptTemplate,
+        defaultSystemPrompt,
+        promptTemplate,
+        promptFooter,
+        promptHeader,
     }
 ) {
-    //creating the keys to insert into promptMaker.
-    const fullPrompt = createPrompt(
-        messages,
-        options.hasDefaultHeader ?? true,
-        options.hasDefaultFooter ?? true
-    );
-    if (options.verbose) {
-        console.log("Sent: " + fullPrompt);
+    const systemMessages = messages
+        .filter((message) => message.role === "system")
+        .map((message) => message.content);
+
+    let fullPrompt = "";
+
+    if (promptHeader) {
+        fullPrompt += promptHeader + "\n\n";
     }
-    const promisifiedRawPrompt = llmodel.raw_prompt(fullPrompt, options, (s) => {});
-    return promisifiedRawPrompt.then((response) => {
-        return {
-            llmodel: llmodel.name(),
-            usage: {
-                prompt_tokens: fullPrompt.length,
-                completion_tokens: response.length, //TODO
-                total_tokens: fullPrompt.length + response.length, //TODO
-            },
-            choices: [
-                {
-                    message: {
-                        role: "assistant",
-                        content: response,
-                    },
-                },
-            ],
-        };
+
+    if (systemPromptTemplate) {
+        // if user specified a template for the system prompt, put all system messages in the template
+        let systemPrompt = "";
+
+        if (systemMessages.length > 0) {
+            systemPrompt += systemMessages.join("\n");
+        }
+
+        if (systemPrompt) {
+            fullPrompt +=
+                systemPromptTemplate.replace("%1", systemPrompt) + "\n";
+        }
+    } else if (defaultSystemPrompt) {
+        // otherwise, use the system prompt from the model config and ignore system messages
+        fullPrompt += defaultSystemPrompt + "\n\n";
+    }
+
+    if (systemMessages.length > 0 && !systemPromptTemplate) {
+        console.warn(
+            "System messages were provided, but no systemPromptTemplate was specified. System messages will be ignored."
+        );
+    }
+
+    for (const message of messages) {
+        if (message.role === "user") {
+            const userMessage = promptTemplate.replace(
+                "%1",
+                message["content"]
+            );
+            fullPrompt += userMessage;
+        }
+        if (message["role"] == "assistant") {
+            const assistantMessage = message["content"] + "\n";
+            fullPrompt += assistantMessage;
+        }
+    }
+
+    if (promptFooter) {
+        fullPrompt += "\n\n" + promptFooter;
+    }
+
+    return fullPrompt;
+}
+
+function createEmbedding(model, text) {
+    return model.embed(text);
+}
+
+const defaultCompletionOptions = {
+    verbose: false,
+    ...DEFAULT_PROMPT_CONTEXT,
+};
+
+async function createCompletion(
+    model,
+    messages,
+    options = defaultCompletionOptions
+) {
+    if (options.hasDefaultHeader !== undefined) {
+        console.warn(
+            "hasDefaultHeader (bool) is deprecated and has no effect, use promptHeader (string) instead"
+        );
+    }
+
+    if (options.hasDefaultFooter !== undefined) {
+        console.warn(
+            "hasDefaultFooter (bool) is deprecated and has no effect, use promptFooter (string) instead"
+        );
+    }
+
+    const optionsWithDefaults = {
+        ...defaultCompletionOptions,
+        ...options,
+    };
+
+    const {
+        verbose,
+        systemPromptTemplate,
+        promptTemplate,
+        promptHeader,
+        promptFooter,
+        ...promptContext
+    } = optionsWithDefaults;
+
+    const prompt = formatChatPrompt(messages, {
+        systemPromptTemplate,
+        defaultSystemPrompt: model.config.systemPrompt,
+        promptTemplate: promptTemplate || model.config.promptTemplate || "%1",
+        promptHeader: promptHeader || "",
+        promptFooter: promptFooter || "",
+        // These were the default header/footer prompts used for non-chat single turn completions.
+        // both seem to be working well still with some models, so keeping them here for reference.
+        // promptHeader: '### Instruction: The prompt below is a question to answer, a task to complete, or a conversation to respond to; decide which and write an appropriate response.',
+        // promptFooter: '### Response:',
     });
+
+    if (verbose) {
+        console.debug("Sending Prompt:\n" + prompt);
+    }
+
+    const response = await model.generate(prompt, promptContext);
+
+    if (verbose) {
+        console.debug("Received Response:\n" + response);
+    }
+
+    return {
+        llmodel: model.llm.name(),
+        usage: {
+            prompt_tokens: prompt.length,
+            completion_tokens: response.length, //TODO
+            total_tokens: prompt.length + response.length, //TODO
+        },
+        choices: [
+            {
+                message: {
+                    role: "assistant",
+                    content: response,
+                },
+            },
+        ],
+    };
 }
 
 function createTokenStream() {
-    throw Error("This API has not been completed yet!")
+    throw Error("This API has not been completed yet!");
 }
 
 module.exports = {
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_DIRECTORY,
+    DEFAULT_PROMPT_CONTEXT,
+    DEFAULT_MODEL_CONFIG,
+    DEFAULT_MODEL_LIST_URL,
     LLModel,
+    InferenceModel,
+    EmbeddingModel,
     createCompletion,
     createEmbedding,
     downloadModel,
     retrieveModel,
     loadModel,
-    createTokenStream
+    createTokenStream,
 };

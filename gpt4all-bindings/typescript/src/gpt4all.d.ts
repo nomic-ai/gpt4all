@@ -1,12 +1,13 @@
 /// <reference types="node" />
 declare module "gpt4all";
 
-
 /** Type of the model */
 type ModelType = "gptj" | "llama" | "mpt" | "replit";
 
+// NOTE: "deprecated" tag in below comment breaks the doc generator https://github.com/documentationjs/documentation/issues/1596
 /**
  * Full list of models available
+ * @deprecated These model names are outdated and this type will not be maintained, please use a string literal instead
  */
 interface ModelFile {
     /** List of GPT-J Models */
@@ -39,10 +40,37 @@ interface LLModelOptions {
      * Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
      */
     type?: ModelType;
-    model_name: ModelFile[ModelType];
+    model_name: string;
     model_path: string;
     library_path?: string;
 }
+
+interface ModelConfig {
+    systemPrompt: string;
+    promptTemplate: string;
+    path: string;
+    url?: string;
+}
+
+declare class InferenceModel {
+    constructor(llm: LLModel, config: ModelConfig);
+    llm: LLModel;
+    config: ModelConfig;
+
+    generate(
+        prompt: string,
+        options?: Partial<LLModelPromptContext>
+    ): Promise<string>;
+}
+
+declare class EmbeddingModel {
+    constructor(llm: LLModel, config: ModelConfig);
+    llm: LLModel;
+    config: ModelConfig;
+
+    embed(text: string): Float32Array;
+}
+
 /**
  * LLModel class representing a language model.
  * This is a base class that provides common functionality for different types of language models.
@@ -90,17 +118,21 @@ declare class LLModel {
      * @param params Optional parameters for the prompt context.
      * @returns The result of the model prompt.
      */
-    raw_prompt(q: string, params: Partial<LLModelPromptContext>, callback: (res: string) => void): void; // TODO work on return type
+    raw_prompt(
+        q: string,
+        params: Partial<LLModelPromptContext>,
+        callback: (res: string) => void
+    ): void; // TODO work on return type
 
     /**
-     * Embed text with the model. Keep in mind that 
+     * Embed text with the model. Keep in mind that
      * not all models can embed text, (only bert can embed as of 07/16/2023 (mm/dd/yyyy))
      * Use the prompt function exported for a value
      * @param q The prompt input.
      * @param params Optional parameters for the prompt context.
      * @returns The result of the model prompt.
      */
-    embed(text: string) : Float32Array
+    embed(text: string): Float32Array;
     /**
      * Whether the model is loaded or not.
      */
@@ -119,8 +151,17 @@ declare class LLModel {
 interface LoadModelOptions {
     modelPath?: string;
     librariesPath?: string;
+    modelConfigFile?: string;
     allowDownload?: boolean;
     verbose?: boolean;
+}
+
+interface InferenceModelOptions extends LoadModelOptions {
+    type?: "inference";
+}
+
+interface EmbeddingModelOptions extends LoadModelOptions {
+    type: "embedding";
 }
 
 /**
@@ -129,50 +170,47 @@ interface LoadModelOptions {
  *
  * @param {string} modelName - The name of the model to load.
  * @param {LoadModelOptions|undefined} [options] - (Optional) Additional options for loading the model.
- * @returns {Promise<LLModel>} A promise that resolves to an instance of the loaded LLModel.
+ * @returns {Promise<InferenceModel | EmbeddingModel>} A promise that resolves to an instance of the loaded LLModel.
  */
 declare function loadModel(
     modelName: string,
-    options?: LoadModelOptions
-): Promise<LLModel>;
+    options?: InferenceModelOptions
+): Promise<InferenceModel>;
 
+declare function loadModel(
+    modelName: string,
+    options?: EmbeddingModelOptions
+): Promise<EmbeddingModel>;
+
+declare function loadModel(
+    modelName: string,
+    options?: EmbeddingOptions | InferenceOptions
+): Promise<InferenceModel | EmbeddingModel>;
 
 /**
  * The nodejs equivalent to python binding's chat_completion
- * @param {LLModel} llmodel - The language model object.
+ * @param {InferenceModel} model - The language model object.
  * @param {PromptMessage[]} messages - The array of messages for the conversation.
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {CompletionReturn} The completion result.
- * @example
- * const llmodel = new LLModel(model)
- * const messages = [
- * { role: 'system', message: 'You are a weather forecaster.' },
- * { role: 'user', message: 'should i go out today?' } ]
- * const completion = await createCompletion(llmodel, messages, {
- *  verbose: true,
- *  temp: 0.9,
- * })
- * console.log(completion.choices[0].message.content)
- * // No, it's going to be cold and rainy.
  */
 declare function createCompletion(
-    llmodel: LLModel,
+    model: InferenceModel,
     messages: PromptMessage[],
     options?: CompletionOptions
 ): Promise<CompletionReturn>;
 
-
 /**
  * The nodejs moral equivalent to python binding's Embed4All().embed()
  * meow
- * @param {LLModel} llmodel - The language model object.
+ * @param {EmbeddingModel} model - The language model object.
  * @param {string} text - text to embed
  * @returns {Float32Array} The completion result.
  */
 declare function createEmbedding(
-    llmodel: LLModel,
-    text: string,
-): Float32Array
+    model: EmbeddingModel,
+    text: string
+): Float32Array;
 
 /**
  * The options for creating the completion.
@@ -185,16 +223,25 @@ interface CompletionOptions extends Partial<LLModelPromptContext> {
     verbose?: boolean;
 
     /**
-     * Indicates if the default header is included in the prompt.
-     * @default true
+     * Template for the system message. Will be put before the conversation with %1 being replaced by all system messages.
+     * Note that if this is not defined, system messages will not be included in the prompt.
      */
-    hasDefaultHeader?: boolean;
+    systemPromptTemplate?: string;
 
     /**
-     * Indicates if the default footer is included in the prompt.
-     * @default true
+     * Template for user messages, with %1 being replaced by the message.
      */
-    hasDefaultFooter?: boolean;
+    promptTemplate?: boolean;
+
+    /**
+     * The initial instruction for the model, on top of the prompt
+     */
+    promptHeader?: string;
+
+    /**
+     * The last instruction for the model, appended to the end of the prompt.
+     */
+    promptFooter?: string;
 }
 
 /**
@@ -212,10 +259,8 @@ interface PromptMessage {
  * The result of the completion, similar to OpenAI's format.
  */
 interface CompletionReturn {
-    /** The model name.
-     * @type {ModelFile}
-     */
-    model: ModelFile[ModelType];
+    /** The model used for the completion. */
+    model: string;
 
     /** Token usage report. */
     usage: {
@@ -246,58 +291,85 @@ interface CompletionChoice {
  */
 interface LLModelPromptContext {
     /** The size of the raw logits vector. */
-    logits_size: number;
+    logitsSize: number;
 
     /** The size of the raw tokens vector. */
-    tokens_size: number;
+    tokensSize: number;
 
     /** The number of tokens in the past conversation. */
-    n_past: number;
+    nPast: number;
 
     /** The number of tokens possible in the context window.
      * @default 1024
      */
-    n_ctx: number;
+    nCtx: number;
 
     /** The number of tokens to predict.
      * @default 128
      * */
-    n_predict: number;
+    nPredict: number;
 
     /** The top-k logits to sample from.
+     * Top-K sampling selects the next token only from the top K most likely tokens predicted by the model.
+     * It helps reduce the risk of generating low-probability or nonsensical tokens, but it may also limit
+     * the diversity of the output. A higher value for top-K (eg., 100) will consider more tokens and lead
+     * to more diverse text, while a lower value (eg., 10) will focus on the most probable tokens and generate
+     * more conservative text. 30 - 60 is a good range for most tasks.
      * @default 40
      * */
-    top_k: number;
+    topK: number;
 
     /** The nucleus sampling probability threshold.
-     * @default 0.9
+     * Top-P limits the selection of the next token to a subset of tokens with a cumulative probability 
+     * above a threshold P. This method, also known as nucleus sampling, finds a balance between diversity
+     * and quality by considering both token probabilities and the number of tokens available for sampling.
+     * When using a higher value for top-P (eg., 0.95), the generated text becomes more diverse.
+     * On the other hand, a lower value (eg., 0.1) produces more focused and conservative text.
+     * The default value is 0.4, which is aimed to be the middle ground between focus and diversity, but
+     * for more creative tasks a higher top-p value will be beneficial, about 0.5-0.9 is a good range for that.
+     * @default 0.4
      * */
-    top_p: number;
+    topP: number;
 
     /** The temperature to adjust the model's output distribution.
-     * @default 0.72
+     * Temperature is like a knob that adjusts how creative or focused the output becomes. Higher temperatures
+     * (eg., 1.2) increase randomness, resulting in more imaginative and diverse text. Lower temperatures (eg., 0.5)
+     * make the output more focused, predictable, and conservative. When the temperature is set to 0, the output
+     * becomes completely deterministic, always selecting the most probable next token and producing identical results
+     * each time. A safe range would be around 0.6 - 0.85, but you are free to search what value fits best for you.
+     * @default 0.7
      * */
     temp: number;
 
     /** The number of predictions to generate in parallel.
+     * By splitting the prompt every N tokens, prompt-batch-size reduces RAM usage during processing. However,
+     * this can increase the processing time as a trade-off. If the N value is set too low (e.g., 10), long prompts
+     * with 500+ tokens will be most affected, requiring numerous processing runs to complete the prompt processing.
+     * To ensure optimal performance, setting the prompt-batch-size to 2048 allows processing of all tokens in a single run.
      * @default 8
      * */
-    n_batch: number;
+    nBatch: number;
 
     /** The penalty factor for repeated tokens.
-     * @default 1
+     * Repeat-penalty can help penalize tokens based on how frequently they occur in the text, including the input prompt.
+     * A token that has already appeared five times is penalized more heavily than a token that has appeared only one time.
+     * A value of 1 means that there is no penalty and values larger than 1 discourage repeated tokens.
+     * @default 1.18
      * */
-    repeat_penalty: number;
+    repeatPenalty: number;
 
     /** The number of last tokens to penalize.
-     * @default 10
+     * The repeat-penalty-tokens N option controls the number of tokens in the history to consider for penalizing repetition.
+     * A larger value will look further back in the generated text to prevent repetitions, while a smaller value will only
+     * consider recent tokens.
+     * @default 64
      * */
-    repeat_last_n: number;
+    repeatLastN: number;
 
     /** The percentage of context to erase if the context window is exceeded.
      * @default 0.5
      * */
-    context_erase: number;
+    contextErase: number;
 }
 
 /**
@@ -320,24 +392,35 @@ declare const DEFAULT_DIRECTORY: string;
  * This searches DEFAULT_DIRECTORY/libraries, cwd/libraries, and finally cwd.
  */
 declare const DEFAULT_LIBRARIES_DIRECTORY: string;
-interface PromptMessage {
-    role: "system" | "assistant" | "user";
-    content: string;
-}
 
 /**
- * Initiates the download of a model file of a specific model type.
+ * Default model configuration.
+ */
+declare const DEFAULT_MODEL_CONFIG: ModelConfig;
+
+/**
+ * Default prompt context.
+ */
+declare const DEFAULT_PROMT_CONTEXT: LLModelPromptContext;
+
+/**
+ * Default model list url.
+ */
+declare const DEFAULT_MODEL_LIST_URL: string;
+
+/**
+ * Initiates the download of a model file.
  * By default this downloads without waiting. use the controller returned to alter this behavior.
- * @param {ModelFile} modelName - The model file to be downloaded.
- * @param {DownloadOptions} options - to pass into the downloader. Default is { location: (cwd), debug: false }.
+ * @param {string} modelName - The model to be downloaded.
+ * @param {DownloadOptions} options - to pass into the downloader. Default is { location: (cwd), verbose: false }.
  * @returns {DownloadController} object that allows controlling the download process.
  *
  * @throws {Error} If the model already exists in the specified location.
  * @throws {Error} If the model cannot be found at the specified url.
  *
  * @example
- * const controller = download('ggml-gpt4all-j-v1.3-groovy.bin')
- * controller.promise().then(() => console.log('Downloaded!'))
+ * const download = downloadModel('ggml-gpt4all-j-v1.3-groovy.bin')
+ * download.promise.then(() => console.log('Downloaded!'))
  */
 declare function downloadModel(
     modelName: string,
@@ -358,46 +441,55 @@ interface DownloadModelOptions {
      * Debug mode -- check how long it took to download in seconds
      * @default false
      */
-    debug?: boolean;
+    verbose?: boolean;
 
     /**
-     * Remote download url. Defaults to `https://gpt4all.io/models`
-     * @default https://gpt4all.io/models
+     * Remote download url. Defaults to `https://gpt4all.io/models/<modelName>`
+     * @default https://gpt4all.io/models/<modelName>
      */
     url?: string;
     /**
-     * Whether to verify the hash of the download to ensure a proper download occurred.
-     * @default true
+     * MD5 sum of the model file. If this is provided, the downloaded file will be checked against this sum.
+     * If the sums do not match, an error will be thrown and the file will be deleted.
      */
-    md5sum?: boolean;
+    md5sum?: string;
 }
 
-declare function listModels(): Promise<Record<string, string>[]>;
+interface ListModelsOptions {
+    url?: string;
+    file?: string;
+}
+
+declare function listModels(options?: ListModelsOptions): Promise<ModelConfig[]>;
 
 interface RetrieveModelOptions {
     allowDownload?: boolean;
     verbose?: boolean;
     modelPath?: string;
+    modelConfigFile?: string;
 }
 
 declare function retrieveModel(
-    model: string,
+    modelName: string,
     options?: RetrieveModelOptions
-): Promise<string>;
+): Promise<ModelConfig>;
 
 /**
  * Model download controller.
  */
 interface DownloadController {
-    /** Cancel the request to download from gpt4all website if this is called. */
+    /** Cancel the request to download if this is called. */
     cancel: () => void;
-    /** Convert the downloader into a promise, allowing people to await and manage its lifetime */
-    promise: () => Promise<void>;
+    /** A promise resolving to the downloaded models config once the download is done */
+    promise: Promise<ModelConfig>;
 }
 
 export {
     ModelType,
     ModelFile,
+    ModelConfig,
+    InferenceModel,
+    EmbeddingModel,
     LLModel,
     LLModelPromptContext,
     PromptMessage,
@@ -409,10 +501,13 @@ export {
     createTokenStream,
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
+    DEFAULT_MODEL_CONFIG,
+    DEFAULT_PROMT_CONTEXT,
+    DEFAULT_MODEL_LIST_URL,
     downloadModel,
     retrieveModel,
     listModels,
     DownloadController,
     RetrieveModelOptions,
-    DownloadModelOptions
+    DownloadModelOptions,
 };
