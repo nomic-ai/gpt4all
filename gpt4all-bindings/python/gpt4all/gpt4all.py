@@ -78,20 +78,37 @@ class GPT4All:
             model_type: Model architecture. This argument currently does not have any functionality and is just used as
                 descriptive identifier for user. Default is None.
             allow_download: Allow API to download models from gpt4all.io. Default is True.
-            n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
+            n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined
+                automatically.
         """
         self.model_type: Optional[str] = model_type
         self.model: pyllmodel.LLModel = pyllmodel.LLModel()
-        # Retrieve model and download if allowed
-        self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
-        self.model.load_model(self.config["path"])
-        # Set n_threads
-        if n_threads is not None:
-            self.model.set_thread_count(n_threads)
-
         self._is_chat_session_activated: bool = False
         self.current_chat_session: List[MessageType] = empty_chat_session()
         self._current_prompt_template: str = "{0}"
+        self._initialize_model(model_name, model_path, allow_download, n_threads)
+
+    def _initialize_model(
+        self, model_name: str, model_path: Optional[str], allow_download: bool = True, n_threads: Optional[int] = None
+    ) -> bool:
+        """
+        Initialize and load the GPT4All model.
+
+        Args:
+            model_name: Name of GPT4All or custom model. Including ".bin" file extension is optional but encouraged.
+            model_path: Path to directory containing model file or, if file does not exist, where to download model.
+                Default is None, in which case models will be stored in `~/.cache/gpt4all/`.
+            allow_download: Allow API to download models from gpt4all.io. Default is True.
+            n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined
+                automatically.
+        """
+        # Retrieve model and download if allowed
+        self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
+        is_loaded = self.model.load_model(self.config["path"])
+        # Set n_threads
+        if n_threads is not None:
+            self.model.set_thread_count(n_threads)
+        return is_loaded
 
     @staticmethod
     def list_models() -> List[ConfigType]:
