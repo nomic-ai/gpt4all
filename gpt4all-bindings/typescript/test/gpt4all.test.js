@@ -167,7 +167,7 @@ describe("downloadModel", () => {
         );
 
         // final model file should be present
-        expect(fsp.access(modelFilePath)).resolves.not.toThrow();
+        await expect(fsp.access(modelFilePath)).resolves.not.toThrow();
 
         // remove the testing model file
         await fsp.unlink(modelFilePath);
@@ -178,17 +178,17 @@ describe("downloadModel", () => {
             md5sum: "wrong-md5sum",
         });
         // the promise should reject with a mismatch
-        expect(await downloadController.promise).rejects.toThrow(
-            `Model "${fakeModelName}" failed verification: Hashes mismatch.`
+        await expect(downloadController.promise).rejects.toThrow(
+            `Model "fake-model" failed verification: Hashes mismatch. Expected wrong-md5sum, got 08d6c05a21512a79a1dfeb9d2a8f262f`
         );
         // fetch should have been called
         expect(global.fetch).toHaveBeenCalledTimes(1);
         // the file should be missing
-        expect(
+        await expect(
             fsp.access(path.resolve(DEFAULT_DIRECTORY, `${fakeModelName}.bin`))
         ).rejects.toThrow();
         // partial file should also be missing
-        expect(
+        await expect(
             fsp.access(path.resolve(DEFAULT_DIRECTORY, `${fakeModelName}.part`))
         ).rejects.toThrow();
     });
