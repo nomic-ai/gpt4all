@@ -292,7 +292,23 @@
     "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based</ul>"
   },
   {
-    "order": "v",
+    "order": "w",
+    "md5sum": "f981ab8fbd1ebbe4932ddd667c108ba7",
+    "disableGUI": "true",
+    "name": "Starcoder",
+    "filename": "starcoderbase-7b-ggml.bin",
+    "filesize": "17860448016",
+    "requires": "2.4.14",
+    "ramrequired": "16",
+    "parameters": "7 billion",
+    "quant": "f16",
+    "type": "Starcoder",
+    "systemPrompt": " ",
+    "promptTemplate": "%1",
+    "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based</ul>"
+  },
+  {
+    "order": "w",
     "md5sum": "c7ebc61eec1779bddae1f2bcbf2007cc",
     "name": "Llama-2-7B Chat",
     "filename": "llama-2-7b-chat.ggmlv3.q4_0.bin",
