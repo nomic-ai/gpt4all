@@ -296,6 +296,8 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
     add_library(ggml${SUFFIX} OBJECT
                 ${DIRECTORY}/ggml.c
                 ${DIRECTORY}/ggml.h
+                ${DIRECTORY}/ggml-alloc.c
+                ${DIRECTORY}/ggml-alloc.h
                 ${GGML_SOURCES_QUANT_K}
                 ${GGML_SOURCES_CUDA}
                 ${GGML_METAL_SOURCES}
