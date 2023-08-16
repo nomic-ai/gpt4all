@@ -20,6 +20,7 @@ const {
     createCompletion,
 } = require("../src/gpt4all.js");
 const { mock } = require("node:test");
+const { mkdirp } = require("mkdirp");
 
 describe("config", () => {
     test("default paths constants are available and correct", () => {
@@ -117,7 +118,7 @@ describe("downloadModel", () => {
         return mockFetchImplementation;
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
         // Mocking the AbortController constructor
         mockAbortController = jest.fn();
         global.AbortController = mockAbortController;
@@ -127,6 +128,7 @@ describe("downloadModel", () => {
         });
         mockFetch = createMockFetch();
         jest.spyOn(global, "fetch").mockImplementation(mockFetch);
+
     });
 
     afterEach(async () => {
@@ -141,12 +143,14 @@ describe("downloadModel", () => {
 
         //if tests fail, remove the created files
         // acts as cleanup if tests fail
+        //
         if(existsSync(fullPath)) {
             await fsp.rm(fullPath)
         }
         if(existsSync(partialPath)) {
             await fsp.rm(partialPath)
         }
+
     });
 
     test("should successfully download a model file", async () => {

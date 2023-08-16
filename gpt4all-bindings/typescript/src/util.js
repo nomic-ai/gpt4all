@@ -105,7 +105,7 @@ function downloadModel(modelName, options = {}) {
         verbose: false,
         ...options,
     };
-
+    
     const modelFileName = appendBinSuffixIfMissing(modelName);
     const partialModelPath = path.join(
         downloadOptions.modelPath,
@@ -114,6 +114,8 @@ function downloadModel(modelName, options = {}) {
     const finalModelPath = path.join(downloadOptions.modelPath, modelFileName);
     const modelUrl =
         downloadOptions.url ?? `https://gpt4all.io/models/${modelFileName}`;
+
+    mkdirp.sync(downloadOptions.modelPath)
 
     if (existsSync(finalModelPath)) {
         throw Error(`Model already exists at ${finalModelPath}`);
