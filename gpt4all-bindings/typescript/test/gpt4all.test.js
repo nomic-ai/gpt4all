@@ -1,6 +1,7 @@
 const path = require("node:path");
 const os = require("node:os");
 const fsp = require("node:fs/promises");
+const { existsSync } = require('node:fs');
 const { LLModel } = require("node-gyp-build")(path.resolve(__dirname, ".."));
 const {
     listModels,
@@ -19,6 +20,7 @@ const {
     createCompletion,
 } = require("../src/gpt4all.js");
 const { mock } = require("node:test");
+const { mkdirp } = require("mkdirp");
 
 describe("config", () => {
     test("default paths constants are available and correct", () => {
@@ -116,7 +118,7 @@ describe("downloadModel", () => {
         return mockFetchImplementation;
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
         // Mocking the AbortController constructor
         mockAbortController = jest.fn();
         global.AbortController = mockAbortController;
@@ -126,19 +128,35 @@ describe("downloadModel", () => {
         });
         mockFetch = createMockFetch();
         jest.spyOn(global, "fetch").mockImplementation(mockFetch);
+
     });
 
-    afterEach(() => {
+    afterEach(async () => {
         // Clean up mocks
         mockAbortController.mockReset();
         mockFetch.mockClear();
         global.fetch.mockRestore();
+        
+        const rootDefaultPath = path.resolve(DEFAULT_DIRECTORY),
+              partialPath = path.resolve(rootDefaultPath, fakeModelName+'.part'),
+              fullPath = path.resolve(rootDefaultPath, fakeModelName+'.bin')  
+
+        //if tests fail, remove the created files
+        // acts as cleanup if tests fail
+        //
+        if(existsSync(fullPath)) {
+            await fsp.rm(fullPath)
+        }
+        if(existsSync(partialPath)) {
+            await fsp.rm(partialPath)
+        }
+
     });
 
     test("should successfully download a model file", async () => {
         const downloadController = downloadModel(fakeModelName);
         const modelFilePath = await downloadController.promise;
-        expect(modelFilePath).toBe(`${DEFAULT_DIRECTORY}/${fakeModelName}.bin`);
+        expect(modelFilePath).toBe(path.resolve(DEFAULT_DIRECTORY, `${fakeModelName}.bin`));
 
         expect(global.fetch).toHaveBeenCalledTimes(1);
         expect(global.fetch).toHaveBeenCalledWith(
@@ -153,7 +171,7 @@ describe("downloadModel", () => {
         );
 
         // final model file should be present
-        expect(fsp.access(modelFilePath)).resolves.not.toThrow();
+        await expect(fsp.access(modelFilePath)).resolves.not.toThrow();
 
         // remove the testing model file
         await fsp.unlink(modelFilePath);
@@ -165,17 +183,17 @@ describe("downloadModel", () => {
         });
         // the promise should reject with a mismatch
         await expect(downloadController.promise).rejects.toThrow(
-            `Model "${fakeModelName}" failed verification: Hashes mismatch.`
+            `Model "fake-model" failed verification: Hashes mismatch. Expected wrong-md5sum, got 08d6c05a21512a79a1dfeb9d2a8f262f`
         );
         // fetch should have been called
         expect(global.fetch).toHaveBeenCalledTimes(1);
         // the file should be missing
-        expect(
-            fsp.access(`${DEFAULT_DIRECTORY}/${fakeModelName}.bin`)
+        await expect(
+            fsp.access(path.resolve(DEFAULT_DIRECTORY, `${fakeModelName}.bin`))
         ).rejects.toThrow();
         // partial file should also be missing
-        expect(
-            fsp.access(`${DEFAULT_DIRECTORY}/${fakeModelName}.part`)
+        await expect(
+            fsp.access(path.resolve(DEFAULT_DIRECTORY, `${fakeModelName}.part`))
         ).rejects.toThrow();
     });
 
