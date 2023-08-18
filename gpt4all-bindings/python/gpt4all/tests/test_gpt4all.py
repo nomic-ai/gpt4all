@@ -1,8 +1,11 @@
 import sys
 from io import StringIO
+from pathlib import Path
 
 from gpt4all import GPT4All, Embed4All
 import time
+import pytest
+
 
 def test_inference():
     model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
@@ -100,6 +103,7 @@ def test_inference_mpt():
     assert isinstance(output, str)
     assert len(output) > 0
 
+
 def test_embedding():
     text = 'The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox jumps over the lazy dog The quick brown fox'
     embedder = Embed4All()
@@ -107,3 +111,22 @@ def test_embedding():
     #for i, value in enumerate(output):
         #print(f'Value at index {i}: {value}')
     assert len(output) == 384
+
+
+def test_empty_embedding():
+    text = ''
+    embedder = Embed4All()
+    with pytest.raises(ValueError):
+        output = embedder.embed(text)
+
+def test_download_model(tmp_path: Path):
+    import gpt4all.gpt4all
+    old_default_dir = gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY
+    gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY = tmp_path  # temporary pytest directory to ensure a download happens
+    try:
+        model = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin')
+        model_path = tmp_path / model.config['filename']
+        assert model_path.absolute() == Path(model.config['path']).absolute()
+        assert model_path.stat().st_size == int(model.config['filesize'])
+    finally:
+        gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY = old_default_dir

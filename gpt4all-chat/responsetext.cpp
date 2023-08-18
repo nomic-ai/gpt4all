@@ -23,6 +23,8 @@ enum Language {
     Php
 };
 
+
+static QColor defaultColor      = "#d1d5db"; // white
 static QColor keywordColor      = "#2e95d3"; // blue
 static QColor functionColor     = "#f22c3d"; // red
 static QColor functionCallColor = "#e9950c"; // orange
@@ -91,6 +93,12 @@ static QVector<HighlightingRule> pythonHighlightingRules()
 
         HighlightingRule rule;
 
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
+
         QTextCharFormat functionCallFormat;
         functionCallFormat.setForeground(functionCallColor);
         rule.pattern = QRegularExpression("\\b(\\w+)\\s*(?=\\()");
@@ -150,6 +158,12 @@ static QVector<HighlightingRule> csharpHighlightingRules()
     if (highlightingRules.isEmpty()) {
 
         HighlightingRule rule;
+
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
 
         // Function call highlighting
         QTextCharFormat functionCallFormat;
@@ -218,6 +232,12 @@ static QVector<HighlightingRule> cppHighlightingRules()
     if (highlightingRules.isEmpty()) {
 
         HighlightingRule rule;
+
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
 
         QTextCharFormat functionCallFormat;
         functionCallFormat.setForeground(functionCallColor);
@@ -296,6 +316,12 @@ static QVector<HighlightingRule> typescriptHighlightingRules()
     if (highlightingRules.isEmpty()) {
 
         HighlightingRule rule;
+
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
 
         QTextCharFormat functionCallFormat;
         functionCallFormat.setForeground(functionCallColor);
@@ -381,6 +407,12 @@ static QVector<HighlightingRule> javaHighlightingRules()
 
         HighlightingRule rule;
 
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
+
         QTextCharFormat functionCallFormat;
         functionCallFormat.setForeground(functionCallColor);
         rule.pattern = QRegularExpression("\\b(\\w+)\\s*(?=\\()");
@@ -450,6 +482,12 @@ static QVector<HighlightingRule> goHighlightingRules()
 
         HighlightingRule rule;
 
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
+
         QTextCharFormat functionCallFormat;
         functionCallFormat.setForeground(functionCallColor);
         rule.pattern = QRegularExpression("\\b(\\w+)\\s*(?=\\()");
@@ -514,6 +552,12 @@ static QVector<HighlightingRule> bashHighlightingRules()
     if (highlightingRules.isEmpty()) {
 
         HighlightingRule rule;
+
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
 
         QTextCharFormat commandFormat;
         commandFormat.setForeground(commandColor);
@@ -582,6 +626,12 @@ static QVector<HighlightingRule> latexHighlightingRules()
 
         HighlightingRule rule;
 
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
+
         QTextCharFormat commandFormat;
         commandFormat.setForeground(commandColor); // commandColor needs to be set to your liking
         rule.pattern = QRegularExpression("\\\\[A-Za-z]+"); // Pattern for LaTeX commands
@@ -603,6 +653,12 @@ static QVector<HighlightingRule> htmlHighlightingRules()
     if (highlightingRules.isEmpty()) {
 
         HighlightingRule rule;
+
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
 
         QTextCharFormat attributeNameFormat;
         attributeNameFormat.setForeground(attributeNameColor);
@@ -643,6 +699,12 @@ static QVector<HighlightingRule> phpHighlightingRules()
     if (highlightingRules.isEmpty()) {
 
         HighlightingRule rule;
+
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
 
         QTextCharFormat functionCallFormat;
         functionCallFormat.setForeground(functionCallColor);
@@ -710,6 +772,12 @@ static QVector<HighlightingRule> jsonHighlightingRules()
     if (highlightingRules.isEmpty()) {
 
         HighlightingRule rule;
+
+        QTextCharFormat defaultFormat;
+        defaultFormat.setForeground(defaultColor);
+        rule.pattern = QRegularExpression(".*");
+        rule.format = defaultFormat;
+        highlightingRules.append(rule);
 
         // Key string rule
         QTextCharFormat keyFormat;
@@ -1015,6 +1083,7 @@ void ResponseText::handleCodeBlocks()
 
         QTextCharFormat codeBlockCharFormat;
         QFont monospaceFont("Courier");
+        monospaceFont.setPointSize(QGuiApplication::font().pointSize() + 2);
         if (monospaceFont.family() != "Courier") {
             monospaceFont.setFamily("Monospace"); // Fallback if Courier isn't available
         }

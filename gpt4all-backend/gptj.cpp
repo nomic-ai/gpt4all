@@ -961,6 +961,11 @@ DLL_EXPORT const char *get_build_variant() {
 DLL_EXPORT bool magic_match(std::istream& f) {
     uint32_t magic = 0;
     f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
+    gptj_hparams hparams;
+    f.read(reinterpret_cast<char*>(&hparams), sizeof(hparams));
+    if (!(hparams.n_vocab >= 50300 && hparams.n_vocab <= 50400)) {
+        return false; // not a gptj.
+    }
     return magic == 0x67676d6c;
 }
 

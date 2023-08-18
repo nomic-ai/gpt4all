@@ -313,6 +313,7 @@ Window {
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Loading model...")
+                    font.pixelSize: theme.fontSizeLarge
                     color: theme.textAccent
                 }
             }
@@ -471,18 +472,21 @@ Window {
         id: copyMessage
         anchors.centerIn: parent
         text: qsTr("Conversation copied to clipboard.")
+        font.pixelSize: theme.fontSizeLarge
     }
 
     PopupDialog {
         id: copyCodeMessage
         anchors.centerIn: parent
         text: qsTr("Code copied to clipboard.")
+        font.pixelSize: theme.fontSizeLarge
     }
 
     PopupDialog {
         id: healthCheckFailed
         anchors.centerIn: parent
         text: qsTr("Connection to datalake failed.")
+        font.pixelSize: theme.fontSizeLarge
     }
 
     PopupDialog {
@@ -491,6 +495,7 @@ Window {
         shouldTimeOut: false
         shouldShowBusy: true
         text: qsTr("Recalculating context.")
+        font.pixelSize: theme.fontSizeLarge
 
         Connections {
             target: currentChat
@@ -509,6 +514,7 @@ Window {
         shouldTimeOut: false
         shouldShowBusy: true
         text: qsTr("Saving chats.")
+        font.pixelSize: theme.fontSizeLarge
     }
 
     MyToolButton {
@@ -614,6 +620,7 @@ Window {
                    If you can't start it manually, then I'm afraid you'll have to<br>
                    reinstall.")
             color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
             Accessible.role: Accessible.Dialog
             Accessible.name: text
             Accessible.description: qsTr("Dialog indicating an error")
@@ -675,7 +682,7 @@ Window {
             anchors.top: parent.top
             anchors.bottom: !currentChat.isServer ? textInputView.top : parent.bottom
             anchors.bottomMargin: !currentChat.isServer ? 30 : 0
-            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
             Rectangle {
                 anchors.fill: parent
@@ -685,6 +692,7 @@ Window {
                     id: warningLabel
                     text: qsTr("You must install a model to continue. Models are available via the download dialog or you can install them manually by downloading from <a href=\"https://gpt4all.io\">the GPT4All website</a> (look for the Models Explorer) and placing them in the model folder. The model folder can be found in the settings dialog under the application tab.")
                     color: theme.textColor
+                    font.pixelSize: theme.fontSizeLarge
                     width: 600
                     linkColor: theme.linkColor
                     wrapMode: Text.WordWrap
@@ -729,6 +737,7 @@ Window {
                     visible: ModelList.installedModels.count !== 0
                     anchors.fill: parent
                     model: chatModel
+                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
                     Accessible.role: Accessible.List
                     Accessible.name: qsTr("List of prompt/response pairs")
@@ -1004,6 +1013,7 @@ Window {
             anchors.rightMargin: 30
             color: theme.mutedTextColor
             text: currentChat.tokenSpeed
+            font.pixelSize: theme.fontSizeLarge
         }
 
         RectangularGlow {

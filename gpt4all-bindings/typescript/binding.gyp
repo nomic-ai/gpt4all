@@ -2,7 +2,6 @@
   "targets": [
     {
       "target_name": "gpt4all", # gpt4all-ts will cause compile error
-      "cflags_cc!": [ "-fno-exceptions"],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
         "../../gpt4all-backend",
@@ -20,9 +19,15 @@
        ],
       "conditions": [
         ['OS=="mac"', {
+            'xcode_settings': {
+                'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+            },
             'defines': [
                 'LIB_FILE_EXT=".dylib"',
                 'NAPI_CPP_EXCEPTIONS',
+            ],
+            'cflags_cc': [
+                "-fexceptions"
             ]
         }],
         ['OS=="win"', {
@@ -48,7 +53,8 @@
                 '-fno-rtti',
             ],
             'cflags_cc': [
-                '-std=c++20'
+                '-std=c++2a',
+                '-fexceptions'
             ]
         }]
       ]

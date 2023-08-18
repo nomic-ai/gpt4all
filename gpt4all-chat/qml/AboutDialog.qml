@@ -39,6 +39,7 @@ MyDialog {
                 anchors.leftMargin: 30
                 anchors.verticalCenter: img.verticalCenter
                 text: qsTr("About GPT4All")
+                font.pixelSize: theme.fontSizeLarger
                 color: theme.textColor
             }
         }
@@ -61,6 +62,7 @@ MyDialog {
                     + qsTr("### Contributors\n")
                     + Download.releaseInfo.contributors
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 focus: false
                 readOnly: true
                 Accessible.role: Accessible.Paragraph
@@ -79,6 +81,7 @@ MyDialog {
             textFormat: Text.StyledText
             wrapMode: Text.WordWrap
             text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
+            font.pixelSize: theme.fontSizeLarge
             onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
             color: theme.textColor
             linkColor: theme.linkColor
@@ -93,6 +96,7 @@ MyDialog {
             textFormat: Text.StyledText
             wrapMode: Text.WordWrap
             text: qsTr("Thank you to <a href=\"https://home.nomic.ai\">Nomic AI</a> and the community for contributing so much great data, code, ideas, and energy to the growing open source AI ecosystem!")
+            font.pixelSize: theme.fontSizeLarge
             onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
             color: theme.textColor
             linkColor: theme.linkColor

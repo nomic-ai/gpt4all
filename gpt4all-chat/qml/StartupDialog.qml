@@ -41,6 +41,7 @@ MyDialog {
                 anchors.verticalCenter: img.verticalCenter
                 text: qsTr("Welcome!")
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
             }
         }
 
@@ -62,6 +63,7 @@ MyDialog {
                     + qsTr("### Contributors\n")
                     + Download.releaseInfo.contributors
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 focus: false
                 readOnly: true
                 Accessible.role: Accessible.Paragraph
@@ -104,6 +106,7 @@ attribution information attached to your data and you will be credited as a cont
 model release that uses your data!")
 
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 focus: false
                 readOnly: true
                 Accessible.role: Accessible.Paragraph
@@ -127,6 +130,7 @@ model release that uses your data!")
                 Layout.row: 0
                 Layout.column: 0
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Opt-in for anonymous usage statistics")
                 Accessible.description: qsTr("Label for opt-in")
@@ -155,6 +159,7 @@ model release that uses your data!")
                     id: optInStatisticsRadioYes
                     checked: false
                     text: qsTr("Yes")
+                    font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-in for anonymous usage statistics")
                     Accessible.description: qsTr("Radio button to allow opt-in for anonymous usage statistics")
@@ -195,6 +200,7 @@ model release that uses your data!")
                 RadioButton {
                     id: optInStatisticsRadioNo
                     text: qsTr("No")
+                    font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-out for anonymous usage statistics")
                     Accessible.description: qsTr("Radio button to allow opt-out for anonymous usage statistics")
@@ -240,6 +246,7 @@ model release that uses your data!")
                 Layout.row: 1
                 Layout.column: 0
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Opt-in for network")
                 Accessible.description: qsTr("Checkbox to allow opt-in for network")
@@ -266,6 +273,7 @@ model release that uses your data!")
                     id: optInNetworkRadioYes
                     checked: false
                     text: qsTr("Yes")
+                    font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-in for network")
                     Accessible.description: qsTr("Radio button to allow opt-in anonymous sharing of chats to the GPT4All Datalake")
@@ -306,6 +314,7 @@ model release that uses your data!")
                 RadioButton {
                     id: optInNetworkRadioNo
                     text: qsTr("No")
+                    font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.RadioButton
                     Accessible.name: qsTr("Opt-out for network")
                     Accessible.description: qsTr("Radio button to allow opt-out anonymous sharing of chats to the GPT4All Datalake")

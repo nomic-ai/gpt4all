@@ -22,6 +22,7 @@ MyDialog {
         anchors.top: parent.top
         anchors.left: parent.left
         text: "Available LocalDocs Collections:"
+        font.pixelSize: theme.fontSizeLarge
         color: theme.textColor
     }
 
@@ -69,6 +70,7 @@ MyDialog {
                     anchors.left: checkBox.right
                     anchors.margins: 20
                     text: collection
+                    font.pixelSize: theme.fontSizeLarge
                     elide: Text.ElideRight
                     color: theme.textColor
                 }

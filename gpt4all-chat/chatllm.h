@@ -16,7 +16,8 @@ enum LLModelType {
     CHATGPT_,
     REPLIT_,
     FALCON_,
-    BERT_
+    BERT_,
+    STARCODER_
 };
 
 struct LLModelInfo {

@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  gpt4all_gpu:
+    image: ghcr.io/huggingface/text-generation-inference:0.9.3
+    container_name: gpt4all_gpu
+    restart: always #restart on error (usually code compilation from save during bad state)
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=token
+      - USE_FLASH_ATTENTION=false
+      - MODEL_ID=''
+      - NUM_SHARD=1
+    command: --model-id $MODEL_ID --num-shard $NUM_SHARD
+    volumes:
+      - ./:/data
+    ports:
+      - "8080:80"
+    shm_size: 1g
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]

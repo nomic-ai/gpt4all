@@ -168,10 +168,14 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
 
 float *llmodel_embedding(llmodel_model model, const char *text, size_t *embedding_size)
 {
+    if (model == nullptr || text == nullptr || !strlen(text)) {
+        *embedding_size = 0;
+        return nullptr;
+    }
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     std::vector<float> embeddingVector = wrapper->llModel->embedding(text);
     float *embedding = (float *)malloc(embeddingVector.size() * sizeof(float));
-    if(embedding == nullptr) {
+    if (embedding == nullptr) {
         *embedding_size = 0;
         return nullptr;
     }

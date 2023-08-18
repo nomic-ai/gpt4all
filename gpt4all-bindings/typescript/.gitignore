@@ -1,3 +1,10 @@
 node_modules/
 build/
 prebuilds/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+runtimes/

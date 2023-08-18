@@ -10,6 +10,7 @@ Button {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter
         color: myButton.enabled ? theme.textColor : theme.mutedTextColor
+        font.pixelSize: theme.fontSizeLarge
         Accessible.role: Accessible.Button
         Accessible.name: text
     }

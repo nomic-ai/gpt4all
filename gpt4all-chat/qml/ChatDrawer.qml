@@ -63,15 +63,15 @@ Drawer {
             anchors.top: newChat.bottom
             anchors.bottom: checkForUpdatesButton.top
             anchors.bottomMargin: 10
-            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOff
             clip: true
 
             ListView {
                 id: conversationList
                 anchors.fill: parent
                 anchors.rightMargin: 10
-
                 model: ChatListModel
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
                 delegate: Rectangle {
                     id: chatRectangle
@@ -255,6 +255,7 @@ Drawer {
             anchors.bottom: downloadButton.top
             anchors.bottomMargin: 10
             text: qsTr("Updates")
+            font.pixelSize: theme.fontSizeLarge
             Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
             onClicked: {
                 if (!LLM.checkForUpdates())

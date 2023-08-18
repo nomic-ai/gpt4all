@@ -35,6 +35,7 @@ MyDialog {
         Label {
             id: listLabel
             text: qsTr("Available Models:")
+            font.pixelSize: theme.fontSizeLarge
             Layout.alignment: Qt.AlignLeft
             Layout.fillWidth: true
             color: theme.textColor
@@ -47,6 +48,7 @@ MyDialog {
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
             text: qsTr("Network error: could not retrieve http://gpt4all.io/models/models.json")
+            font.pixelSize: theme.fontSizeLarge
             color: theme.mutedTextColor
         }
 
@@ -84,6 +86,7 @@ MyDialog {
                         Text {
                             textFormat: Text.StyledText
                             text: "<h2>" + name + "</h2>"
+                            font.pixelSize: theme.fontSizeLarger
                             Layout.row: 0
                             Layout.column: 0
                             Layout.topMargin: 20
@@ -115,6 +118,7 @@ MyDialog {
                                 MyButton {
                                     id: downloadButton
                                     text: isDownloading ? qsTr("Cancel") : isIncomplete ? qsTr("Resume") : qsTr("Download")
+                                    font.pixelSize: theme.fontSizeLarge
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
                                     Layout.minimumWidth: openaiKey.width
@@ -140,6 +144,7 @@ MyDialog {
                                 MyButton {
                                     id: removeButton
                                     text: qsTr("Remove")
+                                    font.pixelSize: theme.fontSizeLarge
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
                                     Layout.minimumWidth: openaiKey.width
@@ -167,6 +172,7 @@ MyDialog {
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     text: qsTr("Install")
+                                    font.pixelSize: theme.fontSizeLarge
                                     background: Rectangle {
                                         border.color: installButton.down ? theme.backgroundLightest : theme.buttonBorder
                                         border.width: 2
@@ -197,6 +203,7 @@ MyDialog {
                                             : (isDownloading ? qsTr("Downloading") : qsTr("Available")))))
                                             + "</strong></font>"
                                         color: theme.textColor
+                                        font.pixelSize: theme.fontSizeLarge
                                         linkColor: theme.textErrorColor
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: text
@@ -222,6 +229,7 @@ MyDialog {
                                             + (qsTr("Type: ") + type)
                                             + "</strong></font>"
                                         color: theme.textColor
+                                        font.pixelSize: theme.fontSizeLarge
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: text
                                         Accessible.description: qsTr("Metadata about the model")
@@ -242,6 +250,7 @@ MyDialog {
                                             + qsTr(" GB) than your system has available (")
                                             + LLM.systemTotalRAMInGBString() + ").</strong></font>"
                                         color: theme.textErrorColor
+                                        font.pixelSize: theme.fontSizeLarge
                                         wrapMode: Text.WordWrap
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: text
@@ -292,6 +301,7 @@ MyDialog {
                                         color: theme.textColor
                                         Layout.alignment: Qt.AlignRight
                                         text: speed
+                                        font.pixelSize: theme.fontSizeLarge
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: qsTr("Download speed")
                                         Accessible.description: qsTr("Download speed in bytes/kilobytes/megabytes per second")
@@ -310,6 +320,7 @@ MyDialog {
                                         id: calcHashLabel
                                         color: theme.textColor
                                         text: qsTr("Calculating MD5...")
+                                        font.pixelSize: theme.fontSizeLarge
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: text
                                         Accessible.description: qsTr("Whether the file hash is being calculated")
@@ -345,6 +356,7 @@ MyDialog {
                                         openaiKey.placeholderTextColor = theme.backgroundLightest
                                     }
                                     placeholderText: qsTr("enter $OPENAI_API_KEY")
+                                    font.pixelSize: theme.fontSizeLarge
                                     placeholderTextColor: theme.backgroundLightest
                                     Accessible.role: Accessible.EditableText
                                     Accessible.name: placeholderText
@@ -361,6 +373,7 @@ MyDialog {
                         Text {
                             id: descriptionText
                             text: description
+                            font.pixelSize: theme.fontSizeLarge
                             Layout.row: 1
                             Layout.column: 0
                             Layout.leftMargin: 20
@@ -418,6 +431,7 @@ MyDialog {
             Label {
                 id: modelPathLabel
                 text: qsTr("Download path:")
+                font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
                 Layout.row: 1
                 Layout.column: 0
@@ -425,6 +439,7 @@ MyDialog {
             MyDirectoryField {
                 id: modelPathDisplayField
                 text: MySettings.modelPath
+                font.pixelSize: theme.fontSizeLarge
                 Layout.fillWidth: true
                 ToolTip.text: qsTr("Path where model files will be downloaded to")
                 ToolTip.visible: hovered

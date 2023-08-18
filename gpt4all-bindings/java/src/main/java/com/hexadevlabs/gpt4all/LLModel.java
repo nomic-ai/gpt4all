@@ -184,11 +184,16 @@ public  class LLModel implements AutoCloseable {
             throw new IllegalStateException("Model file does not exist: " + modelPathAbs);
         }
 
+        // Check if file is Readable
+        if(!Files.isReadable(modelPath)){
+            throw new IllegalStateException("Model file cannot be read: " + modelPathAbs);
+        }
+
         // Create Model Struct. Will load dynamically the correct backend based on model type
         model = library.llmodel_model_create2(modelPathAbs, "auto", error);
 
         if(model == null) {
-            throw new IllegalStateException("Could not load gpt4all backend :" + error.message);
+            throw new IllegalStateException("Could not load, gpt4all backend returned error: " + error.message);
         }
         library.llmodel_loadModel(model, modelPathAbs);
 

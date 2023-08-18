@@ -4,11 +4,12 @@
 TsfnContext::TsfnContext(Napi::Env env, const PromptWorkContext& pc) 
     : deferred_(Napi::Promise::Deferred::New(env)), pc(pc) {
 }
+namespace {
+    static std::string *res;
+}
 
-std::mutex mtx;
-static thread_local std::string res;
 bool response_callback(int32_t token_id, const char *response) {
-   res+=response;
+   *res += response;
    return token_id != -1;
 }
 bool recalculate_callback (bool isrecalculating) {
@@ -21,10 +22,12 @@ bool prompt_callback (int32_t tid) {
 // The thread entry point. This takes as its arguments the specific
 // threadsafe-function context created inside the main thread.
 void threadEntry(TsfnContext* context) {
+  static std::mutex mtx;
   std::lock_guard<std::mutex> lock(mtx);
+  res = &context->pc.res;
   // Perform a call into JavaScript.
   napi_status status =
-    context->tsfn.NonBlockingCall(&context->pc,
+    context->tsfn.BlockingCall(&context->pc,
     [](Napi::Env env, Napi::Function jsCallback, PromptWorkContext* pc) {
         llmodel_prompt(
             *pc->inference_,
@@ -34,8 +37,6 @@ void threadEntry(TsfnContext* context) {
             &recalculate_callback,
             &pc->prompt_params
         );
-        jsCallback.Call({ Napi::String::New(env, res)} );
-        res.clear();
   });
 
   if (status != napi_ok) {
@@ -43,7 +44,6 @@ void threadEntry(TsfnContext* context) {
         "ThreadEntry",
         "Napi::ThreadSafeNapi::Function.NonBlockingCall() failed");
   }
-
   // Release the thread-safe function. This decrements the internal thread
   // count, and will perform finalization since the count will reach 0.
   context->tsfn.Release();
@@ -52,11 +52,9 @@ void threadEntry(TsfnContext* context) {
 void FinalizerCallback(Napi::Env env,
                        void* finalizeData,
                        TsfnContext* context) {
-  // Join the thread
-  context->nativeThread.join();
-  // Resolve the Promise previously returned to JS via the CreateTSFN method.
-  context->deferred_.Resolve(Napi::Boolean::New(env, true));
-  delete context;
+  // Resolve the Promise previously returned to JS 
+    context->deferred_.Resolve(Napi::String::New(env, context->pc.res));
+    // Wait for the thread to finish executing before proceeding.
+    context->nativeThread.join();
+    delete context;
 }
-
-
