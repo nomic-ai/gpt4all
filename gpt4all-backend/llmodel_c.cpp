@@ -210,3 +210,30 @@ const char *llmodel_get_implementation_search_path()
 {
     return LLModel::Implementation::implementationsSearchPath().c_str();
 }
+
+const char *models_dir_path()
+{
+    return LLModel::modelsDirPath().c_str();
+}
+
+const char *models_file_path()
+{
+    return LLModel::modelsFilePath().c_str();
+}
+
+const char *config_file_path()
+{
+    return LLModel::configFilePath().c_str();
+}
+
+const char *language_dir_path(const char *language)
+{
+    static std::string fres;
+    fres = LLModel::languageDirPath(language).c_str();
+    return fres.c_str();
+}
+
+const char *temp_dir_path()
+{
+    return LLModel::tempDirPath().c_str();
+}
