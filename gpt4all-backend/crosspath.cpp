@@ -31,13 +31,9 @@ Crosspath::Crosspath() {
 
     std::error_code ec;
     std::filesystem::create_directories(data(), ec);
+    std::filesystem::create_directories(config(), ec);
     std::filesystem::create_directories(cache(), ec);
-    std::filesystem::create_directories(tmp(), ec);
-}
-
-Crosspath::~Crosspath() {
-    std::error_code ec;
-    std::filesystem::remove_all(tmp(), ec);
+    std::filesystem::create_directories(temp(), ec);
 }
 
 std::string Crosspath::data() const {
@@ -51,6 +47,17 @@ std::string Crosspath::data() const {
 #endif
 }
 
+std::string Crosspath::config() const {
+    return home +
+#if defined(CROSSPATH_IS_LINUX)
+        "/.config/" CROSSPATH_VENDOR "/" CROSSPATH_APP "/";
+#elif defined(CROSSPATH_IS_DARWIN)
+        "/Library/Preferences/" CROSSPATH_VENDOR "/" CROSSPATH_APP "/";
+#elif defined(CROSSPATH_IS_WINDOWS)
+        "\\AppData\\Local\\" CROSSPATH_VENDOR "\\" CROSSPATH_APP "\\Config\\";
+#endif
+}
+
 std::string Crosspath::cache() const {
     return home +
 #if defined(CROSSPATH_IS_POSIX)
@@ -60,13 +67,13 @@ std::string Crosspath::cache() const {
 #endif
 }
 
-std::string Crosspath::tmp() const {
+std::string Crosspath::temp() const {
     return
 #if defined(CROSSPATH_IS_LINUX)
-        "/tmp/" CROSSPATH_VENDOR "-" CROSSPATH_APP "." + std::to_string(getpid()) + "/";
+        "/tmp/" CROSSPATH_VENDOR "-" CROSSPATH_APP "/";
 #elif defined(CROSSPATH_IS_DARWIN)
         getenv("TMPDIR");
 #elif defined(CROSSPATH_IS_WINDOWS)
-        "\\AppData\\Local\\Temp\\" CROSSPATH_VENDOR "-" CROSSPATH_APP "." + std::to_string(GetCurrentProcessId()) + "\\";
+        home + "\\AppData\\Local\\Temp\\" CROSSPATH_VENDOR "-" CROSSPATH_APP "\\";
 #endif
 }

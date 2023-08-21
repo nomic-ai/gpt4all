@@ -144,7 +144,7 @@ add_library(llmodel
 )
 target_compile_definitions(llmodel PRIVATE
     LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}"
-    CROSSPATH_VENDOR="nomic.ai" CROSSPATH_APP="Gpt4All"
+    CROSSPATH_VENDOR="nomic.ai" CROSSPATH_APP="GPT4All"
 )
 
 set_target_properties(llmodel PROPERTIES

@@ -2,6 +2,7 @@
 #include "network.h"
 #include "modellist.h"
 #include "mysettings.h"
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QCoreApplication>
 #include <QNetworkRequest>
@@ -11,7 +12,6 @@
 #include <QJsonArray>
 #include <QUrl>
 #include <QDir>
-#include <QStandardPaths>
 #include <QSettings>
 
 class MyDownload: public Download { };

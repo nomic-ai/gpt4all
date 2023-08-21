@@ -1,9 +1,9 @@
 #include "modellist.h"
 #include "mysettings.h"
 #include "network.h"
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QFile>
-#include <QStandardPaths>
 #include <algorithm>
 
 //#define USE_LOCAL_MODELSJSON
@@ -243,7 +243,7 @@ ModelList::ModelList()
 
 QString ModelList::incompleteDownloadPath(const QString &modelFile)
 {
-    return MySettings::globalInstance()->modelPath() + "incomplete-" + modelFile;
+    return QString::fromStdString(LLModel::tempDirPath()) + "incomplete-" + modelFile;
 }
 
 const QList<ModelInfo> ModelList::exportModelList() const
@@ -859,10 +859,7 @@ void ModelList::updateModelsFromJson()
         qWarning() << "WARNING: Could not download models.json synchronously";
         updateModelsFromJsonAsync();
 
-        QSettings settings;
-        QFileInfo info(settings.fileName());
-        QString dirPath = info.canonicalPath();
-        const QString modelsConfig = dirPath + "/models.json";
+        const QString modelsConfig = QString::fromStdString(LLModel::modelsFilePath());
         QFile file(modelsConfig);
         if (!file.open(QIODeviceBase::ReadOnly)) {
             qWarning() << "ERROR: Couldn't read models config file: " << modelsConfig;
@@ -965,10 +962,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     }
 
     if (save) {
-        QSettings settings;
-        QFileInfo info(settings.fileName());
-        QString dirPath = info.canonicalPath();
-        const QString modelsConfig = dirPath + "/models.json";
+        const QString modelsConfig = QString::fromStdString(LLModel::modelsFilePath());
         QFile file(modelsConfig);
         if (!file.open(QIODeviceBase::WriteOnly)) {
             qWarning() << "ERROR: Couldn't write models config file: " << modelsConfig;

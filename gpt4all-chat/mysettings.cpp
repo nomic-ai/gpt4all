@@ -1,11 +1,11 @@
 #include "mysettings.h"
 #include "modellist.h"
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QSettings>
-#include <QStandardPaths>
 #include <QUrl>
 
 static int      default_threadCount         = std::min(4, (int32_t) std::thread::hardware_concurrency());
@@ -26,7 +26,7 @@ static bool     default_networkUsageStatsActive = false;
 
 static QString defaultLocalModelsPath()
 {
-    QString localPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
+    QString localPath = QString::fromStdString(LLModel::modelsDirPath())
         + "/";
     QString testWritePath = localPath + QString("test_write.txt");
     QString canonicalLocalPath = QFileInfo(localPath).canonicalFilePath() + "/";

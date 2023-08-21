@@ -197,7 +197,7 @@ const std::string &LLModel::modelsFilePath()
 
 const std::string &LLModel::configFilePath()
 {
-    static std::string modelsDir = crosspath.data()+"config.json";
+    static std::string modelsDir = crosspath.config()+"config.json";
     return modelsDir;
 }
 
@@ -206,7 +206,8 @@ std::string LLModel::languageDirPath(const std::string &language)
     return crosspath.data()+"binding-"+language;
 }
 
-const std::string &LLModel::tempDirPath() {
-    static std::string tempDir = crosspath.tmp();
+const std::string &LLModel::tempDirPath()
+{
+    static std::string tempDir = crosspath.temp();
     return tempDir;
 }

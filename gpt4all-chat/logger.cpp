@@ -1,9 +1,11 @@
 #include "logger.h"
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QFile>
+#include <QDir>
 #include <QDebug>
-#include <QStandardPaths>
 #include <QDateTime>
+#include <string>
 #include <iostream>
 
 class MyLogger: public Logger { };
@@ -16,7 +18,9 @@ Logger *Logger::globalInstance()
 Logger::Logger()
 {
     // Get log file dir
-    auto dir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    auto dir = QString::fromStdString(LLModel::languageDirPath("native-chat"));
+    printf("%s\n", LLModel::languageDirPath("native-chat").c_str());
+    QDir().mkdir(dir);
     // Remove old log file
     QFile::remove(dir+"/log-prev.txt");
     QFile::rename(dir+"/log.txt", dir+"/log-prev.txt");
