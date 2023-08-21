@@ -13,13 +13,6 @@
 #  endif
 #endif
 
-#if defined(CROSSPATH_IS_LINUX)
-#  include <unistd.h>
-#elif defined(CROSSPATH_IS_WINDOWS)
-#  include <windows.h>
-#  include <processthreadsapi.h>
-#endif
-
 
 
 Crosspath::Crosspath() {
