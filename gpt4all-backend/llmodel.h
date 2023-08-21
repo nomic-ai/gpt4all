@@ -87,6 +87,12 @@ public:
         return *m_implementation;
     }
 
+    static const std::string& modelsDirPath();
+    static const std::string& modelsFilePath();
+    static const std::string& configFilePath();
+    static std::string languageDirPath(const std::string& language);
+    static const std::string& tempDirPath();
+
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions

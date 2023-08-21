@@ -1,6 +1,7 @@
 #include "llmodel.h"
 #include "dlhandle.h"
 #include "sysinfo.h"
+#include "crosspath.h"
 
 #include <iostream>
 #include <string>
@@ -178,4 +179,34 @@ void LLModel::Implementation::setImplementationsSearchPath(const std::string& pa
 
 const std::string& LLModel::Implementation::implementationsSearchPath() {
     return s_implementations_search_path;
+}
+
+static Crosspath crosspath;
+
+const std::string &LLModel::modelsDirPath()
+{
+    static std::string modelsDir = crosspath.data()+"models";
+    return modelsDir;
+}
+
+const std::string &LLModel::modelsFilePath()
+{
+    static std::string modelsFile = crosspath.cache()+"models.json";
+    return modelsFile;
+}
+
+const std::string &LLModel::configFilePath()
+{
+    static std::string modelsDir = crosspath.data()+"config.json";
+    return modelsDir;
+}
+
+std::string LLModel::languageDirPath(const std::string &language)
+{
+    return crosspath.data()+"binding-"+language;
+}
+
+const std::string &LLModel::tempDirPath() {
+    static std::string tempDir = crosspath.tmp();
+    return tempDir;
 }
