@@ -413,3 +413,18 @@ class LLModel:
     @staticmethod
     def _recalculate_callback(is_recalculating: bool) -> bool:
         return is_recalculating
+
+    def llmodel_get_models_dir_path(self):
+        llmodel.llmodel_get_models_dir_path()
+
+    def llmodel_get_models_file_path(self):
+        llmodel.llmodel_get_models_file_path()
+
+    def llmodel_get_config_file_path(self):
+        llmodel.llmodel_get_config_file_path()
+
+    def llmodel_get_language_dir_path(self):
+        llmodel.llmodel_get_language_dir_path("python")
+
+    def llmodel_get_temp_dir_path(self):
+        llmodel.llmodel_get_temp_dir_path()

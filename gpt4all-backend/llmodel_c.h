@@ -223,14 +223,14 @@ const char *llmodel_get_implementation_search_path();
  * Directory may not exist yet, parent dir will always exist
  * @return Platform specific path; lifetime is static.
  */
-const char *models_dir_path();
+const char *llmodel_get_models_dir_path();
 
 /**
  * Get models.json path.
  * File may not exist and may be deleted periodically, parent dir will always exist
  * @return Platform specific path; lifetime is static.
  */
-const char *models_file_path();
+const char *llmodel_get_models_file_path();
 
 /**
  * Get config.json path.
@@ -238,21 +238,21 @@ const char *models_file_path();
  * Arbitrary settings may be stored in an JSON object here
  * @return Platform specific path; lifetime is static.
  */
-const char *config_file_path();
+const char *llmodel_get_config_file_path();
 
 /**
  * Get bindings specific path.
  * Directory may not exist yet, parent dir will always exist
  * @return Platform specific path; string will stay alive until function is called again
  */
-const char *language_dir_path(const char *language);
+const char *llmodel_get_language_dir_path(const char *language);
 
 /**
  * Get temporary path.
  * Directory will always exist, but may be cleared frequently
  * @return Platform specific path; lifetime is static.
  */
-const char *temp_dir_path();
+const char *llmodel_get_temp_dir_path();
 
 #ifdef __cplusplus
 }
