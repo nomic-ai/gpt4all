@@ -1,3 +1,4 @@
+sentry-sdk
 aiohttp>=3.6.2
 aiofiles
 pydantic>=1.4.0,<2.0.0
