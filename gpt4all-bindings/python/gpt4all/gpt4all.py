@@ -13,8 +13,6 @@ from tqdm import tqdm
 from . import pyllmodel
 
 # TODO: move to config
-DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
-
 DEFAULT_MODEL_CONFIG = {
     "systemPrompt": "",
     "promptTemplate": "### Human: \n{0}\n### Assistant:\n",
@@ -141,14 +139,14 @@ class GPT4All:
 
         # Validate download directory
         if model_path is None:
+            model_path = pyllmodel.llmodel_get_models_dir_path().replace("\\", "\\\\")
             try:
-                os.makedirs(DEFAULT_MODEL_DIRECTORY, exist_ok=True)
+                os.makedirs(model_path, exist_ok=True)
             except OSError as exc:
                 raise ValueError(
-                    f"Failed to create model download directory at {DEFAULT_MODEL_DIRECTORY}: {exc}. "
+                    f"Failed to create model download directory at {model_path}: {exc}. "
                     "Please specify model_path."
                 )
-            model_path = DEFAULT_MODEL_DIRECTORY
         else:
             model_path = model_path.replace("\\", "\\\\")
 
