@@ -139,7 +139,7 @@ class GPT4All:
 
         # Validate download directory
         if model_path is None:
-            model_path = pyllmodel.llmodel_get_models_dir_path().replace("\\", "\\\\")
+            model_path = pyllmodel.LLModel().get_models_dir_path().replace("\\", "\\\\")
             try:
                 os.makedirs(model_path, exist_ok=True)
             except OSError as exc:

@@ -414,17 +414,23 @@ class LLModel:
     def _recalculate_callback(is_recalculating: bool) -> bool:
         return is_recalculating
 
-    def llmodel_get_models_dir_path(self):
-        llmodel.llmodel_get_models_dir_path()
+    def _call_strres(fnc, **args):
+        fres = ctypes.c_char_p
+        fnc.restype = ctypes.c_char_p
+        fres = fnc(**args)
+        return fres.decode("utf-8")
 
-    def llmodel_get_models_file_path(self):
-        llmodel.llmodel_get_models_file_path()
+    def get_models_dir_path(self):
+        return LLModel._call_strres(llmodel.llmodel_get_models_dir_path)
 
-    def llmodel_get_config_file_path(self):
-        llmodel.llmodel_get_config_file_path()
+    def get_models_file_path(self):
+        return LLModel._call_strres(llmodel.llmodel_get_models_file_path)
 
-    def llmodel_get_language_dir_path(self):
-        llmodel.llmodel_get_language_dir_path("python")
+    def get_config_file_path(self):
+        return LLModel._call_strres(llmodel.llmodel_get_config_file_path)
 
-    def llmodel_get_temp_dir_path(self):
-        llmodel.llmodel_get_temp_dir_path()
+    def get_language_dir_path(self):
+        return LLModel._call_strres(llmodel.llmodel_get_language_dir_path, "python")
+
+    def get_temp_dir_path(self):
+        return LLModel._call_strres(llmodel.llmodel_get_temp_dir_path)
