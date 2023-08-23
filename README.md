@@ -64,6 +64,9 @@ Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/csharp">:computer: Official C# Bindings</a>
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/java">:computer: Official Java Bindings</a>
 
+### Integrations
+
+* 🗃️ [Weaviate Vector Database](https://github.com/weaviate/weaviate) - [module docs](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-gpt4all)
 
 ## Contributing
 GPT4All welcomes contributions, involvement, and discussion from the open source community!
