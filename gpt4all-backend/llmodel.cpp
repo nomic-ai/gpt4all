@@ -123,15 +123,14 @@ const LLModel::Implementation* LLModel::Implementation::implementation(std::ifst
 
 LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant) {
 
-    if (!has_at_least_minimal_hardware())
-        std::cerr << "The CPU does not support AVX, which is a hard requirement" << std::endl;
-        return nullptr;
+    if (!has_at_least_minimal_hardware()) {
+        throw std::runtime_error("The CPU does not support AVX, which is a hard requirement");
+    }
 
     // Read magic
     std::ifstream f(modelPath, std::ios::binary);
     if (!f) {
-        std::cerr << "Unable to read '" << modelPath << "'" << std::endl;
-        return nullptr;
+        throw std::runtime_error("Unable to read '" + modelPath + "'");
     }
     // Get correct implementation
     const Implementation* impl = nullptr;
@@ -167,8 +166,7 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
         }
         impl = implementation(f, buildVariant);
         if (!impl) {
-            std::cerr << "Cannot find a (hardware-specific) library for the model '" << modelPath << "'" << std::endl;
-            return nullptr;
+            throw std::runtime_error("Cannot find a (hardware-specific) library for the model '" + modelPath + "'");
         }
     }
     f.close();
