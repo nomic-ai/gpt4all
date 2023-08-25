@@ -11,6 +11,10 @@ import time
 import pytest
 
 
+# running on Metal seems to cause some inference responses to differ:
+IS_MACOS: bool = sys.platform == 'darwin'
+
+
 @pytest.mark.slow
 @pytest.mark.online
 @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
@@ -31,7 +35,7 @@ def test_inference():
     assert output_1 == output_2
 
     tokens = []
-    for token in model.generate('hello', streaming=True):
+    for token in model.generate('hello', top_k=1, streaming=True):
         tokens.append(token)
 
     assert len(tokens) > 0
@@ -133,7 +137,7 @@ def test_inference_hparams():
     folder = str(get_model_folder(name))
     model = GPT4All(model_name=name, model_path=folder)
 
-    output = model.generate("The capital of france is ", max_tokens=3)
+    output = model.generate("The capital of france is ", temp=0, max_tokens=3)
     assert 'Paris' in output
 
 
@@ -145,7 +149,7 @@ def test_inference_falcon():
     folder = str(get_model_folder(name))
     model = GPT4All(model_name=name, model_path=folder)
     prompt = 'hello'
-    output = model.generate(prompt)
+    output = model.generate(prompt, temp=0)
     assert isinstance(output, str)
     assert len(output) > 0
 
@@ -158,7 +162,7 @@ def test_inference_mpt():
     folder = str(get_model_folder(name))
     model = GPT4All(model_name=name, model_path=folder)
     prompt = 'hello'
-    output = model.generate(prompt)
+    output = model.generate(prompt, temp=0)
     assert isinstance(output, str)
     assert len(output) > 0
 
@@ -392,7 +396,10 @@ class TestGPT4AllInstance():
         expected = " apples and bananas.\nI love to eat apples and bananas."
         response = model.generate(prompt, temp=0)
         assert isinstance(response, str)
-        assert response == expected
+        if not IS_MACOS:  # running on Metal can result in a different output
+            assert response == expected
+        else:
+            assert response == expected or 'peaches' in response
 
 
     @pytest.mark.slow
@@ -422,7 +429,11 @@ class TestGPT4AllInstance():
         assert isinstance(response, Iterable)
         response = list(response)
         print(response)
-        assert ''.join(response) == expected
+        response_text = ''.join(response)
+        if not IS_MACOS:  # running on Metal can result in a different output
+            assert response_text == expected
+        else:
+            assert response_text == expected or 'peaches' in response_text
 
 
     @pytest.mark.slow

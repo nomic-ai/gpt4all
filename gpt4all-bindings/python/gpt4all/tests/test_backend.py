@@ -79,6 +79,8 @@ def model_path_str(model_name: str) -> str:
     if not model_name:
         raise ValueError(f"Invalid model name '{model_name}'")
     folder_path = get_model_folder(model_name)
+    if folder_path is None:
+        folder_path = Path.home() / '.cache/gpt4all'
     model_path = folder_path / model_name
     if not model_path.is_file() or not os.access(model_path, os.R_OK):
         raise RuntimeError(f"Model cannot be accessed '{model_path}'")
