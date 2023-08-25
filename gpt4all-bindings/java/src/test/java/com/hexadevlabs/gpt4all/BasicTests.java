@@ -29,6 +29,33 @@ import static org.mockito.Mockito.*;
 public class BasicTests {
 
     @Test
+    public void simplePromptWithObject(){
+
+        LLModel model = Mockito.spy(new LLModel());
+
+        LLModel.GenerationConfig config =
+                LLModel.config()
+                        .withNPredict(20)
+                        .build();
+
+        // The generate method will return "4"
+        doReturn("4").when( model ).generate(anyString(), eq(config), eq(true));
+
+        LLModel.PromptMessage promptMessage1 = new LLModel.PromptMessage(LLModel.Role.SYSTEM, "You are a helpful assistant");
+        LLModel.PromptMessage promptMessage2 = new LLModel.PromptMessage(LLModel.Role.USER, "Add 2+2");
+
+        LLModel.Messages messages = new LLModel.Messages(promptMessage1, promptMessage2);
+
+        LLModel.CompletionReturn response = model.chatCompletion(
+                messages, config, true, true);
+
+        assertTrue( response.choices().first().content().contains("4") );
+
+        // Verifies the prompt and response are certain length.
+        assertEquals( 224 , response.usage().totalTokens );
+    }
+
+    @Test
     public void simplePrompt(){
 
         LLModel model = Mockito.spy(new LLModel());
