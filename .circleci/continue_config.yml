@@ -785,7 +785,7 @@ jobs:
           command: |
             cd gpt4all-bindings/typescript
             npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
-            npm publish --access public --tag alpha
+            npm publish
 
 workflows:
   version: 2
