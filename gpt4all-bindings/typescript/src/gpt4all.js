@@ -212,6 +212,7 @@ async function createCompletion(
             prompt_tokens: prompt.length,
             completion_tokens: response.length, //TODO
             total_tokens: prompt.length + response.length, //TODO
+            context: promptContext
         },
         choices: [
             {
