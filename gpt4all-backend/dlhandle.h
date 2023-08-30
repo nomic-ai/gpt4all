@@ -75,7 +75,7 @@ public:
 
     Dlhandle() : chandle(nullptr) {}
     Dlhandle(const std::string& fpath) {
-        chandle = LoadLibraryA(fpath.c_str());
+        chandle = LoadLibraryExA(fpath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
         if (!chandle) {
             throw Exception("dlopen(\""+fpath+"\"): Error");
         }
