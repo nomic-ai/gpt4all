@@ -56,8 +56,18 @@ struct llmodel_prompt_context {
     int32_t repeat_last_n;  // last n tokens to penalize
     float context_erase;    // percent of context to erase if we exceed the context window
 };
+
+struct llmodel_gpu_device {
+    int index = 0;
+    int type = 0;           // same as VkPhysicalDeviceType
+    size_t heapSize = 0;
+    const char * name;
+    const char * vendor;
+};
+
 #ifndef __cplusplus
 typedef struct llmodel_prompt_context llmodel_prompt_context;
+typedef struct llmodel_gpu_device llmodel_gpu_device;
 #endif
 
 /**
@@ -217,6 +227,50 @@ void llmodel_set_implementation_search_path(const char *path);
  * @return The current search path; lifetime ends on next set llmodel_set_implementation_search_path() call.
  */
 const char *llmodel_get_implementation_search_path();
+
+/**
+ * Get a list of available GPU devices given the memory required.
+ * @return A pointer to an array of llmodel_gpu_device's whose number is given by num_devices.
+ */
+struct llmodel_gpu_device* llmodel_available_gpu_devices(llmodel_model model, size_t memoryRequired, int* num_devices);
+
+/**
+ * Initializes a GPU device based on a specified string criterion.
+ *
+ * This function initializes a GPU device based on a string identifier provided. The function
+ * allows initialization based on general device type ("gpu"), vendor name ("amd", "nvidia", "intel"),
+ * or any specific device name.
+ *
+ * @param memoryRequired The amount of memory (in bytes) required by the application or task
+ *                       that will utilize the GPU device.
+ * @param device A string specifying the desired criterion for GPU device selection. It can be:
+ *               - "gpu": To initialize the best available GPU.
+ *               - "amd", "nvidia", or "intel": To initialize the best available GPU from that vendor.
+ *               - A specific GPU device name: To initialize a GPU with that exact name.
+ *
+ * @return True if the GPU device is successfully initialized based on the provided string
+ *         criterion. Returns false if the desired GPU device could not be initialized.
+ */
+bool llmodel_gpu_init_gpu_device_by_string(llmodel_model model, size_t memoryRequired, const char *device);
+
+/**
+ * Initializes a GPU device by specifying a valid gpu device pointer.
+ * @param device A gpu device pointer.
+ * @return True if the GPU device is successfully initialized, false otherwise.
+ */
+bool llmodel_gpu_init_gpu_device_by_struct(llmodel_model model, const llmodel_gpu_device *device);
+
+/**
+ * Initializes a GPU device by its index.
+ * @param device An integer representing the index of the GPU device to be initialized.
+ * @return True if the GPU device is successfully initialized, false otherwise.
+ */
+bool llmodel_gpu_init_gpu_device_by_int(llmodel_model model, int device);
+
+/**
+ * @return True if a GPU device is successfully initialized, false otherwise.
+ */
+bool llmodel_has_gpu_device(llmodel_model model);
 
 #ifdef __cplusplus
 }

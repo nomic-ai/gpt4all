@@ -20,7 +20,7 @@ endif()
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 set(LLMODEL_VERSION_MAJOR 0)
-set(LLMODEL_VERSION_MINOR 3)
+set(LLMODEL_VERSION_MINOR 4)
 set(LLMODEL_VERSION_PATCH 0)
 set(LLMODEL_VERSION "${LLMODEL_VERSION_MAJOR}.${LLMODEL_VERSION_MINOR}.${LLMODEL_VERSION_PATCH}")
 project(llmodel VERSION ${LLMODEL_VERSION} LANGUAGES CXX C)
@@ -38,6 +38,8 @@ if (NOT IPO_SUPPORTED)
 else()
     message(STATUS "Interprocedural optimization support detected")
 endif()
+
+set(LLAMA_KOMPUTE YES)
 
 include(llama.cpp.cmake)
 

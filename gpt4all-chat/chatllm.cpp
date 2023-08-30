@@ -401,7 +401,7 @@ bool ChatLLM::handlePrompt(int32_t token)
 #endif
     ++m_promptTokens;
     ++m_promptResponseTokens;
-    m_timer->inc();
+    m_timer->start();
     return !m_stopGenerating;
 }
 

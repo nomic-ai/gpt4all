@@ -28,6 +28,9 @@
 #include <llama.h>
 #include <ggml.h>
 
+#ifdef GGML_USE_KOMPUTE
+#include "ggml-vulkan.h"
+#endif
 
 namespace {
 const char *modelType_ = "LLaMA";
@@ -155,12 +158,25 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     // currently
     d_ptr->params.n_gpu_layers = 1;
 #endif
+#ifdef GGML_USE_KOMPUTE
+    if (ggml_vk_has_device()) {
+        // vulkan always runs the whole model if n_gpu_layers is not 0, at least
+        // currently
+        d_ptr->params.n_gpu_layers = 1;
+    }
+#endif
 
     d_ptr->ctx = llama_init_from_file(modelPath.c_str(), d_ptr->params);
     if (!d_ptr->ctx) {
         std::cerr << "LLAMA ERROR: failed to load model from " <<  modelPath << std::endl;
         return false;
     }
+
+#ifdef GGML_USE_KOMPUTE
+    if (ggml_vk_has_device()) {
+        std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
+    }
+#endif
 
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
@@ -250,6 +266,75 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
 {
     static const std::vector<LLModel::Token> fres = {llama_token_eos()};
     return fres;
+}
+
+#if defined(GGML_USE_KOMPUTE)
+#include "ggml-vulkan.h"
+#endif
+
+std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired)
+{
+#if defined(GGML_USE_KOMPUTE)
+    std::vector<ggml_vk_device> vkDevices = ggml_vk_available_devices(memoryRequired);
+
+    std::vector<LLModel::GPUDevice> devices;
+    for(const auto& vkDevice : vkDevices) {
+        LLModel::GPUDevice device;
+        device.index = vkDevice.index;
+        device.type = vkDevice.type;
+        device.heapSize = vkDevice.heapSize;
+        device.name = vkDevice.name;
+        device.vendor = vkDevice.vendor;
+
+        devices.push_back(device);
+    }
+
+    return devices;
+#else
+    return std::vector<LLModel::GPUDevice>();
+#endif
+}
+
+bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string& device)
+{
+#if defined(GGML_USE_KOMPUTE)
+    return ggml_vk_init_device(memoryRequired, device);
+#else
+    return false;
+#endif
+}
+
+bool LLamaModel::initializeGPUDevice(const LLModel::GPUDevice &device)
+{
+#if defined(GGML_USE_KOMPUTE)
+    ggml_vk_device vkDevice;
+    vkDevice.index = device.index;
+    vkDevice.type = device.type;
+    vkDevice.heapSize = device.heapSize;
+    vkDevice.name = device.name;
+    vkDevice.vendor = device.vendor;
+    return ggml_vk_init_device(vkDevice);
+#else
+    return false;
+#endif
+}
+
+bool LLamaModel::initializeGPUDevice(int device)
+{
+#if defined(GGML_USE_KOMPUTE)
+    return ggml_vk_init_device(device);
+#else
+    return false;
+#endif
+}
+
+bool LLamaModel::hasGPUDevice()
+{
+#if defined(GGML_USE_KOMPUTE)
+    return ggml_vk_has_device();
+#else
+    return false;
+#endif
 }
 
 #if defined(_WIN32)
