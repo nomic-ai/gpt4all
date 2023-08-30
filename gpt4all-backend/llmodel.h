@@ -58,6 +58,14 @@ public:
             // window
     };
 
+    struct GPUDevice {
+        int index = 0;
+        int type = 0;
+        size_t heapSize = 0;
+        std::string name;
+        std::string vendor;
+    };
+
     explicit LLModel() {}
     virtual ~LLModel() {}
 
@@ -86,6 +94,12 @@ public:
     const Implementation& implementation() const {
         return *m_implementation;
     }
+
+    virtual std::vector<GPUDevice> availableGPUDevices(size_t /*memoryRequired*/) { return std::vector<GPUDevice>(); }
+    virtual bool initializeGPUDevice(size_t /*memoryRequired*/, const std::string& /*device*/) { return false; }
+    virtual bool initializeGPUDevice(const GPUDevice &/*device*/) { return false; }
+    virtual bool initializeGPUDevice(int /*device*/) { return false; }
+    virtual bool hasGPUDevice() { return false; }
 
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of

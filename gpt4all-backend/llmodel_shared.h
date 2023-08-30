@@ -4,6 +4,49 @@
 #include <vector>
 #include <ggml.h>
 
+#if defined(GGML_USE_KOMPUTE)
+#include "ggml-vulkan.h"
+struct llm_buffer {
+    uint8_t * addr = NULL;
+    size_t size = 0;
+    ggml_vk_memory memory;
+
+    llm_buffer() = default;
+
+    void resize(size_t size) {
+        free();
+
+        if (!ggml_vk_has_device()) {
+            this->addr = new uint8_t[size];
+            this->size = size;
+        } else {
+            this->memory = ggml_vk_allocate(size);
+            this->addr = (uint8_t*)memory.data;
+            this->size = size;
+        }
+    }
+
+    void free() {
+        if (!memory.primaryMemory) {
+            delete[] addr;
+        } else if (memory.data) {
+            ggml_vk_free_memory(memory);
+        }
+        this->addr = NULL;
+        this->size = 0;
+    }
+
+    ~llm_buffer() {
+        free();
+    }
+
+    // disable copy and move
+    llm_buffer(const llm_buffer&) = delete;
+    llm_buffer(llm_buffer&&) = delete;
+    llm_buffer& operator=(const llm_buffer&) = delete;
+    llm_buffer& operator=(llm_buffer&&) = delete;
+};
+#else
 struct llm_buffer {
     uint8_t * addr = NULL;
     size_t size = 0;
@@ -18,6 +61,7 @@ struct llm_buffer {
         delete[] addr;
     }
 };
+#endif
 
 struct llm_kv_cache {
     struct ggml_tensor * k;

@@ -1,3 +1,11 @@
+#
+# Copyright (c) 2023 Nomic, Inc. All rights reserved.
+#
+# This software is licensed under the terms of the Software for Open Models License (SOM),
+# version 1.0, as detailed in the LICENSE_SOM.txt file. A copy of this license should accompany
+# this software. Except as expressly granted in the SOM license, all rights are reserved by Nomic, Inc.
+#
+
 cmake_minimum_required(VERSION 3.12) # Don't bump this version for no reason
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -142,6 +150,129 @@ if (LLAMA_OPENBLAS)
         add_compile_options(-I${OPENBLAS_INC})
     else()
         message(WARNING "OpenBLAS not found")
+    endif()
+endif()
+
+if (LLAMA_KOMPUTE)
+    find_package(Vulkan COMPONENTS glslc REQUIRED)
+    find_program(glslc_executable NAMES glslc HINTS Vulkan::glslc)
+    if (NOT glslc_executable)
+        message(FATAL_ERROR "glslc not found")
+    endif()
+
+    set(LLAMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/llama.cpp-mainline)
+
+    function(compile_shader)
+      set(options)
+      set(oneValueArgs)
+      set(multiValueArgs SOURCES)
+      cmake_parse_arguments(compile_shader "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+      foreach(source ${compile_shader_SOURCES})
+        get_filename_component(OP_FILE ${source} NAME)
+        set(spv_file ${CMAKE_CURRENT_BINARY_DIR}/${OP_FILE}.spv)
+        add_custom_command(
+            OUTPUT ${spv_file}
+            DEPENDS ${LLAMA_DIR}/${source}
+            COMMAND ${glslc_executable} --target-env=vulkan1.2 -o ${spv_file} ${LLAMA_DIR}/${source}
+            COMMENT "Compiling ${source} to ${source}.spv"
+        )
+
+        get_filename_component(RAW_FILE_NAME ${spv_file} NAME)
+        set(FILE_NAME "shader${RAW_FILE_NAME}")
+        string(REPLACE ".comp.spv" ".h" HEADER_FILE ${FILE_NAME})
+        string(TOUPPER ${HEADER_FILE} HEADER_FILE_DEFINE)
+        string(REPLACE "." "_" HEADER_FILE_DEFINE "${HEADER_FILE_DEFINE}")
+        set(OUTPUT_HEADER_FILE "${HEADER_FILE}")
+        message(STATUS "${HEADER_FILE} generating ${HEADER_FILE_DEFINE}")
+        add_custom_command(
+          OUTPUT ${OUTPUT_HEADER_FILE}
+          COMMAND ${CMAKE_COMMAND} -E echo "/*THIS FILE HAS BEEN AUTOMATICALLY GENERATED - DO NOT EDIT*/" > ${OUTPUT_HEADER_FILE}
+          COMMAND ${CMAKE_COMMAND} -E echo \"\#ifndef ${HEADER_FILE_DEFINE}\" >> ${OUTPUT_HEADER_FILE}
+          COMMAND ${CMAKE_COMMAND} -E echo \"\#define ${HEADER_FILE_DEFINE}\" >> ${OUTPUT_HEADER_FILE}
+          COMMAND ${CMAKE_COMMAND} -E echo "namespace kp {" >> ${OUTPUT_HEADER_FILE}
+          COMMAND ${CMAKE_COMMAND} -E echo "namespace shader_data {" >> ${OUTPUT_HEADER_FILE}
+          COMMAND ${CMAKE_BINARY_DIR}/bin/xxd -i ${spv_file} >> ${OUTPUT_HEADER_FILE}
+          COMMAND ${CMAKE_COMMAND} -E echo "}}" >> ${OUTPUT_HEADER_FILE}
+          COMMAND ${CMAKE_COMMAND} -E echo \"\#endif // define ${HEADER_FILE_DEFINE}\" >> ${OUTPUT_HEADER_FILE}
+          DEPENDS ${spv_file} xxd
+          COMMENT "Converting to hpp: ${FILE_NAME} ${CMAKE_BINARY_DIR}/bin/xxd"
+        )
+      endforeach()
+    endfunction()
+
+    if (EXISTS "${LLAMA_DIR}/kompute/CMakeLists.txt")
+        message(STATUS "Kompute found")
+        add_subdirectory(${LLAMA_DIR}/kompute)
+
+        # Compile our shaders
+        compile_shader(SOURCES
+          kompute/op_scale.comp
+          kompute/op_add.comp
+          kompute/op_addrow.comp
+          kompute/op_mul.comp
+          kompute/op_mulrow.comp
+          kompute/op_silu.comp
+          kompute/op_relu.comp
+          kompute/op_gelu.comp
+          kompute/op_softmax.comp
+          kompute/op_norm.comp
+          kompute/op_rmsnorm.comp
+          kompute/op_diagmask.comp
+          kompute/op_mul_mat_f16.comp
+          kompute/op_mul_mat_q4_0.comp
+          kompute/op_mul_mat_q4_1.comp
+          kompute/op_getrows_f16.comp
+          kompute/op_getrows_q4_0.comp
+          kompute/op_getrows_q4_1.comp
+          kompute/op_rope.comp
+          kompute/op_cpy_f16_f16.comp
+          kompute/op_cpy_f16_f32.comp
+          kompute/op_cpy_f32_f16.comp
+          kompute/op_cpy_f32_f32.comp
+        )
+
+        # Create a custom target for our generated shaders
+        add_custom_target(generated_shaders DEPENDS
+          shaderop_scale.h
+          shaderop_add.h
+          shaderop_addrow.h
+          shaderop_mul.h
+          shaderop_mulrow.h
+          shaderop_silu.h
+          shaderop_relu.h
+          shaderop_gelu.h
+          shaderop_softmax.h
+          shaderop_norm.h
+          shaderop_rmsnorm.h
+          shaderop_diagmask.h
+          shaderop_mul_mat_f16.h
+          shaderop_mul_mat_q4_0.h
+          shaderop_mul_mat_q4_1.h
+          shaderop_getrows_f16.h
+          shaderop_getrows_q4_0.h
+          shaderop_getrows_q4_1.h
+          shaderop_rope.h
+          shaderop_cpy_f16_f16.h
+          shaderop_cpy_f16_f32.h
+          shaderop_cpy_f32_f16.h
+          shaderop_cpy_f32_f32.h
+        )
+
+        # Create a custom command that depends on the generated_shaders
+        add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ggml-vulkan.stamp
+            COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/ggml-vulkan.stamp
+            DEPENDS generated_shaders
+            COMMENT "Ensuring shaders are generated before compiling ggml-vulkan.cpp"
+        )
+
+        # Add the stamp to the main sources to ensure dependency tracking
+        set(GGML_SOURCES_KOMPUTE ${LLAMA_DIR}/ggml-vulkan.cpp ${LLAMA_DIR}/ggml-vulkan.h ${CMAKE_CURRENT_BINARY_DIR}/ggml-vulkan.stamp)
+        add_compile_definitions(GGML_USE_KOMPUTE)
+        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} kompute)
+        set(LLAMA_EXTRA_INCLUDES ${LLAMA_EXTRA_INCLUDES} ${CMAKE_BINARY_DIR})
+    else()
+        message(WARNING "Kompute not found")
     endif()
 endif()
 
@@ -301,7 +432,8 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
                 ${GGML_SOURCES_QUANT_K}
                 ${GGML_SOURCES_CUDA}
                 ${GGML_METAL_SOURCES}
-                ${GGML_OPENCL_SOURCES})
+                ${GGML_OPENCL_SOURCES}
+                ${GGML_SOURCES_KOMPUTE})
 
     if (LLAMA_K_QUANTS)
         target_compile_definitions(ggml${SUFFIX} PUBLIC GGML_USE_K_QUANTS)

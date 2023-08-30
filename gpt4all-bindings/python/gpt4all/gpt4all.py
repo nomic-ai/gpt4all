@@ -66,6 +66,7 @@ class GPT4All:
         model_type: Optional[str] = None,
         allow_download: bool = True,
         n_threads: Optional[int] = None,
+        device: Optional[str] = "cpu",
     ):
         """
         Constructor
@@ -78,11 +79,22 @@ class GPT4All:
                 descriptive identifier for user. Default is None.
             allow_download: Allow API to download models from gpt4all.io. Default is True.
             n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
+            device: The processing unit on which the GPT4All model will run. It can be set to:
+                - "cpu": Model will run on the central processing unit.
+                - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
+                - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
+                Alternatively, a specific GPU name can also be provided, and the model will run on the GPU that matches the name if it's available.
+                Default is "cpu".
+
+                Note: If a selected GPU device does not have sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the model.
         """
         self.model_type = model_type
         self.model = pyllmodel.LLModel()
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
+        if device is not None:
+            if device != "cpu":
+                self.model.init_gpu(model_path=self.config["path"], device=device)
         self.model.load_model(self.config["path"])
         # Set n_threads
         if n_threads is not None:

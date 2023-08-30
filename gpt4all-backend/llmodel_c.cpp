@@ -5,7 +5,6 @@
 #include <cerrno>
 #include <utility>
 
-
 struct LLModelWrapper {
     LLModel *llModel = nullptr;
     LLModel::PromptContext promptContext;
@@ -209,4 +208,58 @@ void llmodel_set_implementation_search_path(const char *path)
 const char *llmodel_get_implementation_search_path()
 {
     return LLModel::Implementation::implementationsSearchPath().c_str();
+}
+
+struct llmodel_gpu_device* llmodel_available_gpu_devices(llmodel_model model, size_t memoryRequired, int* num_devices)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    std::vector<LLModel::GPUDevice> devices = wrapper->llModel->availableGPUDevices(memoryRequired);
+
+    // Set the num_devices
+    *num_devices = devices.size();
+
+    if (*num_devices == 0) return nullptr;  // Return nullptr if no devices are found
+
+    // Allocate memory for the output array
+    struct llmodel_gpu_device* output = (struct llmodel_gpu_device*) malloc(*num_devices * sizeof(struct llmodel_gpu_device));
+
+    for (int i = 0; i < *num_devices; i++) {
+        output[i].index = devices[i].index;
+        output[i].type = devices[i].type;
+        output[i].heapSize = devices[i].heapSize;
+        output[i].name = strdup(devices[i].name.c_str());  // Convert std::string to char* and allocate memory
+        output[i].vendor = strdup(devices[i].vendor.c_str());  // Convert std::string to char* and allocate memory
+    }
+
+    return output;
+}
+
+bool llmodel_gpu_init_gpu_device_by_string(llmodel_model model, size_t memoryRequired, const char *device)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->initializeGPUDevice(memoryRequired, std::string(device));
+}
+
+bool llmodel_gpu_init_gpu_device_by_struct(llmodel_model model, const llmodel_gpu_device *device)
+{
+    LLModel::GPUDevice d;
+    d.index = device->index;
+    d.type = device->type;
+    d.heapSize = device->heapSize;
+    d.name = device->name;
+    d.vendor = device->vendor;
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->initializeGPUDevice(d);
+}
+
+bool llmodel_gpu_init_gpu_device_by_int(llmodel_model model, int device)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->initializeGPUDevice(device);
+}
+
+bool llmodel_has_gpu_device(llmodel_model model)
+{
+    LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
+    return wrapper->llModel->hasGPUDevice();
 }
