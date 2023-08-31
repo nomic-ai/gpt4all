@@ -95,11 +95,17 @@ jobs:
           paths:
             - C:\Qt
       - run:
+          name: Install VulkanSDK
+          command: |
+            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
           name: Build
           command: |
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\x64"
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64"
+            $Env:PATH = "${Env:PATH};C:\VulkanSDK\1.3.261.1\bin"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\ucrt\x64"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x64"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64"
@@ -424,6 +430,11 @@ jobs:
           name: Install MinGW64
           command: choco install -y mingw --force --no-progress
       - run:
+          name: Install VulkanSDK
+          command: |
+            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
           name: Install dependencies
           command: |
             choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
@@ -433,6 +444,7 @@ jobs:
             $MinGWBin = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
             $Env:Path += ";$MinGwBin"
             $Env:Path += ";C:\Program Files\CMake\bin"
+            $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
             cd gpt4all-backend
             mkdir runtimes/win-x64
             cd runtimes/win-x64
@@ -460,6 +472,11 @@ jobs:
             git submodule sync
             git submodule update --init --recursive
       - run:
+          name: Install VulkanSDK
+          command: |
+            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
           name: Install dependencies
           command: |
             choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'  
@@ -467,6 +484,7 @@ jobs:
           name: Build Libraries
           command: |
             $Env:Path += ";C:\Program Files\CMake\bin"
+            $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
             cd gpt4all-backend
             mkdir runtimes/win-x64_msvc
             cd runtimes/win-x64_msvc
