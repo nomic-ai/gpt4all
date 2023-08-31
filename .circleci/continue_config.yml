@@ -212,6 +212,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Set Python Version
+          command: pyenv global 3.11.2
+      - run:
           name: Install dependencies
           command: |
             wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
