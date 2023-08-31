@@ -207,8 +207,8 @@ jobs:
           command: aws cloudfront create-invalidation --distribution-id E1STQOW63QL2OH --paths "/*"
 
   build-py-linux:
-    docker:
-      - image: ubuntu-2204:2023.04.2
+    machine:
+      image: ubuntu-2204:2023.04.2
     steps:
       - checkout
       - run:
