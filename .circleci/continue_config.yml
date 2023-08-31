@@ -208,7 +208,7 @@ jobs:
 
   build-py-linux:
     docker:
-      - image: circleci/python:3.8
+      - image: ubuntu-2204:2023.04.2
     steps:
       - checkout
       - run:
