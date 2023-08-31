@@ -285,10 +285,13 @@ jobs:
           name: Add MinGW64 to PATH
           command: $env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
       - run:
-          name: Install dependencies
+          name: Install VulkanSDK
           command:
             Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
-            VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+            & VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
+          name: Install dependencies
+          command:
             choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
       - run:
           name: Install Python dependencies
