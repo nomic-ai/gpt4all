@@ -41,7 +41,7 @@ jobs:
       - restore_cache:  # this is the new step to restore cache
           keys:
             - linux-qt-cache
-      - run: 
+      - run:
           name: Setup Linux and Dependencies
           command: |
             wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
