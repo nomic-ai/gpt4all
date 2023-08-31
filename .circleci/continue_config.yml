@@ -125,6 +125,7 @@ jobs:
               "-DCMAKE_BUILD_TYPE=Release" `
               "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
+              "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON" `
               "-S ..\gpt4all-chat" `
               "-B ."
             & "C:\Qt\Tools\Ninja\ninja.exe"
@@ -448,7 +449,7 @@ jobs:
             cd gpt4all-backend
             mkdir runtimes/win-x64
             cd runtimes/win-x64
-            cmake -G "MinGW Makefiles" ../..
+            cmake -G "MinGW Makefiles" -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON ../..
             cmake --build . --parallel --config Release
             cp "$MinGWBin\libgcc*.dll" .
             cp "$MinGWBin\libstdc++*.dll" .
@@ -488,7 +489,7 @@ jobs:
             cd gpt4all-backend
             mkdir runtimes/win-x64_msvc
             cd runtimes/win-x64_msvc
-            cmake -G "Visual Studio 17 2022" -A X64 ../..
+            cmake -G "Visual Studio 17 2022" -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -A X64 ../..
             cmake --build . --parallel --config Release
             cp bin/Release/*.dll .
       - persist_to_workspace:
