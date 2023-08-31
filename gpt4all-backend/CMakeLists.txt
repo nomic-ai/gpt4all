@@ -39,7 +39,9 @@ else()
     message(STATUS "Interprocedural optimization support detected")
 endif()
 
-set(LLAMA_KOMPUTE YES)
+if(NOT APPLE)
+  set(LLAMA_KOMPUTE YES)
+endif()
 
 include(llama.cpp.cmake)
 
