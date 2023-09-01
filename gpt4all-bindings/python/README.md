@@ -47,6 +47,15 @@ output = model.generate("The capital of France is ", max_tokens=3)
 print(output)
 ```
 
+
+GPU Usage
+```python
+from gpt4all import GPT4All
+model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin", device='gpu') # device='amd', device='intel'
+output = model.generate("The capital of France is ", max_tokens=3)
+print(output)
+```
+
 ## Troubleshooting a Local Build
 - If you're on Windows and have compiled with a MinGW toolchain, you might run into an error like:
   ```
