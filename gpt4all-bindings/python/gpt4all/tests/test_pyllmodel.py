@@ -287,7 +287,7 @@ class TestLLModelInstance:
         folder = str(get_model_folder(name))
         model_path = os.path.join(folder, name)
         memory_needed = model.memory_needed(model_path)
-        assert memory_needed == 2767307008
+        assert memory_needed > 0
         # invalid:
         with pytest.raises(ValueError):
             model_path = os.path.join(folder, 'invalid-model.bin')

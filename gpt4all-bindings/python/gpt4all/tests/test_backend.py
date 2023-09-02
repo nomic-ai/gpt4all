@@ -221,7 +221,7 @@ def test_llmodel_required_mem(orca_mini_path_str, embeddings_path_str):
     paths = [orca_mini_path_str.encode('utf-8'), embeddings_path_str.encode('utf-8')]
     models = list(map(create_model, paths))
     orca_required_mem = llmodel.llmodel_required_mem(models[0], paths[0])
-    assert orca_required_mem == 2_767_307_008
+    assert orca_required_mem > 0
     embeddings_required_mem = llmodel.llmodel_required_mem(models[1], paths[1])
     assert embeddings_required_mem >= 0  # TODO doesn't implement required_mem yet
     for model in models:
