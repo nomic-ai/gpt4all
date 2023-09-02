@@ -15,12 +15,19 @@ import pytest
 IS_MACOS: bool = sys.platform == 'darwin'
 
 
+def get_model_folder_str(model_name: str = None) -> str:
+    folder = get_model_folder(model_name)
+    if folder is not None:
+        return str(folder)
+    return None
+
+
 @pytest.mark.slow
 @pytest.mark.online
 @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
 def test_inference():
     name = 'orca-mini-3b.ggmlv3.q4_0.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     output_1 = model.generate('hello', top_k=1)
 
@@ -65,7 +72,7 @@ def do_long_input(model):
 @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
 def test_inference_long_orca_3b():
     name = 'orca-mini-3b.ggmlv3.q4_0.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
     assert True  # inference completed successfully
@@ -76,7 +83,7 @@ def test_inference_long_orca_3b():
 @pytest.mark.inference(params='7B', arch='falcon')
 def test_inference_long_falcon():
     name = 'ggml-model-gpt4all-falcon-q4_0.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
     assert True  # inference completed successfully
@@ -87,7 +94,7 @@ def test_inference_long_falcon():
 @pytest.mark.inference(params='7B', arch='llama_1', release='orca_mini')
 def test_inference_long_llama_7b():
     name = 'orca-mini-7b.ggmlv3.q4_0.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
     assert True  # inference completed successfully
@@ -98,7 +105,7 @@ def test_inference_long_llama_7b():
 @pytest.mark.inference(params='13B', arch='llama_1', release='nous_hermes')
 def test_inference_long_llama_13b():
     name = 'nous-hermes-13b.ggmlv3.q4_0.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
     assert True  # inference completed successfully
@@ -109,7 +116,7 @@ def test_inference_long_llama_13b():
 @pytest.mark.inference(params='7B', arch='mpt', release='mpt_chat')
 def test_inference_long_mpt():
     name = 'ggml-mpt-7b-chat.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
     assert True  # inference completed successfully
@@ -120,7 +127,7 @@ def test_inference_long_mpt():
 @pytest.mark.inference(params='3B', arch='replit', release='replit_code_v1')
 def test_inference_long_replit():
     name = 'ggml-replit-code-v1-3b.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
     assert True  # inference completed successfully
@@ -131,7 +138,7 @@ def test_inference_long_replit():
 @pytest.mark.inference(params='7B', arch='gptj', release='groovy')
 def test_inference_long_groovy():
     name = 'ggml-gpt4all-j-v1.3-groovy.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     do_long_input(model)
     assert True  # inference completed successfully
@@ -142,7 +149,7 @@ def test_inference_long_groovy():
 @pytest.mark.inference(params='3B', arch='llama_1', release='orca_mini')
 def test_inference_hparams():
     name = 'orca-mini-3b.ggmlv3.q4_0.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
 
     output = model.generate("The capital of france is ", temp=0, max_tokens=3)
@@ -155,7 +162,7 @@ def test_inference_hparams():
 @pytest.mark.inference(params='7B', arch='falcon')
 def test_inference_falcon():
     name = 'ggml-model-gpt4all-falcon-q4_0.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     prompt = 'hello'
     output = model.generate(prompt, temp=0)
@@ -168,7 +175,7 @@ def test_inference_falcon():
 @pytest.mark.inference(params='7B', arch='mpt', release='mpt_chat')
 def test_inference_mpt():
     name = 'ggml-mpt-7b-chat.bin'
-    folder = str(get_model_folder(name))
+    folder = get_model_folder_str(name)
     model = GPT4All(model_name=name, model_path=folder)
     prompt = 'hello'
     output = model.generate(prompt, temp=0)
@@ -225,7 +232,7 @@ class TestGPT4AllClass():
         with pytest.raises(Exception):  # mustn't be whitespace
             GPT4All(name)
         name = 'orca-mini-3b.ggmlv3.q4_0.bin'  # a valid model name
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         model = GPT4All(name, folder)
         assert model is not None
 
@@ -250,7 +257,7 @@ class TestGPT4AllClass():
             with pytest.raises(Exception):
                 GPT4All.retrieve_model(' \t ')  # str.isspace()
         name = 'orca-mini-3b.ggmlv3.q4_0.bin'
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         config = GPT4All.retrieve_model(name, folder)
         # 'config' is a dict, with every key and value being a string:
         assert isinstance(config, dict)
@@ -269,7 +276,7 @@ class TestGPT4AllClass():
             with pytest.raises(Exception):
                 GPT4All.retrieve_model(' \t ', allow_download=False)  # str.isspace()
         name = 'orca-mini-3b.ggmlv3.q4_0.bin'
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         config = GPT4All.retrieve_model(name, folder, allow_download=False)
         # 'config' is a dict, with every key and value being a string:
         assert isinstance(config, dict)
@@ -390,7 +397,7 @@ class TestGPT4AllInstance():
     @pytest.fixture
     def model(self) -> GPT4All:
         name = 'orca-mini-3b.ggmlv3.q4_0.bin'
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         model = GPT4All(model_name=name, model_path=folder)
         yield model
         del model.model  # making sure the memory gets freed asap

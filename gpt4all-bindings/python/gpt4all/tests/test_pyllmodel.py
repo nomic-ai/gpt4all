@@ -22,6 +22,13 @@ IS_WINDOWS: bool = sys.platform == 'win32'
 IS_MACOS: bool = sys.platform == 'darwin'
 
 
+def get_model_folder_str(model_name: str = None) -> str:
+    folder = get_model_folder(model_name)
+    if folder is not None:
+        return str(folder)
+    return None
+
+
 def test_llmodel_path():
     # gpt4all.pyllmodel.LLMODEL_PATH
     llmodel_path = pyllmodel.LLMODEL_PATH
@@ -131,7 +138,7 @@ class TestLLModelMockInstance:
 
     def test_memory_needed(self, mock_model):
         name = 'mock-model.bin'  # on the model, the name is only set after creation (load_model)
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         model_path = os.path.join(folder, name)
         memory_needed = mock_model.memory_needed(model_path)
         assert memory_needed == 1_000_000_000  # predefined in fixture
@@ -139,7 +146,7 @@ class TestLLModelMockInstance:
 
     def test_load_model(self, mock_model):
         name = 'mock-model.bin'  # on the model, the name is only set after creation
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         model_path = os.path.join(folder, name)
         is_loaded = mock_model.load_model(model_path)
         assert is_loaded
@@ -264,7 +271,7 @@ class TestLLModelInstance:
     @pytest.fixture
     def loaded_orca_mini_model(self):
         name = 'orca-mini-3b.ggmlv3.q4_0.bin'
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         model_path = os.path.join(folder, name)
         model = LLModel()
         model.load_model(model_path)
@@ -274,7 +281,7 @@ class TestLLModelInstance:
     @pytest.fixture
     def loaded_embeddings_model(self):
         name = 'ggml-all-MiniLM-L6-v2-f16.bin'
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         model_path = os.path.join(folder, name)
         model = LLModel()
         model.load_model(model_path)
@@ -284,7 +291,7 @@ class TestLLModelInstance:
     def test_memory_needed(self, model):
         # valid:
         name = 'orca-mini-3b.ggmlv3.q4_0.bin'  # on the model, the name is only set after creation (load_model)
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         model_path = os.path.join(folder, name)
         memory_needed = model.memory_needed(model_path)
         assert memory_needed > 0
@@ -298,7 +305,7 @@ class TestLLModelInstance:
     def test_load_model(self, model):
         # valid:
         name = 'orca-mini-3b.ggmlv3.q4_0.bin'  # on the model, the name is only set after creation
-        folder = str(get_model_folder(name))
+        folder = get_model_folder_str(name)
         model_path = os.path.join(folder, name)
         is_loaded = model.load_model(model_path)
         assert is_loaded
