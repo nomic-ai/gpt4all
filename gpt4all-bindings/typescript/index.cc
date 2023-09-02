@@ -15,7 +15,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
        InstanceMethod("initGpuByString", &NodeModelWrapper::InitGpuByString),
        InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice),
-       InstanceMethod("getGpuDevices", &NodeModelWrapper::GetGpuDevices)
+       InstanceMethod("availableGpus", &NodeModelWrapper::GetGpuDevices)
     });
     // Keep a static reference to the constructor
     //
@@ -25,8 +25,41 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
 }
   Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo& info) 
   {
+    auto env = info.Env();
+    int num_devices = 0;
+    auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str());
+    llmodel_gpu_device* all_devices = llmodel_available_gpu_devices(GetInference(), mem_size, &num_devices);
+    if(all_devices == nullptr) {
+        Napi::Error::New(
+            env, 
+            "Unable to retrieve list of all GPU devices"
+        ).ThrowAsJavaScriptException(); 
+        return env.Undefined();
+    }
+    auto js_array = Napi::Array::New(env, num_devices);
+    for(int i = 0; i < num_devices; ++i) {
+       auto gpu_device = *(all_devices + i); 
+       /* 
+        *
+        * struct llmodel_gpu_device {
+            int index = 0;
+            int type = 0;           // same as VkPhysicalDeviceType
+            size_t heapSize = 0; 
+            const char * name;
+            const char * vendor;
+          };
+        *
+        */
+       Napi::Object js_gpu_device = Napi::Object::New(env);
+        js_gpu_device["index"] = uint32_t(gpu_device.index);
+        js_gpu_device["type"] = uint32_t(gpu_device.type);
+        js_gpu_device["heapSize"] = static_cast<uint32_t>( gpu_device.heapSize );
+        js_gpu_device["name"]= gpu_device.name;
+        js_gpu_device["vendor"] = gpu_device.vendor;
 
-    return info.Env().Undefined();
+        js_array[i] = js_gpu_device;
+    }
+    return js_array;
   }
 
    Napi::Value NodeModelWrapper::getType(const Napi::CallbackInfo& info) 

@@ -155,9 +155,27 @@ declare class LLModel {
     initGpuByString(memory_required: number, device_name: string): boolean
     /**
      * From C documentation
-     * @return True if a GPU device is successfully initialized, false otherwise.
+     * @returns True if a GPU device is successfully initialized, false otherwise.
      */
     hasGpuDevice(): boolean
+    /**
+      * GPUs that are usable for this LLModel
+      * @returns 
+      */
+    availableGpus() : GPUDevice[]
+}
+/** 
+  * an object that contains gpu data on this machine.
+  */
+interface GPUDevice {
+    index: number;
+    /**
+      * same as VkPhysicalDeviceType
+     */
+    type: number;            
+    heapSize : number; 
+    name: string;
+    vendor: string;
 }
 
 interface LoadModelOptions {
@@ -531,4 +549,5 @@ export {
     DownloadController,
     RetrieveModelOptions,
     DownloadModelOptions,
+    GPUDevice
 };
