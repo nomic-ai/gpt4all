@@ -162,12 +162,12 @@ declare class LLModel {
       * GPUs that are usable for this LLModel
       * @returns 
       */
-    availableGpus() : GPUDevice[]
+    availableGpus() : GpuDevice[]
 }
 /** 
   * an object that contains gpu data on this machine.
   */
-interface GPUDevice {
+interface GpuDevice[] {
     index: number;
     /**
       * same as VkPhysicalDeviceType
@@ -549,5 +549,5 @@ export {
     DownloadController,
     RetrieveModelOptions,
     DownloadModelOptions,
-    GPUDevice
+    GpuDevice
 };
