@@ -15,13 +15,20 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
        InstanceMethod("initGpuByString", &NodeModelWrapper::InitGpuByString),
        InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice),
-       InstanceMethod("availableGpus", &NodeModelWrapper::GetGpuDevices)
+       InstanceMethod("availableGpus", &NodeModelWrapper::GetGpuDevices),
+       InstanceMethod("memoryRequired", &NodeModelWrapper::GetRequiredMemory)
     });
     // Keep a static reference to the constructor
     //
     constructor = Napi::Persistent(self);
     constructor.SuppressDestruct();
     return self;
+}
+Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info) 
+{
+    auto env = info.Env();
+    return Napi::Number::New(env, static_cast<uint32_t>( llmodel_required_mem(GetInference(), full_model_path.c_str()) ));
+
 }
   Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo& info) 
   {

@@ -28,7 +28,7 @@ public:
   Napi::Value HasGpuDevice(const Napi::CallbackInfo& info);
   Napi::Value ListGpus(const Napi::CallbackInfo& info);
   Napi::Value InitGpuByString(const Napi::CallbackInfo& info);
-  Napi::Value GetMemoryRequired(const Napi::CallbackInfo& info);
+  Napi::Value GetRequiredMemory(const Napi::CallbackInfo& info);
   Napi::Value GetGpuDevices(const Napi::CallbackInfo& info);
   /*
    * The path that is used to search for the dynamic libraries

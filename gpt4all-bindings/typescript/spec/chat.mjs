@@ -27,7 +27,8 @@ console.log("type: " + ll.type());
 console.log("Default directory for models", DEFAULT_DIRECTORY);
 console.log("Default directory for libraries", DEFAULT_LIBRARIES_DIRECTORY);
 console.log("Has GPU", ll.hasGpuDevice());
-console.log("gpu devices", ll.listGpuDevices())
+console.log("gpu devices", ll.availableGpus())
+console.log(ll.memoryRequired())
 const completion1 = await createCompletion(model, [ 
     { role : 'system', content: 'You are an advanced mathematician.'  },
     { role : 'user', content: 'What is 1 + 1?'  }, 
