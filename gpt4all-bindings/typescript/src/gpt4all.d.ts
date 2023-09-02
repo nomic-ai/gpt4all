@@ -167,7 +167,7 @@ declare class LLModel {
 /** 
   * an object that contains gpu data on this machine.
   */
-interface GpuDevice[] {
+interface GpuDevice {
     index: number;
     /**
       * same as VkPhysicalDeviceType
