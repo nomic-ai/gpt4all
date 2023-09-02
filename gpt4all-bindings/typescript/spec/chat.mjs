@@ -2,7 +2,7 @@ import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTO
 
 const model = await loadModel(
     'orca-mini-3b.ggmlv3.q4_0.bin',
-    { verbose: true }
+    { verbose: true, device: 'nvidia' }
 );
 const ll = model.llm;
 
@@ -26,7 +26,7 @@ console.log("name " + ll.name());
 console.log("type: " + ll.type());
 console.log("Default directory for models", DEFAULT_DIRECTORY);
 console.log("Default directory for libraries", DEFAULT_LIBRARIES_DIRECTORY);
-
+console.log("Has GPU", ll.hasGpuDevice());
 const completion1 = await createCompletion(model, [ 
     { role : 'system', content: 'You are an advanced mathematician.'  },
     { role : 'user', content: 'What is 1 + 1?'  }, 

@@ -14,16 +14,22 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("threadCount", &NodeModelWrapper::ThreadCount),
        InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
        InstanceMethod("initGpuByString", &NodeModelWrapper::InitGpuByString),
-       InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice)
+       InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice),
+       InstanceMethod("getGpuDevices", &NodeModelWrapper::GetGpuDevices)
     });
     // Keep a static reference to the constructor
     //
     constructor = Napi::Persistent(self);
     constructor.SuppressDestruct();
     return self;
+}
+  Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo& info) 
+  {
+
+    return info.Env().Undefined();
   }
- 
-  Napi::Value NodeModelWrapper::getType(const Napi::CallbackInfo& info) 
+
+   Napi::Value NodeModelWrapper::getType(const Napi::CallbackInfo& info) 
   {
     if(type.empty()) {
         return info.Env().Undefined();
@@ -62,10 +68,10 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     auto env = info.Env();
     fs::path model_path;
 
-    std::string full_weight_path;
-    //todo
-    std::string library_path = ".";
-    std::string model_name;
+    std::string full_weight_path,
+                library_path = ".",
+                model_name, 
+                device;
     if(info[0].IsString()) {
         model_path = info[0].As<Napi::String>().Utf8Value();
         full_weight_path = model_path.string();
@@ -84,6 +90,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
         } else {
             library_path = ".";
         }
+        device = config_object.Get("device").As<Napi::String>();
     }
     llmodel_set_implementation_search_path(library_path.c_str());
     llmodel_error e = {
@@ -108,7 +115,25 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
         return;
     }
+
+    if(device != "cpu") {
+        size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str());
+        if(mem == 0) {
+            std::cout << "WARNING: no memory needed. does this model support gpu?\n";
+        }
+        std::cout << "Initiating GPU\n";
+        std::cout << "Memory required estimation: " << mem << "\n";
+
+        auto success = llmodel_gpu_init_gpu_device_by_string(GetInference(), mem, device.c_str());
+        if(success) {
+            std::cout << "GPU init successfully\n";
+        } else {
+            std::cout << "WARNING: Failed to init GPU\n";
+        }
+    }
+
     name = model_name.empty() ? model_path.filename().string() : model_name;
+    full_model_path = full_weight_path;
   };
   //NodeModelWrapper::~NodeModelWrapper() {
     //GetInference().reset();

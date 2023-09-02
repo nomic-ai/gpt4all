@@ -28,6 +28,8 @@ public:
   Napi::Value HasGpuDevice(const Napi::CallbackInfo& info);
   Napi::Value ListGpus(const Napi::CallbackInfo& info);
   Napi::Value InitGpuByString(const Napi::CallbackInfo& info);
+  Napi::Value GetMemoryRequired(const Napi::CallbackInfo& info);
+  Napi::Value GetGpuDevices(const Napi::CallbackInfo& info);
   /*
    * The path that is used to search for the dynamic libraries
    */
@@ -46,5 +48,6 @@ private:
   std::string type;
   // corresponds to LLModel::name() in typescript
   std::string name;
+  std::string full_model_path;
   static Napi::FunctionReference constructor;
 };
