@@ -4,6 +4,7 @@ Tests for the GPT4All backend through ctypes.
 import ctypes
 import os
 import sys
+from pathlib import Path
 
 import pytest
 
