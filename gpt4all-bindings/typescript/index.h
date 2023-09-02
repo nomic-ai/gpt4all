@@ -6,6 +6,7 @@
 #include <atomic>
 #include <memory>
 #include <filesystem>
+#include <set>
 namespace fs = std::filesystem;
 
 class NodeModelWrapper: public Napi::ObjectWrap<NodeModelWrapper> {
@@ -24,6 +25,9 @@ public:
   Napi::Value getName(const Napi::CallbackInfo& info);
   Napi::Value ThreadCount(const Napi::CallbackInfo& info);
   Napi::Value GenerateEmbedding(const Napi::CallbackInfo& info);
+  Napi::Value HasGpuDevice(const Napi::CallbackInfo& info);
+  Napi::Value ListGpus(const Napi::CallbackInfo& info);
+  Napi::Value InitGpuByString(const Napi::CallbackInfo& info);
   /*
    * The path that is used to search for the dynamic libraries
    */

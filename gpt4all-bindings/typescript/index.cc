@@ -13,6 +13,8 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("embed", &NodeModelWrapper::GenerateEmbedding),
        InstanceMethod("threadCount", &NodeModelWrapper::ThreadCount),
        InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
+       InstanceMethod("initGpuByString", &NodeModelWrapper::InitGpuByString),
+       InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice)
     });
     // Keep a static reference to the constructor
     //
@@ -27,6 +29,32 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
         return info.Env().Undefined();
     } 
     return Napi::String::New(info.Env(), type);
+  }
+
+  Napi::Value NodeModelWrapper::InitGpuByString(const Napi::CallbackInfo& info) 
+  {
+    auto env = info.Env();
+    uint32_t memory_required = info[0].As<Napi::Number>();
+    
+    std::string gpu_device_identifier = info[1].As<Napi::String>();   
+
+    size_t converted_value;
+    if (memory_required <= std::numeric_limits<size_t>::max()) {
+        converted_value = static_cast<size_t>(memory_required);
+    } else {
+         Napi::Error::New(
+            env, 
+            "invalid number for memory size. Exceeded bounds for memory."
+        ).ThrowAsJavaScriptException(); 
+        return env.Undefined();
+    }
+    
+    auto result = llmodel_gpu_init_gpu_device_by_string(GetInference(), converted_value, gpu_device_identifier.c_str());
+    return Napi::Boolean::New(env, result);
+  }
+  Napi::Value NodeModelWrapper::HasGpuDevice(const Napi::CallbackInfo& info) 
+  {
+    return Napi::Boolean::New(info.Env(), llmodel_has_gpu_device(GetInference()));
   }
 
   NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<NodeModelWrapper>(info) 
