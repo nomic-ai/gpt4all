@@ -15,8 +15,8 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
        InstanceMethod("initGpuByString", &NodeModelWrapper::InitGpuByString),
        InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice),
-       InstanceMethod("availableGpus", &NodeModelWrapper::GetGpuDevices),
-       InstanceMethod("memoryRequired", &NodeModelWrapper::GetRequiredMemory)
+       InstanceMethod("listGpu", &NodeModelWrapper::GetGpuDevices),
+       InstanceMethod("memoryNeeded", &NodeModelWrapper::GetRequiredMemory)
     });
     // Keep a static reference to the constructor
     //
