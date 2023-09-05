@@ -155,7 +155,7 @@ endif()
 
 if (LLAMA_KOMPUTE)
     find_package(Vulkan COMPONENTS glslc REQUIRED)
-    find_program(glslc_executable NAMES glslc HINTS Vulkan::glslc)
+    find_program(glslc_executable glslc.exe PATHS "$ENV{VULKAN_SDK}Bin" NO_DEFAULT_PATH)
     if (NOT glslc_executable)
         message(FATAL_ERROR "glslc not found")
     endif()
