@@ -154,6 +154,7 @@ if (LLAMA_OPENBLAS)
 endif()
 
 if (LLAMA_KOMPUTE)
+    add_compile_definitions(VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
     find_package(Vulkan COMPONENTS glslc REQUIRED)
     find_program(glslc_executable NAMES glslc HINTS Vulkan::glslc)
     if (NOT glslc_executable)
