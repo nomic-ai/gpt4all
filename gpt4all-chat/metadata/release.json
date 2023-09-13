@@ -465,5 +465,21 @@
 * Lakshay Kansal (Nomic AI)
 * Adam Treat (Nomic AI)
 "
+  },
+  {
+    "version": "2.4.15",
+    "notes":
+"
+* Add Vulkan GPU backend which allows inference on AMD, Intel and NVIDIA GPUs
+* Add ability to switch font sizes
+* Various bug fixes
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+* Nils Sauer (Nomic AI)
+* Lakshay Kansal (Nomic AI)
+"
   }
 ]
