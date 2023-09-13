@@ -279,8 +279,10 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         m_llModelInfo.model->initializeGPUDevice(devices.front());
                     } else {
                         for (LLModel::GPUDevice &d : availableDevices) {
-                            if (QString::fromStdString(d.name) == requestedDevice)
+                            if (QString::fromStdString(d.name) == requestedDevice) {
                                 m_llModelInfo.model->initializeGPUDevice(d);
+                                break;
+                            }
                         }
                     }
                 }
