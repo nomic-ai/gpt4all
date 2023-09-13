@@ -275,8 +275,8 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 if (requestedDevice != "CPU") {
                     const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString());
                     std::vector<LLModel::GPUDevice> availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
-                    if (!availableDevices.empty() && requestedDevice == "Auto" && devices.front().type == 2 /*a discrete gpu*/) {
-                        m_llModelInfo.model->initializeGPUDevice(devices.front());
+                    if (!availableDevices.empty() && requestedDevice == "Auto" && availableDevices.front().type == 2 /*a discrete gpu*/) {
+                        m_llModelInfo.model->initializeGPUDevice(availableDevices.front());
                     } else {
                         for (LLModel::GPUDevice &d : availableDevices) {
                             if (QString::fromStdString(d.name) == requestedDevice) {
