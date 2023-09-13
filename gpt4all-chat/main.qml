@@ -1006,8 +1006,20 @@ Window {
         }
 
         Text {
-            id: speed
+            id: device
             anchors.bottom: textInputView.top
+            anchors.bottomMargin: 20
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            color: theme.mutedTextColor
+            visible: speed.text !== ""
+            text: MySettings.device
+            font.pixelSize: theme.fontSizeLarge - 1
+        }
+
+        Text {
+            id: speed
+            anchors.bottom: device.bottom
             anchors.bottomMargin: 20
             anchors.right: parent.right
             anchors.rightMargin: 30
