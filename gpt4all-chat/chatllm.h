@@ -111,6 +111,7 @@ public Q_SLOTS:
     void handleShouldBeLoadedChanged();
     void handleThreadStarted();
     void handleForceMetalChanged(bool forceMetal);
+    void handleDeviceChanged();
     void processSystemPrompt();
 
 Q_SIGNALS:

@@ -23,6 +23,7 @@ static bool     default_localDocsShowReferences = true;
 static QString  default_networkAttribution      = "";
 static bool     default_networkIsActive         = false;
 static bool     default_networkUsageStatsActive = false;
+static QString  default_device              = "Auto";
 
 static QString defaultLocalModelsPath()
 {
@@ -64,6 +65,17 @@ MySettings::MySettings()
     QSettings::setDefaultFormat(QSettings::IniFormat);
 }
 
+Q_INVOKABLE QVector<QString> MySettings::deviceList() const
+{
+    return m_deviceList;
+}
+
+void MySettings::setDeviceList(const QVector<QString> &deviceList)
+{
+    m_deviceList = deviceList;
+    emit deviceListChanged();
+}
+
 void MySettings::restoreModelDefaults(const ModelInfo &model)
 {
     setModelTemperature(model, model.m_temperature);
@@ -79,6 +91,9 @@ void MySettings::restoreModelDefaults(const ModelInfo &model)
 
 void MySettings::restoreApplicationDefaults()
 {
+    setChatTheme(default_chatTheme);
+    setFontSize(default_fontSize);
+    setDevice(default_device);
     setThreadCount(default_threadCount);
     setSaveChats(default_saveChats);
     setSaveChatGPTChats(default_saveChatGPTChats);
@@ -485,7 +500,7 @@ QString MySettings::chatTheme() const
 
 void MySettings::setChatTheme(const QString &u)
 {
-    if(chatTheme() == u)
+    if (chatTheme() == u)
         return;
 
     QSettings setting;
@@ -503,13 +518,31 @@ QString MySettings::fontSize() const
 
 void MySettings::setFontSize(const QString &u)
 {
-    if(fontSize() == u)
+    if (fontSize() == u)
         return;
 
     QSettings setting;
     setting.setValue("fontSize", u);
     setting.sync();
     emit fontSizeChanged();
+}
+
+QString MySettings::device() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("device", default_device).toString();
+}
+
+void MySettings::setDevice(const QString &u)
+{
+    if (device() == u)
+        return;
+
+    QSettings setting;
+    setting.setValue("device", u);
+    setting.sync();
+    emit deviceChanged();
 }
 
 bool MySettings::forceMetal() const
