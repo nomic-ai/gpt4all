@@ -81,6 +81,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     connect(parent, &Chat::idChanged, this, &ChatLLM::handleChatIdChanged);
     connect(&m_llmThread, &QThread::started, this, &ChatLLM::handleThreadStarted);
     connect(MySettings::globalInstance(), &MySettings::forceMetalChanged, this, &ChatLLM::handleForceMetalChanged);
+    connect(MySettings::globalInstance(), &MySettings::deviceChanged, this, &ChatLLM::handleDeviceChanged);
 
     // The following are blocking operations and will block the llm thread
     connect(this, &ChatLLM::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
@@ -122,6 +123,16 @@ void ChatLLM::handleForceMetalChanged(bool forceMetal)
         m_reloadingToChangeVariant = false;
     }
 #endif
+}
+
+void ChatLLM::handleDeviceChanged()
+{
+    if (isModelLoaded() && m_shouldBeLoaded) {
+        m_reloadingToChangeVariant = true;
+        unloadModel();
+        reloadModel();
+        m_reloadingToChangeVariant = false;
+    }
 }
 
 bool ChatLLM::loadDefaultModel()
@@ -250,7 +261,30 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #endif
 
             if (m_llModelInfo.model) {
+                // Update the settings that a model is being loaded and update the device list
                 MySettings::globalInstance()->setAttemptModelLoad(filePath);
+                std::vector<LLModel::GPUDevice> devices = m_llModelInfo.model->availableGPUDevices(0);
+                QVector<QString> deviceList{ "Auto" };
+                for (LLModel::GPUDevice &d : devices)
+                    deviceList << QString::fromStdString(d.name);
+                deviceList << "CPU";
+                MySettings::globalInstance()->setDeviceList(deviceList);
+
+                // Pick the best match for the device
+                const QString requestedDevice = MySettings::globalInstance()->device();
+                if (requestedDevice != "CPU") {
+                    const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString());
+                    std::vector<LLModel::GPUDevice> availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
+                    if (!availableDevices.empty() && requestedDevice == "Auto") {
+                        m_llModelInfo.model->initializeGPUDevice(devices.front());
+                    } else {
+                        for (LLModel::GPUDevice &d : availableDevices) {
+                            if (QString::fromStdString(d.name) == requestedDevice)
+                                m_llModelInfo.model->initializeGPUDevice(d);
+                        }
+                    }
+                }
+
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString());
                 MySettings::globalInstance()->setAttemptModelLoad(QString());
                 if (!success) {

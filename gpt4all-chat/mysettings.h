@@ -25,6 +25,8 @@ class MySettings : public QObject
     Q_PROPERTY(QString networkAttribution READ networkAttribution WRITE setNetworkAttribution NOTIFY networkAttributionChanged)
     Q_PROPERTY(bool networkIsActive READ networkIsActive WRITE setNetworkIsActive NOTIFY networkIsActiveChanged)
     Q_PROPERTY(bool networkUsageStatsActive READ networkUsageStatsActive WRITE setNetworkUsageStatsActive NOTIFY networkUsageStatsActiveChanged)
+    Q_PROPERTY(QString device READ device WRITE setDevice NOTIFY deviceChanged)
+    Q_PROPERTY(QVector<QString> deviceList READ deviceList NOTIFY deviceListChanged)
 
 public:
     static MySettings *globalInstance();
@@ -78,6 +80,8 @@ public:
     void setFontSize(const QString &u);
     bool forceMetal() const;
     void setForceMetal(bool b);
+    QString device() const;
+    void setDevice(const QString &u);
 
     // Release/Download settings
     QString lastVersionStarted() const;
@@ -101,6 +105,9 @@ public:
 
     QString attemptModelLoad() const;
     void setAttemptModelLoad(const QString &modelFile);
+
+    QVector<QString> deviceList() const;
+    void setDeviceList(const QVector<QString> &deviceList);
 
 Q_SIGNALS:
     void nameChanged(const ModelInfo &model);
@@ -131,9 +138,12 @@ Q_SIGNALS:
     void networkIsActiveChanged();
     void networkUsageStatsActiveChanged();
     void attemptModelLoadChanged();
+    void deviceChanged();
+    void deviceListChanged();
 
 private:
     bool m_forceMetal;
+    QVector<QString> m_deviceList;
 
 private:
     explicit MySettings();
