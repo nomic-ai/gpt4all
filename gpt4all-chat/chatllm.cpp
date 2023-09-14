@@ -294,9 +294,15 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 emit reportDevice(actualDevice);
 
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString());
+                if (!success && actualDevice != "CPU") {
+                    emit reportDevice("CPU");
+                    success = m_llModelInfo.model->loadModel(filePath.toStdString());
+                }
+
                 MySettings::globalInstance()->setAttemptModelLoad(QString());
                 if (!success) {
-                    delete std::exchange(m_llModelInfo.model, nullptr);
+                    delete m_llModelInfo.model;
+                    m_llModelInfo.model = nullptr;
                     if (!m_isServer)
                         LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
                     m_llModelInfo = LLModelInfo();
@@ -317,7 +323,8 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     case 'S': m_llModelType = LLModelType::STARCODER_; break;
                     default:
                         {
-                            delete std::exchange(m_llModelInfo.model, nullptr);
+                            delete m_llModelInfo.model;
+                            m_llModelInfo.model = nullptr;
                             if (!m_isServer)
                                 LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
                             m_llModelInfo = LLModelInfo();

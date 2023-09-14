@@ -168,6 +168,10 @@ bool LLamaModel::loadModel(const std::string &modelPath)
 
     d_ptr->ctx = llama_init_from_file(modelPath.c_str(), d_ptr->params);
     if (!d_ptr->ctx) {
+#ifdef GGML_USE_KOMPUTE
+        // Explicitly free the device so next load it doesn't use it
+        ggml_vk_free_device();
+#endif
         std::cerr << "LLAMA ERROR: failed to load model from " <<  modelPath << std::endl;
         return false;
     }
@@ -194,7 +198,7 @@ int32_t LLamaModel::threadCount() const {
 
 LLamaModel::~LLamaModel()
 {
-    if(d_ptr->ctx) {
+    if (d_ptr->ctx) {
         llama_free(d_ptr->ctx);
     }
 }
