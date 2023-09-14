@@ -481,5 +481,19 @@
 * Nils Sauer (Nomic AI)
 * Lakshay Kansal (Nomic AI)
 "
+  },
+  {
+    "version": "2.4.16",
+    "notes":
+"
+* Bugfix for properly falling back to CPU when GPU can't be used
+* Report the actual device we're using
+* Fix context bugs for GPU accelerated models
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+"
   }
 ]
