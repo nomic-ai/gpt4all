@@ -100,6 +100,7 @@ public:
     virtual bool initializeGPUDevice(const GPUDevice &/*device*/) { return false; }
     virtual bool initializeGPUDevice(int /*device*/) { return false; }
     virtual bool hasGPUDevice() { return false; }
+    virtual bool usingGPUDevice() { return false; }
 
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
