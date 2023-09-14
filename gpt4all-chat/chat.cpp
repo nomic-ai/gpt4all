@@ -56,6 +56,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::reportDevice, this, &Chat::handleDeviceChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
 
@@ -343,6 +344,12 @@ void Chat::handleTokenSpeedChanged(const QString &tokenSpeed)
 {
     m_tokenSpeed = tokenSpeed;
     emit tokenSpeedChanged();
+}
+
+void Chat::handleDeviceChanged(const QString &device)
+{
+    m_device = device;
+    emit deviceChanged();
 }
 
 void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
