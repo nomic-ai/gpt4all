@@ -1013,7 +1013,7 @@ Window {
             anchors.rightMargin: 30
             color: theme.mutedTextColor
             visible: currentChat.tokenSpeed !== ""
-            text: qsTr("Speed: ") + currentChat.tokenSpeed + "<br>" + qsTr("Device: ") + MySettings.device
+            text: qsTr("Speed: ") + currentChat.tokenSpeed + "<br>" + qsTr("Device: ") + currentChat.device
             font.pixelSize: theme.fontSizeLarge
         }
 

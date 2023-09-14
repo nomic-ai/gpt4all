@@ -271,21 +271,27 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 MySettings::globalInstance()->setDeviceList(deviceList);
 
                 // Pick the best match for the device
+                QString actualDevice = m_llModelInfo.model->implementation().buildVariant() == "metal" ? "Metal" : "CPU";
                 const QString requestedDevice = MySettings::globalInstance()->device();
                 if (requestedDevice != "CPU") {
                     const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString());
                     std::vector<LLModel::GPUDevice> availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
                     if (!availableDevices.empty() && requestedDevice == "Auto" && availableDevices.front().type == 2 /*a discrete gpu*/) {
                         m_llModelInfo.model->initializeGPUDevice(availableDevices.front());
+                        actualDevice = QString::fromStdString(availableDevices.front().name);
                     } else {
                         for (LLModel::GPUDevice &d : availableDevices) {
                             if (QString::fromStdString(d.name) == requestedDevice) {
                                 m_llModelInfo.model->initializeGPUDevice(d);
+                                actualDevice = QString::fromStdString(d.name);
                                 break;
                             }
                         }
                     }
                 }
+
+                // Report which device we're actually using
+                emit reportDevice(actualDevice);
 
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString());
                 MySettings::globalInstance()->setAttemptModelLoad(QString());

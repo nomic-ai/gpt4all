@@ -129,6 +129,7 @@ Q_SIGNALS:
     void shouldBeLoadedChanged();
     void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void reportSpeed(const QString &speed);
+    void reportDevice(const QString &device);
     void databaseResultsChanged(const QList<ResultInfo>&);
     void modelInfoChanged(const ModelInfo &modelInfo);
 

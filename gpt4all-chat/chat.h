@@ -25,6 +25,7 @@ class Chat : public QObject
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
     Q_PROPERTY(QString modelLoadingError READ modelLoadingError NOTIFY modelLoadingErrorChanged)
     Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged);
+    Q_PROPERTY(QString device READ device NOTIFY deviceChanged);
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -88,6 +89,7 @@ public:
     QString modelLoadingError() const { return m_modelLoadingError; }
 
     QString tokenSpeed() const { return m_tokenSpeed; }
+    QString device() const { return m_device; }
 
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt);
@@ -115,6 +117,7 @@ Q_SIGNALS:
     void isServerChanged();
     void collectionListChanged(const QList<QString> &collectionList);
     void tokenSpeedChanged();
+    void deviceChanged();
 
 private Q_SLOTS:
     void handleResponseChanged(const QString &response);
@@ -125,6 +128,7 @@ private Q_SLOTS:
     void handleRecalculating();
     void handleModelLoadingError(const QString &error);
     void handleTokenSpeedChanged(const QString &tokenSpeed);
+    void handleDeviceChanged(const QString &device);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
     void handleModelInfoChanged(const ModelInfo &modelInfo);
     void handleModelInstalled();
@@ -137,6 +141,7 @@ private:
     ModelInfo m_modelInfo;
     QString m_modelLoadingError;
     QString m_tokenSpeed;
+    QString m_device;
     QString m_response;
     QList<QString> m_collections;
     ChatModel *m_chatModel;
