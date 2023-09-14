@@ -11,6 +11,7 @@ import requests
 from tqdm import tqdm
 
 from . import pyllmodel
+from .plugins import generate_plugin_instructions, get_plugin_response
 
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
@@ -67,6 +68,7 @@ class GPT4All:
         allow_download: bool = True,
         n_threads: Optional[int] = None,
         device: Optional[str] = "cpu",
+        plugins: Optional[Iterable[str]] = None,
     ):
         """
         Constructor
@@ -103,6 +105,11 @@ class GPT4All:
         self._is_chat_session_activated: bool = False
         self.current_chat_session: List[MessageType] = empty_chat_session()
         self._current_prompt_template: str = "{0}"
+        # register plugins
+        self.plugin_instructions: str = ""
+        if plugins is not None:
+            for plugin in plugins:
+                self.plugin_instructions += generate_plugin_instructions(plugin)
 
     @staticmethod
     def list_models() -> List[ConfigType]:
@@ -416,6 +423,9 @@ class GPT4All:
         full_prompt += "\n\n" + default_prompt_footer if default_prompt_footer != "" else ""
 
         return full_prompt
+
+    def get_plugin_response(self, output: str) -> str:
+        return get_plugin_response(output)
 
 
 def empty_chat_session(system_prompt: str = "") -> List[MessageType]:
