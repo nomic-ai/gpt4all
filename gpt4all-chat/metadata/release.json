@@ -495,5 +495,17 @@
 * Adam Treat (Nomic AI)
 * Aaron Miller (Nomic AI)
 "
+  },
+  {
+    "version": "2.4.17",
+    "notes":
+"
+* Bugfix for properly falling back to CPU when GPU is out of memory
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Aaron Miller (Nomic AI)
+"
   }
 ]
