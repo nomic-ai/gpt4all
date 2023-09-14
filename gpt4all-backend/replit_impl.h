@@ -27,6 +27,7 @@ public:
     size_t restoreState(const uint8_t *src) override;
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
+    bool usingGPUDevice() override;
 
 private:
     ReplitPrivate *d_ptr;

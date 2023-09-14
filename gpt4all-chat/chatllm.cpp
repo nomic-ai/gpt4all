@@ -302,6 +302,11 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     m_llModelInfo = LLModelInfo();
                     emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename()));
                 } else {
+                    // We might have had to fallback to CPU after load if the model is not possible to accelerate
+                    // for instance if the quantization method is not supported on Vulkan yet
+                    if (actualDevice != "CPU" && !m_llModelInfo.model->usingGPUDevice())
+                        emit reportDevice("CPU");
+
                     switch (m_llModelInfo.model->implementation().modelType()[0]) {
                     case 'L': m_llModelType = LLModelType::LLAMA_; break;
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;

@@ -337,6 +337,16 @@ bool LLamaModel::hasGPUDevice()
 #endif
 }
 
+bool LLamaModel::usingGPUDevice()
+{
+#if defined(GGML_USE_KOMPUTE)
+    return ggml_vk_using_vulkan();
+#elif defined(GGML_USE_METAL)
+    return true;
+#endif
+    return false;
+}
+
 #if defined(_WIN32)
 #define DLL_EXPORT __declspec(dllexport)
 #else

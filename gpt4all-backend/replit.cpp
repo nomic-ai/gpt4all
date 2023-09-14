@@ -163,7 +163,7 @@ struct mpt_hparams {
     int32_t n_embd      = 0; //max_seq_len
     int32_t n_head      = 0; // n_heads
     int32_t n_layer     = 0; //n_layers
-    int32_t ftype       = 0; 
+    int32_t ftype       = 0;
 };
 
 struct replit_layer {
@@ -220,7 +220,7 @@ static bool kv_cache_init(
     params.mem_size   = cache.buf.size;
     params.mem_buffer = cache.buf.addr;
     params.no_alloc   = false;
-    
+
     cache.ctx = ggml_init(params);
     if (!cache.ctx) {
         fprintf(stderr, "%s: failed to allocate memory for kv cache\n", __func__);
@@ -503,7 +503,7 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
     }
 
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "data", data_ptr, data_size, max_size));
-    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "kv", ggml_get_mem_buffer(model.kv_self.ctx), 
+    GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "kv", ggml_get_mem_buffer(model.kv_self.ctx),
                                                                 ggml_get_mem_size(model.kv_self.ctx), 0));
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "eval", model.eval_buf.addr, model.eval_buf.size, 0));
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "scr0", model.scr0_buf.addr, model.scr0_buf.size, 0));
@@ -973,6 +973,14 @@ const std::vector<LLModel::Token> &Replit::endTokens() const
 {
     static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.raw_vocab.token_to_id["<|endoftext|>"]};
     return fres;
+}
+
+bool Replit::usingGPUDevice()
+{
+#if defined(GGML_USE_METAL)
+    return true;
+#endif
+    return false;
 }
 
 #if defined(_WIN32)

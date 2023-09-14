@@ -30,6 +30,7 @@ public:
     bool initializeGPUDevice(const GPUDevice &device) override;
     bool initializeGPUDevice(int device) override;
     bool hasGPUDevice() override;
+    bool usingGPUDevice() override;
 
 private:
     LLamaPrivate *d_ptr;
