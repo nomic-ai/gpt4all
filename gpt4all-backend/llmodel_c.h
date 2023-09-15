@@ -272,6 +272,15 @@ bool llmodel_gpu_init_gpu_device_by_int(llmodel_model model, int device);
  */
 bool llmodel_has_gpu_device(llmodel_model model);
 
+/**
+ * Sets where GPT4All logs go.
+ * @param log_file_name log file to write to, can be NULL to disable logging or "stderr"
+ * to write to the standard error stream
+ * @param log_level log levels are 0 - error, 1 - warning, 2 - info, 3 - debug. Only log_level
+ * or higher will be written/displayed
+ */
+void llmodel_configure_logging(char* log_file_name, int log_level);
+
 #ifdef __cplusplus
 }
 #endif

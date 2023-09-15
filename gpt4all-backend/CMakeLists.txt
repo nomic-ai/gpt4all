@@ -80,7 +80,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         message(STATUS "Configuring model implementation target ${TARGET_NAME}")
         # Link to ggml/llama
         target_link_libraries(${TARGET_NAME}
-            PRIVATE ${BASE_LIB}-${BUILD_VARIANT})
+            PRIVATE ${BASE_LIB}-${BUILD_VARIANT} -Wl,-U,_dynlog_vlog)
         # Let it know about its build variant
         target_compile_definitions(${TARGET_NAME}
             PRIVATE GGML_BUILD_VARIANT="${BUILD_VARIANT}")
@@ -131,7 +131,7 @@ endforeach()
 
 add_library(llmodel
     llmodel.h llmodel.cpp llmodel_shared.cpp
-    llmodel_c.h llmodel_c.cpp
+    llmodel_c.h llmodel_c.cpp dynlog.c dynlog.h
     dlhandle.h
 )
 target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")

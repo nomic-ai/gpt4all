@@ -1,5 +1,6 @@
 #include "llmodel_c.h"
 #include "llmodel.h"
+#include "dynlog_host.h"
 
 #include <cstring>
 #include <cerrno>
@@ -262,4 +263,13 @@ bool llmodel_has_gpu_device(llmodel_model model)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     return wrapper->llModel->hasGPUDevice();
+}
+
+void llmodel_configure_logging(char* log_file_name, int log_level) {
+    if (log_file_name == NULL) {
+        dynlog_set_output_file(NULL);
+    } else {
+        dynlog_set_output_file(fopen(log_file_name, "a"));
+    }
+    dynlog_set_level(log_level);
 }

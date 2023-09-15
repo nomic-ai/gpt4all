@@ -1,5 +1,6 @@
 #include "llmodel.h"
 #include "dlhandle.h"
+#include "dynlog.h"
 #include "sysinfo.h"
 
 #include <iostream>
@@ -122,9 +123,10 @@ const LLModel::Implementation* LLModel::Implementation::implementation(std::ifst
 }
 
 LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant) {
-
     if (!has_at_least_minimal_hardware())
         return nullptr;
+
+    dlog_info("Finding model implementation library for `%s` buildVariant=%s", modelPath.c_str(), buildVariant.c_str());
 
     // Read magic
     std::ifstream f(modelPath, std::ios::binary);

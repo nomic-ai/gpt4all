@@ -3,6 +3,7 @@
 #include "falcon_impl.h"
 #include "llama.h"
 #include "llama-util.h"
+#include "dynlog.h"
 #include "utils.h"
 #include "llmodel_shared.h"
 
@@ -101,7 +102,7 @@ static bool kv_cache_init(
 
 // load the model's weights from a file
 bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_vocab & vocab, size_t *mem_req) {
-    printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
+    dlog_info("%s: loading model from '%s' - please wait ...", __func__, fname.c_str());
     if (mem_req) {
         *mem_req = 0;
     }
