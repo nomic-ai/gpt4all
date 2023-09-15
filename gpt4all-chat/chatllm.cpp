@@ -263,12 +263,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             if (m_llModelInfo.model) {
                 // Update the settings that a model is being loaded and update the device list
                 MySettings::globalInstance()->setAttemptModelLoad(filePath);
-                std::vector<LLModel::GPUDevice> devices = m_llModelInfo.model->availableGPUDevices(0);
-                QVector<QString> deviceList{ "Auto" };
-                for (LLModel::GPUDevice &d : devices)
-                    deviceList << QString::fromStdString(d.name);
-                deviceList << "CPU";
-                MySettings::globalInstance()->setDeviceList(deviceList);
 
                 // Pick the best match for the device
                 QString actualDevice = m_llModelInfo.model->implementation().buildVariant() == "metal" ? "Metal" : "CPU";
