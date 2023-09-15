@@ -2,9 +2,6 @@ app-id: io.gpt4all.gpt4all
 default-branch: stable
 runtime: org.kde.Platform
 runtime-version: '6.5'
-x-gl-version: &gl-version '1.4'
-x-gl-versions: &gl-versions 23.08;23.08-extra;1.4
-x-gl-merge-dirs: &gl-merge-dirs vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors;lib/dri;lib/d3d;vulkan/explicit_layer.d;vulkan/implicit_layer.d
 sdk: org.kde.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.node14
