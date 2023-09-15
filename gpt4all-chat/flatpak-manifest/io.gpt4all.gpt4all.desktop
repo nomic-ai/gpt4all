@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=GPT4ALL
+GenericName=Open-source assistant-style large language models that run locally on your CPU
+Comment=Run any GPT4All model natively on your home desktop with the auto-updating desktop chat client. See GPT4All Website for a full list of open-source models you can run with this powerful desktop application.
+Exec=chat
+Icon=io.gpt4all.gpt4all
+Type=Application
+Categories=Utility;Office;
+Keywords=GPT,Chat;AI
