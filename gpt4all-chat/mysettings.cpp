@@ -1,5 +1,6 @@
 #include "mysettings.h"
 #include "modellist.h"
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QDir>
 #include <QFile>
@@ -63,6 +64,13 @@ MySettings::MySettings()
     : QObject{nullptr}
 {
     QSettings::setDefaultFormat(QSettings::IniFormat);
+
+    std::vector<LLModel::GPUDevice> devices = LLModel::availableGPUDevices();
+    QVector<QString> deviceList{ "Auto" };
+    for (LLModel::GPUDevice &d : devices)
+        deviceList << QString::fromStdString(d.name);
+    deviceList << "CPU";
+    setDeviceList(deviceList);
 }
 
 Q_INVOKABLE QVector<QString> MySettings::deviceList() const
