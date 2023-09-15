@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+    <id>io.gpt4all.gpt4all</id>
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>MIT License</project_license>
+    <name>GPT4ALL</name>
+    <summary>Open-source assistant-style large language models that run locally on your CPU</summary>
+    <description>
+        <p>Cross platform Qt based GUI for GPT4All versions with GPT-J as the base model.</p>
+        <ul>
+            <li>Fast CPU and GPU based inference using ggml for GPT-J and LLaMA based models</li>
+            <li>The UI is made to look and feel like you've come to expect from a chatty gpt</li>
+            <li>Check for updates so you can always stay fresh with latest models</li>
+            <li>Easy to install with precompiled binaries available for all three major desktop platforms</li>
+            <li>Multi-model - Ability to load more than one model and switch between them</li>
+            <li>Supports both llama.cpp and gptj.cpp style models</li>
+            <li>Model downloader in GUI featuring many popular open source models</li>
+            <li>Settings dialog to change temp, top_p, top_k, threads, etc</li>
+            <li>Copy your conversation to clipboard</li>
+        </ul>
+    </description>
+    <screenshots>
+        <screenshot type="default">
+            <caption>Main Window</caption>
+            <image>https://user-images.githubusercontent.com/50458173/231464085-da9edff6-a593-410e-8f38-7513f75c8aab.png</image>
+        </screenshot>
+    </screenshots>
+    <url type="homepage">https://gpt4all.io</url>
+    <url type="bugtracker">https://github.com/nomic-ai/gpt4all/issues</url>
+    <url type="vcs-browser">https://github.com/nomic-ai/gpt4all</url>
+    <releases>
+      <release version="2.4.17" date="2023-09-14">
+        <description>
+          <p>
+            <ul>
+              <li>Add Vulkan GPU backend which allows inference on AMD, Intel and NVIDIA GPUs</li>
+              <li>Add ability to switch font sizes</li>
+              <li>Various bug fixes</li>
+            </ul>
+          </p>
+        </description>
+        </release>              
+    </releases>
+    <launchable type="desktop-id">io.gpt4all.gpt4all.desktop</launchable>
+    <content_rating type="oars-1.0">
+        <content_attribute id="language-profanity">mild</content_attribute>
+        <content_attribute id="language-humor">moderate</content_attribute>
+        <content_attribute id="language-discrimination">mild</content_attribute>
+    </content_rating>
+</component>
