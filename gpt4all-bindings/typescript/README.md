@@ -58,6 +58,7 @@ const fltArray = createEmbedding(model, "Pain is inevitable, suffering optional"
 *   (win) msvc version 143
     *   Can be obtained with visual studio 2022 build tools
 *   python 3
+*   Vulkan SDK. Should be installable via `pkg manager of choice` or [here](https://vulkan.lunarg.com/#new_tab)
 
 ### Build (from source)
 
@@ -73,14 +74,11 @@ cd gpt4all-bindings/typescript
 ```sh
 yarn
 ```
-
 *   llama.cpp git submodule for gpt4all can be possibly absent. If this is the case, make sure to run in llama.cpp parent directory
 
 ```sh
 git submodule update --init --depth 1 --recursive
 ```
-
-**AS OF NEW BACKEND** to build the backend,
 
 ```sh
 yarn build:backend

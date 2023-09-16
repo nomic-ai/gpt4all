@@ -162,7 +162,7 @@ declare class LLModel {
       * GPUs that are usable for this LLModel
       * @returns 
       */
-    availableGpus() : GpuDevice[]
+    listGpu() : GpuDevice[]
 }
 /** 
   * an object that contains gpu data on this machine.
@@ -223,7 +223,7 @@ declare function loadModel(
 
 declare function loadModel(
     modelName: string,
-    options?: EmbeddingOptions | InferenceOptions
+    options?: EmbeddingModelOptions | InferenceModelOptions
 ): Promise<InferenceModel | EmbeddingModel>;
 
 /**
@@ -440,7 +440,7 @@ declare const DEFAULT_MODEL_CONFIG: ModelConfig;
 /**
  * Default prompt context.
  */
-declare const DEFAULT_PROMT_CONTEXT: LLModelPromptContext;
+declare const DEFAULT_PROMPT_CONTEXT: LLModelPromptContext;
 
 /**
  * Default model list url.
@@ -541,7 +541,7 @@ export {
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_MODEL_CONFIG,
-    DEFAULT_PROMT_CONTEXT,
+    DEFAULT_PROMPT_CONTEXT,
     DEFAULT_MODEL_LIST_URL,
     downloadModel,
     retrieveModel,
