@@ -393,6 +393,8 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
     properties.insert("name", QCoreApplication::applicationName() + " v"
         + QCoreApplication::applicationVersion());
     properties.insert("model", ChatListModel::globalInstance()->currentChat()->modelInfo().filename());
+    properties.insert("requestedDevice", MySettings::globalInstance()->device());
+    properties.insert("actualDevice", ChatListModel::globalInstance()->currentChat()->device());
 
     // Some additional startup information
     if (ev == "startup") {
