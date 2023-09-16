@@ -519,5 +519,16 @@
 "
 * Adam Treat (Nomic AI)
 "
+  },
+  {
+    "version": "2.4.19",
+    "notes":
+"
+* Fix a crasher on systems with corrupted vulkan drivers or corrupted vulkan dlls
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+"
   }
 ]
