@@ -507,5 +507,17 @@
 * Adam Treat (Nomic AI)
 * Aaron Miller (Nomic AI)
 "
+  },
+  {
+    "version": "2.4.18",
+    "notes":
+"
+* Bugfix for devices to show up in the settings combobox on application start and not just on model load
+* Send information on requested device and actual device on model load to help assess which model/gpu/os combos are working
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+"
   }
 ]
