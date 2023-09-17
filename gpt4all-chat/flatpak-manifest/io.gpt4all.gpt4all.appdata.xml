@@ -29,13 +29,11 @@
     <url type="bugtracker">https://github.com/nomic-ai/gpt4all/issues</url>
     <url type="vcs-browser">https://github.com/nomic-ai/gpt4all</url>
     <releases>
-      <release version="2.4.17" date="2023-09-14">
+      <release version="2.4.19" date="2023-09-16">
         <description>
           <p>
             <ul>
-              <li>Add Vulkan GPU backend which allows inference on AMD, Intel and NVIDIA GPUs</li>
-              <li>Add ability to switch font sizes</li>
-              <li>Various bug fixes</li>
+              <li>A bugfix for crashes on systems that have a corrupted Vulkan driver or a corrupted version of the Vulkan shared library</li>
             </ul>
           </p>
         </description>
