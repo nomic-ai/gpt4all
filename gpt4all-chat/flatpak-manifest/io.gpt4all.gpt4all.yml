@@ -154,8 +154,8 @@ modules:
     sources:
       - type: git
         url: https://github.com/nomic-ai/gpt4all
-        tag: v2.4.17
-        commit: aa33419c6ece48ea0c3c655044089841f4f02530
+        tag: v2.4.19
+        commit: 84905aa28171545542fc653dbeca501ae5af383e
       - type: file
         url: https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/icons/logo.svg
         sha256: 4c4e8476d0e2020585b69c6e2fc9e7d0cb12cbb36aa7b83c3a2e48ed4a9a424c
