@@ -888,7 +888,9 @@ bool Starcoder::loadModel(const std::string &modelPath)
 
     // load the model
     if (!starcoder_model_load(modelPath, *d_ptr->model, d_ptr->vocab, nullptr)) {
+        #ifndef GPT4ALL_QUIET
         std::cerr << "STARCODER ERROR: failed to load model from " <<  modelPath;
+        #endif
         return false;
     }
 

@@ -153,7 +153,9 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->params.n_parts  = params.n_parts;
 #endif
 #ifdef GGML_USE_METAL
+    #ifndef GPT4ALL_QUIET
     std::cerr << "llama.cpp: using Metal" << std::endl;
+    #endif
     // metal always runs the whole model if n_gpu_layers is not 0, at least
     // currently
     d_ptr->params.n_gpu_layers = 1;

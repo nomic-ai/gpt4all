@@ -16,7 +16,9 @@ void LLModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bo
         std::vector<int32_t> batch(promptCtx.tokens.begin() + i, promptCtx.tokens.begin() + batch_end);
         assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
         if (!evalTokens(promptCtx, batch)) {
+            #ifndef GPT4ALL_QUIET
             std::cerr << "LLModel ERROR: Failed to process prompt\n";
+            #endif
             goto stop_generating;
         }
         promptCtx.n_past += batch.size();
@@ -37,14 +39,18 @@ void LLModel::prompt(const std::string &prompt,
                      PromptContext &promptCtx)
 {
     if (!isModelLoaded()) {
+        #ifndef GPT4ALL_QUIET
         std::cerr << implementation().modelType() << " ERROR: prompt won't work with an unloaded model!\n";
+        #endif
         return;
     }
 
     if (!supportsCompletion()) {
         std::string errorMessage = "ERROR: this model does not support text completion or chat!\n";
         responseCallback(-1, errorMessage);
+        #ifndef GPT4ALL_QUIET
         std::cerr << implementation().modelType() << errorMessage;
+        #endif
         return;
     }
 
@@ -56,8 +62,10 @@ void LLModel::prompt(const std::string &prompt,
 
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
+        #ifndef GPT4ALL_QUIET
         std::cerr << implementation().modelType() << " ERROR: The prompt is " << embd_inp.size() <<
             " tokens and the context window is " << promptCtx.n_ctx << "!\n";
+        #endif
         return;
     }
 
@@ -75,7 +83,9 @@ void LLModel::prompt(const std::string &prompt,
         if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
             const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
             // Erase the first percentage of context from the tokens...
+            #ifndef GPT4ALL_QUIET
             std::cerr << implementation().modelType() << ": reached the end of the context window so resizing\n";
+            #endif
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
             recalculateContext(promptCtx, recalculateCallback);
@@ -83,7 +93,9 @@ void LLModel::prompt(const std::string &prompt,
         }
 
         if (!evalTokens(promptCtx, batch)) {
+            #ifndef GPT4ALL_QUIET
             std::cerr << implementation().modelType() << " ERROR: Failed to process prompt\n";
+            #endif
             return;
         }
 
@@ -114,7 +126,9 @@ void LLModel::prompt(const std::string &prompt,
         if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
             const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
             // Erase the first percentage of context from the tokens...
+            #ifndef GPT4ALL_QUIET
             std::cerr << implementation().modelType() << ": reached the end of the context window so resizing\n";
+            #endif
             promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
             promptCtx.n_past = promptCtx.tokens.size();
             recalculateContext(promptCtx, recalculateCallback);
@@ -122,7 +136,9 @@ void LLModel::prompt(const std::string &prompt,
         }
 
         if (!evalTokens(promptCtx, { id })) {
+            #ifndef GPT4ALL_QUIET
             std::cerr << implementation().modelType() << " ERROR: Failed to predict next token\n";
+            #endif
             return;
         }
 

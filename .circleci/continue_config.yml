@@ -237,7 +237,7 @@ jobs:
             cd gpt4all-backend
             mkdir build
             cd build
-            cmake ..
+            cmake .. -DGPT4ALL_QUIET=ON -DLLAMA_QUIET=ON
             cmake --build . --parallel
       - run:
           name: Build wheel
@@ -268,7 +268,7 @@ jobs:
             cd gpt4all-backend
             mkdir build
             cd build
-            cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DGPT4ALL_QUIET=ON -DLLAMA_QUIET=ON
             cmake --build . --parallel
       - run:
           name: Build wheel
@@ -312,7 +312,7 @@ jobs:
             mkdir build
             cd build
             $env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
-            cmake -G "MinGW Makefiles" .. -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -DKOMPUTE_OPT_USE_BUILT_IN_VULKAN_HEADER=OFF
+            cmake -G "MinGW Makefiles" .. -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -DKOMPUTE_OPT_USE_BUILT_IN_VULKAN_HEADER=OFF -DGPT4ALL_QUIET=ON -DLLAMA_QUIET=ON
             cmake --build . --parallel
       - run:
           name: Build wheel

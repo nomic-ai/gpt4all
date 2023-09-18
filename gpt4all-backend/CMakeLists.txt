@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(GPT4ALL_QUIET "Disable debugging output" ON)
+
+if(GPT4ALL_QUIET)
+  add_compile_definitions(GPT4ALL_QUIET)
+endif()
+
 if(APPLE)
   option(BUILD_UNIVERSAL "Build a Universal binary on macOS" ON)
   if(BUILD_UNIVERSAL)

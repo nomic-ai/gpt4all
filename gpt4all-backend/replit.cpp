@@ -496,11 +496,18 @@ bool replit_model_load(const std::string & fname, std::istream &fin, replit_mode
     size_t data_size = ggml_get_mem_size(model.ctx);
     const size_t max_size = ggml_get_max_tensor_size(model.ctx);
 
+    #ifndef GPT4ALL_QUIET
     #define GGML_CHECK_BUF(result) if (!(result)) {                     \
         std::cerr << __func__ << ": failed to add buffer" << std::endl; \
         ggml_free(model.ctx);                                           \
         return false;                                                   \
     }
+    #else
+    #define GGML_CHECK_BUF(result) if (!(result)) {                     \
+        ggml_free(model.ctx);                                           \
+        return false;                                                   \
+    }
+    #endif
 
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "data", data_ptr, data_size, max_size));
     GGML_CHECK_BUF(ggml_metal_add_buffer(model.ctx_metal, "kv", ggml_get_mem_buffer(model.kv_self.ctx),
@@ -883,7 +890,9 @@ bool Replit::loadModel(const std::string &modelPath) {
 
     // load the model
     if (!replit_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab, nullptr)) {
+        #ifndef GPT4ALL_QUIET
         std::cerr << "Replit ERROR: failed to load model from " <<  modelPath;
+        #endif
         return false;
     }
 
@@ -1018,7 +1027,9 @@ DLL_EXPORT bool magic_match(std::istream& f) {
         case 2: // GGML_TYPE_Q4_0
             if (qntvr != GGML_QNT_VERSION)
             {
+                #ifndef GPT4ALL_QUIET
                 std::cerr << "replit: not using metal (unsupported qnt ver)" << std::endl;
+                #endif
                 return false;
             }
             return true;

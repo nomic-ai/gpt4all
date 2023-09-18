@@ -771,7 +771,9 @@ bool MPT::loadModel(const std::string &modelPath) {
 
     // load the model
     if (!mpt_model_load(modelPath, fin, *d_ptr->model, d_ptr->vocab, nullptr)) {
+        #ifndef GPT4ALL_QUIET
         std::cerr << "MPT ERROR: failed to load model from " <<  modelPath;
+        #endif
         return false;
     }
 

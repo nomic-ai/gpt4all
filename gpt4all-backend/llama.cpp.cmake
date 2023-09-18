@@ -74,6 +74,7 @@ option(LLAMA_SANITIZE_UNDEFINED     "llama: enable undefined sanitizer"         
 # 3rd party libs
 option(LLAMA_ACCELERATE             "llama: enable Accelerate framework"                    ON)
 option(LLAMA_OPENBLAS               "llama: use OpenBLAS"                                   OFF)
+option(LLAMA_QUIET                  "llama: disable debugging output"                       OFF)
 #option(LLAMA_CUBLAS                 "llama: use cuBLAS"                                     OFF)
 #option(LLAMA_CLBLAST                "llama: use CLBlast"                                    OFF)
 #option(LLAMA_METAL                  "llama: use Metal"                                      OFF)
@@ -90,6 +91,10 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED true)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+
+if (LLAMA_QUIET)
+  add_compile_definitions(LLAMA_QUIET)
+endif()
 
 if (NOT MSVC)
     if (LLAMA_SANITIZE_THREAD)
