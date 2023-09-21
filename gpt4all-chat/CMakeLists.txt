@@ -274,7 +274,6 @@ if (GPT4ALL_LOCALHOST)
     cpack_ifw_add_repository("GPT4AllRepository" URL "http://localhost/repository")
 elseif(GPT4ALL_OFFLINE_INSTALLER)
   add_compile_definitions(GPT4ALL_OFFLINE_INSTALLER)
-  # noop
 else()
   if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
       cpack_ifw_add_repository("GPT4AllRepository" URL "https://gpt4all.io/installer_repos/linux/repository")
