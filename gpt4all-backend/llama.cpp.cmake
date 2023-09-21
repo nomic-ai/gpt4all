@@ -185,7 +185,7 @@ if (LLAMA_KOMPUTE)
         string(REPLACE "." "_" HEADER_FILE_DEFINE "${HEADER_FILE_DEFINE}")
         set(OUTPUT_HEADER_FILE "${HEADER_FILE}")
         message(STATUS "${HEADER_FILE} generating ${HEADER_FILE_DEFINE}")
-        if(CMAKE_GENERATOR MATCHES "Visual Studio") 
+        if(CMAKE_GENERATOR MATCHES "Visual Studio")
             add_custom_command(
               OUTPUT ${OUTPUT_HEADER_FILE}
               COMMAND ${CMAKE_COMMAND} -E echo "/*THIS FILE HAS BEEN AUTOMATICALLY GENERATED - DO NOT EDIT*/" > ${OUTPUT_HEADER_FILE}
@@ -346,6 +346,13 @@ endif()
 # TODO: probably these flags need to be tweaked on some architectures
 #       feel free to update the Makefile for your architecture and send a pull request or issue
 message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+if (MSVC)
+  string(TOLOWER "${CMAKE_GENERATOR_PLATFORM}" CMAKE_GENERATOR_PLATFORM_LWR)
+  message(STATUS "CMAKE_GENERATOR_PLATFORM: ${CMAKE_GENERATOR_PLATFORM}")
+else ()
+  set(CMAKE_GENERATOR_PLATFORM_LWR "")
+endif ()
+
 if (NOT MSVC)
     if (LLAMA_STATIC)
         add_link_options(-static)
@@ -359,6 +366,138 @@ if (NOT MSVC)
     if (LLAMA_NATIVE)
         add_compile_options(-march=native)
     endif()
+endif()
+
+if ((${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm") OR (${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64") OR ("${CMAKE_GENERATOR_PLATFORM_LWR}" MATCHES "arm64"))
+    message(STATUS "ARM detected")
+    if (MSVC)
+        add_compile_definitions(__ARM_NEON)
+        add_compile_definitions(__ARM_FEATURE_FMA)
+        add_compile_definitions(__ARM_FEATURE_DOTPROD)
+        # add_compile_definitions(__ARM_FEATURE_FP16_VECTOR_ARITHMETIC) # MSVC doesn't support vdupq_n_f16, vld1q_f16, vst1q_f16
+        add_compile_definitions(__aarch64__) # MSVC defines _M_ARM64 instead
+    else()
+        check_cxx_compiler_flag(-mfp16-format=ieee COMPILER_SUPPORTS_FP16_FORMAT_I3E)
+        if (NOT "${COMPILER_SUPPORTS_FP16_FORMAT_I3E}" STREQUAL "")
+            add_compile_options(-mfp16-format=ieee)
+        endif()
+        if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv6")
+            # Raspberry Pi 1, Zero
+            add_compile_options(-mfpu=neon-fp-armv8 -mno-unaligned-access)
+        endif()
+        if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7")
+            # Raspberry Pi 2
+            add_compile_options(-mfpu=neon-fp-armv8 -mno-unaligned-access -funsafe-math-optimizations)
+        endif()
+        if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv8")
+            # Raspberry Pi 3, 4, Zero 2 (32-bit)
+            add_compile_options(-mno-unaligned-access)
+        endif()
+    endif()
+elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "^(x86_64|i686|AMD64)$" OR "${CMAKE_GENERATOR_PLATFORM_LWR}" MATCHES "^(x86_64|i686|amd64|x64)$" )
+    message(STATUS "x86 detected")
+    if (MSVC)
+        if (LLAMA_AVX512)
+            add_compile_options($<$<COMPILE_LANGUAGE:C>:/arch:AVX512>)
+            add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arch:AVX512>)
+            # MSVC has no compile-time flags enabling specific
+            # AVX512 extensions, neither it defines the
+            # macros corresponding to the extensions.
+            # Do it manually.
+            if (LLAMA_AVX512_VBMI)
+                add_compile_definitions($<$<COMPILE_LANGUAGE:C>:__AVX512VBMI__>)
+                add_compile_definitions($<$<COMPILE_LANGUAGE:CXX>:__AVX512VBMI__>)
+            endif()
+            if (LLAMA_AVX512_VNNI)
+                add_compile_definitions($<$<COMPILE_LANGUAGE:C>:__AVX512VNNI__>)
+                add_compile_definitions($<$<COMPILE_LANGUAGE:CXX>:__AVX512VNNI__>)
+            endif()
+        elseif (LLAMA_AVX2)
+            add_compile_options($<$<COMPILE_LANGUAGE:C>:/arch:AVX2>)
+            add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arch:AVX2>)
+        elseif (LLAMA_AVX)
+            add_compile_options($<$<COMPILE_LANGUAGE:C>:/arch:AVX>)
+            add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arch:AVX>)
+        endif()
+    else()
+        if (LLAMA_F16C)
+            add_compile_options(-mf16c)
+        endif()
+        if (LLAMA_FMA)
+            add_compile_options(-mfma)
+        endif()
+        if (LLAMA_AVX)
+            add_compile_options(-mavx)
+        endif()
+        if (LLAMA_AVX2)
+            add_compile_options(-mavx2)
+        endif()
+        if (LLAMA_AVX512)
+            add_compile_options(-mavx512f)
+            add_compile_options(-mavx512bw)
+        endif()
+        if (LLAMA_AVX512_VBMI)
+            add_compile_options(-mavx512vbmi)
+        endif()
+        if (LLAMA_AVX512_VNNI)
+            add_compile_options(-mavx512vnni)
+        endif()
+    endif()
+elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc64")
+    message(STATUS "PowerPC detected")
+    add_compile_options(-mcpu=native -mtune=native)
+    #TODO: Add  targets for Power8/Power9 (Altivec/VSX) and Power10(MMA) and query for big endian systems (ppc64/le/be)
+else()
+    message(STATUS "Unknown architecture")
+endif()
+
+#
+# POSIX conformance
+#
+
+# clock_gettime came in POSIX.1b (1993)
+# CLOCK_MONOTONIC came in POSIX.1-2001 / SUSv3 as optional
+# posix_memalign came in POSIX.1-2001 / SUSv3
+# M_PI is an XSI extension since POSIX.1-2001 / SUSv3, came in XPG1 (1985)
+add_compile_definitions(_XOPEN_SOURCE=600)
+
+# Somehow in OpenBSD whenever POSIX conformance is specified
+# some string functions rely on locale_t availability,
+# which was introduced in POSIX.1-2008, forcing us to go higher
+if (CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
+    remove_definitions(-D_XOPEN_SOURCE=600)
+    add_compile_definitions(_XOPEN_SOURCE=700)
+endif()
+
+# Data types, macros and functions related to controlling CPU affinity and
+# some memory allocation are available on Linux through GNU extensions in libc
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    add_compile_definitions(_GNU_SOURCE)
+endif()
+
+# RLIMIT_MEMLOCK came in BSD, is not specified in POSIX.1,
+# and on macOS its availability depends on enabling Darwin extensions
+# similarly on DragonFly, enabling BSD extensions is necessary
+if (
+    CMAKE_SYSTEM_NAME MATCHES "Darwin" OR
+    CMAKE_SYSTEM_NAME MATCHES "iOS" OR
+    CMAKE_SYSTEM_NAME MATCHES "tvOS" OR
+    CMAKE_SYSTEM_NAME MATCHES "DragonFly"
+)
+    add_compile_definitions(_DARWIN_C_SOURCE)
+endif()
+
+# alloca is a non-standard interface that is not visible on BSDs when
+# POSIX conformance is specified, but not all of them provide a clean way
+# to enable it in such cases
+if (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+    add_compile_definitions(__BSD_VISIBLE)
+endif()
+if (CMAKE_SYSTEM_NAME MATCHES "NetBSD")
+    add_compile_definitions(_NETBSD_SOURCE)
+endif()
+if (CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
+    add_compile_definitions(_BSD_SOURCE)
 endif()
 
 function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
@@ -468,15 +607,14 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
 
     if (WITH_LLAMA)
         # Backwards compatibility with old llama.cpp versions
-        set(LLAMA_UTIL_SOURCE_FILE llama-util.h)
+#        set(LLAMA_UTIL_SOURCE_FILE llama-util.h)
         if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}/${LLAMA_UTIL_SOURCE_FILE})
             set(LLAMA_UTIL_SOURCE_FILE llama_util.h)
         endif()
 
         add_library(llama${SUFFIX} STATIC
                     ${DIRECTORY}/llama.cpp
-                    ${DIRECTORY}/llama.h
-                    ${DIRECTORY}/${LLAMA_UTIL_SOURCE_FILE})
+                    ${DIRECTORY}/llama.h)
 
         if (LLAMA_METAL AND GGML_METAL_SOURCES)
             target_compile_definitions(llama${SUFFIX} PUBLIC GGML_USE_METAL GGML_METAL_NDEBUG)

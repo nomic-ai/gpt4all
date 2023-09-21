@@ -796,7 +796,7 @@ void ModelList::updateModelsFromDirectory()
                 QString filename = it.fileName();
 
                 // All files that end with .bin and have 'ggml' somewhere in the name
-                if ((filename.endsWith(".bin") && filename.contains("ggml") && !filename.startsWith("incomplete"))
+                if (((filename.endsWith(".bin") || filename.endsWith(".gguf")) && (/*filename.contains("ggml") ||*/ filename.contains("gguf")) && !filename.startsWith("incomplete"))
                     || (filename.endsWith(".txt") && filename.startsWith("chatgpt-"))) {
 
                     QString filePath = it.filePath();
