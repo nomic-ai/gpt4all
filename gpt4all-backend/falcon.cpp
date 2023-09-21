@@ -2,10 +2,11 @@
 #define FALCON_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "falcon_impl.h"
 #include "llama.h"
-#include "llama-util.h"
 #include "utils.h"
 #include "llmodel_shared.h"
 
+#include <stdio.h>
+#include <string.h>
 #include <cassert>
 #include <cinttypes>
 #include <iostream>
@@ -203,22 +204,22 @@ bool falcon_model_load(const std::string & fname, falcon_model & model, gpt_voca
         const int n_vocab = hparams.n_vocab;
         const int head_dim = hparams.n_embd / hparams.n_head;
 
-        ctx_size += ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * n_vocab;  // tok_embeddings
-        ctx_size += ggml_tensor_overhead() + ggml_type_sizef(GGML_TYPE_F32) * n_embd;  // output_norm
-        ctx_size += ggml_tensor_overhead() + ggml_type_sizef(GGML_TYPE_F32) * n_embd;  // output_norm_b
-        ctx_size += ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * n_vocab;  // lm_head
+        ctx_size += GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * n_vocab;  // tok_embeddings
+        ctx_size += GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(GGML_TYPE_F32) * n_embd;  // output_norm
+        ctx_size += GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(GGML_TYPE_F32) * n_embd;  // output_norm_b
+        ctx_size += GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * n_vocab;  // lm_head
 
         // if (hparams.version == 40) { // Falcon-40B
         //     ctx_size += n_layer * ggml_sizeof_tensor_1d(GGML_TYPE_F32, n_embd);  // attention_norm
         //     ctx_size += n_layer * ggml_sizeof_tensor_1d(GGML_TYPE_F32, n_embd);  // attention_norm_b
         // }
-        ctx_size += n_layer * (ggml_tensor_overhead() + ggml_type_sizef(GGML_TYPE_F32) * n_embd);  // input_layernorm
-        ctx_size += n_layer * (ggml_tensor_overhead() + ggml_type_sizef(GGML_TYPE_F32) * n_embd);  // input_layernorm_b
-        ctx_size += n_layer * (ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * (n_head_kv * 2 + n_head) * head_dim);  // query_key_value
-        ctx_size += n_layer * (ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * n_embd);  // wo
-        ctx_size += n_layer * (ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * n_ff);  // ffn_up
-        ctx_size += n_layer * (ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_ff * n_embd);  // ffn_down
- 
+        ctx_size += n_layer * (GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(GGML_TYPE_F32) * n_embd);  // input_layernorm
+        ctx_size += n_layer * (GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(GGML_TYPE_F32) * n_embd);  // input_layernorm_b
+        ctx_size += n_layer * (GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * (n_head_kv * 2 + n_head) * head_dim);  // query_key_value
+        ctx_size += n_layer * (GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * n_embd);  // wo
+        ctx_size += n_layer * (GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_embd * n_ff);  // ffn_up
+        ctx_size += n_layer * (GGML_MEM_ALIGN + ggml_tensor_overhead() + ggml_type_sizef(wtype) * n_ff * n_embd);  // ffn_down
+
         printf("%s: ggml ctx size = %6.2f MB\n", __func__, ctx_size/(1024.0*1024.0));
     }
 
@@ -494,7 +495,7 @@ bool falcon_eval(
 
         // self-attention
         {
-            layernorm_output = ggml_norm(ctx0, inpL);
+            layernorm_output = ggml_norm(ctx0, inpL, 1e-5f);
 
             layernorm_output = ggml_add(ctx0,
                     ggml_mul(ctx0,
@@ -653,7 +654,7 @@ bool falcon_eval(
 
     // norm
     {
-        inpL = ggml_norm(ctx0, inpL);
+        inpL = ggml_norm(ctx0, inpL, 1e-5f);
 
         // inpL = ln_f_g*inpL + ln_f_b
         inpL = ggml_add(ctx0,
@@ -680,7 +681,7 @@ bool falcon_eval(
     // run the computation
     ggml_build_forward_expand(&gf, inpL);
     ggml_graph_compute_g4a(model.work_buf, &gf, n_threads);
-  
+
 
     //if (n_past%100 == 0) {
     //    ggml_graph_print   (&gf);
@@ -954,13 +955,14 @@ DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT bool magic_match(std::istream& f) {
+DLL_EXPORT bool magic_match(const char* fname) {
+#if 0
     uint32_t magic = 0;
     f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
     uint32_t version = 0;
     f.read(reinterpret_cast<char*>(&version), sizeof(version));
     if (magic != FALCON_MAGIC) {
-         return false; 
+         return false;
     }
     falcon_hparams hparams;
     f.read(reinterpret_cast<char*>(&hparams), sizeof(hparams));
@@ -977,6 +979,8 @@ DLL_EXPORT bool magic_match(std::istream& f) {
         return false;
     }
     return true;
+#endif
+    return false;
 }
 
 DLL_EXPORT LLModel *construct() {
