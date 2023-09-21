@@ -189,7 +189,7 @@ Window {
             + "causes include a bad file format, an incomplete or corrupted download, the wrong file "
             + "type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:"
             + "<br><ul>"
-            + "<li>Ensure the model file has a compatible ggml format and type"
+            + "<li>Ensure the model file has a compatible format and type"
             + "<li>Check the model file is complete in the download folder"
             + "<li>You can find the download folder in the settings dialog"
             + "<li>If you've sideloaded the model ensure the file is not corrupt by checking md5sum"

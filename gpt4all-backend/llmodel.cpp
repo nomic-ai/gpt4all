@@ -52,7 +52,7 @@ LLModel::Implementation::Implementation(Dlhandle &&dlhandle_)
     auto get_build_variant = m_dlhandle->get<const char *()>("get_build_variant");
     assert(get_build_variant);
     m_buildVariant = get_build_variant();
-    m_magicMatch = m_dlhandle->get<bool(std::ifstream&)>("magic_match");
+    m_magicMatch = m_dlhandle->get<bool(const char*)>("magic_match");
     assert(m_magicMatch);
     m_construct = m_dlhandle->get<LLModel *()>("construct");
     assert(m_construct);
@@ -111,10 +111,9 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     return *libs;
 }
 
-const LLModel::Implementation* LLModel::Implementation::implementation(std::ifstream& f, const std::string& buildVariant) {
+const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant) {
     for (const auto& i : implementationList()) {
-        f.seekg(0);
-        if (!i.m_magicMatch(f)) continue;
+        if (!i.m_magicMatch(fname)) continue;
         if (buildVariant != i.m_buildVariant) continue;
         return &i;
     }
@@ -126,9 +125,6 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
     if (!has_at_least_minimal_hardware())
         return nullptr;
 
-    // Read magic
-    std::ifstream f(modelPath, std::ios::binary);
-    if (!f) return nullptr;
     // Get correct implementation
     const Implementation* impl = nullptr;
 
@@ -161,10 +157,9 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
                 buildVariant = "default";
             }
         }
-        impl = implementation(f, buildVariant);
+        impl = implementation(modelPath.c_str(), buildVariant);
         if (!impl) return nullptr;
     }
-    f.close();
 
     // Construct and return llmodel implementation
     auto fres = impl->m_construct();

@@ -226,9 +226,9 @@ size_t LLamaModel::restoreState(const uint8_t *src)
 
 std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str) const
 {
-    const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos());
+    const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos(d_ptr->ctx));
     std::vector<LLModel::Token> fres(str.size()+4);
-    auto fres_len = llama_tokenize(d_ptr->ctx, str.c_str(), fres.data(), fres.size(), useBOS);
+    auto fres_len = llama_tokenize(d_ptr->ctx, str.c_str(), str.length(), fres.data(), fres.size(), useBOS);
     fres.resize(fres_len);
     return fres;
 }
@@ -250,10 +250,10 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
 bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
     // When we recalculate context we could have erased the original BOS token... we need to replace it
-    const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos());
+    const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos(d_ptr->ctx));
     if (useBOS) {
         std::vector<int32_t> myTokens;
-        myTokens.push_back(llama_token_bos());
+        myTokens.push_back(llama_token_bos(d_ptr->ctx));
         myTokens.insert(myTokens.end(), tokens.begin(), tokens.end());
         ctx.n_past += 1;
         return llama_eval(d_ptr->ctx, myTokens.data(), myTokens.size(), ctx.n_past, d_ptr->n_threads) == 0;
@@ -268,7 +268,7 @@ int32_t LLamaModel::contextLength() const
 
 const std::vector<LLModel::Token> &LLamaModel::endTokens() const
 {
-    static const std::vector<LLModel::Token> fres = {llama_token_eos()};
+    static const std::vector<LLModel::Token> fres = {llama_token_eos(d_ptr->ctx)};
     return fres;
 }
 
@@ -351,6 +351,16 @@ bool LLamaModel::usingGPUDevice()
     return false;
 }
 
+std::string get_arch_name(gguf_context *ctx_gguf) {
+    std::string arch_name;
+    const int kid = gguf_find_key(ctx_gguf, "general.architecture");
+    enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
+    if (ktype != (GGUF_TYPE_STRING)) {
+        throw std::runtime_error("ERROR: Can't get general architecture from gguf file.");
+    }
+    return gguf_get_val_str(ctx_gguf, kid);
+}
+
 #if defined(_WIN32)
 #define DLL_EXPORT __declspec(dllexport)
 #else
@@ -370,39 +380,42 @@ DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT bool magic_match(std::istream& f) {
-    // Check magic
-    uint32_t magic = 0;
-    f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
-    if (magic != 0x67676a74) return false;
-    // Check version
-    uint32_t version = 0;
-    f.read(reinterpret_cast<char*>(&version), sizeof(version));
-    if (!(version LLAMA_VERSIONS)) {
+DLL_EXPORT bool magic_match(const char * fname) {
+
+    struct ggml_context * ctx_meta = NULL;
+    struct gguf_init_params params = {
+        /*.no_alloc = */ true,
+        /*.ctx      = */ &ctx_meta,
+    };
+    gguf_context *ctx_gguf = gguf_init_from_file(fname, params);
+    if (!ctx_gguf)
         return false;
-    }
-    llama_file_hparams hparams;
-    f.read(reinterpret_cast<char*>(&hparams), sizeof(hparams));
-    if (!(hparams.n_vocab >= 32000 && hparams.n_vocab <= 32100)) {
-        return false; // not a llama.
-    }
+
+    bool isValid = gguf_get_version(ctx_gguf) <= 2;
+    isValid = get_arch_name(ctx_gguf) != "llama" ? false : isValid;
+
 #ifdef GGML_USE_METAL
-    // Check quant supported on metal
-    // skip fields
-    switch(hparams.ftype) {
-        // currently supported on Metal https://github.com/ggerganov/llama.cpp/blob/ae9663f1887513e152839e91f61c513075a19422/ggml-metal.m#L51-L55
-        case LLAMA_FTYPE_MOSTLY_F16:
-        case LLAMA_FTYPE_MOSTLY_Q2_K:
-        case LLAMA_FTYPE_MOSTLY_Q4_0:
-        case LLAMA_FTYPE_MOSTLY_Q6_K:
-        case LLAMA_FTYPE_MOSTLY_Q4_K_S:
-        case LLAMA_FTYPE_MOSTLY_Q4_K_M:
-            return true;
-        default: // unsupported quant-type for Metal
-            return false;
+    const int n_tensors = gguf_get_n_tensors(ctx_gguf);
+    for (int i = 0; i < n_tensors; i++) {
+        const char * name = gguf_get_tensor_name(ctx_gguf, i);
+        struct ggml_tensor * meta = ggml_get_tensor(ctx_meta, name);
+        switch(meta->type) {
+            // currently supported on Metal https://github.com/ggerganov/llama.cpp/blob/ae9663f1887513e152839e91f61c513075a19422/ggml-metal.m#L51-L55
+            case LLAMA_FTYPE_MOSTLY_F16:
+            case LLAMA_FTYPE_MOSTLY_Q2_K:
+            case LLAMA_FTYPE_MOSTLY_Q4_0:
+            case LLAMA_FTYPE_MOSTLY_Q6_K:
+            case LLAMA_FTYPE_MOSTLY_Q4_K_S:
+            case LLAMA_FTYPE_MOSTLY_Q4_K_M:
+                break;
+            default: // unsupported quant-type for Metal
+                isValid = false;
+        }
     }
 #endif
-    return true;
+
+    gguf_free(ctx_gguf);
+    return isValid;
 }
 
 DLL_EXPORT LLModel *construct() {

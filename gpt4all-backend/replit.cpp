@@ -566,7 +566,7 @@ bool replit_eval(replit_model & model, const int n_threads, const int n_past,
 
         // a = self.ln_1(x)
         {
-            cur = ggml_norm(ctx0, inpL);
+            cur = ggml_norm(ctx0, inpL, 1e-5f);
 
             cur = ggml_mul(ctx0, ggml_repeat(ctx0, model.layers[il].ln_1_weight, cur), cur);
         }
@@ -658,7 +658,7 @@ bool replit_eval(replit_model & model, const int n_threads, const int n_past,
 
         // m = self.ln_2(x)
         {
-            cur = ggml_norm(ctx0, inpL);
+            cur = ggml_norm(ctx0, inpL, 1e-5f);
 
             cur = ggml_mul(ctx0, ggml_repeat(ctx0, model.layers[il].ln_2_weight, cur), cur);
         }
@@ -682,7 +682,7 @@ bool replit_eval(replit_model & model, const int n_threads, const int n_past,
     ggml_set_scratch(ctx0, {0, model.scr0_buf.size, model.scr0_buf.addr, });
     // norm
     {
-        inpL = ggml_norm(ctx0, inpL);
+        inpL = ggml_norm(ctx0, inpL, 1e-5f);
         // inpL = ln_f_g*inpL
         inpL = ggml_mul(ctx0, ggml_repeat(ctx0, model.ln_f_weight, inpL), inpL);
     }
@@ -1002,7 +1002,8 @@ DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT bool magic_match(std::istream& f) {
+DLL_EXPORT bool magic_match(const char *fname) {
+#if 0
     uint32_t magic = 0;
     f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
     if (magic != 0x7265706c) return false;
@@ -1027,6 +1028,8 @@ DLL_EXPORT bool magic_match(std::istream& f) {
     #else
     return true;
     #endif
+#endif
+    return false;
 }
 
 DLL_EXPORT LLModel *construct() {
