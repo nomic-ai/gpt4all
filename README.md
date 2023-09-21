@@ -92,6 +92,17 @@ Example tags: `backend`, `bindings`, `python-bindings`, `documentation`, etc.
 <a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 1: GPT4All</a>
 </p>
 
+## Star History
+
+<a href="https://star-history.com/#nomic-ai/gpt4all&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=nomic-ai/gpt4all&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=nomic-ai/gpt4all&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=nomic-ai/gpt4all&type=Date" />
+  </picture>
+</a>
+
+
 ## Citation
 
 If you utilize this repository, models or data in a downstream project, please consider citing it with:
