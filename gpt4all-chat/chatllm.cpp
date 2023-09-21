@@ -356,10 +356,10 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         emit modelLoadingError(QString("Could not find file for model %1").arg(modelInfo.filename()));
     }
 
-    if (m_llModelInfo.model)
+    if (m_llModelInfo.model) {
         setModelInfo(modelInfo);
-
-    processSystemPrompt();
+        processSystemPrompt();
+    }
     return m_llModelInfo.model;
 }
 

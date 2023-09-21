@@ -1,10 +1,11 @@
 #define STARCODER_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "starcoder_impl.h"
 #include "llama.h"
-#include "llama-util.h"
 #include "utils.h"
 #include "llmodel_shared.h"
 
+#include <stdio.h>
+#include <string.h>
 #include <cassert>
 #include <cinttypes>
 #include <iostream>
@@ -501,7 +502,7 @@ bool starcoder_eval(
         // norm
         {
             // [ 768, N]
-            cur = ggml_norm(ctx0, inpL);
+            cur = ggml_norm(ctx0, inpL, 1e-5f);
 
             // cur = ln_1_g*cur + ln_1_b
             // [ 768, N]
@@ -650,7 +651,7 @@ bool starcoder_eval(
         {
             // norm
             {
-                cur = ggml_norm(ctx0, inpFF);
+                cur = ggml_norm(ctx0, inpFF, 1e-5f);
 
                 // cur = ln_2_g*cur + ln_2_b
                 // [ 768, N]
@@ -707,7 +708,7 @@ bool starcoder_eval(
     // norm
     {
         // [ 768, N]
-        inpL = ggml_norm(ctx0, inpL);
+        inpL = ggml_norm(ctx0, inpL, 1e-5f);
 
         // inpL = ln_f_g*inpL + ln_f_b
         // [ 768, N]
@@ -1003,7 +1004,8 @@ DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT bool magic_match(std::istream& f) {
+DLL_EXPORT bool magic_match(const char *fname) {
+#if 0
     uint32_t magic = 0;
     f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
     if (magic != STARCODER_MAGIC) {
@@ -1015,6 +1017,8 @@ DLL_EXPORT bool magic_match(std::istream& f) {
         return false;
     }
     return true;
+#endif
+    return false;
 }
 
 DLL_EXPORT LLModel *construct() {

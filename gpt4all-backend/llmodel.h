@@ -27,13 +27,13 @@ public:
 
         static bool isImplementation(const Dlhandle&);
         static const std::vector<Implementation>& implementationList();
-        static const Implementation *implementation(std::ifstream& f, const std::string& buildVariant);
+        static const Implementation *implementation(const char *fname, const std::string& buildVariant);
         static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
         static void setImplementationsSearchPath(const std::string& path);
         static const std::string& implementationsSearchPath();
 
     private:
-        bool (*m_magicMatch)(std::ifstream& f);
+        bool (*m_magicMatch)(const char *fname);
         LLModel *(*m_construct)();
 
     private:
