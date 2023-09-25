@@ -4,6 +4,7 @@
 #include "ggml.h"
 
 #include <cassert>
+#include <cinttypes>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -34,7 +35,6 @@ struct bert_hparams
     int32_t n_intermediate = 1536;
     int32_t n_head = 12;
     int32_t n_layer = 6;
-    int32_t f16 = 1;
 };
 
 struct bert_layer
@@ -88,7 +88,6 @@ struct bert_model
     std::vector<bert_layer> layers;
 
     struct ggml_context *ctx;
-    std::map<std::string, struct ggml_tensor *> tensors;
 };
 
 // Replacement for std::vector<uint8_t> that doesn't require zero-initialization.
@@ -482,7 +481,6 @@ void bert_eval(
 //
 
 void bert_free(bert_ctx * ctx) {
-    ggml_free(ctx->model.ctx);
     delete ctx;
 }
 
@@ -492,63 +490,130 @@ struct bert_ctx * bert_load_from_file(const char *fname)
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname);
 #endif
 
-    auto fin = std::ifstream(fname, std::ios::binary);
-    if (!fin)
-    {
-        fprintf(stderr, "%s: failed to open '%s'\n", __func__, fname);
-        return nullptr;
-    }
-
-    // verify magic
-    {
-        uint32_t magic;
-        fin.read((char *)&magic, sizeof(magic));
-        if (magic != 0x62657274)
-        {
-            fprintf(stderr, "%s: invalid model file '%s' (bad magic)\n", __func__, fname);
-            return nullptr;
-        }
-    }
-
     bert_ctx * new_bert = new bert_ctx;
     bert_model & model = new_bert->model;
     bert_vocab & vocab = new_bert->vocab;
+
+    struct gguf_init_params params = {
+        /*.no_alloc = */ false,
+        /*.ctx      = */ &model.ctx,
+    };
+    gguf_context *ggufctx = gguf_init_from_file(fname, params);
+    if (!ggufctx) {
+        fprintf(stderr, "%s: gguf_init_from_file() failed\n", __func__);
+        return nullptr;
+    }
+
+    printf("%s: gguf version     = %d\n", __func__, gguf_get_version(ggufctx));
+    printf("%s: gguf alignment   = %zu\n", __func__, gguf_get_alignment(ggufctx));
+    printf("%s: gguf data offset = %zu\n", __func__, gguf_get_data_offset(ggufctx));
+
+    // print some standard metadata
+    {
+        int keyidx;
+
+        keyidx = gguf_find_key(ggufctx, "general.name");
+        if (keyidx != -1) { printf("%s: model name           = %s\n", __func__, gguf_get_val_str(ggufctx, keyidx)); }
+        keyidx = gguf_find_key(ggufctx, "general.description");
+        if (keyidx != -1) { printf("%s: model description    = %s\n", __func__, gguf_get_val_str(ggufctx, keyidx)); }
+        keyidx = gguf_find_key(ggufctx, "general.author");
+        if (keyidx != -1) { printf("%s: model author         = %s\n", __func__, gguf_get_val_str(ggufctx, keyidx)); }
+        keyidx = gguf_find_key(ggufctx, "general.license");
+        if (keyidx != -1) { printf("%s: model license        = %s\n", __func__, gguf_get_val_str(ggufctx, keyidx)); }
+        keyidx = gguf_find_key(ggufctx, "general.architecture");
+        if (keyidx != -1) { printf("%s: model architecture   = %s\n", __func__, gguf_get_val_str(ggufctx, keyidx)); }
+        keyidx = gguf_find_key(ggufctx, "general.file_type");
+        if (keyidx != -1) { printf("%s: model file type      = %" PRIu32 "\n", __func__, gguf_get_val_u32(ggufctx, keyidx)); }
+        keyidx = gguf_find_key(ggufctx, "gptneox.tensor_data_layout");
+        if (keyidx != -1) { printf("%s: model data layout    = %s\n", __func__, gguf_get_val_str(ggufctx, keyidx)); }
+        keyidx = gguf_find_key(ggufctx, "general.source.huggingface.repository");
+        if (keyidx != -1) { printf("%s: model source HF repo = %s\n", __func__, gguf_get_val_str(ggufctx, keyidx)); }
+    }
+
+    // check required metadata
+    {
+        // check model architecture kv
+        int keyidx = gguf_find_key(ggufctx, "general.architecture");
+        if (keyidx == -1) {
+            fprintf(stderr, "%s: gguf model architecture not found!\n", __func__);
+            return nullptr;
+        }
+        if (strcmp(gguf_get_val_str(ggufctx, keyidx), "bert") != 0) {
+            fprintf(stderr, "%s: model architecture not supported!\n", __func__);
+            return nullptr;
+        }
+    }
 
     // load hparams
     {
         auto &hparams = model.hparams;
 
-        fin.read((char *)&hparams.n_vocab, sizeof(hparams.n_vocab));
-        fin.read((char *)&hparams.n_max_tokens, sizeof(hparams.n_max_tokens));
-        fin.read((char *)&hparams.n_embd, sizeof(hparams.n_embd));
-        fin.read((char *)&hparams.n_intermediate, sizeof(hparams.n_intermediate));
-        fin.read((char *)&hparams.n_head, sizeof(hparams.n_head));
-        fin.read((char *)&hparams.n_layer, sizeof(hparams.n_layer));
-        fin.read((char *)&hparams.f16, sizeof(hparams.f16));
+        bool ok = false;
+        int keyidx;
+
+        do {
+            keyidx = gguf_find_key(ggufctx, "bert.context_length");
+            if (keyidx == -1) { break; }
+            hparams.n_max_tokens = gguf_get_val_u32(ggufctx, keyidx);
+
+            keyidx = gguf_find_key(ggufctx, "bert.embedding_length");
+            if (keyidx == -1) { break; }
+            hparams.n_embd = gguf_get_val_u32(ggufctx, keyidx);
+
+            keyidx = gguf_find_key(ggufctx, "bert.feed_forward_length");
+            if (keyidx == -1) { break; }
+            hparams.n_intermediate = gguf_get_val_u32(ggufctx, keyidx);
+
+            keyidx = gguf_find_key(ggufctx, "bert.attention.head_count");
+            if (keyidx == -1) { break; }
+            hparams.n_head = gguf_get_val_u32(ggufctx, keyidx);
+
+            keyidx = gguf_find_key(ggufctx, "bert.block_count");
+            if (keyidx == -1) { break; }
+            hparams.n_layer = gguf_get_val_u32(ggufctx, keyidx);
+
+            ok = true;
+        } while (false);
+
+        if (!ok) {
+            fprintf(stderr, "%s: required hparam missing!\n", __func__);
+            return nullptr;
+        }
 
 #if defined(DEBUG_BERT)
-        printf("%s: n_vocab = %d\n", __func__, hparams.n_vocab);
         printf("%s: n_max_tokens   = %d\n", __func__, hparams.n_max_tokens);
-        printf("%s: n_embd  = %d\n", __func__, hparams.n_embd);
-        printf("%s: n_intermediate  = %d\n", __func__, hparams.n_intermediate);
-        printf("%s: n_head  = %d\n", __func__, hparams.n_head);
-        printf("%s: n_layer = %d\n", __func__, hparams.n_layer);
-        printf("%s: f16     = %d\n", __func__, hparams.f16);
+        printf("%s: n_embd         = %d\n", __func__, hparams.n_embd);
+        printf("%s: n_intermediate = %d\n", __func__, hparams.n_intermediate);
+        printf("%s: n_head         = %d\n", __func__, hparams.n_head);
+        printf("%s: n_layer        = %d\n", __func__, hparams.n_layer);
 #endif
     }
 
     // load vocab
     {
-        int32_t n_vocab = model.hparams.n_vocab;
+        auto & hparams = model.hparams;
 
-        std::string word;
-        for (int i = 0; i < n_vocab; i++)
-        {
-            uint32_t len;
-            fin.read((char *)&len, sizeof(len));
+        int keyidx = gguf_find_key(ggufctx, "tokenizer.ggml.model");
+        if (keyidx == -1) {
+            fprintf(stderr, "%s: tokenizer model not found!\n", __func__);
+            return nullptr;
+        }
+        if (strcmp(gguf_get_val_str(ggufctx, keyidx), "bert") != 0) {
+            fprintf(stderr, "%s: tokenizer model not supported!\n", __func__);
+            return nullptr;
+        }
 
-            word.resize(len);
-            fin.read((char *)word.data(), len);
+        int tokens_keyidx = gguf_find_key(ggufctx, "tokenizer.ggml.tokens");
+        if (tokens_keyidx == -1) {
+            fprintf(stderr, "%s: bert tokenizer vocab not found!\n", __func__);
+            return nullptr;
+        }
+
+        hparams.n_vocab = gguf_get_arr_n(ggufctx, tokens_keyidx);
+        printf("%s: bert tokenizer vocab = %d\n", __func__, int(hparams.n_vocab));
+
+        for (int i = 0; i < hparams.n_vocab; i++) {
+            std::string word = gguf_get_arr_str(ggufctx, tokens_keyidx, i);
 
             if (word[0] == '#' && word[1] == '#')
             {
@@ -564,289 +629,51 @@ struct bert_ctx * bert_load_from_file(const char *fname)
         }
     }
 
-    // for the big tensors, we have the option to store the data in 16-bit floats or quantized
-    // in order to save memory and also to speed up the computation
-    ggml_type wtype = GGML_TYPE_COUNT;
-    switch (model.hparams.f16)
-    {
-    case 0:
-        wtype = GGML_TYPE_F32;
-        break;
-    case 1:
-        wtype = GGML_TYPE_F16;
-        break;
-    case 2:
-        wtype = GGML_TYPE_Q4_0;
-        break;
-    case 3:
-        wtype = GGML_TYPE_Q4_1;
-        break;
-    default:
-    {
-        fprintf(stderr, "%s: invalid model file '%s' (bad f16 value %d)\n",
-                __func__, fname, model.hparams.f16);
-        bert_free(new_bert);
-        return nullptr;
-    }
-    }
-
     auto &ctx = model.ctx;
 
-    size_t model_mem_req = 0;
-
-    {
-        const auto &hparams = model.hparams;
-
-        const int n_embd = hparams.n_embd;
-        const int n_layer = hparams.n_layer;
-        const int n_max_tokens = hparams.n_max_tokens;
-        const int n_intermediate = hparams.n_intermediate;
-        const int n_vocab = hparams.n_vocab;
-
-        // Calculate size requirements
-
-        model_mem_req += n_embd * n_vocab * ggml_type_sizef(wtype); // word_embeddings
-        model_mem_req += n_embd * 2 * ggml_type_sizef(wtype); // token_type_embeddings
-        model_mem_req += n_embd * n_max_tokens * ggml_type_sizef(wtype); // position_embeddings
-
-        model_mem_req += 2 * n_embd * ggml_type_sizef(GGML_TYPE_F32); // ln_e_*
-
-        model_mem_req += 4 * n_layer * (n_embd * ggml_type_sizef(GGML_TYPE_F32)); // ln_*
-
-        model_mem_req += 4 * n_layer * (n_embd * n_embd * ggml_type_sizef(wtype)); // kqvo weights
-        model_mem_req += 4 * n_layer * (n_embd * ggml_type_sizef(GGML_TYPE_F32)); // kqvo bias
-
-        model_mem_req += 2 * n_layer * (n_embd * n_intermediate * ggml_type_sizef(wtype)); // ff_*_w
-        model_mem_req += n_layer * (n_intermediate * ggml_type_sizef(GGML_TYPE_F32)); // ff_i_b
-        model_mem_req += n_layer * (n_embd * ggml_type_sizef(GGML_TYPE_F32)); // ff_o_b
-
-        model_mem_req += (5 + 16 * n_layer) * ggml_tensor_overhead(); // object overhead
-
 #if defined(DEBUG_BERT)
-        printf("%s: ggml ctx size = %6.2f MB\n", __func__, model_mem_req / (1024.0 * 1024.0));
+    printf("%s: ggml ctx size = %6.2f MB\n", __func__, ggml_get_mem_size(ctx) / (1024.0 * 1024.0));
 #endif
-    }
-
-    // create the ggml context
-    {
-        struct ggml_init_params params = {
-            .mem_size = model_mem_req,
-            .mem_buffer = NULL,
-            .no_alloc = false,
-        };
-
-        model.ctx = ggml_init(params);
-        if (!model.ctx)
-        {
-            fprintf(stderr, "%s: ggml_init() failed\n", __func__);
-            bert_free(new_bert);
-            return nullptr;
-        }
-    }
 
     // prepare memory for the weights
     {
-        const auto &hparams = model.hparams;
-
-        const int n_embd = hparams.n_embd;
-        const int n_layer = hparams.n_layer;
-        const int n_intermediate = hparams.n_intermediate;
-        const int n_max_tokens = hparams.n_max_tokens;
-        const int n_vocab = hparams.n_vocab;
-
+        const int n_layer = model.hparams.n_layer;
         model.layers.resize(n_layer);
 
-        model.word_embeddings = ggml_new_tensor_2d(ctx, wtype, n_embd, n_vocab);
-        model.token_type_embeddings = ggml_new_tensor_2d(ctx, wtype, n_embd, 2);
-        model.position_embeddings = ggml_new_tensor_2d(ctx, wtype, n_embd, n_max_tokens);
+        model.word_embeddings       = ggml_get_tensor(ctx, "token_embd.weight");
+        model.token_type_embeddings = ggml_get_tensor(ctx, "token_types.weight");
+        model.position_embeddings   = ggml_get_tensor(ctx, "position_embd.weight");
+        model.ln_e_w                = ggml_get_tensor(ctx, "output_norm.weight");
+        model.ln_e_b                = ggml_get_tensor(ctx, "output_norm.bias");
 
-        model.ln_e_w = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-        model.ln_e_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-
-        // map by name
-        model.tensors["embeddings.word_embeddings.weight"] = model.word_embeddings;
-        model.tensors["embeddings.token_type_embeddings.weight"] = model.token_type_embeddings;
-        model.tensors["embeddings.position_embeddings.weight"] = model.position_embeddings;
-
-        model.tensors["embeddings.LayerNorm.weight"] = model.ln_e_w;
-        model.tensors["embeddings.LayerNorm.bias"] = model.ln_e_b;
+        auto name = [](int i, std::string n) {
+            static std::string key;
+            key = "blk." + std::to_string(i) + "." + n;
+            return key.c_str();
+        };
 
         for (int i = 0; i < n_layer; ++i)
         {
             auto &layer = model.layers[i];
 
-            layer.ln_att_w = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-            layer.ln_att_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-            layer.ln_out_w = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-            layer.ln_out_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-
-            layer.q_w = ggml_new_tensor_2d(ctx, wtype, n_embd, n_embd);
-            layer.q_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-            layer.k_w = ggml_new_tensor_2d(ctx, wtype, n_embd, n_embd);
-            layer.k_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-            layer.v_w = ggml_new_tensor_2d(ctx, wtype, n_embd, n_embd);
-            layer.v_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-            layer.o_w = ggml_new_tensor_2d(ctx, wtype, n_embd, n_embd);
-            layer.o_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-
-            layer.ff_i_w = ggml_new_tensor_2d(ctx, wtype, n_embd, n_intermediate);
-            layer.ff_i_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_intermediate);
-
-            layer.ff_o_w = ggml_new_tensor_2d(ctx, wtype, n_intermediate, n_embd);
-            layer.ff_o_b = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, n_embd);
-
-            // map by name
-
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.self.query.weight"] = layer.q_w;
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.self.query.bias"] = layer.q_b;
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.self.key.weight"] = layer.k_w;
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.self.key.bias"] = layer.k_b;
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.self.value.weight"] = layer.v_w;
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.self.value.bias"] = layer.v_b;
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.output.LayerNorm.weight"] = layer.ln_att_w;
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.output.LayerNorm.bias"] = layer.ln_att_b;
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.output.dense.weight"] = layer.o_w;
-            model.tensors["encoder.layer." + std::to_string(i) + ".attention.output.dense.bias"] = layer.o_b;
-
-            model.tensors["encoder.layer." + std::to_string(i) + ".intermediate.dense.weight"] = layer.ff_i_w;
-            model.tensors["encoder.layer." + std::to_string(i) + ".intermediate.dense.bias"] = layer.ff_i_b;
-
-            model.tensors["encoder.layer." + std::to_string(i) + ".output.LayerNorm.weight"] = layer.ln_out_w;
-            model.tensors["encoder.layer." + std::to_string(i) + ".output.LayerNorm.bias"] = layer.ln_out_b;
-            model.tensors["encoder.layer." + std::to_string(i) + ".output.dense.weight"] = layer.ff_o_w;
-            model.tensors["encoder.layer." + std::to_string(i) + ".output.dense.bias"] = layer.ff_o_b;
+            layer.ln_att_w = ggml_get_tensor(ctx, name(i, "attn_norm.weight"));
+            layer.ln_att_b = ggml_get_tensor(ctx, name(i, "attn_norm.bias"));
+            layer.ln_out_w = ggml_get_tensor(ctx, name(i, "ffn_norm.weight"));
+            layer.ln_out_b = ggml_get_tensor(ctx, name(i, "ffn_norm.bias"));
+            layer.q_w      = ggml_get_tensor(ctx, name(i, "attn_q.weight"));
+            layer.q_b      = ggml_get_tensor(ctx, name(i, "attn_q.bias"));
+            layer.k_w      = ggml_get_tensor(ctx, name(i, "attn_k.weight"));
+            layer.k_b      = ggml_get_tensor(ctx, name(i, "attn_k.bias"));
+            layer.v_w      = ggml_get_tensor(ctx, name(i, "attn_v.weight"));
+            layer.v_b      = ggml_get_tensor(ctx, name(i, "attn_v.bias"));
+            layer.o_w      = ggml_get_tensor(ctx, name(i, "attn_output.weight"));
+            layer.o_b      = ggml_get_tensor(ctx, name(i, "attn_output.bias"));
+            layer.ff_i_w   = ggml_get_tensor(ctx, name(i, "ffn_up.weight"));
+            layer.ff_i_b   = ggml_get_tensor(ctx, name(i, "ffn_up.bias"));
+            layer.ff_o_w   = ggml_get_tensor(ctx, name(i, "ffn_down.weight"));
+            layer.ff_o_b   = ggml_get_tensor(ctx, name(i, "ffn_down.bias"));
         }
     }
-
-    // load weights
-    {
-        int n_tensors = 0;
-#if defined(DEBUG_BERT)
-        size_t total_size = 0;
-#endif
-
-#if defined(DEBUG_BERT)
-        printf("%s: ", __func__);
-#endif
-
-        while (true)
-        {
-            int32_t n_dims;
-            int32_t length;
-            int32_t ftype;
-
-            fin.read(reinterpret_cast<char *>(&n_dims), sizeof(n_dims));
-            fin.read(reinterpret_cast<char *>(&length), sizeof(length));
-            fin.read(reinterpret_cast<char *>(&ftype), sizeof(ftype));
-
-            if (fin.eof())
-            {
-                break;
-            }
-
-            int64_t nelements = 1;
-            int64_t ne[2] = {1, 1};
-            for (int i = 0; i < n_dims; ++i)
-            {
-                int32_t ne_cur;
-                fin.read(reinterpret_cast<char *>(&ne_cur), sizeof(ne_cur));
-                ne[i] = ne_cur;
-                nelements *= ne[i];
-            }
-
-            std::string name(length, 0);
-            fin.read(&name[0], length);
-
-            if (model.tensors.find(name.data()) == model.tensors.end())
-            {
-                fprintf(stderr, "%s: unknown tensor '%s' in model file\n", __func__, name.data());
-                bert_free(new_bert);
-                return nullptr;
-            }
-
-            auto tensor = model.tensors[name.data()];
-            if (ggml_nelements(tensor) != nelements)
-            {
-                fprintf(stderr, "%s: tensor '%s' has wrong size in model file\n", __func__, name.data());
-                bert_free(new_bert);
-                return nullptr;
-            }
-
-            if (tensor->ne[0] != ne[0] || tensor->ne[1] != ne[1])
-            {
-                fprintf(stderr, "%s: tensor '%s' has wrong shape in model file: got [%ld, %ld], expected [%ld, %ld]\n",
-                        __func__, name.data(), tensor->ne[0], tensor->ne[1], ne[0], ne[1]);
-                bert_free(new_bert);
-                return nullptr;
-            }
-
-#if defined(DEBUG_BERT)
-            static const char *ftype_str[] = {
-                "f32",
-                "f16",
-                "q4_0",
-                "q4_1",
-            };
-            printf("%24s - [%5ld, %5ld], type = %6s, %6.2f MB, %9zu bytes\n", name.data(), ne[0], ne[1], ftype_str[ftype], ggml_nbytes(tensor) / 1024.0 / 1024.0, ggml_nbytes(tensor));
-#endif
-
-            size_t bpe = 0;
-
-            switch (ftype)
-            {
-            case 0:
-                bpe = ggml_type_size(GGML_TYPE_F32);
-                break;
-            case 1:
-                bpe = ggml_type_size(GGML_TYPE_F16);
-                break;
-            case 2:
-                bpe = ggml_type_size(GGML_TYPE_Q4_0);
-                assert(ne[0] % 64 == 0);
-                break;
-            case 3:
-                bpe = ggml_type_size(GGML_TYPE_Q4_1);
-                assert(ne[0] % 64 == 0);
-                break;
-            default:
-            {
-                fprintf(stderr, "%s: unknown ftype %d in model file\n", __func__, ftype);
-                bert_free(new_bert);
-                return nullptr;
-            }
-            };
-
-            if ((nelements * bpe) / ggml_blck_size(tensor->type) != ggml_nbytes(tensor))
-            {
-                fprintf(stderr, "%s: tensor '%s' has wrong size in model file: got %zu, expected %lu\n",
-                        __func__, name.data(), ggml_nbytes(tensor), nelements * bpe);
-                bert_free(new_bert);
-                return nullptr;
-            }
-
-            fin.read(reinterpret_cast<char *>(tensor->data), ggml_nbytes(tensor));
-
-#if defined(DEBUG_BERT)
-            // printf("%42s - [%5d, %5d], type = %6s, %6.2f MB\n", name.data(), ne[0], ne[1], ftype == 0 ? "float" : "f16", ggml_nbytes(tensor)/1024.0/1024.0);
-            total_size += ggml_nbytes(tensor);
-#endif
-
-            if (++n_tensors % 8 == 0)
-            {
-#if defined(DEBUG_BERT)
-                printf(".");
-                fflush(stdout);
-#endif
-            }
-        }
-
-#if defined(DEBUG_BERT)
-        printf(" done\n");
-        printf("%s: model size = %8.2f MB / num tensors = %d\n", __func__, total_size / 1024.0 / 1024.0, n_tensors);
-#endif
-    }
-
-    fin.close();
 
     // Calculate space requirements for setting up context buffers later
     {
@@ -1019,6 +846,16 @@ const std::vector<LLModel::Token> &Bert::endTokens() const
     return out;
 }
 
+std::string get_arch_name(gguf_context *ctx_gguf) {
+    std::string arch_name;
+    const int kid = gguf_find_key(ctx_gguf, "general.architecture");
+    enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
+    if (ktype != GGUF_TYPE_STRING) {
+        throw std::runtime_error("ERROR: Can't get general architecture from gguf file.");
+    }
+    return gguf_get_val_str(ctx_gguf, kid);
+}
+
 #if defined(_WIN32)
 #define DLL_EXPORT __declspec(dllexport)
 #else
@@ -1038,16 +875,21 @@ DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT bool magic_match(const char* fname) {
-#if 0
-    uint32_t magic = 0;
-    f.read(reinterpret_cast<char*>(&magic), sizeof(magic));
-    if (magic != 0x62657274) {
-         return false;
-    }
-    return true;
-#endif
-    return false;
+DLL_EXPORT bool magic_match(const char * fname) {
+    struct ggml_context * ctx_meta = NULL;
+    struct gguf_init_params params = {
+        /*.no_alloc = */ true,
+        /*.ctx      = */ &ctx_meta,
+    };
+    gguf_context *ctx_gguf = gguf_init_from_file(fname, params);
+    if (!ctx_gguf)
+        return false;
+
+    bool isValid = gguf_get_version(ctx_gguf) <= 2;
+    isValid = isValid && get_arch_name(ctx_gguf) == "bert";
+
+    gguf_free(ctx_gguf);
+    return isValid;
 }
 
 DLL_EXPORT LLModel *construct() {
