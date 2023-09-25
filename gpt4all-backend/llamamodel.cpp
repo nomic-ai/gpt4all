@@ -392,27 +392,7 @@ DLL_EXPORT bool magic_match(const char * fname) {
         return false;
 
     bool isValid = gguf_get_version(ctx_gguf) <= 2;
-    isValid = get_arch_name(ctx_gguf) != "llama" ? false : isValid;
-
-#ifdef GGML_USE_METAL
-    const int n_tensors = gguf_get_n_tensors(ctx_gguf);
-    for (int i = 0; i < n_tensors; i++) {
-        const char * name = gguf_get_tensor_name(ctx_gguf, i);
-        struct ggml_tensor * meta = ggml_get_tensor(ctx_meta, name);
-        switch(meta->type) {
-            // currently supported on Metal https://github.com/ggerganov/llama.cpp/blob/ae9663f1887513e152839e91f61c513075a19422/ggml-metal.m#L51-L55
-            case LLAMA_FTYPE_MOSTLY_F16:
-            case LLAMA_FTYPE_MOSTLY_Q2_K:
-            case LLAMA_FTYPE_MOSTLY_Q4_0:
-            case LLAMA_FTYPE_MOSTLY_Q6_K:
-            case LLAMA_FTYPE_MOSTLY_Q4_K_S:
-            case LLAMA_FTYPE_MOSTLY_Q4_K_M:
-                break;
-            default: // unsupported quant-type for Metal
-                isValid = false;
-        }
-    }
-#endif
+    isValid = isValid && get_arch_name(ctx_gguf) == "llama";
 
     gguf_free(ctx_gguf);
     return isValid;
