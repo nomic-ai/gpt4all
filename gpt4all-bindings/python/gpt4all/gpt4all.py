@@ -423,6 +423,6 @@ def empty_chat_session(system_prompt: str = "") -> List[MessageType]:
 
 
 def append_bin_suffix_if_missing(model_name):
-    if not model_name.endswith(".bin"):
+    if not model_name.endswith((".bin", ".gguf")):
         model_name += ".bin"
     return model_name
