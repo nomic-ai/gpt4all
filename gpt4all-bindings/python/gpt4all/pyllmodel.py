@@ -259,12 +259,13 @@ class LLModel:
         True if model loaded successfully, False otherwise
         """
         model_path_enc = model_path.encode("utf-8")
-        self.model = llmodel.llmodel_model_create(model_path_enc)
+        err = LLModelError()
+        self.model = llmodel.llmodel_model_create2(model_path_enc, b"auto", ctypes.byref(err))
 
-        if self.model is not None:
-            llmodel.llmodel_loadModel(self.model, model_path_enc)
-        else:
-            raise ValueError("Unable to instantiate model")
+        if self.model is None:
+            raise ValueError(f"Unable to instantiate model: code={err.code}, {err.message.decode()}")
+
+        llmodel.llmodel_loadModel(self.model, model_path_enc)
 
         filename = os.path.basename(model_path)
         self.model_name = os.path.splitext(filename)[0]
