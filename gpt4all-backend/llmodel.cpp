@@ -131,7 +131,7 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
     #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
         if (buildVariant == "auto") {
             size_t total_mem = getSystemTotalRAMInBytes();
-            impl = implementation(f, "metal");
+            impl = implementation(modelPath.c_str(), "metal");
             if(impl) {
                 LLModel* metalimpl = impl->m_construct();
                 metalimpl->m_implementation = impl;
