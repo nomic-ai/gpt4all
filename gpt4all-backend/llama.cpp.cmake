@@ -174,6 +174,9 @@ if (LLAMA_KOMPUTE)
         add_custom_command(
             OUTPUT ${spv_file}
             DEPENDS ${LLAMA_DIR}/${source}
+              ${LLAMA_DIR}/kompute/common.comp
+              ${LLAMA_DIR}/kompute/op_getrows.comp
+              ${LLAMA_DIR}/kompute/op_mul_mv_q_n.comp
             COMMAND ${glslc_executable} --target-env=vulkan1.2 -o ${spv_file} ${LLAMA_DIR}/${source}
             COMMENT "Compiling ${source} to ${source}.spv"
         )
