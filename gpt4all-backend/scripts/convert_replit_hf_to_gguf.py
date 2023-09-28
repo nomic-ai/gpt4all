@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import struct
 import sys
 from pathlib import Path
@@ -13,7 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 if not 2 <= len(sys.argv) < 4:
-    print("Usage: {} dir-model [ftype]\n".format(os.path.basename(__file__)))
+    print("Usage: {} dir-model [ftype]\n".format(Path(__file__).name))
     print("  ftype == 0 -> float32")
     print("  ftype == 1 -> float16")
     sys.exit(1)
@@ -27,6 +26,7 @@ dir_model = Path(sys.argv[1])
 #
 # map from ftype to string
 ftype_str = ["f32", "f16"]
+
 ftype = 1
 if len(sys.argv) > 2:
     ftype = int(sys.argv[2])
