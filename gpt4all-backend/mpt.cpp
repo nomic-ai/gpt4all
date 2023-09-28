@@ -78,7 +78,6 @@ struct mpt_model {
 
     struct llm_kv_cache kv_self;
     struct ggml_context * ctx;
-    std::map<std::string, struct ggml_tensor *> tensors;
 
 
     llm_buffer eval_buf;
