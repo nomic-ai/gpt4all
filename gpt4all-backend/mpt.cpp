@@ -97,6 +97,116 @@ enum mpt_token_type {
     MPT_TOKEN_TYPE_CONTROL = 3,
 };
 
+using replit_piece_t = std::pair<std::size_t, float>;
+using replit_piece_map_t = std::unordered_map<std::string, replit_piece_t>;
+
+static const std::string replit_ws_symbol = "\342\226\201";
+
+struct mpt_vocab {
+    bool is_replit = false;
+    gpt_vocab raw;
+    replit_piece_map_t piece_map;
+    std::vector<std::string> vocab;
+
+    const char * end_of_text() const {
+        return is_replit ? "<|endoftext|>" : "<|im_end|>";
+    }
+};
+
+std::pair<std::vector<LLModel::Token>, float> encode_word(const std::string & word, const replit_piece_map_t & model) {
+    std::vector<int> best_segmentations_starts(word.length() + 1, -1);
+    best_segmentations_starts[0] = 0;
+
+    std::vector<float> best_segmentations_scores(word.length() + 1, -std::numeric_limits<float>::infinity());
+    best_segmentations_scores[0] = 1.0;
+
+    for (size_t start_idx = 0; start_idx < word.length(); ++start_idx) {
+        float best_score_at_start = best_segmentations_scores[start_idx];
+        for (size_t end_idx = start_idx + 1; end_idx <= word.length(); ++end_idx) {
+            std::string token = word.substr(start_idx, end_idx - start_idx);
+            if (model.count(token) && best_score_at_start != -std::numeric_limits<float>::infinity()) {
+                float token_score = model.at(token).second;
+                float score = token_score + best_score_at_start;
+                if (best_segmentations_scores[end_idx] == -std::numeric_limits<float>::infinity() ||
+                    best_segmentations_scores[end_idx] > score) {
+                    best_segmentations_starts[end_idx] = start_idx;
+                    best_segmentations_scores[end_idx] = score;
+                }
+            }
+        }
+    }
+
+    if (best_segmentations_scores.back() == -std::numeric_limits<float>::infinity()) {
+        return std::make_pair(std::vector<LLModel::Token>{0}, 0.0f);
+    }
+
+    float score = best_segmentations_scores.back();
+    int start = best_segmentations_starts.back();
+    int end = word.length();
+    std::vector<LLModel::Token> tokens;
+    while (start != 0) {
+        const auto token_id = model.at(word.substr(start, end - start)).first;
+        tokens.insert(tokens.begin(), token_id);
+        int next_start = best_segmentations_starts[start];
+        end = start;
+        start = next_start;
+    }
+    const auto token_id = model.at(word.substr(start, end - start)).first;
+    tokens.insert(tokens.begin(), token_id);
+    return std::make_pair(tokens, score);
+}
+
+bool replit_tokenizer_load(mpt_vocab & tokenizer, gguf_context * ggufctx, int tokens_keyidx, int max_vocab_size) {
+    int scores_keyidx = gguf_find_key(ggufctx, "tokenizer.ggml.scores");
+    if (scores_keyidx == -1) {
+        fprintf(stderr, "%s: llama token scores not found!\n", __func__);
+        return false;
+    }
+    const auto *scores = reinterpret_cast<const float *>(gguf_get_arr_data(ggufctx, scores_keyidx));
+
+    for (LLModel::Token i = 0; i < max_vocab_size; i++) {
+        std::string word = gguf_get_arr_str(ggufctx, tokens_keyidx, i);
+        tokenizer.piece_map[word] = std::make_pair(i, -scores[i]);
+        tokenizer.raw.id_to_token[i] = word;
+        tokenizer.raw.token_to_id[word] = i;
+    }
+
+    return true;
+}
+
+std::string replace_all(const std::string & str,    // where to work
+                        const std::string & find,   // substitute 'find'
+                        const std::string & replace //      by 'replace'
+) {
+    std::string result;
+    size_t find_len = find.size();
+    size_t pos, from = 0;
+    while (std::string::npos != (pos = str.find(find, from))) {
+        result.append(str, from, pos - from);
+        result.append(replace);
+        from = pos + find_len;
+    }
+    result.append(str, from, std::string::npos);
+    return result;
+}
+
+std::vector<LLModel::Token> replit_tokenizer_tokenize(mpt_vocab & tokenizer, const std::string & text) {
+    std::vector<LLModel::Token> tokens;
+    auto normalized_text = replace_all(text, " ", replit_ws_symbol);
+    auto tokenized = encode_word(normalized_text, tokenizer.piece_map);
+
+    return tokenized.first;
+}
+
+std::string replit_tokenizer_detokenize(mpt_vocab & tokenizer, const std::vector<LLModel::Token> & tokens) {
+    std::string text;
+    for (auto token : tokens) {
+        text += tokenizer.raw.id_to_token[token];
+    }
+    return replace_all(text, replit_ws_symbol, " ");
+}
+
+
 static bool kv_cache_init(
         const struct mpt_hparams & hparams,
              struct llm_kv_cache & cache,
@@ -130,7 +240,7 @@ static bool kv_cache_init(
 
 // load the model's weights from a file path. if mem_req ptr is passed the model is
 // only partially parsed to estimate required memory
-bool mpt_model_load(const std::string &fname, mpt_model & model, gpt_vocab & vocab, size_t * mem_req) {
+bool mpt_model_load(const std::string &fname, mpt_model & model, mpt_vocab & vocab, size_t * mem_req) {
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
     if (mem_req != nullptr) {
         *mem_req = 0;
@@ -245,53 +355,56 @@ bool mpt_model_load(const std::string &fname, mpt_model & model, gpt_vocab & voc
     {
         auto & hparams = model.hparams;
 
-        int keyidx = gguf_find_key(ggufctx, "tokenizer.ggml.model");
+        int tokens_keyidx = gguf_find_key(ggufctx, "tokenizer.ggml.tokens");
+        if (tokens_keyidx == -1) {
+            fprintf(stderr, "%s: tokenizer vocab not found!\n", __func__);
+            return false;
+        }
 
+        int keyidx = gguf_find_key(ggufctx, "tokenizer.ggml.model");
         if (keyidx == -1) {
             fprintf(stderr, "%s: tokenizer model not found!\n", __func__);
             return false;
         }
-        // TODO: Replit (llama tokenizer)
-        if (strcmp(gguf_get_val_str(ggufctx, keyidx), "gpt2") != 0) {
-            fprintf(stderr, "%s: tokenizer model not supported!\n", __func__);
-            return false;
-        }
-
-
-        int tokens_keyidx = gguf_find_key(ggufctx, "tokenizer.ggml.tokens");
-        if (tokens_keyidx == -1) {
-            fprintf(stderr, "%s: gpt2 tokenizer vocab not found!\n", __func__);
-            return false;
-        }
-
-        int toktypes_keyidx = gguf_find_key(ggufctx, "tokenizer.ggml.token_type");
-        if (toktypes_keyidx == -1) {
-            fprintf(stderr, "%s: gpt2 token types not found!\n", __func__);
-            return false;
-        }
+        std::string tokenizer_model(gguf_get_val_str(ggufctx, keyidx));
 
         hparams.n_vocab = gguf_get_arr_n(ggufctx, tokens_keyidx);
-        printf("%s: gpt2 tokenizer vocab = %d\n", __func__, int(hparams.n_vocab));
+        printf("%s: %s tokenizer vocab = %d\n", __func__, tokenizer_model.c_str(), int(hparams.n_vocab));
 
-        const auto *toktypes = reinterpret_cast<const uint32_t *>(gguf_get_arr_data(ggufctx, toktypes_keyidx));
-
-        for (int i = 0; i < hparams.n_vocab; i++) {
-            std::string word = gguf_get_arr_str(ggufctx, tokens_keyidx, i);
-
-            bool special = false;
-            if (toktypes[i] == MPT_TOKEN_TYPE_CONTROL) {
-                special = true;
-            } else if (toktypes[i] != MPT_TOKEN_TYPE_NORMAL) {
-                fprintf(stderr, "%s: unknown token type: %d\n", __func__, int(toktypes[i]));
+        if (tokenizer_model == "llama") { // Replit
+            vocab.is_replit = true;
+            if (!replit_tokenizer_load(vocab, ggufctx, tokens_keyidx, hparams.n_vocab)) {
                 return false;
             }
-
-            vocab.token_to_id[word] = i;
-            vocab.id_to_token[i] = word;
-
-            if (special) {
-                vocab.add_special_token(word);
+        } else if (tokenizer_model == "gpt2") {
+            int toktypes_keyidx = gguf_find_key(ggufctx, "tokenizer.ggml.token_type");
+            if (toktypes_keyidx == -1) {
+                fprintf(stderr, "%s: gpt2 token types not found!\n", __func__);
+                return false;
             }
+            const auto *toktypes = reinterpret_cast<const uint32_t *>(gguf_get_arr_data(ggufctx, toktypes_keyidx));
+
+            for (int i = 0; i < hparams.n_vocab; i++) {
+                std::string word = gguf_get_arr_str(ggufctx, tokens_keyidx, i);
+
+                bool special = false;
+                if (toktypes[i] == MPT_TOKEN_TYPE_CONTROL) {
+                    special = true;
+                } else if (toktypes[i] != MPT_TOKEN_TYPE_NORMAL) {
+                    fprintf(stderr, "%s: unknown token type: %d\n", __func__, int(toktypes[i]));
+                    return false;
+                }
+
+                vocab.raw.token_to_id[word] = i;
+                vocab.raw.id_to_token[i] = word;
+
+                if (special) {
+                    vocab.raw.add_special_token(word);
+                }
+            }
+        } else {
+            fprintf(stderr, "%s: tokenizer model not supported!\n", __func__);
+            return false;
         }
     }
 
@@ -675,7 +788,7 @@ size_t mpt_set_state_data(mpt_model *model, std::mt19937 *rng, const uint8_t *sr
 struct MPTPrivate {
     const std::string modelPath;
     bool modelLoaded;
-    gpt_vocab vocab;
+    mpt_vocab vocab;
     mpt_model *model = nullptr;
     int64_t n_threads = 0;
     size_t mem_per_token = 0;
@@ -692,7 +805,7 @@ MPT::MPT()
 
 size_t MPT::requiredMem(const std::string &modelPath) {
     mpt_model dummy_model;
-    gpt_vocab dummy_vocab;
+    mpt_vocab dummy_vocab;
     size_t mem_req;
     mpt_model_load(modelPath, dummy_model, dummy_vocab, &mem_req);
     return mem_req;
@@ -710,7 +823,8 @@ bool MPT::loadModel(const std::string &modelPath) {
 
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
-    d_ptr->has_end_of_text = d_ptr->vocab.token_to_id.find("<|im_end|>") != d_ptr->vocab.token_to_id.end();
+    const auto & vocab = d_ptr->vocab;
+    d_ptr->has_end_of_text = vocab.raw.token_to_id.find(vocab.end_of_text()) != vocab.raw.token_to_id.end();
     fflush(stdout);
     return true;
 }
@@ -751,12 +865,18 @@ size_t MPT::restoreState(const uint8_t *src)
 
 std::vector<LLModel::Token> MPT::tokenize(PromptContext &, const std::string &str) const
 {
-    return ::gpt_tokenize(d_ptr->vocab, str);
+    if (d_ptr->vocab.is_replit) {
+        return replit_tokenizer_tokenize(d_ptr->vocab, str);
+    }
+    return ::gpt_tokenize(d_ptr->vocab.raw, str);
 }
 
 std::string MPT::tokenToString(Token id) const
 {
-    return d_ptr->vocab.id_to_token[id];
+    if (d_ptr->vocab.is_replit) {
+        return replit_tokenizer_detokenize(d_ptr->vocab, {id});
+    }
+    return d_ptr->vocab.raw.id_to_token[id];
 }
 
 LLModel::Token MPT::sampleToken(PromptContext &promptCtx) const
@@ -791,7 +911,10 @@ int32_t MPT::contextLength() const
 
 const std::vector<LLModel::Token> &MPT::endTokens() const
 {
-    static const std::vector<LLModel::Token> fres = {0, d_ptr->vocab.token_to_id["<|im_end|>"]};
+    static std::vector<LLModel::Token> fres;
+    if (fres.empty()) {
+        fres = {0, d_ptr->vocab.raw.token_to_id[d_ptr->vocab.end_of_text()]};
+    }
     return fres;
 }
 
