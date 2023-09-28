@@ -98,10 +98,9 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     prepare_target(llamamodel-mainline llama-mainline)
 
     if (NOT LLAMA_METAL)
-# FIXME: These need to be forward ported to latest ggml
-#        add_library(gptj-${BUILD_VARIANT} SHARED
-#            gptj.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
-#        prepare_target(gptj ggml-230511)
+        add_library(gptj-${BUILD_VARIANT} SHARED
+            gptj.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
+        prepare_target(gptj llama-mainline)
 
         add_library(mpt-${BUILD_VARIANT} SHARED
             mpt.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
