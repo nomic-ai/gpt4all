@@ -2,6 +2,8 @@
 
 <p align="center">Open-source assistant-style large language models that run locally on your CPU</p>
 
+<p align="center"><strong>New</strong>: Now with Nomic Vulkan Universal GPU support. <a href="https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan">Learn more</a>.</p>
+
 <p align="center">
 <a href="https://gpt4all.io">GPT4All Website</a>
 </p>

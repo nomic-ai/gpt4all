@@ -9,6 +9,7 @@
 #include <QProcess>
 #include <QResource>
 #include <QSettings>
+#include <QDesktopServices>
 #include <fstream>
 
 class MyLLM: public LLM { };
@@ -60,6 +61,10 @@ bool LLM::hasSettingsAccess() const
 
 bool LLM::checkForUpdates() const
 {
+    #ifdef GPT4ALL_OFFLINE_INSTALLER
+    #pragma message "offline installer build will not check for updates!"
+    return QDesktopServices::openUrl(QUrl("https://gpt4all.io/"));
+    #else
     Network::globalInstance()->sendCheckForUpdates();
 
 #if defined(Q_OS_LINUX)
@@ -78,6 +83,7 @@ bool LLM::checkForUpdates() const
     }
 
     return QProcess::startDetached(fileName);
+    #endif
 }
 
 bool LLM::directoryExists(const QString &path) const
