@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 import json
-import os
 import struct
 import sys
 from pathlib import Path
@@ -64,6 +63,7 @@ dir_out.mkdir(exist_ok=True)
 #
 # map from ftype to string
 ftype_str = ["f32", "f16"]
+
 ftype = 1
 if len(sys.argv) > 3:
     ftype = int(sys.argv[3])
