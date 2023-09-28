@@ -392,7 +392,8 @@ DLL_EXPORT bool magic_match(const char * fname) {
         return false;
 
     bool isValid = gguf_get_version(ctx_gguf) <= 2;
-    isValid = isValid && get_arch_name(ctx_gguf) == "llama";
+    auto arch = get_arch_name(ctx_gguf);
+    isValid = isValid && (arch == "llama" || arch == "starcoder");
 
     gguf_free(ctx_gguf);
     return isValid;
