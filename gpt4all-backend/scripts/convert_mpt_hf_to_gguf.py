@@ -101,17 +101,27 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 special_ids = tokenizer.all_special_ids
 
+reverse_vocab = {id: encoded_tok for encoded_tok, id in tokenizer.vocab.items()}
+added_tokens = tokenizer.get_added_vocab().values()
+byte_encoder = bytes_to_unicode()
+byte_decoder = {v: k for k, v in byte_encoder.items()}
+
 tokens: list[bytearray] = []
 toktypes: list[gguf.TokenType] = []
-
-# TODO(cebtenzzre): this is probably wrong, but I don't know what else to put here
-dot_token = tokenizer.encode('.')[0]
 
 # The number of tokens in tokenizer.json can differ from the expected vocab size.
 # This causes downstream issues with mismatched tensor sizes when running the inference
 for i in range(config.vocab_size):
-    text = tokenizer.decode([dot_token, i]).encode('utf-8')
-    text = text[1:]  # remove the first byte (it's always '.')
+    if i not in reverse_vocab:
+        print(f"Key {i} not in tokenizer vocabulary. Padding with an arbitrary token.")
+        pad_token = f"[PAD{i}]".encode("utf8")
+        text = bytearray(pad_token)
+    elif i in added_tokens:
+        # these tokens are not encoded, for some reason
+        text = bytearray(reverse_vocab[i].encode('utf-8'))
+    else:
+        text = bytearray([byte_decoder[c] for c in reverse_vocab[i]])
+
     tokens.append(text)
 
     # TODO(cebtenzzre): is there a better way to do this?
