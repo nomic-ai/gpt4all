@@ -267,17 +267,25 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 if (requestedDevice != "CPU") {
                     const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString());
                     std::vector<LLModel::GPUDevice> availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
+                    LLModel::GPUDevice *device = nullptr;
+
                     if (!availableDevices.empty() && requestedDevice == "Auto" && availableDevices.front().type == 2 /*a discrete gpu*/) {
-                        m_llModelInfo.model->initializeGPUDevice(availableDevices.front());
-                        actualDevice = QString::fromStdString(availableDevices.front().name);
+                        device = &availableDevices.front();
                     } else {
                         for (LLModel::GPUDevice &d : availableDevices) {
                             if (QString::fromStdString(d.name) == requestedDevice) {
-                                m_llModelInfo.model->initializeGPUDevice(d);
-                                actualDevice = QString::fromStdString(d.name);
+                                device = &d;
                                 break;
                             }
                         }
+                    }
+
+                    if (!device) {
+                        emit reportFallbackReason("<br>Using CPU: device not found");
+                    } else if (!m_llModelInfo.model->initializeGPUDevice(*device)) {
+                        emit reportFallbackReason("<br>Using CPU: failed to init device");
+                    } else {
+                        actualDevice = QString::fromStdString(device->name);
                     }
                 }
 
@@ -285,9 +293,20 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 emit reportDevice(actualDevice);
 
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString());
-                if (!success && actualDevice != "CPU") {
+                if (actualDevice == "CPU") {
+                    // we asked llama.cpp to use the CPU
+                } else if (!success) {
+                    // llama_init_from_file returned nullptr
+                    // this may happen because ggml_metal_add_buffer failed
                     emit reportDevice("CPU");
+                    emit reportFallbackReason("<br>Using CPU: llama_init_from_file failed");
                     success = m_llModelInfo.model->loadModel(filePath.toStdString());
+                } else if (!m_llModelInfo.model->usingGPUDevice()) {
+                    // ggml_vk_init was not called in llama.cpp
+                    // We might have had to fallback to CPU after load if the model is not possible to accelerate
+                    // for instance if the quantization method is not supported on Vulkan yet
+                    emit reportDevice("CPU");
+                    emit reportFallbackReason("<br>Using CPU: unsupported quantization type");
                 }
 
                 MySettings::globalInstance()->setAttemptModelLoad(QString());
@@ -299,11 +318,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     m_llModelInfo = LLModelInfo();
                     emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename()));
                 } else {
-                    // We might have had to fallback to CPU after load if the model is not possible to accelerate
-                    // for instance if the quantization method is not supported on Vulkan yet
-                    if (actualDevice != "CPU" && !m_llModelInfo.model->usingGPUDevice())
-                        emit reportDevice("CPU");
-
                     switch (m_llModelInfo.model->implementation().modelType()[0]) {
                     case 'L': m_llModelType = LLModelType::LLAMA_; break;
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;

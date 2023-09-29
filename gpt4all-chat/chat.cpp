@@ -57,6 +57,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportDevice, this, &Chat::handleDeviceChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::reportFallbackReason, this, &Chat::handleFallbackReasonChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
 
@@ -350,6 +351,12 @@ void Chat::handleDeviceChanged(const QString &device)
 {
     m_device = device;
     emit deviceChanged();
+}
+
+void Chat::handleFallbackReasonChanged(const QString &fallbackReason)
+{
+    m_fallbackReason = fallbackReason;
+    emit fallbackReasonChanged();
 }
 
 void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
