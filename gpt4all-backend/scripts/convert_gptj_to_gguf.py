@@ -27,28 +27,7 @@ from pathlib import Path
 import gguf
 import numpy as np
 from transformers import AutoTokenizer, GPTJConfig, GPTJForCausalLM
-
-
-# ref: https://github.com/openai/gpt-2/blob/master/src/encoder.py
-def bytes_to_unicode():
-    """
-    Returns list of utf-8 byte and a corresponding list of unicode strings.
-    The reversible bpe codes work on unicode strings.
-    This means you need a large # of unicode characters in your vocab if you want to avoid UNKs.
-    When you're at something like a 10B token dataset you end up needing around 5K for decent coverage.
-    This is a significant percentage of your normal, say, 32K bpe vocab.
-    To avoid that, we want lookup tables between utf-8 bytes and unicode strings.
-    And avoids mapping to whitespace/control characters the bpe code barfs on.
-    """
-    bs = list(range(ord("!"), ord("~")+1))+list(range(ord("¡"), ord("¬")+1))+list(range(ord("®"), ord("ÿ")+1))
-    cs = bs[:]
-    n = 0
-    for b in range(2**8):
-        if b not in bs:
-            bs.append(b)
-            cs.append(2**8+n)
-            n += 1
-    return dict(zip(bs, (chr(n) for n in cs)))
+from transformers.models.gpt2 import tokenization_gpt2
 
 
 if not 2 <= len(sys.argv) < 4:
@@ -100,7 +79,7 @@ print("gguf: get gpt2 tokenizer vocab")
 tokenizer = AutoTokenizer.from_pretrained(dir_model)
 
 reverse_vocab = {id: encoded_tok for encoded_tok, id in tokenizer.vocab.items()}
-byte_encoder = bytes_to_unicode()
+byte_encoder = tokenization_gpt2.bytes_to_unicode()
 byte_decoder = {v: k for k, v in byte_encoder.items()}
 
 tokens: list[bytearray] = []
