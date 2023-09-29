@@ -7,7 +7,7 @@ from pathlib import Path
 
 import gguf
 import numpy as np
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoConfig, AutoModel, AutoTokenizer
 
 
 if not 2 <= len(sys.argv) < 4:
@@ -44,17 +44,15 @@ gguf_writer = gguf.GGUFWriter(fname_out, gguf.MODEL_ARCH_NAMES[ARCH])
 
 print("gguf: get model metadata")
 
-model = AutoModel.from_pretrained(dir_model, low_cpu_mem_usage=True)
-hparams = model.config
-print(model)
+config = AutoConfig(dir_model)
 
-block_count = hparams.num_hidden_layers
+block_count = config.num_hidden_layers
 gguf_writer.add_name("BERT")
-gguf_writer.add_context_length(hparams.max_position_embeddings)
-gguf_writer.add_embedding_length(hparams.hidden_size)
-gguf_writer.add_feed_forward_length(hparams.intermediate_size)
+gguf_writer.add_context_length(config.max_position_embeddings)
+gguf_writer.add_embedding_length(config.hidden_size)
+gguf_writer.add_feed_forward_length(config.intermediate_size)
 gguf_writer.add_block_count(block_count)
-gguf_writer.add_head_count(hparams.num_attention_heads)
+gguf_writer.add_head_count(config.num_attention_heads)
 gguf_writer.add_file_type(ftype)
 
 print("gguf: get tokenizer metadata")
@@ -76,7 +74,7 @@ reverse_vocab = {id: encoded_tok for encoded_tok, id in tokenizer.vocab.items()}
 
 # The number of tokens in tokenizer.json can differ from the expected vocab size.
 # This causes downstream issues with mismatched tensor sizes when running the inference
-for i in range(hparams.vocab_size):
+for i in range(config.vocab_size):
     try:
         text = reverse_vocab[i]
     except KeyError:
@@ -93,6 +91,9 @@ special_vocab = gguf.SpecialVocab(dir_model, load_merges=True)
 special_vocab.add_to_gguf(gguf_writer)
 
 print("gguf: get tensor metadata")
+
+model = AutoModel.from_pretrained(dir_model, config=config, low_cpu_mem_usage=True)
+print(model)
 
 tensor_map = gguf.get_tensor_name_map(ARCH, block_count)
 

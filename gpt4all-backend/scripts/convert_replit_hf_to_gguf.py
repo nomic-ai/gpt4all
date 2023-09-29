@@ -8,7 +8,7 @@ from pathlib import Path
 import gguf
 import numpy as np
 from sentencepiece import SentencePieceProcessor
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
 
 if not 2 <= len(sys.argv) < 4:
@@ -42,9 +42,7 @@ gguf_writer = gguf.GGUFWriter(fname_out, gguf.MODEL_ARCH_NAMES[ARCH])
 
 print("gguf: get model metadata")
 
-model = AutoModelForCausalLM.from_pretrained(dir_model, low_cpu_mem_usage=True)
-config = model.config
-#print(model)
+config = AutoConfig(dir_model)
 
 block_count = config.n_layers
 gguf_writer.add_name("Replit")
@@ -94,6 +92,9 @@ special_vocab = gguf.SpecialVocab(dir_model, load_merges=True)
 special_vocab.add_to_gguf(gguf_writer)
 
 print("gguf: get tensor metadata")
+
+model = AutoModelForCausalLM.from_pretrained(dir_model, config=config, low_cpu_mem_usage=True)
+#print(model)
 
 tensor_map = gguf.get_tensor_name_map(ARCH, block_count)
 
