@@ -11,11 +11,8 @@
 
 #define MPT_INTERNAL_STATE_VERSION 0
 #define GPTJ_INTERNAL_STATE_VERSION 0
-#define REPLIT_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
-#define FALCON_INTERNAL_STATE_VERSION 0
 #define BERT_INTERNAL_STATE_VERSION 0
-#define STARCODER_INTERNAL_STATE_VERSION 0
 
 class LLModelStore {
 public:
@@ -311,10 +308,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     case 'L': m_llModelType = LLModelType::LLAMA_; break;
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;
                     case 'M': m_llModelType = LLModelType::MPT_; break;
-                    case 'R': m_llModelType = LLModelType::REPLIT_; break;
-                    case 'F': m_llModelType = LLModelType::FALCON_; break;
                     case 'B': m_llModelType = LLModelType::BERT_; break;
-                    case 'S': m_llModelType = LLModelType::STARCODER_; break;
                     default:
                         {
                             delete m_llModelInfo.model;
@@ -717,13 +711,10 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
     if (version > 1) {
         stream << m_llModelType;
         switch (m_llModelType) {
-        case REPLIT_: stream << REPLIT_INTERNAL_STATE_VERSION; break;
         case MPT_: stream << MPT_INTERNAL_STATE_VERSION; break;
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
-        case FALCON_: stream << FALCON_INTERNAL_STATE_VERSION; break;
         case BERT_: stream << BERT_INTERNAL_STATE_VERSION; break;
-        case STARCODER_: stream << STARCODER_INTERNAL_STATE_VERSION; break;
         default: Q_UNREACHABLE();
         }
     }
