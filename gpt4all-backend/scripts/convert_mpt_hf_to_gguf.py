@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Convert Hugging Face fine-tuned bloom-like models to ggml format
 #
 # Usage:
@@ -44,7 +45,7 @@ def bytes_to_unicode():
 
 
 if not 3 <= len(sys.argv) < 5:
-    print("Usage: python {} model-name dir-output [ftype]".format(Path(__file__).name))
+    print("Usage: {} model-name dir-output [ftype]".format(Path(__file__).name))
     print("  model-name: name of the model to convert. Example: 'bigscience/bloomz-560m'")
     print("  dir-output: directory where the output file will be written")
     print("  ftype == 0 -> float32")
