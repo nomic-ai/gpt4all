@@ -80,12 +80,6 @@ gguf_writer = gguf.GGUFWriter(fname_out, gguf.MODEL_ARCH_NAMES[ARCH])
 print("gguf: get model metadata")
 
 config = AutoConfig.from_pretrained(model_name)
-print("Loading model:", model_name)
-model = AutoModelForCausalLM.from_pretrained(
-    model_name, config=config, torch_dtype=torch.float16 if ftype == 1 else torch.float32, low_cpu_mem_usage=True,
-)
-config = model.config
-print("Model loaded:", model_name)
 
 block_count = config.n_layers
 gguf_writer.add_name("MPT")
@@ -128,6 +122,12 @@ gguf_writer.add_token_list(tokens)
 gguf_writer.add_token_types(toktypes)
 
 print("gguf: get tensor metadata")
+
+print("Loading model:", model_name)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name, config=config, torch_dtype=torch.float16 if ftype == 1 else torch.float32, low_cpu_mem_usage=True,
+)
+print("Model loaded:", model_name)
 
 tensor_map = gguf.get_tensor_name_map(ARCH, block_count)
 
