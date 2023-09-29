@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Convert GPT-J-6B h5 transformer model to ggml format
 #
 # Load the model using GPTJForCausalLM.
