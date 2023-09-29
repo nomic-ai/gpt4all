@@ -14,10 +14,7 @@ enum LLModelType {
     GPTJ_,
     LLAMA_,
     CHATGPT_,
-    REPLIT_,
-    FALCON_,
     BERT_,
-    STARCODER_
 };
 
 struct LLModelInfo {
