@@ -2,6 +2,9 @@
 #include "bert_impl.h"
 #include "llmodel_shared.h"
 #include "ggml.h"
+#ifdef GGML_USE_VULKAN
+#include "ggml-vulkan.h"
+#endif
 
 #include <cassert>
 #include <cmath>
@@ -97,9 +100,11 @@ struct bert_ctx
     bert_model model;
     bert_vocab vocab;
 
-    size_t mem_per_token;
-    int64_t mem_per_input;
     int32_t max_batch_n;
+#ifdef GGML_USE_KOMPUTE
+    ggml_kompute_context* vk_ctx;
+#endif
+    llm_buffer weights_buf;
     llm_buffer buf_compute;
     llm_buffer work_buf;
 };
@@ -253,29 +258,6 @@ std::vector<bert_vocab_id> bert_tokenize(
     return tokens;
 }
 
-void bert_resize_ctx(bert_ctx * ctx, int32_t new_size) {
-    int64_t buf_size_new = ctx->mem_per_input * new_size;
-
-    // TODO: Max memory should be a param? Now just 1 GB
-    int64_t GB = 1 << 30;
-#if defined(DEBUG_BERT)
-    printf("%s: requested_buf_size %lldMB\n", __func__, buf_size_new / (1 << 20));
-#endif
-    if (buf_size_new > GB) {
-        int32_t adjusted_new_size = GB / ctx->mem_per_input;
-        if (adjusted_new_size < 1) adjusted_new_size = 1;
-#if defined(DEBUG_BERT)
-        printf("%s: requested batch size %d, actual new batch size %d\n", __func__, new_size, adjusted_new_size);
-#endif
-        new_size = adjusted_new_size;
-        buf_size_new = ctx->mem_per_input * new_size;
-    }
-    if (new_size > ctx->max_batch_n) {
-        ctx->buf_compute.resize(buf_size_new);
-        ctx->max_batch_n = new_size;
-    }
-}
-
 void bert_eval(
     struct bert_ctx *ctx,
     int32_t n_threads,
@@ -284,11 +266,6 @@ void bert_eval(
     float *embeddings)
 {
     const bert_model& model = ctx->model;
-    bool mem_req_mode = !embeddings;
-
-    // batch_embeddings is nullptr for the initial memory requirements run
-    if (!mem_req_mode && 1 > ctx->max_batch_n)
-        bert_resize_ctx(ctx, 1);
 
     const int N = n_tokens;
     const auto &tokens = raw_tokens;
@@ -309,7 +286,6 @@ void bert_eval(
         return;
     }
 
-    auto & mem_per_token = ctx->mem_per_token;
     auto & buf_compute   = ctx->buf_compute;
 
     struct ggml_init_params params = {
@@ -452,7 +428,16 @@ void bert_eval(
     // run the computation
     ggml_build_forward_expand(&gf, output);
     //ggml_graph_compute_g4a()
+    #ifdef GGML_USE_KOMPUTE
+    if (ctx->vk_ctx) {
+        ggml_vk_graph_compute(ctx->vk_ctx, &gf);
+        ggml_vk_d2h_tensor(ctx->vk_ctx, output);
+    } else {
+        ggml_graph_compute_g4a(ctx->work_buf, &gf, n_threads);
+    }
+    #else
     ggml_graph_compute_g4a(ctx->work_buf, &gf, n_threads);
+    #endif
     //ggml_graph_compute(ctx0, &gf);
 
 
@@ -465,11 +450,7 @@ void bert_eval(
         ggml_graph_print(&gf);
     #endif
 
-    if (!mem_req_mode) {
-        memcpy(embeddings, (float *)ggml_get_data(output), sizeof(float) * n_embd);
-    } else {
-        mem_per_token = ggml_used_mem(ctx0) / N;
-    }
+    memcpy(embeddings, (float *)ggml_get_data(output), sizeof(float) * n_embd);
 
     // printf("used_mem = %zu KB \n", ggml_used_mem(ctx0) / 1024);
     // printf("mem_per_token = %zu KB \n", mem_per_token / 1024);
@@ -483,7 +464,15 @@ void bert_eval(
 
 void bert_free(bert_ctx * ctx) {
     ggml_free(ctx->model.ctx);
+#ifdef GGML_USE_KOMPUTE
+    if(ctx->vk_ctx != nullptr) {
+        ggml_vk_free(ctx->vk_ctx);
+    }
+#endif
     delete ctx;
+#ifdef GGML_USE_KOMPUTE
+    ggml_vk_free_device();
+#endif
 }
 
 struct bert_ctx * bert_load_from_file(const char *fname)
@@ -629,9 +618,10 @@ struct bert_ctx * bert_load_from_file(const char *fname)
 
     // create the ggml context
     {
+        new_bert->weights_buf.resize(model_mem_req);
         struct ggml_init_params params = {
             .mem_size = model_mem_req,
-            .mem_buffer = NULL,
+            .mem_buffer = new_bert->weights_buf.addr,
             .no_alloc = false,
         };
 
@@ -848,21 +838,19 @@ struct bert_ctx * bert_load_from_file(const char *fname)
 
     fin.close();
 
-    // Calculate space requirements for setting up context buffers later
-    {
-        bert_vocab_id tokens[] = {0, 1, 2, 3};
-        // TODO: We set the initial buffer size to 16MB and hope it's enough. Maybe there is a better way to do this?
-        new_bert->buf_compute.resize(16 * 1024 * 1024);
-        bert_eval(new_bert, 1, tokens, 4, nullptr);
-        new_bert->max_batch_n = 0;
+    new_bert->buf_compute.resize(1536 * 1024 * 1024);
+    new_bert->work_buf.resize(64 * 1024 * 1024);
 
-        // TODO: Max tokens should be a param?
-        int32_t N = new_bert->model.hparams.n_max_tokens;
-        new_bert->mem_per_input = 2.2 * (new_bert->mem_per_token * N); // add 10% to account for ggml object overhead
-
+#ifdef GGML_USE_KOMPUTE
+    if (ggml_vk_has_device()) {
+        new_bert->vk_ctx = ggml_vk_init();
+        ggml_vk_add_buffer(new_bert->vk_ctx, "data", new_bert->weights_buf.memory);
+        ggml_vk_add_buffer(new_bert->vk_ctx, "eval", new_bert->buf_compute.memory);
+        ggml_vk_add_buffer(new_bert->vk_ctx, "work", new_bert->work_buf.memory);
+        ggml_vk_h2d_all(new_bert->vk_ctx);
+    } else {
+        new_bert->vk_ctx = nullptr;
     }
-#if defined(DEBUG_BERT)
-    printf("%s: mem_per_token %ld KB, mem_per_input %ld MB\n", __func__, new_bert->mem_per_token / (1 << 10), new_bert->mem_per_input / (1 << 20));
 #endif
 
     return new_bert;
@@ -1018,6 +1006,82 @@ const std::vector<LLModel::Token> &Bert::endTokens() const
     static const std::vector<LLModel::Token> out = { 102 /*sep*/};
     return out;
 }
+
+std::vector<LLModel::GPUDevice> Bert::availableGPUDevices(size_t memoryRequired)
+{
+#if defined(GGML_USE_KOMPUTE)
+    std::vector<ggml_vk_device> vkDevices = ggml_vk_available_devices(memoryRequired);
+
+    std::vector<LLModel::GPUDevice> devices;
+    for(const auto& vkDevice : vkDevices) {
+        LLModel::GPUDevice device;
+        device.index = vkDevice.index;
+        device.type = vkDevice.type;
+        device.heapSize = vkDevice.heapSize;
+        device.name = vkDevice.name;
+        device.vendor = vkDevice.vendor;
+
+        devices.push_back(device);
+    }
+
+    return devices;
+#else
+    return std::vector<LLModel::GPUDevice>();
+#endif
+}
+
+bool Bert::initializeGPUDevice(size_t memoryRequired, const std::string& device)
+{
+#if defined(GGML_USE_KOMPUTE)
+    return ggml_vk_init_device(memoryRequired, device);
+#else
+    return false;
+#endif
+}
+
+bool Bert::initializeGPUDevice(const LLModel::GPUDevice &device)
+{
+#if defined(GGML_USE_KOMPUTE)
+    ggml_vk_device vkDevice;
+    vkDevice.index = device.index;
+    vkDevice.type = device.type;
+    vkDevice.heapSize = device.heapSize;
+    vkDevice.name = device.name;
+    vkDevice.vendor = device.vendor;
+    return ggml_vk_init_device(vkDevice);
+#else
+    return false;
+#endif
+}
+
+bool Bert::initializeGPUDevice(int device)
+{
+#if defined(GGML_USE_KOMPUTE)
+    return ggml_vk_init_device(device);
+#else
+    return false;
+#endif
+}
+
+bool Bert::hasGPUDevice()
+{
+#if defined(GGML_USE_KOMPUTE)
+    return ggml_vk_has_device();
+#else
+    return false;
+#endif
+}
+
+bool Bert::usingGPUDevice()
+{
+#if defined(GGML_USE_KOMPUTE)
+    return ggml_vk_using_vulkan();
+#elif defined(GGML_USE_METAL)
+    return true;
+#endif
+    return false;
+}
+
 
 #if defined(_WIN32)
 #define DLL_EXPORT __declspec(dllexport)
