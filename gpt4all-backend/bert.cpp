@@ -322,12 +322,7 @@ void bert_eval(
     // embd norm
     {
         inpL = ggml_norm(ctx0, inpL);
-
-        inpL = ggml_add(ctx0,
-                        ggml_mul(ctx0,
-                                 ggml_repeat(ctx0, model.ln_e_w, inpL),
-                                 inpL),
-                        ggml_repeat(ctx0, model.ln_e_b, inpL));
+        inpL = ggml_add(ctx0, ggml_mul(ctx0, inpL, model.ln_e_w), model.ln_e_b);
     }
     // layers
     for (int il = 0; il < n_layer; il++)
@@ -338,22 +333,22 @@ void bert_eval(
         {
             struct ggml_tensor *Qcur = cur;
             Qcur = ggml_reshape_3d(ctx0,
-                                   ggml_add(ctx0, ggml_repeat(ctx0, model.layers[il].q_b, Qcur),
-                                            ggml_mul_mat(ctx0, model.layers[il].q_w, Qcur)),
+                                   ggml_add(ctx0, 
+                                            ggml_mul_mat(ctx0, model.layers[il].q_w, Qcur), model.layers[il].q_b),
                                    d_head, n_head, N);
             struct ggml_tensor *Q = ggml_permute(ctx0, Qcur, 0, 2, 1, 3);
 
             struct ggml_tensor *Kcur = cur;
             Kcur = ggml_reshape_3d(ctx0,
-                                   ggml_add(ctx0, ggml_repeat(ctx0, model.layers[il].k_b, Kcur),
-                                            ggml_mul_mat(ctx0, model.layers[il].k_w, Kcur)),
+                                   ggml_add(ctx0, 
+                                            ggml_mul_mat(ctx0, model.layers[il].k_w, Kcur), model.layers[il].k_b),
                                    d_head, n_head, N);
             struct ggml_tensor *K = ggml_permute(ctx0, Kcur, 0, 2, 1, 3);
 
             struct ggml_tensor *Vcur = cur;
             Vcur = ggml_reshape_3d(ctx0,
-                                   ggml_add(ctx0, ggml_repeat(ctx0, model.layers[il].v_b, Vcur),
-                                            ggml_mul_mat(ctx0, model.layers[il].v_w, Vcur)),
+                                   ggml_add(ctx0,
+                                            ggml_mul_mat(ctx0, model.layers[il].v_w, Vcur), model.layers[il].v_b),
                                    d_head, n_head, N);
             struct ggml_tensor *V = ggml_permute(ctx0, Vcur, 0, 2, 1, 3);
 
@@ -374,8 +369,7 @@ void bert_eval(
         }
         // attention output
         cur = ggml_add(ctx0,
-                       ggml_repeat(ctx0, model.layers[il].o_b, cur),
-                       ggml_mul_mat(ctx0, model.layers[il].o_w, cur));
+                       ggml_mul_mat(ctx0, model.layers[il].o_w, cur), model.layers[il].o_b);
 
         // re-add the layer input
         cur = ggml_add(ctx0, cur, inpL);
@@ -385,24 +379,20 @@ void bert_eval(
             cur = ggml_norm(ctx0, cur);
 
             cur = ggml_add(ctx0,
-                           ggml_mul(ctx0,
-                                    ggml_repeat(ctx0, model.layers[il].ln_att_w, cur),
-                                    cur),
-                           ggml_repeat(ctx0, model.layers[il].ln_att_b, cur));
+                           ggml_mul(ctx0, cur, model.layers[il].ln_att_w),
+                           model.layers[il].ln_att_b);
         }
         struct ggml_tensor *att_output = cur;
         // intermediate_output = self.intermediate(attention_output)
         cur = ggml_mul_mat(ctx0, model.layers[il].ff_i_w, cur);
         cur = ggml_add(ctx0,
-                       ggml_repeat(ctx0, model.layers[il].ff_i_b, cur),
-                       cur);
+                       cur, model.layers[il].ff_i_b);
         cur = ggml_gelu(ctx0, cur);
 
         // layer_output = self.output(intermediate_output, attention_output)
         cur = ggml_mul_mat(ctx0, model.layers[il].ff_o_w, cur);
         cur = ggml_add(ctx0,
-                       ggml_repeat(ctx0, model.layers[il].ff_o_b, cur),
-                       cur);
+                       cur, model.layers[il].ff_o_b);
         // attentions bypass the intermediate layer
         cur = ggml_add(ctx0, att_output, cur);
 
@@ -412,9 +402,7 @@ void bert_eval(
 
             cur = ggml_add(ctx0,
                            ggml_mul(ctx0,
-                                    ggml_repeat(ctx0, model.layers[il].ln_out_w, cur),
-                                    cur),
-                           ggml_repeat(ctx0, model.layers[il].ln_out_b, cur));
+                                    cur, model.layers[il].ln_out_w), model.layers[il].ln_out_b);
         }
         inpL = cur;
     }
