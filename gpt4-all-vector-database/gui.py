@@ -86,7 +86,7 @@ class DocQA_GUI(QWidget):
 
     def init_ui(self):
         main_splitter = QSplitter(Qt.Horizontal)
-        self.setWindowTitle('LM Studio ChromaDB Plugin - www.chintellalaw.com')
+        self.setWindowTitle('GPT4All ChromaDB Plugin - www.chintellalaw.com')
         self.setGeometry(300, 300, 850, 910)
         self.setMinimumSize(550, 610)
 
