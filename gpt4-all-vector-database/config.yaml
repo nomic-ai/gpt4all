@@ -1,0 +1,37 @@
+AVAILABLE_MODELS:
+- BAAI/bge-large-en-v1.5
+- BAAI/bge-base-en-v1.5
+- BAAI/bge-small-en-v1.5
+- BAAI/bge-large-en
+- BAAI/bge-base-en
+- BAAI/bge-small-en
+- thenlper/gte-large
+- thenlper/gte-base
+- thenlper/gte-small
+- intfloat/e5-large-v2
+- intfloat/multilingual-e5-large
+- intfloat/e5-base-v2
+- intfloat/multilingual-e5-base
+- intfloat/e5-small-v2
+- intfloat/multilingual-e5-small
+- hkunlp/instructor-xl
+- hkunlp/instructor-large
+- hkunlp/instructor-base
+- sentence-transformers/all-mpnet-base-v2
+- sentence-transformers/all-MiniLM-L12-v2
+- sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+- sentence-transformers/all-MiniLM-L6-v2
+- sentence-transformers/multi-qa-MiniLM-L6-cos-v1
+- sentence-transformers/sentence-t5-xl
+- sentence-transformers/sentence-t5-large
+- sentence-transformers/sentence-t5-base
+- sentence-transformers/gtr-t5-xl
+- sentence-transformers/gtr-t5-large
+- sentence-transformers/gtr-t5-base
+COMPUTE_DEVICE: cuda
+EMBEDDING_MODEL_NAME: C:/PATH/Scripts/LM Search Vector Database/v2_0 - working/Embedding_Models/sentence-transformers--all-mpnet-base-v2
+tabs:
+- name: Settings
+  placeholder: Placeholder text for Settings tab.
+- name: Models
+  placeholder: Placeholder text for Models tab.

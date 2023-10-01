@@ -1,0 +1,16 @@
+openai==0.28.0
+langchain==0.0.267
+chromadb==0.3.29
+pdfminer.six==20221105
+InstructorEmbedding==1.0.1
+sentence-transformers==2.2.2
+pandas==2.0.3
+docx2txt==0.8
+python-docx==0.8.11
+msg-parser==1.2.0
+xlrd==2.0.1
+openpyxl==3.1.2
+unstructured==0.10.12
+nvidia-ml-py==12.535.108
+psutil==5.9.5
+PySide6==6.5.2
