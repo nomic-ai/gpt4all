@@ -264,7 +264,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 // Pick the best match for the device
                 QString actualDevice = m_llModelInfo.model->implementation().buildVariant() == "metal" ? "Metal" : "CPU";
                 const QString requestedDevice = MySettings::globalInstance()->device();
-                if (requestedDevice != "CPU") {
+                if (requestedDevice == "CPU") {
+                    emit reportFallbackReason(""); // fallback not applicable
+                } else {
                     const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString());
                     std::vector<LLModel::GPUDevice> availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
                     LLModel::GPUDevice *device = nullptr;
@@ -286,6 +288,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         emit reportFallbackReason("<br>Using CPU: failed to init device");
                     } else {
                         actualDevice = QString::fromStdString(device->name);
+                        emit reportFallbackReason(""); // no fallback yet
                     }
                 }
 
