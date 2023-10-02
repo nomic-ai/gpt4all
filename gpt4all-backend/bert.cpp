@@ -311,30 +311,36 @@ void bert_eval(
     }
 
     struct ggml_tensor *inpL = ggml_get_rows(ctx0, model.word_embeddings, token_layer);
-
+    struct ggml_tensor* dbgcap = inpL;
     inpL = ggml_add(ctx0,
                     ggml_get_rows(ctx0, model.token_type_embeddings, token_types),
                     inpL);
+    dbgcap = inpL;
     inpL = ggml_add(ctx0,
                     ggml_get_rows(ctx0, model.position_embeddings, positions),
                     inpL);
-
+    dbgcap = inpL;
     // embd norm
     {
         inpL = ggml_norm(ctx0, inpL);
+        dbgcap = inpL;
         inpL = ggml_add(ctx0, ggml_mul(ctx0, inpL, model.ln_e_w), model.ln_e_b);
+        dbgcap = inpL;
     }
     // layers
-    for (int il = 0; il < n_layer; il++)
+    for (int il = 0; il < 1; il++)
+    // for (int il = 0; il < n_layer; il++)
     {
         struct ggml_tensor *cur = inpL;
 
         // self-attention
         {
             struct ggml_tensor *Qcur = cur;
+            struct ggml_tensor *Qmm = ggml_mul_mat(ctx0, model.layers[il].q_w, Qcur);
+            dbgcap = Qmm;
             Qcur = ggml_reshape_3d(ctx0,
                                    ggml_add(ctx0, 
-                                            ggml_mul_mat(ctx0, model.layers[il].q_w, Qcur), model.layers[il].q_b),
+                                            Qmm, model.layers[il].q_b),
                                    d_head, n_head, N);
             struct ggml_tensor *Q = ggml_permute(ctx0, Qcur, 0, 2, 1, 3);
 
@@ -353,14 +359,17 @@ void bert_eval(
             struct ggml_tensor *V = ggml_permute(ctx0, Vcur, 0, 2, 1, 3);
 
             struct ggml_tensor *KQ = ggml_mul_mat(ctx0, K, Q);
+            dbgcap = KQ;
             // KQ = soft_max(KQ / sqrt(head width))
             KQ = ggml_soft_max(ctx0,
                                ggml_scale(ctx0,
                                           KQ,
                                           ggml_new_f32(ctx0, 1.0f / sqrt((float)d_head))));
-
+            //dbgcap = KQ;
             V = ggml_cont(ctx0, ggml_transpose(ctx0, V));
+            //dbgcap = V;
             struct ggml_tensor *KQV = ggml_mul_mat(ctx0, V, KQ);
+            //dbgcap = KQV;
             KQV = ggml_permute(ctx0, KQV, 0, 2, 1, 3);
 
             cur = ggml_cpy(ctx0,
@@ -370,7 +379,6 @@ void bert_eval(
         // attention output
         cur = ggml_add(ctx0,
                        ggml_mul_mat(ctx0, model.layers[il].o_w, cur), model.layers[il].o_b);
-
         // re-add the layer input
         cur = ggml_add(ctx0, cur, inpL);
 
@@ -414,12 +422,19 @@ void bert_eval(
 
     ggml_tensor *output = inpL;
     // run the computation
+    ggml_build_forward_expand(&gf, dbgcap);
     ggml_build_forward_expand(&gf, output);
     //ggml_graph_compute_g4a()
     #ifdef GGML_USE_KOMPUTE
     if (ctx->vk_ctx) {
+        // we should probably add a way to batch these calls
+        ggml_vk_h2d_tensor(ctx->vk_ctx, token_layer);
+        ggml_vk_h2d_tensor(ctx->vk_ctx, token_types);
+        ggml_vk_h2d_tensor(ctx->vk_ctx, positions);
+
         ggml_vk_graph_compute(ctx->vk_ctx, &gf);
         ggml_vk_d2h_tensor(ctx->vk_ctx, output);
+        ggml_vk_d2h_tensor(ctx->vk_ctx, dbgcap);
     } else {
         ggml_graph_compute_g4a(ctx->work_buf, &gf, n_threads);
     }
@@ -428,9 +443,8 @@ void bert_eval(
     #endif
     //ggml_graph_compute(ctx0, &gf);
 
-
-    // float *dat = ggml_get_data_f32(output);
-    // pretty_print_tensor(dat, output->ne, output->nb, output->n_dims - 1, "");
+    // float *dat = ggml_get_data_f32(dbgcap);
+    // pretty_print_tensor(dat, dbgcap->ne, dbgcap->nb, dbgcap->n_dims - 1, "");
 
     #ifdef GGML_PERF
         // print timing information per ggml operation (for debugging purposes)
@@ -438,7 +452,24 @@ void bert_eval(
         ggml_graph_print(&gf);
     #endif
 
+    if (dbgcap) {
+        char fn[256];
+        char *dev = getenv("GPT4ALL_DEVICE");
+        if (!dev) dev = "cpu";
+        snprintf(fn, 256, "dbgcap-%s.dump", dev);
+        FILE* df = fopen(fn, "w");
+        if (df) {
+            fwrite(&dbgcap->ne, sizeof(dbgcap->ne[0]), 4, df);
+            uint64_t size = ggml_nbytes(dbgcap);
+            fwrite(&size, sizeof(size), 1, df);
+            fwrite(ggml_get_data_f32(dbgcap), size, 1, df);
+            fclose(df);
+        }
+    }
+
     memcpy(embeddings, (float *)ggml_get_data(output), sizeof(float) * n_embd);
+    //memcpy(embeddings, (float *)ggml_get_data(dbgcap), sizeof(float) * n_embd); // debug
+
 
     // printf("used_mem = %zu KB \n", ggml_used_mem(ctx0) / 1024);
     // printf("mem_per_token = %zu KB \n", mem_per_token / 1024);
