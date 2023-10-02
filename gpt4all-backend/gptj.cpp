@@ -237,12 +237,7 @@ bool gptj_model_load(const std::string &fname, gptj_model & model, gpt_vocab & v
     // prepare memory for the weights
     {
         const auto & hparams = model.hparams;
-
-        const int n_embd  = hparams.n_embd;
-        const int n_layer = hparams.n_layer;
-        const int n_vocab = hparams.n_vocab;
-
-        model.layers.resize(n_layer);
+        model.layers.resize(hparams.n_layer);
 
         model.wte    = ggml_get_tensor(ctx, "token_embd.weight");
 
@@ -258,7 +253,7 @@ bool gptj_model_load(const std::string &fname, gptj_model & model, gpt_vocab & v
             return key.c_str();
         };
 
-        for (int i = 0; i < n_layer; ++i) {
+        for (int i = 0; i < hparams.n_layer; ++i) {
             auto & layer = model.layers[i];
 
             layer.ln_1_g          = ggml_get_tensor(ctx, name(i, "attn_norm.weight"));
