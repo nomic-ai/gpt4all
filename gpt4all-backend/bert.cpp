@@ -328,8 +328,7 @@ void bert_eval(
         dbgcap = inpL;
     }
     // layers
-    for (int il = 0; il < 1; il++)
-    // for (int il = 0; il < n_layer; il++)
+    for (int il = 0; il < n_layer; il++)
     {
         struct ggml_tensor *cur = inpL;
 
@@ -365,22 +364,24 @@ void bert_eval(
                                ggml_scale(ctx0,
                                           KQ,
                                           ggml_new_f32(ctx0, 1.0f / sqrt((float)d_head))));
-            //dbgcap = KQ;
+            dbgcap = KQ;
             V = ggml_cont(ctx0, ggml_transpose(ctx0, V));
-            //dbgcap = V;
+            dbgcap = V;
             struct ggml_tensor *KQV = ggml_mul_mat(ctx0, V, KQ);
-            //dbgcap = KQV;
+            dbgcap = KQV;
             KQV = ggml_permute(ctx0, KQV, 0, 2, 1, 3);
 
             cur = ggml_cpy(ctx0,
                            KQV,
                            ggml_new_tensor_2d(ctx0, GGML_TYPE_F32, n_embd, N));
         }
+        dbgcap = cur;
         // attention output
         cur = ggml_add(ctx0,
                        ggml_mul_mat(ctx0, model.layers[il].o_w, cur), model.layers[il].o_b);
         // re-add the layer input
         cur = ggml_add(ctx0, cur, inpL);
+        dbgcap = cur;
 
         // attention norm
         {
@@ -390,6 +391,7 @@ void bert_eval(
                            ggml_mul(ctx0, cur, model.layers[il].ln_att_w),
                            model.layers[il].ln_att_b);
         }
+        dbgcap = cur;
         struct ggml_tensor *att_output = cur;
         // intermediate_output = self.intermediate(attention_output)
         cur = ggml_mul_mat(ctx0, model.layers[il].ff_i_w, cur);
@@ -404,6 +406,7 @@ void bert_eval(
         // attentions bypass the intermediate layer
         cur = ggml_add(ctx0, att_output, cur);
 
+        dbgcap = cur;
         // output norm
         {
             cur = ggml_norm(ctx0, cur);
@@ -414,12 +417,14 @@ void bert_eval(
         }
         inpL = cur;
     }
+    dbgcap = inpL;
     inpL = ggml_cont(ctx0, ggml_transpose(ctx0, inpL));
     // pooler
     struct ggml_tensor *sum = ggml_new_tensor_2d(ctx0, GGML_TYPE_F32, N, 1);
     ggml_set_f32(sum, 1.0f / N);
+    dbgcap = sum;
     inpL = ggml_mul_mat(ctx0, inpL, sum);
-
+    dbgcap = inpL;
     ggml_tensor *output = inpL;
     // run the computation
     ggml_build_forward_expand(&gf, dbgcap);
@@ -431,6 +436,7 @@ void bert_eval(
         ggml_vk_h2d_tensor(ctx->vk_ctx, token_layer);
         ggml_vk_h2d_tensor(ctx->vk_ctx, token_types);
         ggml_vk_h2d_tensor(ctx->vk_ctx, positions);
+        ggml_vk_h2d_tensor(ctx->vk_ctx, sum);
 
         ggml_vk_graph_compute(ctx->vk_ctx, &gf);
         ggml_vk_d2h_tensor(ctx->vk_ctx, output);
@@ -460,7 +466,7 @@ void bert_eval(
         FILE* df = fopen(fn, "w");
         if (df) {
             fwrite(&dbgcap->ne, sizeof(dbgcap->ne[0]), 4, df);
-            uint64_t size = ggml_nbytes(dbgcap);
+            uint64_t size = ggml_nelements(dbgcap) * sizeof(float);
             fwrite(&size, sizeof(size), 1, df);
             fwrite(ggml_get_data_f32(dbgcap), size, 1, df);
             fclose(df);
