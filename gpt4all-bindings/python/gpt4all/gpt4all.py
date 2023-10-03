@@ -2,6 +2,7 @@
 Python only API for running all GPT4All models.
 """
 import os
+import sys
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -172,7 +173,7 @@ class GPT4All:
             config.pop("url", None)
             config["path"] = model_dest
             if verbose:
-                print("Found model file at ", model_dest)
+                print("Found model file at", model_dest, file=sys.stderr)
 
         # If model file does not exist, download
         elif allow_download:
