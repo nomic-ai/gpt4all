@@ -92,10 +92,10 @@ void LLModel::prompt(const std::string &prompt,
             if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(batch.at(t));
+            promptCtx.n_past += 1;
             if (!promptCallback(batch.at(t)))
                 return;
         }
-        promptCtx.n_past += batch.size();
         i = batch_end;
     }
 
@@ -125,8 +125,6 @@ void LLModel::prompt(const std::string &prompt,
             std::cerr << implementation().modelType() << " ERROR: Failed to predict next token\n";
             return;
         }
-
-        promptCtx.n_past += 1;
 
         // display text
         for (const auto token : endTokens()) {
@@ -162,6 +160,7 @@ void LLModel::prompt(const std::string &prompt,
             if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
+            promptCtx.n_past += 1;
             //TODO: Conversion to std::string can be avoided here...
             if (!responseCallback(t, std::string(tokenToString(t))))
                 return;
