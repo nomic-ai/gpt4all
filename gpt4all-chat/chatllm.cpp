@@ -371,7 +371,7 @@ void ChatLLM::regenerateResponse()
     else
         m_ctx.n_past -= m_promptResponseTokens;
     m_ctx.n_past = std::max(0, m_ctx.n_past);
-    m_ctx.tokens.erase(m_ctx.tokens.end() -= m_promptResponseTokens, m_ctx.tokens.end());
+    m_ctx.tokens.erase(m_ctx.tokens.end() - m_promptResponseTokens, m_ctx.tokens.end());
     m_promptResponseTokens = 0;
     m_promptTokens = 0;
     m_response = std::string();
