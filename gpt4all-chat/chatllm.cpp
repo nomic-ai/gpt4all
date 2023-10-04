@@ -282,9 +282,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         }
                     }
 
-                    if (!device) {
-                        emit reportFallbackReason("<br>Using CPU: device not found");
-                    } else if (!m_llModelInfo.model->initializeGPUDevice(*device)) {
+                    if (!device || !m_llModelInfo.model->initializeGPUDevice(*device)) {
                         emit reportFallbackReason("<br>Using CPU: failed to init device");
                     } else {
                         actualDevice = QString::fromStdString(device->name);
@@ -300,9 +298,8 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     // we asked llama.cpp to use the CPU
                 } else if (!success) {
                     // llama_init_from_file returned nullptr
-                    // this may happen because ggml_metal_add_buffer failed
                     emit reportDevice("CPU");
-                    emit reportFallbackReason("<br>Using CPU: llama_init_from_file failed");
+                    emit reportFallbackReason("<br>Using CPU: loading failed (out of VRAM?)");
                     success = m_llModelInfo.model->loadModel(filePath.toStdString());
                 } else if (!m_llModelInfo.model->usingGPUDevice()) {
                     // ggml_vk_init was not called in llama.cpp
