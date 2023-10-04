@@ -97,7 +97,12 @@ public:
 
     virtual std::vector<GPUDevice> availableGPUDevices(size_t /*memoryRequired*/) { return std::vector<GPUDevice>(); }
     virtual bool initializeGPUDevice(size_t /*memoryRequired*/, const std::string& /*device*/) { return false; }
-    virtual bool initializeGPUDevice(const GPUDevice &/*device*/) { return false; }
+    virtual bool initializeGPUDevice(const GPUDevice &/*device*/, std::string *unavail_reason = nullptr) {
+        if (unavail_reason) {
+            *unavail_reason = "unsupported model type";
+        }
+        return false;
+    }
     virtual bool initializeGPUDevice(int /*device*/) { return false; }
     virtual bool hasGPUDevice() { return false; }
     virtual bool usingGPUDevice() { return false; }
