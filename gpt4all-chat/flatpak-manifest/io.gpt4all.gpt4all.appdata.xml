@@ -4,11 +4,11 @@
     <metadata_license>CC0-1.0</metadata_license>
     <project_license>MIT License</project_license>
     <name>GPT4ALL</name>
-    <summary>Open-source assistant-style large language models that run locally on your CPU</summary>
+    <summary>Open-source assistant-style large language models that run locally on your CPU and GPU</summary>
     <description>
-        <p>Cross platform Qt based GUI for GPT4All versions with GPT-J as the base model.</p>
+        <p>Cross platform Qt based GUI for GPT4All</p>
         <ul>
-            <li>Fast CPU and GPU based inference using ggml for GPT-J and LLaMA based models</li>
+            <li>Fast CPU and GPU based inference using ggml for open source LLM's</li>
             <li>The UI is made to look and feel like you've come to expect from a chatty gpt</li>
             <li>Check for updates so you can always stay fresh with latest models</li>
             <li>Easy to install with precompiled binaries available for all three major desktop platforms</li>
