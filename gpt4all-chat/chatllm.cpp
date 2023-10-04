@@ -309,8 +309,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     // We might have had to fallback to CPU after load if the model is not possible to accelerate
                     // for instance if the quantization method is not supported on Vulkan yet
                     emit reportDevice("CPU");
-                    // TODO(cebtenzzre): report somewhere if llamamodel decided the model was not supported
-                    emit reportFallbackReason("<br>Using CPU: unsupported quantization type");
+                    emit reportFallbackReason("<br>Using CPU: unsupported model or quant");
                 }
 
                 MySettings::globalInstance()->setAttemptModelLoad(QString());
