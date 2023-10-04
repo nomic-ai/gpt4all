@@ -301,8 +301,9 @@ bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string& d
 #endif
 }
 
-bool LLamaModel::initializeGPUDevice(const LLModel::GPUDevice &device)
+bool LLamaModel::initializeGPUDevice(const LLModel::GPUDevice &device, std::string *unavail_reason)
 {
+    bool result = false;
 #if defined(GGML_USE_KOMPUTE)
     ggml_vk_device vkDevice;
     vkDevice.index = device.index;
@@ -310,10 +311,16 @@ bool LLamaModel::initializeGPUDevice(const LLModel::GPUDevice &device)
     vkDevice.heapSize = device.heapSize;
     vkDevice.name = device.name;
     vkDevice.vendor = device.vendor;
-    return ggml_vk_init_device(vkDevice);
+    result = ggml_vk_init_device(vkDevice);
+    if (!result && unavail_reason) {
+        *unavail_reason = "failed to init device";
+    }
 #else
-    return false;
+    if (unavail_reason) {
+        *unavail_reason = "built without kompute";
+    }
 #endif
+    return result;
 }
 
 bool LLamaModel::initializeGPUDevice(int device)

@@ -282,11 +282,14 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         }
                     }
 
-                    if (!device || !m_llModelInfo.model->initializeGPUDevice(*device)) {
-                        emit reportFallbackReason("<br>Using CPU: failed to init device");
+                    emit reportFallbackReason(""); // no fallback yet
+                    std::string unavail_reason;
+                    if (!device) {
+                        // GPU not available
+                    } else if (!m_llModelInfo.model->initializeGPUDevice(*device, &unavail_reason)) {
+                        emit reportFallbackReason(QString::fromStdString("<br>Using CPU: " + unavail_reason));
                     } else {
                         actualDevice = QString::fromStdString(device->name);
-                        emit reportFallbackReason(""); // no fallback yet
                     }
                 }
 
@@ -306,6 +309,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     // We might have had to fallback to CPU after load if the model is not possible to accelerate
                     // for instance if the quantization method is not supported on Vulkan yet
                     emit reportDevice("CPU");
+                    // TODO(cebtenzzre): report somewhere if llamamodel decided the model was not supported
                     emit reportFallbackReason("<br>Using CPU: unsupported quantization type");
                 }
 
