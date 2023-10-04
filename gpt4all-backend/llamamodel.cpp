@@ -93,6 +93,7 @@ struct LLamaPrivate {
     llama_context *ctx = nullptr;
     llama_context_params params;
     int64_t n_threads = 0;
+    std::vector<LLModel::Token> end_tokens;
 };
 
 LLamaModel::LLamaModel()
@@ -175,6 +176,8 @@ bool LLamaModel::loadModel(const std::string &modelPath)
         std::cerr << "LLAMA ERROR: failed to load model from " <<  modelPath << std::endl;
         return false;
     }
+
+    d_ptr->end_tokens = {llama_token_eos(d_ptr->ctx)};
 
 #ifdef GGML_USE_KOMPUTE
     if (ggml_vk_has_device()) {
@@ -259,8 +262,7 @@ int32_t LLamaModel::contextLength() const
 
 const std::vector<LLModel::Token> &LLamaModel::endTokens() const
 {
-    static const std::vector<LLModel::Token> fres = {llama_token_eos(d_ptr->ctx)};
-    return fres;
+    return d_ptr->end_tokens;
 }
 
 #if defined(GGML_USE_KOMPUTE)
