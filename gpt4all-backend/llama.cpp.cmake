@@ -196,11 +196,11 @@ if (LLAMA_KOMPUTE)
               COMMAND ${CMAKE_COMMAND} -E echo \"\#define ${HEADER_FILE_DEFINE}\" >> ${OUTPUT_HEADER_FILE}
               COMMAND ${CMAKE_COMMAND} -E echo "namespace kp {" >> ${OUTPUT_HEADER_FILE}
               COMMAND ${CMAKE_COMMAND} -E echo "namespace shader_data {" >> ${OUTPUT_HEADER_FILE}
-              COMMAND ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/xxd -i ${spv_file} >> ${OUTPUT_HEADER_FILE}
+              COMMAND ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/xxd -i ${spv_file} >> ${OUTPUT_HEADER_FILE}
               COMMAND ${CMAKE_COMMAND} -E echo "}}" >> ${OUTPUT_HEADER_FILE}
               COMMAND ${CMAKE_COMMAND} -E echo \"\#endif // define ${HEADER_FILE_DEFINE}\" >> ${OUTPUT_HEADER_FILE}
               DEPENDS ${spv_file} xxd
-              COMMENT "Converting to hpp: ${FILE_NAME} ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/xxd"
+              COMMENT "Converting to hpp: ${FILE_NAME} ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/xxd"
             )
         else()
             add_custom_command(
