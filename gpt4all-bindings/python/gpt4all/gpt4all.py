@@ -108,12 +108,12 @@ class GPT4All:
     @staticmethod
     def list_models() -> List[ConfigType]:
         """
-        Fetch model list from https://gpt4all.io/models/models.json.
+        Fetch model list from https://gpt4all.io/models/models2.json.
 
         Returns:
             Model list in JSON format.
         """
-        return requests.get("https://gpt4all.io/models/models.json").json()
+        return requests.get("https://gpt4all.io/models/models2.json").json()
 
     @staticmethod
     def retrieve_model(

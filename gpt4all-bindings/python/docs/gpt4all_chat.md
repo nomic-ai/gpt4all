@@ -7,7 +7,7 @@ It is optimized to run 7-13B parameter LLMs on the CPU's of any computer running
 ## Running LLMs on CPU
 The GPT4All Chat UI supports models from all newer versions of `GGML`, `llama.cpp` including the `LLaMA`, `MPT`, `replit`,  `GPT-J` and `falcon` architectures
 
-GPT4All maintains an official list of recommended models located in [models.json](https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-chat/metadata/models.json). You can pull request new models to it and if accepted they will show up in the official download dialog.
+GPT4All maintains an official list of recommended models located in [models2.json](https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-chat/metadata/models2.json). You can pull request new models to it and if accepted they will show up in the official download dialog.
 
 #### Sideloading any GGML model
 If a model is compatible with the gpt4all-backend, you can sideload it into GPT4All Chat by:

@@ -26,7 +26,7 @@ router = APIRouter(prefix="/engines", tags=["Search Endpoints"])
 async def list_engines():
     '''
     List all available GPT4All models from
-    https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/metadata/models.json
+    https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/metadata/models2.json
     '''
     raise NotImplementedError()
     return ListEnginesResponse(data=[])
