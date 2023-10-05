@@ -80,7 +80,6 @@ struct llm_kv_cache {
     }
 };
 
-#if LLAMA_DATE >= 230519
 inline void ggml_graph_compute_g4a(llm_buffer& buf, ggml_cgraph * graph, int n_threads) {
     struct ggml_cplan plan = ggml_graph_plan(graph, n_threads);
     if (plan.work_size > 0) {
@@ -89,4 +88,3 @@ inline void ggml_graph_compute_g4a(llm_buffer& buf, ggml_cgraph * graph, int n_t
     }
     ggml_graph_compute(graph, &plan);
 }
-#endif

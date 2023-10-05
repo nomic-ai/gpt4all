@@ -39,15 +39,10 @@ const char *modelType_ = "LLaMA";
 struct gpt_params {
     int32_t seed          = -1;   // RNG seed
     int32_t n_keep        = 0;    // number of tokens to keep from initial prompt
-#if LLAMA_DATE <= 230511
-    int32_t n_parts       = -1;   // amount of model parts (-1 = determine from model dimensions)
-#endif
 
-#if LLAMA_DATE >= 230519
     // sampling parameters
     float   tfs_z         = 1.0f; // 1.0 = disabled
     float   typical_p     = 1.0f; // 1.0 = disabled
-#endif
 
     std::string prompt = "";
 
@@ -57,7 +52,6 @@ struct gpt_params {
     bool use_mlock         = false; // use mlock to keep model in memory
 };
 
-#if LLAMA_DATE >= 230519
 static int llama_sample_top_p_top_k(
         llama_context *ctx,
         const llama_token *last_n_tokens_data,
@@ -85,7 +79,6 @@ static int llama_sample_top_p_top_k(
     llama_sample_temperature(ctx, &candidates_p, temp);
     return llama_sample_token(ctx, &candidates_p);
 }
-#endif
 
 struct LLamaPrivate {
     const std::string modelPath;
@@ -149,9 +142,6 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->params.use_mlock  = true;
 #else
     d_ptr->params.use_mlock  = params.use_mlock;
-#endif
-#if LLAMA_DATE <= 230511
-    d_ptr->params.n_parts  = params.n_parts;
 #endif
 #ifdef GGML_USE_METAL
     std::cerr << "llama.cpp: using Metal" << std::endl;
