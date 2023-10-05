@@ -834,12 +834,14 @@ void ModelList::updateModelsFromDirectory()
         processDirectory(localPath);
 }
 
+#define MODELS_VERSION 2
+
 void ModelList::updateModelsFromJson()
 {
 #if defined(USE_LOCAL_MODELSJSON)
-    QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
+    QUrl jsonUrl("file://" + QDir::homePath() + QString("/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json").arg(MODELS_VERSION));
 #else
-    QUrl jsonUrl("http://gpt4all.io/models/models.json");
+    QUrl jsonUrl(QString("http://gpt4all.io/models/models%1.json").arg(MODELS_VERSION));
 #endif
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
@@ -881,9 +883,9 @@ void ModelList::updateModelsFromJsonAsync()
     emit asyncModelRequestOngoingChanged();
 
 #if defined(USE_LOCAL_MODELSJSON)
-    QUrl jsonUrl("file://" + QDir::homePath() + "/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models.json");
+    QUrl jsonUrl("file://" + QDir::homePath() + QString("/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json").arg(MODELS_VERSION));
 #else
-    QUrl jsonUrl("http://gpt4all.io/models/models.json");
+    QUrl jsonUrl(QString("http://gpt4all.io/models/models%1.json").arg(MODELS_VERSION));
 #endif
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();

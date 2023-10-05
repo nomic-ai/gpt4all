@@ -77,10 +77,10 @@ When using GPT4All models in the `chat_session` context:
 - Consecutive chat exchanges are taken into account and not discarded until the session ends; as long as the model has capacity.
 - Internal K/V caches are preserved from previous conversation history, speeding up inference.
 - The model is given a system and prompt template which make it chatty. Depending on `allow_download=True` (default),
-  it will obtain the latest version of [models.json] from the repository, which contains specifically tailored templates
+  it will obtain the latest version of [models2.json] from the repository, which contains specifically tailored templates
   for models. Conversely, if it is not allowed to download, it falls back to default templates instead.
 
-[models.json]: https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-chat/metadata/models.json
+[models2.json]: https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-chat/metadata/models2.json
 
 
 ### Streaming Generations
@@ -379,7 +379,7 @@ logging infrastructure offers [many more customization options][py-logging-cookb
 
 ### Without Online Connectivity
 To prevent GPT4All from accessing online resources, instantiate it with `allow_download=False`. This will disable both
-downloading missing models and [models.json], which contains information about them. As a result, predefined templates
+downloading missing models and [models2.json], which contains information about them. As a result, predefined templates
 are used instead of model-specific system and prompt templates:
 
 === "GPT4All Default Templates Example"
