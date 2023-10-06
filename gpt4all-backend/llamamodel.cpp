@@ -303,11 +303,11 @@ bool LLamaModel::initializeGPUDevice(const LLModel::GPUDevice &device, std::stri
     vkDevice.vendor = device.vendor;
     result = ggml_vk_init_device(vkDevice);
     if (!result && unavail_reason) {
-        *unavail_reason = "failed to init device";
+        *unavail_reason = "failed to init GPU";
     }
 #else
     if (unavail_reason) {
-        *unavail_reason = "built without kompute";
+        *unavail_reason = "built without Kompute";
     }
 #endif
     return result;
