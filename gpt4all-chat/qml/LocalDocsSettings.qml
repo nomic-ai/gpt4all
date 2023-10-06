@@ -242,13 +242,13 @@ MySettingsTab {
             Layout.column: 0
             color: theme.textColor
             font.pixelSize: theme.fontSizeLarge
-            text: qsTr("Document snippets per prompt:")
+            text: qsTr("Max document snippets per prompt:")
         }
 
         MyTextField {
             Layout.row: 2
             Layout.column: 1
-            ToolTip.text: qsTr("Best N matches of retrieved document snippets to add to the context for prompt.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
+            ToolTip.text: qsTr("Max best N matches of retrieved document snippets to add to the context for prompt.\nNOTE: larger numbers increase likelihood of factual responses, but also result in slower generation.")
             ToolTip.visible: hovered
             text: MySettings.localDocsRetrievalSize
             validator: IntValidator {
