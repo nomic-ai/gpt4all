@@ -423,6 +423,9 @@ std::string trim_whitespace(const std::string& input) {
         return !std::isspace(c);
     });
 
+    if (first_non_whitespace == input.end())
+        return std::string();
+
     auto last_non_whitespace = std::find_if(input.rbegin(), input.rend(), [](unsigned char c) {
         return !std::isspace(c);
     }).base();
