@@ -99,7 +99,7 @@ public:
     virtual bool initializeGPUDevice(size_t /*memoryRequired*/, const std::string& /*device*/) { return false; }
     virtual bool initializeGPUDevice(const GPUDevice &/*device*/, std::string *unavail_reason = nullptr) {
         if (unavail_reason) {
-            *unavail_reason = "unsupported model type";
+            *unavail_reason = "model has no GPU support";
         }
         return false;
     }

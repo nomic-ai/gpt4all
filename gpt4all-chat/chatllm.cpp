@@ -287,7 +287,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     if (!device) {
                         // GPU not available
                     } else if (!m_llModelInfo.model->initializeGPUDevice(*device, &unavail_reason)) {
-                        emit reportFallbackReason(QString::fromStdString("<br>Using CPU: " + unavail_reason));
+                        emit reportFallbackReason(QString::fromStdString("<br>" + unavail_reason));
                     } else {
                         actualDevice = QString::fromStdString(device->name);
                     }
@@ -302,14 +302,14 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 } else if (!success) {
                     // llama_init_from_file returned nullptr
                     emit reportDevice("CPU");
-                    emit reportFallbackReason("<br>Using CPU: loading failed (out of VRAM?)");
+                    emit reportFallbackReason("<br>GPU loading failed (out of VRAM?)");
                     success = m_llModelInfo.model->loadModel(filePath.toStdString());
                 } else if (!m_llModelInfo.model->usingGPUDevice()) {
                     // ggml_vk_init was not called in llama.cpp
                     // We might have had to fallback to CPU after load if the model is not possible to accelerate
                     // for instance if the quantization method is not supported on Vulkan yet
                     emit reportDevice("CPU");
-                    emit reportFallbackReason("<br>Using CPU: unsupported model or quant");
+                    emit reportFallbackReason("<br>model or quant has no GPU support");
                 }
 
                 MySettings::globalInstance()->setAttemptModelLoad(QString());
