@@ -84,13 +84,16 @@ void ChatSaver::saveChats(const QVector<Chat *> &chats)
     const QString savePath = MySettings::globalInstance()->modelPath();
     for (Chat *chat : chats) {
         QString fileName = "gpt4all-" + chat->id() + ".chat";
-        QFile file(savePath + "/" + fileName);
-        bool success = file.open(QIODevice::WriteOnly);
+        QString filePath = savePath + "/" + fileName;
+        QFile originalFile(filePath);
+        QFile tempFile(filePath + ".tmp"); // Temporary file
+
+        bool success = tempFile.open(QIODevice::WriteOnly);
         if (!success) {
-            qWarning() << "ERROR: Couldn't save chat to file:" << file.fileName();
+            qWarning() << "ERROR: Couldn't save chat to temporary file:" << tempFile.fileName();
             continue;
         }
-        QDataStream out(&file);
+        QDataStream out(&tempFile);
 
         out << (quint32)CHAT_FORMAT_MAGIC;
         out << (qint32)CHAT_FORMAT_VERSION;
@@ -98,11 +101,16 @@ void ChatSaver::saveChats(const QVector<Chat *> &chats)
 
         qDebug() << "serializing chat" << fileName;
         if (!chat->serialize(out, CHAT_FORMAT_VERSION)) {
-            qWarning() << "ERROR: Couldn't serialize chat to file:" << file.fileName();
-            file.remove();
+            qWarning() << "ERROR: Couldn't serialize chat to file:" << tempFile.fileName();
+            tempFile.remove();
+            continue;
         }
-        file.close();
+
+        if (originalFile.exists())
+            originalFile.remove();
+        tempFile.rename(filePath);
     }
+
     qint64 elapsedTime = timer.elapsed();
     qDebug() << "serializing chats took:" << elapsedTime << "ms";
     emit saveChatsFinished();
