@@ -190,5 +190,21 @@
     "systemPrompt": " ",
     "description": "<strong>Sbert</strong><br><ul><li>For embeddings",
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
+  },
+  {
+    "order": "n",
+    "md5sum": "919de4dd6f25351bcb0223790db1932d",
+    "name": "EM German Mistral",
+    "filename": "em_german_mistral_v01.Q4_0.gguf",
+    "filesize": "4108916352",
+    "requires": "2.5.0",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "Mistral",
+    "description": "<strong>Mistral-based model for German-language applications</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by ellamind<li>Finetuned on German instruction and chat data</a><li>Licensed for commercial use</ul>",
+    "url": "https://huggingface.co/TheBloke/em_german_mistral_v01-GGUF/resolve/main/em_german_mistral_v01.Q4_0.gguf",
+    "promptTemplate": "USER: %1 ASSISTANT: ",
+    "systemPrompt": "Du bist ein hilfreicher Assistent. "
   }
 ]
