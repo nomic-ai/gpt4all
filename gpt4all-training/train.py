@@ -75,7 +75,7 @@ def train(accelerator, config):
         else DummyOptim
     )
 
-    # karpathy doesn't decay embeddding, maybe we should exclude
+    # karpathy doesn't decay embedding, maybe we should exclude
     # https://github.com/karpathy/minGPT/commit/bbbdac74fa9b2e55574d70056163ffbae42310c1#diff-2075fa9c224b395be5bda85544dd36572b59c76c54562819eadadbf268602834R157s
     optimizer = optimizer_cls(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
 
