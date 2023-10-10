@@ -65,6 +65,7 @@ class GPT4All:
         allow_download: bool = True,
         n_threads: Optional[int] = None,
         device: Optional[str] = "cpu",
+        verbose: bool = False,
     ):
         """
         Constructor
@@ -89,7 +90,7 @@ class GPT4All:
         self.model_type = model_type
         self.model = pyllmodel.LLModel()
         # Retrieve model and download if allowed
-        self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download)
+        self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
         if device is not None:
             if device != "cpu":
                 self.model.init_gpu(model_path=self.config["path"], device=device)
@@ -117,7 +118,7 @@ class GPT4All:
         model_name: str,
         model_path: Optional[str] = None,
         allow_download: bool = True,
-        verbose: bool = True,
+        verbose: bool = False,
     ) -> ConfigType:
         """
         Find model file, and if it doesn't exist, download the model.

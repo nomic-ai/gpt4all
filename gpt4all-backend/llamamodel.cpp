@@ -36,6 +36,17 @@ namespace {
 const char *modelType_ = "LLaMA";
 }
 
+static void null_log_callback(enum ggml_log_level level, const char* text, void* userdata) {
+    (void)level;
+    (void)text;
+    (void)userdata;
+}
+
+static bool llama_verbose() {
+    const char* var = getenv("GPT4ALL_VERBOSE_LLAMACPP");
+    return var && *var;
+}
+
 struct gpt_params {
     int32_t seed          = -1;   // RNG seed
     int32_t n_keep        = 0;    // number of tokens to keep from initial prompt
@@ -144,7 +155,9 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->params.use_mlock  = params.use_mlock;
 #endif
 #ifdef GGML_USE_METAL
-    std::cerr << "llama.cpp: using Metal" << std::endl;
+    if (llama_verbose()) {
+        std::cerr << "llama.cpp: using Metal" << std::endl;
+    }
     // metal always runs the whole model if n_gpu_layers is not 0, at least
     // currently
     d_ptr->params.n_gpu_layers = 1;
@@ -390,6 +403,9 @@ DLL_EXPORT bool magic_match(const char * fname) {
 }
 
 DLL_EXPORT LLModel *construct() {
+    if (!llama_verbose()) {
+        llama_log_set(null_log_callback, nullptr);
+    }
     return new LLamaModel;
 }
 }
