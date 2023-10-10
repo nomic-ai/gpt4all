@@ -180,8 +180,8 @@ install(TARGETS llmodel DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 
 # We should probably iterate through the list of the cmake for backend, but these need to be installed
 # to the this component's dir for the finicky qt installer to work
-#install(TARGETS gptj-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-#install(TARGETS gptj-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS gptj-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+install(TARGETS gptj-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llama-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llama-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llamamodel-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
