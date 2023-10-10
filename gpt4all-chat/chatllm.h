@@ -92,8 +92,9 @@ public:
 
     QString generatedName() const { return QString::fromStdString(m_nameResponse); }
 
-    bool serialize(QDataStream &stream, int version);
-    bool deserialize(QDataStream &stream, int version);
+    bool serialize(QDataStream &stream, int version, bool serializeKV);
+    bool deserialize(QDataStream &stream, int version, bool deserializeKV, bool discardKV);
+    void setStateFromText(const QVector<QPair<QString, QString>> &stateFromText) { m_stateFromText = stateFromText; }
 
 public Q_SLOTS:
     bool prompt(const QList<QString> &collectionList, const QString &prompt);
@@ -110,6 +111,7 @@ public Q_SLOTS:
     void handleForceMetalChanged(bool forceMetal);
     void handleDeviceChanged();
     void processSystemPrompt();
+    void processRestoreStateFromText();
 
 Q_SIGNALS:
     void recalcChanged();
@@ -144,6 +146,9 @@ protected:
     bool handleSystemPrompt(int32_t token);
     bool handleSystemResponse(int32_t token, const std::string &response);
     bool handleSystemRecalculate(bool isRecalc);
+    bool handleRestoreStateFromTextPrompt(int32_t token);
+    bool handleRestoreStateFromTextResponse(int32_t token, const std::string &response);
+    bool handleRestoreStateFromTextRecalculate(bool isRecalc);
     void saveState();
     void restoreState();
 
@@ -168,6 +173,8 @@ private:
     bool m_forceMetal;
     bool m_reloadingToChangeVariant;
     bool m_processedSystemPrompt;
+    bool m_restoreStateFromText;
+    QVector<QPair<QString, QString>> m_stateFromText;
 };
 
 #endif // CHATLLM_H
