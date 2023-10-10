@@ -285,6 +285,14 @@ public:
         return stream.status() == QDataStream::Ok;
     }
 
+    QVector<QPair<QString, QString>> text() const
+    {
+        QVector<QPair<QString, QString>> result;
+        for (const auto &c : m_chatItems)
+            result << qMakePair(c.name, c.value);
+        return result;
+    }
+
 Q_SIGNALS:
     void countChanged();
 
