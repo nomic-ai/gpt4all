@@ -27,21 +27,6 @@ body:
         - label: "The official example notebooks/scripts"
         - label: "My own modified scripts"
 
-  - type: checkboxes
-    id: related-components
-    attributes:
-      label: Related Components
-      description: "Select the components related to the issue (if applicable):"
-      options:
-        - label: "backend"
-        - label: "bindings"
-        - label: "python-bindings"
-        - label: "chat-ui"
-        - label: "models"
-        - label: "circleci"
-        - label: "docker"
-        - label: "api"
-
   - type: textarea
     id: reproduction
     validations:
