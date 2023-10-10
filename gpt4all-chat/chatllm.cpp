@@ -742,7 +742,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version)
     stream << generatedName();
     stream << m_promptResponseTokens;
     if (version <= 3) {
-        int responseLogits;
+        int responseLogits = 0;
         stream << responseLogits;
     }
     stream << m_ctx.n_past;
