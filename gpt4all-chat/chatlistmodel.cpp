@@ -232,7 +232,6 @@ void ChatsRestoreThread::run()
             chat->moveToThread(qApp->thread());
             if (!chat->deserialize(in, version)) {
                 qWarning() << "ERROR: Couldn't deserialize chat from file:" << file.fileName();
-                file.remove();
             } else {
                 emit chatRestored(chat);
             }

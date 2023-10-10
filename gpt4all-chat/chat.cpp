@@ -385,7 +385,7 @@ bool Chat::serialize(QDataStream &stream, int version) const
         stream << m_modelInfo.filename();
     if (version > 2)
         stream << m_collections;
-    if (!m_llmodel->serialize(stream, version))
+    if (!m_llmodel->serialize(stream, version, true /*serializeKV*/))
         return false;
     if (!m_chatModel->serialize(stream, version))
         return false;
@@ -404,29 +404,36 @@ bool Chat::deserialize(QDataStream &stream, int version)
     QString modelId;
     stream >> modelId;
     if (version > 4) {
-        if (!ModelList::globalInstance()->contains(modelId))
-            return false;
-        m_modelInfo = ModelList::globalInstance()->modelInfo(modelId);
+        if (ModelList::globalInstance()->contains(modelId))
+            m_modelInfo = ModelList::globalInstance()->modelInfo(modelId);
     } else {
-        if (!ModelList::globalInstance()->containsByFilename(modelId))
-            return false;
-        m_modelInfo = ModelList::globalInstance()->modelInfoByFilename(modelId);
+        if (ModelList::globalInstance()->containsByFilename(modelId))
+            m_modelInfo = ModelList::globalInstance()->modelInfoByFilename(modelId);
     }
-    emit modelInfoChanged();
+    if (!m_modelInfo.id().isEmpty())
+        emit modelInfoChanged();
+
+    bool deserializeKV = true; // make this a setting
+    bool discardKV = m_modelInfo.id().isEmpty();
 
     // Prior to version 2 gptj models had a bug that fixed the kv_cache to F32 instead of F16 so
     // unfortunately, we cannot deserialize these
     if (version < 2 && m_modelInfo.filename().contains("gpt4all-j"))
-        return false;
+        discardKV = true;
+
     if (version > 2) {
         stream >> m_collections;
         emit collectionListChanged(m_collections);
     }
     m_llmodel->setModelInfo(m_modelInfo);
-    if (!m_llmodel->deserialize(stream, version))
+    if (!m_llmodel->deserialize(stream, version, deserializeKV, discardKV))
         return false;
     if (!m_chatModel->deserialize(stream, version))
         return false;
+
+    if (!deserializeKV || discardKV)
+        m_llmodel->setStateFromText(m_chatModel->text());
+
     emit chatModelChanged();
     return stream.status() == QDataStream::Ok;
 }
