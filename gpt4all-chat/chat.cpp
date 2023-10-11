@@ -385,7 +385,11 @@ bool Chat::serialize(QDataStream &stream, int version) const
         stream << m_modelInfo.filename();
     if (version > 2)
         stream << m_collections;
-    if (!m_llmodel->serialize(stream, version, true /*serializeKV*/))
+
+    const bool serializeKV = MySettings::globalInstance()->saveChatsContext();
+    if (version > 5)
+        stream << serializeKV;
+    if (!m_llmodel->serialize(stream, version, serializeKV))
         return false;
     if (!m_chatModel->serialize(stream, version))
         return false;
@@ -413,7 +417,6 @@ bool Chat::deserialize(QDataStream &stream, int version)
     if (!m_modelInfo.id().isEmpty())
         emit modelInfoChanged();
 
-    bool deserializeKV = true; // make this a setting
     bool discardKV = m_modelInfo.id().isEmpty();
 
     // Prior to version 2 gptj models had a bug that fixed the kv_cache to F32 instead of F16 so
@@ -425,6 +428,11 @@ bool Chat::deserialize(QDataStream &stream, int version)
         stream >> m_collections;
         emit collectionListChanged(m_collections);
     }
+
+    bool deserializeKV = true;
+    if (version > 5)
+        stream >> deserializeKV;
+
     m_llmodel->setModelInfo(m_modelInfo);
     if (!m_llmodel->deserialize(stream, version, deserializeKV, discardKV))
         return false;
