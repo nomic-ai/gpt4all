@@ -121,9 +121,10 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
 }
 
 LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant) {
-
-    if (!has_at_least_minimal_hardware())
+    if (!has_at_least_minimal_hardware()) {
+        std::cerr << "LLModel ERROR: CPU does not support AVX\n";
         return nullptr;
+    }
 
     // Get correct implementation
     const Implementation* impl = nullptr;
