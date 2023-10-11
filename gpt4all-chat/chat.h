@@ -54,6 +54,8 @@ public:
     }
     ChatModel *chatModel() { return m_chatModel; }
 
+    bool isNewChat() const { return m_name == tr("New Chat") && !m_chatModel->count(); }
+
     Q_INVOKABLE void reset();
     Q_INVOKABLE void processSystemPrompt();
     Q_INVOKABLE bool isModelLoaded() const;

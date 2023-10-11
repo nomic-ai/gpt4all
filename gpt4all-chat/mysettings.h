@@ -10,8 +10,7 @@ class MySettings : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
-    Q_PROPERTY(bool saveChats READ saveChats WRITE setSaveChats NOTIFY saveChatsChanged)
-    Q_PROPERTY(bool saveChatGPTChats READ saveChatGPTChats WRITE setSaveChatGPTChats NOTIFY saveChatGPTChatsChanged)
+    Q_PROPERTY(bool saveChatsContext READ saveChatsContext WRITE setSaveChatsContext NOTIFY saveChatsContextChanged)
     Q_PROPERTY(bool serverChat READ serverChat WRITE setServerChat NOTIFY serverChatChanged)
     Q_PROPERTY(QString modelPath READ modelPath WRITE setModelPath NOTIFY modelPathChanged)
     Q_PROPERTY(QString userDefaultModel READ userDefaultModel WRITE setUserDefaultModel NOTIFY userDefaultModelChanged)
@@ -64,10 +63,8 @@ public:
     // Application settings
     int threadCount() const;
     void setThreadCount(int c);
-    bool saveChats() const;
-    void setSaveChats(bool b);
-    bool saveChatGPTChats() const;
-    void setSaveChatGPTChats(bool b);
+    bool saveChatsContext() const;
+    void setSaveChatsContext(bool b);
     bool serverChat() const;
     void setServerChat(bool b);
     QString modelPath() const;
@@ -122,8 +119,7 @@ Q_SIGNALS:
     void promptTemplateChanged(const ModelInfo &model);
     void systemPromptChanged(const ModelInfo &model);
     void threadCountChanged();
-    void saveChatsChanged();
-    void saveChatGPTChatsChanged();
+    void saveChatsContextChanged();
     void serverChatChanged();
     void modelPathChanged();
     void userDefaultModelChanged();

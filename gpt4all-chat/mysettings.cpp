@@ -10,8 +10,7 @@
 #include <QUrl>
 
 static int      default_threadCount         = std::min(4, (int32_t) std::thread::hardware_concurrency());
-static bool     default_saveChats           = false;
-static bool     default_saveChatGPTChats    = true;
+static bool     default_saveChatsContext    = false;
 static bool     default_serverChat          = false;
 static QString  default_userDefaultModel    = "Application default";
 static bool     default_forceMetal          = false;
@@ -103,8 +102,7 @@ void MySettings::restoreApplicationDefaults()
     setFontSize(default_fontSize);
     setDevice(default_device);
     setThreadCount(default_threadCount);
-    setSaveChats(default_saveChats);
-    setSaveChatGPTChats(default_saveChatGPTChats);
+    setSaveChatsContext(default_saveChatsContext);
     setServerChat(default_serverChat);
     setModelPath(defaultLocalModelsPath());
     setUserDefaultModel(default_userDefaultModel);
@@ -397,40 +395,22 @@ void MySettings::setThreadCount(int c)
     emit threadCountChanged();
 }
 
-bool MySettings::saveChats() const
+bool MySettings::saveChatsContext() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("saveChats", default_saveChats).toBool();
+    return setting.value("saveChatsContext", default_saveChatsContext).toBool();
 }
 
-void MySettings::setSaveChats(bool b)
+void MySettings::setSaveChatsContext(bool b)
 {
-    if (saveChats() == b)
+    if (saveChatsContext() == b)
         return;
 
     QSettings setting;
-    setting.setValue("saveChats", b);
+    setting.setValue("saveChatsContext", b);
     setting.sync();
-    emit saveChatsChanged();
-}
-
-bool MySettings::saveChatGPTChats() const
-{
-    QSettings setting;
-    setting.sync();
-    return setting.value("saveChatGPTChats", default_saveChatGPTChats).toBool();
-}
-
-void MySettings::setSaveChatGPTChats(bool b)
-{
-    if (saveChatGPTChats() == b)
-        return;
-
-    QSettings setting;
-    setting.setValue("saveChatGPTChats", b);
-    setting.sync();
-    emit saveChatGPTChatsChanged();
+    emit saveChatsContextChanged();
 }
 
 bool MySettings::serverChat() const
