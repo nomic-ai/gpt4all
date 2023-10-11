@@ -238,6 +238,10 @@ if (LLAMA_KOMPUTE)
           kompute/op_norm.comp
           kompute/op_rmsnorm.comp
           kompute/op_diagmask.comp
+          kompute/op_mul_mat_mat_f32.comp
+          kompute/op_mul_mat_mat_f16.comp
+          kompute/op_mul_mat_mat_q8_0.comp
+          kompute/op_mul_mat_mat_q4_0.comp
           kompute/op_mul_mat_f16.comp
           kompute/op_mul_mat_q8_0.comp
           kompute/op_mul_mat_q4_0.comp
@@ -268,6 +272,10 @@ if (LLAMA_KOMPUTE)
           shaderop_norm.h
           shaderop_rmsnorm.h
           shaderop_diagmask.h
+          shaderop_mul_mat_mat_f32.h
+          shaderop_mul_mat_mat_f16.h
+          shaderop_mul_mat_mat_q8_0.h
+          shaderop_mul_mat_mat_q4_0.h
           shaderop_mul_mat_f16.h
           shaderop_mul_mat_q8_0.h
           shaderop_mul_mat_q4_0.h
