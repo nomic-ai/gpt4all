@@ -779,7 +779,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
     }
 
     if (version <= 3) {
-        int responseLogits;
+        int responseLogits = 0;
         stream << responseLogits;
     }
     stream << m_ctx.n_past;
