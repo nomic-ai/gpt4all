@@ -113,8 +113,8 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
 
 const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant) {
     for (const auto& i : implementationList()) {
-        if (!i.m_magicMatch(fname)) continue;
         if (buildVariant != i.m_buildVariant) continue;
+        if (!i.m_magicMatch(fname)) continue;
         return &i;
     }
     return nullptr;
