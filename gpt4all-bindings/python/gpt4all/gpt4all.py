@@ -39,7 +39,7 @@ class Embed4All:
         Args:
             n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
         """
-        self.gpt4all = GPT4All(model_name or 'ggml-all-MiniLM-L6-v2-f16.gguf', n_threads=n_threads, **kwargs)
+        self.gpt4all = GPT4All(model_name or 'all-MiniLM-L6-v2-f16.gguf', n_threads=n_threads, **kwargs)
 
     def embed(self, text: str) -> List[float]:
         """
