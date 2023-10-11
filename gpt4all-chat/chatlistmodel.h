@@ -84,7 +84,7 @@ public:
     Q_INVOKABLE void addChat()
     {
         // Don't add a new chat if we already have one
-        if (m_newChat || m_dummyChat)
+        if (m_newChat)
             return;
 
         // Create a new chat pointer and connect it to determine when it is populated
@@ -99,18 +99,6 @@ public:
         endInsertRows();
         emit countChanged();
         setCurrentChat(m_newChat);
-    }
-
-    Q_INVOKABLE void addDummyChat()
-    {
-        // Create a new dummy chat pointer and don't connect it
-        m_dummyChat = new Chat(this);
-        beginInsertRows(QModelIndex(), 0, 0);
-        m_chats.prepend(m_dummyChat);
-        endInsertRows();
-        emit countChanged();
-        m_currentChat = m_dummyChat;
-        emit currentChatChanged();
     }
 
     Q_INVOKABLE void addServerChat()
@@ -252,7 +240,6 @@ private Q_SLOTS:
 
 private:
     Chat* m_newChat;
-    Chat* m_dummyChat;
     Chat* m_serverChat;
     Chat* m_currentChat;
     QList<Chat*> m_chats;

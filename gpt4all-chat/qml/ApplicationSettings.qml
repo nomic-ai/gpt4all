@@ -234,53 +234,35 @@ MySettingsTab {
             Accessible.description: ToolTip.text
         }
         Label {
-            id: saveChatsLabel
-            text: qsTr("Save chats to disk:")
+            id: saveChatsContextLabel
+            text: qsTr("Save chats context to disk:")
             color: theme.textColor
             font.pixelSize: theme.fontSizeLarge
             Layout.row: 7
             Layout.column: 0
         }
         MyCheckBox {
-            id: saveChatsBox
+            id: saveChatsContextBox
             Layout.row: 7
             Layout.column: 1
-            checked: MySettings.saveChats
+            checked: MySettings.saveChatsContext
             onClicked: {
-                Network.sendSaveChatsToggled(saveChatsBox.checked);
-                MySettings.saveChats = !MySettings.saveChats
+                MySettings.saveChatsContext = !MySettings.saveChatsContext
             }
             ToolTip.text: qsTr("WARNING: Saving chats to disk can be ~2GB per chat")
             ToolTip.visible: hovered
-        }
-        Label {
-            id: saveChatGPTChatsLabel
-            text: qsTr("Save ChatGPT chats to disk:")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
-            Layout.row: 8
-            Layout.column: 0
-        }
-        MyCheckBox {
-            id: saveChatGPTChatsBox
-            Layout.row: 8
-            Layout.column: 1
-            checked: MySettings.saveChatGPTChats
-            onClicked: {
-                MySettings.saveChatGPTChats = !MySettings.saveChatGPTChats
-            }
         }
         Label {
             id: serverChatLabel
             text: qsTr("Enable API server:")
             color: theme.textColor
             font.pixelSize: theme.fontSizeLarge
-            Layout.row: 9
+            Layout.row: 8
             Layout.column: 0
         }
         MyCheckBox {
             id: serverChatBox
-            Layout.row: 9
+            Layout.row: 8
             Layout.column: 1
             checked: MySettings.serverChat
             onClicked: {
@@ -290,7 +272,7 @@ MySettingsTab {
             ToolTip.visible: hovered
         }
         Rectangle {
-            Layout.row: 10
+            Layout.row: 9
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
