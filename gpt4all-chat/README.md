@@ -32,13 +32,8 @@ One click installers for macOS, Linux, and Windows at https://gpt4all.io
 * Multi-chat - a list of current and past chats and the ability to save/delete/export and switch between
 * Text to speech - have the AI response with voice
 * Speech to text - give the prompt with your voice
-* Python bindings
-* Typescript bindings
 * Plugin support for langchain other developer tools
-* Save your prompt/responses to disk
-* Upload prompt/response manually/automatically to nomic.ai to aid future training runs
-* Syntax highlighting support for programming languages, etc.
-* REST API with a built-in webserver in the chat gui itself with a headless operation mode as well
+* chat gui headless operation mode
 * Advanced settings for changing temperature, topk, etc. (DONE)
 * * Improve the accessibility of the installer for screen reader users
 * YOUR IDEA HERE
