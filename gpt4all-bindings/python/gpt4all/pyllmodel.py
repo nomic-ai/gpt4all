@@ -1,23 +1,27 @@
+import atexit
 import ctypes
+import importlib.resources
 import logging
 import os
 import platform
-from queue import Queue
 import re
 import subprocess
 import sys
 import threading
+from contextlib import ExitStack
+from queue import Queue
 from typing import Callable, Iterable, List
-
-import pkg_resources
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-# TODO: provide a config file to make this more robust
-LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
-MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
+file_manager = ExitStack()
+atexit.register(file_manager.close)  # clean up files on exit
 
+# TODO: provide a config file to make this more robust
+MODEL_LIB_PATH = file_manager.enter_context(importlib.resources.as_file(
+    importlib.resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build",
+))
 
 def load_llmodel_library():
     system = platform.system()
@@ -36,9 +40,7 @@ def load_llmodel_library():
 
     llmodel_file = "libllmodel" + "." + c_lib_ext
 
-    llmodel_dir = str(pkg_resources.resource_filename("gpt4all", os.path.join(LLMODEL_PATH, llmodel_file))).replace(
-        "\\", "\\\\"
-    )
+    llmodel_dir = str(MODEL_LIB_PATH / llmodel_file).replace("\\", r"\\")
 
     llmodel_lib = ctypes.CDLL(llmodel_dir)
 
@@ -131,7 +133,7 @@ llmodel.llmodel_set_implementation_search_path.restype = None
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
-llmodel.llmodel_set_implementation_search_path(MODEL_LIB_PATH.encode("utf-8"))
+llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).replace("\\", r"\\").encode("utf-8"))
 
 llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
 llmodel.llmodel_available_gpu_devices.restype = ctypes.POINTER(LLModelGPUDevice)
