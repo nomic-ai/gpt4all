@@ -45,7 +45,7 @@ gguf_writer = gguf.GGUFWriter(fname_out, gguf.MODEL_ARCH_NAMES[ARCH])
 
 print("gguf: get model metadata")
 
-config = AutoConfig(dir_model)
+config = AutoConfig.from_pretrained(dir_model)
 
 block_count = config.num_hidden_layers
 gguf_writer.add_name("BERT")
