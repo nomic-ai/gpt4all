@@ -18,7 +18,7 @@ from pathlib import Path
 import gguf
 import numpy as np
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, MptConfig
 from transformers.models.gpt2 import tokenization_gpt2
 
 
@@ -58,7 +58,7 @@ gguf_writer = gguf.GGUFWriter(fname_out, gguf.MODEL_ARCH_NAMES[ARCH])
 
 print("gguf: get model metadata")
 
-config = AutoConfig.from_pretrained(model_name)
+config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
 
 block_count = config.n_layers
 gguf_writer.add_name("MPT")
@@ -67,11 +67,13 @@ gguf_writer.add_embedding_length(config.d_model)
 gguf_writer.add_block_count(block_count)
 gguf_writer.add_feed_forward_length(4 * config.d_model)
 gguf_writer.add_head_count(config.n_heads)
-gguf_writer.add_max_alibi_bias(config.attn_config.alibi_bias_max)
-gguf_writer.add_layer_norm_eps(config.layer_norm_epsilon)
+if kv_n_heads := config.attn_config.get('kv_n_heads'):
+    gguf_writer.add_head_count_kv(kv_n_heads)
+gguf_writer.add_max_alibi_bias(config.attn_config['alibi_bias_max'])
+gguf_writer.add_layer_norm_eps(MptConfig().layer_norm_epsilon)  # use default from upstream transformers
 gguf_writer.add_file_type(ftype)
 
-clip_qkv = config.attn_config.clip_qkv
+clip_qkv = config.attn_config['clip_qkv']
 if clip_qkv is not None:
     gguf_writer.add_clamp_kqv(clip_qkv)
 
@@ -115,7 +117,8 @@ print("gguf: get tensor metadata")
 
 print("Loading model:", model_name)
 model = AutoModelForCausalLM.from_pretrained(
-    model_name, config=config, torch_dtype=torch.float16 if ftype == 1 else torch.float32, low_cpu_mem_usage=True,
+    model_name, config=config, torch_dtype=torch.float16 if ftype == 1 else torch.float32,
+    low_cpu_mem_usage=True, trust_remote_code=True,
 )
 print("Model loaded:", model_name)
 
