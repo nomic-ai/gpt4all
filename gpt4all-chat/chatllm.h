@@ -10,7 +10,6 @@
 #include "../gpt4all-backend/llmodel.h"
 
 enum LLModelType {
-    MPT_,
     GPTJ_,
     LLAMA_,
     CHATGPT_,
