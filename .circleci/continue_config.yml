@@ -444,7 +444,7 @@ jobs:
           name: Build wheel
           command: |
             cd gpt4all-bindings/python
-            python setup.py bdist_wheel --plat-name=macosx_10_9_universal2
+            python setup.py bdist_wheel --plat-name=macosx_10_15_universal2
       - persist_to_workspace:
           root: gpt4all-bindings/python/dist
           paths:
