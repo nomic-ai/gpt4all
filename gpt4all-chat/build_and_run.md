@@ -6,7 +6,7 @@ gpt4all-chat from source.
 
 ## Prerequisites
 
-On Windows and Linux, GPT4All requires Vulkan. You may download it from here: https://vulkan.lunarg.com/sdk/home
+On Windows and Linux, building GPT4All requires the complete Vulkan SDK. You may download it from here: https://vulkan.lunarg.com/sdk/home
 
 macOS users do not need Vulkan, as GPT4All will use Metal instead.
 

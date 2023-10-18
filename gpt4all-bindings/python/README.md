@@ -15,6 +15,14 @@ pip install gpt4all
 
 ## Local Build Instructions
 
+### Prerequisites
+
+On Windows and Linux, building GPT4All requires the complete Vulkan SDK. You may download it from here: https://vulkan.lunarg.com/sdk/home
+
+macOS users do not need Vulkan, as GPT4All will use Metal instead.
+
+### Building the python bindings
+
 **NOTE**: If you are doing this on a Windows machine, you must build the GPT4All backend using [MinGW64](https://www.mingw-w64.org/) compiler.
 
 1. Setup `llmodel`
