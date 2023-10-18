@@ -35,8 +35,8 @@ MySettingsTab {
             Layout.fillWidth: false
             model: ["Dark", "Light"]
             Accessible.role: Accessible.ComboBox
-            Accessible.name: qsTr("ComboBox for displaying/picking the color theme")
-            Accessible.description: qsTr("Use this for picking the color theme for the chat client to use")
+            Accessible.name: qsTr("Color theme")
+            Accessible.description: qsTr("Color theme for the chat client to use")
             function updateModel() {
                 themeBox.currentIndex = themeBox.indexOfValue(MySettings.chatTheme);
             }
@@ -70,8 +70,8 @@ MySettingsTab {
             Layout.fillWidth: false
             model: ["Small", "Medium", "Large"]
             Accessible.role: Accessible.ComboBox
-            Accessible.name: qsTr("ComboBox for displaying/picking the font size")
-            Accessible.description: qsTr("Use this for picking the font size of the chat client")
+            Accessible.name: qsTr("Font size")
+            Accessible.description: qsTr("Font size of the chat client")
             function updateModel() {
                 fontBox.currentIndex = fontBox.indexOfValue(MySettings.fontSize);
             }
@@ -105,8 +105,8 @@ MySettingsTab {
             Layout.fillWidth: false
             model: MySettings.deviceList
             Accessible.role: Accessible.ComboBox
-            Accessible.name: qsTr("ComboBox for displaying/picking the device")
-            Accessible.description: qsTr("Use this for picking the device of the chat client")
+            Accessible.name: qsTr("Device")
+            Accessible.description: qsTr("Device of the chat client")
             function updateModel() {
                 deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
             }
@@ -143,8 +143,8 @@ MySettingsTab {
             Layout.fillWidth: true
             model: ModelList.userDefaultModelList
             Accessible.role: Accessible.ComboBox
-            Accessible.name: qsTr("ComboBox for displaying/picking the default model")
-            Accessible.description: qsTr("Use this for picking the default model to use; the first item is the current default model")
+            Accessible.name: qsTr("Default model")
+            Accessible.description: qsTr("Default model to use; the first item is the current default model")
             function updateModel() {
                 comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
             }
@@ -194,7 +194,7 @@ MySettingsTab {
             Layout.row: 5
             Layout.column: 2
             text: qsTr("Browse")
-            Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
+            Accessible.description: qsTr("Choose where to save model files")
             onClicked: {
                 openFolderDialog("file://" + MySettings.modelPath, function(selectedFolder) {
                     MySettings.modelPath = selectedFolder

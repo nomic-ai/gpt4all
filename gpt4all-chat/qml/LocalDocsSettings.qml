@@ -83,7 +83,7 @@ MySettingsTab {
                     text: qsTr("Add")
                     Accessible.role: Accessible.Button
                     Accessible.name: text
-                    Accessible.description: qsTr("Add button")
+                    Accessible.description: qsTr("Add collection")
                     onClicked: {
                         var isError = false;
                         if (root.collection === "") {

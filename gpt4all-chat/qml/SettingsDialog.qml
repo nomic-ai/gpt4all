@@ -21,8 +21,8 @@ MyDialog {
 
     Item {
         Accessible.role: Accessible.Dialog
-        Accessible.name: qsTr("Settings dialog")
-        Accessible.description: qsTr("Dialog containing various application settings")
+        Accessible.name: qsTr("Settings")
+        Accessible.description: qsTr("Contains various application settings")
     }
 
     ListModel {
