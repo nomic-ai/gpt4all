@@ -23,6 +23,12 @@ gpt4all-bindings/
           └── linux-x64
 ```
 
+## Prerequisites
+
+On Windows and Linux, building GPT4All requires the complete Vulkan SDK. You may download it from here: https://vulkan.lunarg.com/sdk/home
+
+macOS users do not need Vulkan, as GPT4All will use Metal instead.
+
 ## Local Build Instructions
 > **Note** 
 > Tested On:
