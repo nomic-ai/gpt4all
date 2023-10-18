@@ -222,7 +222,7 @@ if (LLAMA_KOMPUTE)
 
     if (EXISTS "${LLAMA_DIR}/kompute/CMakeLists.txt")
         message(STATUS "Kompute found")
-        set(KOMPUTE_OPT_LOG_LEVEL Error CACHE STRING "Kompute log level")
+        set(KOMPUTE_OPT_LOG_LEVEL Critical CACHE STRING "Kompute log level")
         add_subdirectory(${LLAMA_DIR}/kompute)
 
         # Compile our shaders
