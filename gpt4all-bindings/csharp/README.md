@@ -60,7 +60,7 @@ chmod +x ./build_linux.sh
 1. Setup
 ```
 choco install mingw
-$env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+$env:Path += ";C:\ProgramData\mingw64\mingw64\bin"
 choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
 ```
 2. Run the `./build_win-mingw.ps1` build script
