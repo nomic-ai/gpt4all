@@ -414,6 +414,8 @@ jobs:
           command: |
             cd gpt4all-bindings/python/
             python setup.py bdist_wheel --plat-name=manylinux1_x86_64
+      - store_artifacts:
+          path: gpt4all-bindings/python/dist
       - persist_to_workspace:
           root: gpt4all-bindings/python/dist
           paths:
@@ -445,6 +447,8 @@ jobs:
           command: |
             cd gpt4all-bindings/python
             python setup.py bdist_wheel --plat-name=macosx_10_15_universal2
+      - store_artifacts:
+          path: gpt4all-bindings/python/dist
       - persist_to_workspace:
           root: gpt4all-bindings/python/dist
           paths:
@@ -494,6 +498,8 @@ jobs:
             cp 'C:\ProgramData\mingw64\mingw64\bin\*dll' 'llmodel_DO_NOT_MODIFY/build/'
             cd ..
             python setup.py bdist_wheel --plat-name=win_amd64
+      - store_artifacts:
+          path: gpt4all-bindings/python/dist
       - persist_to_workspace:
           root: gpt4all-bindings/python/dist
           paths:
