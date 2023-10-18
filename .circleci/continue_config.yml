@@ -481,6 +481,7 @@ jobs:
             cd gpt4all-backend
             mkdir build
             cd build
+            $env:Path += ";C:\ProgramData\mingw64\mingw64\bin"
             $env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
             cmake -G "MinGW Makefiles" .. -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -DKOMPUTE_OPT_USE_BUILT_IN_VULKAN_HEADER=OFF
             cmake --build . --parallel
