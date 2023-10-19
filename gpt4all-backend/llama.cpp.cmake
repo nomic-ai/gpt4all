@@ -222,6 +222,7 @@ if (LLAMA_KOMPUTE)
 
     if (EXISTS "${LLAMA_DIR}/kompute/CMakeLists.txt")
         message(STATUS "Kompute found")
+        set(KOMPUTE_OPT_LOG_LEVEL Critical CACHE STRING "Kompute log level")
         add_subdirectory(${LLAMA_DIR}/kompute)
 
         # Compile our shaders
@@ -239,11 +240,6 @@ if (LLAMA_KOMPUTE)
           kompute/op_rmsnorm.comp
           kompute/op_diagmask.comp
           kompute/op_mul_mat_mat_f32.comp
-          kompute/op_mul_mat_mat_f16.comp
-          kompute/op_mul_mat_mat_q8_0.comp
-          kompute/op_mul_mat_mat_q4_0.comp
-          kompute/op_mul_mat_mat_q4_1.comp
-          kompute/op_mul_mat_mat_q6_k.comp
           kompute/op_mul_mat_f16.comp
           kompute/op_mul_mat_q8_0.comp
           kompute/op_mul_mat_q4_0.comp
@@ -275,11 +271,6 @@ if (LLAMA_KOMPUTE)
           shaderop_rmsnorm.h
           shaderop_diagmask.h
           shaderop_mul_mat_mat_f32.h
-          shaderop_mul_mat_mat_f16.h
-          shaderop_mul_mat_mat_q8_0.h
-          shaderop_mul_mat_mat_q4_0.h
-          shaderop_mul_mat_mat_q4_1.h
-          shaderop_mul_mat_mat_q6_k.h
           shaderop_mul_mat_f16.h
           shaderop_mul_mat_q8_0.h
           shaderop_mul_mat_q4_0.h
