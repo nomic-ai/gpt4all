@@ -22,7 +22,7 @@ implementation 'com.hexadevlabs:gpt4all-java-binding:1.1.5'
 
 To add the library dependency for another build system see [Maven Central Java bindings](https://central.sonatype.com/artifact/com.hexadevlabs/gpt4all-java-binding/).
 
-To download model binary weights file use a URL such as [`https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin`](https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin).
+To download model binary weights file use a URL such as [`https://gpt4all.io/models/gguf/gpt4all-13b-snoozy-q4_0.gguf`](https://gpt4all.io/models/gguf/gpt4all-13b-snoozy-q4_0.gguf).
 
 For information about other models available see the [model file list](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-chat#manual-download-of-models).
 

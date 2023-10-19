@@ -18,6 +18,6 @@ COPY gpt4all_api/app /app
 RUN mkdir -p /models
 
 # Include the following line to bake a model into the image and not have to download it on API start.
-RUN wget -q --show-progress=off https://gpt4all.io/models/${MODEL_BIN} -P /models \
+RUN wget -q --show-progress=off https://gpt4all.io/models/gguf/${MODEL_BIN} -P /models \
   && md5sum /models/${MODEL_BIN}
 

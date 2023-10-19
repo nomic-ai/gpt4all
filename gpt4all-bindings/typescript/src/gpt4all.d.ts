@@ -444,8 +444,8 @@ interface DownloadModelOptions {
     verbose?: boolean;
 
     /**
-     * Remote download url. Defaults to `https://gpt4all.io/models/<modelName>`
-     * @default https://gpt4all.io/models/<modelName>
+     * Remote download url. Defaults to `https://gpt4all.io/models/gguf/<modelName>`
+     * @default https://gpt4all.io/models/gguf/<modelName>
      */
     url?: string;
     /**
