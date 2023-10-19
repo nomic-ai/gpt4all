@@ -705,7 +705,7 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 ##### url
 
-Remote download url. Defaults to `https://gpt4all.io/models/<modelName>`
+Remote download url. Defaults to `https://gpt4all.io/models/gguf/<modelName>`
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 

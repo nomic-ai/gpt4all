@@ -113,7 +113,7 @@ function downloadModel(modelName, options = {}) {
     );
     const finalModelPath = path.join(downloadOptions.modelPath, modelFileName);
     const modelUrl =
-        downloadOptions.url ?? `https://gpt4all.io/models/${modelFileName}`;
+        downloadOptions.url ?? `https://gpt4all.io/models/gguf/${modelFileName}`;
 
     mkdirp.sync(downloadOptions.modelPath)
 
