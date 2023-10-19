@@ -414,6 +414,8 @@ jobs:
           command: |
             cd gpt4all-bindings/python/
             python setup.py bdist_wheel --plat-name=manylinux1_x86_64
+      - store_artifacts:
+          path: gpt4all-bindings/python/dist
       - persist_to_workspace:
           root: gpt4all-bindings/python/dist
           paths:
@@ -445,6 +447,8 @@ jobs:
           command: |
             cd gpt4all-bindings/python
             python setup.py bdist_wheel --plat-name=macosx_10_15_universal2
+      - store_artifacts:
+          path: gpt4all-bindings/python/dist
       - persist_to_workspace:
           root: gpt4all-bindings/python/dist
           paths:
@@ -458,9 +462,6 @@ jobs:
       - run:
           name: Install MinGW64
           command: choco install -y mingw --force --no-progress
-      - run:
-          name: Add MinGW64 to PATH
-          command: $env:Path += ";C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
       - run:
           name: Install VulkanSDK
           command: |
@@ -481,6 +482,7 @@ jobs:
             cd gpt4all-backend
             mkdir build
             cd build
+            $env:Path += ";C:\ProgramData\mingw64\mingw64\bin"
             $env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
             cmake -G "MinGW Makefiles" .. -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -DKOMPUTE_OPT_USE_BUILT_IN_VULKAN_HEADER=OFF
             cmake --build . --parallel
@@ -493,9 +495,11 @@ jobs:
             cd gpt4all
             mkdir llmodel_DO_NOT_MODIFY
             mkdir llmodel_DO_NOT_MODIFY/build/
-            cp 'C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll' 'llmodel_DO_NOT_MODIFY/build/'
+            cp 'C:\ProgramData\mingw64\mingw64\bin\*dll' 'llmodel_DO_NOT_MODIFY/build/'
             cd ..
             python setup.py bdist_wheel --plat-name=win_amd64
+      - store_artifacts:
+          path: gpt4all-bindings/python/dist
       - persist_to_workspace:
           root: gpt4all-bindings/python/dist
           paths:
@@ -612,7 +616,7 @@ jobs:
       - run:
           name: Build Libraries
           command: |
-            $MinGWBin = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+            $MinGWBin = "C:\ProgramData\mingw64\mingw64\bin"
             $Env:Path += ";$MinGwBin"
             $Env:Path += ";C:\Program Files\CMake\bin"
             $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
