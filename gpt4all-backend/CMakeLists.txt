@@ -102,10 +102,6 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
             gptj.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
         prepare_target(gptj llama-mainline)
 
-        add_library(mpt-${BUILD_VARIANT} SHARED
-            mpt.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
-        prepare_target(mpt llama-mainline)
-
         add_library(bert-${BUILD_VARIANT} SHARED
             bert.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
         target_compile_definitions(bert-${BUILD_VARIANT} PRIVATE LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)

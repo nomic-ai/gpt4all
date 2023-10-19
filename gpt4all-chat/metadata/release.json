@@ -530,5 +530,26 @@
 "
 * Adam Treat (Nomic AI)
 "
+  },
+  {
+    "version": "2.5.0",
+    "notes":
+"
+* Major new release supports GGUF models only!
+* New models like Mistral Instruct, Replit 1.5, Rift Coder and more
+* All previous version of ggml-based models are no longer supported
+* Extensive changes to vulkan support
+* Better GPU error messages
+* Prompt processing on the GPU
+* Save chats now saves to text (less harddrive space)
+* Many more changes
+",
+    "contributors":
+"
+* Aaron Miller (Nomic AI)
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]

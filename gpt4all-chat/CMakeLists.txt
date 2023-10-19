@@ -18,7 +18,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 5)
-set(APP_VERSION_PATCH 0)
+set(APP_VERSION_PATCH 1)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -189,8 +189,6 @@ install(TARGETS llamamodel-mainline-default DESTINATION lib COMPONENT ${COMPONEN
 if(APPLE)
 install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
-install(TARGETS mpt-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS mpt-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS bert-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS bert-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 

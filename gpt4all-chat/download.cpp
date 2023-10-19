@@ -129,7 +129,7 @@ void Download::downloadModel(const QString &modelFile)
 
     ModelList::globalInstance()->updateDataByFilename(modelFile, ModelList::DownloadingRole, true);
     ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
-    QString url = !info.url.isEmpty() ? info.url : "http://gpt4all.io/models/" + modelFile;
+    QString url = !info.url.isEmpty() ? info.url : "http://gpt4all.io/models/gguf/" + modelFile;
     Network::globalInstance()->sendDownloadStarted(modelFile);
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::User, modelFile);
