@@ -23,28 +23,20 @@ MODEL_LIB_PATH = file_manager.enter_context(importlib.resources.as_file(
     importlib.resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build",
 ))
 
+
 def load_llmodel_library():
-    system = platform.system()
+    ext = {"Darwin": "dylib", "Linux": "so", "Windows": "dll"}[platform.system()]
 
-    def get_c_shared_lib_extension():
-        if system == "Darwin":
-            return "dylib"
-        elif system == "Linux":
-            return "so"
-        elif system == "Windows":
-            return "dll"
-        else:
-            raise Exception("Operating System not supported")
+    try:
+        # Linux, Windows, MinGW
+        lib = ctypes.CDLL(str(MODEL_LIB_PATH / f"libllmodel.{ext}"))
+    except FileNotFoundError:
+        if ext != 'dll':
+            raise
+        # MSVC
+        lib = ctypes.CDLL(str(MODEL_LIB_PATH / "llmodel.dll"))
 
-    c_lib_ext = get_c_shared_lib_extension()
-
-    llmodel_file = "libllmodel" + "." + c_lib_ext
-
-    llmodel_dir = str(MODEL_LIB_PATH / llmodel_file).replace("\\", r"\\")
-
-    llmodel_lib = ctypes.CDLL(llmodel_dir)
-
-    return llmodel_lib
+    return lib
 
 
 llmodel = load_llmodel_library()

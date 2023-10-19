@@ -12,5 +12,5 @@ cmake -G "MinGW Makefiles" -S ..\..\gpt4all-backend -B $BUILD_DIR
 cmake --build $BUILD_DIR --parallel --config Release
 
 # copy native dlls
-cp "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\*dll" $LIBS_DIR
+cp "C:\ProgramData\mingw64\mingw64\bin\*dll" $LIBS_DIR
 cp "$BUILD_DIR\bin\*.dll" $LIBS_DIR
