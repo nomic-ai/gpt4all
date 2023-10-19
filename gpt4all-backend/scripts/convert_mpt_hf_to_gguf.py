@@ -18,7 +18,7 @@ from pathlib import Path
 import gguf
 import numpy as np
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, MptConfig
 from transformers.models.gpt2 import tokenization_gpt2
 
 
@@ -30,7 +30,7 @@ if not 3 <= len(sys.argv) < 5:
     print("  ftype == 1 -> float16")
     sys.exit(1)
 
-model_name = sys.argv[1]
+dir_model = Path(sys.argv[1])
 dir_out = Path(sys.argv[2])
 
 # make sure the output directory exists
@@ -50,7 +50,7 @@ if len(sys.argv) > 3:
         print("Invalid ftype: " + str(ftype))
         sys.exit(1)
 
-fname_out = dir_out / f"ggml-model-{Path(model_name).name}-{ftype_str[ftype]}.gguf"
+fname_out = dir_out / f"ggml-model-{dir_model.name}-{ftype_str[ftype]}.gguf"
 
 
 ARCH = gguf.MODEL_ARCH.MPT
@@ -58,7 +58,7 @@ gguf_writer = gguf.GGUFWriter(fname_out, gguf.MODEL_ARCH_NAMES[ARCH])
 
 print("gguf: get model metadata")
 
-config = AutoConfig.from_pretrained(model_name)
+config = AutoConfig.from_pretrained(dir_model, trust_remote_code=True)
 
 block_count = config.n_layers
 gguf_writer.add_name("MPT")
@@ -67,17 +67,19 @@ gguf_writer.add_embedding_length(config.d_model)
 gguf_writer.add_block_count(block_count)
 gguf_writer.add_feed_forward_length(4 * config.d_model)
 gguf_writer.add_head_count(config.n_heads)
-gguf_writer.add_max_alibi_bias(config.attn_config.alibi_bias_max)
-gguf_writer.add_layer_norm_eps(config.layer_norm_epsilon)
+if kv_n_heads := config.attn_config.get('kv_n_heads'):
+    gguf_writer.add_head_count_kv(kv_n_heads)
+gguf_writer.add_max_alibi_bias(config.attn_config['alibi_bias_max'])
+gguf_writer.add_layer_norm_eps(MptConfig().layer_norm_epsilon)  # use default from upstream transformers
 gguf_writer.add_file_type(ftype)
 
-clip_qkv = config.attn_config.clip_qkv
+clip_qkv = config.attn_config['clip_qkv']
 if clip_qkv is not None:
     gguf_writer.add_clamp_kqv(clip_qkv)
 
 print("gguf: get gpt2 tokenizer vocab")
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(dir_model)
 
 special_ids = tokenizer.all_special_ids
 
@@ -111,13 +113,17 @@ gguf_writer.add_tokenizer_model("gpt2")
 gguf_writer.add_token_list(tokens)
 gguf_writer.add_token_types(toktypes)
 
+special_vocab = gguf.SpecialVocab(dir_model, load_merges=True)
+special_vocab.add_to_gguf(gguf_writer)
+
 print("gguf: get tensor metadata")
 
-print("Loading model:", model_name)
+print("Loading model:", dir_model)
 model = AutoModelForCausalLM.from_pretrained(
-    model_name, config=config, torch_dtype=torch.float16 if ftype == 1 else torch.float32, low_cpu_mem_usage=True,
+    dir_model, config=config, torch_dtype=torch.float16 if ftype == 1 else torch.float32,
+    low_cpu_mem_usage=True, trust_remote_code=True,
 )
-print("Model loaded:", model_name)
+print("Model loaded:", dir_model)
 
 tensor_map = gguf.get_tensor_name_map(ARCH, block_count)
 

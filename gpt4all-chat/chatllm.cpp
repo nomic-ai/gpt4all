@@ -9,7 +9,6 @@
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
 
-#define MPT_INTERNAL_STATE_VERSION 0
 #define GPTJ_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
 #define BERT_INTERNAL_STATE_VERSION 0
@@ -325,7 +324,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     switch (m_llModelInfo.model->implementation().modelType()[0]) {
                     case 'L': m_llModelType = LLModelType::LLAMA_; break;
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;
-                    case 'M': m_llModelType = LLModelType::MPT_; break;
                     case 'B': m_llModelType = LLModelType::BERT_; break;
                     default:
                         {
@@ -760,7 +758,6 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
     if (version > 1) {
         stream << m_llModelType;
         switch (m_llModelType) {
-        case MPT_: stream << MPT_INTERNAL_STATE_VERSION; break;
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
         case BERT_: stream << BERT_INTERNAL_STATE_VERSION; break;

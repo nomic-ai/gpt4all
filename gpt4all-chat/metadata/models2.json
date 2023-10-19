@@ -126,20 +126,20 @@
   },
   {
     "order": "j",
-    "md5sum": "51c627fac9062e208f9b386f105cbd48",
+    "md5sum": "e30579a1b109882f10e2a5e75ea388fb",
     "disableGUI": "true",
     "name": "Replit",
-    "filename": "replit-code-v1-3b-q4_0.gguf",
-    "filesize": "1532949760",
+    "filename": "replit-code-v1_5-3b-q4_0.gguf",
+    "filesize": "1870449696",
     "requires": "2.5.0",
     "ramrequired": "4",
     "parameters": "3 billion",
-    "quant": "f16",
+    "quant": "q4_0",
     "type": "Replit",
     "systemPrompt": " ",
     "promptTemplate": "%1",
     "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>Licensed for commercial use</ul>",
-    "url": "https://gpt4all.io/models/gguf/replit-code-v1-3b-q4_0.gguf"
+    "url": "https://gpt4all.io/models/gguf/replit-code-v1_5-3b-q4_0.gguf"
   },
   {
     "order": "k",
