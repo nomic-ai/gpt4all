@@ -233,7 +233,7 @@ class GPT4All:
             except Exception:
                 if os.path.exists(download_path):
                     if verbose:
-                        print("Cleaning up the interrupted download...")
+                        print("Cleaning up the interrupted download...", file=sys.stderr)
                     os.remove(download_path)
                 raise
 
@@ -245,7 +245,7 @@ class GPT4All:
         time.sleep(2)
 
         if verbose:
-            print("Model downloaded at: ", download_path)
+            print("Model downloaded at:", download_path, file=sys.stderr)
         return download_path
 
     def generate(
