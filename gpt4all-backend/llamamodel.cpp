@@ -36,10 +36,11 @@ namespace {
 const char *modelType_ = "LLaMA";
 }
 
-static void null_log_callback(enum ggml_log_level level, const char* text, void* userdata) {
-    (void)level;
-    (void)text;
+static void llama_log_callback(enum ggml_log_level level, const char *text, void *userdata) {
     (void)userdata;
+    if (level <= GGML_LOG_LEVEL_ERROR) {
+        fputs(text, stderr);
+    }
 }
 
 static bool llama_verbose() {
@@ -404,7 +405,7 @@ DLL_EXPORT bool magic_match(const char * fname) {
 
 DLL_EXPORT LLModel *construct() {
     if (!llama_verbose()) {
-        llama_log_set(null_log_callback, nullptr);
+        llama_log_set(llama_log_callback, nullptr);
     }
     return new LLamaModel;
 }
