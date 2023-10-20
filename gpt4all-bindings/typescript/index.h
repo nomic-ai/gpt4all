@@ -9,10 +9,28 @@
 #include <set>
 namespace fs = std::filesystem;
 
+struct ModelDeleter
+{
+    void operator()(llmodel_model p) const
+    {
+        std::cout << "Debug: deleting model\n";
+        llmodel_model_destroy(p);
+    }
+};
+
+std::shared_ptr<llmodel_model> 
+make_shared_model(llmodel_model* surface,
+        const char *model_path,
+        const char *build_variant,
+        llmodel_error *error)
+{
+    return std::shared_ptr<llmodel_model>(surface, model_path, build_variant, error, ModelDeleter);
+};
+
 class NodeModelWrapper: public Napi::ObjectWrap<NodeModelWrapper> {
 public:
   NodeModelWrapper(const Napi::CallbackInfo &);
-  //~NodeModelWrapper();
+  ~NodeModelWrapper();
   Napi::Value getType(const Napi::CallbackInfo& info);
   Napi::Value IsModelLoaded(const Napi::CallbackInfo& info);
   Napi::Value StateSize(const Napi::CallbackInfo& info);

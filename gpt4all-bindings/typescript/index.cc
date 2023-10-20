@@ -174,9 +174,13 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     name = model_name.empty() ? model_path.filename().string() : model_name;
     full_model_path = full_weight_path;
   };
-  //NodeModelWrapper::~NodeModelWrapper() {
-    //GetInference().reset();
-  //}
+  NodeModelWrapper::~NodeModelWrapper() {
+    if(GetInference() != nullptr) {
+        std::cout << "Debug: deleting model\n";
+        llmodel_model_destroy(p);
+        inference_.reset();
+    }
+  }
 
   Napi::Value NodeModelWrapper::IsModelLoaded(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(GetInference()));
