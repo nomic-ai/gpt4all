@@ -149,13 +149,6 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
        Napi::Error::New(env, "Had an issue creating llmodel object, inference is null").ThrowAsJavaScriptException(); 
        return;
     }
-
-    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str());
-    if(!success) {
-        Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
-        return;
-    }
-
     if(device != "cpu") {
         size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str());
         if(mem == 0) {
@@ -170,6 +163,12 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
         } else {
             std::cout << "WARNING: Failed to init GPU\n";
         }
+    }
+
+    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str());
+    if(!success) {
+        Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
+        return;
     }
 
     name = model_name.empty() ? model_path.filename().string() : model_name;
