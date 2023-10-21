@@ -125,7 +125,7 @@ MyDialog {
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     visible: !isChatGPT && !installed && !calcHash && downloadError === ""
-                                    Accessible.description: qsTr("Cancel/Resume/Download button to stop/restart/start the download")
+                                    Accessible.description: qsTr("Stop/restart/start the download")
                                     background: Rectangle {
                                         border.color: downloadButton.down ? theme.backgroundLightest : theme.buttonBorder
                                         border.width: 2
@@ -151,7 +151,7 @@ MyDialog {
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     visible: installed || downloadError !== ""
-                                    Accessible.description: qsTr("Remove button to remove model from filesystem")
+                                    Accessible.description: qsTr("Remove model from filesystem")
                                     background: Rectangle {
                                         border.color: removeButton.down ? theme.backgroundLightest : theme.buttonBorder
                                         border.width: 2
@@ -186,8 +186,8 @@ MyDialog {
                                             Download.installModel(filename, openaiKey.text);
                                     }
                                     Accessible.role: Accessible.Button
-                                    Accessible.name: qsTr("Install button")
-                                    Accessible.description: qsTr("Install button to install chatgpt model")
+                                    Accessible.name: qsTr("Install")
+                                    Accessible.description: qsTr("Install chatGPT model")
                                 }
 
                                 ColumnLayout {
@@ -385,7 +385,7 @@ MyDialog {
                             linkColor: theme.textColor
                             Accessible.role: Accessible.Paragraph
                             Accessible.name: qsTr("Description")
-                            Accessible.description: qsTr("The description of the file")
+                            Accessible.description: qsTr("File description")
                             onLinkActivated: Qt.openUrlExternally(link)
                         }
                     }
@@ -456,7 +456,7 @@ MyDialog {
             }
             MyButton {
                 text: qsTr("Browse")
-                Accessible.description: qsTr("Opens a folder picker dialog to choose where to save model files")
+                Accessible.description: qsTr("Choose where to save model files")
                 onClicked: modelPathDialog.open()
             }
         }

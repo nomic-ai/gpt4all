@@ -31,8 +31,8 @@ Drawer {
         anchors.margins: 10
 
         Accessible.role: Accessible.Pane
-        Accessible.name: qsTr("Drawer on the left of the application")
-        Accessible.description: qsTr("Drawer that is revealed by pressing the hamburger button")
+        Accessible.name: qsTr("Drawer")
+        Accessible.description: qsTr("Main navigation drawer")
 
         MyButton {
             id: newChat
@@ -42,7 +42,7 @@ Drawer {
             topPadding: 20
             bottomPadding: 20
             text: qsTr("\uFF0B New chat")
-            Accessible.description: qsTr("Use this to create a new chat")
+            Accessible.description: qsTr("Create a new chat")
             background: Rectangle {
                 border.color: newChat.down ? theme.backgroundLightest : theme.buttonBorder
                 border.width: 2
@@ -135,7 +135,7 @@ Drawer {
                         }
                         Accessible.role: Accessible.Button
                         Accessible.name: qsTr("Select the current chat")
-                        Accessible.description: qsTr("Provides a button to select the current chat or edit the chat when in edit mode")
+                        Accessible.description: qsTr("Select the current chat or edit the chat when in edit mode")
                     }
                     Row {
                         id: buttons
@@ -155,8 +155,7 @@ Drawer {
                                 chatName.readOnly = false
                                 chatName.selectByMouse = true
                             }
-                            Accessible.name: qsTr("Edit the chat name")
-                            Accessible.description: qsTr("Provides a button to edit the chat name")
+                            Accessible.name: qsTr("Edit chat name")
                         }
                         MyToolButton {
                             id: trashButton
@@ -168,8 +167,7 @@ Drawer {
                                 trashQuestionDisplayed = true
                                 timer.start()
                             }
-                            Accessible.name: qsTr("Delete of the chat")
-                            Accessible.description: qsTr("Provides a button to delete the chat")
+                            Accessible.name: qsTr("Delete chat")
                         }
                     }
                     Rectangle {
@@ -207,8 +205,7 @@ Drawer {
                                     Network.sendRemoveChat()
                                 }
                                 Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Confirm delete of the chat")
-                                Accessible.description: qsTr("Provides a button to confirm delete of the chat")
+                                Accessible.name: qsTr("Confirm chat deletion")
                             }
                             Button {
                                 id: cancel
@@ -230,8 +227,7 @@ Drawer {
                                     trashQuestionDisplayed = false
                                 }
                                 Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Cancel the delete of the chat")
-                                Accessible.description: qsTr("Provides a button to cancel delete of the chat")
+                                Accessible.name: qsTr("Cancel chat deletion")
                             }
                         }
                     }
@@ -256,7 +252,7 @@ Drawer {
             anchors.bottomMargin: 10
             text: qsTr("Updates")
             font.pixelSize: theme.fontSizeLarge
-            Accessible.description: qsTr("Use this to launch an external application that will check for updates to the installer")
+            Accessible.description: qsTr("Launch an external application that will check for updates to the installer")
             onClicked: {
                 if (!LLM.checkForUpdates())
                     checkForUpdatesError.open()
@@ -270,7 +266,7 @@ Drawer {
             anchors.bottom: aboutButton.top
             anchors.bottomMargin: 10
             text: qsTr("Downloads")
-            Accessible.description: qsTr("Use this to launch a dialog to download new models")
+            Accessible.description: qsTr("Launch a dialog to download new models")
             onClicked: {
                 downloadClicked()
             }
@@ -282,7 +278,7 @@ Drawer {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             text: qsTr("About")
-            Accessible.description: qsTr("Use this to launch a dialog to show the about page")
+            Accessible.description: qsTr("Launch a dialog to show the about page")
             onClicked: {
                 aboutClicked()
             }

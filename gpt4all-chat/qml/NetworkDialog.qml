@@ -89,7 +89,7 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
             }
             Accessible.role: Accessible.EditableText
             Accessible.name: qsTr("Attribution (optional)")
-            Accessible.description: qsTr("Textfield for providing attribution")
+            Accessible.description: qsTr("Provide attribution")
             onEditingFinished: {
                 MySettings.networkAttribution = attribution.text;
             }
@@ -103,12 +103,12 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         spacing: 10
         MyButton {
             text: qsTr("Enable")
-            Accessible.description: qsTr("Enable opt-in button")
+            Accessible.description: qsTr("Enable opt-in")
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
         MyButton {
             text: qsTr("Cancel")
-            Accessible.description: qsTr("Cancel opt-in button")
+            Accessible.description: qsTr("Cancel opt-in")
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
         }
         background: Rectangle {

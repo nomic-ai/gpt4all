@@ -69,7 +69,7 @@ Item {
                     font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.Button
                     Accessible.name: text
-                    Accessible.description: qsTr("Restores the settings dialog to a default state")
+                    Accessible.description: qsTr("Restores settings dialog to a default state")
                     onClicked: {
                         root.restoreDefaultsClicked();
                     }
