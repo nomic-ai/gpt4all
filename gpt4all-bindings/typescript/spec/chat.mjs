@@ -1,7 +1,7 @@
 import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
 const model = await loadModel(
-    'orca-mini-3b.ggmlv3.q4_0.bin',
+    'orca-mini-3b-gguf2-q4_0.gguf',
     { verbose: true }
 );
 const ll = model.llm;
