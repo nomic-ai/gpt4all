@@ -10,6 +10,8 @@
 #include <cassert>
 #include <cstdlib>
 #include <sstream>
+#include <regex>
+#include <iterator>
 #ifdef _MSC_VER
 #include <intrin.h>
 #endif
@@ -75,40 +77,47 @@ bool LLModel::Implementation::isImplementation(const Dlhandle &dl) {
     return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
+static bool s_scanned = false;
+
 const std::vector<LLModel::Implementation> &LLModel::Implementation::implementationList() {
-    // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
-    // individual models without the cleanup of the static list interfering
-    static auto* libs = new std::vector<Implementation>([] () {
-        std::vector<Implementation> fres;
+    static std::vector<LLModel::Implementation> s_impl_libs;
 
-        auto search_in_directory = [&](const std::string& paths) {
-            std::stringstream ss(paths);
-            std::string path;
-            // Split the paths string by the delimiter and process each path.
-            while (std::getline(ss, path, ';')) {
-                std::filesystem::path fs_path(path);
-                // Iterate over all libraries
-                for (const auto& f : std::filesystem::directory_iterator(fs_path)) {
-                    const std::filesystem::path& p = f.path();
-                    if (p.extension() != LIB_FILE_EXT) continue;
-                    // Add to list if model implementation
-                    try {
-                        Dlhandle dl(p.string());
-                        if (!Implementation::isImplementation(dl)) {
-                            continue;
-                        }
-                        fres.emplace_back(Implementation(std::move(dl)));
-                    } catch (...) {}
-                }
+    if(s_scanned) { return s_impl_libs; }
+    std::string impl_name_re = "(bert|llama|gptj|llamamodel-mainline)";
+    if (requires_avxonly()) {
+        impl_name_re += "-avxonly";
+    } else {
+        impl_name_re += "-(default|metal)";
+    }
+    std::regex re(impl_name_re);
+    auto search_in_directory = [&](const std::string& paths) {
+        std::stringstream ss(paths);
+        std::string path;
+        // Split the paths string by the delimiter and process each path.
+        while (std::getline(ss, path, ';')) {
+            std::filesystem::path fs_path(path);
+            // Iterate over all libraries
+            for (const auto& f : std::filesystem::directory_iterator(fs_path)) {
+                const std::filesystem::path& p = f.path();
+
+                if (p.extension() != LIB_FILE_EXT) continue;
+                if (!std::regex_search(p.stem().string(), re)) continue;
+
+                // Add to list if model implementation
+                try {
+                    Dlhandle dl(p.string());
+                    if (!Implementation::isImplementation(dl)) {
+                        continue;
+                    }
+                    s_impl_libs.emplace_back(Implementation(std::move(dl)));
+                } catch (...) {}
             }
-        };
+        }
+    };
+    search_in_directory(s_implementations_search_path);
+    s_scanned = true;
 
-        search_in_directory(s_implementations_search_path);
-
-        return fres;
-    }());
-    // Return static result
-    return *libs;
+    return s_impl_libs;
 }
 
 const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant) {
@@ -170,6 +179,7 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
 
 void LLModel::Implementation::setImplementationsSearchPath(const std::string& path) {
     s_implementations_search_path = path;
+    s_scanned = false;
 }
 
 const std::string& LLModel::Implementation::implementationsSearchPath() {
