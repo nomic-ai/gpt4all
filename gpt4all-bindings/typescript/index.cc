@@ -1,6 +1,5 @@
 #include "index.h"
 
-Napi::FunctionReference NodeModelWrapper::constructor;
 
 Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     Napi::Function self = DefineClass(env, "LLModel", {
@@ -20,8 +19,9 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     });
     // Keep a static reference to the constructor
     //
-    constructor = Napi::Persistent(self);
-    constructor.SuppressDestruct();
+    Napi::FunctionReference* constructor = new Napi::FunctionReference();
+    *constructor = Napi::Persistent(self);
+    env.SetInstanceData(constructor);
     return self;
 }
 Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info) 
@@ -137,7 +137,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
         .message="looks good to me",
         .code=0,
     };
-    inference_ = std::make_shared<llmodel_model>(llmodel_model_create2(full_weight_path.c_str(), "auto", &e));
+    inference_ = llmodel_model_create2(full_weight_path.c_str(), "auto", &e);
     if(e.code != 0) {
        Napi::Error::New(env, e.message).ThrowAsJavaScriptException(); 
        return;
@@ -174,14 +174,20 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     name = model_name.empty() ? model_path.filename().string() : model_name;
     full_model_path = full_weight_path;
   };
-  NodeModelWrapper::~NodeModelWrapper() {
-    if(GetInference() != nullptr) {
-        std::cout << "Debug: deleting model\n";
-        llmodel_model_destroy(p);
-        inference_.reset();
-    }
-  }
 
+//  NodeModelWrapper::~NodeModelWrapper() {
+//    if(GetInference() != nullptr) {
+//        std::cout << "Debug: deleting model\n";
+//        llmodel_model_destroy(inference_);
+//        std::cout << (inference_ == nullptr);
+//    }
+//  }
+//  void NodeModelWrapper::Finalize(Napi::Env env) {
+//    if(inference_ != nullptr) {
+//        std::cout << "Debug: deleting model\n";
+//
+//    } 
+//  }
   Napi::Value NodeModelWrapper::IsModelLoaded(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(GetInference()));
   }
@@ -289,8 +295,9 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     std::string copiedQuestion = question;
     PromptWorkContext pc = {
         copiedQuestion,
-        std::ref(inference_),
+        inference_,
         copiedPrompt,
+        ""
     };
     auto threadSafeContext = new TsfnContext(env, pc);
     threadSafeContext->tsfn = Napi::ThreadSafeFunction::New(
@@ -329,7 +336,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
   }
 
   llmodel_model NodeModelWrapper::GetInference() {
-    return *inference_;
+    return inference_;
   }
 
 //Exports Bindings

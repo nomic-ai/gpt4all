@@ -1,7 +1,7 @@
 import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
 const model = await loadModel(
-    'orca-mini-3b.ggmlv3.q4_0.bin',
+    'mistral-7b-openorca.Q4_0.gguf',
     { verbose: true, device: 'gpu' }
 );
 const ll = model.llm;
@@ -49,16 +49,16 @@ console.log(completion2.choices[0].message)
 // INFO: threading with llama.cpp is not the best maybe not even possible, so this will be left here as reference
 
 //const responses = await Promise.all([
-//    createCompletion(ll, [ 
+//    createCompletion(model, [ 
 //    { role : 'system', content: 'You are an advanced mathematician.'  },
 //    { role : 'user', content: 'What is 1 + 1?'  }, 
 //    ], { verbose: true }),
-//    createCompletion(ll, [ 
+//    createCompletion(model, [ 
 //    { role : 'system', content: 'You are an advanced mathematician.'  },
 //    { role : 'user', content: 'What is 1 + 1?'  }, 
 //    ], { verbose: true }),
 //
-//createCompletion(ll, [ 
+//createCompletion(model, [ 
 //    { role : 'system', content: 'You are an advanced mathematician.'  },
 //    { role : 'user', content: 'What is 1 + 1?'  }, 
 //], { verbose: true })

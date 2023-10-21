@@ -9,31 +9,15 @@
 #include <set>
 namespace fs = std::filesystem;
 
-struct ModelDeleter
-{
-    void operator()(llmodel_model p) const
-    {
-        std::cout << "Debug: deleting model\n";
-        llmodel_model_destroy(p);
-    }
-};
-
-std::shared_ptr<llmodel_model> 
-make_shared_model(llmodel_model* surface,
-        const char *model_path,
-        const char *build_variant,
-        llmodel_error *error)
-{
-    return std::shared_ptr<llmodel_model>(surface, model_path, build_variant, error, ModelDeleter);
-};
 
 class NodeModelWrapper: public Napi::ObjectWrap<NodeModelWrapper> {
 public:
   NodeModelWrapper(const Napi::CallbackInfo &);
-  ~NodeModelWrapper();
+  //virtual ~NodeModelWrapper();
   Napi::Value getType(const Napi::CallbackInfo& info);
   Napi::Value IsModelLoaded(const Napi::CallbackInfo& info);
   Napi::Value StateSize(const Napi::CallbackInfo& info);
+  //void Finalize(Napi::Env env) override;
   /**
    * Prompting the model. This entails spawning a new thread and adding the response tokens
    * into a thread local string variable.
@@ -61,11 +45,10 @@ private:
   /**
    * The underlying inference that interfaces with the C interface
    */
-  std::shared_ptr<llmodel_model> inference_;
+  llmodel_model inference_;
 
   std::string type;
   // corresponds to LLModel::name() in typescript
   std::string name;
   std::string full_model_path;
-  static Napi::FunctionReference constructor;
 };
