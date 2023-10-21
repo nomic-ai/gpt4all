@@ -156,7 +156,6 @@ Drawer {
                                 chatName.selectByMouse = true
                             }
                             Accessible.name: qsTr("Edit chat name")
-                            Accessible.description: qsTr("")
                         }
                         MyToolButton {
                             id: trashButton
@@ -169,7 +168,6 @@ Drawer {
                                 timer.start()
                             }
                             Accessible.name: qsTr("Delete chat")
-                            Accessible.description: qsTr("")
                         }
                     }
                     Rectangle {
@@ -208,7 +206,6 @@ Drawer {
                                 }
                                 Accessible.role: Accessible.Button
                                 Accessible.name: qsTr("Confirm chat deletion")
-                                Accessible.description: qsTr("")
                             }
                             Button {
                                 id: cancel
@@ -231,7 +228,6 @@ Drawer {
                                 }
                                 Accessible.role: Accessible.Button
                                 Accessible.name: qsTr("Cancel chat deletion")
-                                Accessible.description: qsTr("")
                             }
                         }
                     }

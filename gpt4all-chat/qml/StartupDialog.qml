@@ -133,7 +133,6 @@ model release that uses your data!")
                 font.pixelSize: theme.fontSizeLarge
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Opt-in for anonymous usage statistics")
-                Accessible.description: qsTr("")
             }
 
             ButtonGroup {
