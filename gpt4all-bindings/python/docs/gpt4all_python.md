@@ -11,7 +11,7 @@ pip install gpt4all
 === "GPT4All Example"
     ``` py
     from gpt4all import GPT4All
-    model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin")
+    model = GPT4All("orca-mini-3b-gguf2-q4_0.gguf")
     output = model.generate("The capital of France is ", max_tokens=3)
     print(output)
     ```
@@ -35,7 +35,7 @@ Use the GPT4All `chat_session` context manager to hold chat conversations with t
 
 === "GPT4All Example"
     ``` py
-    model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
+    model = GPT4All(model_name='orca-mini-3b-gguf2-q4_0.gguf')
     with model.chat_session():
         response1 = model.generate(prompt='hello', temp=0)
         response2 = model.generate(prompt='write me a short poem', temp=0)
@@ -89,7 +89,7 @@ To interact with GPT4All responses as the model generates, use the `streaming=Tr
 === "GPT4All Streaming Example"
     ``` py
     from gpt4all import GPT4All
-    model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin")
+    model = GPT4All("orca-mini-3b-gguf2-q4_0.gguf")
     tokens = []
     for token in model.generate("The capital of France is", max_tokens=20, streaming=True):
         tokens.append(token)
@@ -135,7 +135,7 @@ is the same as if it weren't provided; that is, `~/.cache/gpt4all/` is the defau
     ``` py
     from pathlib import Path
     from gpt4all import GPT4All
-    model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin',
+    model = GPT4All(model_name='orca-mini-3b-gguf2-q4_0.gguf',
                     model_path=(Path.home() / '.cache' / 'gpt4all'),
                     allow_download=False)
     response = model.generate('my favorite 3 fruits are:', temp=0)
@@ -152,7 +152,7 @@ If you want to point it at the chat GUI's default folder, it should be:
     from pathlib import Path
     from gpt4all import GPT4All
 
-    model_name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+    model_name = 'orca-mini-3b-gguf2-q4_0.gguf'
     model_path = Path.home() / 'Library' / 'Application Support' / 'nomic.ai' / 'GPT4All'
     model = GPT4All(model_name, model_path)
     ```
@@ -161,7 +161,7 @@ If you want to point it at the chat GUI's default folder, it should be:
     from pathlib import Path
     from gpt4all import GPT4All
     import os
-    model_name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+    model_name = 'orca-mini-3b-gguf2-q4_0.gguf'
     model_path = Path(os.environ['LOCALAPPDATA']) / 'nomic.ai' / 'GPT4All'
     model = GPT4All(model_name, model_path)
     ```
@@ -170,7 +170,7 @@ If you want to point it at the chat GUI's default folder, it should be:
     from pathlib import Path
     from gpt4all import GPT4All
 
-    model_name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+    model_name = 'orca-mini-3b-gguf2-q4_0.gguf'
     model_path = Path.home() / '.local' / 'share' / 'nomic.ai' / 'GPT4All'
     model = GPT4All(model_name, model_path)
     ```
@@ -182,7 +182,7 @@ from pathlib import Path
 import gpt4all.gpt4all
 gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY = Path.home() / 'my' / 'models-directory'
 from gpt4all import GPT4All
-model = GPT4All('orca-mini-3b.ggmlv3.q4_0.bin')
+model = GPT4All('orca-mini-3b-gguf2-q4_0.gguf')
 ...
 ```
 
@@ -193,7 +193,7 @@ Session templates can be customized when starting a `chat_session` context:
 === "GPT4All Custom Session Templates Example"
     ``` py
     from gpt4all import GPT4All
-    model = GPT4All('ggml-Wizard-Vicuna-7B-Uncensored.ggmlv3.q4_1.bin')
+    model = GPT4All('wizardlm-13b-v1.2.Q4_0.gguf')
     system_template = 'A chat between a curious user and an artificial intelligence assistant.'
     # many models use triple hash '###' for keywords, Vicunas are simpler:
     prompt_template = 'USER: {0}\nASSISTANT: '
@@ -222,7 +222,7 @@ To do the same outside a session, the input has to be formatted manually. For ex
 
 === "GPT4All Templates Outside a Session Example"
     ``` py
-    model = GPT4All('ggml-Wizard-Vicuna-7B-Uncensored.ggmlv3.q4_1.bin')
+    model = GPT4All('wizardlm-13b-v1.2.Q4_0.gguf')
     system_template = 'A chat between a curious user and an artificial intelligence assistant.'
     prompt_template = 'USER: {0}\nASSISTANT: '
     prompts = ['name 3 colors', 'now name 3 fruits', 'what were the 3 colors in your earlier response?']
@@ -285,7 +285,7 @@ customized in a subclass. As an example:
     ```
 === "GPT4All Custom Subclass Example"
     ``` py
-    model = RotatingTemplateGPT4All('ggml-Wizard-Vicuna-7B-Uncensored.ggmlv3.q4_1.bin')
+    model = RotatingTemplateGPT4All('wizardlm-13b-v1.2.Q4_0.gguf')
     with model.chat_session():  # starting a session is optional in this example
         response1 = model.generate("hi, who are you?")
         print(response1)
@@ -345,7 +345,7 @@ logging infrastructure offers [many more customization options][py-logging-cookb
     import logging
     from gpt4all import GPT4All
     logging.basicConfig(level=logging.INFO)
-    model = GPT4All('nous-hermes-13b.ggmlv3.q4_0.bin')
+    model = GPT4All('nous-hermes-llama2-13b.Q4_0.gguf')
     with model.chat_session('You are a geography expert.\nBe terse.',
                             '### Instruction:\n{0}\n### Response:\n'):
         response = model.generate('who are you?', temp=0)
@@ -414,7 +414,7 @@ If you know exactly when a model should stop responding, you can add a custom ca
 === "GPT4All Custom Stop Callback"
     ``` py
     from gpt4all import GPT4All
-    model = GPT4All('orca-mini-3b.ggmlv3.q4_0.bin')
+    model = GPT4All('orca-mini-3b-gguf2-q4_0.gguf')
 
     def stop_on_token_callback(token_id, token_string):
         # one sentence is enough:

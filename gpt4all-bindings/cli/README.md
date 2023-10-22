@@ -40,5 +40,5 @@ directory, if necessary.
 If you have already saved a model beforehand, specify its path with the `-m`/`--model` argument,
 for example:
 ```shell
-python app.py repl --model /home/user/my-gpt4all-models/GPT4All-13B-snoozy.ggmlv3.q4_0.bin
+python app.py repl --model /home/user/my-gpt4all-models/gpt4all-13b-snoozy-q4_0.gguf
 ```
