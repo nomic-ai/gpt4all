@@ -282,8 +282,8 @@ Window {
                     highlighted: comboBox.highlightedIndex === index
                 }
                 Accessible.role: Accessible.ComboBox
-                Accessible.name: qsTr(List of available models"")
-                Accessible.description: qsTr(" The top item is the current model")
+                Accessible.name: qsTr("List of available models")
+                Accessible.description: qsTr("The top item is the current model")
                 onActivated: function (index) {
                     currentChat.stopGenerating()
                     currentChat.reset();
