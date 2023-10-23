@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 from transformers import AutoModelForCausalLM, AutoTokenizer, get_scheduler
 import torch

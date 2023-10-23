@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """GPT4All CLI
 
 The GPT4All CLI is a self-contained script based on the `gpt4all` and `typer` packages. It offers a

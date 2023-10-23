@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModelForCausalLM
 from read import read_config
