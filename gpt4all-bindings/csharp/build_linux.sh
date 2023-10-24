@@ -1,3 +1,4 @@
+#!/bin/sh
 mkdir -p runtimes
 rm -rf runtimes/linux-x64
 mkdir -p runtimes/linux-x64/native

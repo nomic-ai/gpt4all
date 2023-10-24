@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import numpy as np
 from nomic import atlas
 import glob
