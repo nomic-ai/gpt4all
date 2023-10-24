@@ -490,6 +490,9 @@ struct bert_ctx * bert_load_from_file(const char *fname)
 #endif
 
     bert_ctx * new_bert = new bert_ctx;
+    new_bert->buf_compute.force_cpu = true;
+    new_bert->work_buf.force_cpu = true;
+
     bert_model & model = new_bert->model;
     bert_vocab & vocab = new_bert->vocab;
 
