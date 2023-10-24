@@ -1,11 +1,9 @@
 <h1 align="center">GPT4All</h1>
 
-<p align="center">Open-source assistant-style large language models that run locally on your CPU</p>
-
-<p align="center"><strong>New</strong>: Now with Nomic Vulkan Universal GPU support. <a href="https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan">Learn more</a>.</p>
+<p align="center">Open-source large language models that run locally on your CPU and nearly any GPU</p>
 
 <p align="center">
-<a href="https://gpt4all.io">GPT4All Website</a>
+<a href="https://gpt4all.io">GPT4All Website and Models</a>
 </p>
 
 <p align="center">
@@ -32,14 +30,19 @@ Run on an M1 macOS Device (not sped up!)
 </p>
 
 ## GPT4All: An ecosystem of open-source on-edge large language models.
-GPT4All is an ecosystem to train and deploy **powerful** and **customized** large language models that run locally on consumer grade CPUs. Note that your CPU needs to support [AVX or AVX2 instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions).
+GPT4All is an ecosystem to run **powerful** and **customized** large language models that work locally on consumer grade CPUs and any GPU. Note that your CPU needs to support [AVX or AVX2 instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions).
 
 Learn more in the [documentation](https://docs.gpt4all.io).
 
-The goal is simple - be the best instruction tuned assistant-style language model that any person or enterprise can freely use, distribute and build on.
-
 A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4All open-source ecosystem software. **Nomic AI** supports and maintains this software ecosystem to enforce quality and security alongside spearheading the effort to allow any person or enterprise to easily train and deploy their own on-edge large language models. 
 
+**What's New**
+- **October 19th, 2023**: GGUF Support Launches with Support for:
+    - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
+    - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4_0, Q6 quantizations in GGUF.
+- **September 18th, 2023**: [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) launches supporting local LLM inference on AMD, Intel, Samsung, Qualcomm and NVIDIA GPUs.
+- **August 15th, 2023**: GPT4All API launches allowing inference of local LLMs from docker containers.
+- **July 2023**: Stable support for LocalDocs, a GPT4All Plugin that allows you to privately and locally chat with your data.
 
 ### Chat Client
 Run any GPT4All model natively on your home desktop with the auto-updating desktop chat client. See <a href="https://gpt4all.io">GPT4All Website</a> for a full list of open-source models you can run with this powerful desktop application.
