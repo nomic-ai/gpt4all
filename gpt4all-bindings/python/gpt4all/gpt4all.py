@@ -75,7 +75,7 @@ class GPT4All:
         Constructor
 
         Args:
-            model_name: Name of GPT4All or custom model. Including ".bin" file extension is optional but encouraged.
+            model_name: Name of GPT4All or custom model. Including ".gguf" file extension is optional but encouraged.
             model_path: Path to directory containing model file or, if file does not exist, where to download model.
                 Default is None, in which case models will be stored in `~/.cache/gpt4all/`.
             model_type: Model architecture. This argument currently does not have any functionality and is just used as
@@ -141,7 +141,7 @@ class GPT4All:
             Model config.
         """
 
-        model_filename = append_bin_suffix_if_missing(model_name)
+        model_filename = append_extension_if_missing(model_name)
 
         # get the config for the model
         config: ConfigType = DEFAULT_MODEL_CONFIG
@@ -201,7 +201,7 @@ class GPT4All:
         Download model from https://gpt4all.io.
 
         Args:
-            model_filename: Filename of model (with .bin extension).
+            model_filename: Filename of model (with .gguf extension).
             model_path: Path to download model to.
             verbose: If True (default), print debug messages.
             url: the models remote url (e.g. may be hosted on HF)
@@ -456,7 +456,7 @@ def empty_chat_session(system_prompt: str = "") -> List[MessageType]:
     return [{"role": "system", "content": system_prompt}]
 
 
-def append_bin_suffix_if_missing(model_name):
+def append_extension_if_missing(model_name):
     if not model_name.endswith((".bin", ".gguf")):
-        model_name += ".bin"
+        model_name += ".gguf"
     return model_name
