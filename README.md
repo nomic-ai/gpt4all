@@ -30,13 +30,17 @@ Run on an M1 macOS Device (not sped up!)
 </p>
 
 ## GPT4All: An ecosystem of open-source on-edge large language models.
+
+> [!IMPORTANT]
+> GPT4All v2.5.0 and newer only supports models in GGUF format (.gguf). Models used with a previous version of GPT4All (.bin extension) will no longer work.
+
 GPT4All is an ecosystem to run **powerful** and **customized** large language models that work locally on consumer grade CPUs and any GPU. Note that your CPU needs to support [AVX or AVX2 instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions).
 
 Learn more in the [documentation](https://docs.gpt4all.io).
 
-A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4All open-source ecosystem software. **Nomic AI** supports and maintains this software ecosystem to enforce quality and security alongside spearheading the effort to allow any person or enterprise to easily train and deploy their own on-edge large language models. 
+A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4All open-source ecosystem software. **Nomic AI** supports and maintains this software ecosystem to enforce quality and security alongside spearheading the effort to allow any person or enterprise to easily train and deploy their own on-edge large language models.
 
-**What's New**
+### What's New
 - **October 19th, 2023**: GGUF Support Launches with Support for:
     - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
     - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4_0, Q6 quantizations in GGUF.
