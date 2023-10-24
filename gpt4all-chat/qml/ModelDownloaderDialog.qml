@@ -16,9 +16,17 @@ MyDialog {
     modal: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     padding: 10
+    property bool showEmbeddingModels: false
 
     onOpened: {
         Network.sendModelDownloaderDialog();
+
+        if (showEmbeddingModels) {
+            ModelList.downloadableModels.expanded = true
+            var targetModelIndex = ModelList.defaultEmbeddingModelIndex
+            console.log("targetModelIndex " + targetModelIndex)
+            modelListView.positionViewAtIndex(targetModelIndex, ListView.Contain);
+        }
     }
 
     PopupDialog {

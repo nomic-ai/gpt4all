@@ -138,7 +138,7 @@
     "type": "Replit",
     "systemPrompt": " ",
     "promptTemplate": "%1",
-    "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>Licensed for commercial use</ul>",
+    "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>Licensed for commercial use<li>WARNING: Not available for chat GUI</ul>",
     "url": "https://gpt4all.io/models/gguf/replit-code-v1_5-3b-q4_0.gguf"
   },
   {
@@ -155,7 +155,7 @@
     "type": "Starcoder",
     "systemPrompt": " ",
     "promptTemplate": "%1",
-    "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based</ul>",
+    "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>WARNING: Not available for chat GUI</ul>",
     "url": "https://gpt4all.io/models/gguf/starcoder-q4_0.gguf"
   },
   {
@@ -172,7 +172,7 @@
     "type": "LLaMA",
     "systemPrompt": " ",
     "promptTemplate": "%1",
-    "description": "Code completion model",
+    "description": "<strong>Trained on collection of Python and TypeScript</strong><br><ul><li>Code completion based<li>WARNING: Not available for chat GUI</li>",
     "url": "https://gpt4all.io/models/gguf/rift-coder-v0-7b-q4_0.gguf"
   },
   {
@@ -184,11 +184,11 @@
     "filesize": "45887744",
     "requires": "2.5.0",
     "ramrequired": "1",
-    "parameters": "1 million",
+    "parameters": "40 million",
     "quant": "f16",
     "type": "Bert",
     "systemPrompt": " ",
-    "description": "<strong>Sbert</strong><br><ul><li>For embeddings",
+    "description": "<strong>LocalDocs text embeddings model</strong><br><ul><li>Necessary for LocalDocs feature<li>Used for retrieval augmented generation (RAG)",
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
   },
   {
