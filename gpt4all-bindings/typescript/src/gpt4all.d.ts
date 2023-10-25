@@ -61,6 +61,11 @@ declare class InferenceModel {
         prompt: string,
         options?: Partial<LLModelPromptContext>
     ): Promise<string>;
+
+   /**
+     * delete and cleanup the native model
+    */
+    dispose(): void
 }
 
 declare class EmbeddingModel {
@@ -69,6 +74,12 @@ declare class EmbeddingModel {
     config: ModelConfig;
 
     embed(text: string): Float32Array;
+
+    /**
+      * delete and cleanup the native model
+     */
+    dispose(): void
+
 }
 
 /**
@@ -163,6 +174,11 @@ declare class LLModel {
       * @returns 
       */
     listGpu() : GpuDevice[]
+
+    /**
+      * delete and cleanup the native model
+     */
+    dispose(): void
 }
 /** 
   * an object that contains gpu data on this machine.

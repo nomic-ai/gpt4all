@@ -15,6 +15,10 @@ class InferenceModel {
         const result = this.llm.raw_prompt(prompt, normalizedPromptContext, () => {});
         return result;
     }
+
+    dispose() {
+        this.llm.dispose();
+    }
 }
 
 class EmbeddingModel {
@@ -28,6 +32,10 @@ class EmbeddingModel {
 
     embed(text) {
         return this.llm.embed(text)
+    }
+
+    dispose() {
+        this.llm.dispose();
     }
 }
 

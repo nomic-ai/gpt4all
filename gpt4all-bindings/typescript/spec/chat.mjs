@@ -41,7 +41,9 @@ const completion2 = await createCompletion(model, [
 ], {  verbose: true })
 
 console.log(completion2.choices[0].message)
-ll.dispose()
+
+//CALLING DISPOSE WILL INVALID THE NATIVE MODEL. USE THIS TO CLEANUP
+model.dispose()
 // At the moment, from testing this code, concurrent model prompting is not possible. 
 // Behavior: The last prompt gets answered, but the rest are cancelled
 // my experience with threading is not the best, so if anyone who is good is willing to give this a shot,
