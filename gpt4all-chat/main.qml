@@ -282,8 +282,8 @@ Window {
                     highlighted: comboBox.highlightedIndex === index
                 }
                 Accessible.role: Accessible.ComboBox
-                Accessible.name: qsTr("ComboBox for displaying/picking the current model")
-                Accessible.description: qsTr("Use this for picking the current model to use; the first item is the current model")
+                Accessible.name: qsTr("List of available models")
+                Accessible.description: qsTr("The top item is the current model")
                 onActivated: function (index) {
                     currentChat.stopGenerating()
                     currentChat.reset();
@@ -307,7 +307,7 @@ Window {
                     running: parent.visible
                     Accessible.role: Accessible.Animation
                     Accessible.name: qsTr("Busy indicator")
-                    Accessible.description: qsTr("Displayed when the model is loading")
+                    Accessible.description: qsTr("loading model...")
                 }
 
                 Label {
@@ -339,8 +339,8 @@ Window {
         padding: 15
 
         Accessible.role: Accessible.ButtonMenu
-        Accessible.name: qsTr("Hamburger button")
-        Accessible.description: qsTr("Hamburger button that reveals a drawer on the left of the application")
+        Accessible.name: qsTr("Main menu")
+        Accessible.description: qsTr("Navigation drawer with options")
 
         background: Item {
             anchors.centerIn: parent
@@ -389,7 +389,7 @@ Window {
         Item {
             Accessible.role: Accessible.Dialog
             Accessible.name: qsTr("Network dialog")
-            Accessible.description: qsTr("Dialog for opt-in to sharing feedback/conversations")
+            Accessible.description: qsTr("opt-in to share feedback/conversations")
         }
     }
 
@@ -405,7 +405,7 @@ Window {
         padding: 15
         toggled: MySettings.networkIsActive
         source: "qrc:/gpt4all/icons/network.svg"
-        Accessible.name: qsTr("Network button")
+        Accessible.name: qsTr("Network")
         Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
 
         onClicked: {
@@ -441,8 +441,8 @@ Window {
         padding: 15
         toggled: currentChat.collectionList.length
         source: "qrc:/gpt4all/icons/db.svg"
-        Accessible.name: qsTr("Add collections of documents to the chat")
-        Accessible.description: qsTr("Provides a button to add collections of documents to the chat")
+        Accessible.name: qsTr("Add documents")
+        Accessible.description: qsTr("add collections of documents to the chat")
 
         onClicked: {
             collectionsDialog.open()
@@ -460,8 +460,8 @@ Window {
         z: 200
         padding: 15
         source: "qrc:/gpt4all/icons/settings.svg"
-        Accessible.name: qsTr("Settings button")
-        Accessible.description: qsTr("Reveals a dialogue where you can change various settings")
+        Accessible.name: qsTr("Settings")
+        Accessible.description: qsTr("Reveals a dialogue with settings")
 
         onClicked: {
             settingsDialog.open()
@@ -528,7 +528,7 @@ Window {
         z: 200
         padding: 15
         source: "qrc:/gpt4all/icons/copy.svg"
-        Accessible.name: qsTr("Copy button")
+        Accessible.name: qsTr("Copy")
         Accessible.description: qsTr("Copy the conversation to the clipboard")
 
         TextEdit{
@@ -595,7 +595,7 @@ Window {
         source: "qrc:/gpt4all/icons/regenerate.svg"
 
         Accessible.name: text
-        Accessible.description: qsTr("Reset the context which erases current conversation")
+        Accessible.description: qsTr("Reset the context and erase current conversation")
 
         onClicked: {
             Network.sendResetContext(chatModel.count)
@@ -623,7 +623,7 @@ Window {
             font.pixelSize: theme.fontSizeLarge
             Accessible.role: Accessible.Dialog
             Accessible.name: text
-            Accessible.description: qsTr("Dialog indicating an error")
+            Accessible.description: qsTr("Error dialog")
         }
         background: Rectangle {
             anchors.fill: parent
@@ -641,7 +641,7 @@ Window {
         height: window.height - (window.height * .1)
         Item {
             Accessible.role: Accessible.Dialog
-            Accessible.name: qsTr("Download new models dialog")
+            Accessible.name: qsTr("Download new models")
             Accessible.description: qsTr("Dialog for downloading new models")
         }
     }
@@ -740,8 +740,8 @@ Window {
                     ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
                     Accessible.role: Accessible.List
-                    Accessible.name: qsTr("List of prompt/response pairs")
-                    Accessible.description: qsTr("This is the list of prompt/response pairs comprising the actual conversation with the model")
+                    Accessible.name: qsTr("Conversation with the model")
+                    Accessible.description: qsTr("prompt / response pairs from the conversation")
 
                     delegate: TextArea {
                         id: myTextArea
@@ -811,7 +811,7 @@ Window {
                                     running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
                                     Accessible.role: Accessible.Animation
                                     Accessible.name: qsTr("Busy indicator")
-                                    Accessible.description: qsTr("Displayed when the model is thinking")
+                                    Accessible.description: qsTr("The model is thinking")
                                 }
                                 Label {
                                     anchors.verticalCenter: parent.verticalCenter
@@ -1053,7 +1053,7 @@ Window {
                 }
                 Accessible.role: Accessible.EditableText
                 Accessible.name: placeholderText
-                Accessible.description: qsTr("Textfield for sending messages/prompts to the model")
+                Accessible.description: qsTr("Send messages/prompts to the model")
                 Keys.onReturnPressed: (event)=> {
                     if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
                         event.accepted = false;
@@ -1090,7 +1090,7 @@ Window {
             height: 30
             visible: !currentChat.isServer
             source: "qrc:/gpt4all/icons/send_message.svg"
-            Accessible.name: qsTr("Send the message button")
+            Accessible.name: qsTr("Send message")
             Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
 
             onClicked: {

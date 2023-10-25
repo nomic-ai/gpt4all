@@ -50,7 +50,7 @@ Test it out! In a Python script or console:
 
 ```python
 from gpt4all import GPT4All
-model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin")
+model = GPT4All("orca-mini-3b-gguf2-q4_0.gguf")
 output = model.generate("The capital of France is ", max_tokens=3)
 print(output)
 ```
@@ -59,7 +59,7 @@ print(output)
 GPU Usage
 ```python
 from gpt4all import GPT4All
-model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin", device='gpu') # device='amd', device='intel'
+model = GPT4All("orca-mini-3b-gguf2-q4_0.gguf", device='gpu') # device='amd', device='intel'
 output = model.generate("The capital of France is ", max_tokens=3)
 print(output)
 ```

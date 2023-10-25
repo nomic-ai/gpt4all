@@ -8,7 +8,7 @@ import pytest
 
 
 def test_inference():
-    model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
+    model = GPT4All(model_name='orca-mini-3b-gguf2-q4_0.gguf')
     output_1 = model.generate('hello', top_k=1)
 
     with model.chat_session():
@@ -47,49 +47,44 @@ def do_long_input(model):
 
 
 def test_inference_long_orca_3b():
-    model = GPT4All(model_name="orca-mini-3b.ggmlv3.q4_0.bin")
+    model = GPT4All(model_name="orca-mini-3b-gguf2-q4_0.gguf")
     do_long_input(model)
 
 
 def test_inference_long_falcon():
-    model = GPT4All(model_name='ggml-model-gpt4all-falcon-q4_0.bin')
+    model = GPT4All(model_name='gpt4all-falcon-q4_0.gguf')
     do_long_input(model)
 
 
 def test_inference_long_llama_7b():
-    model = GPT4All(model_name="orca-mini-7b.ggmlv3.q4_0.bin")
+    model = GPT4All(model_name="mistral-7b-openorca.Q4_0.gguf")
     do_long_input(model)
 
 
 def test_inference_long_llama_13b():
-    model = GPT4All(model_name='ggml-nous-hermes-13b.ggmlv3.q4_0.bin')
+    model = GPT4All(model_name='nous-hermes-llama2-13b.Q4_0.gguf')
     do_long_input(model)
 
 
 def test_inference_long_mpt():
-    model = GPT4All(model_name='ggml-mpt-7b-chat.bin')
+    model = GPT4All(model_name='mpt-7b-chat-q4_0.gguf')
     do_long_input(model)
 
 
 def test_inference_long_replit():
-    model = GPT4All(model_name='ggml-replit-code-v1-3b.bin')
-    do_long_input(model)
-
-
-def test_inference_long_groovy():
-    model = GPT4All(model_name='ggml-gpt4all-j-v1.3-groovy.bin')
+    model = GPT4All(model_name='replit-code-v1_5-3b-q4_0.gguf')
     do_long_input(model)
 
 
 def test_inference_hparams():
-    model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin')
+    model = GPT4All(model_name='orca-mini-3b-gguf2-q4_0.gguf')
 
     output = model.generate("The capital of france is ", max_tokens=3)
     assert 'Paris' in output
 
 
 def test_inference_falcon():
-    model = GPT4All(model_name='ggml-model-gpt4all-falcon-q4_0.bin')
+    model = GPT4All(model_name='gpt4all-falcon-q4_0.gguf')
     prompt = 'hello'
     output = model.generate(prompt)
     assert isinstance(output, str)
@@ -97,7 +92,7 @@ def test_inference_falcon():
 
 
 def test_inference_mpt():
-    model = GPT4All(model_name='ggml-mpt-7b-chat.bin')
+    model = GPT4All(model_name='mpt-7b-chat-q4_0.gguf')
     prompt = 'hello'
     output = model.generate(prompt)
     assert isinstance(output, str)

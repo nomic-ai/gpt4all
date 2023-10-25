@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <sstream>
+#include <regex>
 #ifdef _MSC_VER
 #include <intrin.h>
 #endif
@@ -81,6 +82,13 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     static auto* libs = new std::vector<Implementation>([] () {
         std::vector<Implementation> fres;
 
+        std::string impl_name_re = "(bert|llama|gptj|llamamodel-mainline)";
+        if (requires_avxonly()) {
+            impl_name_re += "-avxonly";
+        } else {
+            impl_name_re += "-(default|metal)";
+        }
+        std::regex re(impl_name_re);
         auto search_in_directory = [&](const std::string& paths) {
             std::stringstream ss(paths);
             std::string path;
@@ -90,7 +98,10 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
                 // Iterate over all libraries
                 for (const auto& f : std::filesystem::directory_iterator(fs_path)) {
                     const std::filesystem::path& p = f.path();
+
                     if (p.extension() != LIB_FILE_EXT) continue;
+                    if (!std::regex_search(p.stem().string(), re)) continue;
+
                     // Add to list if model implementation
                     try {
                         Dlhandle dl(p.string());

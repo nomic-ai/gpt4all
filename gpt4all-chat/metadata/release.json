@@ -551,5 +551,20 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.5.1",
+    "notes":
+"
+* Accessibility fixes
+* Bugfix for crasher on Windows
+",
+    "contributors":
+"
+* Aaron Miller (Nomic AI)
+* Jared Van Bortel (Nomic AI)
+* Victor Tsaran <vtsaran@yahoo.com>
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]

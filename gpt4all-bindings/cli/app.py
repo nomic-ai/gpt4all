@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """GPT4All CLI
 
 The GPT4All CLI is a self-contained script based on the `gpt4all` and `typer` packages. It offers a
@@ -53,7 +54,7 @@ def repl(
     model: Annotated[
         str,
         typer.Option("--model", "-m", help="Model to use for chatbot"),
-    ] = "ggml-gpt4all-j-v1.3-groovy",
+    ] = "mistral-7b-instruct-v0.1.Q4_0.gguf",
     n_threads: Annotated[
         int,
         typer.Option("--n-threads", "-t", help="Number of threads to use for chatbot"),
