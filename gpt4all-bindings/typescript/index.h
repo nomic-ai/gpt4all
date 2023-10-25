@@ -24,6 +24,7 @@ public:
    */
   Napi::Value Prompt(const Napi::CallbackInfo& info);
   void SetThreadCount(const Napi::CallbackInfo& info);
+  void Dispose(const Napi::CallbackInfo& info);
   Napi::Value getName(const Napi::CallbackInfo& info);
   Napi::Value ThreadCount(const Napi::CallbackInfo& info);
   Napi::Value GenerateEmbedding(const Napi::CallbackInfo& info);

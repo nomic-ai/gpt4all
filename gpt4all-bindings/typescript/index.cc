@@ -15,7 +15,8 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("initGpuByString", &NodeModelWrapper::InitGpuByString),
        InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice),
        InstanceMethod("listGpu", &NodeModelWrapper::GetGpuDevices),
-       InstanceMethod("memoryNeeded", &NodeModelWrapper::GetRequiredMemory)
+       InstanceMethod("memoryNeeded", &NodeModelWrapper::GetRequiredMemory),
+       InstanceMethod("dispose", &NodeModelWrapper::Dispose)
     });
     // Keep a static reference to the constructor
     //
@@ -313,7 +314,9 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     threadSafeContext->nativeThread = std::thread(threadEntry, threadSafeContext);
     return threadSafeContext->deferred_.Promise();
   }
-
+  void NodeModelWrapper::Dispose(const Napi::CallbackInfo& info) {
+    llmodel_model_destroy(inference_);
+  }
   void NodeModelWrapper::SetThreadCount(const Napi::CallbackInfo& info) {
     if(info[0].IsNumber()) {
         llmodel_setThreadCount(GetInference(), info[0].As<Napi::Number>().Int64Value());
