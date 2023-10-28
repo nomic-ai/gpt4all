@@ -503,6 +503,11 @@ bool ChatLLM::handleRecalculate(bool isRecalc)
 }
 bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt)
 {
+    if (m_restoreStateFromText) {
+        Q_ASSERT(m_state.isEmpty());
+        processRestoreStateFromText();
+    }
+
     if (!m_processedSystemPrompt)
         processSystemPrompt();
     const QString promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
@@ -904,11 +909,6 @@ void ChatLLM::restoreState()
         m_state.clear();
         m_state.resize(0);
         return;
-    }
-
-    if (m_restoreStateFromText) {
-        Q_ASSERT(m_state.isEmpty());
-        processRestoreStateFromText();
     }
 
 #if defined(DEBUG)
