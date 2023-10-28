@@ -55,6 +55,7 @@ public:
 #else
 #include <string>
 #include <exception>
+#include <filesystem>
 #include <stdexcept>
 #ifndef NOMINMAX
     #define NOMINMAX
@@ -75,7 +76,8 @@ public:
 
     Dlhandle() : chandle(nullptr) {}
     Dlhandle(const std::string& fpath) {
-        chandle = LoadLibraryExA(fpath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+        auto p = std::filesystem::absolute(fpath).string();
+        chandle = LoadLibraryExA(p.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
         if (!chandle) {
             throw Exception("dlopen(\""+fpath+"\"): Error");
         }
