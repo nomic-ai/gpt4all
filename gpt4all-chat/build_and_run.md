@@ -47,7 +47,9 @@ Under this release, select the following additional components:
 - Qt Quick 3D
 - Qt 5 Compatibility Module
 - Qt Shader Tools
-- Additional Libraries (clicking the checkbox to the left of this item enables all of them)
+- Additional Libraries:
+  - Qt HTTP Server
+  - Qt PDF
 - Qt Debug information Files
 - Qt Quick Timeline
 
