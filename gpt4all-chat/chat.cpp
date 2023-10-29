@@ -403,6 +403,7 @@ bool Chat::deserialize(QDataStream &stream, int version)
     emit idChanged(m_id);
     stream >> m_name;
     stream >> m_userName;
+    m_generatedName = QLatin1String("nonempty");
     emit nameChanged();
 
     QString modelId;

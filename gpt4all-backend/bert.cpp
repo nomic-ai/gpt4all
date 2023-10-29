@@ -884,7 +884,7 @@ DLL_EXPORT bool magic_match(const char * fname) {
     if (!ctx_gguf)
         return false;
 
-    bool isValid = gguf_get_version(ctx_gguf) <= 2;
+    bool isValid = gguf_get_version(ctx_gguf) <= 3;
     isValid = isValid && get_arch_name(ctx_gguf) == "bert";
 
     gguf_free(ctx_gguf);
