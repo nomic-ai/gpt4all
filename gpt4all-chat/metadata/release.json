@@ -566,5 +566,22 @@
 * Victor Tsaran <vtsaran@yahoo.com>
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.5.2",
+    "notes":
+"
+* Support for GGUF v3 models
+* Important fixes for AMD GPUs
+* Don't start recalculating context immediately for saved chats
+* UI fixes for chat name generation
+* UI fixes for leading whitespaces in chat generation
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]
