@@ -142,17 +142,9 @@ QString Chat::response() const
     return m_response;
 }
 
-QString Chat::responseState() const
+Chat::ResponseState Chat::responseState() const
 {
-    switch (m_responseState) {
-    case ResponseStopped: return QStringLiteral("response stopped");
-    case LocalDocsRetrieval: return QStringLiteral("retrieving ") + m_collections.join(", ");
-    case LocalDocsProcessing: return QStringLiteral("processing ") + m_collections.join(", ");
-    case PromptProcessing: return QStringLiteral("processing");
-    case ResponseGeneration: return QStringLiteral("generating response");
-    };
-    Q_UNREACHABLE();
-    return QString();
+    return m_responseState;
 }
 
 void Chat::handleResponseChanged(const QString &response)

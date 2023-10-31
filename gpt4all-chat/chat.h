@@ -21,7 +21,7 @@ class Chat : public QObject
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
     Q_PROPERTY(bool isServer READ isServer NOTIFY isServerChanged)
-    Q_PROPERTY(QString responseState READ responseState NOTIFY responseStateChanged)
+    Q_PROPERTY(ResponseState responseState READ responseState NOTIFY responseStateChanged)
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
     Q_PROPERTY(QString modelLoadingError READ modelLoadingError NOTIFY modelLoadingErrorChanged)
     Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged);
@@ -68,7 +68,7 @@ public:
 
     QString response() const;
     bool responseInProgress() const { return m_responseInProgress; }
-    QString responseState() const;
+    ResponseState responseState() const;
     ModelInfo modelInfo() const;
     void setModelInfo(const ModelInfo &modelInfo);
     bool isRecalc() const;

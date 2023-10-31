@@ -815,8 +815,17 @@ Window {
                                 }
                                 Label {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: currentChat.responseState + "..."
                                     color: theme.textAccent
+                                    text: {
+                                        switch (currentChat.responseState) {
+                                        case Chat.ResponseStopped: return "response stopped ...";
+                                        case Chat.LocalDocsRetrieval: return "retrieving " + currentChat.collectionList.join(", ") + " ...";
+                                        case Chat.LocalDocsProcessing: return "processing " + currentChat.collectionList.join(", ") + " ...";
+                                        case Chat.PromptProcessing: return "processing ..."
+                                        case Chat.ResponseGeneration: return "generating response ...";
+                                        default: return ""; // handle unexpected values
+                                        }
+                                    }
                                 }
                             }
                         }
