@@ -86,7 +86,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     std::string gpu_device_identifier = info[1].As<Napi::String>();   
 
     size_t converted_value;
-    if (memory_required <= std::numeric_limits<size_t>::max()) {
+    if(memory_required <= std::numeric_limits<size_t>::max()) {
         converted_value = static_cast<size_t>(memory_required);
     } else {
          Napi::Error::New(
