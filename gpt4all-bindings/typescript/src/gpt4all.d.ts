@@ -200,13 +200,19 @@ interface LoadModelOptions {
     modelConfigFile?: string;
     allowDownload?: boolean;
     verbose?: boolean;
-    /* The processing unit on which the model will run. It can be set to 
+    /* The processing unit on which the model will run. It can be set to
      * - "cpu": Model will run on the central processing unit.
      * - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
      * - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
-       Alternatively, a specific GPU name can also be provided, and the model will run on the GPU that matches the name if it's available.
+
+	   Alternatively, a specific GPU name can also be provided, and the model will run on the GPU that matches the name
+       if it's available.
+
        Default is "cpu".
-       Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the model.
+
+	   Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
+       instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
+       model.
     */ 
     device?: string;
 }
