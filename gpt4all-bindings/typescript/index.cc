@@ -70,7 +70,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     return js_array;
   }
 
-   Napi::Value NodeModelWrapper::getType(const Napi::CallbackInfo& info) 
+  Napi::Value NodeModelWrapper::getType(const Napi::CallbackInfo& info) 
   {
     if(type.empty()) {
         return info.Env().Undefined();
