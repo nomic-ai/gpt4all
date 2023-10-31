@@ -62,7 +62,7 @@ async function loadModel(modelName, options = {}) {
         model_name: appendBinSuffixIfMissing(modelName),
         model_path: loadOptions.modelPath,
         library_path: libPath,
-        device: loadOptions.device
+        device: loadOptions.device,
     };
 
     if (loadOptions.verbose) {
