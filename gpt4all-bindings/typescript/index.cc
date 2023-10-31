@@ -46,7 +46,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     }
     auto js_array = Napi::Array::New(env, num_devices);
     for(int i = 0; i < num_devices; ++i) {
-       auto gpu_device = *(all_devices + i); 
+       auto gpu_device = all_devices[i];
        /* 
         *
         * struct llmodel_gpu_device {
