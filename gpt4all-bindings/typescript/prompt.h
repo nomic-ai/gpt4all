@@ -10,7 +10,7 @@
 #include <memory>
 struct PromptWorkContext {
     std::string question;
-    std::shared_ptr<llmodel_model>& inference_;
+    llmodel_model inference_;
     llmodel_prompt_context prompt_params;
     std::string res;
 

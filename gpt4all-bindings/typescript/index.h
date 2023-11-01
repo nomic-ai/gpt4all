@@ -6,24 +6,33 @@
 #include <atomic>
 #include <memory>
 #include <filesystem>
+#include <set>
 namespace fs = std::filesystem;
+
 
 class NodeModelWrapper: public Napi::ObjectWrap<NodeModelWrapper> {
 public:
   NodeModelWrapper(const Napi::CallbackInfo &);
-  //~NodeModelWrapper();
+  //virtual ~NodeModelWrapper();
   Napi::Value getType(const Napi::CallbackInfo& info);
   Napi::Value IsModelLoaded(const Napi::CallbackInfo& info);
   Napi::Value StateSize(const Napi::CallbackInfo& info);
+  //void Finalize(Napi::Env env) override;
   /**
    * Prompting the model. This entails spawning a new thread and adding the response tokens
    * into a thread local string variable.
    */
   Napi::Value Prompt(const Napi::CallbackInfo& info);
   void SetThreadCount(const Napi::CallbackInfo& info);
+  void Dispose(const Napi::CallbackInfo& info);
   Napi::Value getName(const Napi::CallbackInfo& info);
   Napi::Value ThreadCount(const Napi::CallbackInfo& info);
   Napi::Value GenerateEmbedding(const Napi::CallbackInfo& info);
+  Napi::Value HasGpuDevice(const Napi::CallbackInfo& info);
+  Napi::Value ListGpus(const Napi::CallbackInfo& info);
+  Napi::Value InitGpuByString(const Napi::CallbackInfo& info);
+  Napi::Value GetRequiredMemory(const Napi::CallbackInfo& info);
+  Napi::Value GetGpuDevices(const Napi::CallbackInfo& info);
   /*
    * The path that is used to search for the dynamic libraries
    */
@@ -37,10 +46,10 @@ private:
   /**
    * The underlying inference that interfaces with the C interface
    */
-  std::shared_ptr<llmodel_model> inference_;
+  llmodel_model inference_;
 
   std::string type;
   // corresponds to LLModel::name() in typescript
   std::string name;
-  static Napi::FunctionReference constructor;
+  std::string full_model_path;
 };

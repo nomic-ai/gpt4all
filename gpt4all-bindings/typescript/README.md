@@ -75,14 +75,11 @@ cd gpt4all-bindings/typescript
 ```sh
 yarn
 ```
-
 *   llama.cpp git submodule for gpt4all can be possibly absent. If this is the case, make sure to run in llama.cpp parent directory
 
 ```sh
 git submodule update --init --depth 1 --recursive
 ```
-
-**AS OF NEW BACKEND** to build the backend,
 
 ```sh
 yarn build:backend

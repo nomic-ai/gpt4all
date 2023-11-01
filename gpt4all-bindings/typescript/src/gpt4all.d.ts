@@ -61,6 +61,11 @@ declare class InferenceModel {
         prompt: string,
         options?: Partial<LLModelPromptContext>
     ): Promise<string>;
+
+   /**
+     * delete and cleanup the native model
+    */
+    dispose(): void
 }
 
 declare class EmbeddingModel {
@@ -69,6 +74,12 @@ declare class EmbeddingModel {
     config: ModelConfig;
 
     embed(text: string): Float32Array;
+
+    /**
+      * delete and cleanup the native model
+     */
+    dispose(): void
+
 }
 
 /**
@@ -146,6 +157,41 @@ declare class LLModel {
      * Where to get the pluggable backend libraries
      */
     getLibraryPath(): string;
+    /**
+     * Initiate a GPU by a string identifier. 
+     * @param {number} memory_required Should be in the range size_t or will throw 
+     * @param {string} device_name  'amd' | 'nvidia' | 'intel' | 'gpu' | gpu name.
+     * read LoadModelOptions.device for more information
+     */
+    initGpuByString(memory_required: number, device_name: string): boolean
+    /**
+     * From C documentation
+     * @returns True if a GPU device is successfully initialized, false otherwise.
+     */
+    hasGpuDevice(): boolean
+    /**
+      * GPUs that are usable for this LLModel
+      * @returns 
+      */
+    listGpu() : GpuDevice[]
+
+    /**
+      * delete and cleanup the native model
+     */
+    dispose(): void
+}
+/** 
+  * an object that contains gpu data on this machine.
+  */
+interface GpuDevice {
+    index: number;
+    /**
+      * same as VkPhysicalDeviceType
+     */
+    type: number;            
+    heapSize : number; 
+    name: string;
+    vendor: string;
 }
 
 interface LoadModelOptions {
@@ -154,6 +200,21 @@ interface LoadModelOptions {
     modelConfigFile?: string;
     allowDownload?: boolean;
     verbose?: boolean;
+    /* The processing unit on which the model will run. It can be set to
+     * - "cpu": Model will run on the central processing unit.
+     * - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
+     * - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
+
+	   Alternatively, a specific GPU name can also be provided, and the model will run on the GPU that matches the name
+       if it's available.
+
+       Default is "cpu".
+
+	   Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
+       instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
+       model.
+    */ 
+    device?: string;
 }
 
 interface InferenceModelOptions extends LoadModelOptions {
@@ -184,7 +245,7 @@ declare function loadModel(
 
 declare function loadModel(
     modelName: string,
-    options?: EmbeddingOptions | InferenceOptions
+    options?: EmbeddingModelOptions | InferenceModelOptions
 ): Promise<InferenceModel | EmbeddingModel>;
 
 /**
@@ -401,7 +462,7 @@ declare const DEFAULT_MODEL_CONFIG: ModelConfig;
 /**
  * Default prompt context.
  */
-declare const DEFAULT_PROMT_CONTEXT: LLModelPromptContext;
+declare const DEFAULT_PROMPT_CONTEXT: LLModelPromptContext;
 
 /**
  * Default model list url.
@@ -502,7 +563,7 @@ export {
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_MODEL_CONFIG,
-    DEFAULT_PROMT_CONTEXT,
+    DEFAULT_PROMPT_CONTEXT,
     DEFAULT_MODEL_LIST_URL,
     downloadModel,
     retrieveModel,
@@ -510,4 +571,5 @@ export {
     DownloadController,
     RetrieveModelOptions,
     DownloadModelOptions,
+    GpuDevice
 };
