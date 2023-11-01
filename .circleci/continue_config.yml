@@ -856,6 +856,7 @@ jobs:
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
+          override-ci-command: yarn install
       - run:
           command: | 
             cd gpt4all-bindings/typescript
@@ -885,6 +886,7 @@ jobs:
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
+          override-ci-command: yarn install
       - run:
           command: | 
             cd gpt4all-bindings/typescript
