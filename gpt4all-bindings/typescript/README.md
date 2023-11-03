@@ -1,11 +1,11 @@
 # GPT4All Node.js API
 
 ```sh
-yarn add gpt4all@alpha
+yarn add gpt4all@latest
 
-npm install gpt4all@alpha
+npm install gpt4all@latest
 
-pnpm install gpt4all@alpha
+pnpm install gpt4all@latest
 ```
 
 The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-ts) are now out of date.
