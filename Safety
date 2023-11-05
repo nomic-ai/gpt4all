@@ -1,0 +1,58 @@
+#The idea would be to build out a module that can prevent terrorism and csam related requests locally, while allowing for anything else.  At some point there will be a powerful open source model that runs on few resources and such a module raises the bar just a little bit again against misuse.
+# Not aware of anything Open Source that can screen for possible csam but there is an API by Microsoft called PhotoDNA, but again this isn't designed for such a purpose.
+#This is going before adding Multimodality to GPT4ALL.
+
+import numpy as np
+from keras.models import load_model
+from toolkits.application import decode_predictions_dictionary
+from toolkits.gradcam import grad_cam_plus
+from toolkits.preprocessing import load_img, img_to_array
+from toolkits.scoring import ScoringResult, is_csam
+from detoxify import Detoxify
+
+# Load CSAM detection model
+csam_model_path = 'path_to_your_csam_model.h5'  # Replace with the actual path to your model
+csam_model = load_model(csam_model_path)
+
+# Initialize Detoxify model for text content moderation
+text_moderation_model = Detoxify('original')
+
+class SafetyModerationModule:
+    def __init__(self, csam_model, text_moderation_model):
+        self.csam_model = csam_model
+        self.text_moderation_model = text_moderation_model
+
+    def screen_image(self, image_path):
+        # Image screening logic using CSAM model
+        image = load_img(image_path, target_size=(224, 224))
+        image_tensor = img_to_array(image)
+        image_tensor = np.expand_dims(image_tensor, axis=0)
+        preds = self.csam_model.predict(image_tensor)
+        result = is_csam(preds)
+        return result == ScoringResult.NOT_CSAM
+
+    def screen_text(self, text):
+        # Text screening logic using Detoxify or similar model
+        results = self.text_moderation_model.predict(text)
+        # Define a threshold for considering content as toxic
+        toxicity_threshold = 0.85
+        # Check if any of the toxicity scores exceed the threshold
+        is_safe = all(score < toxicity_threshold for score in results.values())
+        return is_safe
+
+    def moderate_content(self, text=None, image_path=None):
+        # Combine image and text screening
+        if text and not self.screen_text(text):
+            return False, 'Text content flagged as inappropriate.'
+        if image_path and not self.screen_image(image_path):
+            return False, 'Image content flagged as inappropriate.'
+        return True, 'Content is safe.'
+
+# Example usage
+moderation_module = SafetyModerationModule(csam_model, text_moderation_model)
+text_to_screen = 'Example text to screen for toxicity.'
+image_to_screen = 'path_to_example_image.jpg'
+
+# Moderate both text and image
+moderation_result, message = moderation_module.moderate_content(text=text_to_screen, image_path=image_to_screen)
+print(message)
