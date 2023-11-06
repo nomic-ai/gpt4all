@@ -24,17 +24,6 @@ extern "C" {
 typedef void *llmodel_model;
 
 /**
- * Structure containing any errors that may eventually occur
- */
-struct llmodel_error {
-    const char *message;  // Human readable error description; Thread-local; guaranteed to survive until next llmodel C API call
-    int code;             // errno; 0 if none
-};
-#ifndef __cplusplus
-typedef struct llmodel_error llmodel_error;
-#endif
-
-/**
  * llmodel_prompt_context structure for holding the prompt context.
  * NOTE: The implementation takes care of all the memory handling of the raw logits pointer and the
  * raw tokens pointer. Attempting to resize them or modify them in any way can lead to undefined

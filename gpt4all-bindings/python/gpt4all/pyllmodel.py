@@ -42,10 +42,6 @@ def load_llmodel_library():
 llmodel = load_llmodel_library()
 
 
-class LLModelError(ctypes.Structure):
-    _fields_ = [("message", ctypes.c_char_p), ("code", ctypes.c_int32)]
-
-
 class LLModelPromptContext(ctypes.Structure):
     _fields_ = [
         ("logits", ctypes.POINTER(ctypes.c_float)),
@@ -77,7 +73,7 @@ class LLModelGPUDevice(ctypes.Structure):
 llmodel.llmodel_model_create.argtypes = [ctypes.c_char_p]
 llmodel.llmodel_model_create.restype = ctypes.c_void_p
 
-llmodel.llmodel_model_create2.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(LLModelError)]
+llmodel.llmodel_model_create2.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p)]
 llmodel.llmodel_model_create2.restype = ctypes.c_void_p
 
 llmodel.llmodel_model_destroy.argtypes = [ctypes.c_void_p]
@@ -253,11 +249,11 @@ class LLModel:
         True if model loaded successfully, False otherwise
         """
         model_path_enc = model_path.encode("utf-8")
-        err = LLModelError()
+        err = ctypes.c_char_p()
         self.model = llmodel.llmodel_model_create2(model_path_enc, b"auto", ctypes.byref(err))
 
         if self.model is None:
-            raise ValueError(f"Unable to instantiate model: code={err.code}, {err.message.decode()}")
+            raise ValueError(f"Unable to instantiate model: {err.decode()}")
 
         llmodel.llmodel_loadModel(self.model, model_path_enc)
 
