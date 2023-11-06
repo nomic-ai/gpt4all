@@ -146,6 +146,15 @@ def empty_response_callback(token_id: int, response: str) -> bool:
     return True
 
 
+def _create_model(model_path: str) -> ctypes.c_void_p:
+    model_path_enc = model_path.encode("utf-8")
+    err = ctypes.c_char_p()
+    model = llmodel.llmodel_model_create2(model_path_enc, b"auto", ctypes.byref(err))
+    if model is None:
+        raise ValueError(f"Unable to instantiate model: {err.decode()}")
+    return model
+
+
 class LLModel:
     """
     Base class and universal wrapper for GPT4All language models
@@ -174,12 +183,8 @@ class LLModel:
 
     def memory_needed(self, model_path: str) -> int:
         model_path_enc = model_path.encode("utf-8")
-        self.model = llmodel.llmodel_model_create(model_path_enc)
-
-        if self.model is not None:
-            return llmodel.llmodel_required_mem(self.model, model_path_enc)
-        else:
-            raise ValueError("Unable to instantiate model")
+        self.model = _create_model(model_path_enc)
+        return llmodel.llmodel_required_mem(self.model, model_path_enc)
 
     def list_gpu(self, model_path: str) -> list:
         """
@@ -249,11 +254,7 @@ class LLModel:
         True if model loaded successfully, False otherwise
         """
         model_path_enc = model_path.encode("utf-8")
-        err = ctypes.c_char_p()
-        self.model = llmodel.llmodel_model_create2(model_path_enc, b"auto", ctypes.byref(err))
-
-        if self.model is None:
-            raise ValueError(f"Unable to instantiate model: {err.decode()}")
+        self.model = _create_model(model_path_enc)
 
         llmodel.llmodel_loadModel(self.model, model_path_enc)
 
