@@ -37,7 +37,7 @@ llmodel_model llmodel_model_create2(const char *model_path, const char *build_va
     if (!wrapper->llModel) {
         delete std::exchange(wrapper, nullptr);
         if (error) {
-            *error = last_error_message;
+            *error = last_error_message.c_str();
         }
     }
     return reinterpret_cast<llmodel_model*>(wrapper);

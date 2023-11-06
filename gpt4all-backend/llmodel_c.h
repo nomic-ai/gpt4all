@@ -94,10 +94,10 @@ DEPRECATED llmodel_model llmodel_model_create(const char *model_path);
  * Recognises correct model type from file at model_path
  * @param model_path A string representing the path to the model file; will only be used to detect model type.
  * @param build_variant A string representing the implementation to use (auto, default, avxonly, ...),
- * @param error A pointer to a llmodel_error; will only be set on error.
+ * @param error A pointer to a string; will only be set on error.
  * @return A pointer to the llmodel_model instance; NULL on error.
  */
-llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, llmodel_error *error);
+llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, const char **error);
 
 /**
  * Destroy a llmodel instance.
