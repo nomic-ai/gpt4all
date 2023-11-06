@@ -123,10 +123,17 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
 }
 
 const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant) {
+    bool buildVariantMatched = false;
     for (const auto& i : implementationList()) {
         if (buildVariant != i.m_buildVariant) continue;
+        buildVariantMatched = true;
+
         if (!i.m_magicMatch(fname)) continue;
         return &i;
+    }
+
+    if (!buildVariantMatched) {
+        std::cerr << "LLModel ERROR: Could not find any implementations for build variant: " << buildVariant << "\n";
     }
     return nullptr;
 }
