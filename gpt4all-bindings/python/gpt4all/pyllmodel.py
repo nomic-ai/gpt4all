@@ -146,10 +146,9 @@ def empty_response_callback(token_id: int, response: str) -> bool:
     return True
 
 
-def _create_model(model_path: str) -> ctypes.c_void_p:
-    model_path_enc = model_path.encode("utf-8")
+def _create_model(model_path: bytes) -> ctypes.c_void_p:
     err = ctypes.c_char_p()
-    model = llmodel.llmodel_model_create2(model_path_enc, b"auto", ctypes.byref(err))
+    model = llmodel.llmodel_model_create2(model_path, b"auto", ctypes.byref(err))
     if model is None:
         raise ValueError(f"Unable to instantiate model: {err.decode()}")
     return model
