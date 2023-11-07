@@ -1,6 +1,7 @@
 package com.hexadevlabs.gpt4all;
 
 import jnr.ffi.Pointer;
+import jnr.ffi.byref.PointerByReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,7 +177,7 @@ public  class LLModel implements AutoCloseable {
         modelName = modelPath.getFileName().toString();
         String modelPathAbs = modelPath.toAbsolutePath().toString();
 
-        LLModelLibrary.LLModelError error = new LLModelLibrary.LLModelError(jnr.ffi.Runtime.getSystemRuntime());
+        PointerByReference error = new PointerByReference();
 
         // Check if model file exists
         if(!Files.exists(modelPath)){
@@ -192,7 +193,7 @@ public  class LLModel implements AutoCloseable {
         model = library.llmodel_model_create2(modelPathAbs, "auto", error);
 
         if(model == null) {
-            throw new IllegalStateException("Could not load, gpt4all backend returned error: " + error.message);
+            throw new IllegalStateException("Could not load, gpt4all backend returned error: " + error.getValue().getString(0));
         }
         library.llmodel_loadModel(model, modelPathAbs);
 

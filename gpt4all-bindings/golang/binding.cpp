@@ -17,11 +17,10 @@
 
 void* load_model(const char *fname, int n_threads) {
     // load the model
-    llmodel_error new_error{};
+    const char *new_error;
     auto model = llmodel_model_create2(fname, "auto", &new_error);
-    if (model == nullptr ){
-        fprintf(stderr, "%s: error '%s'\n",
-                __func__, new_error.message);
+    if (model == nullptr) {
+        fprintf(stderr, "%s: error '%s'\n", __func__, new_error);
         return nullptr;
     }
     if (!llmodel_loadModel(model, fname)) {

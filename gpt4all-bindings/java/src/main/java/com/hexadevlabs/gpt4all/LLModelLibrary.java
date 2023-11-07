@@ -1,6 +1,7 @@
 package com.hexadevlabs.gpt4all;
 
 import jnr.ffi.Pointer;
+import jnr.ffi.byref.PointerByReference;
 import jnr.ffi.Struct;
 import jnr.ffi.annotations.Delegate;
 import jnr.ffi.annotations.Encoding;
@@ -58,7 +59,7 @@ public interface LLModelLibrary {
         }
     }
 
-    Pointer llmodel_model_create2(String model_path, String build_variant, @Out LLModelError llmodel_error);
+    Pointer llmodel_model_create2(String model_path, String build_variant, PointerByReference error);
     void llmodel_model_destroy(Pointer model);
     boolean llmodel_loadModel(Pointer model, String model_path);
     boolean llmodel_isModelLoaded(Pointer model);

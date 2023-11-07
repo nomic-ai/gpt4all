@@ -134,13 +134,10 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
         device = config_object.Get("device").As<Napi::String>();
     }
     llmodel_set_implementation_search_path(library_path.c_str());
-    llmodel_error e = {
-        .message="looks good to me",
-        .code=0,
-    };
+    const char* e;
     inference_ = llmodel_model_create2(full_weight_path.c_str(), "auto", &e);
-    if(e.code != 0) {
-       Napi::Error::New(env, e.message).ThrowAsJavaScriptException(); 
+    if(!inference_) {
+       Napi::Error::New(env, e).ThrowAsJavaScriptException();
        return;
     }
     if(GetInference() == nullptr) {

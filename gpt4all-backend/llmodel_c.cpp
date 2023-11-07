@@ -11,45 +11,33 @@ struct LLModelWrapper {
     ~LLModelWrapper() { delete llModel; }
 };
 
-
 thread_local static std::string last_error_message;
 
-
 llmodel_model llmodel_model_create(const char *model_path) {
-    auto fres = llmodel_model_create2(model_path, "auto", nullptr);
+    const char *error;
+    auto fres = llmodel_model_create2(model_path, "auto", &error);
     if (!fres) {
-        fprintf(stderr, "Invalid model file\n");
+        fprintf(stderr, "Unable to instantiate model: %s\n", error);
     }
     return fres;
 }
 
-llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, llmodel_error *error) {
+llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, const char **error) {
     auto wrapper = new LLModelWrapper;
-    int error_code = 0;
 
     try {
         wrapper->llModel = LLModel::Implementation::construct(model_path, build_variant);
+        if (!wrapper->llModel) {
+            last_error_message = "Model format not supported (no matching implementation found)";
+        }
     } catch (const std::exception& e) {
-        error_code = EINVAL;
         last_error_message = e.what();
     }
 
     if (!wrapper->llModel) {
         delete std::exchange(wrapper, nullptr);
-        // Get errno and error message if none
-        if (error_code == 0) {
-            if (errno != 0) {
-                error_code = errno;
-                last_error_message = std::strerror(error_code);
-            } else {
-                error_code = ENOTSUP;
-                last_error_message = "Model format not supported (no matching implementation found)";
-            }
-        }
-        // Set error argument
         if (error) {
-            error->message = last_error_message.c_str();
-            error->code = error_code;
+            *error = last_error_message.c_str();
         }
     }
     return reinterpret_cast<llmodel_model*>(wrapper);

@@ -139,7 +139,7 @@ $(info I CXX:      $(CXXV))
 $(info )
 
 llmodel.o:
-	mkdir buildllm
+	[ -e buildllm ] || mkdir buildllm
 	cd buildllm && cmake ../../../gpt4all-backend/ $(CMAKEFLAGS) && make
 	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llmodel_c.cpp.o ../llmodel_c.o
 	cd buildllm && cp -rf CMakeFiles/llmodel.dir/llmodel.cpp.o ../llmodel.o
@@ -150,7 +150,7 @@ clean:
 	rm -rf buildllm
 	rm -rf example/main
 
-binding.o: 
+binding.o: binding.cpp binding.h
 	$(CXX) $(CXXFLAGS) binding.cpp -o binding.o -c $(LDFLAGS)
 
 libgpt4all.a: binding.o llmodel.o

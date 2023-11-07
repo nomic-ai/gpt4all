@@ -24,17 +24,6 @@ extern "C" {
 typedef void *llmodel_model;
 
 /**
- * Structure containing any errors that may eventually occur
- */
-struct llmodel_error {
-    const char *message;  // Human readable error description; Thread-local; guaranteed to survive until next llmodel C API call
-    int code;             // errno; 0 if none
-};
-#ifndef __cplusplus
-typedef struct llmodel_error llmodel_error;
-#endif
-
-/**
  * llmodel_prompt_context structure for holding the prompt context.
  * NOTE: The implementation takes care of all the memory handling of the raw logits pointer and the
  * raw tokens pointer. Attempting to resize them or modify them in any way can lead to undefined
@@ -105,10 +94,10 @@ DEPRECATED llmodel_model llmodel_model_create(const char *model_path);
  * Recognises correct model type from file at model_path
  * @param model_path A string representing the path to the model file; will only be used to detect model type.
  * @param build_variant A string representing the implementation to use (auto, default, avxonly, ...),
- * @param error A pointer to a llmodel_error; will only be set on error.
+ * @param error A pointer to a string; will only be set on error.
  * @return A pointer to the llmodel_model instance; NULL on error.
  */
-llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, llmodel_error *error);
+llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, const char **error);
 
 /**
  * Destroy a llmodel instance.
