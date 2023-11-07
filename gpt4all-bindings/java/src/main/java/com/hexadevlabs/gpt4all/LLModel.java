@@ -1,7 +1,7 @@
 package com.hexadevlabs.gpt4all;
 
 import jnr.ffi.Pointer;
-import jnr.ffi.PointerByReference;
+import jnr.ffi.byref.PointerByReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

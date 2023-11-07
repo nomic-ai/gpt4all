@@ -1,7 +1,7 @@
 package com.hexadevlabs.gpt4all;
 
 import jnr.ffi.Pointer;
-import jnr.ffi.PointerByReference;
+import jnr.ffi.byref.PointerByReference;
 import jnr.ffi.Struct;
 import jnr.ffi.annotations.Delegate;
 import jnr.ffi.annotations.Encoding;
