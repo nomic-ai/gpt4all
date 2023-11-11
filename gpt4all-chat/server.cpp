@@ -71,7 +71,7 @@ Server::~Server()
 void Server::start()
 {
     m_server = new QHttpServer(this);
-    if (!m_server->listen(QHostAddress::LocalHost, 4891)) {
+    if (!m_server->listen(QHostAddress::LocalHost, MySettings::globalInstance()->networkPort())) {
         qWarning() << "ERROR: Unable to start the server";
         return;
     }
