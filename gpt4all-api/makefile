@@ -28,19 +28,19 @@ clean_testenv:
 fresh_testenv: clean_testenv testenv
 
 venv:
-	if [ ! -d $(ROOT_DIR)/env ]; then $(PYTHON) -m venv $(ROOT_DIR)/env; fi
+	if [ ! -d $(ROOT_DIR)/venv ]; then $(PYTHON) -m venv $(ROOT_DIR)/venv; fi
 
 dependencies: venv
-	source $(ROOT_DIR)/env/bin/activate; $(PYTHON) -m pip install -r $(ROOT_DIR)/$(APP_NAME)/requirements.txt
+	source $(ROOT_DIR)/venv/bin/activate; $(PYTHON) -m pip install -r $(ROOT_DIR)/$(APP_NAME)/requirements.txt
 
 clean: clean_testenv
 	# Remove existing environment
-	rm -rf $(ROOT_DIR)/env;
+	rm -rf $(ROOT_DIR)/venv;
 	rm -rf $(ROOT_DIR)/$(APP_NAME)/*.pyc;
 
 
 black:
-	source $(ROOT_DIR)/env/bin/activate; black -l 120 -S --target-version py38 $(APP_NAME)
+	source $(ROOT_DIR)/venv/bin/activate; black -l 120 -S --target-version py38 $(APP_NAME)
 
 isort:
-	source $(ROOT_DIR)/env/bin/activate; isort  --ignore-whitespace --atomic -w 120 $(APP_NAME)
+	source $(ROOT_DIR)/venv/bin/activate; isort  --ignore-whitespace --atomic -w 120 $(APP_NAME)
