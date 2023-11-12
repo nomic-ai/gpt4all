@@ -385,22 +385,35 @@ DLL_EXPORT const char *get_build_variant() {
 }
 
 DLL_EXPORT bool magic_match(const char * fname) {
-
     struct ggml_context * ctx_meta = NULL;
     struct gguf_init_params params = {
         /*.no_alloc = */ true,
         /*.ctx      = */ &ctx_meta,
     };
     gguf_context *ctx_gguf = gguf_init_from_file(fname, params);
-    if (!ctx_gguf)
+    if (!ctx_gguf) {
+        std::cerr << __func__ << ": gguf_init_from_file failed\n";
         return false;
+    }
 
-    bool isValid = gguf_get_version(ctx_gguf) <= 3;
+    bool valid = true;
+
+    int gguf_ver = gguf_get_version(ctx_gguf);
+    if (valid && gguf_ver > 3) {
+        std::cerr << __func__ << ": unsupported gguf version: " << gguf_ver << "\n";
+        valid = false;
+    }
+
     auto arch = get_arch_name(ctx_gguf);
-    isValid = isValid && (arch == "llama" || arch == "starcoder" || arch == "falcon" || arch == "mpt");
+    if (valid && !(arch == "llama" || arch == "starcoder" || arch == "falcon" || arch == "mpt")) {
+        if (!(arch == "gptj" || arch == "bert")) { // we support these via other modules
+            std::cerr << __func__ << ": unsupported model architecture: " << arch << "\n";
+        }
+        valid = false;
+    }
 
     gguf_free(ctx_gguf);
-    return isValid;
+    return valid;
 }
 
 DLL_EXPORT LLModel *construct() {

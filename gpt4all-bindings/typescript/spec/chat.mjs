@@ -1,8 +1,8 @@
 import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
 const model = await loadModel(
-    'orca-mini-3b-gguf2-q4_0.gguf',
-    { verbose: true }
+    'mistral-7b-openorca.Q4_0.gguf',
+    { verbose: true, device: 'gpu' }
 );
 const ll = model.llm;
 
@@ -26,7 +26,9 @@ console.log("name " + ll.name());
 console.log("type: " + ll.type());
 console.log("Default directory for models", DEFAULT_DIRECTORY);
 console.log("Default directory for libraries", DEFAULT_LIBRARIES_DIRECTORY);
-
+console.log("Has GPU", ll.hasGpuDevice());
+console.log("gpu devices", ll.listGpu())
+console.log("Required Mem in bytes", ll.memoryNeeded())
 const completion1 = await createCompletion(model, [ 
     { role : 'system', content: 'You are an advanced mathematician.'  },
     { role : 'user', content: 'What is 1 + 1?'  }, 
@@ -40,6 +42,8 @@ const completion2 = await createCompletion(model, [
 
 console.log(completion2.choices[0].message)
 
+//CALLING DISPOSE WILL INVALID THE NATIVE MODEL. USE THIS TO CLEANUP
+model.dispose()
 // At the moment, from testing this code, concurrent model prompting is not possible. 
 // Behavior: The last prompt gets answered, but the rest are cancelled
 // my experience with threading is not the best, so if anyone who is good is willing to give this a shot,
@@ -47,16 +51,16 @@ console.log(completion2.choices[0].message)
 // INFO: threading with llama.cpp is not the best maybe not even possible, so this will be left here as reference
 
 //const responses = await Promise.all([
-//    createCompletion(ll, [ 
+//    createCompletion(model, [ 
 //    { role : 'system', content: 'You are an advanced mathematician.'  },
 //    { role : 'user', content: 'What is 1 + 1?'  }, 
 //    ], { verbose: true }),
-//    createCompletion(ll, [ 
+//    createCompletion(model, [ 
 //    { role : 'system', content: 'You are an advanced mathematician.'  },
 //    { role : 'user', content: 'What is 1 + 1?'  }, 
 //    ], { verbose: true }),
 //
-//createCompletion(ll, [ 
+//createCompletion(model, [ 
 //    { role : 'system', content: 'You are an advanced mathematician.'  },
 //    { role : 'user', content: 'What is 1 + 1?'  }, 
 //], { verbose: true })

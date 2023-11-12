@@ -1,11 +1,11 @@
 # GPT4All Node.js API
 
 ```sh
-yarn add gpt4all@alpha
+yarn add gpt4all@latest
 
-npm install gpt4all@alpha
+npm install gpt4all@latest
 
-pnpm install gpt4all@alpha
+pnpm install gpt4all@latest
 ```
 
 The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-ts) are now out of date.
@@ -75,14 +75,11 @@ cd gpt4all-bindings/typescript
 ```sh
 yarn
 ```
-
 *   llama.cpp git submodule for gpt4all can be possibly absent. If this is the case, make sure to run in llama.cpp parent directory
 
 ```sh
 git submodule update --init --depth 1 --recursive
 ```
-
-**AS OF NEW BACKEND** to build the backend,
 
 ```sh
 yarn build:backend

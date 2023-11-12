@@ -34,6 +34,7 @@ async function loadModel(modelName, options = {}) {
         type: "inference",
         allowDownload: true,
         verbose: true,
+        device: 'cpu',
         ...options,
     };
 
@@ -61,13 +62,13 @@ async function loadModel(modelName, options = {}) {
         model_name: appendBinSuffixIfMissing(modelName),
         model_path: loadOptions.modelPath,
         library_path: libPath,
+        device: loadOptions.device,
     };
 
     if (loadOptions.verbose) {
         console.debug("Creating LLModel with options:", llmOptions);
     }
     const llmodel = new LLModel(llmOptions);
-
     if (loadOptions.type === "embedding") {
         return new EmbeddingModel(llmodel, modelConfig);
     } else if (loadOptions.type === "inference") {

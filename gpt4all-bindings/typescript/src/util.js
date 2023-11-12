@@ -43,8 +43,9 @@ async function listModels(
 }
 
 function appendBinSuffixIfMissing(name) {
-    if (!name.endsWith(".bin")) {
-        return name + ".bin";
+    const ext = path.extname(name);
+    if (![".bin", ".gguf"].includes(ext)) {
+        return name + ".gguf";
     }
     return name;
 }

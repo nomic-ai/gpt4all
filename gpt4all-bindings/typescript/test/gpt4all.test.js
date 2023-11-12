@@ -92,7 +92,7 @@ describe("listModels", () => {
 
 describe("appendBinSuffixIfMissing", () => {
     it("should make sure the suffix is there", () => {
-        expect(appendBinSuffixIfMissing("filename")).toBe("filename.bin");
+        expect(appendBinSuffixIfMissing("filename")).toBe("filename.gguf");
         expect(appendBinSuffixIfMissing("filename.bin")).toBe("filename.bin");
     });
 });
@@ -156,11 +156,11 @@ describe("downloadModel", () => {
     test("should successfully download a model file", async () => {
         const downloadController = downloadModel(fakeModelName);
         const modelFilePath = await downloadController.promise;
-        expect(modelFilePath).toBe(path.resolve(DEFAULT_DIRECTORY, `${fakeModelName}.bin`));
+        expect(modelFilePath).toBe(path.resolve(DEFAULT_DIRECTORY, `${fakeModelName}.gguf`));
 
         expect(global.fetch).toHaveBeenCalledTimes(1);
         expect(global.fetch).toHaveBeenCalledWith(
-            "https://gpt4all.io/models/fake-model.bin",
+            "https://gpt4all.io/models/gguf/fake-model.gguf",
             {
                 signal: "signal",
                 headers: {
@@ -189,7 +189,7 @@ describe("downloadModel", () => {
         expect(global.fetch).toHaveBeenCalledTimes(1);
         // the file should be missing
         await expect(
-            fsp.access(path.resolve(DEFAULT_DIRECTORY, `${fakeModelName}.bin`))
+            fsp.access(path.resolve(DEFAULT_DIRECTORY, `${fakeModelName}.gguf`))
         ).rejects.toThrow();
         // partial file should also be missing
         await expect(
