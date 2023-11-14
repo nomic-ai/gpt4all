@@ -172,7 +172,7 @@ std::vector<qint64> Embeddings::search(const std::vector<float> &embedding, int 
         result = m_hnsw->searchKnn(embedding.data(), K);
     } catch (const std::exception &e) {
         qWarning() << "ERROR: could not search hnswlib index:" << e.what();
-        return std::vector<qint64>();
+        return {};
     }
 
     std::vector<qint64> neighbors;
