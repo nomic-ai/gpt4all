@@ -164,7 +164,7 @@ void Embeddings::clear()
 std::vector<qint64> Embeddings::search(const std::vector<float> &embedding, int K)
 {
     if (!isLoaded())
-        return std::vector<qint64>();
+        return {};
 
     Q_ASSERT(m_hnsw);
     std::priority_queue<std::pair<float, hnswlib::labeltype>> result;
