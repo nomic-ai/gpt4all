@@ -38,7 +38,7 @@ bool EmbeddingLLM::loadModel()
         return false;
     }
 
-    if (m_model->implementation().modelType()[0] != 'B') {
+    if (m_model->implementation().modelType() != "Bert") {
         qWarning() << "WARNING: Model type is not sbert";
         delete m_model;
         m_model = nullptr;
