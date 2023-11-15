@@ -8,6 +8,8 @@
 
 //#define USE_LOCAL_MODELSJSON
 
+#define DEFAULT_EMBEDDING_MODEL "all-MiniLM-L6-v2-f16.gguf"
+
 QString ModelInfo::id() const
 {
     return m_id;
@@ -153,7 +155,7 @@ bool EmbeddingModels::filterAcceptsRow(int sourceRow,
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
-    bool isEmbedding = sourceModel()->data(index, ModelList::FilenameRole).toString() == "all-MiniLM-L6-v2-f16.gguf";
+    bool isEmbedding = sourceModel()->data(index, ModelList::FilenameRole).toString() == DEFAULT_EMBEDDING_MODEL;
     return isInstalled && isEmbedding;
 }
 
@@ -331,7 +333,7 @@ int ModelList::defaultEmbeddingModelIndex() const
     QMutexLocker locker(&m_mutex);
     for (int i = 0; i < m_models.size(); ++i) {
         const ModelInfo *info = m_models.at(i);
-        const bool isEmbedding = info->filename() == "all-MiniLM-L6-v2-f16.gguf";
+        const bool isEmbedding = info->filename() == DEFAULT_EMBEDDING_MODEL;
         if (isEmbedding) return i;
     }
     return -1;
