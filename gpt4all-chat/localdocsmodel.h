@@ -42,9 +42,6 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-Q_SIGNALS:
-    void collectionItemUpdated(int index, const CollectionItem& item);
-
 public Q_SLOTS:
     void updateInstalled(int folder_id, bool b);
     void updateIndexing(int folder_id, bool b);
@@ -60,7 +57,10 @@ public Q_SLOTS:
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
 private:
-    void updateItem(int index, const CollectionItem& item);
+    template<typename T>
+    void updateField(int folder_id, T value,
+        const std::function<void(CollectionItem&, T)>& updater,
+        const QVector<int>& roles);
 
 private:
     QList<CollectionItem> m_collectionList;
