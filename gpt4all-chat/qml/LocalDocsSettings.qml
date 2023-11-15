@@ -35,6 +35,7 @@ MySettingsTab {
             Layout.alignment: Qt.AlignLeft
             text: qsTr("This feature requires the download of a text embedding model in order to index documents for later search. Please download the <b>SBert</a> text embedding model from the download dialog to proceed.")
             font.pixelSize: theme.fontSizeLarger
+            color: theme.textColor
         }
 
         MyButton {
