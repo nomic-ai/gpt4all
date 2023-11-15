@@ -75,88 +75,60 @@ QHash<int, QByteArray> LocalDocsModel::roleNames() const
     return roles;
 }
 
-void LocalDocsModel::updateInstalled(int folder_id, bool b)
+template<typename T>
+void LocalDocsModel::updateField(int folder_id, T value,
+    const std::function<void(CollectionItem&, T)>& updater,
+    const QVector<int>& roles)
 {
     for (int i = 0; i < m_collectionList.size(); ++i) {
         if (m_collectionList.at(i).folder_id != folder_id)
             continue;
 
-        m_collectionList[i].installed = b;
-        emit collectionItemUpdated(i, m_collectionList[i]);
-        emit dataChanged(this->index(i), this->index(i), {InstalledRole});
+        updater(m_collectionList[i], value);
+        emit dataChanged(this->index(i), this->index(i), roles);
     }
+}
+
+void LocalDocsModel::updateInstalled(int folder_id, bool b)
+{
+    updateField<bool>(folder_id, b,
+        [](CollectionItem& item, bool val) { item.installed = val; }, {InstalledRole});
 }
 
 void LocalDocsModel::updateIndexing(int folder_id, bool b)
 {
-    for (int i = 0; i < m_collectionList.size(); ++i) {
-        if (m_collectionList.at(i).folder_id != folder_id)
-            continue;
-
-        m_collectionList[i].indexing = b;
-        emit collectionItemUpdated(i, m_collectionList[i]);
-        emit dataChanged(this->index(i), this->index(i), {IndexingRole});
-    }
+    updateField<bool>(folder_id, b,
+        [](CollectionItem& item, bool val) { item.indexing = val; }, {IndexingRole});
 }
 
 void LocalDocsModel::updateCurrentDocsToIndex(int folder_id, size_t currentDocsToIndex)
 {
-    for (int i = 0; i < m_collectionList.size(); ++i) {
-        if (m_collectionList.at(i).folder_id != folder_id)
-            continue;
-
-        m_collectionList[i].currentDocsToIndex = currentDocsToIndex;
-        emit collectionItemUpdated(i, m_collectionList[i]);
-        emit dataChanged(this->index(i), this->index(i), {CurrentDocsToIndexRole});
-    }
+    updateField<size_t>(folder_id, currentDocsToIndex,
+        [](CollectionItem& item, size_t val) { item.currentDocsToIndex = val; }, {CurrentDocsToIndexRole});
 }
 
 void LocalDocsModel::updateTotalDocsToIndex(int folder_id, size_t totalDocsToIndex)
 {
-    for (int i = 0; i < m_collectionList.size(); ++i) {
-        if (m_collectionList.at(i).folder_id != folder_id)
-            continue;
-
-        m_collectionList[i].totalDocsToIndex = totalDocsToIndex;
-        emit collectionItemUpdated(i, m_collectionList[i]);
-        emit dataChanged(this->index(i), this->index(i), {TotalDocsToIndexRole});
-    }
+    updateField<size_t>(folder_id, totalDocsToIndex,
+        [](CollectionItem& item, size_t val) { item.totalDocsToIndex = val; }, {TotalDocsToIndexRole});
 }
 
 void LocalDocsModel::subtractCurrentBytesToIndex(int folder_id, size_t subtractedBytes)
 {
-    for (int i = 0; i < m_collectionList.size(); ++i) {
-        if (m_collectionList.at(i).folder_id != folder_id)
-            continue;
-
-        m_collectionList[i].currentBytesToIndex -= subtractedBytes;
-        emit collectionItemUpdated(i, m_collectionList[i]);
-        emit dataChanged(this->index(i), this->index(i), {CurrentBytesToIndexRole});
-    }
+    updateField<size_t>(folder_id, subtractedBytes,
+        [](CollectionItem& item, size_t val) { item.currentBytesToIndex -= val; }, {CurrentBytesToIndexRole});
 }
 
 void LocalDocsModel::updateCurrentBytesToIndex(int folder_id, size_t currentBytesToIndex)
 {
-    for (int i = 0; i < m_collectionList.size(); ++i) {
-        if (m_collectionList.at(i).folder_id != folder_id)
-            continue;
-
-        m_collectionList[i].currentBytesToIndex = currentBytesToIndex;
-        emit collectionItemUpdated(i, m_collectionList[i]);
-        emit dataChanged(this->index(i), this->index(i), {CurrentBytesToIndexRole});
-    }
+    updateField<size_t>(folder_id, currentBytesToIndex,
+        [](CollectionItem& item, size_t val) { item.currentBytesToIndex = val; }, {CurrentBytesToIndexRole});
 }
 
 void LocalDocsModel::updateTotalBytesToIndex(int folder_id, size_t totalBytesToIndex)
 {
-    for (int i = 0; i < m_collectionList.size(); ++i) {
-        if (m_collectionList.at(i).folder_id != folder_id)
-            continue;
-
-        m_collectionList[i].totalBytesToIndex = totalBytesToIndex;
-        emit collectionItemUpdated(i, m_collectionList[i]);
-        emit dataChanged(this->index(i), this->index(i), {TotalBytesToIndexRole});
-    }
+    updateField<size_t>(folder_id, totalBytesToIndex,
+        [](CollectionItem& item, size_t val) { item.totalBytesToIndex = val; }, {TotalBytesToIndexRole});
 }
 
 void LocalDocsModel::addCollectionItem(const CollectionItem &item)
