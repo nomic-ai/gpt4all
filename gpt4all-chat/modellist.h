@@ -320,6 +320,8 @@ public:
     QString incompleteDownloadPath(const QString &modelFile);
     bool asyncModelRequestOngoing() const { return m_asyncModelRequestOngoing; }
 
+    void updateModelsFromDirectory();
+
 Q_SIGNALS:
     void countChanged();
     void embeddingModelsChanged();
@@ -333,7 +335,6 @@ private Q_SLOTS:
     void updateModelsFromJson();
     void updateModelsFromJsonAsync();
     void updateModelsFromSettings();
-    void updateModelsFromDirectory();
     void updateDataForSettings();
     void handleModelsJsonDownloadFinished();
     void handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code);
@@ -355,7 +356,6 @@ private:
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;
     QHash<QString, ModelInfo*> m_modelMap;
-    QFileSystemWatcher *m_watcher;
     bool m_asyncModelRequestOngoing;
 
 private:

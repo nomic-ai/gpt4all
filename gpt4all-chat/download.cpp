@@ -385,8 +385,9 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, const QString &sa
         qWarning() << errorString;
         tempFile->close();
         emit hashAndSaveFinished(false, errorString, tempFile, modelReply);
-        return;
     }
+
+    ModelList::globalInstance()->updateModelsFromDirectory();
 }
 
 void Download::handleModelDownloadFinished()

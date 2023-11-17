@@ -264,11 +264,7 @@ ModelList::ModelList()
     m_embeddingModels->setSourceModel(this);
     m_installedModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
-    m_watcher = new QFileSystemWatcher(this);
-    const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
-    m_watcher->addPath(exePath);
-    m_watcher->addPath(MySettings::globalInstance()->modelPath());
-    connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &ModelList::updateModelsFromDirectory);
+
     connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromDirectory);
     connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromJson);
     connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromSettings);
