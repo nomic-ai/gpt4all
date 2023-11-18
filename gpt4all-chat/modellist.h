@@ -120,6 +120,24 @@ private:
 };
 Q_DECLARE_METATYPE(ModelInfo)
 
+class EmbeddingModels : public QSortFilterProxyModel
+{
+    Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+public:
+    explicit EmbeddingModels(QObject *parent);
+    int count() const;
+
+    ModelInfo defaultModelInfo() const;
+
+Q_SIGNALS:
+    void countChanged();
+    void defaultModelIndexChanged();
+
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+};
+
 class InstalledModels : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -165,6 +183,8 @@ class ModelList : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(int defaultEmbeddingModelIndex READ defaultEmbeddingModelIndex NOTIFY defaultEmbeddingModelIndexChanged)
+    Q_PROPERTY(EmbeddingModels* embeddingModels READ embeddingModels NOTIFY embeddingModelsChanged)
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
@@ -273,6 +293,7 @@ public:
     Q_INVOKABLE QString clone(const ModelInfo &model);
     Q_INVOKABLE void remove(const ModelInfo &model);
     ModelInfo defaultModelInfo() const;
+    int defaultEmbeddingModelIndex() const;
 
     void addModel(const QString &id);
     void changeId(const QString &oldId, const QString &newId);
@@ -280,6 +301,7 @@ public:
     const QList<ModelInfo> exportModelList() const;
     const QList<QString> userDefaultModelList() const;
 
+    EmbeddingModels *embeddingModels() const { return m_embeddingModels; }
     InstalledModels *installedModels() const { return m_installedModels; }
     DownloadableModels *downloadableModels() const { return m_downloadableModels; }
 
@@ -300,10 +322,12 @@ public:
 
 Q_SIGNALS:
     void countChanged();
+    void embeddingModelsChanged();
     void installedModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
     void asyncModelRequestOngoingChanged();
+    void defaultEmbeddingModelIndexChanged();
 
 private Q_SLOTS:
     void updateModelsFromJson();
@@ -326,6 +350,7 @@ private:
 private:
     mutable QMutex m_mutex;
     QNetworkAccessManager m_networkManager;
+    EmbeddingModels *m_embeddingModels;
     InstalledModels *m_installedModels;
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;

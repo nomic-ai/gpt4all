@@ -10,13 +10,14 @@ struct llm_buffer {
     uint8_t * addr = NULL;
     size_t size = 0;
     ggml_vk_memory memory;
+    bool force_cpu = false;
 
     llm_buffer() = default;
 
     void resize(size_t size) {
         free();
 
-        if (!ggml_vk_has_device()) {
+        if (!ggml_vk_has_device() || force_cpu) {
             this->addr = new uint8_t[size];
             this->size = size;
         } else {

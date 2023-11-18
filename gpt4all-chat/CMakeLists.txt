@@ -75,7 +75,9 @@ qt_add_executable(chat
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
     chatgpt.h chatgpt.cpp
     database.h database.cpp
+    embeddings.h embeddings.cpp
     download.h download.cpp
+    embllm.cpp embllm.h
     localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
     llm.h llm.cpp
     modellist.h modellist.cpp
@@ -90,6 +92,7 @@ qt_add_executable(chat
 qt_add_qml_module(chat
     URI gpt4all
     VERSION 1.0
+    NO_CACHEGEN
     QML_FILES
       main.qml
       qml/ChatDrawer.qml
@@ -170,7 +173,7 @@ else()
     PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
 endif()
 target_link_libraries(chat
-    PRIVATE llmodel)
+    PRIVATE llmodel bert-default)
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)

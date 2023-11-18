@@ -18,6 +18,7 @@ Chat::Chat(QObject *parent)
     , m_shouldDeleteLater(false)
     , m_isModelLoaded(false)
     , m_shouldLoadModelWhenInstalled(false)
+    , m_collectionModel(new LocalDocsCollectionsModel(this))
 {
     connectLLM();
 }
@@ -35,6 +36,7 @@ Chat::Chat(bool isServer, QObject *parent)
     , m_shouldDeleteLater(false)
     , m_isModelLoaded(false)
     , m_shouldLoadModelWhenInstalled(false)
+    , m_collectionModel(new LocalDocsCollectionsModel(this))
 {
     connectLLM();
 }
@@ -71,6 +73,7 @@ void Chat::connectLLM()
     connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
     connect(this, &Chat::processSystemPromptRequested, m_llmodel, &ChatLLM::processSystemPrompt, Qt::QueuedConnection);
 
+    connect(this, &Chat::collectionListChanged, m_collectionModel, &LocalDocsCollectionsModel::setCollections);
     connect(ModelList::globalInstance()->installedModels(), &InstalledModels::countChanged,
         this, &Chat::handleModelInstalled, Qt::QueuedConnection);
 }
