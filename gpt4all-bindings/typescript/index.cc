@@ -256,6 +256,9 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
              .repeat_last_n = 10,
              .context_erase = 0.5
          };
+    
+    PromptWorkerConfig promptWorkerConfig;
+
     if(info[1].IsObject())
     {
        auto inputObject = info[1].As<Napi::Object>();
@@ -287,29 +290,33 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
        if(inputObject.Has("context_erase")) 
             promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
     }
-    //copy to protect llmodel resources when splitting to new thread
-    llmodel_prompt_context copiedPrompt = promptContext;
+    else
+    {
+        Napi::Error::New(info.Env(), "Missing Prompt Options").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
 
-    std::string copiedQuestion = question;
-    PromptWorkContext pc = {
-        copiedQuestion,
-        inference_,
-        copiedPrompt,
-        ""
-    };
-    auto threadSafeContext = new TsfnContext(env, pc);
-    threadSafeContext->tsfn = Napi::ThreadSafeFunction::New(
-        env,                                    // Environment
-        info[2].As<Napi::Function>(),           // JS function from caller
-        "PromptCallback",                       // Resource name
-        0,                                      // Max queue size (0 = unlimited).
-        1,                                      // Initial thread count
-        threadSafeContext,                      // Context,
-        FinalizerCallback,                      // Finalizer
-        (void*)nullptr                          // Finalizer data
-    );
-    threadSafeContext->nativeThread = std::thread(threadEntry, threadSafeContext);
-    return threadSafeContext->deferred_.Promise();
+    if(info.Length() >= 3 && info[2].IsFunction()){
+        promptWorkerConfig.bHasTokenCallback = true;
+        promptWorkerConfig.tokenCallback = info[2].As<Napi::Function>();
+    }
+
+    
+
+    //copy to protect llmodel resources when splitting to new thread
+    // llmodel_prompt_context copiedPrompt = promptContext;
+    promptWorkerConfig.context = promptContext;
+    promptWorkerConfig.model = GetInference();
+    promptWorkerConfig.mutex = &inference_mutex;
+    promptWorkerConfig.prompt = question;
+    promptWorkerConfig.result = "";
+
+    
+    auto worker = new PromptWorker(env, promptWorkerConfig);
+
+    worker->Queue();
+
+    return worker->GetPromise();
   }
   void NodeModelWrapper::Dispose(const Napi::CallbackInfo& info) {
     llmodel_model_destroy(inference_);

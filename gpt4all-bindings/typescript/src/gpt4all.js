@@ -18,6 +18,7 @@ const {
     DEFAULT_MODEL_LIST_URL,
 } = require("./config.js");
 const { InferenceModel, EmbeddingModel } = require("./models.js");
+const Stream = require('stream')
 
 /**
  * Loads a machine learning model with the specified name. The defacto way to create a model.
@@ -154,11 +155,7 @@ const defaultCompletionOptions = {
     ...DEFAULT_PROMPT_CONTEXT,
 };
 
-async function createCompletion(
-    model,
-    messages,
-    options = defaultCompletionOptions
-) {
+function preparePromptAndContext(model,messages,options){
     if (options.hasDefaultHeader !== undefined) {
         console.warn(
             "hasDefaultHeader (bool) is deprecated and has no effect, use promptHeader (string) instead"
@@ -197,11 +194,28 @@ async function createCompletion(
         // promptFooter: '### Response:',
     });
 
+    return {
+        prompt, promptContext, verbose
+    }
+}
+
+async function createCompletion(
+    model,
+    messages,
+    options = defaultCompletionOptions
+) {
+    const { prompt, promptContext, verbose } = preparePromptAndContext(model,messages,options);
+
     if (verbose) {
         console.debug("Sending Prompt:\n" + prompt);
     }
 
-    const response = await model.generate(prompt, promptContext);
+    let tokensGenerated = 0
+
+    const response = await model.generate(prompt, promptContext,() => {
+        tokensGenerated++;
+        return true;
+    });
 
     if (verbose) {
         console.debug("Received Response:\n" + response);
@@ -211,8 +225,8 @@ async function createCompletion(
         llmodel: model.llm.name(),
         usage: {
             prompt_tokens: prompt.length,
-            completion_tokens: response.length, //TODO
-            total_tokens: prompt.length + response.length, //TODO
+            completion_tokens: tokensGenerated,
+            total_tokens: prompt.length + tokensGenerated, //TODO Not sure how to get tokens in prompt
         },
         choices: [
             {
@@ -225,8 +239,49 @@ async function createCompletion(
     };
 }
 
-function createTokenStream() {
-    throw Error("This API has not been completed yet!");
+
+async function * createTokenStream(model,
+    messages,
+    options = defaultCompletionOptions,callback) {
+    const { prompt, promptContext, verbose } = preparePromptAndContext(model,messages,options);
+
+    
+
+    // We will feed tokens to this stream
+    const stream = new Stream.PassThrough({
+        encoding: 'utf-8'
+    });
+
+
+    if (verbose) {
+        console.debug("Sending Prompt:\n" + prompt);
+    }
+
+    model.generate(prompt, promptContext,(tokenId, token, total) => {
+        stream.push(token);
+        
+        if(callback !== undefined){
+            return callback(tokenId,token,total);
+        }
+
+        return true;
+    }).then(() => {
+        stream.end()
+    })
+
+
+    // Run till the stream is done
+    while(!stream.readableEnded){
+        const token = await new Promise((res)=>{
+            stream.once('data',res)
+        })
+
+        if (verbose) {
+            console.debug("Received Token:\n",token);
+        }
+
+        yield token
+    }
 }
 
 module.exports = {

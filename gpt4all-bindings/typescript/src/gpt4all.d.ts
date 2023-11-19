@@ -52,6 +52,7 @@ interface ModelConfig {
     url?: string;
 }
 
+type TokenCallback = (tokenId: number, token: string, total: string) => boolean
 declare class InferenceModel {
     constructor(llm: LLModel, config: ModelConfig);
     llm: LLModel;
@@ -59,7 +60,8 @@ declare class InferenceModel {
 
     generate(
         prompt: string,
-        options?: Partial<LLModelPromptContext>
+        options?: Partial<LLModelPromptContext>,
+        callback?: TokenCallback
     ): Promise<string>;
 
    /**
@@ -127,13 +129,14 @@ declare class LLModel {
      * Use the prompt function exported for a value
      * @param q The prompt input.
      * @param params Optional parameters for the prompt context.
+     * @param callback - optional callback to control token generation.
      * @returns The result of the model prompt.
      */
     raw_prompt(
         q: string,
         params: Partial<LLModelPromptContext>,
-        callback: (res: string) => void
-    ): void; // TODO work on return type
+        callback?: TokenCallback
+    ): Promise<string>
 
     /**
      * Embed text with the model. Keep in mind that
@@ -434,13 +437,19 @@ interface LLModelPromptContext {
 }
 
 /**
- * TODO: Help wanted to implement this
+ * The nodejs equivalent to python binding's model.generate(prompt,stream=True)
+ * @param {InferenceModel} model - The language model object.
+ * @param {PromptMessage[]} messages - The array of messages for the conversation.
+ * @param {CompletionOptions} options - The options for creating the completion.
+ * @param {TokenCallback} callback - optional callback to control token generation.
+ * @returns {CompletionReturn} The completion result.
  */
 declare function createTokenStream(
-    llmodel: LLModel,
+    llmodel: InferenceModel,
     messages: PromptMessage[],
-    options: CompletionOptions
-): (ll: LLModel) => AsyncGenerator<string>;
+    options: CompletionOptions,
+    callback?: TokenCallback
+): AsyncGenerator<string>;
 /**
  * From python api:
  * models will be stored in (homedir)/.cache/gpt4all/`

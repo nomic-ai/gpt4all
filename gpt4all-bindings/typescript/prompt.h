@@ -1,44 +1,59 @@
-#ifndef TSFN_CONTEXT_H
-#define TSFN_CONTEXT_H
+#ifndef PREDICT_WORKER_H
+#define PREDICT_WORKER_H
 
 #include "napi.h"
 #include "llmodel_c.h"
+#include "llmodel.h"
 #include <thread>
 #include <mutex>
 #include <iostream>
 #include <atomic>
 #include <memory>
-struct PromptWorkContext {
-    std::string question;
-    llmodel_model inference_;
-    llmodel_prompt_context prompt_params;
-    std::string res;
 
-};
+struct TokenCallbackInfo
+    {
+        int32_t tokenId;
+        std::string total;
+        std::string token;
+    };
 
-struct TsfnContext {
-public:
-  TsfnContext(Napi::Env env, const PromptWorkContext &pc);
-  std::thread nativeThread;
-  Napi::Promise::Deferred deferred_;
-  PromptWorkContext pc;
-  Napi::ThreadSafeFunction tsfn;
+    struct LLModelWrapper
+    {
+        LLModel *llModel = nullptr;
+        LLModel::PromptContext promptContext;
+        ~LLModelWrapper() { delete llModel; }
+    };
 
-  // Some data to pass around
-  // int ints[ARRAY_LENGTH];
+    struct PromptWorkerConfig
+    {
+        Napi::Function tokenCallback;
+        bool bHasTokenCallback = false;
+        llmodel_model model;
+        std::mutex * mutex;
+        std::string prompt;
+        llmodel_prompt_context context;
+        std::string result;
+    };
 
-};
+    class PromptWorker : public Napi::AsyncWorker
+    {
+    public:
+        PromptWorker(Napi::Env env, PromptWorkerConfig config);
+        ~PromptWorker();
+        void Execute() override;
+        void OnOK() override;
+        void OnError(const Napi::Error &e) override;
+        Napi::Promise GetPromise();
 
-// The thread entry point. This takes as its arguments the specific
-// threadsafe-function context created inside the main thread.
-void threadEntry(TsfnContext*);
+        bool ResponseCallback(int32_t token_id, const std::string token);
+        bool RecalculateCallback(bool isrecalculating);
+        bool PromptCallback(int32_t tid);
 
-// The thread-safe function finalizer callback. This callback executes
-// at destruction of thread-safe function, taking as arguments the finalizer
-// data and threadsafe-function context.
-void FinalizerCallback(Napi::Env, void* finalizeData, TsfnContext*);
+    private:
+        Napi::Promise::Deferred promise;
+        std::string result;
+        PromptWorkerConfig _config;
+        Napi::ThreadSafeFunction _tsfn;
+    };
 
-bool response_callback(int32_t token_id, const char *response);
-bool recalculate_callback (bool isrecalculating);
-bool prompt_callback (int32_t tid); 
-#endif  // TSFN_CONTEXT_H
+#endif  // PREDICT_WORKER_H
