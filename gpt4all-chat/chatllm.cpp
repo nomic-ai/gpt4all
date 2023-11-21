@@ -917,11 +917,11 @@ void ChatLLM::restoreState()
 #if defined(DEBUG)
     qDebug() << "restoreState" << m_llmThread.objectName() << "size:" << m_state.size();
 #endif
-    m_processedSystemPrompt = true;
 
     if (m_state.isEmpty())
         return;
 
+    m_processedSystemPrompt = true;
     m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
     m_state.clear();
     m_state.resize(0);
@@ -930,7 +930,7 @@ void ChatLLM::restoreState()
 void ChatLLM::processSystemPrompt()
 {
     Q_ASSERT(isModelLoaded());
-    if (!isModelLoaded() || m_processedSystemPrompt || m_isServer)
+    if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText || m_isServer)
         return;
 
     const std::string systemPrompt = MySettings::globalInstance()->modelSystemPrompt(m_modelInfo).toStdString();
@@ -974,7 +974,7 @@ void ChatLLM::processSystemPrompt()
     fflush(stdout);
 #endif
 
-    m_processedSystemPrompt = !m_stopGenerating;
+    m_processedSystemPrompt = m_stopGenerating == false;
 }
 
 void ChatLLM::processRestoreStateFromText()
