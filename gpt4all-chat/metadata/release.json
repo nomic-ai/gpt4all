@@ -601,5 +601,21 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.5.4",
+    "notes":
+"
+* Major bugfix release with new models!
+* Model: Recently released Orca 2 model which does exceptionally well on reasoning tasks
+* Fix: System prompt was not always being honored
+* Fix: Download network retry on cloudflare errors
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Jared Van Bortel (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]
