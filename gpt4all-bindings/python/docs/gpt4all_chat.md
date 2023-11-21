@@ -26,10 +26,7 @@ It allows you to utilize powerful local LLMs to chat with private data without a
 When using LocalDocs, your LLM will cite the sources that most likely contributed to a given output. Note, even an LLM equipped with LocalDocs can hallucinate. The LocalDocs plugin will utilize your documents to help answer prompts and you will see references appear below the response.
 
 <p align="center">
-  <img width="70%" src="https://github.com/nomic-ai/gpt4all/assets/13879686/f70f40b4-9684-46d8-b388-ca186f63d13e">
-</p>
-<p align="center">
-GPT4All-Snoozy with LocalDocs. Try GPT4All-Groovy for a faster experience!
+  <img width="70%" src="https://github.com/nomic-ai/gpt4all/assets/10168/fe5dd3c0-b3cc-4701-98d3-0280dfbcf26f">
 </p>
 
 #### Enabling LocalDocs
