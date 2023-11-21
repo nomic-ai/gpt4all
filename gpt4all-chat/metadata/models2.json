@@ -48,6 +48,36 @@
   },
   {
     "order": "e",
+    "md5sum": "00c8593ba57f5240f59662367b3ed4a5",
+    "name": "Orca 2 (Medium)",
+    "filename": "orca-2-7b.Q4_0.gguf",
+    "filesize": "3825824192",
+    "requires": "2.5.2",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "LLaMA2",
+    "systemPrompt": " ",
+    "description": "<ul><li>Instruction based<li>Trained by Microsoft<li>Cannot be used commercially</ul>",
+    "url": "https://gpt4all.io/models/gguf/orca-2-7b.Q4_0.gguf"
+  },
+  {
+    "order": "f",
+    "md5sum": "3c0d63c4689b9af7baa82469a6f51a19",
+    "name": "Orca 2 (Full)",
+    "filename": "orca-2-13b.Q4_0.gguf",
+    "filesize": "7365856064",
+    "requires": "2.5.2",
+    "ramrequired": "16",
+    "parameters": "13 billion",
+    "quant": "q4_0",
+    "type": "LLaMA2",
+    "systemPrompt": " ",
+    "description": "<ul><li>Instruction based<li>Trained by Microsoft<li>Cannot be used commercially</ul>",
+    "url": "https://gpt4all.io/models/gguf/orca-2-13b.Q4_0.gguf"
+  },
+  {
+    "order": "g",
     "md5sum": "5aff90007499bce5c64b1c0760c0b186",
     "name": "Wizard v1.2",
     "filename": "wizardlm-13b-v1.2.Q4_0.gguf",
@@ -58,11 +88,11 @@
     "quant": "q4_0",
     "type": "LLaMA2",
     "systemPrompt": " ",
-    "description": "<strong>Best overall larger model</strong><br><ul><li>Instruction based<li>Gives very long responses<li>Finetuned with only 1k of high-quality data<li>Trained by Microsoft and Peking University<li>Cannot be used commercially</ul",
+    "description": "<strong>Best overall larger model</strong><br><ul><li>Instruction based<li>Gives very long responses<li>Finetuned with only 1k of high-quality data<li>Trained by Microsoft and Peking University<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/wizardlm-13b-v1.2.Q4_0.gguf"
   },
   {
-    "order": "f",
+    "order": "h",
     "md5sum": "3d12810391d04d1153b692626c0c6e16",
     "name": "Hermes",
     "filename": "nous-hermes-llama2-13b.Q4_0.gguf",
@@ -78,7 +108,7 @@
     "promptTemplate": "### Instruction:\n%1\n### Response:\n"
   },
   {
-    "order": "g",
+    "order": "i",
     "md5sum": "40388eb2f8d16bb5d08c96fdfaac6b2c",
     "name": "Snoozy",
     "filename": "gpt4all-13b-snoozy-q4_0.gguf",
@@ -93,7 +123,7 @@
     "url": "https://gpt4all.io/models/gguf/gpt4all-13b-snoozy-q4_0.gguf"
   },
   {
-    "order": "h",
+    "order": "j",
     "md5sum": "cf5e8f73747f9d7c6fe72a629808c1de",
     "name": "MPT Chat",
     "filename": "mpt-7b-chat-merges-q4_0.gguf",
@@ -109,7 +139,7 @@
     "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>"
   },
   {
-    "order": "i",
+    "order": "k",
     "md5sum": "0e769317b90ac30d6e09486d61fefa26",
     "name": "Mini Orca (Small)",
     "filename": "orca-mini-3b-gguf2-q4_0.gguf",
@@ -125,7 +155,7 @@
     "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
-    "order": "j",
+    "order": "l",
     "md5sum": "e30579a1b109882f10e2a5e75ea388fb",
     "disableGUI": "true",
     "name": "Replit",
@@ -142,7 +172,7 @@
     "url": "https://gpt4all.io/models/gguf/replit-code-v1_5-3b-q4_0.gguf"
   },
   {
-    "order": "k",
+    "order": "m",
     "md5sum": "556fc3e13df42286997fb58e6f4c639f",
     "disableGUI": "true",
     "name": "Starcoder",
@@ -159,7 +189,7 @@
     "url": "https://gpt4all.io/models/gguf/starcoder-q4_0.gguf"
   },
   {
-    "order": "l",
+    "order": "n",
     "md5sum": "e973dd26f0ffa6e46783feaea8f08c83",
     "disableGUI": "true",
     "name": "Rift coder",
@@ -176,7 +206,7 @@
     "url": "https://gpt4all.io/models/gguf/rift-coder-v0-7b-q4_0.gguf"
   },
   {
-    "order": "m",
+    "order": "o",
     "md5sum": "e479e6f38b59afc51a470d1953a6bfc7",
     "disableGUI": "true",
     "name": "SBert",
@@ -192,7 +222,7 @@
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
   },
   {
-    "order": "n",
+    "order": "p",
     "md5sum": "919de4dd6f25351bcb0223790db1932d",
     "name": "EM German Mistral",
     "filename": "em_german_mistral_v01.Q4_0.gguf",
