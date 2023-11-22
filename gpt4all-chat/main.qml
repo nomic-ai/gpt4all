@@ -431,6 +431,10 @@ Window {
     CollectionsDialog {
         id: collectionsDialog
         anchors.centerIn: parent
+        onAddRemoveClicked: {
+            settingsDialog.pageToDisplay = 2;
+            settingsDialog.open();
+        }
     }
 
     MyToolButton {

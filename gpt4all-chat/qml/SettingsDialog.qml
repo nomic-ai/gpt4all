@@ -20,6 +20,7 @@ MyDialog {
     }
 
     signal downloadClicked
+    property alias pageToDisplay: listView.currentIndex
 
     Item {
         Accessible.role: Accessible.Dialog

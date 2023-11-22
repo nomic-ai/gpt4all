@@ -15,6 +15,7 @@ MyDialog {
     width: 480
     height: 640
 
+    signal addRemoveClicked
     property var currentChat: ChatListModel.currentChat
 
     Label {
@@ -30,7 +31,8 @@ MyDialog {
         id: scrollView
         anchors.top: listLabel.bottom
         anchors.topMargin: 20
-        anchors.bottom: parent.bottom
+        anchors.bottom: collectionSettings.top
+        anchors.bottomMargin: 20
         anchors.left: parent.left
         anchors.right: parent.right
         clip: true
@@ -118,6 +120,17 @@ MyDialog {
                     font.pixelSize: theme.fontSizeLarge
                 }
             }
+        }
+    }
+
+    MyButton {
+        id: collectionSettings
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: qsTr("Add & Remove")
+        font.pixelSize: theme.fontSizeLarger
+        onClicked: {
+            addRemoveClicked()
         }
     }
 }
