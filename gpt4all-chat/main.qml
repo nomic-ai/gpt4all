@@ -967,7 +967,7 @@ Window {
                 }
 
                 Image {
-                    visible: currentChat.isServer || (currentChat.modelInfo.isChatGPT || currentChat.modelInfo.isOpenAICompatible)
+                    visible: currentChat.isServer || currentChat.modelInfo.isChatGPT || currentChat.modelInfo.isOpenAICompatible
                     anchors.fill: parent
                     sourceSize.width: 1024
                     sourceSize.height: 1024

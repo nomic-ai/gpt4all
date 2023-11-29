@@ -239,25 +239,24 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 QFile file(filePath);
                 file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text);
                 QTextStream stream(&file);
-                QStringList char_gpt_params = stream.readAll().split('\n');
-                if (!char_gpt_params.size()) {
+                QStringList chatGPTParams = stream.readAll().split('\n');
+                if (chatGPTParams.isEmpty()) {
 
                     emit modelLoadingError(QString("Could not load model due to invalid settings for %1").arg(modelInfo.filename()));
-                }
-                else {
-                    apiKey = char_gpt_params[0];
-                    if (char_gpt_params.size() >= 2) {
-                        apiBase = char_gpt_params[1];
+                } else {
+                    apiKey = chatGPTParams[0];
+                    if (chatGPTParams.size() >= 2) {
+                        apiBase = chatGPTParams[1];
                     }
-                    if (char_gpt_params.size() >= 3) {
-                        chatGPTModel = char_gpt_params[2];
+                    if (chatGPTParams.size() >= 3) {
+i                       chatGPTModel = chatGPTParams[2];
                     }
                 }
                 file.close();
             }
             m_llModelType = LLModelType::CHATGPT_;
             ChatGPT *model = new ChatGPT();
-            model->setModelName(chatGPTModel.size() ? chatGPTModel : (fileInfo.completeBaseName().remove(0, 8))); // remove the chatgpt- prefix
+            model->setModelName(chatGPTModel.size() ? chatGPTModel : fileInfo.completeBaseName().remove(0, 8)); // remove the chatgpt- prefix
             model->setAPIKey(apiKey);
             model->setAPIBase(apiBase.size() ? apiBase : "https://api.openai.com/v1/");
             m_llModelInfo.model = model;

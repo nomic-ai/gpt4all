@@ -187,15 +187,14 @@ MyDialog {
                                         color: installButton.hovered ? theme.backgroundDark : theme.backgroundDarkest
                                     }
                                     onClicked: {
-                                    if (isOpenAICompatible) {
-                                        if (openaiBase.text === "")
-                                            openaiBase.showError();
-//                                        else if (openaiModel.text === "")
-//                                            openaiBase.showError();
-                                        else
-                                            Download.installModel(filename, openaiBase.text, openaiKey.text, openaiModel.text);
-                                        }
-                                        else if (isChatGPT) {
+                                        if (isOpenAICompatible) {
+                                            if (openaiBase.text === "")
+                                                openaiBase.showError();
+//                                            else if (openaiModel.text === "")
+//                                                openaiBase.showError();
+                                            else
+                                                Download.installModel(filename, openaiBase.text, openaiKey.text, openaiModel.text);
+                                        } else if (isChatGPT) {
                                             if (openaiKey.text === "")
                                                 openaiKey.showError();
                                             else
