@@ -880,8 +880,9 @@ void ModelList::updateModelsFromDirectory()
 
                     for (const QString &id : modelsById) {
                         updateData(id, FilenameRole, filename);
-                        updateData(id, ChatGPTRole, filename.startsWith("chatgpt-"));
-                        updateData(id, OpenAICompatibleRole, filename.startsWith("chatgpt-custom"));
+                        const bool is_chatgpt_custom = filename.startsWith("chatgpt-custom");
+                        updateData(id, OpenAICompatibleRole, is_chatgpt_custom);
+                        updateData(id, ChatGPTRole, (!is_chatgpt_custom && filename.startsWith("chatgpt-")));
                         updateData(id, DirpathRole, info.dir().absolutePath() + "/");
                         updateData(id, FilesizeRole, toFileSize(info.size()));
                     }

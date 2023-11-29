@@ -784,9 +784,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
         case BERT_: stream << BERT_INTERNAL_STATE_VERSION; break;
-#ifndef DEBUG
         default: Q_UNREACHABLE();
-#endif
         }
     }
     stream << response();

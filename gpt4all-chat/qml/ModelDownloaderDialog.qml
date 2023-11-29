@@ -424,7 +424,7 @@ MyDialog {
                                     Layout.topMargin: 10
                                     Layout.leftMargin: 20
                                     Layout.minimumWidth: 150
-                                    Layout.maximumWidth: textMetrics.width + 25
+                                    Layout.maximumWidth: textMetricsOAIKey.width + 25
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     color: theme.textColor
                                     background: Rectangle {
