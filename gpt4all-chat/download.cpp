@@ -172,10 +172,10 @@ void Download::cancelDownload(const QString &modelFile)
     }
 }
 
-void Download::installModel(const QString &modelFile, const QString &apiKey)
+void Download::installModel(const QString &modelFile, const QString &apiBase, const QString &apiKey, const QString &modelName)
 {
-    Q_ASSERT(!apiKey.isEmpty());
-    if (apiKey.isEmpty())
+    Q_ASSERT(!(apiKey.isEmpty() && apiBase.isEmpty()));
+    if (apiKey.isEmpty() && apiBase.isEmpty())
         return;
 
     Network::globalInstance()->sendInstallModel(modelFile);
@@ -183,7 +183,10 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
     QFile file(filePath);
     if (file.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
         QTextStream stream(&file);
-        stream << apiKey;
+        stream << apiKey + "\n" + apiBase;
+        if (modelName.size()) {
+            stream << "\n" + modelName;
+        }
         file.close();
     }
 }

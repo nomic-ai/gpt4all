@@ -154,7 +154,7 @@ void ChatGPTWorker::request(const QString &apiKey,
 {
     m_ctx = promptCtx;
 
-    QUrl openaiUrl("https://api.openai.com/v1/chat/completions");
+    QUrl openaiUrl(m_chat->APIBase() + "/chat/completions");
     const QString authorization = QString("Bearer %1").arg(apiKey).trimmed();
     QNetworkRequest request(openaiUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");

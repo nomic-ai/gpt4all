@@ -131,7 +131,7 @@ MyDialog {
                                     Layout.minimumWidth: openaiKey.width
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
-                                    visible: !isChatGPT && !installed && !calcHash && downloadError === ""
+                                    visible: !(isChatGPT || isOpenAICompatible) && !installed && !calcHash && downloadError === ""
                                     Accessible.description: qsTr("Stop/restart/start the download")
                                     background: Rectangle {
                                         border.color: downloadButton.down ? theme.backgroundLightest : theme.buttonBorder
@@ -172,7 +172,7 @@ MyDialog {
 
                                 MyButton {
                                     id: installButton
-                                    visible: !installed && isChatGPT
+                                    visible: !installed && (isChatGPT || isOpenAICompatible)
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
                                     Layout.minimumWidth: openaiKey.width
@@ -187,10 +187,20 @@ MyDialog {
                                         color: installButton.hovered ? theme.backgroundDark : theme.backgroundDarkest
                                     }
                                     onClicked: {
-                                        if (openaiKey.text === "")
-                                            openaiKey.showError();
+                                    if (isOpenAICompatible) {
+                                        if (openaiBase.text === "")
+                                            openaiBase.showError();
+//                                        else if (openaiModel.text === "")
+//                                            openaiBase.showError();
                                         else
-                                            Download.installModel(filename, openaiKey.text);
+                                            Download.installModel(filename, openaiBase.text, openaiKey.text, openaiModel.text);
+                                        }
+                                        else if (isChatGPT) {
+                                            if (openaiKey.text === "")
+                                                openaiKey.showError();
+                                            else
+                                                Download.installModel(filename, openaiBase.text, openaiKey.text, "");
+                                        }
                                     }
                                     Accessible.role: Accessible.Button
                                     Accessible.name: qsTr("Install")
@@ -343,9 +353,75 @@ MyDialog {
                                 }
 
                                 MyTextField {
+                                    id: openaiBase
+                                    visible: !installed && (isOpenAICompatible) // maybe (isChatGPT || isOpenAICompatible)
+                                    Layout.topMargin: 10
+                                    Layout.leftMargin: 20
+                                    Layout.minimumWidth: openaiKey.width
+                                    Layout.maximumWidth: openaiKey.width
+                                    Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+                                    color: theme.textColor
+                                    background: Rectangle {
+                                        color: theme.backgroundLighter
+                                        radius: 10
+                                    }
+                                    wrapMode: Text.WrapAnywhere
+                                    font.pixelSize: theme.fontSizeLarge
+                                    function showError() {
+                                        openaiBase.placeholderTextColor = theme.textErrorColor
+                                    }
+                                    onTextChanged: {
+                                        openaiBase.placeholderTextColor = theme.backgroundLightest
+                                    }
+                                    placeholderText: isOpenAICompatible ? qsTr("(required) $OPENAI_API_BASE") : qsTr("(optional) $OPENAI_API_BASE")
+                                    placeholderTextColor: theme.backgroundLightest
+                                    Accessible.role: Accessible.EditableText
+                                    Accessible.name: placeholderText
+                                    Accessible.description: qsTr("Base URL to access Open API")
+                                    TextMetrics {
+                                        id: textMetricsOAIBase
+                                        font: openaiBase.font
+                                        text: openaiBase.placeholderText
+                                    }
+                                }
+
+                                MyTextField {
+                                    id: openaiModel
+                                    visible: !installed && (isOpenAICompatible)
+                                    Layout.topMargin: 10
+                                    Layout.leftMargin: 20
+                                    Layout.minimumWidth: openaiKey.width
+                                    Layout.maximumWidth: openaiKey.width
+                                    Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+                                    color: theme.textColor
+                                        background: Rectangle {
+                                        color: theme.backgroundLighter
+                                        radius: 10
+                                    }
+                                    wrapMode: Text.WrapAnywhere
+                                    font.pixelSize: theme.fontSizeLarge
+                                    function showError() {
+                                    openaiModel.placeholderTextColor = theme.textErrorColor
+                                    }
+                                    onTextChanged: {
+                                        openaiModel.placeholderTextColor = theme.backgroundLightest
+                                    }
+                                    placeholderText: qsTr("(optional) Model name")
+                                    placeholderTextColor: theme.backgroundLightest
+                                    Accessible.role: Accessible.EditableText
+                                    Accessible.name: placeholderText
+                                    Accessible.description: qsTr("Remote model name")
+                                    TextMetrics {
+                                        id: textMetricsOAIModel
+                                        font: openaiModel.font
+                                        text: openaiModel.placeholderText
+                                    }
+                                }
+
+                                MyTextField {
                                     id: openaiKey
-                                    visible: !installed && isChatGPT
-                                    Layout.topMargin: 20
+                                    visible: !installed && (isChatGPT || isOpenAICompatible)
+                                    Layout.topMargin: 10
                                     Layout.leftMargin: 20
                                     Layout.minimumWidth: 150
                                     Layout.maximumWidth: textMetrics.width + 25
@@ -362,17 +438,18 @@ MyDialog {
                                     onTextChanged: {
                                         openaiKey.placeholderTextColor = theme.backgroundLightest
                                     }
-                                    placeholderText: qsTr("enter $OPENAI_API_KEY")
+                                    placeholderText: isOpenAICompatible ? qsTr("(optional) $OPENAI_API_KEY") : qsTr("(required) $OPENAI_API_KEY")
                                     font.pixelSize: theme.fontSizeLarge
                                     placeholderTextColor: theme.backgroundLightest
                                     Accessible.role: Accessible.EditableText
                                     Accessible.name: placeholderText
-                                    Accessible.description: qsTr("Whether the file hash is being calculated")
+                                    Accessible.description: qsTr("OpenAI API key")
                                     TextMetrics {
-                                        id: textMetrics
+                                        id: textMetricsOAIKey
                                         font: openaiKey.font
                                         text: openaiKey.placeholderText
                                     }
+
                                 }
                             }
                         }

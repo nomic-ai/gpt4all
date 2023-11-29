@@ -52,7 +52,7 @@ public:
     bool hasNewerRelease() const;
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
-    Q_INVOKABLE void installModel(const QString &modelFile, const QString &apiKey);
+    Q_INVOKABLE void installModel(const QString &modelFile, const QString& apiBase, const QString &apiKey, const QString& modelName="");
     Q_INVOKABLE void removeModel(const QString &modelFile);
     Q_INVOKABLE bool isFirstStart() const;
 

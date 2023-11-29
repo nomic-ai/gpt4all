@@ -156,7 +156,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (isModelLoaded() && this->modelInfo() == modelInfo)
         return true;
 
-    bool isChatGPT = modelInfo.isChatGPT;
+    bool isChatGPT = modelInfo.isChatGPT || modelInfo.isOpenAICompatible;
     QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
 
@@ -233,18 +233,33 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (fileInfo.exists()) {
         if (isChatGPT) {
             QString apiKey;
-            QString chatGPTModel = fileInfo.completeBaseName().remove(0, 8); // remove the chatgpt- prefix
+            QString apiBase;
+            QString chatGPTModel;
             {
                 QFile file(filePath);
                 file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text);
                 QTextStream stream(&file);
-                apiKey = stream.readAll();
+                QStringList char_gpt_params = stream.readAll().split('\n');
+                if (!char_gpt_params.size()) {
+
+                    emit modelLoadingError(QString("Could not load model due to invalid settings for %1").arg(modelInfo.filename()));
+                }
+                else {
+                    apiKey = char_gpt_params[0];
+                    if (char_gpt_params.size() >= 2) {
+                        apiBase = char_gpt_params[1];
+                    }
+                    if (char_gpt_params.size() >= 3) {
+                        chatGPTModel = char_gpt_params[2];
+                    }
+                }
                 file.close();
             }
             m_llModelType = LLModelType::CHATGPT_;
             ChatGPT *model = new ChatGPT();
-            model->setModelName(chatGPTModel);
+            model->setModelName(chatGPTModel.size() ? chatGPTModel : (fileInfo.completeBaseName().remove(0, 8))); // remove the chatgpt- prefix
             model->setAPIKey(apiKey);
+            model->setAPIBase(apiBase.size() ? apiBase : "https://api.openai.com/v1/");
             m_llModelInfo.model = model;
         } else {
 
@@ -769,7 +784,9 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
         case BERT_: stream << BERT_INTERNAL_STATE_VERSION; break;
+#ifndef DEBUG
         default: Q_UNREACHABLE();
+#endif
         }
     }
     stream << response();

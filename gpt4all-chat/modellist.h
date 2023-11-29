@@ -17,6 +17,7 @@ struct ModelInfo {
     Q_PROPERTY(bool isDefault MEMBER isDefault)
     Q_PROPERTY(bool disableGUI MEMBER disableGUI)
     Q_PROPERTY(bool isChatGPT MEMBER isChatGPT)
+    Q_PROPERTY(bool isOpenAICompatible MEMBER isOpenAICompatible)
     Q_PROPERTY(QString description MEMBER description)
     Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
     Q_PROPERTY(QString deprecatedVersion MEMBER deprecatedVersion)
@@ -61,6 +62,7 @@ public:
     bool installed = false;
     bool isDefault = false;
     bool isChatGPT = false;
+    bool isOpenAICompatible = false;
     bool disableGUI = false;
     QString description;
     QString requiresVersion;
@@ -204,6 +206,7 @@ public:
         InstalledRole,
         DefaultRole,
         ChatGPTRole,
+        OpenAICompatibleRole,
         DisableGUIRole,
         DescriptionRole,
         RequiresVersionRole,
@@ -246,6 +249,7 @@ public:
         roles[InstalledRole] = "installed";
         roles[DefaultRole] = "isDefault";
         roles[ChatGPTRole] = "isChatGPT";
+        roles[OpenAICompatibleRole] = "isOpenAICompatible";
         roles[DisableGUIRole] = "disableGUI";
         roles[DescriptionRole] = "description";
         roles[RequiresVersionRole] = "requiresVersion";

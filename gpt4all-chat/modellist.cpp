@@ -356,7 +356,7 @@ ModelInfo ModelList::defaultModelInfo() const
         const size_t ramrequired = defaultModel->ramrequired;
 
         // If we don't have either setting, then just use the first model that requires less than 16GB that is installed
-        if (!hasUserDefaultName && !info->isChatGPT && ramrequired > 0 && ramrequired < 16)
+        if (!hasUserDefaultName && !(info->isChatGPT || info->isOpenAICompatible) && ramrequired > 0 && ramrequired < 16)
             break;
 
         // If we have a user specified default and match, then use it
@@ -479,6 +479,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->isDefault;
         case ChatGPTRole:
             return info->isChatGPT;
+        case OpenAICompatibleRole:
+            return info->isOpenAICompatible;
         case DisableGUIRole:
             return info->disableGUI;
         case DescriptionRole:
@@ -604,6 +606,8 @@ void ModelList::updateData(const QString &id, int role, const QVariant &value)
             info->isDefault = value.toBool(); break;
         case ChatGPTRole:
             info->isChatGPT = value.toBool(); break;
+        case OpenAICompatibleRole:
+            info->isOpenAICompatible = value.toBool(); break;
         case DisableGUIRole:
             info->disableGUI = value.toBool(); break;
         case DescriptionRole:
@@ -735,6 +739,7 @@ QString ModelList::clone(const ModelInfo &model)
     updateData(id, ModelList::DirpathRole, model.dirpath);
     updateData(id, ModelList::InstalledRole, model.installed);
     updateData(id, ModelList::ChatGPTRole, model.isChatGPT);
+    updateData(id, ModelList::OpenAICompatibleRole, model.isOpenAICompatible);
     updateData(id, ModelList::TemperatureRole, model.temperature());
     updateData(id, ModelList::TopPRole, model.topP());
     updateData(id, ModelList::TopKRole, model.topK());
@@ -876,6 +881,7 @@ void ModelList::updateModelsFromDirectory()
                     for (const QString &id : modelsById) {
                         updateData(id, FilenameRole, filename);
                         updateData(id, ChatGPTRole, filename.startsWith("chatgpt-"));
+                        updateData(id, OpenAICompatibleRole, filename.startsWith("chatgpt-custom"));
                         updateData(id, DirpathRole, info.dir().absolutePath() + "/");
                         updateData(id, FilesizeRole, toFileSize(info.size()));
                     }
@@ -1116,6 +1122,35 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             updateData(id, ModelList::SystemPromptRole, obj["systemPrompt"].toString());
     }
 
+    const QString CustomOpenAIDesc = tr("<ul><li>Requires acces to OpenAI compatible server</li>"
+                                        "<li>Any OpenAI compatible server that support chat/completions method</li></li></li>"
+                                        "<br />"
+                                        "<p>For OpenAI, the base path is \"https://api.openai.com/v1/\"</p>"
+                                        "<p>eg: For a selfhosted server it could be \"http://localhost:8008/v1/\"</p>");
+
+    {
+        const QString modelName = "Custom OpenAI API";
+        const QString id = modelName;
+        const QString modelFilename = "chatgpt-custom.txt";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        updateData(id, ModelList::NameRole, modelName);
+        updateData(id, ModelList::FilenameRole, modelFilename);
+        updateData(id, ModelList::FilesizeRole, "minimal");
+        updateData(id, ModelList::ChatGPTRole, false);
+        updateData(id, ModelList::OpenAICompatibleRole, true);
+        updateData(id, ModelList::DescriptionRole,
+            tr("<strong>Any OpenAI compatible server</strong><br>") + CustomOpenAIDesc);
+        updateData(id, ModelList::RequiresVersionRole, "2.4.2");
+        updateData(id, ModelList::OrderRole, "ca");
+        updateData(id, ModelList::RamrequiredRole, 0);
+        updateData(id, ModelList::ParametersRole, "?");
+        updateData(id, ModelList::QuantRole, "NA");
+        updateData(id, ModelList::TypeRole, "GPT");
+    }
+
     const QString chatGPTDesc = tr("<ul><li>Requires personal OpenAI API key.</li><li>WARNING: Will send"
         " your chats to OpenAI!</li><li>Your API key will be stored on disk</li><li>Will only be used"
         " to communicate with OpenAI</li><li>You can apply for an API key"
@@ -1133,6 +1168,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::FilenameRole, modelFilename);
         updateData(id, ModelList::FilesizeRole, "minimal");
         updateData(id, ModelList::ChatGPTRole, true);
+        updateData(id, ModelList::OpenAICompatibleRole, false);
         updateData(id, ModelList::DescriptionRole,
             tr("<strong>OpenAI's ChatGPT model GPT-3.5 Turbo</strong><br>") + chatGPTDesc);
         updateData(id, ModelList::RequiresVersionRole, "2.4.2");
@@ -1157,6 +1193,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::FilenameRole, modelFilename);
         updateData(id, ModelList::FilesizeRole, "minimal");
         updateData(id, ModelList::ChatGPTRole, true);
+        updateData(id, ModelList::OpenAICompatibleRole, false);
         updateData(id, ModelList::DescriptionRole,
             tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc + chatGPT4Warn);
         updateData(id, ModelList::RequiresVersionRole, "2.4.2");

@@ -63,8 +63,11 @@ public:
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
 
+    const QString& APIBase() const { return m_apiBase; }
+
     void setModelName(const QString &modelName) { m_modelName = modelName; }
     void setAPIKey(const QString &apiKey) { m_apiKey = apiKey; }
+    void setAPIBase(const QString &apiBase) { m_apiBase = apiBase; }
 
     QList<QString> context() const { return m_context; }
     void setContext(const QList<QString> &context) { m_context = context; }
@@ -91,6 +94,7 @@ private:
     std::function<bool(int32_t, const std::string&)> m_responseCallback;
     QString m_modelName;
     QString m_apiKey;
+    QString m_apiBase;
     QList<QString> m_context;
 };
 
