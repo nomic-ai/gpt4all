@@ -1123,7 +1123,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             updateData(id, ModelList::SystemPromptRole, obj["systemPrompt"].toString());
     }
 
-    const QString CustomOpenAIDesc = tr("<ul><li>Requires acces to OpenAI compatible server</li>"
+    const QString CustomOpenAIDesc = tr("<ul><li>Requires access to OpenAI compatible server</li>"
                                         "<li>Any OpenAI compatible server that support chat/completions method</li></li></li>"
                                         "<br />"
                                         "<p>For OpenAI, the base path is \"https://api.openai.com/v1/\"</p>"

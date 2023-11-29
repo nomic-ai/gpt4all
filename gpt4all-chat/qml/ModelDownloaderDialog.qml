@@ -190,8 +190,6 @@ MyDialog {
                                         if (isOpenAICompatible) {
                                             if (openaiBase.text === "")
                                                 openaiBase.showError();
-//                                            else if (openaiModel.text === "")
-//                                                openaiBase.showError();
                                             else
                                                 Download.installModel(filename, openaiBase.text, openaiKey.text, openaiModel.text);
                                         } else if (isChatGPT) {

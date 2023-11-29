@@ -249,7 +249,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         apiBase = chatGPTParams[1];
                     }
                     if (chatGPTParams.size() >= 3) {
-i                       chatGPTModel = chatGPTParams[2];
+                       chatGPTModel = chatGPTParams[2];
                     }
                 }
                 file.close();
