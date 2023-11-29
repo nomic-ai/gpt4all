@@ -236,5 +236,20 @@
     "url": "https://huggingface.co/TheBloke/em_german_mistral_v01-GGUF/resolve/main/em_german_mistral_v01.Q4_0.gguf",
     "promptTemplate": "USER: %1 ASSISTANT: ",
     "systemPrompt": "Du bist ein hilfreicher Assistent. "
+  },
+  {
+    "order": "q",
+    "md5sum": "03bb36cbdd7c3e8d15fc3a651d680940",
+    "name": "OpenHermes 2.5 - Mistral 7B",
+    "filename": "openhermes-2.5-mistral-7b.Q4_0.gguf",
+    "filesize": "4108927744",
+    "requires": "2.5.0",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "Mistral",
+    "description" : "OpenHermes 2.5 Mistral 7B is a state of the art Mistral Fine-tune, a continuation of OpenHermes 2 model, which trained on additional code datasets.",
+    "url": "https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF/resolve/main/openhermes-2.5-mistral-7b.Q4_0.gguf",
+    "systemPrompt": " "
   }
 ]
