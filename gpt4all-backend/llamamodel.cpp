@@ -71,8 +71,9 @@ static int llama_sample_top_p_top_k(
         int top_k,
         float top_p,
         float temp,
-        float repeat_penalty) {
-    auto logits = llama_get_logits(ctx);
+        float repeat_penalty,
+        int32_t pos) {
+    auto logits = llama_get_logits_ith(ctx, pos);
     auto n_vocab = llama_n_vocab(llama_get_model(ctx));
     // Populate initial list of all candidates
     std::vector<llama_token_data> candidates;
@@ -274,7 +275,7 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
     return llama_sample_top_p_top_k(d_ptr->ctx,
         promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
         n_prev_toks, promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
-        promptCtx.repeat_penalty);
+        promptCtx.repeat_penalty, promptCtx.n_last_batch_tokens - 1);
 }
 
 bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
@@ -282,18 +283,22 @@ bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &toke
     llama_batch batch = llama_batch_init(tokens.size(), 0, 1);
 
     batch.n_tokens = tokens.size();
+    ctx.n_last_batch_tokens = tokens.size();
 
     for (int32_t i = 0; i < batch.n_tokens; i++) {
-        batch.token[i]  = tokens[i];
-        batch.pos[i]    = ctx.n_past + i;
-        batch.seq_id[i] = 0;
-        batch.logits[i] = false;
+        batch.token   [i] = tokens[i];
+        batch.pos     [i] = ctx.n_past + i;
+        batch.n_seq_id[i] = 1;
+        batch.seq_id  [i][0] = 0;
+        batch.logits  [i] = false;
     }
 
     // llama_decode will output logits only for the last token of the prompt
     batch.logits[batch.n_tokens - 1] = true;
 
-    return llama_decode(d_ptr->ctx, batch) == 0;
+    int res = llama_decode(d_ptr->ctx, batch);
+    llama_batch_free(batch);
+    return res == 0;
 }
 
 int32_t LLamaModel::contextLength() const
