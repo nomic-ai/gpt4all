@@ -162,6 +162,10 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->ctx_params.seed   = params.seed;
     d_ptr->ctx_params.f16_kv = params.memory_f16;
 
+    d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
+    d_ptr->ctx_params.n_threads       = d_ptr->n_threads;
+    d_ptr->ctx_params.n_threads_batch = d_ptr->n_threads;
+
 #ifdef GGML_USE_METAL
     if (llama_verbose()) {
         std::cerr << "llama.cpp: using Metal" << std::endl;
@@ -206,7 +210,6 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     }
 #endif
 
-    d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
     fflush(stderr);
     return true;
@@ -214,6 +217,7 @@ bool LLamaModel::loadModel(const std::string &modelPath)
 
 void LLamaModel::setThreadCount(int32_t n_threads) {
     d_ptr->n_threads = n_threads;
+    llama_set_n_threads(d_ptr->ctx, n_threads, n_threads);
 }
 
 int32_t LLamaModel::threadCount() const {
