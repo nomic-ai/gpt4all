@@ -345,6 +345,13 @@ bool gptj_eval(
     struct ggml_context * ctx0 = ggml_init(params);
     struct ggml_cgraph gf = {};
 
+    // KQ_pos - contains the positions
+    struct ggml_tensor * KQ_pos = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
+    int * data = (int *) KQ_pos->data;
+    for (int i = 0; i < N; ++i) {
+        data[i] = n_past + i;
+    }
+
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     memcpy(embd->data, embd_inp.data(), N*ggml_element_size(embd));
 
@@ -370,8 +377,14 @@ bool gptj_eval(
 
         // self-attention
         {
-            struct ggml_tensor * Qcur = ggml_rope(ctx0, ggml_reshape_3d(ctx0, ggml_mul_mat(ctx0, model.layers[il].c_attn_q_proj_w, cur), n_embd/n_head, n_head, N), n_past, n_rot, 0, 0);
-            struct ggml_tensor * Kcur = ggml_rope(ctx0, ggml_reshape_3d(ctx0, ggml_mul_mat(ctx0, model.layers[il].c_attn_k_proj_w, cur), n_embd/n_head, n_head, N), n_past, n_rot, 0, 0);
+            struct ggml_tensor * Qcur = ggml_rope(
+                ctx0, ggml_reshape_3d(ctx0, ggml_mul_mat(ctx0, model.layers[il].c_attn_q_proj_w, cur), n_embd/n_head, n_head, N),
+                KQ_pos, n_rot, 0, 0
+            );
+            struct ggml_tensor * Kcur = ggml_rope(
+                ctx0, ggml_reshape_3d(ctx0, ggml_mul_mat(ctx0, model.layers[il].c_attn_k_proj_w, cur), n_embd/n_head, n_head, N),
+                KQ_pos, n_rot, 0, 0
+            );
 
             // store key and value to memory
             {
