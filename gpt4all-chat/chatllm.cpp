@@ -534,8 +534,10 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
 
     QList<ResultInfo> databaseResults;
     const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
-    emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
-    emit databaseResultsChanged(databaseResults);
+    if (!collectionList.isEmpty()) {
+        emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
+        emit databaseResultsChanged(databaseResults);
+    }
 
     // Augment the prompt template with the results if any
     QList<QString> augmentedTemplate;
