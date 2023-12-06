@@ -317,7 +317,7 @@ void bert_eval(
     };
 
     struct ggml_context *ctx0 = ggml_init(params);
-    struct ggml_cgraph gf = {};
+    struct ggml_cgraph *gf = ggml_new_graph(ctx0);
 
     // Embeddings. word_embeddings + token_type_embeddings + position_embeddings
     struct ggml_tensor *token_layer = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
@@ -448,10 +448,10 @@ void bert_eval(
 
     ggml_tensor *output = inpL;
     // run the computation
-    ggml_build_forward_expand(&gf, output);
+    ggml_build_forward_expand(gf, output);
     //ggml_graph_compute_g4a()
-    ggml_graph_compute_g4a(ctx->work_buf, &gf, n_threads);
-    //ggml_graph_compute(ctx0, &gf);
+    ggml_graph_compute_g4a(ctx->work_buf, gf, n_threads);
+    //ggml_graph_compute(ctx0, gf);
 
 
     // float *dat = ggml_get_data_f32(output);
@@ -460,7 +460,7 @@ void bert_eval(
     #ifdef GGML_PERF
         // print timing information per ggml operation (for debugging purposes)
         // requires GGML_PERF to be defined
-        ggml_graph_print(&gf);
+        ggml_graph_print(gf);
     #endif
 
     if (!mem_req_mode) {
