@@ -16,12 +16,12 @@ Linux users may install Qt via their distro's official packages instead of using
 
 On Arch Linux, this looks like:
 ```
-sudo pacman -S --needed base-devel qt6-base qt6-declarative qt6-wayland qt6-svg qt6-httpserver qt6-webengine qtcreator cmake ninja
+sudo pacman -S --needed base-devel qt6-base qt6-declarative qt6-wayland qt6-svg qt6-httpserver qt6-webengine qt6-5compat qtcreator cmake ninja
 ```
 
 On Ubuntu 23.04, this looks like:
 ```
-sudo apt install build-essential qt6-base-dev qt6-declarative-dev qt6-wayland-dev qt6-svg-dev qt6-httpserver-dev qt6-webengine-dev qtcreator cmake ninja-build
+sudo apt install build-essential qt6-base-dev qt6-declarative-dev qt6-wayland-dev qt6-svg-dev qt6-httpserver-dev qt6-webengine-dev libqt6core5compat6 qml6-module-qt5compat-graphicaleffects qtcreator cmake ninja-build
 ```
 
 ## Download Qt
