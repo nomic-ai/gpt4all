@@ -155,15 +155,15 @@ private:
     QString m_response;
     QList<QString> m_collections;
     ChatModel *m_chatModel;
-    bool m_responseInProgress;
+    bool m_responseInProgress = false;
     ResponseState m_responseState;
     qint64 m_creationDate;
     ChatLLM *m_llmodel;
     QList<ResultInfo> m_databaseResults;
-    bool m_isServer;
-    bool m_shouldDeleteLater;
-    bool m_isModelLoaded;
-    bool m_shouldLoadModelWhenInstalled;
+    bool m_isServer = false;
+    bool m_shouldDeleteLater = false;
+    bool m_isModelLoaded = false;
+    bool m_shouldLoadModelWhenInstalled = false;
     LocalDocsCollectionsModel *m_collectionModel;
 };
 

@@ -239,9 +239,9 @@ private Q_SLOTS:
     }
 
 private:
-    Chat* m_newChat;
-    Chat* m_serverChat;
-    Chat* m_currentChat;
+    Chat* m_newChat = nullptr;
+    Chat* m_serverChat = nullptr;
+    Chat* m_currentChat = nullptr;
     QList<Chat*> m_chats;
 
 private:
