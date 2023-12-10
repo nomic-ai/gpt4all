@@ -110,3 +110,6 @@ venv.bak/
 
 *.lock
 *.cache
+gpt4all_api/app/chat_sessions/*
+gpt4all_api/app/embeddings-files/*
+gpt4all_api/models/*

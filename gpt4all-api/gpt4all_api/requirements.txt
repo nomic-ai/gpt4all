@@ -11,3 +11,4 @@ openai==0.28.0
 black
 isort
 python-dotenv
+pathlib
