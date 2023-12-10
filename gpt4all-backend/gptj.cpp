@@ -343,7 +343,14 @@ bool gptj_eval(
     };
 
     struct ggml_context * ctx0 = ggml_init(params);
-    struct ggml_cgraph gf = {};
+    struct ggml_cgraph * gf = ggml_new_graph(ctx0);
+
+    // KQ_pos - contains the positions
+    struct ggml_tensor * KQ_pos = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
+    int * data = (int *) KQ_pos->data;
+    for (int i = 0; i < N; ++i) {
+        data[i] = n_past + i;
+    }
 
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     memcpy(embd->data, embd_inp.data(), N*ggml_element_size(embd));
@@ -370,8 +377,14 @@ bool gptj_eval(
 
         // self-attention
         {
-            struct ggml_tensor * Qcur = ggml_rope(ctx0, ggml_reshape_3d(ctx0, ggml_mul_mat(ctx0, model.layers[il].c_attn_q_proj_w, cur), n_embd/n_head, n_head, N), n_past, n_rot, 0, 0);
-            struct ggml_tensor * Kcur = ggml_rope(ctx0, ggml_reshape_3d(ctx0, ggml_mul_mat(ctx0, model.layers[il].c_attn_k_proj_w, cur), n_embd/n_head, n_head, N), n_past, n_rot, 0, 0);
+            struct ggml_tensor * Qcur = ggml_rope(
+                ctx0, ggml_reshape_3d(ctx0, ggml_mul_mat(ctx0, model.layers[il].c_attn_q_proj_w, cur), n_embd/n_head, n_head, N),
+                KQ_pos, n_rot, 0, 0
+            );
+            struct ggml_tensor * Kcur = ggml_rope(
+                ctx0, ggml_reshape_3d(ctx0, ggml_mul_mat(ctx0, model.layers[il].c_attn_k_proj_w, cur), n_embd/n_head, n_head, N),
+                KQ_pos, n_rot, 0, 0
+            );
 
             // store key and value to memory
             {
@@ -382,8 +395,8 @@ bool gptj_eval(
                         (   n_ctx)*ggml_element_size(model.kv_self.v),
                         (il*n_ctx)*ggml_element_size(model.kv_self.v)*n_embd + n_past*ggml_element_size(model.kv_self.v));
 
-                ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Kcur, k));
-                ggml_build_forward_expand(&gf, ggml_cpy(ctx0, Vcur, v));
+                ggml_build_forward_expand(gf, ggml_cpy(ctx0, Kcur, k));
+                ggml_build_forward_expand(gf, ggml_cpy(ctx0, Vcur, v));
             }
 
             // Q = Qcur.contiguous().view(n_embd/n_head, n_head, N).permute(0, 2, 1, 3)
@@ -502,22 +515,22 @@ bool gptj_eval(
     // logits -> probs
     //inpL = ggml_soft_max(ctx0, inpL);
 
-    ggml_build_forward_expand(&gf, inpL);
+    ggml_build_forward_expand(gf, inpL);
 
     // run the computation
     {
         std::unique_ptr<uint8_t []> data;
-        auto plan = ggml_graph_plan(&gf, n_threads);
+        auto plan = ggml_graph_plan(gf, n_threads);
         if (plan.work_size > 0) {
             data.reset(new uint8_t[plan.work_size]);
             plan.work_data = data.get();
         }
-        ggml_graph_compute(&gf, &plan);
+        ggml_graph_compute(gf, &plan);
     }
 
     //if (n_past%100 == 0) {
-    //    ggml_graph_print   (&gf);
-    //    ggml_graph_dump_dot(&gf, NULL, "gpt-2.dot");
+    //    ggml_graph_print   (gf);
+    //    ggml_graph_dump_dot(gf, NULL, "gpt-2.dot");
     //}
 
     //embd_w.resize(n_vocab*N);

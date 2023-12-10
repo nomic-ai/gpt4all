@@ -77,7 +77,6 @@ option(LLAMA_OPENBLAS               "llama: use OpenBLAS"                       
 #option(LLAMA_CUBLAS                 "llama: use cuBLAS"                                     OFF)
 #option(LLAMA_CLBLAST                "llama: use CLBlast"                                    OFF)
 #option(LLAMA_METAL                  "llama: use Metal"                                      OFF)
-#option(LLAMA_K_QUANTS               "llama: use k-quants"                                   ON)
 set(LLAMA_BLAS_VENDOR "Generic" CACHE STRING "llama: BLAS library vendor")
 set(LLAMA_CUDA_DMMV_X "32" CACHE STRING "llama: x stride for dmmv CUDA kernels")
 set(LLAMA_CUDA_DMMV_Y "1" CACHE STRING  "llama: y block size for dmmv CUDA kernels")
@@ -228,6 +227,7 @@ if (LLAMA_KOMPUTE)
         # Compile our shaders
         compile_shader(SOURCES
           kompute/op_scale.comp
+          kompute/op_scale_8.comp
           kompute/op_add.comp
           kompute/op_addrow.comp
           kompute/op_mul.comp
@@ -249,7 +249,8 @@ if (LLAMA_KOMPUTE)
           kompute/op_getrows_q4_0.comp
           kompute/op_getrows_q4_1.comp
           kompute/op_getrows_q6_k.comp
-          kompute/op_rope.comp
+          kompute/op_rope_f16.comp
+          kompute/op_rope_f32.comp
           kompute/op_cpy_f16_f16.comp
           kompute/op_cpy_f16_f32.comp
           kompute/op_cpy_f32_f16.comp
@@ -259,6 +260,7 @@ if (LLAMA_KOMPUTE)
         # Create a custom target for our generated shaders
         add_custom_target(generated_shaders DEPENDS
           shaderop_scale.h
+          shaderop_scale_8.h
           shaderop_add.h
           shaderop_addrow.h
           shaderop_mul.h
@@ -280,7 +282,8 @@ if (LLAMA_KOMPUTE)
           shaderop_getrows_q4_0.h
           shaderop_getrows_q4_1.h
           shaderop_getrows_q6_k.h
-          shaderop_rope.h
+          shaderop_rope_f16.h
+          shaderop_rope_f32.h
           shaderop_cpy_f16_f16.h
           shaderop_cpy_f16_f32.h
           shaderop_cpy_f32_f16.h
@@ -564,33 +567,26 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
         endif()
     endif()
 
-    set(GGML_SOURCES_QUANT_K )
-    set(GGML_METAL_SOURCES )
-    if (LLAMA_K_QUANTS)
-        set(GGML_SOURCES_QUANT_K
-            ${DIRECTORY}/k_quants.h
-            ${DIRECTORY}/k_quants.c)
+    set(GGML_METAL_SOURCES)
+    if (LLAMA_METAL)
+        find_library(FOUNDATION_LIBRARY         Foundation              REQUIRED)
+        find_library(METAL_FRAMEWORK            Metal                   REQUIRED)
+        find_library(METALKIT_FRAMEWORK         MetalKit                REQUIRED)
+        find_library(METALPERFORMANCE_FRAMEWORK MetalPerformanceShaders REQUIRED)
 
-        if (LLAMA_METAL)
-            find_library(FOUNDATION_LIBRARY         Foundation              REQUIRED)
-            find_library(METAL_FRAMEWORK            Metal                   REQUIRED)
-            find_library(METALKIT_FRAMEWORK         MetalKit                REQUIRED)
-            find_library(METALPERFORMANCE_FRAMEWORK MetalPerformanceShaders REQUIRED)
+        set(GGML_METAL_SOURCES ${DIRECTORY}/ggml-metal.m ${DIRECTORY}/ggml-metal.h)
+        # get full path to the file
+        #add_compile_definitions(GGML_METAL_DIR_KERNELS="${CMAKE_CURRENT_SOURCE_DIR}/")
 
-            set(GGML_METAL_SOURCES ${DIRECTORY}/ggml-metal.m ${DIRECTORY}/ggml-metal.h)
-            # get full path to the file
-            #add_compile_definitions(GGML_METAL_DIR_KERNELS="${CMAKE_CURRENT_SOURCE_DIR}/")
+        # copy ggml-metal.metal to bin directory
+        configure_file(${DIRECTORY}/ggml-metal.metal bin/ggml-metal.metal COPYONLY)
 
-            # copy ggml-metal.metal to bin directory
-            configure_file(${DIRECTORY}/ggml-metal.metal bin/ggml-metal.metal COPYONLY)
-
-            set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS}
-                ${FOUNDATION_LIBRARY}
-                ${METAL_FRAMEWORK}
-                ${METALKIT_FRAMEWORK}
-                ${METALPERFORMANCE_FRAMEWORK}
-            )
-        endif()
+        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS}
+            ${FOUNDATION_LIBRARY}
+            ${METAL_FRAMEWORK}
+            ${METALKIT_FRAMEWORK}
+            ${METALPERFORMANCE_FRAMEWORK}
+        )
     endif()
 
     add_library(ggml${SUFFIX} OBJECT
@@ -598,15 +594,14 @@ function(include_ggml DIRECTORY SUFFIX WITH_LLAMA)
                 ${DIRECTORY}/ggml.h
                 ${DIRECTORY}/ggml-alloc.c
                 ${DIRECTORY}/ggml-alloc.h
-                ${GGML_SOURCES_QUANT_K}
+                ${DIRECTORY}/ggml-backend.c
+                ${DIRECTORY}/ggml-backend.h
+                ${DIRECTORY}/ggml-quants.h
+                ${DIRECTORY}/ggml-quants.c
                 ${GGML_SOURCES_CUDA}
                 ${GGML_METAL_SOURCES}
                 ${GGML_OPENCL_SOURCES}
                 ${GGML_SOURCES_KOMPUTE})
-
-    if (LLAMA_K_QUANTS)
-        target_compile_definitions(ggml${SUFFIX} PUBLIC GGML_USE_K_QUANTS)
-    endif()
 
     if (LLAMA_METAL AND GGML_METAL_SOURCES)
         target_compile_definitions(ggml${SUFFIX} PUBLIC GGML_USE_METAL GGML_METAL_NDEBUG)

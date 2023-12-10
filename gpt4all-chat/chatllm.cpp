@@ -227,7 +227,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         if (!m_isServer)
             LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
         m_llModelInfo = LLModelInfo();
-        emit modelLoadingError(QString("Previous attempt to load model resulted in crash for `%1` most likely due to insufficient memory. You should either remove this model or decrease your system RAM by closing other applications.").arg(modelInfo.filename()));
+        emit modelLoadingError(QString("Previous attempt to load model resulted in crash for `%1` most likely due to insufficient memory. You should either remove this model or decrease your system RAM usage by closing other applications.").arg(modelInfo.filename()));
     }
 
     if (fileInfo.exists()) {
@@ -534,8 +534,10 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
 
     QList<ResultInfo> databaseResults;
     const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
-    emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
-    emit databaseResultsChanged(databaseResults);
+    if (!collectionList.isEmpty()) {
+        emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
+        emit databaseResultsChanged(databaseResults);
+    }
 
     // Augment the prompt template with the results if any
     QList<QString> augmentedTemplate;
