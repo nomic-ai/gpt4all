@@ -1,4 +1,3 @@
-import atexit
 import ctypes
 import importlib.resources
 import logging
@@ -8,20 +7,14 @@ import re
 import subprocess
 import sys
 import threading
-from contextlib import ExitStack
 from queue import Queue
 from typing import Callable, Iterable, List
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-file_manager = ExitStack()
-atexit.register(file_manager.close)  # clean up files on exit
-
 # TODO: provide a config file to make this more robust
-MODEL_LIB_PATH = file_manager.enter_context(importlib.resources.as_file(
-    importlib.resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build",
-))
+MODEL_LIB_PATH = importlib.resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build"
 
 
 def load_llmodel_library():
