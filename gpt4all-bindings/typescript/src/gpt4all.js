@@ -50,11 +50,15 @@ async function loadModel(modelName, options = {}) {
     let libPath = null;
 
     for (const searchPath of libSearchPaths) {
+        console.log("Checking if path:", searchPath, "exists")
         if (existsSync(searchPath)) {
+            console.log("EXISTS: ", searchPath)
+            console.log("Setting the path as ^^")
             libPath = searchPath;
             break;
         }
     }
+    //mac resolution. the 
     if (!libPath) {
         throw Error("Could not find a valid path from " + libSearchPaths);
     }

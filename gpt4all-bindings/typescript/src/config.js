@@ -9,7 +9,7 @@ const librarySearchPaths = [
     path.resolve(
         __dirname,
         "..",
-        `runtimes/${process.platform}-${process.arch}/native`
+     //   `runtimes/${process.platform}-${process.arch}/native`
     ),
     process.cwd(),
 ];
