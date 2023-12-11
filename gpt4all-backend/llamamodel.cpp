@@ -163,6 +163,10 @@ bool LLamaModel::loadModel(const std::string &modelPath)
     d_ptr->ctx_params.seed   = params.seed;
     d_ptr->ctx_params.f16_kv = params.memory_f16;
 
+    // The new batch API provides space for n_vocab*n_tokens logits. Tell llama.cpp early
+    // that we want this many logits so the state serializes consistently.
+    d_ptr->ctx_params.logits_all = true;
+
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->ctx_params.n_threads       = d_ptr->n_threads;
     d_ptr->ctx_params.n_threads_batch = d_ptr->n_threads;
