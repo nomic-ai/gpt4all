@@ -912,7 +912,7 @@ void ChatLLM::restoreState()
         stream >> context;
         chatGPT->setContext(context);
         m_state.clear();
-        m_state.resize(0);
+        m_state.squeeze();
         return;
     }
 
@@ -926,7 +926,7 @@ void ChatLLM::restoreState()
     m_processedSystemPrompt = true;
     m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
     m_state.clear();
-    m_state.resize(0);
+    m_state.squeeze();
 }
 
 void ChatLLM::processSystemPrompt()
