@@ -863,11 +863,11 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
         if (!discardKV)
             m_state = qUncompress(compressed);
     } else {
-        if (!discardKV)
+        if (!discardKV) {
             stream >> m_state;
-        else {
+        } else {
             QByteArray state;
-            stream >> m_state;
+            stream >> state;
         }
     }
 
