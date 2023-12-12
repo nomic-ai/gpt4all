@@ -47,12 +47,16 @@ async function loadModel(modelName, options = {}) {
     });
 
     assert.ok(typeof loadOptions.librariesPath === 'string');
-    console.log("Passing these paths into runtime library search:", loadOptions.librariesPath)
+    const existingPaths = loadOptions.librariesPath
+        .split(";")
+        .filter(existsSync)
+        .join(';');
+    console.log("Passing these paths into runtime library search:", existingPaths)
 
     const llmOptions = {
         model_name: appendBinSuffixIfMissing(modelName),
         model_path: loadOptions.modelPath,
-        library_path: loadOptions.librariesPath,
+        library_path: existingPaths,
         device: loadOptions.device,
     };
 

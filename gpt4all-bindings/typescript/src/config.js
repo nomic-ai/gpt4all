@@ -15,7 +15,7 @@ const librarySearchPaths = [
     path.resolve(
         __dirname,
         "..",
-        `runtimes/${process.platform}-x64+arm64/native`,
+        `runtimes/${process.platform}/native`,
     ),
     process.cwd(),
 ];
