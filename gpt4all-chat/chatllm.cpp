@@ -863,11 +863,11 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
         if (!discardKV)
             m_state = qUncompress(compressed);
     } else {
-        if (!discardKV)
+        if (!discardKV) {
             stream >> m_state;
-        else {
+        } else {
             QByteArray state;
-            stream >> m_state;
+            stream >> state;
         }
     }
 
@@ -912,7 +912,7 @@ void ChatLLM::restoreState()
         stream >> context;
         chatGPT->setContext(context);
         m_state.clear();
-        m_state.resize(0);
+        m_state.squeeze();
         return;
     }
 
@@ -923,10 +923,16 @@ void ChatLLM::restoreState()
     if (m_state.isEmpty())
         return;
 
-    m_processedSystemPrompt = true;
-    m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
+    if (m_llModelInfo.model->stateSize() == m_state.size()) {
+        m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
+        m_processedSystemPrompt = true;
+    } else {
+        qWarning() << "restoring state from text because" << m_llModelInfo.model->stateSize() << "!=" << m_state.size() << "\n";
+        m_restoreStateFromText = true;
+    }
+
     m_state.clear();
-    m_state.resize(0);
+    m_state.squeeze();
 }
 
 void ChatLLM::processSystemPrompt()
