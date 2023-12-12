@@ -979,7 +979,7 @@ jobs:
             mkdir -p runtimes/darwin-x64+arm64/native
             mkdir -p prebuilds/darwin-x64/
 
-            cp /tmp/gpt4all-backend/runtimes/darwin/*-*.* runtimes/darwin-x64+arm64/native/
+            cp /tmp/gpt4all-backend/runtimes/darwin-x64+arm64/*-*.* runtimes/darwin-x64+arm64/native/
 
             cp /tmp/gpt4all-backend/prebuilds/darwin-x64/*.node prebuilds/darwin-x64/    
             
