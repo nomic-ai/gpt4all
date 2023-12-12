@@ -854,6 +854,7 @@ jobs:
           install-yarn: true
           node-version: "18.16"
       - run: node --version
+      - run: corepack enable
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
@@ -884,6 +885,7 @@ jobs:
           install-yarn: true
           node-version: "18.16"
       - run: node --version
+      - run: corepack enable
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
@@ -925,6 +927,7 @@ jobs:
               nvm install 18.16.0
               nvm use 18.16.0
       - run: node --version 
+      - run: corepack enable
       - run:           
           command: |
             npm install -g yarn
@@ -958,6 +961,7 @@ jobs:
           install-yarn: true
           node-version: "18.16"
       - run: node --version
+      - run: corepack enable
       - run: 
           command: |
             cd gpt4all-bindings/typescript
