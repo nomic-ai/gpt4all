@@ -171,6 +171,7 @@ declare class LLModel {
     hasGpuDevice(): boolean
     /**
       * GPUs that are usable for this LLModel
+      * @throws if hasGpuDevice returns false (i think)
       * @returns 
       */
     listGpu() : GpuDevice[]
