@@ -35,6 +35,11 @@ describe("config", () => {
                 "..",
                 `runtimes/${process.platform}-${process.arch}/native`
             ),
+            path.resolve(
+                __dirname,
+                "..",
+                `runtimes/${process.platform}-x64+arm64/native`,
+            ),
             process.cwd(),
         ];
         expect(typeof DEFAULT_LIBRARIES_DIRECTORY).toBe("string");
