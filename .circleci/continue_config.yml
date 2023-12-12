@@ -896,14 +896,14 @@ jobs:
           name: "Persisting all necessary things to workspace"
           command: |  
             mkdir -p gpt4all-backend/prebuilds/darwin-x64
-            mkdir -p gpt4all-backend/runtimes/darwin-x64
-            cp /tmp/gpt4all-backend/runtimes/osx-x64/*-*.* gpt4all-backend/runtimes/darwin-x64
+            mkdir -p gpt4all-backend/runtimes/darwin-x64+arm64
+            cp /tmp/gpt4all-backend/runtimes/osx-x64/*-*.* gpt4all-backend/runtimes/darwin-x64+arm64
             cp gpt4all-bindings/typescript/prebuilds/darwin-x64/*.node gpt4all-backend/prebuilds/darwin-x64
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
             - prebuilds/darwin-x64/*.node
-            - runtimes/darwin-x64/*-*.*
+            - runtimes/darwin-x64+arm64/*-*.*
 
   build-nodejs-windows: 
     executor:
@@ -972,9 +972,11 @@ jobs:
             cp /tmp/gpt4all-backend/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
             cp /tmp/gpt4all-backend/prebuilds/linux-x64/*.node prebuilds/linux-x64/    
 
-            mkdir -p runtimes/darwin-x64/native
+            mkdir -p runtimes/darwin-x64+arm64/native
             mkdir -p prebuilds/darwin-x64/
-            cp /tmp/gpt4all-backend/runtimes/darwin-x64/*-*.* runtimes/darwin-x64/native/
+
+            cp /tmp/gpt4all-backend/runtimes/darwin/*-*.* runtimes/darwin-x64+arm64/native/
+
             cp /tmp/gpt4all-backend/prebuilds/darwin-x64/*.node prebuilds/darwin-x64/    
             
             # Fallback build if user is not on above prebuilds
