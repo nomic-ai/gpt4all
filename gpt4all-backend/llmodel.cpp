@@ -82,7 +82,7 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     static auto* libs = new std::vector<Implementation>([] () {
         std::vector<Implementation> fres;
 
-        std::string impl_name_re = "(bert|llama|gptj|llamamodel-mainline)";
+        std::string impl_name_re = "(bert|gptj|llamamodel-mainline)";
         if (requires_avxonly()) {
             impl_name_re += "-avxonly";
         } else {
@@ -184,6 +184,27 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
     auto fres = impl->m_construct();
     fres->m_implementation = impl;
     return fres;
+}
+
+LLModel *LLModel::Implementation::constructCpuLlama() {
+    const LLModel::Implementation *impl = nullptr;
+    for (const auto &i : implementationList()) {
+        if (i.m_buildVariant == "metal" || i.m_modelType != "LLaMA") continue;
+        impl = &i;
+    }
+    if (!impl) {
+        std::cerr << "LLModel ERROR: Could not find CPU LLaMA implementation\n";
+        return nullptr;
+    }
+    auto fres = impl->m_construct();
+    fres->m_implementation = impl;
+    return fres;
+}
+
+std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices() {
+    static LLModel *cpuLlama = LLModel::Implementation::constructCpuLlama(); // (memory leak)
+    if (cpuLlama) { return cpuLlama->availableGPUDevices(0); }
+    return {};
 }
 
 void LLModel::Implementation::setImplementationsSearchPath(const std::string& path) {
