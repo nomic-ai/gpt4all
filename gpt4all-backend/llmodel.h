@@ -15,6 +15,15 @@ class Dlhandle;
 class LLModel {
 public:
     using Token = int32_t;
+
+    struct GPUDevice {
+        int index = 0;
+        int type = 0;
+        size_t heapSize = 0;
+        std::string name;
+        std::string vendor;
+    };
+
     class Implementation {
     public:
         Implementation(Dlhandle&&);
@@ -29,14 +38,16 @@ public:
         static const std::vector<Implementation>& implementationList();
         static const Implementation *implementation(const char *fname, const std::string& buildVariant);
         static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
+        static std::vector<GPUDevice> availableGPUDevices();
         static void setImplementationsSearchPath(const std::string& path);
         static const std::string& implementationsSearchPath();
 
     private:
+        static LLModel *constructCpuLlama();
+
         bool (*m_magicMatch)(const char *fname);
         LLModel *(*m_construct)();
 
-    private:
         std::string_view m_modelType;
         std::string_view m_buildVariant;
         Dlhandle *m_dlhandle;
@@ -56,14 +67,6 @@ public:
         int32_t repeat_last_n = 64;     // last n tokens to penalize
         float   contextErase = 0.75f;   // percent of context to erase if we exceed the context window
         int32_t n_last_batch_tokens = 0;
-    };
-
-    struct GPUDevice {
-        int index = 0;
-        int type = 0;
-        size_t heapSize = 0;
-        std::string name;
-        std::string vendor;
     };
 
     explicit LLModel() {}
@@ -106,7 +109,6 @@ public:
     virtual bool initializeGPUDevice(int /*device*/) { return false; }
     virtual bool hasGPUDevice() { return false; }
     virtual bool usingGPUDevice() { return false; }
-    static std::vector<GPUDevice> availableGPUDevices();
 
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
