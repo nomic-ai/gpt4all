@@ -129,6 +129,7 @@ yarn test
 *   why your model may be spewing bull 💩
     *   The downloaded model is broken (just reinstall or download from official site)
     *   That's it so far
+* If you gpu fails to init, ensure [vulkan sdk](https://vulkan.lunarg.com/#new_tab) is installed.
 
 ### Roadmap
 
