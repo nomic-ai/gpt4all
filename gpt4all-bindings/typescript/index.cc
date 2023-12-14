@@ -155,6 +155,8 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
         if(success) {
             std::cout << "GPU init successfully\n";
         } else {
+            //https://github.com/nomic-ai/gpt4all/blob/3acbef14b7c2436fe033cae9036e695d77461a16/gpt4all-bindings/python/gpt4all/pyllmodel.py#L215
+            //Haven't implemented this but it is still open to contribution
             std::cout << "WARNING: Failed to init GPU\n";
         }
     }
