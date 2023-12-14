@@ -81,7 +81,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
   Napi::Value NodeModelWrapper::InitGpuByString(const Napi::CallbackInfo& info) 
   {
     auto env = info.Env();
-    uint32_t memory_required = info[0].As<Napi::Number>();
+    size_t memory_required = static_cast<size_t>(info[0].As<Napi::Number>().Uint32Value());
     
     std::string gpu_device_identifier = info[1].As<Napi::String>();   
 
@@ -149,11 +149,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     }
     if(device != "cpu") {
         size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str());
-        if(mem == 0) {
-            std::cout << "WARNING: no memory needed. does this model support gpu?\n";
-        }
         std::cout << "Initiating GPU\n";
-        std::cout << "Memory required estimation: " << mem << "\n";
 
         auto success = llmodel_gpu_init_gpu_device_by_string(GetInference(), mem, device.c_str());
         if(success) {
