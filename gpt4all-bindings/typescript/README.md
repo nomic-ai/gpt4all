@@ -1,5 +1,5 @@
 # GPT4All Node.js API
-Native bindings to LLMs for all.
+Native Node.js bindings to LLMs for all.
 
 ```sh
 yarn add gpt4all@latest
