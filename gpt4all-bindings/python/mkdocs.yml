@@ -14,7 +14,7 @@ nav:
       - 'GPT4All in Python':
         - 'Generation': 'gpt4all_python.md'
         - 'Embedding': 'gpt4all_python_embedding.md'
-      - 'GPT4ALL in NodeJs': 'gpt4all_typescript.md'
+      - 'GPT4ALL in NodeJs': 'gpt4all_nodejs.md'
       - 'gpt4all_cli.md'
 #    - 'Tutorials':
 #      - 'gpt4all_modal.md'
