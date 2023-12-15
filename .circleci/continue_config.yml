@@ -348,6 +348,7 @@ jobs:
           install-yarn: true
           node-version: "18.16"
       - run: node --version
+      - run: corepack enable
       - node/install-packages:
           pkg-manager: yarn
           app-dir: gpt4all-bindings/typescript

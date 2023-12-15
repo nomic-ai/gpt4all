@@ -64,7 +64,7 @@ MySettings::MySettings()
 {
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
-    std::vector<LLModel::GPUDevice> devices = LLModel::availableGPUDevices();
+    std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
     QVector<QString> deviceList{ "Auto" };
     for (LLModel::GPUDevice &d : devices)
         deviceList << QString::fromStdString(d.name);
