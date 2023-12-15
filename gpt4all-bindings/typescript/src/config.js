@@ -9,7 +9,13 @@ const librarySearchPaths = [
     path.resolve(
         __dirname,
         "..",
-        `runtimes/${process.platform}-${process.arch}/native`
+        `runtimes/${process.platform}-${process.arch}/native`,
+    ),
+    //for darwin. This is hardcoded for now but it should work
+    path.resolve(
+        __dirname,
+        "..",
+        `runtimes/${process.platform}/native`,
     ),
     process.cwd(),
 ];
