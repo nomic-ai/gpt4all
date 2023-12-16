@@ -29,8 +29,8 @@ bool EmbeddingLLM::loadModel()
         return false;
     }
 
-    m_model = LLModel::Implementation::construct(filePath.toStdString(), "auto");
-    bool success = m_model->loadModel(filePath.toStdString());
+    m_model = LLModel::Implementation::construct(filePath.toStdString());
+    bool success = m_model->loadModel(filePath.toStdString(), 2048);
     if (!success) {
         qWarning() << "WARNING: Could not load sbert";
         delete m_model;

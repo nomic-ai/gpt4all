@@ -110,17 +110,19 @@ void llmodel_model_destroy(llmodel_model model);
  * Estimate RAM requirement for a model file
  * @param model A pointer to the llmodel_model instance.
  * @param model_path A string representing the path to the model file.
+ * @param n_ctx Maximum size of context window
  * @return size greater than 0 if the model was parsed successfully, 0 if file could not be parsed.
  */
-size_t llmodel_required_mem(llmodel_model model, const char *model_path);
+size_t llmodel_required_mem(llmodel_model model, const char *model_path, int n_ctx);
 
 /**
  * Load a model from a file.
  * @param model A pointer to the llmodel_model instance.
  * @param model_path A string representing the path to the model file.
+ * @param n_ctx Maximum size of context window
  * @return true if the model was loaded successfully, false otherwise.
  */
-bool llmodel_loadModel(llmodel_model model, const char *model_path);
+bool llmodel_loadModel(llmodel_model model, const char *model_path, int n_ctx);
 
 /**
  * Check if a model is loaded.

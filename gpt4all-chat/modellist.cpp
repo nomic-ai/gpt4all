@@ -97,6 +97,17 @@ void ModelInfo::setPromptBatchSize(int s)
     m_promptBatchSize = s;
 }
 
+int ModelInfo::contextLength() const
+{
+    return MySettings::globalInstance()->modelContextLength(*this);
+}
+
+void ModelInfo::setContextLength(int l)
+{
+    if (isClone) MySettings::globalInstance()->setModelContextLength(*this, l, isClone /*force*/);
+    m_contextLength = l;
+}
+
 double ModelInfo::repeatPenalty() const
 {
     return MySettings::globalInstance()->modelRepeatPenalty(*this);
@@ -274,6 +285,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::topKChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::maxLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::promptBatchSizeChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::contextLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
@@ -525,6 +537,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->maxLength();
         case PromptBatchSizeRole:
             return info->promptBatchSize();
+        case ContextLengthRole:
+            return info->contextLength();
         case RepeatPenaltyRole:
             return info->repeatPenalty();
         case RepeatPenaltyTokensRole:
@@ -740,6 +754,7 @@ QString ModelList::clone(const ModelInfo &model)
     updateData(id, ModelList::TopKRole, model.topK());
     updateData(id, ModelList::MaxLengthRole, model.maxLength());
     updateData(id, ModelList::PromptBatchSizeRole, model.promptBatchSize());
+    updateData(id, ModelList::ContextLengthRole, model.contextLength());
     updateData(id, ModelList::RepeatPenaltyRole, model.repeatPenalty());
     updateData(id, ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens());
     updateData(id, ModelList::PromptTemplateRole, model.promptTemplate());
@@ -1106,6 +1121,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             updateData(id, ModelList::MaxLengthRole, obj["maxLength"].toInt());
         if (obj.contains("promptBatchSize"))
             updateData(id, ModelList::PromptBatchSizeRole, obj["promptBatchSize"].toInt());
+        if (obj.contains("contextLength"))
+            updateData(id, ModelList::ContextLengthRole, obj["contextLength"].toInt());
         if (obj.contains("repeatPenalty"))
             updateData(id, ModelList::RepeatPenaltyRole, obj["repeatPenalty"].toDouble());
         if (obj.contains("repeatPenaltyTokens"))
@@ -1198,6 +1215,8 @@ void ModelList::updateModelsFromSettings()
         const int maxLength = settings.value(g + "/maxLength").toInt();
         Q_ASSERT(settings.contains(g + "/promptBatchSize"));
         const int promptBatchSize = settings.value(g + "/promptBatchSize").toInt();
+        Q_ASSERT(settings.contains(g + "/contextLength"));
+        const int contextLength = settings.value(g + "/contextLength").toInt();
         Q_ASSERT(settings.contains(g + "/repeatPenalty"));
         const double repeatPenalty = settings.value(g + "/repeatPenalty").toDouble();
         Q_ASSERT(settings.contains(g + "/repeatPenaltyTokens"));
@@ -1216,6 +1235,7 @@ void ModelList::updateModelsFromSettings()
         updateData(id, ModelList::TopKRole, topK);
         updateData(id, ModelList::MaxLengthRole, maxLength);
         updateData(id, ModelList::PromptBatchSizeRole, promptBatchSize);
+        updateData(id, ModelList::ContextLengthRole, contextLength);
         updateData(id, ModelList::RepeatPenaltyRole, repeatPenalty);
         updateData(id, ModelList::RepeatPenaltyTokensRole, repeatPenaltyTokens);
         updateData(id, ModelList::PromptTemplateRole, promptTemplate);

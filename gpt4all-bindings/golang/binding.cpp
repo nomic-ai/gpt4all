@@ -23,7 +23,7 @@ void* load_model(const char *fname, int n_threads) {
         fprintf(stderr, "%s: error '%s'\n", __func__, new_error);
         return nullptr;
     }
-    if (!llmodel_loadModel(model, fname)) {
+    if (!llmodel_loadModel(model, fname, 2048)) {
         llmodel_model_destroy(model);
         return nullptr;
     }
