@@ -67,7 +67,6 @@ def repl(
     """The CLI read-eval-print loop."""
     gpt4all_instance = GPT4All(model, device=device)
 
-
     # if threads are passed, set them
     if n_threads is not None:
         num_threads = gpt4all_instance.model.thread_count()
