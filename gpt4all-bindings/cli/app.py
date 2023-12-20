@@ -59,9 +59,14 @@ def repl(
         int,
         typer.Option("--n-threads", "-t", help="Number of threads to use for chatbot"),
     ] = None,
+    device: Annotated[
+        str,
+        typer.Option("--device", "-d", help="Device to use for chatbot - cpu, gpu or cuda"),
+    ] = None,
 ):
     """The CLI read-eval-print loop."""
-    gpt4all_instance = GPT4All(model)
+    gpt4all_instance = GPT4All(model, device=device)
+
 
     # if threads are passed, set them
     if n_threads is not None:
