@@ -61,7 +61,7 @@ def repl(
     ] = None,
     device: Annotated[
         str,
-        typer.Option("--device", "-d", help="Device to use for chatbot - cpu, gpu or cuda"),
+        typer.Option("--device", "-d", help="Device to use for chatbot, e.g. gpu, amd, nvidia, intel. Defaults to CPU."),
     ] = None,
 ):
     """The CLI read-eval-print loop."""
