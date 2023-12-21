@@ -177,6 +177,7 @@ function preparePromptAndContext(model,messages,options){
         ...promptContext
     } = optionsWithDefaults;
 
+    
     const prompt = formatChatPrompt(messages, {
         systemPromptTemplate,
         defaultSystemPrompt: model.config.systemPrompt,
@@ -235,9 +236,9 @@ async function createCompletion(
 }
 
 
-async function * createTokenStream(model,
+function createTokenStream(model,
     messages,
-    options = defaultCompletionOptions,callback) {
+    options = defaultCompletionOptions,callback = undefined) {
     const { prompt, promptContext, verbose } = preparePromptAndContext(model,messages,options);
 
     
@@ -264,19 +265,7 @@ async function * createTokenStream(model,
         stream.end()
     })
 
-
-    // Run till the stream is done
-    while(!stream.readableEnded){
-        const token = await new Promise((res)=>{
-            stream.once('data',res)
-        })
-
-        if (verbose) {
-            console.debug("Received Token:\n",token);
-        }
-
-        yield token
-    }
+    return stream;
 }
 
 module.exports = {

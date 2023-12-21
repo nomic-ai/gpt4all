@@ -49,12 +49,17 @@ interface ModelConfig {
     path: string;
     url?: string;
 }
+
+/**
+ * Callback for controlling token generation
+ */
+type TokenCallback = (tokenId: number, token: string, total: string) => boolean
+
 /**
  *
  * InferenceModel represents an LLM which can make chat predictions, similar to GPT transformers.
  *
  */
-type TokenCallback = (tokenId: number, token: string, total: string) => boolean
 declare class InferenceModel {
     constructor(llm: LLModel, config: ModelConfig);
     llm: LLModel;
@@ -446,19 +451,19 @@ interface LLModelPromptContext {
 }
 
 /**
- * The nodejs equivalent to python binding's model.generate(prompt,stream=True)
+ * Creates a readable stream of tokens
  * @param {InferenceModel} model - The language model object.
  * @param {PromptMessage[]} messages - The array of messages for the conversation.
  * @param {CompletionOptions} options - The options for creating the completion.
  * @param {TokenCallback} callback - optional callback to control token generation.
- * @returns {CompletionReturn} The completion result.
+ * @returns {import('stream').PassThrough} The stream of generated tokens
  */
 declare function createTokenStream(
     llmodel: InferenceModel,
     messages: PromptMessage[],
     options: CompletionOptions,
     callback?: TokenCallback
-): AsyncGenerator<string>;
+): import('stream').PassThrough;
 /**
  * From python api:
  * models will be stored in (homedir)/.cache/gpt4all/`
