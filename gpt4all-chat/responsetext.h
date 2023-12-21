@@ -6,6 +6,7 @@
 #include <QQuickTextDocument>
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
+#include <QTextObjectInterface>
 
 class SyntaxHighlighter : public QSyntaxHighlighter {
     Q_OBJECT
@@ -27,6 +28,20 @@ struct CodeCopy {
     int endPos = -1;
     QString text;
 };
+
+class ContextLinkInterface : public QObject, public QTextObjectInterface
+{
+    Q_OBJECT
+    Q_INTERFACES(QTextObjectInterface)
+
+public:
+    explicit ContextLinkInterface(QObject *parent) : QObject(parent) {}
+    void drawObject(QPainter *painter, const QRectF &rect, QTextDocument *doc, int posInDocument,
+                    const QTextFormat &format) override;
+
+    QSizeF intrinsicSize(QTextDocument *doc, int posInDocument, const QTextFormat &format) override;
+};
+
 
 class ResponseText : public QObject
 {
@@ -61,6 +76,7 @@ private:
     QColor m_linkColor;
     QColor m_headerColor;
     bool m_isProcessingText = false;
+    ContextLinkInterface *m_contextLink;
 };
 
 #endif // RESPONSETEXT_H
