@@ -1,0 +1,1 @@
+### Drop GGUF compatible models here, make sure it matches MODEL_BIN on your .env file

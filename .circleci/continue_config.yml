@@ -348,6 +348,7 @@ jobs:
           install-yarn: true
           node-version: "18.16"
       - run: node --version
+      - run: corepack enable
       - node/install-packages:
           pkg-manager: yarn
           app-dir: gpt4all-bindings/typescript
@@ -853,6 +854,7 @@ jobs:
           install-yarn: true
           node-version: "18.16"
       - run: node --version
+      - run: corepack enable
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
@@ -883,6 +885,7 @@ jobs:
           install-yarn: true
           node-version: "18.16"
       - run: node --version
+      - run: corepack enable
       - node/install-packages:
           app-dir: gpt4all-bindings/typescript
           pkg-manager: yarn
@@ -895,14 +898,14 @@ jobs:
           name: "Persisting all necessary things to workspace"
           command: |  
             mkdir -p gpt4all-backend/prebuilds/darwin-x64
-            mkdir -p gpt4all-backend/runtimes/darwin-x64
-            cp /tmp/gpt4all-backend/runtimes/osx-x64/*-*.* gpt4all-backend/runtimes/darwin-x64
+            mkdir -p gpt4all-backend/runtimes/darwin
+            cp /tmp/gpt4all-backend/runtimes/osx-x64/*-*.* gpt4all-backend/runtimes/darwin
             cp gpt4all-bindings/typescript/prebuilds/darwin-x64/*.node gpt4all-backend/prebuilds/darwin-x64
       - persist_to_workspace:
           root: gpt4all-backend
           paths:
             - prebuilds/darwin-x64/*.node
-            - runtimes/darwin-x64/*-*.*
+            - runtimes/darwin/*-*.*
 
   build-nodejs-windows: 
     executor:
@@ -924,6 +927,7 @@ jobs:
               nvm install 18.16.0
               nvm use 18.16.0
       - run: node --version 
+      - run: corepack enable
       - run:           
           command: |
             npm install -g yarn
@@ -957,6 +961,7 @@ jobs:
           install-yarn: true
           node-version: "18.16"
       - run: node --version
+      - run: corepack enable
       - run: 
           command: |
             cd gpt4all-bindings/typescript
@@ -971,9 +976,12 @@ jobs:
             cp /tmp/gpt4all-backend/runtimes/linux-x64/*-*.so runtimes/linux-x64/native/ 
             cp /tmp/gpt4all-backend/prebuilds/linux-x64/*.node prebuilds/linux-x64/    
 
-            mkdir -p runtimes/darwin-x64/native
+            # darwin has univeral runtime libraries
+            mkdir -p runtimes/darwin/native
             mkdir -p prebuilds/darwin-x64/
-            cp /tmp/gpt4all-backend/runtimes/darwin-x64/*-*.* runtimes/darwin-x64/native/
+
+            cp /tmp/gpt4all-backend/runtimes/darwin/*-*.* runtimes/darwin/native/
+
             cp /tmp/gpt4all-backend/prebuilds/darwin-x64/*.node prebuilds/darwin-x64/    
             
             # Fallback build if user is not on above prebuilds

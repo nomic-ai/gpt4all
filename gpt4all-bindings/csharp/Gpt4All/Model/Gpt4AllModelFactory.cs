@@ -39,7 +39,7 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         var handle = NativeMethods.llmodel_model_create2(modelPath, "auto", out error);
         _logger.LogDebug("Model created handle=0x{ModelHandle:X8}", handle);
         _logger.LogInformation("Model loading started");
-        var loadedSuccessfully = NativeMethods.llmodel_loadModel(handle, modelPath);
+        var loadedSuccessfully = NativeMethods.llmodel_loadModel(handle, modelPath, 2048);
         _logger.LogInformation("Model loading completed success={ModelLoadSuccess}", loadedSuccessfully);
         if (!loadedSuccessfully)
         {

@@ -28,7 +28,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
 Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info) 
 {
     auto env = info.Env();
-    return Napi::Number::New(env, static_cast<uint32_t>( llmodel_required_mem(GetInference(), full_model_path.c_str()) ));
+    return Napi::Number::New(env, static_cast<uint32_t>( llmodel_required_mem(GetInference(), full_model_path.c_str(), 2048) ));
 
 }
   Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo& info) 
@@ -81,7 +81,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
   Napi::Value NodeModelWrapper::InitGpuByString(const Napi::CallbackInfo& info) 
   {
     auto env = info.Env();
-    uint32_t memory_required = info[0].As<Napi::Number>();
+    size_t memory_required = static_cast<size_t>(info[0].As<Napi::Number>().Uint32Value());
     
     std::string gpu_device_identifier = info[1].As<Napi::String>();   
 
@@ -149,21 +149,19 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     }
     if(device != "cpu") {
         size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str());
-        if(mem == 0) {
-            std::cout << "WARNING: no memory needed. does this model support gpu?\n";
-        }
         std::cout << "Initiating GPU\n";
-        std::cout << "Memory required estimation: " << mem << "\n";
 
         auto success = llmodel_gpu_init_gpu_device_by_string(GetInference(), mem, device.c_str());
         if(success) {
             std::cout << "GPU init successfully\n";
         } else {
+            //https://github.com/nomic-ai/gpt4all/blob/3acbef14b7c2436fe033cae9036e695d77461a16/gpt4all-bindings/python/gpt4all/pyllmodel.py#L215
+            //Haven't implemented this but it is still open to contribution
             std::cout << "WARNING: Failed to init GPU\n";
         }
     }
 
-    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str());
+    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str(), 2048);
     if(!success) {
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
         return;

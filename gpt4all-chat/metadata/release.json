@@ -583,5 +583,39 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.5.3",
+    "notes":
+"
+* Major feature update for localdocs!
+* Localdocs now uses an embedding model for retrieval augmented generation
+* Localdocs can now search while your collections are indexing
+* You're guaranteed to get hits from localdocs for every prompt you enter
+* Fix: AMD gpu fixes
+* Fix: Better error messages
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
+  },
+  {
+    "version": "2.5.4",
+    "notes":
+"
+* Major bugfix release with new models!
+* Model: Recently released Orca 2 model which does exceptionally well on reasoning tasks
+* Fix: System prompt was not always being honored
+* Fix: Download network retry on cloudflare errors
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Jared Van Bortel (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]

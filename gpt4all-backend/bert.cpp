@@ -317,7 +317,7 @@ void bert_eval(
     };
 
     struct ggml_context *ctx0 = ggml_init(params);
-    struct ggml_cgraph gf = {};
+    struct ggml_cgraph *gf = ggml_new_graph(ctx0);
 
     // Embeddings. word_embeddings + token_type_embeddings + position_embeddings
     struct ggml_tensor *token_layer = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
@@ -448,10 +448,10 @@ void bert_eval(
 
     ggml_tensor *output = inpL;
     // run the computation
-    ggml_build_forward_expand(&gf, output);
+    ggml_build_forward_expand(gf, output);
     //ggml_graph_compute_g4a()
-    ggml_graph_compute_g4a(ctx->work_buf, &gf, n_threads);
-    //ggml_graph_compute(ctx0, &gf);
+    ggml_graph_compute_g4a(ctx->work_buf, gf, n_threads);
+    //ggml_graph_compute(ctx0, gf);
 
 
     // float *dat = ggml_get_data_f32(output);
@@ -460,7 +460,7 @@ void bert_eval(
     #ifdef GGML_PERF
         // print timing information per ggml operation (for debugging purposes)
         // requires GGML_PERF to be defined
-        ggml_graph_print(&gf);
+        ggml_graph_print(gf);
     #endif
 
     if (!mem_req_mode) {
@@ -714,8 +714,9 @@ Bert::~Bert() {
     bert_free(d_ptr->ctx);
 }
 
-bool Bert::loadModel(const std::string &modelPath)
+bool Bert::loadModel(const std::string &modelPath, int n_ctx)
 {
+    (void)n_ctx;
     d_ptr->ctx = bert_load_from_file(modelPath.c_str());
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = d_ptr->ctx != nullptr;
@@ -728,8 +729,10 @@ bool Bert::isModelLoaded() const
     return d_ptr->modelLoaded;
 }
 
-size_t Bert::requiredMem(const std::string &/*modelPath*/)
+size_t Bert::requiredMem(const std::string &modelPath, int n_ctx)
 {
+    (void)modelPath;
+    (void)n_ctx;
     return 0;
 }
 

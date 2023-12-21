@@ -1,6 +1,6 @@
 {
   "name": "gpt4all",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "packageManager": "yarn@3.6.1",
   "main": "src/gpt4all.js",
   "repository": "nomic-ai/gpt4all",
@@ -9,9 +9,7 @@
     "test": "jest",
     "build:backend": "node scripts/build.js",
     "build": "node-gyp-build",
-    "predocs:build": "node scripts/docs.js",
-    "docs:build": "documentation readme ./src/gpt4all.d.ts --parse-extension js d.ts --format md --section \"API Reference\" --readme-file ../python/docs/gpt4all_typescript.md",
-    "postdocs:build": "documentation readme ./src/gpt4all.d.ts --parse-extension js d.ts --format md --section \"API Reference\" --readme-file README.md"
+    "docs:build": "node scripts/docs.js && documentation readme ./src/gpt4all.d.ts --parse-extension js d.ts --format md --section \"API Reference\" --readme-file ../python/docs/gpt4all_nodejs.md"
   },
   "files": [
     "src/**/*",
@@ -47,7 +45,7 @@
   },
   "jest": {
     "verbose": true
-  }, 
+  },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public",

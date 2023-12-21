@@ -18,7 +18,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 5)
-set(APP_VERSION_PATCH 3)
+set(APP_VERSION_PATCH 5)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -173,7 +173,7 @@ else()
     PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf)
 endif()
 target_link_libraries(chat
-    PRIVATE llmodel bert-default)
+    PRIVATE llmodel)
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)

@@ -108,6 +108,7 @@ void Download::downloadModel(const QString &modelFile)
         const QString error
             = QString("ERROR: Could not open temp file: %1 %2").arg(tempFile->fileName()).arg(modelFile);
         qWarning() << error;
+        clearRetry(modelFile);
         ModelList::globalInstance()->updateDataByFilename(modelFile, ModelList::DownloadErrorRole, error);
         return;
     }
@@ -140,6 +141,7 @@ void Download::downloadModel(const QString &modelFile)
     QNetworkReply *modelReply = m_networkManager.get(request);
     connect(qApp, &QCoreApplication::aboutToQuit, modelReply, &QNetworkReply::abort);
     connect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
+    connect(modelReply, &QNetworkReply::errorOccurred, this, &Download::handleErrorOccurred);
     connect(modelReply, &QNetworkReply::finished, this, &Download::handleModelDownloadFinished);
     connect(modelReply, &QNetworkReply::readyRead, this, &Download::handleReadyRead);
     m_activeDownloads.insert(modelReply, tempFile);
@@ -254,13 +256,51 @@ void Download::parseReleaseJsonFile(const QByteArray &jsonData)
     emit releaseInfoChanged();
 }
 
+bool Download::hasRetry(const QString &filename) const
+{
+    return m_activeRetries.contains(filename);
+}
+
+bool Download::shouldRetry(const QString &filename)
+{
+    int retries = 0;
+    if (m_activeRetries.contains(filename))
+        retries = m_activeRetries.value(filename);
+
+    ++retries;
+
+    // Allow up to ten retries for now
+    if (retries < 10) {
+        m_activeRetries.insert(filename, retries);
+        return true;
+    }
+
+    return false;
+}
+
+void Download::clearRetry(const QString &filename)
+{
+    m_activeRetries.remove(filename);
+}
+
 void Download::handleErrorOccurred(QNetworkReply::NetworkError code)
 {
     QNetworkReply *modelReply = qobject_cast<QNetworkReply *>(sender());
     if (!modelReply)
         return;
 
+    // This occurs when the user explicitly cancels the download
+    if (code == QNetworkReply::OperationCanceledError)
+        return;
+
     QString modelFilename = modelReply->request().attribute(QNetworkRequest::User).toString();
+    if (shouldRetry(modelFilename)) {
+        downloadModel(modelFilename);
+        return;
+    }
+
+    clearRetry(modelFilename);
+
     const QString error
         = QString("ERROR: Network error occurred attempting to download %1 code: %2 errorString %3")
             .arg(modelFilename)
@@ -355,6 +395,7 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, const QString &sa
     // but will only work if the destination is on the same filesystem
     if (tempFile->rename(saveFilePath)) {
         emit hashAndSaveFinished(true, QString(), tempFile, modelReply);
+        ModelList::globalInstance()->updateModelsFromDirectory();
         return;
     }
 
@@ -385,8 +426,9 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, const QString &sa
         qWarning() << errorString;
         tempFile->close();
         emit hashAndSaveFinished(false, errorString, tempFile, modelReply);
-        return;
     }
+
+    ModelList::globalInstance()->updateModelsFromDirectory();
 }
 
 void Download::handleModelDownloadFinished()
@@ -405,10 +447,14 @@ void Download::handleModelDownloadFinished()
         qWarning() << errorString;
         modelReply->deleteLater();
         tempFile->deleteLater();
-        ModelList::globalInstance()->updateDataByFilename(modelFilename, ModelList::DownloadingRole, false);
-        ModelList::globalInstance()->updateDataByFilename(modelFilename, ModelList::DownloadErrorRole, errorString);
+        if (!hasRetry(modelFilename)) {
+            ModelList::globalInstance()->updateDataByFilename(modelFilename, ModelList::DownloadingRole, false);
+            ModelList::globalInstance()->updateDataByFilename(modelFilename, ModelList::DownloadErrorRole, errorString);
+        }
         return;
     }
+
+    clearRetry(modelFilename);
 
     // The hash and save needs the tempFile closed
     tempFile->close();

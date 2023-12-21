@@ -435,8 +435,7 @@ bool Chat::deserialize(QDataStream &stream, int version)
     if (!m_chatModel->deserialize(stream, version))
         return false;
 
-    if (!deserializeKV || discardKV)
-        m_llmodel->setStateFromText(m_chatModel->text());
+    m_llmodel->setStateFromText(m_chatModel->text());
 
     emit chatModelChanged();
     return stream.status() == QDataStream::Ok;

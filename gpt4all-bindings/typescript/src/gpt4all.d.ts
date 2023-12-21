@@ -1,13 +1,12 @@
 /// <reference types="node" />
 declare module "gpt4all";
 
-/** Type of the model */
 type ModelType = "gptj" | "llama" | "mpt" | "replit";
 
 // NOTE: "deprecated" tag in below comment breaks the doc generator https://github.com/documentationjs/documentation/issues/1596
 /**
  * Full list of models available
- * @deprecated These model names are outdated and this type will not be maintained, please use a string literal instead
+ * DEPRECATED!! These model names are outdated and this type will not be maintained, please use a string literal instead
  */
 interface ModelFile {
     /** List of GPT-J Models */
@@ -34,7 +33,6 @@ interface ModelFile {
     replit: "ggml-replit-code-v1-3b.bin";
 }
 
-//mirrors py options
 interface LLModelOptions {
     /**
      * Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
@@ -51,7 +49,11 @@ interface ModelConfig {
     path: string;
     url?: string;
 }
-
+/**
+ *
+ * InferenceModel represents an LLM which can make chat predictions, similar to GPT transformers.
+ *
+ */
 type TokenCallback = (tokenId: number, token: string, total: string) => boolean
 declare class InferenceModel {
     constructor(llm: LLModel, config: ModelConfig);
@@ -70,6 +72,9 @@ declare class InferenceModel {
     dispose(): void
 }
 
+/**
+ * EmbeddingModel represents an LLM which can create embeddings, which are float arrays
+ */
 declare class EmbeddingModel {
     constructor(llm: LLModel, config: ModelConfig);
     llm: LLModel;
@@ -174,6 +179,7 @@ declare class LLModel {
     hasGpuDevice(): boolean
     /**
       * GPUs that are usable for this LLModel
+      * @throws if hasGpuDevice returns false (i think)
       * @returns 
       */
     listGpu() : GpuDevice[]
@@ -184,8 +190,8 @@ declare class LLModel {
     dispose(): void
 }
 /** 
-  * an object that contains gpu data on this machine.
-  */
+ * an object that contains gpu data on this machine.
+ */
 interface GpuDevice {
     index: number;
     /**
@@ -197,6 +203,9 @@ interface GpuDevice {
     vendor: string;
 }
 
+/**
+  * Options that configure a model's behavior.
+  */
 interface LoadModelOptions {
     modelPath?: string;
     librariesPath?: string;

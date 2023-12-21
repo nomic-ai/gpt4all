@@ -17,6 +17,15 @@ Dialog {
         radius: 10
     }
 
+    Rectangle {
+        id: closeBackground
+        z: 299
+        anchors.centerIn: myCloseButton
+        width: myCloseButton.width + 10
+        height: myCloseButton.height + 10
+        color: theme.backgroundDarkest
+    }
+
     MyToolButton {
         id: myCloseButton
         x: 0 + myDialog.width - myDialog.padding - width - 15

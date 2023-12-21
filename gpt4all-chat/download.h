@@ -78,11 +78,15 @@ Q_SIGNALS:
 private:
     void parseReleaseJsonFile(const QByteArray &jsonData);
     QString incompleteDownloadPath(const QString &modelFile);
+    bool hasRetry(const QString &filename) const;
+    bool shouldRetry(const QString &filename);
+    void clearRetry(const QString &filename);
 
     HashAndSaveFile *m_hashAndSave;
     QMap<QString, ReleaseInfo> m_releaseMap;
     QNetworkAccessManager m_networkManager;
     QMap<QNetworkReply*, QFile*> m_activeDownloads;
+    QHash<QString, int> m_activeRetries;
     QDateTime m_startTime;
 
 private:

@@ -1,11 +1,14 @@
 # GPT4All Node.js API
 
+Native Node.js LLM bindings for all.
+
 ```sh
-yarn add gpt4all@alpha
+yarn add gpt4all@latest
 
-npm install gpt4all@alpha
+npm install gpt4all@latest
 
-pnpm install gpt4all@alpha
+pnpm install gpt4all@latest
+
 ```
 
 The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-ts) are now out of date.
@@ -15,12 +18,12 @@ The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-t
 *   Everything should work out the box.
 *   See [API Reference](#api-reference)
 
-### Chat Completion (alpha)
+### Chat Completion
 
 ```js
 import { createCompletion, loadModel } from '../src/gpt4all.js'
 
-const model = await loadModel('ggml-vicuna-7b-1.1-q4_2', { verbose: true });
+const model = await loadModel('mistral-7b-openorca.Q4_0.gguf', { verbose: true });
 
 const response = await createCompletion(model, [
     { role : 'system', content: 'You are meant to be annoying and unhelpful.'  },
@@ -29,7 +32,7 @@ const response = await createCompletion(model, [
 
 ```
 
-### Embedding (alpha)
+### Embedding
 
 ```js
 import { createEmbedding, loadModel } from '../src/gpt4all.js'
@@ -81,8 +84,6 @@ yarn
 ```sh
 git submodule update --init --depth 1 --recursive
 ```
-
-**AS OF NEW BACKEND** to build the backend,
 
 ```sh
 yarn build:backend
@@ -152,13 +153,16 @@ This package is in active development, and breaking changes may happen until the
 
 ##### Table of Contents
 
-*   [ModelType](#modeltype)
 *   [ModelFile](#modelfile)
     *   [gptj](#gptj)
     *   [llama](#llama)
     *   [mpt](#mpt)
     *   [replit](#replit)
 *   [type](#type)
+*   [InferenceModel](#inferencemodel)
+    *   [dispose](#dispose)
+*   [EmbeddingModel](#embeddingmodel)
+    *   [dispose](#dispose-1)
 *   [LLModel](#llmodel)
     *   [constructor](#constructor)
         *   [Parameters](#parameters)
@@ -176,12 +180,20 @@ This package is in active development, and breaking changes may happen until the
     *   [setLibraryPath](#setlibrarypath)
         *   [Parameters](#parameters-4)
     *   [getLibraryPath](#getlibrarypath)
+    *   [initGpuByString](#initgpubystring)
+        *   [Parameters](#parameters-5)
+    *   [hasGpuDevice](#hasgpudevice)
+    *   [listGpu](#listgpu)
+    *   [dispose](#dispose-2)
+*   [GpuDevice](#gpudevice)
+    *   [type](#type-2)
+*   [LoadModelOptions](#loadmodeloptions)
 *   [loadModel](#loadmodel)
-    *   [Parameters](#parameters-5)
-*   [createCompletion](#createcompletion)
     *   [Parameters](#parameters-6)
-*   [createEmbedding](#createembedding)
+*   [createCompletion](#createcompletion)
     *   [Parameters](#parameters-7)
+*   [createEmbedding](#createembedding)
+    *   [Parameters](#parameters-8)
 *   [CompletionOptions](#completionoptions)
     *   [verbose](#verbose)
     *   [systemPromptTemplate](#systemprompttemplate)
@@ -214,14 +226,14 @@ This package is in active development, and breaking changes may happen until the
     *   [repeatLastN](#repeatlastn)
     *   [contextErase](#contexterase)
 *   [createTokenStream](#createtokenstream)
-    *   [Parameters](#parameters-8)
+    *   [Parameters](#parameters-9)
 *   [DEFAULT\_DIRECTORY](#default_directory)
 *   [DEFAULT\_LIBRARIES\_DIRECTORY](#default_libraries_directory)
 *   [DEFAULT\_MODEL\_CONFIG](#default_model_config)
-*   [DEFAULT\_PROMT\_CONTEXT](#default_promt_context)
+*   [DEFAULT\_PROMPT\_CONTEXT](#default_prompt_context)
 *   [DEFAULT\_MODEL\_LIST\_URL](#default_model_list_url)
 *   [downloadModel](#downloadmodel)
-    *   [Parameters](#parameters-9)
+    *   [Parameters](#parameters-10)
     *   [Examples](#examples)
 *   [DownloadModelOptions](#downloadmodeloptions)
     *   [modelPath](#modelpath)
@@ -232,16 +244,10 @@ This package is in active development, and breaking changes may happen until the
     *   [cancel](#cancel)
     *   [promise](#promise)
 
-#### ModelType
-
-Type of the model
-
-Type: (`"gptj"` | `"llama"` | `"mpt"` | `"replit"`)
-
 #### ModelFile
 
 Full list of models available
-@deprecated These model names are outdated and this type will not be maintained, please use a string literal instead
+DEPRECATED!! These model names are outdated and this type will not be maintained, please use a string literal instead
 
 ##### gptj
 
@@ -271,7 +277,27 @@ Type: `"ggml-replit-code-v1-3b.bin"`
 
 Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
 
-Type: [ModelType](#modeltype)
+Type: ModelType
+
+#### InferenceModel
+
+InferenceModel represents an LLM which can make chat predictions, similar to GPT transformers.
+
+##### dispose
+
+delete and cleanup the native model
+
+Returns **void**&#x20;
+
+#### EmbeddingModel
+
+EmbeddingModel represents an LLM which can create embeddings, which are float arrays
+
+##### dispose
+
+delete and cleanup the native model
+
+Returns **void**&#x20;
 
 #### LLModel
 
@@ -294,7 +320,7 @@ Initialize a new LLModel.
 
 either 'gpt', mpt', or 'llama' or undefined
 
-Returns **([ModelType](#modeltype) | [undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined))**&#x20;
+Returns **(ModelType | [undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined))**&#x20;
 
 ##### name
 
@@ -376,6 +402,52 @@ Where to get the pluggable backend libraries
 
 Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
 
+##### initGpuByString
+
+Initiate a GPU by a string identifier.
+
+###### Parameters
+
+*   `memory_required` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Should be in the range size\_t or will throw
+*   `device_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 'amd' | 'nvidia' | 'intel' | 'gpu' | gpu name.
+    read LoadModelOptions.device for more information
+
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+
+##### hasGpuDevice
+
+From C documentation
+
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** True if a GPU device is successfully initialized, false otherwise.
+
+##### listGpu
+
+GPUs that are usable for this LLModel
+
+*   Throws **any** if hasGpuDevice returns false (i think)
+
+Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[GpuDevice](#gpudevice)>**&#x20;
+
+##### dispose
+
+delete and cleanup the native model
+
+Returns **void**&#x20;
+
+#### GpuDevice
+
+an object that contains gpu data on this machine.
+
+##### type
+
+same as VkPhysicalDeviceType
+
+Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
+#### LoadModelOptions
+
+Options that configure a model's behavior.
+
 #### loadModel
 
 Loads a machine learning model with the specified name. The defacto way to create a model.
@@ -384,9 +456,9 @@ By default this will download a model from the official GPT4ALL website, if a mo
 ##### Parameters
 
 *   `modelName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The name of the model to load.
-*   `options` **(LoadModelOptions | [undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined))?** (Optional) Additional options for loading the model.
+*   `options` **([LoadModelOptions](#loadmodeloptions) | [undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined))?** (Optional) Additional options for loading the model.
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<(InferenceModel | EmbeddingModel)>** A promise that resolves to an instance of the loaded LLModel.
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<([InferenceModel](#inferencemodel) | [EmbeddingModel](#embeddingmodel))>** A promise that resolves to an instance of the loaded LLModel.
 
 #### createCompletion
 
@@ -394,7 +466,7 @@ The nodejs equivalent to python binding's chat\_completion
 
 ##### Parameters
 
-*   `model` **InferenceModel** The language model object.
+*   `model` **[InferenceModel](#inferencemodel)** The language model object.
 *   `messages` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[PromptMessage](#promptmessage)>** The array of messages for the conversation.
 *   `options` **[CompletionOptions](#completionoptions)** The options for creating the completion.
 
@@ -407,7 +479,7 @@ meow
 
 ##### Parameters
 
-*   `model` **EmbeddingModel** The language model object.
+*   `model` **[EmbeddingModel](#embeddingmodel)** The language model object.
 *   `text` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** text to embed
 
 Returns **[Float32Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array)** The completion result.
@@ -652,7 +724,7 @@ Default model configuration.
 
 Type: ModelConfig
 
-#### DEFAULT\_PROMT\_CONTEXT
+#### DEFAULT\_PROMPT\_CONTEXT
 
 Default prompt context.
 

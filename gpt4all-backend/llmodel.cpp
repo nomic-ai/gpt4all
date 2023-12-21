@@ -82,7 +82,7 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     static auto* libs = new std::vector<Implementation>([] () {
         std::vector<Implementation> fres;
 
-        std::string impl_name_re = "(bert|llama|gptj|llamamodel-mainline)";
+        std::string impl_name_re = "(bert|gptj|llamamodel-mainline)";
         if (requires_avxonly()) {
             impl_name_re += "-avxonly";
         } else {
@@ -138,7 +138,7 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
     return nullptr;
 }
 
-LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant) {
+LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant, int n_ctx) {
     if (!has_at_least_minimal_hardware()) {
         std::cerr << "LLModel ERROR: CPU does not support AVX\n";
         return nullptr;
@@ -154,7 +154,11 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
             if(impl) {
                 LLModel* metalimpl = impl->m_construct();
                 metalimpl->m_implementation = impl;
-                size_t req_mem = metalimpl->requiredMem(modelPath);
+                /* TODO(cebtenzzre): after we fix requiredMem, we should change this to happen at
+                 * load time, not construct time. right now n_ctx is incorrectly hardcoded 2048 in
+                 * most (all?) places where this is called, causing underestimation of required
+                 * memory. */
+                size_t req_mem = metalimpl->requiredMem(modelPath, n_ctx);
                 float req_to_total = (float) req_mem / (float) total_mem;
                 // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
                 if (req_to_total >= 0.53) {
@@ -165,6 +169,8 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
                 }
             }
         }
+    #else
+        (void)n_ctx;
     #endif
 
     if (!impl) {
@@ -184,6 +190,27 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
     auto fres = impl->m_construct();
     fres->m_implementation = impl;
     return fres;
+}
+
+LLModel *LLModel::Implementation::constructCpuLlama() {
+    const LLModel::Implementation *impl = nullptr;
+    for (const auto &i : implementationList()) {
+        if (i.m_buildVariant == "metal" || i.m_modelType != "LLaMA") continue;
+        impl = &i;
+    }
+    if (!impl) {
+        std::cerr << "LLModel ERROR: Could not find CPU LLaMA implementation\n";
+        return nullptr;
+    }
+    auto fres = impl->m_construct();
+    fres->m_implementation = impl;
+    return fres;
+}
+
+std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices() {
+    static LLModel *cpuLlama = LLModel::Implementation::constructCpuLlama(); // (memory leak)
+    if (cpuLlama) { return cpuLlama->availableGPUDevices(0); }
+    return {};
 }
 
 void LLModel::Implementation::setImplementationsSearchPath(const std::string& path) {
