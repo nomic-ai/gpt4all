@@ -49,6 +49,12 @@ interface ModelConfig {
     path: string;
     url?: string;
 }
+
+/**
+ * Callback for controlling token generation
+ */
+type TokenCallback = (tokenId: number, token: string, total: string) => boolean
+
 /**
  *
  * InferenceModel represents an LLM which can make chat predictions, similar to GPT transformers.
@@ -61,7 +67,8 @@ declare class InferenceModel {
 
     generate(
         prompt: string,
-        options?: Partial<LLModelPromptContext>
+        options?: Partial<LLModelPromptContext>,
+        callback?: TokenCallback
     ): Promise<string>;
 
    /**
@@ -132,13 +139,14 @@ declare class LLModel {
      * Use the prompt function exported for a value
      * @param q The prompt input.
      * @param params Optional parameters for the prompt context.
+     * @param callback - optional callback to control token generation.
      * @returns The result of the model prompt.
      */
     raw_prompt(
         q: string,
         params: Partial<LLModelPromptContext>,
-        callback: (res: string) => void
-    ): void; // TODO work on return type
+        callback?: TokenCallback
+    ): Promise<string>
 
     /**
      * Embed text with the model. Keep in mind that
@@ -443,13 +451,19 @@ interface LLModelPromptContext {
 }
 
 /**
- * TODO: Help wanted to implement this
+ * Creates a readable stream of tokens
+ * @param {InferenceModel} model - The language model object.
+ * @param {PromptMessage[]} messages - The array of messages for the conversation.
+ * @param {CompletionOptions} options - The options for creating the completion.
+ * @param {TokenCallback} callback - optional callback to control token generation.
+ * @returns {import('stream').PassThrough} The stream of generated tokens
  */
 declare function createTokenStream(
-    llmodel: LLModel,
+    llmodel: InferenceModel,
     messages: PromptMessage[],
-    options: CompletionOptions
-): (ll: LLModel) => AsyncGenerator<string>;
+    options: CompletionOptions,
+    callback?: TokenCallback
+): import('stream').PassThrough;
 /**
  * From python api:
  * models will be stored in (homedir)/.cache/gpt4all/`
