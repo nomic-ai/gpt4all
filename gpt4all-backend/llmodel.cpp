@@ -104,7 +104,7 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
 
                     // Add to list if model implementation
                     try {
-                        Dlhandle dl(p.string());
+                        Dlhandle dl(std::filesystem::absolute(p).string());
                         if (!Implementation::isImplementation(dl)) {
                             continue;
                         }
