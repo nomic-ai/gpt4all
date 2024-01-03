@@ -298,6 +298,8 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
 
 bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
+    llama_kv_cache_seq_rm(d_ptr->ctx, 0, ctx.n_past, -1);
+
     llama_batch batch = llama_batch_init(tokens.size(), 0, 1);
 
     batch.n_tokens = tokens.size();
