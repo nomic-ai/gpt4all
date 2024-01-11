@@ -16,9 +16,6 @@ ChatListModel *ChatListModel::globalInstance()
 
 ChatListModel::ChatListModel()
     : QAbstractListModel(nullptr)
-    , m_newChat(nullptr)
-    , m_serverChat(nullptr)
-    , m_currentChat(nullptr)
 {
     addChat();
 

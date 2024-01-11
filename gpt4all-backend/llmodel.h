@@ -43,7 +43,7 @@ public:
         static const std::string& implementationsSearchPath();
 
     private:
-        static LLModel *constructCpuLlama();
+        static LLModel *constructDefaultLlama();
 
         bool (*m_magicMatch)(const char *fname);
         LLModel *(*m_construct)();
