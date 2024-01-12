@@ -6,7 +6,7 @@ import shutil
 package_name = "gpt4all"
 
 # Define the location of your prebuilt C library files
-SRC_CLIB_DIRECtORY = os.path.join("..", "..", "gpt4all-backend")
+SRC_CLIB_DIRECTORY = os.path.join("..", "..", "gpt4all-backend")
 SRC_CLIB_BUILD_DIRECTORY = os.path.join("..", "..", "gpt4all-backend", "build") 
 
 LIB_NAME = "llmodel"
@@ -55,7 +55,7 @@ def copy_prebuilt_C_lib(src_dir, dest_dir, dest_build_dir):
 
 # NOTE: You must provide correct path to the prebuilt llmodel C library. 
 # Specifically, the llmodel.h and C shared library are needed.
-copy_prebuilt_C_lib(SRC_CLIB_DIRECtORY,
+copy_prebuilt_C_lib(SRC_CLIB_DIRECTORY,
                     DEST_CLIB_DIRECTORY,
                     DEST_CLIB_BUILD_DIRECTORY)
 
