@@ -45,13 +45,13 @@ Under this release (e.g. Qt 6.5.0), select the target platform:
 
 Under this release, select the following additional components:
 - Qt Quick 3D
+- Qt Wayland Compositor (for Linux only)
 - Qt 5 Compatibility Module
 - Qt Shader Tools
 - Additional Libraries:
   - Qt HTTP Server
   - Qt PDF
 - Qt Debug information Files
-- Qt Quick Timeline
 
 Under Developer and Designer Tools, select the following components:
 - Qt Creator
