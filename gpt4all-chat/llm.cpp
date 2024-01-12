@@ -11,6 +11,10 @@
 #include <QUrl>
 #include <fstream>
 
+#ifndef GPT4ALL_OFFLINE_INSTALLER
+#include "network.h"
+#endif
+
 class MyLLM: public LLM { };
 Q_GLOBAL_STATIC(MyLLM, llmInstance)
 LLM *LLM::globalInstance()
