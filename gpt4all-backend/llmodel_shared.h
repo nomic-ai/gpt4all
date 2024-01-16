@@ -5,7 +5,7 @@
 #include <ggml.h>
 
 #if defined(GGML_USE_KOMPUTE)
-#include "ggml-vulkan.h"
+#include "ggml-kompute.h"
 struct llm_buffer {
     uint8_t * addr = NULL;
     size_t size = 0;
