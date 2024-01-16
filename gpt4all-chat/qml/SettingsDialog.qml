@@ -19,6 +19,9 @@ MyDialog {
         Network.sendSettingsDialog();
     }
 
+    signal downloadClicked
+    property alias pageToDisplay: listView.currentIndex
+
     Item {
         Accessible.role: Accessible.Dialog
         Accessible.name: qsTr("Settings")
@@ -28,13 +31,13 @@ MyDialog {
     ListModel {
         id: stacksModel
         ListElement {
-            title: "Models"
+            title: qsTr("Models")
         }
         ListElement {
-            title: "Application"
+            title: qsTr("Application")
         }
         ListElement {
-            title: "Plugins"
+            title: qsTr("LocalDocs")
         }
     }
 
@@ -107,9 +110,16 @@ MyDialog {
         }
 
         MySettingsStack {
-            title: qsTr("LocalDocs Plugin (BETA) Settings")
+            title: qsTr("Local Document Collections")
             tabs: [
-                Component { LocalDocsSettings { } }
+                Component {
+                    LocalDocsSettings {
+                        id: localDocsSettings
+                        Component.onCompleted: {
+                             localDocsSettings.downloadClicked.connect(settingsDialog.downloadClicked);
+                        }
+                    }
+                }
             ]
         }
     }

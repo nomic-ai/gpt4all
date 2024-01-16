@@ -184,3 +184,6 @@ build-*
 
 # IntelliJ
 .idea/
+
+# LLM models
+*.gguf

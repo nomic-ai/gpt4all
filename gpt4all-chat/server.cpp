@@ -16,7 +16,7 @@ static inline QJsonObject modelToJson(const ModelInfo &info)
     QJsonObject model;
     model.insert("id", info.name());
     model.insert("object", "model");
-    model.insert("created", "who can keep track?");
+    model.insert("created", 0);
     model.insert("owned_by", "humanity");
     model.insert("root", info.name());
     model.insert("parent", QJsonValue::Null);
@@ -25,7 +25,7 @@ static inline QJsonObject modelToJson(const ModelInfo &info)
     QJsonObject permissionObj;
     permissionObj.insert("id", "foobarbaz");
     permissionObj.insert("object", "model_permission");
-    permissionObj.insert("created", "does it really matter?");
+    permissionObj.insert("created", 0);
     permissionObj.insert("allow_create_engine", false);
     permissionObj.insert("allow_sampling", false);
     permissionObj.insert("allow_logprobs", false);

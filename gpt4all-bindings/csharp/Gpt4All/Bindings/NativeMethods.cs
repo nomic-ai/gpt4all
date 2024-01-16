@@ -70,7 +70,8 @@ internal static unsafe partial class NativeMethods
     [return: MarshalAs(UnmanagedType.I1)]
     public static extern bool llmodel_loadModel(
         [NativeTypeName("llmodel_model")] IntPtr model,
-        [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string model_path);
+        [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string model_path,
+        [NativeTypeName("int32_t")] int n_ctx);
 
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
 

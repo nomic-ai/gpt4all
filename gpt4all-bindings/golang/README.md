@@ -36,7 +36,7 @@ func main() {
 In order to use the bindings you will need to build `libgpt4all.a`:
 
 ```
-git clone https://github.com/nomic-ai/gpt4all
+git clone --recurse-submodules https://github.com/nomic-ai/gpt4all
 cd gpt4all/gpt4all-bindings/golang
 make libgpt4all.a
 ```

@@ -27,6 +27,7 @@ class Chat : public QObject
     Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged);
     Q_PROPERTY(QString device READ device NOTIFY deviceChanged);
     Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY fallbackReasonChanged);
+    Q_PROPERTY(LocalDocsCollectionsModel *collectionModel READ collectionModel NOTIFY collectionModelChanged)
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -83,6 +84,7 @@ public:
     bool isServer() const { return m_isServer; }
 
     QList<QString> collectionList() const;
+    LocalDocsCollectionsModel *collectionModel() const { return m_collectionModel; }
 
     Q_INVOKABLE bool hasCollection(const QString &collection) const;
     Q_INVOKABLE void addCollection(const QString &collection);
@@ -123,6 +125,7 @@ Q_SIGNALS:
     void tokenSpeedChanged();
     void deviceChanged();
     void fallbackReasonChanged();
+    void collectionModelChanged();
 
 private Q_SLOTS:
     void handleResponseChanged(const QString &response);
@@ -152,15 +155,16 @@ private:
     QString m_response;
     QList<QString> m_collections;
     ChatModel *m_chatModel;
-    bool m_responseInProgress;
+    bool m_responseInProgress = false;
     ResponseState m_responseState;
     qint64 m_creationDate;
     ChatLLM *m_llmodel;
     QList<ResultInfo> m_databaseResults;
-    bool m_isServer;
-    bool m_shouldDeleteLater;
-    bool m_isModelLoaded;
-    bool m_shouldLoadModelWhenInstalled;
+    bool m_isServer = false;
+    bool m_shouldDeleteLater = false;
+    bool m_isModelLoaded = false;
+    bool m_shouldLoadModelWhenInstalled = false;
+    LocalDocsCollectionsModel *m_collectionModel;
 };
 
 #endif // CHAT_H

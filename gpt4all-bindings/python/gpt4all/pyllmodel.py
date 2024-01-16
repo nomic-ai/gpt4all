@@ -1,4 +1,5 @@
-import atexit
+from __future__ import annotations
+
 import ctypes
 import importlib.resources
 import logging
@@ -8,20 +9,15 @@ import re
 import subprocess
 import sys
 import threading
-from contextlib import ExitStack
+from enum import Enum
 from queue import Queue
 from typing import Callable, Iterable, List
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-file_manager = ExitStack()
-atexit.register(file_manager.close)  # clean up files on exit
-
 # TODO: provide a config file to make this more robust
-MODEL_LIB_PATH = file_manager.enter_context(importlib.resources.as_file(
-    importlib.resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build",
-))
+MODEL_LIB_PATH = importlib.resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build"
 
 
 def load_llmodel_library():
@@ -79,9 +75,9 @@ llmodel.llmodel_model_create2.restype = ctypes.c_void_p
 llmodel.llmodel_model_destroy.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_model_destroy.restype = None
 
-llmodel.llmodel_loadModel.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+llmodel.llmodel_loadModel.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
 llmodel.llmodel_loadModel.restype = ctypes.c_bool
-llmodel.llmodel_required_mem.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+llmodel.llmodel_required_mem.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
 llmodel.llmodel_required_mem.restype = ctypes.c_size_t
 llmodel.llmodel_isModelLoaded.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_isModelLoaded.restype = ctypes.c_bool
@@ -121,7 +117,7 @@ llmodel.llmodel_set_implementation_search_path.restype = None
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
-llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).replace("\\", r"\\").encode("utf-8"))
+llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).replace("\\", r"\\").encode())
 
 llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
 llmodel.llmodel_available_gpu_devices.restype = ctypes.POINTER(LLModelGPUDevice)
@@ -150,8 +146,14 @@ def _create_model(model_path: bytes) -> ctypes.c_void_p:
     err = ctypes.c_char_p()
     model = llmodel.llmodel_model_create2(model_path, b"auto", ctypes.byref(err))
     if model is None:
-        raise ValueError(f"Unable to instantiate model: {err.decode()}")
+        s = err.value
+        raise ValueError("Unable to instantiate model: {'null' if s is None else s.decode()}")
     return model
+
+
+# Symbol to terminate from generator
+class Sentinel(Enum):
+    TERMINATING_SYMBOL = 0
 
 
 class LLModel:
@@ -180,12 +182,16 @@ class LLModel:
         if self.model is not None:
             self.llmodel_lib.llmodel_model_destroy(self.model)
 
-    def memory_needed(self, model_path: str) -> int:
-        model_path_enc = model_path.encode("utf-8")
-        self.model = _create_model(model_path_enc)
-        return llmodel.llmodel_required_mem(self.model, model_path_enc)
+    def memory_needed(self, model_path: str, n_ctx: int) -> int:
+        self.model = None
+        return self._memory_needed(model_path, n_ctx)
 
-    def list_gpu(self, model_path: str) -> list:
+    def _memory_needed(self, model_path: str, n_ctx: int) -> int:
+        if self.model is None:
+            self.model = _create_model(model_path.encode())
+        return llmodel.llmodel_required_mem(self.model, model_path.encode(), n_ctx)
+
+    def list_gpu(self, model_path: str, n_ctx: int) -> list[LLModelGPUDevice]:
         """
         Lists available GPU devices that satisfy the model's memory requirements.
 
@@ -193,45 +199,41 @@ class LLModel:
         ----------
         model_path : str
             Path to the model.
+        n_ctx : int
+            Maximum size of context window
 
         Returns
         -------
         list
             A list of LLModelGPUDevice structures representing available GPU devices.
         """
-        if self.model is not None:
-            model_path_enc = model_path.encode("utf-8")
-            mem_required = llmodel.llmodel_required_mem(self.model, model_path_enc)
-        else:
-            mem_required = self.memory_needed(model_path)
+        mem_required = self._memory_needed(model_path, n_ctx)
+        return self._list_gpu(mem_required)
+
+    def _list_gpu(self, mem_required: int) -> list[LLModelGPUDevice]:
         num_devices = ctypes.c_int32(0)
         devices_ptr = self.llmodel_lib.llmodel_available_gpu_devices(self.model, mem_required, ctypes.byref(num_devices))
         if not devices_ptr:
             raise ValueError("Unable to retrieve available GPU devices")
-        devices = [devices_ptr[i] for i in range(num_devices.value)]
-        return devices
+        return devices_ptr[:num_devices.value]
 
-    def init_gpu(self, model_path: str, device: str):
-        if self.model is not None:
-            model_path_enc = model_path.encode("utf-8")
-            mem_required = llmodel.llmodel_required_mem(self.model, model_path_enc)
-        else:
-            mem_required = self.memory_needed(model_path)
-        device_enc = device.encode("utf-8")
-        success = self.llmodel_lib.llmodel_gpu_init_gpu_device_by_string(self.model, mem_required, device_enc)
+    def init_gpu(self, model_path: str, device: str, n_ctx: int):
+        mem_required = self._memory_needed(model_path, n_ctx)
+
+        success = self.llmodel_lib.llmodel_gpu_init_gpu_device_by_string(self.model, mem_required, device.encode())
         if not success:
             # Retrieve all GPUs without considering memory requirements.
             num_devices = ctypes.c_int32(0)
             all_devices_ptr = self.llmodel_lib.llmodel_available_gpu_devices(self.model, 0, ctypes.byref(num_devices))
             if not all_devices_ptr:
                 raise ValueError("Unable to retrieve list of all GPU devices")
-            all_gpus = [all_devices_ptr[i].name.decode('utf-8') for i in range(num_devices.value)]
+            all_gpus = [d.name.decode() for d in all_devices_ptr[:num_devices.value]]
 
             # Retrieve GPUs that meet the memory requirements using list_gpu
-            available_gpus = [device.name.decode('utf-8') for device in self.list_gpu(model_path)]
+            available_gpus = [device.name.decode() for device in self._list_gpu(mem_required)]
 
             # Identify GPUs that are unavailable due to insufficient memory or features
-            unavailable_gpus = set(all_gpus) - set(available_gpus)
+            unavailable_gpus = set(all_gpus).difference(available_gpus)
 
             # Formulate the error message
             error_msg = "Unable to initialize model on GPU: '{}'.".format(device)
@@ -239,7 +241,7 @@ class LLModel:
             error_msg += "\nUnavailable GPUs due to insufficient memory or features: {}.".format(unavailable_gpus)
             raise ValueError(error_msg)
 
-    def load_model(self, model_path: str) -> bool:
+    def load_model(self, model_path: str, n_ctx: int) -> bool:
         """
         Load model from a file.
 
@@ -247,15 +249,16 @@ class LLModel:
         ----------
         model_path : str
             Model filepath
+        n_ctx : int
+            Maximum size of context window
 
         Returns
         -------
         True if model loaded successfully, False otherwise
         """
-        model_path_enc = model_path.encode("utf-8")
-        self.model = _create_model(model_path_enc)
+        self.model = _create_model(model_path.encode())
 
-        llmodel.llmodel_loadModel(self.model, model_path_enc)
+        llmodel.llmodel_loadModel(self.model, model_path.encode(), n_ctx)
 
         filename = os.path.basename(model_path)
         self.model_name = os.path.splitext(filename)[0]
@@ -319,7 +322,7 @@ class LLModel:
             raise ValueError("Text must not be None or empty")
 
         embedding_size = ctypes.c_size_t()
-        c_text = ctypes.c_char_p(text.encode('utf-8'))
+        c_text = ctypes.c_char_p(text.encode())
         embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
         embedding_array = [embedding_ptr[i] for i in range(embedding_size.value)]
         llmodel.llmodel_free_embedding(embedding_ptr)
@@ -364,7 +367,7 @@ class LLModel:
             prompt,
         )
 
-        prompt_bytes = prompt.encode("utf-8")
+        prompt_bytes = prompt.encode()
         prompt_ptr = ctypes.c_char_p(prompt_bytes)
 
         self._set_context(
@@ -392,10 +395,7 @@ class LLModel:
     def prompt_model_streaming(
         self, prompt: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
     ) -> Iterable[str]:
-        # Symbol to terminate from generator
-        TERMINATING_SYMBOL = object()
-
-        output_queue: Queue = Queue()
+        output_queue: Queue[str | Sentinel] = Queue()
 
         # Put response tokens into an output queue
         def _generator_callback_wrapper(callback: ResponseCallbackType) -> ResponseCallbackType:
@@ -412,7 +412,7 @@ class LLModel:
 
         def run_llmodel_prompt(prompt: str, callback: ResponseCallbackType, **kwargs):
             self.prompt_model(prompt, callback, **kwargs)
-            output_queue.put(TERMINATING_SYMBOL)
+            output_queue.put(Sentinel.TERMINATING_SYMBOL)
 
         # Kick off llmodel_prompt in separate thread so we can return generator
         # immediately
@@ -426,7 +426,7 @@ class LLModel:
         # Generator
         while True:
             response = output_queue.get()
-            if response is TERMINATING_SYMBOL:
+            if isinstance(response, Sentinel):
                 break
             yield response
 
@@ -449,7 +449,7 @@ class LLModel:
                 else: 
                     # beginning of a byte sequence
                     if len(self.buffer) > 0:
-                        decoded.append(self.buffer.decode('utf-8', 'replace'))
+                        decoded.append(self.buffer.decode(errors='replace'))
 
                         self.buffer.clear()
 
@@ -458,7 +458,7 @@ class LLModel:
 
                 if self.buff_expecting_cont_bytes <= 0: 
                     # received the whole sequence or an out of place continuation byte
-                    decoded.append(self.buffer.decode('utf-8', 'replace'))
+                    decoded.append(self.buffer.decode(errors='replace'))
 
                     self.buffer.clear()
                     self.buff_expecting_cont_bytes = 0

@@ -17,8 +17,8 @@ if(APPLE)
 endif()
 
 set(APP_VERSION_MAJOR 2)
-set(APP_VERSION_MINOR 5)
-set(APP_VERSION_PATCH 3)
+set(APP_VERSION_MINOR 6)
+set(APP_VERSION_PATCH 2)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -75,7 +75,9 @@ qt_add_executable(chat
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
     chatgpt.h chatgpt.cpp
     database.h database.cpp
+    embeddings.h embeddings.cpp
     download.h download.cpp
+    embllm.cpp embllm.h
     localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
     llm.h llm.cpp
     modellist.h modellist.cpp
@@ -90,6 +92,7 @@ qt_add_executable(chat
 qt_add_qml_module(chat
     URI gpt4all
     VERSION 1.0
+    NO_CACHEGEN
     QML_FILES
       main.qml
       qml/ChatDrawer.qml

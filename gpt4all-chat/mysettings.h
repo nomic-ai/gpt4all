@@ -1,6 +1,8 @@
 #ifndef MYSETTINGS_H
 #define MYSETTINGS_H
 
+#include <cstdint>
+
 #include <QObject>
 #include <QMutex>
 
@@ -59,6 +61,8 @@ public:
     Q_INVOKABLE void setModelPromptTemplate(const ModelInfo &m, const QString &t, bool force = false);
     QString modelSystemPrompt(const ModelInfo &m) const;
     Q_INVOKABLE void setModelSystemPrompt(const ModelInfo &m, const QString &p, bool force = false);
+    int modelContextLength(const ModelInfo &m) const;
+    Q_INVOKABLE void setModelContextLength(const ModelInfo &m, int s, bool force = false);
 
     // Application settings
     int threadCount() const;
@@ -79,6 +83,8 @@ public:
     void setForceMetal(bool b);
     QString device() const;
     void setDevice(const QString &u);
+    int32_t contextLength() const;
+    void setContextLength(int32_t value);
 
     // Release/Download settings
     QString lastVersionStarted() const;
@@ -114,6 +120,7 @@ Q_SIGNALS:
     void topKChanged(const ModelInfo &model);
     void maxLengthChanged(const ModelInfo &model);
     void promptBatchSizeChanged(const ModelInfo &model);
+    void contextLengthChanged(const ModelInfo &model);
     void repeatPenaltyChanged(const ModelInfo &model);
     void repeatPenaltyTokensChanged(const ModelInfo &model);
     void promptTemplateChanged(const ModelInfo &model);

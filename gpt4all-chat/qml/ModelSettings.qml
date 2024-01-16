@@ -350,12 +350,60 @@ MySettingsTab {
             columnSpacing: 10
 
             Label {
+                id: contextLengthLabel
+                visible: !root.currentModelInfo.isChatGPT
+                text: qsTr("Context Length:")
+                font.pixelSize: theme.fontSizeLarge
+                color: theme.textColor
+                Layout.row: 0
+                Layout.column: 0
+            }
+            MyTextField {
+                id: contextLengthField
+                visible: !root.currentModelInfo.isChatGPT
+                text: root.currentModelInfo.contextLength
+                color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
+                ToolTip.text: qsTr("Maximum combined prompt/response tokens before information is lost.\nUsing more context than the model was trained on will yield poor results.\nNOTE: Does not take effect until you RESTART GPT4All or SWITCH MODELS.")
+                ToolTip.visible: hovered
+                Layout.row: 0
+                Layout.column: 1
+                validator: IntValidator {
+                    bottom: 1
+                }
+                Connections {
+                    target: MySettings
+                    function onContextLengthChanged() {
+                        contextLengthField.text = root.currentModelInfo.contextLength;
+                    }
+                }
+                Connections {
+                    target: root
+                    function onCurrentModelInfoChanged() {
+                        contextLengthField.text = root.currentModelInfo.contextLength;
+                    }
+                }
+                onEditingFinished: {
+                    var val = parseInt(text)
+                    if (!isNaN(val)) {
+                        MySettings.setModelContextLength(root.currentModelInfo, val)
+                        focus = false
+                    } else {
+                        text = root.currentModelInfo.contextLength
+                    }
+                }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: contextLengthLabel.text
+                Accessible.description: ToolTip.text
+            }
+
+            Label {
                 id: tempLabel
                 text: qsTr("Temperature:")
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                Layout.row: 0
-                Layout.column: 0
+                Layout.row: 1
+                Layout.column: 2
             }
 
             MyTextField {
@@ -365,8 +413,8 @@ MySettingsTab {
                 font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens.\nNOTE: Higher temperature gives more creative but less predictable outputs.")
                 ToolTip.visible: hovered
-                Layout.row: 0
-                Layout.column: 1
+                Layout.row: 1
+                Layout.column: 3
                 validator: DoubleValidator {
                     locale: "C"
                 }
@@ -400,8 +448,8 @@ MySettingsTab {
                 text: qsTr("Top P:")
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                Layout.row: 0
-                Layout.column: 2
+                Layout.row: 2
+                Layout.column: 0
             }
             MyTextField {
                 id: topPField
@@ -410,8 +458,8 @@ MySettingsTab {
                 font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen.\nNOTE: Prevents choosing highly unlikely tokens, aka Nucleus Sampling")
                 ToolTip.visible: hovered
-                Layout.row: 0
-                Layout.column: 3
+                Layout.row: 2
+                Layout.column: 1
                 validator: DoubleValidator {
                     locale: "C"
                 }
@@ -446,8 +494,8 @@ MySettingsTab {
                 text: qsTr("Top K:")
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                Layout.row: 1
-                Layout.column: 0
+                Layout.row: 2
+                Layout.column: 2
             }
             MyTextField {
                 id: topKField
@@ -457,8 +505,8 @@ MySettingsTab {
                 font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Only the top K most likely tokens will be chosen from")
                 ToolTip.visible: hovered
-                Layout.row: 1
-                Layout.column: 1
+                Layout.row: 2
+                Layout.column: 3
                 validator: IntValidator {
                     bottom: 1
                 }
@@ -493,7 +541,7 @@ MySettingsTab {
                 text: qsTr("Max Length:")
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                Layout.row: 1
+                Layout.row: 0
                 Layout.column: 2
             }
             MyTextField {
@@ -504,7 +552,7 @@ MySettingsTab {
                 font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Maximum length of response in tokens")
                 ToolTip.visible: hovered
-                Layout.row: 1
+                Layout.row: 0
                 Layout.column: 3
                 validator: IntValidator {
                     bottom: 1
@@ -541,7 +589,7 @@ MySettingsTab {
                 text: qsTr("Prompt Batch Size:")
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
-                Layout.row: 2
+                Layout.row: 1
                 Layout.column: 0
             }
             MyTextField {
@@ -552,7 +600,7 @@ MySettingsTab {
                 font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Amount of prompt tokens to process at once.\nNOTE: Higher values can speed up reading prompts but will use more RAM")
                 ToolTip.visible: hovered
-                Layout.row: 2
+                Layout.row: 1
                 Layout.column: 1
                 validator: IntValidator {
                     bottom: 1
@@ -588,8 +636,8 @@ MySettingsTab {
                 text: qsTr("Repeat Penalty:")
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                Layout.row: 2
-                Layout.column: 2
+                Layout.row: 3
+                Layout.column: 0
             }
             MyTextField {
                 id: repeatPenaltyField
@@ -599,8 +647,8 @@ MySettingsTab {
                 font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Amount to penalize repetitiveness of the output")
                 ToolTip.visible: hovered
-                Layout.row: 2
-                Layout.column: 3
+                Layout.row: 3
+                Layout.column: 1
                 validator: DoubleValidator {
                     locale: "C"
                 }
@@ -636,7 +684,7 @@ MySettingsTab {
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
                 Layout.row: 3
-                Layout.column: 0
+                Layout.column: 2
             }
             MyTextField {
                 id: repeatPenaltyTokenField
@@ -647,7 +695,7 @@ MySettingsTab {
                 ToolTip.text: qsTr("How far back in output to apply repeat penalty")
                 ToolTip.visible: hovered
                 Layout.row: 3
-                Layout.column: 1
+                Layout.column: 3
                 validator: IntValidator {
                     bottom: 1
                 }

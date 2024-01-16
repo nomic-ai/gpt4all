@@ -39,6 +39,7 @@ struct ModelInfo {
     Q_PROPERTY(int topK READ topK WRITE setTopK)
     Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength)
     Q_PROPERTY(int promptBatchSize READ promptBatchSize WRITE setPromptBatchSize)
+    Q_PROPERTY(int contextLength READ contextLength WRITE setContextLength)
     Q_PROPERTY(double repeatPenalty READ repeatPenalty WRITE setRepeatPenalty)
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
     Q_PROPERTY(QString promptTemplate READ promptTemplate WRITE setPromptTemplate)
@@ -94,6 +95,8 @@ public:
     void setMaxLength(int l);
     int promptBatchSize() const;
     void setPromptBatchSize(int s);
+    int contextLength() const;
+    void setContextLength(int l);
     double repeatPenalty() const;
     void setRepeatPenalty(double p);
     int repeatPenaltyTokens() const;
@@ -112,6 +115,7 @@ private:
     int     m_topK                = 40;
     int     m_maxLength           = 4096;
     int     m_promptBatchSize     = 128;
+    int     m_contextLength       = 2048;
     double  m_repeatPenalty       = 1.18;
     int     m_repeatPenaltyTokens = 64;
     QString m_promptTemplate      = "### Human:\n%1\n### Assistant:\n";
@@ -119,6 +123,24 @@ private:
     friend class MySettings;
 };
 Q_DECLARE_METATYPE(ModelInfo)
+
+class EmbeddingModels : public QSortFilterProxyModel
+{
+    Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+public:
+    explicit EmbeddingModels(QObject *parent);
+    int count() const;
+
+    ModelInfo defaultModelInfo() const;
+
+Q_SIGNALS:
+    void countChanged();
+    void defaultModelIndexChanged();
+
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+};
 
 class InstalledModels : public QSortFilterProxyModel
 {
@@ -165,6 +187,8 @@ class ModelList : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(int defaultEmbeddingModelIndex READ defaultEmbeddingModelIndex NOTIFY defaultEmbeddingModelIndexChanged)
+    Q_PROPERTY(EmbeddingModels* embeddingModels READ embeddingModels NOTIFY embeddingModelsChanged)
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
@@ -207,6 +231,7 @@ public:
         TopKRole,
         MaxLengthRole,
         PromptBatchSizeRole,
+        ContextLengthRole,
         RepeatPenaltyRole,
         RepeatPenaltyTokensRole,
         PromptTemplateRole,
@@ -249,6 +274,7 @@ public:
         roles[TopKRole] = "topK";
         roles[MaxLengthRole] = "maxLength";
         roles[PromptBatchSizeRole] = "promptBatchSize";
+        roles[ContextLengthRole] = "contextLength";
         roles[RepeatPenaltyRole] = "repeatPenalty";
         roles[RepeatPenaltyTokensRole] = "repeatPenaltyTokens";
         roles[PromptTemplateRole] = "promptTemplate";
@@ -273,6 +299,7 @@ public:
     Q_INVOKABLE QString clone(const ModelInfo &model);
     Q_INVOKABLE void remove(const ModelInfo &model);
     ModelInfo defaultModelInfo() const;
+    int defaultEmbeddingModelIndex() const;
 
     void addModel(const QString &id);
     void changeId(const QString &oldId, const QString &newId);
@@ -280,6 +307,7 @@ public:
     const QList<ModelInfo> exportModelList() const;
     const QList<QString> userDefaultModelList() const;
 
+    EmbeddingModels *embeddingModels() const { return m_embeddingModels; }
     InstalledModels *installedModels() const { return m_installedModels; }
     DownloadableModels *downloadableModels() const { return m_downloadableModels; }
 
@@ -298,18 +326,21 @@ public:
     QString incompleteDownloadPath(const QString &modelFile);
     bool asyncModelRequestOngoing() const { return m_asyncModelRequestOngoing; }
 
+    void updateModelsFromDirectory();
+
 Q_SIGNALS:
     void countChanged();
+    void embeddingModelsChanged();
     void installedModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
     void asyncModelRequestOngoingChanged();
+    void defaultEmbeddingModelIndexChanged();
 
 private Q_SLOTS:
     void updateModelsFromJson();
     void updateModelsFromJsonAsync();
     void updateModelsFromSettings();
-    void updateModelsFromDirectory();
     void updateDataForSettings();
     void handleModelsJsonDownloadFinished();
     void handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code);
@@ -326,11 +357,11 @@ private:
 private:
     mutable QMutex m_mutex;
     QNetworkAccessManager m_networkManager;
+    EmbeddingModels *m_embeddingModels;
     InstalledModels *m_installedModels;
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;
     QHash<QString, ModelInfo*> m_modelMap;
-    QFileSystemWatcher *m_watcher;
     bool m_asyncModelRequestOngoing;
 
 private:

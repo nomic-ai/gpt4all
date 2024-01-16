@@ -325,6 +325,10 @@ Window {
         anchors.centerIn: parent
         width: Math.min(1280, window.width - (window.width * .1))
         height: window.height - (window.height * .1)
+        onDownloadClicked: {
+            downloadNewModels.showEmbeddingModels = true
+            downloadNewModels.open()
+        }
     }
 
     Button {
@@ -427,6 +431,10 @@ Window {
     CollectionsDialog {
         id: collectionsDialog
         anchors.centerIn: parent
+        onAddRemoveClicked: {
+            settingsDialog.pageToDisplay = 2;
+            settingsDialog.open();
+        }
     }
 
     MyToolButton {
@@ -652,6 +660,7 @@ Window {
         width: Math.min(600, 0.3 * window.width)
         height: window.height - y
         onDownloadClicked: {
+            downloadNewModels.showEmbeddingModels = false
             downloadNewModels.open()
         }
         onAboutClicked: {
@@ -818,11 +827,11 @@ Window {
                                     color: theme.textAccent
                                     text: {
                                         switch (currentChat.responseState) {
-                                        case Chat.ResponseStopped: return "response stopped ...";
-                                        case Chat.LocalDocsRetrieval: return "retrieving " + currentChat.collectionList.join(", ") + " ...";
-                                        case Chat.LocalDocsProcessing: return "processing " + currentChat.collectionList.join(", ") + " ...";
-                                        case Chat.PromptProcessing: return "processing ..."
-                                        case Chat.ResponseGeneration: return "generating response ...";
+                                        case Chat.ResponseStopped: return qsTr("response stopped ...");
+                                        case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: ") + currentChat.collectionList.join(", ") + " ...";
+                                        case Chat.LocalDocsProcessing: return qsTr("searching localdocs: ") + currentChat.collectionList.join(", ") + " ...";
+                                        case Chat.PromptProcessing: return qsTr("processing ...")
+                                        case Chat.ResponseGeneration: return qsTr("generating response ...");
                                         default: return ""; // handle unexpected values
                                         }
                                     }

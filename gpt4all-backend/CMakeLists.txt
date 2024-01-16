@@ -114,8 +114,6 @@ add_library(llmodel
     llmodel_c.h llmodel_c.cpp
     dlhandle.h
 )
-target_link_libraries(llmodel PRIVATE ggml-mainline-default)
-target_compile_definitions(llmodel PRIVATE GGML_BUILD_VARIANT="default")
 target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 set_target_properties(llmodel PROPERTIES

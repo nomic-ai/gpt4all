@@ -18,6 +18,7 @@ const {
     DEFAULT_MODEL_LIST_URL,
 } = require("./config.js");
 const { InferenceModel, EmbeddingModel } = require("./models.js");
+const assert = require("assert");
 
 /**
  * Loads a machine learning model with the specified name. The defacto way to create a model.
@@ -45,23 +46,17 @@ async function loadModel(modelName, options = {}) {
         verbose: loadOptions.verbose,
     });
 
-    const libSearchPaths = loadOptions.librariesPath.split(";");
+    assert.ok(typeof loadOptions.librariesPath === 'string');
+    const existingPaths = loadOptions.librariesPath
+        .split(";")
+        .filter(existsSync)
+        .join(';');
+    console.log("Passing these paths into runtime library search:", existingPaths)
 
-    let libPath = null;
-
-    for (const searchPath of libSearchPaths) {
-        if (existsSync(searchPath)) {
-            libPath = searchPath;
-            break;
-        }
-    }
-    if (!libPath) {
-        throw Error("Could not find a valid path from " + libSearchPaths);
-    }
     const llmOptions = {
         model_name: appendBinSuffixIfMissing(modelName),
         model_path: loadOptions.modelPath,
-        library_path: libPath,
+        library_path: existingPaths,
         device: loadOptions.device,
     };
 

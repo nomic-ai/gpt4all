@@ -9,8 +9,11 @@ Item {
     property string title: ""
     property Item contentItem: null
     property Item advancedSettings: null
+    property bool showAdvancedSettingsButton: true
+    property bool showRestoreDefaultsButton: true
     property var openFolderDialog
     signal restoreDefaultsClicked
+    signal downloadClicked
 
     onContentItemChanged: function() {
         if (contentItem) {
@@ -64,6 +67,7 @@ Item {
                 MyButton {
                     id: restoreDefaultsButton
                     anchors.left: parent.left
+                    visible: showRestoreDefaultsButton
                     width: implicitWidth
                     text: qsTr("Restore Defaults")
                     font.pixelSize: theme.fontSizeLarge
@@ -77,7 +81,7 @@ Item {
                 MyButton {
                     id: advancedSettingsButton
                     anchors.right: parent.right
-                    visible: root.advancedSettings
+                    visible: root.advancedSettings && showAdvancedSettingsButton
                     width: implicitWidth
                     text: !advancedInner.visible ? qsTr("Advanced Settings") : qsTr("Hide Advanced Settings")
                     font.pixelSize: theme.fontSizeLarge

@@ -15,6 +15,15 @@ class Dlhandle;
 class LLModel {
 public:
     using Token = int32_t;
+
+    struct GPUDevice {
+        int index = 0;
+        int type = 0;
+        size_t heapSize = 0;
+        std::string name;
+        std::string vendor;
+    };
+
     class Implementation {
     public:
         Implementation(Dlhandle&&);
@@ -28,15 +37,17 @@ public:
         static bool isImplementation(const Dlhandle&);
         static const std::vector<Implementation>& implementationList();
         static const Implementation *implementation(const char *fname, const std::string& buildVariant);
-        static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto");
+        static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto", int n_ctx = 2048);
+        static std::vector<GPUDevice> availableGPUDevices();
         static void setImplementationsSearchPath(const std::string& path);
         static const std::string& implementationsSearchPath();
 
     private:
+        static LLModel *constructDefaultLlama();
+
         bool (*m_magicMatch)(const char *fname);
         LLModel *(*m_construct)();
 
-    private:
         std::string_view m_modelType;
         std::string_view m_buildVariant;
         Dlhandle *m_dlhandle;
@@ -54,16 +65,8 @@ public:
         int32_t n_batch = 9;
         float   repeat_penalty = 1.10f;
         int32_t repeat_last_n = 64;     // last n tokens to penalize
-        float   contextErase = 0.75f;   // percent of context to erase if we exceed the context
-            // window
-    };
-
-    struct GPUDevice {
-        int index = 0;
-        int type = 0;
-        size_t heapSize = 0;
-        std::string name;
-        std::string vendor;
+        float   contextErase = 0.75f;   // percent of context to erase if we exceed the context window
+        int32_t n_last_batch_tokens = 0;
     };
 
     explicit LLModel() {}
@@ -71,9 +74,9 @@ public:
 
     virtual bool supportsEmbedding() const = 0;
     virtual bool supportsCompletion() const = 0;
-    virtual bool loadModel(const std::string &modelPath) = 0;
+    virtual bool loadModel(const std::string &modelPath, int n_ctx) = 0;
     virtual bool isModelLoaded() const = 0;
-    virtual size_t requiredMem(const std::string &modelPath) = 0;
+    virtual size_t requiredMem(const std::string &modelPath, int n_ctx) = 0;
     virtual size_t stateSize() const { return 0; }
     virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
     virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
@@ -106,7 +109,6 @@ public:
     virtual bool initializeGPUDevice(int /*device*/) { return false; }
     virtual bool hasGPUDevice() { return false; }
     virtual bool usingGPUDevice() { return false; }
-    static std::vector<GPUDevice> availableGPUDevices();
 
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of

@@ -10,14 +10,10 @@ Chat::Chat(QObject *parent)
     , m_id(Network::globalInstance()->generateUniqueId())
     , m_name(tr("New Chat"))
     , m_chatModel(new ChatModel(this))
-    , m_responseInProgress(false)
     , m_responseState(Chat::ResponseStopped)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
     , m_llmodel(new ChatLLM(this))
-    , m_isServer(false)
-    , m_shouldDeleteLater(false)
-    , m_isModelLoaded(false)
-    , m_shouldLoadModelWhenInstalled(false)
+    , m_collectionModel(new LocalDocsCollectionsModel(this))
 {
     connectLLM();
 }
@@ -35,6 +31,7 @@ Chat::Chat(bool isServer, QObject *parent)
     , m_shouldDeleteLater(false)
     , m_isModelLoaded(false)
     , m_shouldLoadModelWhenInstalled(false)
+    , m_collectionModel(new LocalDocsCollectionsModel(this))
 {
     connectLLM();
 }
@@ -71,6 +68,7 @@ void Chat::connectLLM()
     connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
     connect(this, &Chat::processSystemPromptRequested, m_llmodel, &ChatLLM::processSystemPrompt, Qt::QueuedConnection);
 
+    connect(this, &Chat::collectionListChanged, m_collectionModel, &LocalDocsCollectionsModel::setCollections);
     connect(ModelList::globalInstance()->installedModels(), &InstalledModels::countChanged,
         this, &Chat::handleModelInstalled, Qt::QueuedConnection);
 }
@@ -432,8 +430,7 @@ bool Chat::deserialize(QDataStream &stream, int version)
     if (!m_chatModel->deserialize(stream, version))
         return false;
 
-    if (!deserializeKV || discardKV)
-        m_llmodel->setStateFromText(m_chatModel->text());
+    m_llmodel->setStateFromText(m_chatModel->text());
 
     emit chatModelChanged();
     return stream.status() == QDataStream::Ok;

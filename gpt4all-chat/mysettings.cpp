@@ -64,7 +64,7 @@ MySettings::MySettings()
 {
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
-    std::vector<LLModel::GPUDevice> devices = LLModel::availableGPUDevices();
+    std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
     QVector<QString> deviceList{ "Auto" };
     for (LLModel::GPUDevice &d : devices)
         deviceList << QString::fromStdString(d.name);
@@ -90,6 +90,7 @@ void MySettings::restoreModelDefaults(const ModelInfo &model)
     setModelTopK(model, model.m_topK);;
     setModelMaxLength(model, model.m_maxLength);
     setModelPromptBatchSize(model, model.m_promptBatchSize);
+    setModelContextLength(model, model.m_contextLength);
     setModelRepeatPenalty(model, model.m_repeatPenalty);
     setModelRepeatPenaltyTokens(model, model.m_repeatPenaltyTokens);
     setModelPromptTemplate(model, model.m_promptTemplate);
@@ -278,6 +279,28 @@ void MySettings::setModelPromptBatchSize(const ModelInfo &m, int s, bool force)
     setting.sync();
     if (!force)
         emit promptBatchSizeChanged(m);
+}
+
+int MySettings::modelContextLength(const ModelInfo &m) const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value(QString("model-%1").arg(m.id()) + "/contextLength", m.m_contextLength).toInt();
+}
+
+void MySettings::setModelContextLength(const ModelInfo &m, int l, bool force)
+{
+    if (modelContextLength(m) == l && !force)
+        return;
+
+    QSettings setting;
+    if (m.m_contextLength == l && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/contextLength");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/contextLength", l);
+    setting.sync();
+    if (!force)
+        emit contextLengthChanged(m);
 }
 
 double MySettings::modelRepeatPenalty(const ModelInfo &m) const

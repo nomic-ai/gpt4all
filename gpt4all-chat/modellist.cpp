@@ -8,6 +8,8 @@
 
 //#define USE_LOCAL_MODELSJSON
 
+#define DEFAULT_EMBEDDING_MODEL "all-MiniLM-L6-v2-f16.gguf"
+
 QString ModelInfo::id() const
 {
     return m_id;
@@ -95,6 +97,17 @@ void ModelInfo::setPromptBatchSize(int s)
     m_promptBatchSize = s;
 }
 
+int ModelInfo::contextLength() const
+{
+    return MySettings::globalInstance()->modelContextLength(*this);
+}
+
+void ModelInfo::setContextLength(int l)
+{
+    if (isClone) MySettings::globalInstance()->setModelContextLength(*this, l, isClone /*force*/);
+    m_contextLength = l;
+}
+
 double ModelInfo::repeatPenalty() const
 {
     return MySettings::globalInstance()->modelRepeatPenalty(*this);
@@ -139,6 +152,50 @@ void ModelInfo::setSystemPrompt(const QString &p)
     m_systemPrompt = p;
 }
 
+EmbeddingModels::EmbeddingModels(QObject *parent)
+    : QSortFilterProxyModel(parent)
+{
+    connect(this, &EmbeddingModels::rowsInserted, this, &EmbeddingModels::countChanged);
+    connect(this, &EmbeddingModels::rowsRemoved, this, &EmbeddingModels::countChanged);
+    connect(this, &EmbeddingModels::modelReset, this, &EmbeddingModels::countChanged);
+    connect(this, &EmbeddingModels::layoutChanged, this, &EmbeddingModels::countChanged);
+}
+
+bool EmbeddingModels::filterAcceptsRow(int sourceRow,
+                                       const QModelIndex &sourceParent) const
+{
+    QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+    bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
+    bool isEmbedding = sourceModel()->data(index, ModelList::FilenameRole).toString() == DEFAULT_EMBEDDING_MODEL;
+    return isInstalled && isEmbedding;
+}
+
+int EmbeddingModels::count() const
+{
+    return rowCount();
+}
+
+ModelInfo EmbeddingModels::defaultModelInfo() const
+{
+    if (!sourceModel())
+        return ModelInfo();
+
+    const ModelList *sourceListModel = qobject_cast<const ModelList*>(sourceModel());
+    if (!sourceListModel)
+        return ModelInfo();
+
+    const int rows = sourceListModel->rowCount();
+    for (int i = 0; i < rows; ++i) {
+        QModelIndex sourceIndex = sourceListModel->index(i, 0);
+        if (filterAcceptsRow(i, sourceIndex.parent())) {
+            const QString id = sourceListModel->data(sourceIndex, ModelList::IdRole).toString();
+            return sourceListModel->modelInfo(id);
+        }
+    }
+
+    return ModelInfo();
+}
+
 InstalledModels::InstalledModels(QObject *parent)
     : QSortFilterProxyModel(parent)
 {
@@ -153,7 +210,8 @@ bool InstalledModels::filterAcceptsRow(int sourceRow,
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
-    return isInstalled;
+    bool showInGUI = !sourceModel()->data(index, ModelList::DisableGUIRole).toBool();
+    return isInstalled && showInGUI;
 }
 
 int InstalledModels::count() const
@@ -178,8 +236,7 @@ bool DownloadableModels::filterAcceptsRow(int sourceRow,
     bool withinLimit = sourceRow < (m_expanded ? sourceModel()->rowCount() : m_limit);
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool isDownloadable = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
-    bool showInGUI = !sourceModel()->data(index, ModelList::DisableGUIRole).toBool();
-    return withinLimit && isDownloadable && showInGUI;
+    return withinLimit && isDownloadable;
 }
 
 int DownloadableModels::count() const
@@ -210,17 +267,15 @@ ModelList *ModelList::globalInstance()
 
 ModelList::ModelList()
     : QAbstractListModel(nullptr)
+    , m_embeddingModels(new EmbeddingModels(this))
     , m_installedModels(new InstalledModels(this))
     , m_downloadableModels(new DownloadableModels(this))
     , m_asyncModelRequestOngoing(false)
 {
+    m_embeddingModels->setSourceModel(this);
     m_installedModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
-    m_watcher = new QFileSystemWatcher(this);
-    const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
-    m_watcher->addPath(exePath);
-    m_watcher->addPath(MySettings::globalInstance()->modelPath());
-    connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &ModelList::updateModelsFromDirectory);
+
     connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromDirectory);
     connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromJson);
     connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromSettings);
@@ -230,6 +285,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::topKChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::maxLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::promptBatchSizeChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::contextLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
@@ -278,6 +334,17 @@ const QList<QString> ModelList::userDefaultModelList() const
     else
         models.prepend(defaultId);
     return models;
+}
+
+int ModelList::defaultEmbeddingModelIndex() const
+{
+    QMutexLocker locker(&m_mutex);
+    for (int i = 0; i < m_models.size(); ++i) {
+        const ModelInfo *info = m_models.at(i);
+        const bool isEmbedding = info->filename() == DEFAULT_EMBEDDING_MODEL;
+        if (isEmbedding) return i;
+    }
+    return -1;
 }
 
 ModelInfo ModelList::defaultModelInfo() const
@@ -470,6 +537,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->maxLength();
         case PromptBatchSizeRole:
             return info->promptBatchSize();
+        case ContextLengthRole:
+            return info->contextLength();
         case RepeatPenaltyRole:
             return info->repeatPenalty();
         case RepeatPenaltyTokensRole:
@@ -685,6 +754,7 @@ QString ModelList::clone(const ModelInfo &model)
     updateData(id, ModelList::TopKRole, model.topK());
     updateData(id, ModelList::MaxLengthRole, model.maxLength());
     updateData(id, ModelList::PromptBatchSizeRole, model.promptBatchSize());
+    updateData(id, ModelList::ContextLengthRole, model.contextLength());
     updateData(id, ModelList::RepeatPenaltyRole, model.repeatPenalty());
     updateData(id, ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens());
     updateData(id, ModelList::PromptTemplateRole, model.promptTemplate());
@@ -1051,6 +1121,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             updateData(id, ModelList::MaxLengthRole, obj["maxLength"].toInt());
         if (obj.contains("promptBatchSize"))
             updateData(id, ModelList::PromptBatchSizeRole, obj["promptBatchSize"].toInt());
+        if (obj.contains("contextLength"))
+            updateData(id, ModelList::ContextLengthRole, obj["contextLength"].toInt());
         if (obj.contains("repeatPenalty"))
             updateData(id, ModelList::RepeatPenaltyRole, obj["repeatPenalty"].toDouble());
         if (obj.contains("repeatPenaltyTokens"))
@@ -1143,6 +1215,8 @@ void ModelList::updateModelsFromSettings()
         const int maxLength = settings.value(g + "/maxLength").toInt();
         Q_ASSERT(settings.contains(g + "/promptBatchSize"));
         const int promptBatchSize = settings.value(g + "/promptBatchSize").toInt();
+        Q_ASSERT(settings.contains(g + "/contextLength"));
+        const int contextLength = settings.value(g + "/contextLength").toInt();
         Q_ASSERT(settings.contains(g + "/repeatPenalty"));
         const double repeatPenalty = settings.value(g + "/repeatPenalty").toDouble();
         Q_ASSERT(settings.contains(g + "/repeatPenaltyTokens"));
@@ -1161,6 +1235,7 @@ void ModelList::updateModelsFromSettings()
         updateData(id, ModelList::TopKRole, topK);
         updateData(id, ModelList::MaxLengthRole, maxLength);
         updateData(id, ModelList::PromptBatchSizeRole, promptBatchSize);
+        updateData(id, ModelList::ContextLengthRole, contextLength);
         updateData(id, ModelList::RepeatPenaltyRole, repeatPenalty);
         updateData(id, ModelList::RepeatPenaltyTokensRole, repeatPenaltyTokens);
         updateData(id, ModelList::PromptTemplateRole, promptTemplate);
