@@ -37,7 +37,7 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         _logger.LogInformation("Creating model path={ModelPath}", modelPath);
         IntPtr error;
         var handle = NativeMethods.llmodel_model_create2(modelPath, "auto", out error);
-        if (error != (IntPtr)0)
+        if (error != IntPtr.Zero)
         {
             throw new Exception(Marshal.PtrToStringAnsi(error));
         }
