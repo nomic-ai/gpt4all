@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
 using Gpt4All.Bindings;
 using Gpt4All.LibraryLoader;
+using System.Runtime.InteropServices;
 
 namespace Gpt4All;
 
@@ -33,10 +34,13 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
 
     private IGpt4AllModel CreateModel(string modelPath)
     {
-        var modelType_ = ModelFileUtils.GetModelTypeFromModelFileHeader(modelPath);
-        _logger.LogInformation("Creating model path={ModelPath} type={ModelType}", modelPath, modelType_);
+        _logger.LogInformation("Creating model path={ModelPath}", modelPath);
         IntPtr error;
         var handle = NativeMethods.llmodel_model_create2(modelPath, "auto", out error);
+        if (error != IntPtr.Zero)
+        {
+            throw new Exception(Marshal.PtrToStringAnsi(error));
+        }
         _logger.LogDebug("Model created handle=0x{ModelHandle:X8}", handle);
         _logger.LogInformation("Model loading started");
         var loadedSuccessfully = NativeMethods.llmodel_loadModel(handle, modelPath, 2048);
@@ -47,7 +51,7 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         }
 
         var logger = _loggerFactory.CreateLogger<LLModel>();
-        var underlyingModel = LLModel.Create(handle, modelType_, logger: logger);
+        var underlyingModel = LLModel.Create(handle, logger: logger);
 
         Debug.Assert(underlyingModel.IsLoaded());
 

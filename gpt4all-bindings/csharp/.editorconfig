@@ -41,6 +41,8 @@ insert_final_newline = true
 
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity = error
+dotnet_diagnostic.CS1573.severity = suggestion
+dotnet_diagnostic.CS1591.severity = suggestion
 
 # Sort using and Import directives with System.* appearing first
 dotnet_sort_system_directives_first = true
