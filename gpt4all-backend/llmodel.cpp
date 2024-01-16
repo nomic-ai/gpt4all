@@ -192,7 +192,7 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
     return fres;
 }
 
-LLModel *LLModel::Implementation::constructCpuLlama() {
+LLModel *LLModel::Implementation::constructDefaultLlama() {
     const LLModel::Implementation *impl = nullptr;
     for (const auto &i : implementationList()) {
         if (i.m_buildVariant == "metal" || i.m_modelType != "LLaMA") continue;
@@ -208,8 +208,8 @@ LLModel *LLModel::Implementation::constructCpuLlama() {
 }
 
 std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices() {
-    static LLModel *cpuLlama = LLModel::Implementation::constructCpuLlama(); // (memory leak)
-    if (cpuLlama) { return cpuLlama->availableGPUDevices(0); }
+    static LLModel *llama = LLModel::Implementation::constructDefaultLlama(); // (memory leak)
+    if (llama) { return llama->availableGPUDevices(0); }
     return {};
 }
 
