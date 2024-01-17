@@ -5,6 +5,9 @@ orbs:
   node: circleci/node@5.1
 
 parameters:
+  run-all-workflows:
+    type: boolean
+    default: false
   run-default-workflow:
     type: boolean
     default: false
