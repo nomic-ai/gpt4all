@@ -34,8 +34,9 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
   Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo& info) 
   {
     auto env = info.Env();
+    auto nCtx = info[0].As<Napi::Number>().Int32Value();
     int num_devices = 0;
-    auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str());
+    auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str(),nCtx);
     llmodel_gpu_device* all_devices = llmodel_available_gpu_devices(GetInference(), mem_size, &num_devices);
     if(all_devices == nullptr) {
         Napi::Error::New(
@@ -113,6 +114,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
                 library_path = ".",
                 model_name, 
                 device;
+    int nCtx = 0;
     if(info[0].IsString()) {
         model_path = info[0].As<Napi::String>().Utf8Value();
         full_weight_path = model_path.string();
@@ -132,6 +134,10 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
             library_path = ".";
         }
         device = config_object.Get("device").As<Napi::String>();
+        if(device != "cpu" && !(config_object.Has("nCtx") && config_object.Get("nCtx").IsNumber())){
+          throw Napi::Error::New(env,"nCtx is a required option when creating a model on the gpu");
+        }
+        nCtx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
     }
     llmodel_set_implementation_search_path(library_path.c_str());
     const char* e;
@@ -148,7 +154,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
        return;
     }
     if(device != "cpu") {
-        size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str());
+        size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str(),nCtx);
         std::cout << "Initiating GPU\n";
 
         auto success = llmodel_gpu_init_gpu_device_by_string(GetInference(), mem, device.c_str());

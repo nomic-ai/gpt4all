@@ -184,10 +184,11 @@ declare class LLModel {
     hasGpuDevice(): boolean
     /**
       * GPUs that are usable for this LLModel
+      * @param nCtx Maximum size of context window
       * @throws if hasGpuDevice returns false (i think)
       * @returns 
       */
-    listGpu() : GpuDevice[]
+    listGpu(nCtx: number) : GpuDevice[]
 
     /**
       * delete and cleanup the native model
@@ -232,6 +233,8 @@ interface LoadModelOptions {
        model.
     */ 
     device?: string;
+    // The Maximum window size of this model
+    nCtx?: number;
 }
 
 interface InferenceModelOptions extends LoadModelOptions {
