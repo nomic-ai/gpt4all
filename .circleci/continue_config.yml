@@ -5,6 +5,9 @@ orbs:
   node: circleci/node@5.1
 
 parameters:
+  run-all-workflows:
+    type: boolean
+    default: false
   run-default-workflow:
     type: boolean
     default: false
@@ -1011,11 +1014,17 @@ jobs:
 workflows:
   version: 2
   default:
-    when: << pipeline.parameters.run-default-workflow >>
+    when:
+      or:
+       - << pipeline.parameters.run-all-workflows >>
+       - << pipeline.parameters.run-default-workflow >>
     jobs:
       - default-job
   build-chat-offline-installers:
-    when: << pipeline.parameters.run-chat-workflow >>
+    when:
+      or:
+        - << pipeline.parameters.run-all-workflows >>
+        - << pipeline.parameters.run-chat-workflow >>
     jobs:
       - hold:
           type: approval
@@ -1029,7 +1038,10 @@ workflows:
           requires:
             - hold
   build-and-test-gpt4all-chat:
-    when: << pipeline.parameters.run-chat-workflow >>
+    when:
+      or:
+        - << pipeline.parameters.run-all-workflows >>
+        - << pipeline.parameters.run-chat-workflow >>
     jobs:
       - hold:
           type: approval
@@ -1043,7 +1055,10 @@ workflows:
           requires:
             - hold
   deploy-docs:
-    when: << pipeline.parameters.run-python-workflow >>
+    when:
+      or:
+        - << pipeline.parameters.run-all-workflows >>
+        - << pipeline.parameters.run-python-workflow >>
     jobs:
       - build-ts-docs:
           filters:
@@ -1056,7 +1071,10 @@ workflows:
               only:
                 - main
   build-py-deploy:
-    when: << pipeline.parameters.run-python-workflow >>
+    when:
+      or:
+        - << pipeline.parameters.run-all-workflows >>
+        - << pipeline.parameters.run-python-workflow >>
     jobs:
       - pypi-hold:
           type: approval
@@ -1091,10 +1109,11 @@ workflows:
             - build-py-macos
   build-bindings:
     when: 
-        or:
-         - << pipeline.parameters.run-python-workflow >>
-         - << pipeline.parameters.run-csharp-workflow >>
-         - <<   pipeline.parameters.run-ts-workflow   >>
+      or:
+       - << pipeline.parameters.run-all-workflows >>
+       - << pipeline.parameters.run-python-workflow >>
+       - << pipeline.parameters.run-csharp-workflow >>
+       - << pipeline.parameters.run-ts-workflow >>
     jobs:
       - hold:
           type: approval
