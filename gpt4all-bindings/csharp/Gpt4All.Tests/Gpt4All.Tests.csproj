@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
 
         <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

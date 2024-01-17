@@ -29,7 +29,7 @@
 #include <ggml.h>
 
 #ifdef GGML_USE_KOMPUTE
-#include "ggml-vulkan.h"
+#include "ggml-kompute.h"
 #endif
 
 namespace {
@@ -58,7 +58,7 @@ struct gpt_params {
 
     std::string prompt = "";
 
-    bool memory_f16        = true;  // use f16 instead of f32 for memory kv
+    enum ggml_type kv_type = GGML_TYPE_F16; // use f16 instead of f32 for memory kv
 
     bool use_mmap          = true;  // use mmap for faster loads
     bool use_mlock         = false; // use mlock to keep model in memory
@@ -199,9 +199,10 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx)
 
     d_ptr->ctx_params = llama_context_default_params();
 
-    d_ptr->ctx_params.n_ctx  = n_ctx;
-    d_ptr->ctx_params.seed   = params.seed;
-    d_ptr->ctx_params.f16_kv = params.memory_f16;
+    d_ptr->ctx_params.n_ctx   = n_ctx;
+    d_ptr->ctx_params.seed    = params.seed;
+    d_ptr->ctx_params.type_k  = params.kv_type;
+    d_ptr->ctx_params.type_v  = params.kv_type;
 
     // The new batch API provides space for n_vocab*n_tokens logits. Tell llama.cpp early
     // that we want this many logits so the state serializes consistently.
@@ -332,7 +333,7 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
 }
 
 #if defined(GGML_USE_KOMPUTE)
-#include "ggml-vulkan.h"
+#include "ggml-kompute.h"
 #endif
 
 std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired)
