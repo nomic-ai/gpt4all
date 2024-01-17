@@ -42,16 +42,12 @@ public record ModelRecalculatingEventArgs(bool IsRecalculating);
 public class LLModel : ILLModel
 {
     protected readonly IntPtr _handle;
-    private readonly ModelType _modelType;
     private readonly ILogger _logger;
     private bool _disposed;
 
-    public ModelType ModelType => _modelType;
-
-    internal LLModel(IntPtr handle, ModelType modelType, ILogger? logger = null)
+    internal LLModel(IntPtr handle, ILogger? logger = null)
     {
         _handle = handle;
-        _modelType = modelType;
         _logger = logger ?? NullLogger.Instance;
     }
 
@@ -59,10 +55,9 @@ public class LLModel : ILLModel
     /// Create a new model from a pointer
     /// </summary>
     /// <param name="handle">Pointer to underlying model</param>
-    /// <param name="modelType">The model type</param>
-    public static LLModel Create(IntPtr handle, ModelType modelType, ILogger? logger = null)
+    public static LLModel Create(IntPtr handle, ILogger? logger = null)
     {
-        return new LLModel(handle, modelType, logger: logger);
+        return new LLModel(handle, logger: logger);
     }
 
     /// <summary>
@@ -188,7 +183,7 @@ public class LLModel : ILLModel
     /// <returns>true if the model was loaded successfully, false otherwise.</returns>
     public bool Load(string modelPath)
     {
-        return NativeMethods.llmodel_loadModel(_handle, modelPath);
+        return NativeMethods.llmodel_loadModel(_handle, modelPath, 2048);
     }
 
     protected void Destroy()
@@ -204,12 +199,7 @@ public class LLModel : ILLModel
             // dispose managed state
         }
 
-        switch (_modelType)
-        {
-            default:
-                Destroy();
-                break;
-        }
+        Destroy();
 
         _disposed = true;
     }

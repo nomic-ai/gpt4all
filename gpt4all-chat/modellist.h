@@ -39,6 +39,7 @@ struct ModelInfo {
     Q_PROPERTY(int topK READ topK WRITE setTopK)
     Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength)
     Q_PROPERTY(int promptBatchSize READ promptBatchSize WRITE setPromptBatchSize)
+    Q_PROPERTY(int contextLength READ contextLength WRITE setContextLength)
     Q_PROPERTY(double repeatPenalty READ repeatPenalty WRITE setRepeatPenalty)
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
     Q_PROPERTY(QString promptTemplate READ promptTemplate WRITE setPromptTemplate)
@@ -94,6 +95,8 @@ public:
     void setMaxLength(int l);
     int promptBatchSize() const;
     void setPromptBatchSize(int s);
+    int contextLength() const;
+    void setContextLength(int l);
     double repeatPenalty() const;
     void setRepeatPenalty(double p);
     int repeatPenaltyTokens() const;
@@ -112,6 +115,7 @@ private:
     int     m_topK                = 40;
     int     m_maxLength           = 4096;
     int     m_promptBatchSize     = 128;
+    int     m_contextLength       = 2048;
     double  m_repeatPenalty       = 1.18;
     int     m_repeatPenaltyTokens = 64;
     QString m_promptTemplate      = "### Human:\n%1\n### Assistant:\n";
@@ -227,6 +231,7 @@ public:
         TopKRole,
         MaxLengthRole,
         PromptBatchSizeRole,
+        ContextLengthRole,
         RepeatPenaltyRole,
         RepeatPenaltyTokensRole,
         PromptTemplateRole,
@@ -269,6 +274,7 @@ public:
         roles[TopKRole] = "topK";
         roles[MaxLengthRole] = "maxLength";
         roles[PromptBatchSizeRole] = "promptBatchSize";
+        roles[ContextLengthRole] = "contextLength";
         roles[RepeatPenaltyRole] = "repeatPenalty";
         roles[RepeatPenaltyTokensRole] = "repeatPenaltyTokens";
         roles[PromptTemplateRole] = "promptTemplate";

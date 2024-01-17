@@ -47,16 +47,16 @@ void llmodel_model_destroy(llmodel_model model) {
     delete reinterpret_cast<LLModelWrapper*>(model);
 }
 
-size_t llmodel_required_mem(llmodel_model model, const char *model_path)
+size_t llmodel_required_mem(llmodel_model model, const char *model_path, int n_ctx)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
-    return wrapper->llModel->requiredMem(model_path);
+    return wrapper->llModel->requiredMem(model_path, n_ctx);
 }
 
-bool llmodel_loadModel(llmodel_model model, const char *model_path)
+bool llmodel_loadModel(llmodel_model model, const char *model_path, int n_ctx)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
-    return wrapper->llModel->loadModel(model_path);
+    return wrapper->llModel->loadModel(model_path, n_ctx);
 }
 
 bool llmodel_isModelLoaded(llmodel_model model)

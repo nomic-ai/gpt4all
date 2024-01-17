@@ -13,8 +13,8 @@ public:
     Q_INVOKABLE bool compatHardware() const { return m_compatHardware; }
 
     Q_INVOKABLE bool checkForUpdates() const;
-    Q_INVOKABLE bool directoryExists(const QString &path) const;
-    Q_INVOKABLE bool fileExists(const QString &path) const;
+    Q_INVOKABLE static bool directoryExists(const QString &path);
+    Q_INVOKABLE static bool fileExists(const QString &path);
     Q_INVOKABLE qint64 systemTotalRAMInGB() const;
     Q_INVOKABLE QString systemTotalRAMInGBString() const;
 

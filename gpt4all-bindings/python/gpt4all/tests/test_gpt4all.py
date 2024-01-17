@@ -117,7 +117,7 @@ def test_empty_embedding():
 def test_download_model(tmp_path: Path):
     import gpt4all.gpt4all
     old_default_dir = gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY
-    gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY = tmp_path  # temporary pytest directory to ensure a download happens
+    gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY = str(tmp_path)  # temporary pytest directory to ensure a download happens
     try:
         model = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin')
         model_path = tmp_path / model.config['filename']

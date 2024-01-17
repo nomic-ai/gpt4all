@@ -1,16 +1,19 @@
 #include "llm.h"
 #include "../gpt4all-backend/sysinfo.h"
-#include "../gpt4all-backend/llmodel.h"
-#include "network.h"
 
 #include <QCoreApplication>
+#include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QProcess>
 #include <QResource>
 #include <QSettings>
-#include <QDesktopServices>
+#include <QUrl>
 #include <fstream>
+
+#ifndef GPT4ALL_OFFLINE_INSTALLER
+#include "network.h"
+#endif
 
 class MyLLM: public LLM { };
 Q_GLOBAL_STATIC(MyLLM, llmInstance)
@@ -23,20 +26,6 @@ LLM::LLM()
     : QObject{nullptr}
     , m_compatHardware(true)
 {
-    QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
-    const QString libDir = QCoreApplication::applicationDirPath() + "/../lib/";
-    if (directoryExists(libDir))
-        llmodelSearchPaths += ";" + libDir;
-#if defined(Q_OS_MAC)
-    const QString binDir = QCoreApplication::applicationDirPath() + "/../../../";
-    if (directoryExists(binDir))
-        llmodelSearchPaths += ";" + binDir;
-    const QString frameworksDir = QCoreApplication::applicationDirPath() + "/../Frameworks/";
-    if (directoryExists(frameworksDir))
-        llmodelSearchPaths += ";" + frameworksDir;
-#endif
-    LLModel::Implementation::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
-
 #if defined(__x86_64__)
     #ifndef _MSC_VER
         const bool minimal(__builtin_cpu_supports("avx"));
@@ -86,7 +75,7 @@ bool LLM::checkForUpdates() const
     #endif
 }
 
-bool LLM::directoryExists(const QString &path) const
+bool LLM::directoryExists(const QString &path)
 {
     const QUrl url(path);
     const QString localFilePath = url.isLocalFile() ? url.toLocalFile() : path;
@@ -94,7 +83,7 @@ bool LLM::directoryExists(const QString &path) const
     return info.exists() && info.isDir();
 }
 
-bool LLM::fileExists(const QString &path) const
+bool LLM::fileExists(const QString &path)
 {
     const QUrl url(path);
     const QString localFilePath = url.isLocalFile() ? url.toLocalFile() : path;

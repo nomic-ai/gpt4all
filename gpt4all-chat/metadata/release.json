@@ -617,5 +617,25 @@
 * Jared Van Bortel (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.6.1",
+    "notes":
+"
+* Update to newer llama.cpp
+* Implemented configurable context length
+* Bugfixes for localdocs
+* Bugfixes for serialization to disk
+* Bugfixes for AVX
+* Bugfixes for Windows builds
+* Bugfixes for context retention and clearing
+* Add a button to collections dialog
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]
