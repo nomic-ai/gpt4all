@@ -63,7 +63,10 @@ gguf_writer = gguf.GGUFWriter(fname_out, gguf.MODEL_ARCH_NAMES[ARCH])
 
 print("gguf: get model metadata")
 
-config = GPTJConfig(dir_model)
+with open(dir_model / "config.json", "r") as conffile:
+    json_config = json.load(conffile)
+
+config = GPTJConfig(**json_config)
 
 block_count = config.n_layer
 gguf_writer.add_name("GPT-J")
