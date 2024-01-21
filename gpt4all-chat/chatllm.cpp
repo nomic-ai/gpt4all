@@ -794,7 +794,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
         stream << responseLogits;
     }
     stream << m_ctx.n_past;
-    if (version >= 6) {
+    if (version >= 7) {
         stream << m_ctx.n_ctx;
     }
     stream << quint64(m_ctx.logits.size());
@@ -846,7 +846,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
     stream >> n_past;
     if (!discardKV) m_ctx.n_past = n_past;
 
-    if (version >= 6) {
+    if (version >= 7) {
         uint32_t n_ctx;
         stream >> n_ctx;
         if (!discardKV) m_ctx.n_ctx = n_ctx;
