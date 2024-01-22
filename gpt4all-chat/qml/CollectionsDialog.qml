@@ -94,11 +94,13 @@ MyDialog {
                     anchors.right: parent.right
                     anchors.margins: 20
                     anchors.leftMargin: 40
-                    visible: model.indexing
-                    value: (model.totalBytesToIndex - model.currentBytesToIndex) / model.totalBytesToIndex
+                    visible: model.indexing || model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex || model.error !== ""
+                    value: model.error !== "" ? 0 : model.indexing ?
+                        (model.totalBytesToIndex - model.currentBytesToIndex) / model.totalBytesToIndex :
+                        (model.currentEmbeddingsToIndex / model.totalEmbeddingsToIndex)
                     background: Rectangle {
                         implicitHeight: 45
-                        color: theme.progressBackground
+                        color: model.error ? theme.textErrorColor : theme.progressBackground
                         radius: 3
                     }
                     contentItem: Item {
@@ -114,16 +116,18 @@ MyDialog {
                     Accessible.role: Accessible.ProgressBar
                     Accessible.name: qsTr("Indexing progressBar")
                     Accessible.description: qsTr("Shows the progress made in the indexing")
+                    ToolTip.text: model.error
+                    ToolTip.visible: hovered && model.error !== ""
                 }
                 Label {
                     id: speedLabel
                     color: theme.textColor
-                    visible: model.indexing
+                    visible: model.indexing || model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex
                     anchors.verticalCenter: itemProgressBar.verticalCenter
                     anchors.left: itemProgressBar.left
                     anchors.right: itemProgressBar.right
                     horizontalAlignment: Text.AlignHCenter
-                    text: qsTr("indexing...")
+                    text: model.error !== "" ? qsTr("error...") : (model.indexing ? qsTr("indexing...") : qsTr("embeddings..."))
                     elide: Text.ElideRight
                     font.pixelSize: theme.fontSizeLarge
                 }

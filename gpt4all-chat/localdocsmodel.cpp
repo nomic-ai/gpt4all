@@ -48,6 +48,8 @@ QVariant LocalDocsModel::data(const QModelIndex &index, int role) const
             return item.installed;
         case IndexingRole:
             return item.indexing;
+        case ErrorRole:
+            return item.error;
         case CurrentDocsToIndexRole:
             return item.currentDocsToIndex;
         case TotalDocsToIndexRole:
@@ -56,6 +58,10 @@ QVariant LocalDocsModel::data(const QModelIndex &index, int role) const
             return quint64(item.currentBytesToIndex);
         case TotalBytesToIndexRole:
             return quint64(item.totalBytesToIndex);
+        case CurrentEmbeddingsToIndexRole:
+            return quint64(item.currentEmbeddingsToIndex);
+        case TotalEmbeddingsToIndexRole:
+            return quint64(item.totalEmbeddingsToIndex);
     }
 
     return QVariant();
@@ -68,10 +74,13 @@ QHash<int, QByteArray> LocalDocsModel::roleNames() const
     roles[FolderPathRole] = "folder_path";
     roles[InstalledRole] = "installed";
     roles[IndexingRole] = "indexing";
+    roles[ErrorRole] = "error";
     roles[CurrentDocsToIndexRole] = "currentDocsToIndex";
     roles[TotalDocsToIndexRole] = "totalDocsToIndex";
     roles[CurrentBytesToIndexRole] = "currentBytesToIndex";
     roles[TotalBytesToIndexRole] = "totalBytesToIndex";
+    roles[CurrentEmbeddingsToIndexRole] = "currentEmbeddingsToIndex";
+    roles[TotalEmbeddingsToIndexRole] = "totalEmbeddingsToIndex";
     return roles;
 }
 
@@ -99,6 +108,12 @@ void LocalDocsModel::updateIndexing(int folder_id, bool b)
 {
     updateField<bool>(folder_id, b,
         [](CollectionItem& item, bool val) { item.indexing = val; }, {IndexingRole});
+}
+
+void LocalDocsModel::updateError(int folder_id, const QString &error)
+{
+    updateField<QString>(folder_id, error,
+        [](CollectionItem& item, QString val) { item.error = val; }, {ErrorRole});
 }
 
 void LocalDocsModel::updateCurrentDocsToIndex(int folder_id, size_t currentDocsToIndex)
@@ -129,6 +144,18 @@ void LocalDocsModel::updateTotalBytesToIndex(int folder_id, size_t totalBytesToI
 {
     updateField<size_t>(folder_id, totalBytesToIndex,
         [](CollectionItem& item, size_t val) { item.totalBytesToIndex = val; }, {TotalBytesToIndexRole});
+}
+
+void LocalDocsModel::updateCurrentEmbeddingsToIndex(int folder_id, size_t currentEmbeddingsToIndex)
+{
+    updateField<size_t>(folder_id, currentEmbeddingsToIndex,
+        [](CollectionItem& item, size_t val) { item.currentEmbeddingsToIndex += val; }, {CurrentEmbeddingsToIndexRole});
+}
+
+void LocalDocsModel::updateTotalEmbeddingsToIndex(int folder_id, size_t totalEmbeddingsToIndex)
+{
+    updateField<size_t>(folder_id, totalEmbeddingsToIndex,
+        [](CollectionItem& item, size_t val) { item.totalEmbeddingsToIndex += val; }, {TotalEmbeddingsToIndexRole});
 }
 
 void LocalDocsModel::addCollectionItem(const CollectionItem &item)

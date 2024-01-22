@@ -156,7 +156,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (isModelLoaded() && this->modelInfo() == modelInfo)
         return true;
 
-    bool isChatGPT = modelInfo.isChatGPT;
+    bool isChatGPT = modelInfo.isOnline; // right now only chatgpt is offered for online chat models...
     QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
 

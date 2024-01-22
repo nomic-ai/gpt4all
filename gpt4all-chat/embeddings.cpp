@@ -129,6 +129,9 @@ bool Embeddings::add(const std::vector<float> &embedding, qint64 label)
         }
     }
 
+    if (embedding.empty())
+        return false;
+
     try {
         m_hnsw->addPoint(embedding.data(), label, false);
     } catch (const std::exception &e) {

@@ -1129,7 +1129,7 @@ Window {
                 }
 
                 Image {
-                    visible: currentChat.isServer || currentChat.modelInfo.isChatGPT
+                    visible: currentChat.isServer || currentChat.modelInfo.isOnline
                     anchors.fill: parent
                     sourceSize.width: 1024
                     sourceSize.height: 1024
