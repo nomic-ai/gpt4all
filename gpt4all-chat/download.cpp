@@ -185,7 +185,10 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
         QTextStream stream(&file);
         stream << apiKey;
         file.close();
+        ModelList::globalInstance()->updateModelsFromDirectory();
     }
+
+    ModelList::globalInstance()->updateDataByFilename(modelFile, ModelList::InstalledRole, true);
 }
 
 void Download::removeModel(const QString &modelFile)
@@ -202,6 +205,7 @@ void Download::removeModel(const QString &modelFile)
         file.remove();
     }
 
+    ModelList::globalInstance()->updateDataByFilename(modelFile, ModelList::InstalledRole, false);
     ModelList::globalInstance()->updateDataByFilename(modelFile, ModelList::BytesReceivedRole, 0);
     ModelList::globalInstance()->updateDataByFilename(modelFile, ModelList::BytesTotalRole, 0);
     ModelList::globalInstance()->updateDataByFilename(modelFile, ModelList::TimestampRole, 0);
