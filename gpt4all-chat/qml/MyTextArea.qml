@@ -3,17 +3,20 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 
-TextField {
-    id: myTextField
-    padding: 10
+TextArea {
+    id: myTextArea
+    color: enabled ? theme.textColor : theme.mutedTextColor
     placeholderTextColor: theme.mutedTextColor
+    font.pixelSize: theme.fontSizeLarge
     background: Rectangle {
         implicitWidth: 150
-        color: myTextField.enabled ? theme.controlBackground : theme.disabledControlBackground
+        color: theme.controlBackground
         border.width: 1
         border.color: theme.controlBorder
         radius: 10
     }
+    padding: 10
+    wrapMode: TextArea.Wrap
+
     ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
-    color: enabled ? theme.textColor : theme.mutedTextColor
 }

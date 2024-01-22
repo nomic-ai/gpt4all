@@ -7,7 +7,6 @@ import QtQuick.Layouts
 Dialog {
     id: popupDialog
     anchors.centerIn: parent
-    opacity: 0.9
     padding: 20
     property alias text: textField.text
     property bool shouldTimeOut: true
@@ -53,7 +52,7 @@ Dialog {
 
     background: Rectangle {
         anchors.fill: parent
-        color: theme.backgroundDarkest
+        color: theme.containerBackground
         border.width: 1
         border.color: theme.dialogBorder
         radius: 10

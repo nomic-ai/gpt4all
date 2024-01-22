@@ -11,7 +11,6 @@ MyDialog {
     id: abpoutDialog
     anchors.centerIn: parent
     modal: false
-    opacity: 0.9
     padding: 20
     width: 1024
     height: column.height + 40
@@ -39,8 +38,9 @@ MyDialog {
                 anchors.leftMargin: 30
                 anchors.verticalCenter: img.verticalCenter
                 text: qsTr("About GPT4All")
-                font.pixelSize: theme.fontSizeLarger
                 color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
             }
         }
 
@@ -51,31 +51,23 @@ MyDialog {
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-            TextArea {
+            MyTextArea {
                 id: welcome
-                wrapMode: Text.Wrap
                 width: 1024 - 40
-                padding: 20
                 textFormat: TextEdit.MarkdownText
                 text: qsTr("### Release notes\n")
                     + Download.releaseInfo.notes
                     + qsTr("### Contributors\n")
                     + Download.releaseInfo.contributors
-                color: theme.textColor
-                font.pixelSize: theme.fontSizeLarge
                 focus: false
                 readOnly: true
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Release notes")
                 Accessible.description: qsTr("Release notes for this version")
-                background: Rectangle {
-                    color: theme.backgroundLight
-                    radius: 10
-                }
             }
         }
 
-        Label {
+        MySettingsLabel {
             id: discordLink
             width: parent.width
             textFormat: Text.StyledText
@@ -90,7 +82,7 @@ MyDialog {
             Accessible.name: qsTr("Discord link")
         }
 
-        Label {
+        MySettingsLabel {
             id: nomicProps
             width: parent.width
             textFormat: Text.StyledText

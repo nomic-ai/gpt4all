@@ -111,10 +111,15 @@ qt_add_qml_module(chat
       qml/LocalDocsSettings.qml
       qml/MySettingsTab.qml
       qml/MySettingsStack.qml
+      qml/MySettingsDestructiveButton.qml
+      qml/MySettingsButton.qml
+      qml/MySettingsLabel.qml
+      qml/MySlug.qml
       qml/MyButton.qml
       qml/MyComboBox.qml
       qml/MyDialog.qml
       qml/MyDirectoryField.qml
+      qml/MyTextArea.qml
       qml/MyTextField.qml
       qml/MyCheckBox.qml
       qml/MyBusyIndicator.qml
