@@ -32,13 +32,19 @@ Item {
     }
 
     ScrollView {
+        id: scrollView
         width: parent.width
         height: parent.height
-        padding: 15
-        rightPadding: 20
+        topPadding: 15
+        leftPadding: 5
         contentWidth: availableWidth
         contentHeight: innerColumn.height
-        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+        ScrollBar.vertical: ScrollBar {
+            parent: scrollView.parent
+            anchors.top: scrollView.top
+            anchors.left: scrollView.right
+            anchors.bottom: scrollView.bottom
+        }
 
         Theme {
             id: theme
@@ -64,7 +70,7 @@ Item {
             Item {
                 Layout.fillWidth: true
                 height: restoreDefaultsButton.height
-                MyButton {
+                MySettingsButton {
                     id: restoreDefaultsButton
                     anchors.left: parent.left
                     visible: showRestoreDefaultsButton
@@ -78,7 +84,7 @@ Item {
                         root.restoreDefaultsClicked();
                     }
                 }
-                MyButton {
+                MySettingsButton {
                     id: advancedSettingsButton
                     anchors.right: parent.right
                     visible: root.advancedSettings && showAdvancedSettingsButton

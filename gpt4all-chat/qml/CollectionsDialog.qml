@@ -22,9 +22,10 @@ MyDialog {
         id: listLabel
         anchors.top: parent.top
         anchors.left: parent.left
-        text: qsTr("Local Documents:")
+        text: qsTr("Local Documents")
+        color: theme.titleTextColor
         font.pixelSize: theme.fontSizeLarge
-        color: theme.textColor
+        font.bold: true
     }
 
     ScrollView {
@@ -37,21 +38,28 @@ MyDialog {
         anchors.right: parent.right
         clip: true
         contentHeight: 300
-        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+        ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
         background: Rectangle {
-            color: theme.backgroundLighter
+            color: theme.controlBackground
         }
 
         ListView {
             id: listView
             model: LocalDocs.localDocsModel
             boundsBehavior: Flickable.StopAtBounds
+            ScrollBar.vertical: ScrollBar {
+                parent: listView.parent
+                anchors.top: listView.top
+                anchors.left: listView.right
+                anchors.bottom: listView.bottom
+            }
+
             delegate: Rectangle {
                 id: item
                 width: listView.width
                 height: collectionId.height + 40
-                color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
+                color: index % 2 === 0 ? theme.darkContrast : theme.lightContrast
                 MyCheckBox {
                     id: checkBox
                     anchors.verticalCenter: parent.verticalCenter
@@ -90,7 +98,7 @@ MyDialog {
                     value: (model.totalBytesToIndex - model.currentBytesToIndex) / model.totalBytesToIndex
                     background: Rectangle {
                         implicitHeight: 45
-                        color: theme.backgroundDarkest
+                        color: theme.progressBackground
                         radius: 3
                     }
                     contentItem: Item {
@@ -100,7 +108,7 @@ MyDialog {
                             width: itemProgressBar.visualPosition * parent.width
                             height: parent.height
                             radius: 2
-                            color: theme.assistantColor
+                            color: theme.progressForeground
                         }
                     }
                     Accessible.role: Accessible.ProgressBar
@@ -123,7 +131,7 @@ MyDialog {
         }
     }
 
-    MyButton {
+    MySettingsButton {
         id: collectionSettings
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter

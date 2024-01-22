@@ -52,27 +52,19 @@ MyDialog {
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-            TextArea {
+            MyTextArea {
                 id: welcome
-                wrapMode: Text.Wrap
                 width: 1024 - 40
-                padding: 20
                 textFormat: TextEdit.MarkdownText
                 text: qsTr("### Release notes\n")
                     + Download.releaseInfo.notes
                     + qsTr("### Contributors\n")
                     + Download.releaseInfo.contributors
-                color: theme.textColor
-                font.pixelSize: theme.fontSizeLarge
                 focus: false
                 readOnly: true
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Release notes")
                 Accessible.description: qsTr("Release notes for this version")
-                background: Rectangle {
-                    color: theme.backgroundLight
-                    radius: 10
-                }
             }
         }
 
@@ -83,11 +75,9 @@ MyDialog {
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-            TextArea {
+            MyTextArea {
                 id: optInTerms
-                wrapMode: Text.Wrap
                 width: 1024 - 40
-                padding: 20
                 textFormat: TextEdit.MarkdownText
                 text: qsTr(
 "### Opt-ins for anonymous usage analytics and datalake
@@ -105,17 +95,11 @@ to download and will be used by Nomic AI to improve future GPT4All models. Nomic
 attribution information attached to your data and you will be credited as a contributor to any GPT4All
 model release that uses your data!")
 
-                color: theme.textColor
-                font.pixelSize: theme.fontSizeLarge
                 focus: false
                 readOnly: true
                 Accessible.role: Accessible.Paragraph
                 Accessible.name: qsTr("Terms for opt-in")
                 Accessible.description: qsTr("Describes what will happen when you opt-in")
-                background: Rectangle {
-                    color: theme.backgroundLight
-                    radius: 10
-                }
             }
         }
 

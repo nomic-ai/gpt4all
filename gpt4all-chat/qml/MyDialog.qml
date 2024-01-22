@@ -11,7 +11,7 @@ Dialog {
     background: Rectangle {
         width: parent.width
         height: parent.height
-        color: theme.backgroundDarkest
+        color: theme.containerBackground
         border.width: 1
         border.color: theme.dialogBorder
         radius: 10
@@ -23,7 +23,7 @@ Dialog {
         anchors.centerIn: myCloseButton
         width: myCloseButton.width + 10
         height: myCloseButton.height + 10
-        color: theme.backgroundDarkest
+        color: theme.containerBackground
     }
 
     MyToolButton {

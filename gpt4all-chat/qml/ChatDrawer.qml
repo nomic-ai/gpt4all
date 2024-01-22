@@ -12,7 +12,6 @@ import mysettings
 Drawer {
     id: chatDrawer
     modal: false
-    opacity: 0.9
 
     Theme {
         id: theme
@@ -23,7 +22,7 @@ Drawer {
 
     background: Rectangle {
         height: parent.height
-        color: theme.backgroundDarkest
+        color: theme.containerBackground
     }
 
     Item {
@@ -43,12 +42,6 @@ Drawer {
             bottomPadding: 20
             text: qsTr("\uFF0B New chat")
             Accessible.description: qsTr("Create a new chat")
-            background: Rectangle {
-                border.color: newChat.down ? theme.backgroundLightest : theme.buttonBorder
-                border.width: 2
-                radius: 10
-                color: newChat.hovered ? theme.backgroundDark : theme.backgroundDarkest
-            }
             onClicked: {
                 ChatListModel.addChat();
                 Network.sendNewChat(ChatListModel.count)
@@ -71,19 +64,23 @@ Drawer {
                 anchors.fill: parent
                 anchors.rightMargin: 10
                 model: ChatListModel
-                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
+                ScrollBar.vertical: ScrollBar {
+                    parent: conversationList.parent
+                    anchors.top: conversationList.top
+                    anchors.left: conversationList.right
+                    anchors.bottom: conversationList.bottom
+                }
 
                 delegate: Rectangle {
                     id: chatRectangle
                     width: conversationList.width
                     height: chatName.height
-                    opacity: 0.9
                     property bool isCurrent: ChatListModel.currentChat === ChatListModel.get(index)
                     property bool isServer: ChatListModel.get(index) && ChatListModel.get(index).isServer
                     property bool trashQuestionDisplayed: false
                     visible: !isServer || MySettings.serverChat
                     z: isCurrent ? 199 : 1
-                    color: isServer ? theme.backgroundDarkest : (index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter)
+                    color: index % 2 === 0 ? theme.darkContrast : theme.lightContrast
                     border.width: isCurrent
                     border.color: chatName.readOnly ? theme.assistantColor : theme.userColor
                     TextField {
@@ -106,7 +103,7 @@ Drawer {
                             font: chatName.font
                             text: name
                             elide: Text.ElideRight
-                            elideWidth: chatName.width - 25
+                            elideWidth: chatName.width - 40
                         }
                         background: Rectangle {
                             color: "transparent"
