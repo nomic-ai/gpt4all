@@ -26,7 +26,7 @@ sudo apt install build-essential qt6-base-dev qt6-declarative-dev qt6-wayland-de
 
 On Fedora 39, this looks like:
 ```
-sudo dnf install make automake gcc gcc-c++ kernel-devel qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtwayland-devel qt6-qtsvg-devel qt6-qthttpserver-devel qt6-qtwebengine-devel qt6-qt5compat qt5-qtgraphicaleffects qt6-qtshadertools qt-creator cmake ninja-build
+sudo dnf install make gcc gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtwayland-devel qt6-qtsvg-devel qt6-qthttpserver-devel qt6-qtwebengine-devel qt6-qt5compat qt5-qtgraphicaleffects qt6-qtshadertools qt-creator cmake ninja-build
 ```
 
 ## Download Qt
