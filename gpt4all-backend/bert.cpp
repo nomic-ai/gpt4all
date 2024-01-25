@@ -381,10 +381,9 @@ void bert_eval(
 
             struct ggml_tensor *KQ = ggml_mul_mat(ctx0, K, Q);
             // KQ = soft_max(KQ / sqrt(head width))
-            KQ = ggml_soft_max(ctx0,
-                               ggml_scale(ctx0,
-                                          KQ,
-                                          ggml_new_f32(ctx0, 1.0f / sqrt((float)d_head))));
+            KQ = ggml_soft_max(
+                ctx0, ggml_scale(ctx0, KQ, 1.0f / sqrt((float)d_head))
+            );
 
             V = ggml_cont(ctx0, ggml_transpose(ctx0, V));
             struct ggml_tensor *KQV = ggml_mul_mat(ctx0, V, KQ);
@@ -490,10 +489,6 @@ struct bert_ctx * bert_load_from_file(const char *fname)
 #endif
 
     bert_ctx * new_bert = new bert_ctx;
-#if defined(GGML_USE_KOMPUTE)
-    new_bert->buf_compute.force_cpu = true;
-    new_bert->work_buf.force_cpu = true;
-#endif
 
     bert_model & model = new_bert->model;
     bert_vocab & vocab = new_bert->vocab;
