@@ -96,6 +96,7 @@ static int llama_sample_top_p_top_k(
 struct LLamaPrivate {
     const std::string modelPath;
     bool modelLoaded;
+    int device = -1;
     llama_model *model = nullptr;
     llama_context *ctx = nullptr;
     llama_model_params model_params;
@@ -167,24 +168,17 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx)
     if (llama_verbose()) {
         std::cerr << "llama.cpp: using Metal" << std::endl;
     }
-    // metal always runs the whole model if n_gpu_layers is not 0, at least
-    // currently
-    d_ptr->model_params.n_gpu_layers = 1;
-#endif
-#ifdef GGML_USE_KOMPUTE
-    if (ggml_vk_has_device()) {
-        // vulkan always runs the whole model if n_gpu_layers is not 0, at least
-        // currently
-        d_ptr->model_params.n_gpu_layers = 1;
+    d_ptr->model_params.n_gpu_layers = 100;
+#elif defined(GGML_USE_KOMPUTE)
+    if (d_ptr->device != -1) {
+        d_ptr->model_params.main_gpu = d_ptr->device;
+        d_ptr->model_params.n_gpu_layers = 100;
     }
 #endif
 
     d_ptr->model = llama_load_model_from_file_gpt4all(modelPath.c_str(), &d_ptr->model_params);
     if (!d_ptr->model) {
-#ifdef GGML_USE_KOMPUTE
-        // Explicitly free the device so next load it doesn't use it
-        ggml_vk_free_device();
-#endif
+        d_ptr->device = -1;
         std::cerr << "LLAMA ERROR: failed to load model from " <<  modelPath << std::endl;
         return false;
     }
@@ -214,10 +208,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx)
 
     d_ptr->ctx = llama_new_context_with_model(d_ptr->model, d_ptr->ctx_params);
     if (!d_ptr->ctx) {
-#ifdef GGML_USE_KOMPUTE
-        // Explicitly free the device so next load it doesn't use it
-        ggml_vk_free_device();
-#endif
+        d_ptr->device = -1;
         std::cerr << "LLAMA ERROR: failed to init context for model " <<  modelPath << std::endl;
         return false;
     }
@@ -225,7 +216,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx)
     d_ptr->end_tokens = {llama_token_eos(d_ptr->model)};
 
 #ifdef GGML_USE_KOMPUTE
-    if (ggml_vk_has_device()) {
+    if (usingGPUDevice() && ggml_vk_has_device()) {
         std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
     }
 #endif
@@ -339,62 +330,70 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
 std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired)
 {
 #if defined(GGML_USE_KOMPUTE)
-    std::vector<ggml_vk_device> vkDevices = ggml_vk_available_devices(memoryRequired);
+    size_t count = 0;
+    auto * vkDevices = ggml_vk_available_devices(memoryRequired, &count);
 
-    std::vector<LLModel::GPUDevice> devices;
-    for(const auto& vkDevice : vkDevices) {
-        LLModel::GPUDevice device;
-        device.index = vkDevice.index;
-        device.type = vkDevice.type;
-        device.heapSize = vkDevice.heapSize;
-        device.name = vkDevice.name;
-        device.vendor = vkDevice.vendor;
+    if (vkDevices) {
+        std::vector<LLModel::GPUDevice> devices;
+        devices.reserve(count);
 
-        devices.push_back(device);
+        for (size_t i = 0; i < count; ++i) {
+            auto & dev = vkDevices[i];
+            devices.emplace_back(
+                /* index    = */ dev.index,
+                /* type     = */ dev.type,
+                /* heapSize = */ dev.heapSize,
+                /* name     = */ dev.name,
+                /* vendor   = */ dev.vendor
+            );
+        }
+
+        free(vkDevices);
+        return devices;
     }
-
-    return devices;
-#else
-    return std::vector<LLModel::GPUDevice>();
 #endif
+
+    return {};
 }
 
-bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string& device)
+bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &name)
 {
 #if defined(GGML_USE_KOMPUTE)
-    return ggml_vk_init_device(memoryRequired, device);
+    ggml_vk_device device;
+    bool ok = ggml_vk_get_device(&device, memoryRequired, name.c_str());
+    if (ok) {
+        d_ptr->device = device.index;
+        return true;
+    }
 #else
-    return false;
+    (void)memoryRequired;
+    (void)name;
 #endif
+    return false;
 }
 
 bool LLamaModel::initializeGPUDevice(const LLModel::GPUDevice &device, std::string *unavail_reason)
 {
-    bool result = false;
 #if defined(GGML_USE_KOMPUTE)
-    ggml_vk_device vkDevice;
-    vkDevice.index = device.index;
-    vkDevice.type = device.type;
-    vkDevice.heapSize = device.heapSize;
-    vkDevice.name = device.name;
-    vkDevice.vendor = device.vendor;
-    result = ggml_vk_init_device(vkDevice);
-    if (!result && unavail_reason) {
-        *unavail_reason = "failed to init GPU";
-    }
+    (void)unavail_reason;
+    d_ptr->device = device.index;
+    return true;
 #else
+    (void)device;
     if (unavail_reason) {
         *unavail_reason = "built without Kompute";
     }
+    return false;
 #endif
-    return result;
 }
 
 bool LLamaModel::initializeGPUDevice(int device)
 {
 #if defined(GGML_USE_KOMPUTE)
-    return ggml_vk_init_device(device);
+    d_ptr->device = device;
+    return true;
 #else
+    (void)device;
     return false;
 #endif
 }
@@ -402,7 +401,7 @@ bool LLamaModel::initializeGPUDevice(int device)
 bool LLamaModel::hasGPUDevice()
 {
 #if defined(GGML_USE_KOMPUTE)
-    return ggml_vk_has_device();
+    return d_ptr->device != -1;
 #else
     return false;
 #endif
@@ -411,11 +410,12 @@ bool LLamaModel::hasGPUDevice()
 bool LLamaModel::usingGPUDevice()
 {
 #if defined(GGML_USE_KOMPUTE)
-    return ggml_vk_using_vulkan();
+    return hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
 #elif defined(GGML_USE_METAL)
     return true;
-#endif
+#else
     return false;
+#endif
 }
 
 std::string get_arch_name(gguf_context *ctx_gguf) {

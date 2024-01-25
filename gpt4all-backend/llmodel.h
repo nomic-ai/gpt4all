@@ -17,11 +17,14 @@ public:
     using Token = int32_t;
 
     struct GPUDevice {
-        int index = 0;
-        int type = 0;
-        size_t heapSize = 0;
+        int index;
+        int type;
+        size_t heapSize;
         std::string name;
         std::string vendor;
+
+        GPUDevice(int index, int type, size_t heapSize, std::string name, std::string vendor):
+            index(index), type(type), heapSize(heapSize), name(std::move(name)), vendor(std::move(vendor)) {}
     };
 
     class Implementation {
@@ -98,14 +101,25 @@ public:
         return *m_implementation;
     }
 
-    virtual std::vector<GPUDevice> availableGPUDevices(size_t /*memoryRequired*/) { return std::vector<GPUDevice>(); }
-    virtual bool initializeGPUDevice(size_t /*memoryRequired*/, const std::string& /*device*/) { return false; }
-    virtual bool initializeGPUDevice(const GPUDevice &/*device*/, std::string *unavail_reason = nullptr) {
+    virtual std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired) {
+        (void)memoryRequired;
+        return {};
+    }
+
+    virtual bool initializeGPUDevice(size_t memoryRequired, const std::string& name) {
+        (void)memoryRequired;
+        (void)name;
+        return false;
+    }
+
+    virtual bool initializeGPUDevice(const GPUDevice & device, std::string *unavail_reason = nullptr) {
+        (void)device;
         if (unavail_reason) {
             *unavail_reason = "model has no GPU support";
         }
         return false;
     }
+
     virtual bool initializeGPUDevice(int /*device*/) { return false; }
     virtual bool hasGPUDevice() { return false; }
     virtual bool usingGPUDevice() { return false; }

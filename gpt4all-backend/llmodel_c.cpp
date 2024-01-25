@@ -230,12 +230,13 @@ bool llmodel_gpu_init_gpu_device_by_string(llmodel_model model, size_t memoryReq
 
 bool llmodel_gpu_init_gpu_device_by_struct(llmodel_model model, const llmodel_gpu_device *device)
 {
-    LLModel::GPUDevice d;
-    d.index = device->index;
-    d.type = device->type;
-    d.heapSize = device->heapSize;
-    d.name = device->name;
-    d.vendor = device->vendor;
+    LLModel::GPUDevice d(
+        /* index    = */ device->index,
+        /* type     = */ device->type,
+        /* heapSize = */ device->heapSize,
+        /* name     = */ device->name,
+        /* vendor   = */ device->vendor
+    );
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
     return wrapper->llModel->initializeGPUDevice(d);
 }
