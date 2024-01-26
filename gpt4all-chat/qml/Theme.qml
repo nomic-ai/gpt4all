@@ -136,7 +136,7 @@ QtObject {
 
     property real fontSizeFixedSmall: 16
 
-    property real fontSizeSmall: fontSizeLarge - 4
+    property real fontSizeSmall: fontSizeLarge - 2
     property real  fontSizeLarge: MySettings.fontSize === "Small" ?
         Qt.application.font.pixelSize : MySettings.fontSize === "Medium" ?
             Qt.application.font.pixelSize + 5 : Qt.application.font.pixelSize + 10
