@@ -226,7 +226,8 @@ Window {
                 horizontalAlignment: Text.AlignLeft
                 font.pixelSize: theme.fontSizeFixedSmall
                 color: theme.gray300
-                linkColor: theme.gray300
+                linkColor: hoverHandler1.hovered ? theme.yellowAccent : theme.gray300
+                HoverHandler { id: hoverHandler1 }
                 onLinkActivated: { Qt.openUrlExternally("https://gpt4all.io") }
             }
 
@@ -236,7 +237,8 @@ Window {
                 horizontalAlignment: Text.AlignLeft
                 font.pixelSize: theme.fontSizeFixedSmall
                 color: theme.gray300
-                linkColor: theme.gray300
+                linkColor: hoverHandler2.hovered ? theme.yellowAccent : theme.gray300
+                HoverHandler { id: hoverHandler2 }
                 onLinkActivated: { Qt.openUrlExternally("https://github.com/nomic-ai/gpt4all") }
             }
         }
@@ -251,7 +253,8 @@ Window {
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: theme.fontSizeFixedSmall
                 color: theme.gray300
-                linkColor: theme.gray300
+                linkColor: hoverHandler3.hovered ? theme.yellowAccent : theme.gray300
+                HoverHandler { id: hoverHandler3 }
                 onLinkActivated: { Qt.openUrlExternally("https://nomic.ai") }
             }
 
@@ -261,7 +264,8 @@ Window {
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: theme.fontSizeFixedSmall
                 color: theme.gray300
-                linkColor: theme.gray300
+                linkColor: hoverHandler4.hovered ? theme.yellowAccent : theme.gray300
+                HoverHandler { id: hoverHandler4 }
                 onLinkActivated: { Qt.openUrlExternally("https://twitter.com/nomic_ai") }
             }
 
@@ -271,7 +275,8 @@ Window {
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: theme.fontSizeFixedSmall
                 color: theme.gray300
-                linkColor: theme.gray300
+                linkColor: hoverHandler5.hovered ? theme.yellowAccent : theme.gray300
+                HoverHandler { id: hoverHandler5 }
                 onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
             }
         }
@@ -816,7 +821,7 @@ Window {
                             </ul>
                             ")
                             color: theme.textColor
-                            font.pixelSize: theme.fontSizeSmall
+                            font.pixelSize: theme.fontSizeLarge
                             wrapMode: Text.WordWrap
                         }
 
