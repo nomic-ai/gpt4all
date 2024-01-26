@@ -16,7 +16,7 @@ CheckBox {
         x: myCheckBox.leftPadding
         y: parent.height / 2 - height / 2
         border.color: theme.gray200
-        color: theme.white
+        color: theme.containerBackground
         radius: 3
 
         Rectangle {
