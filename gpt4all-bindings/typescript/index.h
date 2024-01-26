@@ -56,5 +56,6 @@ private:
   std::string type;
   // corresponds to LLModel::name() in typescript
   std::string name;
+  int nCtx{};
   std::string full_model_path;
 };

@@ -34,7 +34,6 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
   Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo& info) 
   {
     auto env = info.Env();
-    auto nCtx = info[0].As<Napi::Number>().Int32Value();
     int num_devices = 0;
     auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str(),nCtx);
     llmodel_gpu_device* all_devices = llmodel_available_gpu_devices(GetInference(), mem_size, &num_devices);
@@ -114,7 +113,6 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
                 library_path = ".",
                 model_name, 
                 device;
-    int nCtx = 0;
     if(info[0].IsString()) {
         model_path = info[0].As<Napi::String>().Utf8Value();
         full_weight_path = model_path.string();

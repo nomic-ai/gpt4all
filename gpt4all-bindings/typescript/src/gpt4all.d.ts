@@ -233,7 +233,10 @@ interface LoadModelOptions {
        model.
     */ 
     device?: string;
-    // The Maximum window size of this model
+    /* The Maximum window size of this model
+     * Default of 2048
+     *
+     */
     nCtx?: number;
 }
 

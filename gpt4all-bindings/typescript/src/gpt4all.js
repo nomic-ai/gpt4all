@@ -37,6 +37,7 @@ async function loadModel(modelName, options = {}) {
         allowDownload: true,
         verbose: true,
         device: 'cpu',
+        nCtx: 2048,
         ...options,
     };
 
@@ -59,11 +60,13 @@ async function loadModel(modelName, options = {}) {
         model_path: loadOptions.modelPath,
         library_path: existingPaths,
         device: loadOptions.device,
+        nCtx: loadOptions.nCtx,
     };
 
     if (loadOptions.verbose) {
         console.debug("Creating LLModel with options:", llmOptions);
     }
+    console.log(modelConfig)
     const llmodel = new LLModel(llmOptions);
     if (loadOptions.type === "embedding") {
         return new EmbeddingModel(llmodel, modelConfig);

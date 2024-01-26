@@ -43,11 +43,11 @@ PromptWorker::PromptWorker(Napi::Env env, PromptWorkerConfig config)
         //         "About to prompt");
         // Call the C++ prompt method
         wrapper->llModel->prompt(
-            _config.prompt, [](int32_t tid)
-            { return true; },
-            [=](int32_t token_id, const std::string tok)
+            _config.prompt, 
+            [](int32_t tid) { return true; },
+            [this](int32_t token_id, const std::string tok)
             {
-                return ResponseCallback(token_id,tok);
+                return ResponseCallback(token_id, tok);
             },
             [](bool isRecalculating)
             {
@@ -118,14 +118,14 @@ PromptWorker::PromptWorker(Napi::Env env, PromptWorkerConfig config)
        {
            // Transform native data into JS data, passing it to the provided
            // `jsCallback` -- the TSFN's JavaScript function.
-
-           auto jsResult = jsCallback.Call({Napi::Number::New(env, value->tokenId), Napi::String::New(env, value->token), Napi::String::New(env,value->total)}).ToBoolean();
-
+           auto token_id = Napi::Number::New(env, value->tokenId);
+           auto token = Napi::String::New(env, value->token);
+           auto total = Napi::String::New(env,value->total);
+           auto jsResult = jsCallback.Call({ token_id, token, total}).ToBoolean();
            promise.set_value(jsResult);
            // We're finished with the data.
            delete value;
        });
-
        if (status != napi_ok) {
             Napi::Error::Fatal(
                 "PromptWorkerResponseCallback",
