@@ -29,9 +29,9 @@ MySettingsTab {
             Layout.row: 1
             Layout.column: 1
             Layout.columnSpan: 1
-            Layout.minimumWidth: 50
+            Layout.minimumWidth: 200
             Layout.fillWidth: false
-            model: ["Dark", "Light"]
+            model: ["Dark", "Light", "LegacyDark"]
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("Color theme")
             Accessible.description: qsTr("Color theme for the chat client to use")
@@ -261,7 +261,7 @@ MySettingsTab {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             height: 3
-            color: theme.yellowAccent
+            color: theme.accentColor
         }
     }
     advancedSettings: GridLayout {
@@ -274,7 +274,7 @@ MySettingsTab {
             Layout.fillWidth: true
             Layout.columnSpan: 3
             height: 3
-            color: theme.yellowAccent
+            color: theme.accentColor
         }
         MySettingsLabel {
             id: gpuOverrideLabel

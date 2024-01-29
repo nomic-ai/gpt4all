@@ -2,6 +2,7 @@ import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
+import mysettings
 
 Button {
     id: myButton
@@ -12,8 +13,8 @@ Button {
     property color mutedTextColor: theme.oppositeMutedTextColor
     property color backgroundColor: theme.buttonBackground
     property color backgroundColorHovered: theme.buttonBackgroundHovered
-    property real  borderWidth: 0
-    property color borderColor: "transparent"
+    property real  borderWidth: MySettings.chatTheme === "LegacyDark" ? 1 : 0
+    property color borderColor: theme.buttonBorder
     property real fontPixelSize: theme.fontSizeLarge
     contentItem: Text {
         text: myButton.text
@@ -25,8 +26,8 @@ Button {
     }
     background: Rectangle {
         radius: 10
-        border.width: borderWidth
-        border.color: borderColor
+        border.width: myButton.borderWidth
+        border.color: myButton.borderColor
         color: myButton.hovered ? backgroundColorHovered : backgroundColor
     }
     Accessible.role: Accessible.Button

@@ -211,7 +211,7 @@ MySettingsTab {
             visible: hasEmbeddingModel
             Layout.fillWidth: true
             height: 3
-            color: theme.yellowAccent
+            color: theme.accentColor
         }
     }
     advancedSettings: GridLayout {
@@ -227,7 +227,7 @@ MySettingsTab {
             Layout.fillWidth: true
             Layout.columnSpan: 3
             height: 3
-            color: theme.yellowAccent
+            color: theme.accentColor
         }
 
         MySettingsLabel {

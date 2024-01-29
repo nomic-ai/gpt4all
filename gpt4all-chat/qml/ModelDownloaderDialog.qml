@@ -42,11 +42,16 @@ MyDialog {
         Label {
             id: listLabel
             text: qsTr("Available Models")
+            visible: false
             Layout.alignment: Qt.AlignLeft
             Layout.fillWidth: true
             color: theme.titleTextColor
             font.pixelSize: theme.fontSizeLarge
             font.bold: true
+        }
+
+        Item {
+            height: 0 // for visible space between close button and rest of dialog
         }
 
         Label {
@@ -110,7 +115,7 @@ MyDialog {
                             id: actionBox
                             width: childrenRect.width + 20
                             color: theme.containerBackground
-                            border.color: theme.yellowAccent
+                            border.color: theme.accentColor
                             border.width: 1
                             radius: 10
                             Layout.row: 1

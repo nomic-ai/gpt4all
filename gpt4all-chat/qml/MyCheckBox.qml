@@ -15,8 +15,8 @@ CheckBox {
         implicitHeight: 26
         x: myCheckBox.leftPadding
         y: parent.height / 2 - height / 2
-        border.color: theme.gray200
-        color: theme.containerBackground
+        border.color: theme.checkboxBorder
+        color: "transparent"
         radius: 3
 
         Rectangle {
@@ -25,7 +25,7 @@ CheckBox {
             x: 6
             y: 6
             radius: 2
-            color: theme.green600
+            color: theme.checkboxForeground
             visible: myCheckBox.checked
         }
     }

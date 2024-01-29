@@ -198,12 +198,12 @@ Window {
     }
 
     Rectangle {
-        id: yellowRibbon
+        id: accentRibbon
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: header.bottom
         height: 3
-        color: theme.yellowAccent
+        color: theme.accentColor
     }
 
     Rectangle {
@@ -225,8 +225,8 @@ Window {
                 text: "<a href=\"https://gpt4all.io\">gpt4all.io</a> |"
                 horizontalAlignment: Text.AlignLeft
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.gray300
-                linkColor: hoverHandler1.hovered ? theme.yellowAccent : theme.gray300
+                color: theme.iconBackgroundHovered
+                linkColor: hoverHandler1.hovered ? theme.accentColor : theme.iconBackgroundHovered
                 HoverHandler { id: hoverHandler1 }
                 onLinkActivated: { Qt.openUrlExternally("https://gpt4all.io") }
             }
@@ -236,8 +236,8 @@ Window {
                 text: "<a href=\"https://github.com/nomic-ai/gpt4all\">github</a>"
                 horizontalAlignment: Text.AlignLeft
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.gray300
-                linkColor: hoverHandler2.hovered ? theme.yellowAccent : theme.gray300
+                color: theme.iconBackgroundHovered
+                linkColor: hoverHandler2.hovered ? theme.accentColor : theme.iconBackgroundHovered
                 HoverHandler { id: hoverHandler2 }
                 onLinkActivated: { Qt.openUrlExternally("https://github.com/nomic-ai/gpt4all") }
             }
@@ -252,8 +252,8 @@ Window {
                 text: "<a href=\"https://nomic.ai\">nomic.ai</a> |"
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.gray300
-                linkColor: hoverHandler3.hovered ? theme.yellowAccent : theme.gray300
+                color: theme.iconBackgroundHovered
+                linkColor: hoverHandler3.hovered ? theme.accentColor : theme.iconBackgroundHovered
                 HoverHandler { id: hoverHandler3 }
                 onLinkActivated: { Qt.openUrlExternally("https://nomic.ai") }
             }
@@ -263,8 +263,8 @@ Window {
                 text: "<a href=\"https://twitter.com/nomic_ai\">twitter</a> |"
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.gray300
-                linkColor: hoverHandler4.hovered ? theme.yellowAccent : theme.gray300
+                color: theme.iconBackgroundHovered
+                linkColor: hoverHandler4.hovered ? theme.accentColor : theme.iconBackgroundHovered
                 HoverHandler { id: hoverHandler4 }
                 onLinkActivated: { Qt.openUrlExternally("https://twitter.com/nomic_ai") }
             }
@@ -274,8 +274,8 @@ Window {
                 text: "<a href=\"https://discord.gg/4M2QFmTt2k\">discord</a>"
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.gray300
-                linkColor: hoverHandler5.hovered ? theme.yellowAccent : theme.gray300
+                color: theme.iconBackgroundHovered
+                linkColor: hoverHandler5.hovered ? theme.accentColor : theme.iconBackgroundHovered
                 HoverHandler { id: hoverHandler5 }
                 onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
             }
@@ -364,7 +364,7 @@ Window {
                     background: Rectangle {
                         color: (index % 2 === 0 ? theme.darkContrast : theme.lightContrast)
                         border.width: highlighted
-                        border.color: theme.yellowAccent
+                        border.color: theme.accentColor
                     }
                     highlighted: comboBox.highlightedIndex === index
                 }
@@ -747,7 +747,7 @@ Window {
 
     ChatDrawer {
         id: drawer
-        y: header.height + yellowRibbon.height
+        y: header.height + accentRibbon.height
         width: Math.min(600, 0.3 * window.width)
         height: window.height - y
         onDownloadClicked: {
@@ -769,11 +769,11 @@ Window {
 
     Rectangle {
         id: conversation
-        color: theme.containerBackground
+        color: theme.conversationBackground
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.top: yellowRibbon.bottom
+        anchors.top: accentRibbon.bottom
 
         ScrollView {
             id: scrollView
@@ -786,7 +786,7 @@ Window {
 
             Rectangle {
                 anchors.fill: parent
-                color: currentChat.isServer ? theme.black : theme.containerBackground
+                color: currentChat.isServer ? theme.black : theme.conversationBackground
 
                 Rectangle {
                     id: homePage
@@ -888,7 +888,7 @@ Window {
                             ColorOverlay {
                                 anchors.fill: image
                                 source: image
-                                color: theme.yellowAccent
+                                color: theme.accentColor
                             }
                             onClicked: {
                                 downloadNewModels.open();

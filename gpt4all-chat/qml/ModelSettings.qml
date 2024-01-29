@@ -684,7 +684,7 @@ MySettingsTab {
             Layout.fillWidth: true
             Layout.minimumWidth: promptTemplate.width
             height: 3
-            color: theme.yellowAccent
+            color: theme.accentColor
         }
     }
 }
