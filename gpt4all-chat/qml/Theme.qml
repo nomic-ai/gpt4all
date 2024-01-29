@@ -542,15 +542,16 @@ QtObject {
     }
 
     property real fontSizeFixedSmall: 16
+    property real fontSize: Qt.application.font.pixelSize
 
     property real fontSizeSmall: fontSizeLarge - 2
     property real  fontSizeLarge: MySettings.fontSize === "Small" ?
-        Qt.application.font.pixelSize : MySettings.fontSize === "Medium" ?
-            Qt.application.font.pixelSize + 5 : Qt.application.font.pixelSize + 10
+        fontSize : MySettings.fontSize === "Medium" ?
+            fontSize + 5 : fontSize + 10
     property real  fontSizeLarger: MySettings.fontSize === "Small" ?
-        Qt.application.font.pixelSize + 2 : MySettings.fontSize === "Medium" ?
-            Qt.application.font.pixelSize + 7 : Qt.application.font.pixelSize + 12
+        fontSize + 2 : MySettings.fontSize === "Medium" ?
+            fontSize + 7 : fontSize + 12
     property real  fontSizeLargest: MySettings.fontSize === "Small" ?
-        Qt.application.font.pixelSize + 7 : MySettings.fontSize === "Medium" ?
-            Qt.application.font.pixelSize + 12 : Qt.application.font.pixelSize + 14
+        fontSize + 7 : MySettings.fontSize === "Medium" ?
+            fontSize + 12 : fontSize + 14
 }

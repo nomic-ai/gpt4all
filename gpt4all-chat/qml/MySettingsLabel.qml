@@ -5,6 +5,6 @@ import QtQuick.Controls.Basic
 
 Label {
     color: theme.settingsTitleTextColor
-    font.pixelSize: theme.fontSizeLarge - 4
+    font.pixelSize: theme.fontSizeSmall
     font.bold: true
 }

@@ -225,8 +225,8 @@ Window {
                 text: "<a href=\"https://gpt4all.io\">gpt4all.io</a> |"
                 horizontalAlignment: Text.AlignLeft
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.iconBackgroundHovered
-                linkColor: hoverHandler1.hovered ? theme.accentColor : theme.iconBackgroundHovered
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler1.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
                 HoverHandler { id: hoverHandler1 }
                 onLinkActivated: { Qt.openUrlExternally("https://gpt4all.io") }
             }
@@ -236,8 +236,8 @@ Window {
                 text: "<a href=\"https://github.com/nomic-ai/gpt4all\">github</a>"
                 horizontalAlignment: Text.AlignLeft
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.iconBackgroundHovered
-                linkColor: hoverHandler2.hovered ? theme.accentColor : theme.iconBackgroundHovered
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler2.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
                 HoverHandler { id: hoverHandler2 }
                 onLinkActivated: { Qt.openUrlExternally("https://github.com/nomic-ai/gpt4all") }
             }
@@ -252,8 +252,8 @@ Window {
                 text: "<a href=\"https://nomic.ai\">nomic.ai</a> |"
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.iconBackgroundHovered
-                linkColor: hoverHandler3.hovered ? theme.accentColor : theme.iconBackgroundHovered
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler3.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
                 HoverHandler { id: hoverHandler3 }
                 onLinkActivated: { Qt.openUrlExternally("https://nomic.ai") }
             }
@@ -263,8 +263,8 @@ Window {
                 text: "<a href=\"https://twitter.com/nomic_ai\">twitter</a> |"
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.iconBackgroundHovered
-                linkColor: hoverHandler4.hovered ? theme.accentColor : theme.iconBackgroundHovered
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler4.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
                 HoverHandler { id: hoverHandler4 }
                 onLinkActivated: { Qt.openUrlExternally("https://twitter.com/nomic_ai") }
             }
@@ -274,8 +274,8 @@ Window {
                 text: "<a href=\"https://discord.gg/4M2QFmTt2k\">discord</a>"
                 horizontalAlignment: Text.AlignRight
                 font.pixelSize: theme.fontSizeFixedSmall
-                color: theme.iconBackgroundHovered
-                linkColor: hoverHandler5.hovered ? theme.accentColor : theme.iconBackgroundHovered
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler5.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
                 HoverHandler { id: hoverHandler5 }
                 onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
             }
@@ -533,7 +533,7 @@ Window {
         anchors.topMargin: 42.5
         anchors.rightMargin: 10
         width: 40
-        height: 40
+        height: 42.5
         z: 200
         padding: 15
         toggled: currentChat.collectionList.length
