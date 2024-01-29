@@ -27,7 +27,7 @@ Button {
             anchors.fill: parent
             color: "transparent"
             visible: myButton.toggled
-            border.color: theme.yellowAccent
+            border.color: theme.accentColor
             border.width: 1
             radius: 10
         }

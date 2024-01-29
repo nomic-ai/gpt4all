@@ -45,7 +45,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 3
-        color: theme.yellowAccent
+        color: theme.accentColor
     }
 
     TabBar {
@@ -90,7 +90,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 3
-        color: theme.yellowAccent
+        color: theme.accentColor
     }
 
     FolderDialog {

@@ -74,7 +74,7 @@ MyDialog {
                         id: titleLabel
                         backgroundColor: index === listView.currentIndex ? theme.buttonBackground : theme.controlBackground
                         backgroundColorHovered: index === listView.currentIndex ? backgroundColor : theme.containerBackground
-                        borderColor: index === listView.currentIndex ? theme.yellowAccent : "transparent"
+                        borderColor: index === listView.currentIndex ? theme.accentColor : "transparent"
                         borderWidth: index === listView.currentIndex ? 1 : 0
                         textColor: index === listView.currentIndex ? theme.oppositeTextColor : theme.titleTextColor
                         anchors.verticalCenter: parent.verticalCenter
