@@ -522,7 +522,7 @@ QtObject {
     property color userColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue700;
+                return blue800;
             case "Dark":
                 return green700;
             default:
