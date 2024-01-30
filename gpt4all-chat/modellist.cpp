@@ -678,6 +678,10 @@ void ModelList::updateData(const QString &id, int role, const QVariant &value)
             info->setMaxLength(value.toInt()); break;
         case PromptBatchSizeRole:
             info->setPromptBatchSize(value.toInt()); break;
+        case ContextLengthRole:
+            info->setContextLength(value.toInt()); break;
+        case GpuLayersRole:
+            info->setGpuLayers(value.toInt()); break;
         case RepeatPenaltyRole:
             info->setRepeatPenalty(value.toDouble()); break;
         case RepeatPenaltyTokensRole:
