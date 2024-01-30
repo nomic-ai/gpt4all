@@ -111,18 +111,20 @@ void llmodel_model_destroy(llmodel_model model);
  * @param model A pointer to the llmodel_model instance.
  * @param model_path A string representing the path to the model file.
  * @param n_ctx Maximum size of context window
+ * @param ngl Number of GPU layers to use (Vulkan)
  * @return size greater than 0 if the model was parsed successfully, 0 if file could not be parsed.
  */
-size_t llmodel_required_mem(llmodel_model model, const char *model_path, int n_ctx);
+size_t llmodel_required_mem(llmodel_model model, const char *model_path, int n_ctx, int ngl);
 
 /**
  * Load a model from a file.
  * @param model A pointer to the llmodel_model instance.
  * @param model_path A string representing the path to the model file.
  * @param n_ctx Maximum size of context window
+ * @param ngl Number of GPU layers to use (Vulkan)
  * @return true if the model was loaded successfully, false otherwise.
  */
-bool llmodel_loadModel(llmodel_model model, const char *model_path, int n_ctx);
+bool llmodel_loadModel(llmodel_model model, const char *model_path, int n_ctx, int ngl);
 
 /**
  * Check if a model is loaded.

@@ -40,6 +40,7 @@ struct ModelInfo {
     Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength)
     Q_PROPERTY(int promptBatchSize READ promptBatchSize WRITE setPromptBatchSize)
     Q_PROPERTY(int contextLength READ contextLength WRITE setContextLength)
+    Q_PROPERTY(int gpuLayers READ gpuLayers WRITE setGpuLayers)
     Q_PROPERTY(double repeatPenalty READ repeatPenalty WRITE setRepeatPenalty)
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
     Q_PROPERTY(QString promptTemplate READ promptTemplate WRITE setPromptTemplate)
@@ -97,6 +98,8 @@ public:
     void setPromptBatchSize(int s);
     int contextLength() const;
     void setContextLength(int l);
+    int gpuLayers() const;
+    void setGpuLayers(int l);
     double repeatPenalty() const;
     void setRepeatPenalty(double p);
     int repeatPenaltyTokens() const;
@@ -116,6 +119,7 @@ private:
     int     m_maxLength           = 4096;
     int     m_promptBatchSize     = 128;
     int     m_contextLength       = 2048;
+    int     m_gpuLayers           = 100;
     double  m_repeatPenalty       = 1.18;
     int     m_repeatPenaltyTokens = 64;
     QString m_promptTemplate      = "### Human:\n%1\n### Assistant:\n";
@@ -232,6 +236,7 @@ public:
         MaxLengthRole,
         PromptBatchSizeRole,
         ContextLengthRole,
+        GpuLayersRole,
         RepeatPenaltyRole,
         RepeatPenaltyTokensRole,
         PromptTemplateRole,
@@ -275,6 +280,7 @@ public:
         roles[MaxLengthRole] = "maxLength";
         roles[PromptBatchSizeRole] = "promptBatchSize";
         roles[ContextLengthRole] = "contextLength";
+        roles[GpuLayersRole] = "gpuLayers";
         roles[RepeatPenaltyRole] = "repeatPenalty";
         roles[RepeatPenaltyTokensRole] = "repeatPenaltyTokens";
         roles[PromptTemplateRole] = "promptTemplate";

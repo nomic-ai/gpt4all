@@ -182,16 +182,16 @@ class LLModel:
         if self.model is not None:
             self.llmodel_lib.llmodel_model_destroy(self.model)
 
-    def memory_needed(self, model_path: str, n_ctx: int) -> int:
+    def memory_needed(self, model_path: str, n_ctx: int, ngl: int) -> int:
         self.model = None
-        return self._memory_needed(model_path, n_ctx)
+        return self._memory_needed(model_path, n_ctx, ngl)
 
-    def _memory_needed(self, model_path: str, n_ctx: int) -> int:
+    def _memory_needed(self, model_path: str, n_ctx: int, ngl: int) -> int:
         if self.model is None:
             self.model = _create_model(model_path.encode())
-        return llmodel.llmodel_required_mem(self.model, model_path.encode(), n_ctx)
+        return llmodel.llmodel_required_mem(self.model, model_path.encode(), n_ctx, ngl)
 
-    def list_gpu(self, model_path: str, n_ctx: int) -> list[LLModelGPUDevice]:
+    def list_gpu(self, model_path: str, n_ctx: int, ngl: int) -> list[LLModelGPUDevice]:
         """
         Lists available GPU devices that satisfy the model's memory requirements.
 
@@ -201,13 +201,15 @@ class LLModel:
             Path to the model.
         n_ctx : int
             Maximum size of context window
+        ngl : int
+            Number of GPU layers to use (Vulkan)
 
         Returns
         -------
         list
             A list of LLModelGPUDevice structures representing available GPU devices.
         """
-        mem_required = self._memory_needed(model_path, n_ctx)
+        mem_required = self._memory_needed(model_path, n_ctx, ngl)
         return self._list_gpu(mem_required)
 
     def _list_gpu(self, mem_required: int) -> list[LLModelGPUDevice]:
@@ -217,8 +219,8 @@ class LLModel:
             raise ValueError("Unable to retrieve available GPU devices")
         return devices_ptr[:num_devices.value]
 
-    def init_gpu(self, model_path: str, device: str, n_ctx: int):
-        mem_required = self._memory_needed(model_path, n_ctx)
+    def init_gpu(self, model_path: str, device: str, n_ctx: int, ngl: int):
+        mem_required = self._memory_needed(model_path, n_ctx, ngl)
 
         success = self.llmodel_lib.llmodel_gpu_init_gpu_device_by_string(self.model, mem_required, device.encode())
         if not success:
@@ -241,7 +243,7 @@ class LLModel:
             error_msg += "\nUnavailable GPUs due to insufficient memory or features: {}.".format(unavailable_gpus)
             raise ValueError(error_msg)
 
-    def load_model(self, model_path: str, n_ctx: int) -> bool:
+    def load_model(self, model_path: str, n_ctx: int, ngl: int) -> bool:
         """
         Load model from a file.
 
@@ -251,6 +253,8 @@ class LLModel:
             Model filepath
         n_ctx : int
             Maximum size of context window
+        ngl : int
+            Number of GPU layers to use (Vulkan)
 
         Returns
         -------
@@ -258,7 +262,7 @@ class LLModel:
         """
         self.model = _create_model(model_path.encode())
 
-        llmodel.llmodel_loadModel(self.model, model_path.encode(), n_ctx)
+        llmodel.llmodel_loadModel(self.model, model_path.encode(), n_ctx, ngl)
 
         filename = os.path.basename(model_path)
         self.model_name = os.path.splitext(filename)[0]

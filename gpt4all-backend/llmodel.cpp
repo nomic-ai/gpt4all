@@ -158,7 +158,7 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
                  * load time, not construct time. right now n_ctx is incorrectly hardcoded 2048 in
                  * most (all?) places where this is called, causing underestimation of required
                  * memory. */
-                size_t req_mem = metalimpl->requiredMem(modelPath, n_ctx);
+                size_t req_mem = metalimpl->requiredMem(modelPath, n_ctx, 100);
                 float req_to_total = (float) req_mem / (float) total_mem;
                 // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
                 if (req_to_total >= 0.53) {

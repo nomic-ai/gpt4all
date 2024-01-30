@@ -247,10 +247,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             model->setAPIKey(apiKey);
             m_llModelInfo.model = model;
         } else {
-
-            // TODO: make configurable in UI
             auto n_ctx = MySettings::globalInstance()->modelContextLength(modelInfo);
             m_ctx.n_ctx = n_ctx;
+            auto ngl = MySettings::globalInstance()->modelGpuLayers(modelInfo);
 
             std::string buildVariant = "auto";
 #if defined(Q_OS_MAC) && defined(__arm__)
@@ -269,7 +268,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 if (requestedDevice == "CPU") {
                     emit reportFallbackReason(""); // fallback not applicable
                 } else {
-                    const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString(), n_ctx);
+                    const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString(), n_ctx, ngl);
                     std::vector<LLModel::GPUDevice> availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
                     LLModel::GPUDevice *device = nullptr;
 
@@ -298,14 +297,14 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 // Report which device we're actually using
                 emit reportDevice(actualDevice);
 
-                bool success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx);
+                bool success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, ngl);
                 if (actualDevice == "CPU") {
                     // we asked llama.cpp to use the CPU
                 } else if (!success) {
                     // llama_init_from_file returned nullptr
                     emit reportDevice("CPU");
                     emit reportFallbackReason("<br>GPU loading failed (out of VRAM?)");
-                    success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx);
+                    success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, 0);
                 } else if (!m_llModelInfo.model->usingGPUDevice()) {
                     // ggml_vk_init was not called in llama.cpp
                     // We might have had to fallback to CPU after load if the model is not possible to accelerate

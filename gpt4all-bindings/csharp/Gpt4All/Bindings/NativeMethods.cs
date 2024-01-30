@@ -71,7 +71,8 @@ internal static unsafe partial class NativeMethods
     public static extern bool llmodel_loadModel(
         [NativeTypeName("llmodel_model")] IntPtr model,
         [NativeTypeName("const char *")][MarshalAs(UnmanagedType.LPUTF8Str)] string model_path,
-        [NativeTypeName("int32_t")] int n_ctx);
+        [NativeTypeName("int32_t")] int n_ctx,
+        [NativeTypeName("int32_t")] int ngl);
 
     [DllImport("libllmodel", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
 

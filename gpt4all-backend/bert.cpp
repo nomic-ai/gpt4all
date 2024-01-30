@@ -709,9 +709,10 @@ Bert::~Bert() {
     bert_free(d_ptr->ctx);
 }
 
-bool Bert::loadModel(const std::string &modelPath, int n_ctx)
+bool Bert::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
     (void)n_ctx;
+    (void)ngl;
     d_ptr->ctx = bert_load_from_file(modelPath.c_str());
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = d_ptr->ctx != nullptr;
@@ -724,10 +725,11 @@ bool Bert::isModelLoaded() const
     return d_ptr->modelLoaded;
 }
 
-size_t Bert::requiredMem(const std::string &modelPath, int n_ctx)
+size_t Bert::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
 {
     (void)modelPath;
     (void)n_ctx;
+    (void)ngl;
     return 0;
 }
 

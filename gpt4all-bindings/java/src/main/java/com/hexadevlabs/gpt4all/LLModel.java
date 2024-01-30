@@ -195,7 +195,7 @@ public  class LLModel implements AutoCloseable {
         if(model == null) {
             throw new IllegalStateException("Could not load, gpt4all backend returned error: " + error.getValue().getString(0));
         }
-        library.llmodel_loadModel(model, modelPathAbs, 2048);
+        library.llmodel_loadModel(model, modelPathAbs, 2048, 100);
 
         if(!library.llmodel_isModelLoaded(model)){
             throw new IllegalStateException("The model " + modelName + " could not be loaded");

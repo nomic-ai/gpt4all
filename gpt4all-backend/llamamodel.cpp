@@ -121,8 +121,9 @@ struct llama_file_hparams {
     enum llama_ftype ftype = LLAMA_FTYPE_MOSTLY_F16;
 };
 
-size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx) {
+size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl) {
     // TODO(cebtenzzre): update to GGUF
+    (void)ngl; // FIXME(cetenzzre): use this value
     auto fin = std::ifstream(modelPath, std::ios::binary);
     fin.seekg(0, std::ios_base::end);
     size_t filesize = fin.tellg();
@@ -144,7 +145,7 @@ size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx) {
     return filesize + est_kvcache_size;
 }
 
-bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx)
+bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
     gpt_params params;
 
@@ -168,11 +169,14 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx)
     if (llama_verbose()) {
         std::cerr << "llama.cpp: using Metal" << std::endl;
     }
+
+    // always fully offload on Metal
+    // TODO(cebtenzzre): use this parameter to allow using more than 53% of system RAM to load a model
     d_ptr->model_params.n_gpu_layers = 100;
 #elif defined(GGML_USE_KOMPUTE)
     if (d_ptr->device != -1) {
         d_ptr->model_params.main_gpu = d_ptr->device;
-        d_ptr->model_params.n_gpu_layers = 100;
+        d_ptr->model_params.n_gpu_layers = ngl;
     }
 #endif
 
