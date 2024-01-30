@@ -327,13 +327,9 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
     return d_ptr->end_tokens;
 }
 
-#if defined(GGML_USE_KOMPUTE)
-#include "ggml-kompute.h"
-#endif
-
-std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired)
+std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired) const
 {
-#if defined(GGML_USE_KOMPUTE)
+#ifdef GGML_USE_KOMPUTE
     size_t count = 0;
     auto * vkDevices = ggml_vk_available_devices(memoryRequired, &count);
 
@@ -360,7 +356,7 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
     return {};
 }
 
-bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &name)
+bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &name) const
 {
 #if defined(GGML_USE_KOMPUTE)
     ggml_vk_device device;
@@ -376,28 +372,17 @@ bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &n
     return false;
 }
 
-bool LLamaModel::initializeGPUDevice(const LLModel::GPUDevice &device, std::string *unavail_reason)
+bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) const
 {
 #if defined(GGML_USE_KOMPUTE)
     (void)unavail_reason;
-    d_ptr->device = device.index;
+    d_ptr->device = device;
     return true;
 #else
     (void)device;
     if (unavail_reason) {
         *unavail_reason = "built without Kompute";
     }
-    return false;
-#endif
-}
-
-bool LLamaModel::initializeGPUDevice(int device)
-{
-#if defined(GGML_USE_KOMPUTE)
-    d_ptr->device = device;
-    return true;
-#else
-    (void)device;
     return false;
 #endif
 }

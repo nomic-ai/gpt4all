@@ -287,7 +287,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     std::string unavail_reason;
                     if (!device) {
                         // GPU not available
-                    } else if (!m_llModelInfo.model->initializeGPUDevice(*device, &unavail_reason)) {
+                    } else if (!m_llModelInfo.model->initializeGPUDevice(device->index, &unavail_reason)) {
                         emit reportFallbackReason(QString::fromStdString("<br>" + unavail_reason));
                     } else {
                         actualDevice = QString::fromStdString(device->name);

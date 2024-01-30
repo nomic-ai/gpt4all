@@ -101,18 +101,18 @@ public:
         return *m_implementation;
     }
 
-    virtual std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired) {
+    virtual std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired) const {
         (void)memoryRequired;
         return {};
     }
 
-    virtual bool initializeGPUDevice(size_t memoryRequired, const std::string& name) {
+    virtual bool initializeGPUDevice(size_t memoryRequired, const std::string& name) const {
         (void)memoryRequired;
         (void)name;
         return false;
     }
 
-    virtual bool initializeGPUDevice(const GPUDevice & device, std::string *unavail_reason = nullptr) {
+    virtual bool initializeGPUDevice(int device, std::string *unavail_reason = nullptr) const {
         (void)device;
         if (unavail_reason) {
             *unavail_reason = "model has no GPU support";
@@ -120,7 +120,6 @@ public:
         return false;
     }
 
-    virtual bool initializeGPUDevice(int /*device*/) { return false; }
     virtual bool hasGPUDevice() { return false; }
     virtual bool usingGPUDevice() { return false; }
 

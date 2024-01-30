@@ -25,10 +25,9 @@ public:
     size_t restoreState(const uint8_t *src) override;
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
-    std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired) override;
-    bool initializeGPUDevice(size_t memoryRequired, const std::string& name) override;
-    bool initializeGPUDevice(const GPUDevice &device, std::string *unavail_reason) override;
-    bool initializeGPUDevice(int device) override;
+    std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired) const override;
+    bool initializeGPUDevice(size_t memoryRequired, const std::string& name) const override;
+    bool initializeGPUDevice(int device, std::string *unavail_reason) const override;
     bool hasGPUDevice() override;
     bool usingGPUDevice() override;
 
