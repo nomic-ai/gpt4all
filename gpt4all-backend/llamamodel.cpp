@@ -346,6 +346,7 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
                 /* name     = */ dev.name,
                 /* vendor   = */ dev.vendor
             );
+            ggml_vk_device_destroy(&dev);
         }
 
         free(vkDevices);
