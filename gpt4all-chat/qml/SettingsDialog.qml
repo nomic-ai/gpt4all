@@ -41,46 +41,52 @@ MyDialog {
         }
     }
 
-    ScrollView {
+    Rectangle {
         id: stackList
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
-        width: 200
-        ScrollBar.vertical.policy: ScrollBar.AsNeeded
-        clip: true
+        width: 220
+        color: theme.controlBackground
+        radius: 10
 
-        ListView {
-            id: listView
-            anchors.fill: parent
-            anchors.rightMargin: 10
-            model: stacksModel
+        ScrollView {
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.topMargin: 10
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            clip: true
 
-            delegate: Rectangle {
-                id: item
-                width: listView.width
-                height: titleLabel.height + 25
-                color: "transparent"
-                border.color: theme.backgroundLighter
-                border.width: index == listView.currentIndex ? 1 : 0
-                radius: 10
+            ListView {
+                id: listView
+                anchors.fill: parent
+                model: stacksModel
 
-                Text {
-                    id: titleLabel
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.margins: 20
-                    font.bold: index == listView.currentIndex
-                    text: title
-                    font.pixelSize: theme.fontSizeLarge
-                    elide: Text.ElideRight
-                    color: theme.textColor
-                    width: 200
-                }
+                delegate: Rectangle {
+                    id: item
+                    width: listView.width
+                    height: titleLabel.height + 10
+                    color: "transparent"
 
-                TapHandler {
-                    onTapped: {
-                        listView.currentIndex = index
+                    MyButton {
+                        id: titleLabel
+                        backgroundColor: index === listView.currentIndex ? theme.buttonBackground : theme.controlBackground
+                        backgroundColorHovered: index === listView.currentIndex ? backgroundColor : theme.containerBackground
+                        borderColor: index === listView.currentIndex ? theme.accentColor : "transparent"
+                        borderWidth: index === listView.currentIndex ? 1 : 0
+                        textColor: index === listView.currentIndex ? theme.oppositeTextColor : theme.titleTextColor
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.margins: 10
+                        font.bold: index === listView.currentIndex
+                        text: title
+                        font.pixelSize: theme.fontSizeLarge
+                        onClicked: {
+                            listView.currentIndex = index
+                        }
                     }
                 }
             }

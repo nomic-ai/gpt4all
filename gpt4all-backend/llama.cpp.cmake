@@ -175,6 +175,7 @@ if (LLAMA_KOMPUTE)
             DEPENDS ${LLAMA_DIR}/${source}
               ${LLAMA_DIR}/kompute-shaders/common.comp
               ${LLAMA_DIR}/kompute-shaders/op_getrows.comp
+              ${LLAMA_DIR}/kompute-shaders/op_mul_mv_q_n_pre.comp
               ${LLAMA_DIR}/kompute-shaders/op_mul_mv_q_n.comp
             COMMAND ${glslc_executable} --target-env=vulkan1.2 -o ${spv_file} ${LLAMA_DIR}/${source}
             COMMENT "Compiling ${source} to ${source}.spv"
@@ -231,7 +232,6 @@ if (LLAMA_KOMPUTE)
           kompute-shaders/op_add.comp
           kompute-shaders/op_addrow.comp
           kompute-shaders/op_mul.comp
-          kompute-shaders/op_mulrow.comp
           kompute-shaders/op_silu.comp
           kompute-shaders/op_relu.comp
           kompute-shaders/op_gelu.comp
@@ -264,7 +264,6 @@ if (LLAMA_KOMPUTE)
           shaderop_add.h
           shaderop_addrow.h
           shaderop_mul.h
-          shaderop_mulrow.h
           shaderop_silu.h
           shaderop_relu.h
           shaderop_gelu.h

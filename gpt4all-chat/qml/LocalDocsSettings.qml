@@ -26,7 +26,7 @@ MySettingsTab {
         property alias collection: collection.text
         property alias folder_path: folderEdit.text
 
-        Label {
+        MySettingsLabel {
             id: downloadLabel
             Layout.fillWidth: true
             Layout.maximumWidth: parent.width
@@ -34,11 +34,9 @@ MySettingsTab {
             visible: !hasEmbeddingModel
             Layout.alignment: Qt.AlignLeft
             text: qsTr("This feature requires the download of a text embedding model in order to index documents for later search. Please download the <b>SBert</a> text embedding model from the download dialog to proceed.")
-            font.pixelSize: theme.fontSizeLarger
-            color: theme.textColor
         }
 
-        MyButton {
+        MySettingsButton {
             visible: !hasEmbeddingModel
             Layout.topMargin: 20
             Layout.alignment: Qt.AlignLeft
@@ -97,7 +95,7 @@ MySettingsTab {
                     }
                 }
 
-                MyButton {
+                MySettingsButton {
                     id: browseButton
                     text: qsTr("Browse")
                     onClicked: {
@@ -107,7 +105,7 @@ MySettingsTab {
                     }
                 }
 
-                MyButton {
+                MySettingsButton {
                     id: addButton
                     text: qsTr("Add")
                     Accessible.role: Accessible.Button
@@ -143,7 +141,7 @@ MySettingsTab {
                     id: item
                     Layout.fillWidth: true
                     height: buttons.height + 20
-                    color: index % 2 === 0 ? theme.backgroundDark : theme.backgroundDarker
+                    color: index % 2 === 0 ? theme.darkContrast : theme.lightContrast
                     property bool removing: false
 
                     Text {
@@ -177,7 +175,7 @@ MySettingsTab {
                         anchors.margins: 20
                         width: removeButton.width
                         height:removeButton.height
-                        MyButton {
+                        MySettingsButton {
                             id: removeButton
                             anchors.centerIn: parent
                             text: qsTr("Remove")
@@ -194,11 +192,9 @@ MySettingsTab {
 
         RowLayout {
             visible: hasEmbeddingModel
-            Label {
+            MySettingsLabel {
                 id: showReferencesLabel
-                text: qsTr("Show references:")
-                color: theme.textColor
-                font.pixelSize: theme.fontSizeLarge
+                text: qsTr("Show references")
             }
             MyCheckBox {
                 id: showReferencesBox
@@ -214,8 +210,8 @@ MySettingsTab {
         Rectangle {
             visible: hasEmbeddingModel
             Layout.fillWidth: true
-            height: 1
-            color: theme.tabBorder
+            height: 3
+            color: theme.accentColor
         }
     }
     advancedSettings: GridLayout {
@@ -230,17 +226,15 @@ MySettingsTab {
             Layout.column: 0
             Layout.fillWidth: true
             Layout.columnSpan: 3
-            height: 1
-            color: theme.tabBorder
+            height: 3
+            color: theme.accentColor
         }
 
-        Label {
+        MySettingsLabel {
             id: chunkLabel
             Layout.row: 1
             Layout.column: 0
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
-            text: qsTr("Document snippet size (characters):")
+            text: qsTr("Document snippet size (characters)")
         }
 
         MyTextField {
@@ -264,13 +258,11 @@ MySettingsTab {
             }
         }
 
-        Label {
+        MySettingsLabel {
             id: contextItemsPerPrompt
             Layout.row: 2
             Layout.column: 0
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
-            text: qsTr("Max document snippets per prompt:")
+            text: qsTr("Max document snippets per prompt")
         }
 
         MyTextField {
@@ -300,7 +292,7 @@ MySettingsTab {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
             Layout.minimumHeight: warningLabel.height
-            Label {
+            MySettingsLabel {
                 id: warningLabel
                 width: parent.width
                 color: theme.textErrorColor

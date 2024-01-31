@@ -192,6 +192,13 @@ public:
 
     int count() const { return m_chats.size(); }
 
+    void clearChats() {
+        m_newChat = nullptr;
+        m_serverChat = nullptr;
+        m_currentChat = nullptr;
+        m_chats.clear();
+    }
+
     void removeChatFile(Chat *chat) const;
     Q_INVOKABLE void saveChats();
     void restoreChat(Chat *chat);

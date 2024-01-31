@@ -15,15 +15,17 @@ CheckBox {
         implicitHeight: 26
         x: myCheckBox.leftPadding
         y: parent.height / 2 - height / 2
-        border.color: theme.dialogBorder
+        border.color: theme.checkboxBorder
         color: "transparent"
+        radius: 3
 
         Rectangle {
             width: 14
             height: 14
             x: 6
             y: 6
-            color: theme.textColor
+            radius: 2
+            color: theme.checkboxForeground
             visible: myCheckBox.checked
         }
     }
@@ -36,4 +38,5 @@ CheckBox {
         verticalAlignment: Text.AlignVCenter
         leftPadding: myCheckBox.indicator.width + myCheckBox.spacing
     }
+    ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
 }

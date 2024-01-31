@@ -27,7 +27,7 @@ from pathlib import Path
 
 import gguf
 import numpy as np
-from transformers import AutoTokenizer, GPTJConfig, GPTJForCausalLM
+from transformers import AutoConfig, AutoTokenizer, GPTJForCausalLM
 from transformers.models.gpt2 import tokenization_gpt2
 
 
@@ -63,7 +63,7 @@ gguf_writer = gguf.GGUFWriter(fname_out, gguf.MODEL_ARCH_NAMES[ARCH])
 
 print("gguf: get model metadata")
 
-config = GPTJConfig(dir_model)
+config = AutoConfig.from_pretrained(dir_model)
 
 block_count = config.n_layer
 gguf_writer.add_name("GPT-J")

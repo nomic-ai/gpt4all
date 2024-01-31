@@ -70,6 +70,7 @@ class GPT4All:
         n_threads: Optional[int] = None,
         device: Optional[str] = "cpu",
         n_ctx: int = 2048,
+        ngl: int = 100,
         verbose: bool = False,
     ):
         """
@@ -92,6 +93,7 @@ class GPT4All:
 
                 Note: If a selected GPU device does not have sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the model.
             n_ctx: Maximum size of context window
+            ngl: Number of GPU layers to use (Vulkan)
             verbose: If True, print debug messages.
         """
         self.model_type = model_type
@@ -99,8 +101,8 @@ class GPT4All:
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
         if device is not None and device != "cpu":
-            self.model.init_gpu(model_path=self.config["path"], device=device, n_ctx=n_ctx)
-        self.model.load_model(self.config["path"], n_ctx)
+            self.model.init_gpu(model_path=self.config["path"], device=device, n_ctx=n_ctx, ngl=ngl)
+        self.model.load_model(self.config["path"], n_ctx, ngl)
         # Set n_threads
         if n_threads is not None:
             self.model.set_thread_count(n_threads)

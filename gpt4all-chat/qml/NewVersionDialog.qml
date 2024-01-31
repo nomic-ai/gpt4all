@@ -31,12 +31,13 @@ MyDialog {
             anchors.left: parent.left
             topPadding: 20
             bottomPadding: 20
-            text: qsTr("New version is available:")
-            color: theme.textColor
+            text: qsTr("New version is available")
+            color: theme.titleTextColor
             font.pixelSize: theme.fontSizeLarge
+            font.bold: true
         }
 
-        MyButton {
+        MySettingsButton {
             id: button
             anchors.left: label.right
             anchors.leftMargin: 10

@@ -14,10 +14,10 @@ import mysettings
 
 Window {
     id: window
-    width: 1280
-    height: 720
-    minimumWidth: 720
-    minimumHeight: 480
+    width: 1920
+    height: 1080
+    minimumWidth: 1280
+    minimumHeight: 720
     visible: true
     title: qsTr("GPT4All v") + Qt.application.version
 
@@ -47,7 +47,7 @@ Window {
         }
     }
 
-    color: theme.backgroundDarkest
+    color: theme.black
 
     // Startup code
     Component.onCompleted: {
@@ -198,12 +198,97 @@ Window {
     }
 
     Rectangle {
+        id: accentRibbon
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: header.bottom
+        height: 3
+        color: theme.accentColor
+    }
+
+    Rectangle {
+        id: titleBar
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 5
+        z: 200
+        height: 25
+        color: "transparent"
+
+        RowLayout {
+            anchors.left: parent.left
+            anchors.leftMargin: 30
+
+            Text {
+                textFormat: Text.StyledText
+                text: "<a href=\"https://gpt4all.io\">gpt4all.io</a> |"
+                horizontalAlignment: Text.AlignLeft
+                font.pixelSize: theme.fontSizeFixedSmall
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler1.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
+                HoverHandler { id: hoverHandler1 }
+                onLinkActivated: { Qt.openUrlExternally("https://gpt4all.io") }
+            }
+
+            Text {
+                textFormat: Text.StyledText
+                text: "<a href=\"https://github.com/nomic-ai/gpt4all\">github</a>"
+                horizontalAlignment: Text.AlignLeft
+                font.pixelSize: theme.fontSizeFixedSmall
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler2.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
+                HoverHandler { id: hoverHandler2 }
+                onLinkActivated: { Qt.openUrlExternally("https://github.com/nomic-ai/gpt4all") }
+            }
+        }
+
+        RowLayout {
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+
+            Text {
+                textFormat: Text.StyledText
+                text: "<a href=\"https://nomic.ai\">nomic.ai</a> |"
+                horizontalAlignment: Text.AlignRight
+                font.pixelSize: theme.fontSizeFixedSmall
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler3.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
+                HoverHandler { id: hoverHandler3 }
+                onLinkActivated: { Qt.openUrlExternally("https://nomic.ai") }
+            }
+
+            Text {
+                textFormat: Text.StyledText
+                text: "<a href=\"https://twitter.com/nomic_ai\">twitter</a> |"
+                horizontalAlignment: Text.AlignRight
+                font.pixelSize: theme.fontSizeFixedSmall
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler4.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
+                HoverHandler { id: hoverHandler4 }
+                onLinkActivated: { Qt.openUrlExternally("https://twitter.com/nomic_ai") }
+            }
+
+            Text {
+                textFormat: Text.StyledText
+                text: "<a href=\"https://discord.gg/4M2QFmTt2k\">discord</a>"
+                horizontalAlignment: Text.AlignRight
+                font.pixelSize: theme.fontSizeFixedSmall
+                color: theme.iconBackgroundLight
+                linkColor: hoverHandler5.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
+                HoverHandler { id: hoverHandler5 }
+                onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
+            }
+        }
+    }
+
+    Rectangle {
         id: header
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
         height: 100
-        color: theme.backgroundDarkest
+        color: theme.mainHeader
         Item {
             anchors.centerIn: parent
             height: childrenRect.height
@@ -216,7 +301,7 @@ Window {
                 font.pixelSize: theme.fontSizeLarger
                 text: ""
                 background: Rectangle {
-                    color: theme.backgroundDarkest
+                    color: theme.mainHeader
                 }
                 horizontalAlignment: TextInput.AlignRight
             }
@@ -251,7 +336,7 @@ Window {
                     }
                 }
                 background: Rectangle {
-                    color: theme.backgroundDark
+                    color: theme.mainComboBackground
                     radius: 10
                 }
                 contentItem: Text {
@@ -261,8 +346,8 @@ Window {
                     text: currentChat.modelLoadingError !== ""
                         ? qsTr("Model loading error...")
                         : comboBox.currentModelName
-                    font: comboBox.font
-                    color: theme.textColor
+                    font.pixelSize: theme.fontSizeLarger
+                    color: theme.white
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
@@ -277,7 +362,9 @@ Window {
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: highlighted ? theme.backgroundLight : theme.backgroundDark
+                        color: (index % 2 === 0 ? theme.darkContrast : theme.lightContrast)
+                        border.width: highlighted
+                        border.color: theme.accentColor
                     }
                     highlighted: comboBox.highlightedIndex === index
                 }
@@ -314,7 +401,7 @@ Window {
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Loading model...")
                     font.pixelSize: theme.fontSizeLarge
-                    color: theme.textAccent
+                    color: theme.oppositeTextColor
                 }
             }
         }
@@ -335,7 +422,7 @@ Window {
         id: drawerButton
         anchors.left: parent.left
         anchors.top: parent.top
-        anchors.topMargin: 30
+        anchors.topMargin: 42.5
         anchors.leftMargin: 30
         width: 40
         height: 40
@@ -353,7 +440,7 @@ Window {
 
             Rectangle {
                 id: bar1
-                color: drawerButton.hovered ? theme.textColor : theme.backgroundLightest
+                color: drawerButton.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
                 width: parent.width
                 height: 6
                 radius: 2
@@ -363,7 +450,7 @@ Window {
             Rectangle {
                 id: bar2
                 anchors.centerIn: parent
-                color: drawerButton.hovered ? theme.textColor : theme.backgroundLightest
+                color: drawerButton.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
                 width: parent.width
                 height: 6
                 radius: 2
@@ -373,7 +460,7 @@ Window {
             Rectangle {
                 id: bar3
                 anchors.bottom: parent.bottom
-                color: drawerButton.hovered ? theme.textColor : theme.backgroundLightest
+                color: drawerButton.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
                 width: parent.width
                 height: 6
                 radius: 2
@@ -399,9 +486,10 @@ Window {
 
     MyToolButton {
         id: networkButton
+        backgroundColor: theme.iconBackgroundLight
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.topMargin: 30
+        anchors.topMargin: 42.5
         anchors.rightMargin: 30
         width: 40
         height: 40
@@ -439,12 +527,13 @@ Window {
 
     MyToolButton {
         id: collectionsButton
+        backgroundColor: theme.iconBackgroundLight
         anchors.right: networkButton.left
         anchors.top: parent.top
-        anchors.topMargin: 30
+        anchors.topMargin: 42.5
         anchors.rightMargin: 10
         width: 40
-        height: 40
+        height: 42.5
         z: 200
         padding: 15
         toggled: currentChat.collectionList.length
@@ -459,9 +548,10 @@ Window {
 
     MyToolButton {
         id: settingsButton
+        backgroundColor: theme.iconBackgroundLight
         anchors.right: collectionsButton.left
         anchors.top: parent.top
-        anchors.topMargin: 30
+        anchors.topMargin: 42.5
         anchors.rightMargin: 10
         width: 40
         height: 40
@@ -527,9 +617,10 @@ Window {
 
     MyToolButton {
         id: copyButton
+        backgroundColor: theme.iconBackgroundLight
         anchors.right: settingsButton.left
         anchors.top: parent.top
-        anchors.topMargin: 30
+        anchors.topMargin: 42.5
         anchors.rightMargin: 10
         width: 40
         height: 40
@@ -592,9 +683,10 @@ Window {
 
     MyToolButton {
         id: resetContextButton
+        backgroundColor: theme.iconBackgroundLight
         anchors.right: copyButton.left
         anchors.top: parent.top
-        anchors.topMargin: 30
+        anchors.topMargin: 42.5
         anchors.rightMargin: 10
         width: 40
         height: 40
@@ -616,7 +708,6 @@ Window {
         id: checkForUpdatesError
         anchors.centerIn: parent
         modal: false
-        opacity: 0.9
         padding: 20
         Text {
             horizontalAlignment: Text.AlignJustify
@@ -627,7 +718,7 @@ Window {
                    above where this application resides on your filesystem.<br><br>
                    If you can't start it manually, then I'm afraid you'll have to<br>
                    reinstall.")
-            color: theme.textColor
+            color: theme.textErrorColor
             font.pixelSize: theme.fontSizeLarge
             Accessible.role: Accessible.Dialog
             Accessible.name: text
@@ -635,7 +726,7 @@ Window {
         }
         background: Rectangle {
             anchors.fill: parent
-            color: theme.backgroundDarkest
+            color: theme.containerBackground
             border.width: 1
             border.color: theme.dialogBorder
             radius: 10
@@ -656,7 +747,7 @@ Window {
 
     ChatDrawer {
         id: drawer
-        y: header.height
+        y: header.height + accentRibbon.height
         width: Math.min(600, 0.3 * window.width)
         height: window.height - y
         onDownloadClicked: {
@@ -678,11 +769,11 @@ Window {
 
     Rectangle {
         id: conversation
-        color: theme.backgroundLight
+        color: theme.conversationBackground
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.top: header.bottom
+        anchors.top: accentRibbon.bottom
 
         ScrollView {
             id: scrollView
@@ -695,58 +786,129 @@ Window {
 
             Rectangle {
                 anchors.fill: parent
-                color: currentChat.isServer ? theme.backgroundDark : theme.backgroundLight
+                color: currentChat.isServer ? theme.black : theme.conversationBackground
 
-                Text {
-                    id: warningLabel
-                    text: qsTr("You must install a model to continue. Models are available via the download dialog or you can install them manually by downloading from <a href=\"https://gpt4all.io\">the GPT4All website</a> (look for the Models Explorer) and placing them in the model folder. The model folder can be found in the settings dialog under the application tab.")
-                    color: theme.textColor
-                    font.pixelSize: theme.fontSizeLarge
-                    width: 600
-                    linkColor: theme.linkColor
-                    wrapMode: Text.WordWrap
-                    anchors.centerIn: parent
-                    visible: ModelList.installedModels.count === 0
-                    onLinkActivated: function(link) {
-                        Qt.openUrlExternally(link)
-                    }
-                }
+                Rectangle {
+                    id: homePage
+                    color: "transparent"//theme.green200
+                    anchors.fill: parent
+                    visible: (ModelList.installedModels.count === 0 || chatModel.count === 0) && !currentChat.isServer
 
-                MyButton {
-                    id: downloadButton
-                    text: qsTr("Download models")
-                    visible: ModelList.installedModels.count === 0
-                    anchors.top: warningLabel.bottom
-                    anchors.topMargin: 20
-                    anchors.horizontalCenter: warningLabel.horizontalCenter
-                    padding: 15
-                    leftPadding: 50
-                    Image {
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                        anchors.leftMargin: 15
-                        width: 24
-                        height: 24
-                        mipmap: true
-                        source: "qrc:/gpt4all/icons/download.svg"
-                    }
-                    background: Rectangle {
-                        border.color: downloadButton.down ? theme.backgroundLightest : theme.buttonBorder
-                        border.width: 2
-                        radius: 10
-                        color: downloadButton.hovered ? theme.backgroundLighter : theme.backgroundLight
-                    }
-                    onClicked: {
-                        downloadNewModels.open();
+                    ColumnLayout {
+                        anchors.centerIn: parent
+                        spacing: 0
+
+                        Text {
+                            Layout.alignment: Qt.AlignHCenter
+                            text: qsTr("GPT4All")
+                            color: theme.titleTextColor
+                            font.pixelSize: theme.fontSizeLargest + 15
+                            font.bold: true
+                            horizontalAlignment: Qt.AlignHCenter
+                            wrapMode: Text.WordWrap
+                        }
+
+                        Text {
+                            Layout.alignment: Qt.AlignHCenter
+                            textFormat: Text.StyledText
+                            text: qsTr(
+                            "<ul>
+                            <li>Run privacy-aware local chatbots.
+                            <li>No internet required to use.
+                            <li>CPU and GPU acceleration.
+                            <li>Chat with your local data and documents.
+                            <li>Built by Nomic AI and forever open-source.
+                            </ul>
+                            ")
+                            color: theme.textColor
+                            font.pixelSize: theme.fontSizeLarge
+                            wrapMode: Text.WordWrap
+                        }
+
+                        RowLayout {
+                            spacing: 10
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.topMargin: 30
+                            MySlug {
+                               text: "MISTRAL"
+                               color: theme.red600
+                            }
+                            MySlug {
+                               text: "FALCON"
+                               color: theme.green600
+                            }
+                            MySlug {
+                               text: "LLAMA"
+                               color: theme.purple500
+                            }
+                            MySlug {
+                               text: "LLAMA2"
+                               color: theme.red400
+                            }
+                            MySlug {
+                               text: "MPT"
+                               color: theme.green700
+                            }
+                            MySlug {
+                               text: "REPLIT"
+                               color: theme.yellow700
+                            }
+                            MySlug {
+                               text: "STARCODER"
+                               color: theme.purple400
+                            }
+                            MySlug {
+                               text: "SBERT"
+                               color: theme.yellow600
+                            }
+                            MySlug {
+                               text: "GPT-J"
+                               color: theme.gray600
+                            }
+                        }
+
+                        MyButton {
+                            id: downloadButton
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.topMargin: 40
+                            text: qsTr("Download models")
+                            fontPixelSize: theme.fontSizeLargest + 10
+                            padding: 18
+                            leftPadding: 50
+                            Image {
+                                id: image
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.left: parent.left
+                                anchors.leftMargin: 15
+                                width: 24
+                                height: 24
+                                mipmap: true
+                                source: "qrc:/gpt4all/icons/download.svg"
+                            }
+                            ColorOverlay {
+                                anchors.fill: image
+                                source: image
+                                color: theme.accentColor
+                            }
+                            onClicked: {
+                                downloadNewModels.open();
+                            }
+                        }
                     }
                 }
 
                 ListView {
                     id: listView
-                    visible: ModelList.installedModels.count !== 0
+                    visible: ModelList.installedModels.count !== 0 && chatModel.count !== 0
                     anchors.fill: parent
                     model: chatModel
-                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
+
+                    ScrollBar.vertical: ScrollBar {
+                        parent: listView.parent
+                        anchors.top: listView.top
+                        anchors.left: listView.right
+                        anchors.bottom: listView.bottom
+                    }
 
                     Accessible.role: Accessible.List
                     Accessible.name: qsTr("Conversation with the model")
@@ -767,8 +929,8 @@ Window {
                         background: Rectangle {
                             opacity: 1.0
                             color: name === qsTr("Response: ")
-                                ? (currentChat.isServer ? theme.backgroundDarkest : theme.backgroundLighter)
-                                : (currentChat.isServer ? theme.backgroundDark : theme.backgroundLight)
+                                ? (currentChat.isServer ? theme.black : theme.lightContrast)
+                                : (currentChat.isServer ? theme.white : theme.darkContrast)
                         }
                         TapHandler {
                             id: tapHandler
@@ -793,7 +955,7 @@ Window {
 
                         Component.onCompleted: {
                             responseText.setLinkColor(theme.linkColor);
-                            responseText.setHeaderColor(name === qsTr("Response: ") ? theme.backgroundLight : theme.backgroundLighter);
+                            responseText.setHeaderColor(name === qsTr("Response: ") ? theme.darkContrast : theme.lightContrast);
                             responseText.textDocument = textDocument
                         }
 
@@ -824,7 +986,7 @@ Window {
                                 }
                                 Label {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    color: theme.textAccent
+                                    color: theme.mutedTextColor
                                     text: {
                                         switch (currentChat.responseState) {
                                         case Chat.ResponseStopped: return qsTr("response stopped ...");
@@ -981,6 +1143,7 @@ Window {
         MyButton {
             id: myButton
             visible: chatModel.count && !currentChat.isServer
+            textColor: theme.textColor
             Image {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
@@ -1010,10 +1173,10 @@ Window {
                 }
             }
             background: Rectangle {
-                border.color: myButton.down ? theme.backgroundLightest : theme.buttonBorder
+                border.color: theme.conversationButtonBorder
                 border.width: 2
                 radius: 10
-                color: myButton.hovered ? theme.backgroundLighter : theme.backgroundLight
+                color: myButton.hovered ? theme.conversationButtonBackgroundHovered : theme.conversationButtonBackground
             }
             anchors.bottom: textInputView.top
             anchors.horizontalCenter: textInputView.horizontalCenter
@@ -1037,12 +1200,13 @@ Window {
 
         RectangularGlow {
             id: effect
+            visible: !currentChat.isServer
             anchors.fill: textInputView
             glowRadius: 50
             spread: 0
-            color: theme.backgroundDark
+            color: theme.sendGlow
             cornerRadius: 10
-            opacity: 0.2
+            opacity: 0.1
         }
 
         ScrollView {
@@ -1053,7 +1217,7 @@ Window {
             anchors.margins: 30
             height: Math.min(contentHeight, 200)
             visible: !currentChat.isServer
-            TextArea {
+            MyTextArea {
                 id: textInput
                 color: theme.textColor
                 topPadding: 30
@@ -1061,14 +1225,8 @@ Window {
                 leftPadding: 20
                 rightPadding: 40
                 enabled: currentChat.isModelLoaded && !currentChat.isServer
-                wrapMode: Text.WordWrap
                 font.pixelSize: theme.fontSizeLarger
                 placeholderText: qsTr("Send a message...")
-                placeholderTextColor: theme.mutedTextColor
-                background: Rectangle {
-                    color: theme.backgroundAccent
-                    radius: 10
-                }
                 Accessible.role: Accessible.EditableText
                 Accessible.name: placeholderText
                 Accessible.description: qsTr("Send messages/prompts to the model")
@@ -1101,6 +1259,8 @@ Window {
         }
 
         MyToolButton {
+            backgroundColor: theme.sendButtonBackground
+            backgroundColorHovered: theme.sendButtonBackgroundHovered
             anchors.right: textInputView.right
             anchors.verticalCenter: textInputView.verticalCenter
             anchors.rightMargin: 15

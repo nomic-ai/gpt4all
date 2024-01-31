@@ -11,7 +11,8 @@ TextField {
     color: text === "" || isValid ? theme.textColor : theme.textErrorColor
     background: Rectangle {
         implicitWidth: 150
-        color: theme.backgroundDark
+        color: theme.controlBackground
         radius: 10
     }
+    ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
 }

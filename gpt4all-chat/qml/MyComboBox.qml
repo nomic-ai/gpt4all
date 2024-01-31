@@ -28,7 +28,7 @@ ComboBox {
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
-            color: highlighted ? theme.backgroundLight : theme.backgroundDark
+            color: highlighted ? theme.lightContrast : theme.darkContrast
         }
         highlighted: comboBox.highlightedIndex === index
     }
@@ -47,7 +47,7 @@ ComboBox {
         }
 
         background: Rectangle {
-            color: theme.backgroundDark
+            color: theme.black
         }
     }
     indicator: Canvas {
@@ -73,13 +73,16 @@ ComboBox {
             context.moveTo(0, height / 2 + 2);
             context.lineTo(width / 2, height);
             context.lineTo(width, height / 2 + 2);
-            context.strokeStyle = comboBox.pressed ? theme.textAccent : theme.mutedTextColor;
+            context.strokeStyle = comboBox.pressed ? theme.gray400 : theme.gray300;
             context.stroke();
 
         }
     }
     background: Rectangle {
-        color: theme.backgroundDark
+        color: theme.controlBackground
+        border.width: 1
+        border.color: theme.controlBorder
         radius: 10
     }
+    ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
 }

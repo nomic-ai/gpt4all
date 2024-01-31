@@ -17,11 +17,14 @@ public:
     using Token = int32_t;
 
     struct GPUDevice {
-        int index = 0;
-        int type = 0;
-        size_t heapSize = 0;
+        int index;
+        int type;
+        size_t heapSize;
         std::string name;
         std::string vendor;
+
+        GPUDevice(int index, int type, size_t heapSize, std::string name, std::string vendor):
+            index(index), type(type), heapSize(heapSize), name(std::move(name)), vendor(std::move(vendor)) {}
     };
 
     class Implementation {
@@ -39,6 +42,8 @@ public:
         static const Implementation *implementation(const char *fname, const std::string& buildVariant);
         static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto", int n_ctx = 2048);
         static std::vector<GPUDevice> availableGPUDevices();
+        static int32_t maxContextLength(const std::string &modelPath);
+        static int32_t layerCount(const std::string &modelPath);
         static void setImplementationsSearchPath(const std::string& path);
         static const std::string& implementationsSearchPath();
 
@@ -74,9 +79,9 @@ public:
 
     virtual bool supportsEmbedding() const = 0;
     virtual bool supportsCompletion() const = 0;
-    virtual bool loadModel(const std::string &modelPath, int n_ctx) = 0;
+    virtual bool loadModel(const std::string &modelPath, int n_ctx, int ngl) = 0;
     virtual bool isModelLoaded() const = 0;
-    virtual size_t requiredMem(const std::string &modelPath, int n_ctx) = 0;
+    virtual size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) = 0;
     virtual size_t stateSize() const { return 0; }
     virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
     virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
@@ -98,15 +103,25 @@ public:
         return *m_implementation;
     }
 
-    virtual std::vector<GPUDevice> availableGPUDevices(size_t /*memoryRequired*/) { return std::vector<GPUDevice>(); }
-    virtual bool initializeGPUDevice(size_t /*memoryRequired*/, const std::string& /*device*/) { return false; }
-    virtual bool initializeGPUDevice(const GPUDevice &/*device*/, std::string *unavail_reason = nullptr) {
+    virtual std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired) const {
+        (void)memoryRequired;
+        return {};
+    }
+
+    virtual bool initializeGPUDevice(size_t memoryRequired, const std::string& name) const {
+        (void)memoryRequired;
+        (void)name;
+        return false;
+    }
+
+    virtual bool initializeGPUDevice(int device, std::string *unavail_reason = nullptr) const {
+        (void)device;
         if (unavail_reason) {
             *unavail_reason = "model has no GPU support";
         }
         return false;
     }
-    virtual bool initializeGPUDevice(int /*device*/) { return false; }
+
     virtual bool hasGPUDevice() { return false; }
     virtual bool usingGPUDevice() { return false; }
 
@@ -119,6 +134,18 @@ protected:
     virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const = 0;
     virtual int32_t contextLength() const = 0;
     virtual const std::vector<Token>& endTokens() const = 0;
+
+    virtual int32_t maxContextLength(std::string const &modelPath) const
+    {
+        (void)modelPath;
+        return -1;
+    }
+
+    virtual int32_t layerCount(std::string const &modelPath) const
+    {
+        (void)modelPath;
+        return -1;
+    }
 
     // This is a helper function called from the default implementation of 'prompt' but it can be
     // shared by all base classes so it isn't virtual

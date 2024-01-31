@@ -41,11 +41,17 @@ MyDialog {
 
         Label {
             id: listLabel
-            text: qsTr("Available Models:")
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("Available Models")
+            visible: false
             Layout.alignment: Qt.AlignLeft
             Layout.fillWidth: true
-            color: theme.textColor
+            color: theme.titleTextColor
+            font.pixelSize: theme.fontSizeLarge
+            font.bold: true
+        }
+
+        Item {
+            height: 0 // for visible space between close button and rest of dialog
         }
 
         Label {
@@ -84,7 +90,7 @@ MyDialog {
                     id: delegateItem
                     width: modelListView.width
                     height: childrenRect.height
-                    color: index % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
+                    color: index % 2 === 0 ? theme.darkContrast : theme.lightContrast
 
                     GridLayout {
                         columns: 2
@@ -99,7 +105,7 @@ MyDialog {
                             Layout.topMargin: 20
                             Layout.leftMargin: 20
                             Layout.columnSpan: 2
-                            color: theme.assistantColor
+                            color: theme.titleTextColor
                             Accessible.role: Accessible.Paragraph
                             Accessible.name: qsTr("Model file")
                             Accessible.description: qsTr("Model file to be downloaded")
@@ -108,7 +114,8 @@ MyDialog {
                         Rectangle {
                             id: actionBox
                             width: childrenRect.width + 20
-                            color: theme.backgroundDark
+                            color: theme.containerBackground
+                            border.color: theme.accentColor
                             border.width: 1
                             radius: 10
                             Layout.row: 1
@@ -122,7 +129,7 @@ MyDialog {
 
                             ColumnLayout {
                                 spacing: 0
-                                MyButton {
+                                MySettingsButton {
                                     id: downloadButton
                                     text: isDownloading ? qsTr("Cancel") : isIncomplete ? qsTr("Resume") : qsTr("Download")
                                     font.pixelSize: theme.fontSizeLarge
@@ -133,12 +140,6 @@ MyDialog {
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     visible: !isChatGPT && !installed && !calcHash && downloadError === ""
                                     Accessible.description: qsTr("Stop/restart/start the download")
-                                    background: Rectangle {
-                                        border.color: downloadButton.down ? theme.backgroundLightest : theme.buttonBorder
-                                        border.width: 2
-                                        radius: 10
-                                        color: downloadButton.hovered ? theme.backgroundDark : theme.backgroundDarkest
-                                    }
                                     onClicked: {
                                         if (!isDownloading) {
                                             Download.downloadModel(filename);
@@ -148,10 +149,9 @@ MyDialog {
                                     }
                                 }
 
-                                MyButton {
+                                MySettingsDestructiveButton {
                                     id: removeButton
                                     text: qsTr("Remove")
-                                    font.pixelSize: theme.fontSizeLarge
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
                                     Layout.minimumWidth: openaiKey.width
@@ -159,18 +159,12 @@ MyDialog {
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     visible: installed || downloadError !== ""
                                     Accessible.description: qsTr("Remove model from filesystem")
-                                    background: Rectangle {
-                                        border.color: removeButton.down ? theme.backgroundLightest : theme.buttonBorder
-                                        border.width: 2
-                                        radius: 10
-                                        color: removeButton.hovered ? theme.backgroundDark : theme.backgroundDarkest
-                                    }
                                     onClicked: {
                                         Download.removeModel(filename);
                                     }
                                 }
 
-                                MyButton {
+                                MySettingsButton {
                                     id: installButton
                                     visible: !installed && isChatGPT
                                     Layout.topMargin: 20
@@ -180,12 +174,6 @@ MyDialog {
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     text: qsTr("Install")
                                     font.pixelSize: theme.fontSizeLarge
-                                    background: Rectangle {
-                                        border.color: installButton.down ? theme.backgroundLightest : theme.buttonBorder
-                                        border.width: 2
-                                        radius: 10
-                                        color: installButton.hovered ? theme.backgroundDark : theme.backgroundDarkest
-                                    }
                                     onClicked: {
                                         if (openaiKey.text === "")
                                             openaiKey.showError();
@@ -285,7 +273,7 @@ MyDialog {
                                         value: bytesReceived / bytesTotal
                                         background: Rectangle {
                                             implicitHeight: 45
-                                            color: theme.backgroundDarkest
+                                            color: theme.progressBackground
                                             radius: 3
                                         }
                                         contentItem: Item {
@@ -295,7 +283,7 @@ MyDialog {
                                                 width: itemProgressBar.visualPosition * parent.width
                                                 height: parent.height
                                                 radius: 2
-                                                color: theme.assistantColor
+                                                color: theme.progressForeground
                                             }
                                         }
                                         Accessible.role: Accessible.ProgressBar
@@ -350,21 +338,14 @@ MyDialog {
                                     Layout.minimumWidth: 150
                                     Layout.maximumWidth: textMetrics.width + 25
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
-                                    color: theme.textColor
-                                    background: Rectangle {
-                                        color: theme.backgroundLighter
-                                        radius: 10
-                                    }
                                     wrapMode: Text.WrapAnywhere
                                     function showError() {
                                         openaiKey.placeholderTextColor = theme.textErrorColor
                                     }
                                     onTextChanged: {
-                                        openaiKey.placeholderTextColor = theme.backgroundLightest
+                                        openaiKey.placeholderTextColor = theme.mutedTextColor
                                     }
                                     placeholderText: qsTr("enter $OPENAI_API_KEY")
-                                    font.pixelSize: theme.fontSizeLarge
-                                    placeholderTextColor: theme.backgroundLightest
                                     Accessible.role: Accessible.EditableText
                                     Accessible.name: placeholderText
                                     Accessible.description: qsTr("Whether the file hash is being calculated")
@@ -402,18 +383,12 @@ MyDialog {
                     Rectangle {
                         width: modelListView.width
                         height: expandButton.height + 80
-                        color: ModelList.downloadableModels.count % 2 === 0 ? theme.backgroundLight : theme.backgroundLighter
-                        MyButton {
+                        color: ModelList.downloadableModels.count % 2 === 0 ? theme.darkContrast : theme.lightContrast
+                        MySettingsButton {
                             id: expandButton
                             anchors.centerIn: parent
                             padding: 40
                             text: ModelList.downloadableModels.expanded ? qsTr("Show fewer models") : qsTr("Show more models")
-                            background: Rectangle {
-                                border.color: expandButton.down ? theme.backgroundLightest : theme.buttonBorder
-                                border.width: 2
-                                radius: 10
-                                color: expandButton.hovered ? theme.backgroundDark : theme.backgroundDarkest
-                            }
                             onClicked: {
                                 ModelList.downloadableModels.expanded = !ModelList.downloadableModels.expanded;
                             }
@@ -435,9 +410,9 @@ MyDialog {
                     MySettings.modelPath = selectedFolder
                 }
             }
-            Label {
+            MySettingsLabel {
                 id: modelPathLabel
-                text: qsTr("Download path:")
+                text: qsTr("Download path")
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
                 Layout.row: 1
@@ -461,7 +436,7 @@ MyDialog {
                     }
                 }
             }
-            MyButton {
+            MySettingsButton {
                 text: qsTr("Browse")
                 Accessible.description: qsTr("Choose where to save model files")
                 onClicked: modelPathDialog.open()

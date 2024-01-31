@@ -16,12 +16,17 @@ Linux users may install Qt via their distro's official packages instead of using
 
 On Arch Linux, this looks like:
 ```
-sudo pacman -S --needed base-devel qt6-base qt6-httpserver qtcreator cmake ninja
+sudo pacman -S --needed base-devel qt6-base qt6-declarative qt6-wayland qt6-svg qt6-httpserver qt6-webengine qt6-5compat qt6-shadertools qtcreator cmake ninja
 ```
 
 On Ubuntu 23.04, this looks like:
 ```
-sudo apt install build-essential libqt6gui6 qt6-base-dev libqt6httpserver6 qt6-httpserver-dev qtcreator cmake ninja-build
+sudo apt install build-essential qt6-base-dev qt6-declarative-dev qt6-wayland-dev qt6-svg-dev qt6-httpserver-dev qt6-webengine-dev libqt6core5compat6 qml6-module-qt5compat-graphicaleffects libqt6shadertools6 qtcreator cmake ninja-build
+```
+
+On Fedora 39, this looks like:
+```
+sudo dnf install make gcc gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtwayland-devel qt6-qtsvg-devel qt6-qthttpserver-devel qt6-qtwebengine-devel qt6-qt5compat qt5-qtgraphicaleffects qt6-qtshadertools qt-creator cmake ninja-build
 ```
 
 ## Download Qt
@@ -45,13 +50,13 @@ Under this release (e.g. Qt 6.5.0), select the target platform:
 
 Under this release, select the following additional components:
 - Qt Quick 3D
+- Qt Wayland Compositor (for Linux only)
 - Qt 5 Compatibility Module
 - Qt Shader Tools
 - Additional Libraries:
   - Qt HTTP Server
   - Qt PDF
 - Qt Debug information Files
-- Qt Quick Timeline
 
 Under Developer and Designer Tools, select the following components:
 - Qt Creator

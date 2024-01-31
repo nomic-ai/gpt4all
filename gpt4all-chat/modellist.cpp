@@ -1,6 +1,7 @@
 #include "modellist.h"
 #include "mysettings.h"
 #include "network.h"
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QFile>
 #include <QStandardPaths>
@@ -106,6 +107,41 @@ void ModelInfo::setContextLength(int l)
 {
     if (isClone) MySettings::globalInstance()->setModelContextLength(*this, l, isClone /*force*/);
     m_contextLength = l;
+}
+
+int ModelInfo::maxContextLength() const
+{
+    if (m_maxContextLength != -1) return m_maxContextLength;
+    auto path = (dirpath + filename()).toStdString();
+    int layers = LLModel::Implementation::maxContextLength(path);
+    if (layers < 0) {
+        layers = 4096; // fallback value
+    }
+    m_maxContextLength = layers;
+    return m_maxContextLength;
+}
+
+int ModelInfo::gpuLayers() const
+{
+    return MySettings::globalInstance()->modelGpuLayers(*this);
+}
+
+void ModelInfo::setGpuLayers(int l)
+{
+    if (isClone) MySettings::globalInstance()->setModelGpuLayers(*this, l, isClone /*force*/);
+    m_gpuLayers = l;
+}
+
+int ModelInfo::maxGpuLayers() const
+{
+    if (m_maxGpuLayers != -1) return m_maxGpuLayers;
+    auto path = (dirpath + filename()).toStdString();
+    int layers = LLModel::Implementation::layerCount(path);
+    if (layers < 0) {
+        layers = 100; // fallback value
+    }
+    m_maxGpuLayers = layers;
+    return m_maxGpuLayers;
 }
 
 double ModelInfo::repeatPenalty() const
@@ -286,6 +322,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::maxLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::promptBatchSizeChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::contextLengthChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::gpuLayersChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
@@ -539,6 +576,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->promptBatchSize();
         case ContextLengthRole:
             return info->contextLength();
+        case GpuLayersRole:
+            return info->gpuLayers();
         case RepeatPenaltyRole:
             return info->repeatPenalty();
         case RepeatPenaltyTokensRole:
@@ -664,6 +703,10 @@ void ModelList::updateData(const QString &id, int role, const QVariant &value)
             info->setMaxLength(value.toInt()); break;
         case PromptBatchSizeRole:
             info->setPromptBatchSize(value.toInt()); break;
+        case ContextLengthRole:
+            info->setContextLength(value.toInt()); break;
+        case GpuLayersRole:
+            info->setGpuLayers(value.toInt()); break;
         case RepeatPenaltyRole:
             info->setRepeatPenalty(value.toDouble()); break;
         case RepeatPenaltyTokensRole:
@@ -755,6 +798,7 @@ QString ModelList::clone(const ModelInfo &model)
     updateData(id, ModelList::MaxLengthRole, model.maxLength());
     updateData(id, ModelList::PromptBatchSizeRole, model.promptBatchSize());
     updateData(id, ModelList::ContextLengthRole, model.contextLength());
+    updateData(id, ModelList::GpuLayersRole, model.contextLength());
     updateData(id, ModelList::RepeatPenaltyRole, model.repeatPenalty());
     updateData(id, ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens());
     updateData(id, ModelList::PromptTemplateRole, model.promptTemplate());
@@ -1123,6 +1167,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             updateData(id, ModelList::PromptBatchSizeRole, obj["promptBatchSize"].toInt());
         if (obj.contains("contextLength"))
             updateData(id, ModelList::ContextLengthRole, obj["contextLength"].toInt());
+        if (obj.contains("gpuLayers"))
+            updateData(id, ModelList::GpuLayersRole, obj["gpuLayers"].toInt());
         if (obj.contains("repeatPenalty"))
             updateData(id, ModelList::RepeatPenaltyRole, obj["repeatPenalty"].toDouble());
         if (obj.contains("repeatPenaltyTokens"))
@@ -1217,6 +1263,8 @@ void ModelList::updateModelsFromSettings()
         const int promptBatchSize = settings.value(g + "/promptBatchSize").toInt();
         Q_ASSERT(settings.contains(g + "/contextLength"));
         const int contextLength = settings.value(g + "/contextLength").toInt();
+        Q_ASSERT(settings.contains(g + "/gpuLayers"));
+        const int gpuLayers = settings.value(g + "/gpuLayers").toInt();
         Q_ASSERT(settings.contains(g + "/repeatPenalty"));
         const double repeatPenalty = settings.value(g + "/repeatPenalty").toDouble();
         Q_ASSERT(settings.contains(g + "/repeatPenaltyTokens"));
@@ -1236,6 +1284,7 @@ void ModelList::updateModelsFromSettings()
         updateData(id, ModelList::MaxLengthRole, maxLength);
         updateData(id, ModelList::PromptBatchSizeRole, promptBatchSize);
         updateData(id, ModelList::ContextLengthRole, contextLength);
+        updateData(id, ModelList::GpuLayersRole, gpuLayers);
         updateData(id, ModelList::RepeatPenaltyRole, repeatPenalty);
         updateData(id, ModelList::RepeatPenaltyTokensRole, repeatPenaltyTokens);
         updateData(id, ModelList::PromptTemplateRole, promptTemplate);

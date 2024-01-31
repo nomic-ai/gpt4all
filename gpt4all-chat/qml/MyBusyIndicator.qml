@@ -43,7 +43,7 @@ BusyIndicator {
                     implicitWidth: 10
                     implicitHeight: 10
                     radius: 5
-                    color: theme.textAccent
+                    color: theme.accentColor
 
                     required property int index
 

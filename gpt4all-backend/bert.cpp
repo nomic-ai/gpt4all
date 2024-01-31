@@ -381,10 +381,9 @@ void bert_eval(
 
             struct ggml_tensor *KQ = ggml_mul_mat(ctx0, K, Q);
             // KQ = soft_max(KQ / sqrt(head width))
-            KQ = ggml_soft_max(ctx0,
-                               ggml_scale(ctx0,
-                                          KQ,
-                                          ggml_new_f32(ctx0, 1.0f / sqrt((float)d_head))));
+            KQ = ggml_soft_max(
+                ctx0, ggml_scale(ctx0, KQ, 1.0f / sqrt((float)d_head))
+            );
 
             V = ggml_cont(ctx0, ggml_transpose(ctx0, V));
             struct ggml_tensor *KQV = ggml_mul_mat(ctx0, V, KQ);
@@ -490,10 +489,6 @@ struct bert_ctx * bert_load_from_file(const char *fname)
 #endif
 
     bert_ctx * new_bert = new bert_ctx;
-#if defined(GGML_USE_KOMPUTE)
-    new_bert->buf_compute.force_cpu = true;
-    new_bert->work_buf.force_cpu = true;
-#endif
 
     bert_model & model = new_bert->model;
     bert_vocab & vocab = new_bert->vocab;
@@ -714,9 +709,10 @@ Bert::~Bert() {
     bert_free(d_ptr->ctx);
 }
 
-bool Bert::loadModel(const std::string &modelPath, int n_ctx)
+bool Bert::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
     (void)n_ctx;
+    (void)ngl;
     d_ptr->ctx = bert_load_from_file(modelPath.c_str());
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = d_ptr->ctx != nullptr;
@@ -729,10 +725,11 @@ bool Bert::isModelLoaded() const
     return d_ptr->modelLoaded;
 }
 
-size_t Bert::requiredMem(const std::string &modelPath, int n_ctx)
+size_t Bert::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
 {
     (void)modelPath;
     (void)n_ctx;
+    (void)ngl;
     return 0;
 }
 

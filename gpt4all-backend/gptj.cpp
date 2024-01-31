@@ -414,11 +414,7 @@ bool gptj_eval(
             struct ggml_tensor * KQ = ggml_mul_mat(ctx0, K, Q);
 
             // KQ_scaled = KQ / sqrt(n_embd/n_head)
-            struct ggml_tensor * KQ_scaled =
-                ggml_scale(ctx0,
-                        KQ,
-                        ggml_new_f32(ctx0, 1.0f/sqrt(float(n_embd)/n_head))
-                        );
+            struct ggml_tensor * KQ_scaled = ggml_scale(ctx0, KQ, 1.0f/sqrt(float(n_embd)/n_head));
 
             // KQ_masked = mask_past(KQ_scaled)
             struct ggml_tensor * KQ_masked = ggml_diag_mask_inf(ctx0, KQ_scaled, n_past);
@@ -676,8 +672,9 @@ GPTJ::GPTJ()
     d_ptr->modelLoaded = false;
 }
 
-size_t GPTJ::requiredMem(const std::string &modelPath, int n_ctx) {
+size_t GPTJ::requiredMem(const std::string &modelPath, int n_ctx, int ngl) {
     (void)n_ctx;
+    (void)ngl;
     gptj_model dummy_model;
     gpt_vocab dummy_vocab;
     size_t mem_req;
@@ -685,8 +682,9 @@ size_t GPTJ::requiredMem(const std::string &modelPath, int n_ctx) {
     return mem_req;
 }
 
-bool GPTJ::loadModel(const std::string &modelPath, int n_ctx) {
+bool GPTJ::loadModel(const std::string &modelPath, int n_ctx, int ngl) {
     (void)n_ctx;
+    (void)ngl;
     std::mt19937 rng(time(NULL));
     d_ptr->rng = rng;
 

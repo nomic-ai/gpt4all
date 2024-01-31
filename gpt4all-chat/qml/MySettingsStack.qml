@@ -14,28 +14,38 @@ Item {
         id: theme
     }
 
-    property alias title: titleLabel.text
+    property alias title: titleLabelText.text
     property ListModel tabTitlesModel: ListModel { }
     property list<Component> tabs: [ ]
 
-    Label {
+    Rectangle {
         id: titleLabel
         anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
-        color: theme.textColor
-        padding: 10
-        font.bold: true
-        font.pixelSize: theme.fontSizeLarger
+        anchors.leftMargin: 20
+        anchors.rightMargin: 15
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: titleLabelText.height
+        color: "transparent"
+        Label {
+            id: titleLabelText
+            anchors.left: parent.left
+            color: theme.titleTextColor
+            topPadding: 10
+            bottomPadding: 10
+            font.pixelSize: theme.fontSizeLargest
+            font.bold: true
+        }
     }
 
     Rectangle {
         anchors.top: titleLabel.bottom
-        anchors.leftMargin: 15
+        anchors.leftMargin: 20
         anchors.rightMargin: 15
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 1
-        color: theme.tabBorder
+        height: 3
+        color: theme.accentColor
     }
 
     TabBar {
@@ -62,9 +72,6 @@ Item {
                 }
                 background: Rectangle {
                     color: "transparent"
-                    border.width: 1
-                    border.color: tabButton.checked ? theme.tabBorder : "transparent"
-                    radius: 10
                 }
                 Accessible.role: Accessible.Button
                 Accessible.name: model.title
@@ -82,16 +89,8 @@ Item {
         anchors.rightMargin: 15
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 1
-        color: theme.tabBorder
-    }
-
-    Rectangle {
-        anchors.fill: parent
-        color: "transparent"
-        radius: 10
-        border.width: 1
-        border.color: theme.tabBorder
+        height: 3
+        color: theme.accentColor
     }
 
     FolderDialog {

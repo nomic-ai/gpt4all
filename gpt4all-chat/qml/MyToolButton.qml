@@ -7,6 +7,8 @@ import Qt5Compat.GraphicalEffects
 Button {
     id: myButton
     padding: 10
+    property color backgroundColor: theme.iconBackgroundDark
+    property color backgroundColorHovered: theme.iconBackgroundHovered
     property bool toggled: false
     property alias source: image.source
     property alias fillMode: image.fillMode
@@ -25,7 +27,7 @@ Button {
             anchors.fill: parent
             color: "transparent"
             visible: myButton.toggled
-            border.color: theme.backgroundLightest
+            border.color: theme.accentColor
             border.width: 1
             radius: 10
         }
@@ -39,9 +41,10 @@ Button {
         ColorOverlay {
             anchors.fill: image
             source: image
-            color: myButton.hovered ? theme.textColor : "transparent"
+            color: myButton.hovered ? backgroundColorHovered : backgroundColor
         }
     }
     Accessible.role: Accessible.Button
     Accessible.name: text
+    ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
 }

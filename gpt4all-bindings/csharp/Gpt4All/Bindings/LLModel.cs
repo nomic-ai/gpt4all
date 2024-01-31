@@ -183,7 +183,7 @@ public class LLModel : ILLModel
     /// <returns>true if the model was loaded successfully, false otherwise.</returns>
     public bool Load(string modelPath)
     {
-        return NativeMethods.llmodel_loadModel(_handle, modelPath, 2048);
+        return NativeMethods.llmodel_loadModel(_handle, modelPath, 2048, 100);
     }
 
     protected void Destroy()

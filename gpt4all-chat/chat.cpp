@@ -112,7 +112,7 @@ void Chat::resetResponseState()
     m_tokenSpeed = QString();
     emit tokenSpeedChanged();
     m_responseInProgress = true;
-    m_responseState = Chat::LocalDocsRetrieval;
+    m_responseState = m_collections.empty() ? Chat::PromptProcessing : Chat::LocalDocsRetrieval;
     emit responseInProgressChanged();
     emit responseStateChanged();
 }
@@ -120,7 +120,7 @@ void Chat::resetResponseState()
 void Chat::prompt(const QString &prompt)
 {
     resetResponseState();
-    emit promptRequested( m_collections, prompt);
+    emit promptRequested(m_collections, prompt);
 }
 
 void Chat::regenerateResponse()

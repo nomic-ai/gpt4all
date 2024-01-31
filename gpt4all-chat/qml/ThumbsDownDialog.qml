@@ -10,7 +10,6 @@ import llm
 MyDialog {
     id: thumbsDownDialog
     modal: true
-    opacity: 0.9
     padding: 20
 
     Theme {
@@ -50,18 +49,9 @@ MyDialog {
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-            TextArea {
+            MyTextArea {
                 id: thumbsDownNewResponse
-                color: theme.textColor
-                padding: 20
-                wrapMode: Text.Wrap
-                font.pixelSize: theme.fontSizeLarge
                 placeholderText: qsTr("Please provide a better response...")
-                placeholderTextColor: theme.backgroundLightest
-                background: Rectangle {
-                    color: theme.backgroundLighter
-                    radius: 10
-                }
             }
         }
     }
@@ -70,15 +60,13 @@ MyDialog {
         padding: 20
         alignment: Qt.AlignRight
         spacing: 10
-        MyButton {
+        MySettingsButton {
             text: qsTr("Submit")
-            font.pixelSize: theme.fontSizeLarge
             Accessible.description: qsTr("Submits the user's response")
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
-        MyButton {
+        MySettingsButton {
             text: qsTr("Cancel")
-            font.pixelSize: theme.fontSizeLarge
             Accessible.description: qsTr("Closes the response dialog")
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
         }

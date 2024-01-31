@@ -18,11 +18,9 @@ MySettingsTab {
         columns: 3
         rowSpacing: 10
         columnSpacing: 10
-        Label {
+        MySettingsLabel {
             id: themeLabel
-            text: qsTr("Theme:")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("Theme")
             Layout.row: 1
             Layout.column: 0
         }
@@ -31,9 +29,9 @@ MySettingsTab {
             Layout.row: 1
             Layout.column: 1
             Layout.columnSpan: 1
-            Layout.minimumWidth: 50
+            Layout.minimumWidth: 200
             Layout.fillWidth: false
-            model: ["Dark", "Light"]
+            model: ["Dark", "Light", "LegacyDark"]
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("Color theme")
             Accessible.description: qsTr("Color theme for the chat client to use")
@@ -53,11 +51,9 @@ MySettingsTab {
                 MySettings.chatTheme = themeBox.currentText
             }
         }
-        Label {
+        MySettingsLabel {
             id: fontLabel
-            text: qsTr("Font Size:")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("Font Size")
             Layout.row: 2
             Layout.column: 0
         }
@@ -88,11 +84,9 @@ MySettingsTab {
                 MySettings.fontSize = fontBox.currentText
             }
         }
-        Label {
+        MySettingsLabel {
             id: deviceLabel
-            text: qsTr("Device:")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("Device")
             Layout.row: 3
             Layout.column: 0
         }
@@ -126,11 +120,9 @@ MySettingsTab {
                 MySettings.device = deviceBox.currentText
             }
         }
-        Label {
+        MySettingsLabel {
             id: defaultModelLabel
-            text: qsTr("Default model:")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("Default model")
             Layout.row: 4
             Layout.column: 0
         }
@@ -161,11 +153,9 @@ MySettingsTab {
                 MySettings.userDefaultModel = comboBox.currentText
             }
         }
-        Label {
+        MySettingsLabel {
             id: modelPathLabel
-            text: qsTr("Download path:")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("Download path")
             Layout.row: 5
             Layout.column: 0
         }
@@ -190,7 +180,7 @@ MySettingsTab {
                 }
             }
         }
-        MyButton {
+        MySettingsButton {
             Layout.row: 5
             Layout.column: 2
             text: qsTr("Browse")
@@ -201,11 +191,9 @@ MySettingsTab {
                 })
             }
         }
-        Label {
+        MySettingsLabel {
             id: nThreadsLabel
-            text: qsTr("CPU Threads:")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("CPU Threads")
             Layout.row: 6
             Layout.column: 0
         }
@@ -233,11 +221,9 @@ MySettingsTab {
             Accessible.name: nThreadsLabel.text
             Accessible.description: ToolTip.text
         }
-        Label {
+        MySettingsLabel {
             id: saveChatsContextLabel
-            text: qsTr("Save chats context to disk:")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("Save chats context to disk")
             Layout.row: 7
             Layout.column: 0
         }
@@ -252,11 +238,9 @@ MySettingsTab {
             ToolTip.text: qsTr("WARNING: Saving chats to disk can be ~2GB per chat")
             ToolTip.visible: hovered
         }
-        Label {
+        MySettingsLabel {
             id: serverChatLabel
-            text: qsTr("Enable API server:")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("Enable API server")
             Layout.row: 8
             Layout.column: 0
         }
@@ -276,8 +260,8 @@ MySettingsTab {
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
-            height: 1
-            color: theme.tabBorder
+            height: 3
+            color: theme.accentColor
         }
     }
     advancedSettings: GridLayout {
@@ -289,14 +273,12 @@ MySettingsTab {
             Layout.column: 0
             Layout.fillWidth: true
             Layout.columnSpan: 3
-            height: 1
-            color: theme.tabBorder
+            height: 3
+            color: theme.accentColor
         }
-        Label {
+        MySettingsLabel {
             id: gpuOverrideLabel
-            text: qsTr("Force Metal (macOS+arm):")
-            color: theme.textColor
-            font.pixelSize: theme.fontSizeLarge
+            text: qsTr("Force Metal (macOS+arm)")
             Layout.row: 1
             Layout.column: 0
         }
@@ -316,7 +298,7 @@ MySettingsTab {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignTop
                 Layout.minimumHeight: warningLabel.height
-                Label {
+                MySettingsLabel {
                     id: warningLabel
                     width: parent.width
                     color: theme.textErrorColor

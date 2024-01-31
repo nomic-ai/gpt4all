@@ -63,6 +63,8 @@ public:
     Q_INVOKABLE void setModelSystemPrompt(const ModelInfo &m, const QString &p, bool force = false);
     int modelContextLength(const ModelInfo &m) const;
     Q_INVOKABLE void setModelContextLength(const ModelInfo &m, int s, bool force = false);
+    int modelGpuLayers(const ModelInfo &m) const;
+    Q_INVOKABLE void setModelGpuLayers(const ModelInfo &m, int s, bool force = false);
 
     // Application settings
     int threadCount() const;
@@ -85,6 +87,8 @@ public:
     void setDevice(const QString &u);
     int32_t contextLength() const;
     void setContextLength(int32_t value);
+    int32_t gpuLayers() const;
+    void setGpuLayers(int32_t value);
 
     // Release/Download settings
     QString lastVersionStarted() const;
@@ -121,6 +125,7 @@ Q_SIGNALS:
     void maxLengthChanged(const ModelInfo &model);
     void promptBatchSizeChanged(const ModelInfo &model);
     void contextLengthChanged(const ModelInfo &model);
+    void gpuLayersChanged(const ModelInfo &model);
     void repeatPenaltyChanged(const ModelInfo &model);
     void repeatPenaltyTokensChanged(const ModelInfo &model);
     void promptTemplateChanged(const ModelInfo &model);
