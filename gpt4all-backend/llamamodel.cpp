@@ -32,7 +32,7 @@
 #include "ggml-kompute.h"
 #endif
 
-// Maximum suppored GGUF version
+// Maximum supported GGUF version
 static constexpr int GGUF_VER_MAX = 3;
 
 namespace {
