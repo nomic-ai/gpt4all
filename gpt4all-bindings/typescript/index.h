@@ -7,10 +7,13 @@
 #include <memory>
 #include <filesystem>
 #include <set>
+#include <mutex>
+
 namespace fs = std::filesystem;
 
 
 class NodeModelWrapper: public Napi::ObjectWrap<NodeModelWrapper> {
+  
 public:
   NodeModelWrapper(const Napi::CallbackInfo &);
   //virtual ~NodeModelWrapper();
@@ -48,8 +51,11 @@ private:
    */
   llmodel_model inference_;
 
+  std::mutex inference_mutex;
+
   std::string type;
   // corresponds to LLModel::name() in typescript
   std::string name;
+  int nCtx{};
   std::string full_model_path;
 };

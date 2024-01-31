@@ -49,6 +49,12 @@ interface ModelConfig {
     path: string;
     url?: string;
 }
+
+/**
+ * Callback for controlling token generation
+ */
+type TokenCallback = (tokenId: number, token: string, total: string) => boolean
+
 /**
  *
  * InferenceModel represents an LLM which can make chat predictions, similar to GPT transformers.
@@ -61,7 +67,8 @@ declare class InferenceModel {
 
     generate(
         prompt: string,
-        options?: Partial<LLModelPromptContext>
+        options?: Partial<LLModelPromptContext>,
+        callback?: TokenCallback
     ): Promise<string>;
 
    /**
@@ -132,13 +139,14 @@ declare class LLModel {
      * Use the prompt function exported for a value
      * @param q The prompt input.
      * @param params Optional parameters for the prompt context.
+     * @param callback - optional callback to control token generation.
      * @returns The result of the model prompt.
      */
     raw_prompt(
         q: string,
         params: Partial<LLModelPromptContext>,
-        callback: (res: string) => void
-    ): void; // TODO work on return type
+        callback?: TokenCallback
+    ): Promise<string>
 
     /**
      * Embed text with the model. Keep in mind that
@@ -176,10 +184,11 @@ declare class LLModel {
     hasGpuDevice(): boolean
     /**
       * GPUs that are usable for this LLModel
+      * @param nCtx Maximum size of context window
       * @throws if hasGpuDevice returns false (i think)
       * @returns 
       */
-    listGpu() : GpuDevice[]
+    listGpu(nCtx: number) : GpuDevice[]
 
     /**
       * delete and cleanup the native model
@@ -224,6 +233,11 @@ interface LoadModelOptions {
        model.
     */ 
     device?: string;
+    /* The Maximum window size of this model
+     * Default of 2048
+     *
+     */
+    nCtx?: number;
 }
 
 interface InferenceModelOptions extends LoadModelOptions {
@@ -443,13 +457,34 @@ interface LLModelPromptContext {
 }
 
 /**
- * TODO: Help wanted to implement this
+ * Creates a readable stream of tokens
+ * @param {InferenceModel} model - The language model object.
+ * @param {PromptMessage[]} messages - The array of messages for the conversation.
+ * @param {CompletionOptions} options - The options for creating the completion.
+ * @param {TokenCallback} callback - optional callback to control token generation.
+ * @returns {import('stream').PassThrough} The stream of generated tokens
  */
 declare function createTokenStream(
-    llmodel: LLModel,
+    llmodel: InferenceModel,
     messages: PromptMessage[],
-    options: CompletionOptions
-): (ll: LLModel) => AsyncGenerator<string>;
+    options: CompletionOptions,
+    callback?: TokenCallback
+): import('stream').PassThrough;
+
+/**
+ * Creates a readable stream of tokens
+ * @param {InferenceModel} model - The language model object.
+ * @param {PromptMessage[]} messages - The array of messages for the conversation.
+ * @param {CompletionOptions} options - The options for creating the completion.
+ * @param {TokenCallback} callback - optional callback to control token generation.
+ * @returns {AsyncGenerator<string>} The stream of generated tokens
+ */
+declare async function *generateTokens(
+    llmodel: InferenceModel,
+    messages: PromptMessage[],
+    options: CompletionOptions,
+    callback?: TokenCallback
+): AsyncGenerator<string>;
 /**
  * From python api:
  * models will be stored in (homedir)/.cache/gpt4all/`
@@ -569,6 +604,7 @@ export {
     createCompletion,
     createEmbedding,
     createTokenStream,
+    generateTokens,
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_MODEL_CONFIG,
