@@ -28,7 +28,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
 Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info) 
 {
     auto env = info.Env();
-    return Napi::Number::New(env, static_cast<uint32_t>( llmodel_required_mem(GetInference(), full_model_path.c_str(), 2048) ));
+    return Napi::Number::New(env, static_cast<uint32_t>( llmodel_required_mem(GetInference(), full_model_path.c_str(), 2048, 100) ));
 
 }
   Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo& info) 
@@ -161,7 +161,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
         }
     }
 
-    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str(), 2048);
+    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str(), 2048, 100);
     if(!success) {
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
         return;

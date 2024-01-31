@@ -91,6 +91,7 @@ void MySettings::restoreModelDefaults(const ModelInfo &model)
     setModelMaxLength(model, model.m_maxLength);
     setModelPromptBatchSize(model, model.m_promptBatchSize);
     setModelContextLength(model, model.m_contextLength);
+    setModelGpuLayers(model, model.m_gpuLayers);
     setModelRepeatPenalty(model, model.m_repeatPenalty);
     setModelRepeatPenaltyTokens(model, model.m_repeatPenaltyTokens);
     setModelPromptTemplate(model, model.m_promptTemplate);
@@ -301,6 +302,28 @@ void MySettings::setModelContextLength(const ModelInfo &m, int l, bool force)
     setting.sync();
     if (!force)
         emit contextLengthChanged(m);
+}
+
+int MySettings::modelGpuLayers(const ModelInfo &m) const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value(QString("model-%1").arg(m.id()) + "/gpuLayers", m.m_gpuLayers).toInt();
+}
+
+void MySettings::setModelGpuLayers(const ModelInfo &m, int l, bool force)
+{
+    if (modelGpuLayers(m) == l && !force)
+        return;
+
+    QSettings setting;
+    if (m.m_gpuLayers == l && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/gpuLayers");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/gpuLayers", l);
+    setting.sync();
+    if (!force)
+        emit gpuLayersChanged(m);
 }
 
 double MySettings::modelRepeatPenalty(const ModelInfo &m) const

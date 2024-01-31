@@ -61,7 +61,7 @@ public interface LLModelLibrary {
 
     Pointer llmodel_model_create2(String model_path, String build_variant, PointerByReference error);
     void llmodel_model_destroy(Pointer model);
-    boolean llmodel_loadModel(Pointer model, String model_path, int n_ctx);
+    boolean llmodel_loadModel(Pointer model, String model_path, int n_ctx, int ngl);
     boolean llmodel_isModelLoaded(Pointer model);
     @u_int64_t long llmodel_get_state_size(Pointer model);
     @u_int64_t long llmodel_save_state_data(Pointer model, Pointer dest);

@@ -332,9 +332,6 @@ MySettingsTab {
                 ToolTip.visible: hovered
                 Layout.row: 0
                 Layout.column: 1
-                validator: IntValidator {
-                    bottom: 1
-                }
                 Connections {
                     target: MySettings
                     function onContextLengthChanged() {
@@ -349,11 +346,18 @@ MySettingsTab {
                 }
                 onEditingFinished: {
                     var val = parseInt(text)
-                    if (!isNaN(val)) {
+                    if (isNaN(val)) {
+                        text = root.currentModelInfo.contextLength
+                    } else {
+                        if (val < 8) {
+                            val = 8
+                            contextLengthField.text = val
+                        } else if (val > root.currentModelInfo.maxContextLength) {
+                            val = root.currentModelInfo.maxContextLength
+                            contextLengthField.text = val
+                        }
                         MySettings.setModelContextLength(root.currentModelInfo, val)
                         focus = false
-                    } else {
-                        text = root.currentModelInfo.contextLength
                     }
                 }
                 Accessible.role: Accessible.EditableText
@@ -672,6 +676,60 @@ MySettingsTab {
                 }
                 Accessible.role: Accessible.EditableText
                 Accessible.name: repeatPenaltyTokensLabel.text
+                Accessible.description: ToolTip.text
+            }
+
+            MySettingsLabel {
+                id: gpuLayersLabel
+                visible: !root.currentModelInfo.isChatGPT
+                text: qsTr("GPU Layers")
+                Layout.row: 4
+                Layout.column: 0
+            }
+            MyTextField {
+                id: gpuLayersField
+                visible: !root.currentModelInfo.isChatGPT
+                text: root.currentModelInfo.gpuLayers
+                font.pixelSize: theme.fontSizeLarge
+                color: theme.textColor
+                ToolTip.text: qsTr("How many GPU layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.\nLower values increase CPU load and RAM usage, and make inference slower.\nNOTE: Does not take effect until you RESTART GPT4All or SWITCH MODELS.")
+                ToolTip.visible: hovered
+                Layout.row: 4
+                Layout.column: 1
+                Connections {
+                    target: MySettings
+                    function onGpuLayersChanged() {
+                        gpuLayersField.text = root.currentModelInfo.gpuLayers
+                    }
+                }
+                Connections {
+                    target: root
+                    function onCurrentModelInfoChanged() {
+                        if (root.currentModelInfo.gpuLayers == 100) {
+                            gpuLayersField.text = root.currentModelInfo.maxGpuLayers
+                        } else {
+                            gpuLayersField.text = root.currentModelInfo.gpuLayers
+                        }
+                    }
+                }
+                onEditingFinished: {
+                    var val = parseInt(text)
+                    if (isNaN(val)) {
+                        gpuLayersField.text = root.currentModelInfo.gpuLayers
+                    } else {
+                        if (val < 1) {
+                            val = 1
+                            gpuLayersField.text = val
+                        } else if (val > root.currentModelInfo.maxGpuLayers) {
+                            val = root.currentModelInfo.maxGpuLayers
+                            gpuLayersField.text = val
+                        }
+                        MySettings.setModelGpuLayers(root.currentModelInfo, val)
+                        focus = false
+                    }
+                }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: gpuLayersLabel.text
                 Accessible.description: ToolTip.text
             }
         }

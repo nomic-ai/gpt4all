@@ -32,6 +32,9 @@
 #include "ggml-kompute.h"
 #endif
 
+// Maximum supported GGUF version
+static constexpr int GGUF_VER_MAX = 3;
+
 namespace {
 const char *modelType_ = "LLaMA";
 }
@@ -121,8 +124,9 @@ struct llama_file_hparams {
     enum llama_ftype ftype = LLAMA_FTYPE_MOSTLY_F16;
 };
 
-size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx) {
+size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl) {
     // TODO(cebtenzzre): update to GGUF
+    (void)ngl; // FIXME(cetenzzre): use this value
     auto fin = std::ifstream(modelPath, std::ios::binary);
     fin.seekg(0, std::ios_base::end);
     size_t filesize = fin.tellg();
@@ -144,7 +148,7 @@ size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx) {
     return filesize + est_kvcache_size;
 }
 
-bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx)
+bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
     gpt_params params;
 
@@ -168,11 +172,14 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx)
     if (llama_verbose()) {
         std::cerr << "llama.cpp: using Metal" << std::endl;
     }
+
+    // always fully offload on Metal
+    // TODO(cebtenzzre): use this parameter to allow using more than 53% of system RAM to load a model
     d_ptr->model_params.n_gpu_layers = 100;
 #elif defined(GGML_USE_KOMPUTE)
     if (d_ptr->device != -1) {
         d_ptr->model_params.main_gpu = d_ptr->device;
-        d_ptr->model_params.n_gpu_layers = 100;
+        d_ptr->model_params.n_gpu_layers = ngl;
     }
 #endif
 
@@ -323,13 +330,70 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
     return d_ptr->end_tokens;
 }
 
-#if defined(GGML_USE_KOMPUTE)
-#include "ggml-kompute.h"
-#endif
+std::string get_arch_name(gguf_context *ctx_gguf) {
+    std::string arch_name;
+    const int kid = gguf_find_key(ctx_gguf, "general.architecture");
+    enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
+    if (ktype != (GGUF_TYPE_STRING)) {
+        throw std::runtime_error("ERROR: Can't get general architecture from gguf file.");
+    }
+    return gguf_get_val_str(ctx_gguf, kid);
+}
 
-std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired)
+static gguf_context *load_gguf(const char *fname, std::string &arch) {
+    struct gguf_init_params params = {
+        /*.no_alloc = */ true,
+        /*.ctx      = */ nullptr,
+    };
+    gguf_context *ctx = gguf_init_from_file(fname, params);
+    if (!ctx) {
+        std::cerr << __func__ << ": gguf_init_from_file failed\n";
+        return nullptr;
+    }
+
+    int gguf_ver = gguf_get_version(ctx);
+    if (gguf_ver > GGUF_VER_MAX) {
+        std::cerr << __func__ << ": unsupported gguf version: " << gguf_ver << "\n";
+        gguf_free(ctx);
+        return nullptr;
+    }
+
+    arch = get_arch_name(ctx);
+    return ctx;
+}
+
+static int32_t get_arch_key_u32(std::string const &modelPath, std::string const &archKey) {
+    std::string arch;
+    auto * ctx = load_gguf(modelPath.c_str(), arch);
+
+    int32_t value = -1;
+    if (ctx) {
+        auto key = arch + "." + archKey;
+        int keyidx = gguf_find_key(ctx, key.c_str());
+        if (keyidx != -1) {
+            value = gguf_get_val_u32(ctx, keyidx);
+        } else {
+            std::cerr << __func__ << ": " << key << "not found in " << modelPath << "\n";
+        }
+    }
+
+    gguf_free(ctx);
+    return value;
+}
+
+int32_t LLamaModel::maxContextLength(std::string const &modelPath) const
 {
-#if defined(GGML_USE_KOMPUTE)
+    return get_arch_key_u32(modelPath, "context_length");
+}
+
+int32_t LLamaModel::layerCount(std::string const &modelPath) const
+{
+    return get_arch_key_u32(modelPath, "block_count");
+}
+
+std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired) const
+{
+#ifdef GGML_USE_KOMPUTE
     size_t count = 0;
     auto * vkDevices = ggml_vk_available_devices(memoryRequired, &count);
 
@@ -346,6 +410,7 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
                 /* name     = */ dev.name,
                 /* vendor   = */ dev.vendor
             );
+            ggml_vk_device_destroy(&dev);
         }
 
         free(vkDevices);
@@ -356,7 +421,7 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
     return {};
 }
 
-bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &name)
+bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &name) const
 {
 #if defined(GGML_USE_KOMPUTE)
     ggml_vk_device device;
@@ -372,28 +437,17 @@ bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &n
     return false;
 }
 
-bool LLamaModel::initializeGPUDevice(const LLModel::GPUDevice &device, std::string *unavail_reason)
+bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) const
 {
 #if defined(GGML_USE_KOMPUTE)
     (void)unavail_reason;
-    d_ptr->device = device.index;
+    d_ptr->device = device;
     return true;
 #else
     (void)device;
     if (unavail_reason) {
         *unavail_reason = "built without Kompute";
     }
-    return false;
-#endif
-}
-
-bool LLamaModel::initializeGPUDevice(int device)
-{
-#if defined(GGML_USE_KOMPUTE)
-    d_ptr->device = device;
-    return true;
-#else
-    (void)device;
     return false;
 #endif
 }
@@ -418,16 +472,6 @@ bool LLamaModel::usingGPUDevice()
 #endif
 }
 
-std::string get_arch_name(gguf_context *ctx_gguf) {
-    std::string arch_name;
-    const int kid = gguf_find_key(ctx_gguf, "general.architecture");
-    enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
-    if (ktype != (GGUF_TYPE_STRING)) {
-        throw std::runtime_error("ERROR: Can't get general architecture from gguf file.");
-    }
-    return gguf_get_val_str(ctx_gguf, kid);
-}
-
 #if defined(_WIN32)
 #define DLL_EXPORT __declspec(dllexport)
 #else
@@ -447,35 +491,19 @@ DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT bool magic_match(const char * fname) {
-    struct ggml_context * ctx_meta = NULL;
-    struct gguf_init_params params = {
-        /*.no_alloc = */ true,
-        /*.ctx      = */ &ctx_meta,
-    };
-    gguf_context *ctx_gguf = gguf_init_from_file(fname, params);
-    if (!ctx_gguf) {
-        std::cerr << __func__ << ": gguf_init_from_file failed\n";
-        return false;
-    }
+DLL_EXPORT bool magic_match(const char *fname) {
+    std::string arch;
+    auto * ctx = load_gguf(fname, arch);
 
     bool valid = true;
-
-    int gguf_ver = gguf_get_version(ctx_gguf);
-    if (valid && gguf_ver > 3) {
-        std::cerr << __func__ << ": unsupported gguf version: " << gguf_ver << "\n";
-        valid = false;
-    }
-
-    auto arch = get_arch_name(ctx_gguf);
-    if (valid && !(arch == "llama" || arch == "starcoder" || arch == "falcon" || arch == "mpt")) {
+    if (!(arch == "llama" || arch == "starcoder" || arch == "falcon" || arch == "mpt")) {
         if (!(arch == "gptj" || arch == "bert")) { // we support these via other modules
             std::cerr << __func__ << ": unsupported model architecture: " << arch << "\n";
         }
         valid = false;
     }
 
-    gguf_free(ctx_gguf);
+    gguf_free(ctx);
     return valid;
 }
 
