@@ -4,8 +4,9 @@
 #ifndef LLAMAMODEL_H
 #define LLAMAMODEL_H
 
-#include <string>
 #include <functional>
+#include <memory>
+#include <string>
 #include <vector>
 #include "llmodel.h"
 
@@ -32,7 +33,7 @@ public:
     bool usingGPUDevice() override;
 
 private:
-    LLamaPrivate *d_ptr;
+    std::unique_ptr<LLamaPrivate> d_ptr;
 
 protected:
     std::vector<Token> tokenize(PromptContext &, const std::string&) const override;

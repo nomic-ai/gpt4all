@@ -2,15 +2,17 @@
 #include "dlhandle.h"
 #include "sysinfo.h"
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <fstream>
-#include <filesystem>
 #include <cassert>
 #include <cstdlib>
-#include <sstream>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <memory>
 #include <regex>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #ifdef _MSC_VER
 #include <intrin.h>
 #endif
@@ -193,22 +195,25 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
 }
 
 LLModel *LLModel::Implementation::constructDefaultLlama() {
-    const LLModel::Implementation *impl = nullptr;
-    for (const auto &i : implementationList()) {
-        if (i.m_buildVariant == "metal" || i.m_modelType != "LLaMA") continue;
-        impl = &i;
-    }
-    if (!impl) {
-        std::cerr << "LLModel ERROR: Could not find CPU LLaMA implementation\n";
-        return nullptr;
-    }
-    auto fres = impl->m_construct();
-    fres->m_implementation = impl;
-    return fres;
+    static std::unique_ptr<LLModel> llama([]() -> LLModel * {
+        const LLModel::Implementation *impl = nullptr;
+        for (const auto &i : implementationList()) {
+            if (i.m_buildVariant == "metal" || i.m_modelType != "LLaMA") continue;
+            impl = &i;
+        }
+        if (!impl) {
+            std::cerr << "LLModel ERROR: Could not find CPU LLaMA implementation\n";
+            return nullptr;
+        }
+        auto fres = impl->m_construct();
+        fres->m_implementation = impl;
+        return fres;
+    }());
+    return llama.get();
 }
 
 std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices() {
-    static LLModel *llama = LLModel::Implementation::constructDefaultLlama(); // (memory leak)
+    auto * llama = constructDefaultLlama();
     if (llama) { return llama->availableGPUDevices(0); }
     return {};
 }
