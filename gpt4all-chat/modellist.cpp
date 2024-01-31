@@ -1,6 +1,7 @@
 #include "modellist.h"
 #include "mysettings.h"
 #include "network.h"
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QFile>
 #include <QStandardPaths>
@@ -108,6 +109,18 @@ void ModelInfo::setContextLength(int l)
     m_contextLength = l;
 }
 
+int ModelInfo::maxContextLength() const
+{
+    if (m_maxContextLength != -1) return m_maxContextLength;
+    auto path = (dirpath + filename()).toStdString();
+    int layers = LLModel::Implementation::maxContextLength(path);
+    if (layers < 0) {
+        layers = 4096; // fallback value
+    }
+    m_maxContextLength = layers;
+    return m_maxContextLength;
+}
+
 int ModelInfo::gpuLayers() const
 {
     return MySettings::globalInstance()->modelGpuLayers(*this);
@@ -117,6 +130,18 @@ void ModelInfo::setGpuLayers(int l)
 {
     if (isClone) MySettings::globalInstance()->setModelGpuLayers(*this, l, isClone /*force*/);
     m_gpuLayers = l;
+}
+
+int ModelInfo::maxGpuLayers() const
+{
+    if (m_maxGpuLayers != -1) return m_maxGpuLayers;
+    auto path = (dirpath + filename()).toStdString();
+    int layers = LLModel::Implementation::layerCount(path);
+    if (layers < 0) {
+        layers = 100; // fallback value
+    }
+    m_maxGpuLayers = layers;
+    return m_maxGpuLayers;
 }
 
 double ModelInfo::repeatPenalty() const

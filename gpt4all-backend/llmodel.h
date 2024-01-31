@@ -42,6 +42,8 @@ public:
         static const Implementation *implementation(const char *fname, const std::string& buildVariant);
         static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto", int n_ctx = 2048);
         static std::vector<GPUDevice> availableGPUDevices();
+        static int32_t maxContextLength(const std::string &modelPath);
+        static int32_t layerCount(const std::string &modelPath);
         static void setImplementationsSearchPath(const std::string& path);
         static const std::string& implementationsSearchPath();
 
@@ -132,6 +134,18 @@ protected:
     virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const = 0;
     virtual int32_t contextLength() const = 0;
     virtual const std::vector<Token>& endTokens() const = 0;
+
+    virtual int32_t maxContextLength(std::string const &modelPath) const
+    {
+        (void)modelPath;
+        return -1;
+    }
+
+    virtual int32_t layerCount(std::string const &modelPath) const
+    {
+        (void)modelPath;
+        return -1;
+    }
 
     // This is a helper function called from the default implementation of 'prompt' but it can be
     // shared by all base classes so it isn't virtual

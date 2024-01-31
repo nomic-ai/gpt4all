@@ -42,6 +42,9 @@ protected:
     bool evalTokens(PromptContext& ctx, const std::vector<int32_t> &tokens) const override;
     int32_t contextLength() const override;
     const std::vector<Token>& endTokens() const override;
+
+    int32_t maxContextLength(std::string const &modelPath) const override;
+    int32_t layerCount(std::string const &modelPath) const override;
 };
 
 #endif // LLAMAMODEL_H

@@ -218,6 +218,16 @@ std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices() {
     return {};
 }
 
+int32_t LLModel::Implementation::maxContextLength(const std::string &modelPath) {
+    auto * llama = constructDefaultLlama();
+    return llama ? llama->maxContextLength(modelPath) : -1;
+}
+
+int32_t LLModel::Implementation::layerCount(const std::string &modelPath) {
+    auto * llama = constructDefaultLlama();
+    return llama ? llama->layerCount(modelPath) : -1;
+}
+
 void LLModel::Implementation::setImplementationsSearchPath(const std::string& path) {
     s_implementations_search_path = path;
 }

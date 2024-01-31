@@ -32,6 +32,9 @@
 #include "ggml-kompute.h"
 #endif
 
+// Maximum suppored GGUF version
+static constexpr int GGUF_VER_MAX = 3;
+
 namespace {
 const char *modelType_ = "LLaMA";
 }
@@ -327,6 +330,67 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
     return d_ptr->end_tokens;
 }
 
+std::string get_arch_name(gguf_context *ctx_gguf) {
+    std::string arch_name;
+    const int kid = gguf_find_key(ctx_gguf, "general.architecture");
+    enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
+    if (ktype != (GGUF_TYPE_STRING)) {
+        throw std::runtime_error("ERROR: Can't get general architecture from gguf file.");
+    }
+    return gguf_get_val_str(ctx_gguf, kid);
+}
+
+static gguf_context *load_gguf(const char *fname, std::string &arch) {
+    struct gguf_init_params params = {
+        /*.no_alloc = */ true,
+        /*.ctx      = */ nullptr,
+    };
+    gguf_context *ctx = gguf_init_from_file(fname, params);
+    if (!ctx) {
+        std::cerr << __func__ << ": gguf_init_from_file failed\n";
+        return nullptr;
+    }
+
+    int gguf_ver = gguf_get_version(ctx);
+    if (gguf_ver > GGUF_VER_MAX) {
+        std::cerr << __func__ << ": unsupported gguf version: " << gguf_ver << "\n";
+        gguf_free(ctx);
+        return nullptr;
+    }
+
+    arch = get_arch_name(ctx);
+    return ctx;
+}
+
+static int32_t get_arch_key_u32(std::string const &modelPath, std::string const &archKey) {
+    std::string arch;
+    auto * ctx = load_gguf(modelPath.c_str(), arch);
+
+    int32_t value = -1;
+    if (ctx) {
+        auto key = arch + "." + archKey;
+        int keyidx = gguf_find_key(ctx, key.c_str());
+        if (keyidx != -1) {
+            value = gguf_get_val_u32(ctx, keyidx);
+        } else {
+            std::cerr << __func__ << ": " << key << "not found in " << modelPath << "\n";
+        }
+    }
+
+    gguf_free(ctx);
+    return value;
+}
+
+int32_t LLamaModel::maxContextLength(std::string const &modelPath) const
+{
+    return get_arch_key_u32(modelPath, "context_length");
+}
+
+int32_t LLamaModel::layerCount(std::string const &modelPath) const
+{
+    return get_arch_key_u32(modelPath, "block_count");
+}
+
 std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired) const
 {
 #ifdef GGML_USE_KOMPUTE
@@ -408,16 +472,6 @@ bool LLamaModel::usingGPUDevice()
 #endif
 }
 
-std::string get_arch_name(gguf_context *ctx_gguf) {
-    std::string arch_name;
-    const int kid = gguf_find_key(ctx_gguf, "general.architecture");
-    enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
-    if (ktype != (GGUF_TYPE_STRING)) {
-        throw std::runtime_error("ERROR: Can't get general architecture from gguf file.");
-    }
-    return gguf_get_val_str(ctx_gguf, kid);
-}
-
 #if defined(_WIN32)
 #define DLL_EXPORT __declspec(dllexport)
 #else
@@ -437,35 +491,19 @@ DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT bool magic_match(const char * fname) {
-    struct ggml_context * ctx_meta = NULL;
-    struct gguf_init_params params = {
-        /*.no_alloc = */ true,
-        /*.ctx      = */ &ctx_meta,
-    };
-    gguf_context *ctx_gguf = gguf_init_from_file(fname, params);
-    if (!ctx_gguf) {
-        std::cerr << __func__ << ": gguf_init_from_file failed\n";
-        return false;
-    }
+DLL_EXPORT bool magic_match(const char *fname) {
+    std::string arch;
+    auto * ctx = load_gguf(fname, arch);
 
     bool valid = true;
-
-    int gguf_ver = gguf_get_version(ctx_gguf);
-    if (valid && gguf_ver > 3) {
-        std::cerr << __func__ << ": unsupported gguf version: " << gguf_ver << "\n";
-        valid = false;
-    }
-
-    auto arch = get_arch_name(ctx_gguf);
-    if (valid && !(arch == "llama" || arch == "starcoder" || arch == "falcon" || arch == "mpt")) {
+    if (!(arch == "llama" || arch == "starcoder" || arch == "falcon" || arch == "mpt")) {
         if (!(arch == "gptj" || arch == "bert")) { // we support these via other modules
             std::cerr << __func__ << ": unsupported model architecture: " << arch << "\n";
         }
         valid = false;
     }
 
-    gguf_free(ctx_gguf);
+    gguf_free(ctx);
     return valid;
 }
 
