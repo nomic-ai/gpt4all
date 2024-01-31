@@ -470,6 +470,21 @@ declare function createTokenStream(
     options: CompletionOptions,
     callback?: TokenCallback
 ): import('stream').PassThrough;
+
+/**
+ * Creates a readable stream of tokens
+ * @param {InferenceModel} model - The language model object.
+ * @param {PromptMessage[]} messages - The array of messages for the conversation.
+ * @param {CompletionOptions} options - The options for creating the completion.
+ * @param {TokenCallback} callback - optional callback to control token generation.
+ * @returns {AsyncGenerator<string>} The stream of generated tokens
+ */
+declare async function *generateTokens(
+    llmodel: InferenceModel,
+    messages: PromptMessage[],
+    options: CompletionOptions,
+    callback?: TokenCallback
+): AsyncGenerator<string>;
 /**
  * From python api:
  * models will be stored in (homedir)/.cache/gpt4all/`
@@ -589,6 +604,7 @@ export {
     createCompletion,
     createEmbedding,
     createTokenStream,
+    generateTokens,
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_MODEL_CONFIG,

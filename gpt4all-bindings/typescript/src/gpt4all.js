@@ -238,18 +238,10 @@ async function createCompletion(
     };
 }
 
-
-function createTokenStream(model,
+function _internal_createTokenStream(stream,model,
     messages,
     options = defaultCompletionOptions,callback = undefined) {
     const { prompt, promptContext, verbose } = preparePromptAndContext(model,messages,options);
-
-    
-
-    // We will feed tokens to this stream
-    const stream = new Stream.PassThrough({
-        encoding: 'utf-8'
-    });
 
 
     if (verbose) {
@@ -271,6 +263,54 @@ function createTokenStream(model,
     return stream;
 }
 
+function createTokenStream(model,
+    messages,
+    options = defaultCompletionOptions,callback = undefined) {
+   
+        // Silent crash if we dont do this here
+  const stream = new Stream.PassThrough({
+    encoding: 'utf-8'
+  });
+    return _internal_createTokenStream(stream,model,messages,options,callback);
+}
+
+async function* generateTokens(model,
+    messages,
+    options = defaultCompletionOptions, callback = undefined) {
+    const stream = createTokenStream(model,messages,options,callback)
+
+    let bHasFinished = false;
+    let activeDataCallback = undefined;
+    const finishCallback = () => {
+        bHasFinished = true;
+        if(activeDataCallback !== undefined){
+            activeDataCallback(undefined);
+        }
+    }
+
+    stream.on("finish",finishCallback)
+
+    while (!bHasFinished) {
+        const token = await new Promise((res) => {
+
+            activeDataCallback = (d) => {
+                stream.off("data",activeDataCallback)
+                activeDataCallback = undefined
+                res(d);
+            }
+            stream.on('data', activeDataCallback)
+        })
+
+        if (token == undefined) {
+            break;
+        }
+
+        yield token;
+    }
+
+    stream.off("finish",finishCallback);
+}
+
 module.exports = {
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_DIRECTORY,
@@ -286,4 +326,5 @@ module.exports = {
     retrieveModel,
     loadModel,
     createTokenStream,
+    generateTokens
 };
