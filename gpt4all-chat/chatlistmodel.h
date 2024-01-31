@@ -196,6 +196,7 @@ public:
         m_newChat = nullptr;
         m_serverChat = nullptr;
         m_currentChat = nullptr;
+        for (auto * chat: m_chats) { delete chat; }
         m_chats.clear();
     }
 
