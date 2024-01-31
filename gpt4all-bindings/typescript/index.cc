@@ -35,7 +35,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
   {
     auto env = info.Env();
     int num_devices = 0;
-    auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str());
+    auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str(),nCtx);
     llmodel_gpu_device* all_devices = llmodel_available_gpu_devices(GetInference(), mem_size, &num_devices);
     if(all_devices == nullptr) {
         Napi::Error::New(
@@ -132,6 +132,10 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
             library_path = ".";
         }
         device = config_object.Get("device").As<Napi::String>();
+        if(device != "cpu" && !(config_object.Has("nCtx") && config_object.Get("nCtx").IsNumber())){
+          throw Napi::Error::New(env,"nCtx is a required option when creating a model on the gpu");
+        }
+        nCtx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
     }
     llmodel_set_implementation_search_path(library_path.c_str());
     const char* e;
@@ -148,7 +152,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
        return;
     }
     if(device != "cpu") {
-        size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str());
+        size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str(),nCtx);
         std::cout << "Initiating GPU\n";
 
         auto success = llmodel_gpu_init_gpu_device_by_string(GetInference(), mem, device.c_str());
@@ -254,6 +258,9 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
              .repeat_last_n = 10,
              .context_erase = 0.5
          };
+    
+    PromptWorkerConfig promptWorkerConfig;
+
     if(info[1].IsObject())
     {
        auto inputObject = info[1].As<Napi::Object>();
@@ -285,29 +292,33 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
        if(inputObject.Has("context_erase")) 
             promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
     }
-    //copy to protect llmodel resources when splitting to new thread
-    llmodel_prompt_context copiedPrompt = promptContext;
+    else
+    {
+        Napi::Error::New(info.Env(), "Missing Prompt Options").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
 
-    std::string copiedQuestion = question;
-    PromptWorkContext pc = {
-        copiedQuestion,
-        inference_,
-        copiedPrompt,
-        ""
-    };
-    auto threadSafeContext = new TsfnContext(env, pc);
-    threadSafeContext->tsfn = Napi::ThreadSafeFunction::New(
-        env,                                    // Environment
-        info[2].As<Napi::Function>(),           // JS function from caller
-        "PromptCallback",                       // Resource name
-        0,                                      // Max queue size (0 = unlimited).
-        1,                                      // Initial thread count
-        threadSafeContext,                      // Context,
-        FinalizerCallback,                      // Finalizer
-        (void*)nullptr                          // Finalizer data
-    );
-    threadSafeContext->nativeThread = std::thread(threadEntry, threadSafeContext);
-    return threadSafeContext->deferred_.Promise();
+    if(info.Length() >= 3 && info[2].IsFunction()){
+        promptWorkerConfig.bHasTokenCallback = true;
+        promptWorkerConfig.tokenCallback = info[2].As<Napi::Function>();
+    }
+
+    
+
+    //copy to protect llmodel resources when splitting to new thread
+    // llmodel_prompt_context copiedPrompt = promptContext;
+    promptWorkerConfig.context = promptContext;
+    promptWorkerConfig.model = GetInference();
+    promptWorkerConfig.mutex = &inference_mutex;
+    promptWorkerConfig.prompt = question;
+    promptWorkerConfig.result = "";
+
+    
+    auto worker = new PromptWorker(env, promptWorkerConfig);
+
+    worker->Queue();
+
+    return worker->GetPromise();
   }
   void NodeModelWrapper::Dispose(const Napi::CallbackInfo& info) {
     llmodel_model_destroy(inference_);
