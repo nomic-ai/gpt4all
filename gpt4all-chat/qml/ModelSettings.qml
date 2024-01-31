@@ -332,9 +332,6 @@ MySettingsTab {
                 ToolTip.visible: hovered
                 Layout.row: 0
                 Layout.column: 1
-                validator: IntValidator {
-                    bottom: 1
-                }
                 Connections {
                     target: MySettings
                     function onContextLengthChanged() {
@@ -349,11 +346,18 @@ MySettingsTab {
                 }
                 onEditingFinished: {
                     var val = parseInt(text)
-                    if (!isNaN(val)) {
+                    if (isNaN(val)) {
+                        text = root.currentModelInfo.contextLength
+                    } else {
+                        if (val < 8) {
+                            val = 8
+                            contextLengthField.text = val
+                        } else if (val > root.currentModelInfo.maxContextLength) {
+                            val = root.currentModelInfo.maxContextLength
+                            contextLengthField.text = val
+                        }
                         MySettings.setModelContextLength(root.currentModelInfo, val)
                         focus = false
-                    } else {
-                        text = root.currentModelInfo.contextLength
                     }
                 }
                 Accessible.role: Accessible.EditableText
@@ -692,28 +696,36 @@ MySettingsTab {
                 ToolTip.visible: hovered
                 Layout.row: 4
                 Layout.column: 1
-                validator: IntValidator {
-                    bottom: 1
-                }
                 Connections {
                     target: MySettings
                     function onGpuLayersChanged() {
-                        gpuLayersField.text = root.currentModelInfo.gpuLayers;
+                        gpuLayersField.text = root.currentModelInfo.gpuLayers
                     }
                 }
                 Connections {
                     target: root
                     function onCurrentModelInfoChanged() {
-                        gpuLayersField.text = root.currentModelInfo.gpuLayers;
+                        if (root.currentModelInfo.gpuLayers == 100) {
+                            gpuLayersField.text = root.currentModelInfo.maxGpuLayers
+                        } else {
+                            gpuLayersField.text = root.currentModelInfo.gpuLayers
+                        }
                     }
                 }
                 onEditingFinished: {
                     var val = parseInt(text)
-                    if (!isNaN(val)) {
+                    if (isNaN(val)) {
+                        gpuLayersField.text = root.currentModelInfo.gpuLayers
+                    } else {
+                        if (val < 1) {
+                            val = 1
+                            gpuLayersField.text = val
+                        } else if (val > root.currentModelInfo.maxGpuLayers) {
+                            val = root.currentModelInfo.maxGpuLayers
+                            gpuLayersField.text = val
+                        }
                         MySettings.setModelGpuLayers(root.currentModelInfo, val)
                         focus = false
-                    } else {
-                        text = root.currentModelInfo.gpuLayers
                     }
                 }
                 Accessible.role: Accessible.EditableText
