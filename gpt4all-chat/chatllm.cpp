@@ -228,6 +228,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
         m_llModelInfo = LLModelInfo();
         emit modelLoadingError(QString("Previous attempt to load model resulted in crash for `%1` most likely due to insufficient memory. You should either remove this model or decrease your system RAM usage by closing other applications.").arg(modelInfo.filename()));
+        return false;
     }
 
     if (fileInfo.exists()) {
