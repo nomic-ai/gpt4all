@@ -150,7 +150,15 @@ size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
 
 bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
-    gpt_params params;
+    // clean up after previous loadModel()
+    if (d_ptr->model) {
+        llama_free_model(d_ptr->model);
+        d_ptr->model = nullptr;
+    }
+    if (d_ptr->ctx) {
+        llama_free(d_ptr->ctx);
+        d_ptr->ctx = nullptr;
+    }
 
     if (n_ctx < 8) {
         std::cerr << "warning: minimum context size is 8, using minimum size.\n";
@@ -158,6 +166,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     }
 
     // -- load the model --
+
+    gpt_params params;
 
     d_ptr->model_params = llama_model_default_params();
 
@@ -215,8 +225,10 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
     d_ptr->ctx = llama_new_context_with_model(d_ptr->model, d_ptr->ctx_params);
     if (!d_ptr->ctx) {
-        d_ptr->device = -1;
         std::cerr << "LLAMA ERROR: failed to init context for model " <<  modelPath << std::endl;
+        llama_free_model(d_ptr->model);
+        d_ptr->model = nullptr;
+        d_ptr->device = -1;
         return false;
     }
 
