@@ -135,7 +135,7 @@ MyDialog {
                                     font.pixelSize: theme.fontSizeLarge
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: apiKey.width
+                                    Layout.minimumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     visible: !isOnline && !installed && !calcHash && downloadError === ""
@@ -154,7 +154,7 @@ MyDialog {
                                     text: qsTr("Remove")
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: apiKey.width
+                                    Layout.minimumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     visible: installed || downloadError !== ""
@@ -169,7 +169,7 @@ MyDialog {
                                     visible: !installed && isOnline
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: apiKey.width
+                                    Layout.minimumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     text: qsTr("Install")
@@ -238,7 +238,7 @@ MyDialog {
                                         visible: LLM.systemTotalRAMInGB() < ramrequired
                                         Layout.topMargin: 20
                                         Layout.leftMargin: 20
-                                        Layout.maximumWidth: apiKey.width
+                                        Layout.maximumWidth: 300
                                         textFormat: Text.StyledText
                                         text: qsTr("<strong><font size=\"2\">WARNING: Not recommended for your hardware.")
                                             + qsTr(" Model requires more memory (") + ramrequired
@@ -261,7 +261,7 @@ MyDialog {
                                     visible: isDownloading && !calcHash
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: apiKey.width
+                                    Layout.minimumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     spacing: 20
@@ -269,7 +269,7 @@ MyDialog {
                                     ProgressBar {
                                         id: itemProgressBar
                                         Layout.fillWidth: true
-                                        width: apiKey.width
+                                        width: 200
                                         value: bytesReceived / bytesTotal
                                         background: Rectangle {
                                             implicitHeight: 45
@@ -307,14 +307,16 @@ MyDialog {
                                     visible: calcHash
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: apiKey.width
+                                    Layout.minimumWidth: 200
+                                    Layout.maximumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+                                    clip: true
 
                                     Label {
                                         id: calcHashLabel
                                         color: theme.textColor
-                                        text: qsTr("Calculating MD5...")
+                                        text: qsTr("Calculating...")
                                         font.pixelSize: theme.fontSizeLarge
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: text
@@ -335,8 +337,7 @@ MyDialog {
                                     visible: !installed && isOnline
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: 150
-                                    Layout.maximumWidth: textMetrics.width + 25
+                                    Layout.minimumWidth: 200
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     wrapMode: Text.WrapAnywhere
                                     function showError() {
