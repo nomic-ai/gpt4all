@@ -10,12 +10,12 @@ const stream = gpt.createTokenStream(model,[{
     content: "How are you ?"
   }],{ nPredict: 2048 })
 
+//Weird behavior: you cannot add .pipe to the stream object above without it crashing
 stream.pipe(process.stdout)
 
 await new Promise((res) => {
-    let s = stream
     stream.on('finish', () => { 
-        res(s);   
+        res();   
     })
 });
 
