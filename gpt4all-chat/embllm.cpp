@@ -113,6 +113,7 @@ void EmbeddingLLMWorker::requestSyncEmbedding(const QString &text)
     QJsonArray texts;
     texts.append(text);
     root.insert("texts", texts);
+    root.insert("task_type", "search_query");
 
     QJsonDocument doc(root);
 
