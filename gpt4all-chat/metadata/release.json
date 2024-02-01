@@ -637,5 +637,26 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.6.2",
+    "notes":
+"
+* Update to latest llama.cpp
+* Update to newly merged vulkan backend
+* Partial GPU offloading support
+* New localdocs speed increases and features
+* New GUI settings option for configuring how many layers to put on GPU
+* New lightmode theme, darkmode theme and legacy theme
+* Lots of UI updates and enhancements
+* Scores of bugfixes for stability and usability
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Karthik Nair
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]
