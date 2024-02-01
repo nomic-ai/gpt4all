@@ -57,5 +57,6 @@ private:
   // corresponds to LLModel::name() in typescript
   std::string name;
   int nCtx{};
+  int nGpuLayers{};
   std::string full_model_path;
 };

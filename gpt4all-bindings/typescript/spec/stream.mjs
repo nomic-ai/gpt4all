@@ -1,24 +1,30 @@
 import gpt from '../src/gpt4all.js'
 
-const model = await gpt.loadModel("mistral-7b-openorca.Q4_0.gguf")  
+const model = await gpt.loadModel('mistral-7b-openorca.Q4_0.gguf', { verbose: true, device: 'gpu' });
+
 
 process.stdout.write('Response: ')
 
 const stream = gpt.createTokenStream(model,[{
     role: 'user',
     content: "How are you ?"
-  }],{nPredict: 2048 }).pipe(process.stdout)
+  }],{ nPredict: 2048 })
+
+stream.pipe(process.stdout)
 
 await new Promise((res) => {
-    stream.on('end', () => { 
-        res();   
+    let s = stream
+    stream.on('finish', () => { 
+        res(s);   
     })
 });
 
-await gpt.createCompletion(model, [{
+const result = await gpt.createCompletion(model, [{
     role: 'user',
     content: "Are you sure you're okay?"
 }])
+
+console.log(result)
 
 model.dispose();
 

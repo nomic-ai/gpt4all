@@ -38,6 +38,7 @@ async function loadModel(modelName, options = {}) {
         verbose: true,
         device: 'cpu',
         nCtx: 2048,
+        ngl : 100,
         ...options,
     };
 
@@ -61,6 +62,7 @@ async function loadModel(modelName, options = {}) {
         library_path: existingPaths,
         device: loadOptions.device,
         nCtx: loadOptions.nCtx,
+        ngl: loadOptions.ngl
     };
 
     if (loadOptions.verbose) {
@@ -263,15 +265,17 @@ function _internal_createTokenStream(stream,model,
     return stream;
 }
 
+let ref;
 function createTokenStream(model,
     messages,
     options = defaultCompletionOptions,callback = undefined) {
    
-        // Silent crash if we dont do this here
-  const stream = new Stream.PassThrough({
-    encoding: 'utf-8'
-  });
-    return _internal_createTokenStream(stream,model,messages,options,callback);
+   // Silent crash if we dont do this here
+   const stream = new Stream.PassThrough({
+     encoding: 'utf-8'
+   });
+    ref = stream
+   return _internal_createTokenStream(stream,model,messages,options,callback);
 }
 
 async function* generateTokens(model,

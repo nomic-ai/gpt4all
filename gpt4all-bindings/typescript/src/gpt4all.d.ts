@@ -233,11 +233,16 @@ interface LoadModelOptions {
        model.
     */ 
     device?: string;
-    /* The Maximum window size of this model
+    /* 
+     * The Maximum window size of this model
      * Default of 2048
-     *
      */
     nCtx?: number;
+    /* 
+     * Number of gpu layers needed
+     * Default of 100
+     */
+    ngl?: number;
 }
 
 interface InferenceModelOptions extends LoadModelOptions {
@@ -458,7 +463,7 @@ interface LLModelPromptContext {
 
 /**
  * Creates a readable stream of tokens
- * @param {InferenceModel} model - The language model object.
+ * @param {InferenceModel} llmodel - The language model object.
  * @param {PromptMessage[]} messages - The array of messages for the conversation.
  * @param {CompletionOptions} options - The options for creating the completion.
  * @param {TokenCallback} callback - optional callback to control token generation.
@@ -472,8 +477,8 @@ declare function createTokenStream(
 ): import('stream').PassThrough;
 
 /**
- * Creates a readable stream of tokens
- * @param {InferenceModel} model - The language model object.
+ * Creates an async generator of tokens
+ * @param {InferenceModel} llmodel - The language model object.
  * @param {PromptMessage[]} messages - The array of messages for the conversation.
  * @param {CompletionOptions} options - The options for creating the completion.
  * @param {TokenCallback} callback - optional callback to control token generation.

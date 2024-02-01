@@ -28,14 +28,14 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
 Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info) 
 {
     auto env = info.Env();
-    return Napi::Number::New(env, static_cast<uint32_t>( llmodel_required_mem(GetInference(), full_model_path.c_str(), 2048) ));
+    return Napi::Number::New(env, static_cast<uint32_t>(llmodel_required_mem(GetInference(), full_model_path.c_str(), nCtx, nGpuLayers) ));
 
 }
   Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo& info) 
   {
     auto env = info.Env();
     int num_devices = 0;
-    auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str(),nCtx);
+    auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str(),nCtx, nGpuLayers);
     llmodel_gpu_device* all_devices = llmodel_available_gpu_devices(GetInference(), mem_size, &num_devices);
     if(all_devices == nullptr) {
         Napi::Error::New(
@@ -136,6 +136,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
           throw Napi::Error::New(env,"nCtx is a required option when creating a model on the gpu");
         }
         nCtx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
+        nGpuLayers = config_object.Get("ngl").As<Napi::Number>().Int32Value();
     }
     llmodel_set_implementation_search_path(library_path.c_str());
     const char* e;
@@ -152,7 +153,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
        return;
     }
     if(device != "cpu") {
-        size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str(),nCtx);
+        size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str(),nCtx, nGpuLayers);
         std::cout << "Initiating GPU\n";
 
         auto success = llmodel_gpu_init_gpu_device_by_string(GetInference(), mem, device.c_str());
@@ -165,7 +166,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
         }
     }
 
-    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str(), 2048);
+    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str(), nCtx, nGpuLayers);
     if(!success) {
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException(); 
         return;
