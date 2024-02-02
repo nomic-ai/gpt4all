@@ -508,7 +508,14 @@ DLL_EXPORT bool magic_match(const char *fname) {
     auto * ctx = load_gguf(fname, arch);
 
     bool valid = true;
-    if (!(arch == "llama" || arch == "starcoder" || arch == "falcon" || arch == "mpt")) {
+
+    static const std::vector<const char *> known_arches {
+        "baichuan", "bloom", "codeshell", "falcon", "gpt2", "llama", "mpt", "orion", "persimmon", "phi2", "plamo",
+        "qwen", "qwen2", "refact", "stablelm", "starcoder"
+    };
+
+    if (std::find(known_arches.begin(), known_arches.end(), arch) == known_arches.end()) {
+        // not supported by this version of llama.cpp
         if (!(arch == "gptj" || arch == "bert")) { // we support these via other modules
             std::cerr << __func__ << ": unsupported model architecture: " << arch << "\n";
         }
