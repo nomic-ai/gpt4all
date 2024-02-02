@@ -679,7 +679,7 @@ jobs:
 
   build-csharp-linux:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy # Ubuntu 22.04
+      - image: mcr.microsoft.com/dotnet/sdk:8.0 
     steps:
       - checkout
       - attach_workspace:
@@ -824,7 +824,7 @@ jobs:
 
   store-and-upload-nupkgs:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
+      - image: mcr.microsoft.com/dotnet/sdk:8.0 # Ubuntu 22.04
     steps:
       - attach_workspace:
           at: /tmp/workspace
