@@ -1041,7 +1041,7 @@ void ModelList::handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkErro
         return;
 
     qWarning() << QString("ERROR: Modellist download failed with error code \"%1-%2\"")
-                      .arg(code).arg(reply->errorString()).toStdString();
+                      .arg(code).arg(reply->errorString());
 }
 
 void ModelList::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
