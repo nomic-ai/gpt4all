@@ -1,6 +1,7 @@
 #include "chatllm.h"
 #include "chat.h"
 #include "chatgpt.h"
+#include "localdocs.h"
 #include "modellist.h"
 #include "network.h"
 #include "mysettings.h"
