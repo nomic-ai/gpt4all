@@ -685,18 +685,21 @@ size_t GPTJ::requiredMem(const std::string &modelPath, int n_ctx, int ngl) {
 bool GPTJ::loadModel(const std::string &modelPath, int n_ctx, int ngl) {
     (void)n_ctx;
     (void)ngl;
+    d_ptr->modelLoaded = false;
+
     std::mt19937 rng(time(NULL));
     d_ptr->rng = rng;
 
     // load the model
-    if (!gptj_model_load(modelPath, *d_ptr->model, d_ptr->vocab)) {
+    bool ok = gptj_model_load(modelPath, *d_ptr->model, d_ptr->vocab);
+    fflush(stdout);
+    if (!ok) {
         std::cerr << "GPT-J ERROR: failed to load model from " <<  modelPath;
         return false;
     }
 
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->modelLoaded = true;
-    fflush(stdout);
     return true;
 }
 
