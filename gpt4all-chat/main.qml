@@ -16,8 +16,8 @@ Window {
     id: window
     width: 1920
     height: 1080
-    minimumWidth: 1280
-    minimumHeight: 720
+    minimumWidth: 720
+    minimumHeight: 480
     visible: true
     title: qsTr("GPT4All v") + Qt.application.version
 
