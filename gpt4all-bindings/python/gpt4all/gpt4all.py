@@ -15,7 +15,7 @@ from requests.exceptions import ChunkedEncodingError
 from tqdm import tqdm
 from urllib3.exceptions import IncompleteRead, ProtocolError
 
-from . import pyllmodel
+from . import _pyllmodel
 
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
@@ -97,7 +97,7 @@ class GPT4All:
             verbose: If True, print debug messages.
         """
         self.model_type = model_type
-        self.model = pyllmodel.LLModel()
+        self.model = _pyllmodel.LLModel()
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
         if device is not None and device != "cpu":
@@ -292,7 +292,7 @@ class GPT4All:
         n_batch: int = 8,
         n_predict: Optional[int] = None,
         streaming: bool = False,
-        callback: pyllmodel.ResponseCallbackType = pyllmodel.empty_response_callback,
+        callback: _pyllmodel.ResponseCallbackType = _pyllmodel.empty_response_callback,
     ) -> Union[str, Iterable[str]]:
         """
         Generate outputs from any GPT4All model.
@@ -350,9 +350,9 @@ class GPT4All:
             output_collector = self.current_chat_session
 
         def _callback_wrapper(
-            callback: pyllmodel.ResponseCallbackType,
+            callback: _pyllmodel.ResponseCallbackType,
             output_collector: List[MessageType],
-        ) -> pyllmodel.ResponseCallbackType:
+        ) -> _pyllmodel.ResponseCallbackType:
             def _callback(token_id: int, response: str) -> bool:
                 nonlocal callback, output_collector
 
