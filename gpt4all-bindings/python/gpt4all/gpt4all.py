@@ -97,12 +97,12 @@ class GPT4All:
             verbose: If True, print debug messages.
         """
         self.model_type = model_type
-        self.model = _pyllmodel.LLModel()
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
+        self.model = _pyllmodel.LLModel(self.config["path"], n_ctx, ngl)
         if device is not None and device != "cpu":
-            self.model.init_gpu(model_path=self.config["path"], device=device, n_ctx=n_ctx, ngl=ngl)
-        self.model.load_model(self.config["path"], n_ctx, ngl)
+            self.model.init_gpu(device)
+        self.model.load_model()
         # Set n_threads
         if n_threads is not None:
             self.model.set_thread_count(n_threads)
