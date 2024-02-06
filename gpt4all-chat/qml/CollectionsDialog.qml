@@ -121,7 +121,7 @@ MyDialog {
                 }
                 Label {
                     id: speedLabel
-                    color: theme.textColor
+                    color: theme.progressText
                     visible: model.indexing || model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex
                     anchors.verticalCenter: itemProgressBar.verticalCenter
                     anchors.left: itemProgressBar.left
