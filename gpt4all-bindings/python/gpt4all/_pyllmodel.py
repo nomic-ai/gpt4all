@@ -166,7 +166,7 @@ class LLModel:
         self.model_path = model_path.encode()
         self.n_ctx = n_ctx
         self.ngl = ngl
-        self.context = None
+        self.context: LLModelPromptContext | None = None
         self.buffer = bytearray()
         self.buff_expecting_cont_bytes: int = 0
 
@@ -247,7 +247,7 @@ class LLModel:
         reset_context: bool = False,
     ):
         if self.context is None:
-            self.context = LLModelPromptContext(
+            context = LLModelPromptContext(
                 logits_size=0,
                 tokens_size=0,
                 n_past=0,
@@ -261,8 +261,11 @@ class LLModel:
                 repeat_last_n=repeat_last_n,
                 context_erase=context_erase,
             )
-        elif reset_context:
-            self.context.n_past = 0
+            self.context = context
+        else:
+            context = self.context
+            if reset_context:
+                self.context.n_past = 0
 
         self.context.n_predict = n_predict
         self.context.top_k = top_k
