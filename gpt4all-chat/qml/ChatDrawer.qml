@@ -131,7 +131,7 @@ Drawer {
                             }
                         }
                         Accessible.role: Accessible.Button
-                        Accessible.name: qsTr("Select the current chat")
+                        Accessible.name: text
                         Accessible.description: qsTr("Select the current chat or edit the chat when in edit mode")
                     }
                     Row {

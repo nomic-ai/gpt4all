@@ -369,7 +369,7 @@ Window {
                     highlighted: comboBox.highlightedIndex === index
                 }
                 Accessible.role: Accessible.ComboBox
-                Accessible.name: qsTr("List of available models")
+                Accessible.name: comboBox.currentModelName
                 Accessible.description: qsTr("The top item is the current model")
                 onActivated: function (index) {
                     currentChat.stopGenerating()
@@ -957,7 +957,7 @@ Window {
                         }
 
                         Accessible.role: Accessible.Paragraph
-                        Accessible.name: name
+                        Accessible.name: text
                         Accessible.description: name === qsTr("Response: ") ? "The response by the model" : "The prompt by the user"
 
                         topPadding: 20
