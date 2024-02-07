@@ -869,6 +869,7 @@ Window {
 
                         MyButton {
                             id: downloadButton
+                            visible: LLM.isNetworkOnline
                             Layout.alignment: Qt.AlignHCenter
                             Layout.topMargin: 40
                             text: qsTr("Download models")
