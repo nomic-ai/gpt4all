@@ -6,6 +6,8 @@
 class LLM : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool isNetworkOnline READ isNetworkOnline NOTIFY isNetworkOnlineChanged)
+
 public:
     static LLM *globalInstance();
 
@@ -17,10 +19,10 @@ public:
     Q_INVOKABLE static bool fileExists(const QString &path);
     Q_INVOKABLE qint64 systemTotalRAMInGB() const;
     Q_INVOKABLE QString systemTotalRAMInGBString() const;
+    Q_INVOKABLE bool isNetworkOnline() const;
 
 Q_SIGNALS:
-    void chatListModelChanged();
-    void modelListChanged();
+    void isNetworkOnlineChanged();
 
 private:
     bool m_compatHardware;
