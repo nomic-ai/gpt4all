@@ -890,15 +890,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     qDebug() << "scanning folder for documents" << folder_path;
 #endif
 
-    static const QList<QString> extensions { "txt", "doc", "docx", "pdf", "rtf", "odt", "html", "htm",
-    "xls", "xlsx", "csv", "ods", "ppt", "pptx", "odp", "xml", "json", "log", "md", "org", "tex", "asc", "wks",
-    "wpd", "wps", "wri", "xhtml", "xht", "xslt", "yaml", "yml", "dtd", "sgml", "tsv", "strings", "resx",
-    "plist", "properties", "ini", "config", "bat", "sh", "ps1", "cmd", "awk", "sed", "vbs", "ics", "mht",
-    "mhtml", "epub", "djvu", "azw", "azw3", "mobi", "fb2", "prc", "lit", "lrf", "tcr", "pdb", "oxps",
-    "xps", "pages", "numbers", "key", "keynote", "abw", "zabw", "123", "wk1", "wk3", "wk4", "wk5", "wq1",
-    "wq2", "xlw", "xlr", "dif", "slk", "sylk", "wb1", "wb2", "wb3", "qpw", "wdb", "wks", "wku", "wr1",
-    "wrk", "xlk", "xlt", "xltm", "xltx", "xlsm", "xla", "xlam", "xll", "xld", "xlv", "xlw", "xlc", "xlm",
-    "xlt", "xln" };
+    static const QList<QString> extensions { "txt", "pdf", "md", "rst" };
 
     QDir dir(folder_path);
     Q_ASSERT(dir.exists());

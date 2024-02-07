@@ -222,6 +222,17 @@ QtObject {
         }
     }
 
+    property color progressText: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return "#ffffff";
+            case "Dark":
+                return "#000000";
+            default:
+                return "#000000";
+        }
+    }
+
     property color checkboxBorder: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
