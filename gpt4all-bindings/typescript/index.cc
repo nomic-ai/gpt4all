@@ -3,9 +3,9 @@
 
 Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
     Napi::Function self = DefineClass(env, "LLModel", {
-       InstanceMethod("type",  &NodeModelWrapper::getType),
+       InstanceMethod("type",  &NodeModelWrapper::GetType),
        InstanceMethod("isModelLoaded", &NodeModelWrapper::IsModelLoaded),
-       InstanceMethod("name", &NodeModelWrapper::getName),
+       InstanceMethod("name", &NodeModelWrapper::GetName),
        InstanceMethod("stateSize", &NodeModelWrapper::StateSize),
        InstanceMethod("raw_prompt", &NodeModelWrapper::Prompt),
        InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
@@ -70,7 +70,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     return js_array;
   }
 
-  Napi::Value NodeModelWrapper::getType(const Napi::CallbackInfo& info) 
+  Napi::Value NodeModelWrapper::GetType(const Napi::CallbackInfo& info) 
   {
     if(type.empty()) {
         return info.Env().Undefined();
@@ -330,7 +330,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     }
   }
 
-  Napi::Value NodeModelWrapper::getName(const Napi::CallbackInfo& info) {
+  Napi::Value NodeModelWrapper::GetName(const Napi::CallbackInfo& info) {
     return Napi::String::New(info.Env(), name);
   }
   Napi::Value NodeModelWrapper::ThreadCount(const Napi::CallbackInfo& info) {

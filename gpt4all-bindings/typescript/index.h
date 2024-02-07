@@ -17,7 +17,7 @@ class NodeModelWrapper: public Napi::ObjectWrap<NodeModelWrapper> {
 public:
   NodeModelWrapper(const Napi::CallbackInfo &);
   //virtual ~NodeModelWrapper();
-  Napi::Value getType(const Napi::CallbackInfo& info);
+  Napi::Value GetType(const Napi::CallbackInfo& info);
   Napi::Value IsModelLoaded(const Napi::CallbackInfo& info);
   Napi::Value StateSize(const Napi::CallbackInfo& info);
   //void Finalize(Napi::Env env) override;
@@ -28,7 +28,7 @@ public:
   Napi::Value Prompt(const Napi::CallbackInfo& info);
   void SetThreadCount(const Napi::CallbackInfo& info);
   void Dispose(const Napi::CallbackInfo& info);
-  Napi::Value getName(const Napi::CallbackInfo& info);
+  Napi::Value GetName(const Napi::CallbackInfo& info);
   Napi::Value ThreadCount(const Napi::CallbackInfo& info);
   Napi::Value GenerateEmbedding(const Napi::CallbackInfo& info);
   Napi::Value HasGpuDevice(const Napi::CallbackInfo& info);
