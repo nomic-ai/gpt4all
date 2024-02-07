@@ -904,10 +904,7 @@ Window {
                     model: chatModel
 
                     ScrollBar.vertical: ScrollBar {
-                        parent: listView.parent
-                        anchors.top: listView.top
-                        anchors.left: listView.right
-                        anchors.bottom: listView.bottom
+                        policy: ScrollBar.AsNeeded
                     }
 
                     Accessible.role: Accessible.List
