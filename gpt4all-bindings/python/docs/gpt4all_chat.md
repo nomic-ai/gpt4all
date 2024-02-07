@@ -61,17 +61,7 @@ The general technique this plugin uses is called [Retrieval Augmented Generation
 These document chunks help your LLM respond to queries with knowledge about the contents of your data.
 The number of chunks and the size of each chunk can be configured in the LocalDocs plugin settings tab.
 
-LocalDocs supports the following file types:
-```json
-["txt", "doc", "docx", "pdf", "rtf", "odt", "html", "htm", "xls", "xlsx", "csv", "ods", "ppt", "pptx", "odp", "xml", "json", "log", "md", "org", "tex", "asc", "wks",
-"wpd", "wps", "wri", "xhtml", "xht", "xslt", "yaml", "yml", "dtd", "sgml", "tsv", "strings", "resx",
-"plist", "properties", "ini", "config", "bat", "sh", "ps1", "cmd", "awk", "sed", "vbs", "ics", "mht",
-"mhtml", "epub", "djvu", "azw", "azw3", "mobi", "fb2", "prc", "lit", "lrf", "tcr", "pdb", "oxps",
-"xps", "pages", "numbers", "key", "keynote", "abw", "zabw", "123", "wk1", "wk3", "wk4", "wk5", "wq1",
-"wq2", "xlw", "xlr", "dif", "slk", "sylk", "wb1", "wb2", "wb3", "qpw", "wdb", "wks", "wku", "wr1",
-"wrk", "xlk", "xlt", "xltm", "xltx", "xlsm", "xla", "xlam", "xll", "xld", "xlv", "xlw", "xlc", "xlm",
-"xlt", "xln"]
-```
+LocalDocs currently supports plain text files (`.txt`, `.md`, and `.rst`) and PDF files (`.pdf`).
 
 #### Troubleshooting and FAQ
 *My LocalDocs plugin isn't using my documents*
