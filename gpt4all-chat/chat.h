@@ -17,6 +17,7 @@ class Chat : public QObject
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(ChatModel *chatModel READ chatModel NOTIFY chatModelChanged)
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
+    Q_PROPERTY(float modelLoadingPercentage READ modelLoadingPercentage NOTIFY modelLoadingPercentageChanged)
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
     Q_PROPERTY(ModelInfo modelInfo READ modelInfo WRITE setModelInfo NOTIFY modelInfoChanged)
     Q_PROPERTY(bool responseInProgress READ responseInProgress NOTIFY responseInProgressChanged)
@@ -61,6 +62,7 @@ public:
     Q_INVOKABLE void reset();
     Q_INVOKABLE void processSystemPrompt();
     Q_INVOKABLE bool isModelLoaded() const;
+    Q_INVOKABLE float modelLoadingPercentage() const;
     Q_INVOKABLE void prompt(const QString &prompt);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void stopGenerating();
@@ -75,8 +77,11 @@ public:
     void setModelInfo(const ModelInfo &modelInfo);
     bool isRecalc() const;
 
-    void unloadModel();
-    void reloadModel();
+    Q_INVOKABLE void unloadModel();
+    Q_INVOKABLE void reloadModel();
+    Q_INVOKABLE void forceUnloadModel();
+    Q_INVOKABLE void forceReloadModel();
+    Q_INVOKABLE void trySwitchContextOfLoadedModel();
     void unloadAndDeleteLater();
 
     qint64 creationDate() const { return m_creationDate; }
@@ -106,6 +111,7 @@ Q_SIGNALS:
     void nameChanged();
     void chatModelChanged();
     void isModelLoadedChanged();
+    void modelLoadingPercentageChanged();
     void responseChanged();
     void responseInProgressChanged();
     void responseStateChanged();
@@ -127,10 +133,12 @@ Q_SIGNALS:
     void deviceChanged();
     void fallbackReasonChanged();
     void collectionModelChanged();
+    void trySwitchContextOfLoadedModelAttempted();
+    void trySwitchContextOfLoadedModelCompleted(bool);
 
 private Q_SLOTS:
     void handleResponseChanged(const QString &response);
-    void handleModelLoadedChanged(bool);
+    void handleModelLoadingPercentageChanged(float);
     void promptProcessing();
     void responseStopped();
     void generatedNameChanged(const QString &name);
@@ -141,7 +149,6 @@ private Q_SLOTS:
     void handleFallbackReasonChanged(const QString &device);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
     void handleModelInfoChanged(const ModelInfo &modelInfo);
-    void handleModelInstalled();
 
 private:
     QString m_id;
@@ -163,8 +170,7 @@ private:
     QList<ResultInfo> m_databaseResults;
     bool m_isServer = false;
     bool m_shouldDeleteLater = false;
-    bool m_isModelLoaded = false;
-    bool m_shouldLoadModelWhenInstalled = false;
+    float m_modelLoadingPercentage = 0.0f;
     LocalDocsCollectionsModel *m_collectionModel;
 };
 

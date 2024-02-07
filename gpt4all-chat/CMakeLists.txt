@@ -109,6 +109,7 @@ qt_add_qml_module(chat
       qml/ModelSettings.qml
       qml/ApplicationSettings.qml
       qml/LocalDocsSettings.qml
+      qml/SwitchModelDialog.qml
       qml/MySettingsTab.qml
       qml/MySettingsStack.qml
       qml/MySettingsDestructiveButton.qml
@@ -123,6 +124,7 @@ qt_add_qml_module(chat
       qml/MyTextField.qml
       qml/MyCheckBox.qml
       qml/MyBusyIndicator.qml
+      qml/MyMiniButton.qml
       qml/MyToolButton.qml
     RESOURCES
       icons/send_message.svg
@@ -133,6 +135,7 @@ qt_add_qml_module(chat
       icons/db.svg
       icons/download.svg
       icons/settings.svg
+      icons/eject.svg
       icons/edit.svg
       icons/image.svg
       icons/trash.svg

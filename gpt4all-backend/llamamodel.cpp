@@ -180,6 +180,9 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->model_params.use_mlock = params.use_mlock;
 #endif
 
+    d_ptr->model_params.progress_callback = &LLModel::staticProgressCallback;
+    d_ptr->model_params.progress_callback_user_data = this;
+
 #ifdef GGML_USE_METAL
     if (llama_verbose()) {
         std::cerr << "llama.cpp: using Metal" << std::endl;
