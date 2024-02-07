@@ -179,9 +179,9 @@ public:
         if (m_currentChat && m_currentChat != m_serverChat)
             m_currentChat->unloadModel();
         m_currentChat = chat;
-        if (!m_currentChat->isModelLoaded() && m_currentChat != m_serverChat)
-            m_currentChat->reloadModel();
         emit currentChatChanged();
+        if (!m_currentChat->isModelLoaded() && m_currentChat != m_serverChat)
+            m_currentChat->trySwitchContextOfLoadedModel();
     }
 
     Q_INVOKABLE Chat* get(int index)

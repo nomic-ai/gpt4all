@@ -74,6 +74,8 @@ public:
         int32_t n_last_batch_tokens = 0;
     };
 
+    using ProgressCallback = std::function<bool(float progress)>;
+
     explicit LLModel() {}
     virtual ~LLModel() {}
 
@@ -125,6 +127,8 @@ public:
     virtual bool hasGPUDevice() { return false; }
     virtual bool usingGPUDevice() { return false; }
 
+    void setProgressCallback(ProgressCallback callback) { m_progressCallback = callback; }
+
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
@@ -152,6 +156,15 @@ protected:
     void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate);
 
     const Implementation *m_implementation = nullptr;
+
+    ProgressCallback m_progressCallback;
+    static bool staticProgressCallback(float progress, void* ctx)
+    {
+        LLModel* model = static_cast<LLModel*>(ctx);
+        if (model && model->m_progressCallback)
+            return model->m_progressCallback(progress);
+        return true;
+    }
 
 private:
     friend class LLMImplementation;
