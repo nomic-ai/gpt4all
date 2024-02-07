@@ -154,12 +154,9 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     }
     if(device != "cpu") {
         size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str(),nCtx, nGpuLayers);
-        std::cout << "Initiating GPU\n";
 
         auto success = llmodel_gpu_init_gpu_device_by_string(GetInference(), mem, device.c_str());
-        if(success) {
-            std::cout << "GPU init successfully\n";
-        } else {
+        if(!success) {
             //https://github.com/nomic-ai/gpt4all/blob/3acbef14b7c2436fe033cae9036e695d77461a16/gpt4all-bindings/python/gpt4all/pyllmodel.py#L215
             //Haven't implemented this but it is still open to contribution
             std::cout << "WARNING: Failed to init GPU\n";

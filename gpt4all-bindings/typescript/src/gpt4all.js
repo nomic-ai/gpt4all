@@ -265,7 +265,6 @@ function _internal_createTokenStream(stream,model,
     return stream;
 }
 
-let ref;
 function createTokenStream(model,
     messages,
     options = defaultCompletionOptions,callback = undefined) {
@@ -274,7 +273,6 @@ function createTokenStream(model,
    const stream = new Stream.PassThrough({
      encoding: 'utf-8'
    });
-    ref = stream
    return _internal_createTokenStream(stream,model,messages,options,callback);
 }
 

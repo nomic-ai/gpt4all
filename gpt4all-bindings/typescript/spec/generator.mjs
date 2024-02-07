@@ -19,7 +19,6 @@ const result = await gpt.createCompletion(model, [{
 
 console.log(result)
 
-
 const result2 = await gpt.createCompletion(model, [{ 
     role: 'user',
     content: "You sure you sure?"
