@@ -786,7 +786,7 @@ jobs:
       - run:
           name: Install dependencies
           command: | # It will be latest .NET version
-            brew install --cask dotnet-sdk 
+            brew install --cask dotnet-sdk
       - attach_workspace:
           at: /tmp/workspace
       - run:
