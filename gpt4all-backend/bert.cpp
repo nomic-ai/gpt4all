@@ -343,7 +343,7 @@ void bert_eval(
 
     // embd norm
     {
-        inpL = ggml_norm(ctx0, inpL, 1e-5f);
+        inpL = ggml_norm(ctx0, inpL, 1e-12f);
 
         inpL = ggml_add(ctx0,
                         ggml_mul(ctx0,
@@ -403,7 +403,7 @@ void bert_eval(
 
         // attention norm
         {
-            cur = ggml_norm(ctx0, cur, 1e-5f);
+            cur = ggml_norm(ctx0, cur, 1e-12f);
 
             cur = ggml_add(ctx0,
                            ggml_mul(ctx0,
@@ -429,7 +429,7 @@ void bert_eval(
 
         // output norm
         {
-            cur = ggml_norm(ctx0, cur, 1e-5f);
+            cur = ggml_norm(ctx0, cur, 1e-12f);
 
             cur = ggml_add(ctx0,
                            ggml_mul(ctx0,
