@@ -679,7 +679,7 @@ jobs:
 
   build-csharp-linux:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0 
+      - image: mcr.microsoft.com/dotnet/sdk:8.0 # update it when new .NET version is released
     steps:
       - checkout
       - attach_workspace:
@@ -736,6 +736,10 @@ jobs:
       - attach_workspace:
           at: C:\Users\circleci\workspace
       - run:
+          name: "Install .NET" # install latest .NET version
+          command: |
+            choco install -y dotnet-sdk
+      - run:
           name: "Prepare Native Libs"
           command: |
             cd gpt4all-bindings/csharp
@@ -781,8 +785,8 @@ jobs:
             - gpt4all-csharp-nuget-packages-nix
       - run:
           name: Install dependencies
-          command: |
-            brew install --cask dotnet-sdk
+          command: | # It will be latest .NET version
+            brew install --cask dotnet-sdk 
       - attach_workspace:
           at: /tmp/workspace
       - run:
