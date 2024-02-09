@@ -401,8 +401,7 @@ jobs:
       - run:
           name: Build C library
           command: |
-            git submodule init
-            git submodule update
+            git submodule update --init --recursive
             cd gpt4all-backend
             cmake -B build
             cmake --build build --parallel
@@ -432,8 +431,7 @@ jobs:
       - run:
           name: Build C library
           command: |
-            git submodule init
-            git submodule update
+            git submodule update --init  # don't use --recursive because macOS doesn't use Kompute
             cd gpt4all-backend
             cmake -B build -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             cmake --build build --parallel
@@ -472,8 +470,7 @@ jobs:
       - run:
           name: Build C library
           command: |
-            git submodule init
-            git submodule update
+            git submodule update --init --recursive
             cd gpt4all-backend
             $Env:Path += ";C:\ProgramData\mingw64\mingw64\bin"
             $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
