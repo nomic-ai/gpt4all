@@ -679,7 +679,7 @@ jobs:
 
   build-csharp-linux:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy # Ubuntu 22.04
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
       - checkout
       - attach_workspace:
@@ -736,6 +736,10 @@ jobs:
       - attach_workspace:
           at: C:\Users\circleci\workspace
       - run:
+          name: "Install .NET"
+          command: |
+            choco install -y dotnet-8.0-sdk
+      - run:
           name: "Prepare Native Libs"
           command: |
             cd gpt4all-bindings/csharp
@@ -782,7 +786,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            brew install --cask dotnet-sdk
+            brew tap isen-ng/dotnet-sdk-versions
+            brew install --cask dotnet-sdk8-0-100
       - attach_workspace:
           at: /tmp/workspace
       - run:
@@ -824,7 +829,7 @@ jobs:
 
   store-and-upload-nupkgs:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy # Ubuntu 22.04
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
       - attach_workspace:
           at: /tmp/workspace
@@ -840,9 +845,9 @@ jobs:
             cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
             mkdir -p runtimes/win-x64/native
             cp /tmp/workspace/runtimes/win-x64/*.dll runtimes/win-x64/native/
-            mkdir -p runtimes/osx/native
-            cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
-            cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
+            #mkdir -p runtimes/osx/native
+            #cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
+            #cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
             dotnet pack ./Gpt4All/Gpt4All.csproj -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -c Release
             dotnet nuget push ./Gpt4All/bin/Release/Gpt4All.*.nupkg -s $NUGET_URL -k $NUGET_TOKEN --skip-duplicate
       - store_artifacts:
@@ -1209,4 +1214,4 @@ workflows:
             - nuget-hold
             - build-csharp-windows
             - build-csharp-linux
-            - build-csharp-macos
+            #- build-csharp-macos

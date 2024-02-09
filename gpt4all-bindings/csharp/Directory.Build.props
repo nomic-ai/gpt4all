@@ -5,7 +5,7 @@
         <Company></Company>
         <Copyright></Copyright>
         <NeutralLanguage>en-US</NeutralLanguage>
-        <Version>0.6.3-alpha</Version>
+        <Version>0.6.4-alpha</Version>
         <VersionSuffix>$(VersionSuffix)</VersionSuffix>
         <Version Condition=" '$(VersionSuffix)' != '' ">$(Version)$(VersionSuffix)</Version>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
