@@ -786,7 +786,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            brew install --cask dotnet-sdk  # NB: This installs the latest .NET SDK
+            brew tap isen-ng/dotnet-sdk-versions
+            brew install --cask dotnet-sdk8-0-100
       - attach_workspace:
           at: /tmp/workspace
       - run:
