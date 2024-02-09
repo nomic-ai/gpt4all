@@ -679,7 +679,7 @@ jobs:
 
   build-csharp-linux:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0 # update it when new .NET version is released
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
       - checkout
       - attach_workspace:
@@ -736,9 +736,9 @@ jobs:
       - attach_workspace:
           at: C:\Users\circleci\workspace
       - run:
-          name: "Install .NET" # install latest .NET version
+          name: "Install .NET"
           command: |
-            choco install -y dotnet-sdk
+            choco install -y dotnet-8.0-sdk
       - run:
           name: "Prepare Native Libs"
           command: |
@@ -785,8 +785,8 @@ jobs:
             - gpt4all-csharp-nuget-packages-nix
       - run:
           name: Install dependencies
-          command: | # It will be latest .NET version
-            brew install --cask dotnet-sdk
+          command: |
+            brew install --cask dotnet-sdk  # NB: This installs the latest .NET SDK
       - attach_workspace:
           at: /tmp/workspace
       - run:
@@ -828,7 +828,7 @@ jobs:
 
   store-and-upload-nupkgs:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0 # Ubuntu 22.04
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
     steps:
       - attach_workspace:
           at: /tmp/workspace
@@ -844,9 +844,9 @@ jobs:
             cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
             mkdir -p runtimes/win-x64/native
             cp /tmp/workspace/runtimes/win-x64/*.dll runtimes/win-x64/native/
-            mkdir -p runtimes/osx/native
-            cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
-            cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
+            #mkdir -p runtimes/osx/native
+            #cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
+            #cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
             dotnet pack ./Gpt4All/Gpt4All.csproj -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -c Release
             dotnet nuget push ./Gpt4All/bin/Release/Gpt4All.*.nupkg -s $NUGET_URL -k $NUGET_TOKEN --skip-duplicate
       - store_artifacts:
@@ -1213,4 +1213,4 @@ workflows:
             - nuget-hold
             - build-csharp-windows
             - build-csharp-linux
-            - build-csharp-macos
+            #- build-csharp-macos
