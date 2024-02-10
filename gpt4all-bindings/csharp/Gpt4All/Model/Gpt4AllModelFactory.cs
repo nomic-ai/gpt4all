@@ -32,7 +32,7 @@ public class Gpt4AllModelFactory : IGpt4AllModelFactory
         }
     }
 
-    private IGpt4AllModel CreateModel(string modelPath)
+    private Gpt4All CreateModel(string modelPath)
     {
         _logger.LogInformation("Creating model path={ModelPath}", modelPath);
         IntPtr error;

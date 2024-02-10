@@ -175,7 +175,7 @@ class LLModel:
         model = llmodel.llmodel_model_create2(self.model_path, b"auto", ctypes.byref(err))
         if model is None:
             s = err.value
-            raise ValueError("Unable to instantiate model: {'null' if s is None else s.decode()}")
+            raise ValueError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
         self.model = model
 
     def __del__(self):
