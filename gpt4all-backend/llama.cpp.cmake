@@ -160,6 +160,7 @@ if (LLAMA_OPENBLAS)
 endif()
 
 if (LLAMA_KOMPUTE)
+    set(LLAMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/llama.cpp-mainline)
     if (NOT EXISTS "${LLAMA_DIR}/kompute/CMakeLists.txt")
         message(FATAL_ERROR "Kompute not found")
     endif()
@@ -171,8 +172,6 @@ if (LLAMA_KOMPUTE)
     if (NOT glslc_executable)
         message(FATAL_ERROR "glslc not found")
     endif()
-
-    set(LLAMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/llama.cpp-mainline)
 
     function(compile_shader)
       set(options)
