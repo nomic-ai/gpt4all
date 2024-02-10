@@ -38,6 +38,12 @@ else()
     endif()
 endif()
 
+if (APPLE)
+    set(LLAMA_KOMPUTE_DEFAULT OFF)
+else()
+    set(LLAMA_KOMPUTE_DEFAULT ON)
+endif()
+
 
 #
 # Option list
@@ -70,12 +76,6 @@ option(LLAMA_SANITIZE_UNDEFINED     "llama: enable undefined sanitizer"         
 #if (NOT MSVC)
 #    option(LLAMA_F16C               "llama: enable F16C"                                    ON)
 #endif()
-
-if (APPLE)
-    set(LLAMA_KOMPUTE_DEFAULT ON)
-else()
-    set(LLAMA_KOMPUTE_DEFAULT OFF)
-endif()
 
 # 3rd party libs
 option(LLAMA_ACCELERATE             "llama: enable Accelerate framework"                    ON)
