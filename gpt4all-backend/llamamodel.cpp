@@ -432,6 +432,8 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
         free(vkDevices);
         return devices;
     }
+#else
+    std::cerr << __func__ << ": built without Kompute\n";
 #endif
 
     return {};
