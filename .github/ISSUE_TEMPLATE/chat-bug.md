@@ -1,6 +1,6 @@
 ---
-name: "\U0001F4AC Chat UI Bug Report"
-about: A bug report for the GPT4All Chat UI
+name: "\U0001F4AC GPT4All Bug Report"
+about: A bug report for GPT4All Chat
 labels: ["chat", "bug-unconfirmed"]
 ---
 
