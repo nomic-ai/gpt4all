@@ -265,7 +265,7 @@ function _internal_createTokenStream(stream,model,
     return stream;
 }
 
-function createTokenStream(model,
+function _createTokenStream(model,
     messages,
     options = defaultCompletionOptions,callback = undefined) {
    
@@ -279,7 +279,7 @@ function createTokenStream(model,
 async function* generateTokens(model,
     messages,
     options = defaultCompletionOptions, callback = undefined) {
-    const stream = createTokenStream(model,messages,options,callback)
+    const stream = _createTokenStream(model,messages,options,callback)
 
     let bHasFinished = false;
     let activeDataCallback = undefined;
@@ -327,6 +327,5 @@ module.exports = {
     downloadModel,
     retrieveModel,
     loadModel,
-    createTokenStream,
     generateTokens
 };
