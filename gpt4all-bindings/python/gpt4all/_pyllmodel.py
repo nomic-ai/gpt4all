@@ -142,15 +142,6 @@ def empty_response_callback(token_id: int, response: str) -> bool:
     return True
 
 
-def _create_model(model_path: bytes) -> ctypes.c_void_p:
-    err = ctypes.c_char_p()
-    model = llmodel.llmodel_model_create2(model_path, b"auto", ctypes.byref(err))
-    if model is None:
-        s = err.value
-        raise ValueError("Unable to instantiate model: {'null' if s is None else s.decode()}")
-    return model
-
-
 # Symbol to terminate from generator
 class Sentinel(Enum):
     TERMINATING_SYMBOL = 0
@@ -161,116 +152,77 @@ class LLModel:
     Base class and universal wrapper for GPT4All language models
     built around llmodel C-API.
 
-    Attributes
+    Parameters
     ----------
-    model: llmodel_model
-        Ctype pointer to underlying model
-    model_name: str
-        Model name
+    model_path : str
+        Path to the model.
+    n_ctx : int
+        Maximum size of context window
+    ngl : int
+        Number of GPU layers to use (Vulkan)
     """
 
-    def __init__(self):
-        self.model = None
-        self.model_name = None
-        self.context = None
-        self.llmodel_lib = llmodel
-
+    def __init__(self, model_path: str, n_ctx: int, ngl: int):
+        self.model_path = model_path.encode()
+        self.n_ctx = n_ctx
+        self.ngl = ngl
+        self.context: LLModelPromptContext | None = None
         self.buffer = bytearray()
         self.buff_expecting_cont_bytes: int = 0
 
+        # Construct a model implementation
+        err = ctypes.c_char_p()
+        model = llmodel.llmodel_model_create2(self.model_path, b"auto", ctypes.byref(err))
+        if model is None:
+            s = err.value
+            raise ValueError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
+        self.model = model
+
     def __del__(self):
-        if self.model is not None:
-            self.llmodel_lib.llmodel_model_destroy(self.model)
-
-    def memory_needed(self, model_path: str, n_ctx: int, ngl: int) -> int:
-        self.model = None
-        return self._memory_needed(model_path, n_ctx, ngl)
-
-    def _memory_needed(self, model_path: str, n_ctx: int, ngl: int) -> int:
-        if self.model is None:
-            self.model = _create_model(model_path.encode())
-        return llmodel.llmodel_required_mem(self.model, model_path.encode(), n_ctx, ngl)
-
-    def list_gpu(self, model_path: str, n_ctx: int, ngl: int) -> list[LLModelGPUDevice]:
-        """
-        Lists available GPU devices that satisfy the model's memory requirements.
-
-        Parameters
-        ----------
-        model_path : str
-            Path to the model.
-        n_ctx : int
-            Maximum size of context window
-        ngl : int
-            Number of GPU layers to use (Vulkan)
-
-        Returns
-        -------
-        list
-            A list of LLModelGPUDevice structures representing available GPU devices.
-        """
-        mem_required = self._memory_needed(model_path, n_ctx, ngl)
-        return self._list_gpu(mem_required)
+        if hasattr(self, 'model'):
+            llmodel.llmodel_model_destroy(self.model)
 
     def _list_gpu(self, mem_required: int) -> list[LLModelGPUDevice]:
         num_devices = ctypes.c_int32(0)
-        devices_ptr = self.llmodel_lib.llmodel_available_gpu_devices(self.model, mem_required, ctypes.byref(num_devices))
+        devices_ptr = llmodel.llmodel_available_gpu_devices(self.model, mem_required, ctypes.byref(num_devices))
         if not devices_ptr:
             raise ValueError("Unable to retrieve available GPU devices")
         return devices_ptr[:num_devices.value]
 
-    def init_gpu(self, model_path: str, device: str, n_ctx: int, ngl: int):
-        mem_required = self._memory_needed(model_path, n_ctx, ngl)
+    def init_gpu(self, device: str):
+        mem_required = llmodel.llmodel_required_mem(self.model, self.model_path, self.n_ctx, self.ngl)
 
-        success = self.llmodel_lib.llmodel_gpu_init_gpu_device_by_string(self.model, mem_required, device.encode())
-        if not success:
-            # Retrieve all GPUs without considering memory requirements.
-            num_devices = ctypes.c_int32(0)
-            all_devices_ptr = self.llmodel_lib.llmodel_available_gpu_devices(self.model, 0, ctypes.byref(num_devices))
-            if not all_devices_ptr:
-                raise ValueError("Unable to retrieve list of all GPU devices")
-            all_gpus = [d.name.decode() for d in all_devices_ptr[:num_devices.value]]
+        if llmodel.llmodel_gpu_init_gpu_device_by_string(self.model, mem_required, device.encode()):
+            return
 
-            # Retrieve GPUs that meet the memory requirements using list_gpu
-            available_gpus = [device.name.decode() for device in self._list_gpu(mem_required)]
+        # Retrieve all GPUs without considering memory requirements.
+        num_devices = ctypes.c_int32(0)
+        all_devices_ptr = llmodel.llmodel_available_gpu_devices(self.model, 0, ctypes.byref(num_devices))
+        if not all_devices_ptr:
+            raise ValueError("Unable to retrieve list of all GPU devices")
+        all_gpus = [d.name.decode() for d in all_devices_ptr[:num_devices.value]]
 
-            # Identify GPUs that are unavailable due to insufficient memory or features
-            unavailable_gpus = set(all_gpus).difference(available_gpus)
+        # Retrieve GPUs that meet the memory requirements using list_gpu
+        available_gpus = [device.name.decode() for device in self._list_gpu(mem_required)]
 
-            # Formulate the error message
-            error_msg = "Unable to initialize model on GPU: '{}'.".format(device)
-            error_msg += "\nAvailable GPUs: {}.".format(available_gpus)
-            error_msg += "\nUnavailable GPUs due to insufficient memory or features: {}.".format(unavailable_gpus)
-            raise ValueError(error_msg)
+        # Identify GPUs that are unavailable due to insufficient memory or features
+        unavailable_gpus = set(all_gpus).difference(available_gpus)
 
-    def load_model(self, model_path: str, n_ctx: int, ngl: int) -> bool:
+        # Formulate the error message
+        error_msg = "Unable to initialize model on GPU: '{}'.".format(device)
+        error_msg += "\nAvailable GPUs: {}.".format(available_gpus)
+        error_msg += "\nUnavailable GPUs due to insufficient memory or features: {}.".format(unavailable_gpus)
+        raise ValueError(error_msg)
+
+    def load_model(self) -> bool:
         """
         Load model from a file.
-
-        Parameters
-        ----------
-        model_path : str
-            Model filepath
-        n_ctx : int
-            Maximum size of context window
-        ngl : int
-            Number of GPU layers to use (Vulkan)
 
         Returns
         -------
         True if model loaded successfully, False otherwise
         """
-        self.model = _create_model(model_path.encode())
-
-        llmodel.llmodel_loadModel(self.model, model_path.encode(), n_ctx, ngl)
-
-        filename = os.path.basename(model_path)
-        self.model_name = os.path.splitext(filename)[0]
-
-        if llmodel.llmodel_isModelLoaded(self.model):
-            return True
-        else:
-            return False
+        return llmodel.llmodel_loadModel(self.model, self.model_path, self.n_ctx, self.ngl)
 
     def set_thread_count(self, n_threads):
         if not llmodel.llmodel_isModelLoaded(self.model):
@@ -295,7 +247,7 @@ class LLModel:
         reset_context: bool = False,
     ):
         if self.context is None:
-            self.context = LLModelPromptContext(
+            context = LLModelPromptContext(
                 logits_size=0,
                 tokens_size=0,
                 n_past=0,
@@ -309,8 +261,11 @@ class LLModel:
                 repeat_last_n=repeat_last_n,
                 context_erase=context_erase,
             )
-        elif reset_context:
-            self.context.n_past = 0
+            self.context = context
+        else:
+            context = self.context
+            if reset_context:
+                self.context.n_past = 0
 
         self.context.n_predict = n_predict
         self.context.top_k = top_k

@@ -203,7 +203,7 @@ QtObject {
     property color progressForeground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return accentColor;
+                return purple400;
             case "Dark":
                 return accentColor;
             default:
@@ -219,6 +219,17 @@ QtObject {
                 return green600;
             default:
                 return green600;
+        }
+    }
+
+    property color progressText: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return "#ffffff";
+            case "Dark":
+                return "#000000";
+            default:
+                return "#000000";
         }
     }
 

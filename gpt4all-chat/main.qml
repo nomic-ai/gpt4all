@@ -16,8 +16,8 @@ Window {
     id: window
     width: 1920
     height: 1080
-    minimumWidth: 1280
-    minimumHeight: 720
+    minimumWidth: 720
+    minimumHeight: 480
     visible: true
     title: qsTr("GPT4All v") + Qt.application.version
 
@@ -369,7 +369,7 @@ Window {
                     highlighted: comboBox.highlightedIndex === index
                 }
                 Accessible.role: Accessible.ComboBox
-                Accessible.name: qsTr("List of available models")
+                Accessible.name: comboBox.currentModelName
                 Accessible.description: qsTr("The top item is the current model")
                 onActivated: function (index) {
                     currentChat.stopGenerating()
@@ -410,7 +410,7 @@ Window {
     SettingsDialog {
         id: settingsDialog
         anchors.centerIn: parent
-        width: Math.min(1280, window.width - (window.width * .1))
+        width: Math.min(1920, window.width - (window.width * .1))
         height: window.height - (window.height * .1)
         onDownloadClicked: {
             downloadNewModels.showEmbeddingModels = true
@@ -736,7 +736,7 @@ Window {
     ModelDownloaderDialog {
         id: downloadNewModels
         anchors.centerIn: parent
-        width: Math.min(1280, window.width - (window.width * .1))
+        width: Math.min(1920, window.width - (window.width * .1))
         height: window.height - (window.height * .1)
         Item {
             Accessible.role: Accessible.Dialog
@@ -869,6 +869,7 @@ Window {
 
                         MyButton {
                             id: downloadButton
+                            visible: LLM.isNetworkOnline
                             Layout.alignment: Qt.AlignHCenter
                             Layout.topMargin: 40
                             text: qsTr("Download models")
@@ -904,10 +905,7 @@ Window {
                     model: chatModel
 
                     ScrollBar.vertical: ScrollBar {
-                        parent: listView.parent
-                        anchors.top: listView.top
-                        anchors.left: listView.right
-                        anchors.bottom: listView.bottom
+                        policy: ScrollBar.AsNeeded
                     }
 
                     Accessible.role: Accessible.List
@@ -960,7 +958,7 @@ Window {
                         }
 
                         Accessible.role: Accessible.Paragraph
-                        Accessible.name: name
+                        Accessible.name: text
                         Accessible.description: name === qsTr("Response: ") ? "The response by the model" : "The prompt by the user"
 
                         topPadding: 20
@@ -1129,7 +1127,7 @@ Window {
                 }
 
                 Image {
-                    visible: currentChat.isServer || currentChat.modelInfo.isChatGPT
+                    visible: currentChat.isServer || currentChat.modelInfo.isOnline
                     anchors.fill: parent
                     sourceSize.width: 1024
                     sourceSize.height: 1024

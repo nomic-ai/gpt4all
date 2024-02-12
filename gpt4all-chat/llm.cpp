@@ -9,6 +9,7 @@
 #include <QResource>
 #include <QSettings>
 #include <QUrl>
+#include <QNetworkInformation>
 #include <fstream>
 
 #ifndef GPT4ALL_OFFLINE_INSTALLER
@@ -39,6 +40,10 @@ LLM::LLM()
 #endif
 
     m_compatHardware = minimal;
+
+    QNetworkInformation::loadDefaultBackend();
+    connect(QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged,
+        this, &LLM::isNetworkOnlineChanged);
 }
 
 bool LLM::hasSettingsAccess() const
@@ -99,4 +104,12 @@ qint64 LLM::systemTotalRAMInGB() const
 QString LLM::systemTotalRAMInGBString() const
 {
     return QString::fromStdString(getSystemTotalRAMInGBString());
+}
+
+bool LLM::isNetworkOnline() const
+{
+    if (!QNetworkInformation::instance())
+        return false;
+
+    return QNetworkInformation::instance()->reachability() == QNetworkInformation::Reachability::Online;
 }

@@ -38,6 +38,12 @@ else()
     endif()
 endif()
 
+if (APPLE)
+    set(LLAMA_KOMPUTE_DEFAULT OFF)
+else()
+    set(LLAMA_KOMPUTE_DEFAULT ON)
+endif()
+
 
 #
 # Option list
@@ -77,6 +83,7 @@ option(LLAMA_OPENBLAS               "llama: use OpenBLAS"                       
 #option(LLAMA_CUBLAS                 "llama: use cuBLAS"                                     OFF)
 #option(LLAMA_CLBLAST                "llama: use CLBlast"                                    OFF)
 #option(LLAMA_METAL                  "llama: use Metal"                                      OFF)
+option(LLAMA_KOMPUTE                "llama: use Kompute"                                    ${LLAMA_KOMPUTE_DEFAULT})
 set(LLAMA_BLAS_VENDOR "Generic" CACHE STRING "llama: BLAS library vendor")
 set(LLAMA_CUDA_DMMV_X "32" CACHE STRING "llama: x stride for dmmv CUDA kernels")
 set(LLAMA_CUDA_DMMV_Y "1" CACHE STRING  "llama: y block size for dmmv CUDA kernels")
@@ -153,14 +160,18 @@ if (LLAMA_OPENBLAS)
 endif()
 
 if (LLAMA_KOMPUTE)
+    set(LLAMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/llama.cpp-mainline)
+    if (NOT EXISTS "${LLAMA_DIR}/kompute/CMakeLists.txt")
+        message(FATAL_ERROR "Kompute not found")
+    endif()
+    message(STATUS "Kompute found")
+
     add_compile_definitions(VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
     find_package(Vulkan COMPONENTS glslc REQUIRED)
     find_program(glslc_executable NAMES glslc HINTS Vulkan::glslc)
     if (NOT glslc_executable)
         message(FATAL_ERROR "glslc not found")
     endif()
-
-    set(LLAMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/llama.cpp-mainline)
 
     function(compile_shader)
       set(options)
@@ -220,91 +231,86 @@ if (LLAMA_KOMPUTE)
       endforeach()
     endfunction()
 
-    if (EXISTS "${LLAMA_DIR}/kompute/CMakeLists.txt")
-        message(STATUS "Kompute found")
-        set(KOMPUTE_OPT_LOG_LEVEL Critical CACHE STRING "Kompute log level")
-        add_subdirectory(${LLAMA_DIR}/kompute)
+    set(KOMPUTE_OPT_LOG_LEVEL Critical CACHE STRING "Kompute log level")
+    add_subdirectory(${LLAMA_DIR}/kompute)
 
-        # Compile our shaders
-        compile_shader(SOURCES
-          kompute-shaders/op_scale.comp
-          kompute-shaders/op_scale_8.comp
-          kompute-shaders/op_add.comp
-          kompute-shaders/op_addrow.comp
-          kompute-shaders/op_mul.comp
-          kompute-shaders/op_silu.comp
-          kompute-shaders/op_relu.comp
-          kompute-shaders/op_gelu.comp
-          kompute-shaders/op_softmax.comp
-          kompute-shaders/op_norm.comp
-          kompute-shaders/op_rmsnorm.comp
-          kompute-shaders/op_diagmask.comp
-          kompute-shaders/op_mul_mat_mat_f32.comp
-          kompute-shaders/op_mul_mat_f16.comp
-          kompute-shaders/op_mul_mat_q8_0.comp
-          kompute-shaders/op_mul_mat_q4_0.comp
-          kompute-shaders/op_mul_mat_q4_1.comp
-          kompute-shaders/op_mul_mat_q6_k.comp
-          kompute-shaders/op_getrows_f16.comp
-          kompute-shaders/op_getrows_q4_0.comp
-          kompute-shaders/op_getrows_q4_1.comp
-          kompute-shaders/op_getrows_q6_k.comp
-          kompute-shaders/op_rope_f16.comp
-          kompute-shaders/op_rope_f32.comp
-          kompute-shaders/op_cpy_f16_f16.comp
-          kompute-shaders/op_cpy_f16_f32.comp
-          kompute-shaders/op_cpy_f32_f16.comp
-          kompute-shaders/op_cpy_f32_f32.comp
-        )
+    # Compile our shaders
+    compile_shader(SOURCES
+      kompute-shaders/op_scale.comp
+      kompute-shaders/op_scale_8.comp
+      kompute-shaders/op_add.comp
+      kompute-shaders/op_addrow.comp
+      kompute-shaders/op_mul.comp
+      kompute-shaders/op_silu.comp
+      kompute-shaders/op_relu.comp
+      kompute-shaders/op_gelu.comp
+      kompute-shaders/op_softmax.comp
+      kompute-shaders/op_norm.comp
+      kompute-shaders/op_rmsnorm.comp
+      kompute-shaders/op_diagmask.comp
+      kompute-shaders/op_mul_mat_mat_f32.comp
+      kompute-shaders/op_mul_mat_f16.comp
+      kompute-shaders/op_mul_mat_q8_0.comp
+      kompute-shaders/op_mul_mat_q4_0.comp
+      kompute-shaders/op_mul_mat_q4_1.comp
+      kompute-shaders/op_mul_mat_q6_k.comp
+      kompute-shaders/op_getrows_f16.comp
+      kompute-shaders/op_getrows_q4_0.comp
+      kompute-shaders/op_getrows_q4_1.comp
+      kompute-shaders/op_getrows_q6_k.comp
+      kompute-shaders/op_rope_f16.comp
+      kompute-shaders/op_rope_f32.comp
+      kompute-shaders/op_cpy_f16_f16.comp
+      kompute-shaders/op_cpy_f16_f32.comp
+      kompute-shaders/op_cpy_f32_f16.comp
+      kompute-shaders/op_cpy_f32_f32.comp
+    )
 
-        # Create a custom target for our generated shaders
-        add_custom_target(generated_shaders DEPENDS
-          shaderop_scale.h
-          shaderop_scale_8.h
-          shaderop_add.h
-          shaderop_addrow.h
-          shaderop_mul.h
-          shaderop_silu.h
-          shaderop_relu.h
-          shaderop_gelu.h
-          shaderop_softmax.h
-          shaderop_norm.h
-          shaderop_rmsnorm.h
-          shaderop_diagmask.h
-          shaderop_mul_mat_mat_f32.h
-          shaderop_mul_mat_f16.h
-          shaderop_mul_mat_q8_0.h
-          shaderop_mul_mat_q4_0.h
-          shaderop_mul_mat_q4_1.h
-          shaderop_mul_mat_q6_k.h
-          shaderop_getrows_f16.h
-          shaderop_getrows_q4_0.h
-          shaderop_getrows_q4_1.h
-          shaderop_getrows_q6_k.h
-          shaderop_rope_f16.h
-          shaderop_rope_f32.h
-          shaderop_cpy_f16_f16.h
-          shaderop_cpy_f16_f32.h
-          shaderop_cpy_f32_f16.h
-          shaderop_cpy_f32_f32.h
-        )
+    # Create a custom target for our generated shaders
+    add_custom_target(generated_shaders DEPENDS
+      shaderop_scale.h
+      shaderop_scale_8.h
+      shaderop_add.h
+      shaderop_addrow.h
+      shaderop_mul.h
+      shaderop_silu.h
+      shaderop_relu.h
+      shaderop_gelu.h
+      shaderop_softmax.h
+      shaderop_norm.h
+      shaderop_rmsnorm.h
+      shaderop_diagmask.h
+      shaderop_mul_mat_mat_f32.h
+      shaderop_mul_mat_f16.h
+      shaderop_mul_mat_q8_0.h
+      shaderop_mul_mat_q4_0.h
+      shaderop_mul_mat_q4_1.h
+      shaderop_mul_mat_q6_k.h
+      shaderop_getrows_f16.h
+      shaderop_getrows_q4_0.h
+      shaderop_getrows_q4_1.h
+      shaderop_getrows_q6_k.h
+      shaderop_rope_f16.h
+      shaderop_rope_f32.h
+      shaderop_cpy_f16_f16.h
+      shaderop_cpy_f16_f32.h
+      shaderop_cpy_f32_f16.h
+      shaderop_cpy_f32_f32.h
+    )
 
-        # Create a custom command that depends on the generated_shaders
-        add_custom_command(
-            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ggml-kompute.stamp
-            COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/ggml-kompute.stamp
-            DEPENDS generated_shaders
-            COMMENT "Ensuring shaders are generated before compiling ggml-kompute.cpp"
-        )
+    # Create a custom command that depends on the generated_shaders
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ggml-kompute.stamp
+        COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/ggml-kompute.stamp
+        DEPENDS generated_shaders
+        COMMENT "Ensuring shaders are generated before compiling ggml-kompute.cpp"
+    )
 
-        # Add the stamp to the main sources to ensure dependency tracking
-        set(GGML_SOURCES_KOMPUTE ${LLAMA_DIR}/ggml-kompute.cpp ${LLAMA_DIR}/ggml-kompute.h ${CMAKE_CURRENT_BINARY_DIR}/ggml-kompute.stamp)
-        add_compile_definitions(GGML_USE_KOMPUTE)
-        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} kompute)
-        set(LLAMA_EXTRA_INCLUDES ${LLAMA_EXTRA_INCLUDES} ${CMAKE_BINARY_DIR})
-    else()
-        message(WARNING "Kompute not found")
-    endif()
+    # Add the stamp to the main sources to ensure dependency tracking
+    set(GGML_SOURCES_KOMPUTE ${LLAMA_DIR}/ggml-kompute.cpp ${LLAMA_DIR}/ggml-kompute.h ${CMAKE_CURRENT_BINARY_DIR}/ggml-kompute.stamp)
+    add_compile_definitions(GGML_USE_KOMPUTE)
+    set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} kompute)
+    set(LLAMA_EXTRA_INCLUDES ${LLAMA_EXTRA_INCLUDES} ${CMAKE_BINARY_DIR})
 endif()
 
 if (LLAMA_ALL_WARNINGS)

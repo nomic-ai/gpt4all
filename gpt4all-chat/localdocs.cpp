@@ -30,6 +30,8 @@ LocalDocs::LocalDocs()
         m_localDocsModel, &LocalDocsModel::updateInstalled, Qt::QueuedConnection);
     connect(m_database, &Database::updateIndexing,
         m_localDocsModel, &LocalDocsModel::updateIndexing, Qt::QueuedConnection);
+    connect(m_database, &Database::updateError,
+        m_localDocsModel, &LocalDocsModel::updateError, Qt::QueuedConnection);
     connect(m_database, &Database::updateCurrentDocsToIndex,
         m_localDocsModel, &LocalDocsModel::updateCurrentDocsToIndex, Qt::QueuedConnection);
     connect(m_database, &Database::updateTotalDocsToIndex,
@@ -40,6 +42,10 @@ LocalDocs::LocalDocs()
         m_localDocsModel, &LocalDocsModel::updateCurrentBytesToIndex, Qt::QueuedConnection);
     connect(m_database, &Database::updateTotalBytesToIndex,
         m_localDocsModel, &LocalDocsModel::updateTotalBytesToIndex, Qt::QueuedConnection);
+    connect(m_database, &Database::updateCurrentEmbeddingsToIndex,
+            m_localDocsModel, &LocalDocsModel::updateCurrentEmbeddingsToIndex, Qt::QueuedConnection);
+    connect(m_database, &Database::updateTotalEmbeddingsToIndex,
+            m_localDocsModel, &LocalDocsModel::updateTotalEmbeddingsToIndex, Qt::QueuedConnection);
     connect(m_database, &Database::addCollectionItem,
         m_localDocsModel, &LocalDocsModel::addCollectionItem, Qt::QueuedConnection);
     connect(m_database, &Database::removeFolderById,

@@ -150,7 +150,17 @@ size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
 
 bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
-    gpt_params params;
+    d_ptr->modelLoaded = false;
+
+    // clean up after previous loadModel()
+    if (d_ptr->model) {
+        llama_free_model(d_ptr->model);
+        d_ptr->model = nullptr;
+    }
+    if (d_ptr->ctx) {
+        llama_free(d_ptr->ctx);
+        d_ptr->ctx = nullptr;
+    }
 
     if (n_ctx < 8) {
         std::cerr << "warning: minimum context size is 8, using minimum size.\n";
@@ -158,6 +168,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     }
 
     // -- load the model --
+
+    gpt_params params;
 
     d_ptr->model_params = llama_model_default_params();
 
@@ -185,6 +197,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
     d_ptr->model = llama_load_model_from_file_gpt4all(modelPath.c_str(), &d_ptr->model_params);
     if (!d_ptr->model) {
+        fflush(stdout);
         d_ptr->device = -1;
         std::cerr << "LLAMA ERROR: failed to load model from " <<  modelPath << std::endl;
         return false;
@@ -215,8 +228,11 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
     d_ptr->ctx = llama_new_context_with_model(d_ptr->model, d_ptr->ctx_params);
     if (!d_ptr->ctx) {
-        d_ptr->device = -1;
+        fflush(stdout);
         std::cerr << "LLAMA ERROR: failed to init context for model " <<  modelPath << std::endl;
+        llama_free_model(d_ptr->model);
+        d_ptr->model = nullptr;
+        d_ptr->device = -1;
         return false;
     }
 
@@ -228,8 +244,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     }
 #endif
 
+    fflush(stdout);
     d_ptr->modelLoaded = true;
-    fflush(stderr);
     return true;
 }
 
@@ -416,6 +432,8 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
         free(vkDevices);
         return devices;
     }
+#else
+    std::cerr << __func__ << ": built without Kompute\n";
 #endif
 
     return {};
@@ -496,7 +514,14 @@ DLL_EXPORT bool magic_match(const char *fname) {
     auto * ctx = load_gguf(fname, arch);
 
     bool valid = true;
-    if (!(arch == "llama" || arch == "starcoder" || arch == "falcon" || arch == "mpt")) {
+
+    static const std::vector<const char *> known_arches {
+        "baichuan", "bloom", "codeshell", "falcon", "gpt2", "llama", "mpt", "orion", "persimmon", "phi2", "plamo",
+        "qwen", "qwen2", "refact", "stablelm", "starcoder"
+    };
+
+    if (std::find(known_arches.begin(), known_arches.end(), arch) == known_arches.end()) {
+        // not supported by this version of llama.cpp
         if (!(arch == "gptj" || arch == "bert")) { // we support these via other modules
             std::cerr << __func__ << ": unsupported model architecture: " << arch << "\n";
         }

@@ -16,7 +16,7 @@ struct ModelInfo {
     Q_PROPERTY(bool installed MEMBER installed)
     Q_PROPERTY(bool isDefault MEMBER isDefault)
     Q_PROPERTY(bool disableGUI MEMBER disableGUI)
-    Q_PROPERTY(bool isChatGPT MEMBER isChatGPT)
+    Q_PROPERTY(bool isOnline MEMBER isOnline)
     Q_PROPERTY(QString description MEMBER description)
     Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
     Q_PROPERTY(QString deprecatedVersion MEMBER deprecatedVersion)
@@ -64,7 +64,7 @@ public:
     bool calcHash = false;
     bool installed = false;
     bool isDefault = false;
-    bool isChatGPT = false;
+    bool isOnline = false;
     bool disableGUI = false;
     QString description;
     QString requiresVersion;
@@ -217,7 +217,7 @@ public:
         CalcHashRole,
         InstalledRole,
         DefaultRole,
-        ChatGPTRole,
+        OnlineRole,
         DisableGUIRole,
         DescriptionRole,
         RequiresVersionRole,
@@ -261,7 +261,7 @@ public:
         roles[CalcHashRole] = "calcHash";
         roles[InstalledRole] = "installed";
         roles[DefaultRole] = "isDefault";
-        roles[ChatGPTRole] = "isChatGPT";
+        roles[OnlineRole] = "isOnline";
         roles[DisableGUIRole] = "disableGUI";
         roles[DescriptionRole] = "description";
         roles[RequiresVersionRole] = "requiresVersion";
@@ -359,7 +359,7 @@ private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
-    QString modelDirPath(const QString &modelName, bool isChatGPT);
+    QString modelDirPath(const QString &modelName, bool isOnline);
     int indexForModel(ModelInfo *model);
     QVariant dataInternal(const ModelInfo *info, int role) const;
     static bool lessThan(const ModelInfo* a, const ModelInfo* b);

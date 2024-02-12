@@ -6,7 +6,10 @@ This package contains a set of C# bindings around the `llmodel` C-API.
 TBD
 
 ## Installation
-TBD NuGet
+
+Windows and Linux builds are available on NuGet: https://www.nuget.org/packages/Gpt4All
+
+macOS is WIP due to code signing issues, contributions are welcome.
 
 ## Project Structure
 ```

@@ -8,6 +8,7 @@
 #include "chatllm.h"
 #include "chatmodel.h"
 #include "database.h"
+#include "localdocsmodel.h"
 
 class Chat : public QObject
 {

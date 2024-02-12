@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QFileInfo>
 
-#include "localdocs.h"
+#include "database.h"
 #include "modellist.h"
 #include "../gpt4all-backend/llmodel.h"
 

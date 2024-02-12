@@ -637,5 +637,52 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.6.2",
+    "notes":
+"
+* Update to latest llama.cpp
+* Update to newly merged vulkan backend
+* Partial GPU offloading support
+* New localdocs speed increases and features
+* New GUI settings option for configuring how many layers to put on GPU
+* New lightmode theme, darkmode theme and legacy theme
+* Lots of UI updates and enhancements
+* Scores of bugfixes for stability and usability
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Karthik Nair
+* Community (beta testers, bug reporters, bindings authors)
+"
+  },
+  {
+    "version": "2.7.0",
+    "notes":
+"
+* Add support for twelve new model architectures
+* Including Baichuan, BLOOM, CodeShell, GPT-2, Orion, Persimmon, Phi and Phi-2, Plamo, Qwen, Qwen2, Refact, and StableLM
+* Fix for progress bar colors on legacy theme
+* Fix sizing for model download dialog elements
+* Fix dialog sizes to use more screen realestate where available
+* Fix for vram leak when model loading fails
+* Fix for making the collection dialog progress bar more readable
+* Fix for smaller minimum size for main screen
+* Fix for mistral crash
+* Fix for mistral openorca prompt template to ChatLM
+* Fix for excluding non-text documents from localdoc scanning
+* Fix for scrollbar missing on main conversation
+* Fix accessibility issues for screen readers
+* Fix for not showing the download button when not online
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]

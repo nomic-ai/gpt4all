@@ -61,7 +61,7 @@ copy_prebuilt_C_lib(SRC_CLIB_DIRECTORY,
 
 setup(
     name=package_name,
-    version="2.1.0",
+    version="2.2.1",
     description="Python bindings for GPT4All",
     author="Nomic and the Open Source Community",
     author_email="support@nomic.ai",

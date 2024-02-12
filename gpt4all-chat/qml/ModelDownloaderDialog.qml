@@ -135,10 +135,10 @@ MyDialog {
                                     font.pixelSize: theme.fontSizeLarge
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: openaiKey.width
+                                    Layout.minimumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
-                                    visible: !isChatGPT && !installed && !calcHash && downloadError === ""
+                                    visible: !isOnline && !installed && !calcHash && downloadError === ""
                                     Accessible.description: qsTr("Stop/restart/start the download")
                                     onClicked: {
                                         if (!isDownloading) {
@@ -154,7 +154,7 @@ MyDialog {
                                     text: qsTr("Remove")
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: openaiKey.width
+                                    Layout.minimumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     visible: installed || downloadError !== ""
@@ -166,23 +166,23 @@ MyDialog {
 
                                 MySettingsButton {
                                     id: installButton
-                                    visible: !installed && isChatGPT
+                                    visible: !installed && isOnline
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: openaiKey.width
+                                    Layout.minimumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     text: qsTr("Install")
                                     font.pixelSize: theme.fontSizeLarge
                                     onClicked: {
-                                        if (openaiKey.text === "")
-                                            openaiKey.showError();
+                                        if (apiKey.text === "")
+                                            apiKey.showError();
                                         else
-                                            Download.installModel(filename, openaiKey.text);
+                                            Download.installModel(filename, apiKey.text);
                                     }
                                     Accessible.role: Accessible.Button
                                     Accessible.name: qsTr("Install")
-                                    Accessible.description: qsTr("Install chatGPT model")
+                                    Accessible.description: qsTr("Install online model")
                                 }
 
                                 ColumnLayout {
@@ -238,7 +238,7 @@ MyDialog {
                                         visible: LLM.systemTotalRAMInGB() < ramrequired
                                         Layout.topMargin: 20
                                         Layout.leftMargin: 20
-                                        Layout.maximumWidth: openaiKey.width
+                                        Layout.maximumWidth: 300
                                         textFormat: Text.StyledText
                                         text: qsTr("<strong><font size=\"2\">WARNING: Not recommended for your hardware.")
                                             + qsTr(" Model requires more memory (") + ramrequired
@@ -261,7 +261,7 @@ MyDialog {
                                     visible: isDownloading && !calcHash
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: openaiKey.width
+                                    Layout.minimumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     spacing: 20
@@ -269,7 +269,7 @@ MyDialog {
                                     ProgressBar {
                                         id: itemProgressBar
                                         Layout.fillWidth: true
-                                        width: openaiKey.width
+                                        width: 200
                                         value: bytesReceived / bytesTotal
                                         background: Rectangle {
                                             implicitHeight: 45
@@ -307,14 +307,16 @@ MyDialog {
                                     visible: calcHash
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: openaiKey.width
+                                    Layout.minimumWidth: 200
+                                    Layout.maximumWidth: 200
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+                                    clip: true
 
                                     Label {
                                         id: calcHashLabel
                                         color: theme.textColor
-                                        text: qsTr("Calculating MD5...")
+                                        text: qsTr("Calculating...")
                                         font.pixelSize: theme.fontSizeLarge
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: text
@@ -331,28 +333,27 @@ MyDialog {
                                 }
 
                                 MyTextField {
-                                    id: openaiKey
-                                    visible: !installed && isChatGPT
+                                    id: apiKey
+                                    visible: !installed && isOnline
                                     Layout.topMargin: 20
                                     Layout.leftMargin: 20
-                                    Layout.minimumWidth: 150
-                                    Layout.maximumWidth: textMetrics.width + 25
+                                    Layout.minimumWidth: 200
                                     Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                     wrapMode: Text.WrapAnywhere
                                     function showError() {
-                                        openaiKey.placeholderTextColor = theme.textErrorColor
+                                        apiKey.placeholderTextColor = theme.textErrorColor
                                     }
                                     onTextChanged: {
-                                        openaiKey.placeholderTextColor = theme.mutedTextColor
+                                        apiKey.placeholderTextColor = theme.mutedTextColor
                                     }
-                                    placeholderText: qsTr("enter $OPENAI_API_KEY")
+                                    placeholderText: qsTr("enter $API_KEY")
                                     Accessible.role: Accessible.EditableText
                                     Accessible.name: placeholderText
                                     Accessible.description: qsTr("Whether the file hash is being calculated")
                                     TextMetrics {
                                         id: textMetrics
-                                        font: openaiKey.font
-                                        text: openaiKey.placeholderText
+                                        font: apiKey.font
+                                        text: apiKey.placeholderText
                                     }
                                 }
                             }

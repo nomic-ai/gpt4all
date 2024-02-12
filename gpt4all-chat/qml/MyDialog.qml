@@ -19,6 +19,7 @@ Dialog {
 
     Rectangle {
         id: closeBackground
+        visible: myCloseButton.visible
         z: 299
         anchors.centerIn: myCloseButton
         width: myCloseButton.width + 10

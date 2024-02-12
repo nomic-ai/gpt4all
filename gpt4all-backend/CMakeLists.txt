@@ -39,10 +39,6 @@ else()
     message(STATUS "Interprocedural optimization support detected")
 endif()
 
-if(NOT APPLE)
-  set(LLAMA_KOMPUTE YES)
-endif()
-
 include(llama.cpp.cmake)
 
 set(BUILD_VARIANTS default avxonly)

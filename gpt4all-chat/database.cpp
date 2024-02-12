@@ -558,7 +558,6 @@ void Database::scheduleNext(int folder_id, size_t countForFolder)
     if (!countForFolder) {
         emit updateIndexing(folder_id, false);
         emit updateInstalled(folder_id, true);
-        m_embeddings->save();
     }
     if (!m_docsToScan.isEmpty())
         QTimer::singleShot(0, this, &Database::scanQueue);
@@ -570,7 +569,7 @@ void Database::handleDocumentError(const QString &errorMessage,
     qWarning() << errorMessage << document_id << document_path << error.text();
 }
 
-size_t Database::chunkStream(QTextStream &stream, int document_id, const QString &file,
+size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
     const QString &title, const QString &author, const QString &subject, const QString &keywords, int page,
     int maxChunks)
 {
@@ -579,6 +578,8 @@ size_t Database::chunkStream(QTextStream &stream, int document_id, const QString
     int line_to = -1;
     QList<QString> words;
     int chunks = 0;
+
+    QVector<EmbeddingChunk> chunkList;
 
     while (!stream.atEnd()) {
         QString word;
@@ -605,9 +606,22 @@ size_t Database::chunkStream(QTextStream &stream, int document_id, const QString
                 qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
             }
 
+#if 1
+            EmbeddingChunk toEmbed;
+            toEmbed.folder_id = folder_id;
+            toEmbed.chunk_id = chunk_id;
+            toEmbed.chunk = chunk;
+            chunkList << toEmbed;
+            if (chunkList.count() == 100) {
+                m_embLLM->generateAsyncEmbeddings(chunkList);
+                emit updateTotalEmbeddingsToIndex(folder_id, 100);
+                chunkList.clear();
+            }
+#else
             const std::vector<float> result = m_embLLM->generateEmbeddings(chunk);
             if (!m_embeddings->add(result, chunk_id))
                 qWarning() << "ERROR: Cannot add point to embeddings index";
+#endif
 
             ++chunks;
 
@@ -615,10 +629,37 @@ size_t Database::chunkStream(QTextStream &stream, int document_id, const QString
             charCount = 0;
 
             if (maxChunks > 0 && chunks == maxChunks)
-                return stream.pos();
+                break;
         }
     }
+
+    if (!chunkList.isEmpty()) {
+        m_embLLM->generateAsyncEmbeddings(chunkList);
+        emit updateTotalEmbeddingsToIndex(folder_id, chunkList.count());
+        chunkList.clear();
+    }
+
     return stream.pos();
+}
+
+void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddings)
+{
+    if (embeddings.isEmpty())
+        return;
+
+    int folder_id = 0;
+    for (auto e : embeddings) {
+        folder_id = e.folder_id;
+        if (!m_embeddings->add(e.embedding, e.chunk_id))
+            qWarning() << "ERROR: Cannot add point to embeddings index";
+    }
+    emit updateCurrentEmbeddingsToIndex(folder_id, embeddings.count());
+    m_embeddings->save();
+}
+
+void Database::handleErrorGenerated(int folder_id, const QString &error)
+{
+    emit updateError(folder_id, error);
 }
 
 void Database::removeEmbeddingsByDocumentId(int document_id)
@@ -792,14 +833,13 @@ void Database::scanQueue()
         const QPdfSelection selection = doc.getAllText(pageIndex);
         QString text = selection.text();
         QTextStream stream(&text);
-        chunkStream(stream, document_id, info.doc.fileName(),
+        chunkStream(stream, info.folder, document_id, info.doc.fileName(),
             doc.metaData(QPdfDocument::MetaDataField::Title).toString(),
             doc.metaData(QPdfDocument::MetaDataField::Author).toString(),
             doc.metaData(QPdfDocument::MetaDataField::Subject).toString(),
             doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(),
             pageIndex + 1
         );
-        m_embeddings->save();
         emit subtractCurrentBytesToIndex(info.folder, bytesPerPage);
         if (info.currentPage < doc.pageCount()) {
             info.currentPage += 1;
@@ -828,9 +868,8 @@ void Database::scanQueue()
 #if defined(DEBUG)
         qDebug() << "scanning byteIndex" << byteIndex << "of" << bytes << document_path;
 #endif
-        int pos = chunkStream(stream, document_id, info.doc.fileName(), QString() /*title*/, QString() /*author*/,
-            QString() /*subject*/, QString() /*keywords*/, -1 /*page*/, 5 /*maxChunks*/);
-        m_embeddings->save();
+        int pos = chunkStream(stream, info.folder, document_id, info.doc.fileName(), QString() /*title*/, QString() /*author*/,
+            QString() /*subject*/, QString() /*keywords*/, -1 /*page*/, 100 /*maxChunks*/);
         file.close();
         const size_t bytesChunked = pos - byteIndex;
         emit subtractCurrentBytesToIndex(info.folder, bytesChunked);
@@ -851,15 +890,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     qDebug() << "scanning folder for documents" << folder_path;
 #endif
 
-    static const QList<QString> extensions { "txt", "doc", "docx", "pdf", "rtf", "odt", "html", "htm",
-    "xls", "xlsx", "csv", "ods", "ppt", "pptx", "odp", "xml", "json", "log", "md", "org", "tex", "asc", "wks",
-    "wpd", "wps", "wri", "xhtml", "xht", "xslt", "yaml", "yml", "dtd", "sgml", "tsv", "strings", "resx",
-    "plist", "properties", "ini", "config", "bat", "sh", "ps1", "cmd", "awk", "sed", "vbs", "ics", "mht",
-    "mhtml", "epub", "djvu", "azw", "azw3", "mobi", "fb2", "prc", "lit", "lrf", "tcr", "pdb", "oxps",
-    "xps", "pages", "numbers", "key", "keynote", "abw", "zabw", "123", "wk1", "wk3", "wk4", "wk5", "wq1",
-    "wq2", "xlw", "xlr", "dif", "slk", "sylk", "wb1", "wb2", "wb3", "qpw", "wdb", "wks", "wku", "wr1",
-    "wrk", "xlk", "xlt", "xltm", "xltx", "xlsm", "xla", "xlam", "xll", "xld", "xlv", "xlw", "xlc", "xlm",
-    "xlt", "xln" };
+    static const QList<QString> extensions { "txt", "pdf", "md", "rst" };
 
     QDir dir(folder_path);
     Q_ASSERT(dir.exists());
@@ -892,6 +923,8 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
 void Database::start()
 {
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Database::directoryChanged);
+    connect(m_embLLM, &EmbeddingLLM::embeddingsGenerated, this, &Database::handleEmbeddingsGenerated);
+    connect(m_embLLM, &EmbeddingLLM::errorGenerated, this, &Database::handleErrorGenerated);
     connect(this, &Database::docsToScanChanged, this, &Database::scanQueue);
     if (!QSqlDatabase::drivers().contains("QSQLITE")) {
         qWarning() << "ERROR: missing sqllite driver";
@@ -1081,6 +1114,10 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     QSqlQuery q;
     if (m_embeddings->isLoaded()) {
         std::vector<float> result = m_embLLM->generateEmbeddings(text);
+        if (result.empty()) {
+            qDebug() << "ERROR: generating embeddings returned a null result";
+            return;
+        }
         std::vector<qint64> embeddings = m_embeddings->search(result, retrievalSize);
         if (!selectChunk(q, collections, embeddings, retrievalSize)) {
             qDebug() << "ERROR: selecting chunks:" << q.lastError().text();

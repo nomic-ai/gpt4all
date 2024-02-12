@@ -8,8 +8,9 @@
 #include <QThread>
 #include <QFileSystemWatcher>
 
+#include "embllm.h"
+
 class Embeddings;
-class EmbeddingLLM;
 struct DocumentInfo
 {
     int folder;
@@ -39,10 +40,13 @@ struct CollectionItem {
     int folder_id = -1;
     bool installed = false;
     bool indexing = false;
+    QString error;
     int currentDocsToIndex = 0;
     int totalDocsToIndex = 0;
     size_t currentBytesToIndex = 0;
     size_t totalBytesToIndex = 0;
+    size_t currentEmbeddingsToIndex = 0;
+    size_t totalEmbeddingsToIndex = 0;
 };
 Q_DECLARE_METATYPE(CollectionItem)
 
@@ -66,11 +70,14 @@ Q_SIGNALS:
     void docsToScanChanged();
     void updateInstalled(int folder_id, bool b);
     void updateIndexing(int folder_id, bool b);
+    void updateError(int folder_id, const QString &error);
     void updateCurrentDocsToIndex(int folder_id, size_t currentDocsToIndex);
     void updateTotalDocsToIndex(int folder_id, size_t totalDocsToIndex);
     void subtractCurrentBytesToIndex(int folder_id, size_t subtractedBytes);
     void updateCurrentBytesToIndex(int folder_id, size_t currentBytesToIndex);
     void updateTotalBytesToIndex(int folder_id, size_t totalBytesToIndex);
+    void updateCurrentEmbeddingsToIndex(int folder_id, size_t currentBytesToIndex);
+    void updateTotalEmbeddingsToIndex(int folder_id, size_t totalBytesToIndex);
     void addCollectionItem(const CollectionItem &item);
     void removeFolderById(int folder_id);
     void removeCollectionItem(const QString &collectionName);
@@ -82,10 +89,12 @@ private Q_SLOTS:
     bool addFolderToWatch(const QString &path);
     bool removeFolderFromWatch(const QString &path);
     void addCurrentFolders();
+    void handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
+    void handleErrorGenerated(int folder_id, const QString &error);
 
 private:
     void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
-    size_t chunkStream(QTextStream &stream, int document_id, const QString &file,
+    size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
         const QString &title, const QString &author, const QString &subject, const QString &keywords, int page,
         int maxChunks = -1);
     void removeEmbeddingsByDocumentId(int document_id);

@@ -1,6 +1,7 @@
 #include "chatllm.h"
 #include "chat.h"
 #include "chatgpt.h"
+#include "localdocs.h"
 #include "modellist.h"
 #include "network.h"
 #include "mysettings.h"
@@ -156,7 +157,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (isModelLoaded() && this->modelInfo() == modelInfo)
         return true;
 
-    bool isChatGPT = modelInfo.isChatGPT;
+    bool isChatGPT = modelInfo.isOnline; // right now only chatgpt is offered for online chat models...
     QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
 
@@ -228,6 +229,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
         m_llModelInfo = LLModelInfo();
         emit modelLoadingError(QString("Previous attempt to load model resulted in crash for `%1` most likely due to insufficient memory. You should either remove this model or decrease your system RAM usage by closing other applications.").arg(modelInfo.filename()));
+        return false;
     }
 
     if (fileInfo.exists()) {
