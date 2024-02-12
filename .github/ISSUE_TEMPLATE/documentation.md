@@ -6,4 +6,4 @@ labels: ["documentation"]
 
 ### Documentation
 
-<!-- Please describe the issue with the documentation as clearly as possible. --!>
+<!-- Please describe the issue with the documentation as clearly as possible. -->

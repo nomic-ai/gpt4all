@@ -4,7 +4,7 @@ about: A bug report for the GPT4All Chat UI
 labels: ["chat", "bug-unconfirmed"]
 ---
 
-<!-- Before creating a new issue, please make sure to take a few moments to check the issue tracker for existing issues about the bug. --!>
+<!-- Before creating a new issue, please make sure to take a few moments to check the issue tracker for existing issues about the bug. -->
 
 ### Bug Report
 
@@ -12,7 +12,7 @@ labels: ["chat", "bug-unconfirmed"]
 
 ### Steps to Reproduce
 
-<!-- List the steps that should be taken to experience this issue. Provide any relevant information about your configuration, and describe anything that was unexpected. --!>
+<!-- List the steps that should be taken to experience this issue. Provide any relevant information about your configuration, and describe anything that was unexpected. -->
 
 1.
 2.
@@ -20,7 +20,7 @@ labels: ["chat", "bug-unconfirmed"]
 
 ### Expected Behavior
 
-<!-- In a few words, what did you expect to happen? --!>
+<!-- In a few words, what did you expect to happen? -->
 
 ### Your Environment
 
