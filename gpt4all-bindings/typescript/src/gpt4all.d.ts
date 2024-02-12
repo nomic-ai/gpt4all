@@ -461,20 +461,6 @@ interface LLModelPromptContext {
     contextErase: number;
 }
 
-/**
- * Creates a readable stream of tokens
- * @param {InferenceModel} llmodel - The language model object.
- * @param {PromptMessage[]} messages - The array of messages for the conversation.
- * @param {CompletionOptions} options - The options for creating the completion.
- * @param {TokenCallback} callback - optional callback to control token generation.
- * @returns {import('stream').PassThrough} The stream of generated tokens
- */
-declare function createTokenStream(
-    llmodel: InferenceModel,
-    messages: PromptMessage[],
-    options: CompletionOptions,
-    callback?: TokenCallback
-): import('stream').PassThrough;
 
 /**
  * Creates an async generator of tokens
@@ -484,7 +470,7 @@ declare function createTokenStream(
  * @param {TokenCallback} callback - optional callback to control token generation.
  * @returns {AsyncGenerator<string>} The stream of generated tokens
  */
-declare async function *generateTokens(
+declare function generateTokens(
     llmodel: InferenceModel,
     messages: PromptMessage[],
     options: CompletionOptions,
@@ -608,7 +594,6 @@ export {
     loadModel,
     createCompletion,
     createEmbedding,
-    createTokenStream,
     generateTokens,
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
