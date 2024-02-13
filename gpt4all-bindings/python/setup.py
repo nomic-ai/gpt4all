@@ -59,13 +59,28 @@ copy_prebuilt_C_lib(SRC_CLIB_DIRECTORY,
                     DEST_CLIB_DIRECTORY,
                     DEST_CLIB_BUILD_DIRECTORY)
 
+
+def get_long_description():
+    with open(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "README.md"),
+        encoding="utf8",
+    ) as fp:
+        return fp.read()
+
+
 setup(
     name=package_name,
     version="2.2.1",
     description="Python bindings for GPT4All",
+    long_description=get_long_description(),
+    long_description_content_type="text/markdown",
     author="Nomic and the Open Source Community",
     author_email="support@nomic.ai",
-    url="https://pypi.org/project/gpt4all/",
+    url="https://gpt4all.io/",
+    project_urls={
+        "Documentation": "https://docs.gpt4all.io/gpt4all_python.html",
+        "Source code": "https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python",
+    },
     classifiers = [
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
