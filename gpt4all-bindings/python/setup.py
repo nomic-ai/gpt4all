@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import os
+import pathlib
 import platform
 import shutil
 
@@ -61,7 +62,7 @@ copy_prebuilt_C_lib(SRC_CLIB_DIRECTORY,
 
 
 def get_long_description():
-    with open(Path(__file__).parent / "README.md", encoding="utf8") as fp:
+    with open(pathlib.Path(__file__).parent / "README.md", encoding="utf-8") as fp:
         return fp.read()
 
 
