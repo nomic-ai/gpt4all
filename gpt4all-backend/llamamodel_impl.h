@@ -16,7 +16,7 @@ public:
     LLamaModel();
     ~LLamaModel();
 
-    bool supportsEmbedding() const override { return false; }
+    bool supportsEmbedding() const override { return true; }
     bool supportsCompletion() const override { return true; }
     bool loadModel(const std::string &modelPath, int n_ctx, int ngl) override;
     bool isModelBlacklisted(const std::string &modelPath) override;
@@ -32,6 +32,9 @@ public:
     bool initializeGPUDevice(int device, std::string *unavail_reason) const override;
     bool hasGPUDevice() override;
     bool usingGPUDevice() override;
+
+    size_t embeddingSize() const override;
+    bool embed(const std::vector<std::string> &prompts, float *embeddings) override;
 
 private:
     std::unique_ptr<LLamaPrivate> d_ptr;

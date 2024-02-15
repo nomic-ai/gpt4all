@@ -101,7 +101,8 @@ public:
                         bool special = false,
                         std::string *fakeReply = nullptr);
 
-    virtual std::vector<float> embedding(const std::string &text);
+    virtual size_t embeddingSize() const;
+    virtual bool embed(const std::vector<std::string> &prompts, float *embeddings);
 
     virtual void setThreadCount(int32_t n_threads) { (void)n_threads; }
     virtual int32_t threadCount() const { return 1; }

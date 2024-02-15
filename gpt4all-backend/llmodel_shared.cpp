@@ -267,12 +267,14 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
     }
 }
 
-std::vector<float> LLModel::embedding(const std::string &text)
-{
-    (void)text;
-    if (!supportsCompletion()) {
-        std::string errorMessage = "ERROR: this model does not support generating embeddings!\n";
-        std::cerr << implementation().modelType() << errorMessage;
-    }
-    return std::vector<float>();
+size_t LLModel::embeddingSize() const {
+    std::cerr << __func__ << ": " << implementation().modelType() << " does not support embeddings\n";
+    return 0;
+}
+
+bool LLModel::embed(const std::vector<std::string> &prompts, float *embeddings) {
+    (void)prompts;
+    (void)embeddings;
+    std::cerr << __func__ << ": " << implementation().modelType() << " does not support embeddings\n";
+    return false;
 }

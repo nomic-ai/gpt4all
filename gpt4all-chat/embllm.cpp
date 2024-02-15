@@ -52,6 +52,8 @@ bool EmbeddingLLMWorker::loadModel()
     }
 
     m_model = LLModel::Implementation::construct(filePath.toStdString());
+    // NOTE: explicitly loads model on CPU to avoid GPU OOM
+    // TODO(cebtenzzre): support GPU-accelerated embeddings
     bool success = m_model->loadModel(filePath.toStdString(), 2048, 0);
     if (!success) {
         qWarning() << "WARNING: Could not load sbert";
@@ -83,15 +85,21 @@ std::vector<float> EmbeddingLLMWorker::generateSyncEmbedding(const QString &text
 {
     if (!hasModel() && !loadModel()) {
         qWarning() << "WARNING: Could not load model for embeddings";
-        return std::vector<float>();
+        return {};
     }
 
     if (isNomic()) {
         qWarning() << "WARNING: Request to generate sync embeddings for non-local model invalid";
-        return std::vector<float>();
+        return {};
     }
 
-    return m_model->embedding(text.toStdString());
+    // TODO(cebtenzzre): take advantage of batched embeddings
+    std::vector<float> embedding(m_model->embeddingSize());
+    if (!m_model->embed({text.toStdString()}, embedding.data())) {
+        qWarning() << "WARNING: LLModel::embed failed";
+        return {};
+    }
+    return embedding;
 }
 
 void EmbeddingLLMWorker::requestSyncEmbedding(const QString &text)
@@ -141,7 +149,12 @@ void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &ch
             EmbeddingResult result;
             result.folder_id = c.folder_id;
             result.chunk_id = c.chunk_id;
-            result.embedding = m_model->embedding(c.chunk.toStdString());
+            // TODO(cebtenzzre): take advantage of batched embeddings
+            result.embedding.resize(m_model->embeddingSize());
+            if (!m_model->embed({c.chunk.toStdString()}, result.embedding.data())) {
+                qWarning() << "WARNING: LLModel::embed failed";
+                return;
+            }
             results << result;
         }
         emit embeddingsGenerated(results);

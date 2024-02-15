@@ -146,27 +146,33 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     ctx->context_erase = wrapper->promptContext.contextErase;
 }
 
-float *llmodel_embedding(llmodel_model model, const char *text, size_t *embedding_size)
+float *llmodel_embed(llmodel_model model, const char **prompts, size_t *embedding_size)
 {
-    if (model == nullptr || text == nullptr || !strlen(text)) {
-        *embedding_size = 0;
-        return nullptr;
-    }
     auto *wrapper = static_cast<LLModelWrapper *>(model);
-    std::vector<float> embeddingVector = wrapper->llModel->embedding(text);
-    float *embedding = (float *)malloc(embeddingVector.size() * sizeof(float));
-    if (embedding == nullptr) {
-        *embedding_size = 0;
+    *embedding_size = 0;
+
+    if (!prompts || !*prompts) {
+        std::cerr << __func__ << ": no prompts given\n";
         return nullptr;
     }
-    std::copy(embeddingVector.begin(), embeddingVector.end(), embedding);
-    *embedding_size = embeddingVector.size();
+
+    std::vector<std::string> promptsVec;
+    while (*prompts) { promptsVec.emplace_back(*prompts++); }
+
+    size_t embd_size = promptsVec.size() * wrapper->llModel->embeddingSize();
+    auto *embedding = new float[embd_size];
+    if (!wrapper->llModel->embed(promptsVec, embedding)) {
+        std::cerr << __func__ << ": LLModel::embed failed\n";
+        return nullptr;
+    }
+
+    *embedding_size = embd_size;
     return embedding;
 }
 
 void llmodel_free_embedding(float *ptr)
 {
-    free(ptr);
+    delete[] ptr;
 }
 
 void llmodel_setThreadCount(llmodel_model model, int32_t n_threads)

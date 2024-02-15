@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <initializer_list>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -533,6 +534,135 @@ bool LLamaModel::usingGPUDevice()
 #else
     return false;
 #endif
+}
+
+void llama_batch_add(
+                 struct llama_batch & batch,
+                        llama_token   id,
+                          llama_pos   pos,
+    const std::vector<llama_seq_id> & seq_ids,
+                               bool   logits) {
+    batch.token   [batch.n_tokens] = id;
+    batch.pos     [batch.n_tokens] = pos;
+    batch.n_seq_id[batch.n_tokens] = seq_ids.size();
+    for (size_t i = 0; i < seq_ids.size(); ++i) {
+        batch.seq_id[batch.n_tokens][i] = seq_ids[i];
+    }
+    batch.logits  [batch.n_tokens] = logits;
+
+    batch.n_tokens++;
+}
+
+static void batch_add_seq(llama_batch &batch, const std::vector<LLModel::Token> &tokens, int seq_id) {
+    for (unsigned i = 0; i < tokens.size(); i++) {
+        llama_batch_add(batch, tokens[i], i, { seq_id }, false);
+    }
+}
+
+size_t LLamaModel::embeddingSize() const {
+    return llama_n_embd(d_ptr->model);
+}
+
+bool LLamaModel::embed(const std::vector<std::string> &prompts, float *embeddings)
+{
+    typedef std::vector<LLModel::Token> TokenString;
+
+    const llama_token bos_token = llama_token_bos(d_ptr->model);
+    const llama_token eos_token = llama_token_eos(d_ptr->model);
+
+    // tokenize the prompts
+    std::vector<TokenString> inputs;
+    for (const auto &prompt: prompts) {
+        TokenString inp(prompt.length()+4);
+        int32_t n_tokens = llama_tokenize(d_ptr->model, prompt.c_str(), prompt.length(), inp.data(), inp.size(), false, false);
+        assert(eos_token == -1 || inp[n_tokens - 1] == eos_token);
+        inp.resize(n_tokens - 1); // erase EOS/SEP
+        inputs.push_back(inp);
+    }
+
+    const uint32_t n_batch = llama_n_batch(d_ptr->ctx);
+    const uint32_t max_len = n_batch - 2; // minus BOS/CLS and EOS/SEP
+    constexpr int overlap = 32;
+    assert(overlap < n_batch);
+
+    // split into max_len-sized chunks
+    struct split_batch { int idx; TokenString batch; };
+    std::vector<split_batch> batches;
+    for (unsigned i = 0; i < inputs.size(); i++) {
+        auto &input = inputs[i];
+        for (auto it = input.begin(); it < input.end(); it += max_len) {
+            if (it > input.begin()) it -= overlap;
+            auto end = std::min(it + max_len, input.end());
+            auto &batch = batches.emplace_back(i, TokenString()).batch;
+            batch.push_back(bos_token);
+            batch.insert(batch.end(), it, end);
+            batch.push_back(eos_token);
+        }
+    }
+    inputs.clear();
+
+    // initialize batch
+    struct llama_batch batch = llama_batch_init(n_batch, 0, batches.size());
+
+    const int32_t n_embd = llama_n_embd(d_ptr->model);
+    // n_prompts x n_embd matrix
+    std::vector<double> embeddingsSum(prompts.size() * n_embd);
+    std::vector<int> embeddingsSumTotal(prompts.size());
+    std::vector<int> queued_indices; // prompt indices of batches to be processed
+
+    auto decode = [this, &queued_indices, n_embd, &batch, &embeddingsSum, &embeddingsSumTotal]() {
+        // kv cache is irrelevant for embeddings
+        llama_kv_cache_clear(d_ptr->ctx);
+
+        if (llama_decode(d_ptr->ctx, batch) < 0) {
+            std::cerr << __func__ << ": llama_decode failed\n";
+            return false;
+        }
+
+        for (unsigned i = 0; i < queued_indices.size(); ++i) {
+            auto i_prompt = queued_indices[i];
+            auto *out = &embeddingsSum[i_prompt * n_embd];
+            float *emb = llama_get_embeddings_ith(d_ptr->ctx, i);
+            std::transform(out, out + n_embd, emb, out, std::plus<float>());
+            embeddingsSumTotal[i_prompt]++;
+        }
+
+        return true;
+    };
+
+    // break into batches
+    for (auto &inp: batches) {
+        // encode if at capacity
+        if (batch.n_tokens + inp.batch.size() > n_batch) {
+            if (!decode()) { return false; }
+            batch.n_tokens = 0;
+            queued_indices.clear();
+        }
+
+        // add to batch
+        batch_add_seq(batch, inp.batch, queued_indices.size());
+        queued_indices.push_back(inp.idx);
+    }
+
+    // final batch
+    if (!decode()) { return false; }
+
+    for (unsigned i = 0; i < prompts.size(); i++) {
+        auto *embd = &embeddingsSum[i * n_embd];
+        auto *embd_end = embd + n_embd;
+        int total = embeddingsSumTotal[i];
+
+        // average over chunks
+        std::transform(embd, embd_end, embd, [total](float f){ return f / total; });
+
+        // L2 norm
+        double magnitude = std::sqrt(std::inner_product(embd, embd_end, embd, 0.0));
+        std::transform(embd, embd_end, embd, [magnitude](float f){ return f / magnitude; });
+        memcpy(embeddings, embd, n_embd);
+        embeddings += n_embd;
+    }
+
+    return true;
 }
 
 #if defined(_WIN32)
