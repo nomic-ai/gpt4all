@@ -291,8 +291,9 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
 {
     const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos(d_ptr->model));
     std::vector<LLModel::Token> fres(str.size()+4);
-    // TODO(cebtenzzre): we may want to use special=true here to process special tokens
-    auto fres_len = llama_tokenize(d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), useBOS, false);
+    // TODO(cebtenzzre): ideally, we should use token IDs directly in the prompt so this
+    //                   doesn't pick up e.g. <s> and </s> from the user
+    auto fres_len = llama_tokenize(d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), useBOS, true);
     fres.resize(fres_len);
     return fres;
 }
