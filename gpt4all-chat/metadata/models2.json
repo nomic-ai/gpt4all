@@ -1,10 +1,10 @@
 [
   {
     "order": "a",
-    "md5sum": "48de9538c774188eb25a7e9ee024bbd3",
+    "md5sum": "ae2f1e3697b53245069458f852eb1e89",
     "name": "Mistral OpenOrca",
-    "filename": "mistral-7b-openorca.Q4_0.gguf",
-    "filesize": "4108927744",
+    "filename": "mistral-7b-openorca.Q4_0.gguf2.gguf",
+    "filesize": "4108928096",
     "requires": "2.5.0",
     "ramrequired": "8",
     "parameters": "7 billion",
