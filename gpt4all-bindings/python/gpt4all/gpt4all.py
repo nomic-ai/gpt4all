@@ -4,8 +4,10 @@ Python only API for running all GPT4All models.
 from __future__ import annotations
 
 import os
+import re
 import sys
 import time
+import warnings
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
@@ -314,6 +316,10 @@ class GPT4All:
             Either the entire completion or a generator that yields the completion token by token.
         """
 
+        if re.search(r"%1(?![0-9])", self._current_prompt_template):
+            raise ValueError("Prompt template containing a literal '%1' is not supported. For a prompt "
+                             "placeholder, please use '{0}' instead.")
+
         # Preparing the model request
         generate_kwargs: Dict[str, Any] = dict(
             temp=temp,
@@ -327,16 +333,29 @@ class GPT4All:
 
         if self._is_chat_session_activated:
             # check if there is only one message, i.e. system prompt:
-            generate_kwargs["reset_context"] = len(self.current_chat_session) == 1
+            reset = len(self.current_chat_session) == 1
+            generate_kwargs["reset_context"] = reset
             self.current_chat_session.append({"role": "user", "content": prompt})
 
-            prompt = self._format_chat_prompt_template(
-                messages=self.current_chat_session[-1:],
-                default_prompt_header=self.current_chat_session[0]["content"]
-                if generate_kwargs["reset_context"]
-                else "",
-            )
+            if self._format_chat_prompt_template.__func__ is GPT4All._format_chat_prompt_template:
+                if reset:
+                    # ingest system prompt
+                    self.model.prompt_model(self.current_chat_session[0]["content"], "%1",
+                                            n_batch=n_batch, n_predict=0, special=True)
+                prompt_template = self._current_prompt_template.format("%1")
+            else:
+                warnings.warn(
+                    "_format_chat_prompt_template is deprecated. Please use a chat session with a prompt template.",
+                    DeprecationWarning,
+                )
+                # special tokens won't be processed
+                prompt = self._format_chat_prompt_template(
+                    self.current_chat_session[-1:],
+                    self.current_chat_session[0]["content"] if reset else "",
+                )
+                prompt_template = "%1"
         else:
+            prompt_template = "%1"
             generate_kwargs["reset_context"] = True
 
         # Prepare the callback, process the model response
@@ -365,14 +384,16 @@ class GPT4All:
         # Send the request to the model
         if streaming:
             return self.model.prompt_model_streaming(
-                prompt=prompt,
-                callback=_callback_wrapper(callback, output_collector),
+                prompt,
+                prompt_template,
+                _callback_wrapper(callback, output_collector),
                 **generate_kwargs,
             )
 
         self.model.prompt_model(
-            prompt=prompt,
-            callback=_callback_wrapper(callback, output_collector),
+            prompt,
+            prompt_template,
+            _callback_wrapper(callback, output_collector),
             **generate_kwargs,
         )
 
@@ -422,24 +443,6 @@ class GPT4All:
         Returns:
             Formatted prompt.
         """
-
-        if isinstance(default_prompt_header, bool):
-            import warnings
-
-            warnings.warn(
-                "Using True/False for the 'default_prompt_header' is deprecated. Use a string instead.",
-                DeprecationWarning,
-            )
-            default_prompt_header = ""
-
-        if isinstance(default_prompt_footer, bool):
-            import warnings
-
-            warnings.warn(
-                "Using True/False for the 'default_prompt_footer' is deprecated. Use a string instead.",
-                DeprecationWarning,
-            )
-            default_prompt_footer = ""
 
         full_prompt = default_prompt_header + "\n\n" if default_prompt_header != "" else ""
 

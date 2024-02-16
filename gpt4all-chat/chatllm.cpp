@@ -543,14 +543,11 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     }
 
     // Augment the prompt template with the results if any
-    QList<QString> augmentedTemplate;
+    QList<QString> docsContext;
     if (!databaseResults.isEmpty())
-        augmentedTemplate.append("### Context:");
+        docsContext.append("### Context:");
     for (const ResultInfo &info : databaseResults)
-        augmentedTemplate.append(info.text);
-    augmentedTemplate.append(promptTemplate);
-
-    QString instructPrompt = augmentedTemplate.join("\n").arg(prompt);
+        docsContext.append(info.text);
 
     int n_threads = MySettings::globalInstance()->threadCount();
 
@@ -560,7 +557,6 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
         std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleRecalculate, this, std::placeholders::_1);
     emit promptProcessing();
-    qint32 logitsBefore = m_ctx.logits.size();
     m_ctx.n_predict = n_predict;
     m_ctx.top_k = top_k;
     m_ctx.top_p = top_p;
@@ -570,11 +566,16 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     m_ctx.repeat_last_n = repeat_penalty_tokens;
     m_llModelInfo.model->setThreadCount(n_threads);
 #if defined(DEBUG)
-    printf("%s", qPrintable(instructPrompt));
+    printf("%s", qPrintable(prompt));
     fflush(stdout);
 #endif
     m_timer->start();
-    m_llModelInfo.model->prompt(instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
+    if (!docsContext.isEmpty()) {
+        auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode localdocs context without a response
+        m_llModelInfo.model->prompt(docsContext.join("\n").toStdString(), "%1", promptFunc, responseFunc, recalcFunc, m_ctx);
+        m_ctx.n_predict = old_n_predict; // now we are ready for a response
+    }
+    m_llModelInfo.model->prompt(prompt.toStdString(), promptTemplate.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
@@ -659,7 +660,7 @@ void ChatLLM::generateName()
     printf("%s", qPrintable(instructPrompt));
     fflush(stdout);
 #endif
-    m_llModelInfo.model->prompt(instructPrompt.toStdString(), promptFunc, responseFunc, recalcFunc, ctx);
+    m_llModelInfo.model->prompt(instructPrompt.toStdString(), "%1", promptFunc, responseFunc, recalcFunc, ctx);
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
@@ -719,16 +720,6 @@ bool ChatLLM::handleSystemPrompt(int32_t token)
     return !m_stopGenerating;
 }
 
-bool ChatLLM::handleSystemResponse(int32_t token, const std::string &response)
-{
-#if defined(DEBUG)
-    qDebug() << "system response" << m_llmThread.objectName() << token << response << m_stopGenerating;
-#endif
-    Q_UNUSED(token);
-    Q_UNUSED(response);
-    return false;
-}
-
 bool ChatLLM::handleSystemRecalculate(bool isRecalc)
 {
 #if defined(DEBUG)
@@ -745,16 +736,6 @@ bool ChatLLM::handleRestoreStateFromTextPrompt(int32_t token)
 #endif
     Q_UNUSED(token);
     return !m_stopGenerating;
-}
-
-bool ChatLLM::handleRestoreStateFromTextResponse(int32_t token, const std::string &response)
-{
-#if defined(DEBUG)
-    qDebug() << "restore state from text response" << m_llmThread.objectName() << token << response << m_stopGenerating;
-#endif
-    Q_UNUSED(token);
-    Q_UNUSED(response);
-    return false;
 }
 
 bool ChatLLM::handleRestoreStateFromTextRecalculate(bool isRecalc)
@@ -966,8 +947,6 @@ void ChatLLM::processSystemPrompt()
     m_ctx = LLModel::PromptContext();
 
     auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
-    auto responseFunc = std::bind(&ChatLLM::handleSystemResponse, this, std::placeholders::_1,
-        std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleSystemRecalculate, this, std::placeholders::_1);
 
     const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
@@ -990,7 +969,9 @@ void ChatLLM::processSystemPrompt()
     printf("%s", qPrintable(QString::fromStdString(systemPrompt)));
     fflush(stdout);
 #endif
-    m_llModelInfo.model->prompt(systemPrompt, promptFunc, responseFunc, recalcFunc, m_ctx);
+    auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode system prompt without a response
+    m_llModelInfo.model->prompt(systemPrompt, "%1", promptFunc, nullptr, recalcFunc, m_ctx, true);
+    m_ctx.n_predict = old_n_predict;
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
@@ -1012,8 +993,6 @@ void ChatLLM::processRestoreStateFromText()
     m_ctx = LLModel::PromptContext();
 
     auto promptFunc = std::bind(&ChatLLM::handleRestoreStateFromTextPrompt, this, std::placeholders::_1);
-    auto responseFunc = std::bind(&ChatLLM::handleRestoreStateFromTextResponse, this, std::placeholders::_1,
-        std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleRestoreStateFromTextRecalculate, this, std::placeholders::_1);
 
     const QString promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
@@ -1033,10 +1012,15 @@ void ChatLLM::processRestoreStateFromText()
     m_ctx.repeat_penalty = repeat_penalty;
     m_ctx.repeat_last_n = repeat_penalty_tokens;
     m_llModelInfo.model->setThreadCount(n_threads);
+    auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode history without a response
     for (auto pair : m_stateFromText) {
-        const QString str = pair.first == "Prompt: " ? promptTemplate.arg(pair.second) : pair.second;
-        m_llModelInfo.model->prompt(str.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
+        if (pair.first == "Prompt: ") {
+            m_llModelInfo.model->prompt(pair.second.toStdString(), promptTemplate.toStdString(), promptFunc, nullptr, recalcFunc, m_ctx);
+        } else {
+            m_llModelInfo.model->prompt(pair.second.toStdString(), "%1", promptFunc, nullptr, recalcFunc, m_ctx);
+        }
     }
+    m_ctx.n_predict = old_n_predict;
 
     if (!m_stopGenerating) {
         m_restoreStateFromText = false;

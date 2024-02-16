@@ -89,10 +89,12 @@ public:
     // This method requires the model to return true from supportsCompletion otherwise it will throw
     // an error
     virtual void prompt(const std::string &prompt,
+                        const std::string &promptTemplate,
                         std::function<bool(int32_t)> promptCallback,
                         std::function<bool(int32_t, const std::string&)> responseCallback,
                         std::function<bool(bool)> recalculateCallback,
-                        PromptContext &ctx);
+                        PromptContext &ctx,
+                        bool special = false);
 
     virtual std::vector<float> embedding(const std::string &text);
 
@@ -128,7 +130,7 @@ public:
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
-    virtual std::vector<Token> tokenize(PromptContext &ctx, const std::string &str) const = 0;
+    virtual std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special = false) const = 0;
     virtual std::string tokenToString(Token id) const = 0;
     virtual Token sampleToken(PromptContext &ctx) const = 0;
     virtual bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const = 0;

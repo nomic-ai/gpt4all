@@ -100,10 +100,12 @@ bool recalculate_wrapper(bool is_recalculating, void *user_data) {
 }
 
 void llmodel_prompt(llmodel_model model, const char *prompt,
+                    const char *prompt_template,
                     llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
                     llmodel_recalculate_callback recalculate_callback,
-                    llmodel_prompt_context *ctx)
+                    llmodel_prompt_context *ctx,
+                    bool special)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
 
@@ -131,7 +133,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     wrapper->promptContext.contextErase = ctx->context_erase;
 
     // Call the C++ prompt method
-    wrapper->llModel->prompt(prompt, prompt_func, response_func, recalc_func, wrapper->promptContext);
+    wrapper->llModel->prompt(prompt, prompt_template, prompt_func, response_func, recalc_func, wrapper->promptContext, special);
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data
     // which involves no copies

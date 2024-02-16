@@ -57,10 +57,12 @@ public:
     size_t saveState(uint8_t *dest) const override;
     size_t restoreState(const uint8_t *src) override;
     void prompt(const std::string &prompt,
+        const std::string &promptTemplate,
         std::function<bool(int32_t)> promptCallback,
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
-        PromptContext &ctx) override;
+        PromptContext &ctx,
+        bool special) override;
 
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
@@ -83,7 +85,7 @@ protected:
     // them as they are only called from the default implementation of 'prompt' which we override and
     // completely replace
 
-    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str) const override {
+    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) const override {
         (void)ctx;
         (void)str;
         (void)special;

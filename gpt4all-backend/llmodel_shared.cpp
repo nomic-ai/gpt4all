@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <regex>
 #include <unordered_set>
 
 void LLModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {
@@ -27,10 +28,12 @@ stop_generating:
 }
 
 void LLModel::prompt(const std::string &prompt,
+                     const std::string &promptTemplate,
                      std::function<bool(int32_t)> promptCallback,
                      std::function<bool(int32_t, const std::string&)> responseCallback,
                      std::function<bool(bool)> recalculateCallback,
-                     PromptContext &promptCtx)
+                     PromptContext &promptCtx,
+                     bool special)
 {
     if (!isModelLoaded()) {
         std::cerr << implementation().modelType() << " ERROR: prompt won't work with an unloaded model!\n";
@@ -44,8 +47,34 @@ void LLModel::prompt(const std::string &prompt,
         return;
     }
 
+    static const std::regex placeholderRegex(R"(%1(?![0-9]))");
+
     // tokenize the prompt
-    std::vector<Token> embd_inp = tokenize(promptCtx, prompt);
+    std::vector<Token> embd_inp;
+    {
+        std::smatch placeholder;
+        if (std::regex_search(promptTemplate, placeholder, placeholderRegex)) {
+            // first half of prompt template
+            std::string prefix = placeholder.prefix();
+            if (!prefix.empty()) {
+                embd_inp = tokenize(promptCtx, prefix, true);
+            }
+
+            // prompt (user input shouldn't have special token processing)
+            auto tokens = tokenize(promptCtx, prompt, special);
+            embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
+
+            // second half of prompt template
+            std::string suffix = placeholder.suffix();
+            if (!suffix.empty()) {
+                tokens = tokenize(promptCtx, suffix, true);
+                embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
+            }
+        } else {
+            std::cerr << __func__ << ": prompt template has no placeholder\n";
+            embd_inp = tokenize(promptCtx, promptTemplate, true);
+        }
+    }
 
     // save the context size
     promptCtx.n_ctx = contextLength();
