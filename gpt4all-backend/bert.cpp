@@ -814,8 +814,9 @@ std::vector<float> Bert::embedding(const std::string &text)
     return finalEmbeddings;
 }
 
-std::vector<LLModel::Token> Bert::tokenize(PromptContext &, const std::string &str) const
+std::vector<LLModel::Token> Bert::tokenize(PromptContext &ctx, const std::string &str) const
 {
+    (void)ctx;
     return ::bert_tokenize(d_ptr->ctx, str.c_str());
 }
 

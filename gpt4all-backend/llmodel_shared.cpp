@@ -40,7 +40,7 @@ void LLModel::prompt(const std::string &prompt,
     if (!supportsCompletion()) {
         std::string errorMessage = "ERROR: this model does not support text completion or chat!\n";
         responseCallback(-1, errorMessage);
-        std::cerr << implementation().modelType() << errorMessage;
+        std::cerr << implementation().modelType() << " " << errorMessage;
         return;
     }
 
@@ -165,8 +165,9 @@ void LLModel::prompt(const std::string &prompt,
     }
 }
 
-std::vector<float> LLModel::embedding(const std::string &/*text*/)
+std::vector<float> LLModel::embedding(const std::string &text)
 {
+    (void)text;
     if (!supportsCompletion()) {
         std::string errorMessage = "ERROR: this model does not support generating embeddings!\n";
         std::cerr << implementation().modelType() << errorMessage;
