@@ -63,10 +63,15 @@ def repl(
         str,
         typer.Option("--device", "-d", help="Device to use for chatbot, e.g. gpu, amd, nvidia, intel. Defaults to CPU."),
     ] = None,
+    prompt: Annotated[
+        str,
+        typer.Option("--prompt", "-p", help="Prompt to use for chatbot"),
+    ] = "",
 ):
     """The CLI read-eval-print loop."""
     gpt4all_instance = GPT4All(model, device=device)
-
+    print(f"Model {model}")
+    print(f"Prompt {prompt}")
     # if threads are passed, set them
     if n_threads is not None:
         num_threads = gpt4all_instance.model.thread_count()
@@ -91,22 +96,24 @@ def repl(
     except:
         pass  # fall back to old loop
     if use_new_loop:
-        _new_loop(gpt4all_instance)
+        _new_loop(gpt4all_instance, prompt)
     else:
-        _old_loop(gpt4all_instance)
+        _old_loop(gpt4all_instance, prompt)
 
 
-def _old_loop(gpt4all_instance):
+def _old_loop(gpt4all_instance, prompt):
     while True:
-        message = input(" ⇢  ")
+        user_input = input(" ⇢  ")
 
         # Check if special command and take action
-        if message in SPECIAL_COMMANDS:
-            SPECIAL_COMMANDS[message](MESSAGES)
+        if user_input in SPECIAL_COMMANDS:
+            SPECIAL_COMMANDS[user_input](MESSAGES)
             continue
 
-        # if regular message, append to messages
+        # If regular message, append to messages
+        message = prompt + user_input
         MESSAGES.append({"role": "user", "content": message})
+
 
         # execute chat completion and ignore the full response since 
         # we are outputting it incrementally
@@ -134,17 +141,19 @@ def _old_loop(gpt4all_instance):
         print() # newline before next prompt
 
 
-def _new_loop(gpt4all_instance):
+def _new_loop(gpt4all_instance, prompt):
+
     with gpt4all_instance.chat_session():
         while True:
-            message = input(" ⇢  ")
+            user_input = input(" ⇢  ")
 
             # Check if special command and take action
-            if message in SPECIAL_COMMANDS:
-                SPECIAL_COMMANDS[message](MESSAGES)
+            if user_input in SPECIAL_COMMANDS:
+                SPECIAL_COMMANDS[user_input](MESSAGES)
                 continue
 
-            # if regular message, append to messages
+            # If regular message, append to messages
+            message = prompt + user_input
             MESSAGES.append({"role": "user", "content": message})
 
             # execute chat completion and ignore the full response since 
