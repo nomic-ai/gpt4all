@@ -1,8 +1,9 @@
 #include "llmodel_c.h"
 #include "llmodel.h"
 
-#include <cstring>
 #include <cerrno>
+#include <cstring>
+#include <iostream>
 #include <utility>
 
 struct LLModelWrapper {
@@ -56,7 +57,14 @@ size_t llmodel_required_mem(llmodel_model model, const char *model_path, int n_c
 bool llmodel_loadModel(llmodel_model model, const char *model_path, int n_ctx, int ngl)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
-    return wrapper->llModel->loadModel(model_path, n_ctx, ngl);
+
+    std::string modelPath(model_path);
+    if (wrapper->llModel->isModelBlacklisted(modelPath)) {
+        size_t slash = modelPath.find_last_of("/\\");
+        auto basename = slash == std::string::npos ? modelPath : modelPath.substr(slash + 1);
+        std::cerr << "warning: model '" << basename << "' is out-of-date, please check for an updated version\n";
+    }
+    return wrapper->llModel->loadModel(modelPath, n_ctx, ngl);
 }
 
 bool llmodel_isModelLoaded(llmodel_model model)

@@ -19,6 +19,7 @@ public:
     bool supportsEmbedding() const override { return false; }
     bool supportsCompletion() const override { return true; }
     bool loadModel(const std::string &modelPath, int n_ctx, int ngl) override;
+    bool isModelBlacklisted(const std::string &modelPath) override;
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) override;
     size_t stateSize() const override;

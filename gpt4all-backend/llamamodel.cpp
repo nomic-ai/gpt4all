@@ -6,38 +6,32 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
-#include <map>
-#include <string>
-#include <vector>
+#include <iomanip>
 #include <iostream>
-#if defined(_WIN32) && defined(_MSC_VER)
-    #define WIN32_LEAN_AND_MEAN
-    #ifndef NOMINMAX
-        #define NOMINMAX
-    #endif
-    #include <windows.h>
-    #include <io.h>
-    #include <stdio.h>
-#else
-    #include <unistd.h>
-#endif
+#include <map>
 #include <random>
+#include <sstream>
+#include <string>
 #include <thread>
 #include <unordered_set>
+#include <vector>
 
 #include <llama.h>
 #include <ggml.h>
-
 #ifdef GGML_USE_KOMPUTE
-#include "ggml-kompute.h"
+#include <ggml-kompute.h>
 #endif
+
+#include "md5.h"
 
 // Maximum supported GGUF version
 static constexpr int GGUF_VER_MAX = 3;
 
-namespace {
-const char *modelType_ = "LLaMA";
-}
+static const char * const modelType_ = "LLaMA";
+
+static const std::map<std::string, const char *> MODEL_BLACKLIST {
+    {"mistral-7b-openorca.Q4_0.gguf", "48de9538c774188eb25a7e9ee024bbd3"},
+};
 
 static bool llama_verbose() {
     const char* var = getenv("GPT4ALL_VERBOSE_LLAMACPP");
@@ -146,6 +140,38 @@ size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
     const size_t kvcache_element_size = 2; // fp16
     const size_t est_kvcache_size = hparams.n_embd * hparams.n_layer * 2u * n_ctx * kvcache_element_size;
     return filesize + est_kvcache_size;
+}
+
+bool LLamaModel::isModelBlacklisted(const std::string &modelPath) {
+    size_t slash = modelPath.find_last_of("/\\");
+    auto basename = slash == std::string::npos ? modelPath : modelPath.substr(slash + 1);
+    auto modelEntry = MODEL_BLACKLIST.find(basename);
+    if (modelEntry == MODEL_BLACKLIST.end()) { return false; }
+
+    unsigned char digest[16];
+    {
+        std::ifstream file(modelPath, std::ios::in | std::ios::binary);
+        if (!file.good()) { return false; }
+
+        MD5_CTX ctx;
+        MD5_Init(&ctx);
+
+        std::vector<char> readBuf(16384); // 16 KiB
+        while (file.good()) {
+            file.read(readBuf.data(), readBuf.size());
+            MD5_Update(&ctx, readBuf.data(), file.gcount());
+        }
+
+        MD5_Final(digest, &ctx);
+    }
+
+    std::ostringstream hexStr;
+    hexStr << std::hex << std::setfill('0');
+    for (auto byte: digest) {
+        hexStr << std::setw(2) << int(byte);
+    }
+
+    return hexStr.str() == modelEntry->second;
 }
 
 bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
