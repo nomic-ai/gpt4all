@@ -261,6 +261,10 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             m_llModelInfo.model = LLModel::Implementation::construct(filePath.toStdString(), buildVariant, n_ctx);
 
             if (m_llModelInfo.model) {
+                if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
+                    // TODO(cebtenzzre): warn that this model is out-of-date
+                }
+
                 // Update the settings that a model is being loaded and update the device list
                 MySettings::globalInstance()->setAttemptModelLoad(filePath);
 
