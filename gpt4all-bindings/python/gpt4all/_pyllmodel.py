@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ctypes
-import importlib.resources
 import logging
 import os
 import platform
@@ -13,11 +12,16 @@ from enum import Enum
 from queue import Queue
 from typing import Callable, Iterable, List
 
+if sys.version_info >= (3, 9):
+    import importlib.resources as importlib_resources
+else:
+    import importlib_resources
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 # TODO: provide a config file to make this more robust
-MODEL_LIB_PATH = importlib.resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build"
+MODEL_LIB_PATH = importlib_resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build"
 
 
 def load_llmodel_library():
