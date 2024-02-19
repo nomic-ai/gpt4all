@@ -50,7 +50,7 @@ async def chat_completion(request: ChatCompletionRequest):
     # GPU is not implemented yet
     if settings.inference_mode == "gpu":
         raise HTTPException(status_code=400,
-              detail=f"Not implemented yet: Can only infere in CPU mode.")
+              detail=f"Not implemented yet: Can only infer in CPU mode.")
 
     # we only support the configured model
     if request.model != settings.model:
