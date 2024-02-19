@@ -130,6 +130,10 @@ Window {
         return ModelList.modelInfo(currentChat.modelInfo.id).name;
     }
 
+    property bool isCurrentlyLoading: false
+    property real modelLoadingPercentage: 0.0
+    property bool trySwitchContextInProgress: false
+
     PopupDialog {
         id: errorCompatHardware
         anchors.centerIn: parent
@@ -289,8 +293,6 @@ Window {
     SwitchModelDialog {
         id: switchModelDialog
         anchors.centerIn: parent
-        width: Math.min(1024, window.width - (window.width * .2))
-        height: Math.min(600, window.height - (window.height * .2))
         Item {
             Accessible.role: Accessible.Dialog
             Accessible.name: qsTr("Switch model dialog")
@@ -309,8 +311,6 @@ Window {
             anchors.centerIn: parent
             height: childrenRect.height
             visible: true
-                || currentChat.modelLoadingError !== ""
-                || currentChat.isServer
 
             Label {
                 id: modelLabel
@@ -337,18 +337,17 @@ Window {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     implicitWidth: 575
-                    width: window.width >= 750 ? implicitWidth : implicitWidth - ((750 - window.width))
+                    width: window.width >= 750 ? implicitWidth : implicitWidth - (750 - window.width)
                     enabled: !currentChat.isServer
+                        && !window.trySwitchContextInProgress
+                        && !window.isCurrentlyLoading
                     model: ModelList.installedModels
                     valueRole: "id"
                     textRole: "name"
-                    property bool isCurrentlyLoading: false
-                    property real modelLoadingPercentage: 0.0
-                    property bool trySwitchContextInProgress: false
 
                     function changeModel(index) {
-                        comboBox.modelLoadingPercentage = 0.0;
-                        comboBox.isCurrentlyLoading = true;
+                        window.modelLoadingPercentage = 0.0;
+                        window.isCurrentlyLoading = true;
                         currentChat.stopGenerating()
                         currentChat.reset();
                         currentChat.modelInfo = ModelList.modelInfo(comboBox.valueAt(index))
@@ -357,15 +356,15 @@ Window {
                     Connections {
                         target: currentChat
                         function onModelLoadingPercentageChanged() {
-                            comboBox.modelLoadingPercentage = currentChat.modelLoadingPercentage;
-                            comboBox.isCurrentlyLoading = currentChat.modelLoadingPercentage !== 0.0
+                            window.modelLoadingPercentage = currentChat.modelLoadingPercentage;
+                            window.isCurrentlyLoading = currentChat.modelLoadingPercentage !== 0.0
                                 && currentChat.modelLoadingPercentage !== 1.0;
                         }
                         function onTrySwitchContextOfLoadedModelAttempted() {
-                            comboBox.trySwitchContextInProgress = true;
+                            window.trySwitchContextInProgress = true;
                         }
                         function onTrySwitchContextOfLoadedModelCompleted() {
-                            comboBox.trySwitchContextInProgress = false;
+                            window.trySwitchContextInProgress = false;
                         }
                     }
                     Connections {
@@ -377,14 +376,14 @@ Window {
 
                     background: ProgressBar {
                         id: modelProgress
-                        value: comboBox.modelLoadingPercentage
+                        value: window.modelLoadingPercentage
                         background: Rectangle {
                             color: theme.mainComboBackground
                             radius: 10
                         }
                         contentItem: Item {
                             Rectangle {
-                                visible: comboBox.isCurrentlyLoading
+                                visible: window.isCurrentlyLoading
                                 anchors.bottom: parent.bottom
                                 width: modelProgress.visualPosition * parent.width
                                 height: 10
@@ -400,13 +399,13 @@ Window {
                         text: {
                             if (currentChat.modelLoadingError !== "")
                                 return qsTr("Model loading error...")
-                            if (comboBox.trySwitchContextInProgress)
+                            if (window.trySwitchContextInProgress)
                                 return qsTr("Switching context...")
                             if (currentModelName() === "")
                                 return qsTr("Choose a model...")
                             if (currentChat.modelLoadingPercentage === 0.0)
                                 return qsTr("Reload \u00B7 ") + currentModelName()
-                            if (comboBox.isCurrentlyLoading)
+                            if (window.isCurrentlyLoading)
                                 return qsTr("Loading \u00B7 ") + currentModelName()
                             return currentModelName()
                         }
@@ -468,7 +467,8 @@ Window {
                     MyMiniButton {
                         id: reloadButton
                         visible: currentChat.modelLoadingError === ""
-                            && !comboBox.trySwitchContextInProgress
+                            && !window.trySwitchContextInProgress
+                            && !window.isCurrentlyLoading
                             && (currentChat.isModelLoaded || currentModelName() !== "")
                         z: 500
                         anchors.right: ejectButton.visible ? ejectButton.left : parent.right
@@ -1264,8 +1264,8 @@ Window {
                 backgroundColorHovered: theme.conversationButtonBackgroundHovered
                 backgroundRadius: 5
                 padding: 15
-                topPadding: 4
-                bottomPadding: 4
+                topPadding: 8
+                bottomPadding: 8
                 text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
                 fontPixelSize: theme.fontSizeSmaller
                 Accessible.description: qsTr("Controls generation of the response")
@@ -1273,11 +1273,12 @@ Window {
 
             MyButton {
                 textColor: theme.textColor
-                visible: chatModel.count
-                    && !currentChat.isServer
+                visible: !currentChat.isServer
                     && !currentChat.isModelLoaded
-                    && currentChat.modelLoadingPercentage === 0.0
-                    && currentChat.modelInfo.name !== ""
+                    && !window.trySwitchContextInProgress
+                    && !window.isCurrentlyLoading
+                    && currentModelName() !== ""
+
                 Image {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
@@ -1294,8 +1295,8 @@ Window {
                 backgroundColorHovered: theme.conversationButtonBackgroundHovered
                 backgroundRadius: 5
                 padding: 15
-                topPadding: 4
-                bottomPadding: 4
+                topPadding: 8
+                bottomPadding: 8
                 text: qsTr("Reload \u00B7 ") + currentChat.modelInfo.name
                 fontPixelSize: theme.fontSizeSmaller
                 Accessible.description: qsTr("Reloads the model")

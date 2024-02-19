@@ -17,9 +17,11 @@ MyDialog {
         id: theme
     }
 
-    Column {
-        id: column
-        spacing: 20
+    contentItem: Text {
+        textFormat: Text.StyledText
+        text: qsTr("<b>Warning:</b> changing the model will erase the current conversation. Do you wish to continue?")
+        color: theme.textColor
+        font.pixelSize: theme.fontSizeLarge
     }
 
     footer: DialogButtonBox {

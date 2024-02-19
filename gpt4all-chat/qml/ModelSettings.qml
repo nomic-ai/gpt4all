@@ -328,7 +328,7 @@ MySettingsTab {
                 text: root.currentModelInfo.contextLength
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
-                ToolTip.text: qsTr("Maximum combined prompt/response tokens before information is lost.\nUsing more context than the model was trained on will yield poor results.\nNOTE: Does not take effect until you RESTART GPT4All or SWITCH MODELS.")
+                ToolTip.text: qsTr("Maximum combined prompt/response tokens before information is lost.\nUsing more context than the model was trained on will yield poor results.\nNOTE: Does not take effect until you reload the model.")
                 ToolTip.visible: hovered
                 Layout.row: 0
                 Layout.column: 1
@@ -692,7 +692,7 @@ MySettingsTab {
                 text: root.currentModelInfo.gpuLayers
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
-                ToolTip.text: qsTr("How many GPU layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.\nLower values increase CPU load and RAM usage, and make inference slower.\nNOTE: Does not take effect until you RESTART GPT4All or SWITCH MODELS.")
+                ToolTip.text: qsTr("How many GPU layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.\nLower values increase CPU load and RAM usage, and make inference slower.\nNOTE: Does not take effect until you reload the model.")
                 ToolTip.visible: hovered
                 Layout.row: 4
                 Layout.column: 1
@@ -705,7 +705,7 @@ MySettingsTab {
                 Connections {
                     target: root
                     function onCurrentModelInfoChanged() {
-                        if (root.currentModelInfo.gpuLayers == 100) {
+                        if (root.currentModelInfo.gpuLayers === 100) {
                             gpuLayersField.text = root.currentModelInfo.maxGpuLayers
                         } else {
                             gpuLayersField.text = root.currentModelInfo.gpuLayers
