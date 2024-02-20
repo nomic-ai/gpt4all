@@ -443,9 +443,9 @@ Window {
                     Accessible.description: qsTr("The top item is the current model")
                     onActivated: function (index) {
                         var newInfo = ModelList.modelInfo(comboBox.valueAt(index));
-                        if (currentModelName() !== ""
-                            && newInfo !== currentChat.modelInfo
-                            && chatModel.count !== 0) {
+                        if (newInfo === currentChat.modelInfo) {
+                            currentChat.reloadModel();
+                        } else if (currentModelName() !== "" && chatModel.count !== 0) {
                             switchModelDialog.index = index;
                             switchModelDialog.open();
                         } else {
