@@ -88,7 +88,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 
     # Add each individual implementations
     add_library(llamamodel-mainline-${BUILD_VARIANT} SHARED
-        llamamodel.cpp llmodel_shared.cpp md5.c)
+        llamamodel.cpp llmodel_shared.cpp)
     target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     prepare_target(llamamodel-mainline llama-mainline)
