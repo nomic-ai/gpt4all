@@ -95,7 +95,8 @@ public:
                         std::function<bool(int32_t, const std::string&)> responseCallback,
                         std::function<bool(bool)> recalculateCallback,
                         PromptContext &ctx,
-                        bool special = false);
+                        bool special = false,
+                        std::string *fakeReply = nullptr);
 
     virtual std::vector<float> embedding(const std::string &text);
 
@@ -156,6 +157,14 @@ protected:
 
     const Implementation *m_implementation = nullptr;
 
+    void decodePrompt(std::function<bool(int32_t)> promptCallback,
+                      std::function<bool(int32_t, const std::string&)> responseCallback,
+                      std::function<bool(bool)> recalculateCallback,
+                      PromptContext &promptCtx,
+                      std::vector<Token> embd_inp);
+    void generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
+                          std::function<bool(bool)> recalculateCallback,
+                          PromptContext &promptCtx);
 private:
     friend class LLMImplementation;
 };

@@ -80,11 +80,13 @@ void ChatGPT::prompt(const std::string &prompt,
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
         PromptContext &promptCtx,
-        bool special) {
+        bool special,
+        std::string *fakeReply) {
 
     Q_UNUSED(promptCallback);
     Q_UNUSED(recalculateCallback);
     Q_UNUSED(special);
+    Q_UNUSED(fakeReply); // FIXME(cebtenzzre): I broke ChatGPT
 
     if (!isModelLoaded()) {
         std::cerr << "ChatGPT ERROR: prompt won't work with an unloaded model!\n";

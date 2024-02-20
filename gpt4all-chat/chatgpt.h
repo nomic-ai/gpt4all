@@ -62,7 +62,8 @@ public:
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
         PromptContext &ctx,
-        bool special) override;
+        bool special,
+        std::string *fakeReply) override;
 
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;

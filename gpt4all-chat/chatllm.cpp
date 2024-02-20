@@ -1016,15 +1016,20 @@ void ChatLLM::processRestoreStateFromText()
     m_ctx.repeat_penalty = repeat_penalty;
     m_ctx.repeat_last_n = repeat_penalty_tokens;
     m_llModelInfo.model->setThreadCount(n_threads);
-    auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode history without a response
-    for (auto pair : m_stateFromText) {
-        if (pair.first == "Prompt: ") {
-            m_llModelInfo.model->prompt(pair.second.toStdString(), promptTemplate.toStdString(), promptFunc, nullptr, recalcFunc, m_ctx);
-        } else {
-            m_llModelInfo.model->prompt(pair.second.toStdString(), "%1", promptFunc, nullptr, recalcFunc, m_ctx);
-        }
+
+    auto it = m_stateFromText.begin();
+    while (it < m_stateFromText.end()) {
+        auto &prompt = *it++;
+        Q_ASSERT(prompt.first == "Prompt: ");
+        Q_ASSERT(it < m_stateFromText.end());
+
+        auto &response = *it++;
+        Q_ASSERT(response.first != "Prompt: ");
+        auto responseText = response.second.toStdString();
+
+        m_llModelInfo.model->prompt(prompt.second.toStdString(), promptTemplate.toStdString(), promptFunc, nullptr,
+                                    recalcFunc, m_ctx, false, &responseText);
     }
-    m_ctx.n_predict = old_n_predict;
 
     if (!m_stopGenerating) {
         m_restoreStateFromText = false;
