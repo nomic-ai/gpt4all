@@ -395,7 +395,13 @@ Window {
                     contentItem: Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         leftPadding: 10
-                        rightPadding: 20
+                        rightPadding: {
+                            if (ejectButton.visible && reloadButton)
+                                return 105;
+                            if (reloadButton.visible)
+                                return 65
+                            return 25
+                        }
                         text: {
                             if (currentChat.modelLoadingError !== "")
                                 return qsTr("Model loading error...")
