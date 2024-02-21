@@ -21,6 +21,14 @@ Window {
     visible: true
     title: qsTr("GPT4All v") + Qt.application.version
 
+
+    Settings {
+        property alias x: window.x
+        property alias y: window.y
+        property alias width: window.width
+        property alias height: window.height
+    }
+
     Theme {
         id: theme
     }
