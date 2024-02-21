@@ -5,9 +5,17 @@
 #include <regex>
 #include <unordered_set>
 
+// TODO(cebtenzzre): replace this with llama_kv_cache_seq_shift for llamamodel (GPT-J needs this as-is)
 void LLModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {
-    size_t i = 0;
-    promptCtx.n_past = 0;
+    int n_keep = shouldAddBOS();
+    const int32_t n_discard = (promptCtx.n_ctx - n_keep) * promptCtx.contextErase;
+
+    // Erase the first percentage of context from the tokens
+    std::cerr << implementation().modelType() << ": reached the end of the context window so resizing\n";
+    promptCtx.tokens.erase(promptCtx.tokens.begin() + n_keep, promptCtx.tokens.begin() + n_keep + n_discard);
+
+    size_t i = n_keep;
+    promptCtx.n_past = n_keep;
     while (i < promptCtx.tokens.size()) {
         size_t batch_end = std::min(i + promptCtx.n_batch, promptCtx.tokens.size());
         std::vector<int32_t> batch(promptCtx.tokens.begin() + i, promptCtx.tokens.begin() + batch_end);
@@ -166,11 +174,6 @@ void LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
 
         // Check if the context has run out...
         if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
-            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
-            // Erase the first percentage of context from the tokens...
-            std::cerr << implementation().modelType() << ": reached the end of the context window so resizing\n";
-            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
-            promptCtx.n_past = promptCtx.tokens.size();
             recalculateContext(promptCtx, recalculateCallback);
             assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
         }
@@ -209,11 +212,6 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
 
         // Check if the context has run out...
         if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
-            const int32_t erasePoint = promptCtx.n_ctx * promptCtx.contextErase;
-            // Erase the first percentage of context from the tokens...
-            std::cerr << implementation().modelType() << ": reached the end of the context window so resizing\n";
-            promptCtx.tokens.erase(promptCtx.tokens.begin(), promptCtx.tokens.begin() + erasePoint);
-            promptCtx.n_past = promptCtx.tokens.size();
             recalculateContext(promptCtx, recalculateCallback);
             assert(promptCtx.n_past + 1 <= promptCtx.n_ctx);
         }

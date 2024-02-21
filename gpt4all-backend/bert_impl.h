@@ -39,6 +39,7 @@ protected:
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
     int32_t contextLength() const override;
     const std::vector<Token> &endTokens() const override;
+    bool shouldAddBOS() const override { return true; }
 };
 
 #endif // BERT_H
