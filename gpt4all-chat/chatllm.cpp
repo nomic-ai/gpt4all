@@ -274,16 +274,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     // Store the file info in the modelInfo in case we have an error loading
     m_llModelInfo.fileInfo = fileInfo;
 
-    // Check if we've previously tried to load this file and failed/crashed
-    if (MySettings::globalInstance()->attemptModelLoad() == filePath) {
-        MySettings::globalInstance()->setAttemptModelLoad(QString()); // clear the flag
-        if (!m_isServer)
-            LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
-        m_llModelInfo = LLModelInfo();
-        emit modelLoadingError(QString("Previous attempt to load model resulted in crash for `%1` most likely due to insufficient memory. You should either remove this model or decrease your system RAM usage by closing other applications.").arg(modelInfo.filename()));
-        return false;
-    }
-
     if (fileInfo.exists()) {
         if (isChatGPT) {
             QString apiKey;
@@ -318,9 +308,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     emit modelLoadingPercentageChanged(progress);
                     return m_shouldBeLoaded;
                 });
-
-                // Update the settings that a model is being loaded and update the device list
-                MySettings::globalInstance()->setAttemptModelLoad(filePath);
 
                 // Pick the best match for the device
                 QString actualDevice = m_llModelInfo.model->implementation().buildVariant() == "metal" ? "Metal" : "CPU";
@@ -373,7 +360,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     emit reportFallbackReason("<br>model or quant has no GPU support");
                 }
 
-                MySettings::globalInstance()->setAttemptModelLoad(QString());
                 if (!success) {
                     delete m_llModelInfo.model;
                     m_llModelInfo.model = nullptr;
