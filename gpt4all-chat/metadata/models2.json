@@ -5,7 +5,7 @@
     "name": "Gemma Instruct",
     "filename": "gemma-7b-it.Q4_0.gguf",
     "filesize": "4809316512",
-    "requires": "2.5.0",
+    "requires": "2.7.1",
     "ramrequired": "8",
     "parameters": "7 billion",
     "quant": "q4_0",
