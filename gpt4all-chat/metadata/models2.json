@@ -12,7 +12,7 @@
     "type": "Gemma",
     "description": "<strong>A state-of-the-art open model from Google</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by Google</li><li>Licensed for commercial use</li><li>Gemma is provided under and subject to the Gemma Terms of Use found at <a href=\"https://ai.google.dev/gemma/terms\">ai.google.dev/gemma/terms</a></li></ul>",
     "url": "https://gpt4all.io/models/gguf/gemma-7b-it.Q4_0.gguf",
-    "promptTemplate": "<start_of_turn>user\n%1<end_of_turn>\n<start_of_turn>model\n\n",
+    "promptTemplate": "<start_of_turn>user\n%1<end_of_turn>\n<start_of_turn>model\n",
     "systemPrompt": ""
   },
   {
