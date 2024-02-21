@@ -369,7 +369,7 @@ size_t LLamaModel::restoreState(const uint8_t *src)
 
 std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str, bool special) const
 {
-    const bool wantBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos(d_ptr->model));
+    const bool wantBOS = ctx.n_past == 0 && ctx.tokens.empty();
     const bool useBOS = wantBOS && shouldAddBOS();
     std::vector<LLModel::Token> fres(str.size()+4);
     auto fres_len = llama_tokenize(d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), useBOS, special);
