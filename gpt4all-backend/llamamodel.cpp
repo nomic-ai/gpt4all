@@ -519,8 +519,8 @@ DLL_EXPORT bool magic_match(const char *fname) {
     bool valid = true;
 
     static const std::vector<const char *> known_arches {
-        "baichuan", "bloom", "codeshell", "falcon", "gpt2", "llama", "mpt", "orion", "persimmon", "phi2", "plamo",
-        "qwen", "qwen2", "refact", "stablelm", "starcoder"
+        "baichuan", "bloom", "codeshell", "falcon", "gemma", "gpt2", "llama", "mpt", "orion", "persimmon", "phi2",
+        "plamo", "qwen", "qwen2", "refact", "stablelm", "starcoder"
     };
 
     if (std::find(known_arches.begin(), known_arches.end(), arch) == known_arches.end()) {
