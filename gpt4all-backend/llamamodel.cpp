@@ -371,8 +371,9 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
 {
     const bool wantBOS = ctx.n_past == 0 && ctx.tokens.empty();
     const bool useBOS = wantBOS && shouldAddBOS();
-    std::vector<LLModel::Token> fres(str.size()+4);
-    auto fres_len = llama_tokenize(d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), useBOS, special);
+    auto strCat = wantBOS && !special ? " " + str : str; // insert leading space ourselves, llama.cpp fork doesn't anymore
+    std::vector<LLModel::Token> fres(strCat.size()+4);
+    auto fres_len = llama_tokenize(d_ptr->model, strCat.c_str(), strCat.length(), fres.data(), fres.size(), useBOS, special);
     fres.resize(fres_len);
     return fres;
 }
