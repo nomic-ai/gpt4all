@@ -140,6 +140,11 @@ void LLModel::prompt(const std::string &prompt,
         // template: end of assistant prompt
         size_t start = placeholders[1].position() + placeholders[1].length();
         auto asstSuffix = promptTemplate.substr(start);
+        if (!asstSuffix.empty() && asstSuffix[0] == '\n') {
+            // strip leading '\n' because the model would have produced it if it wanted
+            // to, and llama_tokenize turns it into a space
+            asstSuffix = asstSuffix.substr(1);
+        }
         if (!asstSuffix.empty()) {
             embd_inp = tokenize(promptCtx, asstSuffix, true);
             decodePrompt(promptCallback, responseCallback, recalculateCallback, promptCtx, embd_inp);
