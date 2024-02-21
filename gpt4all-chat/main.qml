@@ -1273,7 +1273,7 @@ Window {
                 topPadding: 8
                 bottomPadding: 8
                 text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
-                fontPixelSize: theme.fontSizeSmaller
+                fontPixelSize: theme.fontSizeSmall
                 Accessible.description: qsTr("Controls generation of the response")
             }
 
@@ -1304,7 +1304,7 @@ Window {
                 topPadding: 8
                 bottomPadding: 8
                 text: qsTr("Reload \u00B7 ") + currentChat.modelInfo.name
-                fontPixelSize: theme.fontSizeSmaller
+                fontPixelSize: theme.fontSizeSmall
                 Accessible.description: qsTr("Reloads the model")
             }
         }
