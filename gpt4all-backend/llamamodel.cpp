@@ -87,6 +87,12 @@ static int llama_sample_top_p_top_k(
     return llama_sample_token(ctx, &candidates_p);
 }
 
+static bool llama_should_add_bos_token(const llama_model * model) {
+    const int add_bos = llama_add_bos_token(model);
+
+    return add_bos != -1 ? bool(add_bos) : (llama_vocab_type(model) == LLAMA_VOCAB_TYPE_SPM);
+}
+
 std::string get_arch_name(gguf_context *ctx_gguf) {
     std::string arch_name;
     const int kid = gguf_find_key(ctx_gguf, "general.architecture");
@@ -366,7 +372,8 @@ size_t LLamaModel::restoreState(const uint8_t *src)
 
 std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str, bool special) const
 {
-    const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos(d_ptr->model));
+    const bool wantBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos(d_ptr->model));
+    const bool useBOS = wantBOS && llama_should_add_bos_token(d_ptr->model);
     std::vector<LLModel::Token> fres(str.size()+4);
     auto fres_len = llama_tokenize(d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), useBOS, special);
     fres.resize(fres_len);
