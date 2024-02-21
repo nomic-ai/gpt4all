@@ -117,6 +117,10 @@ protected:
         throw std::logic_error("not implemented");
     }
 
+    bool shouldAddBOS() const override {
+        throw std::logic_error("not implemented");
+    }
+
 private:
     std::function<bool(int32_t, const std::string&)> m_responseCallback;
     QString m_modelName;

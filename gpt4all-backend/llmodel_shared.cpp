@@ -89,7 +89,7 @@ void LLModel::prompt(const std::string &prompt,
         }
     }
 
-    auto old_n_past = ctx.n_past; // prepare to fake n_past for tokenize
+    auto old_n_past = promptCtx.n_past; // prepare to fake n_past for tokenize
 
     // tokenize the user prompt
     std::vector<Token> embd_inp;
@@ -103,13 +103,13 @@ void LLModel::prompt(const std::string &prompt,
         std::string userPrefix(phUser.prefix());
         if (!userPrefix.empty()) {
             embd_inp = tokenize(promptCtx, userPrefix, true);
-            ctx.n_past += embd_inp.size();
+            promptCtx.n_past += embd_inp.size();
         }
 
         // user input (shouldn't have special token processing)
         auto tokens = tokenize(promptCtx, prompt, special);
         embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
-        ctx.n_past += tokens.size();
+        promptCtx.n_past += tokens.size();
 
         // template: end of user prompt + start of assistant prompt
         size_t start = phUser.position() + phUser.length();
@@ -118,11 +118,11 @@ void LLModel::prompt(const std::string &prompt,
         if (!userToAsst.empty()) {
             tokens = tokenize(promptCtx, userToAsst, true);
             embd_inp.insert(embd_inp.end(), tokens.begin(), tokens.end());
-            ctx.n_past += tokens.size();
+            promptCtx.n_past += tokens.size();
         }
     }
 
-    ctx.n_past = old_n_past; // restore n_past so decodePrompt can increment it
+    promptCtx.n_past = old_n_past; // restore n_past so decodePrompt can increment it
 
     // decode the user prompt
     decodePrompt(promptCallback, responseCallback, recalculateCallback, promptCtx, embd_inp);

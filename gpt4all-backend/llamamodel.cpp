@@ -426,7 +426,7 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
     return d_ptr->end_tokens;
 }
 
-bool shouldAddBOS() const
+bool LLamaModel::shouldAddBOS() const
 {
     int add_bos = llama_add_bos_token(d_ptr->model);
     return add_bos != -1 ? bool(add_bos) : llama_vocab_type(d_ptr->model) == LLAMA_VOCAB_TYPE_SPM;
