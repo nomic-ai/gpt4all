@@ -684,5 +684,27 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.7.1",
+    "notes":
+"
+* Update to latest llama.cpp with support for Google Gemma
+* Gemma, Phi and Phi-2, Qwen2, and StableLM are now all GPU accelerated
+* Large revamp of the model loading to support explicit unload/reload
+* Bugfixes for ChatML and improved version of Mistral OpenOrca
+* We no longer load a model by default on application start
+* We no longer load a model by default on chat context switch
+* Fixes for visual artifacts in update reminder dialog
+* Blacklist Intel GPU's for now as we don't support yet
+* Fixes for binary save/restore of chat
+* Save and restore of window geometry across application starts
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]
