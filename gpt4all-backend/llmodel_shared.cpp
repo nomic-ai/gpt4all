@@ -136,14 +136,17 @@ void LLModel::prompt(const std::string &prompt,
     }
 
     // decode the rest of the prompt template
+    // template: end of assistant prompt
+    std::string asstSuffix;
     if (placeholders.size() >= 2) {
-        // template: end of assistant prompt
         size_t start = placeholders[1].position() + placeholders[1].length();
-        auto asstSuffix = promptTemplate.substr(start);
-        if (!asstSuffix.empty()) {
-            embd_inp = tokenize(promptCtx, asstSuffix, true);
-            decodePrompt(promptCallback, responseCallback, recalculateCallback, promptCtx, embd_inp);
-        }
+        asstSuffix = promptTemplate.substr(start);
+    } else {
+        asstSuffix = "\n\n"; // default to a blank link, good for e.g. Alpaca
+    }
+    if (!asstSuffix.empty()) {
+        embd_inp = tokenize(promptCtx, asstSuffix, true);
+        decodePrompt(promptCallback, responseCallback, recalculateCallback, promptCtx, embd_inp);
     }
 }
 
