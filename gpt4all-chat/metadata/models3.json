@@ -1,22 +1,6 @@
 [
   {
     "order": "a",
-    "md5sum": "6d1ca6e9533d177361fe2612a2c87474",
-    "name": "Gemma Instruct",
-    "filename": "gemma-7b-it.Q4_0.gguf",
-    "filesize": "4809316512",
-    "requires": "2.7.1",
-    "ramrequired": "8",
-    "parameters": "7 billion",
-    "quant": "q4_0",
-    "type": "Gemma",
-    "description": "<strong>A state-of-the-art open model from Google</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by Google</li><li>Licensed for commercial use</li><li>Gemma is provided under and subject to the Gemma Terms of Use found at <a href=\"https://ai.google.dev/gemma/terms\">ai.google.dev/gemma/terms</a></li></ul>",
-    "url": "https://gpt4all.io/models/gguf/gemma-7b-it.Q4_0.gguf",
-    "promptTemplate": "<start_of_turn>user\n%1<end_of_turn>\n<start_of_turn>model\n%2<end_of_turn>\n",
-    "systemPrompt": ""
-  },
-  {
-    "order": "b",
     "md5sum": "f692417a22405d80573ac10cb0cd6c6a",
     "name": "Mistral OpenOrca",
     "filename": "mistral-7b-openorca.Q4_0.gguf2.gguf",
@@ -30,6 +14,22 @@
     "url": "https://gpt4all.io/models/gguf/mistral-7b-openorca.Q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
     "systemPrompt": "<|im_start|>system\nYou are MistralOrca, a large language model trained by Alignment Lab AI. For multi-step problems, write out your reasoning for each step.\n<|im_end|>"
+  },
+  {
+    "order": "b",
+    "md5sum": "97463be739b50525df56d33b26b00852",
+    "name": "Mistral Instruct",
+    "filename": "mistral-7b-instruct-v0.1.Q4_0.gguf",
+    "filesize": "4108916384",
+    "requires": "2.5.0",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "Mistral",
+    "systemPrompt": " ",
+    "description": "<strong>Best overall fast instruction following model</strong><br><ul><li>Fast responses</li><li>Trained by Mistral AI<li>Uncensored</li><li>Licensed for commercial use</li></ul>",
+    "url": "https://gpt4all.io/models/gguf/mistral-7b-instruct-v0.1.Q4_0.gguf",
+    "promptTemplate": "[INST] %1 [/INST]"
   },
   {
     "order": "c",
@@ -46,22 +46,6 @@
     "description": "<strong>Very fast model with good quality</strong><br><ul><li>Fastest responses</li><li>Instruction based</li><li>Trained by TII<li>Finetuned by Nomic AI<li>Licensed for commercial use</ul>",
     "url": "https://gpt4all.io/models/gguf/gpt4all-falcon-newbpe-q4_0.gguf",
     "promptTemplate": "### Instruction:\n%1\n### Response:\n"
-  },
-  {
-    "order": "d",
-    "md5sum": "97463be739b50525df56d33b26b00852",
-    "name": "Mistral Instruct",
-    "filename": "mistral-7b-instruct-v0.1.Q4_0.gguf",
-    "filesize": "4108916384",
-    "requires": "2.5.0",
-    "ramrequired": "8",
-    "parameters": "7 billion",
-    "quant": "q4_0",
-    "type": "Mistral",
-    "systemPrompt": " ",
-    "description": "<strong>Best overall fast instruction following model</strong><br><ul><li>Fast responses</li><li>Trained by Mistral AI<li>Uncensored</li><li>Licensed for commercial use</li></ul>",
-    "url": "https://gpt4all.io/models/gguf/mistral-7b-instruct-v0.1.Q4_0.gguf",
-    "promptTemplate": "[INST] %1 [/INST]"
   },
   {
     "order": "e",
