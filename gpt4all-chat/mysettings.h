@@ -110,8 +110,6 @@ public:
     bool networkUsageStatsActive() const;
     void setNetworkUsageStatsActive(bool b);
 
-    QString attemptModelLoad() const;
-    void setAttemptModelLoad(const QString &modelFile);
 
     QVector<QString> deviceList() const;
     void setDeviceList(const QVector<QString> &deviceList);

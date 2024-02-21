@@ -23,14 +23,10 @@ Chat::Chat(bool isServer, QObject *parent)
     , m_id(Network::globalInstance()->generateUniqueId())
     , m_name(tr("Server Chat"))
     , m_chatModel(new ChatModel(this))
-    , m_responseInProgress(false)
     , m_responseState(Chat::ResponseStopped)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
     , m_llmodel(new Server(this))
     , m_isServer(true)
-    , m_shouldDeleteLater(false)
-    , m_isModelLoaded(false)
-    , m_shouldLoadModelWhenInstalled(false)
     , m_collectionModel(new LocalDocsCollectionsModel(this))
 {
     connectLLM();
@@ -45,7 +41,7 @@ Chat::~Chat()
 void Chat::connectLLM()
 {
     // Should be in different threads
-    connect(m_llmodel, &ChatLLM::isModelLoadedChanged, this, &Chat::handleModelLoadedChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::modelLoadingPercentageChanged, this, &Chat::handleModelLoadingPercentageChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
@@ -57,6 +53,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::reportFallbackReason, this, &Chat::handleFallbackReasonChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::trySwitchContextOfLoadedModelCompleted, this, &Chat::trySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
     connect(this, &Chat::modelChangeRequested, m_llmodel, &ChatLLM::modelChangeRequested, Qt::QueuedConnection);
@@ -69,8 +66,6 @@ void Chat::connectLLM()
     connect(this, &Chat::processSystemPromptRequested, m_llmodel, &ChatLLM::processSystemPrompt, Qt::QueuedConnection);
 
     connect(this, &Chat::collectionListChanged, m_collectionModel, &LocalDocsCollectionsModel::setCollections);
-    connect(ModelList::globalInstance()->installedModels(), &InstalledModels::countChanged,
-        this, &Chat::handleModelInstalled, Qt::QueuedConnection);
 }
 
 void Chat::reset()
@@ -101,7 +96,12 @@ void Chat::processSystemPrompt()
 
 bool Chat::isModelLoaded() const
 {
-    return m_isModelLoaded;
+    return m_modelLoadingPercentage == 1.0f;
+}
+
+float Chat::modelLoadingPercentage() const
+{
+    return m_modelLoadingPercentage;
 }
 
 void Chat::resetResponseState()
@@ -158,16 +158,18 @@ void Chat::handleResponseChanged(const QString &response)
     emit responseChanged();
 }
 
-void Chat::handleModelLoadedChanged(bool loaded)
+void Chat::handleModelLoadingPercentageChanged(float loadingPercentage)
 {
     if (m_shouldDeleteLater)
         deleteLater();
 
-    if (loaded == m_isModelLoaded)
+    if (loadingPercentage == m_modelLoadingPercentage)
         return;
 
-    m_isModelLoaded = loaded;
-    emit isModelLoadedChanged();
+    m_modelLoadingPercentage = loadingPercentage;
+    emit modelLoadingPercentageChanged();
+    if (m_modelLoadingPercentage == 1.0f || m_modelLoadingPercentage == 0.0f)
+        emit isModelLoadedChanged();
 }
 
 void Chat::promptProcessing()
@@ -238,10 +240,10 @@ ModelInfo Chat::modelInfo() const
 
 void Chat::setModelInfo(const ModelInfo &modelInfo)
 {
-    if (m_modelInfo == modelInfo)
+    if (m_modelInfo == modelInfo && isModelLoaded())
         return;
 
-    m_isModelLoaded = false;
+    m_modelLoadingPercentage = std::numeric_limits<float>::min(); // small non-zero positive value
     emit isModelLoadedChanged();
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();
@@ -291,21 +293,26 @@ void Chat::unloadModel()
 
 void Chat::reloadModel()
 {
-    // If the installed model list is empty, then we mark a special flag and monitor for when a model
-    // is installed
-    if (!ModelList::globalInstance()->installedModels()->count()) {
-        m_shouldLoadModelWhenInstalled = true;
-        return;
-    }
     m_llmodel->setShouldBeLoaded(true);
 }
 
-void Chat::handleModelInstalled()
+void Chat::forceUnloadModel()
 {
-    if (!m_shouldLoadModelWhenInstalled)
-        return;
-    m_shouldLoadModelWhenInstalled = false;
-    reloadModel();
+    stopGenerating();
+    m_llmodel->setForceUnloadModel(true);
+    m_llmodel->setShouldBeLoaded(false);
+}
+
+void Chat::forceReloadModel()
+{
+    m_llmodel->setForceUnloadModel(true);
+    m_llmodel->setShouldBeLoaded(true);
+}
+
+void Chat::trySwitchContextOfLoadedModel()
+{
+    emit trySwitchContextOfLoadedModelAttempted();
+    m_llmodel->setShouldTrySwitchContext(true);
 }
 
 void Chat::generatedNameChanged(const QString &name)

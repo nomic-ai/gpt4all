@@ -13,9 +13,10 @@ Button {
     property color mutedTextColor: theme.oppositeMutedTextColor
     property color backgroundColor: theme.buttonBackground
     property color backgroundColorHovered: theme.buttonBackgroundHovered
+    property real  backgroundRadius: 10
     property real  borderWidth: MySettings.chatTheme === "LegacyDark" ? 1 : 0
     property color borderColor: theme.buttonBorder
-    property real fontPixelSize: theme.fontSizeLarge
+    property real  fontPixelSize: theme.fontSizeLarge
     contentItem: Text {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter
@@ -25,7 +26,7 @@ Button {
         Accessible.name: text
     }
     background: Rectangle {
-        radius: 10
+        radius: myButton.backgroundRadius
         border.width: myButton.borderWidth
         border.color: myButton.borderColor
         color: myButton.hovered ? backgroundColorHovered : backgroundColor
