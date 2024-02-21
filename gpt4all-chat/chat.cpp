@@ -243,7 +243,7 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
     if (m_modelInfo == modelInfo && isModelLoaded())
         return;
 
-    m_modelLoadingPercentage = std::numeric_limits<float>::min();
+    m_modelLoadingPercentage = std::numeric_limits<float>::min(); // small non-zero positive value
     emit isModelLoadedChanged();
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();

@@ -222,7 +222,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #endif
         delete m_llModelInfo.model;
         m_llModelInfo.model = nullptr;
-        emit modelLoadingPercentageChanged(std::numeric_limits<float>::min());
+        emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
     } else if (!m_isServer) {
         // This is a blocking call that tries to retrieve the model we need from the model store.
         // If it succeeds, then we just have to restore state. If the store has never had a model
