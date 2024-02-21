@@ -463,7 +463,7 @@ Window {
 
                     MyMiniButton {
                         id: ejectButton
-                        visible: currentChat.isModelLoaded
+                        visible: currentChat.isModelLoaded && !window.isCurrentlyLoading
                         z: 500
                         anchors.right: parent.right
                         anchors.rightMargin: 50

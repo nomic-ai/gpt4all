@@ -672,7 +672,11 @@ void ChatLLM::unloadModel()
     if (!isModelLoaded() || m_isServer)
         return;
 
-    emit modelLoadingPercentageChanged(0.0f);
+    if (!m_forceUnloadModel || !m_shouldBeLoaded)
+        emit modelLoadingPercentageChanged(0.0f);
+    else
+        emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
+
     saveState();
 #if defined(DEBUG_MODEL_LOADING)
     qDebug() << "unloadModel" << m_llmThread.objectName() << m_llModelInfo.model;
