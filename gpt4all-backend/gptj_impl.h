@@ -30,12 +30,13 @@ private:
     GPTJPrivate *d_ptr;
 
 protected:
-    std::vector<Token> tokenize(PromptContext &, const std::string&) const override;
+    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) const override;
     Token sampleToken(PromptContext &ctx) const override;
-    std::string tokenToString(Token) const override;
+    std::string tokenToString(Token id) const override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
     int32_t contextLength() const override;
-    const std::vector<Token>& endTokens() const override;
+    const std::vector<Token> &endTokens() const override;
+    bool shouldAddBOS() const override { return false; }
 };
 
 #endif // GPTJ_H

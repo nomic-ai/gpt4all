@@ -19,6 +19,7 @@ public:
     bool supportsEmbedding() const override { return false; }
     bool supportsCompletion() const override { return true; }
     bool loadModel(const std::string &modelPath, int n_ctx, int ngl) override;
+    bool isModelBlacklisted(const std::string &modelPath) override;
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) override;
     size_t stateSize() const override;
@@ -27,7 +28,7 @@ public:
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
     std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired) const override;
-    bool initializeGPUDevice(size_t memoryRequired, const std::string& name) const override;
+    bool initializeGPUDevice(size_t memoryRequired, const std::string &name) const override;
     bool initializeGPUDevice(int device, std::string *unavail_reason) const override;
     bool hasGPUDevice() override;
     bool usingGPUDevice() override;
@@ -36,12 +37,13 @@ private:
     std::unique_ptr<LLamaPrivate> d_ptr;
 
 protected:
-    std::vector<Token> tokenize(PromptContext &, const std::string&) const override;
-    std::string tokenToString(Token) const override;
-    Token sampleToken(PromptContext& ctx) const override;
-    bool evalTokens(PromptContext& ctx, const std::vector<int32_t> &tokens) const override;
+    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) const override;
+    std::string tokenToString(Token id) const override;
+    Token sampleToken(PromptContext &ctx) const override;
+    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
     int32_t contextLength() const override;
-    const std::vector<Token>& endTokens() const override;
+    const std::vector<Token> &endTokens() const override;
+    bool shouldAddBOS() const override;
 
     int32_t maxContextLength(std::string const &modelPath) const override;
     int32_t layerCount(std::string const &modelPath) const override;

@@ -17,10 +17,10 @@
   },
   {
     "order": "b",
-    "md5sum": "48de9538c774188eb25a7e9ee024bbd3",
+    "md5sum": "f692417a22405d80573ac10cb0cd6c6a",
     "name": "Mistral OpenOrca",
-    "filename": "mistral-7b-openorca.Q4_0.gguf",
-    "filesize": "4108927744",
+    "filename": "mistral-7b-openorca.Q4_0.gguf2.gguf",
+    "filesize": "4108928128",
     "requires": "2.5.0",
     "ramrequired": "8",
     "parameters": "7 billion",
@@ -28,7 +28,7 @@
     "type": "Mistral",
     "description": "<strong>Best overall fast chat model</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by Mistral AI<li>Finetuned on OpenOrca dataset curated via <a href=\"https://atlas.nomic.ai/\">Nomic Atlas</a><li>Licensed for commercial use</ul>",
     "url": "https://gpt4all.io/models/gguf/mistral-7b-openorca.Q4_0.gguf",
-    "promptTemplate": "<|im_start|>user\n%1<|im_end|><|im_start|>assistant\n",
+    "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n",
     "systemPrompt": "<|im_start|>system\nYou are MistralOrca, a large language model trained by Alignment Lab AI. For multi-step problems, write out your reasoning for each step.\n<|im_end|>"
   },
   {
@@ -152,7 +152,7 @@
     "type": "MPT",
     "description": "<strong>Good model with novel architecture</strong><br><ul><li>Fast responses<li>Chat based<li>Trained by Mosaic ML<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/mpt-7b-chat-newbpe-q4_0.gguf",
-    "promptTemplate": "<|im_start|>user\n%1<|im_end|><|im_start|>assistant\n",
+    "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n",
     "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>"
   },
   {

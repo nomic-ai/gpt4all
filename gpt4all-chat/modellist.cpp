@@ -951,7 +951,7 @@ void ModelList::updateModelsFromDirectory()
         processDirectory(localPath);
 }
 
-#define MODELS_VERSION 2
+#define MODELS_VERSION 3
 
 void ModelList::updateModelsFromJson()
 {

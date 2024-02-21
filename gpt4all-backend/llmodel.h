@@ -29,23 +29,23 @@ public:
 
     class Implementation {
     public:
-        Implementation(Dlhandle&&);
-        Implementation(const Implementation&) = delete;
-        Implementation(Implementation&&);
+        Implementation(Dlhandle &&);
+        Implementation(const Implementation &) = delete;
+        Implementation(Implementation &&);
         ~Implementation();
 
         std::string_view modelType() const { return m_modelType; }
         std::string_view buildVariant() const { return m_buildVariant; }
 
-        static bool isImplementation(const Dlhandle&);
-        static const std::vector<Implementation>& implementationList();
-        static const Implementation *implementation(const char *fname, const std::string& buildVariant);
+        static bool isImplementation(const Dlhandle &dl);
+        static const std::vector<Implementation> &implementationList();
+        static const Implementation *implementation(const char *fname, const std::string &buildVariant);
         static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto", int n_ctx = 2048);
         static std::vector<GPUDevice> availableGPUDevices();
         static int32_t maxContextLength(const std::string &modelPath);
         static int32_t layerCount(const std::string &modelPath);
-        static void setImplementationsSearchPath(const std::string& path);
-        static const std::string& implementationsSearchPath();
+        static void setImplementationsSearchPath(const std::string &path);
+        static const std::string &implementationsSearchPath();
 
     private:
         static LLModel *constructDefaultLlama();
@@ -82,26 +82,30 @@ public:
     virtual bool supportsEmbedding() const = 0;
     virtual bool supportsCompletion() const = 0;
     virtual bool loadModel(const std::string &modelPath, int n_ctx, int ngl) = 0;
+    virtual bool isModelBlacklisted(const std::string &modelPath) { (void)modelPath; return false; };
     virtual bool isModelLoaded() const = 0;
     virtual size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) = 0;
     virtual size_t stateSize() const { return 0; }
-    virtual size_t saveState(uint8_t */*dest*/) const { return 0; }
-    virtual size_t restoreState(const uint8_t */*src*/) { return 0; }
+    virtual size_t saveState(uint8_t *dest) const { (void)dest; return 0; }
+    virtual size_t restoreState(const uint8_t *src) { (void)src; return 0; }
 
     // This method requires the model to return true from supportsCompletion otherwise it will throw
     // an error
     virtual void prompt(const std::string &prompt,
+                        const std::string &promptTemplate,
                         std::function<bool(int32_t)> promptCallback,
                         std::function<bool(int32_t, const std::string&)> responseCallback,
                         std::function<bool(bool)> recalculateCallback,
-                        PromptContext &ctx);
+                        PromptContext &ctx,
+                        bool special = false,
+                        std::string *fakeReply = nullptr);
 
     virtual std::vector<float> embedding(const std::string &text);
 
-    virtual void setThreadCount(int32_t /*n_threads*/) {}
+    virtual void setThreadCount(int32_t n_threads) { (void)n_threads; }
     virtual int32_t threadCount() const { return 1; }
 
-    const Implementation& implementation() const {
+    const Implementation &implementation() const {
         return *m_implementation;
     }
 
@@ -110,7 +114,7 @@ public:
         return {};
     }
 
-    virtual bool initializeGPUDevice(size_t memoryRequired, const std::string& name) const {
+    virtual bool initializeGPUDevice(size_t memoryRequired, const std::string &name) const {
         (void)memoryRequired;
         (void)name;
         return false;
@@ -132,12 +136,13 @@ public:
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
-    virtual std::vector<Token> tokenize(PromptContext &, const std::string&) const = 0;
-    virtual std::string tokenToString(Token) const = 0;
+    virtual std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special = false) const = 0;
+    virtual std::string tokenToString(Token id) const = 0;
     virtual Token sampleToken(PromptContext &ctx) const = 0;
-    virtual bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const = 0;
+    virtual bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const = 0;
     virtual int32_t contextLength() const = 0;
-    virtual const std::vector<Token>& endTokens() const = 0;
+    virtual const std::vector<Token> &endTokens() const = 0;
+    virtual bool shouldAddBOS() const = 0;
 
     virtual int32_t maxContextLength(std::string const &modelPath) const
     {
@@ -165,6 +170,15 @@ protected:
             return model->m_progressCallback(progress);
         return true;
     }
+
+    void decodePrompt(std::function<bool(int32_t)> promptCallback,
+                      std::function<bool(int32_t, const std::string&)> responseCallback,
+                      std::function<bool(bool)> recalculateCallback,
+                      PromptContext &promptCtx,
+                      std::vector<Token> embd_inp);
+    void generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
+                          std::function<bool(bool)> recalculateCallback,
+                          PromptContext &promptCtx);
 
 private:
     friend class LLMImplementation;
