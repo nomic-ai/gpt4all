@@ -135,6 +135,7 @@ void ModelInfo::setGpuLayers(int l)
 
 int ModelInfo::maxGpuLayers() const
 {
+    if (isOnline) return -1;
     if (m_maxGpuLayers != -1) return m_maxGpuLayers;
     auto path = (dirpath + filename()).toStdString();
     int layers = LLModel::Implementation::layerCount(path);

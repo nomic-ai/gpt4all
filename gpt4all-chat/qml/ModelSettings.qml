@@ -154,7 +154,7 @@ MySettingsTab {
         }
 
         MySettingsLabel {
-            visible: !root.currentModelInfo.isChatGPT
+            visible: !root.currentModelInfo.isOnline
             text: qsTr("System Prompt")
             Layout.row: 6
             Layout.column: 0
@@ -163,7 +163,7 @@ MySettingsTab {
 
         Rectangle {
             id: systemPrompt
-            visible: !root.currentModelInfo.isChatGPT
+            visible: !root.currentModelInfo.isOnline
             Layout.row: 7
             Layout.column: 0
             Layout.columnSpan: 2
@@ -317,14 +317,14 @@ MySettingsTab {
 
             MySettingsLabel {
                 id: contextLengthLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Context Length")
                 Layout.row: 0
                 Layout.column: 0
             }
             MyTextField {
                 id: contextLengthField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.contextLength
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
@@ -454,14 +454,14 @@ MySettingsTab {
             }
             MySettingsLabel {
                 id: topKLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Top K")
                 Layout.row: 2
                 Layout.column: 2
             }
             MyTextField {
                 id: topKField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.topK
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -499,14 +499,14 @@ MySettingsTab {
             }
             MySettingsLabel {
                 id: maxLengthLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Max Length")
                 Layout.row: 0
                 Layout.column: 2
             }
             MyTextField {
                 id: maxLengthField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.maxLength
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -545,14 +545,14 @@ MySettingsTab {
 
             MySettingsLabel {
                 id: batchSizeLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Prompt Batch Size")
                 Layout.row: 1
                 Layout.column: 0
             }
             MyTextField {
                 id: batchSizeField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.promptBatchSize
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -590,14 +590,14 @@ MySettingsTab {
             }
             MySettingsLabel {
                 id: repeatPenaltyLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Repeat Penalty")
                 Layout.row: 3
                 Layout.column: 0
             }
             MyTextField {
                 id: repeatPenaltyField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.repeatPenalty
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -635,14 +635,14 @@ MySettingsTab {
             }
             MySettingsLabel {
                 id: repeatPenaltyTokensLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Repeat Penalty Tokens")
                 Layout.row: 3
                 Layout.column: 2
             }
             MyTextField {
                 id: repeatPenaltyTokenField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.repeatPenaltyTokens
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -681,14 +681,14 @@ MySettingsTab {
 
             MySettingsLabel {
                 id: gpuLayersLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("GPU Layers")
                 Layout.row: 4
                 Layout.column: 0
             }
             MyTextField {
                 id: gpuLayersField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.gpuLayers
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
