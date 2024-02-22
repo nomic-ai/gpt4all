@@ -260,7 +260,14 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->model_params.progress_callback = &LLModel::staticProgressCallback;
     d_ptr->model_params.progress_callback_user_data = this;
 
-#ifdef GGML_USE_METAL
+#ifdef GGML_USE_KOMPUTE
+    if (d_ptr->device != -1) {
+        d_ptr->model_params.main_gpu = d_ptr->device;
+        d_ptr->model_params.n_gpu_layers = ngl;
+    }
+#elif defined(GGML_USE_METAL)
+    (void)ngl;
+
     if (llama_verbose()) {
         std::cerr << "llama.cpp: using Metal" << std::endl;
     }
@@ -268,11 +275,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     // always fully offload on Metal
     // TODO(cebtenzzre): use this parameter to allow using more than 53% of system RAM to load a model
     d_ptr->model_params.n_gpu_layers = 100;
-#elif defined(GGML_USE_KOMPUTE)
-    if (d_ptr->device != -1) {
-        d_ptr->model_params.main_gpu = d_ptr->device;
-        d_ptr->model_params.n_gpu_layers = ngl;
-    }
+#else
+    (void)ngl;
 #endif
 
     d_ptr->model = llama_load_model_from_file_gpt4all(modelPath.c_str(), &d_ptr->model_params);
@@ -469,6 +473,7 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
         return devices;
     }
 #else
+    (void)memoryRequired;
     std::cerr << __func__ << ": built without Kompute\n";
 #endif
 
