@@ -67,6 +67,8 @@ bool LLM::checkForUpdates() const
     QString tool("maintenancetool.exe");
 #elif defined(Q_OS_DARWIN)
     QString tool("../../../maintenancetool.app/Contents/MacOS/maintenancetool");
+#elif defined(Q_OS_FREEBSD)
+    QString tool("maintenancetool"); //maybe
 #endif
 
     QString fileName = QCoreApplication::applicationDirPath()
