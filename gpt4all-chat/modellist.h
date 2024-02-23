@@ -122,7 +122,7 @@ private:
     QString m_filename;
     double  m_temperature          = 0.7;
     double  m_topP                 = 0.4;
-    double  m_minP                 = 0.1;
+    double  m_minP                 = 0.0;
     int     m_topK                 = 40;
     int     m_maxLength            = 4096;
     int     m_promptBatchSize      = 128;
