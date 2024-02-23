@@ -24,7 +24,7 @@ DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").re
 
 DEFAULT_MODEL_CONFIG = {
     "systemPrompt": "",
-    "promptTemplate": "### Human: \n{0}\n### Assistant:\n",
+    "promptTemplate": "### Human: \n{0}\n\n### Assistant:\n",
 }
 
 ConfigType = Dict[str, str]

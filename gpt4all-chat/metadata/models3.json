@@ -45,7 +45,7 @@
     "systemPrompt": " ",
     "description": "<strong>Very fast model with good quality</strong><br><ul><li>Fastest responses</li><li>Instruction based</li><li>Trained by TII<li>Finetuned by Nomic AI<li>Licensed for commercial use</ul>",
     "url": "https://gpt4all.io/models/gguf/gpt4all-falcon-newbpe-q4_0.gguf",
-    "promptTemplate": "### Instruction:\n%1\n### Response:\n"
+    "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
   },
   {
     "order": "e",
@@ -106,7 +106,7 @@
     "systemPrompt": " ",
     "description": "<strong>Extremely good model</strong><br><ul><li>Instruction based<li>Gives long responses<li>Curated with 300,000 uncensored instructions<li>Trained by Nous Research<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/nous-hermes-llama2-13b.Q4_0.gguf",
-    "promptTemplate": "### Instruction:\n%1\n### Response:\n"
+    "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
   },
   {
     "order": "i",
@@ -152,7 +152,7 @@
     "type": "OpenLLaMa",
     "description": "<strong>Small version of new model with novel dataset</strong><br><ul><li>Instruction based<li>Explain tuned datasets<li>Orca Research Paper dataset construction approaches<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/orca-mini-3b-gguf2-q4_0.gguf",
-    "promptTemplate": "### User:\n%1\n### Response:\n",
+    "promptTemplate": "### User:\n%1\n\n### Response:\n",
     "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
