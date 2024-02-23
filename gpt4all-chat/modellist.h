@@ -36,6 +36,7 @@ struct ModelInfo {
     Q_PROPERTY(bool isClone MEMBER isClone)
     Q_PROPERTY(double temperature READ temperature WRITE setTemperature)
     Q_PROPERTY(double topP READ topP WRITE setTopP)
+    Q_PROPERTY(double minP READ minP WRITE setMinP)
     Q_PROPERTY(int topK READ topK WRITE setTopK)
     Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength)
     Q_PROPERTY(int promptBatchSize READ promptBatchSize WRITE setPromptBatchSize)
@@ -92,6 +93,8 @@ public:
     void setTemperature(double t);
     double topP() const;
     void setTopP(double p);
+    double minP() const;
+    void setMinP(double p);
     int topK() const;
     void setTopK(int k);
     int maxLength() const;
@@ -119,6 +122,7 @@ private:
     QString m_filename;
     double  m_temperature          = 0.7;
     double  m_topP                 = 0.4;
+    double  m_minP                 = 0.1;
     int     m_topK                 = 40;
     int     m_maxLength            = 4096;
     int     m_promptBatchSize      = 128;
@@ -247,6 +251,7 @@ public:
         RepeatPenaltyTokensRole,
         PromptTemplateRole,
         SystemPromptRole,
+        MinPRole,
     };
 
     QHash<int, QByteArray> roleNames() const override
@@ -282,6 +287,7 @@ public:
         roles[IsCloneRole] = "isClone";
         roles[TemperatureRole] = "temperature";
         roles[TopPRole] = "topP";
+        roles[MinPRole] = "minP";
         roles[TopKRole] = "topK";
         roles[MaxLengthRole] = "maxLength";
         roles[PromptBatchSizeRole] = "promptBatchSize";

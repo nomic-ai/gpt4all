@@ -134,6 +134,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     wrapper->promptContext.n_predict = ctx->n_predict;
     wrapper->promptContext.top_k = ctx->top_k;
     wrapper->promptContext.top_p = ctx->top_p;
+    wrapper->promptContext.min_p = ctx->min_p;
     wrapper->promptContext.temp = ctx->temp;
     wrapper->promptContext.n_batch = ctx->n_batch;
     wrapper->promptContext.repeat_penalty = ctx->repeat_penalty;
@@ -156,6 +157,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     ctx->n_predict = wrapper->promptContext.n_predict;
     ctx->top_k = wrapper->promptContext.top_k;
     ctx->top_p = wrapper->promptContext.top_p;
+    ctx->min_p = wrapper->promptContext.min_p;
     ctx->temp = wrapper->promptContext.temp;
     ctx->n_batch = wrapper->promptContext.n_batch;
     ctx->repeat_penalty = wrapper->promptContext.repeat_penalty;

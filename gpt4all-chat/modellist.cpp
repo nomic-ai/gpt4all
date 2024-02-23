@@ -60,10 +60,21 @@ double ModelInfo::topP() const
     return MySettings::globalInstance()->modelTopP(*this);
 }
 
+double ModelInfo::minP() const
+{
+    return MySettings::globalInstance()->modelMinP(*this);
+}
+
 void ModelInfo::setTopP(double p)
 {
     if (isClone) MySettings::globalInstance()->setModelTopP(*this, p, isClone /*force*/);
     m_topP = p;
+}
+
+void ModelInfo::setMinP(double p)
+{
+    if (isClone) MySettings::globalInstance()->setModelMinP(*this, p, isClone /*force*/);
+    m_minP = p;
 }
 
 int ModelInfo::topK() const
@@ -321,6 +332,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::nameChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::temperatureChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::topPChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::minPChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::topKChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::maxLengthChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::promptBatchSizeChanged, this, &ModelList::updateDataForSettings);
@@ -571,6 +583,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->temperature();
         case TopPRole:
             return info->topP();
+        case MinPRole:
+            return info->minP();
         case TopKRole:
             return info->topK();
         case MaxLengthRole:
@@ -700,6 +714,8 @@ void ModelList::updateData(const QString &id, int role, const QVariant &value)
             info->setTemperature(value.toDouble()); break;
         case TopPRole:
             info->setTopP(value.toDouble()); break;
+        case MinPRole:
+            info->setMinP(value.toDouble()); break;
         case TopKRole:
             info->setTopK(value.toInt()); break;
         case MaxLengthRole:
@@ -797,6 +813,7 @@ QString ModelList::clone(const ModelInfo &model)
     updateData(id, ModelList::OnlineRole, model.isOnline);
     updateData(id, ModelList::TemperatureRole, model.temperature());
     updateData(id, ModelList::TopPRole, model.topP());
+    updateData(id, ModelList::MinPRole, model.minP());
     updateData(id, ModelList::TopKRole, model.topK());
     updateData(id, ModelList::MaxLengthRole, model.maxLength());
     updateData(id, ModelList::PromptBatchSizeRole, model.promptBatchSize());
@@ -1163,6 +1180,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             updateData(id, ModelList::TemperatureRole, obj["temperature"].toDouble());
         if (obj.contains("topP"))
             updateData(id, ModelList::TopPRole, obj["topP"].toDouble());
+        if (obj.contains("minP"))
+            updateData(id, ModelList::MinPRole, obj["minP"].toDouble());
         if (obj.contains("topK"))
             updateData(id, ModelList::TopKRole, obj["topK"].toInt());
         if (obj.contains("maxLength"))
@@ -1287,6 +1306,8 @@ void ModelList::updateModelsFromSettings()
         const double temperature = settings.value(g + "/temperature").toDouble();
         Q_ASSERT(settings.contains(g + "/topP"));
         const double topP = settings.value(g + "/topP").toDouble();
+        Q_ASSERT(settings.contains(g + "/minP"));
+        const double minP = settings.value(g + "/minP").toDouble();
         Q_ASSERT(settings.contains(g + "/topK"));
         const int topK = settings.value(g + "/topK").toInt();
         Q_ASSERT(settings.contains(g + "/maxLength"));
@@ -1312,6 +1333,7 @@ void ModelList::updateModelsFromSettings()
         updateData(id, ModelList::FilenameRole, filename);
         updateData(id, ModelList::TemperatureRole, temperature);
         updateData(id, ModelList::TopPRole, topP);
+        updateData(id, ModelList::MinPRole, minP);
         updateData(id, ModelList::TopKRole, topK);
         updateData(id, ModelList::MaxLengthRole, maxLength);
         updateData(id, ModelList::PromptBatchSizeRole, promptBatchSize);

@@ -39,6 +39,7 @@ struct llmodel_prompt_context {
     int32_t n_predict;      // number of tokens to predict
     int32_t top_k;          // top k logits to sample from
     float top_p;            // nucleus sampling probability threshold
+    float min_p;            // nucleus sampling probability threshold
     float temp;             // temperature to adjust model's output distribution
     int32_t n_batch;        // number of predictions to generate in parallel
     float repeat_penalty;   // penalty factor for repeated tokens
