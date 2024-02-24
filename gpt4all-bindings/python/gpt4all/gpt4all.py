@@ -337,10 +337,12 @@ class GPT4All:
             generate_kwargs["reset_context"] = reset
             self.current_chat_session.append({"role": "user", "content": prompt})
 
-            if self._format_chat_prompt_template.__func__ is GPT4All._format_chat_prompt_template:
+            fct_func = self._format_chat_prompt_template.__func__  # type: ignore[attr-defined]
+            if fct_func is GPT4All._format_chat_prompt_template:
                 if reset:
                     # ingest system prompt
                     self.model.prompt_model(self.current_chat_session[0]["content"], "%1",
+                                            _pyllmodel.empty_response_callback,
                                             n_batch=n_batch, n_predict=0, special=True)
                 prompt_template = self._current_prompt_template.format("%1")
             else:
