@@ -248,6 +248,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
              .n_predict = 128,
              .top_k = 40,
              .top_p = 0.9f,
+             .min_p = 0.0f,
              .temp = 0.72f,
              .n_batch = 8,
              .repeat_penalty = 1.0f,
@@ -274,6 +275,8 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
             promptContext.top_k = inputObject.Get("top_k").As<Napi::Number>().Int32Value();
        if(inputObject.Has("top_p")) 
             promptContext.top_p = inputObject.Get("top_p").As<Napi::Number>().FloatValue();
+       if(inputObject.Has("min_p")) 
+            promptContext.min_p = inputObject.Get("min_p").As<Napi::Number>().FloatValue();
        if(inputObject.Has("temp")) 
             promptContext.temp = inputObject.Get("temp").As<Napi::Number>().FloatValue();
        if(inputObject.Has("n_batch")) 
