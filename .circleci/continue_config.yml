@@ -1107,7 +1107,11 @@ workflows:
     jobs:
       - hold:
           type: approval
+      - csharp-hold:
+          type: approval
       - nuget-hold:
+          type: approval
+      - nodejs-hold:
           type: approval
       - npm-hold:
           type: approval
@@ -1151,21 +1155,21 @@ workflows:
             branches:
               only:
           requires:
-            - npm-hold
+            - nodejs-hold
             - build-bindings-backend-linux
       - build-nodejs-windows:
           filters:
             branches:
               only:
           requires:
-            - npm-hold
+            - nodejs-hold
             - build-bindings-backend-windows-msvc
       - build-nodejs-macos:
           filters:
             branches:
               only:
           requires:
-            - npm-hold
+            - nodejs-hold
             - build-bindings-backend-macos
 
 
@@ -1175,21 +1179,21 @@ workflows:
             branches:
               only:
           requires:
-            - nuget-hold
+            - csharp-hold
             - build-bindings-backend-linux
       - build-csharp-windows:
           filters:
             branches:
               only:
           requires:
-            - nuget-hold
+            - csharp-hold
             - build-bindings-backend-windows
       - build-csharp-macos:
           filters:
             branches:
               only:
           requires:
-            - nuget-hold
+            - csharp-hold
             - build-bindings-backend-macos
       - store-and-upload-nupkgs:
           filters:
