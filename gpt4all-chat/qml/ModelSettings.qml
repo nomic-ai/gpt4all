@@ -463,7 +463,7 @@ MySettingsTab {
                 text: root.currentModelInfo.minP
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                ToolTip.text: qsTr("Sets the minimum probability value for a token to be considered.")
+                ToolTip.text: qsTr("Sets the minimum relative probability for a token to be considered.")
                 ToolTip.visible: hovered
                 Layout.row: 3
                 Layout.column: 1
