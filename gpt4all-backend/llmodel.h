@@ -66,7 +66,7 @@ public:
         int32_t n_predict = 200;
         int32_t top_k = 40;
         float   top_p = 0.9f;
-        float   min_p = 0.1f;
+        float   min_p = 0.0f;
         float   temp = 0.9f;
         int32_t n_batch = 9;
         float   repeat_penalty = 1.10f;

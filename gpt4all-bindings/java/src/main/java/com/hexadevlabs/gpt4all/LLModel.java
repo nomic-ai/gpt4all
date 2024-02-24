@@ -72,8 +72,8 @@ public  class LLModel implements AutoCloseable {
                 return this;
             }
 
-            public Builder withTopP(float min_p) {
-                configToBuild.top_p.set(min_p);
+            public Builder withMinP(float min_p) {
+                configToBuild.min_p.set(min_p);
                 return this;
             }
 
