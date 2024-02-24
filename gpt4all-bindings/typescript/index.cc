@@ -132,9 +132,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
             library_path = ".";
         }
         device = config_object.Get("device").As<Napi::String>();
-        if(device != "cpu" && !(config_object.Has("nCtx") && config_object.Get("nCtx").IsNumber())){
-          throw Napi::Error::New(env,"nCtx is a required option when creating a model on the gpu");
-        }
+
         nCtx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
         nGpuLayers = config_object.Get("ngl").As<Napi::Number>().Int32Value();
     }
