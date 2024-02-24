@@ -224,7 +224,6 @@ async function retrieveModel(modelName, options = {}) {
         verbose: true,
         ...options,
     };
-
     await mkdirp(retrieveOptions.modelPath);
 
     const modelFileName = appendBinSuffixIfMissing(modelName);
@@ -284,7 +283,6 @@ async function retrieveModel(modelName, options = {}) {
     } else {
         throw Error("Failed to retrieve model.");
     }
-
     return config;
 }
 
