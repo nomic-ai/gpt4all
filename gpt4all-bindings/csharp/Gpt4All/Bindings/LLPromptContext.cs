@@ -65,6 +65,15 @@ public unsafe class LLModelPromptContext
     }
 
     /// <summary>
+    /// min p sampling probability threshold
+    /// </summary>
+    public float MinP
+    {
+        get => _ctx.min_p;
+        set => _ctx.min_p = value;
+    }
+
+    /// <summary>
     /// temperature to adjust model's output distribution
     /// </summary>
     public float Temperature

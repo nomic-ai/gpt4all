@@ -289,6 +289,7 @@ class GPT4All:
         temp: float = 0.7,
         top_k: int = 40,
         top_p: float = 0.4,
+        min_p: float = 0.0,
         repeat_penalty: float = 1.18,
         repeat_last_n: int = 64,
         n_batch: int = 8,
@@ -305,6 +306,7 @@ class GPT4All:
             temp: The model temperature. Larger values increase creativity but decrease factuality.
             top_k: Randomly sample from the top_k most likely tokens at each generation step. Set this to 1 for greedy decoding.
             top_p: Randomly sample at each generation step from the top most likely tokens whose probabilities add up to top_p.
+            min_p: Randomly sample at each generation step from the top most likely tokens whose probabilities are at least min_p.
             repeat_penalty: Penalize the model for repetition. Higher values result in less repetition.
             repeat_last_n: How far in the models generation history to apply the repeat penalty.
             n_batch: Number of prompt tokens processed in parallel. Larger values decrease latency but increase resource requirements.
@@ -325,6 +327,7 @@ class GPT4All:
             temp=temp,
             top_k=top_k,
             top_p=top_p,
+            min_p=min_p,
             repeat_penalty=repeat_penalty,
             repeat_last_n=repeat_last_n,
             n_batch=n_batch,

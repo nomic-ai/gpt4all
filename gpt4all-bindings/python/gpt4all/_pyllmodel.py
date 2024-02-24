@@ -49,6 +49,7 @@ class LLModelPromptContext(ctypes.Structure):
         ("n_predict", ctypes.c_int32),
         ("top_k", ctypes.c_int32),
         ("top_p", ctypes.c_float),
+        ("min_p", ctypes.c_float),
         ("temp", ctypes.c_float),
         ("n_batch", ctypes.c_int32),
         ("repeat_penalty", ctypes.c_float),
@@ -241,6 +242,7 @@ class LLModel:
         n_predict: int = 4096,
         top_k: int = 40,
         top_p: float = 0.9,
+        min_p: float = 0.0,
         temp: float = 0.1,
         n_batch: int = 8,
         repeat_penalty: float = 1.2,
@@ -257,6 +259,7 @@ class LLModel:
                 n_predict=n_predict,
                 top_k=top_k,
                 top_p=top_p,
+                min_p=min_p,
                 temp=temp,
                 n_batch=n_batch,
                 repeat_penalty=repeat_penalty,
@@ -272,6 +275,7 @@ class LLModel:
         self.context.n_predict = n_predict
         self.context.top_k = top_k
         self.context.top_p = top_p
+        self.context.min_p = min_p
         self.context.temp = temp
         self.context.n_batch = n_batch
         self.context.repeat_penalty = repeat_penalty
@@ -297,6 +301,7 @@ class LLModel:
         n_predict: int = 4096,
         top_k: int = 40,
         top_p: float = 0.9,
+        min_p: float = 0.0,
         temp: float = 0.1,
         n_batch: int = 8,
         repeat_penalty: float = 1.2,
@@ -334,6 +339,7 @@ class LLModel:
             n_predict=n_predict,
             top_k=top_k,
             top_p=top_p,
+            min_p=min_p,
             temp=temp,
             n_batch=n_batch,
             repeat_penalty=repeat_penalty,

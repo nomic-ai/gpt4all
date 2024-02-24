@@ -568,16 +568,17 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
     const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
     const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
     const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
+    const float min_p = MySettings::globalInstance()->modelMinP(m_modelInfo);
     const float temp = MySettings::globalInstance()->modelTemperature(m_modelInfo);
     const int32_t n_batch = MySettings::globalInstance()->modelPromptBatchSize(m_modelInfo);
     const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
     const int32_t repeat_penalty_tokens = MySettings::globalInstance()->modelRepeatPenaltyTokens(m_modelInfo);
-    return promptInternal(collectionList, prompt, promptTemplate, n_predict, top_k, top_p, temp, n_batch,
+    return promptInternal(collectionList, prompt, promptTemplate, n_predict, top_k, top_p, min_p, temp, n_batch,
         repeat_penalty, repeat_penalty_tokens);
 }
 
 bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
-    int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
+    int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
     int32_t repeat_penalty_tokens)
 {
     if (!isModelLoaded())
@@ -608,6 +609,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     m_ctx.n_predict = n_predict;
     m_ctx.top_k = top_k;
     m_ctx.top_p = top_p;
+    m_ctx.min_p = min_p;
     m_ctx.temp = temp;
     m_ctx.n_batch = n_batch;
     m_ctx.repeat_penalty = repeat_penalty;
@@ -1020,6 +1022,7 @@ void ChatLLM::processSystemPrompt()
     const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
     const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
     const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
+    const float min_p = MySettings::globalInstance()->modelMinP(m_modelInfo);
     const float temp = MySettings::globalInstance()->modelTemperature(m_modelInfo);
     const int32_t n_batch = MySettings::globalInstance()->modelPromptBatchSize(m_modelInfo);
     const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
@@ -1028,6 +1031,7 @@ void ChatLLM::processSystemPrompt()
     m_ctx.n_predict = n_predict;
     m_ctx.top_k = top_k;
     m_ctx.top_p = top_p;
+    m_ctx.min_p = min_p;
     m_ctx.temp = temp;
     m_ctx.n_batch = n_batch;
     m_ctx.repeat_penalty = repeat_penalty;
@@ -1067,6 +1071,7 @@ void ChatLLM::processRestoreStateFromText()
     const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
     const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
     const float top_p = MySettings::globalInstance()->modelTopP(m_modelInfo);
+    const float min_p = MySettings::globalInstance()->modelMinP(m_modelInfo);
     const float temp = MySettings::globalInstance()->modelTemperature(m_modelInfo);
     const int32_t n_batch = MySettings::globalInstance()->modelPromptBatchSize(m_modelInfo);
     const float repeat_penalty = MySettings::globalInstance()->modelRepeatPenalty(m_modelInfo);
@@ -1075,6 +1080,7 @@ void ChatLLM::processRestoreStateFromText()
     m_ctx.n_predict = n_predict;
     m_ctx.top_k = top_k;
     m_ctx.top_p = top_p;
+    m_ctx.min_p = min_p;
     m_ctx.temp = temp;
     m_ctx.n_batch = n_batch;
     m_ctx.repeat_penalty = repeat_penalty;
