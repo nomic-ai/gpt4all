@@ -818,7 +818,7 @@ QString ModelList::clone(const ModelInfo &model)
     updateData(id, ModelList::MaxLengthRole, model.maxLength());
     updateData(id, ModelList::PromptBatchSizeRole, model.promptBatchSize());
     updateData(id, ModelList::ContextLengthRole, model.contextLength());
-    updateData(id, ModelList::GpuLayersRole, model.contextLength());
+    updateData(id, ModelList::GpuLayersRole, model.gpuLayers());
     updateData(id, ModelList::RepeatPenaltyRole, model.repeatPenalty());
     updateData(id, ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens());
     updateData(id, ModelList::PromptTemplateRole, model.promptTemplate());
