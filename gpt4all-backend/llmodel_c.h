@@ -39,6 +39,7 @@ struct llmodel_prompt_context {
     int32_t n_predict;      // number of tokens to predict
     int32_t top_k;          // top k logits to sample from
     float top_p;            // nucleus sampling probability threshold
+    float min_p;            // Min P sampling
     float temp;             // temperature to adjust model's output distribution
     int32_t n_batch;        // number of predictions to generate in parallel
     float repeat_penalty;   // penalty factor for repeated tokens
@@ -163,16 +164,20 @@ uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src);
  * Generate a response using the model.
  * @param model A pointer to the llmodel_model instance.
  * @param prompt A string representing the input prompt.
+ * @param prompt_template A string representing the input prompt template.
  * @param prompt_callback A callback function for handling the processing of prompt.
  * @param response_callback A callback function for handling the generated response.
  * @param recalculate_callback A callback function for handling recalculation requests.
+ * @param special True if special tokens in the prompt should be processed, false otherwise.
  * @param ctx A pointer to the llmodel_prompt_context structure.
  */
 void llmodel_prompt(llmodel_model model, const char *prompt,
+                    const char *prompt_template,
                     llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
                     llmodel_recalculate_callback recalculate_callback,
-                    llmodel_prompt_context *ctx);
+                    llmodel_prompt_context *ctx,
+                    bool special);
 
 /**
  * Generate an embedding using the model.

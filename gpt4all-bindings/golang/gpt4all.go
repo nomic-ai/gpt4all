@@ -7,7 +7,7 @@ package gpt4all
 // #cgo LDFLAGS: -lgpt4all -lm -lstdc++ -ldl
 // void* load_model(const char *fname, int n_threads);
 // void model_prompt( const char *prompt, void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, int top_k,
-//                            float top_p, float temp, int n_batch,float ctx_erase);
+//                            float top_p, float min_p, float temp, int n_batch,float ctx_erase);
 // void free_model(void *state_ptr);
 // extern unsigned char getTokenCallback(void *, char *);
 // void llmodel_set_implementation_search_path(const char *path);
@@ -58,7 +58,7 @@ func (l *Model) Predict(text string, opts ...PredictOption) (string, error) {
 	out := make([]byte, po.Tokens)
 
 	C.model_prompt(input, l.state, (*C.char)(unsafe.Pointer(&out[0])), C.int(po.RepeatLastN), C.float(po.RepeatPenalty), C.int(po.ContextSize),
-		C.int(po.Tokens), C.int(po.TopK), C.float(po.TopP), C.float(po.Temperature), C.int(po.Batch), C.float(po.ContextErase))
+		C.int(po.Tokens), C.int(po.TopK), C.float(po.TopP), C.float(po.MinP), C.float(po.Temperature), C.int(po.Batch), C.float(po.ContextErase))
 
 	res := C.GoString((*C.char)(unsafe.Pointer(&out[0])))
 	res = strings.TrimPrefix(res, " ")

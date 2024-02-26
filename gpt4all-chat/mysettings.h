@@ -47,6 +47,8 @@ public:
     Q_INVOKABLE void setModelTemperature(const ModelInfo &m, double t, bool force = false);
     double modelTopP(const ModelInfo &m) const;
     Q_INVOKABLE void setModelTopP(const ModelInfo &m, double p, bool force = false);
+    double modelMinP(const ModelInfo &m) const;
+    Q_INVOKABLE void setModelMinP(const ModelInfo &m, double p, bool force = false);
     int modelTopK(const ModelInfo &m) const;
     Q_INVOKABLE void setModelTopK(const ModelInfo &m, int k, bool force = false);
     int modelMaxLength(const ModelInfo &m) const;
@@ -110,8 +112,6 @@ public:
     bool networkUsageStatsActive() const;
     void setNetworkUsageStatsActive(bool b);
 
-    QString attemptModelLoad() const;
-    void setAttemptModelLoad(const QString &modelFile);
 
     QVector<QString> deviceList() const;
     void setDeviceList(const QVector<QString> &deviceList);
@@ -121,6 +121,7 @@ Q_SIGNALS:
     void filenameChanged(const ModelInfo &model);
     void temperatureChanged(const ModelInfo &model);
     void topPChanged(const ModelInfo &model);
+    void minPChanged(const ModelInfo &model);
     void topKChanged(const ModelInfo &model);
     void maxLengthChanged(const ModelInfo &model);
     void promptBatchSizeChanged(const ModelInfo &model);

@@ -81,6 +81,8 @@ public:
 
     bool shouldBeLoaded() const { return m_shouldBeLoaded; }
     void setShouldBeLoaded(bool b);
+    void setShouldTrySwitchContext(bool b);
+    void setForceUnloadModel(bool b) { m_forceUnloadModel = b; }
 
     QString response() const;
 
@@ -98,14 +100,15 @@ public:
 public Q_SLOTS:
     bool prompt(const QList<QString> &collectionList, const QString &prompt);
     bool loadDefaultModel();
+    bool trySwitchContextOfLoadedModel(const ModelInfo &modelInfo);
     bool loadModel(const ModelInfo &modelInfo);
     void modelChangeRequested(const ModelInfo &modelInfo);
-    void forceUnloadModel();
     void unloadModel();
     void reloadModel();
     void generateName();
     void handleChatIdChanged(const QString &id);
     void handleShouldBeLoadedChanged();
+    void handleShouldTrySwitchContextChanged();
     void handleThreadStarted();
     void handleForceMetalChanged(bool forceMetal);
     void handleDeviceChanged();
@@ -114,7 +117,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void recalcChanged();
-    void isModelLoadedChanged(bool);
+    void modelLoadingPercentageChanged(float);
     void modelLoadingError(const QString &error);
     void responseChanged(const QString &response);
     void promptProcessing();
@@ -125,6 +128,8 @@ Q_SIGNALS:
     void stateChanged();
     void threadStarted();
     void shouldBeLoadedChanged();
+    void shouldTrySwitchContextChanged();
+    void trySwitchContextOfLoadedModelCompleted(bool);
     void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void reportSpeed(const QString &speed);
     void reportDevice(const QString &device);
@@ -134,7 +139,7 @@ Q_SIGNALS:
 
 protected:
     bool promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
-        int32_t n_predict, int32_t top_k, float top_p, float temp, int32_t n_batch, float repeat_penalty,
+        int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
         int32_t repeat_penalty_tokens);
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
@@ -167,7 +172,9 @@ private:
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;
+    std::atomic<bool> m_shouldTrySwitchContext;
     std::atomic<bool> m_isRecalc;
+    std::atomic<bool> m_forceUnloadModel;
     bool m_isServer;
     bool m_forceMetal;
     bool m_reloadingToChangeVariant;

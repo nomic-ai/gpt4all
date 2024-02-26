@@ -1,8 +1,9 @@
 #include "llmodel_c.h"
 #include "llmodel.h"
 
-#include <cstring>
 #include <cerrno>
+#include <cstring>
+#include <iostream>
 #include <utility>
 
 struct LLModelWrapper {
@@ -56,7 +57,14 @@ size_t llmodel_required_mem(llmodel_model model, const char *model_path, int n_c
 bool llmodel_loadModel(llmodel_model model, const char *model_path, int n_ctx, int ngl)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
-    return wrapper->llModel->loadModel(model_path, n_ctx, ngl);
+
+    std::string modelPath(model_path);
+    if (wrapper->llModel->isModelBlacklisted(modelPath)) {
+        size_t slash = modelPath.find_last_of("/\\");
+        auto basename = slash == std::string::npos ? modelPath : modelPath.substr(slash + 1);
+        std::cerr << "warning: model '" << basename << "' is out-of-date, please check for an updated version\n";
+    }
+    return wrapper->llModel->loadModel(modelPath, n_ctx, ngl);
 }
 
 bool llmodel_isModelLoaded(llmodel_model model)
@@ -100,10 +108,12 @@ bool recalculate_wrapper(bool is_recalculating, void *user_data) {
 }
 
 void llmodel_prompt(llmodel_model model, const char *prompt,
+                    const char *prompt_template,
                     llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
                     llmodel_recalculate_callback recalculate_callback,
-                    llmodel_prompt_context *ctx)
+                    llmodel_prompt_context *ctx,
+                    bool special)
 {
     LLModelWrapper *wrapper = reinterpret_cast<LLModelWrapper*>(model);
 
@@ -124,6 +134,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     wrapper->promptContext.n_predict = ctx->n_predict;
     wrapper->promptContext.top_k = ctx->top_k;
     wrapper->promptContext.top_p = ctx->top_p;
+    wrapper->promptContext.min_p = ctx->min_p;
     wrapper->promptContext.temp = ctx->temp;
     wrapper->promptContext.n_batch = ctx->n_batch;
     wrapper->promptContext.repeat_penalty = ctx->repeat_penalty;
@@ -131,7 +142,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     wrapper->promptContext.contextErase = ctx->context_erase;
 
     // Call the C++ prompt method
-    wrapper->llModel->prompt(prompt, prompt_func, response_func, recalc_func, wrapper->promptContext);
+    wrapper->llModel->prompt(prompt, prompt_template, prompt_func, response_func, recalc_func, wrapper->promptContext, special);
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data
     // which involves no copies
@@ -146,6 +157,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     ctx->n_predict = wrapper->promptContext.n_predict;
     ctx->top_k = wrapper->promptContext.top_k;
     ctx->top_p = wrapper->promptContext.top_p;
+    ctx->min_p = wrapper->promptContext.min_p;
     ctx->temp = wrapper->promptContext.temp;
     ctx->n_batch = wrapper->promptContext.n_batch;
     ctx->repeat_penalty = wrapper->promptContext.repeat_penalty;

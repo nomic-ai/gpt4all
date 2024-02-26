@@ -29,6 +29,8 @@ public unsafe partial struct llmodel_prompt_context
 
     public float top_p;
 
+    public float min_p;
+
     public float temp;
 
     [NativeTypeName("int32_t")]

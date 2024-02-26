@@ -12,6 +12,7 @@ public static class PredictRequestOptionsExtensions
             TokensSize = opts.TokensSize,
             TopK = opts.TopK,
             TopP = opts.TopP,
+            MinP = opts.MinP,
             PastNum = opts.PastConversationTokensNum,
             RepeatPenalty = opts.RepeatPenalty,
             Temperature = opts.Temperature,

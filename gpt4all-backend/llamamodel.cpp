@@ -6,38 +6,29 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
-#include <map>
-#include <string>
-#include <vector>
+#include <iomanip>
 #include <iostream>
-#if defined(_WIN32) && defined(_MSC_VER)
-    #define WIN32_LEAN_AND_MEAN
-    #ifndef NOMINMAX
-        #define NOMINMAX
-    #endif
-    #include <windows.h>
-    #include <io.h>
-    #include <stdio.h>
-#else
-    #include <unistd.h>
-#endif
+#include <map>
 #include <random>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 #include <thread>
 #include <unordered_set>
+#include <vector>
 
 #include <llama.h>
 #include <ggml.h>
-
 #ifdef GGML_USE_KOMPUTE
-#include "ggml-kompute.h"
+#include <ggml-kompute.h>
 #endif
+
+using namespace std::string_literals;
 
 // Maximum supported GGUF version
 static constexpr int GGUF_VER_MAX = 3;
 
-namespace {
-const char *modelType_ = "LLaMA";
-}
+static const char * const modelType_ = "LLaMA";
 
 static bool llama_verbose() {
     const char* var = getenv("GPT4ALL_VERBOSE_LLAMACPP");
@@ -73,6 +64,7 @@ static int llama_sample_top_p_top_k(
         int last_n_tokens_size,
         int top_k,
         float top_p,
+        float min_p,
         float temp,
         float repeat_penalty,
         int32_t pos) {
@@ -92,8 +84,61 @@ static int llama_sample_top_p_top_k(
     llama_sample_tail_free(ctx, &candidates_p, 1.0f, 1);
     llama_sample_typical(ctx, &candidates_p, 1.0f, 1);
     llama_sample_top_p(ctx, &candidates_p, top_p, 1);
+    llama_sample_min_p(ctx, &candidates_p, min_p, 1);
     llama_sample_temp(ctx, &candidates_p, temp);
     return llama_sample_token(ctx, &candidates_p);
+}
+
+std::string get_arch_name(gguf_context *ctx_gguf) {
+    std::string arch_name;
+    const int kid = gguf_find_key(ctx_gguf, "general.architecture");
+    enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
+    if (ktype != (GGUF_TYPE_STRING)) {
+        throw std::runtime_error("ERROR: Can't get general architecture from gguf file.");
+    }
+    return gguf_get_val_str(ctx_gguf, kid);
+}
+
+static gguf_context *load_gguf(const char *fname) {
+    struct gguf_init_params params = {
+        /*.no_alloc = */ true,
+        /*.ctx      = */ nullptr,
+    };
+    gguf_context *ctx = gguf_init_from_file(fname, params);
+    if (!ctx) {
+        std::cerr << __func__ << ": gguf_init_from_file failed\n";
+        return nullptr;
+    }
+
+    int gguf_ver = gguf_get_version(ctx);
+    if (gguf_ver > GGUF_VER_MAX) {
+        std::cerr << __func__ << ": unsupported gguf version: " << gguf_ver << "\n";
+        gguf_free(ctx);
+        return nullptr;
+    }
+
+    return ctx;
+}
+
+static int32_t get_arch_key_u32(std::string const &modelPath, std::string const &archKey) {
+    auto * ctx = load_gguf(modelPath.c_str());
+    if (!ctx)
+        return -1;
+    auto arch = get_arch_name(ctx);
+
+    int32_t value = -1;
+    if (ctx) {
+        auto key = arch + "." + archKey;
+        int keyidx = gguf_find_key(ctx, key.c_str());
+        if (keyidx != -1) {
+            value = gguf_get_val_u32(ctx, keyidx);
+        } else {
+            std::cerr << __func__ << ": " << key << "not found in " << modelPath << "\n";
+        }
+    }
+
+    gguf_free(ctx);
+    return value;
 }
 
 struct LLamaPrivate {
@@ -148,6 +193,42 @@ size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
     return filesize + est_kvcache_size;
 }
 
+bool LLamaModel::isModelBlacklisted(const std::string &modelPath) {
+    auto * ctx = load_gguf(modelPath.c_str());
+    if (!ctx) {
+        std::cerr << __func__ << ": failed to load " << modelPath << "\n";
+        return false;
+    }
+
+    auto get_key = [ctx, &modelPath](const char *name) {
+        int keyidx = gguf_find_key(ctx, name);
+        if (keyidx == -1) {
+            throw std::logic_error(name + " not found in "s + modelPath);
+        }
+        return keyidx;
+    };
+
+    bool res = false;
+    try {
+        std::string name(gguf_get_val_str(ctx, get_key("general.name")));
+        int token_idx = get_key("tokenizer.ggml.tokens");
+        int n_vocab = gguf_get_arr_n(ctx, token_idx);
+
+        // check for known bad models
+        if (name == "open-orca_mistral-7b-openorca"
+            && n_vocab == 32002
+            && gguf_get_arr_str(ctx, token_idx, 32000) == "<dummy32000>"s // should be <|im_end|>
+        ) {
+            res = true;
+        }
+    } catch (const std::logic_error &e) {
+        std::cerr << __func__ << ": " << e.what() << "\n";
+    }
+
+    gguf_free(ctx);
+    return res;
+}
+
 bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
     d_ptr->modelLoaded = false;
@@ -180,7 +261,17 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->model_params.use_mlock = params.use_mlock;
 #endif
 
-#ifdef GGML_USE_METAL
+    d_ptr->model_params.progress_callback = &LLModel::staticProgressCallback;
+    d_ptr->model_params.progress_callback_user_data = this;
+
+#ifdef GGML_USE_KOMPUTE
+    if (d_ptr->device != -1) {
+        d_ptr->model_params.main_gpu = d_ptr->device;
+        d_ptr->model_params.n_gpu_layers = ngl;
+    }
+#elif defined(GGML_USE_METAL)
+    (void)ngl;
+
     if (llama_verbose()) {
         std::cerr << "llama.cpp: using Metal" << std::endl;
     }
@@ -188,11 +279,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     // always fully offload on Metal
     // TODO(cebtenzzre): use this parameter to allow using more than 53% of system RAM to load a model
     d_ptr->model_params.n_gpu_layers = 100;
-#elif defined(GGML_USE_KOMPUTE)
-    if (d_ptr->device != -1) {
-        d_ptr->model_params.main_gpu = d_ptr->device;
-        d_ptr->model_params.n_gpu_layers = ngl;
-    }
+#else
+    (void)ngl;
 #endif
 
     d_ptr->model = llama_load_model_from_file_gpt4all(modelPath.c_str(), &d_ptr->model_params);
@@ -287,12 +375,13 @@ size_t LLamaModel::restoreState(const uint8_t *src)
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
-std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str) const
+std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str, bool special) const
 {
-    const bool useBOS = ctx.n_past == 0 && (ctx.tokens.empty() || ctx.tokens.front() != llama_token_bos(d_ptr->model));
-    std::vector<LLModel::Token> fres(str.size()+4);
-    // TODO(cebtenzzre): we may want to use special=true here to process special tokens
-    auto fres_len = llama_tokenize(d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), useBOS, false);
+    const bool wantBOS = ctx.n_past == 0 && ctx.tokens.empty();
+    const bool useBOS = wantBOS && shouldAddBOS();
+    auto strCat = wantBOS && !special ? " " + str : str; // insert leading space ourselves, llama.cpp fork doesn't anymore
+    std::vector<LLModel::Token> fres(strCat.size()+4);
+    auto fres_len = llama_tokenize(d_ptr->model, strCat.c_str(), strCat.length(), fres.data(), fres.size(), useBOS, special);
     fres.resize(fres_len);
     return fres;
 }
@@ -307,7 +396,7 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return llama_sample_top_p_top_k(d_ptr->ctx,
         promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
-        n_prev_toks, promptCtx.top_k, promptCtx.top_p, promptCtx.temp,
+        n_prev_toks, promptCtx.top_k, promptCtx.top_p, promptCtx.min_p, promptCtx.temp,
         promptCtx.repeat_penalty, promptCtx.n_last_batch_tokens - 1);
 }
 
@@ -346,55 +435,10 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
     return d_ptr->end_tokens;
 }
 
-std::string get_arch_name(gguf_context *ctx_gguf) {
-    std::string arch_name;
-    const int kid = gguf_find_key(ctx_gguf, "general.architecture");
-    enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
-    if (ktype != (GGUF_TYPE_STRING)) {
-        throw std::runtime_error("ERROR: Can't get general architecture from gguf file.");
-    }
-    return gguf_get_val_str(ctx_gguf, kid);
-}
-
-static gguf_context *load_gguf(const char *fname, std::string &arch) {
-    struct gguf_init_params params = {
-        /*.no_alloc = */ true,
-        /*.ctx      = */ nullptr,
-    };
-    gguf_context *ctx = gguf_init_from_file(fname, params);
-    if (!ctx) {
-        std::cerr << __func__ << ": gguf_init_from_file failed\n";
-        return nullptr;
-    }
-
-    int gguf_ver = gguf_get_version(ctx);
-    if (gguf_ver > GGUF_VER_MAX) {
-        std::cerr << __func__ << ": unsupported gguf version: " << gguf_ver << "\n";
-        gguf_free(ctx);
-        return nullptr;
-    }
-
-    arch = get_arch_name(ctx);
-    return ctx;
-}
-
-static int32_t get_arch_key_u32(std::string const &modelPath, std::string const &archKey) {
-    std::string arch;
-    auto * ctx = load_gguf(modelPath.c_str(), arch);
-
-    int32_t value = -1;
-    if (ctx) {
-        auto key = arch + "." + archKey;
-        int keyidx = gguf_find_key(ctx, key.c_str());
-        if (keyidx != -1) {
-            value = gguf_get_val_u32(ctx, keyidx);
-        } else {
-            std::cerr << __func__ << ": " << key << "not found in " << modelPath << "\n";
-        }
-    }
-
-    gguf_free(ctx);
-    return value;
+bool LLamaModel::shouldAddBOS() const
+{
+    int add_bos = llama_add_bos_token(d_ptr->model);
+    return add_bos != -1 ? bool(add_bos) : llama_vocab_type(d_ptr->model) == LLAMA_VOCAB_TYPE_SPM;
 }
 
 int32_t LLamaModel::maxContextLength(std::string const &modelPath) const
@@ -433,6 +477,7 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
         return devices;
     }
 #else
+    (void)memoryRequired;
     std::cerr << __func__ << ": built without Kompute\n";
 #endif
 
@@ -510,14 +555,14 @@ DLL_EXPORT const char *get_build_variant() {
 }
 
 DLL_EXPORT bool magic_match(const char *fname) {
-    std::string arch;
-    auto * ctx = load_gguf(fname, arch);
+    auto * ctx = load_gguf(fname);
+    auto arch = get_arch_name(ctx);
 
     bool valid = true;
 
     static const std::vector<const char *> known_arches {
-        "baichuan", "bloom", "codeshell", "falcon", "gpt2", "llama", "mpt", "orion", "persimmon", "phi2", "plamo",
-        "qwen", "qwen2", "refact", "stablelm", "starcoder"
+        "baichuan", "bloom", "codeshell", "falcon", "gemma", "gpt2", "llama", "mpt", "orion", "persimmon", "phi2",
+        "plamo", "qwen", "qwen2", "refact", "stablelm", "starcoder"
     };
 
     if (std::find(known_arches.begin(), known_arches.end(), arch) == known_arches.end()) {

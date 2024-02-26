@@ -75,13 +75,18 @@ size_t ChatGPT::restoreState(const uint8_t *src)
 }
 
 void ChatGPT::prompt(const std::string &prompt,
+        const std::string &promptTemplate,
         std::function<bool(int32_t)> promptCallback,
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
-        PromptContext &promptCtx) {
+        PromptContext &promptCtx,
+        bool special,
+        std::string *fakeReply) {
 
     Q_UNUSED(promptCallback);
     Q_UNUSED(recalculateCallback);
+    Q_UNUSED(special);
+    Q_UNUSED(fakeReply); // FIXME(cebtenzzre): I broke ChatGPT
 
     if (!isModelLoaded()) {
         std::cerr << "ChatGPT ERROR: prompt won't work with an unloaded model!\n";
@@ -109,7 +114,7 @@ void ChatGPT::prompt(const std::string &prompt,
 
     QJsonObject promptObject;
     promptObject.insert("role", "user");
-    promptObject.insert("content", QString::fromStdString(prompt));
+    promptObject.insert("content", QString::fromStdString(promptTemplate).arg(QString::fromStdString(prompt)));
     messages.append(promptObject);
     root.insert("messages", messages);
 

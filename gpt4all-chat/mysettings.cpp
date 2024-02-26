@@ -87,6 +87,7 @@ void MySettings::restoreModelDefaults(const ModelInfo &model)
 {
     setModelTemperature(model, model.m_temperature);
     setModelTopP(model, model.m_topP);
+    setModelMinP(model, model.m_minP);
     setModelTopK(model, model.m_topK);;
     setModelMaxLength(model, model.m_maxLength);
     setModelPromptBatchSize(model, model.m_promptBatchSize);
@@ -201,6 +202,13 @@ double MySettings::modelTopP(const ModelInfo &m) const
     return setting.value(QString("model-%1").arg(m.id()) + "/topP", m.m_topP).toDouble();
 }
 
+double MySettings::modelMinP(const ModelInfo &m) const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value(QString("model-%1").arg(m.id()) + "/minP", m.m_minP).toDouble();
+}
+
 void MySettings::setModelTopP(const ModelInfo &m, double p, bool force)
 {
     if (modelTopP(m) == p && !force)
@@ -214,6 +222,21 @@ void MySettings::setModelTopP(const ModelInfo &m, double p, bool force)
     setting.sync();
     if (!force)
         emit topPChanged(m);
+}
+
+void MySettings::setModelMinP(const ModelInfo &m, double p, bool force)
+{
+    if (modelMinP(m) == p && !force)
+        return;
+
+    QSettings setting;
+    if (m.m_minP == p && !m.isClone)
+        setting.remove(QString("model-%1").arg(m.id()) + "/minP");
+    else
+        setting.setValue(QString("model-%1").arg(m.id()) + "/minP", p);
+    setting.sync();
+    if (!force)
+        emit minPChanged(m);
 }
 
 int MySettings::modelTopK(const ModelInfo &m) const
@@ -716,25 +739,4 @@ void MySettings::setNetworkUsageStatsActive(bool b)
     setting.setValue("network/usageStatsActive", b);
     setting.sync();
     emit networkUsageStatsActiveChanged();
-}
-
-QString MySettings::attemptModelLoad() const
-{
-    QSettings setting;
-    setting.sync();
-    return setting.value("attemptModelLoad", QString()).toString();
-}
-
-void MySettings::setAttemptModelLoad(const QString &modelFile)
-{
-    if (attemptModelLoad() == modelFile)
-        return;
-
-    QSettings setting;
-    if (modelFile.isEmpty())
-        setting.remove("attemptModelLoad");
-    else
-        setting.setValue("attemptModelLoad", modelFile);
-    setting.sync();
-    emit attemptModelLoadChanged();
 }

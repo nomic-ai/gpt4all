@@ -246,90 +246,6 @@ To do the same outside a session, the input has to be formatted manually. For ex
     The colors in my previous response are blue, green and red.
     ```
 
-Ultimately, the method `GPT4All._format_chat_prompt_template()` is responsible for formatting templates. It can be
-customized in a subclass. As an example:
-
-=== "Custom Subclass"
-    ``` py
-    from itertools import cycle
-    from gpt4all import GPT4All
-
-    class RotatingTemplateGPT4All(GPT4All):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self._templates = [
-                "Respond like a pirate.",
-                "Respond like a politician.",
-                "Respond like a philosopher.",
-                "Respond like a Klingon.",
-            ]
-            self._cycling_templates = cycle(self._templates)
-
-        def _format_chat_prompt_template(
-            self,
-            messages: list,
-            default_prompt_header: str = "",
-            default_prompt_footer: str = "",
-        ) -> str:
-            full_prompt = default_prompt_header + "\n\n" if default_prompt_header != "" else ""
-            for message in messages:
-                if message["role"] == "user":
-                    user_message = f"USER: {message['content']} {next(self._cycling_templates)}\n"
-                    full_prompt += user_message
-                if message["role"] == "assistant":
-                    assistant_message = f"ASSISTANT: {message['content']}\n"
-                    full_prompt += assistant_message
-            full_prompt += "\n\n" + default_prompt_footer if default_prompt_footer != "" else ""
-            print(full_prompt)
-            return full_prompt
-    ```
-=== "GPT4All Custom Subclass Example"
-    ``` py
-    model = RotatingTemplateGPT4All('wizardlm-13b-v1.2.Q4_0.gguf')
-    with model.chat_session():  # starting a session is optional in this example
-        response1 = model.generate("hi, who are you?")
-        print(response1)
-        print()
-        response2 = model.generate("what can you tell me about snakes?")
-        print(response2)
-        print()
-        response3 = model.generate("what's your opinion on Chess?")
-        print(response3)
-        print()
-        response4 = model.generate("tell me about ancient Rome.")
-        print(response4)
-    ```
-=== "Possible Output"
-    ```
-    USER: hi, who are you? Respond like a pirate.
-
-    Pirate: Ahoy there mateys! I be Cap'n Jack Sparrow of the Black Pearl.
-
-    USER: what can you tell me about snakes? Respond like a politician.
-
-    Politician: Snakes have been making headlines lately due to their ability to
-    slither into tight spaces and evade capture, much like myself during my last
-    election campaign. However, I believe that with proper education and
-    understanding of these creatures, we can work together towards creating a
-    safer environment for both humans and snakes alike.
-
-    USER: what's your opinion on Chess? Respond like a philosopher.
-
-    Philosopher: The game of chess is often used as an analogy to illustrate the
-    complexities of life and decision-making processes. However, I believe that it
-    can also be seen as a reflection of our own consciousness and subconscious mind.
-    Just as each piece on the board has its unique role to play in shaping the
-    outcome of the game, we too have different roles to fulfill in creating our own
-    personal narrative.
-
-    USER: tell me about ancient Rome. Respond like a Klingon.
-
-    Klingon: Ancient Rome was once a great empire that ruled over much of Europe and
-    the Mediterranean region. However, just as the Empire fell due to internal strife
-    and external threats, so too did my own house come crashing down when I failed to
-    protect our homeworld from invading forces.
-    ```
-
 
 ### Introspection
 A less apparent feature is the capacity to log the final prompt that gets sent to the model. It relies on
@@ -347,7 +263,7 @@ logging infrastructure offers [many more customization options][py-logging-cookb
     logging.basicConfig(level=logging.INFO)
     model = GPT4All('nous-hermes-llama2-13b.Q4_0.gguf')
     with model.chat_session('You are a geography expert.\nBe terse.',
-                            '### Instruction:\n{0}\n### Response:\n'):
+                            '### Instruction:\n{0}\n\n### Response:\n'):
         response = model.generate('who are you?', temp=0)
         print(response)
         response = model.generate('what are your favorite 3 mountains?', temp=0)
@@ -361,6 +277,7 @@ logging infrastructure offers [many more customization options][py-logging-cookb
 
     ### Instruction:
     who are you?
+
     ### Response:
 
     ===/LLModel.prompt_model -- prompt/===
@@ -368,6 +285,7 @@ logging infrastructure offers [many more customization options][py-logging-cookb
     INFO:gpt4all.pyllmodel:LLModel.prompt_model -- prompt:
     ### Instruction:
     what are your favorite 3 mountains?
+
     ### Response:
 
     ===/LLModel.prompt_model -- prompt/===
@@ -399,10 +317,10 @@ are used instead of model-specific system and prompt templates:
 === "Output"
     ```
     default system template: ''
-    default prompt template: '### Human: \n{0}\n### Assistant:\n'
+    default prompt template: '### Human: \n{0}\n\n### Assistant:\n'
 
     session system template: ''
-    session prompt template: '### Human: \n{0}\n### Assistant:\n'
+    session prompt template: '### Human: \n{0}\n\n### Assistant:\n'
     ```
 
 

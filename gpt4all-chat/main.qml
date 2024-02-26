@@ -21,6 +21,14 @@ Window {
     visible: true
     title: qsTr("GPT4All v") + Qt.application.version
 
+
+    Settings {
+        property alias x: window.x
+        property alias y: window.y
+        property alias width: window.width
+        property alias height: window.height
+    }
+
     Theme {
         id: theme
     }
@@ -125,6 +133,14 @@ Window {
             return;
         }
     }
+
+    function currentModelName() {
+        return ModelList.modelInfo(currentChat.modelInfo.id).name;
+    }
+
+    property bool isCurrentlyLoading: false
+    property real modelLoadingPercentage: 0.0
+    property bool trySwitchContextInProgress: false
 
     PopupDialog {
         id: errorCompatHardware
@@ -282,6 +298,16 @@ Window {
         }
     }
 
+    SwitchModelDialog {
+        id: switchModelDialog
+        anchors.centerIn: parent
+        Item {
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTr("Switch model dialog")
+            Accessible.description: qsTr("Warn the user if they switch models, then context will be erased")
+        }
+    }
+
     Rectangle {
         id: header
         anchors.left: parent.left
@@ -292,7 +318,7 @@ Window {
         Item {
             anchors.centerIn: parent
             height: childrenRect.height
-            visible: currentChat.isModelLoaded || currentChat.modelLoadingError !== "" || currentChat.isServer
+            visible: true
 
             Label {
                 id: modelLabel
@@ -306,102 +332,174 @@ Window {
                 horizontalAlignment: TextInput.AlignRight
             }
 
-            MyComboBox {
-                id: comboBox
-                implicitWidth: 375
-                width: window.width >= 750 ? implicitWidth : implicitWidth - ((750 - window.width))
+            RowLayout {
+                id: comboLayout
                 anchors.top: modelLabel.top
                 anchors.bottom: modelLabel.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.horizontalCenterOffset: window.width >= 950 ? 0 : Math.max(-((950 - window.width) / 2), -99.5)
-                enabled: !currentChat.isServer
-                model: ModelList.installedModels
-                valueRole: "id"
-                textRole: "name"
-                property string currentModelName: ""
-                function updateCurrentModelName() {
-                    var info = ModelList.modelInfo(currentChat.modelInfo.id);
-                    comboBox.currentModelName = info.name;
-                }
-                Connections {
-                    target: currentChat
-                    function onModelInfoChanged() {
-                        comboBox.updateCurrentModelName();
+                spacing: 20
+
+                MyComboBox {
+                    id: comboBox
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    implicitWidth: 575
+                    width: window.width >= 750 ? implicitWidth : implicitWidth - (750 - window.width)
+                    enabled: !currentChat.isServer
+                        && !window.trySwitchContextInProgress
+                        && !window.isCurrentlyLoading
+                    model: ModelList.installedModels
+                    valueRole: "id"
+                    textRole: "name"
+
+                    function changeModel(index) {
+                        window.modelLoadingPercentage = 0.0;
+                        window.isCurrentlyLoading = true;
+                        currentChat.stopGenerating()
+                        currentChat.reset();
+                        currentChat.modelInfo = ModelList.modelInfo(comboBox.valueAt(index))
                     }
-                }
-                Connections {
-                    target: window
-                    function onCurrentChatChanged() {
-                        comboBox.updateCurrentModelName();
+
+                    Connections {
+                        target: currentChat
+                        function onModelLoadingPercentageChanged() {
+                            window.modelLoadingPercentage = currentChat.modelLoadingPercentage;
+                            window.isCurrentlyLoading = currentChat.modelLoadingPercentage !== 0.0
+                                && currentChat.modelLoadingPercentage !== 1.0;
+                        }
+                        function onTrySwitchContextOfLoadedModelAttempted() {
+                            window.trySwitchContextInProgress = true;
+                        }
+                        function onTrySwitchContextOfLoadedModelCompleted() {
+                            window.trySwitchContextInProgress = false;
+                        }
                     }
-                }
-                background: Rectangle {
-                    color: theme.mainComboBackground
-                    radius: 10
-                }
-                contentItem: Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    leftPadding: 10
-                    rightPadding: 20
-                    text: currentChat.modelLoadingError !== ""
-                        ? qsTr("Model loading error...")
-                        : comboBox.currentModelName
-                    font.pixelSize: theme.fontSizeLarger
-                    color: theme.white
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                }
-                delegate: ItemDelegate {
-                    width: comboBox.width
+                    Connections {
+                        target: switchModelDialog
+                        function onAccepted() {
+                            comboBox.changeModel(switchModelDialog.index)
+                        }
+                    }
+
+                    background: ProgressBar {
+                        id: modelProgress
+                        value: window.modelLoadingPercentage
+                        background: Rectangle {
+                            color: theme.mainComboBackground
+                            radius: 10
+                        }
+                        contentItem: Item {
+                            Rectangle {
+                                visible: window.isCurrentlyLoading
+                                anchors.bottom: parent.bottom
+                                width: modelProgress.visualPosition * parent.width
+                                height: 10
+                                radius: 2
+                                color: theme.progressForeground
+                            }
+                        }
+                    }
                     contentItem: Text {
-                        text: name
-                        color: theme.textColor
-                        font: comboBox.font
-                        elide: Text.ElideRight
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        leftPadding: 10
+                        rightPadding: {
+                            if (ejectButton.visible && reloadButton)
+                                return 105;
+                            if (reloadButton.visible)
+                                return 65
+                            return 25
+                        }
+                        text: {
+                            if (currentChat.modelLoadingError !== "")
+                                return qsTr("Model loading error...")
+                            if (window.trySwitchContextInProgress)
+                                return qsTr("Switching context...")
+                            if (currentModelName() === "")
+                                return qsTr("Choose a model...")
+                            if (currentChat.modelLoadingPercentage === 0.0)
+                                return qsTr("Reload \u00B7 ") + currentModelName()
+                            if (window.isCurrentlyLoading)
+                                return qsTr("Loading \u00B7 ") + currentModelName()
+                            return currentModelName()
+                        }
+                        font.pixelSize: theme.fontSizeLarger
+                        color: theme.white
                         verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        elide: Text.ElideRight
                     }
-                    background: Rectangle {
-                        color: (index % 2 === 0 ? theme.darkContrast : theme.lightContrast)
-                        border.width: highlighted
-                        border.color: theme.accentColor
+                    delegate: ItemDelegate {
+                        id: comboItemDelegate
+                        width: comboBox.width
+                        contentItem: Text {
+                            text: name
+                            color: theme.textColor
+                            font: comboBox.font
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: (index % 2 === 0 ? theme.darkContrast : theme.lightContrast)
+                            border.width: highlighted
+                            border.color: theme.accentColor
+                        }
+                        highlighted: comboBox.highlightedIndex === index
                     }
-                    highlighted: comboBox.highlightedIndex === index
-                }
-                Accessible.role: Accessible.ComboBox
-                Accessible.name: comboBox.currentModelName
-                Accessible.description: qsTr("The top item is the current model")
-                onActivated: function (index) {
-                    currentChat.stopGenerating()
-                    currentChat.reset();
-                    currentChat.modelInfo = ModelList.modelInfo(comboBox.valueAt(index))
-                }
-            }
-        }
+                    Accessible.role: Accessible.ComboBox
+                    Accessible.name: currentModelName()
+                    Accessible.description: qsTr("The top item is the current model")
+                    onActivated: function (index) {
+                        var newInfo = ModelList.modelInfo(comboBox.valueAt(index));
+                        if (newInfo === currentChat.modelInfo) {
+                            currentChat.reloadModel();
+                        } else if (currentModelName() !== "" && chatModel.count !== 0) {
+                            switchModelDialog.index = index;
+                            switchModelDialog.open();
+                        } else {
+                            comboBox.changeModel(index);
+                        }
+                    }
 
-        Item {
-            anchors.centerIn: parent
-            visible: ModelList.installedModels.count
-                && !currentChat.isModelLoaded
-                && currentChat.modelLoadingError === ""
-                && !currentChat.isServer
-            width: childrenRect.width
-            height: childrenRect.height
-            Row {
-                spacing: 5
-                MyBusyIndicator {
-                    anchors.verticalCenter: parent.verticalCenter
-                    running: parent.visible
-                    Accessible.role: Accessible.Animation
-                    Accessible.name: qsTr("Busy indicator")
-                    Accessible.description: qsTr("loading model...")
-                }
+                    MyMiniButton {
+                        id: ejectButton
+                        visible: currentChat.isModelLoaded && !window.isCurrentlyLoading
+                        z: 500
+                        anchors.right: parent.right
+                        anchors.rightMargin: 50
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "qrc:/gpt4all/icons/eject.svg"
+                        backgroundColor: theme.gray300
+                        backgroundColorHovered: theme.iconBackgroundLight
+                        onClicked: {
+                            currentChat.forceUnloadModel();
+                        }
+                        ToolTip.text: qsTr("Eject the currently loaded model")
+                        ToolTip.visible: hovered
+                    }
 
-                Label {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("Loading model...")
-                    font.pixelSize: theme.fontSizeLarge
-                    color: theme.oppositeTextColor
+                    MyMiniButton {
+                        id: reloadButton
+                        visible: currentChat.modelLoadingError === ""
+                            && !window.trySwitchContextInProgress
+                            && !window.isCurrentlyLoading
+                            && (currentChat.isModelLoaded || currentModelName() !== "")
+                        z: 500
+                        anchors.right: ejectButton.visible ? ejectButton.left : parent.right
+                        anchors.rightMargin: ejectButton.visible ? 10 : 50
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "qrc:/gpt4all/icons/regenerate.svg"
+                        backgroundColor: theme.gray300
+                        backgroundColorHovered: theme.iconBackgroundLight
+                        onClicked: {
+                            if (currentChat.isModelLoaded)
+                                currentChat.forceReloadModel();
+                            else
+                                currentChat.reloadModel();
+                        }
+                        ToolTip.text: qsTr("Reload the currently loaded model")
+                        ToolTip.visible: hovered
+                    }
                 }
             }
         }
@@ -790,9 +888,9 @@ Window {
 
                 Rectangle {
                     id: homePage
-                    color: "transparent"//theme.green200
+                    color: "transparent"
                     anchors.fill: parent
-                    visible: (ModelList.installedModels.count === 0 || chatModel.count === 0) && !currentChat.isServer
+                    visible: !currentChat.isModelLoaded && (ModelList.installedModels.count === 0 || currentModelName() === "") && !currentChat.isServer
 
                     ColumnLayout {
                         anchors.centerIn: parent
@@ -1138,50 +1236,85 @@ Window {
             }
         }
 
-        MyButton {
-            id: myButton
-            visible: chatModel.count && !currentChat.isServer
-            textColor: theme.textColor
-            Image {
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: 15
-                source: currentChat.responseInProgress ? "qrc:/gpt4all/icons/stop_generating.svg" : "qrc:/gpt4all/icons/regenerate.svg"
-            }
-            leftPadding: 50
-            onClicked: {
-                var index = Math.max(0, chatModel.count - 1);
-                var listElement = chatModel.get(index);
-
-                if (currentChat.responseInProgress) {
-                    listElement.stopped = true
-                    currentChat.stopGenerating()
-                } else {
-                    currentChat.regenerateResponse()
-                    if (chatModel.count) {
-                        if (listElement.name === qsTr("Response: ")) {
-                            chatModel.updateCurrentResponse(index, true);
-                            chatModel.updateStopped(index, false);
-                            chatModel.updateThumbsUpState(index, false);
-                            chatModel.updateThumbsDownState(index, false);
-                            chatModel.updateNewResponse(index, "");
-                            currentChat.prompt(listElement.prompt)
-                        }
-                    }
-                }
-            }
-            background: Rectangle {
-                border.color: theme.conversationButtonBorder
-                border.width: 2
-                radius: 10
-                color: myButton.hovered ? theme.conversationButtonBackgroundHovered : theme.conversationButtonBackground
-            }
+        RowLayout {
             anchors.bottom: textInputView.top
             anchors.horizontalCenter: textInputView.horizontalCenter
             anchors.bottomMargin: 20
-            padding: 15
-            text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
-            Accessible.description: qsTr("Controls generation of the response")
+            spacing: 10
+            MyButton {
+                textColor: theme.textColor
+                visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded
+                Image {
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: 15
+                    source: currentChat.responseInProgress ? "qrc:/gpt4all/icons/stop_generating.svg" : "qrc:/gpt4all/icons/regenerate.svg"
+                }
+                leftPadding: 50
+                onClicked: {
+                    var index = Math.max(0, chatModel.count - 1);
+                    var listElement = chatModel.get(index);
+
+                    if (currentChat.responseInProgress) {
+                        listElement.stopped = true
+                        currentChat.stopGenerating()
+                    } else {
+                        currentChat.regenerateResponse()
+                        if (chatModel.count) {
+                            if (listElement.name === qsTr("Response: ")) {
+                                chatModel.updateCurrentResponse(index, true);
+                                chatModel.updateStopped(index, false);
+                                chatModel.updateThumbsUpState(index, false);
+                                chatModel.updateThumbsDownState(index, false);
+                                chatModel.updateNewResponse(index, "");
+                                currentChat.prompt(listElement.prompt)
+                            }
+                        }
+                    }
+                }
+
+                borderWidth: 1
+                backgroundColor: theme.conversationButtonBackground
+                backgroundColorHovered: theme.conversationButtonBackgroundHovered
+                backgroundRadius: 5
+                padding: 15
+                topPadding: 8
+                bottomPadding: 8
+                text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
+                fontPixelSize: theme.fontSizeSmall
+                Accessible.description: qsTr("Controls generation of the response")
+            }
+
+            MyButton {
+                textColor: theme.textColor
+                visible: !currentChat.isServer
+                    && !currentChat.isModelLoaded
+                    && !window.trySwitchContextInProgress
+                    && !window.isCurrentlyLoading
+                    && currentModelName() !== ""
+
+                Image {
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: 15
+                    source: "qrc:/gpt4all/icons/regenerate.svg"
+                }
+                leftPadding: 50
+                onClicked: {
+                    currentChat.reloadModel();
+                }
+
+                borderWidth: 1
+                backgroundColor: theme.conversationButtonBackground
+                backgroundColorHovered: theme.conversationButtonBackgroundHovered
+                backgroundRadius: 5
+                padding: 15
+                topPadding: 8
+                bottomPadding: 8
+                text: qsTr("Reload \u00B7 ") + currentChat.modelInfo.name
+                fontPixelSize: theme.fontSizeSmall
+                Accessible.description: qsTr("Reloads the model")
+            }
         }
 
         Text {
@@ -1224,7 +1357,7 @@ Window {
                 rightPadding: 40
                 enabled: currentChat.isModelLoaded && !currentChat.isServer
                 font.pixelSize: theme.fontSizeLarger
-                placeholderText: qsTr("Send a message...")
+                placeholderText: currentChat.isModelLoaded ? qsTr("Send a message...") : qsTr("Load a model to continue...")
                 Accessible.role: Accessible.EditableText
                 Accessible.name: placeholderText
                 Accessible.description: qsTr("Send messages/prompts to the model")
@@ -1247,6 +1380,7 @@ Window {
                                MySettings.maxLength,
                                MySettings.topK,
                                MySettings.topP,
+                               MySettings.minP,
                                MySettings.temperature,
                                MySettings.promptBatchSize,
                                MySettings.repeatPenalty,

@@ -16,6 +16,8 @@ public record PredictRequestOptions
 
     public float TopP { get; init; } = 0.9f;
 
+    public float MinP { get; init; } = 0.0f;
+
     public float Temperature { get; init; } = 0.1f;
 
     public int Batches { get; init; } = 8;

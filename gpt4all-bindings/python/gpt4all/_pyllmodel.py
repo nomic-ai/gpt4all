@@ -53,6 +53,7 @@ class LLModelPromptContext(ctypes.Structure):
         ("n_predict", ctypes.c_int32),
         ("top_k", ctypes.c_int32),
         ("top_p", ctypes.c_float),
+        ("min_p", ctypes.c_float),
         ("temp", ctypes.c_float),
         ("n_batch", ctypes.c_int32),
         ("repeat_penalty", ctypes.c_float),
@@ -93,10 +94,12 @@ RecalculateCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_bool)
 llmodel.llmodel_prompt.argtypes = [
     ctypes.c_void_p,
     ctypes.c_char_p,
+    ctypes.c_char_p,
     PromptCallback,
     ResponseCallback,
     RecalculateCallback,
     ctypes.POINTER(LLModelPromptContext),
+    ctypes.c_bool,
 ]
 
 llmodel.llmodel_prompt.restype = None
@@ -243,6 +246,7 @@ class LLModel:
         n_predict: int = 4096,
         top_k: int = 40,
         top_p: float = 0.9,
+        min_p: float = 0.0,
         temp: float = 0.1,
         n_batch: int = 8,
         repeat_penalty: float = 1.2,
@@ -259,6 +263,7 @@ class LLModel:
                 n_predict=n_predict,
                 top_k=top_k,
                 top_p=top_p,
+                min_p=min_p,
                 temp=temp,
                 n_batch=n_batch,
                 repeat_penalty=repeat_penalty,
@@ -274,6 +279,7 @@ class LLModel:
         self.context.n_predict = n_predict
         self.context.top_k = top_k
         self.context.top_p = top_p
+        self.context.min_p = min_p
         self.context.temp = temp
         self.context.n_batch = n_batch
         self.context.repeat_penalty = repeat_penalty
@@ -294,16 +300,19 @@ class LLModel:
     def prompt_model(
         self,
         prompt: str,
+        prompt_template: str,
         callback: ResponseCallbackType,
         n_predict: int = 4096,
         top_k: int = 40,
         top_p: float = 0.9,
+        min_p: float = 0.0,
         temp: float = 0.1,
         n_batch: int = 8,
         repeat_penalty: float = 1.2,
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
         reset_context: bool = False,
+        special: bool = False,
     ):
         """
         Generate response from model from a prompt.
@@ -330,13 +339,11 @@ class LLModel:
             prompt,
         )
 
-        prompt_bytes = prompt.encode()
-        prompt_ptr = ctypes.c_char_p(prompt_bytes)
-
         self._set_context(
             n_predict=n_predict,
             top_k=top_k,
             top_p=top_p,
+            min_p=min_p,
             temp=temp,
             n_batch=n_batch,
             repeat_penalty=repeat_penalty,
@@ -347,16 +354,18 @@ class LLModel:
 
         llmodel.llmodel_prompt(
             self.model,
-            prompt_ptr,
+            ctypes.c_char_p(prompt.encode()),
+            ctypes.c_char_p(prompt_template.encode()),
             PromptCallback(self._prompt_callback),
             ResponseCallback(self._callback_decoder(callback)),
             RecalculateCallback(self._recalculate_callback),
             self.context,
+            special,
         )
 
 
     def prompt_model_streaming(
-        self, prompt: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
+        self, prompt: str, prompt_template: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
     ) -> Iterable[str]:
         output_queue: Queue[str | Sentinel] = Queue()
 
@@ -373,15 +382,15 @@ class LLModel:
 
             return _generator_callback
 
-        def run_llmodel_prompt(prompt: str, callback: ResponseCallbackType, **kwargs):
-            self.prompt_model(prompt, callback, **kwargs)
+        def run_llmodel_prompt(prompt: str, prompt_template: str, callback: ResponseCallbackType, **kwargs):
+            self.prompt_model(prompt, prompt_template, callback, **kwargs)
             output_queue.put(Sentinel.TERMINATING_SYMBOL)
 
         # Kick off llmodel_prompt in separate thread so we can return generator
         # immediately
         thread = threading.Thread(
             target=run_llmodel_prompt,
-            args=(prompt, _generator_callback_wrapper(callback)),
+            args=(prompt, prompt_template, _generator_callback_wrapper(callback)),
             kwargs=kwargs,
         )
         thread.start()

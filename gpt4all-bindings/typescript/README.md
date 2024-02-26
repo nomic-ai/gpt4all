@@ -136,14 +136,18 @@ yarn test
 
 This package is in active development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
 
+*   \[ ] Purely offline. Per the gui, which can be run completely offline, the bindings should be as well.
+*   \[ ] NPM bundle size reduction via optionalDependencies strategy (need help)
+    *   Should include prebuilds to avoid painful node-gyp errors
+*   \[ ] createChatSession ( the python equivalent to create\_chat\_session )
+*   \[x] generateTokens, the new name for createTokenStream. As of 3.2.0, this is released but not 100% tested. Check spec/generator.mjs! 
+*   \[x] ~~createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)~~ May not implement unless someone else can complete
 *   \[x] prompt models via a threadsafe function in order to have proper non blocking behavior in nodejs
-*   \[ ] ~~createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)~~ May not implement unless someone else can complete
+*   \[x] generateTokens is the new name for this^
 *   \[x] proper unit testing (integrate with circle ci)
 *   \[x] publish to npm under alpha tag `gpt4all@alpha`
 *   \[x] have more people test on other platforms (mac tester needed)
 *   \[x] switch to new pluggable backend
-*   \[ ] NPM bundle size reduction via optionalDependencies strategy (need help)
-    *   Should include prebuilds to avoid painful node-gyp errors
-*   \[ ] createChatSession ( the python equivalent to create\_chat\_session )
+
 
 ### API Reference

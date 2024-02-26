@@ -42,18 +42,18 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - macos-qt-cache_v2
+            - macos-qt-cache-v3
       - run:
           name: Installing Qt
           command: |
             if [ ! -d ~/Qt ]; then
               curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
               hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
-              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.46 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
               hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
             fi
       - save_cache:  # this is the new step to save cache
-          key: macos-qt-cache_v2
+          key: macos-qt-cache-v3
           paths:
             - ~/Qt
       - run:
@@ -61,7 +61,7 @@ jobs:
           command: |
             mkdir build
             cd build
-            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.6/bin
+            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
               -DCMAKE_GENERATOR:STRING=Ninja \
               -DBUILD_UNIVERSAL=ON \
@@ -91,7 +91,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - linux-qt-cache
+            - linux-qt-cache-v2
       - run:
           name: Setup Linux and Dependencies
           command: |
@@ -104,10 +104,10 @@ jobs:
             if [ ! -d ~/Qt ]; then
               wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
               chmod +x qt-unified-linux-x64-4.6.0-online.run
-              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.46 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
+              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
             fi
       - save_cache:  # this is the new step to save cache
-          key: linux-qt-cache
+          key: linux-qt-cache-v2
           paths:
             - ~/Qt
       - run:
@@ -120,7 +120,7 @@ jobs:
           command: |
             set -eo pipefail
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
-            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.6/bin
+            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
             mkdir build
             cd build
             mkdir upload
@@ -145,16 +145,16 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - windows-qt-cache
+            - windows-qt-cache-v2
       - run:
           name: Installing Qt
           command: |
             if (-not (Test-Path C:\Qt)) {
               Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
-              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.46 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             }
       - save_cache:  # this is the new step to save cache
-          key: windows-qt-cache
+          key: windows-qt-cache-v2
           paths:
             - C:\Qt
       - run:
@@ -169,7 +169,7 @@ jobs:
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64"
             $Env:PATH = "${Env:PATH};C:\VulkanSDK\1.3.261.1\bin"
-            $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.6\bin"
+            $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.7\bin"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\ucrt\x64"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x64"
             $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64"
@@ -212,7 +212,7 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - linux-qt-cache
+            - linux-qt-cache-v2
       - run:
           name: Setup Linux and Dependencies
           command: |
@@ -225,10 +225,10 @@ jobs:
             if [ ! -d ~/Qt ]; then
               wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
               chmod +x qt-unified-linux-x64-4.6.0-online.run
-              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.46 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
+              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
             fi
       - save_cache:  # this is the new step to save cache
-          key: linux-qt-cache
+          key: linux-qt-cache-v2
           paths:
             - ~/Qt
       - run:
@@ -252,16 +252,16 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - windows-qt-cache
+            - windows-qt-cache-v2
       - run:
           name: Installing Qt
           command: |
             if (-not (Test-Path C:\Qt)) {
               Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
-              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.46 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             }
       - save_cache:  # this is the new step to save cache
-          key: windows-qt-cache
+          key: windows-qt-cache-v2
           paths:
             - C:\Qt
       - run:
@@ -311,18 +311,18 @@ jobs:
             git submodule update --init --recursive
       - restore_cache:  # this is the new step to restore cache
           keys:
-            - macos-qt-cache_v2
+            - macos-qt-cache-v3
       - run:
           name: Installing Qt
           command: |
             if [ ! -d ~/Qt ]; then
               curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
               hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
-              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.46 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
               hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
             fi
       - save_cache:  # this is the new step to save cache
-          key: macos-qt-cache_v2
+          key: macos-qt-cache-v3
           paths:
             - ~/Qt
       - run:
@@ -611,6 +611,7 @@ jobs:
             $Env:Path += ";$MinGwBin"
             $Env:Path += ";C:\Program Files\CMake\bin"
             $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
+            $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
             cd gpt4all-backend
             mkdir runtimes/win-x64
             cd runtimes/win-x64
@@ -651,6 +652,7 @@ jobs:
           command: |
             $Env:Path += ";C:\Program Files\CMake\bin"
             $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
+            $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
             cd gpt4all-backend
             mkdir runtimes/win-x64_msvc
             cd runtimes/win-x64_msvc
@@ -1107,7 +1109,11 @@ workflows:
     jobs:
       - hold:
           type: approval
+      - csharp-hold:
+          type: approval
       - nuget-hold:
+          type: approval
+      - nodejs-hold:
           type: approval
       - npm-hold:
           type: approval
@@ -1151,21 +1157,21 @@ workflows:
             branches:
               only:
           requires:
-            - npm-hold
+            - nodejs-hold
             - build-bindings-backend-linux
       - build-nodejs-windows:
           filters:
             branches:
               only:
           requires:
-            - npm-hold
+            - nodejs-hold
             - build-bindings-backend-windows-msvc
       - build-nodejs-macos:
           filters:
             branches:
               only:
           requires:
-            - npm-hold
+            - nodejs-hold
             - build-bindings-backend-macos
 
 
@@ -1175,21 +1181,21 @@ workflows:
             branches:
               only:
           requires:
-            - nuget-hold
+            - csharp-hold
             - build-bindings-backend-linux
       - build-csharp-windows:
           filters:
             branches:
               only:
           requires:
-            - nuget-hold
+            - csharp-hold
             - build-bindings-backend-windows
       - build-csharp-macos:
           filters:
             branches:
               only:
           requires:
-            - nuget-hold
+            - csharp-hold
             - build-bindings-backend-macos
       - store-and-upload-nupkgs:
           filters:

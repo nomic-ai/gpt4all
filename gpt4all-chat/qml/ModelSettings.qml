@@ -154,7 +154,7 @@ MySettingsTab {
         }
 
         MySettingsLabel {
-            visible: !root.currentModelInfo.isChatGPT
+            visible: !root.currentModelInfo.isOnline
             text: qsTr("System Prompt")
             Layout.row: 6
             Layout.column: 0
@@ -163,7 +163,7 @@ MySettingsTab {
 
         Rectangle {
             id: systemPrompt
-            visible: !root.currentModelInfo.isChatGPT
+            visible: !root.currentModelInfo.isOnline
             Layout.row: 7
             Layout.column: 0
             Layout.columnSpan: 2
@@ -317,18 +317,18 @@ MySettingsTab {
 
             MySettingsLabel {
                 id: contextLengthLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Context Length")
                 Layout.row: 0
                 Layout.column: 0
             }
             MyTextField {
                 id: contextLengthField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.contextLength
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
-                ToolTip.text: qsTr("Maximum combined prompt/response tokens before information is lost.\nUsing more context than the model was trained on will yield poor results.\nNOTE: Does not take effect until you RESTART GPT4All or SWITCH MODELS.")
+                ToolTip.text: qsTr("Maximum combined prompt/response tokens before information is lost.\nUsing more context than the model was trained on will yield poor results.\nNOTE: Does not take effect until you reload the model.")
                 ToolTip.visible: hovered
                 Layout.row: 0
                 Layout.column: 1
@@ -453,15 +453,59 @@ MySettingsTab {
                 Accessible.description: ToolTip.text
             }
             MySettingsLabel {
+                id: minPLabel 
+                text: qsTr("Min P")
+                Layout.row: 3
+                Layout.column: 0
+            }
+            MyTextField {
+                id: minPField
+                text: root.currentModelInfo.minP
+                color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
+                ToolTip.text: qsTr("Sets the minimum relative probability for a token to be considered.")
+                ToolTip.visible: hovered
+                Layout.row: 3
+                Layout.column: 1
+                validator: DoubleValidator {
+                    locale: "C"
+                }
+                Connections {
+                    target: MySettings
+                    function onMinPChanged() {
+                        minPField.text = root.currentModelInfo.minP;
+                    }
+                }
+                Connections {
+                    target: root
+                    function onCurrentModelInfoChanged() {
+                        minPField.text = root.currentModelInfo.minP;
+                    }
+                }
+                onEditingFinished: {
+                    var val = parseFloat(text)
+                    if (!isNaN(val)) {
+                        MySettings.setModelMinP(root.currentModelInfo, val)
+                        focus = false
+                    } else {
+                        text = root.currentModelInfo.minP
+                    }
+                }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: minPLabel.text
+                Accessible.description: ToolTip.text
+            }
+
+            MySettingsLabel {
                 id: topKLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Top K")
                 Layout.row: 2
                 Layout.column: 2
             }
             MyTextField {
                 id: topKField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.topK
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -499,14 +543,14 @@ MySettingsTab {
             }
             MySettingsLabel {
                 id: maxLengthLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Max Length")
                 Layout.row: 0
                 Layout.column: 2
             }
             MyTextField {
                 id: maxLengthField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.maxLength
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -545,14 +589,14 @@ MySettingsTab {
 
             MySettingsLabel {
                 id: batchSizeLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Prompt Batch Size")
                 Layout.row: 1
                 Layout.column: 0
             }
             MyTextField {
                 id: batchSizeField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.promptBatchSize
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -590,21 +634,21 @@ MySettingsTab {
             }
             MySettingsLabel {
                 id: repeatPenaltyLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Repeat Penalty")
-                Layout.row: 3
-                Layout.column: 0
+                Layout.row: 4
+                Layout.column: 2
             }
             MyTextField {
                 id: repeatPenaltyField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.repeatPenalty
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Amount to penalize repetitiveness of the output")
                 ToolTip.visible: hovered
-                Layout.row: 3
-                Layout.column: 1
+                Layout.row: 4
+                Layout.column: 3
                 validator: DoubleValidator {
                     locale: "C"
                 }
@@ -635,14 +679,14 @@ MySettingsTab {
             }
             MySettingsLabel {
                 id: repeatPenaltyTokensLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("Repeat Penalty Tokens")
                 Layout.row: 3
                 Layout.column: 2
             }
             MyTextField {
                 id: repeatPenaltyTokenField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.repeatPenaltyTokens
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -681,18 +725,18 @@ MySettingsTab {
 
             MySettingsLabel {
                 id: gpuLayersLabel
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: qsTr("GPU Layers")
                 Layout.row: 4
                 Layout.column: 0
             }
             MyTextField {
                 id: gpuLayersField
-                visible: !root.currentModelInfo.isChatGPT
+                visible: !root.currentModelInfo.isOnline
                 text: root.currentModelInfo.gpuLayers
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
-                ToolTip.text: qsTr("How many GPU layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.\nLower values increase CPU load and RAM usage, and make inference slower.\nNOTE: Does not take effect until you RESTART GPT4All or SWITCH MODELS.")
+                ToolTip.text: qsTr("How many GPU layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.\nLower values increase CPU load and RAM usage, and make inference slower.\nNOTE: Does not take effect until you reload the model.")
                 ToolTip.visible: hovered
                 Layout.row: 4
                 Layout.column: 1
@@ -705,7 +749,7 @@ MySettingsTab {
                 Connections {
                     target: root
                     function onCurrentModelInfoChanged() {
-                        if (root.currentModelInfo.gpuLayers == 100) {
+                        if (root.currentModelInfo.gpuLayers === 100) {
                             gpuLayersField.text = root.currentModelInfo.maxGpuLayers
                         } else {
                             gpuLayersField.text = root.currentModelInfo.gpuLayers

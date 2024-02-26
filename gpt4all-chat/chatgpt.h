@@ -1,6 +1,8 @@
 #ifndef CHATGPT_H
 #define CHATGPT_H
 
+#include <stdexcept>
+
 #include <QObject>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -55,10 +57,13 @@ public:
     size_t saveState(uint8_t *dest) const override;
     size_t restoreState(const uint8_t *src) override;
     void prompt(const std::string &prompt,
+        const std::string &promptTemplate,
         std::function<bool(int32_t)> promptCallback,
         std::function<bool(int32_t, const std::string&)> responseCallback,
         std::function<bool(bool)> recalculateCallback,
-        PromptContext &ctx) override;
+        PromptContext &ctx,
+        bool special,
+        std::string *fakeReply) override;
 
     void setThreadCount(int32_t n_threads) override;
     int32_t threadCount() const override;
@@ -69,7 +74,7 @@ public:
     QList<QString> context() const { return m_context; }
     void setContext(const QList<QString> &context) { m_context = context; }
 
-    bool callResponse(int32_t token, const std::string& string);
+    bool callResponse(int32_t token, const std::string &string);
 
 Q_SIGNALS:
     void request(const QString &apiKey,
@@ -80,12 +85,41 @@ protected:
     // We have to implement these as they are pure virtual in base class, but we don't actually use
     // them as they are only called from the default implementation of 'prompt' which we override and
     // completely replace
-    std::vector<Token> tokenize(PromptContext &, const std::string&) const override { return std::vector<Token>(); }
-    std::string tokenToString(Token) const override { return std::string(); }
-    Token sampleToken(PromptContext &ctx) const override { return -1; }
-    bool evalTokens(PromptContext &/*ctx*/, const std::vector<int32_t>& /*tokens*/) const override { return false; }
-    int32_t contextLength() const override { return -1; }
-    const std::vector<Token>& endTokens() const override { static const std::vector<Token> fres; return fres; }
+
+    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) const override {
+        (void)ctx;
+        (void)str;
+        (void)special;
+        throw std::logic_error("not implemented");
+    }
+
+    std::string tokenToString(Token id) const override {
+        (void)id;
+        throw std::logic_error("not implemented");
+    }
+
+    Token sampleToken(PromptContext &ctx) const override {
+        (void)ctx;
+        throw std::logic_error("not implemented");
+    }
+
+    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override {
+        (void)ctx;
+        (void)tokens;
+        throw std::logic_error("not implemented");
+    }
+
+    int32_t contextLength() const override {
+        throw std::logic_error("not implemented");
+    }
+
+    const std::vector<Token> &endTokens() const override {
+        throw std::logic_error("not implemented");
+    }
+
+    bool shouldAddBOS() const override {
+        throw std::logic_error("not implemented");
+    }
 
 private:
     std::function<bool(int32_t, const std::string&)> m_responseCallback;
