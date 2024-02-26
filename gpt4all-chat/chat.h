@@ -112,6 +112,7 @@ Q_SIGNALS:
     void chatModelChanged();
     void isModelLoadedChanged();
     void modelLoadingPercentageChanged();
+    void modelLoadingWarning(const QString &warning);
     void responseChanged();
     void responseInProgressChanged();
     void responseStateChanged();

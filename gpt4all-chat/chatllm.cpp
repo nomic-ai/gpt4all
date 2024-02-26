@@ -304,7 +304,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
             if (m_llModelInfo.model) {
                 if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
-                    // TODO(cebtenzzre): warn that this model is out-of-date
+                    emit modelLoadingWarning(QString(
+                        "%1 is known to be broken. Please get a replacement via the download dialog."
+                    ).arg(modelInfo.filename()));
                 }
 
                 m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
