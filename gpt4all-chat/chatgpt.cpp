@@ -121,7 +121,7 @@ void ChatGPT::prompt(const std::string &prompt,
     QJsonDocument doc(root);
 
 #if defined(DEBUG)
-    qDebug() << "ChatGPT::prompt begin network request" << qPrintable(doc.toJson());
+    qDebug() << "ChatGPT::prompt begin network request" << doc.toJson();
 #endif
 
     m_responseCallback = responseCallback;
@@ -210,7 +210,7 @@ void ChatGPTWorker::handleReadyRead()
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
         m_chat->callResponse(-1, QString("\nERROR: 2 ChatGPT responded with error code \"%1-%2\" %3\n")
-            .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
+            .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString());
         emit finished();
         return;
     }
@@ -225,7 +225,7 @@ void ChatGPTWorker::handleReadyRead()
         if (jsonData == "[DONE]")
             continue;
 #if defined(DEBUG)
-        qDebug() << "line" << qPrintable(jsonData);
+        qDebug() << "line" << jsonData;
 #endif
         QJsonParseError err;
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
