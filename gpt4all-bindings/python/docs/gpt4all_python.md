@@ -263,7 +263,7 @@ logging infrastructure offers [many more customization options][py-logging-cookb
     logging.basicConfig(level=logging.INFO)
     model = GPT4All('nous-hermes-llama2-13b.Q4_0.gguf')
     with model.chat_session('You are a geography expert.\nBe terse.',
-                            '### Instruction:\n{0}\n### Response:\n'):
+                            '### Instruction:\n{0}\n\n### Response:\n'):
         response = model.generate('who are you?', temp=0)
         print(response)
         response = model.generate('what are your favorite 3 mountains?', temp=0)
@@ -277,6 +277,7 @@ logging infrastructure offers [many more customization options][py-logging-cookb
 
     ### Instruction:
     who are you?
+
     ### Response:
 
     ===/LLModel.prompt_model -- prompt/===
@@ -284,6 +285,7 @@ logging infrastructure offers [many more customization options][py-logging-cookb
     INFO:gpt4all.pyllmodel:LLModel.prompt_model -- prompt:
     ### Instruction:
     what are your favorite 3 mountains?
+
     ### Response:
 
     ===/LLModel.prompt_model -- prompt/===
@@ -315,10 +317,10 @@ are used instead of model-specific system and prompt templates:
 === "Output"
     ```
     default system template: ''
-    default prompt template: '### Human: \n{0}\n### Assistant:\n'
+    default prompt template: '### Human: \n{0}\n\n### Assistant:\n'
 
     session system template: ''
-    session prompt template: '### Human: \n{0}\n### Assistant:\n'
+    session prompt template: '### Human: \n{0}\n\n### Assistant:\n'
     ```
 
 
