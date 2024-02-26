@@ -122,6 +122,8 @@ static gguf_context *load_gguf(const char *fname) {
 
 static int32_t get_arch_key_u32(std::string const &modelPath, std::string const &archKey) {
     auto * ctx = load_gguf(modelPath.c_str());
+    if (!ctx)
+        return -1;
     auto arch = get_arch_name(ctx);
 
     int32_t value = -1;
