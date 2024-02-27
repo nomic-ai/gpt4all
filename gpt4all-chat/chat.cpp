@@ -35,7 +35,6 @@ Chat::Chat(bool isServer, QObject *parent)
 Chat::~Chat()
 {
     delete m_llmodel;
-    m_llmodel = nullptr;
 }
 
 void Chat::connectLLM()

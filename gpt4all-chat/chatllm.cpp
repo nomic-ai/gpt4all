@@ -95,6 +95,10 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
 
 ChatLLM::~ChatLLM()
 {
+    destroy();
+}
+
+void ChatLLM::destroy() {
     m_stopGenerating = true;
     m_llmThread.quit();
     m_llmThread.wait();
