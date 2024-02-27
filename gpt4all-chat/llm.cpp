@@ -42,8 +42,11 @@ LLM::LLM()
     m_compatHardware = minimal;
 
     QNetworkInformation::loadDefaultBackend();
-    connect(QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged,
-        this, &LLM::isNetworkOnlineChanged);
+    auto * netinfo = QNetworkInformation::instance();
+    if (netinfo) {
+        connect(netinfo, &QNetworkInformation::reachabilityChanged,
+            this, &LLM::isNetworkOnlineChanged);
+    }
 }
 
 bool LLM::hasSettingsAccess() const
@@ -108,8 +111,6 @@ QString LLM::systemTotalRAMInGBString() const
 
 bool LLM::isNetworkOnline() const
 {
-    if (!QNetworkInformation::instance())
-        return false;
-
-    return QNetworkInformation::instance()->reachability() == QNetworkInformation::Reachability::Online;
+    auto * netinfo = QNetworkInformation::instance();
+    return !netinfo || netinfo->reachability() == QNetworkInformation::Reachability::Online;
 }
