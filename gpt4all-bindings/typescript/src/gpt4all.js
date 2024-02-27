@@ -195,9 +195,7 @@ function preparePromptAndContext(model,messages,options){
         // promptFooter: '### Response:',
     });
 
-    return {
-        prompt, promptContext, verbose
-    }
+    return { prompt, promptContext, verbose }
 }
 
 async function createCompletion(

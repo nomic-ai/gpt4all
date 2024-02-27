@@ -297,7 +297,8 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
         return info.Env().Undefined();
     }
 
-    if(info.Length() >= 3 && info[2].IsFunction()){
+    if(info.Length() >= 3 && info[2].IsFunction()) 
+    {
         promptWorkerConfig.bHasTokenCallback = true;
         promptWorkerConfig.tokenCallback = info[2].As<Napi::Function>();
     }
@@ -311,8 +312,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     promptWorkerConfig.mutex = &inference_mutex;
     promptWorkerConfig.prompt = question;
     promptWorkerConfig.result = "";
-
-    
+    promptWorkerConfig.promptTemplate = info[1].As<Napi::Object>().Get("shiiiii").As<Napi::String>();
     auto worker = new PromptWorker(env, promptWorkerConfig);
 
     worker->Queue();

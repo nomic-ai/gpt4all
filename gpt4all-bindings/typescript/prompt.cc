@@ -44,6 +44,7 @@ PromptWorker::PromptWorker(Napi::Env env, PromptWorkerConfig config)
         // Call the C++ prompt method
         wrapper->llModel->prompt(
             _config.prompt, 
+            _config.promptTemplate,
             [](int32_t tid) { return true; },
             [this](int32_t token_id, const std::string tok)
             {

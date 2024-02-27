@@ -17,25 +17,26 @@ struct TokenCallbackInfo
         std::string token;
     };
 
-    struct LLModelWrapper
+struct LLModelWrapper
     {
         LLModel *llModel = nullptr;
         LLModel::PromptContext promptContext;
         ~LLModelWrapper() { delete llModel; }
     };
 
-    struct PromptWorkerConfig
+struct PromptWorkerConfig
     {
         Napi::Function tokenCallback;
         bool bHasTokenCallback = false;
         llmodel_model model;
         std::mutex * mutex;
         std::string prompt;
+        std::string promptTemplate;
         llmodel_prompt_context context;
         std::string result;
     };
 
-    class PromptWorker : public Napi::AsyncWorker
+class PromptWorker : public Napi::AsyncWorker
     {
     public:
         PromptWorker(Napi::Env env, PromptWorkerConfig config);
