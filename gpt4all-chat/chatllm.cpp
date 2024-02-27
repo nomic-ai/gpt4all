@@ -304,9 +304,14 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
             if (m_llModelInfo.model) {
                 if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
-                    emit modelLoadingWarning(QString(
-                        "%1 is known to be broken. Please get a replacement via the download dialog."
-                    ).arg(modelInfo.filename()));
+                    static QSet<QString> warned;
+                    auto fname = modelInfo.filename();
+                    if (!warned.contains(fname)) {
+                        emit modelLoadingWarning(QString(
+                            "%1 is known to be broken. Please get a replacement via the download dialog."
+                        ).arg(fname));
+                        warned.insert(fname); // don't warn again until restart
+                    }
                 }
 
                 m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
