@@ -312,7 +312,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     promptWorkerConfig.mutex = &inference_mutex;
     promptWorkerConfig.prompt = question;
     promptWorkerConfig.result = "";
-    promptWorkerConfig.promptTemplate = info[1].As<Napi::Object>().Get("shiiiii").As<Napi::String>();
+    promptWorkerConfig.promptTemplate = info[1].As<Napi::Object>().Get("promptTemplate").As<Napi::String>();
     auto worker = new PromptWorker(env, promptWorkerConfig);
 
     worker->Queue();

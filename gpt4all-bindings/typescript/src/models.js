@@ -11,7 +11,10 @@ class InferenceModel {
 
     async generate(prompt, promptContext,callback) {
         warnOnSnakeCaseKeys(promptContext);
-        const normalizedPromptContext = normalizePromptContext(promptContext);
+        const normalizedPromptContext = { 
+            promptTemplate: this.config.promptTemplate,
+            ...normalizePromptContext(promptContext) 
+        };
         const result = this.llm.raw_prompt(prompt, normalizedPromptContext,callback);
         return result;
     }
