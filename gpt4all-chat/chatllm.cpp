@@ -480,7 +480,7 @@ void ChatLLM::resetResponse()
 
 void ChatLLM::resetContext()
 {
-    regenerateResponse();
+    resetResponse();
     m_processedSystemPrompt = false;
     m_ctx = LLModel::PromptContext();
 }
