@@ -236,7 +236,7 @@ async function retrieveModel(modelName, options = {}) {
         file: retrieveOptions.modelConfigFile,
         url:
             retrieveOptions.allowDownload &&
-            "https://gpt4all.io/models/models2.json",
+            "https://gpt4all.io/models/models3.json",
     });
 
     const loadedModelConfig = availableModels.find(

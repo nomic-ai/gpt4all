@@ -27,7 +27,7 @@ const DEFAULT_MODEL_CONFIG = {
     promptTemplate: "### Human: \n%1\n### Assistant:\n",
 }
 
-const DEFAULT_MODEL_LIST_URL = "https://gpt4all.io/models/models2.json";
+const DEFAULT_MODEL_LIST_URL = "https://gpt4all.io/models/models3.json";
 
 const DEFAULT_PROMPT_CONTEXT = {
     temp: 0.7,
