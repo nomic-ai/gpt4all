@@ -35,12 +35,13 @@ static const std::vector<const char *> KNOWN_ARCHES {
     "baichuan", "bert", "bloom", "codeshell", "falcon", "gemma", "gpt2", "llama", "mpt", "nomic-bert", "orion",
     "persimmon", "phi2", "plamo", "qwen", "qwen2", "refact", "stablelm", "starcoder"
 };
+
 static const std::vector<const char *> EMBEDDING_ARCHES {
     "bert", "nomic-bert"
 };
 
 static bool is_embedding_arch(const std::string &arch) {
-    return std::find(KNOWN_ARCHES.begin(), KNOWN_ARCHES.end(), arch) < KNOWN_ARCHES.end();
+    return std::find(EMBEDDING_ARCHES.begin(), EMBEDDING_ARCHES.end(), arch) < EMBEDDING_ARCHES.end();
 }
 
 static bool llama_verbose() {
@@ -206,7 +207,7 @@ size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
     return filesize + est_kvcache_size;
 }
 
-bool LLamaModel::isModelBlacklisted(const std::string &modelPath) {
+bool LLamaModel::isModelBlacklisted(const std::string &modelPath) const {
     auto * ctx = load_gguf(modelPath.c_str());
     if (!ctx) {
         std::cerr << __func__ << ": failed to load " << modelPath << "\n";
@@ -242,6 +243,18 @@ bool LLamaModel::isModelBlacklisted(const std::string &modelPath) {
     return res;
 }
 
+bool LLamaModel::isEmbeddingModel(const std::string &modelPath) const {
+    auto *ctx_gguf = load_gguf(modelPath.c_str());
+    if (!ctx_gguf) {
+        std::cerr << __func__ << ": failed to load GGUF from " <<  modelPath << "\n";
+        return false;
+    }
+
+    std::string arch = get_arch_name(ctx_gguf);
+    gguf_free(ctx_gguf);
+    return is_embedding_arch(arch);
+}
+
 bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
     d_ptr->modelLoaded = false;
@@ -261,18 +274,11 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
         n_ctx = 8;
     }
 
-    // -- check direct arch --
+    // -- check the model arch --
 
-    std::string arch_name;
-    {
-        auto *ctx_gguf = load_gguf(modelPath.c_str());
-        if (!ctx_gguf) {
-            std::cerr << __func__ << ": failed to load GGUF from " <<  modelPath << "\n";
-            return false;
-        }
-        arch_name = get_arch_name(ctx_gguf);
-        gguf_free(ctx_gguf);
-    }
+    bool isEmbedding = isEmbeddingModel(modelPath);
+    m_supportsEmbedding = isEmbedding;
+    m_supportsCompletion = !isEmbedding;
 
     // -- load the model --
 
@@ -340,7 +346,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->ctx_params.n_threads       = d_ptr->n_threads;
     d_ptr->ctx_params.n_threads_batch = d_ptr->n_threads;
 
-    if (std::find(EMBEDDING_ARCHES.begin(), EMBEDDING_ARCHES.end(), arch_name) < EMBEDDING_ARCHES.end()) {
+    if (m_supportsEmbedding) {
         d_ptr->ctx_params.embedding = true;
     }
 
@@ -595,6 +601,11 @@ size_t LLamaModel::embeddingSize() const {
 bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings)
 {
     typedef std::vector<LLModel::Token> TokenString;
+
+    if (!m_supportsEmbedding) {
+        std::cerr << __func__ << ": not an embedding model\n";
+        return false;
+    }
 
     const llama_token bos_token = llama_token_bos(d_ptr->model);
     const llama_token eos_token = llama_token_eos(d_ptr->model);

@@ -16,10 +16,11 @@ public:
     LLamaModel();
     ~LLamaModel();
 
-    bool supportsEmbedding() const override { return true; }
-    bool supportsCompletion() const override { return true; }
+    bool supportsEmbedding() const override { return m_supportsEmbedding; }
+    bool supportsCompletion() const override { return m_supportsCompletion; }
     bool loadModel(const std::string &modelPath, int n_ctx, int ngl) override;
-    bool isModelBlacklisted(const std::string &modelPath) override;
+    bool isModelBlacklisted(const std::string &modelPath) const override;
+    bool isEmbeddingModel(const std::string &modelPath) const override;
     bool isModelLoaded() const override;
     size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) override;
     size_t stateSize() const override;
@@ -38,6 +39,8 @@ public:
 
 private:
     std::unique_ptr<LLamaPrivate> d_ptr;
+    bool m_supportsEmbedding = false;
+    bool m_supportsCompletion = false;
 
 protected:
     std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) const override;
