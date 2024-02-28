@@ -39,6 +39,10 @@ static const std::vector<const char *> EMBEDDING_ARCHES {
     "bert", "nomic-bert"
 };
 
+static bool is_embedding_arch(const std::string &arch) {
+    return std::find(KNOWN_ARCHES.begin(), KNOWN_ARCHES.end(), arch) < KNOWN_ARCHES.end();
+}
+
 static bool llama_verbose() {
     const char* var = getenv("GPT4ALL_VERBOSE_LLAMACPP");
     return var && *var;
@@ -133,7 +137,7 @@ static int32_t get_arch_key_u32(std::string const &modelPath, std::string const 
     auto * ctx = load_gguf(modelPath.c_str());
     if (!ctx)
         return -1;
-    auto arch = get_arch_name(ctx);
+    std::string arch = get_arch_name(ctx);
 
     int32_t value = -1;
     if (ctx) {
@@ -711,7 +715,7 @@ DLL_EXPORT const char *get_build_variant() {
 
 DLL_EXPORT bool magic_match(const char *fname) {
     auto * ctx = load_gguf(fname);
-    auto arch = get_arch_name(ctx);
+    std::string arch = get_arch_name(ctx);
 
     bool valid = true;
 
@@ -721,6 +725,10 @@ DLL_EXPORT bool magic_match(const char *fname) {
             std::cerr << __func__ << ": unsupported model architecture: " << arch << "\n";
         }
         valid = false;
+    }
+
+    if (valid && is_embedding_arch(arch) && gguf_find_key(ctx, (arch + ".pooling_type").c_str()) < 0) {
+        valid = false; // old pre-llama.cpp embedding model, e.g. all-MiniLM-L6-v2-f16.gguf
     }
 
     gguf_free(ctx);
