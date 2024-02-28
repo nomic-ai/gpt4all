@@ -31,6 +31,14 @@ static constexpr int GGUF_VER_MAX = 3;
 
 static const char * const modelType_ = "LLaMA";
 
+static const std::vector<const char *> KNOWN_ARCHES {
+    "baichuan", "bert", "bloom", "codeshell", "falcon", "gemma", "gpt2", "llama", "mpt", "nomic-bert", "orion",
+    "persimmon", "phi2", "plamo", "qwen", "qwen2", "refact", "stablelm", "starcoder"
+};
+static const std::vector<const char *> EMBEDDING_ARCHES {
+    "bert", "nomic-bert"
+};
+
 static bool llama_verbose() {
     const char* var = getenv("GPT4ALL_VERBOSE_LLAMACPP");
     return var && *var;
@@ -249,6 +257,19 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
         n_ctx = 8;
     }
 
+    // -- check direct arch --
+
+    std::string arch_name;
+    {
+        auto *ctx_gguf = load_gguf(modelPath.c_str());
+        if (!ctx_gguf) {
+            std::cerr << __func__ << ": failed to load GGUF from " <<  modelPath << "\n";
+            return false;
+        }
+        arch_name = get_arch_name(ctx_gguf);
+        gguf_free(ctx_gguf);
+    }
+
     // -- load the model --
 
     gpt_params params;
@@ -314,6 +335,10 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->n_threads = std::min(4, (int32_t) std::thread::hardware_concurrency());
     d_ptr->ctx_params.n_threads       = d_ptr->n_threads;
     d_ptr->ctx_params.n_threads_batch = d_ptr->n_threads;
+
+    if (std::find(EMBEDDING_ARCHES.begin(), EMBEDDING_ARCHES.end(), arch_name) < EMBEDDING_ARCHES.end()) {
+        d_ptr->ctx_params.embedding = true;
+    }
 
     d_ptr->ctx = llama_new_context_with_model(d_ptr->model, d_ptr->ctx_params);
     if (!d_ptr->ctx) {
@@ -602,7 +627,7 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings)
     inputs.clear();
 
     // initialize batch
-    struct llama_batch batch = llama_batch_init(n_batch, 0, batches.size());
+    struct llama_batch batch = llama_batch_init(n_batch, 0, 1);
 
     const int32_t n_embd = llama_n_embd(d_ptr->model);
     // n_texts x n_embd matrix
@@ -622,8 +647,8 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings)
         for (unsigned i = 0; i < queued_indices.size(); ++i) {
             auto i_prompt = queued_indices[i];
             auto *out = &embeddingsSum[i_prompt * n_embd];
-            float *emb = llama_get_embeddings_ith(d_ptr->ctx, i);
-            std::transform(out, out + n_embd, emb, out, std::plus<float>());
+            auto *emb = llama_get_embeddings_ith(d_ptr->ctx, i);
+            std::transform(out, out + n_embd, emb, out, std::plus<double>());
             embeddingsSumTotal[i_prompt]++;
         }
 
@@ -658,7 +683,7 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings)
         // L2 norm
         double magnitude = std::sqrt(std::inner_product(embd, embd_end, embd, 0.0));
         std::transform(embd, embd_end, embd, [magnitude](float f){ return f / magnitude; });
-        memcpy(embeddings, embd, n_embd);
+        std::copy(embd, embd_end, embeddings);
         embeddings += n_embd;
     }
 
@@ -690,12 +715,7 @@ DLL_EXPORT bool magic_match(const char *fname) {
 
     bool valid = true;
 
-    static const std::vector<const char *> known_arches {
-        "baichuan", "bert", "bloom", "codeshell", "falcon", "gemma", "gpt2", "llama", "mpt", "nomic-bert", "orion",
-        "persimmon", "phi2", "plamo", "qwen", "qwen2", "refact", "stablelm", "starcoder"
-    };
-
-    if (std::find(known_arches.begin(), known_arches.end(), arch) == known_arches.end()) {
+    if (std::find(KNOWN_ARCHES.begin(), KNOWN_ARCHES.end(), arch) == KNOWN_ARCHES.end()) {
         // not supported by this version of llama.cpp
         if (arch != "gptj") { // we support this via another module
             std::cerr << __func__ << ": unsupported model architecture: " << arch << "\n";

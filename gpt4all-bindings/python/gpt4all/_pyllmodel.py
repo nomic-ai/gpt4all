@@ -301,8 +301,8 @@ class LLModel:
 
         embedding_size = ctypes.c_size_t()
         c_texts = (ctypes.c_char_p * (len(text) + 1))()
-        for i, text in enumerate(text):
-            c_texts[i] = ctypes.c_char_p(text.encode())
+        for i, t in enumerate(text):
+            c_texts[i] = ctypes.c_char_p(t.encode())
 
         embedding_ptr = llmodel.llmodel_embed(self.model, c_texts, ctypes.byref(embedding_size))
         n_embd = embedding_size.value // len(text)
