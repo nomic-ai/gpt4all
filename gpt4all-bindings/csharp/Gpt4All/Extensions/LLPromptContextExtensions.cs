@@ -16,6 +16,7 @@ internal static class LLPromptContextExtensions
             n_predict = {ctx.n_predict}
             top_k = {ctx.top_k}
             top_p = {ctx.top_p}
+            min_p = {ctx.min_p}
             temp = {ctx.temp}
             n_batch = {ctx.n_batch}
             repeat_penalty = {ctx.repeat_penalty}

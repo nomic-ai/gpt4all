@@ -205,6 +205,10 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
     if (body.contains("top_p"))
         top_p = body["top_p"].toDouble();
 
+    float min_p = 0.f;
+    if (body.contains("min_p"))
+        min_p = body["min_p"].toDouble();
+
     int n = 1;
     if (body.contains("n"))
         n = body["n"].toInt();
@@ -312,6 +316,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             max_tokens /*n_predict*/,
             top_k,
             top_p,
+            min_p,
             temperature,
             n_batch,
             repeat_penalty,

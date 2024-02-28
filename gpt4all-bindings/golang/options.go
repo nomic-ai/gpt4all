@@ -2,7 +2,7 @@ package gpt4all
 
 type PredictOptions struct {
 	ContextSize, RepeatLastN, Tokens, TopK, Batch  int
-	TopP, Temperature, ContextErase, RepeatPenalty float64
+	TopP, MinP, Temperature, ContextErase, RepeatPenalty float64
 }
 
 type PredictOption func(p *PredictOptions)
@@ -11,6 +11,7 @@ var DefaultOptions PredictOptions = PredictOptions{
 	Tokens:        200,
 	TopK:          10,
 	TopP:          0.90,
+        MinP:          0.0,
 	Temperature:   0.96,
 	Batch:         1,
 	ContextErase:  0.55,
@@ -47,6 +48,13 @@ func SetTopK(topk int) PredictOption {
 func SetTopP(topp float64) PredictOption {
 	return func(p *PredictOptions) {
 		p.TopP = topp
+	}
+}
+
+// SetMinP sets the value for min p sampling
+func SetMinP(minp float64) PredictOption {
+	return func(p *PredictOptions) {
+		p.MinP = minp
 	}
 }
 

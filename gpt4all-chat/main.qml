@@ -1380,6 +1380,7 @@ Window {
                                MySettings.maxLength,
                                MySettings.topK,
                                MySettings.topP,
+                               MySettings.minP,
                                MySettings.temperature,
                                MySettings.promptBatchSize,
                                MySettings.repeatPenalty,

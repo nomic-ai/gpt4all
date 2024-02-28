@@ -453,6 +453,50 @@ MySettingsTab {
                 Accessible.description: ToolTip.text
             }
             MySettingsLabel {
+                id: minPLabel 
+                text: qsTr("Min P")
+                Layout.row: 3
+                Layout.column: 0
+            }
+            MyTextField {
+                id: minPField
+                text: root.currentModelInfo.minP
+                color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
+                ToolTip.text: qsTr("Sets the minimum relative probability for a token to be considered.")
+                ToolTip.visible: hovered
+                Layout.row: 3
+                Layout.column: 1
+                validator: DoubleValidator {
+                    locale: "C"
+                }
+                Connections {
+                    target: MySettings
+                    function onMinPChanged() {
+                        minPField.text = root.currentModelInfo.minP;
+                    }
+                }
+                Connections {
+                    target: root
+                    function onCurrentModelInfoChanged() {
+                        minPField.text = root.currentModelInfo.minP;
+                    }
+                }
+                onEditingFinished: {
+                    var val = parseFloat(text)
+                    if (!isNaN(val)) {
+                        MySettings.setModelMinP(root.currentModelInfo, val)
+                        focus = false
+                    } else {
+                        text = root.currentModelInfo.minP
+                    }
+                }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: minPLabel.text
+                Accessible.description: ToolTip.text
+            }
+
+            MySettingsLabel {
                 id: topKLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Top K")
@@ -592,8 +636,8 @@ MySettingsTab {
                 id: repeatPenaltyLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Repeat Penalty")
-                Layout.row: 3
-                Layout.column: 0
+                Layout.row: 4
+                Layout.column: 2
             }
             MyTextField {
                 id: repeatPenaltyField
@@ -603,8 +647,8 @@ MySettingsTab {
                 font.pixelSize: theme.fontSizeLarge
                 ToolTip.text: qsTr("Amount to penalize repetitiveness of the output")
                 ToolTip.visible: hovered
-                Layout.row: 3
-                Layout.column: 1
+                Layout.row: 4
+                Layout.column: 3
                 validator: DoubleValidator {
                     locale: "C"
                 }

@@ -159,6 +159,7 @@ This package is in active development, and breaking changes may happen until the
     *   [mpt](#mpt)
     *   [replit](#replit)
 *   [type](#type)
+*   [TokenCallback](#tokencallback)
 *   [InferenceModel](#inferencemodel)
     *   [dispose](#dispose)
 *   [EmbeddingModel](#embeddingmodel)
@@ -184,16 +185,17 @@ This package is in active development, and breaking changes may happen until the
         *   [Parameters](#parameters-5)
     *   [hasGpuDevice](#hasgpudevice)
     *   [listGpu](#listgpu)
+        *   [Parameters](#parameters-6)
     *   [dispose](#dispose-2)
 *   [GpuDevice](#gpudevice)
     *   [type](#type-2)
 *   [LoadModelOptions](#loadmodeloptions)
 *   [loadModel](#loadmodel)
-    *   [Parameters](#parameters-6)
-*   [createCompletion](#createcompletion)
     *   [Parameters](#parameters-7)
-*   [createEmbedding](#createembedding)
+*   [createCompletion](#createcompletion)
     *   [Parameters](#parameters-8)
+*   [createEmbedding](#createembedding)
+    *   [Parameters](#parameters-9)
 *   [CompletionOptions](#completionoptions)
     *   [verbose](#verbose)
     *   [systemPromptTemplate](#systemprompttemplate)
@@ -225,15 +227,15 @@ This package is in active development, and breaking changes may happen until the
     *   [repeatPenalty](#repeatpenalty)
     *   [repeatLastN](#repeatlastn)
     *   [contextErase](#contexterase)
-*   [createTokenStream](#createtokenstream)
-    *   [Parameters](#parameters-9)
+*   [generateTokens](#generatetokens)
+    *   [Parameters](#parameters-10)
 *   [DEFAULT\_DIRECTORY](#default_directory)
 *   [DEFAULT\_LIBRARIES\_DIRECTORY](#default_libraries_directory)
 *   [DEFAULT\_MODEL\_CONFIG](#default_model_config)
 *   [DEFAULT\_PROMPT\_CONTEXT](#default_prompt_context)
 *   [DEFAULT\_MODEL\_LIST\_URL](#default_model_list_url)
 *   [downloadModel](#downloadmodel)
-    *   [Parameters](#parameters-10)
+    *   [Parameters](#parameters-11)
     *   [Examples](#examples)
 *   [DownloadModelOptions](#downloadmodeloptions)
     *   [modelPath](#modelpath)
@@ -278,6 +280,12 @@ Type: `"ggml-replit-code-v1-3b.bin"`
 Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
 
 Type: ModelType
+
+#### TokenCallback
+
+Callback for controlling token generation
+
+Type: function (tokenId: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number), token: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), total: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)): [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
 
 #### InferenceModel
 
@@ -362,9 +370,9 @@ Use the prompt function exported for a value
 
 *   `q` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The prompt input.
 *   `params` **Partial<[LLModelPromptContext](#llmodelpromptcontext)>** Optional parameters for the prompt context.
-*   `callback` **function (res: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)): void**&#x20;
+*   `callback` **[TokenCallback](#tokencallback)?** optional callback to control token generation.
 
-Returns **void** The result of the model prompt.
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** The result of the model prompt.
 
 ##### embed
 
@@ -423,6 +431,12 @@ Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 ##### listGpu
 
 GPUs that are usable for this LLModel
+
+###### Parameters
+
+*   `nCtx` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Maximum size of context window
+
+<!---->
 
 *   Throws **any** if hasGpuDevice returns false (i think)
 
@@ -690,17 +704,18 @@ The percentage of context to erase if the context window is exceeded.
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
-#### createTokenStream
+#### generateTokens
 
-TODO: Help wanted to implement this
+Creates an async generator of tokens
 
 ##### Parameters
 
-*   `llmodel` **[LLModel](#llmodel)**&#x20;
-*   `messages` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[PromptMessage](#promptmessage)>**&#x20;
-*   `options` **[CompletionOptions](#completionoptions)**&#x20;
+*   `llmodel` **[InferenceModel](#inferencemodel)** The language model object.
+*   `messages` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[PromptMessage](#promptmessage)>** The array of messages for the conversation.
+*   `options` **[CompletionOptions](#completionoptions)** The options for creating the completion.
+*   `callback` **[TokenCallback](#tokencallback)** optional callback to control token generation.
 
-Returns **function (ll: [LLModel](#llmodel)): AsyncGenerator<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>**&#x20;
+Returns **AsyncGenerator<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** The stream of generated tokens
 
 #### DEFAULT\_DIRECTORY
 
