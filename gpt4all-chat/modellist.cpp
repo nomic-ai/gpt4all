@@ -938,7 +938,7 @@ void ModelList::updateModelsFromDirectory()
                     for (const QString &id : modelsById) {
                         updateData(id, FilenameRole, filename);
                         // FIXME: WE should change this to use a consistent filename for online models
-                        updateData(id, OnlineRole, filename.startsWith("chatgpt-") || filename.startsWith("mistral-") || filename.startsWith("nomic-"));
+                        updateData(id, OnlineRole, filename.startsWith("chatgpt-") || (filename.startsWith("mistral-") && filename.endsWith(".txt")) || filename.startsWith("nomic-"));
                         updateData(id, DirpathRole, info.dir().absolutePath() + "/");
                         updateData(id, FilesizeRole, toFileSize(info.size()));
                     }
