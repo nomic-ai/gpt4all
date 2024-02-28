@@ -10,7 +10,7 @@ import time
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union, overload
 
 import requests
 from requests.exceptions import ChunkedEncodingError
@@ -45,15 +45,20 @@ class Embed4All:
         """
         self.gpt4all = GPT4All(model_name or 'all-MiniLM-L6-v2-f16.gguf', n_threads=n_threads, **kwargs)
 
-    def embed(self, text: str) -> List[float]:
+    @overload
+    def embed(self, text: str) -> list[float]: ...
+    @overload
+    def embed(self, text: list[str]) -> list[list[float]]: ...
+
+    def embed(self, text):
         """
         Generate an embedding.
 
         Args:
-            text: The text document to generate an embedding for.
+            text: The string or list of strings to generate embeddings for.
 
         Returns:
-            An embedding of your document of text.
+            An embedding or list of embeddings of your string(s).
         """
         return self.gpt4all.model.generate_embedding(text)
 
