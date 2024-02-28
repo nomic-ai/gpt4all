@@ -3,11 +3,14 @@
 
 #include <stdexcept>
 
-#include <QObject>
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QNetworkAccessManager>
+#include <QObject>
+#include <QString>
+#include <QStringList>
 #include <QThread>
+
 #include "../gpt4all-backend/llmodel.h"
 
 class ChatGPT;
@@ -126,6 +129,7 @@ private:
     QString m_modelName;
     QString m_apiKey;
     QList<QString> m_context;
+    QStringList m_queuedPrompts;
 };
 
 #endif // CHATGPT_H
