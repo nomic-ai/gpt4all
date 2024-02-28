@@ -691,13 +691,13 @@ DLL_EXPORT bool magic_match(const char *fname) {
     bool valid = true;
 
     static const std::vector<const char *> known_arches {
-        "baichuan", "bloom", "codeshell", "falcon", "gemma", "gpt2", "llama", "mpt", "orion", "persimmon", "phi2",
-        "plamo", "qwen", "qwen2", "refact", "stablelm", "starcoder"
+        "baichuan", "bert", "bloom", "codeshell", "falcon", "gemma", "gpt2", "llama", "mpt", "nomic-bert", "orion",
+        "persimmon", "phi2", "plamo", "qwen", "qwen2", "refact", "stablelm", "starcoder"
     };
 
     if (std::find(known_arches.begin(), known_arches.end(), arch) == known_arches.end()) {
         // not supported by this version of llama.cpp
-        if (!(arch == "gptj" || arch == "bert")) { // we support these via other modules
+        if (arch != "gptj") { // we support this via another module
             std::cerr << __func__ << ": unsupported model architecture: " << arch << "\n";
         }
         valid = false;
