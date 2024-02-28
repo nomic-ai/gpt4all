@@ -102,7 +102,7 @@ void Mistral::prompt(const std::string &prompt,
     QJsonArray messages;
     for (int i = 0; i < m_context.count() && i < promptCtx.n_past; ++i) {
         QJsonObject message;
-        message.insert("role", i % 2 == 0 ? "assistant" : "user");
+        message.insert("role", i % 2 == 0 ? "user" : "assistant");
         message.insert("content", m_context.at(i));
         messages.append(message);
     }
@@ -114,8 +114,6 @@ void Mistral::prompt(const std::string &prompt,
     root.insert("messages", messages);
 
     QJsonDocument doc(root);
-
-    qDebug(qPrintable(doc.toJson()));
 
 #if defined(DEBUG)
     qDebug() << "Mistral::prompt begin network request" << qPrintable(doc.toJson());

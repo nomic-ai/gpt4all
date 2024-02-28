@@ -914,7 +914,7 @@ void ModelList::updateModelsFromDirectory()
 
                 // All files that end with .bin and have 'ggml' somewhere in the name
                 if (((filename.endsWith(".bin") || filename.endsWith(".gguf")) && (/*filename.contains("ggml") ||*/ filename.contains("gguf")) && !filename.startsWith("incomplete"))
-                    || (filename.endsWith(".txt") && (filename.startsWith("chatgpt-") || filename.startsWith("nomic-")))) {
+                    || (filename.endsWith(".txt") && (filename.startsWith("chatgpt-") || filename.startsWith("mistral-") || filename.startsWith("nomic-")))) {
 
                     QString filePath = it.filePath();
                     QFileInfo info(filePath);
@@ -938,7 +938,7 @@ void ModelList::updateModelsFromDirectory()
                     for (const QString &id : modelsById) {
                         updateData(id, FilenameRole, filename);
                         // FIXME: WE should change this to use a consistent filename for online models
-                        updateData(id, OnlineRole, filename.startsWith("chatgpt-") || filename.startsWith("nomic-"));
+                        updateData(id, OnlineRole, filename.startsWith("chatgpt-") || filename.startsWith("mistral-") || filename.startsWith("nomic-"));
                         updateData(id, DirpathRole, info.dir().absolutePath() + "/");
                         updateData(id, FilesizeRole, toFileSize(info.size()));
                     }
@@ -1228,6 +1228,75 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc + chatGPT4Warn);
         updateData(id, ModelList::RequiresVersionRole, "2.4.2");
         updateData(id, ModelList::OrderRole, "cb");
+        updateData(id, ModelList::RamrequiredRole, 0);
+        updateData(id, ModelList::ParametersRole, "?");
+        updateData(id, ModelList::QuantRole, "NA");
+        updateData(id, ModelList::TypeRole, "GPT");
+    }
+
+    const QString mistralDesc = tr("<ul><li>Requires personal Mistral API key.</li><li>WARNING: Will send"
+                                   " your chats to Mistral!</li><li>Your API key will be stored on disk</li><li>Will only be used"
+                                   " to communicate with Mistral</li><li>You can apply for an API key"
+                                   " <a href=\"https://console.mistral.ai/user/api-keys\">here.</a></li>");
+
+    {
+        const QString modelName = "Mistral-tiny";
+        const QString id = modelName;
+        const QString modelFilename = "mistral-tiny.txt";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        updateData(id, ModelList::NameRole, modelName);
+        updateData(id, ModelList::FilenameRole, modelFilename);
+        updateData(id, ModelList::FilesizeRole, "minimal");
+        updateData(id, ModelList::OnlineRole, true);
+        updateData(id, ModelList::DescriptionRole,
+                   tr("<strong>MistralAI's tiny model.</strong><br>") + mistralDesc);
+        updateData(id, ModelList::RequiresVersionRole, "2.4.2");
+        updateData(id, ModelList::OrderRole, "ca");
+        updateData(id, ModelList::RamrequiredRole, 0);
+        updateData(id, ModelList::ParametersRole, "?");
+        updateData(id, ModelList::QuantRole, "NA");
+        updateData(id, ModelList::TypeRole, "GPT");
+    }
+    {
+        const QString modelName = "Mistral-small";
+        const QString id = modelName;
+        const QString modelFilename = "mistral-small.txt";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        updateData(id, ModelList::NameRole, modelName);
+        updateData(id, ModelList::FilenameRole, modelFilename);
+        updateData(id, ModelList::FilesizeRole, "minimal");
+        updateData(id, ModelList::OnlineRole, true);
+        updateData(id, ModelList::DescriptionRole,
+                   tr("<strong>MistralAI's small model.</strong><br>") + mistralDesc);
+        updateData(id, ModelList::RequiresVersionRole, "2.4.2");
+        updateData(id, ModelList::OrderRole, "ca");
+        updateData(id, ModelList::RamrequiredRole, 0);
+        updateData(id, ModelList::ParametersRole, "?");
+        updateData(id, ModelList::QuantRole, "NA");
+        updateData(id, ModelList::TypeRole, "GPT");
+    }
+    {
+        const QString modelName = "Mistral-medium";
+        const QString id = modelName;
+        const QString modelFilename = "mistral-medium.txt";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        updateData(id, ModelList::NameRole, modelName);
+        updateData(id, ModelList::FilenameRole, modelFilename);
+        updateData(id, ModelList::FilesizeRole, "minimal");
+        updateData(id, ModelList::OnlineRole, true);
+        updateData(id, ModelList::DescriptionRole,
+                   tr("<strong>MistralAI's medium model.</strong><br>") + mistralDesc);
+        updateData(id, ModelList::RequiresVersionRole, "2.4.2");
+        updateData(id, ModelList::OrderRole, "ca");
         updateData(id, ModelList::RamrequiredRole, 0);
         updateData(id, ModelList::ParametersRole, "?");
         updateData(id, ModelList::QuantRole, "NA");

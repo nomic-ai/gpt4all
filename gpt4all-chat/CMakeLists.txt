@@ -74,6 +74,7 @@ qt_add_executable(chat
     chatllm.h chatllm.cpp
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
     chatgpt.h chatgpt.cpp
+    mistral.h mistral.cpp
     database.h database.cpp
     embeddings.h embeddings.cpp
     download.h download.cpp

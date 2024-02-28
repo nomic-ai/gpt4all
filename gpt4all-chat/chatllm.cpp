@@ -1,6 +1,7 @@
 #include "chatllm.h"
 #include "chat.h"
 #include "chatgpt.h"
+#include "mistral.h"
 #include "localdocs.h"
 #include "modellist.h"
 #include "network.h"
@@ -209,7 +210,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (isModelLoaded() && this->modelInfo() == modelInfo)
         return true;
 
-    bool isChatGPT = modelInfo.isOnline; // right now only chatgpt is offered for online chat models...
+    bool isOnline = modelInfo.isOnline; // right now only chatgpt and mistral are offered for online chat models...
     QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
 
@@ -275,9 +276,11 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     m_llModelInfo.fileInfo = fileInfo;
 
     if (fileInfo.exists()) {
-        if (isChatGPT) {
+        if (isOnline) {
             QString apiKey;
-            QString chatGPTModel = fileInfo.completeBaseName().remove(0, 8); // remove the chatgpt- prefix
+            QString modelType = fileInfo.completeBaseName();
+            modelType.truncate(modelType.indexOf('-'));
+            QString modelName = fileInfo.completeBaseName();
             {
                 QFile file(filePath);
                 file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text);
@@ -285,11 +288,20 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 apiKey = stream.readAll();
                 file.close();
             }
-            m_llModelType = LLModelType::CHATGPT_;
-            ChatGPT *model = new ChatGPT();
-            model->setModelName(chatGPTModel);
-            model->setAPIKey(apiKey);
-            m_llModelInfo.model = model;
+            if(modelType == "chatgpt") {
+                m_llModelType = LLModelType::CHATGPT_;
+                ChatGPT *model = new ChatGPT();
+                model->setModelName(modelName);
+                model->setAPIKey(apiKey);
+                m_llModelInfo.model = model;
+            }
+            if(modelType == "mistral") {
+                m_llModelType = LLModelType::MISTRAL_;
+                Mistral *model = new Mistral();
+                model->setModelName(modelName);
+                model->setAPIKey(apiKey);
+                m_llModelInfo.model = model;
+            }
         } else {
             auto n_ctx = MySettings::globalInstance()->modelContextLength(modelInfo);
             m_ctx.n_ctx = n_ctx;
@@ -458,7 +470,7 @@ void ChatLLM::regenerateResponse()
 {
     // ChatGPT uses a different semantic meaning for n_past than local models. For ChatGPT, the meaning
     // of n_past is of the number of prompt/response pairs, rather than for total tokens.
-    if (m_llModelType == LLModelType::CHATGPT_)
+    if (m_llModelType == LLModelType::CHATGPT_ || m_llModelType == LLModelType::MISTRAL_)
         m_ctx.n_past -= 1;
     else
         m_ctx.n_past -= m_promptResponseTokens;
@@ -953,6 +965,14 @@ void ChatLLM::saveState()
         stream << chatGPT->context();
         return;
     }
+    if (m_llModelType == LLModelType::MISTRAL_) {
+        m_state.clear();
+        QDataStream stream(&m_state, QIODeviceBase::WriteOnly);
+        stream.setVersion(QDataStream::Qt_6_5);
+        Mistral *mistral = static_cast<Mistral*>(m_llModelInfo.model);
+        stream << mistral->context();
+        return;
+    }
 
     const size_t stateSize = m_llModelInfo.model->stateSize();
     m_state.resize(stateSize);
@@ -974,6 +994,17 @@ void ChatLLM::restoreState()
         QList<QString> context;
         stream >> context;
         chatGPT->setContext(context);
+        m_state.clear();
+        m_state.squeeze();
+        return;
+    }
+    if (m_llModelType == LLModelType::MISTRAL_) {
+        QDataStream stream(&m_state, QIODeviceBase::ReadOnly);
+        stream.setVersion(QDataStream::Qt_6_5);
+        Mistral *mistral = static_cast<Mistral*>(m_llModelInfo.model);
+        QList<QString> context;
+        stream >> context;
+        mistral->setContext(context);
         m_state.clear();
         m_state.squeeze();
         return;
