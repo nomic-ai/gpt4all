@@ -272,8 +272,8 @@ size_t LLModel::embeddingSize() const {
     return 0;
 }
 
-bool LLModel::embed(const std::vector<std::string> &prompts, float *embeddings) {
-    (void)prompts;
+bool LLModel::embed(const std::vector<std::string> &texts, float *embeddings) {
+    (void)texts;
     (void)embeddings;
     std::cerr << __func__ << ": " << implementation().modelType() << " does not support embeddings\n";
     return false;

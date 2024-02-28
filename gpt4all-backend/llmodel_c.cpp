@@ -146,22 +146,22 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     ctx->context_erase = wrapper->promptContext.contextErase;
 }
 
-float *llmodel_embed(llmodel_model model, const char **prompts, size_t *embedding_size)
+float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size)
 {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
     *embedding_size = 0;
 
-    if (!prompts || !*prompts) {
-        std::cerr << __func__ << ": no prompts given\n";
+    if (!texts || !*texts) {
+        std::cerr << __func__ << ": no texts given\n";
         return nullptr;
     }
 
-    std::vector<std::string> promptsVec;
-    while (*prompts) { promptsVec.emplace_back(*prompts++); }
+    std::vector<std::string> textsVec;
+    while (*texts) { textsVec.emplace_back(*texts++); }
 
-    size_t embd_size = promptsVec.size() * wrapper->llModel->embeddingSize();
+    size_t embd_size = textsVec.size() * wrapper->llModel->embeddingSize();
     auto *embedding = new float[embd_size];
-    if (!wrapper->llModel->embed(promptsVec, embedding)) {
+    if (!wrapper->llModel->embed(textsVec, embedding)) {
         std::cerr << __func__ << ": LLModel::embed failed\n";
         return nullptr;
     }

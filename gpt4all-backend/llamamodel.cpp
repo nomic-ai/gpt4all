@@ -563,18 +563,18 @@ size_t LLamaModel::embeddingSize() const {
     return llama_n_embd(d_ptr->model);
 }
 
-bool LLamaModel::embed(const std::vector<std::string> &prompts, float *embeddings)
+bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings)
 {
     typedef std::vector<LLModel::Token> TokenString;
 
     const llama_token bos_token = llama_token_bos(d_ptr->model);
     const llama_token eos_token = llama_token_eos(d_ptr->model);
 
-    // tokenize the prompts
+    // tokenize the texts
     std::vector<TokenString> inputs;
-    for (const auto &prompt: prompts) {
-        TokenString inp(prompt.length()+4);
-        int32_t n_tokens = llama_tokenize(d_ptr->model, prompt.c_str(), prompt.length(), inp.data(), inp.size(), false, false);
+    for (const auto &text: texts) {
+        TokenString inp(text.length()+4);
+        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), inp.data(), inp.size(), false, false);
         assert(eos_token == -1 || inp[n_tokens - 1] == eos_token);
         inp.resize(n_tokens - 1); // erase EOS/SEP
         inputs.push_back(inp);
@@ -605,10 +605,10 @@ bool LLamaModel::embed(const std::vector<std::string> &prompts, float *embedding
     struct llama_batch batch = llama_batch_init(n_batch, 0, batches.size());
 
     const int32_t n_embd = llama_n_embd(d_ptr->model);
-    // n_prompts x n_embd matrix
-    std::vector<double> embeddingsSum(prompts.size() * n_embd);
-    std::vector<int> embeddingsSumTotal(prompts.size());
-    std::vector<int> queued_indices; // prompt indices of batches to be processed
+    // n_texts x n_embd matrix
+    std::vector<double> embeddingsSum(texts.size() * n_embd);
+    std::vector<int> embeddingsSumTotal(texts.size());
+    std::vector<int> queued_indices; // text indices of batches to be processed
 
     auto decode = [this, &queued_indices, n_embd, &batch, &embeddingsSum, &embeddingsSumTotal]() {
         // kv cache is irrelevant for embeddings
@@ -647,7 +647,7 @@ bool LLamaModel::embed(const std::vector<std::string> &prompts, float *embedding
     // final batch
     if (!decode()) { return false; }
 
-    for (unsigned i = 0; i < prompts.size(); i++) {
+    for (unsigned i = 0; i < texts.size(); i++) {
         auto *embd = &embeddingsSum[i * n_embd];
         auto *embd_end = embd + n_embd;
         int total = embeddingsSumTotal[i];
