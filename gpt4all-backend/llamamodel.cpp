@@ -347,7 +347,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->ctx_params.n_threads_batch = d_ptr->n_threads;
 
     if (m_supportsEmbedding) {
-        d_ptr->ctx_params.embedding = true;
+        d_ptr->ctx_params.embeddings = true;
     }
 
     d_ptr->ctx = llama_new_context_with_model(d_ptr->model, d_ptr->ctx_params);
@@ -590,7 +590,7 @@ void llama_batch_add(
 
 static void batch_add_seq(llama_batch &batch, const std::vector<LLModel::Token> &tokens, int seq_id) {
     for (unsigned i = 0; i < tokens.size(); i++) {
-        llama_batch_add(batch, tokens[i], i, { seq_id }, false);
+        llama_batch_add(batch, tokens[i], i, { seq_id }, i == tokens.size() - 1);
     }
 }
 
@@ -659,8 +659,9 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings)
             return false;
         }
 
-        for (unsigned i = 0; i < queued_indices.size(); ++i) {
-            auto i_prompt = queued_indices[i];
+        for (int i = 0; i < batch.n_tokens; ++i) {
+            if (!batch.logits[i]) { continue; }
+            int i_prompt = queued_indices[batch.seq_id[i][0]];
             auto *out = &embeddingsSum[i_prompt * n_embd];
             auto *emb = llama_get_embeddings_ith(d_ptr->ctx, i);
             std::transform(out, out + n_embd, emb, out, std::plus<double>());
