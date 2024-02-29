@@ -384,7 +384,7 @@ private:
 
 private:
     explicit ModelList();
-    ~ModelList() {}
+    ~ModelList() { for (auto *model: m_models) { delete model; } }
     friend class MyModelList;
 };
 
