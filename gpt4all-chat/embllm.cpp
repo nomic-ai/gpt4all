@@ -27,7 +27,7 @@ void EmbeddingLLMWorker::wait()
 
 bool EmbeddingLLMWorker::loadModel()
 {
-    const EmbeddingModels *embeddingModels = ModelList::globalInstance()->embeddingModels();
+    const EmbeddingModels *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
     if (!embeddingModels->count())
         return false;
 
@@ -41,7 +41,8 @@ bool EmbeddingLLMWorker::loadModel()
         return false;
     }
 
-    bool isNomic = fileInfo.fileName().startsWith("nomic");
+    auto filename = fileInfo.fileName();
+    bool isNomic = filename.startsWith("nomic-") && filename.endsWith(".txt");
     if (isNomic) {
         QFile file(filePath);
         file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text);
@@ -56,14 +57,14 @@ bool EmbeddingLLMWorker::loadModel()
     // TODO(cebtenzzre): support GPU-accelerated embeddings
     bool success = m_model->loadModel(filePath.toStdString(), 2048, 0);
     if (!success) {
-        qWarning() << "WARNING: Could not load sbert";
+        qWarning() << "WARNING: Could not load embedding model";
         delete m_model;
         m_model = nullptr;
         return false;
     }
 
-    if (m_model->implementation().modelType() != "Bert") {
-        qWarning() << "WARNING: Model type is not sbert";
+    if (!m_model->supportsEmbedding()) {
+        qWarning() << "WARNING: Model type does not support embeddings";
         delete m_model;
         m_model = nullptr;
         return false;

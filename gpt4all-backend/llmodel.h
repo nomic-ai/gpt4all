@@ -44,6 +44,7 @@ public:
         static std::vector<GPUDevice> availableGPUDevices();
         static int32_t maxContextLength(const std::string &modelPath);
         static int32_t layerCount(const std::string &modelPath);
+        static bool isEmbeddingModel(const std::string &modelPath);
         static void setImplementationsSearchPath(const std::string &path);
         static const std::string &implementationsSearchPath();
 

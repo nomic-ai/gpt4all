@@ -34,6 +34,7 @@ struct ModelInfo {
     Q_PROPERTY(QString quant MEMBER quant)
     Q_PROPERTY(QString type MEMBER type)
     Q_PROPERTY(bool isClone MEMBER isClone)
+    Q_PROPERTY(bool isEmbeddingModel MEMBER isEmbeddingModel)
     Q_PROPERTY(double temperature READ temperature WRITE setTemperature)
     Q_PROPERTY(double topP READ topP WRITE setTopP)
     Q_PROPERTY(double minP READ minP WRITE setMinP)
@@ -84,6 +85,7 @@ public:
     QString quant;
     QString type;
     bool isClone = false;
+    bool isEmbeddingModel = false;
 
     bool operator==(const ModelInfo &other) const {
         return  m_id == other.m_id;
@@ -143,9 +145,10 @@ class EmbeddingModels : public QSortFilterProxyModel
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
-    explicit EmbeddingModels(QObject *parent);
+    EmbeddingModels(QObject *parent, bool requireInstalled);
     int count() const;
 
+    int defaultModelIndex() const;
     ModelInfo defaultModelInfo() const;
 
 Q_SIGNALS:
@@ -154,15 +157,17 @@ Q_SIGNALS:
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+
+private:
+    bool m_requireInstalled;
 };
 
-class InstalledModels : public QSortFilterProxyModel
+class InstalledModels : public EmbeddingModels
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
     explicit InstalledModels(QObject *parent);
-    int count() const;
 
 Q_SIGNALS:
     void countChanged();
@@ -201,8 +206,8 @@ class ModelList : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
-    Q_PROPERTY(int defaultEmbeddingModelIndex READ defaultEmbeddingModelIndex NOTIFY defaultEmbeddingModelIndexChanged)
-    Q_PROPERTY(EmbeddingModels* embeddingModels READ embeddingModels NOTIFY embeddingModelsChanged)
+    Q_PROPERTY(int defaultEmbeddingModelIndex READ defaultEmbeddingModelIndex)
+    Q_PROPERTY(EmbeddingModels* installedEmbeddingModels READ installedEmbeddingModels NOTIFY installedEmbeddingModelsChanged)
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
@@ -240,6 +245,7 @@ public:
         QuantRole,
         TypeRole,
         IsCloneRole,
+        IsEmbeddingModelRole,
         TemperatureRole,
         TopPRole,
         TopKRole,
@@ -285,6 +291,7 @@ public:
         roles[QuantRole] = "quant";
         roles[TypeRole] = "type";
         roles[IsCloneRole] = "isClone";
+        roles[IsEmbeddingModelRole] = "isEmbeddingModel";
         roles[TemperatureRole] = "temperature";
         roles[TopPRole] = "topP";
         roles[MinPRole] = "minP";
@@ -326,6 +333,7 @@ public:
     const QList<QString> userDefaultModelList() const;
 
     EmbeddingModels *embeddingModels() const { return m_embeddingModels; }
+    EmbeddingModels *installedEmbeddingModels() const { return m_installedEmbeddingModels; }
     InstalledModels *installedModels() const { return m_installedModels; }
     DownloadableModels *downloadableModels() const { return m_downloadableModels; }
 
@@ -348,12 +356,11 @@ public:
 
 Q_SIGNALS:
     void countChanged();
-    void embeddingModelsChanged();
+    void installedEmbeddingModelsChanged();
     void installedModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
     void asyncModelRequestOngoingChanged();
-    void defaultEmbeddingModelIndexChanged();
 
 private Q_SLOTS:
     void updateModelsFromJson();
@@ -375,6 +382,7 @@ private:
     mutable QMutex m_mutex;
     QNetworkAccessManager m_networkManager;
     EmbeddingModels *m_embeddingModels;
+    EmbeddingModels *m_installedEmbeddingModels;
     InstalledModels *m_installedModels;
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;
