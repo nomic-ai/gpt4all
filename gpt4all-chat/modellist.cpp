@@ -893,29 +893,6 @@ QString ModelList::uniqueModelName(const ModelInfo &model) const
     return baseName;
 }
 
-QString ModelList::modelDirPath(const QString &modelName, bool isOnline)
-{
-    QVector<QString> possibleFilePaths;
-    if (isOnline)
-        possibleFilePaths << "/" + modelName + ".txt";
-    else {
-        possibleFilePaths << "/ggml-" + modelName + ".bin";
-        possibleFilePaths << "/" + modelName + ".bin";
-    }
-    for (const QString &modelFilename : possibleFilePaths) {
-        QString appPath = QCoreApplication::applicationDirPath() + modelFilename;
-        QFileInfo infoAppPath(appPath);
-        if (infoAppPath.exists())
-            return QCoreApplication::applicationDirPath();
-
-        QString downloadPath = MySettings::globalInstance()->modelPath() + modelFilename;
-        QFileInfo infoLocalPath(downloadPath);
-        if (infoLocalPath.exists())
-            return MySettings::globalInstance()->modelPath();
-    }
-    return QString();
-}
-
 void ModelList::updateModelsFromDirectory()
 {
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();

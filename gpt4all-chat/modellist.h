@@ -365,7 +365,6 @@ private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
-    QString modelDirPath(const QString &modelName, bool isOnline);
     int indexForModel(ModelInfo *model);
     QVariant dataInternal(const ModelInfo *info, int role) const;
     static bool lessThan(const ModelInfo* a, const ModelInfo* b);
