@@ -169,6 +169,7 @@ uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src);
  * @param response_callback A callback function for handling the generated response.
  * @param recalculate_callback A callback function for handling recalculation requests.
  * @param special True if special tokens in the prompt should be processed, false otherwise.
+ * @param fake_reply A string to insert into context as the model's reply, or NULL to generate one.
  * @param ctx A pointer to the llmodel_prompt_context structure.
  */
 void llmodel_prompt(llmodel_model model, const char *prompt,
@@ -177,7 +178,8 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
                     llmodel_response_callback response_callback,
                     llmodel_recalculate_callback recalculate_callback,
                     llmodel_prompt_context *ctx,
-                    bool special);
+                    bool special,
+                    const char *fake_reply);
 
 /**
  * Generate an embedding using the model.
