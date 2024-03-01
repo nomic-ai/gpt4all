@@ -60,7 +60,7 @@ MyDialog {
             Layout.fillHeight: true
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
-            text: qsTr("Network error: could not retrieve http://gpt4all.io/models/models2.json")
+            text: qsTr("Network error: could not retrieve http://gpt4all.io/models/models3.json")
             font.pixelSize: theme.fontSizeLarge
             color: theme.mutedTextColor
         }
