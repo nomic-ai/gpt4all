@@ -184,13 +184,16 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
  * NOTE: If given NULL pointers for the model or text, or an empty text, a NULL pointer will be
  * returned. Bindings should signal an error when NULL is the return value.
  * @param model A pointer to the llmodel_model instance.
- * @param texts A pointer to a NULL-terminated array of strings representing the texts to generate an embedding for.
+ * @param texts A pointer to a NULL-terminated array of strings representing the texts to generate an
+ * embedding for.
  * @param embedding_size A pointer to a size_t type that will be set by the call indicating the length
  * of the returned floating point array.
+ * @param matryoshka_dim The per-text embedding dimension for use with Matryoshka-capable models. Cannot be
+ * greater than the model architecture's n_embd. Set to -1 to disable.
  * @return A pointer to an array of floating point values passed to the calling method which then will
  * be responsible for lifetime of this memory.
  */
-float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size);
+float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size, int matryoshka_dim);
 
 /**
  * Frees the memory allocated by the llmodel_embedding function.

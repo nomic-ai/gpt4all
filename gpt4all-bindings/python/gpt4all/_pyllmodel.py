@@ -108,6 +108,7 @@ llmodel.llmodel_embed.argtypes = [
     ctypes.c_void_p,
     ctypes.POINTER(ctypes.c_char_p),
     ctypes.POINTER(ctypes.c_size_t),
+    ctypes.c_int,
 ]
 
 llmodel.llmodel_embed.restype = ctypes.POINTER(ctypes.c_float)
@@ -287,11 +288,11 @@ class LLModel:
         self.context.context_erase = context_erase
 
     @overload
-    def generate_embedding(self, text: str) -> list[float]: ...
+    def generate_embedding(self, text: str, matryoshka_dim: int) -> list[float]: ...
     @overload
-    def generate_embedding(self, text: list[str]) -> list[list[float]]: ...
+    def generate_embedding(self, text: list[str], matryoshka_dim: int) -> list[list[float]]: ...
 
-    def generate_embedding(self, text):
+    def generate_embedding(self, text, matryoshka_dim):
         if not text:
             raise ValueError("text must not be None or empty")
 
@@ -304,7 +305,7 @@ class LLModel:
         for i, t in enumerate(text):
             c_texts[i] = ctypes.c_char_p(t.encode())
 
-        embedding_ptr = llmodel.llmodel_embed(self.model, c_texts, ctypes.byref(embedding_size))
+        embedding_ptr = llmodel.llmodel_embed(self.model, c_texts, ctypes.byref(embedding_size), matryoshka_dim)
         n_embd = embedding_size.value // len(text)
         embedding_array = [
             [embedding_ptr[i * n_embd + j] for j in range(n_embd)]

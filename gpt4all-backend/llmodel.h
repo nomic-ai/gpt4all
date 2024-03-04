@@ -104,7 +104,7 @@ public:
                         std::string *fakeReply = nullptr);
 
     virtual size_t embeddingSize() const;
-    virtual bool embed(const std::vector<std::string> &texts, float *embeddings);
+    virtual bool embed(const std::vector<std::string> &texts, float *embeddings, int matryoshkaDim = -1);
 
     virtual void setThreadCount(int32_t n_threads) { (void)n_threads; }
     virtual int32_t threadCount() const { return 1; }

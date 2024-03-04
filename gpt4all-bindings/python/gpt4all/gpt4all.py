@@ -46,11 +46,11 @@ class Embed4All:
         self.gpt4all = GPT4All(model_name or 'all-MiniLM-L6-v2-f16.gguf', n_threads=n_threads, **kwargs)
 
     @overload
-    def embed(self, text: str) -> list[float]: ...
+    def embed(self, text: str, matryoshka_dim: int) -> list[float]: ...
     @overload
-    def embed(self, text: list[str]) -> list[list[float]]: ...
+    def embed(self, text: list[str], matryoshka_dim: int) -> list[list[float]]: ...
 
-    def embed(self, text):
+    def embed(self, text, matryoshka_dim=-1):
         """
         Generate an embedding.
 
@@ -60,7 +60,7 @@ class Embed4All:
         Returns:
             An embedding or list of embeddings of your string(s).
         """
-        return self.gpt4all.model.generate_embedding(text)
+        return self.gpt4all.model.generate_embedding(text, matryoshka_dim)
 
 
 class GPT4All:

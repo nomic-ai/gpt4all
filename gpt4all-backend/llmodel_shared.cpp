@@ -272,9 +272,10 @@ size_t LLModel::embeddingSize() const {
     return 0;
 }
 
-bool LLModel::embed(const std::vector<std::string> &texts, float *embeddings) {
+bool LLModel::embed(const std::vector<std::string> &texts, float *embeddings, int matryoshkaDim) {
     (void)texts;
     (void)embeddings;
+    (void)matryoshkaDim;
     std::cerr << __func__ << ": " << implementation().modelType() << " does not support embeddings\n";
     return false;
 }

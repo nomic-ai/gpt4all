@@ -598,7 +598,7 @@ size_t LLamaModel::embeddingSize() const {
     return llama_n_embd(d_ptr->model);
 }
 
-bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings)
+bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings, int matryoshkaDim)
 {
     typedef std::vector<LLModel::Token> TokenString;
 
@@ -645,6 +645,8 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings)
     struct llama_batch batch = llama_batch_init(n_batch, 0, 1);
 
     const int32_t n_embd = llama_n_embd(d_ptr->model);
+    matryoshkaDim = std::min(matryoshkaDim, n_embd);
+
     // n_texts x n_embd matrix
     std::vector<double> embeddingsSum(texts.size() * n_embd);
     std::vector<int> embeddingsSumTotal(texts.size());
@@ -688,19 +690,39 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings)
     // final batch
     if (!decode()) { return false; }
 
+    auto product = [](double a) {
+        return [a](double b) { return a * b; };
+    };
+
     for (unsigned i = 0; i < texts.size(); i++) {
         auto *embd = &embeddingsSum[i * n_embd];
         auto *embd_end = embd + n_embd;
         int total = embeddingsSumTotal[i];
 
         // average over chunks
-        std::transform(embd, embd_end, embd, [total](float f){ return f / total; });
+        std::transform(embd, embd_end, embd, product(1.0 / total));
+
+        // layer normalization for matryoshka
+        if (matryoshkaDim > 0) {
+            // normalize mean
+            double mean = std::accumulate(embd, embd_end, 0.0) / n_embd;
+            std::transform(embd, embd_end, embd, [mean](double f){ return f - mean; });
+
+            // unbiased sample variance, with Bessel's correction
+            double variance = std::inner_product(embd, embd_end, embd, 0.0) / (n_embd - 1);
+
+            // trim to matryoshka dim
+            embd_end = embd + matryoshkaDim;
+
+            // normalize variance
+            std::transform(embd, embd_end, embd, product(1.0 / std::sqrt(variance + 1e-5)));
+        }
 
         // L2 norm
         double magnitude = std::sqrt(std::inner_product(embd, embd_end, embd, 0.0));
-        std::transform(embd, embd_end, embd, [magnitude](float f){ return f / magnitude; });
+        std::transform(embd, embd_end, embd, product(1.0 / std::max(magnitude, 1e-12)));
         std::copy(embd, embd_end, embeddings);
-        embeddings += n_embd;
+        embeddings += embd_end - embd;
     }
 
     return true;
