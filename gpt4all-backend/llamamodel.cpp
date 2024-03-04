@@ -319,19 +319,23 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     if (!d_ptr->model) {
         fflush(stdout);
         d_ptr->device = -1;
-        std::cerr << "LLAMA ERROR: failed to load model from " <<  modelPath << std::endl;
+        std::cerr << "LLAMA ERROR: failed to load model from " << modelPath << std::endl;
         return false;
-    }
-
-    const int n_ctx_train = llama_n_ctx_train(d_ptr->model);
-    if (n_ctx > n_ctx_train) {
-        std::cerr << "warning: model was trained on only " << n_ctx_train << " context tokens ("
-                  << n_ctx << " specified)\n";
     }
 
     // -- initialize the context --
 
     d_ptr->ctx_params = llama_context_default_params();
+
+    const int n_ctx_train = llama_n_ctx_train(d_ptr->model);
+    if (isEmbedding) {
+        d_ptr->ctx_params.n_batch = n_ctx_train;
+    } else {
+        if (n_ctx > n_ctx_train) {
+            std::cerr << "warning: model was trained on only " << n_ctx_train << " context tokens ("
+                      << n_ctx << " specified)\n";
+        }
+    }
 
     d_ptr->ctx_params.n_ctx   = n_ctx;
     d_ptr->ctx_params.seed    = params.seed;
