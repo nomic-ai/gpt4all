@@ -657,9 +657,6 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings,
     std::vector<int> queued_indices; // text indices of batches to be processed
 
     auto decode = [this, &queued_indices, n_embd, &batch, &embeddingsSum, &embeddingsSumTotal]() {
-        // kv cache is irrelevant for embeddings
-        llama_kv_cache_clear(d_ptr->ctx);
-
         if (llama_decode(d_ptr->ctx, batch) < 0) {
             std::cerr << __func__ << ": llama_decode failed\n";
             return false;
@@ -669,8 +666,13 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings,
             if (!batch.logits[i]) { continue; }
             int i_prompt = queued_indices[batch.seq_id[i][0]];
             auto *out = &embeddingsSum[i_prompt * n_embd];
-            auto *emb = llama_get_embeddings_ith(d_ptr->ctx, i);
-            std::transform(out, out + n_embd, emb, out, std::plus<double>());
+
+            // sequence embeddings aren't available when pooling_type is NONE
+            auto *embd = llama_get_embeddings_seq(d_ptr->ctx, batch.seq_id[i][0]);
+            if (!embd) { embd = llama_get_embeddings_ith(d_ptr->ctx, i); }
+            assert(embd);
+
+            std::transform(out, out + n_embd, embd, out, std::plus<double>());
             embeddingsSumTotal[i_prompt]++;
         }
 
