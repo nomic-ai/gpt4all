@@ -130,7 +130,7 @@ void Download::downloadModel(const QString &modelFile)
 
     ModelList::globalInstance()->updateDataByFilename(modelFile, ModelList::DownloadingRole, true);
     ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
-    QString url = !info.url.isEmpty() ? info.url : "http://gpt4all.io/models/gguf/" + modelFile;
+    QString url = !info.url().isEmpty() ? info.url() : "http://gpt4all.io/models/gguf/" + modelFile;
     Network::globalInstance()->sendDownloadStarted(modelFile);
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::User, modelFile);
@@ -201,6 +201,8 @@ void Download::removeModel(const QString &modelFile)
 
     QFile file(filePath);
     if (file.exists()) {
+        const ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
+        ModelList::globalInstance()->removeInstalled(info);
         Network::globalInstance()->sendRemoveModel(modelFile);
         file.remove();
     }
@@ -364,8 +366,8 @@ HashAndSaveFile::HashAndSaveFile()
     m_hashAndSaveThread.start();
 }
 
-void HashAndSaveFile::hashAndSave(const QString &expectedHash, const QString &saveFilePath,
-        QFile *tempFile, QNetworkReply *modelReply)
+void HashAndSaveFile::hashAndSave(const QString &expectedHash, QCryptographicHash::Algorithm a,
+    const QString &saveFilePath, QFile *tempFile, QNetworkReply *modelReply)
 {
     Q_ASSERT(!tempFile->isOpen());
     QString modelFilename = modelReply->request().attribute(QNetworkRequest::User).toString();
@@ -379,13 +381,16 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, const QString &sa
         return;
     }
 
-    QCryptographicHash hash(QCryptographicHash::Md5);
+    QCryptographicHash hash(a);
     while(!tempFile->atEnd())
         hash.addData(tempFile->read(16384));
-    if (hash.result().toHex() != expectedHash) {
+    if (hash.result().toHex() != expectedHash.toLatin1()) {
         tempFile->close();
         const QString error
-            = QString("ERROR: Download error MD5SUM did not match: %1 != %2 for %3").arg(hash.result().toHex()).arg(expectedHash).arg(modelFilename);
+            = QString("ERROR: Download error hash did not match: %1 != %2 for %3")
+                .arg(hash.result().toHex())
+                .arg(expectedHash.toLatin1())
+                .arg(modelFilename);
         qWarning() << error;
         tempFile->remove();
         emit hashAndSaveFinished(false, error, tempFile, modelReply);
@@ -472,9 +477,12 @@ void Download::handleModelDownloadFinished()
 
     // Notify that we are calculating hash
     ModelList::globalInstance()->updateDataByFilename(modelFilename, ModelList::CalcHashRole, true);
-    QByteArray md5sum =  ModelList::globalInstance()->modelInfoByFilename(modelFilename).md5sum;
+    QByteArray hash =  ModelList::globalInstance()->modelInfoByFilename(modelFilename).hash;
+    ModelInfo::HashAlgorithm hashAlgorithm =  ModelList::globalInstance()->modelInfoByFilename(modelFilename).hashAlgorithm;
     const QString saveFilePath = MySettings::globalInstance()->modelPath() + modelFilename;
-    emit requestHashAndSave(md5sum, saveFilePath, tempFile, modelReply);
+    emit requestHashAndSave(hash,
+        (hashAlgorithm == ModelInfo::Md5 ? QCryptographicHash::Md5 : QCryptographicHash::Sha256),
+        saveFilePath, tempFile, modelReply);
 }
 
 void Download::handleHashAndSaveFinished(bool success, const QString &error,
@@ -489,10 +497,14 @@ void Download::handleHashAndSaveFinished(bool success, const QString &error,
     tempFile->deleteLater();
 
     ModelList::globalInstance()->updateDataByFilename(modelFilename, ModelList::DownloadingRole, false);
-    if (!success)
+    if (!success) {
         ModelList::globalInstance()->updateDataByFilename(modelFilename, ModelList::DownloadErrorRole, error);
-    else
+    } else {
+        ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFilename);
+        if (info.isDiscovered())
+            ModelList::globalInstance()->updateDiscoveredInstalled(info);
         ModelList::globalInstance()->updateDataByFilename(modelFilename, ModelList::DownloadErrorRole, QString());
+    }
 }
 
 void Download::handleReadyRead()
