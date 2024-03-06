@@ -20,7 +20,7 @@ struct ModelInfo {
     Q_PROPERTY(bool isOnline MEMBER isOnline)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
-    Q_PROPERTY(QString deprecatedVersion MEMBER deprecatedVersion)
+    Q_PROPERTY(QString versionRemoved MEMBER versionRemoved)
     Q_PROPERTY(QString url READ url WRITE setUrl)
     Q_PROPERTY(qint64 bytesReceived MEMBER bytesReceived)
     Q_PROPERTY(qint64 bytesTotal MEMBER bytesTotal)
@@ -106,7 +106,7 @@ public:
     bool isOnline = false;
     bool disableGUI = false;
     QString requiresVersion;
-    QString deprecatedVersion;
+    QString versionRemoved;
     qint64 bytesReceived = 0;
     qint64 bytesTotal = 0;
     qint64 timestamp = 0;
@@ -285,7 +285,7 @@ public:
         DisableGUIRole,
         DescriptionRole,
         RequiresVersionRole,
-        DeprecatedVersionRole,
+        VersionRemovedRole,
         UrlRole,
         BytesReceivedRole,
         BytesTotalRole,
@@ -335,7 +335,7 @@ public:
         roles[DisableGUIRole] = "disableGUI";
         roles[DescriptionRole] = "description";
         roles[RequiresVersionRole] = "requiresVersion";
-        roles[DeprecatedVersionRole] = "deprecatedVersion";
+        roles[VersionRemovedRole] = "versionRemoved";
         roles[UrlRole] = "url";
         roles[BytesReceivedRole] = "bytesReceived";
         roles[BytesTotalRole] = "bytesTotal";

@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QStandardPaths>
 #include <algorithm>
+#include <compare>
 
 //#define USE_LOCAL_MODELSJSON
 
@@ -691,8 +692,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->description();
         case RequiresVersionRole:
             return info->requiresVersion;
-        case DeprecatedVersionRole:
-            return info->deprecatedVersion;
+        case VersionRemovedRole:
+            return info->versionRemoved;
         case UrlRole:
             return info->url();
         case BytesReceivedRole:
@@ -840,8 +841,8 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->setDescription(value.toString()); break;
             case RequiresVersionRole:
                 info->requiresVersion = value.toString(); break;
-            case DeprecatedVersionRole:
-                info->deprecatedVersion = value.toString(); break;
+            case VersionRemovedRole:
+                info->versionRemoved = value.toString(); break;
             case UrlRole:
                 info->setUrl(value.toString()); break;
             case BytesReceivedRole:
@@ -1277,22 +1278,19 @@ void ModelList::updateDataForSettings()
     emit dataChanged(index(0, 0), index(m_models.size() - 1, 0));
 }
 
-static bool compareVersions(const QString &a, const QString &b) {
+static std::strong_ordering compareVersions(const QString &a, const QString &b) {
     QStringList aParts = a.split('.');
     QStringList bParts = b.split('.');
 
     for (int i = 0; i < std::min(aParts.size(), bParts.size()); ++i) {
         int aInt = aParts[i].toInt();
         int bInt = bParts[i].toInt();
-
-        if (aInt > bInt) {
-            return true;
-        } else if (aInt < bInt) {
-            return false;
+        if (auto diff = aInt <=> bInt; diff != 0) {
+            return diff;
         }
     }
 
-    return aParts.size() > bParts.size();
+    return aParts.size() <=> bParts.size();
 }
 
 void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
@@ -1328,7 +1326,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QString modelFilename = obj["filename"].toString();
         QString modelFilesize = obj["filesize"].toString();
         QString requiresVersion = obj["requires"].toString();
-        QString deprecatedVersion = obj["deprecated"].toString();
+        QString versionRemoved = obj["removedIn"].toString();
         QString url = obj["url"].toString();
         QByteArray modelHash = obj["md5sum"].toString().toLatin1().constData();
         bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
@@ -1340,16 +1338,13 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QString quant = obj["quant"].toString();
         QString type = obj["type"].toString();
 
-        // If the currentVersion version is strictly less than required version, then continue
-        if (!requiresVersion.isEmpty()
-            && requiresVersion != currentVersion
-            && compareVersions(requiresVersion, currentVersion)) {
+        // If the current version is strictly less than required version, then skip
+        if (!requiresVersion.isEmpty() && compareVersions(currentVersion, requiresVersion) < 0) {
             continue;
         }
 
-        // If the current version is strictly greater than the deprecated version, then continue
-        if (!deprecatedVersion.isEmpty()
-            && compareVersions(currentVersion, deprecatedVersion)) {
+        // If the version removed is less than or equal to the current version, then skip
+        if (!versionRemoved.isEmpty() && compareVersions(versionRemoved, currentVersion) <= 0) {
             continue;
         }
 
@@ -1372,7 +1367,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::DefaultRole, isDefault);
         updateData(id, ModelList::DescriptionRole, description);
         updateData(id, ModelList::RequiresVersionRole, requiresVersion);
-        updateData(id, ModelList::DeprecatedVersionRole, deprecatedVersion);
+        updateData(id, ModelList::VersionRemovedRole, versionRemoved);
         updateData(id, ModelList::UrlRole, url);
         updateData(id, ModelList::DisableGUIRole, disableGUI);
         updateData(id, ModelList::OrderRole, order);
