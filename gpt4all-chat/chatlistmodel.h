@@ -143,6 +143,8 @@ public:
             m_newChat = nullptr;
         }
 
+        chat->markForDeletion();
+
         const int index = m_chats.indexOf(chat);
         if (m_chats.count() < 3 /*m_serverChat included*/) {
             addChat();

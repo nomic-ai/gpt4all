@@ -83,6 +83,7 @@ public:
     void setShouldBeLoaded(bool b);
     void setShouldTrySwitchContext(bool b);
     void setForceUnloadModel(bool b) { m_forceUnloadModel = b; }
+    void setMarkedForDeletion(bool b) { m_markedForDeletion = b; }
 
     QString response() const;
 
@@ -175,6 +176,7 @@ private:
     std::atomic<bool> m_shouldTrySwitchContext;
     std::atomic<bool> m_isRecalc;
     std::atomic<bool> m_forceUnloadModel;
+    std::atomic<bool> m_markedForDeletion;
     bool m_isServer;
     bool m_forceMetal;
     bool m_reloadingToChangeVariant;

@@ -285,6 +285,11 @@ void Chat::unloadAndDeleteLater()
     unloadModel();
 }
 
+void Chat::markForDeletion()
+{
+    m_llmodel->setMarkedForDeletion(true);
+}
+
 void Chat::unloadModel()
 {
     stopGenerating();

@@ -64,6 +64,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_isRecalc(false)
     , m_shouldBeLoaded(false)
     , m_forceUnloadModel(false)
+    , m_markedForDeletion(false)
     , m_shouldTrySwitchContext(false)
     , m_stopGenerating(false)
     , m_timer(nullptr)
@@ -679,7 +680,9 @@ void ChatLLM::unloadModel()
     else
         emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
 
-    saveState();
+    if (!m_markedForDeletion)
+        saveState();
+
 #if defined(DEBUG_MODEL_LOADING)
     qDebug() << "unloadModel" << m_llmThread.objectName() << m_llModelInfo.model;
 #endif
