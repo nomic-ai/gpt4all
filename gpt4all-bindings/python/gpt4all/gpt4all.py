@@ -158,9 +158,8 @@ class GPT4All:
                 if model_filename == m["filename"]:
                     config.update(m)
                     config["systemPrompt"] = config["systemPrompt"].strip()
-                    config["promptTemplate"] = config["promptTemplate"].replace(
-                        "%1", "{0}", 1
-                    )  # change to Python-style formatting
+                    # change to Python-style formatting
+                    config["promptTemplate"] = config["promptTemplate"].replace("%1", "{0}", 1).replace("%2", "{1}", 1)
                     break
 
         # Validate download directory
@@ -347,7 +346,7 @@ class GPT4All:
                     self.model.prompt_model(self.current_chat_session[0]["content"], "%1",
                                             _pyllmodel.empty_response_callback,
                                             n_batch=n_batch, n_predict=0, special=True)
-                prompt_template = self._current_prompt_template.format("%1")
+                prompt_template = self._current_prompt_template.format("%1", "%2")
             else:
                 warnings.warn(
                     "_format_chat_prompt_template is deprecated. Please use a chat session with a prompt template.",
