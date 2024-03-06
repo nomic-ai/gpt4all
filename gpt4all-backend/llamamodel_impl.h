@@ -35,7 +35,8 @@ public:
     bool usingGPUDevice() override;
 
     size_t embeddingSize() const override;
-    bool embed(const std::vector<std::string> &texts, float *embeddings, int matryoshkaDim) override;
+    bool embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> taskType,
+               int dimensionality, bool doMean) override;
 
 private:
     std::unique_ptr<LLamaPrivate> d_ptr;

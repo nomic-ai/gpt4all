@@ -188,12 +188,15 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
  * embedding for.
  * @param embedding_size A pointer to a size_t type that will be set by the call indicating the length
  * of the returned floating point array.
- * @param matryoshka_dim The per-text embedding dimension for use with Matryoshka-capable models. Cannot be
- * greater than the model architecture's n_embd. Set to -1 to disable.
+ * @param task_type The downstream task to generate embeddings for, or NULL.
+ * @param dimensionality The embedding dimension, for use with Matryoshka-capable models. Set to -1 to for full-size.
+ * @param do_mean True to average multiple embeddings if the text is longer than the model can accept, False to
+ * truncate.
  * @return A pointer to an array of floating point values passed to the calling method which then will
  * be responsible for lifetime of this memory.
  */
-float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size, int matryoshka_dim);
+float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size, const char *task_type,
+                     int dimensionality, bool do_mean);
 
 /**
  * Frees the memory allocated by the llmodel_embedding function.

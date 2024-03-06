@@ -108,7 +108,9 @@ llmodel.llmodel_embed.argtypes = [
     ctypes.c_void_p,
     ctypes.POINTER(ctypes.c_char_p),
     ctypes.POINTER(ctypes.c_size_t),
+    ctypes.c_char_p,
     ctypes.c_int,
+    ctypes.c_bool,
 ]
 
 llmodel.llmodel_embed.restype = ctypes.POINTER(ctypes.c_float)
@@ -288,11 +290,15 @@ class LLModel:
         self.context.context_erase = context_erase
 
     @overload
-    def generate_embedding(self, text: str, matryoshka_dim: int) -> list[float]: ...
+    def generate_embeddings(
+        self, text: str, task_type: str, dimensionality: int, do_mean: bool,
+    ) -> list[float]: ...
     @overload
-    def generate_embedding(self, text: list[str], matryoshka_dim: int) -> list[list[float]]: ...
+    def generate_embeddings(
+        self, text: list[str], task_type: str, dimensionality: int, do_mean: bool,
+    ) -> list[list[float]]: ...
 
-    def generate_embedding(self, text, matryoshka_dim):
+    def generate_embeddings(self, text, task_type, dimensionality, do_mean):
         if not text:
             raise ValueError("text must not be None or empty")
 
@@ -300,18 +306,29 @@ class LLModel:
         if single_text:
             text = [text]
 
+        # prepare input
         embedding_size = ctypes.c_size_t()
+        c_task_type = ctypes.c_char_p() if task_type is None else task_type.encode()
         c_texts = (ctypes.c_char_p * (len(text) + 1))()
         for i, t in enumerate(text):
-            c_texts[i] = ctypes.c_char_p(t.encode())
+            c_texts[i] = t.encode()
 
-        embedding_ptr = llmodel.llmodel_embed(self.model, c_texts, ctypes.byref(embedding_size), matryoshka_dim)
+        # generate the embeddings
+        embedding_ptr = llmodel.llmodel_embed(
+            self.model, c_texts, ctypes.byref(embedding_size), c_task_type, dimensionality, do_mean,
+        )
+
+        if embedding_ptr.value is None:
+            raise RuntimeError('Failed to generate embedding. See stderr for details.')
+
+        # extract output
         n_embd = embedding_size.value // len(text)
         embedding_array = [
             [embedding_ptr[i * n_embd + j] for j in range(n_embd)]
             for i in range(len(text))
         ]
         llmodel.llmodel_free_embedding(embedding_ptr)
+
         return embedding_array[0] if single_text else embedding_array
 
     def prompt_model(

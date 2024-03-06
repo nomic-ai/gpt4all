@@ -36,6 +36,8 @@ class Embed4All:
     Python class that handles embeddings for GPT4All.
     """
 
+    MIN_DIMENSIONALITY = 64
+
     def __init__(self, model_name: Optional[str] = None, n_threads: Optional[int] = None, **kwargs):
         """
         Constructor
@@ -46,21 +48,47 @@ class Embed4All:
         self.gpt4all = GPT4All(model_name or 'all-MiniLM-L6-v2-f16.gguf', n_threads=n_threads, **kwargs)
 
     @overload
-    def embed(self, text: str, matryoshka_dim: int) -> list[float]: ...
+    def embed(
+        self, text: str, task_type: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        max_tokens_per_text: int | None = ...,
+    ) -> list[float]: ...
     @overload
-    def embed(self, text: list[str], matryoshka_dim: int) -> list[list[float]]: ...
+    def embed(
+        self, text: list[str], task_type: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        max_tokens_per_text: int | None = ...,
+    ) -> list[list[float]]: ...
 
-    def embed(self, text, matryoshka_dim=-1):
+    # TODO(cebtenzzre): document max_tokens_per_text and implement with assumption that 8192 will be useful for Atlas compat
+    def embed(self, text, task_type=None, dimensionality=None, long_text_mode="truncate", max_tokens_per_text=None):
         """
-        Generate an embedding.
+        Generate one or more embeddings.
 
         Args:
-            text: The string or list of strings to generate embeddings for.
+            text: A text or list of texts to generate embeddings for.
+            task_type: The downstream task to generate embeddings for, model-specific. For Nomic Embed this can be
+            `search_query`, `search_document`, `classification`, or `clustering`. Defaults to `search_document`.
+            dimensionality: The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
+            long_text_mode: How to handle texts longer than the model can accept. One of `mean` or `truncate`.
 
         Returns:
-            An embedding or list of embeddings of your string(s).
+            An embedding or list of embeddings of your text(s).
         """
-        return self.gpt4all.model.generate_embedding(text, matryoshka_dim)
+        if dimensionality is None:
+            dimensionality = -1
+        else:
+            if dimensionality <= 0:
+                raise ValueError(f'Dimensionality must be None or a positive integer, got {dimensionality}')
+            if dimensionality < self.MIN_DIMENSIONALITY:
+                raise ValueError(
+                    f'Dimensionality {dimensionality} is less than the suggested minimum of {self.MIN_DIMENSIONALITY}.'
+                    ' Performance may be degraded.'
+                )
+        try:
+            do_mean = {"mean": True, "truncate": False}[long_text_mode]
+        except KeyError:
+            raise ValueError(f"Long text mode must be one of 'mean' or 'truncate', got {long_text_mode!r}")
+
+        return self.gpt4all.model.generate_embeddings(text, task_type, dimensionality, do_mean)
 
 
 class GPT4All:

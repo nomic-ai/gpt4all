@@ -274,12 +274,6 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
         n_ctx = 8;
     }
 
-    // -- check the model arch --
-
-    bool isEmbedding = isEmbeddingModel(modelPath);
-    m_supportsEmbedding = isEmbedding;
-    m_supportsCompletion = !isEmbedding;
-
     // -- load the model --
 
     gpt_params params;
@@ -371,6 +365,10 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
         std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
     }
 #endif
+
+    bool isEmbedding = is_embedding_arch(llama_model_arch(d_ptr->model));
+    m_supportsEmbedding = isEmbedding;
+    m_supportsCompletion = !isEmbedding;
 
     fflush(stdout);
     d_ptr->modelLoaded = true;
@@ -602,8 +600,72 @@ size_t LLamaModel::embeddingSize() const {
     return llama_n_embd(d_ptr->model);
 }
 
-bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings, int matryoshkaDim)
-{
+struct EmbModelSpec {
+    struct Prefixes {
+        const char *document;
+        const char *query;
+    } prefixes;
+    std::vector<const char *> names;
+};
+
+static const EmbModelSpec::Prefixes NOMIC_SPEC {
+    "search_document", "search_query",
+};
+static const EmbModelSpec::Prefixes LLM_EMBEDDER_SPEC {
+    "Represent this document for retrieval",
+    "Represent this query for retrieving relevant documents",
+};
+static const EmbModelSpec::Prefixes BGE_SPEC {
+    nullptr, "Represent this sentence for searching relevant passages",
+};
+static const EmbModelSpec::Prefixes E5_SPEC {
+    "passage", "query",
+};
+static const EmbModelSpec::Prefixes E5_MISTRAL_SPEC {
+    nullptr, "Instruct: Given a query, retrieve relevant passages that answer the query\nQuery",
+};
+
+static const EmbModelSpec EMBEDDING_MODEL_SPECS[] {
+    {NOMIC_SPEC,        {"nomic-embed-text-v1", "nomic-embed-text-v1-ablated", "nomic-embed-text-v1-unsupervised",
+                         "nomic-embed-text-v1.5"}},
+    {LLM_EMBEDDER_SPEC, {"llm-embedder"}},
+    {BGE_SPEC,          {"bge-small-en", "bge-base-en", "bge-large-en",
+                         "bge-small-en-v1.5", "bge-base-en-v1.5", "bge-large-en-v1.5"}},
+    {E5_SPEC,           {"e5-small", "e5-base", "e5-large",
+                         "e5-small-unsupervised", "e5-base-unsupervised", "e5-large-unsupervised",
+                         "e5-small-v2", "e5-base-v2", "e5-large-v2"}},
+    {E5_MISTRAL_SPEC,   {"e5-mistral-7b-instruct",
+                         "multilingual-e5-small", "multilingual-e5-base", "multilingual-e5-large",
+                         "multilingual-e5-large-instruct"}},
+};
+
+static std::optional<std::string> getEmbedPrefix(const std::string &modelName, bool isRetrieval) {
+    static const auto &specs = EMBEDDING_MODEL_SPECS;
+    auto it = std::find_if(specs, std::end(specs),
+        [&modelName](auto &spec) {
+            auto &names = spec.names;
+            return std::find(names, std::end(names), modelName) < std::end(names);
+        }
+    );
+    if (it < std::end(specs)) {
+        if (auto *prefix = isRetrieval ? it->prefixes.query : it->prefixes.document) {
+            return prefix;
+        }
+    }
+    return std::nullopt;
+}
+
+bool LLModel::embed(
+    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, bool doMean
+) {
+    auto taskType = getEmbedPrefix(llama_model_name(d_ptr->model), isRetrieval);
+    return embed(texts, embeddings, taskType, dimensionality, doMean);
+}
+
+bool LLModel::embed(
+    const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> taskType, int dimensionality,
+    bool doMean
+) {
     typedef std::vector<LLModel::Token> TokenString;
 
     if (!m_supportsEmbedding) {
@@ -614,20 +676,46 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings,
     const llama_token bos_token = llama_token_bos(d_ptr->model);
     const llama_token eos_token = llama_token_eos(d_ptr->model);
 
+    assert(shouldAddBOS());
+    bool addEOS = llama_vocab_type(d_ptr->model) == LLAMA_VOCAB_TYPE_WPM;
+
+    // no EOS, optional BOS
+    auto tokenize = [this](const std::string &text, bool addBOS) {
+        if (!text.empty() && text[0] != ' ') {
+            text = ' ' + text; // normalize for SPM - our fork of llama.cpp doesn't add a space prefix
+        }
+        TokenString inp(text.length()+4);
+        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), inp.data(), inp.size(), addBOS, false);
+        if (addEOS) {
+            assert(eos_token != -1 && inp[n_tokens - 1] == eos_token);
+            inp.resize(n_tokens - 1); // erase EOS/SEP
+        } else {
+            assert(eos_token == -1 || inp[n_tokens - 1] != eos_token);
+        }
+        return inp;
+    };
+
     // tokenize the texts
     std::vector<TokenString> inputs;
     for (const auto &text: texts) {
-        TokenString inp(text.length()+4);
-        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), inp.data(), inp.size(), false, false);
-        assert(eos_token == -1 || inp[n_tokens - 1] == eos_token);
-        inp.resize(n_tokens - 1); // erase EOS/SEP
-        inputs.push_back(inp);
+        inputs.push_back(tokenize(text, false));
+    }
+
+    // tokenize the prefix
+    TokenString prefix;
+    if (taskType) {
+        prefix = tokenize(*taskType + ':');
+    } else {
+        prefix.push_back(bos_token);
     }
 
     const uint32_t n_batch = llama_n_batch(d_ptr->ctx);
-    const uint32_t max_len = n_batch - 2; // minus BOS/CLS and EOS/SEP
-    constexpr int overlap = 32;
-    assert(overlap < n_batch);
+    const uint32_t max_len = n_batch - prefix.length() - addEOS; // minus BOS/CLS and EOS/SEP
+    constexpr int overlap = 8;
+    if (overlap >= max_len) {
+        std::cerr << __func__ << ": max chunk length of " << max_len << " is smaller than overlap of " << overlap << " tokens\n";
+        return false;
+    }
 
     // split into max_len-sized chunks
     struct split_batch { int idx; TokenString batch; };
@@ -637,8 +725,7 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings,
         for (auto it = input.begin(); it < input.end(); it += max_len) {
             if (it > input.begin()) it -= overlap;
             auto end = std::min(it + max_len, input.end());
-            auto &batch = batches.emplace_back(i, TokenString()).batch;
-            batch.push_back(bos_token);
+            auto &batch = batches.emplace_back(i, prefix).batch;
             batch.insert(batch.end(), it, end);
             batch.push_back(eos_token);
         }
@@ -649,7 +736,7 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings,
     struct llama_batch batch = llama_batch_init(n_batch, 0, 1);
 
     const int32_t n_embd = llama_n_embd(d_ptr->model);
-    matryoshkaDim = std::min(matryoshkaDim, n_embd);
+    dimensionality = std::min(dimensionality, n_embd);
 
     // n_texts x n_embd matrix
     std::vector<double> embeddingsSum(texts.size() * n_embd);
@@ -709,7 +796,7 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings,
         std::transform(embd, embd_end, embd, product(1.0 / total));
 
         // layer normalization for matryoshka
-        if (matryoshkaDim > 0) {
+        if (dimensionality > 0) {
             // normalize mean
             double mean = std::accumulate(embd, embd_end, 0.0) / n_embd;
             std::transform(embd, embd_end, embd, [mean](double f){ return f - mean; });
@@ -718,7 +805,7 @@ bool LLamaModel::embed(const std::vector<std::string> &texts, float *embeddings,
             double variance = std::inner_product(embd, embd_end, embd, 0.0) / (n_embd - 1);
 
             // trim to matryoshka dim
-            embd_end = embd + matryoshkaDim;
+            embd_end = embd + dimensionality;
 
             // normalize variance
             std::transform(embd, embd_end, embd, product(1.0 / std::sqrt(variance + 1e-5)));

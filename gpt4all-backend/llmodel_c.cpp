@@ -4,6 +4,7 @@
 #include <cerrno>
 #include <cstring>
 #include <iostream>
+#include <optional>
 #include <utility>
 
 struct LLModelWrapper {
@@ -146,8 +147,10 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     ctx->context_erase = wrapper->promptContext.contextErase;
 }
 
-float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size, int matryoshka_dim)
-{
+float *llmodel_embed(
+    llmodel_model model, const char **texts, size_t *embedding_size, const char *task_type, int dimensionality,
+    bool do_mean
+) {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
     *embedding_size = 0;
 
@@ -165,8 +168,11 @@ float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_
     }
     embd_size *= textsVec.size();
 
+    std::optional<std::string> taskTypeStr;
+    if (task_type) { taskTypeStr = *task_type; }
+
     auto *embedding = new float[embd_size];
-    if (!wrapper->llModel->embed(textsVec, embedding, matryoshka_dim)) {
+    if (!wrapper->llModel->embed(textsVec, embedding, taskTypeStr, dimensionality, do_mean)) {
         std::cerr << __func__ << ": LLModel::embed failed\n";
         return nullptr;
     }
