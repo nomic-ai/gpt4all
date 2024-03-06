@@ -334,7 +334,8 @@ void Chat::handleRecalculating()
 
 void Chat::handleModelLoadingError(const QString &error)
 {
-    qWarning() << "ERROR:" << qUtf8Printable(error) << "id" << id();
+    auto stream = qWarning().noquote() << "ERROR:" << error << "id";
+    stream.quote() << id();
     m_modelLoadingError = error;
     emit modelLoadingErrorChanged();
 }
