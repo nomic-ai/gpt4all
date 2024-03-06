@@ -121,7 +121,7 @@ void ChatGPT::prompt(const std::string &prompt,
     QJsonDocument doc(root);
 
 #if defined(DEBUG)
-    qDebug().noquote() << "ChatGPT::prompt begin network request" << doc.toJson();
+    qDebug() << "ChatGPT::prompt begin network request" << qUtf8Printable(doc.toJson());
 #endif
 
     m_responseCallback = responseCallback;
@@ -225,7 +225,7 @@ void ChatGPTWorker::handleReadyRead()
         if (jsonData == "[DONE]")
             continue;
 #if defined(DEBUG)
-        qDebug().noquote() << "line" << jsonData;
+        qDebug() << "line" << qUtf8Printable(jsonData);
 #endif
         QJsonParseError err;
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
