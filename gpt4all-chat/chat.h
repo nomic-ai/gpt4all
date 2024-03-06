@@ -84,6 +84,7 @@ public:
     Q_INVOKABLE void forceReloadModel();
     Q_INVOKABLE void trySwitchContextOfLoadedModel();
     void unloadAndDeleteLater();
+    void markForDeletion();
 
     qint64 creationDate() const { return m_creationDate; }
     bool serialize(QDataStream &stream, int version) const;
