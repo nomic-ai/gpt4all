@@ -1,6 +1,22 @@
 [
   {
     "order": "a",
+    "md5sum": "a5f6b4eabd3992da4d7fb7f020f921eb",
+    "name": "Nous Hermes 2 Mistral DPO",
+    "filename": "Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf",
+    "filesize": "4108928000",
+    "requires": "2.7.1",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "Mistral",
+    "description": "<strong>Best overall fast chat model</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Accepts system prompts in ChatML format</li><li>Trained by Mistral AI<li>Finetuned by Nous Research on the OpenHermes-2.5 dataset<li>Licensed for commercial use</ul>",
+    "url": "https://huggingface.co/NousResearch/Nous-Hermes-2-Mistral-7B-DPO-GGUF/resolve/main/Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf",
+    "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
+    "systemPrompt": ""
+  },
+  {
+    "order": "b",
     "md5sum": "f692417a22405d80573ac10cb0cd6c6a",
     "name": "Mistral OpenOrca",
     "filename": "mistral-7b-openorca.gguf2.Q4_0.gguf",
@@ -10,13 +26,13 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "Mistral",
-    "description": "<strong>Best overall fast chat model</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by Mistral AI<li>Finetuned on OpenOrca dataset curated via <a href=\"https://atlas.nomic.ai/\">Nomic Atlas</a><li>Licensed for commercial use</ul>",
+    "description": "<strong>Strong overall fast chat model</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by Mistral AI<li>Finetuned on OpenOrca dataset curated via <a href=\"https://atlas.nomic.ai/\">Nomic Atlas</a><li>Licensed for commercial use</ul>",
     "url": "https://gpt4all.io/models/gguf/mistral-7b-openorca.gguf2.Q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
     "systemPrompt": "<|im_start|>system\nYou are MistralOrca, a large language model trained by Alignment Lab AI. For multi-step problems, write out your reasoning for each step.\n<|im_end|>"
   },
   {
-    "order": "b",
+    "order": "c",
     "md5sum": "97463be739b50525df56d33b26b00852",
     "name": "Mistral Instruct",
     "filename": "mistral-7b-instruct-v0.1.Q4_0.gguf",
@@ -27,12 +43,12 @@
     "quant": "q4_0",
     "type": "Mistral",
     "systemPrompt": " ",
-    "description": "<strong>Best overall fast instruction following model</strong><br><ul><li>Fast responses</li><li>Trained by Mistral AI<li>Uncensored</li><li>Licensed for commercial use</li></ul>",
+    "description": "<strong>Strong overall fast instruction following model</strong><br><ul><li>Fast responses</li><li>Trained by Mistral AI<li>Uncensored</li><li>Licensed for commercial use</li></ul>",
     "url": "https://gpt4all.io/models/gguf/mistral-7b-instruct-v0.1.Q4_0.gguf",
     "promptTemplate": "[INST] %1 [/INST]"
   },
   {
-    "order": "c",
+    "order": "d",
     "md5sum": "c4c78adf744d6a20f05c8751e3961b84",
     "name": "GPT4All Falcon",
     "filename": "gpt4all-falcon-newbpe-q4_0.gguf",
@@ -89,7 +105,7 @@
     "quant": "q4_0",
     "type": "LLaMA2",
     "systemPrompt": " ",
-    "description": "<strong>Best overall larger model</strong><br><ul><li>Instruction based<li>Gives very long responses<li>Finetuned with only 1k of high-quality data<li>Trained by Microsoft and Peking University<li>Cannot be used commercially</ul>",
+    "description": "<strong>Strong overall larger model</strong><br><ul><li>Instruction based<li>Gives very long responses<li>Finetuned with only 1k of high-quality data<li>Trained by Microsoft and Peking University<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/wizardlm-13b-v1.2.Q4_0.gguf"
   },
   {

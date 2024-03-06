@@ -46,6 +46,7 @@ public:
     explicit Chat(QObject *parent = nullptr);
     explicit Chat(bool isServer, QObject *parent = nullptr);
     virtual ~Chat();
+    void destroy() { m_llmodel->destroy(); }
     void connectLLM();
 
     QString id() const { return m_id; }
