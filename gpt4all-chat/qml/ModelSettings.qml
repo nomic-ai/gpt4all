@@ -82,7 +82,7 @@ MySettingsTab {
                 enabled: root.currentModelInfo.isClone
                 text: qsTr("Remove")
                 onClicked: {
-                    ModelList.remove(root.currentModelInfo);
+                    ModelList.removeClone(root.currentModelInfo);
                     comboBox.currentIndex = 0;
                 }
             }
@@ -453,7 +453,7 @@ MySettingsTab {
                 Accessible.description: ToolTip.text
             }
             MySettingsLabel {
-                id: minPLabel 
+                id: minPLabel
                 text: qsTr("Min P")
                 Layout.row: 3
                 Layout.column: 0
