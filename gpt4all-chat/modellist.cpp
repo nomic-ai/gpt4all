@@ -1311,7 +1311,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!file.open(QIODeviceBase::WriteOnly)) {
             qWarning() << "ERROR: Couldn't write models config file: " << modelsConfig;
         } else {
-            file.write(jsonData.constData());
+            file.write(jsonData);
             file.close();
         }
     }
@@ -1328,7 +1328,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QString requiresVersion = obj["requires"].toString();
         QString versionRemoved = obj["removedIn"].toString();
         QString url = obj["url"].toString();
-        QByteArray modelHash = obj["md5sum"].toString().toLatin1().constData();
+        QByteArray modelHash = obj["md5sum"].toString().toLatin1();
         bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
         bool disableGUI = obj.contains("disableGUI") && obj["disableGUI"] == QString("true");
         QString description = obj["description"].toString();

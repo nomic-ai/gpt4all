@@ -120,6 +120,7 @@ Q_SIGNALS:
     void recalcChanged();
     void modelLoadingPercentageChanged(float);
     void modelLoadingError(const QString &error);
+    void modelLoadingWarning(const QString &warning);
     void responseChanged(const QString &response);
     void promptProcessing();
     void responseStopped();

@@ -308,7 +308,14 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
             if (m_llModelInfo.model) {
                 if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
-                    // TODO(cebtenzzre): warn that this model is out-of-date
+                    static QSet<QString> warned;
+                    auto fname = modelInfo.filename();
+                    if (!warned.contains(fname)) {
+                        emit modelLoadingWarning(QString(
+                            "%1 is known to be broken. Please get a replacement via the download dialog."
+                        ).arg(fname));
+                        warned.insert(fname); // don't warn again until restart
+                    }
                 }
 
                 m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
@@ -996,7 +1003,7 @@ void ChatLLM::restoreState()
         m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
         m_processedSystemPrompt = true;
     } else {
-        qWarning() << "restoring state from text because" << m_llModelInfo.model->stateSize() << "!=" << m_state.size() << "\n";
+        qWarning() << "restoring state from text because" << m_llModelInfo.model->stateSize() << "!=" << m_state.size();
         m_restoreStateFromText = true;
     }
 
