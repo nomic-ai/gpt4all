@@ -72,6 +72,7 @@ public:
     ChatLLM(Chat *parent, bool isServer = false);
     virtual ~ChatLLM();
 
+    void destroy();
     bool isModelLoaded() const;
     void regenerateResponse();
     void resetResponse();
