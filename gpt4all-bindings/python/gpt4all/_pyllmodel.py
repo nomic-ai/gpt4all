@@ -323,7 +323,8 @@ class LLModel:
         )
 
         if embedding_ptr.value is None:
-            raise RuntimeError(f'Failed to generate embeddings: {error.value.decode()}')
+            msg = "(unknown error)" if error.value is None else error.value.decode()
+            raise RuntimeError(f'Failed to generate embeddings: {msg}')
 
         # extract output
         n_embd = embedding_size.value // len(text)
