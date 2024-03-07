@@ -1,13 +1,14 @@
 #ifndef LLMODEL_H
 #define LLMODEL_H
 
-#include <string>
-#include <functional>
-#include <vector>
-#include <string_view>
-#include <fstream>
 #include <cstdint>
+#include <fstream>
+#include <functional>
 #include <limits>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
 
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
@@ -104,7 +105,7 @@ public:
                         std::string *fakeReply = nullptr);
 
     virtual size_t embeddingSize() const {
-        throw std::logic_error(implementation().modelType() + " does not support embeddings");
+        throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
     }
     // user-specified prefix
     virtual void embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix,

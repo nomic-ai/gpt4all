@@ -1,10 +1,11 @@
 #ifndef EMBLLM_H
 #define EMBLLM_H
 
-#include <QObject>
-#include <QThread>
-#include <QNetworkReply>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QObject>
+#include <QStringList>
+#include <QThread>
 
 #include "../gpt4all-backend/llmodel.h"
 
@@ -49,6 +50,9 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void handleFinished();
+
+protected:
+    void sendAtlasRequest(const QStringList &texts, const QString &taskType, QVariant userData = {});
 
 private:
     QString m_nomicAPIKey;

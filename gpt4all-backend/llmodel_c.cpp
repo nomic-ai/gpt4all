@@ -168,13 +168,13 @@ float *llmodel_embed(
 
     try {
         embd_size = wrapper->llModel->embeddingSize();
-        if (dimensionality > 0 && dimensionality < embd_size) {
+        if (dimensionality > 0 && dimensionality < int(embd_size)) {
             embd_size = dimensionality;
         }
         embd_size *= textsVec.size();
 
         std::optional<std::string> prefixStr;
-        if (prefix) { prefixStr = *prefix; }
+        if (prefix) { prefixStr = prefix; }
 
         embedding = new float[embd_size];
         wrapper->llModel->embed(textsVec, embedding, prefixStr, dimensionality, do_mean, atlas);

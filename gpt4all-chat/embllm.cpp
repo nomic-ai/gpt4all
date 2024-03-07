@@ -82,6 +82,7 @@ bool EmbeddingLLMWorker::isNomic() const
     return !m_nomicAPIKey.isEmpty();
 }
 
+// this function is always called for retrieval tasks
 std::vector<float> EmbeddingLLMWorker::generateSyncEmbedding(const QString &text)
 {
     if (!hasModel() && !loadModel()) {
@@ -94,15 +95,36 @@ std::vector<float> EmbeddingLLMWorker::generateSyncEmbedding(const QString &text
         return {};
     }
 
-    // TODO(cebtenzzre): take advantage of batched embeddings
     std::vector<float> embedding(m_model->embeddingSize());
-    if (!m_model->embed({text.toStdString()}, embedding.data())) {
-        qWarning() << "WARNING: LLModel::embed failed";
+    try {
+        m_model->embed({text.toStdString()}, embedding.data(), true);
+    } catch (const std::exception &e) {
+        qWarning() << "WARNING: LLModel::embed failed: " << e.what();
         return {};
     }
     return embedding;
 }
 
+void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QString &taskType, QVariant userData) {
+    QJsonObject root;
+    root.insert("model", "nomic-embed-text-v1");
+    root.insert("texts", QJsonArray::fromStringList(texts));
+    root.insert("task_type", taskType);
+
+    QJsonDocument doc(root);
+
+    QUrl nomicUrl("https://api-atlas.nomic.ai/v1/embedding/text");
+    const QString authorization = QString("Bearer %1").arg(m_nomicAPIKey).trimmed();
+    QNetworkRequest request(nomicUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Authorization", authorization.toUtf8());
+    request.setAttribute(QNetworkRequest::User, userData);
+    QNetworkReply *reply = m_networkManager->post(request, doc.toJson(QJsonDocument::Compact));
+    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+    connect(reply, &QNetworkReply::finished, this, &EmbeddingLLMWorker::handleFinished);
+}
+
+// this function is always called for retrieval tasks
 void EmbeddingLLMWorker::requestSyncEmbedding(const QString &text)
 {
     if (!hasModel() && !loadModel()) {
@@ -117,25 +139,10 @@ void EmbeddingLLMWorker::requestSyncEmbedding(const QString &text)
 
     Q_ASSERT(hasModel());
 
-    QJsonObject root;
-    root.insert("model", "nomic-embed-text-v1");
-    QJsonArray texts;
-    texts.append(text);
-    root.insert("texts", texts);
-    root.insert("task_type", "search_query");
-
-    QJsonDocument doc(root);
-
-    QUrl nomicUrl("https://api-atlas.nomic.ai/v1/embedding/text");
-    const QString authorization = QString("Bearer %1").arg(m_nomicAPIKey).trimmed();
-    QNetworkRequest request(nomicUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader("Authorization", authorization.toUtf8());
-    QNetworkReply *reply = m_networkManager->post(request, doc.toJson(QJsonDocument::Compact));
-    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
-    connect(reply, &QNetworkReply::finished, this, &EmbeddingLLMWorker::handleFinished);
+    sendAtlasRequest({text}, "search_query");
 }
 
+// this function is always called for storage into the database
 void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &chunks)
 {
     if (!hasModel() && !loadModel()) {
@@ -152,8 +159,10 @@ void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &ch
             result.chunk_id = c.chunk_id;
             // TODO(cebtenzzre): take advantage of batched embeddings
             result.embedding.resize(m_model->embeddingSize());
-            if (!m_model->embed({c.chunk.toStdString()}, result.embedding.data())) {
-                qWarning() << "WARNING: LLModel::embed failed";
+            try {
+                m_model->embed({c.chunk.toStdString()}, result.embedding.data(), false);
+            } catch (const std::exception &e) {
+                qWarning() << "WARNING: LLModel::embed failed:" << e.what();
                 return;
             }
             results << result;
@@ -162,26 +171,10 @@ void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &ch
         return;
     };
 
-    QJsonObject root;
-    root.insert("model", "nomic-embed-text-v1");
-    QJsonArray texts;
-
-    for (auto c : chunks)
+    QStringList texts;
+    for (auto &c: chunks)
         texts.append(c.chunk);
-    root.insert("texts", texts);
-
-    QJsonDocument doc(root);
-
-    QUrl nomicUrl("https://api-atlas.nomic.ai/v1/embedding/text");
-    const QString authorization = QString("Bearer %1").arg(m_nomicAPIKey).trimmed();
-    QNetworkRequest request(nomicUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader("Authorization", authorization.toUtf8());
-    request.setAttribute(QNetworkRequest::User, QVariant::fromValue(chunks));
-
-    QNetworkReply *reply = m_networkManager->post(request, doc.toJson(QJsonDocument::Compact));
-    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
-    connect(reply, &QNetworkReply::finished, this, &EmbeddingLLMWorker::handleFinished);
+    sendAtlasRequest(texts, "search_document", QVariant::fromValue(chunks));
 }
 
 std::vector<float> jsonArrayToVector(const QJsonArray &jsonArray) {

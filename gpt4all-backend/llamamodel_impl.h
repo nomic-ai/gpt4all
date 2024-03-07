@@ -45,9 +45,6 @@ public:
                bool doMean = true, bool atlas = false) override;
 
 private:
-    void embedInternal(const std::vector<std::string> &texts, float *embeddings, std::string prefix,
-                       int dimensionality = -1, bool doMean, bool atlas, EmbModelSpec *spec);
-
     std::unique_ptr<LLamaPrivate> d_ptr;
     bool m_supportsEmbedding = false;
     bool m_supportsCompletion = false;
@@ -60,9 +57,11 @@ protected:
     int32_t contextLength() const override;
     const std::vector<Token> &endTokens() const override;
     bool shouldAddBOS() const override;
-
     int32_t maxContextLength(std::string const &modelPath) const override;
     int32_t layerCount(std::string const &modelPath) const override;
+
+    void embedInternal(const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
+                       bool doMean, bool atlas, const EmbModelSpec *spec);
 };
 
 #endif // LLAMAMODEL_H

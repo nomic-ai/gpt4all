@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <regex>
+#include <string>
 #include <unordered_set>
 
 // TODO(cebtenzzre): replace this with llama_kv_cache_seq_shift for llamamodel (GPT-J needs this as-is)
@@ -277,7 +278,7 @@ void LLModel::embed(
     (void)dimensionality;
     (void)doMean;
     (void)atlas;
-    throw std::logic_error(implementation().modelType() + " does not support embeddings");
+    throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
 }
 
 void LLModel::embed(
@@ -290,5 +291,5 @@ void LLModel::embed(
     (void)dimensionality;
     (void)doMean;
     (void)atlas;
-    throw std::logic_error(implementation().modelType() + " does not support embeddings");
+    throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
 }

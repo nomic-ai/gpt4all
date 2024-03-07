@@ -321,6 +321,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
     d_ptr->ctx_params = llama_context_default_params();
 
+    bool isEmbedding = is_embedding_arch(llama_model_arch(d_ptr->model));
     const int n_ctx_train = llama_n_ctx_train(d_ptr->model);
     if (isEmbedding) {
         d_ptr->ctx_params.n_batch = n_ctx_train;
@@ -366,7 +367,6 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     }
 #endif
 
-    bool isEmbedding = is_embedding_arch(llama_model_arch(d_ptr->model));
     m_supportsEmbedding = isEmbedding;
     m_supportsCompletion = !isEmbedding;
 
@@ -603,7 +603,7 @@ size_t LLamaModel::embeddingSize() const {
 struct EmbModelSpec {
     const char *docPrefix;
     const char *queryPrefix;
-    std::vector<const char *> otherPrefixes;
+    std::vector<const char *> otherPrefixes = {};
     bool matryoshkaCapable = false;
     const char *recommendedDims = nullptr;
 };
@@ -651,13 +651,13 @@ static const EmbModelSpec *getEmbedSpec(const std::string &modelName) {
     auto it = std::find_if(specs, std::end(specs),
         [&modelName](auto &spec) {
             auto &names = spec.names;
-            return std::find(names, std::end(names), modelName) < std::end(names);
+            return std::find(names.begin(), names.end(), modelName) < names.end();
         }
     );
     return it < std::end(specs) ? &it->spec : nullptr;
 }
 
-void LLModel::embed(
+void LLamaModel::embed(
     const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, bool doMean,
     bool atlas
 ) {
@@ -668,7 +668,7 @@ void LLModel::embed(
     embed(texts, embeddings, prefix, dimensionality, doMean, atlas);
 }
 
-void LLModel::embed(
+void LLamaModel::embed(
     const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
     bool doMean, bool atlas
 ) {
@@ -676,9 +676,9 @@ void LLModel::embed(
         throw std::logic_error("no model is loaded");
     }
 
-    const char *modelName = llama_model_name(d_ptr->model)
+    const char *modelName = llama_model_name(d_ptr->model);
     if (!m_supportsEmbedding) {
-        throw std::logic_error("not an embedding model: " + modelName);
+        throw std::logic_error("not an embedding model: "s + modelName);
     }
 
     auto *spec = getEmbedSpec(modelName);
@@ -687,10 +687,10 @@ void LLModel::embed(
     }
 
     const int32_t n_embd = llama_n_embd(d_ptr->model);
-    if (dimensinality < 0) {
+    if (dimensionality < 0) {
         dimensionality = n_embd;
     } else if (spec && dimensionality != n_embd) {
-        auto msg = [dimensionality, modelName](const char *) {
+        auto msg = [dimensionality, modelName]() {
             return "unsupported dimensionality " + std::to_string(dimensionality) + " for model " + modelName;
         };
         if (!spec->matryoshkaCapable) {
@@ -726,9 +726,15 @@ auto product(double a) -> std::function<double(double)> {
     return [a](double b) { return a * b; };
 }
 
-void LLModel::embedInternal(
+template <typename T>
+double getL2NormScale(T *start, T *end) {
+    double magnitude = std::sqrt(std::inner_product(start, end, start, 0.0));
+    return 1.0 / std::max(magnitude, 1e-12);
+}
+
+void LLamaModel::embedInternal(
     const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
-    bool doMean, bool atlas, EmbModelSpec *spec
+    bool doMean, bool atlas, const EmbModelSpec *spec
 ) {
     typedef std::vector<LLModel::Token> TokenString;
     static constexpr int32_t atlasMaxLength = 8192;
@@ -740,7 +746,7 @@ void LLModel::embedInternal(
     bool addEOS = llama_vocab_type(d_ptr->model) == LLAMA_VOCAB_TYPE_WPM;
 
     // no EOS, optional BOS
-    auto tokenize = [this, addEOS](const std::string &text, TokenString &tokens, bool addBOS) {
+    auto tokenize = [this, addEOS](std::string text, TokenString &tokens, bool addBOS) {
         if (!text.empty() && text[0] != ' ') {
             text = ' ' + text; // normalize for SPM - our fork of llama.cpp doesn't add a space prefix
         }
@@ -752,15 +758,15 @@ void LLModel::embedInternal(
 
     // tokenize the texts
     std::vector<TokenString> inputs;
-    for (int i = 0; i < texts.size(); i++) {
+    for (unsigned i = 0; i < texts.size(); i++) {
         auto &text = texts[i];
         auto &inp = inputs.emplace_back();
         tokenize(text, inp, false);
         if (atlas && inp.size() > atlasMaxLength) {
             if (doMean) {
                 throw std::logic_error(
-                    "length of text at index " + std::to_string(i) + " is " + std::to_string(n_tokens) +
-                    " tokens which exceeds limit of " + std::to_string(atlasMaxLength);
+                    "length of text at index " + std::to_string(i) + " is " + std::to_string(inp.size()) +
+                    " tokens which exceeds limit of " + std::to_string(atlasMaxLength)
                 );
             }
             inp.resize(atlasMaxLength);
@@ -778,11 +784,11 @@ void LLModel::embedInternal(
     if (prefix.empty()) {
         prefixTokens.push_back(bos_token);
     } else {
-        tokenize(*prefix + ':', prefixTokens, true);
+        tokenize(prefix + ':', prefixTokens, true);
     }
 
     const uint32_t n_batch = llama_n_batch(d_ptr->ctx);
-    const uint32_t max_len = n_batch - prefixTokens.length() - addEOS; // minus BOS/CLS and EOS/SEP
+    const uint32_t max_len = n_batch - (prefixTokens.size() + addEOS); // minus BOS/CLS and EOS/SEP
     constexpr int overlap = 8;
     if (overlap >= max_len) {
         throw std::logic_error("max chunk length of " + std::to_string(max_len) + " is smaller than overlap of " +
@@ -808,19 +814,13 @@ void LLModel::embedInternal(
     // initialize batch
     struct llama_batch batch = llama_batch_init(n_batch, 0, 1);
 
-    dimensionality = std::min(dimensionality, n_embd);
-
     // n_texts x n_embd matrix
+    const int32_t n_embd = llama_n_embd(d_ptr->model);
     std::vector<double> embeddingsSum(texts.size() * n_embd);
     std::vector<int> embeddingsSumTotal(texts.size());
     std::vector<int> queued_indices; // text indices of batches to be processed
 
-    auto getL2NormScale = [](double *start, double *end) {
-        double magnitude = std::sqrt(std::inner_product(embd, embd_end, embd, 0.0));
-        return 1.0 / std::max(magnitude, 1e-12);
-    }
-
-    auto decode = [this, &queued_indices, n_embd, &batch, &embeddingsSum, &embeddingsSumTotal, spec]() {
+    auto decode = [this, &queued_indices, n_embd, &batch, &embeddingsSum, &embeddingsSumTotal, spec, dimensionality]() {
         if (llama_decode(d_ptr->ctx, batch) < 0) {
             throw std::runtime_error("llama_decode failed");
         }
