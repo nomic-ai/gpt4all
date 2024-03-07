@@ -109,9 +109,7 @@ void Download::downloadModel(const QString &modelFile)
             = QString("ERROR: Could not open temp file: %1 %2").arg(tempFile->fileName()).arg(modelFile);
         qWarning() << error;
         clearRetry(modelFile);
-        QVector<QPair<int, QVariant>> data;
-        data.append(qMakePair(ModelList::DownloadErrorRole, error));
-        ModelList::globalInstance()->updateDataByFilename(modelFile, data);
+        ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::DownloadErrorRole, error }});
         return;
     }
     tempFile->flush();
