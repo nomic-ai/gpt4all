@@ -11,6 +11,8 @@
 #include "llmodel.h"
 
 struct LLamaPrivate;
+struct EmbModelSpec;
+
 class LLamaModel : public LLModel {
 public:
     LLamaModel();
@@ -30,15 +32,22 @@ public:
     int32_t threadCount() const override;
     std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired) const override;
     bool initializeGPUDevice(size_t memoryRequired, const std::string &name) const override;
-    bool initializeGPUDevice(int device, std::string *unavail_reason) const override;
+    bool initializeGPUDevice(int device, std::string *unavail_reason = nullptr) const override;
     bool hasGPUDevice() override;
     bool usingGPUDevice() override;
 
     size_t embeddingSize() const override;
-    bool embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> taskType,
-               int dimensionality, bool doMean) override;
+    // user-specified prefix
+    void embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix,
+               int dimensionality = -1, bool doMean = true, bool atlas = false) override;
+    // automatic prefix
+    void embed(const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality = -1,
+               bool doMean = true, bool atlas = false) override;
 
 private:
+    void embedInternal(const std::vector<std::string> &texts, float *embeddings, std::string prefix,
+                       int dimensionality = -1, bool doMean, bool atlas, EmbModelSpec *spec);
+
     std::unique_ptr<LLamaPrivate> d_ptr;
     bool m_supportsEmbedding = false;
     bool m_supportsCompletion = false;

@@ -148,32 +148,40 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
 }
 
 float *llmodel_embed(
-    llmodel_model model, const char **texts, size_t *embedding_size, const char *task_type, int dimensionality,
-    bool do_mean
+    llmodel_model model, const char **texts, size_t *embedding_size, const char *prefix, int dimensionality,
+    bool do_mean, bool atlas, const char **error
 ) {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
-    *embedding_size = 0;
 
     if (!texts || !*texts) {
-        std::cerr << __func__ << ": no texts given\n";
+        if (error) {
+            *error = strdup("'texts' is NULL or empty");
+        }
         return nullptr;
     }
 
     std::vector<std::string> textsVec;
     while (*texts) { textsVec.emplace_back(*texts++); }
 
-    size_t embd_size = wrapper->llModel->embeddingSize();
-    if (matryoshka_dim > 0 && matryoshka_dim < embd_size) {
-        embd_size = matryoshka_dim;
-    }
-    embd_size *= textsVec.size();
+    size_t embd_size;
+    float *embedding;
 
-    std::optional<std::string> taskTypeStr;
-    if (task_type) { taskTypeStr = *task_type; }
+    try {
+        embd_size = wrapper->llModel->embeddingSize();
+        if (dimensionality > 0 && dimensionality < embd_size) {
+            embd_size = dimensionality;
+        }
+        embd_size *= textsVec.size();
 
-    auto *embedding = new float[embd_size];
-    if (!wrapper->llModel->embed(textsVec, embedding, taskTypeStr, dimensionality, do_mean)) {
-        std::cerr << __func__ << ": LLModel::embed failed\n";
+        std::optional<std::string> prefixStr;
+        if (prefix) { prefixStr = *prefix; }
+
+        embedding = new float[embd_size];
+        wrapper->llModel->embed(textsVec, embedding, prefixStr, dimensionality, do_mean, atlas);
+    } catch (std::exception const &e) {
+        if (error) {
+            *error = strdup(e.what());
+        }
         return nullptr;
     }
 

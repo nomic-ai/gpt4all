@@ -103,13 +103,15 @@ public:
                         bool special = false,
                         std::string *fakeReply = nullptr);
 
-    virtual size_t embeddingSize() const;
+    virtual size_t embeddingSize() const {
+        throw std::logic_error(implementation().modelType() + " does not support embeddings");
+    }
     // user-specified prefix
-    virtual bool embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> taskType,
-                       int dimensionality = -1, bool doMean = true);
+    virtual void embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix,
+                       int dimensionality = -1, bool doMean = true, bool atlas = false);
     // automatic prefix
-    virtual bool embed(const std::vector<std::string> &texts, float *embeddings, bool isRetrieval,
-                       int dimensionality = -1, bool doMean = true);
+    virtual void embed(const std::vector<std::string> &texts, float *embeddings, bool isRetrieval,
+                       int dimensionality = -1, bool doMean = true, bool atlas = false);
 
     virtual void setThreadCount(int32_t n_threads) { (void)n_threads; }
     virtual int32_t threadCount() const { return 1; }

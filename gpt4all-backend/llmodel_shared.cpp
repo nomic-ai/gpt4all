@@ -267,32 +267,28 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
     }
 }
 
-size_t LLModel::embeddingSize() const {
-    std::cerr << __func__ << ": " << implementation().modelType() << " does not support embeddings\n";
-    return 0;
-}
-
-bool LLModel::embed(
-    const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> taskType, int dimensionality,
-    bool doMean
+void LLModel::embed(
+    const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
+    bool doMean, bool atlas
 ) {
     (void)texts;
     (void)embeddings;
-    (void)taskType;
+    (void)prefix;
     (void)dimensionality;
     (void)doMean;
-    std::cerr << __func__ << ": " << implementation().modelType() << " does not support embeddings\n";
-    return false;
+    (void)atlas;
+    throw std::logic_error(implementation().modelType() + " does not support embeddings");
 }
 
-bool LLModel::embed(
-    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, bool doMean
+void LLModel::embed(
+    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, bool doMean,
+    bool atlas
 ) {
     (void)texts;
     (void)embeddings;
     (void)isRetrieval;
     (void)dimensionality;
     (void)doMean;
-    std::cerr << __func__ << ": " << implementation().modelType() << " does not support embeddings\n";
-    return false;
+    (void)atlas;
+    throw std::logic_error(implementation().modelType() + " does not support embeddings");
 }

@@ -601,33 +601,40 @@ size_t LLamaModel::embeddingSize() const {
 }
 
 struct EmbModelSpec {
-    struct Prefixes {
-        const char *document;
-        const char *query;
-    } prefixes;
+    const char *docPrefix;
+    const char *queryPrefix;
+    std::vector<const char *> otherPrefixes;
+    bool matryoshkaCapable = false;
+    const char *recommendedDims = nullptr;
+};
+
+struct EmbModelGroup {
+    EmbModelSpec spec;
     std::vector<const char *> names;
 };
 
-static const EmbModelSpec::Prefixes NOMIC_SPEC {
-    "search_document", "search_query",
+static const EmbModelSpec NOPREFIX_SPEC {nullptr, nullptr};
+static const EmbModelSpec NOMIC_SPEC    {"search_document", "search_query", {"clustering", "classification"}};
+static const EmbModelSpec E5_SPEC       {"passage", "query"};
+
+static const EmbModelSpec NOMIC_1_5_SPEC {
+    "search_document", "search_query", {"clustering", "classification"}, true, "[768, 512, 384, 256, 128]"
 };
-static const EmbModelSpec::Prefixes LLM_EMBEDDER_SPEC {
+static const EmbModelSpec LLM_EMBEDDER_SPEC {
     "Represent this document for retrieval",
     "Represent this query for retrieving relevant documents",
 };
-static const EmbModelSpec::Prefixes BGE_SPEC {
+static const EmbModelSpec BGE_SPEC {
     nullptr, "Represent this sentence for searching relevant passages",
 };
-static const EmbModelSpec::Prefixes E5_SPEC {
-    "passage", "query",
-};
-static const EmbModelSpec::Prefixes E5_MISTRAL_SPEC {
+static const EmbModelSpec E5_MISTRAL_SPEC {
     nullptr, "Instruct: Given a query, retrieve relevant passages that answer the query\nQuery",
 };
 
-static const EmbModelSpec EMBEDDING_MODEL_SPECS[] {
-    {NOMIC_SPEC,        {"nomic-embed-text-v1", "nomic-embed-text-v1-ablated", "nomic-embed-text-v1-unsupervised",
-                         "nomic-embed-text-v1.5"}},
+static const EmbModelGroup EMBEDDING_MODEL_SPECS[] {
+    {NOPREFIX_SPEC,     {"all-MiniLM-L6-v1", "all-MiniLM-L12-v1", "all-MiniLM-L6-v2", "all-MiniLM-L12-v2"}},
+    {NOMIC_SPEC,        {"nomic-embed-text-v1", "nomic-embed-text-v1-ablated", "nomic-embed-text-v1-unsupervised"}},
+    {NOMIC_1_5_SPEC,    {"nomic-embed-text-v1.5"}},
     {LLM_EMBEDDER_SPEC, {"llm-embedder"}},
     {BGE_SPEC,          {"bge-small-en", "bge-base-en", "bge-large-en",
                          "bge-small-en-v1.5", "bge-base-en-v1.5", "bge-large-en-v1.5"}},
@@ -639,7 +646,7 @@ static const EmbModelSpec EMBEDDING_MODEL_SPECS[] {
                          "multilingual-e5-large-instruct"}},
 };
 
-static std::optional<std::string> getEmbedPrefix(const std::string &modelName, bool isRetrieval) {
+static const EmbModelSpec *getEmbedSpec(const std::string &modelName) {
     static const auto &specs = EMBEDDING_MODEL_SPECS;
     auto it = std::find_if(specs, std::end(specs),
         [&modelName](auto &spec) {
@@ -647,31 +654,84 @@ static std::optional<std::string> getEmbedPrefix(const std::string &modelName, b
             return std::find(names, std::end(names), modelName) < std::end(names);
         }
     );
-    if (it < std::end(specs)) {
-        if (auto *prefix = isRetrieval ? it->prefixes.query : it->prefixes.document) {
-            return prefix;
+    return it < std::end(specs) ? &it->spec : nullptr;
+}
+
+void LLModel::embed(
+    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, bool doMean,
+    bool atlas
+) {
+    std::optional<std::string> prefix;
+    if (auto *spec = getEmbedSpec(llama_model_name(d_ptr->model))) {
+        prefix = isRetrieval ? spec->queryPrefix : spec->docPrefix;
+    }
+    embed(texts, embeddings, prefix, dimensionality, doMean, atlas);
+}
+
+void LLModel::embed(
+    const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
+    bool doMean, bool atlas
+) {
+    if (!d_ptr->model) {
+        throw std::logic_error("no model is loaded");
+    }
+
+    const char *modelName = llama_model_name(d_ptr->model)
+    if (!m_supportsEmbedding) {
+        throw std::logic_error("not an embedding model: " + modelName);
+    }
+
+    auto *spec = getEmbedSpec(modelName);
+    if (!spec) {
+        std::cerr << __func__ << ": warning: unknown model " << modelName << "\n";
+    }
+
+    const int32_t n_embd = llama_n_embd(d_ptr->model);
+    if (dimensinality < 0) {
+        dimensionality = n_embd;
+    } else if (spec && dimensionality != n_embd) {
+        auto msg = [dimensionality, modelName](const char *) {
+            return "unsupported dimensionality " + std::to_string(dimensionality) + " for model " + modelName;
+        };
+        if (!spec->matryoshkaCapable) {
+            throw std::logic_error(msg() + " (supported: " + std::to_string(n_embd) + ")");
+        }
+        if (dimensionality == 0 || dimensionality > n_embd) {
+            throw std::logic_error(msg() + " (recommended: " + spec->recommendedDims + ")");
         }
     }
-    return std::nullopt;
+
+    if (!prefix) {
+        if (spec) {
+            prefix = spec->docPrefix;
+        } else {
+            std::cerr << __func__ << ": warning: assuming no prefix\n";
+            prefix = "";
+        }
+    } else if (spec && prefix != spec->docPrefix && prefix != spec->queryPrefix &&
+               std::find(spec->otherPrefixes.begin(), spec->otherPrefixes.end(), *prefix) == spec->otherPrefixes.end())
+    {
+        std::stringstream ss;
+        ss << std::quoted(*prefix) << " is not a valid task type for model " << modelName;
+        throw std::logic_error(ss.str());
+    }
+
+    embedInternal(texts, embeddings, *prefix, dimensionality, doMean, atlas, spec);
 }
 
-bool LLModel::embed(
-    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, bool doMean
-) {
-    auto taskType = getEmbedPrefix(llama_model_name(d_ptr->model), isRetrieval);
-    return embed(texts, embeddings, taskType, dimensionality, doMean);
+// MD5 hash of "nomic empty"
+static const char EMPTY_PLACEHOLDER[] = "24df574ea1c998de59d5be15e769658e";
+
+auto product(double a) -> std::function<double(double)> {
+    return [a](double b) { return a * b; };
 }
 
-bool LLModel::embed(
-    const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> taskType, int dimensionality,
-    bool doMean
+void LLModel::embedInternal(
+    const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
+    bool doMean, bool atlas, EmbModelSpec *spec
 ) {
     typedef std::vector<LLModel::Token> TokenString;
-
-    if (!m_supportsEmbedding) {
-        std::cerr << __func__ << ": not an embedding model\n";
-        return false;
-    }
+    static constexpr int32_t atlasMaxLength = 8192;
 
     const llama_token bos_token = llama_token_bos(d_ptr->model);
     const llama_token eos_token = llama_token_eos(d_ptr->model);
@@ -680,41 +740,53 @@ bool LLModel::embed(
     bool addEOS = llama_vocab_type(d_ptr->model) == LLAMA_VOCAB_TYPE_WPM;
 
     // no EOS, optional BOS
-    auto tokenize = [this](const std::string &text, bool addBOS) {
+    auto tokenize = [this, addEOS](const std::string &text, TokenString &tokens, bool addBOS) {
         if (!text.empty() && text[0] != ' ') {
             text = ' ' + text; // normalize for SPM - our fork of llama.cpp doesn't add a space prefix
         }
-        TokenString inp(text.length()+4);
-        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), inp.data(), inp.size(), addBOS, false);
-        if (addEOS) {
-            assert(eos_token != -1 && inp[n_tokens - 1] == eos_token);
-            inp.resize(n_tokens - 1); // erase EOS/SEP
-        } else {
-            assert(eos_token == -1 || inp[n_tokens - 1] != eos_token);
-        }
-        return inp;
+        tokens.resize(text.length()+4);
+        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), addBOS, false);
+        assert(addEOS == (eos_token != -1 && tokens[n_tokens - 1] == eos_token));
+        tokens.resize(n_tokens - addEOS); // erase EOS/SEP
     };
 
     // tokenize the texts
     std::vector<TokenString> inputs;
-    for (const auto &text: texts) {
-        inputs.push_back(tokenize(text, false));
+    for (int i = 0; i < texts.size(); i++) {
+        auto &text = texts[i];
+        auto &inp = inputs.emplace_back();
+        tokenize(text, inp, false);
+        if (atlas && inp.size() > atlasMaxLength) {
+            if (doMean) {
+                throw std::logic_error(
+                    "length of text at index " + std::to_string(i) + " is " + std::to_string(n_tokens) +
+                    " tokens which exceeds limit of " + std::to_string(atlasMaxLength);
+                );
+            }
+            inp.resize(atlasMaxLength);
+        } else if (inp.empty()) {
+            if (!atlas || !text.empty()) {
+                std::cerr << __func__ << ": warning: chunking tokenized text at index " << std::to_string(i)
+                          << " into zero tokens\n";
+            }
+            tokenize(EMPTY_PLACEHOLDER, inp, false);
+        }
     }
 
     // tokenize the prefix
-    TokenString prefix;
-    if (taskType) {
-        prefix = tokenize(*taskType + ':');
+    TokenString prefixTokens;
+    if (prefix.empty()) {
+        prefixTokens.push_back(bos_token);
     } else {
-        prefix.push_back(bos_token);
+        tokenize(*prefix + ':', prefixTokens, true);
     }
 
     const uint32_t n_batch = llama_n_batch(d_ptr->ctx);
-    const uint32_t max_len = n_batch - prefix.length() - addEOS; // minus BOS/CLS and EOS/SEP
+    const uint32_t max_len = n_batch - prefixTokens.length() - addEOS; // minus BOS/CLS and EOS/SEP
     constexpr int overlap = 8;
     if (overlap >= max_len) {
-        std::cerr << __func__ << ": max chunk length of " << max_len << " is smaller than overlap of " << overlap << " tokens\n";
-        return false;
+        throw std::logic_error("max chunk length of " + std::to_string(max_len) + " is smaller than overlap of " +
+                               std::to_string(overlap) + " tokens");
     }
 
     // split into max_len-sized chunks
@@ -723,11 +795,12 @@ bool LLModel::embed(
     for (unsigned i = 0; i < inputs.size(); i++) {
         auto &input = inputs[i];
         for (auto it = input.begin(); it < input.end(); it += max_len) {
-            if (it > input.begin()) it -= overlap;
+            if (it > input.begin()) { it -= overlap; }
             auto end = std::min(it + max_len, input.end());
-            auto &batch = batches.emplace_back(i, prefix).batch;
+            auto &batch = batches.emplace_back(i, prefixTokens).batch;
             batch.insert(batch.end(), it, end);
             batch.push_back(eos_token);
+            if (!doMean) { break; /* limit text to one chunk */ }
         }
     }
     inputs.clear();
@@ -735,7 +808,6 @@ bool LLModel::embed(
     // initialize batch
     struct llama_batch batch = llama_batch_init(n_batch, 0, 1);
 
-    const int32_t n_embd = llama_n_embd(d_ptr->model);
     dimensionality = std::min(dimensionality, n_embd);
 
     // n_texts x n_embd matrix
@@ -743,10 +815,14 @@ bool LLModel::embed(
     std::vector<int> embeddingsSumTotal(texts.size());
     std::vector<int> queued_indices; // text indices of batches to be processed
 
-    auto decode = [this, &queued_indices, n_embd, &batch, &embeddingsSum, &embeddingsSumTotal]() {
+    auto getL2NormScale = [](double *start, double *end) {
+        double magnitude = std::sqrt(std::inner_product(embd, embd_end, embd, 0.0));
+        return 1.0 / std::max(magnitude, 1e-12);
+    }
+
+    auto decode = [this, &queued_indices, n_embd, &batch, &embeddingsSum, &embeddingsSumTotal, spec]() {
         if (llama_decode(d_ptr->ctx, batch) < 0) {
-            std::cerr << __func__ << ": llama_decode failed\n";
-            return false;
+            throw std::runtime_error("llama_decode failed");
         }
 
         for (int i = 0; i < batch.n_tokens; ++i) {
@@ -759,18 +835,36 @@ bool LLModel::embed(
             if (!embd) { embd = llama_get_embeddings_ith(d_ptr->ctx, i); }
             assert(embd);
 
-            std::transform(out, out + n_embd, embd, out, std::plus<double>());
+            auto *embd_end = embd + n_embd;
+
+            // layer normalization for nomic-embed-text-v1.5
+            if (spec && spec->matryoshkaCapable) {
+                // normalize mean
+                double mean = std::accumulate(embd, embd_end, 0.0) / n_embd;
+                std::transform(embd, embd_end, embd, [mean](double f){ return f - mean; });
+
+                // unbiased sample variance, with Bessel's correction
+                double variance = std::inner_product(embd, embd_end, embd, 0.0) / (n_embd - 1);
+
+                // trim to matryoshka dim
+                embd_end = embd + dimensionality;
+
+                // normalize variance
+                std::transform(embd, embd_end, embd, product(1.0 / std::sqrt(variance + 1e-5)));
+            }
+
+            // L2 norm
+            auto scale = getL2NormScale(embd, embd_end);
+            std::transform(embd, embd_end, out, out, [scale](double e, double o){ return o + scale * e; });
             embeddingsSumTotal[i_prompt]++;
         }
-
-        return true;
     };
 
     // break into batches
     for (auto &inp: batches) {
         // encode if at capacity
         if (batch.n_tokens + inp.batch.size() > n_batch) {
-            if (!decode()) { return false; }
+            decode();
             batch.n_tokens = 0;
             queued_indices.clear();
         }
@@ -781,44 +875,21 @@ bool LLModel::embed(
     }
 
     // final batch
-    if (!decode()) { return false; }
-
-    auto product = [](double a) {
-        return [a](double b) { return a * b; };
-    };
+    decode();
 
     for (unsigned i = 0; i < texts.size(); i++) {
         auto *embd = &embeddingsSum[i * n_embd];
-        auto *embd_end = embd + n_embd;
+        auto *embd_end = embd + dimensionality;
         int total = embeddingsSumTotal[i];
 
         // average over chunks
         std::transform(embd, embd_end, embd, product(1.0 / total));
 
-        // layer normalization for matryoshka
-        if (dimensionality > 0) {
-            // normalize mean
-            double mean = std::accumulate(embd, embd_end, 0.0) / n_embd;
-            std::transform(embd, embd_end, embd, [mean](double f){ return f - mean; });
-
-            // unbiased sample variance, with Bessel's correction
-            double variance = std::inner_product(embd, embd_end, embd, 0.0) / (n_embd - 1);
-
-            // trim to matryoshka dim
-            embd_end = embd + dimensionality;
-
-            // normalize variance
-            std::transform(embd, embd_end, embd, product(1.0 / std::sqrt(variance + 1e-5)));
-        }
-
-        // L2 norm
-        double magnitude = std::sqrt(std::inner_product(embd, embd_end, embd, 0.0));
-        std::transform(embd, embd_end, embd, product(1.0 / std::max(magnitude, 1e-12)));
-        std::copy(embd, embd_end, embeddings);
-        embeddings += embd_end - embd;
+        // L2 norm and copy
+        auto scale = getL2NormScale(embd, embd_end);
+        std::transform(embd, embd_end, embeddings, product(scale));
+        embeddings += dimensionality;
     }
-
-    return true;
 }
 
 #if defined(_WIN32)

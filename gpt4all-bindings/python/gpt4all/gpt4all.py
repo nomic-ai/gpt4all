@@ -49,26 +49,27 @@ class Embed4All:
 
     @overload
     def embed(
-        self, text: str, task_type: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
-        max_tokens_per_text: int | None = ...,
+        self, text: str, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        atlas: bool = ...,
     ) -> list[float]: ...
     @overload
     def embed(
-        self, text: list[str], task_type: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
-        max_tokens_per_text: int | None = ...,
+        self, text: list[str], prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        atlas: bool = ...,
     ) -> list[list[float]]: ...
 
-    # TODO(cebtenzzre): document max_tokens_per_text and implement with assumption that 8192 will be useful for Atlas compat
-    def embed(self, text, task_type=None, dimensionality=None, long_text_mode="truncate", max_tokens_per_text=None):
+    def embed(self, text, prefix=None, dimensionality=None, long_text_mode="truncate", atlas=False):
         """
         Generate one or more embeddings.
 
         Args:
             text: A text or list of texts to generate embeddings for.
-            task_type: The downstream task to generate embeddings for, model-specific. For Nomic Embed this can be
-            `search_query`, `search_document`, `classification`, or `clustering`. Defaults to `search_document`.
+            prefix: The model-specific prefix representing the embedding task, without the trailing colon. For Nomic
+            Embed this can be `search_query`, `search_document`, `classification`, or `clustering`.
             dimensionality: The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
             long_text_mode: How to handle texts longer than the model can accept. One of `mean` or `truncate`.
+            atlas: Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens
+            with long_text_mode="mean" will raise an error. Disabled by default.
 
         Returns:
             An embedding or list of embeddings of your text(s).
@@ -87,8 +88,7 @@ class Embed4All:
             do_mean = {"mean": True, "truncate": False}[long_text_mode]
         except KeyError:
             raise ValueError(f"Long text mode must be one of 'mean' or 'truncate', got {long_text_mode!r}")
-
-        return self.gpt4all.model.generate_embeddings(text, task_type, dimensionality, do_mean)
+        return self.gpt4all.model.generate_embeddings(text, prefix, dimensionality, do_mean, atlas)
 
 
 class GPT4All:

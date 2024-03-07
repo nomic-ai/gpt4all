@@ -111,6 +111,8 @@ llmodel.llmodel_embed.argtypes = [
     ctypes.c_char_p,
     ctypes.c_int,
     ctypes.c_bool,
+    ctypes.c_bool,
+    ctypes.POINTER(ctypes.c_char_p),
 ]
 
 llmodel.llmodel_embed.restype = ctypes.POINTER(ctypes.c_float)
@@ -291,14 +293,14 @@ class LLModel:
 
     @overload
     def generate_embeddings(
-        self, text: str, task_type: str, dimensionality: int, do_mean: bool,
+        self, text: str, prefix: str, dimensionality: int, do_mean: bool, atlas: bool,
     ) -> list[float]: ...
     @overload
     def generate_embeddings(
-        self, text: list[str], task_type: str, dimensionality: int, do_mean: bool,
+        self, text: list[str], prefix: str, dimensionality: int, do_mean: bool, atlas: bool,
     ) -> list[list[float]]: ...
 
-    def generate_embeddings(self, text, task_type, dimensionality, do_mean):
+    def generate_embeddings(self, text, prefix, dimensionality, do_mean, atlas):
         if not text:
             raise ValueError("text must not be None or empty")
 
@@ -308,18 +310,20 @@ class LLModel:
 
         # prepare input
         embedding_size = ctypes.c_size_t()
-        c_task_type = ctypes.c_char_p() if task_type is None else task_type.encode()
+        error = ctypes.c_char_p()
+        c_prefix = ctypes.c_char_p() if prefix is None else prefix.encode()
         c_texts = (ctypes.c_char_p * (len(text) + 1))()
         for i, t in enumerate(text):
             c_texts[i] = t.encode()
 
         # generate the embeddings
         embedding_ptr = llmodel.llmodel_embed(
-            self.model, c_texts, ctypes.byref(embedding_size), c_task_type, dimensionality, do_mean,
+            self.model, c_texts, ctypes.byref(embedding_size), c_prefix, dimensionality, do_mean, atlas,
+            ctypes.byref(error),
         )
 
         if embedding_ptr.value is None:
-            raise RuntimeError('Failed to generate embedding. See stderr for details.')
+            raise RuntimeError(f'Failed to generate embeddings: {error.value.decode()}')
 
         # extract output
         n_embd = embedding_size.value // len(text)
