@@ -51,7 +51,7 @@ interface ModelConfig {
 }
 
 /**
- * Callback for controlling token generation
+ * Callback for controlling token generation. Return false to stop token generation.
  */
 type TokenCallback = (tokenId: number, token: string, total: string) => boolean
 
@@ -279,15 +279,41 @@ declare function loadModel(
 /**
  * The nodejs equivalent to python binding's chat_completion
  * @param {InferenceModel} model - The language model object.
- * @param {PromptMessage[]} messages - The array of messages for the conversation.
+ * @param {string} message - The user input message
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {CompletionReturn} The completion result.
  */
 declare function createCompletion(
     model: InferenceModel,
-    messages: PromptMessage[],
+    message: string,
     options?: CompletionOptions
 ): Promise<CompletionReturn>;
+
+/**
+ * Streaming variant of createCompletion, returns a stream of tokens and a promise that resolves to the completion result.
+ * @param {InferenceModel} model - The language model object.
+ * @param {string} message - The user input message.
+ * @param {CompletionOptions} options - The options for creating the completion.
+ * @returns {CompletionStreamReturn} An object of token stream and the completion result promise.
+ */
+declare function createCompletionStream(
+    model: InferenceModel,
+    message: string,
+    options?: CompletionOptions
+): CompletionStreamReturn;
+
+/**
+ * Creates an async generator of tokens
+ * @param {InferenceModel} llmodel - The language model object.
+ * @param {string} message - The user input message.
+ * @param {CompletionOptions} options - The options for creating the completion.
+ * @returns {AsyncGenerator<string>} The stream of generated tokens
+ */
+declare function createCompletionGenerator(
+    llmodel: InferenceModel,
+    message: string,
+    options: CompletionOptions
+): AsyncGenerator<string, CompletionReturn>;
 
 /**
  * The nodejs moral equivalent to python binding's Embed4All().embed()
@@ -331,12 +357,17 @@ interface CompletionOptions extends Partial<LLModelPromptContext> {
      * The last instruction for the model, appended to the end of the prompt.
      */
     promptFooter?: string;
+    
+    /**
+     * Callback for controlling token generation. Return false to stop processing.
+     */
+    onToken?: TokenCallback;
 }
 
 /**
  * A message in the conversation, identical to OpenAI's chat message.
  */
-interface PromptMessage {
+interface Message {
     /** The role of the message. */
     role: "system" | "assistant" | "user";
 
@@ -363,16 +394,16 @@ interface CompletionReturn {
         total_tokens: number;
     };
 
-    /** The generated completions. */
-    choices: CompletionChoice[];
+    /** The generated completion. */
+    message: Message;
 }
 
 /**
- * A completion choice, similar to OpenAI's format.
+ * The result of a streamed completion, containing a stream of tokens and a promise that resolves to the completion result.
  */
-interface CompletionChoice {
-    /** Response message */
-    message: PromptMessage;
+interface CompletionStreamReturn {
+    tokens: ReadableStream;
+    result: Promise<CompletionReturn>;
 }
 
 /**
@@ -461,21 +492,6 @@ interface LLModelPromptContext {
     contextErase: number;
 }
 
-
-/**
- * Creates an async generator of tokens
- * @param {InferenceModel} llmodel - The language model object.
- * @param {PromptMessage[]} messages - The array of messages for the conversation.
- * @param {CompletionOptions} options - The options for creating the completion.
- * @param {TokenCallback} callback - optional callback to control token generation.
- * @returns {AsyncGenerator<string>} The stream of generated tokens
- */
-declare function generateTokens(
-    llmodel: InferenceModel,
-    messages: PromptMessage[],
-    options: CompletionOptions,
-    callback?: TokenCallback
-): AsyncGenerator<string>;
 /**
  * From python api:
  * models will be stored in (homedir)/.cache/gpt4all/`
@@ -588,13 +604,15 @@ export {
     EmbeddingModel,
     LLModel,
     LLModelPromptContext,
-    PromptMessage,
+    Message,
     CompletionOptions,
+    CompletionReturn,
     LoadModelOptions,
     loadModel,
     createCompletion,
+    createCompletionStream,
+    createCompletionGenerator,
     createEmbedding,
-    generateTokens,
     DEFAULT_DIRECTORY,
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_MODEL_CONFIG,

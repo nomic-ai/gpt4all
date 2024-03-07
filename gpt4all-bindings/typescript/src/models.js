@@ -1,21 +1,63 @@
-const { normalizePromptContext, warnOnSnakeCaseKeys } = require('./util');
+const { normalizePromptContext, warnOnSnakeCaseKeys } = require("./util");
 
 class InferenceModel {
     llm;
     config;
+    messages;
 
     constructor(llmodel, config) {
         this.llm = llmodel;
         this.config = config;
     }
 
-    async generate(prompt, promptContext,callback) {
+    async initialize(promptContext) {
+        // https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-bindings/python/gpt4all/gpt4all.py#L346
+        // TODO probably need to add support for "special" flag?
+        // console.debug("Ingesting system prompt", this.config);
+        await this.llm.raw_prompt(
+            this.config.systemPrompt,
+            {
+                promptTemplate: "%1",
+                nPredict: 0,
+                nBatch: promptContext.nBatch,
+                // special: true,
+            },
+            () => true
+        );
+
+        this.messages = [];
+        this.messages.push({
+            role: "system",
+            content: this.config.systemPrompt,
+        });
+    }
+    async generate(prompt, promptContext, callback) {
         warnOnSnakeCaseKeys(promptContext);
-        const normalizedPromptContext = { 
+        const normalizedPromptContext = {
             promptTemplate: this.config.promptTemplate,
-            ...normalizePromptContext(promptContext) 
+            ...normalizePromptContext(promptContext),
         };
-        const result = this.llm.raw_prompt(prompt, normalizedPromptContext,callback);
+
+        if (!this.messages) {
+            await this.initialize(normalizedPromptContext);
+        }
+
+        this.messages.push({
+            role: "user",
+            content: prompt,
+        });
+
+        const result = await this.llm.raw_prompt(
+            prompt,
+            normalizedPromptContext,
+            callback
+        );
+
+        this.messages.push({
+            role: "assistant",
+            content: result,
+        });
+
         return result;
     }
 
@@ -34,14 +76,13 @@ class EmbeddingModel {
     }
 
     embed(text) {
-        return this.llm.embed(text)
+        return this.llm.embed(text);
     }
 
     dispose() {
         this.llm.dispose();
     }
 }
-
 
 module.exports = {
     InferenceModel,
