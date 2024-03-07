@@ -373,8 +373,7 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant data(const QString &id, int role) const;
     QVariant dataByFilename(const QString &filename, int role) const;
-    void updateData(const QString &id, int role, const QVariant &value);
-    void updateDataByFilename(const QString &filename, int role, const QVariant &value);
+    void updateDataByFilename(const QString &filename, const QVector<QPair<int, QVariant>> &data);
     void updateData(const QString &id, const QVector<QPair<int, QVariant>> &data);
 
     int count() const { return m_models.size(); }
