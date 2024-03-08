@@ -9,7 +9,8 @@
 
 //#define USE_LOCAL_MODELSJSON
 
-#define NOMIC_EMBEDDING_MODEL "nomic-embed-text-v1.txt"
+const char DEFAULT_EMBEDDING_MODEL[] = "all-MiniLM-L6-v2.gguf2.f16.gguf";
+const char NOMIC_EMBEDDING_MODEL[] = "nomic-embed-text-v1.txt";
 
 QString ModelInfo::id() const
 {
@@ -218,13 +219,11 @@ bool EmbeddingModels::filterAcceptsRow(int sourceRow,
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool isEmbeddingModel = sourceModel()->data(index, ModelList::IsEmbeddingModelRole).toBool();
     bool installed = sourceModel()->data(index, ModelList::InstalledRole).toBool();
-    auto filename = sourceModel()->data(index, ModelList::FilenameRole).toString();
+    QString filename = sourceModel()->data(index, ModelList::FilenameRole).toString();
+    if (filename != DEFAULT_EMBEDDING_MODEL) {
+        return false; // we are currently not prepared to support other embedding models
+    }
     return isEmbeddingModel && (!m_requireInstalled || installed);
-}
-
-int EmbeddingModels::count() const
-{
-    return rowCount();
 }
 
 int EmbeddingModels::defaultModelIndex() const
@@ -256,18 +255,23 @@ ModelInfo EmbeddingModels::defaultModelInfo() const
 }
 
 InstalledModels::InstalledModels(QObject *parent)
-    : EmbeddingModels(parent, false) {}
+    : QSortFilterProxyModel(parent)
+{
+    connect(this, &InstalledModels::rowsInserted, this, &InstalledModels::countChanged);
+    connect(this, &InstalledModels::rowsRemoved, this, &InstalledModels::countChanged);
+    connect(this, &InstalledModels::modelReset, this, &InstalledModels::countChanged);
+    connect(this, &InstalledModels::layoutChanged, this, &InstalledModels::countChanged);
+}
 
 bool InstalledModels::filterAcceptsRow(int sourceRow,
                                        const QModelIndex &sourceParent) const
 {
-    if (EmbeddingModels::filterAcceptsRow(sourceRow, sourceParent)) {
-        return false; // don't let user select embedding models
-    }
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+    bool isEmbeddingModel = sourceModel()->data(index, ModelList::IsEmbeddingModelRole).toBool();
     bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
     bool showInGUI = !sourceModel()->data(index, ModelList::DisableGUIRole).toBool();
-    return isInstalled && showInGUI;
+    // (don't let the user select embedding models)
+    return !isEmbeddingModel && isInstalled && showInGUI;
 }
 
 DownloadableModels::DownloadableModels(QObject *parent)

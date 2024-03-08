@@ -146,7 +146,7 @@ class EmbeddingModels : public QSortFilterProxyModel
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
     EmbeddingModels(QObject *parent, bool requireInstalled);
-    int count() const;
+    int count() const { return rowCount(); }
 
     int defaultModelIndex() const;
     ModelInfo defaultModelInfo() const;
@@ -162,12 +162,13 @@ private:
     bool m_requireInstalled;
 };
 
-class InstalledModels : public EmbeddingModels
+class InstalledModels : public QSortFilterProxyModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
     explicit InstalledModels(QObject *parent);
+    int count() const { return rowCount(); }
 
 Q_SIGNALS:
     void countChanged();
