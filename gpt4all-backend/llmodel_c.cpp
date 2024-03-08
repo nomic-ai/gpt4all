@@ -98,7 +98,8 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
                     llmodel_response_callback response_callback,
                     llmodel_recalculate_callback recalculate_callback,
                     llmodel_prompt_context *ctx,
-                    bool special)
+                    bool special,
+                    const char *fake_reply)
 {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
 
@@ -122,9 +123,13 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
     wrapper->promptContext.repeat_last_n = ctx->repeat_last_n;
     wrapper->promptContext.contextErase = ctx->context_erase;
 
+    std::string fake_reply_str;
+    if (fake_reply) { fake_reply_str = fake_reply; }
+    auto *fake_reply_p = fake_reply ? &fake_reply_str : nullptr;
+
     // Call the C++ prompt method
     wrapper->llModel->prompt(prompt, prompt_template, prompt_callback, response_func, recalculate_callback,
-                             wrapper->promptContext, special);
+                             wrapper->promptContext, special, fake_reply_p);
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data
     // which involves no copies

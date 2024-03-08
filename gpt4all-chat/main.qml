@@ -93,6 +93,9 @@ Window {
             if (currentChat.modelLoadingError !== "")
                 modelLoadingErrorPopup.open()
         }
+        function onModelLoadingWarning(warning) {
+            modelLoadingWarningPopup.open_(warning)
+        }
     }
 
     property bool hasShownModelDownload: false
@@ -211,6 +214,15 @@ Window {
             + "<li>If you've sideloaded the model ensure the file is not corrupt by checking md5sum"
             + "<li>Read more about what models are supported in our <a href=\"https://docs.gpt4all.io/gpt4all_chat.html\">documentation</a> for the gui"
             + "<li>Check out our <a href=\"https://discord.gg/4M2QFmTt2k\">discord channel</a> for help")
+    }
+
+    PopupDialog {
+        id: modelLoadingWarningPopup
+        property string message
+        anchors.centerIn: parent
+        shouldTimeOut: false
+        text: qsTr("<h3>Warning</h3><p>%1</p>").arg(message)
+        function open_(msg) { message = msg; open(); }
     }
 
     Rectangle {

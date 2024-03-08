@@ -86,10 +86,30 @@ void ChatGPT::prompt(const std::string &prompt,
     Q_UNUSED(promptCallback);
     Q_UNUSED(recalculateCallback);
     Q_UNUSED(special);
-    Q_UNUSED(fakeReply); // FIXME(cebtenzzre): I broke ChatGPT
 
     if (!isModelLoaded()) {
         std::cerr << "ChatGPT ERROR: prompt won't work with an unloaded model!\n";
+        return;
+    }
+
+    if (!promptCtx.n_past) { m_queuedPrompts.clear(); }
+    Q_ASSERT(promptCtx.n_past <= m_context.size());
+    m_context.resize(promptCtx.n_past);
+
+    // FIXME(cebtenzzre): We're assuming people don't try to use %2 with ChatGPT. What would that even mean?
+    m_queuedPrompts << QString::fromStdString(promptTemplate).arg(QString::fromStdString(prompt));
+
+    if (!promptCtx.n_predict && !fakeReply) {
+        return; // response explicitly suppressed, queue prompt for later
+    }
+
+    QString formattedPrompt = m_queuedPrompts.join("");
+    m_queuedPrompts.clear();
+
+    if (fakeReply) {
+        promptCtx.n_past += 1;
+        m_context.append(formattedPrompt);
+        m_context.append(QString::fromStdString(*fakeReply));
         return;
     }
 
@@ -104,8 +124,9 @@ void ChatGPT::prompt(const std::string &prompt,
     root.insert("temperature", promptCtx.temp);
     root.insert("top_p", promptCtx.top_p);
 
+    // conversation history
     QJsonArray messages;
-    for (int i = 0; i < m_context.count() && i < promptCtx.n_past; ++i) {
+    for (int i = 0; i < m_context.count(); ++i) {
         QJsonObject message;
         message.insert("role", i % 2 == 0 ? "assistant" : "user");
         message.insert("content", m_context.at(i));
@@ -114,14 +135,14 @@ void ChatGPT::prompt(const std::string &prompt,
 
     QJsonObject promptObject;
     promptObject.insert("role", "user");
-    promptObject.insert("content", QString::fromStdString(promptTemplate).arg(QString::fromStdString(prompt)));
+    promptObject.insert("content", formattedPrompt);
     messages.append(promptObject);
     root.insert("messages", messages);
 
     QJsonDocument doc(root);
 
 #if defined(DEBUG)
-    qDebug() << "ChatGPT::prompt begin network request" << qPrintable(doc.toJson());
+    qDebug().noquote() << "ChatGPT::prompt begin network request" << doc.toJson();
 #endif
 
     m_responseCallback = responseCallback;
@@ -138,7 +159,7 @@ void ChatGPT::prompt(const std::string &prompt,
     workerThread.wait();
 
     promptCtx.n_past += 1;
-    m_context.append(QString::fromStdString(prompt));
+    m_context.append(formattedPrompt);
     m_context.append(worker.currentResponse());
     m_responseCallback = nullptr;
 
@@ -210,7 +231,7 @@ void ChatGPTWorker::handleReadyRead()
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
         m_chat->callResponse(-1, QString("\nERROR: 2 ChatGPT responded with error code \"%1-%2\" %3\n")
-            .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
+            .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString());
         emit finished();
         return;
     }
@@ -225,7 +246,7 @@ void ChatGPTWorker::handleReadyRead()
         if (jsonData == "[DONE]")
             continue;
 #if defined(DEBUG)
-        qDebug() << "line" << qPrintable(jsonData);
+        qDebug().noquote() << "line" << jsonData;
 #endif
         QJsonParseError err;
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);

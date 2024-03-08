@@ -100,6 +100,7 @@ llmodel.llmodel_prompt.argtypes = [
     RecalculateCallback,
     ctypes.POINTER(LLModelPromptContext),
     ctypes.c_bool,
+    ctypes.c_char_p,
 ]
 
 llmodel.llmodel_prompt.restype = None
@@ -400,6 +401,7 @@ class LLModel:
             RecalculateCallback(self._recalculate_callback),
             self.context,
             special,
+            ctypes.c_char_p(),
         )
 
 
