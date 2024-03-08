@@ -199,7 +199,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
  * long_text_mode="mean" will raise an error. Disabled by default.
  * @param error Return location for a malloc()ed string that will be set on error, or NULL.
  * @return A pointer to an array of floating point values passed to the calling method which then will
- * be responsible for lifetime of this memory. NULL if an error occured.
+ * be responsible for lifetime of this memory. NULL if an error occurred.
  */
 float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size, const char *prefix,
                      int dimensionality, bool do_mean, bool atlas, const char **error);
