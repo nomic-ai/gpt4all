@@ -53,7 +53,7 @@ interface ModelConfig {
 /**
  * Callback for controlling token generation. Return false to stop token generation.
  */
-type TokenCallback = (tokenId: number, token: string, total: string) => boolean
+type TokenCallback = (tokenId: number, token: string, total: string) => boolean;
 
 /**
  *
@@ -64,17 +64,20 @@ declare class InferenceModel {
     constructor(llm: LLModel, config: ModelConfig);
     llm: LLModel;
     config: ModelConfig;
+    messages: Message[];
+
+    initialize(options?: CompletionOptions): Promise<void>;
 
     generate(
         prompt: string,
-        options?: Partial<LLModelPromptContext>,
+        options?: CompletionOptions,
         callback?: TokenCallback
     ): Promise<string>;
 
-   /**
+    /**
      * delete and cleanup the native model
-    */
-    dispose(): void
+     */
+    dispose(): void;
 }
 
 /**
@@ -88,10 +91,9 @@ declare class EmbeddingModel {
     embed(text: string): Float32Array;
 
     /**
-      * delete and cleanup the native model
+     * delete and cleanup the native model
      */
-    dispose(): void
-
+    dispose(): void;
 }
 
 /**
@@ -146,7 +148,7 @@ declare class LLModel {
         q: string,
         params: Partial<LLModelPromptContext>,
         callback?: TokenCallback
-    ): Promise<string>
+    ): Promise<string>;
 
     /**
      * Embed text with the model. Keep in mind that
@@ -171,47 +173,47 @@ declare class LLModel {
      */
     getLibraryPath(): string;
     /**
-     * Initiate a GPU by a string identifier. 
-     * @param {number} memory_required Should be in the range size_t or will throw 
+     * Initiate a GPU by a string identifier.
+     * @param {number} memory_required Should be in the range size_t or will throw
      * @param {string} device_name  'amd' | 'nvidia' | 'intel' | 'gpu' | gpu name.
      * read LoadModelOptions.device for more information
      */
-    initGpuByString(memory_required: number, device_name: string): boolean
+    initGpuByString(memory_required: number, device_name: string): boolean;
     /**
      * From C documentation
      * @returns True if a GPU device is successfully initialized, false otherwise.
      */
-    hasGpuDevice(): boolean
+    hasGpuDevice(): boolean;
     /**
-      * GPUs that are usable for this LLModel
-      * @param nCtx Maximum size of context window
-      * @throws if hasGpuDevice returns false (i think)
-      * @returns 
-      */
-    listGpu(nCtx: number) : GpuDevice[]
+     * GPUs that are usable for this LLModel
+     * @param nCtx Maximum size of context window
+     * @throws if hasGpuDevice returns false (i think)
+     * @returns
+     */
+    listGpu(nCtx: number): GpuDevice[];
 
     /**
-      * delete and cleanup the native model
+     * delete and cleanup the native model
      */
-    dispose(): void
+    dispose(): void;
 }
-/** 
+/**
  * an object that contains gpu data on this machine.
  */
 interface GpuDevice {
     index: number;
     /**
-      * same as VkPhysicalDeviceType
+     * same as VkPhysicalDeviceType
      */
-    type: number;            
-    heapSize : number; 
+    type: number;
+    heapSize: number;
     name: string;
     vendor: string;
 }
 
 /**
-  * Options that configure a model's behavior.
-  */
+ * Options that configure a model's behavior.
+ */
 interface LoadModelOptions {
     modelPath?: string;
     librariesPath?: string;
@@ -231,14 +233,14 @@ interface LoadModelOptions {
 	   Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
        instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
        model.
-    */ 
+    */
     device?: string;
-    /* 
+    /*
      * The Maximum window size of this model
      * Default of 2048
      */
     nCtx?: number;
-    /* 
+    /*
      * Number of gpu layers needed
      * Default of 100
      */
@@ -338,26 +340,17 @@ interface CompletionOptions extends Partial<LLModelPromptContext> {
     verbose?: boolean;
 
     /**
-     * Template for the system message. Will be put before the conversation with %1 being replaced by all system messages.
-     * Note that if this is not defined, system messages will not be included in the prompt.
+     * System prompt to ingest on the first turn.
      */
-    systemPromptTemplate?: string;
+    systemPrompt?: string;
 
     /**
-     * Template for user messages, with %1 being replaced by the message.
+     * Template for user / assistant message pairs.
+     * %1 is required and will be replaced by the user input.
+     * %2 is optional and will be replaced by the assistant response.
      */
     promptTemplate?: boolean;
 
-    /**
-     * The initial instruction for the model, on top of the prompt
-     */
-    promptHeader?: string;
-
-    /**
-     * The last instruction for the model, appended to the end of the prompt.
-     */
-    promptFooter?: string;
-    
     /**
      * Callback for controlling token generation. Return false to stop processing.
      */
@@ -440,7 +433,7 @@ interface LLModelPromptContext {
     topK: number;
 
     /** The nucleus sampling probability threshold.
-     * Top-P limits the selection of the next token to a subset of tokens with a cumulative probability 
+     * Top-P limits the selection of the next token to a subset of tokens with a cumulative probability
      * above a threshold P. This method, also known as nucleus sampling, finds a balance between diversity
      * and quality by considering both token probabilities and the number of tokens available for sampling.
      * When using a higher value for top-P (eg., 0.95), the generated text becomes more diverse.
@@ -572,7 +565,9 @@ interface ListModelsOptions {
     file?: string;
 }
 
-declare function listModels(options?: ListModelsOptions): Promise<ModelConfig[]>;
+declare function listModels(
+    options?: ListModelsOptions
+): Promise<ModelConfig[]>;
 
 interface RetrieveModelOptions {
     allowDownload?: boolean;
@@ -624,5 +619,5 @@ export {
     DownloadController,
     RetrieveModelOptions,
     DownloadModelOptions,
-    GpuDevice
+    GpuDevice,
 };

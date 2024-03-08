@@ -99,50 +99,31 @@ async function createCompletion(
         ...options,
     };
 
-    const {
-        verbose,
-        systemPromptTemplate,
-        promptTemplate,
-        promptHeader,
-        promptFooter,
-        ...promptContext
-    } = optionsWithDefaults;
-
-    if (verbose) {
-        console.debug("Creating completion", {
-            message,
-            options: optionsWithDefaults,
-        });
-    }
-
     let tokensGenerated = 0;
 
     const response = await model.generate(
         message,
-        promptContext,
+        optionsWithDefaults,
         (tokenId, text, fullText) => {
-            if (verbose) {
+            if (optionsWithDefaults.verbose) {
                 console.debug("Got token", {
                     tokenId,
                     text,
                 });
             }
-            
+
             let continueGeneration = true;
 
             if (options.onToken) {
                 // don't wanna cancel the generation if the callback returns undefined
-                continueGeneration = options.onToken(tokenId, text, fullText) !== false;
+                continueGeneration =
+                    options.onToken(tokenId, text, fullText) !== false;
             }
 
             tokensGenerated++;
             return continueGeneration;
         }
     );
-
-    if (verbose) {
-        console.debug("Finished completion:\n" + response);
-    }
 
     return {
         llmodel: model.llm.name(),

@@ -1,7 +1,7 @@
 import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
 const model = await loadModel(
-    'mistral-7b-openorca.Q4_0.gguf',
+    'mistral-7b-openorca.gguf2.Q4_0.gguf',
     { verbose: true, device: 'gpu' }
 );
 const ll = model.llm;
@@ -29,18 +29,15 @@ console.log("Default directory for libraries", DEFAULT_LIBRARIES_DIRECTORY);
 console.log("Has GPU", ll.hasGpuDevice());
 console.log("gpu devices", ll.listGpu())
 console.log("Required Mem in bytes", ll.memoryNeeded())
-const completion1 = await createCompletion(model, [ 
-    { role : 'system', content: 'You are an advanced mathematician.'  },
-    { role : 'user', content: 'What is 1 + 1?'  }, 
-], { verbose: true })
-console.log(completion1.choices[0].message)
+const completion1 = await createCompletion(model, 'What is 1 + 1?', {
+    verbose: true,
+    systemPrompt: '<|im_start|>system\nYou are an advanced mathematician.\n<|im_end|>',
+})
+console.log(completion1.message)
 
-const completion2 = await createCompletion(model, [
-    { role : 'system', content: 'You are an advanced mathematician.'  },
-    { role : 'user', content: 'What is two plus two?'  }, 
-], {  verbose: true })
+const completion2 = await createCompletion(model, 'What is two plus two?', {  verbose: true })
 
-console.log(completion2.choices[0].message)
+console.log(completion2.message)
 
 //CALLING DISPOSE WILL INVALID THE NATIVE MODEL. USE THIS TO CLEANUP
 model.dispose()

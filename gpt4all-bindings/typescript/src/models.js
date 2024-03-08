@@ -10,16 +10,17 @@ class InferenceModel {
         this.config = config;
     }
 
-    async initialize(promptContext) {
+    async initialize(opts = DEFAULT_PROMPT_CONTEXT) {
+        const systemPrompt = opts.systemPrompt ?? this.config.systemPrompt;
+        console.debug("Ingesting system prompt", systemPrompt);
         // https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-bindings/python/gpt4all/gpt4all.py#L346
         // TODO probably need to add support for "special" flag?
-        // console.debug("Ingesting system prompt", this.config);
         await this.llm.raw_prompt(
-            this.config.systemPrompt,
+            systemPrompt,
             {
                 promptTemplate: "%1",
                 nPredict: 0,
-                nBatch: promptContext.nBatch,
+                nBatch: opts?.nBatch ?? DEFAULT_PROMPT_CONTEXT.nBatch,
                 // special: true,
             },
             () => true
@@ -28,10 +29,15 @@ class InferenceModel {
         this.messages = [];
         this.messages.push({
             role: "system",
-            content: this.config.systemPrompt,
+            content: systemPrompt,
         });
     }
-    async generate(prompt, promptContext, callback) {
+    async generate(
+        prompt,
+        opts = DEFAULT_PROMPT_CONTEXT,
+        callback = () => true
+    ) {
+        const { verbose, systemPrompt, ...promptContext } = opts;
         warnOnSnakeCaseKeys(promptContext);
         const normalizedPromptContext = {
             promptTemplate: this.config.promptTemplate,
@@ -39,7 +45,7 @@ class InferenceModel {
         };
 
         if (!this.messages) {
-            await this.initialize(normalizedPromptContext);
+            await this.initialize(opts);
         }
 
         this.messages.push({
@@ -47,11 +53,22 @@ class InferenceModel {
             content: prompt,
         });
 
+        if (verbose) {
+            console.debug("Generating completion", {
+                prompt,
+                promptContext: normalizedPromptContext,
+            });
+        }
+
         const result = await this.llm.raw_prompt(
             prompt,
             normalizedPromptContext,
             callback
         );
+
+        if (verbose) {
+            console.debug("Finished completion:\n" + result);
+        }
 
         this.messages.push({
             role: "assistant",
