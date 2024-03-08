@@ -980,7 +980,7 @@ QString ModelList::clone(const ModelInfo &model)
     const QString id = Network::globalInstance()->generateUniqueId();
     addModel(id);
 
-    QVector<QPair<int, QVariant>> data = {
+    QVector<QPair<int, QVariant>> data {
         { ModelList::InstalledRole, model.installed },
         { ModelList::IsCloneRole, true },
         { ModelList::NameRole, uniqueModelName(model) },
@@ -1144,7 +1144,7 @@ void ModelList::updateModelsFromDirectory()
                     }
 
                     for (const QString &id : modelsById) {
-                        QVector<QPair<int, QVariant>> data = {
+                        QVector<QPair<int, QVariant>> data {
                             { InstalledRole, true },
                             { FilenameRole, filename },
                             // FIXME: WE should change this to use a consistent filename for online models
@@ -1350,7 +1350,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!contains(id))
             addModel(id);
 
-        QVector<QPair<int, QVariant>> data = {
+        QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, modelFilesize },
@@ -1408,7 +1408,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             changeId(modelFilename, id);
         if (!contains(id))
             addModel(id);
-        QVector<QPair<int, QVariant>> data = {
+        QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, "minimal" },
@@ -1435,7 +1435,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             changeId(modelFilename, id);
         if (!contains(id))
             addModel(id);
-        QVector<QPair<int, QVariant>> data = {
+        QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, "minimal" },
@@ -1465,7 +1465,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             changeId(modelFilename, id);
         if (!contains(id))
             addModel(id);
-        QVector<QPair<int, QVariant>> data = {
+        QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, "minimal" },
@@ -1486,7 +1486,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
 
 void ModelList::updateDiscoveredInstalled(const ModelInfo &info)
 {
-    QVector<QPair<int, QVariant>> data = {
+    QVector<QPair<int, QVariant>> data {
         { ModelList::InstalledRole, true },
         { ModelList::IsDiscoveredRole, true },
         { ModelList::NameRole, info.name() },
@@ -1897,7 +1897,7 @@ void ModelList::handleDiscoveryItemFinished()
     if (!contains(id))
         addModel(id);
 
-    QVector<QPair<int, QVariant>> data = {
+    QVector<QPair<int, QVariant>> data {
         { ModelList::NameRole, modelName },
         { ModelList::FilenameRole, modelFilename },
         { ModelList::FilesizeRole, modelFilesize },
