@@ -492,10 +492,15 @@ const QList<QString> ModelList::userDefaultModelList() const
     QList<QString> models;
     bool foundUserDefault = false;
     for (ModelInfo *info : m_models) {
-        if (info->installed && info->id() == userDefaultModelName) {
+
+        // Only installed models that are meant for GUI are suitable as a default
+        if (!info->installed || info->disableGUI)
+            continue;
+
+        if (info->id() == userDefaultModelName) {
             foundUserDefault = true;
             models.prepend(info->name());
-        } else if (info->installed) {
+        } else {
             models.append(info->name());
         }
     }
