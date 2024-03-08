@@ -998,7 +998,7 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::RepeatPenaltyRole, model.repeatPenalty() },
         { ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() },
         { ModelList::PromptTemplateRole, model.promptTemplate() },
-        { ModelList::SystemPromptRole, model.systemPrompt() }
+        { ModelList::SystemPromptRole, model.systemPrompt() },
     };
     updateData(id, data);
     return id;
@@ -1150,7 +1150,7 @@ void ModelList::updateModelsFromDirectory()
                             // FIXME: WE should change this to use a consistent filename for online models
                             { OnlineRole, filename.startsWith("chatgpt-") || filename.startsWith("nomic-") },
                             { DirpathRole, info.dir().absolutePath() + "/" },
-                            { FilesizeRole, toFileSize(info.size()) }
+                            { FilesizeRole, toFileSize(info.size()) },
                         };
                         updateData(id, data);
                     }
@@ -1420,7 +1420,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::RamrequiredRole, 0 },
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
-            { ModelList::TypeRole, "GPT" }
+            { ModelList::TypeRole, "GPT" },
         };
         updateData(id, data);
     }
@@ -1447,7 +1447,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::RamrequiredRole, 0 },
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
-            { ModelList::TypeRole, "GPT" }
+            { ModelList::TypeRole, "GPT" },
         };
         updateData(id, data);
     }
@@ -1478,7 +1478,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::RamrequiredRole, 0 },
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
-            { ModelList::TypeRole, "Bert" }
+            { ModelList::TypeRole, "Bert" },
         };
         updateData(id, data);
     }
@@ -1497,7 +1497,7 @@ void ModelList::updateDiscoveredInstalled(const ModelInfo &info)
         { ModelList::DownloadsRole, info.downloads() },
         { ModelList::RecencyRole, info.recency() },
         { ModelList::QuantRole, info.quant() },
-        { ModelList::TypeRole, info.type() }
+        { ModelList::TypeRole, info.type() },
     };
     updateData(info.id(), data);
 }
@@ -1910,7 +1910,7 @@ void ModelList::handleDiscoveryItemFinished()
         { ModelList::QuantRole, toQuantString(modelFilename) },
         { ModelList::TypeRole, type },
         { ModelList::HashRole, linkedEtagHeader },
-        { ModelList::HashAlgorithmRole, ModelInfo::Sha256 }
+        { ModelList::HashAlgorithmRole, ModelInfo::Sha256 },
     };
     updateData(id, data);
 

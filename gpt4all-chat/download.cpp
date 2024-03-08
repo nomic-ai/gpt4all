@@ -217,7 +217,7 @@ void Download::removeModel(const QString &modelFile)
             { ModelList::BytesTotalRole, 0 },
             { ModelList::TimestampRole, 0 },
             { ModelList::SpeedRole, QString() },
-            { ModelList::DownloadErrorRole, QString() }
+            { ModelList::DownloadErrorRole, QString() },
         };
         ModelList::globalInstance()->updateDataByFilename(modelFile, data);
     }
@@ -364,7 +364,7 @@ void Download::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
         { ModelList::BytesReceivedRole, currentBytesReceived },
         { ModelList::BytesTotalRole, bytesTotal },
         { ModelList::SpeedRole, speedText },
-        { ModelList::TimestampRole, currentUpdate }
+        { ModelList::TimestampRole, currentUpdate },
     };
     ModelList::globalInstance()->updateDataByFilename(modelFilename, data);
 }
@@ -470,7 +470,7 @@ void Download::handleModelDownloadFinished()
         if (!hasRetry(modelFilename)) {
             QVector<QPair<int, QVariant>> data {
                 { ModelList::DownloadingRole, false },
-                { ModelList::DownloadErrorRole, errorString }
+                { ModelList::DownloadErrorRole, errorString },
             };
             ModelList::globalInstance()->updateDataByFilename(modelFilename, data);
         }
@@ -509,7 +509,7 @@ void Download::handleHashAndSaveFinished(bool success, const QString &error,
 
     QVector<QPair<int, QVariant>> data {
         { ModelList::CalcHashRole, false },
-        { ModelList::DownloadingRole, false }
+        { ModelList::DownloadingRole, false },
     };
 
     modelReply->deleteLater();
