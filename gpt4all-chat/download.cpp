@@ -211,7 +211,7 @@ void Download::removeModel(const QString &modelFile)
     }
 
     if (!shouldRemoveInstalled) {
-        QVector<QPair<int, QVariant>> data = {
+        QVector<QPair<int, QVariant>> data {
             { ModelList::InstalledRole, false },
             { ModelList::BytesReceivedRole, 0 },
             { ModelList::BytesTotalRole, 0 },
@@ -360,7 +360,7 @@ void Download::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
     else
         speedText = QString::number(static_cast<double>(speed / (1024.0 * 1024.0)), 'f', 2) + " MB/s";
 
-    QVector<QPair<int, QVariant>> data = {
+    QVector<QPair<int, QVariant>> data {
         { ModelList::BytesReceivedRole, currentBytesReceived },
         { ModelList::BytesTotalRole, bytesTotal },
         { ModelList::SpeedRole, speedText },
@@ -468,7 +468,7 @@ void Download::handleModelDownloadFinished()
         modelReply->deleteLater();
         tempFile->deleteLater();
         if (!hasRetry(modelFilename)) {
-            QVector<QPair<int, QVariant>> data = {
+            QVector<QPair<int, QVariant>> data {
                 { ModelList::DownloadingRole, false },
                 { ModelList::DownloadErrorRole, errorString }
             };
@@ -507,7 +507,7 @@ void Download::handleHashAndSaveFinished(bool success, const QString &error,
     QString modelFilename = modelReply->request().attribute(QNetworkRequest::User).toString();
     Network::globalInstance()->sendDownloadFinished(modelFilename, success);
 
-    QVector<QPair<int, QVariant>> data = {
+    QVector<QPair<int, QVariant>> data {
         { ModelList::CalcHashRole, false },
         { ModelList::DownloadingRole, false }
     };
