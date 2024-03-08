@@ -269,5 +269,37 @@
     "url": "https://huggingface.co/TheBloke/em_german_mistral_v01-GGUF/resolve/main/em_german_mistral_v01.Q4_0.gguf",
     "promptTemplate": "USER: %1 ASSISTANT: ",
     "systemPrompt": "Du bist ein hilfreicher Assistent. "
+  },
+  {
+    "order": "q",
+    "md5sum": "60ea031126f82db8ddbbfecc668315d2",
+    "disableGUI": "true",
+    "name": "Nomic Embed Text v1",
+    "filename": "nomic-embed-text-v1.f16.gguf",
+    "filesize": "274290560",
+    "requires": "TODO(cebtenzzre): this should be the release that will include this change",
+    "ramrequired": "1",
+    "parameters": "137 million",
+    "quant": "f16",
+    "type": "Bert",
+    "systemPrompt": "",
+    "description": "nomic-embed-text-v1",
+    "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.f16.gguf"
+  },
+  {
+    "order": "r",
+    "md5sum": "a5401e7f7e46ed9fcaed5b60a281d547",
+    "disableGUI": "true",
+    "name": "Nomic Embed Text v1.5",
+    "filename": "nomic-embed-text-v1.5.f16.gguf",
+    "filesize": "274290560",
+    "requires": "TODO(cebtenzzre): this should be the release that will include this change",
+    "ramrequired": "1",
+    "parameters": "137 million",
+    "quant": "f16",
+    "type": "Bert",
+    "systemPrompt": "",
+    "description": "nomic-embed-text-v1.5",
+    "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf"
   }
 ]
