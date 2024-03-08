@@ -980,25 +980,26 @@ QString ModelList::clone(const ModelInfo &model)
     const QString id = Network::globalInstance()->generateUniqueId();
     addModel(id);
 
-    QVector<QPair<int, QVariant>> data;
-    data.append({ ModelList::InstalledRole, model.installed });
-    data.append({ ModelList::IsCloneRole, true });
-    data.append({ ModelList::NameRole, uniqueModelName(model) });
-    data.append({ ModelList::FilenameRole, model.filename() });
-    data.append({ ModelList::DirpathRole, model.dirpath });
-    data.append({ ModelList::OnlineRole, model.isOnline });
-    data.append({ ModelList::TemperatureRole, model.temperature() });
-    data.append({ ModelList::TopPRole, model.topP() });
-    data.append({ ModelList::MinPRole, model.minP() });
-    data.append({ ModelList::TopKRole, model.topK() });
-    data.append({ ModelList::MaxLengthRole, model.maxLength() });
-    data.append({ ModelList::PromptBatchSizeRole, model.promptBatchSize() });
-    data.append({ ModelList::ContextLengthRole, model.contextLength() });
-    data.append({ ModelList::GpuLayersRole, model.gpuLayers() });
-    data.append({ ModelList::RepeatPenaltyRole, model.repeatPenalty() });
-    data.append({ ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() });
-    data.append({ ModelList::PromptTemplateRole, model.promptTemplate() });
-    data.append({ ModelList::SystemPromptRole, model.systemPrompt() });
+    QVector<QPair<int, QVariant>> data = {
+        { ModelList::InstalledRole, model.installed },
+        { ModelList::IsCloneRole, true },
+        { ModelList::NameRole, uniqueModelName(model) },
+        { ModelList::FilenameRole, model.filename() },
+        { ModelList::DirpathRole, model.dirpath },
+        { ModelList::OnlineRole, model.isOnline },
+        { ModelList::TemperatureRole, model.temperature() },
+        { ModelList::TopPRole, model.topP() },
+        { ModelList::MinPRole, model.minP() },
+        { ModelList::TopKRole, model.topK() },
+        { ModelList::MaxLengthRole, model.maxLength() },
+        { ModelList::PromptBatchSizeRole, model.promptBatchSize() },
+        { ModelList::ContextLengthRole, model.contextLength() },
+        { ModelList::GpuLayersRole, model.gpuLayers() },
+        { ModelList::RepeatPenaltyRole, model.repeatPenalty() },
+        { ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() },
+        { ModelList::PromptTemplateRole, model.promptTemplate() },
+        { ModelList::SystemPromptRole, model.systemPrompt() }
+    };
     updateData(id, data);
     return id;
 }
@@ -1143,13 +1144,14 @@ void ModelList::updateModelsFromDirectory()
                     }
 
                     for (const QString &id : modelsById) {
-                        QVector<QPair<int, QVariant>> data;
-                        data.append({ InstalledRole, true });
-                        data.append({ FilenameRole, filename });
-                        // FIXME: WE should change this to use a consistent filename for online models
-                        data.append({ OnlineRole, filename.startsWith("chatgpt-") || filename.startsWith("nomic-") });
-                        data.append({ DirpathRole, info.dir().absolutePath() + "/" });
-                        data.append({ FilesizeRole, toFileSize(info.size()) });
+                        QVector<QPair<int, QVariant>> data = {
+                            { InstalledRole, true },
+                            { FilenameRole, filename },
+                            // FIXME: WE should change this to use a consistent filename for online models
+                            { OnlineRole, filename.startsWith("chatgpt-") || filename.startsWith("nomic-") },
+                            { DirpathRole, info.dir().absolutePath() + "/" },
+                            { FilesizeRole, toFileSize(info.size()) }
+                        };
                         updateData(id, data);
                     }
                 }
@@ -1348,23 +1350,24 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         if (!contains(id))
             addModel(id);
 
-        QVector<QPair<int, QVariant>> data;
-        data.append({ ModelList::NameRole, modelName });
-        data.append({ ModelList::FilenameRole, modelFilename });
-        data.append({ ModelList::FilesizeRole, modelFilesize });
-        data.append({ ModelList::HashRole, modelHash });
-        data.append({ ModelList::HashAlgorithmRole, ModelInfo::Md5 });
-        data.append({ ModelList::DefaultRole, isDefault });
-        data.append({ ModelList::DescriptionRole, description });
-        data.append({ ModelList::RequiresVersionRole, requiresVersion });
-        data.append({ ModelList::VersionRemovedRole, versionRemoved });
-        data.append({ ModelList::UrlRole, url });
-        data.append({ ModelList::DisableGUIRole, disableGUI });
-        data.append({ ModelList::OrderRole, order });
-        data.append({ ModelList::RamrequiredRole, ramrequired });
-        data.append({ ModelList::ParametersRole, parameters });
-        data.append({ ModelList::QuantRole, quant });
-        data.append({ ModelList::TypeRole, type });
+        QVector<QPair<int, QVariant>> data = {
+            { ModelList::NameRole, modelName },
+            { ModelList::FilenameRole, modelFilename },
+            { ModelList::FilesizeRole, modelFilesize },
+            { ModelList::HashRole, modelHash },
+            { ModelList::HashAlgorithmRole, ModelInfo::Md5 },
+            { ModelList::DefaultRole, isDefault },
+            { ModelList::DescriptionRole, description },
+            { ModelList::RequiresVersionRole, requiresVersion },
+            { ModelList::VersionRemovedRole, versionRemoved },
+            { ModelList::UrlRole, url },
+            { ModelList::DisableGUIRole, disableGUI },
+            { ModelList::OrderRole, order },
+            { ModelList::RamrequiredRole, ramrequired },
+            { ModelList::ParametersRole, parameters },
+            { ModelList::QuantRole, quant },
+            { ModelList::TypeRole, type },
+        };
         if (obj.contains("temperature"))
             data.append({ ModelList::TemperatureRole, obj["temperature"].toDouble() });
         if (obj.contains("topP"))
@@ -1405,19 +1408,20 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             changeId(modelFilename, id);
         if (!contains(id))
             addModel(id);
-        QVector<QPair<int, QVariant>> data;
-        data.append({ ModelList::NameRole, modelName });
-        data.append({ ModelList::FilenameRole, modelFilename });
-        data.append({ ModelList::FilesizeRole, "minimal" });
-        data.append({ ModelList::OnlineRole, true });
-        data.append({ ModelList::DescriptionRole,
-            tr("<strong>OpenAI's ChatGPT model GPT-3.5 Turbo</strong><br>") + chatGPTDesc });
-        data.append({ ModelList::RequiresVersionRole, "2.4.2" });
-        data.append({ ModelList::OrderRole, "ca" });
-        data.append({ ModelList::RamrequiredRole, 0 });
-        data.append({ ModelList::ParametersRole, "?" });
-        data.append({ ModelList::QuantRole, "NA" });
-        data.append({ ModelList::TypeRole, "GPT" });
+        QVector<QPair<int, QVariant>> data = {
+            { ModelList::NameRole, modelName },
+            { ModelList::FilenameRole, modelFilename },
+            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::OnlineRole, true },
+            { ModelList::DescriptionRole,
+             tr("<strong>OpenAI's ChatGPT model GPT-3.5 Turbo</strong><br>") + chatGPTDesc },
+            { ModelList::RequiresVersionRole, "2.4.2" },
+            { ModelList::OrderRole, "ca" },
+            { ModelList::RamrequiredRole, 0 },
+            { ModelList::ParametersRole, "?" },
+            { ModelList::QuantRole, "NA" },
+            { ModelList::TypeRole, "GPT" }
+        };
         updateData(id, data);
     }
 
@@ -1431,19 +1435,20 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             changeId(modelFilename, id);
         if (!contains(id))
             addModel(id);
-        QVector<QPair<int, QVariant>> data;
-        data.append({ ModelList::NameRole, modelName });
-        data.append({ ModelList::FilenameRole, modelFilename });
-        data.append({ ModelList::FilesizeRole, "minimal" });
-        data.append({ ModelList::OnlineRole, true });
-        data.append({ ModelList::DescriptionRole,
-            tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc + chatGPT4Warn });
-        data.append({ ModelList::RequiresVersionRole, "2.4.2" });
-        data.append({ ModelList::OrderRole, "cb" });
-        data.append({ ModelList::RamrequiredRole, 0 });
-        data.append({ ModelList::ParametersRole, "?" });
-        data.append({ ModelList::QuantRole, "NA" });
-        data.append({ ModelList::TypeRole, "GPT" });
+        QVector<QPair<int, QVariant>> data = {
+            { ModelList::NameRole, modelName },
+            { ModelList::FilenameRole, modelFilename },
+            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::OnlineRole, true },
+            { ModelList::DescriptionRole,
+             tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc + chatGPT4Warn },
+            { ModelList::RequiresVersionRole, "2.4.2" },
+            { ModelList::OrderRole, "cb" },
+            { ModelList::RamrequiredRole, 0 },
+            { ModelList::ParametersRole, "?" },
+            { ModelList::QuantRole, "NA" },
+            { ModelList::TypeRole, "GPT" }
+        };
         updateData(id, data);
     }
 
@@ -1460,38 +1465,40 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             changeId(modelFilename, id);
         if (!contains(id))
             addModel(id);
-        QVector<QPair<int, QVariant>> data;
-        data.append({ ModelList::NameRole, modelName });
-        data.append({ ModelList::FilenameRole, modelFilename });
-        data.append({ ModelList::FilesizeRole, "minimal" });
-        data.append({ ModelList::OnlineRole, true });
-        data.append({ ModelList::DisableGUIRole, true });
-        data.append({ ModelList::DescriptionRole,
-            tr("<strong>LocalDocs Nomic Atlas Embed</strong><br>") + nomicEmbedDesc });
-        data.append({ ModelList::RequiresVersionRole, "2.6.3" });
-        data.append({ ModelList::OrderRole, "na" });
-        data.append({ ModelList::RamrequiredRole, 0 });
-        data.append({ ModelList::ParametersRole, "?" });
-        data.append({ ModelList::QuantRole, "NA" });
-        data.append({ ModelList::TypeRole, "Bert" });
+        QVector<QPair<int, QVariant>> data = {
+            { ModelList::NameRole, modelName },
+            { ModelList::FilenameRole, modelFilename },
+            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::OnlineRole, true },
+            { ModelList::DisableGUIRole, true },
+            { ModelList::DescriptionRole,
+             tr("<strong>LocalDocs Nomic Atlas Embed</strong><br>") + nomicEmbedDesc },
+            { ModelList::RequiresVersionRole, "2.6.3" },
+            { ModelList::OrderRole, "na" },
+            { ModelList::RamrequiredRole, 0 },
+            { ModelList::ParametersRole, "?" },
+            { ModelList::QuantRole, "NA" },
+            { ModelList::TypeRole, "Bert" }
+        };
         updateData(id, data);
     }
 }
 
 void ModelList::updateDiscoveredInstalled(const ModelInfo &info)
 {
-    QVector<QPair<int, QVariant>> data;
-    data.append({ ModelList::InstalledRole, true });
-    data.append({ ModelList::IsDiscoveredRole, true });
-    data.append({ ModelList::NameRole, info.name() });
-    data.append({ ModelList::FilenameRole, info.filename() });
-    data.append({ ModelList::DescriptionRole, info.description() });
-    data.append({ ModelList::UrlRole, info.url() });
-    data.append({ ModelList::LikesRole, info.likes() });
-    data.append({ ModelList::DownloadsRole, info.downloads() });
-    data.append({ ModelList::RecencyRole, info.recency() });
-    data.append({ ModelList::QuantRole, info.quant() });
-    data.append({ ModelList::TypeRole, info.type() });
+    QVector<QPair<int, QVariant>> data = {
+        { ModelList::InstalledRole, true },
+        { ModelList::IsDiscoveredRole, true },
+        { ModelList::NameRole, info.name() },
+        { ModelList::FilenameRole, info.filename() },
+        { ModelList::DescriptionRole, info.description() },
+        { ModelList::UrlRole, info.url() },
+        { ModelList::LikesRole, info.likes() },
+        { ModelList::DownloadsRole, info.downloads() },
+        { ModelList::RecencyRole, info.recency() },
+        { ModelList::QuantRole, info.quant() },
+        { ModelList::TypeRole, info.type() }
+    };
     updateData(info.id(), data);
 }
 
@@ -1890,20 +1897,21 @@ void ModelList::handleDiscoveryItemFinished()
     if (!contains(id))
         addModel(id);
 
-    QVector<QPair<int, QVariant>> data;
-    data.append({ ModelList::NameRole, modelName });
-    data.append({ ModelList::FilenameRole, modelFilename });
-    data.append({ ModelList::FilesizeRole, modelFilesize });
-    data.append({ ModelList::DescriptionRole, description });
-    data.append({ ModelList::IsDiscoveredRole, true });
-    data.append({ ModelList::UrlRole, url });
-    data.append({ ModelList::LikesRole, likes });
-    data.append({ ModelList::DownloadsRole, downloads });
-    data.append({ ModelList::RecencyRole, lastModified });
-    data.append({ ModelList::QuantRole, toQuantString(modelFilename) });
-    data.append({ ModelList::TypeRole, type });
-    data.append({ ModelList::HashRole, linkedEtagHeader });
-    data.append({ ModelList::HashAlgorithmRole, ModelInfo::Sha256 });
+    QVector<QPair<int, QVariant>> data = {
+        { ModelList::NameRole, modelName },
+        { ModelList::FilenameRole, modelFilename },
+        { ModelList::FilesizeRole, modelFilesize },
+        { ModelList::DescriptionRole, description },
+        { ModelList::IsDiscoveredRole, true },
+        { ModelList::UrlRole, url },
+        { ModelList::LikesRole, likes },
+        { ModelList::DownloadsRole, downloads },
+        { ModelList::RecencyRole, lastModified },
+        { ModelList::QuantRole, toQuantString(modelFilename) },
+        { ModelList::TypeRole, type },
+        { ModelList::HashRole, linkedEtagHeader },
+        { ModelList::HashAlgorithmRole, ModelInfo::Sha256 }
+    };
     updateData(id, data);
 
     ++m_discoverResultsCompleted;

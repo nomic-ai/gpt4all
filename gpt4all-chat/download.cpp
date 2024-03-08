@@ -211,13 +211,14 @@ void Download::removeModel(const QString &modelFile)
     }
 
     if (!shouldRemoveInstalled) {
-        QVector<QPair<int, QVariant>> data;
-        data.append({ ModelList::InstalledRole, false });
-        data.append({ ModelList::BytesReceivedRole, 0 });
-        data.append({ ModelList::BytesTotalRole, 0 });
-        data.append({ ModelList::TimestampRole, 0 });
-        data.append({ ModelList::SpeedRole, QString() });
-        data.append({ ModelList::DownloadErrorRole, QString() });
+        QVector<QPair<int, QVariant>> data = {
+            { ModelList::InstalledRole, false },
+            { ModelList::BytesReceivedRole, 0 },
+            { ModelList::BytesTotalRole, 0 },
+            { ModelList::TimestampRole, 0 },
+            { ModelList::SpeedRole, QString() },
+            { ModelList::DownloadErrorRole, QString() }
+        };
         ModelList::globalInstance()->updateDataByFilename(modelFile, data);
     }
 }
@@ -359,11 +360,12 @@ void Download::handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
     else
         speedText = QString::number(static_cast<double>(speed / (1024.0 * 1024.0)), 'f', 2) + " MB/s";
 
-    QVector<QPair<int, QVariant>> data;
-    data.append({ ModelList::BytesReceivedRole, currentBytesReceived });
-    data.append({ ModelList::BytesTotalRole, bytesTotal });
-    data.append({ ModelList::SpeedRole, speedText });
-    data.append({ ModelList::TimestampRole, currentUpdate });
+    QVector<QPair<int, QVariant>> data = {
+        { ModelList::BytesReceivedRole, currentBytesReceived },
+        { ModelList::BytesTotalRole, bytesTotal },
+        { ModelList::SpeedRole, speedText },
+        { ModelList::TimestampRole, currentUpdate }
+    };
     ModelList::globalInstance()->updateDataByFilename(modelFilename, data);
 }
 
@@ -466,9 +468,10 @@ void Download::handleModelDownloadFinished()
         modelReply->deleteLater();
         tempFile->deleteLater();
         if (!hasRetry(modelFilename)) {
-            QVector<QPair<int, QVariant>> data;
-            data.append({ ModelList::DownloadingRole, false });
-            data.append({ ModelList::DownloadErrorRole, errorString });
+            QVector<QPair<int, QVariant>> data = {
+                { ModelList::DownloadingRole, false },
+                { ModelList::DownloadErrorRole, errorString }
+            };
             ModelList::globalInstance()->updateDataByFilename(modelFilename, data);
         }
         return;
@@ -504,9 +507,10 @@ void Download::handleHashAndSaveFinished(bool success, const QString &error,
     QString modelFilename = modelReply->request().attribute(QNetworkRequest::User).toString();
     Network::globalInstance()->sendDownloadFinished(modelFilename, success);
 
-    QVector<QPair<int, QVariant>> data;
-    data.append({ ModelList::CalcHashRole, false });
-    data.append({ ModelList::DownloadingRole, false });
+    QVector<QPair<int, QVariant>> data = {
+        { ModelList::CalcHashRole, false },
+        { ModelList::DownloadingRole, false }
+    };
 
     modelReply->deleteLater();
     tempFile->deleteLater();
