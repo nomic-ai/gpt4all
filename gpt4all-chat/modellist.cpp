@@ -802,12 +802,22 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             return;
         }
 
+        // We only sort when one of the fields used by the sorting algorithm actually changes that
+        // is implicated or used by the sorting algorithm
+        bool shouldSort = false;
+
         for (const auto &d : data) {
             const int role = d.first;
             const QVariant value = d.second;
             switch (role) {
             case IdRole:
-                info->setId(value.toString()); break;
+            {
+                if (info->id() != value.toString()) {
+                    info->setId(value.toString());
+                    shouldSort = true;
+                }
+                break;
+            }
             case NameRole:
                 info->setName(value.toString()); break;
             case FilenameRole:
@@ -853,7 +863,13 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case DownloadErrorRole:
                 info->downloadError = value.toString(); break;
             case OrderRole:
-                info->order = value.toString(); break;
+            {
+                if (info->order != value.toString()) {
+                    info->order = value.toString();
+                    shouldSort = true;
+                }
+                break;
+            }
             case RamrequiredRole:
                 info->ramrequired = value.toInt(); break;
             case ParametersRole:
@@ -863,9 +879,21 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case TypeRole:
                 info->setType(value.toString()); break;
             case IsCloneRole:
-                info->setIsClone(value.toBool()); break;
+            {
+                if (info->isClone() != value.toBool()) {
+                    info->setIsClone(value.toBool());
+                    shouldSort = true;
+                }
+                break;
+            }
             case IsDiscoveredRole:
-                info->setIsDiscovered(value.toBool()); break;
+            {
+                if (info->isDiscovered() != value.toBool()) {
+                    info->setIsDiscovered(value.toBool());
+                    shouldSort = true;
+                }
+                break;
+            }
             case TemperatureRole:
                 info->setTemperature(value.toDouble()); break;
             case TopPRole:
@@ -891,11 +919,29 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case SystemPromptRole:
                 info->setSystemPrompt(value.toString()); break;
             case LikesRole:
-                info->setLikes(value.toInt()); break;
+            {
+                if (info->likes() != value.toInt()) {
+                    info->setLikes(value.toInt());
+                    shouldSort = true;
+                }
+                break;
+            }
             case DownloadsRole:
-                info->setDownloads(value.toInt()); break;
+            {
+                if (info->downloads() != value.toInt()) {
+                    info->setDownloads(value.toInt());
+                    shouldSort = true;
+                }
+                break;
+            }
             case RecencyRole:
-                info->setRecency(value.toDateTime()); break;
+            {
+                if (info->recency() != value.toDateTime()) {
+                    info->setRecency(value.toDateTime());
+                    shouldSort = true;
+                }
+                break;
+            }
             }
         }
 
@@ -905,11 +951,13 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
         const QFileInfo incompleteInfo(incompleteDownloadPath(info->filename()));
         info->isIncomplete = incompleteInfo.exists();
 
-        auto s = m_discoverSort;
-        auto d = m_discoverSortDirection;
-        std::stable_sort(m_models.begin(), m_models.end(), [s, d](const ModelInfo* lhs, const ModelInfo* rhs) {
-            return ModelList::lessThan(lhs, rhs, s, d);
-        });
+        if (shouldSort) {
+            auto s = m_discoverSort;
+            auto d = m_discoverSortDirection;
+            std::stable_sort(m_models.begin(), m_models.end(), [s, d](const ModelInfo* lhs, const ModelInfo* rhs) {
+                return ModelList::lessThan(lhs, rhs, s, d);
+            });
+        }
     }
     emit dataChanged(createIndex(index, 0), createIndex(index, 0));
     emit userDefaultModelListChanged();
