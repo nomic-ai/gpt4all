@@ -811,13 +811,13 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             const QVariant value = d.second;
             switch (role) {
             case IdRole:
-            {
-                if (info->id() != value.toString()) {
-                    info->setId(value.toString());
-                    shouldSort = true;
+                {
+                    if (info->id() != value.toString()) {
+                        info->setId(value.toString());
+                        shouldSort = true;
+                    }
+                    break;
                 }
-                break;
-            }
             case NameRole:
                 info->setName(value.toString()); break;
             case FilenameRole:
@@ -863,13 +863,13 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case DownloadErrorRole:
                 info->downloadError = value.toString(); break;
             case OrderRole:
-            {
-                if (info->order != value.toString()) {
-                    info->order = value.toString();
-                    shouldSort = true;
+                {
+                    if (info->order != value.toString()) {
+                        info->order = value.toString();
+                        shouldSort = true;
+                    }
+                    break;
                 }
-                break;
-            }
             case RamrequiredRole:
                 info->ramrequired = value.toInt(); break;
             case ParametersRole:
@@ -879,21 +879,21 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case TypeRole:
                 info->setType(value.toString()); break;
             case IsCloneRole:
-            {
-                if (info->isClone() != value.toBool()) {
-                    info->setIsClone(value.toBool());
-                    shouldSort = true;
+                {
+                    if (info->isClone() != value.toBool()) {
+                        info->setIsClone(value.toBool());
+                        shouldSort = true;
+                    }
+                    break;
                 }
-                break;
-            }
             case IsDiscoveredRole:
-            {
-                if (info->isDiscovered() != value.toBool()) {
-                    info->setIsDiscovered(value.toBool());
-                    shouldSort = true;
+                {
+                    if (info->isDiscovered() != value.toBool()) {
+                        info->setIsDiscovered(value.toBool());
+                        shouldSort = true;
+                    }
+                    break;
                 }
-                break;
-            }
             case TemperatureRole:
                 info->setTemperature(value.toDouble()); break;
             case TopPRole:
@@ -919,29 +919,29 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case SystemPromptRole:
                 info->setSystemPrompt(value.toString()); break;
             case LikesRole:
-            {
-                if (info->likes() != value.toInt()) {
-                    info->setLikes(value.toInt());
-                    shouldSort = true;
+                {
+                    if (info->likes() != value.toInt()) {
+                        info->setLikes(value.toInt());
+                        shouldSort = true;
+                    }
+                    break;
                 }
-                break;
-            }
             case DownloadsRole:
-            {
-                if (info->downloads() != value.toInt()) {
-                    info->setDownloads(value.toInt());
-                    shouldSort = true;
+                {
+                    if (info->downloads() != value.toInt()) {
+                        info->setDownloads(value.toInt());
+                        shouldSort = true;
+                    }
+                    break;
                 }
-                break;
-            }
             case RecencyRole:
-            {
-                if (info->recency() != value.toDateTime()) {
-                    info->setRecency(value.toDateTime());
-                    shouldSort = true;
+                {
+                    if (info->recency() != value.toDateTime()) {
+                        info->setRecency(value.toDateTime());
+                        shouldSort = true;
+                    }
+                    break;
                 }
-                break;
-            }
             }
         }
 
