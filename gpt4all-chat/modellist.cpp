@@ -10,7 +10,10 @@
 
 //#define USE_LOCAL_MODELSJSON
 
-const char DEFAULT_EMBEDDING_MODEL[] = "all-MiniLM-L6-v2.gguf2.f16.gguf";
+const char * const KNOWN_EMBEDDING_MODELS[] {
+    "all-MiniLM-L6-v2.gguf2.f16.gguf",
+    "nomic-embed-text-v1.txt",
+};
 
 QString ModelInfo::id() const
 {
@@ -324,7 +327,8 @@ bool EmbeddingModels::filterAcceptsRow(int sourceRow,
     bool isEmbeddingModel = sourceModel()->data(index, ModelList::IsEmbeddingModelRole).toBool();
     bool installed = sourceModel()->data(index, ModelList::InstalledRole).toBool();
     QString filename = sourceModel()->data(index, ModelList::FilenameRole).toString();
-    if (filename != DEFAULT_EMBEDDING_MODEL) {
+    auto &known = KNOWN_EMBEDDING_MODELS;
+    if (std::find(known, std::end(known), filename.toStdString()) == std::end(known)) {
         return false; // we are currently not prepared to support other embedding models
     }
     return isEmbeddingModel && (!m_requireInstalled || installed);
