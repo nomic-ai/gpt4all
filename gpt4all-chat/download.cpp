@@ -128,9 +128,7 @@ void Download::downloadModel(const QString &modelFile)
         return;
     }
 
-    QVector<QPair<int, QVariant>> data;
-    data.append(qMakePair(ModelList::DownloadingRole, true));
-    ModelList::globalInstance()->updateDataByFilename(modelFile, data);
+    ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::DownloadingRole, true }});
     ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
     QString url = !info.url().isEmpty() ? info.url() : "http://gpt4all.io/models/gguf/" + modelFile;
     Network::globalInstance()->sendDownloadStarted(modelFile);
@@ -168,9 +166,7 @@ void Download::cancelDownload(const QString &modelFile)
             tempFile->deleteLater();
             m_activeDownloads.remove(modelReply);
 
-            QVector<QPair<int, QVariant>> data;
-            data.append(qMakePair(ModelList::DownloadingRole, false));
-            ModelList::globalInstance()->updateDataByFilename(modelFile, data);
+            ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::DownloadingRole, false }});
             break;
         }
     }
@@ -192,9 +188,7 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
         ModelList::globalInstance()->updateModelsFromDirectory();
     }
 
-    QVector<QPair<int, QVariant>> data;
-    data.append(qMakePair(ModelList::InstalledRole, true));
-    ModelList::globalInstance()->updateDataByFilename(modelFile, data);
+    ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::InstalledRole, true }});
 }
 
 void Download::removeModel(const QString &modelFile)
@@ -209,7 +203,7 @@ void Download::removeModel(const QString &modelFile)
     QFile file(filePath);
     if (file.exists()) {
         const ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
-        shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.description() == "");
+        shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.description() == "" /*indicates sideloaded*/);
         if (shouldRemoveInstalled)
             ModelList::globalInstance()->removeInstalled(info);
         Network::globalInstance()->sendRemoveModel(modelFile);
@@ -326,9 +320,7 @@ void Download::handleErrorOccurred(QNetworkReply::NetworkError code)
             .arg(code)
             .arg(modelReply->errorString());
     qWarning() << error;
-    QVector<QPair<int, QVariant>> data;
-    data.append(qMakePair(ModelList::DownloadErrorRole, error));
-    ModelList::globalInstance()->updateDataByFilename(modelFilename, data);
+    ModelList::globalInstance()->updateDataByFilename(modelFilename, {{ ModelList::DownloadErrorRole, error }});
     Network::globalInstance()->sendDownloadError(modelFilename, (int)code, modelReply->errorString());
     cancelDownload(modelFilename);
 }
@@ -495,9 +487,7 @@ void Download::handleModelDownloadFinished()
     }
 
     // Notify that we are calculating hash
-    QVector<QPair<int, QVariant>> data;
-    data.append(qMakePair(ModelList::CalcHashRole, true));
-    ModelList::globalInstance()->updateDataByFilename(modelFilename, data);
+    ModelList::globalInstance()->updateDataByFilename(modelFilename, {{ ModelList::CalcHashRole, true }});
     QByteArray hash =  ModelList::globalInstance()->modelInfoByFilename(modelFilename).hash;
     ModelInfo::HashAlgorithm hashAlgorithm =  ModelList::globalInstance()->modelInfoByFilename(modelFilename).hashAlgorithm;
     const QString saveFilePath = MySettings::globalInstance()->modelPath() + modelFilename;
