@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 
     // Make sure ChatLLM threads are joined before global destructors run.
     // Otherwise, we can get a heap-use-after-free inside of llama.cpp.
-    ChatListModel::globalInstance()->clearChats();
+    ChatListModel::globalInstance()->destroyChats();
 
     return res;
 }

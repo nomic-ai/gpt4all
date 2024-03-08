@@ -11,8 +11,8 @@ Button {
     property color backgroundColorHovered: theme.iconBackgroundHovered
     property alias source: image.source
     property alias fillMode: image.fillMode
-    width: 30
-    height: 30
+    implicitWidth: 30
+    implicitHeight: 30
     contentItem: Text {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter

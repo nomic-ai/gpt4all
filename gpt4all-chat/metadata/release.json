@@ -706,5 +706,24 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.7.2",
+    "notes":
+"
+* New support for model search/discovery using huggingface search in downloads
+* Support for more model architectures for GPU acceleration
+* Three different crash fixes for corner case settings
+* Add a minp sampling parameter
+* Bert layoer norm epsilon value
+* Fix problem with blank lines between reply and next prompt
+",
+    "contributors":
+"
+* Christopher Barrera
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]

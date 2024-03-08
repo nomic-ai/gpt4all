@@ -46,6 +46,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::modelLoadingWarning, this, &Chat::modelLoadingWarning, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
@@ -285,6 +286,11 @@ void Chat::unloadAndDeleteLater()
     unloadModel();
 }
 
+void Chat::markForDeletion()
+{
+    m_llmodel->setMarkedForDeletion(true);
+}
+
 void Chat::unloadModel()
 {
     stopGenerating();
@@ -333,7 +339,8 @@ void Chat::handleRecalculating()
 
 void Chat::handleModelLoadingError(const QString &error)
 {
-    qWarning() << "ERROR:" << qPrintable(error) << "id" << id();
+    auto stream = qWarning().noquote() << "ERROR:" << error << "id";
+    stream.quote() << id();
     m_modelLoadingError = error;
     emit modelLoadingErrorChanged();
 }

@@ -11,16 +11,17 @@ struct ModelInfo {
     Q_PROPERTY(QString filename READ filename WRITE setFilename)
     Q_PROPERTY(QString dirpath MEMBER dirpath)
     Q_PROPERTY(QString filesize MEMBER filesize)
-    Q_PROPERTY(QByteArray md5sum MEMBER md5sum)
+    Q_PROPERTY(QByteArray hash MEMBER hash)
+    Q_PROPERTY(HashAlgorithm hashAlgorithm MEMBER hashAlgorithm)
     Q_PROPERTY(bool calcHash MEMBER calcHash)
     Q_PROPERTY(bool installed MEMBER installed)
     Q_PROPERTY(bool isDefault MEMBER isDefault)
     Q_PROPERTY(bool disableGUI MEMBER disableGUI)
     Q_PROPERTY(bool isOnline MEMBER isOnline)
-    Q_PROPERTY(QString description MEMBER description)
+    Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
-    Q_PROPERTY(QString deprecatedVersion MEMBER deprecatedVersion)
-    Q_PROPERTY(QString url MEMBER url)
+    Q_PROPERTY(QString versionRemoved MEMBER versionRemoved)
+    Q_PROPERTY(QString url READ url WRITE setUrl)
     Q_PROPERTY(qint64 bytesReceived MEMBER bytesReceived)
     Q_PROPERTY(qint64 bytesTotal MEMBER bytesTotal)
     Q_PROPERTY(qint64 timestamp MEMBER timestamp)
@@ -31,9 +32,10 @@ struct ModelInfo {
     Q_PROPERTY(QString order MEMBER order)
     Q_PROPERTY(int ramrequired MEMBER ramrequired)
     Q_PROPERTY(QString parameters MEMBER parameters)
-    Q_PROPERTY(QString quant MEMBER quant)
-    Q_PROPERTY(QString type MEMBER type)
-    Q_PROPERTY(bool isClone MEMBER isClone)
+    Q_PROPERTY(QString quant READ quant WRITE setQuant)
+    Q_PROPERTY(QString type READ type WRITE setType)
+    Q_PROPERTY(bool isClone READ isClone WRITE setIsClone)
+    Q_PROPERTY(bool isDiscovered READ isDiscovered WRITE setIsDiscovered)
     Q_PROPERTY(double temperature READ temperature WRITE setTemperature)
     Q_PROPERTY(double topP READ topP WRITE setTopP)
     Q_PROPERTY(double minP READ minP WRITE setMinP)
@@ -48,8 +50,16 @@ struct ModelInfo {
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
     Q_PROPERTY(QString promptTemplate READ promptTemplate WRITE setPromptTemplate)
     Q_PROPERTY(QString systemPrompt READ systemPrompt WRITE setSystemPrompt)
+    Q_PROPERTY(int likes READ likes WRITE setLikes)
+    Q_PROPERTY(int downloads READ downloads WRITE setDownloads)
+    Q_PROPERTY(QDateTime recency READ recency WRITE setRecency)
 
 public:
+    enum HashAlgorithm {
+        Md5,
+        Sha256
+    };
+
     QString id() const;
     void setId(const QString &id);
 
@@ -59,18 +69,44 @@ public:
     QString filename() const;
     void setFilename(const QString &name);
 
+    QString description() const;
+    void setDescription(const QString &d);
+
+    QString url() const;
+    void setUrl(const QString &u);
+
+    QString quant() const;
+    void setQuant(const QString &q);
+
+    QString type() const;
+    void setType(const QString &t);
+
+    bool isClone() const;
+    void setIsClone(bool b);
+
+    bool isDiscovered() const;
+    void setIsDiscovered(bool b);
+
+    int likes() const;
+    void setLikes(int l);
+
+    int downloads() const;
+    void setDownloads(int d);
+
+    QDateTime recency() const;
+    void setRecency(const QDateTime &r);
+
     QString dirpath;
     QString filesize;
-    QByteArray md5sum;
+    QByteArray hash;
+    HashAlgorithm hashAlgorithm;
     bool calcHash = false;
     bool installed = false;
     bool isDefault = false;
     bool isOnline = false;
     bool disableGUI = false;
-    QString description;
     QString requiresVersion;
-    QString deprecatedVersion;
-    QString url;
+    QString versionRemoved;
     qint64 bytesReceived = 0;
     qint64 bytesTotal = 0;
     qint64 timestamp = 0;
@@ -79,11 +115,8 @@ public:
     bool isIncomplete = false;
     QString downloadError;
     QString order;
-    int ramrequired = 0;
+    int ramrequired = -1;
     QString parameters;
-    QString quant;
-    QString type;
-    bool isClone = false;
 
     bool operator==(const ModelInfo &other) const {
         return  m_id == other.m_id;
@@ -116,10 +149,21 @@ public:
     QString systemPrompt() const;
     void setSystemPrompt(const QString &p);
 
+    bool shouldSaveMetadata() const;
+
 private:
     QString m_id;
     QString m_name;
     QString m_filename;
+    QString m_description;
+    QString m_url;
+    QString m_quant;
+    QString m_type;
+    bool    m_isClone              = false;
+    bool    m_isDiscovered         = false;
+    int     m_likes                = -1;
+    int     m_downloads            = -1;
+    QDateTime m_recency;
     double  m_temperature          = 0.7;
     double  m_topP                 = 0.4;
     double  m_minP                 = 0.0;
@@ -183,6 +227,8 @@ public:
     bool isExpanded() const;
     void setExpanded(bool expanded);
 
+    Q_INVOKABLE void discoverAndFilter(const QString &discover);
+
 Q_SIGNALS:
     void countChanged();
 
@@ -195,6 +241,7 @@ Q_SIGNALS:
 private:
     bool m_expanded;
     int m_limit;
+    QString m_discoverFilter;
 };
 
 class ModelList : public QAbstractListModel
@@ -207,9 +254,21 @@ class ModelList : public QAbstractListModel
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
     Q_PROPERTY(bool asyncModelRequestOngoing READ asyncModelRequestOngoing NOTIFY asyncModelRequestOngoingChanged)
+    Q_PROPERTY(int discoverLimit READ discoverLimit WRITE setDiscoverLimit NOTIFY discoverLimitChanged)
+    Q_PROPERTY(int discoverSortDirection READ discoverSortDirection WRITE setDiscoverSortDirection NOTIFY discoverSortDirectionChanged)
+    Q_PROPERTY(DiscoverSort discoverSort READ discoverSort WRITE setDiscoverSort NOTIFY discoverSortChanged)
+    Q_PROPERTY(float discoverProgress READ discoverProgress NOTIFY discoverProgressChanged)
+    Q_PROPERTY(bool discoverInProgress READ discoverInProgress NOTIFY discoverInProgressChanged)
 
 public:
     static ModelList *globalInstance();
+
+    enum DiscoverSort {
+        Default,
+        Likes,
+        Downloads,
+        Recent
+    };
 
     enum Roles {
         IdRole = Qt::UserRole + 1,
@@ -217,7 +276,8 @@ public:
         FilenameRole,
         DirpathRole,
         FilesizeRole,
-        Md5sumRole,
+        HashRole,
+        HashAlgorithmRole,
         CalcHashRole,
         InstalledRole,
         DefaultRole,
@@ -225,7 +285,7 @@ public:
         DisableGUIRole,
         DescriptionRole,
         RequiresVersionRole,
-        DeprecatedVersionRole,
+        VersionRemovedRole,
         UrlRole,
         BytesReceivedRole,
         BytesTotalRole,
@@ -240,6 +300,7 @@ public:
         QuantRole,
         TypeRole,
         IsCloneRole,
+        IsDiscoveredRole,
         TemperatureRole,
         TopPRole,
         TopKRole,
@@ -252,6 +313,9 @@ public:
         PromptTemplateRole,
         SystemPromptRole,
         MinPRole,
+        LikesRole,
+        DownloadsRole,
+        RecencyRole
     };
 
     QHash<int, QByteArray> roleNames() const override
@@ -262,7 +326,8 @@ public:
         roles[FilenameRole] = "filename";
         roles[DirpathRole] = "dirpath";
         roles[FilesizeRole] = "filesize";
-        roles[Md5sumRole] = "md5sum";
+        roles[HashRole] = "hash";
+        roles[HashAlgorithmRole] = "hashAlgorithm";
         roles[CalcHashRole] = "calcHash";
         roles[InstalledRole] = "installed";
         roles[DefaultRole] = "isDefault";
@@ -270,7 +335,7 @@ public:
         roles[DisableGUIRole] = "disableGUI";
         roles[DescriptionRole] = "description";
         roles[RequiresVersionRole] = "requiresVersion";
-        roles[DeprecatedVersionRole] = "deprecatedVersion";
+        roles[VersionRemovedRole] = "versionRemoved";
         roles[UrlRole] = "url";
         roles[BytesReceivedRole] = "bytesReceived";
         roles[BytesTotalRole] = "bytesTotal";
@@ -285,6 +350,7 @@ public:
         roles[QuantRole] = "quant";
         roles[TypeRole] = "type";
         roles[IsCloneRole] = "isClone";
+        roles[IsDiscoveredRole] = "isDiscovered";
         roles[TemperatureRole] = "temperature";
         roles[TopPRole] = "topP";
         roles[MinPRole] = "minP";
@@ -297,6 +363,9 @@ public:
         roles[RepeatPenaltyTokensRole] = "repeatPenaltyTokens";
         roles[PromptTemplateRole] = "promptTemplate";
         roles[SystemPromptRole] = "systemPrompt";
+        roles[LikesRole] = "likes";
+        roles[DownloadsRole] = "downloads";
+        roles[RecencyRole] = "recency";
         return roles;
     }
 
@@ -306,6 +375,7 @@ public:
     QVariant dataByFilename(const QString &filename, int role) const;
     void updateData(const QString &id, int role, const QVariant &value);
     void updateDataByFilename(const QString &filename, int role, const QVariant &value);
+    void updateData(const QString &id, const QVector<QPair<int, QVariant>> &data);
 
     int count() const { return m_models.size(); }
 
@@ -315,7 +385,8 @@ public:
     Q_INVOKABLE ModelInfo modelInfoByFilename(const QString &filename) const;
     Q_INVOKABLE bool isUniqueName(const QString &name) const;
     Q_INVOKABLE QString clone(const ModelInfo &model);
-    Q_INVOKABLE void remove(const ModelInfo &model);
+    Q_INVOKABLE void removeClone(const ModelInfo &model);
+    Q_INVOKABLE void removeInstalled(const ModelInfo &model);
     ModelInfo defaultModelInfo() const;
     int defaultEmbeddingModelIndex() const;
 
@@ -345,6 +416,21 @@ public:
     bool asyncModelRequestOngoing() const { return m_asyncModelRequestOngoing; }
 
     void updateModelsFromDirectory();
+    void updateDiscoveredInstalled(const ModelInfo &info);
+
+    int discoverLimit() const;
+    void setDiscoverLimit(int limit);
+
+    int discoverSortDirection() const;
+    void setDiscoverSortDirection(int direction); // -1 or 1
+
+    DiscoverSort discoverSort() const;
+    void setDiscoverSort(DiscoverSort sort);
+
+    float discoverProgress() const;
+    bool discoverInProgress() const;
+
+    Q_INVOKABLE void discoverSearch(const QString &discover);
 
 Q_SIGNALS:
     void countChanged();
@@ -354,22 +440,35 @@ Q_SIGNALS:
     void userDefaultModelListChanged();
     void asyncModelRequestOngoingChanged();
     void defaultEmbeddingModelIndexChanged();
+    void discoverLimitChanged();
+    void discoverSortDirectionChanged();
+    void discoverSortChanged();
+    void discoverProgressChanged();
+    void discoverInProgressChanged();
 
 private Q_SLOTS:
+    void resortModel();
     void updateModelsFromJson();
     void updateModelsFromJsonAsync();
     void updateModelsFromSettings();
     void updateDataForSettings();
     void handleModelsJsonDownloadFinished();
     void handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkError code);
+    void handleDiscoveryFinished();
+    void handleDiscoveryErrorOccurred(QNetworkReply::NetworkError code);
+    void handleDiscoveryItemFinished();
+    void handleDiscoveryItemErrorOccurred(QNetworkReply::NetworkError code);
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 
 private:
+    void removeInternal(const ModelInfo &model);
+    void clearDiscoveredModels();
     QString modelDirPath(const QString &modelName, bool isOnline);
     int indexForModel(ModelInfo *model);
     QVariant dataInternal(const ModelInfo *info, int role) const;
-    static bool lessThan(const ModelInfo* a, const ModelInfo* b);
+    static bool lessThan(const ModelInfo* a, const ModelInfo* b, DiscoverSort s, int d);
     void parseModelsJsonFile(const QByteArray &jsonData, bool save);
+    void parseDiscoveryJsonFile(const QByteArray &jsonData);
     QString uniqueModelName(const ModelInfo &model) const;
 
 private:
@@ -381,8 +480,14 @@ private:
     QList<ModelInfo*> m_models;
     QHash<QString, ModelInfo*> m_modelMap;
     bool m_asyncModelRequestOngoing;
+    int m_discoverLimit;
+    int m_discoverSortDirection;
+    DiscoverSort m_discoverSort;
+    int m_discoverNumberOfResults;
+    int m_discoverResultsCompleted;
+    bool m_discoverInProgress;
 
-private:
+protected:
     explicit ModelList();
     ~ModelList() {}
     friend class MyModelList;
