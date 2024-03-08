@@ -1,4 +1,4 @@
-#include "chatgpt.h"
+#include "chatapi.h"
 
 #include <string>
 #include <vector>
@@ -13,14 +13,15 @@
 
 //#define DEBUG
 
-ChatGPT::ChatGPT()
+ChatAPI::ChatAPI()
     : QObject(nullptr)
     , m_modelName("gpt-3.5-turbo")
+    , m_requestURL("")
     , m_responseCallback(nullptr)
 {
 }
 
-size_t ChatGPT::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
+size_t ChatAPI::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
 {
     Q_UNUSED(modelPath);
     Q_UNUSED(n_ctx);
@@ -28,7 +29,7 @@ size_t ChatGPT::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
     return 0;
 }
 
-bool ChatGPT::loadModel(const std::string &modelPath, int n_ctx, int ngl)
+bool ChatAPI::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
     Q_UNUSED(modelPath);
     Q_UNUSED(n_ctx);
@@ -36,80 +37,60 @@ bool ChatGPT::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     return true;
 }
 
-void ChatGPT::setThreadCount(int32_t n_threads)
+void ChatAPI::setThreadCount(int32_t n_threads)
 {
     Q_UNUSED(n_threads);
     qt_noop();
 }
 
-int32_t ChatGPT::threadCount() const
+int32_t ChatAPI::threadCount() const
 {
     return 1;
 }
 
-ChatGPT::~ChatGPT()
+ChatAPI::~ChatAPI()
 {
 }
 
-bool ChatGPT::isModelLoaded() const
+bool ChatAPI::isModelLoaded() const
 {
     return true;
 }
 
 // All three of the state virtual functions are handled custom inside of chatllm save/restore
-size_t ChatGPT::stateSize() const
+size_t ChatAPI::stateSize() const
 {
     return 0;
 }
 
-size_t ChatGPT::saveState(uint8_t *dest) const
+size_t ChatAPI::saveState(uint8_t *dest) const
 {
     Q_UNUSED(dest);
     return 0;
 }
 
-size_t ChatGPT::restoreState(const uint8_t *src)
+size_t ChatAPI::restoreState(const uint8_t *src)
 {
     Q_UNUSED(src);
     return 0;
 }
 
-void ChatGPT::prompt(const std::string &prompt,
-        const std::string &promptTemplate,
-        std::function<bool(int32_t)> promptCallback,
-        std::function<bool(int32_t, const std::string&)> responseCallback,
-        std::function<bool(bool)> recalculateCallback,
-        PromptContext &promptCtx,
-        bool special,
-        std::string *fakeReply) {
+void ChatAPI::prompt(const std::string &prompt,
+                     const std::string &promptTemplate,
+                     std::function<bool(int32_t)> promptCallback,
+                     std::function<bool(int32_t, const std::string&)> responseCallback,
+                     std::function<bool(bool)> recalculateCallback,
+                     PromptContext &promptCtx,
+                     bool special,
+                     std::string *fakeReply) {
 
     Q_UNUSED(promptCallback);
     Q_UNUSED(recalculateCallback);
     Q_UNUSED(special);
+    Q_UNUSED(fakeReply); // FIXME(cebtenzzre): I broke ChatGPT
 
     if (!isModelLoaded()) {
         std::cerr << "ChatGPT ERROR: prompt won't work with an unloaded model!\n";
-        return;
-    }
-
-    if (!promptCtx.n_past) { m_queuedPrompts.clear(); }
-    Q_ASSERT(promptCtx.n_past <= m_context.size());
-    m_context.resize(promptCtx.n_past);
-
-    // FIXME(cebtenzzre): We're assuming people don't try to use %2 with ChatGPT. What would that even mean?
-    m_queuedPrompts << QString::fromStdString(promptTemplate).arg(QString::fromStdString(prompt));
-
-    if (!promptCtx.n_predict && !fakeReply) {
-        return; // response explicitly suppressed, queue prompt for later
-    }
-
-    QString formattedPrompt = m_queuedPrompts.join("");
-    m_queuedPrompts.clear();
-
-    if (fakeReply) {
-        promptCtx.n_past += 1;
-        m_context.append(formattedPrompt);
-        m_context.append(QString::fromStdString(*fakeReply));
         return;
     }
 
@@ -124,18 +105,17 @@ void ChatGPT::prompt(const std::string &prompt,
     root.insert("temperature", promptCtx.temp);
     root.insert("top_p", promptCtx.top_p);
 
-    // conversation history
     QJsonArray messages;
-    for (int i = 0; i < m_context.count(); ++i) {
+    for (int i = 0; i < m_context.count() && i < promptCtx.n_past; ++i) {
         QJsonObject message;
-        message.insert("role", i % 2 == 0 ? "assistant" : "user");
+        message.insert("role", i % 2 == 0 ? "user" : "assistant");
         message.insert("content", m_context.at(i));
         messages.append(message);
     }
 
     QJsonObject promptObject;
     promptObject.insert("role", "user");
-    promptObject.insert("content", formattedPrompt);
+    promptObject.insert("content", QString::fromStdString(promptTemplate).arg(QString::fromStdString(prompt)));
     messages.append(promptObject);
     root.insert("messages", messages);
 
@@ -150,16 +130,16 @@ void ChatGPT::prompt(const std::string &prompt,
     // The following code sets up a worker thread and object to perform the actual api request to
     // chatgpt and then blocks until it is finished
     QThread workerThread;
-    ChatGPTWorker worker(this);
+    ChatAPIWorker worker(this);
     worker.moveToThread(&workerThread);
-    connect(&worker, &ChatGPTWorker::finished, &workerThread, &QThread::quit, Qt::DirectConnection);
-    connect(this, &ChatGPT::request, &worker, &ChatGPTWorker::request, Qt::QueuedConnection);
+    connect(&worker, &ChatAPIWorker::finished, &workerThread, &QThread::quit, Qt::DirectConnection);
+    connect(this, &ChatAPI::request, &worker, &ChatAPIWorker::request, Qt::QueuedConnection);
     workerThread.start();
     emit request(m_apiKey, &promptCtx, doc.toJson(QJsonDocument::Compact));
     workerThread.wait();
 
     promptCtx.n_past += 1;
-    m_context.append(formattedPrompt);
+    m_context.append(QString::fromStdString(prompt));
     m_context.append(worker.currentResponse());
     m_responseCallback = nullptr;
 
@@ -168,7 +148,7 @@ void ChatGPT::prompt(const std::string &prompt,
 #endif
 }
 
-bool ChatGPT::callResponse(int32_t token, const std::string& string)
+bool ChatAPI::callResponse(int32_t token, const std::string& string)
 {
     Q_ASSERT(m_responseCallback);
     if (!m_responseCallback) {
@@ -178,13 +158,13 @@ bool ChatGPT::callResponse(int32_t token, const std::string& string)
     return m_responseCallback(token, string);
 }
 
-void ChatGPTWorker::request(const QString &apiKey,
-        LLModel::PromptContext *promptCtx,
-        const QByteArray &array)
+void ChatAPIWorker::request(const QString &apiKey,
+                            LLModel::PromptContext *promptCtx,
+                            const QByteArray &array)
 {
     m_ctx = promptCtx;
 
-    QUrl openaiUrl("https://api.openai.com/v1/chat/completions");
+    QUrl openaiUrl(m_chat->getURL());
     const QString authorization = QString("Bearer %1").arg(apiKey).trimmed();
     QNetworkRequest request(openaiUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -192,12 +172,12 @@ void ChatGPTWorker::request(const QString &apiKey,
     m_networkManager = new QNetworkAccessManager(this);
     QNetworkReply *reply = m_networkManager->post(request, array);
     connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
-    connect(reply, &QNetworkReply::finished, this, &ChatGPTWorker::handleFinished);
-    connect(reply, &QNetworkReply::readyRead, this, &ChatGPTWorker::handleReadyRead);
-    connect(reply, &QNetworkReply::errorOccurred, this, &ChatGPTWorker::handleErrorOccurred);
+    connect(reply, &QNetworkReply::finished, this, &ChatAPIWorker::handleFinished);
+    connect(reply, &QNetworkReply::readyRead, this, &ChatAPIWorker::handleReadyRead);
+    connect(reply, &QNetworkReply::errorOccurred, this, &ChatAPIWorker::handleErrorOccurred);
 }
 
-void ChatGPTWorker::handleFinished()
+void ChatAPIWorker::handleFinished()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply) {
@@ -211,13 +191,13 @@ void ChatGPTWorker::handleFinished()
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
         qWarning() << QString("ERROR: ChatGPT responded with error code \"%1-%2\"")
-            .arg(code).arg(reply->errorString()).toStdString();
+                          .arg(code).arg(reply->errorString()).toStdString();
     }
     reply->deleteLater();
     emit finished();
 }
 
-void ChatGPTWorker::handleReadyRead()
+void ChatAPIWorker::handleReadyRead()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply) {
@@ -231,7 +211,7 @@ void ChatGPTWorker::handleReadyRead()
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
         m_chat->callResponse(-1, QString("\nERROR: 2 ChatGPT responded with error code \"%1-%2\" %3\n")
-            .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
+                                     .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
         emit finished();
         return;
     }
@@ -252,7 +232,7 @@ void ChatGPTWorker::handleReadyRead()
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
         if (err.error != QJsonParseError::NoError) {
             m_chat->callResponse(-1, QString("\nERROR: ChatGPT responded with invalid json \"%1\"\n")
-                .arg(err.errorString()).toStdString());
+                                         .arg(err.errorString()).toStdString());
             continue;
         }
 
@@ -271,7 +251,7 @@ void ChatGPTWorker::handleReadyRead()
     }
 }
 
-void ChatGPTWorker::handleErrorOccurred(QNetworkReply::NetworkError code)
+void ChatAPIWorker::handleErrorOccurred(QNetworkReply::NetworkError code)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply || reply->error() == QNetworkReply::OperationCanceledError /*when we call abort on purpose*/) {

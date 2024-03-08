@@ -931,7 +931,7 @@ void ModelList::updateModelsFromDirectory()
 
                 // All files that end with .bin and have 'ggml' somewhere in the name
                 if (((filename.endsWith(".bin") || filename.endsWith(".gguf")) && (/*filename.contains("ggml") ||*/ filename.contains("gguf")) && !filename.startsWith("incomplete"))
-                    || (filename.endsWith(".txt") && (filename.startsWith("chatgpt-") || filename.startsWith("mistral-") || filename.startsWith("nomic-")))) {
+                    || (filename.endsWith(".txt")  || filename.startsWith("nomic-"))) {
 
                     QString filePath = it.filePath();
                     QFileInfo info(filePath);
@@ -955,7 +955,7 @@ void ModelList::updateModelsFromDirectory()
                     for (const QString &id : modelsById) {
                         updateData(id, FilenameRole, filename);
                         // FIXME: WE should change this to use a consistent filename for online models
-                        updateData(id, OnlineRole, filename.startsWith("chatgpt-") || (filename.startsWith("mistral-") && filename.endsWith(".txt")) || filename.startsWith("nomic-"));
+                        updateData(id, OnlineRole, filename.endsWith(".txt") || filename.startsWith("nomic-"));
                         updateData(id, DirpathRole, info.dir().absolutePath() + "/");
                         updateData(id, FilesizeRole, toFileSize(info.size()));
                     }
@@ -1210,7 +1210,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     {
         const QString modelName = "ChatGPT-3.5 Turbo";
         const QString id = modelName;
-        const QString modelFilename = "chatgpt-gpt-3.5-turbo.txt";
+        const QString modelFilename = "gpt-3.5-turbo.txt";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))
@@ -1227,6 +1227,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::ParametersRole, "?");
         updateData(id, ModelList::QuantRole, "NA");
         updateData(id, ModelList::TypeRole, "GPT");
+        updateData(id, ModelList::UrlRole, "https://api.openai.com/v1/chat/completions");
     }
 
     {
@@ -1234,7 +1235,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
 
         const QString modelName = "ChatGPT-4";
         const QString id = modelName;
-        const QString modelFilename = "chatgpt-gpt-4.txt";
+        const QString modelFilename = "gpt-4.txt";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))
@@ -1251,6 +1252,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::ParametersRole, "?");
         updateData(id, ModelList::QuantRole, "NA");
         updateData(id, ModelList::TypeRole, "GPT");
+        updateData(id, ModelList::UrlRole, "https://api.openai.com/v1/chat/completions");
     }
 
     const QString mistralDesc = tr("<ul><li>Requires personal Mistral API key.</li><li>WARNING: Will send"
@@ -1259,7 +1261,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
                                    " <a href=\"https://console.mistral.ai/user/api-keys\">here.</a></li>");
 
     {
-        const QString modelName = "Mistral-tiny";
+        const QString modelName = "Mistral Tiny API";
         const QString id = modelName;
         const QString modelFilename = "mistral-tiny.txt";
         if (contains(modelFilename))
@@ -1278,9 +1280,10 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::ParametersRole, "?");
         updateData(id, ModelList::QuantRole, "NA");
         updateData(id, ModelList::TypeRole, "GPT");
+        updateData(id, ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions");
     }
     {
-        const QString modelName = "Mistral-small";
+        const QString modelName = "Mistral Small API";
         const QString id = modelName;
         const QString modelFilename = "mistral-small.txt";
         if (contains(modelFilename))
@@ -1299,9 +1302,10 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::ParametersRole, "?");
         updateData(id, ModelList::QuantRole, "NA");
         updateData(id, ModelList::TypeRole, "GPT");
+        updateData(id, ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions");
     }
     {
-        const QString modelName = "Mistral-medium";
+        const QString modelName = "Mistral Medium API";
         const QString id = modelName;
         const QString modelFilename = "mistral-medium.txt";
         if (contains(modelFilename))
@@ -1320,6 +1324,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         updateData(id, ModelList::ParametersRole, "?");
         updateData(id, ModelList::QuantRole, "NA");
         updateData(id, ModelList::TypeRole, "GPT");
+        updateData(id, ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions");
     }
 
     {
