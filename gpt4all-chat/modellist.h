@@ -119,6 +119,7 @@ public:
     int ramrequired = -1;
     QString parameters;
     bool isEmbeddingModel = false;
+    bool checkedEmbeddingModel = false;
 
     bool operator==(const ModelInfo &other) const {
         return  m_id == other.m_id;

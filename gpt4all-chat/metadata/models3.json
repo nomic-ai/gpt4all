@@ -252,6 +252,7 @@
     "parameters": "40 million",
     "quant": "f16",
     "type": "Bert",
+    "embeddingModel": true,
     "systemPrompt": " ",
     "description": "<strong>LocalDocs text embeddings model</strong><br><ul><li>For use with LocalDocs feature<li>Used for retrieval augmented generation (RAG)",
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
@@ -268,6 +269,7 @@
     "parameters": "40 million",
     "quant": "f16",
     "type": "Bert",
+    "embeddingModel": true,
     "description": "<strong>LocalDocs text embeddings model</strong><br><ul><li>For use with LocalDocs feature<li>Used for retrieval augmented generation (RAG)",
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2.gguf2.f16.gguf"
   },
@@ -299,6 +301,7 @@
     "parameters": "137 million",
     "quant": "f16",
     "type": "Bert",
+    "embeddingModel": true,
     "systemPrompt": "",
     "description": "nomic-embed-text-v1",
     "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.f16.gguf"
@@ -315,6 +318,7 @@
     "parameters": "137 million",
     "quant": "f16",
     "type": "Bert",
+    "embeddingModel": true,
     "systemPrompt": "",
     "description": "nomic-embed-text-v1.5",
     "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf"

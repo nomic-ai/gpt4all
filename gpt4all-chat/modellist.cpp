@@ -11,7 +11,6 @@
 //#define USE_LOCAL_MODELSJSON
 
 const char DEFAULT_EMBEDDING_MODEL[] = "all-MiniLM-L6-v2.gguf2.f16.gguf";
-const char NOMIC_EMBEDDING_MODEL[] = "nomic-embed-text-v1.txt";
 
 QString ModelInfo::id() const
 {
@@ -814,7 +813,6 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
         // We only sort when one of the fields used by the sorting algorithm actually changes that
         // is implicated or used by the sorting algorithm
         bool shouldSort = false;
-        bool shouldCheckEmbed = false;
 
         for (const auto &d : data) {
             const int role = d.first;
@@ -831,20 +829,9 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case NameRole:
                 info->setName(value.toString()); break;
             case FilenameRole:
-                {
-                    // note: setFilename must be called unconditionally
-                    info->setFilename(value.toString());
-                    shouldCheckEmbed |= info->filename() != value.toString();
-                    break;
-                }
+                info->setFilename(value.toString()); break;
             case DirpathRole:
-                {
-                    if (info->dirpath != value.toString()) {
-                        info->dirpath = value.toString();
-                        shouldCheckEmbed = true;
-                    }
-                    break;
-                }
+                info->dirpath = value.toString(); break;
             case FilesizeRole:
                 info->filesize = value.toString(); break;
             case HashRole:
@@ -854,23 +841,11 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             case CalcHashRole:
                 info->calcHash = value.toBool(); break;
             case InstalledRole:
-                {
-                    if (info->installed != value.toBool()) {
-                        info->installed = value.toBool();
-                        shouldCheckEmbed = true;
-                    }
-                    break;
-                }
+                info->installed = value.toBool(); break;
             case DefaultRole:
                 info->isDefault = value.toBool(); break;
             case OnlineRole:
-                {
-                    if (info->isOnline != value.toBool()) {
-                        info->isOnline = value.toBool();
-                        shouldCheckEmbed = true;
-                    }
-                    break;
-                }
+                info->isOnline = value.toBool(); break;
             case DisableGUIRole:
                 info->disableGUI = value.toBool(); break;
             case DescriptionRole:
@@ -928,8 +903,7 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                     break;
                 }
             case IsEmbeddingModelRole:
-                (void)value;
-                Q_ASSERT(!"IsEmbeddingModelRole should not be updated directly"); break;
+                info->isEmbeddingModel = value.toBool(); break;
             case TemperatureRole:
                 info->setTemperature(value.toDouble()); break;
             case TopPRole:
@@ -982,25 +956,19 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
         }
 
         // Extra guarantee that these always remains in sync with filesystem
-        const QFileInfo fileInfo(info->dirpath + info->filename());
-        if (info->installed != fileInfo.exists()) {
-            info->installed = fileInfo.exists();
-            shouldCheckEmbed = true;
-        }
+        QString modelPath = info->dirpath + info->filename();
+        const QFileInfo fileInfo(modelPath);
+        info->installed = fileInfo.exists();
         const QFileInfo incompleteInfo(incompleteDownloadPath(info->filename()));
         info->isIncomplete = incompleteInfo.exists();
 
-        if (shouldCheckEmbed) {
-            auto filename = info->filename();
-            if (filename == NOMIC_EMBEDDING_MODEL) {
-                info->isEmbeddingModel = true; // Nomic embedding API
-            } else if (!info->installed || info->isOnline || info->dirpath.isEmpty() || filename.isEmpty()) {
-                info->isEmbeddingModel = false; // can only check installed offline models
-            } else {
-                // read GGUF and decide based on model architecture
-                auto path = (info->dirpath + filename).toStdString();
-                info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(path);
-            }
+        // check installed, discovered/sideloaded models only (including clones)
+        if (!info->checkedEmbeddingModel && !info->isEmbeddingModel && info->installed
+            && (info->isDiscovered() || info->description().isEmpty()))
+        {
+            // read GGUF and decide based on model architecture
+            info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(modelPath.toStdString());
+            info->checkedEmbeddingModel = true;
         }
 
         if (shouldSort) {
@@ -1091,6 +1059,7 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::FilenameRole, model.filename() },
         { ModelList::DirpathRole, model.dirpath },
         { ModelList::OnlineRole, model.isOnline },
+        { ModelList::IsEmbeddingModelRole, model.isEmbeddingModel },
         { ModelList::TemperatureRole, model.temperature() },
         { ModelList::TopPRole, model.topP() },
         { ModelList::MinPRole, model.minP() },
@@ -1408,6 +1377,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QString parameters = obj["parameters"].toString();
         QString quant = obj["quant"].toString();
         QString type = obj["type"].toString();
+        bool isEmbeddingModel = obj["embeddingModel"].toBool();
 
         // If the current version is strictly less than required version, then skip
         if (!requiresVersion.isEmpty() && compareVersions(currentVersion, requiresVersion) < 0) {
@@ -1447,6 +1417,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::ParametersRole, parameters },
             { ModelList::QuantRole, quant },
             { ModelList::TypeRole, type },
+            { ModelList::IsEmbeddingModelRole, isEmbeddingModel },
         };
         if (obj.contains("temperature"))
             data.append({ ModelList::TemperatureRole, obj["temperature"].toDouble() });
