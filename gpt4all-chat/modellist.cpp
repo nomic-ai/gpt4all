@@ -1002,7 +1002,6 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 auto path = (info->dirpath + filename).toStdString();
                 info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(path);
             }
-            break;
         }
 
         if (shouldSort) {
