@@ -398,7 +398,8 @@ bool DownloadableModels::filterAcceptsRow(int sourceRow,
     bool isDownloadable = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
     bool isInstalled = !sourceModel()->data(index, ModelList::InstalledRole).toString().isEmpty();
     bool isIncomplete = !sourceModel()->data(index, ModelList::IncompleteRole).toString().isEmpty();
-    return withinLimit && (isDownloadable || isInstalled || isIncomplete);
+    bool isClone = sourceModel()->data(index, ModelList::IsCloneRole).toBool();
+    return withinLimit && !isClone && (isDownloadable || isInstalled || isIncomplete);
 }
 
 int DownloadableModels::count() const
