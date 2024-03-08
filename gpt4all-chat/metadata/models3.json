@@ -230,6 +230,7 @@
     "filename": "all-MiniLM-L6-v2-f16.gguf",
     "filesize": "45887744",
     "requires": "2.5.0",
+    "removedIn": "TODO(cebtenzzre): this should be the release that will include this change",
     "ramrequired": "1",
     "parameters": "40 million",
     "quant": "f16",
@@ -237,6 +238,21 @@
     "systemPrompt": " ",
     "description": "<strong>LocalDocs text embeddings model</strong><br><ul><li>For use with LocalDocs feature<li>Used for retrieval augmented generation (RAG)",
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
+  },
+  {
+    "order": "o",
+    "md5sum": "dd90e2cb7f8e9316ac3796cece9883b5",
+    "disableGUI": "true",
+    "name": "SBert",
+    "filename": "all-MiniLM-L6-v2.gguf2.f16.gguf",
+    "filesize": "45949216",
+    "requires": "TODO(cebtenzzre): this should be the release that will include this change",
+    "ramrequired": "1",
+    "parameters": "40 million",
+    "quant": "f16",
+    "type": "Bert",
+    "description": "<strong>LocalDocs text embeddings model</strong><br><ul><li>For use with LocalDocs feature<li>Used for retrieval augmented generation (RAG)",
+    "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2.gguf2.f16.gguf"
   },
   {
     "order": "p",
