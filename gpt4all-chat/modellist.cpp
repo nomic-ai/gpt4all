@@ -832,10 +832,9 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->setName(value.toString()); break;
             case FilenameRole:
                 {
-                    if (info->filename() != value.toString()) {
-                        info->setFilename(value.toString());
-                        shouldCheckEmbed = true;
-                    }
+                    // note: setFilename must be called unconditionally
+                    info->setFilename(value.toString());
+                    shouldCheckEmbed |= info->filename() != value.toString();
                     break;
                 }
             case DirpathRole:
