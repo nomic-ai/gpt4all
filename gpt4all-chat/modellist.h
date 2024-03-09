@@ -462,7 +462,7 @@ private Q_SLOTS:
 private:
     void removeInternal(const ModelInfo &model);
     void clearDiscoveredModels();
-    QString modelDirPath(const QString &modelName, bool isOnline);
+    bool modelExists(const QString &fileName) const;
     int indexForModel(ModelInfo *model);
     QVariant dataInternal(const ModelInfo *info, int role) const;
     static bool lessThan(const ModelInfo* a, const ModelInfo* b, DiscoverSort s, int d);
