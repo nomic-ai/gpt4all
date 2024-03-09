@@ -34,6 +34,8 @@ struct PromptWorkerConfig
         std::string promptTemplate;
         llmodel_prompt_context context;
         std::string result;
+        bool special = false;
+        std::string* fakeReply = nullptr;
     };
 
 class PromptWorker : public Napi::AsyncWorker

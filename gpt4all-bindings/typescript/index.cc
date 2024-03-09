@@ -239,6 +239,11 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
         Napi::Error::New(info.Env(), "invalid string argument").ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
+
+    if(!info[1].IsObject()) {
+        Napi::Error::New(info.Env(), "Missing Prompt Options").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
     //defaults copied from python bindings
     llmodel_prompt_context promptContext = {
              .logits = nullptr,
@@ -258,44 +263,36 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     
     PromptWorkerConfig promptWorkerConfig;
 
-    if(info[1].IsObject())
-    {
-       auto inputObject = info[1].As<Napi::Object>();
+    auto inputObject = info[1].As<Napi::Object>();
              
         // Extract and assign the properties
-       if (inputObject.Has("logits") || inputObject.Has("tokens")) {
-           Napi::Error::New(info.Env(), "Invalid input: 'logits' or 'tokens' properties are not allowed").ThrowAsJavaScriptException();
-           return info.Env().Undefined();
-       }
-             // Assign the remaining properties
-       if(inputObject.Has("n_past")) 
-            promptContext.n_past = inputObject.Get("n_past").As<Napi::Number>().Int32Value();
-       if(inputObject.Has("n_ctx")) 
-            promptContext.n_ctx = inputObject.Get("n_ctx").As<Napi::Number>().Int32Value();
-       if(inputObject.Has("n_predict"))
-            promptContext.n_predict = inputObject.Get("n_predict").As<Napi::Number>().Int32Value();
-       if(inputObject.Has("top_k"))
-            promptContext.top_k = inputObject.Get("top_k").As<Napi::Number>().Int32Value();
-       if(inputObject.Has("top_p")) 
-            promptContext.top_p = inputObject.Get("top_p").As<Napi::Number>().FloatValue();
-       if(inputObject.Has("min_p")) 
-            promptContext.min_p = inputObject.Get("min_p").As<Napi::Number>().FloatValue();
-       if(inputObject.Has("temp")) 
-            promptContext.temp = inputObject.Get("temp").As<Napi::Number>().FloatValue();
-       if(inputObject.Has("n_batch")) 
-            promptContext.n_batch = inputObject.Get("n_batch").As<Napi::Number>().Int32Value();
-       if(inputObject.Has("repeat_penalty")) 
-            promptContext.repeat_penalty = inputObject.Get("repeat_penalty").As<Napi::Number>().FloatValue();
-       if(inputObject.Has("repeat_last_n")) 
-            promptContext.repeat_last_n = inputObject.Get("repeat_last_n").As<Napi::Number>().Int32Value();
-       if(inputObject.Has("context_erase")) 
-            promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
-    }
-    else
-    {
-        Napi::Error::New(info.Env(), "Missing Prompt Options").ThrowAsJavaScriptException();
-        return info.Env().Undefined();
-    }
+   if (inputObject.Has("logits") || inputObject.Has("tokens")) {
+       Napi::Error::New(info.Env(), "Invalid input: 'logits' or 'tokens' properties are not allowed").ThrowAsJavaScriptException();
+       return info.Env().Undefined();
+   }
+         // Assign the remaining properties
+   if(inputObject.Has("n_past")) 
+        promptContext.n_past = inputObject.Get("n_past").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("n_ctx")) 
+        promptContext.n_ctx = inputObject.Get("n_ctx").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("n_predict"))
+        promptContext.n_predict = inputObject.Get("n_predict").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("top_k"))
+        promptContext.top_k = inputObject.Get("top_k").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("top_p")) 
+        promptContext.top_p = inputObject.Get("top_p").As<Napi::Number>().FloatValue();
+   if(inputObject.Has("min_p")) 
+        promptContext.min_p = inputObject.Get("min_p").As<Napi::Number>().FloatValue();
+   if(inputObject.Has("temp")) 
+        promptContext.temp = inputObject.Get("temp").As<Napi::Number>().FloatValue();
+   if(inputObject.Has("n_batch")) 
+        promptContext.n_batch = inputObject.Get("n_batch").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("repeat_penalty")) 
+        promptContext.repeat_penalty = inputObject.Get("repeat_penalty").As<Napi::Number>().FloatValue();
+   if(inputObject.Has("repeat_last_n")) 
+        promptContext.repeat_last_n = inputObject.Get("repeat_last_n").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("context_erase")) 
+        promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
 
     if(info.Length() >= 3 && info[2].IsFunction()) 
     {
@@ -312,7 +309,16 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     promptWorkerConfig.mutex = &inference_mutex;
     promptWorkerConfig.prompt = question;
     promptWorkerConfig.result = "";
-    promptWorkerConfig.promptTemplate = info[1].As<Napi::Object>().Get("promptTemplate").As<Napi::String>();
+
+    promptWorkerConfig.promptTemplate = inputObject.Get("promptTemplate").As<Napi::String>();
+    if(inputObject.Has("special")) {
+        promptWorkerConfig.special = inputObject.Get("special").As<Napi::Boolean>();
+    }
+    if(inputObject.Has("fakeReply")) {
+        //maybe this will cause memorry issues due to pointer paranoia
+        std::string fakeReply = inputObject.Get("fakeReply").As<Napi::String>().As<Napi::String>();
+        promptWorkerConfig.fakeReply = &fakeReply;
+    }
     auto worker = new PromptWorker(env, promptWorkerConfig);
 
     worker->Queue();

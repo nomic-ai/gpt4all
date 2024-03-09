@@ -46,15 +46,12 @@ PromptWorker::PromptWorker(Napi::Env env, PromptWorkerConfig config)
             _config.prompt, 
             _config.promptTemplate,
             [](int32_t tid) { return true; },
-            [this](int32_t token_id, const std::string tok)
-            {
-                return ResponseCallback(token_id, tok);
-            },
-            [](bool isRecalculating)
-            {
-                return isRecalculating;
-            },
-            wrapper->promptContext);
+            [this](int32_t token_id, const std::string tok) { return ResponseCallback(token_id, tok); },
+            [](bool isRecalculating) { return isRecalculating; },
+            wrapper->promptContext,
+            _config.special,
+            _config.fakeReply
+        );
 
         // Update the C context by giving access to the wrappers raw pointers to std::vector data
         // which involves no copies

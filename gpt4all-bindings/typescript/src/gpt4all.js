@@ -49,7 +49,7 @@ async function loadModel(modelName, options = {}) {
         verbose: loadOptions.verbose,
     });
 
-    assert.ok(typeof loadOptions.librariesPath === "string");
+    assert.ok(typeof loadOptions.librariesPath === "string", "Libraries path should be a string");
     const existingPaths = loadOptions.librariesPath
         .split(";")
         .filter(existsSync)
