@@ -247,4 +247,3 @@ if __name__ == "__main__":
         accelerator = Accelerator()
 
     train(accelerator, config=config)
-
