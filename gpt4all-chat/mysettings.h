@@ -28,6 +28,7 @@ class MySettings : public QObject
     Q_PROPERTY(bool networkUsageStatsActive READ networkUsageStatsActive WRITE setNetworkUsageStatsActive NOTIFY networkUsageStatsActiveChanged)
     Q_PROPERTY(QString device READ device WRITE setDevice NOTIFY deviceChanged)
     Q_PROPERTY(QVector<QString> deviceList READ deviceList NOTIFY deviceListChanged)
+    Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
 
 public:
     static MySettings *globalInstance();
@@ -43,6 +44,26 @@ public:
     Q_INVOKABLE void setModelName(const ModelInfo &m, const QString &name, bool force = false);
     QString modelFilename(const ModelInfo &m) const;
     Q_INVOKABLE void setModelFilename(const ModelInfo &m, const QString &filename, bool force = false);
+
+    QString modelDescription(const ModelInfo &m) const;
+    void setModelDescription(const ModelInfo &m, const QString &d, bool force = false);
+    QString modelUrl(const ModelInfo &m) const;
+    void setModelUrl(const ModelInfo &m, const QString &u, bool force = false);
+    QString modelQuant(const ModelInfo &m) const;
+    void setModelQuant(const ModelInfo &m, const QString &q, bool force = false);
+    QString modelType(const ModelInfo &m) const;
+    void setModelType(const ModelInfo &m, const QString &t, bool force = false);
+    bool modelIsClone(const ModelInfo &m) const;
+    void setModelIsClone(const ModelInfo &m, bool b, bool force = false);
+    bool modelIsDiscovered(const ModelInfo &m) const;
+    void setModelIsDiscovered(const ModelInfo &m, bool b, bool force = false);
+    int modelLikes(const ModelInfo &m) const;
+    void setModelLikes(const ModelInfo &m, int l, bool force = false);
+    int modelDownloads(const ModelInfo &m) const;
+    void setModelDownloads(const ModelInfo &m, int d, bool force = false);
+    QDateTime modelRecency(const ModelInfo &m) const;
+    void setModelRecency(const ModelInfo &m, const QDateTime &r, bool force = false);
+
     double modelTemperature(const ModelInfo &m) const;
     Q_INVOKABLE void setModelTemperature(const ModelInfo &m, double t, bool force = false);
     double modelTopP(const ModelInfo &m) const;
@@ -111,7 +132,8 @@ public:
     void setNetworkIsActive(bool b);
     bool networkUsageStatsActive() const;
     void setNetworkUsageStatsActive(bool b);
-
+    int networkPort() const;
+    void setNetworkPort(int c);
 
     QVector<QString> deviceList() const;
     void setDeviceList(const QVector<QString> &deviceList);
@@ -145,6 +167,7 @@ Q_SIGNALS:
     void localDocsShowReferencesChanged();
     void networkAttributionChanged();
     void networkIsActiveChanged();
+    void networkPortChanged();
     void networkUsageStatsActiveChanged();
     void attemptModelLoadChanged();
     void deviceChanged();

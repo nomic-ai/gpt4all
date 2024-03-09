@@ -64,6 +64,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_isRecalc(false)
     , m_shouldBeLoaded(false)
     , m_forceUnloadModel(false)
+    , m_markedForDeletion(false)
     , m_shouldTrySwitchContext(false)
     , m_stopGenerating(false)
     , m_timer(nullptr)
@@ -95,6 +96,10 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
 
 ChatLLM::~ChatLLM()
 {
+    destroy();
+}
+
+void ChatLLM::destroy() {
     m_stopGenerating = true;
     m_llmThread.quit();
     m_llmThread.wait();
@@ -306,7 +311,14 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
             if (m_llModelInfo.model) {
                 if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
-                    // TODO(cebtenzzre): warn that this model is out-of-date
+                    static QSet<QString> warned;
+                    auto fname = modelInfo.filename();
+                    if (!warned.contains(fname)) {
+                        emit modelLoadingWarning(QString(
+                            "%1 is known to be broken. Please get a replacement via the download dialog."
+                        ).arg(fname));
+                        warned.insert(fname); // don't warn again until restart
+                    }
                 }
 
                 m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
@@ -482,7 +494,7 @@ void ChatLLM::resetResponse()
 
 void ChatLLM::resetContext()
 {
-    regenerateResponse();
+    resetResponse();
     m_processedSystemPrompt = false;
     m_ctx = LLModel::PromptContext();
 }
@@ -681,7 +693,9 @@ void ChatLLM::unloadModel()
     else
         emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
 
-    saveState();
+    if (!m_markedForDeletion)
+        saveState();
+
 #if defined(DEBUG_MODEL_LOADING)
     qDebug() << "unloadModel" << m_llmThread.objectName() << m_llModelInfo.model;
 #endif
@@ -994,7 +1008,7 @@ void ChatLLM::restoreState()
         m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
         m_processedSystemPrompt = true;
     } else {
-        qWarning() << "restoring state from text because" << m_llModelInfo.model->stateSize() << "!=" << m_state.size() << "\n";
+        qWarning() << "restoring state from text because" << m_llModelInfo.model->stateSize() << "!=" << m_state.size();
         m_restoreStateFromText = true;
     }
 

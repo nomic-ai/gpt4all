@@ -3,11 +3,14 @@
 
 #include <stdexcept>
 
-#include <QObject>
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QNetworkAccessManager>
+#include <QObject>
+#include <QString>
+#include <QStringList>
 #include <QThread>
+
 #include "../gpt4all-backend/llmodel.h"
 
 class ChatAPI;
@@ -129,6 +132,7 @@ private:
     QString m_apiKey;
     QString m_requestURL;
     QList<QString> m_context;
+    QStringList m_queuedPrompts;
 };
 
 #endif // CHATAPI_H

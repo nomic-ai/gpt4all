@@ -28,7 +28,7 @@ public:
     HashAndSaveFile();
 
 public Q_SLOTS:
-    void hashAndSave(const QString &hash, const QString &saveFilePath,
+    void hashAndSave(const QString &hash, QCryptographicHash::Algorithm a, const QString &saveFilePath,
         QFile *tempFile, QNetworkReply *modelReply);
 
 Q_SIGNALS:
@@ -72,7 +72,7 @@ private Q_SLOTS:
 Q_SIGNALS:
     void releaseInfoChanged();
     void hasNewerReleaseChanged();
-    void requestHashAndSave(const QString &hash, const QString &saveFilePath,
+    void requestHashAndSave(const QString &hash, QCryptographicHash::Algorithm a, const QString &saveFilePath,
         QFile *tempFile, QNetworkReply *modelReply);
 
 private:

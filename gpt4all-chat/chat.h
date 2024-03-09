@@ -46,6 +46,7 @@ public:
     explicit Chat(QObject *parent = nullptr);
     explicit Chat(bool isServer, QObject *parent = nullptr);
     virtual ~Chat();
+    void destroy() { m_llmodel->destroy(); }
     void connectLLM();
 
     QString id() const { return m_id; }
@@ -83,6 +84,7 @@ public:
     Q_INVOKABLE void forceReloadModel();
     Q_INVOKABLE void trySwitchContextOfLoadedModel();
     void unloadAndDeleteLater();
+    void markForDeletion();
 
     qint64 creationDate() const { return m_creationDate; }
     bool serialize(QDataStream &stream, int version) const;
@@ -112,6 +114,7 @@ Q_SIGNALS:
     void chatModelChanged();
     void isModelLoadedChanged();
     void modelLoadingPercentageChanged();
+    void modelLoadingWarning(const QString &warning);
     void responseChanged();
     void responseInProgressChanged();
     void responseStateChanged();
