@@ -1137,27 +1137,18 @@ QString ModelList::uniqueModelName(const ModelInfo &model) const
     return baseName;
 }
 
-QString ModelList::modelDirPath(const QString &modelName, bool isOnline)
+bool ModelList::modelExists(const QString &modelFilename) const
 {
-    QVector<QString> possibleFilePaths;
-    if (isOnline)
-        possibleFilePaths << "/" + modelName + ".txt";
-    else {
-        possibleFilePaths << "/ggml-" + modelName + ".bin";
-        possibleFilePaths << "/" + modelName + ".bin";
-    }
-    for (const QString &modelFilename : possibleFilePaths) {
-        QString appPath = QCoreApplication::applicationDirPath() + modelFilename;
-        QFileInfo infoAppPath(appPath);
-        if (infoAppPath.exists())
-            return QCoreApplication::applicationDirPath();
+    QString appPath = QCoreApplication::applicationDirPath() + modelFilename;
+    QFileInfo infoAppPath(appPath);
+    if (infoAppPath.exists())
+        return true;
 
-        QString downloadPath = MySettings::globalInstance()->modelPath() + modelFilename;
-        QFileInfo infoLocalPath(downloadPath);
-        if (infoLocalPath.exists())
-            return MySettings::globalInstance()->modelPath();
-    }
-    return QString();
+    QString downloadPath = MySettings::globalInstance()->modelPath() + modelFilename;
+    QFileInfo infoLocalPath(downloadPath);
+    if (infoLocalPath.exists())
+        return true;
+    return false;
 }
 
 void ModelList::updateModelsFromDirectory()
@@ -1568,6 +1559,14 @@ void ModelList::updateModelsFromSettings()
         const QString id = g.sliced(6);
         if (contains(id))
             continue;
+
+        // If we can't find the corresponding file, then delete it from settings as this reflects a
+        // stale model. The file could have been deleted manually by the user for instance.
+        if (!settings.contains(g + "/filename") || !modelExists(settings.value(g + "/filename").toString())) {
+            settings.remove(g);
+            settings.sync();
+            continue;
+        }
 
         addModel(id);
 
