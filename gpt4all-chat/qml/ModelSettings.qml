@@ -5,6 +5,7 @@ import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import modellist
 import mysettings
+import chatlistmodel
 
 MySettingsTab {
     onRestoreDefaultsClicked: {
@@ -42,7 +43,7 @@ MySettingsTab {
                 model: ModelList.installedModels
                 valueRole: "id"
                 textRole: "name"
-                currentIndex: 0
+                currentIndex: comboBox.indexOfValue(ChatListModel.currentChat.modelInfo.id)
                 contentItem: Text {
                     leftPadding: 10
                     rightPadding: 20
