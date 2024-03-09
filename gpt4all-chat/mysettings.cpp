@@ -684,7 +684,7 @@ int MySettings::networkPort() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("networkPort", default_serverChat).toInt();
+    return setting.value("networkPort", default_networkPort).toInt();
 }
 
 void MySettings::setNetworkPort(int c)
