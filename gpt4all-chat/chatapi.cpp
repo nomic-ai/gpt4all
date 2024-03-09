@@ -90,7 +90,7 @@ void ChatAPI::prompt(const std::string &prompt,
     Q_UNUSED(fakeReply); // FIXME(cebtenzzre): I broke ChatGPT
 
     if (!isModelLoaded()) {
-        std::cerr << "ChatGPT ERROR: prompt won't work with an unloaded model!\n";
+        std::cerr << "ChatAPI ERROR: prompt won't work with an unloaded model!\n";
         return;
     }
 
@@ -122,7 +122,7 @@ void ChatAPI::prompt(const std::string &prompt,
     QJsonDocument doc(root);
 
 #if defined(DEBUG)
-    qDebug() << "ChatGPT::prompt begin network request" << qPrintable(doc.toJson());
+    qDebug() << "ChatAPI::prompt begin network request" << qPrintable(doc.toJson());
 #endif
 
     m_responseCallback = responseCallback;
@@ -144,7 +144,7 @@ void ChatAPI::prompt(const std::string &prompt,
     m_responseCallback = nullptr;
 
 #if defined(DEBUG)
-    qDebug() << "ChatGPT::prompt end network request";
+    qDebug() << "ChatAPI::prompt end network request";
 #endif
 }
 
@@ -152,7 +152,7 @@ bool ChatAPI::callResponse(int32_t token, const std::string& string)
 {
     Q_ASSERT(m_responseCallback);
     if (!m_responseCallback) {
-        std::cerr << "ChatGPT ERROR: no response callback!\n";
+        std::cerr << "ChatAPI ERROR: no response callback!\n";
         return false;
     }
     return m_responseCallback(token, string);
@@ -164,9 +164,9 @@ void ChatAPIWorker::request(const QString &apiKey,
 {
     m_ctx = promptCtx;
 
-    QUrl openaiUrl(m_chat->getURL());
+    QUrl apiUrl(m_chat->getURL());
     const QString authorization = QString("Bearer %1").arg(apiKey).trimmed();
-    QNetworkRequest request(openaiUrl);
+    QNetworkRequest request(apiUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", authorization.toUtf8());
     m_networkManager = new QNetworkAccessManager(this);
@@ -190,7 +190,7 @@ void ChatAPIWorker::handleFinished()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        qWarning() << QString("ERROR: ChatGPT responded with error code \"%1-%2\"")
+        qWarning() << QString("ERROR: ChatAPI responded with error code \"%1-%2\"")
                           .arg(code).arg(reply->errorString()).toStdString();
     }
     reply->deleteLater();
@@ -210,7 +210,7 @@ void ChatAPIWorker::handleReadyRead()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        m_chat->callResponse(-1, QString("\nERROR: 2 ChatGPT responded with error code \"%1-%2\" %3\n")
+        m_chat->callResponse(-1, QString("\nERROR: 2 ChatAPI responded with error code \"%1-%2\" %3\n")
                                      .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
         emit finished();
         return;
@@ -231,7 +231,7 @@ void ChatAPIWorker::handleReadyRead()
         QJsonParseError err;
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
         if (err.error != QJsonParseError::NoError) {
-            m_chat->callResponse(-1, QString("\nERROR: ChatGPT responded with invalid json \"%1\"\n")
+            m_chat->callResponse(-1, QString("\nERROR: ChatAPI responded with invalid json \"%1\"\n")
                                          .arg(err.errorString()).toStdString());
             continue;
         }
@@ -259,7 +259,7 @@ void ChatAPIWorker::handleErrorOccurred(QNetworkReply::NetworkError code)
         return;
     }
 
-    qWarning() << QString("ERROR: ChatGPT responded with error code \"%1-%2\"")
+    qWarning() << QString("ERROR: ChatAPI responded with error code \"%1-%2\"")
                       .arg(code).arg(reply->errorString()).toStdString();
     emit finished();
 }
