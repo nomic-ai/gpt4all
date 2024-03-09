@@ -7,7 +7,6 @@ const {
     listModels,
     downloadModel,
     appendBinSuffixIfMissing,
-    normalizePromptContext,
 } = require("../src/util.js");
 const {
     DEFAULT_DIRECTORY,
@@ -205,47 +204,4 @@ describe("downloadModel", () => {
     // TODO
     // test("should be able to cancel and resume a download", async () => {
     // });
-});
-
-describe("normalizePromptContext", () => {
-    it("should convert a dict with camelCased keys to snake_case", () => {
-        const camelCased = {
-            topK: 20,
-            repeatLastN: 10,
-        };
-
-        const expectedSnakeCased = {
-            top_k: 20,
-            repeat_last_n: 10,
-        };
-
-        const result = normalizePromptContext(camelCased);
-        expect(result).toEqual(expectedSnakeCased);
-    });
-
-    it("should convert a mixed case dict to snake_case, last value taking precedence", () => {
-        const mixedCased = {
-            topK: 20,
-            top_k: 10,
-            repeatLastN: 10,
-        };
-
-        const expectedSnakeCased = {
-            top_k: 10,
-            repeat_last_n: 10,
-        };
-
-        const result = normalizePromptContext(mixedCased);
-        expect(result).toEqual(expectedSnakeCased);
-    });
-
-    it("should not modify already snake cased dict", () => {
-        const snakeCased = {
-            top_k: 10,
-            repeast_last_n: 10,
-        };
-
-        const result = normalizePromptContext(snakeCased);
-        expect(result).toEqual(snakeCased);
-    });
 });

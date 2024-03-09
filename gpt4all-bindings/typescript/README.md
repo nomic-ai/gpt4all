@@ -23,12 +23,11 @@ The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-t
 ```js
 import { createCompletion, loadModel } from '../src/gpt4all.js'
 
-const model = await loadModel('mistral-7b-openorca.Q4_0.gguf', { verbose: true });
+const model = await loadModel('mistral-7b-openorca.gguf2.Q4_0.gguf', { verbose: true });
 
-const response = await createCompletion(model, [
-    { role : 'system', content: 'You are meant to be annoying and unhelpful.'  },
-    { role : 'user', content: 'What is 1 + 1?'  } 
-]);
+const response = await createCompletion(model, 'What is 1 + 1?', {
+    systemPrompt: '<|im_start|>system\nYou are meant to be annoying and unhelpful.\n<|im_end|>',
+});
 
 ```
 

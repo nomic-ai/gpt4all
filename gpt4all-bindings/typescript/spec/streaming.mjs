@@ -2,10 +2,10 @@ import gpt from "../src/gpt4all.js";
 
 const model = await gpt.loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
     device: "gpu",
+    nCtx: 4096,
 });
 
 process.stdout.write("Stream:");
-
 const stream = gpt.createCompletionStream(model, "How are you ?", {
     nPredict: 2048,
 });
@@ -15,8 +15,18 @@ stream.tokens.on("data", (data) => {
 await stream.result;
 process.stdout.write("\n");
 
+process.stdout.write("Stream with pipe:");
+const stream2 = gpt.createCompletionStream(model, "Very well. Please say something nice about node streams.", {
+    nPast: 2048,
+    nPredict: 2048,
+});
+stream2.tokens.pipe(process.stdout);
+await stream2.result;
+process.stdout.write("\n");
+
 process.stdout.write("Generator:");
-const gen = gpt.createCompletionGenerator(model, "You sure ?", {
+const gen = gpt.createCompletionGenerator(model, "generators instead?", {
+    nPast: 2048,
     nPredict: 2048,
 });
 for await (const chunk of gen) {
@@ -26,7 +36,9 @@ for await (const chunk of gen) {
 process.stdout.write("\n");
 
 process.stdout.write("Callback:");
-await gpt.createCompletion(model, "You sure you sure?", {
+await gpt.createCompletion(model, "Why not just callbacks?", {
+    nPast: 2048,
+    nPredict: 2048,
     onToken: (tokenId, tokenText) => {
         process.stdout.write(tokenText);
     },

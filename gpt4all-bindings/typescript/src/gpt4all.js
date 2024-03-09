@@ -35,7 +35,7 @@ async function loadModel(modelName, options = {}) {
         librariesPath: DEFAULT_LIBRARIES_DIRECTORY,
         type: "inference",
         allowDownload: true,
-        verbose: true,
+        verbose: false,
         device: "cpu",
         nCtx: 2048,
         ngl: 100,
@@ -90,7 +90,7 @@ const defaultCompletionOptions = {
 };
 
 async function createCompletion(
-    model,
+    provider,
     message,
     options = defaultCompletionOptions
 ) {
@@ -101,7 +101,7 @@ async function createCompletion(
 
     let tokensGenerated = 0;
 
-    const response = await model.generate(
+    const response = await provider.generate(
         message,
         optionsWithDefaults,
         (tokenId, text, fullText) => {
@@ -115,7 +115,7 @@ async function createCompletion(
             let continueGeneration = true;
 
             if (options.onToken) {
-                // don't wanna cancel the generation if the callback returns undefined
+                // don't wanna cancel the generation if the users callback returns undefined
                 continueGeneration =
                     options.onToken(tokenId, text, fullText) !== false;
             }
@@ -126,7 +126,7 @@ async function createCompletion(
     );
 
     return {
-        llmodel: model.llm.name(),
+        llmodel: provider.modelName,
         usage: {
             prompt_tokens: message.length,
             completion_tokens: tokensGenerated,
@@ -140,7 +140,7 @@ async function createCompletion(
 }
 
 function createCompletionStream(
-    model,
+    provider,
     message,
     options = defaultCompletionOptions
 ) {
@@ -148,7 +148,7 @@ function createCompletionStream(
         encoding: "utf-8",
     });
 
-    const completionPromise = createCompletion(model, message, {
+    const completionPromise = createCompletion(provider, message, {
         ...options,
         onToken: (tokenId, text, fullText) => {
             completionStream.push(text);
@@ -168,8 +168,8 @@ function createCompletionStream(
     };
 }
 
-async function* createCompletionGenerator(model, message, options) {
-    const completion = createCompletionStream(model, message, options);
+async function* createCompletionGenerator(provider, message, options) {
+    const completion = createCompletionStream(provider, message, options);
     for await (const chunk of completion.tokens) {
         yield chunk;
     }

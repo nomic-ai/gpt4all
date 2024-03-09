@@ -1,67 +1,51 @@
-import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
+import {
+    loadModel,
+    createCompletion,
+    createCompletionStream,
+} from "../src/gpt4all.js";
 
-const model = await loadModel(
-    'mistral-7b-openorca.gguf2.Q4_0.gguf',
-    { verbose: true, device: 'gpu' }
-);
-const ll = model.llm;
+const model = await loadModel("mpt-7b-chat-newbpe-q4_0.gguf", {
+    verbose: true,
+    device: "gpu",
+    // nCtx: 4096,
+});
 
-try {
-   class Extended extends LLModel {
-   }
+const chat = await model.createChatSession({
+    verbose: true,
+    systemPrompt:
+        "<|im_start|>system\nRoleplay as Batman. Answer as if you are Batman, never say you're an Assistant.\n<|im_end|>",
+    // messages: [
+    //     {
+    //         role: "user",
+    //         content: "Hello! I am Robin - let's fight crime together!",
+    //     },
+    //     {
+    //         role: "assistant",
+    //         content: "Hey Robin! I'm ready to protect Gotham with you.",
+    //     },
+    // ],
+});
 
-} catch(e) {
-    console.log("Extending from native class gone wrong " + e)
+const promptContext = {
+	nCtx: 4096,
+	nPast: 4096,
 }
 
-console.log("state size " + ll.stateSize())
+const turn1 = await createCompletion(chat, "Hello! I am Robin - let's fight crime together!", promptContext);
+// console.log(turn1.message);
 
-console.log("thread count " + ll.threadCount());
-ll.setThreadCount(5);
+const turn2 = await createCompletion(chat, "Whats our next adventure?.", promptContext);
+// console.log(turn2.message);
 
-console.log("thread count " + ll.threadCount());
-ll.setThreadCount(4);
-console.log("thread count " + ll.threadCount());
-console.log("name " + ll.name());
-console.log("type: " + ll.type());
-console.log("Default directory for models", DEFAULT_DIRECTORY);
-console.log("Default directory for libraries", DEFAULT_LIBRARIES_DIRECTORY);
-console.log("Has GPU", ll.hasGpuDevice());
-console.log("gpu devices", ll.listGpu())
-console.log("Required Mem in bytes", ll.memoryNeeded())
-const completion1 = await createCompletion(model, 'What is 1 + 1?', {
-    verbose: true,
-    systemPrompt: '<|im_start|>system\nYou are an advanced mathematician.\n<|im_end|>',
-})
-console.log(completion1.message)
+console.log(chat.messages);
 
-const completion2 = await createCompletion(model, 'What is two plus two?', {  verbose: true })
+// const completion2 = await createCompletion(
+//     chat,
+//     "Could you remind me who we both are, please?",
+//     {
+//         // verbose: true
+//     }
+// );
+// console.log(completion2.message);
 
-console.log(completion2.message)
-
-//CALLING DISPOSE WILL INVALID THE NATIVE MODEL. USE THIS TO CLEANUP
-model.dispose()
-// At the moment, from testing this code, concurrent model prompting is not possible. 
-// Behavior: The last prompt gets answered, but the rest are cancelled
-// my experience with threading is not the best, so if anyone who is good is willing to give this a shot,
-// maybe this is possible
-// INFO: threading with llama.cpp is not the best maybe not even possible, so this will be left here as reference
-
-//const responses = await Promise.all([
-//    createCompletion(model, [ 
-//    { role : 'system', content: 'You are an advanced mathematician.'  },
-//    { role : 'user', content: 'What is 1 + 1?'  }, 
-//    ], { verbose: true }),
-//    createCompletion(model, [ 
-//    { role : 'system', content: 'You are an advanced mathematician.'  },
-//    { role : 'user', content: 'What is 1 + 1?'  }, 
-//    ], { verbose: true }),
-//
-//createCompletion(model, [ 
-//    { role : 'system', content: 'You are an advanced mathematician.'  },
-//    { role : 'user', content: 'What is 1 + 1?'  }, 
-//], { verbose: true })
-//
-//])
-//console.log(responses.map(s => s.choices[0].message))
-
+model.dispose();

@@ -1,43 +1,11 @@
 /// <reference types="node" />
 declare module "gpt4all";
 
-type ModelType = "gptj" | "llama" | "mpt" | "replit";
-
-// NOTE: "deprecated" tag in below comment breaks the doc generator https://github.com/documentationjs/documentation/issues/1596
-/**
- * Full list of models available
- * DEPRECATED!! These model names are outdated and this type will not be maintained, please use a string literal instead
- */
-interface ModelFile {
-    /** List of GPT-J Models */
-    gptj:
-        | "ggml-gpt4all-j-v1.3-groovy.bin"
-        | "ggml-gpt4all-j-v1.2-jazzy.bin"
-        | "ggml-gpt4all-j-v1.1-breezy.bin"
-        | "ggml-gpt4all-j.bin";
-    /** List Llama Models */
-    llama:
-        | "ggml-gpt4all-l13b-snoozy.bin"
-        | "ggml-vicuna-7b-1.1-q4_2.bin"
-        | "ggml-vicuna-13b-1.1-q4_2.bin"
-        | "ggml-wizardLM-7B.q4_2.bin"
-        | "ggml-stable-vicuna-13B.q4_2.bin"
-        | "ggml-nous-gpt4-vicuna-13b.bin"
-        | "ggml-v3-13b-hermes-q5_1.bin";
-    /** List of MPT Models */
-    mpt:
-        | "ggml-mpt-7b-base.bin"
-        | "ggml-mpt-7b-chat.bin"
-        | "ggml-mpt-7b-instruct.bin";
-    /** List of Replit Models */
-    replit: "ggml-replit-code-v1-3b.bin";
-}
-
 interface LLModelOptions {
     /**
      * Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
      */
-    type?: ModelType;
+    type?: string;
     model_name: string;
     model_path: string;
     library_path?: string;
@@ -56,6 +24,58 @@ interface ModelConfig {
 type TokenCallback = (tokenId: number, token: string, total: string) => boolean;
 
 /**
+ * Options for the chat session.
+ */
+interface ChatSessionOptions {
+    /**
+     * System prompt to ingest on initialization.
+     */
+    systemPrompt?: string;
+
+    /**
+     * Template for user / assistant message pairs.
+     * %1 is required and will be replaced by the user input.
+     * %2 is optional and will be replaced by the assistant response. The response will be appended if not present.
+     */
+    promptTemplate?: string;
+
+    /**
+     * Messages to ingest on initialization.
+     */
+    messages?: Message[];
+}
+
+declare class ChatSession {
+    constructor(model: InferenceModel, options: ChatSessionOptions);
+    model: InferenceModel;
+    modelName: string;
+    messages: Message[];
+    systemPrompt: string;
+    promptTemplate: string;
+
+    /**
+     * Ingests system prompt and initial messages.
+     * Sets this chat session as the active chat session of the model.
+     * @param options The options for the chat session.
+     */
+    initialize(options: ChatSessionOptions): Promise<void>;
+
+    /**
+     * Prompts the model in chat-session context.
+     * @param prompt The prompt input.
+     * @param options Prompt context and other options.
+     * @param callback Token generation callback.
+     * @returns The model's response to the prompt.
+     * @throws {Error} If the chat session is not the active chat session of the model.
+     */
+    generate(
+        prompt: string,
+        options?: CompletionOptions,
+        callback?: TokenCallback
+    ): Promise<string>;
+}
+
+/**
  *
  * InferenceModel represents an LLM which can make chat predictions, similar to GPT transformers.
  *
@@ -65,9 +85,23 @@ declare class InferenceModel {
     llm: LLModel;
     config: ModelConfig;
     messages: Message[];
+    chatSession?: ChatSession;
+    modelName: string;
+    
+    /**
+     * Create a chat session with the model.
+     * @param options The options for the chat session.
+     * @returns The chat session.
+     */
+    createChatSession(options?: ChatSessionOptions): Promise<ChatSession>;
 
-    initialize(options?: CompletionOptions): Promise<void>;
-
+    /**
+     * Prompts the model with a given input and optional parameters.
+     * @param prompt The prompt input.
+     * @param options Prompt context and other options.
+     * @param callback Token generation callback.
+     * @returns The model's response to the prompt.
+     */
     generate(
         prompt: string,
         options?: CompletionOptions,
@@ -279,40 +313,52 @@ declare function loadModel(
 ): Promise<InferenceModel | EmbeddingModel>;
 
 /**
+ * Interface for something that can provide completions.
+ */
+interface InferenceProvider {
+    modelName: string;
+    generate(
+        message: string,
+        options?: CompletionOptions,
+        callback?: TokenCallback
+    ): Promise<string>;
+}
+
+/**
  * The nodejs equivalent to python binding's chat_completion
- * @param {InferenceModel} model - The language model object.
+ * @param {InferenceProvider} provider - The inference model object or chat session
  * @param {string} message - The user input message
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {CompletionReturn} The completion result.
  */
 declare function createCompletion(
-    model: InferenceModel,
+    provider: InferenceProvider,
     message: string,
     options?: CompletionOptions
 ): Promise<CompletionReturn>;
 
 /**
  * Streaming variant of createCompletion, returns a stream of tokens and a promise that resolves to the completion result.
- * @param {InferenceModel} model - The language model object.
+ * @param {InferenceProvider} provider - The inference model object or chat session
  * @param {string} message - The user input message.
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {CompletionStreamReturn} An object of token stream and the completion result promise.
  */
 declare function createCompletionStream(
-    model: InferenceModel,
+    provider: InferenceProvider,
     message: string,
     options?: CompletionOptions
 ): CompletionStreamReturn;
 
 /**
  * Creates an async generator of tokens
- * @param {InferenceModel} llmodel - The language model object.
+ * @param {InferenceProvider} provider - The inference model object or chat session
  * @param {string} message - The user input message.
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {AsyncGenerator<string>} The stream of generated tokens
  */
 declare function createCompletionGenerator(
-    llmodel: InferenceModel,
+    provider: InferenceProvider,
     message: string,
     options: CompletionOptions
 ): AsyncGenerator<string, CompletionReturn>;
@@ -335,21 +381,9 @@ declare function createEmbedding(
 interface CompletionOptions extends Partial<LLModelPromptContext> {
     /**
      * Indicates if verbose logging is enabled.
-     * @default true
+     * @default false
      */
     verbose?: boolean;
-
-    /**
-     * System prompt to ingest on the first turn.
-     */
-    systemPrompt?: string;
-
-    /**
-     * Template for user / assistant message pairs.
-     * %1 is required and will be replaced by the user input.
-     * %2 is optional and will be replaced by the assistant response.
-     */
-    promptTemplate?: boolean;
 
     /**
      * Callback for controlling token generation. Return false to stop processing.
@@ -369,7 +403,7 @@ interface Message {
 }
 
 /**
- * The result of the completion, similar to OpenAI's format.
+ * The result of a completion.
  */
 interface CompletionReturn {
     /** The model used for the completion. */
