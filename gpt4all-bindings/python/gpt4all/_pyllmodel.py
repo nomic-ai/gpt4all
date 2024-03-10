@@ -330,8 +330,8 @@ class LLModel:
         # extract output
         n_embd = embedding_size.value // len(text)
         embedding_array = [
-            [embedding_ptr[i * n_embd + j] for j in range(n_embd)]
-            for i in range(len(text))
+            embedding_ptr[i:i + n_embd]
+            for i in range(0, embedding_size.value, n_embd)
         ]
         llmodel.llmodel_free_embedding(embedding_ptr)
 
