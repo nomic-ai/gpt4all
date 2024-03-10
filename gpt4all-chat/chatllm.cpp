@@ -294,7 +294,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             QString path = modelInfo.filename();
             path.chop(4);
             model->setModelName(path);
-            model->setRequestURL(modelInfo.url);
+            model->setRequestURL(modelInfo.url());
             model->setAPIKey(apiKey);
             m_llModelInfo.model = model;
         } else {
