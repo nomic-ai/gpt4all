@@ -1175,7 +1175,7 @@ void ModelList::updateModelsFromDirectory()
 
                 // All files that end with .bin and have 'ggml' somewhere in the name
                 if (((filename.endsWith(".bin") || filename.endsWith(".gguf")) && (/*filename.contains("ggml") ||*/ filename.contains("gguf")) && !filename.startsWith("incomplete"))
-                    || (filename.endsWith(".txt")  || filename.startsWith("nomic-"))) {
+                    || filename.endsWith(".txt")) {
 
                     QString filePath = it.filePath();
                     QFileInfo info(filePath);
@@ -1202,7 +1202,7 @@ void ModelList::updateModelsFromDirectory()
                             { InstalledRole, true },
                             { FilenameRole, filename },
                             // FIXME: WE should change this to use a consistent filename for online models
-                            { OnlineRole, filename.endsWith(".txt") || filename.startsWith("nomic-") },
+                            { OnlineRole, filename.endsWith(".txt") },
                             { DirpathRole, info.dir().absolutePath() + "/" },
                             { FilesizeRole, toFileSize(info.size()) },
                         };
