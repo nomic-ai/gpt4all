@@ -1922,7 +1922,7 @@ void ModelList::handleDiscoveryItemFinished()
     QString repoCommit = QString::fromUtf8(repoCommitHeader);
     QString linkedSize = QString::fromUtf8(linkedSizeHeader);
     QString linkedEtag = QString::fromUtf8(linkedEtagHeader);
-    QString url = locationHeader;
+
     QString modelFilename = reply->request().attribute(QNetworkRequest::UserMax).toString();
     QString modelFilesize = linkedSize;
     modelFilesize = ModelList::toFileSize(modelFilesize.toULongLong());
@@ -1953,7 +1953,7 @@ void ModelList::handleDiscoveryItemFinished()
         { ModelList::FilesizeRole, modelFilesize },
         { ModelList::DescriptionRole, description },
         { ModelList::IsDiscoveredRole, true },
-        { ModelList::UrlRole, url },
+        { ModelList::UrlRole, reply->request().url() },
         { ModelList::LikesRole, likes },
         { ModelList::DownloadsRole, downloads },
         { ModelList::RecencyRole, lastModified },
