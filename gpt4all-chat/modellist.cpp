@@ -1560,13 +1560,10 @@ void ModelList::updateModelsFromSettings()
         if (contains(id))
             continue;
 
-        // If we can't find the corresponding file, then delete it from settings as this reflects a
-        // stale model. The file could have been deleted manually by the user for instance.
-        if (!settings.contains(g + "/filename") || !modelExists(settings.value(g + "/filename").toString())) {
-            settings.remove(g);
-            settings.sync();
+        // If we can't find the corresponding file, then ignore it as this reflects a stale model.
+        // The file could have been deleted manually by the user for instance or temporarily renamed.
+        if (!settings.contains(g + "/filename") || !modelExists(settings.value(g + "/filename").toString()))
             continue;
-        }
 
         addModel(id);
 
