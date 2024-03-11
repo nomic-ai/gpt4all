@@ -43,7 +43,12 @@ MySettingsTab {
                 model: ModelList.installedModels
                 valueRole: "id"
                 textRole: "name"
-                currentIndex: comboBox.indexOfValue(ChatListModel.currentChat.modelInfo.id)
+                currentIndex: {
+                    var i = comboBox.indexOfValue(ChatListModel.currentChat.modelInfo.id);
+                    if (i >= 0)
+                        return i;
+                    return 0;
+                }
                 contentItem: Text {
                     leftPadding: 10
                     rightPadding: 20
