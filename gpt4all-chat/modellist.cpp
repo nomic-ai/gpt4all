@@ -1712,7 +1712,7 @@ void ModelList::clearDiscoveredModels()
     {
         QMutexLocker locker(&m_mutex);
         for (ModelInfo *info : m_models)
-            if (info->isDiscovered())
+            if (info->isDiscovered() && !info->installed)
                 infos.append(*info);
     }
     for (ModelInfo &info : infos)
