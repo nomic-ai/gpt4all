@@ -30,11 +30,12 @@ const DEFAULT_MODEL_CONFIG = {
 const DEFAULT_MODEL_LIST_URL = "https://gpt4all.io/models/models3.json";
 
 const DEFAULT_PROMPT_CONTEXT = {
-    temp: 0.7,
+    temp: 0.1,
     topK: 40,
-    topP: 0.4,
+    topP: 0.9,
+    minP: 0.0,
     repeatPenalty: 1.18,
-    repeatLastN: 64,
+    repeatLastN: 10,
     nBatch: 8,
 }
 

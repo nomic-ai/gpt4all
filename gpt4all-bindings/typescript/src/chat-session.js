@@ -24,12 +24,12 @@ class ChatSession {
 
         // ingest system prompt
 
-        if (this.systemPrompt.trim()) {
+        if (this.systemPrompt) {
             await this.model.generate(this.systemPrompt, {
                 promptTemplate: "%1",
                 nPredict: 0,
-                // nBatch: opts?.nBatch ?? DEFAULT_PROMPT_CONTEXT.nBatch,
                 special: true,
+                // verbose: true,
             });
         }
 
@@ -89,10 +89,12 @@ class ChatSession {
             // send the pairs to the model
 
             for (const turn of messagePairs) {
-                await this.model.generate(turn.user, {
+                const res = await this.model.generate(turn.user, {
                     promptTemplate: this.promptTemplate,
                     fakeReply: turn.assistant,
+                    nPast: 1024,
                 });
+                // console.log('turn', turn, res);
             }
         }
 
@@ -113,7 +115,7 @@ class ChatSession {
             await this.initialize();
         }
         const response = await this.model.generate(prompt, {
-            nPast: 2048,
+            nPast: 1524,
             ...options,
         }, callback);
 
