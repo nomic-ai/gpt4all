@@ -660,8 +660,9 @@ void LLamaModel::embed(
     const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, bool doMean,
     bool atlas
 ) {
+    EmbModelSpec *spec;
     std::optional<std::string> prefix;
-    if (auto *spec = getEmbedSpec(llama_model_name(d_ptr->model)))
+    if (d_ptr->model && (spec = getEmbedSpec(llama_model_name(d_ptr->model))))
         prefix = isRetrieval ? spec->queryPrefix : spec->docPrefix;
 
     embed(texts, embeddings, prefix, dimensionality, doMean, atlas);
