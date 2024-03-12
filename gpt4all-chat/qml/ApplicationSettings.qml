@@ -255,8 +255,39 @@ MySettingsTab {
             ToolTip.text: qsTr("WARNING: This enables the gui to act as a local REST web server(OpenAI API compliant) for API requests and will increase your RAM usage as well")
             ToolTip.visible: hovered
         }
-        Rectangle {
+        MySettingsLabel {
+            id: serverPortLabel
+            text: qsTr("API Server Port (Requires restart):")
             Layout.row: 9
+            Layout.column: 0
+        }
+        MyTextField {
+            id: serverPortField
+            text: MySettings.networkPort
+            color: theme.textColor
+            font.pixelSize: theme.fontSizeLarge
+            ToolTip.text: qsTr("Api server port. WARNING: You need to restart the application for it to take effect")
+            ToolTip.visible: hovered
+            Layout.row: 9
+            Layout.column: 1
+            validator: IntValidator {
+                bottom: 1
+            }
+            onEditingFinished: {
+                var val = parseInt(text)
+                if (!isNaN(val)) {
+                    MySettings.networkPort = val
+                    focus = false
+                } else {
+                    text = MySettings.networkPort
+                }
+            }
+            Accessible.role: Accessible.EditableText
+            Accessible.name: serverPortField.text
+            Accessible.description: ToolTip.text
+        }
+        Rectangle {
+            Layout.row: 10
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true

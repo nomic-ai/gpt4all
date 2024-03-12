@@ -51,7 +51,7 @@ def test_batched_completion():
     model = model_id  # replace with your specific model ID
     prompt = "Who is Michael Jordan?"
     responses = []
-    
+
     # Loop to create completions one at a time
     for _ in range(3):
         response = openai.Completion.create(
@@ -62,7 +62,7 @@ def test_batched_completion():
     # Assertions to check the responses
     for response in responses:
         assert len(response['choices'][0]['text']) > len(prompt)
-    
+
     assert len(responses) == 3
 
 def test_embedding():
@@ -75,3 +75,19 @@ def test_embedding():
     assert response["model"] == model
     assert isinstance(output, list)
     assert all(isinstance(x, args) for x in output)
+
+def test_chat_completion():
+    model = model_id
+
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Knock knock."},
+            {"role": "assistant", "content": "Who's there?"},
+            {"role": "user", "content": "Orange."},
+            ]
+    )
+
+    assert response.choices[0].message.role == "assistant"
+    assert len(response.choices[0].message.content) > 0

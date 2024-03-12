@@ -1160,6 +1160,20 @@ QString ModelList::uniqueModelName(const ModelInfo &model) const
     return baseName;
 }
 
+bool ModelList::modelExists(const QString &modelFilename) const
+{
+    QString appPath = QCoreApplication::applicationDirPath() + modelFilename;
+    QFileInfo infoAppPath(appPath);
+    if (infoAppPath.exists())
+        return true;
+
+    QString downloadPath = MySettings::globalInstance()->modelPath() + modelFilename;
+    QFileInfo infoLocalPath(downloadPath);
+    if (infoLocalPath.exists())
+        return true;
+    return false;
+}
+
 void ModelList::updateModelsFromDirectory()
 {
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
@@ -1307,7 +1321,7 @@ void ModelList::handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkErro
         return;
 
     qWarning() << QString("ERROR: Modellist download failed with error code \"%1-%2\"")
-                      .arg(code).arg(reply->errorString()).toStdString();
+                      .arg(code).arg(reply->errorString());
 }
 
 void ModelList::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
@@ -1570,6 +1584,11 @@ void ModelList::updateModelsFromSettings()
         if (contains(id))
             continue;
 
+        // If we can't find the corresponding file, then ignore it as this reflects a stale model.
+        // The file could have been deleted manually by the user for instance or temporarily renamed.
+        if (!settings.contains(g + "/filename") || !modelExists(settings.value(g + "/filename").toString()))
+            continue;
+
         addModel(id);
 
         QVector<QPair<int, QVariant>> data;
@@ -1717,7 +1736,7 @@ void ModelList::clearDiscoveredModels()
     {
         QMutexLocker locker(&m_mutex);
         for (ModelInfo *info : m_models)
-            if (info->isDiscovered())
+            if (info->isDiscovered() && !info->installed)
                 infos.append(*info);
     }
     for (ModelInfo &info : infos)
@@ -1927,7 +1946,7 @@ void ModelList::handleDiscoveryItemFinished()
     QString repoCommit = QString::fromUtf8(repoCommitHeader);
     QString linkedSize = QString::fromUtf8(linkedSizeHeader);
     QString linkedEtag = QString::fromUtf8(linkedEtagHeader);
-    QString url = locationHeader;
+
     QString modelFilename = reply->request().attribute(QNetworkRequest::UserMax).toString();
     QString modelFilesize = linkedSize;
     modelFilesize = ModelList::toFileSize(modelFilesize.toULongLong());
@@ -1958,7 +1977,7 @@ void ModelList::handleDiscoveryItemFinished()
         { ModelList::FilesizeRole, modelFilesize },
         { ModelList::DescriptionRole, description },
         { ModelList::IsDiscoveredRole, true },
-        { ModelList::UrlRole, url },
+        { ModelList::UrlRole, reply->request().url() },
         { ModelList::LikesRole, likes },
         { ModelList::DownloadsRole, downloads },
         { ModelList::RecencyRole, lastModified },

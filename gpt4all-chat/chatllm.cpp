@@ -961,7 +961,7 @@ void ChatLLM::saveState()
     if (m_llModelType == LLModelType::CHATGPT_) {
         m_state.clear();
         QDataStream stream(&m_state, QIODeviceBase::WriteOnly);
-        stream.setVersion(QDataStream::Qt_6_5);
+        stream.setVersion(QDataStream::Qt_6_4);
         ChatGPT *chatGPT = static_cast<ChatGPT*>(m_llModelInfo.model);
         stream << chatGPT->context();
         return;
@@ -982,7 +982,7 @@ void ChatLLM::restoreState()
 
     if (m_llModelType == LLModelType::CHATGPT_) {
         QDataStream stream(&m_state, QIODeviceBase::ReadOnly);
-        stream.setVersion(QDataStream::Qt_6_5);
+        stream.setVersion(QDataStream::Qt_6_4);
         ChatGPT *chatGPT = static_cast<ChatGPT*>(m_llModelInfo.model);
         QList<QString> context;
         stream >> context;

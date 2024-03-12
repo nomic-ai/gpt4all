@@ -211,7 +211,7 @@ void ChatGPTWorker::handleFinished()
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
         qWarning() << QString("ERROR: ChatGPT responded with error code \"%1-%2\"")
-            .arg(code).arg(reply->errorString()).toStdString();
+            .arg(code).arg(reply->errorString());
     }
     reply->deleteLater();
     emit finished();
@@ -280,6 +280,6 @@ void ChatGPTWorker::handleErrorOccurred(QNetworkReply::NetworkError code)
     }
 
     qWarning() << QString("ERROR: ChatGPT responded with error code \"%1-%2\"")
-                      .arg(code).arg(reply->errorString()).toStdString();
+                      .arg(code).arg(reply->errorString());
     emit finished();
 }

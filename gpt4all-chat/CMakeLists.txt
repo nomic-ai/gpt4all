@@ -18,7 +18,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 7)
-set(APP_VERSION_PATCH 3)
+set(APP_VERSION_PATCH 4)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -40,9 +40,9 @@ configure_file(
 )
 
 if(LINUX)
-  find_package(Qt6 6.5 COMPONENTS Core Quick WaylandCompositor QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+  find_package(Qt6 6.4 COMPONENTS Core Quick WaylandCompositor QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
 else()
-  find_package(Qt6 6.5 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+  find_package(Qt6 6.4 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
 endif()
 
 # Get the Qt6Core target properties
