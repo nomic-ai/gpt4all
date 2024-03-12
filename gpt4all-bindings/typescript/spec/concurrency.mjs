@@ -1,22 +1,29 @@
-// At the moment, from testing this code, concurrent model prompting is not possible.
-// Behavior: The last prompt gets answered, but the rest are cancelled
-// my experience with threading is not the best, so if anyone who is good is willing to give this a shot,
-// maybe this is possible
-// INFO: threading with llama.cpp is not the best maybe not even possible, so this will be left here as reference
+import {
+	loadModel,
+	createCompletion,
+} from "../src/gpt4all.js";
+
+const modelOptions = {
+    verbose: true,
+};
 
 const model1 = await loadModel("orca-mini-3b-gguf2-q4_0.gguf", {
-    verbose: true,
-    // device: 'gpu'
+    ...modelOptions,
+    device: "gpu", // only one model can be on gpu
 });
+const model2 = await loadModel("orca-mini-3b-gguf2-q4_0.gguf", modelOptions);
+const model3 = await loadModel("orca-mini-3b-gguf2-q4_0.gguf", modelOptions);
 
-const model2 = await loadModel("orca-mini-3b-gguf2-q4_0.gguf", {
+const promptContext = {
     verbose: true,
-    // device: 'gpu'
-});
+}
 
 const responses = await Promise.all([
-    createCompletion(model1, "What is 1 + 1?", { verbose: true }),
-    // createCompletion(model1, "What is 1 + 1?", { verbose: true }),
-    createCompletion(model2, "What is 1 + 1?", { verbose: true }),
+    createCompletion(model1, "What is 1 + 1?", promptContext),
+    // generating with the same model instance will wait for the previous completion to finish
+    createCompletion(model1, "What is 1 + 1?", promptContext),
+    // generating with different model instances will run in parallel
+    createCompletion(model2, "What is 1 + 2?", promptContext),
+    createCompletion(model3, "What is 1 + 3?", promptContext),
 ]);
 console.log(responses.map((res) => res.message));
