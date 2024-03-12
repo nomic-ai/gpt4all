@@ -143,7 +143,7 @@ void ChatAPI::prompt(const std::string &prompt,
     QJsonDocument doc(root);
 
 #if defined(DEBUG)
-    qDebug().noquote() << "ChatGPT::prompt begin network request" << doc.toJson();
+    qDebug().noquote() << "ChatAPI::prompt begin network request" << doc.toJson();
     qDebug() << "ChatAPI::prompt begin network request" << qPrintable(doc.toJson());
 #endif
 
