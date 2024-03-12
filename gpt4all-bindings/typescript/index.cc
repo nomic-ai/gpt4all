@@ -249,16 +249,16 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
              .logits = nullptr,
              .tokens = nullptr,
              .n_past = 0,
-             .n_ctx = 1024,
-             .n_predict = 128,
+             .n_ctx = 2048,
+             .n_predict = 4096,
              .top_k = 40,
              .top_p = 0.9f,
              .min_p = 0.0f,
-             .temp = 0.72f,
+             .temp = 0.1f,
              .n_batch = 8,
-             .repeat_penalty = 1.0f,
+             .repeat_penalty = 1.2f,
              .repeat_last_n = 10,
-             .context_erase = 0.5
+             .context_erase = 0.75
          };
     
     PromptWorkerConfig promptWorkerConfig;
@@ -271,28 +271,28 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
        return info.Env().Undefined();
    }
          // Assign the remaining properties
-   if(inputObject.Has("n_past")) 
-        promptContext.n_past = inputObject.Get("n_past").As<Napi::Number>().Int32Value();
-   if(inputObject.Has("n_ctx")) 
-        promptContext.n_ctx = inputObject.Get("n_ctx").As<Napi::Number>().Int32Value();
-   if(inputObject.Has("n_predict"))
-        promptContext.n_predict = inputObject.Get("n_predict").As<Napi::Number>().Int32Value();
-   if(inputObject.Has("top_k"))
-        promptContext.top_k = inputObject.Get("top_k").As<Napi::Number>().Int32Value();
-   if(inputObject.Has("top_p")) 
-        promptContext.top_p = inputObject.Get("top_p").As<Napi::Number>().FloatValue();
-   if(inputObject.Has("min_p")) 
-        promptContext.min_p = inputObject.Get("min_p").As<Napi::Number>().FloatValue();
+   if(inputObject.Has("nPast")) 
+        promptContext.n_past = inputObject.Get("nPast").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("nCtx")) 
+        promptContext.n_ctx = inputObject.Get("nCtx").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("nPredict"))
+        promptContext.n_predict = inputObject.Get("nPredict").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("topK"))
+        promptContext.top_k = inputObject.Get("topK").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("topP")) 
+        promptContext.top_p = inputObject.Get("topP").As<Napi::Number>().FloatValue();
+   if(inputObject.Has("minP")) 
+        promptContext.min_p = inputObject.Get("minP").As<Napi::Number>().FloatValue();
    if(inputObject.Has("temp")) 
         promptContext.temp = inputObject.Get("temp").As<Napi::Number>().FloatValue();
-   if(inputObject.Has("n_batch")) 
-        promptContext.n_batch = inputObject.Get("n_batch").As<Napi::Number>().Int32Value();
-   if(inputObject.Has("repeat_penalty")) 
-        promptContext.repeat_penalty = inputObject.Get("repeat_penalty").As<Napi::Number>().FloatValue();
-   if(inputObject.Has("repeat_last_n")) 
-        promptContext.repeat_last_n = inputObject.Get("repeat_last_n").As<Napi::Number>().Int32Value();
-   if(inputObject.Has("context_erase")) 
-        promptContext.context_erase = inputObject.Get("context_erase").As<Napi::Number>().FloatValue();
+   if(inputObject.Has("nBatch")) 
+        promptContext.n_batch = inputObject.Get("nBatch").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("repeatPenalty")) 
+        promptContext.repeat_penalty = inputObject.Get("repeatPenalty").As<Napi::Number>().FloatValue();
+   if(inputObject.Has("repeatLastN")) 
+        promptContext.repeat_last_n = inputObject.Get("repeatLastN").As<Napi::Number>().Int32Value();
+   if(inputObject.Has("contextErase")) 
+        promptContext.context_erase = inputObject.Get("contextErase").As<Napi::Number>().FloatValue();
 
     if(info.Length() >= 3 && info[2].IsFunction()) 
     {
@@ -316,8 +316,9 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
     }
     if(inputObject.Has("fakeReply")) {
         //maybe this will cause memorry issues due to pointer paranoia
-        std::string fakeReply = inputObject.Get("fakeReply").As<Napi::String>().As<Napi::String>();
-        promptWorkerConfig.fakeReply = &fakeReply;
+        // std::string fakeReply = inputObject.Get("fakeReply").As<Napi::String>().As<Napi::String>();
+        // promptWorkerConfig.fakeReply = &fakeReply;
+        promptWorkerConfig.fakeReply = new std::string(inputObject.Get("fakeReply").As<Napi::String>().Utf8Value());
     }
     auto worker = new PromptWorker(env, promptWorkerConfig);
 
