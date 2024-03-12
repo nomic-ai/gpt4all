@@ -232,8 +232,6 @@ void ChatAPIWorker::handleReadyRead()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        m_chat->callResponse(-1, QString("\nERROR: 2 ChatGPT responded with error code \"%1-%2\" %3\n")
-            .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString());
         m_chat->callResponse(-1, QString("\nERROR: 2 ChatAPI responded with error code \"%1-%2\" %3\n")
                                      .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
         emit finished();
