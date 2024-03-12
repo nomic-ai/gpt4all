@@ -51,10 +51,9 @@ Q_SIGNALS:
 private Q_SLOTS:
     void handleFinished();
 
-protected:
+private:
     void sendAtlasRequest(const QStringList &texts, const QString &taskType, QVariant userData = {});
 
-private:
     QString m_nomicAPIKey;
     QNetworkAccessManager *m_networkManager;
     std::vector<float> m_lastResponse;
