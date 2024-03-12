@@ -328,9 +328,9 @@ bool EmbeddingModels::filterAcceptsRow(int sourceRow,
     bool installed = sourceModel()->data(index, ModelList::InstalledRole).toBool();
     QString filename = sourceModel()->data(index, ModelList::FilenameRole).toString();
     auto &known = KNOWN_EMBEDDING_MODELS;
-    if (std::find(known, std::end(known), filename.toStdString()) == std::end(known)) {
+    if (std::find(known, std::end(known), filename.toStdString()) == std::end(known))
         return false; // we are currently not prepared to support other embedding models
-    }
+
     return isEmbeddingModel && (!m_requireInstalled || installed);
 }
 
@@ -341,9 +341,8 @@ int EmbeddingModels::defaultModelIndex() const
 
     int rows = sourceListModel->rowCount();
     for (int i = 0; i < rows; ++i) {
-        if (filterAcceptsRow(i, sourceListModel->index(i, 0).parent())) {
+        if (filterAcceptsRow(i, sourceListModel->index(i, 0).parent()))
             return i;
-        }
     }
 
     return -1;
@@ -1003,9 +1002,8 @@ void ModelList::resortModel()
 
 void ModelList::updateDataByFilename(const QString &filename, QVector<QPair<int, QVariant>> data)
 {
-    if (data.isEmpty()) {
+    if (data.isEmpty())
         return; // no-op
-    }
 
     QVector<QString> modelsById;
     {

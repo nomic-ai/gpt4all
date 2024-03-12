@@ -159,9 +159,8 @@ float *llmodel_embed(
     auto *wrapper = static_cast<LLModelWrapper *>(model);
 
     if (!texts || !*texts) {
-        if (error) {
+        if (error)
             *error = strdup("'texts' is NULL or empty");
-        }
         return nullptr;
     }
 
@@ -173,9 +172,9 @@ float *llmodel_embed(
 
     try {
         embd_size = wrapper->llModel->embeddingSize();
-        if (dimensionality > 0 && dimensionality < int(embd_size)) {
+        if (dimensionality > 0 && dimensionality < int(embd_size))
             embd_size = dimensionality;
-        }
+
         embd_size *= textsVec.size();
 
         std::optional<std::string> prefixStr;
@@ -184,9 +183,8 @@ float *llmodel_embed(
         embedding = new float[embd_size];
         wrapper->llModel->embed(textsVec, embedding, prefixStr, dimensionality, do_mean, atlas);
     } catch (std::exception const &e) {
-        if (error) {
+        if (error)
             *error = strdup(e.what());
-        }
         return nullptr;
     }
 

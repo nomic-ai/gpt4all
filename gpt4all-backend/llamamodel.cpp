@@ -345,9 +345,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->ctx_params.n_threads       = d_ptr->n_threads;
     d_ptr->ctx_params.n_threads_batch = d_ptr->n_threads;
 
-    if (m_supportsEmbedding) {
+    if (m_supportsEmbedding)
         d_ptr->ctx_params.embeddings = true;
-    }
 
     d_ptr->ctx = llama_new_context_with_model(d_ptr->model, d_ptr->ctx_params);
     if (!d_ptr->ctx) {
@@ -662,9 +661,9 @@ void LLamaModel::embed(
     bool atlas
 ) {
     std::optional<std::string> prefix;
-    if (auto *spec = getEmbedSpec(llama_model_name(d_ptr->model))) {
+    if (auto *spec = getEmbedSpec(llama_model_name(d_ptr->model)))
         prefix = isRetrieval ? spec->queryPrefix : spec->docPrefix;
-    }
+
     embed(texts, embeddings, prefix, dimensionality, doMean, atlas);
 }
 
@@ -672,19 +671,16 @@ void LLamaModel::embed(
     const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
     bool doMean, bool atlas
 ) {
-    if (!d_ptr->model) {
+    if (!d_ptr->model)
         throw std::logic_error("no model is loaded");
-    }
 
     const char *modelName = llama_model_name(d_ptr->model);
-    if (!m_supportsEmbedding) {
+    if (!m_supportsEmbedding)
         throw std::logic_error("not an embedding model: "s + modelName);
-    }
 
     auto *spec = getEmbedSpec(modelName);
-    if (!spec) {
+    if (!spec)
         std::cerr << __func__ << ": warning: unknown model " << modelName << "\n";
-    }
 
     const int32_t n_embd = llama_n_embd(d_ptr->model);
     if (dimensionality < 0) {
@@ -693,12 +689,10 @@ void LLamaModel::embed(
         auto msg = [dimensionality, modelName]() {
             return "unsupported dimensionality " + std::to_string(dimensionality) + " for model " + modelName;
         };
-        if (!spec->matryoshkaCapable) {
+        if (!spec->matryoshkaCapable)
             throw std::logic_error(msg() + " (supported: " + std::to_string(n_embd) + ")");
-        }
-        if (dimensionality == 0 || dimensionality > n_embd) {
+        if (dimensionality == 0 || dimensionality > n_embd)
             throw std::logic_error(msg() + " (recommended: " + spec->recommendedDims + ")");
-        }
     }
 
     if (!prefix) {
@@ -747,9 +741,9 @@ void LLamaModel::embedInternal(
 
     // no EOS, optional BOS
     auto tokenize = [this, addEOS](std::string text, TokenString &tokens, bool addBOS) {
-        if (!text.empty() && text[0] != ' ') {
+        if (!text.empty() && text[0] != ' ')
             text = ' ' + text; // normalize for SPM - our fork of llama.cpp doesn't add a space prefix
-        }
+
         tokens.resize(text.length()+4);
         int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), addBOS, false);
         assert(addEOS == (eos_token != -1 && tokens[n_tokens - 1] == eos_token));
@@ -821,9 +815,8 @@ void LLamaModel::embedInternal(
     std::vector<int> queued_indices; // text indices of batches to be processed
 
     auto decode = [this, &queued_indices, n_embd, &batch, &embeddingsSum, &embeddingsSumTotal, spec, dimensionality]() {
-        if (llama_decode(d_ptr->ctx, batch) < 0) {
+        if (llama_decode(d_ptr->ctx, batch) < 0)
             throw std::runtime_error("llama_decode failed");
-        }
 
         for (int i = 0; i < batch.n_tokens; ++i) {
             if (!batch.logits[i]) { continue; }
@@ -925,9 +918,8 @@ DLL_EXPORT bool magic_match(const char *fname) {
         valid = false;
     }
 
-    if (valid && is_embedding_arch(arch) && gguf_find_key(ctx, (arch + ".pooling_type").c_str()) < 0) {
+    if (valid && is_embedding_arch(arch) && gguf_find_key(ctx, (arch + ".pooling_type").c_str()) < 0)
         valid = false; // old pre-llama.cpp embedding model, e.g. all-MiniLM-L6-v2-f16.gguf
-    }
 
     gguf_free(ctx);
     return valid;
