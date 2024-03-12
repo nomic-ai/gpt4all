@@ -733,6 +733,7 @@ void LLamaModel::embedInternal(
 ) {
     typedef std::vector<LLModel::Token> TokenString;
     static constexpr int32_t atlasMaxLength = 8192;
+    static constexpr int chunkOverlap = 8; // Atlas overlaps n_batch-sized chunks of input by 8 tokens
 
     const llama_token bos_token = llama_token_bos(d_ptr->model);
     const llama_token eos_token = llama_token_eos(d_ptr->model);
@@ -784,10 +785,9 @@ void LLamaModel::embedInternal(
 
     const uint32_t n_batch = llama_n_batch(d_ptr->ctx);
     const uint32_t max_len = n_batch - (prefixTokens.size() + addEOS); // minus BOS/CLS and EOS/SEP
-    constexpr int overlap = 8;
-    if (overlap >= max_len) {
+    if (chunkOverlap >= max_len) {
         throw std::logic_error("max chunk length of " + std::to_string(max_len) + " is smaller than overlap of " +
-                               std::to_string(overlap) + " tokens");
+                               std::to_string(chunkOverlap) + " tokens");
     }
 
     // split into max_len-sized chunks
@@ -796,7 +796,7 @@ void LLamaModel::embedInternal(
     for (unsigned i = 0; i < inputs.size(); i++) {
         auto &input = inputs[i];
         for (auto it = input.begin(); it < input.end(); it += max_len) {
-            if (it > input.begin()) { it -= overlap; }
+            if (it > input.begin()) { it -= chunkOverlap; }
             auto end = std::min(it + max_len, input.end());
             auto &batch = batches.emplace_back(i, prefixTokens).batch;
             batch.insert(batch.end(), it, end);
