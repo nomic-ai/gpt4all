@@ -80,7 +80,7 @@ class Embed4All:
             if dimensionality <= 0:
                 raise ValueError(f'Dimensionality must be None or a positive integer, got {dimensionality}')
             if dimensionality < self.MIN_DIMENSIONALITY:
-                raise ValueError(
+                warnings.warn(
                     f'Dimensionality {dimensionality} is less than the suggested minimum of {self.MIN_DIMENSIONALITY}.'
                     ' Performance may be degraded.'
                 )
