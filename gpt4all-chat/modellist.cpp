@@ -1141,7 +1141,7 @@ QString ModelList::modelDirPath(const QString &modelName, bool isOnline)
 {
     QVector<QString> possibleFilePaths;
     if (isOnline)
-        possibleFilePaths << "/" + modelName + ".txt";
+        possibleFilePaths << "/" + modelName + ".rmodel";
     else {
         possibleFilePaths << "/ggml-" + modelName + ".bin";
         possibleFilePaths << "/" + modelName + ".bin";
@@ -1175,7 +1175,7 @@ void ModelList::updateModelsFromDirectory()
 
                 // All files that end with .bin and have 'ggml' somewhere in the name
                 if (((filename.endsWith(".bin") || filename.endsWith(".gguf")) && (/*filename.contains("ggml") ||*/ filename.contains("gguf")) && !filename.startsWith("incomplete"))
-                    || filename.endsWith(".txt")) {
+                    || filename.endsWith(".rmodel")) {
 
                     QString filePath = it.filePath();
                     QFileInfo info(filePath);
@@ -1201,8 +1201,7 @@ void ModelList::updateModelsFromDirectory()
                         QVector<QPair<int, QVariant>> data {
                             { InstalledRole, true },
                             { FilenameRole, filename },
-                            // FIXME: WE should change this to use a consistent filename for online models
-                            { OnlineRole, filename.endsWith(".txt") },
+                            { OnlineRole, filename.endsWith(".rmodel") },
                             { DirpathRole, info.dir().absolutePath() + "/" },
                             { FilesizeRole, toFileSize(info.size()) },
                         };
@@ -1457,7 +1456,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     {
         const QString modelName = "ChatGPT-3.5 Turbo";
         const QString id = modelName;
-        const QString modelFilename = "gpt-3.5-turbo.txt";
+        const QString modelFilename = "gpt4all-gpt-3.5-turbo.rmodel";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))
@@ -1485,7 +1484,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
 
         const QString modelName = "ChatGPT-4";
         const QString id = modelName;
-        const QString modelFilename = "gpt-4.txt";
+        const QString modelFilename = "gpt4all-gpt-4.rmodel";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))
@@ -1517,7 +1516,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     {
         const QString modelName = "Mistral Tiny API";
         const QString id = modelName;
-        const QString modelFilename = "mistral-tiny.txt";
+        const QString modelFilename = "gpt4all-mistral-tiny.rmodel";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))
@@ -1542,7 +1541,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     {
         const QString modelName = "Mistral Small API";
         const QString id = modelName;
-        const QString modelFilename = "mistral-small.txt";
+        const QString modelFilename = "gpt4all-mistral-small.rmodel";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))
@@ -1568,7 +1567,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     {
         const QString modelName = "Mistral Medium API";
         const QString id = modelName;
-        const QString modelFilename = "mistral-medium.txt";
+        const QString modelFilename = "gpt4all-mistral-medium.rmodel";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))

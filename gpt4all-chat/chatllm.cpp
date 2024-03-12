@@ -282,18 +282,21 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (fileInfo.exists()) {
         if (isOnline) {
             QString apiKey;
+            QString modelName;
             {
                 QFile file(filePath);
                 file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text);
                 QTextStream stream(&file);
-                apiKey = stream.readAll();
+                QString text = stream.readAll();
+                QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
+                QJsonObject obj = doc.object();
+                apiKey = obj["apiKey"].toString();
+                modelName = obj["modelName"].toString();
                 file.close();
             }
             m_llModelType = LLModelType::API_;
             ChatAPI *model = new ChatAPI();
-            QString path = modelInfo.filename();
-            path.chop(4);
-            model->setModelName(path);
+            model->setModelName(modelName);
             model->setRequestURL(modelInfo.url());
             model->setAPIKey(apiKey);
             m_llModelInfo.model = model;
