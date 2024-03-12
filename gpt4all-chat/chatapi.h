@@ -74,7 +74,7 @@ public:
     void setModelName(const QString &modelName) { m_modelName = modelName; }
     void setAPIKey(const QString &apiKey) { m_apiKey = apiKey; }
     void setRequestURL(const QString &requestURL) { m_requestURL = requestURL; }
-    QString getURL() { return m_requestURL; }
+    QString url() const { return m_requestURL; }
 
     QList<QString> context() const { return m_context; }
     void setContext(const QList<QString> &context) { m_context = context; }

@@ -186,7 +186,7 @@ void ChatAPIWorker::request(const QString &apiKey,
 {
     m_ctx = promptCtx;
 
-    QUrl apiUrl(m_chat->getURL());
+    QUrl apiUrl(m_chat->url());
     const QString authorization = QString("Bearer %1").arg(apiKey).trimmed();
     QNetworkRequest request(apiUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
