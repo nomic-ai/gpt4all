@@ -1074,11 +1074,11 @@ Window {
                         Menu {
                             id: conversationContextMenu
                             MenuItem {
-                                text: "Copy"
+                                text: qsTr("Copy")
                                 onTriggered: myTextArea.copy()
                             }
                             MenuItem {
-                                text: "Select All"
+                                text: qsTr("Select All")
                                 onTriggered: myTextArea.selectAll()
                             }
                         }
@@ -1443,19 +1443,19 @@ Window {
                 Menu {
                     id: textInputContextMenu
                     MenuItem {
-                        text: "Cut"
+                        text: qsTr("Cut")
                         onTriggered: textInput.cut()
                     }
                     MenuItem {
-                        text: "Copy"
+                        text: qsTr("Copy")
                         onTriggered: textInput.copy()
                     }
                     MenuItem {
-                        text: "Paste"
+                        text: qsTr("Paste")
                         onTriggered: textInput.paste()
                     }
                     MenuItem {
-                        text: "Select All"
+                        text: qsTr("Select All")
                         onTriggered: textInput.selectAll()
                     }
                 }
