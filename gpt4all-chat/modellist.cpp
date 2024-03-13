@@ -1178,7 +1178,7 @@ void ModelList::updateModelsFromDirectory()
             it.next();
             if (!it.fileInfo().isDir()) {
                 QString filename = it.fileName();
-                if (filename.endsWith(".txt")) {
+                if (filename.startsWith("chatgpt-") && filename.endsWith(".txt")) {
                     QString apikey;
                     QString modelname(filename);
                     modelname.chop(4); // strip ".txt" extension
@@ -1648,7 +1648,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             "<li>You can apply for an API key <a href=\"https://atlas.nomic.ai/\">with Nomic Atlas.</a></li>");
         const QString modelName = "Nomic Embed";
         const QString id = modelName;
-        const QString modelFilename = "nomic-embed-text-v1.txt";
+        const QString modelFilename = "nomic-embed-text-v1.txt"; // FIXME: This should be made to use '.rmodel' as well
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))
