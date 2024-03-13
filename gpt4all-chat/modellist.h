@@ -16,7 +16,6 @@ struct ModelInfo {
     Q_PROPERTY(bool calcHash MEMBER calcHash)
     Q_PROPERTY(bool installed MEMBER installed)
     Q_PROPERTY(bool isDefault MEMBER isDefault)
-    Q_PROPERTY(bool disableGUI MEMBER disableGUI)
     Q_PROPERTY(bool isOnline MEMBER isOnline)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
@@ -105,7 +104,6 @@ public:
     bool installed = false;
     bool isDefault = false;
     bool isOnline = false;
-    bool disableGUI = false;
     QString requiresVersion;
     QString versionRemoved;
     qint64 bytesReceived = 0;
@@ -289,7 +287,6 @@ public:
         InstalledRole,
         DefaultRole,
         OnlineRole,
-        DisableGUIRole,
         DescriptionRole,
         RequiresVersionRole,
         VersionRemovedRole,
@@ -340,7 +337,6 @@ public:
         roles[InstalledRole] = "installed";
         roles[DefaultRole] = "isDefault";
         roles[OnlineRole] = "isOnline";
-        roles[DisableGUIRole] = "disableGUI";
         roles[DescriptionRole] = "description";
         roles[RequiresVersionRole] = "requiresVersion";
         roles[VersionRemovedRole] = "versionRemoved";

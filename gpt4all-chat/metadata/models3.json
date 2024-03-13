@@ -260,7 +260,6 @@
   {
     "order": "o",
     "md5sum": "dd90e2cb7f8e9316ac3796cece9883b5",
-    "disableGUI": "true",
     "name": "SBert",
     "filename": "all-MiniLM-L6-v2.gguf2.f16.gguf",
     "filesize": "45949216",

@@ -374,11 +374,10 @@ bool InstalledModels::filterAcceptsRow(int sourceRow,
                                        const QModelIndex &sourceParent) const
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
-    bool isEmbeddingModel = sourceModel()->data(index, ModelList::IsEmbeddingModelRole).toBool();
     bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
-    bool showInGUI = !sourceModel()->data(index, ModelList::DisableGUIRole).toBool();
-    // (don't let the user select embedding models)
-    return !isEmbeddingModel && isInstalled && showInGUI;
+    bool isEmbeddingModel = sourceModel()->data(index, ModelList::IsEmbeddingModelRole).toBool();
+    // list installed chat models
+    return isInstalled && !isEmbeddingModel;
 }
 
 DownloadableModels::DownloadableModels(QObject *parent)
@@ -503,8 +502,8 @@ const QList<QString> ModelList::userDefaultModelList() const
     bool foundUserDefault = false;
     for (ModelInfo *info : m_models) {
 
-        // Only installed models that are meant for GUI are suitable as a default
-        if (!info->installed || info->disableGUI || info->isEmbeddingModel)
+        // Only installed chat models are suitable as a default
+        if (!info->installed || info->isEmbeddingModel)
             continue;
 
         if (info->id() == userDefaultModelName) {
@@ -695,8 +694,6 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->isDefault;
         case OnlineRole:
             return info->isOnline;
-        case DisableGUIRole:
-            return info->disableGUI;
         case DescriptionRole:
             return info->description();
         case RequiresVersionRole:
@@ -849,8 +846,6 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->isDefault = value.toBool(); break;
             case OnlineRole:
                 info->isOnline = value.toBool(); break;
-            case DisableGUIRole:
-                info->disableGUI = value.toBool(); break;
             case DescriptionRole:
                 info->setDescription(value.toString()); break;
             case RequiresVersionRole:
@@ -1395,15 +1390,17 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QString type = obj["type"].toString();
         bool isEmbeddingModel = obj["embeddingModel"].toBool();
 
-        // If the current version is strictly less than required version, then skip
-        if (!requiresVersion.isEmpty() && compareVersions(currentVersion, requiresVersion) < 0) {
+        // Some models aren't supported in the GUI at all
+        if (disableGUI)
             continue;
-        }
+
+        // If the current version is strictly less than required version, then skip
+        if (!requiresVersion.isEmpty() && compareVersions(currentVersion, requiresVersion) < 0)
+            continue;
 
         // If the version removed is less than or equal to the current version, then skip
-        if (!versionRemoved.isEmpty() && compareVersions(versionRemoved, currentVersion) <= 0) {
+        if (!versionRemoved.isEmpty() && compareVersions(versionRemoved, currentVersion) <= 0)
             continue;
-        }
 
         modelFilesize = ModelList::toFileSize(modelFilesize.toULongLong());
 
@@ -1427,7 +1424,6 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::RequiresVersionRole, requiresVersion },
             { ModelList::VersionRemovedRole, versionRemoved },
             { ModelList::UrlRole, url },
-            { ModelList::DisableGUIRole, disableGUI },
             { ModelList::OrderRole, order },
             { ModelList::RamrequiredRole, ramrequired },
             { ModelList::ParametersRole, parameters },
@@ -1537,7 +1533,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, "minimal" },
             { ModelList::OnlineRole, true },
-            { ModelList::DisableGUIRole, true },
+            { ModelList::IsEmbeddingModelRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>LocalDocs Nomic Atlas Embed</strong><br>") + nomicEmbedDesc },
             { ModelList::RequiresVersionRole, "2.6.3" },
