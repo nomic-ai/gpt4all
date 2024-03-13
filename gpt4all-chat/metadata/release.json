@@ -725,5 +725,33 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.7.3",
+    "notes":
+"
+* Fix for network reachability unknown
+* Fix undefined behavior with resetContext
+* Fix ChatGPT which was broken with previous release
+* Fix for clean up of chat llm thread destruction
+* Display of model loading warnings
+* Fix for issue 2080 where the GUI appears to hang when a chat is deleted
+* Fix for issue 2077 better responsiveness of model download dialog when download is taking place
+* Fix for issue 2092 don't include models that are disabled for GUI in application default model list
+* Fix for issue 2087 where cloned modelds were lost and listed in download dialog erroneously
+* Fix for MPT models without duplicated token embd weight
+* New feature with api server port setting
+* Fix for issue 2024 where combobox for model settings uses currently used model by default
+* Clean up settings properly for removed models and don't list stale model settings in download dialog
+* Fix for issue 2105 where the cancel button was not working for discovered model downloads
+",
+    "contributors":
+"
+* Christopher Barrera
+* Daniel Alencar
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]

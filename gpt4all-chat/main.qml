@@ -1057,6 +1057,32 @@ Window {
                             }
                         }
 
+                        MouseArea {
+                            id: conversationMouseArea
+                            anchors.fill: parent
+                            acceptedButtons: Qt.RightButton
+
+                            onClicked: {
+                                if (mouse.button === Qt.RightButton) {
+                                    conversationContextMenu.x = conversationMouseArea.mouseX
+                                    conversationContextMenu.y = conversationMouseArea.mouseY
+                                    conversationContextMenu.open()
+                                }
+                            }
+                        }
+
+                        Menu {
+                            id: conversationContextMenu
+                            MenuItem {
+                                text: qsTr("Copy")
+                                onTriggered: myTextArea.copy()
+                            }
+                            MenuItem {
+                                text: qsTr("Select All")
+                                onTriggered: myTextArea.selectAll()
+                            }
+                        }
+
                         ResponseText {
                             id: responseText
                         }
@@ -1399,6 +1425,41 @@ Window {
                                MySettings.repeatPenaltyTokens)
                     textInput.text = ""
                 }
+
+                MouseArea {
+                    id: textInputMouseArea
+                    anchors.fill: parent
+                    acceptedButtons: Qt.RightButton
+
+                    onClicked: {
+                        if (mouse.button === Qt.RightButton) {
+                            textInputContextMenu.x = textInputMouseArea.mouseX
+                            textInputContextMenu.y = textInputMouseArea.mouseY
+                            textInputContextMenu.open()
+                        }
+                    }
+                }
+
+                Menu {
+                    id: textInputContextMenu
+                    MenuItem {
+                        text: qsTr("Cut")
+                        onTriggered: textInput.cut()
+                    }
+                    MenuItem {
+                        text: qsTr("Copy")
+                        onTriggered: textInput.copy()
+                    }
+                    MenuItem {
+                        text: qsTr("Paste")
+                        onTriggered: textInput.paste()
+                    }
+                    MenuItem {
+                        text: qsTr("Select All")
+                        onTriggered: textInput.selectAll()
+                    }
+                }
+
             }
         }
 
