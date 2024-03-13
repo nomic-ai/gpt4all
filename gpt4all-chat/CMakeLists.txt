@@ -142,6 +142,8 @@ qt_add_qml_module(chat
       icons/network.svg
       icons/thumbs_up.svg
       icons/thumbs_down.svg
+      icons/left_panel_closed.svg
+      icons/left_panel_open.svg
       icons/logo.svg
       icons/logo-32.png
       icons/logo-48.png
