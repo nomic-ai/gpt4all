@@ -1218,9 +1218,7 @@ void ModelList::updateModelsFromDirectory()
             if (!it.fileInfo().isDir()) {
                 QString filename = it.fileName();
 
-                // All files that end with .bin and have 'ggml' somewhere in the name
-                if (((filename.endsWith(".bin") || filename.endsWith(".gguf")) && (/*filename.contains("ggml") ||*/ filename.contains("gguf")) && !filename.startsWith("incomplete"))
-                    || filename.endsWith(".rmodel")) {
+                if ((filename.endsWith(".gguf") && !filename.startsWith("incomplete")) || filename.endsWith(".rmodel")) {
 
                     QString filePath = it.filePath();
                     QFileInfo info(filePath);

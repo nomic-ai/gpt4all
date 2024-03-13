@@ -12,7 +12,6 @@
 enum LLModelType {
     GPTJ_,
     LLAMA_,
-    BERT_,
     API_,
 };
 
