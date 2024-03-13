@@ -1012,7 +1012,10 @@ Window {
                 ListView {
                     id: listView
                     visible: ModelList.installedModels.count !== 0 && chatModel.count !== 0
-                    anchors.fill: parent
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: Math.min(1280, parent.width)
                     model: chatModel
 
                     ScrollBar.vertical: ScrollBar {
