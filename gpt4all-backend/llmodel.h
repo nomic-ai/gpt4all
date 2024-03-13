@@ -1,13 +1,14 @@
 #ifndef LLMODEL_H
 #define LLMODEL_H
 
-#include <string>
-#include <functional>
-#include <vector>
-#include <string_view>
-#include <fstream>
 #include <cstdint>
+#include <fstream>
+#include <functional>
 #include <limits>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
 
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
@@ -44,6 +45,7 @@ public:
         static std::vector<GPUDevice> availableGPUDevices();
         static int32_t maxContextLength(const std::string &modelPath);
         static int32_t layerCount(const std::string &modelPath);
+        static bool isEmbeddingModel(const std::string &modelPath);
         static void setImplementationsSearchPath(const std::string &path);
         static const std::string &implementationsSearchPath();
 
@@ -83,7 +85,8 @@ public:
     virtual bool supportsEmbedding() const = 0;
     virtual bool supportsCompletion() const = 0;
     virtual bool loadModel(const std::string &modelPath, int n_ctx, int ngl) = 0;
-    virtual bool isModelBlacklisted(const std::string &modelPath) { (void)modelPath; return false; };
+    virtual bool isModelBlacklisted(const std::string &modelPath) const { (void)modelPath; return false; };
+    virtual bool isEmbeddingModel(const std::string &modelPath) const { (void)modelPath; return false; }
     virtual bool isModelLoaded() const = 0;
     virtual size_t requiredMem(const std::string &modelPath, int n_ctx, int ngl) = 0;
     virtual size_t stateSize() const { return 0; }
@@ -101,7 +104,15 @@ public:
                         bool special = false,
                         std::string *fakeReply = nullptr);
 
-    virtual std::vector<float> embedding(const std::string &text);
+    virtual size_t embeddingSize() const {
+        throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
+    }
+    // user-specified prefix
+    virtual void embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix,
+                       int dimensionality = -1, bool doMean = true, bool atlas = false);
+    // automatic prefix
+    virtual void embed(const std::vector<std::string> &texts, float *embeddings, bool isRetrieval,
+                       int dimensionality = -1, bool doMean = true, bool atlas = false);
 
     virtual void setThreadCount(int32_t n_threads) { (void)n_threads; }
     virtual int32_t threadCount() const { return 1; }

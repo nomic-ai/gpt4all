@@ -14,7 +14,7 @@ MySettingsTab {
         MySettings.restoreLocalDocsDefaults();
     }
 
-    property bool hasEmbeddingModel: ModelList.embeddingModels.count !== 0
+    property bool hasEmbeddingModel: ModelList.installedEmbeddingModels.count !== 0
     showAdvancedSettingsButton: hasEmbeddingModel
     showRestoreDefaultsButton: hasEmbeddingModel
 
