@@ -211,8 +211,8 @@ void ChatAPIWorker::handleFinished()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        qWarning("ERROR: ChatAPIWorker::handleFinished got HTTP Error %d response (%s)",
-                 code, qPrintable(reply->errorString()));
+        qWarning().noquote() << "ERROR: ChatAPIWorker::handleFinished got HTTP Error" << code << "response:"
+                             << reply->errorString();
     }
     reply->deleteLater();
     emit finished();
@@ -231,8 +231,11 @@ void ChatAPIWorker::handleReadyRead()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        m_chat->callResponse(-1, QString("ERROR: ChatAPIWorker::handleReadyRead got HTTP Error %1 %2: %3")
-                                     .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString());
+        m_chat->callResponse(
+            -1,
+            QString("ERROR: ChatAPIWorker::handleReadyRead got HTTP Error %1 %2: %3")
+                .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString()
+        );
         emit finished();
         return;
     }
@@ -252,7 +255,7 @@ void ChatAPIWorker::handleReadyRead()
         QJsonParseError err;
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
         if (err.error != QJsonParseError::NoError) {
-            m_chat->callResponse(-1, QString("\nERROR: ChatAPI responded with invalid json \"%1\"\n")
+            m_chat->callResponse(-1, QString("ERROR: ChatAPI responded with invalid json \"%1\"")
                                          .arg(err.errorString()).toStdString());
             continue;
         }
@@ -280,7 +283,7 @@ void ChatAPIWorker::handleErrorOccurred(QNetworkReply::NetworkError code)
         return;
     }
 
-    qWarning("ERROR: ChatAPIWorker::handleErrorOccurred got HTTP Error %d response (%s)",
-             code, qPrintable(reply->errorString()));
+    qWarning().noquote() << "ERROR: ChatAPIWorker::handleErrorOccurred got HTTP Error" << code << "response:"
+                         << reply->errorString();
     emit finished();
 }

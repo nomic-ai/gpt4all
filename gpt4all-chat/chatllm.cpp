@@ -280,7 +280,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     m_llModelInfo.fileInfo = fileInfo;
 
     if (fileInfo.exists()) {
-        if (isOnline) {
+        if (modelInfo.isOnline) {
             QString apiKey;
             QString modelName;
             {

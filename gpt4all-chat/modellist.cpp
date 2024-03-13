@@ -1181,7 +1181,7 @@ void ModelList::updateModelsFromDirectory()
                     obj.insert("modelName", modelname);
                     QJsonDocument doc(obj);
 
-                    QString newfilename = "gpt4all-" + modelname + ".rmodel";
+                    auto newfilename = QString("gpt4all-%1.rmodel").arg(modelname);
                     QFile newfile(path + newfilename);
                     if (newfile.open(QIODevice::ReadWrite)) {
                         QTextStream out(&newfile);
@@ -1248,7 +1248,6 @@ void ModelList::updateModelsFromDirectory()
         updateOldRemoteModels(localPath);
         processDirectory(localPath);
     }
-
 }
 
 #define MODELS_VERSION 3
@@ -1539,13 +1538,12 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::UrlRole, "https://api.openai.com/v1/chat/completions"},
         };
         updateData(id, data);
-        
     }
     
 	const QString mistralDesc = tr("<ul><li>Requires personal Mistral API key.</li><li>WARNING: Will send"
                                    " your chats to Mistral!</li><li>Your API key will be stored on disk</li><li>Will only be used"
                                    " to communicate with Mistral</li><li>You can apply for an API key"
-                                   " <a href=\"https://console.mistral.ai/user/api-keys\">here.</a></li>");
+                                   " <a href=\"https://console.mistral.ai/user/api-keys\">here</a>.</li>");
 
     {
         const QString modelName = "Mistral Tiny API";
