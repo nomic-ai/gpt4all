@@ -1565,7 +1565,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::RamrequiredRole, 0 },
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
-            { ModelList::TypeRole, "GPT" },
+            { ModelList::TypeRole, "Mistral" },
             { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
         };
         updateData(id, data);
@@ -1590,7 +1590,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::RamrequiredRole, 0 },
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
-            { ModelList::TypeRole, "GPT" },
+            { ModelList::TypeRole, "Mistral" },
             { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
         };
         updateData(id, data);
@@ -1616,7 +1616,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::RamrequiredRole, 0 },
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
-            { ModelList::TypeRole, "GPT" },
+            { ModelList::TypeRole, "Mistral" },
             { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
         };
         updateData(id, data);
