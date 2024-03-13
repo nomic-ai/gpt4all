@@ -292,7 +292,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 QJsonObject obj = doc.object();
                 apiKey = obj["apiKey"].toString();
                 modelName = obj["modelName"].toString();
-                file.close();
             }
             m_llModelType = LLModelType::API_;
             ChatAPI *model = new ChatAPI();
