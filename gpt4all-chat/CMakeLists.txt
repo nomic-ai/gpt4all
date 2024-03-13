@@ -142,6 +142,8 @@ qt_add_qml_module(chat
       icons/network.svg
       icons/thumbs_up.svg
       icons/thumbs_down.svg
+      icons/left_panel_closed.svg
+      icons/left_panel_open.svg
       icons/logo.svg
       icons/logo-32.png
       icons/logo-48.png
@@ -200,8 +202,6 @@ install(TARGETS llamamodel-mainline-default DESTINATION lib COMPONENT ${COMPONEN
 if(APPLE)
 install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
-install(TARGETS bert-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS bert-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
 set(CPACK_VERBATIM_VARIABLES YES)

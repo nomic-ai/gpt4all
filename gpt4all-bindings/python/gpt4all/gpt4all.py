@@ -10,7 +10,7 @@ import time
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union, overload
 
 import requests
 from requests.exceptions import ChunkedEncodingError
@@ -36,6 +36,8 @@ class Embed4All:
     Python class that handles embeddings for GPT4All.
     """
 
+    MIN_DIMENSIONALITY = 64
+
     def __init__(self, model_name: Optional[str] = None, n_threads: Optional[int] = None, **kwargs):
         """
         Constructor
@@ -45,17 +47,48 @@ class Embed4All:
         """
         self.gpt4all = GPT4All(model_name or 'all-MiniLM-L6-v2-f16.gguf', n_threads=n_threads, **kwargs)
 
-    def embed(self, text: str) -> List[float]:
+    @overload
+    def embed(
+        self, text: str, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        atlas: bool = ...,
+    ) -> list[float]: ...
+    @overload
+    def embed(
+        self, text: list[str], prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        atlas: bool = ...,
+    ) -> list[list[float]]: ...
+
+    def embed(self, text, prefix=None, dimensionality=None, long_text_mode="truncate", atlas=False):
         """
-        Generate an embedding.
+        Generate one or more embeddings.
 
         Args:
-            text: The text document to generate an embedding for.
+            text: A text or list of texts to generate embeddings for.
+            prefix: The model-specific prefix representing the embedding task, without the trailing colon. For Nomic
+            Embed this can be `search_query`, `search_document`, `classification`, or `clustering`.
+            dimensionality: The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
+            long_text_mode: How to handle texts longer than the model can accept. One of `mean` or `truncate`.
+            atlas: Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens
+            with long_text_mode="mean" will raise an error. Disabled by default.
 
         Returns:
-            An embedding of your document of text.
+            An embedding or list of embeddings of your text(s).
         """
-        return self.gpt4all.model.generate_embedding(text)
+        if dimensionality is None:
+            dimensionality = -1
+        else:
+            if dimensionality <= 0:
+                raise ValueError(f'Dimensionality must be None or a positive integer, got {dimensionality}')
+            if dimensionality < self.MIN_DIMENSIONALITY:
+                warnings.warn(
+                    f'Dimensionality {dimensionality} is less than the suggested minimum of {self.MIN_DIMENSIONALITY}.'
+                    ' Performance may be degraded.'
+                )
+        try:
+            do_mean = {"mean": True, "truncate": False}[long_text_mode]
+        except KeyError:
+            raise ValueError(f"Long text mode must be one of 'mean' or 'truncate', got {long_text_mode!r}")
+        return self.gpt4all.model.generate_embeddings(text, prefix, dimensionality, do_mean, atlas)
 
 
 class GPT4All:

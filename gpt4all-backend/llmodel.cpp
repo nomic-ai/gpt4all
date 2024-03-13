@@ -213,19 +213,24 @@ LLModel *LLModel::Implementation::constructDefaultLlama() {
 }
 
 std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices() {
-    auto * llama = constructDefaultLlama();
+    auto *llama = constructDefaultLlama();
     if (llama) { return llama->availableGPUDevices(0); }
     return {};
 }
 
 int32_t LLModel::Implementation::maxContextLength(const std::string &modelPath) {
-    auto * llama = constructDefaultLlama();
+    auto *llama = constructDefaultLlama();
     return llama ? llama->maxContextLength(modelPath) : -1;
 }
 
 int32_t LLModel::Implementation::layerCount(const std::string &modelPath) {
-    auto * llama = constructDefaultLlama();
+    auto *llama = constructDefaultLlama();
     return llama ? llama->layerCount(modelPath) : -1;
+}
+
+bool LLModel::Implementation::isEmbeddingModel(const std::string &modelPath) {
+    auto *llama = constructDefaultLlama();
+    return llama && llama->isEmbeddingModel(modelPath);
 }
 
 void LLModel::Implementation::setImplementationsSearchPath(const std::string& path) {

@@ -24,7 +24,7 @@ MyDialog {
         if (showEmbeddingModels) {
             ModelList.downloadableModels.expanded = true
             var targetModelIndex = ModelList.defaultEmbeddingModelIndex
-            modelListView.positionViewAtIndex(targetModelIndex, ListView.Contain)
+            modelListView.positionViewAtIndex(targetModelIndex, ListView.Beginning)
         }
     }
 

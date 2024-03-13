@@ -528,57 +528,24 @@ Window {
         }
     }
 
-    Button {
+    MyToolButton {
         id: drawerButton
+        backgroundColor: theme.iconBackgroundLight
         anchors.left: parent.left
         anchors.top: parent.top
         anchors.topMargin: 42.5
         anchors.leftMargin: 30
         width: 40
         height: 40
+        scale: 1.5
         z: 200
         padding: 15
-
+        source: conversation.state === "expanded" ? "qrc:/gpt4all/icons/left_panel_open.svg" : "qrc:/gpt4all/icons/left_panel_closed.svg"
         Accessible.role: Accessible.ButtonMenu
-        Accessible.name: qsTr("Main menu")
-        Accessible.description: qsTr("Navigation drawer with options")
-
-        background: Item {
-            anchors.centerIn: parent
-            width: 30
-            height: 30
-
-            Rectangle {
-                id: bar1
-                color: drawerButton.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
-                width: parent.width
-                height: 6
-                radius: 2
-                antialiasing: true
-            }
-
-            Rectangle {
-                id: bar2
-                anchors.centerIn: parent
-                color: drawerButton.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
-                width: parent.width
-                height: 6
-                radius: 2
-                antialiasing: true
-            }
-
-            Rectangle {
-                id: bar3
-                anchors.bottom: parent.bottom
-                color: drawerButton.hovered ? theme.iconBackgroundHovered : theme.iconBackgroundLight
-                width: parent.width
-                height: 6
-                radius: 2
-                antialiasing: true
-            }
-        }
+        Accessible.name: qsTr("Chat panel")
+        Accessible.description: qsTr("Chat panel with options")
         onClicked: {
-            drawer.visible = !drawer.visible
+            conversation.toggleLeftPanel()
         }
     }
 
@@ -857,9 +824,10 @@ Window {
 
     ChatDrawer {
         id: drawer
-        y: header.height + accentRibbon.height
-        width: Math.min(600, 0.3 * window.width)
-        height: window.height - y
+        anchors.left: parent.left
+        anchors.top: accentRibbon.bottom
+        anchors.bottom: parent.bottom
+        width: Math.min(600, 0.2 * window.width)
         onDownloadClicked: {
             downloadNewModels.showEmbeddingModels = false
             downloadNewModels.open()
@@ -880,10 +848,43 @@ Window {
     Rectangle {
         id: conversation
         color: theme.conversationBackground
-        anchors.left: parent.left
+        anchors.left: drawer.right
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.top: accentRibbon.bottom
+        state: "expanded"
+
+        states: [
+            State {
+                name: "expanded"
+                AnchorChanges {
+                    target: conversation
+                    anchors.left: drawer.right
+                }
+            },
+            State {
+                name: "collapsed"
+                AnchorChanges {
+                    target: conversation
+                    anchors.left: parent.left
+                }
+            }
+        ]
+
+        function toggleLeftPanel() {
+            if (conversation.state === "expanded") {
+                conversation.state = "collapsed";
+            } else {
+                conversation.state = "expanded";
+            }
+        }
+
+        transitions: Transition {
+            AnchorAnimation {
+                easing.type: Easing.InOutQuad
+                duration: 200
+            }
+        }
 
         ScrollView {
             id: scrollView
@@ -1011,7 +1012,10 @@ Window {
                 ListView {
                     id: listView
                     visible: ModelList.installedModels.count !== 0 && chatModel.count !== 0
-                    anchors.fill: parent
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: Math.min(1280, parent.width)
                     model: chatModel
 
                     ScrollBar.vertical: ScrollBar {

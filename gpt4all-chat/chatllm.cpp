@@ -12,7 +12,6 @@
 
 #define GPTJ_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
-#define BERT_INTERNAL_STATE_VERSION 0
 
 class LLModelStore {
 public:
@@ -389,7 +388,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     switch (m_llModelInfo.model->implementation().modelType()[0]) {
                     case 'L': m_llModelType = LLModelType::LLAMA_; break;
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;
-                    case 'B': m_llModelType = LLModelType::BERT_; break;
                     default:
                         {
                             delete m_llModelInfo.model;
@@ -843,7 +841,6 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
         switch (m_llModelType) {
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
-        case BERT_: stream << BERT_INTERNAL_STATE_VERSION; break;
         default: Q_UNREACHABLE();
         }
     }
