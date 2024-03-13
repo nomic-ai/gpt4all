@@ -1162,12 +1162,12 @@ void ModelList::updateModelsFromDirectory()
             it.next();
             if (!it.fileInfo().isDir()) {
                 QString filename = it.fileName();
-                if(filename.endsWith(".txt")) {
+                if (filename.endsWith(".txt")) {
                     QString apikey;
                     QString modelname(filename);
-                    modelname.chop(4);
-                    if(filename.startsWith("chatgpt-")) {
-                        modelname.remove(0, 8);
+                    modelname.chop(4); // strip ".txt" extension
+                    if (filename.startsWith("chatgpt-")) {
+                        modelname.remove(0, 8); // strip "chatgpt-" prefix
                     }
                     QFile file(path + filename);
                     if (file.open(QIODevice::ReadWrite)) {

@@ -185,8 +185,8 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
 
         QJsonObject obj;
         QString modelName(modelFile);
-        modelName.remove(0, 8);
-        modelName.chop(7);
+        modelName.remove(0, 8); // strip "gpt4all-" prefix
+        modelName.chop(7); // strip ".rmodel" extension
         obj.insert("apiKey", apiKey);
         obj.insert("modelName", modelName);
         QJsonDocument doc(obj);
