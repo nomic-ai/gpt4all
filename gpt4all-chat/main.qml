@@ -848,11 +848,11 @@ Window {
     Rectangle {
         id: conversation
         color: theme.conversationBackground
-        anchors.left: parent.left
+        anchors.left: drawer.right
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.top: accentRibbon.bottom
-        state: "collapsed"
+        state: "expanded"
 
         states: [
             State {
