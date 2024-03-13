@@ -1156,6 +1156,44 @@ void ModelList::updateModelsFromDirectory()
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     const QString localPath = MySettings::globalInstance()->modelPath();
 
+    auto updateOldRemoteModels = [&](const QString& path) {
+        QDirIterator it(path, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            if (!it.fileInfo().isDir()) {
+                QString filename = it.fileName();
+                if(filename.endsWith(".txt")) {
+                    QString apikey;
+                    QString modelname(filename);
+                    modelname.chop(4);
+                    if(filename.startsWith("chatgpt-")) {
+                        modelname.remove(0, 8);
+                    }
+                    QFile file(path + filename);
+                    if (file.open(QIODevice::ReadWrite)) {
+                        QTextStream in(&file);
+                        apikey = in.readAll();
+                        file.close();
+                    }
+
+                    QJsonObject obj;
+                    obj.insert("apiKey", apikey);
+                    obj.insert("modelName", modelname);
+                    QJsonDocument doc(obj);
+
+                    QString newfilename = "gpt4all-" + modelname + ".rmodel";
+                    QFile newfile(path + newfilename);
+                    if (newfile.open(QIODevice::ReadWrite)) {
+                        QTextStream out(&newfile);
+                        out << doc.toJson();
+                        newfile.close();
+                    }
+                    file.remove();
+                }
+            }
+        }
+    };
+
     auto processDirectory = [&](const QString& path) {
         QDirIterator it(path, QDirIterator::Subdirectories);
         while (it.hasNext()) {
@@ -1203,9 +1241,14 @@ void ModelList::updateModelsFromDirectory()
         }
     };
 
+
+    updateOldRemoteModels(exePath);
     processDirectory(exePath);
-    if (localPath != exePath)
+    if (localPath != exePath) {
+        updateOldRemoteModels(localPath);
         processDirectory(localPath);
+    }
+
 }
 
 #define MODELS_VERSION 3
