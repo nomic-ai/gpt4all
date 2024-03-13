@@ -182,8 +182,17 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
     QString filePath = MySettings::globalInstance()->modelPath() + modelFile;
     QFile file(filePath);
     if (file.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
+
+        QJsonObject obj;
+        QString modelName(modelFile);
+        modelName.remove(0, 8); // strip "gpt4all-" prefix
+        modelName.chop(7); // strip ".rmodel" extension
+        obj.insert("apiKey", apiKey);
+        obj.insert("modelName", modelName);
+        QJsonDocument doc(obj);
+
         QTextStream stream(&file);
-        stream << apiKey;
+        stream << doc.toJson();
         file.close();
         ModelList::globalInstance()->updateModelsFromDirectory();
     }

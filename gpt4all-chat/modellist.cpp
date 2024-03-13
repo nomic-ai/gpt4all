@@ -1172,6 +1172,44 @@ void ModelList::updateModelsFromDirectory()
     const QString exePath = QCoreApplication::applicationDirPath() + QDir::separator();
     const QString localPath = MySettings::globalInstance()->modelPath();
 
+    auto updateOldRemoteModels = [&](const QString& path) {
+        QDirIterator it(path, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            if (!it.fileInfo().isDir()) {
+                QString filename = it.fileName();
+                if (filename.endsWith(".txt")) {
+                    QString apikey;
+                    QString modelname(filename);
+                    modelname.chop(4); // strip ".txt" extension
+                    if (filename.startsWith("chatgpt-")) {
+                        modelname.remove(0, 8); // strip "chatgpt-" prefix
+                    }
+                    QFile file(path + filename);
+                    if (file.open(QIODevice::ReadWrite)) {
+                        QTextStream in(&file);
+                        apikey = in.readAll();
+                        file.close();
+                    }
+
+                    QJsonObject obj;
+                    obj.insert("apiKey", apikey);
+                    obj.insert("modelName", modelname);
+                    QJsonDocument doc(obj);
+
+                    auto newfilename = QString("gpt4all-%1.rmodel").arg(modelname);
+                    QFile newfile(path + newfilename);
+                    if (newfile.open(QIODevice::ReadWrite)) {
+                        QTextStream out(&newfile);
+                        out << doc.toJson();
+                        newfile.close();
+                    }
+                    file.remove();
+                }
+            }
+        }
+    };
+
     auto processDirectory = [&](const QString& path) {
         QDirIterator it(path, QDirIterator::Subdirectories);
         while (it.hasNext()) {
@@ -1180,8 +1218,7 @@ void ModelList::updateModelsFromDirectory()
             if (!it.fileInfo().isDir()) {
                 QString filename = it.fileName();
 
-                if ((filename.endsWith(".gguf") && !filename.startsWith("incomplete"))
-                    || (filename.endsWith(".txt") && (filename.startsWith("chatgpt-") || filename.startsWith("nomic-")))) {
+                if ((filename.endsWith(".gguf") && !filename.startsWith("incomplete")) || filename.endsWith(".rmodel")) {
 
                     QString filePath = it.filePath();
                     QFileInfo info(filePath);
@@ -1207,8 +1244,7 @@ void ModelList::updateModelsFromDirectory()
                         QVector<QPair<int, QVariant>> data {
                             { InstalledRole, true },
                             { FilenameRole, filename },
-                            // FIXME: WE should change this to use a consistent filename for online models
-                            { OnlineRole, filename.startsWith("chatgpt-") || filename.startsWith("nomic-") },
+                            { OnlineRole, filename.endsWith(".rmodel") },
                             { DirpathRole, info.dir().absolutePath() + "/" },
                             { FilesizeRole, toFileSize(info.size()) },
                         };
@@ -1219,9 +1255,13 @@ void ModelList::updateModelsFromDirectory()
         }
     };
 
+
+    updateOldRemoteModels(exePath);
     processDirectory(exePath);
-    if (localPath != exePath)
+    if (localPath != exePath) {
+        updateOldRemoteModels(localPath);
         processDirectory(localPath);
+    }
 }
 
 #define MODELS_VERSION 3
@@ -1466,7 +1506,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     {
         const QString modelName = "ChatGPT-3.5 Turbo";
         const QString id = modelName;
-        const QString modelFilename = "chatgpt-gpt-3.5-turbo.txt";
+        const QString modelFilename = "gpt4all-gpt-3.5-turbo.rmodel";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))
@@ -1478,12 +1518,13 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::OnlineRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>OpenAI's ChatGPT model GPT-3.5 Turbo</strong><br>") + chatGPTDesc },
-            { ModelList::RequiresVersionRole, "2.4.2" },
+            { ModelList::RequiresVersionRole, "2.7.4" },
             { ModelList::OrderRole, "ca" },
             { ModelList::RamrequiredRole, 0 },
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "GPT" },
+            { ModelList::UrlRole, "https://api.openai.com/v1/chat/completions"},
         };
         updateData(id, data);
     }
@@ -1493,7 +1534,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
 
         const QString modelName = "ChatGPT-4";
         const QString id = modelName;
-        const QString modelFilename = "chatgpt-gpt-4.txt";
+        const QString modelFilename = "gpt4all-gpt-4.rmodel";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))
@@ -1505,15 +1546,99 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::OnlineRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>OpenAI's ChatGPT model GPT-4</strong><br>") + chatGPTDesc + chatGPT4Warn },
-            { ModelList::RequiresVersionRole, "2.4.2" },
+            { ModelList::RequiresVersionRole, "2.7.4" },
             { ModelList::OrderRole, "cb" },
             { ModelList::RamrequiredRole, 0 },
             { ModelList::ParametersRole, "?" },
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "GPT" },
+            { ModelList::UrlRole, "https://api.openai.com/v1/chat/completions"},
         };
         updateData(id, data);
     }
+    
+	const QString mistralDesc = tr("<ul><li>Requires personal Mistral API key.</li><li>WARNING: Will send"
+                                   " your chats to Mistral!</li><li>Your API key will be stored on disk</li><li>Will only be used"
+                                   " to communicate with Mistral</li><li>You can apply for an API key"
+                                   " <a href=\"https://console.mistral.ai/user/api-keys\">here</a>.</li>");
+
+    {
+        const QString modelName = "Mistral Tiny API";
+        const QString id = modelName;
+        const QString modelFilename = "gpt4all-mistral-tiny.rmodel";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        QVector<QPair<int, QVariant>> data {
+            { ModelList::NameRole, modelName },
+            { ModelList::FilenameRole, modelFilename },
+            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::OnlineRole, true },
+            { ModelList::DescriptionRole,
+             tr("<strong>Mistral Tiny model</strong><br>") + mistralDesc },
+            { ModelList::RequiresVersionRole, "2.7.4" },
+            { ModelList::OrderRole, "cc" },
+            { ModelList::RamrequiredRole, 0 },
+            { ModelList::ParametersRole, "?" },
+            { ModelList::QuantRole, "NA" },
+            { ModelList::TypeRole, "Mistral" },
+            { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
+        };
+        updateData(id, data);
+    }
+    {
+        const QString modelName = "Mistral Small API";
+        const QString id = modelName;
+        const QString modelFilename = "gpt4all-mistral-small.rmodel";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        QVector<QPair<int, QVariant>> data {
+            { ModelList::NameRole, modelName },
+            { ModelList::FilenameRole, modelFilename },
+            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::OnlineRole, true },
+            { ModelList::DescriptionRole,
+             tr("<strong>Mistral Small model</strong><br>") + mistralDesc },
+            { ModelList::RequiresVersionRole, "2.7.4" },
+            { ModelList::OrderRole, "cd" },
+            { ModelList::RamrequiredRole, 0 },
+            { ModelList::ParametersRole, "?" },
+            { ModelList::QuantRole, "NA" },
+            { ModelList::TypeRole, "Mistral" },
+            { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
+        };
+        updateData(id, data);
+    }
+    
+    {
+        const QString modelName = "Mistral Medium API";
+        const QString id = modelName;
+        const QString modelFilename = "gpt4all-mistral-medium.rmodel";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        QVector<QPair<int, QVariant>> data {
+            { ModelList::NameRole, modelName },
+            { ModelList::FilenameRole, modelFilename },
+            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::OnlineRole, true },
+            { ModelList::DescriptionRole,
+             tr("<strong>Mistral Medium model</strong><br>") + mistralDesc },
+            { ModelList::RequiresVersionRole, "2.7.4" },
+            { ModelList::OrderRole, "ce" },
+            { ModelList::RamrequiredRole, 0 },
+            { ModelList::ParametersRole, "?" },
+            { ModelList::QuantRole, "NA" },
+            { ModelList::TypeRole, "Mistral" },
+            { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
+        };
+        updateData(id, data);
+    }
+
 
     {
         const QString nomicEmbedDesc = tr("<ul><li>For use with LocalDocs feature</li>"
