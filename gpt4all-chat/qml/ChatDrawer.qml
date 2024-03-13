@@ -9,9 +9,8 @@ import download
 import network
 import mysettings
 
-Drawer {
+Rectangle {
     id: chatDrawer
-    modal: false
 
     Theme {
         id: theme
@@ -20,10 +19,7 @@ Drawer {
     signal downloadClicked
     signal aboutClicked
 
-    background: Rectangle {
-        height: parent.height
-        color: theme.containerBackground
-    }
+    color: theme.containerBackground
 
     Item {
         anchors.fill: parent
@@ -94,7 +90,7 @@ Drawer {
                         wrapMode: Text.NoWrap
                         hoverEnabled: false // Disable hover events on the TextArea
                         selectByMouse: false // Disable text selection in the TextArea
-                        font.pixelSize: theme.fontSizeLarger
+                        font.pixelSize: theme.fontSizeLarge
                         text: readOnly ? metrics.elidedText : name
                         horizontalAlignment: TextInput.AlignLeft
                         opacity: trashQuestionDisplayed ? 0.5 : 1.0
