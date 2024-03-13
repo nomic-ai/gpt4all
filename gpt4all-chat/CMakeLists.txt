@@ -96,6 +96,7 @@ qt_add_qml_module(chat
     QML_FILES
       main.qml
       qml/ChatDrawer.qml
+      qml/ChatView.qml
       qml/CollectionsDialog.qml
       qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
