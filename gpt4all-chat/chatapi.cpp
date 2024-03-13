@@ -144,7 +144,6 @@ void ChatAPI::prompt(const std::string &prompt,
 
 #if defined(DEBUG)
     qDebug().noquote() << "ChatAPI::prompt begin network request" << doc.toJson();
-    qDebug() << "ChatAPI::prompt begin network request" << qPrintable(doc.toJson());
 #endif
 
     m_responseCallback = responseCallback;
@@ -212,8 +211,8 @@ void ChatAPIWorker::handleFinished()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        qWarning() << QString("ERROR: ChatAPI responded with error code \"%1-%2\"")
-                          .arg(code).arg(reply->errorString()).toStdString();
+        qWarning("ERROR: ChatAPIWorker::handleFinished got HTTP Error %d response (%s)",
+                 code, qPrintable(reply->errorString()));
     }
     reply->deleteLater();
     emit finished();
@@ -232,8 +231,8 @@ void ChatAPIWorker::handleReadyRead()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
-        m_chat->callResponse(-1, QString("\nERROR: 2 ChatAPI responded with error code \"%1-%2\" %3\n")
-                                     .arg(code).arg(reply->errorString()).arg(qPrintable(reply->readAll())).toStdString());
+        m_chat->callResponse(-1, QString("ERROR: ChatAPIWorker::handleReadyRead got HTTP Error %1 %2: %3")
+                                     .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString());
         emit finished();
         return;
     }
@@ -281,7 +280,7 @@ void ChatAPIWorker::handleErrorOccurred(QNetworkReply::NetworkError code)
         return;
     }
 
-    qWarning() << QString("ERROR: ChatAPI responded with error code \"%1-%2\"")
-                      .arg(code).arg(reply->errorString()).toStdString();
+    qWarning("ERROR: ChatAPIWorker::handleErrorOccurred got HTTP Error %d response (%s)",
+             code, qPrintable(reply->errorString()));
     emit finished();
 }

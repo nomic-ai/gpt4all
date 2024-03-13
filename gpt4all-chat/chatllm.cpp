@@ -214,7 +214,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (isModelLoaded() && this->modelInfo() == modelInfo)
         return true;
 
-    bool isOnline = modelInfo.isOnline; // right now only chatgpt and mistral are offered for online chat models...
+    bool isOnline = modelInfo.isOnline;
     QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
 
