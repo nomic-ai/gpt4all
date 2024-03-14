@@ -198,17 +198,14 @@ class GPT4All:
         if model_path is None:
             try:
                 os.makedirs(DEFAULT_MODEL_DIRECTORY, exist_ok=True)
-            except OSError as exc:
-                raise ValueError(
-                    f"Failed to create model download directory at {DEFAULT_MODEL_DIRECTORY}: {exc}. "
-                    "Please specify model_path."
-                )
+            except OSError as e:
+                raise RuntimeError("Failed to create model download directory") from e
             model_path = DEFAULT_MODEL_DIRECTORY
         else:
             model_path = Path(model_path)
 
         if not model_path.exists():
-            raise ValueError(f"Invalid model directory: {model_path}")
+            raise FileNotFoundError(f"Model directory does not exist: {model_path!r}")
 
         model_dest = model_path / model_filename
         if model_dest.exists():
@@ -223,7 +220,7 @@ class GPT4All:
 
             config["path"] = str(GPT4All.download_model(model_filename, model_path, verbose=verbose, url=url))
         else:
-            raise ValueError("Failed to retrieve model")
+            raise FileNotFoundError(f"Model file does not exist: {model_dest!r}")
 
         return config
 
