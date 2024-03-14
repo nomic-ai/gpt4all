@@ -340,10 +340,6 @@ class GPT4All:
             Either the entire completion or a generator that yields the completion token by token.
         """
 
-        if re.search(r"%1(?![0-9])", self._current_prompt_template):
-            raise ValueError("Prompt template containing a literal '%1' is not supported. For a prompt "
-                             "placeholder, please use '{0}' instead.")
-
         # Preparing the model request
         generate_kwargs: Dict[str, Any] = dict(
             temp=temp,
@@ -444,6 +440,10 @@ class GPT4All:
             system_prompt = self.config["systemPrompt"]
         if prompt_template is None:
             prompt_template = self.config["promptTemplate"]
+
+        if re.search(r"%1(?![0-9])", prompt_template):
+            raise ValueError("Prompt template containing a literal '%1' is not supported. For a prompt "
+                             "placeholder, please use '{0}' instead.")
 
         self._is_chat_session_activated = True
         self.current_chat_session = empty_chat_session(system_prompt)
