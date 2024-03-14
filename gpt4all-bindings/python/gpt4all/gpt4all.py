@@ -190,7 +190,6 @@ class GPT4All:
             for m in available_models:
                 if model_filename == m["filename"]:
                     config.update(m)
-                    config["systemPrompt"] = config["systemPrompt"].strip()
                     # change to Python-style formatting
                     config["promptTemplate"] = config["promptTemplate"].replace("%1", "{0}", 1).replace("%2", "{1}", 1)
                     break
