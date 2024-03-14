@@ -143,8 +143,12 @@ class GPT4All:
             self.model.set_thread_count(n_threads)
 
         self._is_chat_session_activated: bool = False
-        self.current_chat_session: List[MessageType] = empty_chat_session()
+        self._history: list[MessageType] = empty_chat_session()
         self._current_prompt_template: str = "{0}"
+
+    @property
+    def current_chat_session(self) -> list[MessageType]:
+        return self._history
 
     @staticmethod
     def list_models() -> List[ConfigType]:
@@ -354,15 +358,15 @@ class GPT4All:
 
         if self._is_chat_session_activated:
             # check if there is only one message, i.e. system prompt:
-            reset = len(self.current_chat_session) == 1
+            reset = len(self._history) == 1
             generate_kwargs["reset_context"] = reset
-            self.current_chat_session.append({"role": "user", "content": prompt})
+            self._history.append({"role": "user", "content": prompt})
 
             fct_func = self._format_chat_prompt_template.__func__  # type: ignore[attr-defined]
             if fct_func is GPT4All._format_chat_prompt_template:
                 if reset:
                     # ingest system prompt
-                    self.model.prompt_model(self.current_chat_session[0]["content"], "%1",
+                    self.model.prompt_model(self._history[0]["content"], "%1",
                                             _pyllmodel.empty_response_callback,
                                             n_batch=n_batch, n_predict=0, special=True)
                 prompt_template = self._current_prompt_template.format("%1", "%2")
@@ -373,8 +377,8 @@ class GPT4All:
                 )
                 # special tokens won't be processed
                 prompt = self._format_chat_prompt_template(
-                    self.current_chat_session[-1:],
-                    self.current_chat_session[0]["content"] if reset else "",
+                    self._history[-1:],
+                    self._history[0]["content"] if reset else "",
                 )
                 prompt_template = "%1"
         else:
@@ -385,11 +389,11 @@ class GPT4All:
         output_collector: List[MessageType]
         output_collector = [
             {"content": ""}
-        ]  # placeholder for the self.current_chat_session if chat session is not activated
+        ]  # placeholder for the self._history if chat session is not activated
 
         if self._is_chat_session_activated:
-            self.current_chat_session.append({"role": "assistant", "content": ""})
-            output_collector = self.current_chat_session
+            self._history.append({"role": "assistant", "content": ""})
+            output_collector = self._history
 
         def _callback_wrapper(
             callback: _pyllmodel.ResponseCallbackType,
@@ -446,13 +450,13 @@ class GPT4All:
                              "placeholder, please use '{0}' instead.")
 
         self._is_chat_session_activated = True
-        self.current_chat_session = empty_chat_session(system_prompt)
+        self._history = empty_chat_session(system_prompt)
         self._current_prompt_template = prompt_template
         try:
             yield self
         finally:
             self._is_chat_session_activated = False
-            self.current_chat_session = empty_chat_session()
+            self._history = empty_chat_session()
             self._current_prompt_template = "{0}"
 
     def _format_chat_prompt_template(
