@@ -429,8 +429,8 @@ class GPT4All:
     @contextmanager
     def chat_session(
         self,
-        system_prompt: str = "",
-        prompt_template: str = "",
+        system_prompt: str | None = None,
+        prompt_template: str | None = None,
     ):
         """
         Context manager to hold an inference optimized chat session with a GPT4All model.
@@ -439,14 +439,18 @@ class GPT4All:
             system_prompt: An initial instruction for the model.
             prompt_template: Template for the prompts with {0} being replaced by the user message.
         """
-        # Code to acquire resource, e.g.:
+
+        if system_prompt is None:
+            system_prompt = self.config["systemPrompt"]
+        if prompt_template is None:
+            prompt_template = self.config["promptTemplate"]
+
         self._is_chat_session_activated = True
-        self.current_chat_session = empty_chat_session(system_prompt or self.config["systemPrompt"])
-        self._current_prompt_template = prompt_template or self.config["promptTemplate"]
+        self.current_chat_session = empty_chat_session(system_prompt)
+        self._current_prompt_template = prompt_template
         try:
             yield self
         finally:
-            # Code to release resource, e.g.:
             self._is_chat_session_activated = False
             self.current_chat_session = empty_chat_session()
             self._current_prompt_template = "{0}"
