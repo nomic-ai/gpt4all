@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ctypes
-import logging
 import os
 import platform
 import re
@@ -16,8 +15,6 @@ if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
 else:
     import importlib_resources
-
-logger: logging.Logger = logging.getLogger(__name__)
 
 
 # TODO: provide a config file to make this more robust
@@ -371,13 +368,6 @@ class LLModel:
 
         self.buffer.clear()
         self.buff_expecting_cont_bytes = 0
-
-        logger.info(
-            "LLModel.prompt_model -- prompt:\n"
-            + "%s\n"
-            + "===/LLModel.prompt_model -- prompt/===",
-            prompt,
-        )
 
         self._set_context(
             n_predict=n_predict,
