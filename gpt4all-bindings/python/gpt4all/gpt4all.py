@@ -159,8 +159,9 @@ class GPT4All:
             raise ValueError(f'Request failed: HTTP {resp.status_code} {resp.reason}')
         return resp.json()
 
-    @staticmethod
+    @classmethod
     def retrieve_model(
+        cls,
         model_name: str,
         model_path: Optional[Union[str, os.PathLike[str]]] = None,
         allow_download: bool = True,
@@ -185,13 +186,14 @@ class GPT4All:
         # get the config for the model
         config: ConfigType = DEFAULT_MODEL_CONFIG
         if allow_download:
-            available_models = GPT4All.list_models()
+            available_models = cls.list_models()
 
             for m in available_models:
                 if model_filename == m["filename"]:
+                    if (tmpl := m.get("promptTemplate")) is not None:
+                        # change to Python-style formatting
+                        m["promptTemplate"] = tmpl.replace("%1", "{0}", 1).replace("%2", "{1}", 1)
                     config.update(m)
-                    # change to Python-style formatting
-                    config["promptTemplate"] = config["promptTemplate"].replace("%1", "{0}", 1).replace("%2", "{1}", 1)
                     break
 
         # Validate download directory
@@ -209,16 +211,12 @@ class GPT4All:
 
         model_dest = model_path / model_filename
         if model_dest.exists():
-            config.pop("url", None)
             config["path"] = str(model_dest)
             if verbose:
                 print(f"Found model file at {str(model_dest)!r}", file=sys.stderr)
-
-        # If model file does not exist, download
         elif allow_download:
-            url = config.pop("url", None)
-
-            config["path"] = str(GPT4All.download_model(model_filename, model_path, verbose=verbose, url=url))
+            # If model file does not exist, download
+            config["path"] = str(cls.download_model(model_filename, model_path, verbose=verbose, url=config.get("url")))
         else:
             raise FileNotFoundError(f"Model file does not exist: {model_dest!r}")
 
@@ -244,21 +242,17 @@ class GPT4All:
             Model file destination.
         """
 
-        def get_download_url(model_filename):
-            if url:
-                return url
-            return f"https://gpt4all.io/models/gguf/{model_filename}"
-
         # Download model
         download_path = Path(model_path) / model_filename
-        download_url = get_download_url(model_filename)
+        if url is None:
+            url = f"https://gpt4all.io/models/gguf/{model_filename}"
 
         def make_request(offset=None):
             headers = {}
             if offset:
                 print(f"\nDownload interrupted, resuming from byte position {offset}", file=sys.stderr)
                 headers['Range'] = f'bytes={offset}-'  # resume incomplete response
-            response = requests.get(download_url, stream=True, headers=headers)
+            response = requests.get(url, stream=True, headers=headers)
             if response.status_code not in (200, 206):
                 raise ValueError(f'Request failed: HTTP {response.status_code} {response.reason}')
             if offset and (response.status_code != 206 or str(offset) not in response.headers.get('Content-Range', '')):
