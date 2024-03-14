@@ -791,14 +791,16 @@ void LLamaModel::embedInternal(
     }
 
     // split into max_len-sized chunks
-    struct split_batch { int idx; TokenString batch; };
+    struct split_batch { unsigned idx; TokenString batch; };
     std::vector<split_batch> batches;
     for (unsigned i = 0; i < inputs.size(); i++) {
         auto &input = inputs[i];
         for (auto it = input.begin(); it < input.end(); it += max_len) {
             if (it > input.begin()) { it -= chunkOverlap; }
             auto end = std::min(it + max_len, input.end());
-            auto &batch = batches.emplace_back(i, prefixTokens).batch;
+            batches.push_back({ i, {} });
+            auto &batch = batches.back().batch;
+            batch = prefixTokens;
             batch.insert(batch.end(), it, end);
             batch.push_back(eos_token);
             if (!doMean) { break; /* limit text to one chunk */ }
