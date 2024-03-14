@@ -20,7 +20,7 @@ from urllib3.exceptions import IncompleteRead, ProtocolError
 from . import _pyllmodel
 
 # TODO: move to config
-DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all").replace("\\", "\\\\")
+DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all")
 
 DEFAULT_MODEL_CONFIG = {
     "systemPrompt": "",
@@ -205,12 +205,12 @@ class GPT4All:
                 )
             model_path = DEFAULT_MODEL_DIRECTORY
         else:
-            model_path = str(model_path).replace("\\", "\\\\")
+            model_path = str(model_path)
 
         if not os.path.exists(model_path):
             raise ValueError(f"Invalid model directory: {model_path}")
 
-        model_dest = os.path.join(model_path, model_filename).replace("\\", "\\\\")
+        model_dest = os.path.join(model_path, model_filename)
         if os.path.exists(model_dest):
             config.pop("url", None)
             config["path"] = model_dest
@@ -253,7 +253,7 @@ class GPT4All:
             return f"https://gpt4all.io/models/gguf/{model_filename}"
 
         # Download model
-        download_path = os.path.join(model_path, model_filename).replace("\\", "\\\\")
+        download_path = os.path.join(model_path, model_filename)
         download_url = get_download_url(model_filename)
 
         def make_request(offset=None):

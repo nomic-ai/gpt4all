@@ -130,7 +130,7 @@ llmodel.llmodel_set_implementation_search_path.restype = None
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
-llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).replace("\\", r"\\").encode())
+llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).encode())
 
 llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
 llmodel.llmodel_available_gpu_devices.restype = ctypes.POINTER(LLModelGPUDevice)
