@@ -142,12 +142,11 @@ class GPT4All:
         if n_threads is not None:
             self.model.set_thread_count(n_threads)
 
-        self._is_chat_session_activated: bool = False
-        self._history: list[MessageType] = empty_chat_session()
+        self._history: list[MessageType] | None = None
         self._current_prompt_template: str = "{0}"
 
     @property
-    def current_chat_session(self) -> list[MessageType]:
+    def current_chat_session(self) -> list[MessageType] | None:
         return self._history
 
     @staticmethod
@@ -356,7 +355,7 @@ class GPT4All:
             n_predict=n_predict if n_predict is not None else max_tokens,
         )
 
-        if self._is_chat_session_activated:
+        if self._history is not None:
             # check if there is only one message, i.e. system prompt:
             reset = len(self._history) == 1
             generate_kwargs["reset_context"] = reset
@@ -391,7 +390,7 @@ class GPT4All:
             {"content": ""}
         ]  # placeholder for the self._history if chat session is not activated
 
-        if self._is_chat_session_activated:
+        if self._history is not None:
             self._history.append({"role": "assistant", "content": ""})
             output_collector = self._history
 
@@ -449,14 +448,12 @@ class GPT4All:
             raise ValueError("Prompt template containing a literal '%1' is not supported. For a prompt "
                              "placeholder, please use '{0}' instead.")
 
-        self._is_chat_session_activated = True
-        self._history = empty_chat_session(system_prompt)
+        self._history = [{"role": "system", "content": system_prompt}]
         self._current_prompt_template = prompt_template
         try:
             yield self
         finally:
-            self._is_chat_session_activated = False
-            self._history = empty_chat_session()
+            self._history = None
             self._current_prompt_template = "{0}"
 
     def _format_chat_prompt_template(
@@ -492,10 +489,6 @@ class GPT4All:
         full_prompt += "\n\n" + default_prompt_footer if default_prompt_footer != "" else ""
 
         return full_prompt
-
-
-def empty_chat_session(system_prompt: str = "") -> List[MessageType]:
-    return [{"role": "system", "content": system_prompt}]
 
 
 def append_extension_if_missing(model_name):
