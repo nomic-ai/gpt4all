@@ -6,6 +6,7 @@ class InferenceModel {
     modelName;
     config;
     activeChatSession;
+    nPast = 0;
 
     constructor(llmodel, config) {
         this.llm = llmodel;
@@ -20,14 +21,15 @@ class InferenceModel {
         return this.activeChatSession;
     }
 
-    async generate(
-        prompt,
-        options = DEFAULT_PROMPT_CONTEXT,
-        callback = () => true
-    ) {
+    async generate(prompt, options = DEFAULT_PROMPT_CONTEXT, onToken) {
         const { verbose, ...otherOptions } = options;
         const promptContext = {
             promptTemplate: this.config.promptTemplate,
+            nPast: this.nPast,
+            temp:
+                otherOptions.temp ??
+                otherOptions.temperature ??
+                DEFAULT_PROMPT_CONTEXT.temp,
             ...otherOptions,
         };
 
@@ -38,17 +40,51 @@ class InferenceModel {
             });
         }
 
-        const response = await this.llm.raw_prompt(
+        let tokensGenerated = 0;
+
+        const response = await this.llm.infer(
             prompt,
             promptContext,
-            callback
+            (tokenId, text, fullText) => {
+                if (verbose) {
+                    console.debug("Got token", {
+                        tokenId,
+                        text,
+                    });
+                }
+
+                let continueGeneration = true;
+
+                if (onToken) {
+                    // don't wanna cancel the generation unless user explicitly returns false
+                    continueGeneration =
+                        onToken(tokenId, text, fullText) !== false;
+                }
+
+                tokensGenerated++;
+                return continueGeneration;
+            }
         );
 
+        const nPastDelta = response.nPast - this.nPast;
+        this.nPast = response.nPast;
+
+        const result = {
+            model: this.modelName,
+            usage: {
+                prompt_tokens: nPastDelta - tokensGenerated,
+                completion_tokens: tokensGenerated,
+                total_tokens: nPastDelta,
+                n_past_tokens: this.nPast,
+            },
+            message: response.text,
+        };
+
         if (verbose) {
-            console.debug("Finished completion:\n" + response);
+            console.debug("Finished completion:\n", result);
         }
 
-        return response;
+        return result;
     }
 
     dispose() {

@@ -7,7 +7,7 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env) {
        InstanceMethod("isModelLoaded", &NodeModelWrapper::IsModelLoaded),
        InstanceMethod("name", &NodeModelWrapper::GetName),
        InstanceMethod("stateSize", &NodeModelWrapper::StateSize),
-       InstanceMethod("raw_prompt", &NodeModelWrapper::Prompt),
+       InstanceMethod("infer", &NodeModelWrapper::Infer),
        InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
        InstanceMethod("embed", &NodeModelWrapper::GenerateEmbedding),
        InstanceMethod("threadCount", &NodeModelWrapper::ThreadCount),
@@ -230,7 +230,7 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo& info)
  * @param recalculate_callback A callback function for handling recalculation requests.
  * @param ctx A pointer to the llmodel_prompt_context structure.
  */
-  Napi::Value NodeModelWrapper::Prompt(const Napi::CallbackInfo& info) {
+  Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo& info) {
     auto env = info.Env();
     std::string question;
     if(info[0].IsString()) {

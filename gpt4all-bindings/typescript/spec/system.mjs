@@ -10,12 +10,10 @@ const model = await loadModel("Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf", {
 
 const chat = await model.createChatSession({
     verbose: true,
-    systemPrompt: "Roleplay as Batman. Answer as if you are Batman, never say you're an Assistant.",
+    systemPrompt: "<|im_start|>system\nRoleplay as Batman. Answer as if you are Batman, never say you're an Assistant.\n<|im_end|>",
 });
-
 const turn1 = await createCompletion(chat, "You have any plans tonight?");
-console.log(turn1.message);
-
-// "I'm afraid I must decline any personal invitations tonight. As Batman, I have a responsibility to protect Gotham City. [...]"
+console.log(turn1);
+// "I'm afraid I must decline any personal invitations tonight. As Batman, I have a responsibility to protect Gotham City."
 
 model.dispose();

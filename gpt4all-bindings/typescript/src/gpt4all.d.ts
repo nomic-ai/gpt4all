@@ -72,7 +72,7 @@ declare class ChatSession {
         prompt: string,
         options?: CompletionOptions,
         callback?: TokenCallback
-    ): Promise<string>;
+    ): Promise<CompletionReturn>;
 }
 
 /**
@@ -84,9 +84,9 @@ declare class InferenceModel {
     constructor(llm: LLModel, config: ModelConfig);
     llm: LLModel;
     config: ModelConfig;
-    messages: Message[];
-    chatSession?: ChatSession;
+    activeChatSession?: ChatSession;
     modelName: string;
+    nPast: number;
     
     /**
      * Create a chat session with the model.
@@ -97,7 +97,7 @@ declare class InferenceModel {
 
     /**
      * Prompts the model with a given input and optional parameters.
-     * @param prompt The prompt input.
+     * @param input The prompt input.
      * @param options Prompt context and other options.
      * @param callback Token generation callback.
      * @returns The model's response to the prompt.
@@ -106,7 +106,7 @@ declare class InferenceModel {
         prompt: string,
         options?: CompletionOptions,
         callback?: TokenCallback
-    ): Promise<string>;
+    ): Promise<CompletionReturn>;
 
     /**
      * delete and cleanup the native model
@@ -128,6 +128,11 @@ declare class EmbeddingModel {
      * delete and cleanup the native model
      */
     dispose(): void;
+}
+
+interface InferenceResult {
+    text: string;
+    nPast: number;
 }
 
 /**
@@ -173,16 +178,16 @@ declare class LLModel {
      * Prompt the model with a given input and optional parameters.
      * This is the raw output from model.
      * Use the prompt function exported for a value
-     * @param q The prompt input.
-     * @param params Optional parameters for the prompt context.
+     * @param prompt The prompt input.
+     * @param promptContext Optional parameters for the prompt context.
      * @param callback - optional callback to control token generation.
      * @returns The result of the model prompt.
      */
-    raw_prompt(
-        q: string,
-        params: Partial<LLModelPromptContext>,
+    infer(
+        prompt: string,
+        promptContext: Partial<LLModelPromptContext>,
         callback?: TokenCallback
-    ): Promise<string>;
+    ): Promise<InferenceResult>;
 
     /**
      * Embed text with the model. Keep in mind that
@@ -313,15 +318,15 @@ declare function loadModel(
 ): Promise<InferenceModel | EmbeddingModel>;
 
 /**
- * Interface for something that can provide completions.
+ * Interface for inference, implemented by InferenceModel and ChatSession.
  */
 interface InferenceProvider {
     modelName: string;
     generate(
-        message: string,
+        input: string,
         options?: CompletionOptions,
         callback?: TokenCallback
-    ): Promise<string>;
+    ): Promise<CompletionReturn>;
 }
 
 /**
@@ -392,7 +397,7 @@ interface CompletionOptions extends Partial<LLModelPromptContext> {
 }
 
 /**
- * A message in the conversation, identical to OpenAI's chat message.
+ * A message in the conversation.
  */
 interface Message {
     /** The role of the message. */
@@ -419,10 +424,13 @@ interface CompletionReturn {
 
         /** The total number of tokens used. */
         total_tokens: number;
+
+        /** Number of tokens used in the conversation. */
+        n_past_tokens: number;
     };
 
     /** The generated completion. */
-    message: Message;
+    message: string;
 }
 
 /**
@@ -443,16 +451,13 @@ interface LLModelPromptContext {
     /** The size of the raw tokens vector. */
     tokensSize: number;
 
-    /** The number of tokens in the past conversation. */
+    /** The number of tokens in the past conversation.
+     * This controls how far back the model looks when generating completions.
+     * */
     nPast: number;
 
-    /** The number of tokens possible in the context window.
-     * @default 1024
-     */
-    nCtx: number;
-
-    /** The number of tokens to predict.
-     * @default 128
+    /** The maximum number of tokens to predict.
+     * @default 4096
      * */
     nPredict: number;
 
@@ -474,7 +479,7 @@ interface LLModelPromptContext {
      * On the other hand, a lower value (eg., 0.1) produces more focused and conservative text.
      * The default value is 0.4, which is aimed to be the middle ground between focus and diversity, but
      * for more creative tasks a higher top-p value will be beneficial, about 0.5-0.9 is a good range for that.
-     * @default 0.4
+     * @default 0.9
      * */
     topP: number;
 
@@ -484,9 +489,11 @@ interface LLModelPromptContext {
      * make the output more focused, predictable, and conservative. When the temperature is set to 0, the output
      * becomes completely deterministic, always selecting the most probable next token and producing identical results
      * each time. A safe range would be around 0.6 - 0.85, but you are free to search what value fits best for you.
-     * @default 0.7
+     * @default 0.1
+     * @alias temperature
      * */
     temp: number;
+    temperature: number;
 
     /** The number of predictions to generate in parallel.
      * By splitting the prompt every N tokens, prompt-batch-size reduces RAM usage during processing. However,
@@ -509,12 +516,12 @@ interface LLModelPromptContext {
      * The repeat-penalty-tokens N option controls the number of tokens in the history to consider for penalizing repetition.
      * A larger value will look further back in the generated text to prevent repetitions, while a smaller value will only
      * consider recent tokens.
-     * @default 64
+     * @default 10
      * */
     repeatLastN: number;
 
     /** The percentage of context to erase if the context window is exceeded.
-     * @default 0.5
+     * @default 0.75
      * */
     contextErase: number;
 }

@@ -89,12 +89,10 @@ class ChatSession {
             // send the pairs to the model
 
             for (const turn of messagePairs) {
-                const res = await this.model.generate(turn.user, {
+                await this.model.generate(turn.user, {
                     promptTemplate: this.promptTemplate,
                     fakeReply: turn.assistant,
-                    nPast: 1024,
                 });
-                // console.log('turn', turn, res);
             }
         }
 
@@ -104,7 +102,7 @@ class ChatSession {
     async generate(
         prompt,
         options = DEFAULT_PROMPT_CONTEXT,
-        callback = () => true
+        callback
     ) {
         if (this.model.activeChatSession !== this) {
             throw new Error(
@@ -115,7 +113,8 @@ class ChatSession {
             await this.initialize();
         }
         const response = await this.model.generate(prompt, {
-            nPast: 1524,
+            nPredict: 1024,
+            contextErase: 0.5,
             ...options,
         }, callback);
 
@@ -125,7 +124,7 @@ class ChatSession {
         });
         this.messages.push({
             role: "assistant",
-            content: response,
+            content: response.message,
         });
 
         return response;

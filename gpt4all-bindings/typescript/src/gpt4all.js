@@ -99,44 +99,13 @@ async function createCompletion(
         ...options,
     };
 
-    let tokensGenerated = 0;
-
-    const response = await provider.generate(
+    const result = await provider.generate(
         message,
         optionsWithDefaults,
-        (tokenId, text, fullText) => {
-            if (optionsWithDefaults.verbose) {
-                console.debug("Got token", {
-                    tokenId,
-                    text,
-                });
-            }
-
-            let continueGeneration = true;
-
-            if (options.onToken) {
-                // don't wanna cancel the generation if the users callback returns undefined
-                continueGeneration =
-                    options.onToken(tokenId, text, fullText) !== false;
-            }
-
-            tokensGenerated++;
-            return continueGeneration;
-        }
+        options.onToken
     );
 
-    return {
-        llmodel: provider.modelName,
-        usage: {
-            prompt_tokens: message.length,
-            completion_tokens: tokensGenerated,
-            total_tokens: message.length + tokensGenerated, //TODO Not sure how to get tokens in prompt
-        },
-        message: {
-            role: "assistant",
-            content: response,
-        },
-    };
+    return result;
 }
 
 function createCompletionStream(

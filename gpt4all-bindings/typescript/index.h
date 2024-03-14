@@ -25,7 +25,7 @@ public:
    * Prompting the model. This entails spawning a new thread and adding the response tokens
    * into a thread local string variable.
    */
-  Napi::Value Prompt(const Napi::CallbackInfo& info);
+  Napi::Value Infer(const Napi::CallbackInfo& info);
   void SetThreadCount(const Napi::CallbackInfo& info);
   void Dispose(const Napi::CallbackInfo& info);
   Napi::Value GetName(const Napi::CallbackInfo& info);

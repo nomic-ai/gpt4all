@@ -77,7 +77,11 @@ PromptWorker::PromptWorker(Napi::Env env, PromptWorkerConfig config)
 
     void PromptWorker::OnOK()
     {
-        promise.Resolve(Napi::String::New(Env(), result));
+        // promise.Resolve(Napi::String::New(Env(), result));
+        Napi::Object returnValue = Napi::Object::New(Env());
+        returnValue.Set("text", result);
+        returnValue.Set("nPast", _config.context.n_past);
+        promise.Resolve(returnValue);
     }
 
     void PromptWorker::OnError(const Napi::Error &e)
