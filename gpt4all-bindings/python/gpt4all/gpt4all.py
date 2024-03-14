@@ -22,10 +22,7 @@ from . import _pyllmodel
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = Path.home() / ".cache" / "gpt4all"
 
-DEFAULT_MODEL_CONFIG = {
-    "systemPrompt": "",
-    "promptTemplate": "### Human:\n{0}\n\n### Assistant:\n",
-}
+DEFAULT_PROMPT_TEMPLATE = "### Human:\n{0}\n\n### Assistant:\n"
 
 ConfigType = Dict[str, str]
 MessageType = Dict[str, str]
@@ -187,15 +184,15 @@ class GPT4All:
         model_filename = append_extension_if_missing(model_name)
 
         # get the config for the model
-        config: ConfigType = DEFAULT_MODEL_CONFIG
+        config: ConfigType = {}
         if allow_download:
             available_models = cls.list_models()
 
             for m in available_models:
                 if model_filename == m["filename"]:
-                    if (tmpl := m.get("promptTemplate")) is not None:
-                        # change to Python-style formatting
-                        m["promptTemplate"] = tmpl.replace("%1", "{0}", 1).replace("%2", "{1}", 1)
+                    tmpl = m.get("promptTemplate", DEFAULT_PROMPT_TEMPLATE)
+                    # change to Python-style formatting
+                    m["promptTemplate"] = tmpl.replace("%1", "{0}", 1).replace("%2", "{1}", 1)
                     config.update(m)
                     break
 
@@ -440,9 +437,14 @@ class GPT4All:
         """
 
         if system_prompt is None:
-            system_prompt = self.config["systemPrompt"]
+            system_prompt = self.config.get("systemPrompt", "")
+
         if prompt_template is None:
-            prompt_template = self.config["promptTemplate"]
+            if (tmpl := self.config.get("promptTemplate")) is None:
+                warnings.warn("Use of a sideloaded model or allow_download=False without specifying a prompt template "
+                              "is deprecated. Defaulting to Alpaca.", DeprecationWarning)
+                tmpl = DEFAULT_PROMPT_TEMPLATE
+            prompt_template = tmpl
 
         if re.search(r"%1(?![0-9])", prompt_template):
             raise ValueError("Prompt template containing a literal '%1' is not supported. For a prompt "
