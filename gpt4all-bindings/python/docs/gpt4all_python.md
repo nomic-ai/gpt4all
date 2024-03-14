@@ -317,10 +317,10 @@ are used instead of model-specific system and prompt templates:
 === "Output"
     ```
     default system template: ''
-    default prompt template: '### Human: \n{0}\n\n### Assistant:\n'
+    default prompt template: '### Human:\n{0}\n\n### Assistant:\n'
 
     session system template: ''
-    session prompt template: '### Human: \n{0}\n\n### Assistant:\n'
+    session prompt template: '### Human:\n{0}\n\n### Assistant:\n'
     ```
 
 
