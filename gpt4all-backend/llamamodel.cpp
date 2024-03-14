@@ -345,7 +345,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->ctx_params.n_threads       = d_ptr->n_threads;
     d_ptr->ctx_params.n_threads_batch = d_ptr->n_threads;
 
-    if (m_supportsEmbedding)
+    if (isEmbedding)
         d_ptr->ctx_params.embeddings = true;
 
     d_ptr->ctx = llama_new_context_with_model(d_ptr->model, d_ptr->ctx_params);
@@ -612,22 +612,22 @@ struct EmbModelGroup {
     std::vector<const char *> names;
 };
 
-static const EmbModelSpec NOPREFIX_SPEC {nullptr, nullptr};
+static const EmbModelSpec NOPREFIX_SPEC {"", ""};
 static const EmbModelSpec NOMIC_SPEC    {"search_document", "search_query", {"clustering", "classification"}};
 static const EmbModelSpec E5_SPEC       {"passage", "query"};
 
 static const EmbModelSpec NOMIC_1_5_SPEC {
-    "search_document", "search_query", {"clustering", "classification"}, true, "[768, 512, 384, 256, 128]"
+    "search_document", "search_query", {"clustering", "classification"}, true, "[768, 512, 384, 256, 128]",
 };
 static const EmbModelSpec LLM_EMBEDDER_SPEC {
     "Represent this document for retrieval",
     "Represent this query for retrieving relevant documents",
 };
 static const EmbModelSpec BGE_SPEC {
-    nullptr, "Represent this sentence for searching relevant passages",
+    "", "Represent this sentence for searching relevant passages",
 };
 static const EmbModelSpec E5_MISTRAL_SPEC {
-    nullptr, "Instruct: Given a query, retrieve relevant passages that answer the query\nQuery",
+    "", "Instruct: Given a query, retrieve relevant passages that answer the query\nQuery",
 };
 
 static const EmbModelGroup EMBEDDING_MODEL_SPECS[] {
@@ -738,18 +738,20 @@ void LLamaModel::embedInternal(
     const llama_token bos_token = llama_token_bos(d_ptr->model);
     const llama_token eos_token = llama_token_eos(d_ptr->model);
 
-    assert(shouldAddBOS());
-    bool addEOS = llama_vocab_type(d_ptr->model) == LLAMA_VOCAB_TYPE_WPM;
+    bool useBOS = shouldAddBOS();
+    bool useEOS = llama_vocab_type(d_ptr->model) == LLAMA_VOCAB_TYPE_WPM;
 
     // no EOS, optional BOS
-    auto tokenize = [this, addEOS](std::string text, TokenString &tokens, bool addBOS) {
-        if (!text.empty() && text[0] != ' ')
+    auto tokenize = [this, useBOS, useEOS, eos_token](std::string text, TokenString &tokens, bool wantBOS) {
+        if (!text.empty() && text[0] != ' ') {
             text = ' ' + text; // normalize for SPM - our fork of llama.cpp doesn't add a space prefix
+        }
+        wantBOS &= useBOS;
 
         tokens.resize(text.length()+4);
-        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), addBOS, false);
-        assert(addEOS == (eos_token != -1 && tokens[n_tokens - 1] == eos_token));
-        tokens.resize(n_tokens - addEOS); // erase EOS/SEP
+        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), wantBOS, false);
+        assert(useEOS == (eos_token != -1 && tokens[n_tokens - 1] == eos_token));
+        tokens.resize(n_tokens - useEOS); // erase EOS/SEP
     };
 
     // tokenize the texts
@@ -784,7 +786,7 @@ void LLamaModel::embedInternal(
     }
 
     const uint32_t n_batch = llama_n_batch(d_ptr->ctx);
-    const uint32_t max_len = n_batch - (prefixTokens.size() + addEOS); // minus BOS/CLS and EOS/SEP
+    const uint32_t max_len = n_batch - (prefixTokens.size() + useEOS); // minus BOS/CLS and EOS/SEP
     if (chunkOverlap >= max_len) {
         throw std::logic_error("max chunk length of " + std::to_string(max_len) + " is smaller than overlap of " +
                                std::to_string(chunkOverlap) + " tokens");

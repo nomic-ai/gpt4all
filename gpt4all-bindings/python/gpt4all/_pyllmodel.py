@@ -320,7 +320,7 @@ class LLModel:
             ctypes.byref(error),
         )
 
-        if embedding_ptr.value is None:
+        if not embedding_ptr:
             msg = "(unknown error)" if error.value is None else error.value.decode()
             raise RuntimeError(f'Failed to generate embeddings: {msg}')
 
