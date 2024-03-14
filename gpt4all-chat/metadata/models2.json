@@ -237,5 +237,21 @@
     "url": "https://huggingface.co/TheBloke/em_german_mistral_v01-GGUF/resolve/main/em_german_mistral_v01.Q4_0.gguf",
     "promptTemplate": "USER: %1 ASSISTANT: ",
     "systemPrompt": "Du bist ein hilfreicher Assistent. "
+  },
+  {
+    "order": "g",
+    "md5sum": "02bc0d06f6b453ff0db6870a624a22eb",
+    "name": "Ghost 7B v0.9.1",
+    "filename": "ghost-7b-v0.9.1-q4_0.gguf-unsloth.Q4_K_M.gguf",
+    "filesize": "4368439488",
+    "requires": "2.5.0",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "Mistral",
+    "description": "<strong>Ghost 7B v0.9.1</strong> fast, powerful and smooth for Vietnamese and English languages.",
+    "url": "https://huggingface.co/lamhieu/ghost-7b-v0.9.1-q4_0.gguf/resolve/main/ghost-7b-v0.9.1-q4_0.gguf-unsloth.Q4_K_M.gguf",
+    "promptTemplate": "<|user|>\n%1</s>\n<|assistant|>\n%2</s>\n",
+    "systemPrompt": "<|system|>\nYou are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior.\n</s>"
   }
 ]
