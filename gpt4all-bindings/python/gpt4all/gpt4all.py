@@ -20,7 +20,7 @@ from urllib3.exceptions import IncompleteRead, ProtocolError
 from . import _pyllmodel
 
 # TODO: move to config
-DEFAULT_MODEL_DIRECTORY = os.path.join(str(Path.home()), ".cache", "gpt4all")
+DEFAULT_MODEL_DIRECTORY = Path.home() / ".cache" / "gpt4all"
 
 DEFAULT_MODEL_CONFIG = {
     "systemPrompt": "",
@@ -205,23 +205,23 @@ class GPT4All:
                 )
             model_path = DEFAULT_MODEL_DIRECTORY
         else:
-            model_path = str(model_path)
+            model_path = Path(model_path)
 
-        if not os.path.exists(model_path):
+        if not model_path.exists():
             raise ValueError(f"Invalid model directory: {model_path}")
 
-        model_dest = os.path.join(model_path, model_filename)
-        if os.path.exists(model_dest):
+        model_dest = model_path / model_filename
+        if model_dest.exists():
             config.pop("url", None)
-            config["path"] = model_dest
+            config["path"] = str(model_dest)
             if verbose:
-                print("Found model file at", model_dest, file=sys.stderr)
+                print(f"Found model file at {str(model_dest)!r}", file=sys.stderr)
 
         # If model file does not exist, download
         elif allow_download:
             url = config.pop("url", None)
 
-            config["path"] = GPT4All.download_model(model_filename, model_path, verbose=verbose, url=url)
+            config["path"] = str(GPT4All.download_model(model_filename, model_path, verbose=verbose, url=url))
         else:
             raise ValueError("Failed to retrieve model")
 
@@ -230,10 +230,10 @@ class GPT4All:
     @staticmethod
     def download_model(
         model_filename: str,
-        model_path: Union[str, os.PathLike[str]],
+        model_path: str | os.PathLike[str],
         verbose: bool = True,
         url: Optional[str] = None,
-    ) -> str:
+    ) -> str | os.PathLike[str]:
         """
         Download model from https://gpt4all.io.
 
@@ -253,7 +253,7 @@ class GPT4All:
             return f"https://gpt4all.io/models/gguf/{model_filename}"
 
         # Download model
-        download_path = os.path.join(model_path, model_filename)
+        download_path = Path(model_path) / model_filename
         download_url = get_download_url(model_filename)
 
         def make_request(offset=None):
@@ -310,7 +310,7 @@ class GPT4All:
             time.sleep(2)  # Sleep for a little bit so Windows can remove file lock
 
         if verbose:
-            print("Model downloaded at:", download_path, file=sys.stderr)
+            print(f"Model downloaded to {str(download_path)!r}", file=sys.stderr)
         return download_path
 
     def generate(
