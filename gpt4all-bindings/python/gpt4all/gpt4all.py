@@ -57,18 +57,21 @@ class Embed4All:
         atlas: bool = ...,
     ) -> list[list[float]]: ...
 
-    def embed(self, text, prefix=None, dimensionality=None, long_text_mode="mean", atlas=False):
+    def embed(
+        self, text: str | list[str], prefix: str | None = None, dimensionality: int | None = None,
+        long_text_mode: str = "mean", atlas: bool = False,
+    ) -> list[Any]:
         """
         Generate one or more embeddings.
 
         Args:
             text: A text or list of texts to generate embeddings for.
             prefix: The model-specific prefix representing the embedding task, without the trailing colon. For Nomic
-            Embed this can be `search_query`, `search_document`, `classification`, or `clustering`.
+                Embed this can be `search_query`, `search_document`, `classification`, or `clustering`.
             dimensionality: The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
             long_text_mode: How to handle texts longer than the model can accept. One of `mean` or `truncate`.
             atlas: Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens
-            with long_text_mode="mean" will raise an error. Disabled by default.
+                with long_text_mode="mean" will raise an error. Disabled by default.
 
         Returns:
             An embedding or list of embeddings of your text(s).
