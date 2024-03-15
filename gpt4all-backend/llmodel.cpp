@@ -78,7 +78,7 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     static auto* libs = new std::vector<Implementation>([] () {
         std::vector<Implementation> fres;
 
-        std::string impl_name_re = "(bert|gptj|llamamodel-mainline)";
+        std::string impl_name_re = "(gptj|llamamodel-mainline)";
         if (cpu_supports_avx2() == 0) {
             impl_name_re += "-avxonly";
         } else {
