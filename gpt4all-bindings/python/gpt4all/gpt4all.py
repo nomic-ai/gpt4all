@@ -312,6 +312,7 @@ class GPT4All:
     def generate(
         self,
         prompt: str,
+        *,
         max_tokens: int = 200,
         temp: float = 0.7,
         top_k: int = 40,
