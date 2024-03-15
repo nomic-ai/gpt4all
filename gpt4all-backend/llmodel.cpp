@@ -73,6 +73,10 @@ bool LLModel::Implementation::isImplementation(const Dlhandle &dl) {
 }
 
 const std::vector<LLModel::Implementation> &LLModel::Implementation::implementationList() {
+    if (cpu_supports_avx() == 0) {
+        throw std::runtime_error("CPU does not support AVX");
+    }
+
     // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
     // individual models without the cleanup of the static list interfering
     static auto* libs = new std::vector<Implementation>([] () {
@@ -128,18 +132,13 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
         return &i;
     }
 
-    if (!buildVariantMatched) {
-        std::cerr << "LLModel ERROR: Could not find any implementations for build variant: " << buildVariant << "\n";
-    }
-    return nullptr;
+    if (!buildVariantMatched)
+        throw std::runtime_error("Could not find any implementations for build variant: " + buildVariant);
+
+    return nullptr; // unsupported model format
 }
 
 LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant, int n_ctx) {
-    if (!cpu_supports_avx()) {
-        std::cerr << "LLModel ERROR: CPU does not support AVX\n";
-        return nullptr;
-    }
-
     // Get correct implementation
     const Implementation* impl = nullptr;
 
@@ -190,15 +189,24 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
 
 LLModel *LLModel::Implementation::constructDefaultLlama() {
     static std::unique_ptr<LLModel> llama([]() -> LLModel * {
+        const std::vector<LLModel::Implementation> *impls;
+        try {
+            impls = &implementationList();
+        } catch (const std::runtime_error &e) {
+            std::cerr << __func__ << ": implementationList failed: " << e.what() << "\n";
+            return nullptr;
+        }
+
         const LLModel::Implementation *impl = nullptr;
-        for (const auto &i : implementationList()) {
+        for (const auto &i: *impls) {
             if (i.m_buildVariant == "metal" || i.m_modelType != "LLaMA") continue;
             impl = &i;
         }
         if (!impl) {
-            std::cerr << "LLModel ERROR: Could not find CPU LLaMA implementation\n";
+            std::cerr << __func__ << ": could not find llama.cpp implementation\n";
             return nullptr;
         }
+
         auto fres = impl->m_construct();
         fres->m_implementation = impl;
         return fres;
