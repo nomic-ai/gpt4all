@@ -1,62 +1,65 @@
 #ifndef PREDICT_WORKER_H
 #define PREDICT_WORKER_H
 
-#include "napi.h"
-#include "llmodel_c.h"
 #include "llmodel.h"
-#include <thread>
-#include <mutex>
-#include <iostream>
+#include "llmodel_c.h"
+#include "napi.h"
 #include <atomic>
+#include <iostream>
 #include <memory>
+#include <mutex>
+#include <thread>
 
 struct TokenCallbackInfo
-    {
-        int32_t tokenId;
-        std::string total;
-        std::string token;
-    };
+{
+    int32_t tokenId;
+    std::string total;
+    std::string token;
+};
 
 struct LLModelWrapper
+{
+    LLModel *llModel = nullptr;
+    LLModel::PromptContext promptContext;
+    ~LLModelWrapper()
     {
-        LLModel *llModel = nullptr;
-        LLModel::PromptContext promptContext;
-        ~LLModelWrapper() { delete llModel; }
-    };
+        delete llModel;
+    }
+};
 
 struct PromptWorkerConfig
-    {
-        Napi::Function tokenCallback;
-        bool bHasTokenCallback = false;
-        llmodel_model model;
-        std::mutex * mutex;
-        std::string prompt;
-        std::string promptTemplate;
-        llmodel_prompt_context context;
-        std::string result;
-        bool special = false;
-        std::string* fakeReply = nullptr;
-    };
+{
+    Napi::Function tokenCallback;
+    bool bHasTokenCallback = false;
+    llmodel_model model;
+    std::mutex *mutex;
+    std::string prompt;
+    std::string promptTemplate;
+    llmodel_prompt_context context;
+    std::string result;
+    bool special = false;
+    std::string *fakeReply = nullptr;
+};
 
 class PromptWorker : public Napi::AsyncWorker
-    {
-    public:
-        PromptWorker(Napi::Env env, PromptWorkerConfig config);
-        ~PromptWorker();
-        void Execute() override;
-        void OnOK() override;
-        void OnError(const Napi::Error &e) override;
-        Napi::Promise GetPromise();
+{
+  public:
+    PromptWorker(Napi::Env env, PromptWorkerConfig config);
+    ~PromptWorker();
+    void Execute() override;
+    void OnOK() override;
+    void OnError(const Napi::Error &e) override;
+    Napi::Promise GetPromise();
 
-        bool ResponseCallback(int32_t token_id, const std::string token);
-        bool RecalculateCallback(bool isrecalculating);
-        bool PromptCallback(int32_t tid);
+    bool ResponseCallback(int32_t token_id, const std::string token);
+    bool RecalculateCallback(bool isrecalculating);
+    bool PromptCallback(int32_t tid);
 
-    private:
-        Napi::Promise::Deferred promise;
-        std::string result;
-        PromptWorkerConfig _config;
-        Napi::ThreadSafeFunction _tsfn;
-    };
+  private:
+    Napi::Promise::Deferred promise;
+    std::string result;
+    PromptWorkerConfig _config;
+    Napi::ThreadSafeFunction _tsfn;
+};
 
-#endif  // PREDICT_WORKER_H
+#endif // PREDICT_WORKER_H
