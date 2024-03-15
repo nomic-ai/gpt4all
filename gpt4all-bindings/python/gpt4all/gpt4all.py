@@ -152,7 +152,7 @@ class GPT4All:
 
     @property
     def current_chat_session(self) -> list[MessageType] | None:
-        return self._history
+        return None if self._history is None else list(self._history)
 
     @staticmethod
     def list_models() -> list[ConfigType]:
