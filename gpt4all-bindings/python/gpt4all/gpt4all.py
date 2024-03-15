@@ -10,7 +10,7 @@ import time
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Union, overload
+from typing import TYPE_CHECKING, Any, Iterable, Literal, overload
 
 import requests
 from requests.exceptions import ChunkedEncodingError
@@ -19,13 +19,16 @@ from urllib3.exceptions import IncompleteRead, ProtocolError
 
 from . import _pyllmodel
 
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = Path.home() / ".cache" / "gpt4all"
 
 DEFAULT_PROMPT_TEMPLATE = "### Human:\n{0}\n\n### Assistant:\n"
 
-ConfigType = Dict[str, str]
-MessageType = Dict[str, str]
+ConfigType: TypeAlias = 'dict[str, str]'
+MessageType: TypeAlias = 'dict[str, str]'
 
 
 class Embed4All:
@@ -35,7 +38,7 @@ class Embed4All:
 
     MIN_DIMENSIONALITY = 64
 
-    def __init__(self, model_name: Optional[str] = None, n_threads: Optional[int] = None, **kwargs):
+    def __init__(self, model_name: str | None = None, n_threads: int | None = None, **kwargs):
         """
         Constructor
 
@@ -101,11 +104,11 @@ class GPT4All:
     def __init__(
         self,
         model_name: str,
-        model_path: Optional[Union[str, os.PathLike[str]]] = None,
-        model_type: Optional[str] = None,
+        model_path: str | os.PathLike[str] | None = None,
+        model_type: str | None = None,
         allow_download: bool = True,
-        n_threads: Optional[int] = None,
-        device: Optional[str] = "cpu",
+        n_threads: int | None = None,
+        device: str | None = "cpu",
         n_ctx: int = 2048,
         ngl: int = 100,
         verbose: bool = False,
@@ -152,7 +155,7 @@ class GPT4All:
         return self._history
 
     @staticmethod
-    def list_models() -> List[ConfigType]:
+    def list_models() -> list[ConfigType]:
         """
         Fetch model list from https://gpt4all.io/models/models2.json.
 
@@ -168,7 +171,7 @@ class GPT4All:
     def retrieve_model(
         cls,
         model_name: str,
-        model_path: Optional[Union[str, os.PathLike[str]]] = None,
+        model_path: str | os.PathLike[str] | None = None,
         allow_download: bool = True,
         verbose: bool = False,
     ) -> ConfigType:
@@ -232,7 +235,7 @@ class GPT4All:
         model_filename: str,
         model_path: str | os.PathLike[str],
         verbose: bool = True,
-        url: Optional[str] = None,
+        url: str | None = None,
     ) -> str | os.PathLike[str]:
         """
         Download model from https://gpt4all.io.
@@ -309,6 +312,25 @@ class GPT4All:
             print(f"Model downloaded to {str(download_path)!r}", file=sys.stderr)
         return download_path
 
+    @overload
+    def generate(
+        self, prompt: str, *, max_tokens: int = ..., temp: float = ..., top_k: int = ..., top_p: float = ...,
+        min_p: float = ..., repeat_penalty: float = ..., repeat_last_n: int = ..., n_batch: int = ...,
+        n_predict: int | None = ..., streaming: Literal[False] = ..., callback: _pyllmodel.ResponseCallbackType = ...,
+    ) -> str: ...
+    @overload
+    def generate(
+        self, prompt: str, *, max_tokens: int = ..., temp: float = ..., top_k: int = ..., top_p: float = ...,
+        min_p: float = ..., repeat_penalty: float = ..., repeat_last_n: int = ..., n_batch: int = ...,
+        n_predict: int | None = ..., streaming: Literal[True], callback: _pyllmodel.ResponseCallbackType = ...,
+    ) -> Iterable[str]: ...
+    @overload
+    def generate(
+        self, prompt: str, *, max_tokens: int = ..., temp: float = ..., top_k: int = ..., top_p: float = ...,
+        min_p: float = ..., repeat_penalty: float = ..., repeat_last_n: int = ..., n_batch: int = ...,
+        n_predict: int | None = ..., streaming: bool, callback: _pyllmodel.ResponseCallbackType = ...,
+    ) -> Any: ...
+
     def generate(
         self,
         prompt: str,
@@ -321,10 +343,10 @@ class GPT4All:
         repeat_penalty: float = 1.18,
         repeat_last_n: int = 64,
         n_batch: int = 8,
-        n_predict: Optional[int] = None,
+        n_predict: int | None = None,
         streaming: bool = False,
         callback: _pyllmodel.ResponseCallbackType = _pyllmodel.empty_response_callback,
-    ) -> Union[str, Iterable[str]]:
+    ) -> Any:
         """
         Generate outputs from any GPT4All model.
 
@@ -347,7 +369,7 @@ class GPT4All:
         """
 
         # Preparing the model request
-        generate_kwargs: Dict[str, Any] = dict(
+        generate_kwargs: dict[str, Any] = dict(
             temp=temp,
             top_k=top_k,
             top_p=top_p,
@@ -388,7 +410,7 @@ class GPT4All:
             generate_kwargs["reset_context"] = True
 
         # Prepare the callback, process the model response
-        output_collector: List[MessageType]
+        output_collector: list[MessageType]
         output_collector = [
             {"content": ""}
         ]  # placeholder for the self._history if chat session is not activated
@@ -399,7 +421,7 @@ class GPT4All:
 
         def _callback_wrapper(
             callback: _pyllmodel.ResponseCallbackType,
-            output_collector: List[MessageType],
+            output_collector: list[MessageType],
         ) -> _pyllmodel.ResponseCallbackType:
             def _callback(token_id: int, response: str) -> bool:
                 nonlocal callback, output_collector
@@ -466,7 +488,7 @@ class GPT4All:
 
     def _format_chat_prompt_template(
         self,
-        messages: List[MessageType],
+        messages: list[MessageType],
         default_prompt_header: str = "",
         default_prompt_footer: str = "",
     ) -> str:

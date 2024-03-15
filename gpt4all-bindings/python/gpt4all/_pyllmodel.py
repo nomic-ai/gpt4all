@@ -9,7 +9,7 @@ import sys
 import threading
 from enum import Enum
 from queue import Queue
-from typing import Callable, Iterable, overload
+from typing import Any, Callable, Iterable, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
@@ -295,15 +295,20 @@ class LLModel:
     ) -> list[float]: ...
     @overload
     def generate_embeddings(
-        self, text: list[str], prefix: str, dimensionality: int, do_mean: bool, atlas: bool,
+        self, text: list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
     ) -> list[list[float]]: ...
+    @overload
+    def generate_embeddings(
+        self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+    ) -> Any: ...
 
-    def generate_embeddings(self, text, prefix, dimensionality, do_mean, atlas):
+    def generate_embeddings(
+        self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+    ) -> Any:
         if not text:
             raise ValueError("text must not be None or empty")
 
-        single_text = isinstance(text, str)
-        if single_text:
+        if (single_text := isinstance(text, str)):
             text = [text]
 
         # prepare input
