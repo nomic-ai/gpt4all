@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ctypes
-import logging
 import os
 import platform
 import re
@@ -16,8 +15,6 @@ if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
 else:
     import importlib_resources
-
-logger: logging.Logger = logging.getLogger(__name__)
 
 
 # TODO: provide a config file to make this more robust
@@ -130,7 +127,7 @@ llmodel.llmodel_set_implementation_search_path.restype = None
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
-llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).replace("\\", r"\\").encode())
+llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).encode())
 
 llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
 llmodel.llmodel_available_gpu_devices.restype = ctypes.POINTER(LLModelGPUDevice)
@@ -323,7 +320,7 @@ class LLModel:
             ctypes.byref(error),
         )
 
-        if embedding_ptr.value is None:
+        if not embedding_ptr:
             msg = "(unknown error)" if error.value is None else error.value.decode()
             raise RuntimeError(f'Failed to generate embeddings: {msg}')
 
@@ -371,13 +368,6 @@ class LLModel:
 
         self.buffer.clear()
         self.buff_expecting_cont_bytes = 0
-
-        logger.info(
-            "LLModel.prompt_model -- prompt:\n"
-            + "%s\n"
-            + "===/LLModel.prompt_model -- prompt/===",
-            prompt,
-        )
 
         self._set_context(
             n_predict=n_predict,
