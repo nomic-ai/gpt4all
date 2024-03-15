@@ -31,19 +31,20 @@ MessageType = Dict[str, str]
 class Embed4All:
     """
     Python class that handles embeddings for GPT4All.
-
-    Args:
-        model_name: The name of the embedding model to use. Defaults to `all-MiniLM-L6-v2.gguf2.f16.gguf`.
-
-    All other arguments are passed to the GPT4All constructor. See its documentation for more info.
     """
 
     MIN_DIMENSIONALITY = 64
 
-    def __init__(self, model_name: Optional[str] = None, **kwargs):
+    def __init__(self, model_name: Optional[str] = None, n_threads: Optional[int] = None, **kwargs):
+        """
+        Constructor
+
+        Args:
+            n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
+        """
         if model_name is None:
             model_name = 'all-MiniLM-L6-v2.gguf2.f16.gguf'
-        self.gpt4all = GPT4All(model_name, **kwargs)
+        self.gpt4all = GPT4All(model_name, n_threads=n_threads, **kwargs)
 
     @overload
     def embed(
@@ -92,26 +93,6 @@ class Embed4All:
 class GPT4All:
     """
     Python class that handles instantiation, downloading, generation and chat with GPT4All models.
-
-    Args:
-        model_name: Name of GPT4All or custom model. Including ".gguf" file extension is optional but encouraged.
-        model_path: Path to directory containing model file or, if file does not exist, where to download model.
-            Default is None, in which case models will be stored in `~/.cache/gpt4all/`.
-        model_type: Model architecture. This argument currently does not have any functionality and is just used as
-            descriptive identifier for user. Default is None.
-        allow_download: Allow API to download models from gpt4all.io. Default is True.
-        n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
-        device: The processing unit on which the GPT4All model will run. It can be set to:
-            - "cpu": Model will run on the central processing unit.
-            - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
-            - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
-            Alternatively, a specific GPU name can also be provided, and the model will run on the GPU that matches the name if it's available.
-            Default is "cpu".
-
-            Note: If a selected GPU device does not have sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the model.
-        n_ctx: Maximum size of context window
-        ngl: Number of GPU layers to use (Vulkan)
-        verbose: If True, print debug messages.
     """
 
     def __init__(
@@ -126,6 +107,29 @@ class GPT4All:
         ngl: int = 100,
         verbose: bool = False,
     ):
+        """
+        Constructor
+
+        Args:
+            model_name: Name of GPT4All or custom model. Including ".gguf" file extension is optional but encouraged.
+            model_path: Path to directory containing model file or, if file does not exist, where to download model.
+                Default is None, in which case models will be stored in `~/.cache/gpt4all/`.
+            model_type: Model architecture. This argument currently does not have any functionality and is just used as
+                descriptive identifier for user. Default is None.
+            allow_download: Allow API to download models from gpt4all.io. Default is True.
+            n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
+            device: The processing unit on which the GPT4All model will run. It can be set to:
+                - "cpu": Model will run on the central processing unit.
+                - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
+                - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
+                Alternatively, a specific GPU name can also be provided, and the model will run on the GPU that matches the name if it's available.
+                Default is "cpu".
+
+                Note: If a selected GPU device does not have sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the model.
+            n_ctx: Maximum size of context window
+            ngl: Number of GPU layers to use (Vulkan)
+            verbose: If True, print debug messages.
+        """
         self.model_type = model_type
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
