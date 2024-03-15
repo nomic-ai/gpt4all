@@ -30,7 +30,6 @@ public:
 
     class Implementation {
     public:
-        Implementation(Dlhandle &&);
         Implementation(const Implementation &) = delete;
         Implementation(Implementation &&);
         ~Implementation();
@@ -38,9 +37,6 @@ public:
         std::string_view modelType() const { return m_modelType; }
         std::string_view buildVariant() const { return m_buildVariant; }
 
-        static bool isImplementation(const Dlhandle &dl);
-        static const std::vector<Implementation> &implementationList();
-        static const Implementation *implementation(const char *fname, const std::string &buildVariant);
         static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto", int n_ctx = 2048);
         static std::vector<GPUDevice> availableGPUDevices();
         static int32_t maxContextLength(const std::string &modelPath);
@@ -51,6 +47,10 @@ public:
         static bool hasSupportedCPU();
 
     private:
+        Implementation(Dlhandle &&);
+
+        static const std::vector<Implementation> &implementationList();
+        static const Implementation *implementation(const char *fname, const std::string &buildVariant);
         static LLModel *constructDefaultLlama();
 
         bool (*m_magicMatch)(const char *fname);

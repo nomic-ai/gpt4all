@@ -65,10 +65,10 @@ LLModel::Implementation::Implementation(Implementation &&o)
 }
 
 LLModel::Implementation::~Implementation() {
-    if (m_dlhandle) delete m_dlhandle;
+    delete m_dlhandle;
 }
 
-bool LLModel::Implementation::isImplementation(const Dlhandle &dl) {
+static bool isImplementation(const Dlhandle &dl) {
     return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
@@ -105,9 +105,8 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
                     // Add to list if model implementation
                     try {
                         Dlhandle dl(p.string());
-                        if (!Implementation::isImplementation(dl)) {
+                        if (!isImplementation(dl))
                             continue;
-                        }
                         fres.emplace_back(Implementation(std::move(dl)));
                     } catch (...) {}
                 }
