@@ -47,10 +47,15 @@ void PromptWorker::Execute()
     //         "About to prompt");
     // Call the C++ prompt method
     wrapper->llModel->prompt(
-        _config.prompt, _config.promptTemplate, [](int32_t tid) { return true; },
+        _config.prompt,
+        _config.promptTemplate,
+        [](int32_t tid) { return true; },
         [this](int32_t token_id, const std::string tok) { return ResponseCallback(token_id, tok); },
-        [](bool isRecalculating) { return isRecalculating; }, wrapper->promptContext, _config.special,
-        _config.fakeReply);
+        [](bool isRecalculating) { return isRecalculating; },
+        wrapper->promptContext,
+        _config.special,
+        _config.fakeReply
+    );
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data
     // which involves no copies
@@ -76,11 +81,11 @@ void PromptWorker::Execute()
 
 void PromptWorker::OnOK()
 {
-    // promise.Resolve(Napi::String::New(Env(), result));
     Napi::Object returnValue = Napi::Object::New(Env());
     returnValue.Set("text", result);
     returnValue.Set("nPast", _config.context.n_past);
     promise.Resolve(returnValue);
+    delete _config.fakeReply;
 }
 
 void PromptWorker::OnError(const Napi::Error &e)

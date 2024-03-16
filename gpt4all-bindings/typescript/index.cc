@@ -77,6 +77,11 @@ Napi::Value NodeModelWrapper::GetType(const Napi::CallbackInfo &info)
     return Napi::String::New(info.Env(), type);
 }
 
+// Napi::Value NodeModelWrapper::GetContextWindowSize(const Napi::CallbackInfo &info)
+// {
+//     return Napi::Number::New(info.Env(), nCtx);
+// }
+
 Napi::Value NodeModelWrapper::InitGpuByString(const Napi::CallbackInfo &info)
 {
     auto env = info.Env();
@@ -245,10 +250,10 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
 Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
 {
     auto env = info.Env();
-    std::string question;
+    std::string prompt;
     if (info[0].IsString())
     {
-        question = info[0].As<Napi::String>().Utf8Value();
+        prompt = info[0].As<Napi::String>().Utf8Value();
     }
     else
     {
@@ -265,7 +270,7 @@ Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
     llmodel_prompt_context promptContext = {.logits = nullptr,
                                             .tokens = nullptr,
                                             .n_past = 0,
-                                            .n_ctx = 2048,
+                                            .n_ctx = nCtx,
                                             .n_predict = 4096,
                                             .top_k = 40,
                                             .top_p = 0.9f,
@@ -290,8 +295,6 @@ Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
     // Assign the remaining properties
     if (inputObject.Has("nPast"))
         promptContext.n_past = inputObject.Get("nPast").As<Napi::Number>().Int32Value();
-    if (inputObject.Has("nCtx"))
-        promptContext.n_ctx = inputObject.Get("nCtx").As<Napi::Number>().Int32Value();
     if (inputObject.Has("nPredict"))
         promptContext.n_predict = inputObject.Get("nPredict").As<Napi::Number>().Int32Value();
     if (inputObject.Has("topK"))
@@ -322,7 +325,7 @@ Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
     promptWorkerConfig.context = promptContext;
     promptWorkerConfig.model = GetInference();
     promptWorkerConfig.mutex = &inference_mutex;
-    promptWorkerConfig.prompt = question;
+    promptWorkerConfig.prompt = prompt;
     promptWorkerConfig.result = "";
 
     promptWorkerConfig.promptTemplate = inputObject.Get("promptTemplate").As<Napi::String>();
@@ -332,9 +335,7 @@ Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
     }
     if (inputObject.Has("fakeReply"))
     {
-        // maybe this will cause memorry issues due to pointer paranoia
-        //  std::string fakeReply = inputObject.Get("fakeReply").As<Napi::String>().As<Napi::String>();
-        //  promptWorkerConfig.fakeReply = &fakeReply;
+        // this will be deleted in the worker
         promptWorkerConfig.fakeReply = new std::string(inputObject.Get("fakeReply").As<Napi::String>().Utf8Value());
     }
     auto worker = new PromptWorker(env, promptWorkerConfig);
