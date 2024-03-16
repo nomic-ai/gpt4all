@@ -240,17 +240,17 @@
   },
   {
     "order": "g",
-    "md5sum": "02bc0d06f6b453ff0db6870a624a22eb",
+    "md5sum": "31b47b4e8c1816b62684ac3ca373f9e1",
     "name": "Ghost 7B v0.9.1",
-    "filename": "model.Q4_K_M.gguf",
-    "filesize": "4368439488",
+    "filename": "model.Q4_0.gguf",
+    "filesize": "4108916960",
     "requires": "2.5.0",
     "ramrequired": "8",
     "parameters": "7 billion",
-    "quant": "q4_k_m",
+    "quant": "q4_0",
     "type": "Mistral",
     "description": "<strong>Ghost 7B v0.9.1</strong> fast, powerful and smooth for Vietnamese and English languages.",
-    "url": "https://huggingface.co/lamhieu/ghost-7b-v0.9.1-gguf/resolve/main/model.Q4_K_M.gguf",
+    "url": "https://huggingface.co/lamhieu/ghost-7b-v0.9.1/resolve/main/model.Q4_0.gguf",
     "promptTemplate": "<|user|>\n%1</s>\n<|assistant|>\n%2</s>\n",
     "systemPrompt": "<|system|>\nYou are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior.\n</s>"
   }
