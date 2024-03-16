@@ -20,6 +20,7 @@ const {
     DEFAULT_MODEL_LIST_URL,
 } = require("./config.js");
 const { InferenceModel, EmbeddingModel } = require("./models.js");
+const { ChatSession } = require("./chat-session.js");
 
 /**
  * Loads a machine learning model with the specified name. The defacto way to create a model.
@@ -154,6 +155,7 @@ module.exports = {
     LLModel,
     InferenceModel,
     EmbeddingModel,
+    ChatSession,
     createCompletion,
     createCompletionStream,
     createCompletionGenerator,

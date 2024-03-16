@@ -256,34 +256,46 @@ interface GpuDevice {
  * Options that configure a model's behavior.
  */
 interface LoadModelOptions {
+    /**
+     * Where to look for model files.
+     */
     modelPath?: string;
+    /**
+     * Where to look for the backend libraries.
+     */
     librariesPath?: string;
+    /**
+     * The path to the model configuration file, useful for offline usage or custom model configurations.
+     */
     modelConfigFile?: string;
+    /**
+     * Whether to allow downloading the model if it is not present at the specified path.
+     */
     allowDownload?: boolean;
+    /**
+     * Enable verbose logging.
+     */
     verbose?: boolean;
-    /* The processing unit on which the model will run. It can be set to
-     * - "cpu": Model will run on the central processing unit.
-     * - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
-     * - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
-
-	   Alternatively, a specific GPU name can also be provided, and the model will run on the GPU that matches the name
-       if it's available.
-
-       Default is "cpu".
-
-	   Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
-       instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
-       model.
+   /**
+    * The processing unit on which the model will run. It can be set to
+    * - "cpu": Model will run on the central processing unit.
+    * - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
+    * - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
+    * - "gpu name": Model will run on the GPU that matches the name if it's available.
+    * Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
+    * instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
+    * model.
+    * @default "cpu"
     */
     device?: string;
-    /*
+    /**
      * The Maximum window size of this model
-     * Default of 2048
+     * @default 2048
      */
     nCtx?: number;
-    /*
+    /**
      * Number of gpu layers needed
-     * Default of 100
+     * @default 100
      */
     ngl?: number;
 }
@@ -470,7 +482,7 @@ interface LLModelPromptContext {
      */
     promptTemplate?: string;
 
-    /** The context window size. Do not use.
+    /** The context window size. Do not use, it has no effect. See loadModel options.
      * @default 2048
      * @deprecated Use loadModel's nCtx option instead.
      * */
@@ -656,7 +668,9 @@ export {
     ModelFile,
     ModelConfig,
     InferenceModel,
+    InferenceProvider,
     EmbeddingModel,
+    ChatSession,
     LLModel,
     LLModelPromptContext,
     Message,
