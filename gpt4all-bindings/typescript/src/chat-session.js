@@ -5,16 +5,20 @@ class ChatSession {
     modelName;
     messages;
     systemPrompt;
-    promptTemplate;
+    promptContext;
     initialized;
 
     constructor(model, opts = {}) {
+        const { messages, systemPrompt, ...otherOpts } = opts;
         this.model = model;
         this.modelName = model.llm.name();
-        this.messages = opts.messages ?? [];
-        this.systemPrompt = opts.systemPrompt ?? model.config.systemPrompt;
-        this.promptTemplate = opts.promptTemplate ?? model.config.promptTemplate;
+        this.messages = messages ?? [];
+        this.systemPrompt = systemPrompt ?? model.config.systemPrompt;
         this.initialized = false;
+        this.promptContext = {
+            ...DEFAULT_PROMPT_CONTEXT,
+            ...otherOpts,
+        };
     }
 
     async initialize() {
@@ -29,6 +33,7 @@ class ChatSession {
                 promptTemplate: "%1",
                 nPredict: 0,
                 special: true,
+                nBatch: this.promptContext.nBatch,
                 // verbose: true,
             });
         }
@@ -90,7 +95,7 @@ class ChatSession {
 
             for (const turn of messagePairs) {
                 await this.model.generate(turn.user, {
-                    promptTemplate: this.promptTemplate,
+                    ...this.promptContext,
                     fakeReply: turn.assistant,
                 });
             }
@@ -113,8 +118,7 @@ class ChatSession {
             await this.initialize();
         }
         const response = await this.model.generate(prompt, {
-            nPredict: 1024,
-            contextErase: 0.5,
+            ...this.promptContext,
             ...options,
         }, callback);
 

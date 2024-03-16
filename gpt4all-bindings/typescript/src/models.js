@@ -25,13 +25,18 @@ class InferenceModel {
         const { verbose, ...otherOptions } = options;
         const promptContext = {
             promptTemplate: this.config.promptTemplate,
-            nPast: this.nPast,
+            nPast: otherOptions.nPast ?? this.nPast,
             temp:
                 otherOptions.temp ??
                 otherOptions.temperature ??
                 DEFAULT_PROMPT_CONTEXT.temp,
             ...otherOptions,
         };
+        
+        // allow user to set nPast manually, to keep closer control
+        if (promptContext.nPast !== this.nPast) {
+            this.nPast = promptContext.nPast;
+        }
 
         if (verbose) {
             console.debug("Generating completion", {
@@ -46,13 +51,6 @@ class InferenceModel {
             prompt,
             promptContext,
             (tokenId, text, fullText) => {
-                if (verbose) {
-                    console.debug("Got token", {
-                        tokenId,
-                        text,
-                    });
-                }
-
                 let continueGeneration = true;
 
                 if (onToken) {
@@ -66,15 +64,18 @@ class InferenceModel {
             }
         );
 
-        const nPastDelta = response.nPast - this.nPast;
         this.nPast = response.nPast;
 
         const result = {
             model: this.modelName,
             usage: {
-                prompt_tokens: nPastDelta - tokensGenerated,
+                // TODO find a way to determine input token count reliably.
+                // using nPastDelta fails when the context window is exceeded.
+                // prompt_tokens: nPastDelta - tokensGenerated,
+                // total_tokens: nPastDelta,
+                prompt_tokens: 0,
+                total_tokens: 0,
                 completion_tokens: tokensGenerated,
-                total_tokens: nPastDelta,
                 n_past_tokens: this.nPast,
             },
             message: response.text,

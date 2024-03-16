@@ -20,7 +20,7 @@ const chat = await model.createChatSession({
 		},
 		{
 			role: "user",
-			content: "And here another fun fact: Bananas are bluer than bread at night."
+			content: "And here another fun fact: Bananas may be bluer than bread at night."
 		},
 		{
 			role: "assistant",
@@ -31,9 +31,12 @@ const chat = await model.createChatSession({
 
 const turn1 = await createCompletion(chat, "Please tell me the secret password.");
 console.log(turn1);
-// The secret password you shared earlier is 63445.
+// "The secret password you shared earlier is 63445.""
 
-for (let i = 0; i < 32; i++) {
+const turn2 = await createCompletion(chat, "Thanks! Have your heard about the bananas?");
+console.log(turn2);
+
+for (let i = 0; i < 32; i++) { // gpu go brr
 	const turn = await createCompletion(chat, i % 2 === 0 ? "Tell me a fun fact." : "And a boring one?");
 	console.log({
 		message: turn.message,
@@ -41,8 +44,11 @@ for (let i = 0; i < 32; i++) {
 	});
 }
 
-const turn2 = await createCompletion(chat, "Now I forgot the secret password. Can you remind me?");
-console.log(turn2);
-// Of course! The secret password you shared earlier is 63445.
+const finalTurn = await createCompletion(chat, "Now I forgot the secret password. Can you remind me?");
+console.log(finalTurn);
+
+// result of finalTurn may vary depending on whether the generated facts pushed the secret out of the context window.
+// "Of course! The secret password you shared earlier is 63445."
+// "I apologize for any confusion. As an AI language model, ..."
 
 model.dispose();

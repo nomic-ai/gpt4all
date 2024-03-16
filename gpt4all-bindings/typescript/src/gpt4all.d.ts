@@ -26,18 +26,11 @@ type TokenCallback = (tokenId: number, token: string, total: string) => boolean;
 /**
  * Options for the chat session.
  */
-interface ChatSessionOptions {
+interface ChatSessionOptions extends Partial<LLModelPromptContext> {
     /**
      * System prompt to ingest on initialization.
      */
     systemPrompt?: string;
-
-    /**
-     * Template for user / assistant message pairs.
-     * %1 is required and will be replaced by the user input.
-     * %2 is optional and will be replaced by the assistant response. The response will be appended if not present.
-     */
-    promptTemplate?: string;
 
     /**
      * Messages to ingest on initialization.
@@ -87,7 +80,7 @@ declare class InferenceModel {
     activeChatSession?: ChatSession;
     modelName: string;
     nPast: number;
-    
+
     /**
      * Create a chat session with the model.
      * @param options The options for the chat session.
@@ -114,6 +107,7 @@ declare class InferenceModel {
     dispose(): void;
 }
 
+
 /**
  * EmbeddingModel represents an LLM which can create embeddings, which are float arrays
  */
@@ -130,6 +124,9 @@ declare class EmbeddingModel {
     dispose(): void;
 }
 
+/**
+ * Shape of LLModel's inference result.
+ */
 interface InferenceResult {
     text: string;
     nPast: number;
@@ -198,6 +195,7 @@ declare class LLModel {
      * @returns The result of the model prompt.
      */
     embed(text: string): Float32Array;
+
     /**
      * Whether the model is loaded or not.
      */
@@ -207,10 +205,12 @@ declare class LLModel {
      * Where to search for the pluggable backend libraries
      */
     setLibraryPath(s: string): void;
+
     /**
      * Where to get the pluggable backend libraries
      */
     getLibraryPath(): string;
+
     /**
      * Initiate a GPU by a string identifier.
      * @param {number} memory_required Should be in the range size_t or will throw
@@ -218,11 +218,13 @@ declare class LLModel {
      * read LoadModelOptions.device for more information
      */
     initGpuByString(memory_required: number, device_name: string): boolean;
+
     /**
      * From C documentation
      * @returns True if a GPU device is successfully initialized, false otherwise.
      */
     hasGpuDevice(): boolean;
+
     /**
      * GPUs that are usable for this LLModel
      * @param nCtx Maximum size of context window
@@ -416,13 +418,13 @@ interface CompletionReturn {
 
     /** Token usage report. */
     usage: {
-        /** The number of tokens used in the prompt. */
+        /** The number of tokens used in the prompt. Currently not available and always 0. */
         prompt_tokens: number;
 
         /** The number of tokens used in the completion. */
         completion_tokens: number;
 
-        /** The total number of tokens used. */
+        /** The total number of tokens used. Currently not available and always 0. */
         total_tokens: number;
 
         /** Number of tokens used in the conversation. */
@@ -460,6 +462,19 @@ interface LLModelPromptContext {
      * @default 4096
      * */
     nPredict: number;
+    
+    /**
+     * Template for user / assistant message pairs.
+     * %1 is required and will be replaced by the user input.
+     * %2 is optional and will be replaced by the assistant response.
+     */
+    promptTemplate?: string;
+
+    /** The context window size. Do not use.
+     * @default 2048
+     * @deprecated Use loadModel's nCtx option instead.
+     * */
+    nCtx: number;
 
     /** The top-k logits to sample from.
      * Top-K sampling selects the next token only from the top K most likely tokens predicted by the model.
@@ -477,11 +492,15 @@ interface LLModelPromptContext {
      * and quality by considering both token probabilities and the number of tokens available for sampling.
      * When using a higher value for top-P (eg., 0.95), the generated text becomes more diverse.
      * On the other hand, a lower value (eg., 0.1) produces more focused and conservative text.
-     * The default value is 0.4, which is aimed to be the middle ground between focus and diversity, but
-     * for more creative tasks a higher top-p value will be beneficial, about 0.5-0.9 is a good range for that.
      * @default 0.9
      * */
     topP: number;
+    
+    /**
+     * The minimum probability of a token to be considered.
+     * @default 0.0
+     */
+    minP: number;
 
     /** The temperature to adjust the model's output distribution.
      * Temperature is like a knob that adjusts how creative or focused the output becomes. Higher temperatures
