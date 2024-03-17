@@ -10,35 +10,107 @@ npm install gpt4all@latest
 pnpm install gpt4all@latest
 
 ```
-
-*   Llama.cpp + gpt4all nodejs bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
-*   The nodejs api has made strides to mirror the python api. It is not 100% mirrored, but many pieces of the api resemble its python counterpart.
-*   Everything should work out the box.
+## Contents 
 *   See [API Reference](#api-reference)
+*   See [Examples](#api-example)
+*   See [Developing](#develop)
+*   GPT4ALL nodejs bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
 
+## Api Example
 ### Chat Completion
 
 ```js
-import { createCompletion, loadModel } from '../src/gpt4all.js'
+import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
-const model = await loadModel('mistral-7b-openorca.gguf2.Q4_0.gguf', { verbose: true });
+const model = await loadModel( 'mistral-7b-openorca.gguf2.Q4_0.gguf', { verbose: true, device: 'gpu' });
 
-const response = await createCompletion(model, 'What is 1 + 1?', {
-    systemPrompt: '<|im_start|>system\nYou are meant to be annoying and unhelpful.\n<|im_end|>',
-});
+const completion1 = await createCompletion(model, 'What is 1 + 1?', { verbose: true, })
+console.log(completion1.message)
 
+const completion2 = await createCompletion(model, 'And if we add two?', {  verbose: true  })
+console.log(completion2.message)
+
+model.dispose()
 ```
 
 ### Embedding
 
 ```js
-import { createEmbedding, loadModel } from '../src/gpt4all.js'
+import { loadModel, createEmbedding } from '../src/gpt4all.js'
 
-const model = await loadModel('ggml-all-MiniLM-L6-v2-f16', { verbose: true });
+const embedder = await loadModel("all-MiniLM-L6-v2-f16.gguf", { verbose: true, type: 'embedding'})
 
-const fltArray = createEmbedding(model, "Pain is inevitable, suffering optional");
+console.log(createEmbedding(embedder, "Maybe Minecraft was the friends we made along the way"));
+```
+### Chat Sessions 
+```js 
+import { loadModel, createCompletion } from "../src/gpt4all.js";
+
+const model = await loadModel("orca-mini-3b-gguf2-q4_0.gguf", {
+    verbose: true,
+    device: "gpu",
+});
+
+const chat = await model.createChatSession();
+
+await createCompletion(
+    chat,
+    "Why are bananas rather blue than bread at night sometimes?",
+    {
+        verbose: true,
+    }
+);
+await createCompletion(chat, "Are you sure?", { verbose: true, });
+
+```
+### Streaming responses
+```js 
+import gpt from "../src/gpt4all.js";
+
+const model = await gpt.loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
+    device: "gpu",
+});
+
+process.stdout.write("### Stream:");
+const stream = gpt.createCompletionStream(model, "How are you?");
+stream.tokens.on("data", (data) => {
+    process.stdout.write(data);
+});
+//wait till stream finishes. We cannot continue until this one is done.
+await stream.result;
+process.stdout.write("\n");
+
+process.stdout.write("### Stream with pipe:");
+const stream2 = gpt.createCompletionStream(
+    model,
+    "Please say something nice about node streams."
+);
+stream2.tokens.pipe(process.stdout);
+await stream2.result;
+process.stdout.write("\n");
+
+console.log("done");
+model.dispose();
 ```
 
+### Async Generators 
+```js
+import gpt from "../src/gpt4all.js";
+
+const model = await gpt.loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
+    device: "gpu",
+});
+
+process.stdout.write("### Generator:");
+const gen = gpt.createCompletionGenerator(model, "Redstone in Minecraft is Turing Complete. Let that sink in. (let it in!)");
+for await (const chunk of gen) {
+    process.stdout.write(chunk);
+}
+
+process.stdout.write("\n");
+model.dispose();
+```
+## Develop
 ### Build Instructions
 
 *   binding.gyp is compile config

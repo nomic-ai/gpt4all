@@ -11,36 +11,115 @@ pnpm install gpt4all@latest
 
 ```
 
-The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-ts) are now out of date.
+## Contents
 
-*   New bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
-*   The nodejs api has made strides to mirror the python api. It is not 100% mirrored, but many pieces of the api resemble its python counterpart.
-*   Everything should work out the box.
 *   See [API Reference](#api-reference)
+*   See [Examples](#api-example)
+*   See [Developing](#develop)
+*   GPT4ALL nodejs bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
+
+## Api Example
 
 ### Chat Completion
 
 ```js
-import { createCompletion, loadModel } from '../src/gpt4all.js'
+import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
 
-const model = await loadModel('mistral-7b-openorca.Q4_0.gguf', { verbose: true });
+const model = await loadModel( 'mistral-7b-openorca.gguf2.Q4_0.gguf', { verbose: true, device: 'gpu' });
 
-const response = await createCompletion(model, [
-    { role : 'system', content: 'You are meant to be annoying and unhelpful.'  },
-    { role : 'user', content: 'What is 1 + 1?'  } 
-]);
+const completion1 = await createCompletion(model, 'What is 1 + 1?', { verbose: true, })
+console.log(completion1.message)
 
+const completion2 = await createCompletion(model, 'And if we add two?', {  verbose: true  })
+console.log(completion2.message)
+
+model.dispose()
 ```
 
 ### Embedding
 
 ```js
-import { createEmbedding, loadModel } from '../src/gpt4all.js'
+import { loadModel, createEmbedding } from '../src/gpt4all.js'
 
-const model = await loadModel('ggml-all-MiniLM-L6-v2-f16', { verbose: true });
+const embedder = await loadModel("all-MiniLM-L6-v2-f16.gguf", { verbose: true, type: 'embedding'})
 
-const fltArray = createEmbedding(model, "Pain is inevitable, suffering optional");
+console.log(createEmbedding(embedder, "Maybe Minecraft was the friends we made along the way"));
 ```
+
+### Chat Sessions
+
+```js
+import { loadModel, createCompletion } from "../src/gpt4all.js";
+
+const model = await loadModel("orca-mini-3b-gguf2-q4_0.gguf", {
+    verbose: true,
+    device: "gpu",
+});
+
+const chat = await model.createChatSession();
+
+await createCompletion(
+    chat,
+    "Why are bananas rather blue than bread at night sometimes?",
+    {
+        verbose: true,
+    }
+);
+await createCompletion(chat, "Are you sure?", { verbose: true, });
+
+```
+
+### Streaming responses
+
+```js
+import gpt from "../src/gpt4all.js";
+
+const model = await gpt.loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
+    device: "gpu",
+});
+
+process.stdout.write("### Stream:");
+const stream = gpt.createCompletionStream(model, "How are you?");
+stream.tokens.on("data", (data) => {
+    process.stdout.write(data);
+});
+//wait till stream finishes. We cannot continue until this one is done.
+await stream.result;
+process.stdout.write("\n");
+
+process.stdout.write("### Stream with pipe:");
+const stream2 = gpt.createCompletionStream(
+    model,
+    "Please say something nice about node streams."
+);
+stream2.tokens.pipe(process.stdout);
+await stream2.result;
+process.stdout.write("\n");
+
+console.log("done");
+model.dispose();
+```
+
+### Async Generators
+
+```js
+import gpt from "../src/gpt4all.js";
+
+const model = await gpt.loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
+    device: "gpu",
+});
+
+process.stdout.write("### Generator:");
+const gen = gpt.createCompletionGenerator(model, "Redstone in Minecraft is Turing Complete. Let that sink in. (let it in!)");
+for await (const chunk of gen) {
+    process.stdout.write(chunk);
+}
+
+process.stdout.write("\n");
+model.dispose();
+```
+
+## Develop
 
 ### Build Instructions
 
@@ -131,21 +210,27 @@ yarn test
 
 *   why your model may be spewing bull 💩
     *   The downloaded model is broken (just reinstall or download from official site)
-    *   That's it so far
+*   Your model is hanging after a call to generate tokens.
+    *   Is `nPast` set too high? This may cause your model to hang (03/16/2024), Linux Mint, Ubuntu 22.04
+*   Your GPU usage is still high after node.js exits.
+    *   Make sure to call `model.dispose()`!!!
 
 ### Roadmap
 
-This package is in active development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
+This package has been stabilizing over time development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
 
+*   \[ ] Purely offline. Per the gui, which can be run completely offline, the bindings should be as well.
+*   \[ ] NPM bundle size reduction via optionalDependencies strategy (need help)
+    *   Should include prebuilds to avoid painful node-gyp errors
+*   \[x] createChatSession ( the python equivalent to create\_chat\_session )
+*   \[x] generateTokens, the new name for createTokenStream. As of 3.2.0, this is released but not 100% tested. Check spec/generator.mjs!
+*   \[x] ~~createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)~~ May not implement unless someone else can complete
 *   \[x] prompt models via a threadsafe function in order to have proper non blocking behavior in nodejs
-*   \[ ] ~~createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)~~ May not implement unless someone else can complete
+*   \[x] generateTokens is the new name for this^
 *   \[x] proper unit testing (integrate with circle ci)
 *   \[x] publish to npm under alpha tag `gpt4all@alpha`
 *   \[x] have more people test on other platforms (mac tester needed)
 *   \[x] switch to new pluggable backend
-*   \[ ] NPM bundle size reduction via optionalDependencies strategy (need help)
-    *   Should include prebuilds to avoid painful node-gyp errors
-*   \[ ] createChatSession ( the python equivalent to create\_chat\_session )
 
 ### API Reference
 
@@ -153,143 +238,199 @@ This package is in active development, and breaking changes may happen until the
 
 ##### Table of Contents
 
-*   [ModelFile](#modelfile)
-    *   [gptj](#gptj)
-    *   [llama](#llama)
-    *   [mpt](#mpt)
-    *   [replit](#replit)
 *   [type](#type)
 *   [TokenCallback](#tokencallback)
+*   [ChatSessionOptions](#chatsessionoptions)
+    *   [systemPrompt](#systemprompt)
+    *   [messages](#messages)
+*   [initialize](#initialize)
+    *   [Parameters](#parameters)
+*   [generate](#generate)
+    *   [Parameters](#parameters-1)
 *   [InferenceModel](#inferencemodel)
+    *   [createChatSession](#createchatsession)
+        *   [Parameters](#parameters-2)
+    *   [generate](#generate-1)
+        *   [Parameters](#parameters-3)
     *   [dispose](#dispose)
 *   [EmbeddingModel](#embeddingmodel)
     *   [dispose](#dispose-1)
+*   [InferenceResult](#inferenceresult)
 *   [LLModel](#llmodel)
     *   [constructor](#constructor)
-        *   [Parameters](#parameters)
+        *   [Parameters](#parameters-4)
     *   [type](#type-1)
     *   [name](#name)
     *   [stateSize](#statesize)
     *   [threadCount](#threadcount)
     *   [setThreadCount](#setthreadcount)
-        *   [Parameters](#parameters-1)
-    *   [raw\_prompt](#raw_prompt)
-        *   [Parameters](#parameters-2)
+        *   [Parameters](#parameters-5)
+    *   [infer](#infer)
+        *   [Parameters](#parameters-6)
     *   [embed](#embed)
-        *   [Parameters](#parameters-3)
+        *   [Parameters](#parameters-7)
     *   [isModelLoaded](#ismodelloaded)
     *   [setLibraryPath](#setlibrarypath)
-        *   [Parameters](#parameters-4)
+        *   [Parameters](#parameters-8)
     *   [getLibraryPath](#getlibrarypath)
     *   [initGpuByString](#initgpubystring)
-        *   [Parameters](#parameters-5)
+        *   [Parameters](#parameters-9)
     *   [hasGpuDevice](#hasgpudevice)
     *   [listGpu](#listgpu)
-        *   [Parameters](#parameters-6)
+        *   [Parameters](#parameters-10)
     *   [dispose](#dispose-2)
 *   [GpuDevice](#gpudevice)
     *   [type](#type-2)
 *   [LoadModelOptions](#loadmodeloptions)
-*   [loadModel](#loadmodel)
-    *   [Parameters](#parameters-7)
-*   [createCompletion](#createcompletion)
-    *   [Parameters](#parameters-8)
-*   [createEmbedding](#createembedding)
-    *   [Parameters](#parameters-9)
-*   [CompletionOptions](#completionoptions)
+    *   [modelPath](#modelpath)
+    *   [librariesPath](#librariespath)
+    *   [modelConfigFile](#modelconfigfile)
+    *   [allowDownload](#allowdownload)
     *   [verbose](#verbose)
-    *   [systemPromptTemplate](#systemprompttemplate)
-    *   [promptTemplate](#prompttemplate)
-    *   [promptHeader](#promptheader)
-    *   [promptFooter](#promptfooter)
-*   [PromptMessage](#promptmessage)
+    *   [device](#device)
+    *   [nCtx](#nctx)
+    *   [ngl](#ngl)
+*   [loadModel](#loadmodel)
+    *   [Parameters](#parameters-11)
+*   [InferenceProvider](#inferenceprovider)
+*   [createCompletion](#createcompletion)
+    *   [Parameters](#parameters-12)
+*   [createCompletionStream](#createcompletionstream)
+    *   [Parameters](#parameters-13)
+*   [createCompletionGenerator](#createcompletiongenerator)
+    *   [Parameters](#parameters-14)
+*   [createEmbedding](#createembedding)
+    *   [Parameters](#parameters-15)
+*   [CompletionOptions](#completionoptions)
+    *   [verbose](#verbose-1)
+    *   [onToken](#ontoken)
+*   [Message](#message)
     *   [role](#role)
     *   [content](#content)
 *   [prompt\_tokens](#prompt_tokens)
 *   [completion\_tokens](#completion_tokens)
 *   [total\_tokens](#total_tokens)
+*   [n\_past\_tokens](#n_past_tokens)
 *   [CompletionReturn](#completionreturn)
     *   [model](#model)
     *   [usage](#usage)
-    *   [choices](#choices)
-*   [CompletionChoice](#completionchoice)
-    *   [message](#message)
+    *   [message](#message-1)
+*   [CompletionStreamReturn](#completionstreamreturn)
 *   [LLModelPromptContext](#llmodelpromptcontext)
     *   [logitsSize](#logitssize)
     *   [tokensSize](#tokenssize)
     *   [nPast](#npast)
-    *   [nCtx](#nctx)
     *   [nPredict](#npredict)
+    *   [promptTemplate](#prompttemplate)
+    *   [nCtx](#nctx-1)
     *   [topK](#topk)
     *   [topP](#topp)
-    *   [temp](#temp)
+    *   [minP](#minp)
+    *   [temperature](#temperature)
     *   [nBatch](#nbatch)
     *   [repeatPenalty](#repeatpenalty)
     *   [repeatLastN](#repeatlastn)
     *   [contextErase](#contexterase)
-*   [generateTokens](#generatetokens)
-    *   [Parameters](#parameters-10)
 *   [DEFAULT\_DIRECTORY](#default_directory)
 *   [DEFAULT\_LIBRARIES\_DIRECTORY](#default_libraries_directory)
 *   [DEFAULT\_MODEL\_CONFIG](#default_model_config)
 *   [DEFAULT\_PROMPT\_CONTEXT](#default_prompt_context)
 *   [DEFAULT\_MODEL\_LIST\_URL](#default_model_list_url)
 *   [downloadModel](#downloadmodel)
-    *   [Parameters](#parameters-11)
+    *   [Parameters](#parameters-16)
     *   [Examples](#examples)
 *   [DownloadModelOptions](#downloadmodeloptions)
-    *   [modelPath](#modelpath)
-    *   [verbose](#verbose-1)
+    *   [modelPath](#modelpath-1)
+    *   [verbose](#verbose-2)
     *   [url](#url)
     *   [md5sum](#md5sum)
 *   [DownloadController](#downloadcontroller)
     *   [cancel](#cancel)
     *   [promise](#promise)
 
-#### ModelFile
-
-Full list of models available
-DEPRECATED!! These model names are outdated and this type will not be maintained, please use a string literal instead
-
-##### gptj
-
-List of GPT-J Models
-
-Type: (`"ggml-gpt4all-j-v1.3-groovy.bin"` | `"ggml-gpt4all-j-v1.2-jazzy.bin"` | `"ggml-gpt4all-j-v1.1-breezy.bin"` | `"ggml-gpt4all-j.bin"`)
-
-##### llama
-
-List Llama Models
-
-Type: (`"ggml-gpt4all-l13b-snoozy.bin"` | `"ggml-vicuna-7b-1.1-q4_2.bin"` | `"ggml-vicuna-13b-1.1-q4_2.bin"` | `"ggml-wizardLM-7B.q4_2.bin"` | `"ggml-stable-vicuna-13B.q4_2.bin"` | `"ggml-nous-gpt4-vicuna-13b.bin"` | `"ggml-v3-13b-hermes-q5_1.bin"`)
-
-##### mpt
-
-List of MPT Models
-
-Type: (`"ggml-mpt-7b-base.bin"` | `"ggml-mpt-7b-chat.bin"` | `"ggml-mpt-7b-instruct.bin"`)
-
-##### replit
-
-List of Replit Models
-
-Type: `"ggml-replit-code-v1-3b.bin"`
-
 #### type
 
 Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
 
-Type: ModelType
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
 #### TokenCallback
 
-Callback for controlling token generation
+Callback for controlling token generation. Return false to stop token generation.
 
 Type: function (tokenId: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number), token: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), total: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)): [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
+#### ChatSessionOptions
+
+**Extends Partial\<LLModelPromptContext>**
+
+Options for the chat session.
+
+##### systemPrompt
+
+System prompt to ingest on initialization.
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+##### messages
+
+Messages to ingest on initialization.
+
+Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[Message](#message)>
+
+#### initialize
+
+Ingests system prompt and initial messages.
+Sets this chat session as the active chat session of the model.
+
+##### Parameters
+
+*   `options` **[ChatSessionOptions](#chatsessionoptions)** The options for the chat session.
+
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<void>**&#x20;
+
+#### generate
+
+Prompts the model in chat-session context.
+
+##### Parameters
+
+*   `prompt` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The prompt input.
+*   `options` **[CompletionOptions](#completionoptions)?** Prompt context and other options.
+*   `callback` **[TokenCallback](#tokencallback)?** Token generation callback.
+
+<!---->
+
+*   Throws **[Error](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error)** If the chat session is not the active chat session of the model.
+
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[CompletionReturn](#completionreturn)>** The model's response to the prompt.
 
 #### InferenceModel
 
 InferenceModel represents an LLM which can make chat predictions, similar to GPT transformers.
+
+##### createChatSession
+
+Create a chat session with the model.
+
+###### Parameters
+
+*   `options` **[ChatSessionOptions](#chatsessionoptions)?** The options for the chat session.
+
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<ChatSession>** The chat session.
+
+##### generate
+
+Prompts the model with a given input and optional parameters.
+
+###### Parameters
+
+*   `prompt` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+*   `options` **[CompletionOptions](#completionoptions)?** Prompt context and other options.
+*   `callback` **[TokenCallback](#tokencallback)?** Token generation callback.
+*   `input`  The prompt input.
+
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[CompletionReturn](#completionreturn)>** The model's response to the prompt.
 
 ##### dispose
 
@@ -306,6 +447,10 @@ EmbeddingModel represents an LLM which can create embeddings, which are float ar
 delete and cleanup the native model
 
 Returns **void**&#x20;
+
+#### InferenceResult
+
+Shape of LLModel's inference result.
 
 #### LLModel
 
@@ -326,9 +471,9 @@ Initialize a new LLModel.
 
 ##### type
 
-either 'gpt', mpt', or 'llama' or undefined
+undefined or user supplied
 
-Returns **(ModelType | [undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined))**&#x20;
+Returns **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined))**&#x20;
 
 ##### name
 
@@ -360,7 +505,7 @@ Set the number of threads used for model inference.
 
 Returns **void**&#x20;
 
-##### raw\_prompt
+##### infer
 
 Prompt the model with a given input and optional parameters.
 This is the raw output from model.
@@ -368,23 +513,20 @@ Use the prompt function exported for a value
 
 ###### Parameters
 
-*   `q` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The prompt input.
-*   `params` **Partial<[LLModelPromptContext](#llmodelpromptcontext)>** Optional parameters for the prompt context.
+*   `prompt` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The prompt input.
+*   `promptContext` **Partial<[LLModelPromptContext](#llmodelpromptcontext)>** Optional parameters for the prompt context.
 *   `callback` **[TokenCallback](#tokencallback)?** optional callback to control token generation.
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** The result of the model prompt.
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[InferenceResult](#inferenceresult)>** The result of the model prompt.
 
 ##### embed
 
 Embed text with the model. Keep in mind that
-not all models can embed text, (only bert can embed as of 07/16/2023 (mm/dd/yyyy))
 Use the prompt function exported for a value
 
 ###### Parameters
 
-*   `text` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
-*   `q`  The prompt input.
-*   `params`  Optional parameters for the prompt context.
+*   `text` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The prompt input.
 
 Returns **[Float32Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array)** The result of the model prompt.
 
@@ -462,6 +604,62 @@ Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 Options that configure a model's behavior.
 
+##### modelPath
+
+Where to look for model files.
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+##### librariesPath
+
+Where to look for the backend libraries.
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+##### modelConfigFile
+
+The path to the model configuration file, useful for offline usage or custom model configurations.
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+##### allowDownload
+
+Whether to allow downloading the model if it is not present at the specified path.
+
+Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
+##### verbose
+
+Enable verbose logging.
+
+Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
+##### device
+
+The processing unit on which the model will run. It can be set to
+
+*   "cpu": Model will run on the central processing unit.
+*   "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
+*   "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
+*   "gpu name": Model will run on the GPU that matches the name if it's available.
+    Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
+    instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
+    model.
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+##### nCtx
+
+The Maximum window size of this model
+
+Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
+##### ngl
+
+Number of gpu layers needed
+
+Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
 #### loadModel
 
 Loads a machine learning model with the specified name. The defacto way to create a model.
@@ -474,17 +672,45 @@ By default this will download a model from the official GPT4ALL website, if a mo
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<([InferenceModel](#inferencemodel) | [EmbeddingModel](#embeddingmodel))>** A promise that resolves to an instance of the loaded LLModel.
 
+#### InferenceProvider
+
+Interface for inference, implemented by InferenceModel and ChatSession.
+
 #### createCompletion
 
 The nodejs equivalent to python binding's chat\_completion
 
 ##### Parameters
 
-*   `model` **[InferenceModel](#inferencemodel)** The language model object.
-*   `messages` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[PromptMessage](#promptmessage)>** The array of messages for the conversation.
+*   `provider` **[InferenceProvider](#inferenceprovider)** The inference model object or chat session
+*   `message` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The user input message
 *   `options` **[CompletionOptions](#completionoptions)** The options for creating the completion.
 
 Returns **[CompletionReturn](#completionreturn)** The completion result.
+
+#### createCompletionStream
+
+Streaming variant of createCompletion, returns a stream of tokens and a promise that resolves to the completion result.
+
+##### Parameters
+
+*   `provider` **[InferenceProvider](#inferenceprovider)** The inference model object or chat session
+*   `message` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The user input message.
+*   `options` **[CompletionOptions](#completionoptions)** The options for creating the completion.
+
+Returns **[CompletionStreamReturn](#completionstreamreturn)** An object of token stream and the completion result promise.
+
+#### createCompletionGenerator
+
+Creates an async generator of tokens
+
+##### Parameters
+
+*   `provider` **[InferenceProvider](#inferenceprovider)** The inference model object or chat session
+*   `message` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The user input message.
+*   `options` **[CompletionOptions](#completionoptions)** The options for creating the completion.
+
+Returns **AsyncGenerator<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** The stream of generated tokens
 
 #### createEmbedding
 
@@ -510,34 +736,15 @@ Indicates if verbose logging is enabled.
 
 Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
 
-##### systemPromptTemplate
+##### onToken
 
-Template for the system message. Will be put before the conversation with %1 being replaced by all system messages.
-Note that if this is not defined, system messages will not be included in the prompt.
+Callback for controlling token generation. Return false to stop processing.
 
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+Type: [TokenCallback](#tokencallback)
 
-##### promptTemplate
+#### Message
 
-Template for user messages, with %1 being replaced by the message.
-
-Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
-
-##### promptHeader
-
-The initial instruction for the model, on top of the prompt
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-##### promptFooter
-
-The last instruction for the model, appended to the end of the prompt.
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-#### PromptMessage
-
-A message in the conversation, identical to OpenAI's chat message.
+A message in the conversation.
 
 ##### role
 
@@ -553,7 +760,7 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 #### prompt\_tokens
 
-The number of tokens used in the prompt.
+The number of tokens used in the prompt. Currently not available and always 0.
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
@@ -565,13 +772,19 @@ Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 #### total\_tokens
 
-The total number of tokens used.
+The total number of tokens used. Currently not available and always 0.
+
+Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
+#### n\_past\_tokens
+
+Number of tokens used in the conversation.
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
 #### CompletionReturn
 
-The result of the completion, similar to OpenAI's format.
+The result of a completion.
 
 ##### model
 
@@ -583,23 +796,17 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 Token usage report.
 
-Type: {prompt\_tokens: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number), completion\_tokens: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number), total\_tokens: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)}
-
-##### choices
-
-The generated completions.
-
-Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[CompletionChoice](#completionchoice)>
-
-#### CompletionChoice
-
-A completion choice, similar to OpenAI's format.
+Type: {prompt\_tokens: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number), completion\_tokens: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number), total\_tokens: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number), n\_past\_tokens: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)}
 
 ##### message
 
-Response message
+The generated completion.
 
-Type: [PromptMessage](#promptmessage)
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### CompletionStreamReturn
+
+The result of a streamed completion, containing a stream of tokens and a promise that resolves to the completion result.
 
 #### LLModelPromptContext
 
@@ -620,18 +827,29 @@ Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 ##### nPast
 
 The number of tokens in the past conversation.
-
-Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
-
-##### nCtx
-
-The number of tokens possible in the context window.
+This controls how far back the model looks when generating completions.
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
 ##### nPredict
 
-The number of tokens to predict.
+The maximum number of tokens to predict.
+
+Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
+##### promptTemplate
+
+Template for user / assistant message pairs.
+%1 is required and will be replaced by the user input.
+%2 is optional and will be replaced by the assistant response.
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+##### nCtx
+
+The context window size. Do not use, it has no effect. See loadModel options.
+THIS IS DEPRECATED!!!
+Use loadModel's nCtx option instead.
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
@@ -654,12 +872,16 @@ above a threshold P. This method, also known as nucleus sampling, finds a balanc
 and quality by considering both token probabilities and the number of tokens available for sampling.
 When using a higher value for top-P (eg., 0.95), the generated text becomes more diverse.
 On the other hand, a lower value (eg., 0.1) produces more focused and conservative text.
-The default value is 0.4, which is aimed to be the middle ground between focus and diversity, but
-for more creative tasks a higher top-p value will be beneficial, about 0.5-0.9 is a good range for that.
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
-##### temp
+##### minP
+
+The minimum probability of a token to be considered.
+
+Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
+##### temperature
 
 The temperature to adjust the model's output distribution.
 Temperature is like a knob that adjusts how creative or focused the output becomes. Higher temperatures
@@ -704,19 +926,6 @@ The percentage of context to erase if the context window is exceeded.
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
-#### generateTokens
-
-Creates an async generator of tokens
-
-##### Parameters
-
-*   `llmodel` **[InferenceModel](#inferencemodel)** The language model object.
-*   `messages` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[PromptMessage](#promptmessage)>** The array of messages for the conversation.
-*   `options` **[CompletionOptions](#completionoptions)** The options for creating the completion.
-*   `callback` **[TokenCallback](#tokencallback)** optional callback to control token generation.
-
-Returns **AsyncGenerator<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** The stream of generated tokens
-
 #### DEFAULT\_DIRECTORY
 
 From python api:
@@ -759,7 +968,7 @@ By default this downloads without waiting. use the controller returned to alter 
 ##### Parameters
 
 *   `modelName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The model to be downloaded.
-*   `options` **DownloadOptions** to pass into the downloader. Default is { location: (cwd), verbose: false }.
+*   `options` **[DownloadModelOptions](#downloadmodeloptions)** to pass into the downloader. Default is { location: (cwd), verbose: false }.
 
 ##### Examples
 
