@@ -31,7 +31,6 @@ console.log("gpu devices", ll.listGpu())
 console.log("Required Mem in bytes", ll.memoryNeeded())
 const completion1 = await createCompletion(model, 'What is 1 + 1?', {
     verbose: true,
-    systemPrompt: '<|im_start|>system\nYou are an advanced mathematician.\n<|im_end|>',
 })
 console.log(completion1.message)
 
@@ -41,4 +40,3 @@ console.log(completion2.message)
 
 //CALLING DISPOSE WILL INVALID THE NATIVE MODEL. USE THIS TO CLEANUP
 model.dispose()
-

@@ -90,6 +90,7 @@ void PromptWorker::OnOK()
 
 void PromptWorker::OnError(const Napi::Error &e)
 {
+    delete _config.fakeReply;
     promise.Reject(e.Value());
 }
 
