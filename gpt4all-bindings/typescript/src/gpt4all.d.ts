@@ -69,9 +69,7 @@ declare class ChatSession {
 }
 
 /**
- *
  * InferenceModel represents an LLM which can make chat predictions, similar to GPT transformers.
- *
  */
 declare class InferenceModel {
     constructor(llm: LLModel, config: ModelConfig);
@@ -145,8 +143,8 @@ declare class LLModel {
     constructor(path: string);
     constructor(options: LLModelOptions);
 
-    /** either 'gpt', mpt', or 'llama' or undefined */
-    type(): ModelType | undefined;
+    /** undefined or user supplied */
+    type(): string|undefined;
 
     /** The name of the model. */
     name(): string;
@@ -188,10 +186,8 @@ declare class LLModel {
 
     /**
      * Embed text with the model. Keep in mind that
-     * not all models can embed text, (only bert can embed as of 07/16/2023 (mm/dd/yyyy))
      * Use the prompt function exported for a value
-     * @param q The prompt input.
-     * @param params Optional parameters for the prompt context.
+     * @param text The prompt input.
      * @returns The result of the model prompt.
      */
     embed(text: string): Float32Array;
@@ -483,9 +479,10 @@ interface LLModelPromptContext {
     promptTemplate?: string;
 
     /** The context window size. Do not use, it has no effect. See loadModel options.
+     * THIS IS DEPRECATED!!!
+     * Use loadModel's nCtx option instead.
      * @default 2048
-     * @deprecated Use loadModel's nCtx option instead.
-     * */
+     */
     nCtx: number;
 
     /** The top-k logits to sample from.
@@ -505,6 +502,7 @@ interface LLModelPromptContext {
      * When using a higher value for top-P (eg., 0.95), the generated text becomes more diverse.
      * On the other hand, a lower value (eg., 0.1) produces more focused and conservative text.
      * @default 0.9
+     * 
      * */
     topP: number;
     
@@ -589,7 +587,7 @@ declare const DEFAULT_MODEL_LIST_URL: string;
  * Initiates the download of a model file.
  * By default this downloads without waiting. use the controller returned to alter this behavior.
  * @param {string} modelName - The model to be downloaded.
- * @param {DownloadOptions} options - to pass into the downloader. Default is { location: (cwd), verbose: false }.
+ * @param {DownloadModelOptions} options - to pass into the downloader. Default is { location: (cwd), verbose: false }.
  * @returns {DownloadController} object that allows controlling the download process.
  *
  * @throws {Error} If the model already exists in the specified location.
@@ -664,8 +662,7 @@ interface DownloadController {
 }
 
 export {
-    ModelType,
-    ModelFile,
+    //ModelType,
     ModelConfig,
     InferenceModel,
     InferenceProvider,

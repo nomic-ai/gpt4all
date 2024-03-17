@@ -11,9 +11,7 @@ pnpm install gpt4all@latest
 
 ```
 
-The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-ts) are now out of date.
-
-*   New bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
+*   Llama.cpp + gpt4all nodejs bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
 *   The nodejs api has made strides to mirror the python api. It is not 100% mirrored, but many pieces of the api resemble its python counterpart.
 *   Everything should work out the box.
 *   See [API Reference](#api-reference)
@@ -129,16 +127,19 @@ yarn test
 
 *   why your model may be spewing bull 💩
     *   The downloaded model is broken (just reinstall or download from official site)
-    *   That's it so far
+*   Your model is hanging after a call to generate tokens.
+    * Is `nPast` set too high? This may cause your model to hang (03/16/2024), Linux Mint, Ubuntu 22.04
+*  Your GPU usage is still high after node.js exits.
+    * Make sure to call `model.dispose()`!!!
 
 ### Roadmap
 
-This package is in active development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
+This package has been stabilizing over time development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
 
 *   \[ ] Purely offline. Per the gui, which can be run completely offline, the bindings should be as well.
 *   \[ ] NPM bundle size reduction via optionalDependencies strategy (need help)
     *   Should include prebuilds to avoid painful node-gyp errors
-*   \[ ] createChatSession ( the python equivalent to create\_chat\_session )
+*   \[x] createChatSession ( the python equivalent to create\_chat\_session )
 *   \[x] generateTokens, the new name for createTokenStream. As of 3.2.0, this is released but not 100% tested. Check spec/generator.mjs! 
 *   \[x] ~~createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)~~ May not implement unless someone else can complete
 *   \[x] prompt models via a threadsafe function in order to have proper non blocking behavior in nodejs

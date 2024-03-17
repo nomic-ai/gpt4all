@@ -33,8 +33,9 @@ const completion1 = await createCompletion(model, 'What is 1 + 1?', {
     verbose: true,
 })
 console.log(completion1.message)
-
-const completion2 = await createCompletion(model, 'And if we add two?', {  verbose: true, nPast: 100 })
+//Very specific: 
+// tested on Ubuntu 22.0, Linux Mint, if I set nPast to 100, the app hangs.
+const completion2 = await createCompletion(model, 'And if we add two?', {  verbose: true  })
 
 console.log(completion2.message)
 

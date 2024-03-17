@@ -3,9 +3,21 @@ const { DEFAULT_PROMPT_CONTEXT } = require("./config");
 class ChatSession {
     model;
     modelName;
+    /**
+     * @type {unknown[]}
+     */
     messages;
+    /**
+     * @type {string}
+     */
     systemPrompt;
+    /**
+     * @type {import('./gpt4all').LLModelPromptContext}
+     */
     promptContext;
+    /**
+     * @type {boolean}
+     */
     initialized;
 
     constructor(model, opts = {}) {

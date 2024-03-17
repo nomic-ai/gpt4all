@@ -27,7 +27,7 @@ const { ChatSession } = require("./chat-session.js");
  * By default this will download a model from the official GPT4ALL website, if a model is not present at given path.
  *
  * @param {string} modelName - The name of the model to load.
- * @param {LoadModelOptions|undefined} [options] - (Optional) Additional options for loading the model.
+ * @param {import('./gpt4all').LoadModelOptions|undefined} [options] - (Optional) Additional options for loading the model.
  * @returns {Promise<InferenceModel | EmbeddingModel>} A promise that resolves to an instance of the loaded LLModel.
  */
 async function loadModel(modelName, options = {}) {
