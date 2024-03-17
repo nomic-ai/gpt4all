@@ -81,8 +81,39 @@ async function loadModel(modelName, options = {}) {
     }
 }
 
-function createEmbedding(model, text) {
-    return model.embed(text);
+function createEmbedding(model, text, options) {
+  let { 
+    dimensionality=undefined, 
+    long_text_mode="mean",
+    atlas=false 
+  } = options ?? {};
+
+  if (dimensionality === undefined) {
+    dimensionality = -1;
+  } else {
+    if (dimensionality <= 0) {
+      throw new Error(`Dimensionality must be undefined or a positive integer, got ${dimensionality}`);
+    }
+    if (dimensionality < model.MIN_DIMENSIONALITY) {
+      console.warn(`Dimensionality ${dimensionality} is less than the suggested minimum of ${model.MIN_DIMENSIONALITY}. Performance may be degraded.`);
+    }
+  }
+
+  let do_mean;
+  switch (long_text_mode) {
+    case 'mean': do_mean = true; break;
+    case 'truncate': do_mean = false; break;
+    default:
+      throw new Error(`Long text mode must be one of 'mean' or 'truncate', got ${long_text_mode}`);
+  }
+ /**
+   text = info[0]
+   auto prefix = info[1].As<Napi::String>().Utf8Value();
+   auto dimensionality = info[2].As<Napi::Number>().Int32Value();
+   auto do_mean = info[3].As<Napi::Boolean>().Value();
+   auto atlas = info[4].As<Napi::Boolean>().Value();
+  */
+  return model.embed(text, options?.prefix, dimensionality, do_mean, atlas);
 }
 
 const defaultCompletionOptions = {

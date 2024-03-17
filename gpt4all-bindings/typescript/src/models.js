@@ -96,14 +96,20 @@ class InferenceModel {
 class EmbeddingModel {
     llm;
     config;
-
+    MIN_DIMENSIONALITY = 64
     constructor(llmodel, config) {
         this.llm = llmodel;
         this.config = config;
     }
 
-    embed(text) {
-        return this.llm.embed(text);
+    embed(text, prefix, dimensionality, do_mean, atlas) {
+        return this.llm.embed(
+            text, 
+            prefix,
+            dimensionality,
+            do_mean,
+            atlas
+        );
     }
 
     dispose() {

@@ -18,11 +18,10 @@ pnpm install gpt4all@latest
 
 ## Api Example
 ### Chat Completion
-
 ```js
-import { LLModel, createCompletion, DEFAULT_DIRECTORY, DEFAULT_LIBRARIES_DIRECTORY, loadModel } from '../src/gpt4all.js'
+import { createCompletion, loadModel } from '../src/gpt4all.js'
 
-const model = await loadModel( 'mistral-7b-openorca.gguf2.Q4_0.gguf', { verbose: true, device: 'gpu' });
+const model = await loadModel('mistral-7b-openorca.gguf2.Q4_0.gguf', { verbose: true, device: 'gpu' });
 
 const completion1 = await createCompletion(model, 'What is 1 + 1?', { verbose: true, })
 console.log(completion1.message)
@@ -38,7 +37,7 @@ model.dispose()
 ```js
 import { loadModel, createEmbedding } from '../src/gpt4all.js'
 
-const embedder = await loadModel("all-MiniLM-L6-v2-f16.gguf", { verbose: true, type: 'embedding'})
+const embedder = await loadModel("nomic-embed-text-v1.5.f16.gguf", { verbose: true, type: 'embedding'})
 
 console.log(createEmbedding(embedder, "Maybe Minecraft was the friends we made along the way"));
 ```
@@ -110,6 +109,26 @@ for await (const chunk of gen) {
 process.stdout.write("\n");
 model.dispose();
 ```
+### Offline usage 
+do this b4 going offline
+```sh
+curl -L https://gpt4all.io/models/models3.json -o ./models3.json
+```
+```js 
+import { createCompletion, loadModel } from 'gpt4all'
+
+//make sure u downloaded the models before going offline!
+const model = await loadModel('mistral-7b-openorca.gguf2.Q4_0.gguf', { 
+    verbose: true,
+    device: 'gpu',
+    modelConfigFile: "./models3.json" 
+});
+
+await createCompletion(model, 'What is 1 + 1?', { verbose: true })
+
+model.dispose();
+```
+
 ## Develop
 ### Build Instructions
 

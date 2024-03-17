@@ -112,40 +112,19 @@ Napi::Value NodeModelWrapper::HasGpuDevice(const Napi::CallbackInfo &info)
 NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo &info) : Napi::ObjectWrap<NodeModelWrapper>(info)
 {
     auto env = info.Env();
-    fs::path model_path;
+    auto config_object = info[0].As<Napi::Object>();
 
-    std::string full_weight_path, library_path = ".", model_name, device;
-    if (info[0].IsString())
-    {
-        model_path = info[0].As<Napi::String>().Utf8Value();
-        full_weight_path = model_path.string();
-        std::cout << "DEPRECATION: constructor accepts object now. Check docs for more.\n";
-    }
-    else
-    {
-        auto config_object = info[0].As<Napi::Object>();
-        model_name = config_object.Get("model_name").As<Napi::String>();
-        model_path = config_object.Get("model_path").As<Napi::String>().Utf8Value();
-        if (config_object.Has("model_type"))
-        {
-            type = config_object.Get("model_type").As<Napi::String>();
-        }
-        full_weight_path = (model_path / fs::path(model_name)).string();
+    //sets the directory where models (gguf files) are to be searched
+    llmodel_set_implementation_search_path(
+        config_object.Has("library_path")
+        ? config_object.Get("library_path").As<Napi::String>().Utf8Value().c_str()
+        : "."
+    );
 
-        if (config_object.Has("library_path"))
-        {
-            library_path = config_object.Get("library_path").As<Napi::String>();
-        }
-        else
-        {
-            library_path = ".";
-        }
-        device = config_object.Get("device").As<Napi::String>();
+    std::string model_name = config_object.Get("model_name").As<Napi::String>();
+    fs::path model_path = config_object.Get("model_path").As<Napi::String>().Utf8Value();
+    std::string full_weight_path = (model_path / fs::path(model_name)).string();
 
-        nCtx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
-        nGpuLayers = config_object.Get("ngl").As<Napi::Number>().Int32Value();
-    }
-    llmodel_set_implementation_search_path(library_path.c_str());
     const char *e;
     inference_ = llmodel_model_create2(full_weight_path.c_str(), "auto", &e);
     if (!inference_)
@@ -155,12 +134,14 @@ NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo &info) : Napi::Objec
     }
     if (GetInference() == nullptr)
     {
-        std::cerr << "Tried searching libraries in \"" << library_path << "\"" << std::endl;
+        std::cerr << "Tried searching libraries in \"" << llmodel_get_implementation_search_path() << "\"" << std::endl;
         std::cerr << "Tried searching for model weight in \"" << full_weight_path << "\"" << std::endl;
         std::cerr << "Do you have runtime libraries installed?" << std::endl;
         Napi::Error::New(env, "Had an issue creating llmodel object, inference is null").ThrowAsJavaScriptException();
         return;
     }
+
+    std::string device = config_object.Get("device").As<Napi::String>();
     if (device != "cpu")
     {
         size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str(), nCtx, nGpuLayers);
@@ -181,8 +162,14 @@ NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo &info) : Napi::Objec
         return;
     }
 
+    if (config_object.Has("model_type"))
+    {
+        type = config_object.Get("model_type").As<Napi::String>();
+    }
     name = model_name.empty() ? model_path.filename().string() : model_name;
     full_model_path = full_weight_path;
+    nCtx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
+    nGpuLayers = config_object.Get("ngl").As<Napi::Number>().Int32Value();
 };
 
 //  NodeModelWrapper::~NodeModelWrapper() {
@@ -212,30 +199,63 @@ Napi::Value NodeModelWrapper::StateSize(const Napi::CallbackInfo &info)
 Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
 {
     auto env = info.Env();
-    std::string text = info[0].As<Napi::String>().Utf8Value();
+
+    auto prefix = info[1];
+    auto dimensionality = info[2].As<Napi::Number>().Int32Value();
+    auto do_mean = info[3].As<Napi::Boolean>().Value();
+    auto atlas = info[4].As<Napi::Boolean>().Value();
     size_t embedding_size = 0;
-    float *arr = llmodel_embedding(GetInference(), text.c_str(), &embedding_size);
-    if (arr == nullptr)
+
+    // This procedure can maybe be optimized but its whatever, i have too many intermediary structures
+    std::vector<std::string> text_arr;
+    bool is_single_text = false;
+    if (info[0].IsString())
     {
-        Napi::Error::New(env, "Cannot embed. native embedder returned 'nullptr'").ThrowAsJavaScriptException();
+        is_single_text = true;
+        text_arr.push_back(info[0].As<Napi::String>().Utf8Value());
+    }
+    else
+    {
+        auto jsarr = info[0].As<Napi::Array>();
+        size_t len = jsarr.Length();
+        for (size_t i = 0; i < len; ++i)
+        {
+            std::string str = jsarr.Get(i).As<Napi::String>().Utf8Value();
+            text_arr.push_back(str);
+        }
+    }
+    std::vector<const char *> str_ptrs;
+    for (size_t i = 0; i < text_arr.size(); ++i)
+        str_ptrs.push_back(text_arr[i].c_str());
+
+    const char *err = nullptr;
+    float *embeds = llmodel_embed(GetInference(), str_ptrs.data(), &embedding_size,
+                                  prefix.IsUndefined() ? NULL : prefix.As<Napi::String>().Utf8Value().c_str(),
+                                  dimensionality, do_mean, atlas, &err);
+    if (err)
+    {
+        Napi::Error::New(env, strcmp(err, "(unknown error)") == 0 ? "Unknown error: sorry bud" : err)
+            .ThrowAsJavaScriptException();
+        delete err;
         return env.Undefined();
     }
 
-    if (embedding_size == 0 && text.size() != 0)
-    {
-        std::cout << "Warning: embedding length 0 but input text length > 0" << std::endl;
-    }
     Napi::Float32Array js_array = Napi::Float32Array::New(env, embedding_size);
-
     for (size_t i = 0; i < embedding_size; ++i)
     {
-        float element = *(arr + i);
+        float element = *(embeds + i);
         js_array[i] = element;
     }
 
-    llmodel_free_embedding(arr);
-
-    return js_array;
+    llmodel_free_embedding(embeds);
+    if (is_single_text)
+    {
+        return js_array;
+    }
+    else
+    {
+        return js_array;
+    }
 }
 
 /**

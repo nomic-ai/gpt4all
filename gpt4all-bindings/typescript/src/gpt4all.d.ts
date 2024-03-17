@@ -379,6 +379,32 @@ declare function createCompletionGenerator(
 ): AsyncGenerator<string, CompletionReturn>;
 
 /**
+ * Options for generating one or more embeddings.
+ */
+interface EmbedddingOptions { 
+    /**
+     * The model-specific prefix representing the embedding task, without the trailing colon. For Nomic Embed 
+     * this can be `search_query`, `search_document`, `classification`, or `clustering`.
+     */
+    prefix?: string
+    /**
+     *The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
+     * @default determines on the model
+     */
+    dimensionality: number;
+    /**
+     * How to handle texts longer than the model can accept. One of `mean` or `truncate`.
+     * @default "mean"
+     */
+     long_text_mode?: string
+    /**
+     * Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens 
+     * with long_text_mode="mean" will raise an error. Disabled by default.
+     * @default false
+     */
+     atlas?: boolean
+}
+/**
  * The nodejs moral equivalent to python binding's Embed4All().embed()
  * meow
  * @param {EmbeddingModel} model - The language model object.
@@ -387,7 +413,8 @@ declare function createCompletionGenerator(
  */
 declare function createEmbedding(
     model: EmbeddingModel,
-    text: string
+    text: string,
+    options: EmbedddingOptions
 ): Float32Array;
 
 /**
