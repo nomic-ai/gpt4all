@@ -1,4 +1,5 @@
 #include "index.h"
+#include "napi.h"
 
 Napi::Function NodeModelWrapper::GetClass(Napi::Env env)
 {
@@ -198,6 +199,35 @@ Napi::Value NodeModelWrapper::StateSize(const Napi::CallbackInfo &info)
     return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(GetInference())));
 }
 
+Napi::Value ChunkedFloatPtr(
+    float* embedding_ptr,
+    int embedding_size,
+    int text_len,
+    Napi::Env const& env
+    ) 
+{
+    auto n_embd = embedding_size / text_len;
+//    std::cout << "Embedding size: " << embedding_size << std::endl;
+//    std::cout << "Text length: " << text_len << std::endl;
+//    std::cout << "Chunk size (n_embd): " << n_embd << std::endl;
+    Napi::Array result = Napi::Array::New(env, text_len);
+    for (int i = 0; i < embedding_size; i += n_embd) {
+        int end = std::min(i + n_embd, embedding_size);
+        //possible bounds error?
+        //Constructs a container with as many elements as the range [first,last), with each element emplace-constructed from its corresponding element in that range, in the same order.
+        std::vector<float> chunk(embedding_ptr + i, embedding_ptr + end);
+        Napi::Float32Array fltarr = Napi::Float32Array::New(env, chunk.size());
+        //I know theres a way to emplace the raw float ptr into a Napi::Float32Array but idk how and 
+        // im too scared to cause memory issues
+        // this is goodenough
+        for(int j = 0 ; j < chunk.size(); j++) {
+            fltarr.Set(j, chunk[j]);
+        }
+        result.Set(i, fltarr);
+    }
+    return result;
+}
+
 Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
 {
     auto env = info.Env();
@@ -206,7 +236,7 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
     auto dimensionality = info[2].As<Napi::Number>().Int32Value();
     auto do_mean = info[3].As<Napi::Boolean>().Value();
     auto atlas = info[4].As<Napi::Boolean>().Value();
-    size_t embedding_size = 0;
+    size_t embedding_size;
 
     // This procedure can maybe be optimized but its whatever, i have too many intermediary structures
     std::vector<std::string> text_arr;
@@ -229,35 +259,23 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
     std::vector<const char *> str_ptrs;
     for (size_t i = 0; i < text_arr.size(); ++i)
         str_ptrs.push_back(text_arr[i].c_str());
-
-    const char *err = nullptr;
+    str_ptrs.push_back(nullptr);
+    const char *_err;
     float *embeds = llmodel_embed(GetInference(), str_ptrs.data(), &embedding_size,
-                                  prefix.IsUndefined() ? NULL : prefix.As<Napi::String>().Utf8Value().c_str(),
-                                  dimensionality, do_mean, atlas, &err);
-    if (err)
+                                  prefix.IsUndefined() ? nullptr : prefix.As<Napi::String>().Utf8Value().c_str(),
+                                  dimensionality, do_mean, atlas, &_err);
+    if (_err)
     {
-        Napi::Error::New(env, strcmp(err, "(unknown error)") == 0 ? "Unknown error: sorry bud" : err)
+        //i dont wanna deal with c strings lol
+        std::string err(_err);
+        Napi::Error::New(env, err == "(unknown error)"? "Unknown error: sorry bud" : err)
             .ThrowAsJavaScriptException();
-        delete err;
         return env.Undefined();
     }
-
-    Napi::Float32Array js_array = Napi::Float32Array::New(env, embedding_size);
-    for (size_t i = 0; i < embedding_size; ++i)
-    {
-        float element = *(embeds + i);
-        js_array[i] = element;
-    }
-
+    auto embedmat = ChunkedFloatPtr(embeds, embedding_size, text_arr.size(), env);
+    
     llmodel_free_embedding(embeds);
-    if (is_single_text)
-    {
-        return js_array;
-    }
-    else
-    {
-        return js_array;
-    }
+    return embedmat;
 }
 
 /**
