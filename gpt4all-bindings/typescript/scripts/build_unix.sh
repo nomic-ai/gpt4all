@@ -24,7 +24,6 @@ mkdir -p "$NATIVE_DIR" "$BUILD_DIR"
 
 cmake -S ../../gpt4all-backend -B "$BUILD_DIR" &&
 cmake --build "$BUILD_DIR" -j --config Release && {
-  cp "$BUILD_DIR"/libbert*.$LIB_EXT   "$NATIVE_DIR"/
   cp "$BUILD_DIR"/libgptj*.$LIB_EXT   "$NATIVE_DIR"/
   cp "$BUILD_DIR"/libllama*.$LIB_EXT  "$NATIVE_DIR"/
 }
