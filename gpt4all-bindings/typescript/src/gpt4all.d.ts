@@ -140,7 +140,6 @@ declare class LLModel {
      * @param path Absolute path to the model file.
      * @throws {Error} If the model file does not exist.
      */
-    constructor(path: string);
     constructor(options: LLModelOptions);
 
     /** undefined or user supplied */

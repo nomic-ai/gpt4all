@@ -125,6 +125,11 @@ NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo &info) : Napi::Objec
     fs::path model_path = config_object.Get("model_path").As<Napi::String>().Utf8Value();
     std::string full_weight_path = (model_path / fs::path(model_name)).string();
 
+    name = model_name.empty() ? model_path.filename().string() : model_name;
+    full_model_path = full_weight_path;
+    nCtx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
+    nGpuLayers = config_object.Get("ngl").As<Napi::Number>().Int32Value();
+
     const char *e;
     inference_ = llmodel_model_create2(full_weight_path.c_str(), "auto", &e);
     if (!inference_)
@@ -161,15 +166,12 @@ NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo &info) : Napi::Objec
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException();
         return;
     }
-
+    //optional
     if (config_object.Has("model_type"))
     {
         type = config_object.Get("model_type").As<Napi::String>();
     }
-    name = model_name.empty() ? model_path.filename().string() : model_name;
-    full_model_path = full_weight_path;
-    nCtx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
-    nGpuLayers = config_object.Get("ngl").As<Napi::Number>().Int32Value();
+    
 };
 
 //  NodeModelWrapper::~NodeModelWrapper() {

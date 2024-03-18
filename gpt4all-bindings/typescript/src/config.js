@@ -36,7 +36,7 @@ const DEFAULT_PROMPT_CONTEXT = {
     minP: 0.0,
     repeatPenalty: 1.18,
     repeatLastN: 10,
-    nBatch: 8,
+    nBatch: 100,
 }
 
 module.exports = {
