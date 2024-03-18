@@ -27,7 +27,7 @@ LLM::LLM()
     : QObject{nullptr}
     , m_compatHardware(true)
 {
-#if defined(__x86_64__)
+#if defined(__x86_64__) || defined(_M_X64)
     #ifndef _MSC_VER
         const bool minimal(__builtin_cpu_supports("avx"));
     #else
