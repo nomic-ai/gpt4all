@@ -19,33 +19,27 @@
 
 std::string s_implementations_search_path = ".";
 
-static bool cpu_supports_avx() {
-#if defined(__x86_64__) || defined(_M_X64)
-    #ifndef _MSC_VER
-        return __builtin_cpu_supports("avx");
-    #else
-        int cpuInfo[4];
-        __cpuid(cpuInfo, 1);
-        return cpuInfo[2] & (1 << 28);
-    #endif
-#else
-    return true; // Don't know how to handle non-x86_64
-#endif
-}
+#if !(defined(__x86_64__) || defined(_M_X64))
+    // irrelevant on non-x86_64
+    #define cpu_supports_avx()  -1
+    #define cpu_supports_avx2() -1
+#elif defined(_MSC_VER)
+    // MSVC
+    static int get_cpu_info(int func_id, int reg_id) {
+        int info[4];
+        __cpuid(info, func_id);
+        return info[reg_id];
+    }
 
-static bool cpu_supports_avx2() {
-#if defined(__x86_64__) || defined(_M_X64)
-    #ifndef _MSC_VER
-        return __builtin_cpu_supports("avx2");
-    #else
-        int cpuInfo[4];
-        __cpuidex(cpuInfo, 7, 0);
-        return cpuInfo[1] & (1 << 5);
-    #endif
+    // AVX via EAX=1: Processor Info and Feature Bits, bit 28 of ECX
+    #define cpu_supports_avx()  (get_cpu_info(1, 2) & (1 << 28))
+    // AVX2 via EAX=7, ECX=0: Extended Features, bit 5 of EBX
+    #define cpu_supports_avx2() (get_cpu_info(7, 1) & (1 <<  5))
 #else
-    return true; // Don't know how to handle non-x86_64
+    // gcc/clang
+    #define cpu_supports_avx()  __builtin_cpu_supports("avx")
+    #define cpu_supports_avx2() __builtin_cpu_supports("avx2")
 #endif
-}
 
 LLModel::Implementation::Implementation(Dlhandle &&dlhandle_)
     : m_dlhandle(new Dlhandle(std::move(dlhandle_))) {
@@ -85,10 +79,10 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
         std::vector<Implementation> fres;
 
         std::string impl_name_re = "(bert|gptj|llamamodel-mainline)";
-        if (cpu_supports_avx2()) {
-            impl_name_re += "-(default|metal)";
-        } else {
+        if (cpu_supports_avx2() == 0) {
             impl_name_re += "-avxonly";
+        } else {
+            impl_name_re += "-(default|metal)";
         }
         std::regex re(impl_name_re);
         auto search_in_directory = [&](const std::string& paths) {
@@ -178,10 +172,10 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
     if (!impl) {
         //TODO: Auto-detect CUDA/OpenCL
         if (buildVariant == "auto") {
-            if (cpu_supports_avx2()) {
-                buildVariant = "default";
-            } else {
+            if (cpu_supports_avx2() == 0) {
                 buildVariant = "avxonly";
+            } else {
+                buildVariant = "default";
             }
         }
         impl = implementation(modelPath.c_str(), buildVariant);
@@ -241,6 +235,6 @@ const std::string& LLModel::Implementation::implementationsSearchPath() {
     return s_implementations_search_path;
 }
 
-bool LLModel::Implementation::cpuSupportsAVX() {
-    return cpu_supports_avx();
+bool LLModel::Implementation::hasSupportedCPU() {
+    return cpu_supports_avx() != 0;
 }

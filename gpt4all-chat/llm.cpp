@@ -26,7 +26,7 @@ LLM *LLM::globalInstance()
 
 LLM::LLM()
     : QObject{nullptr}
-    , m_compatHardware(LLModel::Implementation::cpuSupportsAVX())
+    , m_compatHardware(LLModel::Implementation::hasSupportedCPU())
 {
     QNetworkInformation::loadDefaultBackend();
     auto * netinfo = QNetworkInformation::instance();
