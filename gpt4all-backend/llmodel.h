@@ -48,6 +48,7 @@ public:
         static bool isEmbeddingModel(const std::string &modelPath);
         static void setImplementationsSearchPath(const std::string &path);
         static const std::string &implementationsSearchPath();
+        static bool cpuSupportsAVX();
 
     private:
         static LLModel *constructDefaultLlama();
