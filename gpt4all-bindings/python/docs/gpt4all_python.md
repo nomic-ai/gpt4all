@@ -207,15 +207,35 @@ When using a `chat_session()`, you may customize the system prompt, and set the 
 
 ### Without Online Connectivity
 To prevent GPT4All from accessing online resources, instantiate it with `allow_download=False`. When using this flag,
-there will be no default system prompt, and you must specify the prompt template yourself:
+there will be no default system prompt by default, and you must specify the prompt template yourself.
+
+You can retrieve a model's default system prompt and prompt template with an online instance of GPT4All:
+
+=== "Prompt Template Retrieval"
+    ``` py
+    from gpt4all import GPT4All
+    model = GPT4All('orca-mini-3b-gguf2-q4_0.gguf')
+    print(repr(model.config['systemPrompt']))
+    print(repr(model.config['promptTemplate']))
+    ```
+=== "Output"
+    ```py
+    '### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n'
+    '### User:\n{0}\n### Response:\n'
+    ```
+
+Then you can pass them explicitly when creating an offline instance:
 
 ``` py
 from gpt4all import GPT4All
 model = GPT4All('orca-mini-3b-gguf2-q4_0.gguf', allow_download=False)
-with model.chat_session(prompt_template='### User:\n%1\n\n### Response:\n'):
+
+system_prompt = '### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n'
+prompt_template = '### User:\n{0}\n\n### Response:\n'
+
+with model.chat_session(system_prompt=system_prompt, prompt_template=prompt_template):
     ...
 ```
-
 
 ### Interrupting Generation
 The simplest way to stop generation is to set a fixed upper limit with the `max_tokens` parameter.
