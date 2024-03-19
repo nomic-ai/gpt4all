@@ -28,12 +28,8 @@ def test_inference():
     assert len(tokens) > 0
 
     with model.chat_session():
-        tokens = list(model.generate(prompt='hello', top_k=1, streaming=True))
-        model.current_chat_session.append({'role': 'assistant', 'content': ''.join(tokens)})
-
-        tokens = list(model.generate(prompt='write me a poem about dogs', top_k=1, streaming=True))
-        model.current_chat_session.append({'role': 'assistant', 'content': ''.join(tokens)})
-
+        model.generate(prompt='hello', top_k=1, streaming=True)
+        model.generate(prompt='write me a poem about dogs', top_k=1, streaming=True)
         print(model.current_chat_session)
 
 

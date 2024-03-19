@@ -692,9 +692,9 @@ void LLamaModel::embed(
             return "unsupported dimensionality " + std::to_string(dimensionality) + " for model " + modelName;
         };
         if (!spec->matryoshkaCapable)
-            throw std::logic_error(msg() + " (supported: " + std::to_string(n_embd) + ")");
+            throw std::out_of_range(msg() + " (supported: " + std::to_string(n_embd) + ")");
         if (dimensionality == 0 || dimensionality > n_embd)
-            throw std::logic_error(msg() + " (recommended: " + spec->recommendedDims + ")");
+            throw std::out_of_range(msg() + " (recommended: " + spec->recommendedDims + ")");
     }
 
     if (!prefix) {
@@ -709,7 +709,7 @@ void LLamaModel::embed(
     {
         std::stringstream ss;
         ss << std::quoted(*prefix) << " is not a valid task type for model " << modelName;
-        throw std::logic_error(ss.str());
+        throw std::invalid_argument(ss.str());
     }
 
     embedInternal(texts, embeddings, *prefix, dimensionality, doMean, atlas, spec);
@@ -763,7 +763,7 @@ void LLamaModel::embedInternal(
         tokenize(text, inp, false);
         if (atlas && inp.size() > atlasMaxLength) {
             if (doMean) {
-                throw std::logic_error(
+                throw std::length_error(
                     "length of text at index " + std::to_string(i) + " is " + std::to_string(inp.size()) +
                     " tokens which exceeds limit of " + std::to_string(atlasMaxLength)
                 );
