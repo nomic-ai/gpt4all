@@ -350,7 +350,7 @@ jobs:
       - node/install-packages:
           pkg-manager: yarn
           app-dir: gpt4all-bindings/typescript
-          override-ci-command: yarn install
+          override-ci-command: yarn install --ignore-scripts
       - run:
           name: build docs ts yo
           command: |
