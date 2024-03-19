@@ -270,25 +270,27 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
 
 void LLModel::embed(
     const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
-    bool doMean, bool atlas
+    size_t *tokenCount, bool doMean, bool atlas
 ) {
     (void)texts;
     (void)embeddings;
     (void)prefix;
     (void)dimensionality;
+    (void)tokenCount;
     (void)doMean;
     (void)atlas;
     throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
 }
 
 void LLModel::embed(
-    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, bool doMean,
-    bool atlas
+    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, size_t *tokenCount,
+    bool doMean, bool atlas
 ) {
     (void)texts;
     (void)embeddings;
     (void)isRetrieval;
     (void)dimensionality;
+    (void)tokenCount;
     (void)doMean;
     (void)atlas;
     throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");

@@ -18,6 +18,7 @@ from tqdm import tqdm
 from urllib3.exceptions import IncompleteRead, ProtocolError
 
 from . import _pyllmodel
+from ._pyllmodel import EmbedResult as EmbedResult
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -49,21 +50,51 @@ class Embed4All:
             model_name = 'all-MiniLM-L6-v2.gguf2.f16.gguf'
         self.gpt4all = GPT4All(model_name, n_threads=n_threads, **kwargs)
 
+    # return_dict=False
     @overload
     def embed(
-        self, text: str, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
-        atlas: bool = ...,
+        self, text: str, *, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        return_dict: Literal[False] = ..., atlas: bool = ...,
     ) -> list[float]: ...
     @overload
     def embed(
-        self, text: list[str], prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
-        atlas: bool = ...,
+        self, text: list[str], *, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        return_dict: Literal[False] = ..., atlas: bool = ...,
     ) -> list[list[float]]: ...
+    @overload
+    def embed(
+        self, text: str | list[str], *, prefix: str | None = ..., dimensionality: int | None = ...,
+        long_text_mode: str = ..., return_dict: Literal[False] = ..., atlas: bool = ...,
+    ) -> list[Any]: ...
+
+    # return_dict=True
+    @overload
+    def embed(
+        self, text: str, *, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        return_dict: Literal[True], atlas: bool = ...,
+    ) -> EmbedResult[list[float]]: ...
+    @overload
+    def embed(
+        self, text: list[str], *, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
+        return_dict: Literal[True], atlas: bool = ...,
+    ) -> EmbedResult[list[list[float]]]: ...
+    @overload
+    def embed(
+        self, text: str | list[str], *, prefix: str | None = ..., dimensionality: int | None = ...,
+        long_text_mode: str = ..., return_dict: Literal[True], atlas: bool = ...,
+    ) -> EmbedResult[list[Any]]: ...
+
+    # return type unknown
+    @overload
+    def embed(
+        self, text: str | list[str], *, prefix: str | None = ..., dimensionality: int | None = ...,
+        long_text_mode: str = ..., return_dict: bool = ..., atlas: bool = ...,
+    ) -> Any: ...
 
     def embed(
-        self, text: str | list[str], prefix: str | None = None, dimensionality: int | None = None,
-        long_text_mode: str = "mean", atlas: bool = False,
-    ) -> list[Any]:
+        self, text: str | list[str], *, prefix: str | None = None, dimensionality: int | None = None,
+        long_text_mode: str = "mean", return_dict: bool = False, atlas: bool = False,
+    ) -> Any:
         """
         Generate one or more embeddings.
 
@@ -73,11 +104,13 @@ class Embed4All:
                 Embed this can be `search_query`, `search_document`, `classification`, or `clustering`.
             dimensionality: The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
             long_text_mode: How to handle texts longer than the model can accept. One of `mean` or `truncate`.
+            return_dict: Return the result as a dict that includes the number of prompt tokens processed.
             atlas: Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens
                 with long_text_mode="mean" will raise an error. Disabled by default.
 
         Returns:
-            An embedding or list of embeddings of your text(s).
+            With return_dict=False, an embedding or list of embeddings of your text(s).
+            With return_dict=True, a dict with keys 'embeddings' and 'n_prompt_tokens'.
         """
         if dimensionality is None:
             dimensionality = -1
@@ -93,7 +126,8 @@ class Embed4All:
             do_mean = {"mean": True, "truncate": False}[long_text_mode]
         except KeyError:
             raise ValueError(f"Long text mode must be one of 'mean' or 'truncate', got {long_text_mode!r}")
-        return self.gpt4all.model.generate_embeddings(text, prefix, dimensionality, do_mean, atlas)
+        result = self.gpt4all.model.generate_embeddings(text, prefix, dimensionality, do_mean, atlas)
+        return result if return_dict else result['embeddings']
 
 
 class GPT4All:

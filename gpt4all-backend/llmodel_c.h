@@ -193,6 +193,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
  * @param prefix The model-specific prefix representing the embedding task, without the trailing colon. NULL for no
  * prefix.
  * @param dimensionality The embedding dimension, for use with Matryoshka-capable models. Set to -1 to for full-size.
+ * @param token_count Return location for the number of prompt tokens processed, or NULL.
  * @param do_mean True to average multiple embeddings if the text is longer than the model can accept, False to
  * truncate.
  * @param atlas Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens with
@@ -202,7 +203,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
  * be responsible for lifetime of this memory. NULL if an error occurred.
  */
 float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size, const char *prefix,
-                     int dimensionality, bool do_mean, bool atlas, const char **error);
+                     int dimensionality, size_t *token_count, bool do_mean, bool atlas, const char **error);
 
 /**
  * Frees the memory allocated by the llmodel_embedding function.
