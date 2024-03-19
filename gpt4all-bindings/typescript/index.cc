@@ -211,7 +211,7 @@ Napi::Value ChunkedFloatPtr(float *embedding_ptr, int embedding_size, int text_l
         // from its corresponding element in that range, in the same order.
         std::vector<float> chunk(embedding_ptr + i, embedding_ptr + end);
         Napi::Float32Array fltarr = Napi::Float32Array::New(env, chunk.size());
-        // I know theres a way to emplace the raw float ptr into a Napi::Float32Array but idk how and
+        // I know there's a way to emplace the raw float ptr into a Napi::Float32Array but idk how and
         //  im too scared to cause memory issues
         //  this is goodenough
         for (int j = 0; j < chunk.size(); j++)
