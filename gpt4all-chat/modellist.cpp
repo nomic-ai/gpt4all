@@ -228,11 +228,11 @@ int ModelInfo::maxContextLength() const
     if (!installed || isOnline) return -1;
     if (m_maxContextLength != -1) return m_maxContextLength;
     auto path = (dirpath + filename()).toStdString();
-    int layers = LLModel::Implementation::maxContextLength(path);
-    if (layers < 0) {
-        layers = 4096; // fallback value
+    int n_ctx = LLModel::Implementation::maxContextLength(path);
+    if (n_ctx < 0) {
+        n_ctx = 4096; // fallback value
     }
-    m_maxContextLength = layers;
+    m_maxContextLength = n_ctx;
     return m_maxContextLength;
 }
 

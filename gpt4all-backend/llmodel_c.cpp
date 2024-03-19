@@ -13,8 +13,6 @@ struct LLModelWrapper {
     ~LLModelWrapper() { delete llModel; }
 };
 
-thread_local static std::string last_error_message;
-
 llmodel_model llmodel_model_create(const char *model_path) {
     const char *error;
     auto fres = llmodel_model_create2(model_path, "auto", &error);
@@ -24,24 +22,30 @@ llmodel_model llmodel_model_create(const char *model_path) {
     return fres;
 }
 
+static void llmodel_set_error(const char **errptr, const char *message) {
+    thread_local static std::string last_error_message;
+    if (errptr) {
+        last_error_message = message;
+        *errptr = last_error_message.c_str();
+    }
+}
+
 llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, const char **error) {
-    auto wrapper = new LLModelWrapper;
-
+    LLModel *llModel;
     try {
-        wrapper->llModel = LLModel::Implementation::construct(model_path, build_variant);
-        if (!wrapper->llModel) {
-            last_error_message = "Model format not supported (no matching implementation found)";
-        }
+        llModel = LLModel::Implementation::construct(model_path, build_variant);
     } catch (const std::exception& e) {
-        last_error_message = e.what();
+        llmodel_set_error(error, e.what());
+        return nullptr;
     }
 
-    if (!wrapper->llModel) {
-        delete std::exchange(wrapper, nullptr);
-        if (error) {
-            *error = last_error_message.c_str();
-        }
+    if (!llModel) {
+        llmodel_set_error(error, "Model format not supported (no matching implementation found)");
+        return nullptr;
     }
+
+    auto wrapper = new LLModelWrapper;
+    wrapper->llModel = llModel;
     return wrapper;
 }
 
@@ -159,8 +163,7 @@ float *llmodel_embed(
     auto *wrapper = static_cast<LLModelWrapper *>(model);
 
     if (!texts || !*texts) {
-        if (error)
-            *error = strdup("'texts' is NULL or empty");
+        llmodel_set_error(error, "'texts' is NULL or empty");
         return nullptr;
     }
 
@@ -183,8 +186,7 @@ float *llmodel_embed(
         embedding = new float[embd_size];
         wrapper->llModel->embed(textsVec, embedding, prefixStr, dimensionality, do_mean, atlas);
     } catch (std::exception const &e) {
-        if (error)
-            *error = strdup(e.what());
+        llmodel_set_error(error, e.what());
         return nullptr;
     }
 
