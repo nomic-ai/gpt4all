@@ -698,12 +698,9 @@ void LLamaModel::embed(
     }
 
     if (!prefix) {
-        if (spec) {
-            prefix = spec->docPrefix;
-        } else {
-            std::cerr << __func__ << ": warning: assuming no prefix\n";
-            prefix = "";
-        }
+        if (!spec)
+            throw std::invalid_argument("unknown model "s + modelName + ", specify a prefix if applicable or an empty string");
+        prefix = spec->docPrefix;
     } else if (spec && prefix != spec->docPrefix && prefix != spec->queryPrefix &&
                std::find(spec->otherPrefixes.begin(), spec->otherPrefixes.end(), *prefix) == spec->otherPrefixes.end())
     {

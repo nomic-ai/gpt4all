@@ -101,7 +101,9 @@ class Embed4All:
         Args:
             text: A text or list of texts to generate embeddings for.
             prefix: The model-specific prefix representing the embedding task, without the trailing colon. For Nomic
-                Embed this can be `search_query`, `search_document`, `classification`, or `clustering`.
+                Embed, this can be `search_query`, `search_document`, `classification`, or `clustering`. Defaults to
+                `search_document` or equivalent if known; otherwise, you must explictly pass a prefix or an empty
+                string if none applies.
             dimensionality: The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
             long_text_mode: How to handle texts longer than the model can accept. One of `mean` or `truncate`.
             return_dict: Return the result as a dict that includes the number of prompt tokens processed.
