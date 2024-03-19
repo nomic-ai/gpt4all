@@ -27,7 +27,7 @@ def load_llmodel_library():
     ext = {"Darwin": "dylib", "Linux": "so", "Windows": "dll"}[platform.system()]
 
     try:
-        # Linux, Windows, MinGW
+        # macOS, Linux, MinGW
         lib = ctypes.CDLL(str(MODEL_LIB_PATH / f"libllmodel.{ext}"))
     except FileNotFoundError:
         if ext != 'dll':
