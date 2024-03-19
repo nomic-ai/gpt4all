@@ -191,12 +191,12 @@ class GPT4All:
     @staticmethod
     def list_models() -> list[ConfigType]:
         """
-        Fetch model list from https://gpt4all.io/models/models2.json.
+        Fetch model list from https://gpt4all.io/models/models3.json.
 
         Returns:
             Model list in JSON format.
         """
-        resp = requests.get("https://gpt4all.io/models/models2.json")
+        resp = requests.get("https://gpt4all.io/models/models3.json")
         if resp.status_code != 200:
             raise ValueError(f'Request failed: HTTP {resp.status_code} {resp.reason}')
         return resp.json()
