@@ -476,7 +476,9 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
 bool LLamaModel::shouldAddBOS() const
 {
     int add_bos = llama_add_bos_token(d_ptr->model);
-    return add_bos != -1 ? bool(add_bos) : llama_vocab_type(d_ptr->model) == LLAMA_VOCAB_TYPE_SPM;
+    if (add_bos != -1) { return add_bos; }
+    auto vocab_type = llama_vocab_type(d_ptr->model);
+    return vocab_type == LLAMA_VOCAB_TYPE_SPM || vocab_type == LLAMA_VOCAB_TYPE_WPM;
 }
 
 int32_t LLamaModel::maxContextLength(std::string const &modelPath) const
