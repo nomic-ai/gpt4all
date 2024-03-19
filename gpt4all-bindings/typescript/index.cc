@@ -115,12 +115,10 @@ NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo &info) : Napi::Objec
     auto env = info.Env();
     auto config_object = info[0].As<Napi::Object>();
 
-    //sets the directory where models (gguf files) are to be searched
+    // sets the directory where models (gguf files) are to be searched
     llmodel_set_implementation_search_path(
-        config_object.Has("library_path")
-        ? config_object.Get("library_path").As<Napi::String>().Utf8Value().c_str()
-        : "."
-    );
+        config_object.Has("library_path") ? config_object.Get("library_path").As<Napi::String>().Utf8Value().c_str()
+                                          : ".");
 
     std::string model_name = config_object.Get("model_name").As<Napi::String>();
     fs::path model_path = config_object.Get("model_path").As<Napi::String>().Utf8Value();
@@ -167,12 +165,11 @@ NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo &info) : Napi::Objec
         Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException();
         return;
     }
-    //optional
+    // optional
     if (config_object.Has("model_type"))
     {
         type = config_object.Get("model_type").As<Napi::String>();
     }
-    
 };
 
 //  NodeModelWrapper::~NodeModelWrapper() {
@@ -199,28 +196,26 @@ Napi::Value NodeModelWrapper::StateSize(const Napi::CallbackInfo &info)
     return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(GetInference())));
 }
 
-Napi::Value ChunkedFloatPtr(
-    float* embedding_ptr,
-    int embedding_size,
-    int text_len,
-    Napi::Env const& env
-    ) 
+Napi::Value ChunkedFloatPtr(float *embedding_ptr, int embedding_size, int text_len, Napi::Env const &env)
 {
     auto n_embd = embedding_size / text_len;
-//    std::cout << "Embedding size: " << embedding_size << std::endl;
-//    std::cout << "Text length: " << text_len << std::endl;
-//    std::cout << "Chunk size (n_embd): " << n_embd << std::endl;
+    //    std::cout << "Embedding size: " << embedding_size << std::endl;
+    //    std::cout << "Text length: " << text_len << std::endl;
+    //    std::cout << "Chunk size (n_embd): " << n_embd << std::endl;
     Napi::Array result = Napi::Array::New(env, text_len);
-    for (int i = 0; i < embedding_size; i += n_embd) {
+    for (int i = 0; i < embedding_size; i += n_embd)
+    {
         int end = std::min(i + n_embd, embedding_size);
-        //possible bounds error?
-        //Constructs a container with as many elements as the range [first,last), with each element emplace-constructed from its corresponding element in that range, in the same order.
+        // possible bounds error?
+        // Constructs a container with as many elements as the range [first,last), with each element emplace-constructed
+        // from its corresponding element in that range, in the same order.
         std::vector<float> chunk(embedding_ptr + i, embedding_ptr + end);
         Napi::Float32Array fltarr = Napi::Float32Array::New(env, chunk.size());
-        //I know theres a way to emplace the raw float ptr into a Napi::Float32Array but idk how and 
-        // im too scared to cause memory issues
-        // this is goodenough
-        for(int j = 0 ; j < chunk.size(); j++) {
+        // I know theres a way to emplace the raw float ptr into a Napi::Float32Array but idk how and
+        //  im too scared to cause memory issues
+        //  this is goodenough
+        for (int j = 0; j < chunk.size(); j++)
+        {
             fltarr.Set(j, chunk[j]);
         }
         result.Set(i, fltarr);
@@ -260,20 +255,19 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
     for (size_t i = 0; i < text_arr.size(); ++i)
         str_ptrs.push_back(text_arr[i].c_str());
     str_ptrs.push_back(nullptr);
-    const char *_err;
+    const char *_err = nullptr;
     float *embeds = llmodel_embed(GetInference(), str_ptrs.data(), &embedding_size,
                                   prefix.IsUndefined() ? nullptr : prefix.As<Napi::String>().Utf8Value().c_str(),
                                   dimensionality, do_mean, atlas, &_err);
     if (_err)
     {
-        //i dont wanna deal with c strings lol
+        // i dont wanna deal with c strings lol
         std::string err(_err);
-        Napi::Error::New(env, err == "(unknown error)"? "Unknown error: sorry bud" : err)
-            .ThrowAsJavaScriptException();
+        Napi::Error::New(env, err == "(unknown error)" ? "Unknown error: sorry bud" : err).ThrowAsJavaScriptException();
         return env.Undefined();
     }
     auto embedmat = ChunkedFloatPtr(embeds, embedding_size, text_arr.size(), env);
-    
+
     llmodel_free_embedding(embeds);
     return embedmat;
 }
