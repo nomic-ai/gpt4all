@@ -196,7 +196,7 @@ class LLModel:
             raise RuntimeError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
         self.model = model
 
-    def __del__(self):
+    def __del__(self, llmodel=llmodel):
         if hasattr(self, 'model'):
             llmodel.llmodel_model_destroy(self.model)
 
