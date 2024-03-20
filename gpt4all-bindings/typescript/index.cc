@@ -196,17 +196,7 @@ Napi::Value NodeModelWrapper::StateSize(const Napi::CallbackInfo &info)
     return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(GetInference())));
 }
 
-<<<<<<< HEAD
-Napi::Value ChunkedFloatPtr(float *embedding_ptr, int embedding_size, int text_len, Napi::Env const &env)
-{
-    auto n_embd = embedding_size / text_len;
-    //    std::cout << "Embedding size: " << embedding_size << std::endl;
-    //    std::cout << "Text length: " << text_len << std::endl;
-    //    std::cout << "Chunk size (n_embd): " << n_embd << std::endl;
-    Napi::Array result = Napi::Array::New(env, text_len);
-    for (int i = 0; i < embedding_size; i += n_embd)
-    {
-=======
+
 Napi::Array ChunkedFloatPtr(
     float* embedding_ptr,
     int embedding_size,
