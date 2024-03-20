@@ -22,7 +22,7 @@ from . import _pyllmodel
 from ._pyllmodel import EmbedResult as EmbedResult
 
 if TYPE_CHECKING:
-    from typing import TypeAlias
+    from typing_extensions import TypeAlias
 
 if sys.platform == 'darwin':
     import fcntl

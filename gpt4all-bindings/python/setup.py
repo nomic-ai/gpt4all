@@ -102,7 +102,8 @@ setup(
             'mkdocstrings[python]',
             'mkdocs-jupyter',
             'black',
-            'isort'
+            'isort',
+            'typing-extensions>=3.10',
         ]
     },
     package_data={'llmodel': [os.path.join(DEST_CLIB_DIRECTORY, "*")]},
