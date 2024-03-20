@@ -3,6 +3,7 @@ Python only API for running all GPT4All models.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import sys
@@ -263,7 +264,11 @@ class GPT4All:
                 print(f"Found model file at {str(model_dest)!r}", file=sys.stderr)
         elif allow_download:
             # If model file does not exist, download
-            config["path"] = str(cls.download_model(model_filename, model_path, verbose=verbose, url=config.get("url")))
+            filesize = config.get("filesize")
+            config["path"] = str(cls.download_model(
+                model_filename, model_path, verbose=verbose, url=config.get("url"),
+                expected_size=None if filesize is None else int(filesize), expected_md5=config.get("md5sum"),
+            ))
         else:
             raise FileNotFoundError(f"Model file does not exist: {model_dest!r}")
 
@@ -275,6 +280,8 @@ class GPT4All:
         model_path: str | os.PathLike[str],
         verbose: bool = True,
         url: str | None = None,
+        expected_size: int | None = None,
+        expected_md5: str | None = None,
     ) -> str | os.PathLike[str]:
         """
         Download model from https://gpt4all.io.
@@ -284,6 +291,8 @@ class GPT4All:
             model_path: Path to download model to.
             verbose: If True (default), print debug messages.
             url: the models remote url (e.g. may be hosted on HF)
+            expected_size: The expected size of the download.
+            expected_md5: The exected MD5 hash of the download.
 
         Returns:
             Model file destination.
@@ -315,9 +324,9 @@ class GPT4All:
 
         partial_path = Path(model_path) / (model_filename + ".part")
 
-        with open(partial_path, "wb") as partf:
+        with open(partial_path, "w+b") as partf:
             try:
-                with tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True) as progress_bar:
+                with tqdm(desc="Downloading", total=total_size_in_bytes, unit="iB", unit_scale=True) as progress_bar:
                     while True:
                         last_progress = progress_bar.n
                         try:
@@ -339,6 +348,20 @@ class GPT4All:
                             response = make_request(progress_bar.n)
                             continue
                         break
+
+                # verify file integrity
+                file_size = partf.tell()
+                if expected_size is not None and file_size != expected_size:
+                    raise ValueError(f"Expected file size of {expected_size} bytes, got {file_size}")
+                if expected_md5 is not None:
+                    partf.seek(0)
+                    hsh = hashlib.md5()
+                    with tqdm(desc="Verifying", total=total_size_in_bytes, unit="iB", unit_scale=True) as bar:
+                        while chunk := partf.read(block_size):
+                            hsh.update(chunk)
+                            bar.update(len(chunk))
+                    if hsh.hexdigest() != expected_md5.lower():
+                        raise ValueError(f"Expected MD5 hash of {expected_md5!r}, got {hsh.hexdigest()!r}")
             except Exception:
                 if verbose:
                     print("Cleaning up the interrupted download...", file=sys.stderr)
