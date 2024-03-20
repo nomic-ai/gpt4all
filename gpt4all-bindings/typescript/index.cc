@@ -221,25 +221,18 @@ Napi::Array ChunkedFloatPtr(
     Napi::Array result = Napi::Array::New(env, text_len);
     auto count = 0;
     for (int i = 0; i < embedding_size; i += n_embd) {
->>>>>>> e564084 (search embed spec preview & fix array bounds)
         int end = std::min(i + n_embd, embedding_size);
         // possible bounds error?
         // Constructs a container with as many elements as the range [first,last), with each element emplace-constructed
         // from its corresponding element in that range, in the same order.
         std::vector<float> chunk(embedding_ptr + i, embedding_ptr + end);
         Napi::Float32Array fltarr = Napi::Float32Array::New(env, chunk.size());
-<<<<<<< HEAD
         // I know there's a way to emplace the raw float ptr into a Napi::Float32Array but idk how and
         //  im too scared to cause memory issues
         //  this is goodenough
         for (int j = 0; j < chunk.size(); j++)
         {
-=======
-        //I know theres a way to emplace the raw float ptr into a Napi::Float32Array but idk how and 
-        // im too scared to cause memory issues
-        // this is goodenough
-        for(uint32_t j = 0 ; j < chunk.size(); j++) {
->>>>>>> e564084 (search embed spec preview & fix array bounds)
+
             fltarr.Set(j, chunk[j]);
         }
         result.Set(count++, fltarr);
