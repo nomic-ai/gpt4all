@@ -105,7 +105,10 @@ declare class InferenceModel {
     dispose(): void;
 }
 
-
+interface EmbeddingResult {
+    n_prompt_tokens: number;
+    embeddings: Float32Array | Float32Array[]
+}
 /**
  * EmbeddingModel represents an LLM which can create embeddings, which are float arrays
  */
@@ -114,7 +117,7 @@ declare class EmbeddingModel {
     llm: LLModel;
     config: ModelConfig;
 
-    embed(text: string): Float32Array;
+    embed(text: string): EmbeddingResult;
 
     /**
      * delete and cleanup the native model
@@ -426,13 +429,13 @@ interface EmbedddingOptions {
  * meow
  * @param {EmbeddingModel} model - The language model object.
  * @param {string} text - text to embed
- * @returns {Float32Array} The completion result.
+ * @returns {EmbeddingResult} The completion result.
  */
 declare function createEmbedding(
     model: EmbeddingModel,
     text: string,
     options: EmbedddingOptions
-): Float32Array;
+): EmbeddingResult;
 
 /**
  * A message in the conversation.

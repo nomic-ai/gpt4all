@@ -205,9 +205,9 @@ Napi::Array ChunkedFloatPtr(
     ) 
 {
     auto n_embd = embedding_size / text_len;
-    std::cout << "Embedding size: " << embedding_size << std::endl;
-    std::cout << "Text length: " << text_len << std::endl;
-    std::cout << "Chunk size (n_embd): " << n_embd << std::endl;
+    // std::cout << "Embedding size: " << embedding_size << std::endl;
+    // std::cout << "Text length: " << text_len << std::endl;
+    // std::cout << "Chunk size (n_embd): " << n_embd << std::endl;
     Napi::Array result = Napi::Array::New(env, text_len);
     auto count = 0;
     for (int i = 0; i < embedding_size; i += n_embd) {
@@ -239,6 +239,7 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
     auto do_mean = info[3].As<Napi::Boolean>().Value();
     auto atlas = info[4].As<Napi::Boolean>().Value();
     size_t embedding_size;
+    size_t token_count = 0;
 
     // This procedure can maybe be optimized but its whatever, i have too many intermediary structures
     std::vector<std::string> text_arr;
@@ -263,9 +264,9 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
         str_ptrs.push_back(text_arr[i].c_str());
     str_ptrs.push_back(nullptr);
     const char *_err = nullptr;
-    float *embeds = llmodel_embed(GetInference(), str_ptrs.data(), &embedding_size,
+    float *embeds = llmodel_embed(GetInference(), str_ptrs.data(),  &embedding_size,
                                   prefix.IsUndefined() ? nullptr : prefix.As<Napi::String>().Utf8Value().c_str(),
-                                  dimensionality, do_mean, atlas, &_err);
+                                  dimensionality, &token_count, do_mean, atlas, &_err);
     if (_err)
     {
         // i dont wanna deal with c strings lol
@@ -276,11 +277,15 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
     auto embedmat = ChunkedFloatPtr(embeds, embedding_size, text_arr.size(), env);
 
     llmodel_free_embedding(embeds);
+    auto res = Napi::Object::New(env);
+    res.Set("n_prompt_tokens", token_count);
     if(is_single_text) {
-        uint32_t fst = 0;
-        return embedmat.Get(fst);
+        res.Set("embeddings", embedmat.Get(static_cast<uint32_t>(0)));
+    } else {
+        res.Set("embeddings", embedmat);
     }
-    return embedmat;
+    
+    return res;
 }
 
 /**
