@@ -296,11 +296,14 @@ class GPT4All:
             if offset:
                 print(f"\nDownload interrupted, resuming from byte position {offset}", file=sys.stderr)
                 headers['Range'] = f'bytes={offset}-'  # resume incomplete response
+                headers["Accept-Encoding"] = "identity"  # Content-Encoding changes meaning of ranges
             response = requests.get(url, stream=True, headers=headers)
             if response.status_code not in (200, 206):
                 raise ValueError(f'Request failed: HTTP {response.status_code} {response.reason}')
             if offset and (response.status_code != 206 or str(offset) not in response.headers.get('Content-Range', '')):
                 raise ValueError('Connection was interrupted and server does not support range requests')
+            if (enc := response.headers.get("Content-Encoding")) is not None:
+                raise ValueError(f"Expected identity Content-Encoding, got {enc}")
             return response
 
         response = make_request()
