@@ -28,7 +28,7 @@ DEFAULT_MODEL_DIRECTORY = Path.home() / ".cache" / "gpt4all"
 
 DEFAULT_PROMPT_TEMPLATE = "### Human:\n{0}\n\n### Assistant:\n"
 
-ConfigType: TypeAlias = 'dict[str, str]'
+ConfigType: TypeAlias = 'dict[str, Any]'
 MessageType: TypeAlias = 'dict[str, str]'
 
 
