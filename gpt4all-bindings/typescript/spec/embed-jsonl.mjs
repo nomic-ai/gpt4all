@@ -2,7 +2,7 @@ import { loadModel, createEmbedding } from '../src/gpt4all.js'
 import { createGunzip, createGzip, createUnzip } from 'node:zlib';
 import { Readable } from 'stream'
 import readline  from 'readline'
-const embedder = await loadModel("nomic-embed-text-v1.5.f16.gguf", { verbose: true, type: 'embedding', gpu: true })
+const embedder = await loadModel("nomic-embed-text-v1.5.f16.gguf", { verbose: true, type: 'embedding', device: 'gpu' })
 console.log("Running with", embedder.llm.threadCount(), "threads");
 
 
