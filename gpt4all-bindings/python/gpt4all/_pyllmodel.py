@@ -299,7 +299,7 @@ class LLModel:
 
     @overload
     def generate_embeddings(
-        self, text: str, prefix: str, dimensionality: int, do_mean: bool, count_tokens: bool, atlas: bool,
+        self, text: str, prefix: str, dimensionality: int, do_mean: bool, atlas: bool,
     ) -> EmbedResult[list[float]]: ...
     @overload
     def generate_embeddings(
