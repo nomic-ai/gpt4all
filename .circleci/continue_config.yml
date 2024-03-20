@@ -343,19 +343,18 @@ jobs:
     steps:
       - checkout
       - node/install:
-          install-yarn: true
           node-version: "18.16"
       - run: node --version
       - run: corepack enable
       - node/install-packages:
-          pkg-manager: yarn
+          pkg-manager: npm
           app-dir: gpt4all-bindings/typescript
-          override-ci-command: yarn install
+          override-ci-command: npm install --ignore-scripts
       - run:
           name: build docs ts yo
           command: |
             cd gpt4all-bindings/typescript
-            yarn docs:build
+            npm run docs:build
   build-py-docs:
     docker:
       - image: circleci/python:3.8

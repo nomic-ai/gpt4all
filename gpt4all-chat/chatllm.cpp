@@ -1,6 +1,6 @@
 #include "chatllm.h"
 #include "chat.h"
-#include "chatgpt.h"
+#include "chatapi.h"
 #include "localdocs.h"
 #include "modellist.h"
 #include "network.h"
@@ -12,7 +12,6 @@
 
 #define GPTJ_INTERNAL_STATE_VERSION 0
 #define LLAMA_INTERNAL_STATE_VERSION 0
-#define BERT_INTERNAL_STATE_VERSION 0
 
 class LLModelStore {
 public:
@@ -214,7 +213,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (isModelLoaded() && this->modelInfo() == modelInfo)
         return true;
 
-    bool isChatGPT = modelInfo.isOnline; // right now only chatgpt is offered for online chat models...
     QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
 
@@ -280,19 +278,23 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     m_llModelInfo.fileInfo = fileInfo;
 
     if (fileInfo.exists()) {
-        if (isChatGPT) {
+        if (modelInfo.isOnline) {
             QString apiKey;
-            QString chatGPTModel = fileInfo.completeBaseName().remove(0, 8); // remove the chatgpt- prefix
+            QString modelName;
             {
                 QFile file(filePath);
                 file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text);
                 QTextStream stream(&file);
-                apiKey = stream.readAll();
-                file.close();
+                QString text = stream.readAll();
+                QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
+                QJsonObject obj = doc.object();
+                apiKey = obj["apiKey"].toString();
+                modelName = obj["modelName"].toString();
             }
-            m_llModelType = LLModelType::CHATGPT_;
-            ChatGPT *model = new ChatGPT();
-            model->setModelName(chatGPTModel);
+            m_llModelType = LLModelType::API_;
+            ChatAPI *model = new ChatAPI();
+            model->setModelName(modelName);
+            model->setRequestURL(modelInfo.url());
             model->setAPIKey(apiKey);
             m_llModelInfo.model = model;
         } else {
@@ -386,7 +388,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     switch (m_llModelInfo.model->implementation().modelType()[0]) {
                     case 'L': m_llModelType = LLModelType::LLAMA_; break;
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;
-                    case 'B': m_llModelType = LLModelType::BERT_; break;
                     default:
                         {
                             delete m_llModelInfo.model;
@@ -470,7 +471,7 @@ void ChatLLM::regenerateResponse()
 {
     // ChatGPT uses a different semantic meaning for n_past than local models. For ChatGPT, the meaning
     // of n_past is of the number of prompt/response pairs, rather than for total tokens.
-    if (m_llModelType == LLModelType::CHATGPT_)
+    if (m_llModelType == LLModelType::API_)
         m_ctx.n_past -= 1;
     else
         m_ctx.n_past -= m_promptResponseTokens;
@@ -840,7 +841,6 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
         switch (m_llModelType) {
         case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
-        case BERT_: stream << BERT_INTERNAL_STATE_VERSION; break;
         default: Q_UNREACHABLE();
         }
     }
@@ -961,12 +961,12 @@ void ChatLLM::saveState()
     if (!isModelLoaded())
         return;
 
-    if (m_llModelType == LLModelType::CHATGPT_) {
+    if (m_llModelType == LLModelType::API_) {
         m_state.clear();
         QDataStream stream(&m_state, QIODeviceBase::WriteOnly);
-        stream.setVersion(QDataStream::Qt_6_5);
-        ChatGPT *chatGPT = static_cast<ChatGPT*>(m_llModelInfo.model);
-        stream << chatGPT->context();
+        stream.setVersion(QDataStream::Qt_6_4);
+        ChatAPI *chatAPI = static_cast<ChatAPI*>(m_llModelInfo.model);
+        stream << chatAPI->context();
         return;
     }
 
@@ -983,13 +983,13 @@ void ChatLLM::restoreState()
     if (!isModelLoaded())
         return;
 
-    if (m_llModelType == LLModelType::CHATGPT_) {
+    if (m_llModelType == LLModelType::API_) {
         QDataStream stream(&m_state, QIODeviceBase::ReadOnly);
-        stream.setVersion(QDataStream::Qt_6_5);
-        ChatGPT *chatGPT = static_cast<ChatGPT*>(m_llModelInfo.model);
+        stream.setVersion(QDataStream::Qt_6_4);
+        ChatAPI *chatAPI = static_cast<ChatAPI*>(m_llModelInfo.model);
         QList<QString> context;
         stream >> context;
-        chatGPT->setContext(context);
+        chatAPI->setContext(context);
         m_state.clear();
         m_state.squeeze();
         return;

@@ -24,7 +24,7 @@ const DEFAULT_LIBRARIES_DIRECTORY = librarySearchPaths.join(";");
 
 const DEFAULT_MODEL_CONFIG = {
     systemPrompt: "",
-    promptTemplate: "### Human: \n%1\n### Assistant:\n",
+    promptTemplate: "### Human:\n%1\n\n### Assistant:\n",
 }
 
 const DEFAULT_MODEL_LIST_URL = "https://gpt4all.io/models/models3.json";

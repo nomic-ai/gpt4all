@@ -18,7 +18,7 @@ endif()
 
 set(APP_VERSION_MAJOR 2)
 set(APP_VERSION_MINOR 7)
-set(APP_VERSION_PATCH 3)
+set(APP_VERSION_PATCH 4)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -40,9 +40,9 @@ configure_file(
 )
 
 if(LINUX)
-  find_package(Qt6 6.5 COMPONENTS Core Quick WaylandCompositor QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+  find_package(Qt6 6.4 COMPONENTS Core Quick WaylandCompositor QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
 else()
-  find_package(Qt6 6.5 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+  find_package(Qt6 6.4 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
 endif()
 
 # Get the Qt6Core target properties
@@ -73,7 +73,7 @@ qt_add_executable(chat
     chat.h chat.cpp
     chatllm.h chatllm.cpp
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
-    chatgpt.h chatgpt.cpp
+    chatapi.h chatapi.cpp
     database.h database.cpp
     embeddings.h embeddings.cpp
     download.h download.cpp
@@ -96,6 +96,7 @@ qt_add_qml_module(chat
     QML_FILES
       main.qml
       qml/ChatDrawer.qml
+      qml/ChatView.qml
       qml/CollectionsDialog.qml
       qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
@@ -130,6 +131,7 @@ qt_add_qml_module(chat
       icons/send_message.svg
       icons/stop_generating.svg
       icons/regenerate.svg
+      icons/chat.svg
       icons/close.svg
       icons/copy.svg
       icons/db.svg
@@ -138,10 +140,14 @@ qt_add_qml_module(chat
       icons/eject.svg
       icons/edit.svg
       icons/image.svg
+      icons/info.svg
+      icons/search.svg
       icons/trash.svg
       icons/network.svg
       icons/thumbs_up.svg
       icons/thumbs_down.svg
+      icons/left_panel_closed.svg
+      icons/left_panel_open.svg
       icons/logo.svg
       icons/logo-32.png
       icons/logo-48.png
@@ -184,7 +190,10 @@ target_link_libraries(chat
     PRIVATE llmodel)
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "..." FORCE)
+endif()
 
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
 install(TARGETS llmodel DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
@@ -200,8 +209,6 @@ install(TARGETS llamamodel-mainline-default DESTINATION lib COMPONENT ${COMPONEN
 if(APPLE)
 install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
-install(TARGETS bert-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS bert-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
 set(CPACK_VERBATIM_VARIABLES YES)

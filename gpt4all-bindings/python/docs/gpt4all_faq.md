@@ -61,12 +61,12 @@ or `allowDownload=true` (default), a model is automatically downloaded into `.ca
 unless it already exists.
 
 In case of connection issues or errors during the download, you might want to manually verify the model file's MD5
-checksum by comparing it with the one listed in [models2.json].
+checksum by comparing it with the one listed in [models3.json].
 
 As an alternative to the basic downloader built into the bindings, you can choose to download from the 
 <https://gpt4all.io/> website instead. Scroll down to 'Model Explorer' and pick your preferred model.
 
-[models2.json]: https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-chat/metadata/models2.json
+[models3.json]: https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-chat/metadata/models3.json
 
 #### I need the chat GUI and bindings to behave the same
 
@@ -93,7 +93,7 @@ The chat GUI and bindings are based on the same backend. You can make them behav
 - Next you'll have to compare the templates, adjusting them as necessary, based on how you're using the bindings.
     - Specifically, in Python:
         - With simple `generate()` calls, the input has to be surrounded with system and prompt templates.
-        - When using a chat session, it depends on whether the bindings are allowed to download [models2.json]. If yes,
+        - When using a chat session, it depends on whether the bindings are allowed to download [models3.json]. If yes,
           and in the chat GUI the default templates are used, it'll be handled automatically. If no, use
           `chat_session()` template parameters to customize them.
 

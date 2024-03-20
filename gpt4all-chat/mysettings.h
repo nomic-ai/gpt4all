@@ -28,6 +28,7 @@ class MySettings : public QObject
     Q_PROPERTY(bool networkUsageStatsActive READ networkUsageStatsActive WRITE setNetworkUsageStatsActive NOTIFY networkUsageStatsActiveChanged)
     Q_PROPERTY(QString device READ device WRITE setDevice NOTIFY deviceChanged)
     Q_PROPERTY(QVector<QString> deviceList READ deviceList NOTIFY deviceListChanged)
+    Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
 
 public:
     static MySettings *globalInstance();
@@ -131,6 +132,8 @@ public:
     void setNetworkIsActive(bool b);
     bool networkUsageStatsActive() const;
     void setNetworkUsageStatsActive(bool b);
+    int networkPort() const;
+    void setNetworkPort(int c);
 
     QVector<QString> deviceList() const;
     void setDeviceList(const QVector<QString> &deviceList);
@@ -164,6 +167,7 @@ Q_SIGNALS:
     void localDocsShowReferencesChanged();
     void networkAttributionChanged();
     void networkIsActiveChanged();
+    void networkPortChanged();
     void networkUsageStatsActiveChanged();
     void attemptModelLoadChanged();
     void deviceChanged();

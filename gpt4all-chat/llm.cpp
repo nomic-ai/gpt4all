@@ -1,4 +1,5 @@
 #include "llm.h"
+#include "../gpt4all-backend/llmodel.h"
 #include "../gpt4all-backend/sysinfo.h"
 
 #include <QCoreApplication>
@@ -25,22 +26,8 @@ LLM *LLM::globalInstance()
 
 LLM::LLM()
     : QObject{nullptr}
-    , m_compatHardware(true)
+    , m_compatHardware(LLModel::Implementation::hasSupportedCPU())
 {
-#if defined(__x86_64__)
-    #ifndef _MSC_VER
-        const bool minimal(__builtin_cpu_supports("avx"));
-    #else
-        int cpuInfo[4];
-        __cpuid(cpuInfo, 1);
-        const bool minimal(cpuInfo[2] & (1 << 28));
-    #endif
-#else
-    const bool minimal = true; // Don't know how to handle non-x86_64
-#endif
-
-    m_compatHardware = minimal;
-
     QNetworkInformation::loadDefaultBackend();
     auto * netinfo = QNetworkInformation::instance();
     if (netinfo) {

@@ -22,6 +22,7 @@ static int      default_localDocsRetrievalSize  = 3;
 static bool     default_localDocsShowReferences = true;
 static QString  default_networkAttribution      = "";
 static bool     default_networkIsActive         = false;
+static int      default_networkPort         = 4891;
 static bool     default_networkUsageStatsActive = false;
 static QString  default_device              = "Auto";
 
@@ -107,6 +108,7 @@ void MySettings::restoreApplicationDefaults()
     setThreadCount(default_threadCount);
     setSaveChatsContext(default_saveChatsContext);
     setServerChat(default_serverChat);
+    setNetworkPort(default_networkPort);
     setModelPath(defaultLocalModelsPath());
     setUserDefaultModel(default_userDefaultModel);
     setForceMetal(default_forceMetal);
@@ -676,6 +678,24 @@ void MySettings::setServerChat(bool b)
     setting.setValue("serverChat", b);
     setting.sync();
     emit serverChatChanged();
+}
+
+int MySettings::networkPort() const
+{
+    QSettings setting;
+    setting.sync();
+    return setting.value("networkPort", default_networkPort).toInt();
+}
+
+void MySettings::setNetworkPort(int c)
+{
+    if (networkPort() == c)
+        return;
+
+    QSettings setting;
+    setting.setValue("networkPort", c);
+    setting.sync();
+    emit networkPortChanged();
 }
 
 QString MySettings::modelPath() const

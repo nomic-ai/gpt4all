@@ -16,7 +16,6 @@ struct ModelInfo {
     Q_PROPERTY(bool calcHash MEMBER calcHash)
     Q_PROPERTY(bool installed MEMBER installed)
     Q_PROPERTY(bool isDefault MEMBER isDefault)
-    Q_PROPERTY(bool disableGUI MEMBER disableGUI)
     Q_PROPERTY(bool isOnline MEMBER isOnline)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
@@ -36,6 +35,7 @@ struct ModelInfo {
     Q_PROPERTY(QString type READ type WRITE setType)
     Q_PROPERTY(bool isClone READ isClone WRITE setIsClone)
     Q_PROPERTY(bool isDiscovered READ isDiscovered WRITE setIsDiscovered)
+    Q_PROPERTY(bool isEmbeddingModel MEMBER isEmbeddingModel)
     Q_PROPERTY(double temperature READ temperature WRITE setTemperature)
     Q_PROPERTY(double topP READ topP WRITE setTopP)
     Q_PROPERTY(double minP READ minP WRITE setMinP)
@@ -104,7 +104,6 @@ public:
     bool installed = false;
     bool isDefault = false;
     bool isOnline = false;
-    bool disableGUI = false;
     QString requiresVersion;
     QString versionRemoved;
     qint64 bytesReceived = 0;
@@ -117,6 +116,8 @@ public:
     QString order;
     int ramrequired = -1;
     QString parameters;
+    bool isEmbeddingModel = false;
+    bool checkedEmbeddingModel = false;
 
     bool operator==(const ModelInfo &other) const {
         return  m_id == other.m_id;
@@ -187,9 +188,10 @@ class EmbeddingModels : public QSortFilterProxyModel
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
-    explicit EmbeddingModels(QObject *parent);
-    int count() const;
+    EmbeddingModels(QObject *parent, bool requireInstalled);
+    int count() const { return rowCount(); }
 
+    int defaultModelIndex() const;
     ModelInfo defaultModelInfo() const;
 
 Q_SIGNALS:
@@ -198,6 +200,9 @@ Q_SIGNALS:
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+
+private:
+    bool m_requireInstalled;
 };
 
 class InstalledModels : public QSortFilterProxyModel
@@ -206,7 +211,7 @@ class InstalledModels : public QSortFilterProxyModel
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
     explicit InstalledModels(QObject *parent);
-    int count() const;
+    int count() const { return rowCount(); }
 
 Q_SIGNALS:
     void countChanged();
@@ -248,8 +253,8 @@ class ModelList : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
-    Q_PROPERTY(int defaultEmbeddingModelIndex READ defaultEmbeddingModelIndex NOTIFY defaultEmbeddingModelIndexChanged)
-    Q_PROPERTY(EmbeddingModels* embeddingModels READ embeddingModels NOTIFY embeddingModelsChanged)
+    Q_PROPERTY(int defaultEmbeddingModelIndex READ defaultEmbeddingModelIndex)
+    Q_PROPERTY(EmbeddingModels* installedEmbeddingModels READ installedEmbeddingModels NOTIFY installedEmbeddingModelsChanged)
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
@@ -282,7 +287,6 @@ public:
         InstalledRole,
         DefaultRole,
         OnlineRole,
-        DisableGUIRole,
         DescriptionRole,
         RequiresVersionRole,
         VersionRemovedRole,
@@ -301,6 +305,7 @@ public:
         TypeRole,
         IsCloneRole,
         IsDiscoveredRole,
+        IsEmbeddingModelRole,
         TemperatureRole,
         TopPRole,
         TopKRole,
@@ -332,7 +337,6 @@ public:
         roles[InstalledRole] = "installed";
         roles[DefaultRole] = "isDefault";
         roles[OnlineRole] = "isOnline";
-        roles[DisableGUIRole] = "disableGUI";
         roles[DescriptionRole] = "description";
         roles[RequiresVersionRole] = "requiresVersion";
         roles[VersionRemovedRole] = "versionRemoved";
@@ -351,6 +355,7 @@ public:
         roles[TypeRole] = "type";
         roles[IsCloneRole] = "isClone";
         roles[IsDiscoveredRole] = "isDiscovered";
+        roles[IsEmbeddingModelRole] = "isEmbeddingModel";
         roles[TemperatureRole] = "temperature";
         roles[TopPRole] = "topP";
         roles[MinPRole] = "minP";
@@ -373,8 +378,7 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant data(const QString &id, int role) const;
     QVariant dataByFilename(const QString &filename, int role) const;
-    void updateData(const QString &id, int role, const QVariant &value);
-    void updateDataByFilename(const QString &filename, int role, const QVariant &value);
+    void updateDataByFilename(const QString &filename, QVector<QPair<int, QVariant>> data);
     void updateData(const QString &id, const QVector<QPair<int, QVariant>> &data);
 
     int count() const { return m_models.size(); }
@@ -397,6 +401,7 @@ public:
     const QList<QString> userDefaultModelList() const;
 
     EmbeddingModels *embeddingModels() const { return m_embeddingModels; }
+    EmbeddingModels *installedEmbeddingModels() const { return m_installedEmbeddingModels; }
     InstalledModels *installedModels() const { return m_installedModels; }
     DownloadableModels *downloadableModels() const { return m_downloadableModels; }
 
@@ -434,12 +439,11 @@ public:
 
 Q_SIGNALS:
     void countChanged();
-    void embeddingModelsChanged();
+    void installedEmbeddingModelsChanged();
     void installedModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
     void asyncModelRequestOngoingChanged();
-    void defaultEmbeddingModelIndexChanged();
     void discoverLimitChanged();
     void discoverSortDirectionChanged();
     void discoverSortChanged();
@@ -463,7 +467,7 @@ private Q_SLOTS:
 private:
     void removeInternal(const ModelInfo &model);
     void clearDiscoveredModels();
-    QString modelDirPath(const QString &modelName, bool isOnline);
+    bool modelExists(const QString &fileName) const;
     int indexForModel(ModelInfo *model);
     QVariant dataInternal(const ModelInfo *info, int role) const;
     static bool lessThan(const ModelInfo* a, const ModelInfo* b, DiscoverSort s, int d);
@@ -475,6 +479,7 @@ private:
     mutable QMutex m_mutex;
     QNetworkAccessManager m_networkManager;
     EmbeddingModels *m_embeddingModels;
+    EmbeddingModels *m_installedEmbeddingModels;
     InstalledModels *m_installedModels;
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;
@@ -489,7 +494,7 @@ private:
 
 protected:
     explicit ModelList();
-    ~ModelList() {}
+    ~ModelList() { for (auto *model: m_models) { delete model; } }
     friend class MyModelList;
 };
 

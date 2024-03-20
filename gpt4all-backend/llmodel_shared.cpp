@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <regex>
+#include <string>
 #include <unordered_set>
 
 // TODO(cebtenzzre): replace this with llama_kv_cache_seq_shift for llamamodel (GPT-J needs this as-is)
@@ -267,12 +268,30 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
     }
 }
 
-std::vector<float> LLModel::embedding(const std::string &text)
-{
-    (void)text;
-    if (!supportsCompletion()) {
-        std::string errorMessage = "ERROR: this model does not support generating embeddings!\n";
-        std::cerr << implementation().modelType() << errorMessage;
-    }
-    return std::vector<float>();
+void LLModel::embed(
+    const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
+    size_t *tokenCount, bool doMean, bool atlas
+) {
+    (void)texts;
+    (void)embeddings;
+    (void)prefix;
+    (void)dimensionality;
+    (void)tokenCount;
+    (void)doMean;
+    (void)atlas;
+    throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
+}
+
+void LLModel::embed(
+    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, size_t *tokenCount,
+    bool doMean, bool atlas
+) {
+    (void)texts;
+    (void)embeddings;
+    (void)isRetrieval;
+    (void)dimensionality;
+    (void)tokenCount;
+    (void)doMean;
+    (void)atlas;
+    throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
 }

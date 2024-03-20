@@ -38,7 +38,7 @@ The GPT4All software ecosystem is compatible with the following Transformer arch
 - `MPT` (including `Replit`)
 - `GPT-J`
 
-You can find an exhaustive list of supported models on the [website](https://gpt4all.io) or in the [models directory](https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/metadata/models2.json)
+You can find an exhaustive list of supported models on the [website](https://gpt4all.io) or in the [models directory](https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/metadata/models3.json)
 
 
 GPT4All models are artifacts produced through a process known as neural network quantization.

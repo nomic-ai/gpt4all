@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ctypes
-import logging
 import os
 import platform
 import re
@@ -10,14 +9,14 @@ import sys
 import threading
 from enum import Enum
 from queue import Queue
-from typing import Callable, Iterable, List
+from typing import Any, Callable, Generic, Iterable, TypedDict, TypeVar, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
 else:
     import importlib_resources
 
-logger: logging.Logger = logging.getLogger(__name__)
+EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
 
 # TODO: provide a config file to make this more robust
@@ -28,7 +27,7 @@ def load_llmodel_library():
     ext = {"Darwin": "dylib", "Linux": "so", "Windows": "dll"}[platform.system()]
 
     try:
-        # Linux, Windows, MinGW
+        # macOS, Linux, MinGW
         lib = ctypes.CDLL(str(MODEL_LIB_PATH / f"libllmodel.{ext}"))
     except FileNotFoundError:
         if ext != 'dll':
@@ -105,13 +104,19 @@ llmodel.llmodel_prompt.argtypes = [
 
 llmodel.llmodel_prompt.restype = None
 
-llmodel.llmodel_embedding.argtypes = [
+llmodel.llmodel_embed.argtypes = [
     ctypes.c_void_p,
-    ctypes.c_char_p,
+    ctypes.POINTER(ctypes.c_char_p),
     ctypes.POINTER(ctypes.c_size_t),
+    ctypes.c_char_p,
+    ctypes.c_int,
+    ctypes.POINTER(ctypes.c_size_t),
+    ctypes.c_bool,
+    ctypes.c_bool,
+    ctypes.POINTER(ctypes.c_char_p),
 ]
 
-llmodel.llmodel_embedding.restype = ctypes.POINTER(ctypes.c_float)
+llmodel.llmodel_embed.restype = ctypes.POINTER(ctypes.c_float)
 
 llmodel.llmodel_free_embedding.argtypes = [ctypes.POINTER(ctypes.c_float)]
 llmodel.llmodel_free_embedding.restype = None
@@ -125,7 +130,7 @@ llmodel.llmodel_set_implementation_search_path.restype = None
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
-llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).replace("\\", r"\\").encode())
+llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).encode())
 
 llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
 llmodel.llmodel_available_gpu_devices.restype = ctypes.POINTER(LLModelGPUDevice)
@@ -153,6 +158,11 @@ def empty_response_callback(token_id: int, response: str) -> bool:
 # Symbol to terminate from generator
 class Sentinel(Enum):
     TERMINATING_SYMBOL = 0
+
+
+class EmbedResult(Generic[EmbeddingsType], TypedDict):
+    embeddings: EmbeddingsType
+    n_prompt_tokens: int
 
 
 class LLModel:
@@ -183,10 +193,10 @@ class LLModel:
         model = llmodel.llmodel_model_create2(self.model_path, b"auto", ctypes.byref(err))
         if model is None:
             s = err.value
-            raise ValueError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
+            raise RuntimeError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
         self.model = model
 
-    def __del__(self):
+    def __del__(self, llmodel=llmodel):
         if hasattr(self, 'model'):
             llmodel.llmodel_model_destroy(self.model)
 
@@ -287,16 +297,57 @@ class LLModel:
         self.context.repeat_last_n = repeat_last_n
         self.context.context_erase = context_erase
 
-    def generate_embedding(self, text: str) -> List[float]:
-        if not text:
-            raise ValueError("Text must not be None or empty")
+    @overload
+    def generate_embeddings(
+        self, text: str, prefix: str, dimensionality: int, do_mean: bool, count_tokens: bool, atlas: bool,
+    ) -> EmbedResult[list[float]]: ...
+    @overload
+    def generate_embeddings(
+        self, text: list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+    ) -> EmbedResult[list[list[float]]]: ...
+    @overload
+    def generate_embeddings(
+        self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+    ) -> EmbedResult[list[Any]]: ...
 
+    def generate_embeddings(
+        self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+    ) -> EmbedResult[list[Any]]:
+        if not text:
+            raise ValueError("text must not be None or empty")
+
+        if (single_text := isinstance(text, str)):
+            text = [text]
+
+        # prepare input
         embedding_size = ctypes.c_size_t()
-        c_text = ctypes.c_char_p(text.encode())
-        embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
-        embedding_array = [embedding_ptr[i] for i in range(embedding_size.value)]
+        token_count = ctypes.c_size_t()
+        error = ctypes.c_char_p()
+        c_prefix = ctypes.c_char_p() if prefix is None else prefix.encode()
+        c_texts = (ctypes.c_char_p * (len(text) + 1))()
+        for i, t in enumerate(text):
+            c_texts[i] = t.encode()
+
+        # generate the embeddings
+        embedding_ptr = llmodel.llmodel_embed(
+            self.model, c_texts, ctypes.byref(embedding_size), c_prefix, dimensionality, ctypes.byref(token_count),
+            do_mean, atlas, ctypes.byref(error),
+        )
+
+        if not embedding_ptr:
+            msg = "(unknown error)" if error.value is None else error.value.decode()
+            raise RuntimeError(f'Failed to generate embeddings: {msg}')
+
+        # extract output
+        n_embd = embedding_size.value // len(text)
+        embedding_array = [
+            embedding_ptr[i:i + n_embd]
+            for i in range(0, embedding_size.value, n_embd)
+        ]
         llmodel.llmodel_free_embedding(embedding_ptr)
-        return list(embedding_array)
+
+        embeddings = embedding_array[0] if single_text else embedding_array
+        return {'embeddings': embeddings, 'n_prompt_tokens': token_count.value}
 
     def prompt_model(
         self,
@@ -332,13 +383,6 @@ class LLModel:
 
         self.buffer.clear()
         self.buff_expecting_cont_bytes = 0
-
-        logger.info(
-            "LLModel.prompt_model -- prompt:\n"
-            + "%s\n"
-            + "===/LLModel.prompt_model -- prompt/===",
-            prompt,
-        )
 
         self._set_context(
             n_predict=n_predict,

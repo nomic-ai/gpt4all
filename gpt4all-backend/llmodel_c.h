@@ -186,13 +186,24 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
  * NOTE: If given NULL pointers for the model or text, or an empty text, a NULL pointer will be
  * returned. Bindings should signal an error when NULL is the return value.
  * @param model A pointer to the llmodel_model instance.
- * @param text A string representing the text to generate an embedding for.
+ * @param texts A pointer to a NULL-terminated array of strings representing the texts to generate an
+ * embedding for.
  * @param embedding_size A pointer to a size_t type that will be set by the call indicating the length
  * of the returned floating point array.
+ * @param prefix The model-specific prefix representing the embedding task, without the trailing colon. NULL for no
+ * prefix.
+ * @param dimensionality The embedding dimension, for use with Matryoshka-capable models. Set to -1 to for full-size.
+ * @param token_count Return location for the number of prompt tokens processed, or NULL.
+ * @param do_mean True to average multiple embeddings if the text is longer than the model can accept, False to
+ * truncate.
+ * @param atlas Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens with
+ * long_text_mode="mean" will raise an error. Disabled by default.
+ * @param error Return location for a malloc()ed string that will be set on error, or NULL.
  * @return A pointer to an array of floating point values passed to the calling method which then will
- * be responsible for lifetime of this memory.
+ * be responsible for lifetime of this memory. NULL if an error occurred.
  */
-float *llmodel_embedding(llmodel_model model, const char *text, size_t *embedding_size);
+float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size, const char *prefix,
+                     int dimensionality, size_t *token_count, bool do_mean, bool atlas, const char **error);
 
 /**
  * Frees the memory allocated by the llmodel_embedding function.

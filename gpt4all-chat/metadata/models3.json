@@ -29,7 +29,7 @@
     "description": "<strong>Strong overall fast chat model</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by Mistral AI<li>Finetuned on OpenOrca dataset curated via <a href=\"https://atlas.nomic.ai/\">Nomic Atlas</a><li>Licensed for commercial use</ul>",
     "url": "https://gpt4all.io/models/gguf/mistral-7b-openorca.gguf2.Q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
-    "systemPrompt": "<|im_start|>system\nYou are MistralOrca, a large language model trained by Alignment Lab AI. For multi-step problems, write out your reasoning for each step.\n<|im_end|>"
+    "systemPrompt": "<|im_start|>system\nYou are MistralOrca, a large language model trained by Alignment Lab AI. For multi-step problems, write out your reasoning for each step.\n<|im_end|>\n"
   },
   {
     "order": "c",
@@ -42,7 +42,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "Mistral",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "description": "<strong>Strong overall fast instruction following model</strong><br><ul><li>Fast responses</li><li>Trained by Mistral AI<li>Uncensored</li><li>Licensed for commercial use</li></ul>",
     "url": "https://gpt4all.io/models/gguf/mistral-7b-instruct-v0.1.Q4_0.gguf",
     "promptTemplate": "[INST] %1 [/INST]"
@@ -58,7 +58,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "Falcon",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "description": "<strong>Very fast model with good quality</strong><br><ul><li>Fastest responses</li><li>Instruction based</li><li>Trained by TII<li>Finetuned by Nomic AI<li>Licensed for commercial use</ul>",
     "url": "https://gpt4all.io/models/gguf/gpt4all-falcon-newbpe-q4_0.gguf",
     "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
@@ -74,7 +74,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "LLaMA2",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "description": "<ul><li>Instruction based<li>Trained by Microsoft<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/orca-2-7b.Q4_0.gguf"
   },
@@ -89,7 +89,7 @@
     "parameters": "13 billion",
     "quant": "q4_0",
     "type": "LLaMA2",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "description": "<ul><li>Instruction based<li>Trained by Microsoft<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/orca-2-13b.Q4_0.gguf"
   },
@@ -104,7 +104,7 @@
     "parameters": "13 billion",
     "quant": "q4_0",
     "type": "LLaMA2",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "description": "<strong>Strong overall larger model</strong><br><ul><li>Instruction based<li>Gives very long responses<li>Finetuned with only 1k of high-quality data<li>Trained by Microsoft and Peking University<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/wizardlm-13b-v1.2.Q4_0.gguf"
   },
@@ -119,7 +119,7 @@
     "parameters": "13 billion",
     "quant": "q4_0",
     "type": "LLaMA2",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "description": "<strong>Extremely good model</strong><br><ul><li>Instruction based<li>Gives long responses<li>Curated with 300,000 uncensored instructions<li>Trained by Nous Research<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/nous-hermes-llama2-13b.Q4_0.gguf",
     "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
@@ -135,7 +135,7 @@
     "parameters": "13 billion",
     "quant": "q4_0",
     "type": "LLaMA",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "description": "<strong>Very good overall model</strong><br><ul><li>Instruction based<li>Based on the same dataset as Groovy<li>Slower than Groovy, with higher quality responses<li>Trained by Nomic AI<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/gpt4all-13b-snoozy-q4_0.gguf"
   },
@@ -146,6 +146,7 @@
     "filename": "mpt-7b-chat-newbpe-q4_0.gguf",
     "filesize": "3912373472",
     "requires": "2.6.0",
+    "removedIn": "2.7.3",
     "ramrequired": "8",
     "parameters": "7 billion",
     "quant": "q4_0",
@@ -153,7 +154,23 @@
     "description": "<strong>Good model with novel architecture</strong><br><ul><li>Fast responses<li>Chat based<li>Trained by Mosaic ML<li>Cannot be used commercially</ul>",
     "url": "https://gpt4all.io/models/gguf/mpt-7b-chat-newbpe-q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
-    "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>"
+    "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n"
+  },
+  {
+    "order": "j",
+    "md5sum": "ab5d8e8a2f79365ea803c1f1d0aa749d",
+    "name": "MPT Chat",
+    "filename": "mpt-7b-chat.gguf4.Q4_0.gguf",
+    "filesize": "3796178112",
+    "requires": "2.7.3",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "MPT",
+    "description": "<strong>Good model with novel architecture</strong><br><ul><li>Fast responses<li>Chat based<li>Trained by Mosaic ML<li>Cannot be used commercially</ul>",
+    "url": "https://gpt4all.io/models/gguf/mpt-7b-chat.gguf4.Q4_0.gguf",
+    "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
+    "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n"
   },
   {
     "order": "k",
@@ -183,7 +200,7 @@
     "parameters": "3 billion",
     "quant": "q4_0",
     "type": "Replit",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "promptTemplate": "%1",
     "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>Licensed for commercial use<li>WARNING: Not available for chat GUI</ul>",
     "url": "https://gpt4all.io/models/gguf/replit-code-v1_5-3b-newbpe-q4_0.gguf"
@@ -200,7 +217,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "Starcoder",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "promptTemplate": "%1",
     "description": "<strong>Trained on subset of the Stack</strong><br><ul><li>Code completion based<li>WARNING: Not available for chat GUI</ul>",
     "url": "https://gpt4all.io/models/gguf/starcoder-newbpe-q4_0.gguf"
@@ -217,7 +234,7 @@
     "parameters": "7 billion",
     "quant": "q4_0",
     "type": "LLaMA",
-    "systemPrompt": " ",
+    "systemPrompt": "",
     "promptTemplate": "%1",
     "description": "<strong>Trained on collection of Python and TypeScript</strong><br><ul><li>Code completion based<li>WARNING: Not available for chat GUI</li>",
     "url": "https://gpt4all.io/models/gguf/rift-coder-v0-7b-q4_0.gguf"
@@ -230,13 +247,30 @@
     "filename": "all-MiniLM-L6-v2-f16.gguf",
     "filesize": "45887744",
     "requires": "2.5.0",
+    "removedIn": "2.7.4",
     "ramrequired": "1",
     "parameters": "40 million",
     "quant": "f16",
     "type": "Bert",
-    "systemPrompt": " ",
+    "embeddingModel": true,
+    "systemPrompt": "",
     "description": "<strong>LocalDocs text embeddings model</strong><br><ul><li>For use with LocalDocs feature<li>Used for retrieval augmented generation (RAG)",
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
+  },
+  {
+    "order": "o",
+    "md5sum": "dd90e2cb7f8e9316ac3796cece9883b5",
+    "name": "SBert",
+    "filename": "all-MiniLM-L6-v2.gguf2.f16.gguf",
+    "filesize": "45949216",
+    "requires": "2.7.4",
+    "ramrequired": "1",
+    "parameters": "40 million",
+    "quant": "f16",
+    "type": "Bert",
+    "embeddingModel": true,
+    "description": "<strong>LocalDocs text embeddings model</strong><br><ul><li>For use with LocalDocs feature<li>Used for retrieval augmented generation (RAG)",
+    "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2.gguf2.f16.gguf"
   },
   {
     "order": "p",
@@ -253,5 +287,55 @@
     "url": "https://huggingface.co/TheBloke/em_german_mistral_v01-GGUF/resolve/main/em_german_mistral_v01.Q4_0.gguf",
     "promptTemplate": "USER: %1 ASSISTANT: ",
     "systemPrompt": "Du bist ein hilfreicher Assistent. "
+  },
+  {
+    "order": "q",
+    "md5sum": "60ea031126f82db8ddbbfecc668315d2",
+    "disableGUI": "true",
+    "name": "Nomic Embed Text v1",
+    "filename": "nomic-embed-text-v1.f16.gguf",
+    "filesize": "274290560",
+    "requires": "2.7.4",
+    "ramrequired": "1",
+    "parameters": "137 million",
+    "quant": "f16",
+    "type": "Bert",
+    "embeddingModel": true,
+    "systemPrompt": "",
+    "description": "nomic-embed-text-v1",
+    "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.f16.gguf"
+  },
+  {
+    "order": "r",
+    "md5sum": "a5401e7f7e46ed9fcaed5b60a281d547",
+    "disableGUI": "true",
+    "name": "Nomic Embed Text v1.5",
+    "filename": "nomic-embed-text-v1.5.f16.gguf",
+    "filesize": "274290560",
+    "requires": "2.7.4",
+    "ramrequired": "1",
+    "parameters": "137 million",
+    "quant": "f16",
+    "type": "Bert",
+    "embeddingModel": true,
+    "systemPrompt": "",
+    "description": "nomic-embed-text-v1.5",
+    "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf"
+  },
+  {
+    "order": "g",
+    "md5sum": "31b47b4e8c1816b62684ac3ca373f9e1",
+    "name": "Ghost 7B v0.9.1",
+    "filename": "ghost-7b-v0.9.1-Q4_0.gguf",
+    "filesize": "4108916960",
+    "requires": "2.5.0",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "Mistral",
+    "description": "<strong>Ghost 7B v0.9.1</strong> fast, powerful and smooth for Vietnamese and English languages.",
+    "url": "https://huggingface.co/lamhieu/ghost-7b-v0.9.1-gguf/resolve/main/ghost-7b-v0.9.1-Q4_0.gguf",
+    "promptTemplate": "<|user|>\n%1</s>\n<|assistant|>\n%2</s>\n",
+    "systemPrompt": "<|system|>\nYou are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior.\n</s>"
   }
 ]
