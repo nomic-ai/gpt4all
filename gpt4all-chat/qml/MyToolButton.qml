@@ -9,6 +9,8 @@ Button {
     padding: 10
     property color backgroundColor: theme.iconBackgroundDark
     property color backgroundColorHovered: theme.iconBackgroundHovered
+    property color toggledColor: theme.accentColor
+    property real toggledWidth: 1
     property bool toggled: false
     property alias source: image.source
     property alias fillMode: image.fillMode
@@ -27,8 +29,8 @@ Button {
             anchors.fill: parent
             color: "transparent"
             visible: myButton.toggled
-            border.color: theme.accentColor
-            border.width: 1
+            border.color: myButton.toggledColor
+            border.width: myButton.toggledWidth
             radius: 10
         }
         Image {
