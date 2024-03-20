@@ -51,7 +51,6 @@ function appendBinSuffixIfMissing(name) {
 }
 
 function prepareMessagesForIngest(messages) {
-    
     const systemMessages = messages.filter(
         (message) => message.role === "system"
     );
@@ -64,7 +63,7 @@ function prepareMessagesForIngest(messages) {
     const userAssistantMessages = messages.filter(
         (message) => message.role !== "system"
     );
-    
+
     // make sure the first message is a user message
     // if its not, the turns will be out of order
     if (userAssistantMessages[0].role !== "user") {
@@ -104,8 +103,8 @@ function prepareMessagesForIngest(messages) {
             assistantMessage = null;
         }
     }
-    
-    return turns
+
+    return turns;
 }
 
 // readChunks() reads from the provided reader and yields the results into an async iterable
@@ -128,7 +127,7 @@ function downloadModel(modelName, options = {}) {
         verbose: false,
         ...options,
     };
-    
+
     const modelFileName = appendBinSuffixIfMissing(modelName);
     const partialModelPath = path.join(
         downloadOptions.modelPath,
@@ -136,14 +135,15 @@ function downloadModel(modelName, options = {}) {
     );
     const finalModelPath = path.join(downloadOptions.modelPath, modelFileName);
     const modelUrl =
-        downloadOptions.url ?? `https://gpt4all.io/models/gguf/${modelFileName}`;
+        downloadOptions.url ??
+        `https://gpt4all.io/models/gguf/${modelFileName}`;
 
-    mkdirp.sync(downloadOptions.modelPath)
+    mkdirp.sync(downloadOptions.modelPath);
 
     if (existsSync(finalModelPath)) {
         throw Error(`Model already exists at ${finalModelPath}`);
     }
-    
+
     if (downloadOptions.verbose) {
         console.debug(`Downloading ${modelName} from ${modelUrl}`);
     }
@@ -289,7 +289,6 @@ async function retrieveModel(modelName, options = {}) {
             console.debug(`Found ${modelName} at ${fullModelPath}`);
         }
     } else if (retrieveOptions.allowDownload) {
-
         const downloadController = downloadModel(modelName, {
             modelPath: retrieveOptions.modelPath,
             verbose: retrieveOptions.verbose,

@@ -143,7 +143,7 @@ async function createCompletion(
         ...defaultCompletionOptions,
         ...options,
     };
-    
+
     const response = await provider.generate(
         input,
         completionOptions,

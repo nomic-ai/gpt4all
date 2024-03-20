@@ -31,17 +31,17 @@ class InferenceModel {
                 DEFAULT_PROMPT_CONTEXT.temp,
             ...otherOptions,
         };
-        
+
         if (verbose) {
             console.debug("Generating completion", {
                 input,
                 promptContext,
             });
         }
-        
+
         let prompt = input;
         let nPast = promptContext.nPast;
-        
+
         if (Array.isArray(input)) {
             // assuming input is a messages array
             // -> tailing user message will be used as the final prompt. its required.
@@ -53,9 +53,7 @@ class InferenceModel {
             const lastMessage = input[input.length - 1];
             if (lastMessage.role !== "user") {
                 // this is most likely a user error
-                throw new Error(
-                    "The final message must be of role 'user'."
-                );
+                throw new Error("The final message must be of role 'user'.");
             }
             if (input[0].role === "system") {
                 // needs to be a pre-templated prompt ala '<|im_start|>system\nYou are an advanced mathematician.\n<|im_end|>\n'
@@ -68,7 +66,7 @@ class InferenceModel {
                 nPast = sysRes.nPast;
                 messages.shift();
             }
-            
+
             prompt = lastMessage.content;
             const messagesToIngest = messages.slice(0, input.length - 1);
             const turns = prepareMessagesForIngest(messagesToIngest);
@@ -84,7 +82,7 @@ class InferenceModel {
         }
 
         let tokensGenerated = 0;
-        
+
         const response = await this.llm.infer(
             prompt,
             {
@@ -104,7 +102,7 @@ class InferenceModel {
                 return continueGeneration;
             }
         );
-        
+
         response.tokensGenerated = tokensGenerated;
 
         if (verbose) {
@@ -122,20 +120,14 @@ class InferenceModel {
 class EmbeddingModel {
     llm;
     config;
-    MIN_DIMENSIONALITY = 64
+    MIN_DIMENSIONALITY = 64;
     constructor(llmodel, config) {
         this.llm = llmodel;
         this.config = config;
     }
 
     embed(text, prefix, dimensionality, do_mean, atlas) {
-        return this.llm.embed(
-            text, 
-            prefix,
-            dimensionality,
-            do_mean,
-            atlas
-        );
+        return this.llm.embed(text, prefix, dimensionality, do_mean, atlas);
     }
 
     dispose() {

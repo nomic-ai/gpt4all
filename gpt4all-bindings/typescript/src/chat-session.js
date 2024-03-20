@@ -20,7 +20,6 @@ class ChatSession {
      * @type {boolean}
      */
     initialized;
-    
 
     constructor(model, opts = {}) {
         const { messages, systemPrompt, ...otherOpts } = opts;
@@ -61,9 +60,8 @@ class ChatSession {
 
         this.initialized = true;
     }
-    
+
     async ingestMessages(messages) {
-        
         const turns = prepareMessagesForIngest(messages);
 
         // send the message pairs to the model
@@ -75,14 +73,9 @@ class ChatSession {
             });
             this.promptContext.nPast = res.nPast;
         }
-    
     }
 
-    async generate(
-        input,
-        options = DEFAULT_PROMPT_CONTEXT,
-        callback
-    ) {
+    async generate(input, options = DEFAULT_PROMPT_CONTEXT, callback) {
         if (this.model.activeChatSession !== this) {
             throw new Error(
                 "Chat session is not active. Create a new chat session or call initialize to continue."
@@ -91,40 +84,44 @@ class ChatSession {
         if (!this.initialized) {
             await this.initialize();
         }
-        
+
         let prompt = input;
-        
+
         if (Array.isArray(input)) {
             // assuming input is a messages array
             // -> tailing user message will be used as the final prompt. its optional.
             // -> all system messages will be ignored.
             // -> all other messages will be ingested with fakeReply
             // -> user/assistant messages will be pushed into the messages array
-            
+
             let tailingUserMessage = "";
             let messagesToIngest = input;
-            
+
             const lastMessage = input[input.length - 1];
             if (lastMessage.role === "user") {
                 tailingUserMessage = lastMessage.content;
                 messagesToIngest = input.slice(0, input.length - 1);
             }
-            
+
             if (messagesToIngest.length > 0) {
                 await this.ingestMessages(otherMessages);
                 this.messages.push(...messagesToIngest);
             }
-            
+
             if (tailingUserMessage) {
                 prompt = tailingUserMessage;
             }
         }
-            
-        const response = await this.model.generate(prompt, {
-            ...this.promptContext,
-            ...options,
-        }, callback);
-        
+
+        const response = await this.model.generate(
+            prompt,
+            {
+                ...this.promptContext,
+                ...options,
+            },
+            callback
+        );
+
         this.promptContext.nPast = response.nPast;
 
         this.messages.push({
