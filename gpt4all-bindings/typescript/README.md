@@ -15,7 +15,7 @@ pnpm install gpt4all@latest
 *   See [Examples](#api-example)
 *   See [Developing](#develop)
 *   GPT4ALL nodejs bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
-
+*   [spare change](https://github.com/sponsors/jacoobes) for a college student?
 ## Api Example
 ### Chat Completion
 ```js
@@ -132,11 +132,11 @@ model.dispose();
 ## Develop
 ### Build Instructions
 
-*   binding.gyp is compile config
+*   `binding.gyp` is compile config
 *   Tested on Ubuntu. Everything seems to work fine
 *   Tested on Windows. Everything works fine.
 *   Sparse testing on mac os.
-*   MingW works as well to build the gpt4all-backend. **HOWEVER**, this package works only with MSVC built dlls.
+*   MingW script works to build the gpt4all-backend. We left it there just in case. **HOWEVER**, this package works only with MSVC built dlls.
 
 ### Requirements
 
@@ -164,23 +164,18 @@ cd gpt4all-bindings/typescript
 *   To Build and Rebuild:
 
 ```sh
-yarn
+node scripts/prebuild.js
 ```
 *   llama.cpp git submodule for gpt4all can be possibly absent. If this is the case, make sure to run in llama.cpp parent directory
 
 ```sh
-git submodule update --init --depth 1 --recursive
+git submodule update --init --recursive
 ```
 
 ```sh
 yarn build:backend
 ```
-
-This will build platform-dependent dynamic libraries, and will be located in runtimes/(platform)/native The only current way to use them is to put them in the current working directory of your application. That is, **WHEREVER YOU RUN YOUR NODE APPLICATION**
-
-*   llama-xxxx.dll is required.
-*   According to whatever model you are using, you'll need to select the proper model loader.
-    *   For example, if you running an Mosaic MPT model, you will need to select the mpt-(buildvariant).(dynamiclibrary)
+This will build platform-dependent dynamic libraries, and will be located in runtimes/(platform)/native 
 
 ### Test
 

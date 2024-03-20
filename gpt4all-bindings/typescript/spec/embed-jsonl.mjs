@@ -22,5 +22,5 @@ lineReader.on('line', line => {
     console.log(createEmbedding(embedder, question_answer))
 })
 
-
+lineReader.on('close', () => embedder.dispose())
 

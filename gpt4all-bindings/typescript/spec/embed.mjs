@@ -9,3 +9,4 @@ console.log(createEmbedding(embedder, ["Accept your current situation", "12312"]
 console.log(e)
 }
 
+embedder.dispose()
