@@ -196,6 +196,7 @@ Napi::Value NodeModelWrapper::StateSize(const Napi::CallbackInfo &info)
     return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(GetInference())));
 }
 
+<<<<<<< HEAD
 Napi::Value ChunkedFloatPtr(float *embedding_ptr, int embedding_size, int text_len, Napi::Env const &env)
 {
     auto n_embd = embedding_size / text_len;
@@ -205,20 +206,43 @@ Napi::Value ChunkedFloatPtr(float *embedding_ptr, int embedding_size, int text_l
     Napi::Array result = Napi::Array::New(env, text_len);
     for (int i = 0; i < embedding_size; i += n_embd)
     {
+=======
+Napi::Array ChunkedFloatPtr(
+    float* embedding_ptr,
+    int embedding_size,
+    int text_len,
+    Napi::Env const& env
+    ) 
+{
+    auto n_embd = embedding_size / text_len;
+    std::cout << "Embedding size: " << embedding_size << std::endl;
+    std::cout << "Text length: " << text_len << std::endl;
+    std::cout << "Chunk size (n_embd): " << n_embd << std::endl;
+    Napi::Array result = Napi::Array::New(env, text_len);
+    auto count = 0;
+    for (int i = 0; i < embedding_size; i += n_embd) {
+>>>>>>> e564084 (search embed spec preview & fix array bounds)
         int end = std::min(i + n_embd, embedding_size);
         // possible bounds error?
         // Constructs a container with as many elements as the range [first,last), with each element emplace-constructed
         // from its corresponding element in that range, in the same order.
         std::vector<float> chunk(embedding_ptr + i, embedding_ptr + end);
         Napi::Float32Array fltarr = Napi::Float32Array::New(env, chunk.size());
+<<<<<<< HEAD
         // I know there's a way to emplace the raw float ptr into a Napi::Float32Array but idk how and
         //  im too scared to cause memory issues
         //  this is goodenough
         for (int j = 0; j < chunk.size(); j++)
         {
+=======
+        //I know theres a way to emplace the raw float ptr into a Napi::Float32Array but idk how and 
+        // im too scared to cause memory issues
+        // this is goodenough
+        for(uint32_t j = 0 ; j < chunk.size(); j++) {
+>>>>>>> e564084 (search embed spec preview & fix array bounds)
             fltarr.Set(j, chunk[j]);
         }
-        result.Set(i, fltarr);
+        result.Set(count++, fltarr);
     }
     return result;
 }
@@ -269,6 +293,10 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
     auto embedmat = ChunkedFloatPtr(embeds, embedding_size, text_arr.size(), env);
 
     llmodel_free_embedding(embeds);
+    if(is_single_text) {
+        uint32_t fst = 0;
+        return embedmat.Get(fst);
+    }
     return embedmat;
 }
 
@@ -319,7 +347,6 @@ Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
 
     auto inputObject = info[1].As<Napi::Object>();
 
-    // Extract and assign the properties
     if (inputObject.Has("logits") || inputObject.Has("tokens"))
     {
         Napi::Error::New(info.Env(), "Invalid input: 'logits' or 'tokens' properties are not allowed")
