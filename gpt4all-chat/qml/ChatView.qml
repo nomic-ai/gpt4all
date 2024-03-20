@@ -891,7 +891,13 @@ Rectangle {
                         text: value + references
                         anchors.horizontalCenter: listView.contentItem.horizontalCenter
                         width: Math.min(1280, listView.contentItem.width)
-                        color: theme.textColor
+                        color: {
+                            if (!currentChat.isServer)
+                                return theme.textColor
+                            if (name === qsTr("Response: "))
+                                return theme.white
+                            return theme.black
+                        }
                         wrapMode: Text.WordWrap
                         textFormat: TextEdit.PlainText
                         focus: false
