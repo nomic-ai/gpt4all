@@ -10,7 +10,7 @@ import time
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable, Literal, overload
+from typing import TYPE_CHECKING, Any, Iterable, Literal, Protocol, overload
 
 import requests
 from requests.exceptions import ChunkedEncodingError
@@ -22,6 +22,9 @@ from ._pyllmodel import EmbedResult as EmbedResult
 
 if TYPE_CHECKING:
     from typing import TypeAlias
+
+if sys.platform == 'darwin':
+    import fcntl
 
 # TODO: move to config
 DEFAULT_MODEL_DIRECTORY = Path.home() / ".cache" / "gpt4all"
@@ -287,7 +290,6 @@ class GPT4All:
         """
 
         # Download model
-        download_path = Path(model_path) / model_filename
         if url is None:
             url = f"https://gpt4all.io/models/gguf/{model_filename}"
 
@@ -311,41 +313,55 @@ class GPT4All:
         total_size_in_bytes = int(response.headers.get("content-length", 0))
         block_size = 2**20  # 1 MB
 
-        with open(download_path, "wb") as file, \
-                tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True) as progress_bar:
+        partial_path = Path(model_path) / (model_filename + ".part")
+
+        with open(partial_path, "wb") as partf:
             try:
-                while True:
-                    last_progress = progress_bar.n
-                    try:
-                        for data in response.iter_content(block_size):
-                            file.write(data)
-                            progress_bar.update(len(data))
-                    except ChunkedEncodingError as cee:
-                        if cee.args and isinstance(pe := cee.args[0], ProtocolError):
-                            if len(pe.args) >= 2 and isinstance(ir := pe.args[1], IncompleteRead):
-                                assert progress_bar.n <= ir.partial  # urllib3 may be ahead of us but never behind
-                                # the socket was closed during a read - retry
-                                response = make_request(progress_bar.n)
-                                continue
-                        raise
-                    if total_size_in_bytes != 0 and progress_bar.n < total_size_in_bytes:
-                        if progress_bar.n == last_progress:
-                            raise RuntimeError('Download not making progress, aborting.')
-                        # server closed connection prematurely - retry
-                        response = make_request(progress_bar.n)
-                        continue
-                    break
+                with tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True) as progress_bar:
+                    while True:
+                        last_progress = progress_bar.n
+                        try:
+                            for data in response.iter_content(block_size):
+                                partf.write(data)
+                                progress_bar.update(len(data))
+                        except ChunkedEncodingError as cee:
+                            if cee.args and isinstance(pe := cee.args[0], ProtocolError):
+                                if len(pe.args) >= 2 and isinstance(ir := pe.args[1], IncompleteRead):
+                                    assert progress_bar.n <= ir.partial  # urllib3 may be ahead of us but never behind
+                                    # the socket was closed during a read - retry
+                                    response = make_request(progress_bar.n)
+                                    continue
+                            raise
+                        if total_size_in_bytes != 0 and progress_bar.n < total_size_in_bytes:
+                            if progress_bar.n == last_progress:
+                                raise RuntimeError("Download not making progress, aborting.")
+                            # server closed connection prematurely - retry
+                            response = make_request(progress_bar.n)
+                            continue
+                        break
             except Exception:
                 if verbose:
                     print("Cleaning up the interrupted download...", file=sys.stderr)
                 try:
-                    os.remove(download_path)
+                    os.remove(partial_path)
                 except OSError:
                     pass
                 raise
 
-        if os.name == 'nt':
-            time.sleep(2)  # Sleep for a little bit so Windows can remove file lock
+            # flush buffers and sync the inode
+            partf.flush()
+            _fsync(partf)
+
+        # move to final destination
+        download_path = Path(model_path) / model_filename
+        try:
+            os.rename(partial_path, download_path)
+        except FileExistsError:
+            try:
+                os.remove(partial_path)
+            except OSError:
+                pass
+            raise
 
         if verbose:
             print(f"Model downloaded to {str(download_path)!r}", file=sys.stderr)
@@ -564,3 +580,19 @@ def append_extension_if_missing(model_name):
     if not model_name.endswith((".bin", ".gguf")):
         model_name += ".gguf"
     return model_name
+
+
+class _HasFileno(Protocol):
+    def fileno(self) -> int: ...
+
+
+def _fsync(fd: int | _HasFileno) -> None:
+    if sys.platform == 'darwin':
+        # Apple's fsync does not flush the drive write cache
+        try:
+            fcntl.fcntl(fd, fcntl.F_FULLFSYNC)
+        except OSError:
+            pass  # fall back to fsync
+        else:
+            return
+    os.fsync(fd)
