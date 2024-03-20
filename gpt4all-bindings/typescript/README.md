@@ -15,7 +15,7 @@ pnpm install gpt4all@latest
 *   See [Examples](#api-example)
 *   See [Developing](#develop)
 *   GPT4ALL nodejs bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
-*   [spare change](https://github.com/sponsors/jacoobes) for a college student?
+*   [spare change](https://github.com/sponsors/jacoobes) for a college student? 🤑
 ## Api Example
 ### Chat Completion
 ```js
