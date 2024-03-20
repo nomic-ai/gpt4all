@@ -640,6 +640,7 @@ static const EmbModelGroup EMBEDDING_MODEL_SPECS[] {
     {LLM_EMBEDDER_SPEC, {"llm-embedder"}},
     {BGE_SPEC,          {"bge-small-en", "bge-base-en", "bge-large-en",
                          "bge-small-en-v1.5", "bge-base-en-v1.5", "bge-large-en-v1.5"}},
+    // NOTE: E5 Mistral is not yet implemented in llama.cpp, so it's not in EMBEDDING_ARCHES
     {E5_SPEC,           {"e5-small", "e5-base", "e5-large",
                          "e5-small-unsupervised", "e5-base-unsupervised", "e5-large-unsupervised",
                          "e5-small-v2", "e5-base-v2", "e5-large-v2"}},
