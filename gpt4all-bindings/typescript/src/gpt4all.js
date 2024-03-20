@@ -50,7 +50,10 @@ async function loadModel(modelName, options = {}) {
         verbose: loadOptions.verbose,
     });
 
-    assert.ok(typeof loadOptions.librariesPath === "string", "Libraries path should be a string");
+    assert.ok(
+        typeof loadOptions.librariesPath === "string",
+        "Libraries path should be a string"
+    );
     const existingPaths = loadOptions.librariesPath
         .split(";")
         .filter(existsSync)
@@ -82,38 +85,48 @@ async function loadModel(modelName, options = {}) {
 }
 
 function createEmbedding(model, text, options) {
-  let { 
-    dimensionality=undefined, 
-    long_text_mode="mean",
-    atlas=false 
-  } = options ?? {};
+    let {
+        dimensionality = undefined,
+        long_text_mode = "mean",
+        atlas = false,
+    } = options ?? {};
 
-  if (dimensionality === undefined) {
-    dimensionality = -1;
-  } else {
-    if (dimensionality <= 0) {
-      throw new Error(`Dimensionality must be undefined or a positive integer, got ${dimensionality}`);
+    if (dimensionality === undefined) {
+        dimensionality = -1;
+    } else {
+        if (dimensionality <= 0) {
+            throw new Error(
+                `Dimensionality must be undefined or a positive integer, got ${dimensionality}`
+            );
+        }
+        if (dimensionality < model.MIN_DIMENSIONALITY) {
+            console.warn(
+                `Dimensionality ${dimensionality} is less than the suggested minimum of ${model.MIN_DIMENSIONALITY}. Performance may be degraded.`
+            );
+        }
     }
-    if (dimensionality < model.MIN_DIMENSIONALITY) {
-      console.warn(`Dimensionality ${dimensionality} is less than the suggested minimum of ${model.MIN_DIMENSIONALITY}. Performance may be degraded.`);
-    }
-  }
 
-  let do_mean;
-  switch (long_text_mode) {
-    case 'mean': do_mean = true; break;
-    case 'truncate': do_mean = false; break;
-    default:
-      throw new Error(`Long text mode must be one of 'mean' or 'truncate', got ${long_text_mode}`);
-  }
- /**
+    let do_mean;
+    switch (long_text_mode) {
+        case "mean":
+            do_mean = true;
+            break;
+        case "truncate":
+            do_mean = false;
+            break;
+        default:
+            throw new Error(
+                `Long text mode must be one of 'mean' or 'truncate', got ${long_text_mode}`
+            );
+    }
+    /**
    text = info[0]
    auto prefix = info[1].As<Napi::String>().Utf8Value();
    auto dimensionality = info[2].As<Napi::Number>().Int32Value();
    auto do_mean = info[3].As<Napi::Boolean>().Value();
    auto atlas = info[4].As<Napi::Boolean>().Value();
   */
-  return model.embed(text, options?.prefix, dimensionality, do_mean, atlas);
+    return model.embed(text, options?.prefix, dimensionality, do_mean, atlas);
 }
 
 const defaultCompletionOptions = {
@@ -123,33 +136,56 @@ const defaultCompletionOptions = {
 
 async function createCompletion(
     provider,
-    message,
+    input,
     options = defaultCompletionOptions
 ) {
-    const optionsWithDefaults = {
+    const completionOptions = {
         ...defaultCompletionOptions,
         ...options,
     };
-
-    const result = await provider.generate(
-        message,
-        optionsWithDefaults,
+    
+    const response = await provider.generate(
+        input,
+        completionOptions,
         options.onToken
     );
 
-    return result;
+    return {
+        model: provider.modelName,
+        usage: {
+            // TODO find a way to determine input token count reliably.
+            // using nPastDelta fails when the context window is exceeded.
+            // prompt_tokens: nPastDelta - tokensGenerated,
+            // total_tokens: nPastDelta,
+            prompt_tokens: 0,
+            total_tokens: 0,
+            completion_tokens: response.tokensGenerated,
+            n_past_tokens: response.nPast,
+        },
+        choices: [
+            {
+                message: {
+                    role: "assistant",
+                    content: response.text,
+                },
+                // index: 0,
+                // logprobs: null,
+                // finish_reason: "length",
+            },
+        ],
+    };
 }
 
 function createCompletionStream(
     provider,
-    message,
+    input,
     options = defaultCompletionOptions
 ) {
     const completionStream = new Stream.PassThrough({
         encoding: "utf-8",
     });
 
-    const completionPromise = createCompletion(provider, message, {
+    const completionPromise = createCompletion(provider, input, {
         ...options,
         onToken: (tokenId, text, fullText) => {
             completionStream.push(text);
@@ -169,8 +205,8 @@ function createCompletionStream(
     };
 }
 
-async function* createCompletionGenerator(provider, message, options) {
-    const completion = createCompletionStream(provider, message, options);
+async function* createCompletionGenerator(provider, input, options) {
+    const completion = createCompletionStream(provider, input, options);
     for await (const chunk of completion.tokens) {
         yield chunk;
     }

@@ -18,7 +18,7 @@ console.log(chat1turn1);
 
 const chat1turn2 = await createCompletion(
     chat1,
-    "Lets add sprinkle some plot twists. And a cliffhanger at the end."
+    "Lets sprinkle some plot twists. And a cliffhanger at the end."
 );
 console.log(chat1turn2);
 

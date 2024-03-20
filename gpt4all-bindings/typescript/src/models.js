@@ -1,12 +1,12 @@
 const { DEFAULT_PROMPT_CONTEXT } = require("./config");
 const { ChatSession } = require("./chat-session");
+const { prepareMessagesForIngest } = require("./util");
 
 class InferenceModel {
     llm;
     modelName;
     config;
     activeChatSession;
-    nPast = 0;
 
     constructor(llmodel, config) {
         this.llm = llmodel;
@@ -21,11 +21,10 @@ class InferenceModel {
         return this.activeChatSession;
     }
 
-    async generate(prompt, options = DEFAULT_PROMPT_CONTEXT, onToken) {
+    async generate(input, options = DEFAULT_PROMPT_CONTEXT, onToken) {
         const { verbose, ...otherOptions } = options;
         const promptContext = {
             promptTemplate: this.config.promptTemplate,
-            nPast: otherOptions.nPast ?? this.nPast,
             temp:
                 otherOptions.temp ??
                 otherOptions.temperature ??
@@ -33,23 +32,65 @@ class InferenceModel {
             ...otherOptions,
         };
         
-        // allow user to set nPast manually, to keep closer control
-        if (promptContext.nPast !== this.nPast) {
-            this.nPast = promptContext.nPast;
-        }
-
         if (verbose) {
             console.debug("Generating completion", {
-                prompt,
+                input,
                 promptContext,
             });
         }
+        
+        let prompt = input;
+        let nPast = promptContext.nPast;
+        
+        if (Array.isArray(input)) {
+            // assuming input is a messages array
+            // -> tailing user message will be used as the final prompt. its required.
+            // -> leading system message will be ingested, further system messages will be ignored
+            // -> all other messages will be ingested with fakeReply
+            // -> model/context will only be kept for this completion; "stateless"
+            nPast = 0;
+            const messages = [...input];
+            const lastMessage = input[input.length - 1];
+            if (lastMessage.role !== "user") {
+                // this is most likely a user error
+                throw new Error(
+                    "The final message must be of role 'user'."
+                );
+            }
+            if (input[0].role === "system") {
+                // needs to be a pre-templated prompt ala '<|im_start|>system\nYou are an advanced mathematician.\n<|im_end|>\n'
+                const systemPrompt = input[0].content;
+                const sysRes = await this.llm.infer(systemPrompt, {
+                    promptTemplate: "%1",
+                    nPredict: 0,
+                    special: true,
+                });
+                nPast = sysRes.nPast;
+                messages.shift();
+            }
+            
+            prompt = lastMessage.content;
+            const messagesToIngest = messages.slice(0, input.length - 1);
+            const turns = prepareMessagesForIngest(messagesToIngest);
+
+            for (const turn of turns) {
+                const turnRes = await this.llm.infer(turn.user, {
+                    ...promptContext,
+                    nPast,
+                    fakeReply: turn.assistant,
+                });
+                nPast = turnRes.nPast;
+            }
+        }
 
         let tokensGenerated = 0;
-
+        
         const response = await this.llm.infer(
             prompt,
-            promptContext,
+            {
+                ...promptContext,
+                nPast,
+            },
             (tokenId, text, fullText) => {
                 let continueGeneration = true;
 
@@ -63,29 +104,14 @@ class InferenceModel {
                 return continueGeneration;
             }
         );
-
-        this.nPast = response.nPast;
-
-        const result = {
-            model: this.modelName,
-            usage: {
-                // TODO find a way to determine input token count reliably.
-                // using nPastDelta fails when the context window is exceeded.
-                // prompt_tokens: nPastDelta - tokensGenerated,
-                // total_tokens: nPastDelta,
-                prompt_tokens: 0,
-                total_tokens: 0,
-                completion_tokens: tokensGenerated,
-                n_past_tokens: this.nPast,
-            },
-            message: response.text,
-        };
+        
+        response.tokensGenerated = tokensGenerated;
 
         if (verbose) {
-            console.debug("Finished completion:\n", result);
+            console.debug("Finished completion:\n", response);
         }
 
-        return result;
+        return response;
     }
 
     dispose() {

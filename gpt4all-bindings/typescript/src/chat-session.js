@@ -1,4 +1,5 @@
 const { DEFAULT_PROMPT_CONTEXT } = require("./config");
+const { prepareMessagesForIngest } = require("./util");
 
 class ChatSession {
     model;
@@ -19,6 +20,7 @@ class ChatSession {
      * @type {boolean}
      */
     initialized;
+    
 
     constructor(model, opts = {}) {
         const { messages, systemPrompt, ...otherOpts } = opts;
@@ -30,6 +32,7 @@ class ChatSession {
         this.promptContext = {
             ...DEFAULT_PROMPT_CONTEXT,
             ...otherOpts,
+            nPast: 0,
         };
     }
 
@@ -41,83 +44,42 @@ class ChatSession {
         // ingest system prompt
 
         if (this.systemPrompt) {
-            await this.model.generate(this.systemPrompt, {
+            const res = await this.model.generate(this.systemPrompt, {
                 promptTemplate: "%1",
                 nPredict: 0,
                 special: true,
                 nBatch: this.promptContext.nBatch,
                 // verbose: true,
             });
+            this.promptContext.nPast = res.nPast;
         }
 
         // ingest initial messages
         if (this.messages.length > 0) {
-            const systemMessages = this.messages.filter(
-                (message) => message.role === "system"
-            );
-            if (systemMessages.length > 0) {
-                console.warn(
-                    "System messages will be ignored. Use systemPrompt instead."
-                );
-            }
-
-            const initialMessages = this.messages.filter(
-                (message) => message.role !== "system"
-            );
-
-            // make sure the first message is a user message
-            if (initialMessages[0].role !== "user") {
-                initialMessages.unshift({
-                    role: "user",
-                    content: "",
-                });
-            }
-
-            // create pairs of user input and assistant replies
-            const messagePairs = [];
-            let userMessage = null,
-                assistantMessage = null;
-
-            for (const message of initialMessages) {
-                if (message.role === "user") {
-                    if (!userMessage) {
-                        userMessage = message.content;
-                    } else {
-                        userMessage += "\n" + message.content;
-                    }
-                } else if (message.role === "assistant") {
-                    if (!assistantMessage) {
-                        assistantMessage = message.content;
-                    } else {
-                        assistantMessage += "\n" + message.content;
-                    }
-                }
-
-                if (userMessage && assistantMessage) {
-                    messagePairs.push({
-                        user: userMessage,
-                        assistant: assistantMessage,
-                    });
-                    userMessage = null;
-                    assistantMessage = null;
-                }
-            }
-
-            // send the pairs to the model
-
-            for (const turn of messagePairs) {
-                await this.model.generate(turn.user, {
-                    ...this.promptContext,
-                    fakeReply: turn.assistant,
-                });
-            }
+            await this.ingestMessages(this.messages);
         }
 
         this.initialized = true;
     }
+    
+    async ingestMessages(messages) {
+        
+        const turns = prepareMessagesForIngest(messages);
+
+        // send the message pairs to the model
+
+        for (const turn of turns) {
+            const res = await this.model.generate(turn.user, {
+                ...this.promptContext,
+                fakeReply: turn.assistant,
+            });
+            this.promptContext.nPast = res.nPast;
+        }
+    
+    }
 
     async generate(
-        prompt,
+        input,
         options = DEFAULT_PROMPT_CONTEXT,
         callback
     ) {
@@ -129,10 +91,41 @@ class ChatSession {
         if (!this.initialized) {
             await this.initialize();
         }
+        
+        let prompt = input;
+        
+        if (Array.isArray(input)) {
+            // assuming input is a messages array
+            // -> tailing user message will be used as the final prompt. its optional.
+            // -> all system messages will be ignored.
+            // -> all other messages will be ingested with fakeReply
+            // -> user/assistant messages will be pushed into the messages array
+            
+            let tailingUserMessage = "";
+            let messagesToIngest = input;
+            
+            const lastMessage = input[input.length - 1];
+            if (lastMessage.role === "user") {
+                tailingUserMessage = lastMessage.content;
+                messagesToIngest = input.slice(0, input.length - 1);
+            }
+            
+            if (messagesToIngest.length > 0) {
+                await this.ingestMessages(otherMessages);
+                this.messages.push(...messagesToIngest);
+            }
+            
+            if (tailingUserMessage) {
+                prompt = tailingUserMessage;
+            }
+        }
+            
         const response = await this.model.generate(prompt, {
             ...this.promptContext,
             ...options,
         }, callback);
+        
+        this.promptContext.nPast = response.nPast;
 
         this.messages.push({
             role: "user",
@@ -140,7 +133,7 @@ class ChatSession {
         });
         this.messages.push({
             role: "assistant",
-            content: response.message,
+            content: response.text,
         });
 
         return response;

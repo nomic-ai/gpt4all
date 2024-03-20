@@ -50,6 +50,64 @@ function appendBinSuffixIfMissing(name) {
     return name;
 }
 
+function prepareMessagesForIngest(messages) {
+    
+    const systemMessages = messages.filter(
+        (message) => message.role === "system"
+    );
+    if (systemMessages.length > 0) {
+        console.warn(
+            "System messages are currently not supported and will be ignored. Use the systemPrompt option instead."
+        );
+    }
+
+    const userAssistantMessages = messages.filter(
+        (message) => message.role !== "system"
+    );
+    
+    // make sure the first message is a user message
+    // if its not, the turns will be out of order
+    if (userAssistantMessages[0].role !== "user") {
+        initialMessages.unshift({
+            role: "user",
+            content: "",
+        });
+    }
+
+    // create turns of user input + assistant reply
+    const turns = [];
+    let userMessage = null;
+    let assistantMessage = null;
+
+    for (const message of userAssistantMessages) {
+        // consecutive messages of the same role are concatenated into one message
+        if (message.role === "user") {
+            if (!userMessage) {
+                userMessage = message.content;
+            } else {
+                userMessage += "\n" + message.content;
+            }
+        } else if (message.role === "assistant") {
+            if (!assistantMessage) {
+                assistantMessage = message.content;
+            } else {
+                assistantMessage += "\n" + message.content;
+            }
+        }
+
+        if (userMessage && assistantMessage) {
+            turns.push({
+                user: userMessage,
+                assistant: assistantMessage,
+            });
+            userMessage = null;
+            assistantMessage = null;
+        }
+    }
+    
+    return turns
+}
+
 // readChunks() reads from the provided reader and yields the results into an async iterable
 // https://css-tricks.com/web-streams-everywhere-and-fetch-for-node-js/
 function readChunks(reader) {
@@ -254,6 +312,7 @@ async function retrieveModel(modelName, options = {}) {
 
 module.exports = {
     appendBinSuffixIfMissing,
+    prepareMessagesForIngest,
     downloadModel,
     retrieveModel,
     listModels,

@@ -65,7 +65,7 @@ declare class ChatSession {
         prompt: string,
         options?: CompletionOptions,
         callback?: TokenCallback
-    ): Promise<CompletionReturn>;
+    ): Promise<CompletionResult>;
 }
 
 /**
@@ -97,7 +97,7 @@ declare class InferenceModel {
         prompt: string,
         options?: CompletionOptions,
         callback?: TokenCallback
-    ): Promise<CompletionReturn>;
+    ): Promise<CompletionResult>;
 
     /**
      * delete and cleanup the native model
@@ -332,50 +332,68 @@ declare function loadModel(
 interface InferenceProvider {
     modelName: string;
     generate(
-        input: string,
+        input: CompletionInput,
         options?: CompletionOptions,
         callback?: TokenCallback
-    ): Promise<CompletionReturn>;
+    ): Promise<CompletionResult>;
 }
+
+/**
+ * Options for creating a completion.
+ */
+interface CompletionOptions extends Partial<LLModelPromptContext> {
+    /**
+     * Indicates if verbose logging is enabled.
+     * @default false
+     */
+    verbose?: boolean;
+
+    /**
+     * Callback for controlling token generation. Return false to stop processing.
+     */
+    onToken?: TokenCallback;
+}
+
+type CompletionInput = string | Message[];
 
 /**
  * The nodejs equivalent to python binding's chat_completion
  * @param {InferenceProvider} provider - The inference model object or chat session
- * @param {string} message - The user input message
+ * @param {CompletionInput} input - The input string or message array
  * @param {CompletionOptions} options - The options for creating the completion.
- * @returns {CompletionReturn} The completion result.
+ * @returns {CompletionResult} The completion result.
  */
 declare function createCompletion(
     provider: InferenceProvider,
-    message: string,
+    input: CompletionInput,
     options?: CompletionOptions
-): Promise<CompletionReturn>;
+): Promise<CompletionResult>;
 
 /**
  * Streaming variant of createCompletion, returns a stream of tokens and a promise that resolves to the completion result.
  * @param {InferenceProvider} provider - The inference model object or chat session
- * @param {string} message - The user input message.
+ * @param {CompletionInput} input - The input string or message array
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {CompletionStreamReturn} An object of token stream and the completion result promise.
  */
 declare function createCompletionStream(
     provider: InferenceProvider,
-    message: string,
+    input: CompletionInput,
     options?: CompletionOptions
 ): CompletionStreamReturn;
 
 /**
  * Creates an async generator of tokens
  * @param {InferenceProvider} provider - The inference model object or chat session
- * @param {string} message - The user input message.
+ * @param {CompletionInput} input - The input string or message array
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {AsyncGenerator<string>} The stream of generated tokens
  */
 declare function createCompletionGenerator(
     provider: InferenceProvider,
-    message: string,
+    input: CompletionInput,
     options: CompletionOptions
-): AsyncGenerator<string, CompletionReturn>;
+): AsyncGenerator<string, CompletionResult>;
 
 /**
  * Options for generating one or more embeddings.
@@ -417,22 +435,6 @@ declare function createEmbedding(
 ): Float32Array;
 
 /**
- * The options for creating the completion.
- */
-interface CompletionOptions extends Partial<LLModelPromptContext> {
-    /**
-     * Indicates if verbose logging is enabled.
-     * @default false
-     */
-    verbose?: boolean;
-
-    /**
-     * Callback for controlling token generation. Return false to stop processing.
-     */
-    onToken?: TokenCallback;
-}
-
-/**
  * A message in the conversation.
  */
 interface Message {
@@ -446,7 +448,7 @@ interface Message {
 /**
  * The result of a completion.
  */
-interface CompletionReturn {
+interface CompletionResult {
     /** The model used for the completion. */
     model: string;
 
@@ -466,7 +468,9 @@ interface CompletionReturn {
     };
 
     /** The generated completion. */
-    message: string;
+    choices: Array<{
+        message: Message;
+    }>;
 }
 
 /**
@@ -474,7 +478,7 @@ interface CompletionReturn {
  */
 interface CompletionStreamReturn {
     tokens: ReadableStream;
-    result: Promise<CompletionReturn>;
+    result: Promise<CompletionResult>;
 }
 
 /**
@@ -688,7 +692,6 @@ interface DownloadController {
 }
 
 export {
-    //ModelType,
     ModelConfig,
     InferenceModel,
     InferenceProvider,
@@ -698,7 +701,7 @@ export {
     LLModelPromptContext,
     Message,
     CompletionOptions,
-    CompletionReturn,
+    CompletionResult as CompletionReturn,
     LoadModelOptions,
     loadModel,
     createCompletion,
