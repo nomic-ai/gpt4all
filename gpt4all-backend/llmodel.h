@@ -110,10 +110,10 @@ public:
     }
     // user-specified prefix
     virtual void embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix,
-                       int dimensionality = -1, bool doMean = true, bool atlas = false);
+                       int dimensionality = -1, size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false);
     // automatic prefix
     virtual void embed(const std::vector<std::string> &texts, float *embeddings, bool isRetrieval,
-                       int dimensionality = -1, bool doMean = true, bool atlas = false);
+                       int dimensionality = -1, size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false);
 
     virtual void setThreadCount(int32_t n_threads) { (void)n_threads; }
     virtual int32_t threadCount() const { return 1; }

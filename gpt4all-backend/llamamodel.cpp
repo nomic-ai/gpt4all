@@ -476,7 +476,9 @@ const std::vector<LLModel::Token> &LLamaModel::endTokens() const
 bool LLamaModel::shouldAddBOS() const
 {
     int add_bos = llama_add_bos_token(d_ptr->model);
-    return add_bos != -1 ? bool(add_bos) : llama_vocab_type(d_ptr->model) == LLAMA_VOCAB_TYPE_SPM;
+    if (add_bos != -1) { return add_bos; }
+    auto vocab_type = llama_vocab_type(d_ptr->model);
+    return vocab_type == LLAMA_VOCAB_TYPE_SPM || vocab_type == LLAMA_VOCAB_TYPE_WPM;
 }
 
 int32_t LLamaModel::maxContextLength(std::string const &modelPath) const
@@ -638,6 +640,7 @@ static const EmbModelGroup EMBEDDING_MODEL_SPECS[] {
     {LLM_EMBEDDER_SPEC, {"llm-embedder"}},
     {BGE_SPEC,          {"bge-small-en", "bge-base-en", "bge-large-en",
                          "bge-small-en-v1.5", "bge-base-en-v1.5", "bge-large-en-v1.5"}},
+    // NOTE: E5 Mistral is not yet implemented in llama.cpp, so it's not in EMBEDDING_ARCHES
     {E5_SPEC,           {"e5-small", "e5-base", "e5-large",
                          "e5-small-unsupervised", "e5-base-unsupervised", "e5-large-unsupervised",
                          "e5-small-v2", "e5-base-v2", "e5-large-v2"}},
@@ -658,20 +661,20 @@ static const EmbModelSpec *getEmbedSpec(const std::string &modelName) {
 }
 
 void LLamaModel::embed(
-    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, bool doMean,
-    bool atlas
+    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, size_t *tokenCount,
+    bool doMean, bool atlas
 ) {
     const EmbModelSpec *spec;
     std::optional<std::string> prefix;
     if (d_ptr->model && (spec = getEmbedSpec(llama_model_name(d_ptr->model))))
         prefix = isRetrieval ? spec->queryPrefix : spec->docPrefix;
 
-    embed(texts, embeddings, prefix, dimensionality, doMean, atlas);
+    embed(texts, embeddings, prefix, dimensionality, tokenCount, doMean, atlas);
 }
 
 void LLamaModel::embed(
     const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
-    bool doMean, bool atlas
+    size_t *tokenCount, bool doMean, bool atlas
 ) {
     if (!d_ptr->model)
         throw std::logic_error("no model is loaded");
@@ -698,12 +701,9 @@ void LLamaModel::embed(
     }
 
     if (!prefix) {
-        if (spec) {
-            prefix = spec->docPrefix;
-        } else {
-            std::cerr << __func__ << ": warning: assuming no prefix\n";
-            prefix = "";
-        }
+        if (!spec)
+            throw std::invalid_argument("unknown model "s + modelName + ", specify a prefix if applicable or an empty string");
+        prefix = spec->docPrefix;
     } else if (spec && prefix != spec->docPrefix && prefix != spec->queryPrefix &&
                std::find(spec->otherPrefixes.begin(), spec->otherPrefixes.end(), *prefix) == spec->otherPrefixes.end())
     {
@@ -712,7 +712,7 @@ void LLamaModel::embed(
         throw std::invalid_argument(ss.str());
     }
 
-    embedInternal(texts, embeddings, *prefix, dimensionality, doMean, atlas, spec);
+    embedInternal(texts, embeddings, *prefix, dimensionality, tokenCount, doMean, atlas, spec);
 }
 
 // MD5 hash of "nomic empty"
@@ -730,7 +730,7 @@ double getL2NormScale(T *start, T *end) {
 
 void LLamaModel::embedInternal(
     const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
-    bool doMean, bool atlas, const EmbModelSpec *spec
+    size_t *tokenCount, bool doMean, bool atlas, const EmbModelSpec *spec
 ) {
     typedef std::vector<LLModel::Token> TokenString;
     static constexpr int32_t atlasMaxLength = 8192;
@@ -796,6 +796,7 @@ void LLamaModel::embedInternal(
     // split into max_len-sized chunks
     struct split_batch { unsigned idx; TokenString batch; };
     std::vector<split_batch> batches;
+    size_t totalTokens = 0;
     for (unsigned i = 0; i < inputs.size(); i++) {
         auto &input = inputs[i];
         for (auto it = input.begin(); it < input.end(); it += max_len) {
@@ -805,6 +806,7 @@ void LLamaModel::embedInternal(
             auto &batch = batches.back().batch;
             batch = prefixTokens;
             batch.insert(batch.end(), it, end);
+            totalTokens += end - it;
             batch.push_back(eos_token);
             if (!doMean) { break; /* limit text to one chunk */ }
         }
@@ -889,6 +891,8 @@ void LLamaModel::embedInternal(
         std::transform(embd, embd_end, embeddings, product(scale));
         embeddings += dimensionality;
     }
+
+    if (tokenCount) { *tokenCount = totalTokens; }
 }
 
 #if defined(_WIN32)

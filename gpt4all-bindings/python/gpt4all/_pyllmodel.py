@@ -9,12 +9,14 @@ import sys
 import threading
 from enum import Enum
 from queue import Queue
-from typing import Any, Callable, Iterable, overload
+from typing import Any, Callable, Generic, Iterable, TypedDict, TypeVar, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
 else:
     import importlib_resources
+
+EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
 
 # TODO: provide a config file to make this more robust
@@ -25,7 +27,7 @@ def load_llmodel_library():
     ext = {"Darwin": "dylib", "Linux": "so", "Windows": "dll"}[platform.system()]
 
     try:
-        # Linux, Windows, MinGW
+        # macOS, Linux, MinGW
         lib = ctypes.CDLL(str(MODEL_LIB_PATH / f"libllmodel.{ext}"))
     except FileNotFoundError:
         if ext != 'dll':
@@ -108,6 +110,7 @@ llmodel.llmodel_embed.argtypes = [
     ctypes.POINTER(ctypes.c_size_t),
     ctypes.c_char_p,
     ctypes.c_int,
+    ctypes.POINTER(ctypes.c_size_t),
     ctypes.c_bool,
     ctypes.c_bool,
     ctypes.POINTER(ctypes.c_char_p),
@@ -157,6 +160,11 @@ class Sentinel(Enum):
     TERMINATING_SYMBOL = 0
 
 
+class EmbedResult(Generic[EmbeddingsType], TypedDict):
+    embeddings: EmbeddingsType
+    n_prompt_tokens: int
+
+
 class LLModel:
     """
     Base class and universal wrapper for GPT4All language models
@@ -188,7 +196,7 @@ class LLModel:
             raise RuntimeError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
         self.model = model
 
-    def __del__(self):
+    def __del__(self, llmodel=llmodel):
         if hasattr(self, 'model'):
             llmodel.llmodel_model_destroy(self.model)
 
@@ -291,20 +299,20 @@ class LLModel:
 
     @overload
     def generate_embeddings(
-        self, text: str, prefix: str, dimensionality: int, do_mean: bool, atlas: bool,
-    ) -> list[float]: ...
+        self, text: str, prefix: str, dimensionality: int, do_mean: bool, count_tokens: bool, atlas: bool,
+    ) -> EmbedResult[list[float]]: ...
     @overload
     def generate_embeddings(
         self, text: list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
-    ) -> list[list[float]]: ...
+    ) -> EmbedResult[list[list[float]]]: ...
     @overload
     def generate_embeddings(
         self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
-    ) -> Any: ...
+    ) -> EmbedResult[list[Any]]: ...
 
     def generate_embeddings(
         self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
-    ) -> Any:
+    ) -> EmbedResult[list[Any]]:
         if not text:
             raise ValueError("text must not be None or empty")
 
@@ -313,6 +321,7 @@ class LLModel:
 
         # prepare input
         embedding_size = ctypes.c_size_t()
+        token_count = ctypes.c_size_t()
         error = ctypes.c_char_p()
         c_prefix = ctypes.c_char_p() if prefix is None else prefix.encode()
         c_texts = (ctypes.c_char_p * (len(text) + 1))()
@@ -321,8 +330,8 @@ class LLModel:
 
         # generate the embeddings
         embedding_ptr = llmodel.llmodel_embed(
-            self.model, c_texts, ctypes.byref(embedding_size), c_prefix, dimensionality, do_mean, atlas,
-            ctypes.byref(error),
+            self.model, c_texts, ctypes.byref(embedding_size), c_prefix, dimensionality, ctypes.byref(token_count),
+            do_mean, atlas, ctypes.byref(error),
         )
 
         if not embedding_ptr:
@@ -337,7 +346,8 @@ class LLModel:
         ]
         llmodel.llmodel_free_embedding(embedding_ptr)
 
-        return embedding_array[0] if single_text else embedding_array
+        embeddings = embedding_array[0] if single_text else embedding_array
+        return {'embeddings': embeddings, 'n_prompt_tokens': token_count.value}
 
     def prompt_model(
         self,

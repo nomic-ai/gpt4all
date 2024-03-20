@@ -39,10 +39,10 @@ public:
     size_t embeddingSize() const override;
     // user-specified prefix
     void embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix,
-               int dimensionality = -1, bool doMean = true, bool atlas = false) override;
+               int dimensionality = -1, size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false) override;
     // automatic prefix
     void embed(const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality = -1,
-               bool doMean = true, bool atlas = false) override;
+               size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false) override;
 
 private:
     std::unique_ptr<LLamaPrivate> d_ptr;
@@ -61,7 +61,7 @@ protected:
     int32_t layerCount(std::string const &modelPath) const override;
 
     void embedInternal(const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
-                       bool doMean, bool atlas, const EmbModelSpec *spec);
+                       size_t *tokenCount, bool doMean, bool atlas, const EmbModelSpec *spec);
 };
 
 #endif // LLAMAMODEL_H
