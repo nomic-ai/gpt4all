@@ -12,7 +12,7 @@ const messages = [
     },
     {
         role: "user",
-        content: "Whats 2+2?",
+        content: "What's 2+2?",
     },
     {
         role: "assistant",

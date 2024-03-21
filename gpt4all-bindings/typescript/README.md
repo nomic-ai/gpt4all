@@ -241,7 +241,9 @@ This package has been stabilizing over time development, and breaking changes ma
 This repository serves as the new bindings for nodejs users.
 - If you were a user of [these bindings](https://github.com/nomic-ai/gpt4all-ts), they are outdated.
 - Version 4 includes the follow breaking changes
-    * `createEmbedding` & `EmbeddingModel.embed()` returns an object, EmbeddingResult, instead of a float32array.
-    * 
+    * `createEmbedding` & `EmbeddingModel.embed()` returns an object, `EmbeddingResult`, instead of a float32array.
+    * Removed deprecated types `ModelType` and `ModelFile`
+    * Removed deprecated initiation of model by string path only
+    
 
 ### API Reference
