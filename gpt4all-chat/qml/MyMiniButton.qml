@@ -6,14 +6,13 @@ import Qt5Compat.GraphicalEffects
 
 Button {
     id: myButton
-    padding: 10
+    padding: 0
     property color backgroundColor: theme.iconBackgroundDark
     property color backgroundColorHovered: theme.iconBackgroundHovered
-    property color toggledColor: theme.accentColor
-    property real toggledWidth: 1
-    property bool toggled: false
     property alias source: image.source
     property alias fillMode: image.fillMode
+    implicitWidth: 30
+    implicitHeight: 30
     contentItem: Text {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter
@@ -28,17 +27,13 @@ Button {
         Rectangle {
             anchors.fill: parent
             color: "transparent"
-            visible: myButton.toggled
-            border.color: myButton.toggledColor
-            border.width: myButton.toggledWidth
-            radius: 10
         }
         Image {
             id: image
             anchors.centerIn: parent
             mipmap: true
-            width: 30
-            height: 30
+            width: 20
+            height: 20
         }
         ColorOverlay {
             anchors.fill: image

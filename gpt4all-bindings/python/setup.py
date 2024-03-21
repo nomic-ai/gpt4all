@@ -68,7 +68,7 @@ def get_long_description():
 
 setup(
     name=package_name,
-    version="2.2.1.post1",
+    version="2.3.0",
     description="Python bindings for GPT4All",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
@@ -86,7 +86,11 @@ setup(
     ],
     python_requires='>=3.8',
     packages=find_packages(),
-    install_requires=['requests', 'tqdm'],
+    install_requires=[
+        'requests',
+        'tqdm',
+        'importlib_resources; python_version < "3.9"',
+    ],
     extras_require={
         'dev': [
             'pytest',

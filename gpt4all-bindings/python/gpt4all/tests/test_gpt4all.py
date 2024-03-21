@@ -28,12 +28,8 @@ def test_inference():
     assert len(tokens) > 0
 
     with model.chat_session():
-        tokens = list(model.generate(prompt='hello', top_k=1, streaming=True))
-        model.current_chat_session.append({'role': 'assistant', 'content': ''.join(tokens)})
-
-        tokens = list(model.generate(prompt='write me a poem about dogs', top_k=1, streaming=True))
-        model.current_chat_session.append({'role': 'assistant', 'content': ''.join(tokens)})
-
+        model.generate(prompt='hello', top_k=1, streaming=True)
+        model.generate(prompt='write me a poem about dogs', top_k=1, streaming=True)
         print(model.current_chat_session)
 
 
@@ -115,13 +111,13 @@ def test_empty_embedding():
         output = embedder.embed(text)
 
 def test_download_model(tmp_path: Path):
-    import gpt4all.gpt4all
-    old_default_dir = gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY
-    gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY = str(tmp_path)  # temporary pytest directory to ensure a download happens
+    from gpt4all import gpt4all
+    old_default_dir = gpt4all.DEFAULT_MODEL_DIRECTORY
+    gpt4all.DEFAULT_MODEL_DIRECTORY = tmp_path  # temporary pytest directory to ensure a download happens
     try:
         model = GPT4All(model_name='ggml-all-MiniLM-L6-v2-f16.bin')
         model_path = tmp_path / model.config['filename']
         assert model_path.absolute() == Path(model.config['path']).absolute()
         assert model_path.stat().st_size == int(model.config['filesize'])
     finally:
-        gpt4all.gpt4all.DEFAULT_MODEL_DIRECTORY = old_default_dir
+        gpt4all.DEFAULT_MODEL_DIRECTORY = old_default_dir

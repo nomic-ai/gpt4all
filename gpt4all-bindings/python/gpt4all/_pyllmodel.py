@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import ctypes
-import importlib.resources
-import logging
 import os
 import platform
 import re
@@ -11,20 +9,25 @@ import sys
 import threading
 from enum import Enum
 from queue import Queue
-from typing import Callable, Iterable, List
+from typing import Any, Callable, Generic, Iterable, TypedDict, TypeVar, overload
 
-logger: logging.Logger = logging.getLogger(__name__)
+if sys.version_info >= (3, 9):
+    import importlib.resources as importlib_resources
+else:
+    import importlib_resources
+
+EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
 
 # TODO: provide a config file to make this more robust
-MODEL_LIB_PATH = importlib.resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build"
+MODEL_LIB_PATH = importlib_resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build"
 
 
 def load_llmodel_library():
     ext = {"Darwin": "dylib", "Linux": "so", "Windows": "dll"}[platform.system()]
 
     try:
-        # Linux, Windows, MinGW
+        # macOS, Linux, MinGW
         lib = ctypes.CDLL(str(MODEL_LIB_PATH / f"libllmodel.{ext}"))
     except FileNotFoundError:
         if ext != 'dll':
@@ -49,6 +52,7 @@ class LLModelPromptContext(ctypes.Structure):
         ("n_predict", ctypes.c_int32),
         ("top_k", ctypes.c_int32),
         ("top_p", ctypes.c_float),
+        ("min_p", ctypes.c_float),
         ("temp", ctypes.c_float),
         ("n_batch", ctypes.c_int32),
         ("repeat_penalty", ctypes.c_float),
@@ -89,21 +93,30 @@ RecalculateCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_bool)
 llmodel.llmodel_prompt.argtypes = [
     ctypes.c_void_p,
     ctypes.c_char_p,
+    ctypes.c_char_p,
     PromptCallback,
     ResponseCallback,
     RecalculateCallback,
     ctypes.POINTER(LLModelPromptContext),
+    ctypes.c_bool,
+    ctypes.c_char_p,
 ]
 
 llmodel.llmodel_prompt.restype = None
 
-llmodel.llmodel_embedding.argtypes = [
+llmodel.llmodel_embed.argtypes = [
     ctypes.c_void_p,
-    ctypes.c_char_p,
+    ctypes.POINTER(ctypes.c_char_p),
     ctypes.POINTER(ctypes.c_size_t),
+    ctypes.c_char_p,
+    ctypes.c_int,
+    ctypes.POINTER(ctypes.c_size_t),
+    ctypes.c_bool,
+    ctypes.c_bool,
+    ctypes.POINTER(ctypes.c_char_p),
 ]
 
-llmodel.llmodel_embedding.restype = ctypes.POINTER(ctypes.c_float)
+llmodel.llmodel_embed.restype = ctypes.POINTER(ctypes.c_float)
 
 llmodel.llmodel_free_embedding.argtypes = [ctypes.POINTER(ctypes.c_float)]
 llmodel.llmodel_free_embedding.restype = None
@@ -117,7 +130,7 @@ llmodel.llmodel_set_implementation_search_path.restype = None
 llmodel.llmodel_threadCount.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
-llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).replace("\\", r"\\").encode())
+llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).encode())
 
 llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
 llmodel.llmodel_available_gpu_devices.restype = ctypes.POINTER(LLModelGPUDevice)
@@ -145,6 +158,11 @@ def empty_response_callback(token_id: int, response: str) -> bool:
 # Symbol to terminate from generator
 class Sentinel(Enum):
     TERMINATING_SYMBOL = 0
+
+
+class EmbedResult(Generic[EmbeddingsType], TypedDict):
+    embeddings: EmbeddingsType
+    n_prompt_tokens: int
 
 
 class LLModel:
@@ -175,10 +193,10 @@ class LLModel:
         model = llmodel.llmodel_model_create2(self.model_path, b"auto", ctypes.byref(err))
         if model is None:
             s = err.value
-            raise ValueError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
+            raise RuntimeError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
         self.model = model
 
-    def __del__(self):
+    def __del__(self, llmodel=llmodel):
         if hasattr(self, 'model'):
             llmodel.llmodel_model_destroy(self.model)
 
@@ -239,6 +257,7 @@ class LLModel:
         n_predict: int = 4096,
         top_k: int = 40,
         top_p: float = 0.9,
+        min_p: float = 0.0,
         temp: float = 0.1,
         n_batch: int = 8,
         repeat_penalty: float = 1.2,
@@ -255,6 +274,7 @@ class LLModel:
                 n_predict=n_predict,
                 top_k=top_k,
                 top_p=top_p,
+                min_p=min_p,
                 temp=temp,
                 n_batch=n_batch,
                 repeat_penalty=repeat_penalty,
@@ -270,36 +290,81 @@ class LLModel:
         self.context.n_predict = n_predict
         self.context.top_k = top_k
         self.context.top_p = top_p
+        self.context.min_p = min_p
         self.context.temp = temp
         self.context.n_batch = n_batch
         self.context.repeat_penalty = repeat_penalty
         self.context.repeat_last_n = repeat_last_n
         self.context.context_erase = context_erase
 
-    def generate_embedding(self, text: str) -> List[float]:
-        if not text:
-            raise ValueError("Text must not be None or empty")
+    @overload
+    def generate_embeddings(
+        self, text: str, prefix: str, dimensionality: int, do_mean: bool, count_tokens: bool, atlas: bool,
+    ) -> EmbedResult[list[float]]: ...
+    @overload
+    def generate_embeddings(
+        self, text: list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+    ) -> EmbedResult[list[list[float]]]: ...
+    @overload
+    def generate_embeddings(
+        self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+    ) -> EmbedResult[list[Any]]: ...
 
+    def generate_embeddings(
+        self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+    ) -> EmbedResult[list[Any]]:
+        if not text:
+            raise ValueError("text must not be None or empty")
+
+        if (single_text := isinstance(text, str)):
+            text = [text]
+
+        # prepare input
         embedding_size = ctypes.c_size_t()
-        c_text = ctypes.c_char_p(text.encode())
-        embedding_ptr = llmodel.llmodel_embedding(self.model, c_text, ctypes.byref(embedding_size))
-        embedding_array = [embedding_ptr[i] for i in range(embedding_size.value)]
+        token_count = ctypes.c_size_t()
+        error = ctypes.c_char_p()
+        c_prefix = ctypes.c_char_p() if prefix is None else prefix.encode()
+        c_texts = (ctypes.c_char_p * (len(text) + 1))()
+        for i, t in enumerate(text):
+            c_texts[i] = t.encode()
+
+        # generate the embeddings
+        embedding_ptr = llmodel.llmodel_embed(
+            self.model, c_texts, ctypes.byref(embedding_size), c_prefix, dimensionality, ctypes.byref(token_count),
+            do_mean, atlas, ctypes.byref(error),
+        )
+
+        if not embedding_ptr:
+            msg = "(unknown error)" if error.value is None else error.value.decode()
+            raise RuntimeError(f'Failed to generate embeddings: {msg}')
+
+        # extract output
+        n_embd = embedding_size.value // len(text)
+        embedding_array = [
+            embedding_ptr[i:i + n_embd]
+            for i in range(0, embedding_size.value, n_embd)
+        ]
         llmodel.llmodel_free_embedding(embedding_ptr)
-        return list(embedding_array)
+
+        embeddings = embedding_array[0] if single_text else embedding_array
+        return {'embeddings': embeddings, 'n_prompt_tokens': token_count.value}
 
     def prompt_model(
         self,
         prompt: str,
+        prompt_template: str,
         callback: ResponseCallbackType,
         n_predict: int = 4096,
         top_k: int = 40,
         top_p: float = 0.9,
+        min_p: float = 0.0,
         temp: float = 0.1,
         n_batch: int = 8,
         repeat_penalty: float = 1.2,
         repeat_last_n: int = 10,
         context_erase: float = 0.75,
         reset_context: bool = False,
+        special: bool = False,
     ):
         """
         Generate response from model from a prompt.
@@ -319,20 +384,11 @@ class LLModel:
         self.buffer.clear()
         self.buff_expecting_cont_bytes = 0
 
-        logger.info(
-            "LLModel.prompt_model -- prompt:\n"
-            + "%s\n"
-            + "===/LLModel.prompt_model -- prompt/===",
-            prompt,
-        )
-
-        prompt_bytes = prompt.encode()
-        prompt_ptr = ctypes.c_char_p(prompt_bytes)
-
         self._set_context(
             n_predict=n_predict,
             top_k=top_k,
             top_p=top_p,
+            min_p=min_p,
             temp=temp,
             n_batch=n_batch,
             repeat_penalty=repeat_penalty,
@@ -343,16 +399,19 @@ class LLModel:
 
         llmodel.llmodel_prompt(
             self.model,
-            prompt_ptr,
+            ctypes.c_char_p(prompt.encode()),
+            ctypes.c_char_p(prompt_template.encode()),
             PromptCallback(self._prompt_callback),
             ResponseCallback(self._callback_decoder(callback)),
             RecalculateCallback(self._recalculate_callback),
             self.context,
+            special,
+            ctypes.c_char_p(),
         )
 
 
     def prompt_model_streaming(
-        self, prompt: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
+        self, prompt: str, prompt_template: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
     ) -> Iterable[str]:
         output_queue: Queue[str | Sentinel] = Queue()
 
@@ -369,15 +428,15 @@ class LLModel:
 
             return _generator_callback
 
-        def run_llmodel_prompt(prompt: str, callback: ResponseCallbackType, **kwargs):
-            self.prompt_model(prompt, callback, **kwargs)
+        def run_llmodel_prompt(prompt: str, prompt_template: str, callback: ResponseCallbackType, **kwargs):
+            self.prompt_model(prompt, prompt_template, callback, **kwargs)
             output_queue.put(Sentinel.TERMINATING_SYMBOL)
 
         # Kick off llmodel_prompt in separate thread so we can return generator
         # immediately
         thread = threading.Thread(
             target=run_llmodel_prompt,
-            args=(prompt, _generator_callback_wrapper(callback)),
+            args=(prompt, prompt_template, _generator_callback_wrapper(callback)),
             kwargs=kwargs,
         )
         thread.start()

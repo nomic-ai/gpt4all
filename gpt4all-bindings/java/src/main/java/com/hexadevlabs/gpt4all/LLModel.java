@@ -32,6 +32,7 @@ public  class LLModel implements AutoCloseable {
             n_predict.set(128);
             top_k.set(40);
             top_p.set(0.95);
+            min_p.set(0.0);
             temp.set(0.28);
             n_batch.set(8);
             repeat_penalty.set(1.1);
@@ -68,6 +69,11 @@ public  class LLModel implements AutoCloseable {
 
             public Builder withTopP(float top_p) {
                 configToBuild.top_p.set(top_p);
+                return this;
+            }
+
+            public Builder withMinP(float min_p) {
+                configToBuild.min_p.set(min_p);
                 return this;
             }
 

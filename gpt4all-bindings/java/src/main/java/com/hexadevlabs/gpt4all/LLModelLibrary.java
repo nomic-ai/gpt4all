@@ -48,6 +48,7 @@ public interface LLModelLibrary {
         public final int32_t n_predict = new int32_t();
         public final int32_t top_k = new int32_t();
         public final Float top_p = new Float();
+        public final Float min_p = new Float();
         public final Float temp = new Float();
         public final int32_t n_batch = new int32_t();
         public final Float repeat_penalty = new Float();

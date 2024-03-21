@@ -737,8 +737,10 @@ size_t GPTJ::restoreState(const uint8_t *src)
     return gptj_set_state_data(d_ptr->model, &d_ptr->rng, src);
 }
 
-std::vector<LLModel::Token> GPTJ::tokenize(PromptContext &, const std::string &str) const
+std::vector<LLModel::Token> GPTJ::tokenize(PromptContext &ctx, const std::string &str, bool special) const
 {
+    (void)ctx;
+    (void)special;
     return ::gpt_tokenize(d_ptr->vocab, str);
 }
 

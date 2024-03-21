@@ -143,6 +143,8 @@ public:
             m_newChat = nullptr;
         }
 
+        chat->markForDeletion();
+
         const int index = m_chats.indexOf(chat);
         if (m_chats.count() < 3 /*m_serverChat included*/) {
             addChat();
@@ -179,9 +181,9 @@ public:
         if (m_currentChat && m_currentChat != m_serverChat)
             m_currentChat->unloadModel();
         m_currentChat = chat;
-        if (!m_currentChat->isModelLoaded() && m_currentChat != m_serverChat)
-            m_currentChat->reloadModel();
         emit currentChatChanged();
+        if (!m_currentChat->isModelLoaded() && m_currentChat != m_serverChat)
+            m_currentChat->trySwitchContextOfLoadedModel();
     }
 
     Q_INVOKABLE Chat* get(int index)
@@ -192,13 +194,8 @@ public:
 
     int count() const { return m_chats.size(); }
 
-    void clearChats() {
-        m_newChat = nullptr;
-        m_serverChat = nullptr;
-        m_currentChat = nullptr;
-        for (auto * chat: m_chats) { delete chat; }
-        m_chats.clear();
-    }
+    // stop ChatLLM threads for clean shutdown
+    void destroyChats() { for (auto *chat: m_chats) { chat->destroy(); } }
 
     void removeChatFile(Chat *chat) const;
     Q_INVOKABLE void saveChats();

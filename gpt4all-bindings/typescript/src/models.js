@@ -9,10 +9,10 @@ class InferenceModel {
         this.config = config;
     }
 
-    async generate(prompt, promptContext) {
+    async generate(prompt, promptContext,callback) {
         warnOnSnakeCaseKeys(promptContext);
         const normalizedPromptContext = normalizePromptContext(promptContext);
-        const result = this.llm.raw_prompt(prompt, normalizedPromptContext, () => {});
+        const result = this.llm.raw_prompt(prompt, normalizedPromptContext,callback);
         return result;
     }
 

@@ -462,9 +462,9 @@ void Network::handleIpifyFinished()
         qWarning() << "ERROR: ipify invalid response.";
     if (code != 200)
         qWarning() << "ERROR: ipify response != 200 code:" << code;
-    m_ipify = qPrintable(reply->readAll());
+    m_ipify = reply->readAll();
 #if defined(DEBUG)
-    printf("ipify finished %s\n", m_ipify.toLatin1().constData());
+    printf("ipify finished %s\n", qPrintable(m_ipify));
     fflush(stdout);
 #endif
     reply->deleteLater();

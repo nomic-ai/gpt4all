@@ -18,6 +18,7 @@ const {
     DEFAULT_MODEL_LIST_URL,
 } = require("./config.js");
 const { InferenceModel, EmbeddingModel } = require("./models.js");
+const Stream = require('stream')
 const assert = require("assert");
 
 /**
@@ -36,6 +37,8 @@ async function loadModel(modelName, options = {}) {
         allowDownload: true,
         verbose: true,
         device: 'cpu',
+        nCtx: 2048,
+        ngl : 100,
         ...options,
     };
 
@@ -58,11 +61,14 @@ async function loadModel(modelName, options = {}) {
         model_path: loadOptions.modelPath,
         library_path: existingPaths,
         device: loadOptions.device,
+        nCtx: loadOptions.nCtx,
+        ngl: loadOptions.ngl
     };
 
     if (loadOptions.verbose) {
         console.debug("Creating LLModel with options:", llmOptions);
     }
+    console.log(modelConfig)
     const llmodel = new LLModel(llmOptions);
     if (loadOptions.type === "embedding") {
         return new EmbeddingModel(llmodel, modelConfig);
@@ -149,11 +155,7 @@ const defaultCompletionOptions = {
     ...DEFAULT_PROMPT_CONTEXT,
 };
 
-async function createCompletion(
-    model,
-    messages,
-    options = defaultCompletionOptions
-) {
+function preparePromptAndContext(model,messages,options){
     if (options.hasDefaultHeader !== undefined) {
         console.warn(
             "hasDefaultHeader (bool) is deprecated and has no effect, use promptHeader (string) instead"
@@ -180,6 +182,7 @@ async function createCompletion(
         ...promptContext
     } = optionsWithDefaults;
 
+    
     const prompt = formatChatPrompt(messages, {
         systemPromptTemplate,
         defaultSystemPrompt: model.config.systemPrompt,
@@ -192,11 +195,28 @@ async function createCompletion(
         // promptFooter: '### Response:',
     });
 
+    return {
+        prompt, promptContext, verbose
+    }
+}
+
+async function createCompletion(
+    model,
+    messages,
+    options = defaultCompletionOptions
+) {
+    const { prompt, promptContext, verbose } = preparePromptAndContext(model,messages,options);
+
     if (verbose) {
         console.debug("Sending Prompt:\n" + prompt);
     }
 
-    const response = await model.generate(prompt, promptContext);
+    let tokensGenerated = 0
+
+    const response = await model.generate(prompt, promptContext,() => {
+        tokensGenerated++;
+        return true;
+    });
 
     if (verbose) {
         console.debug("Received Response:\n" + response);
@@ -206,8 +226,8 @@ async function createCompletion(
         llmodel: model.llm.name(),
         usage: {
             prompt_tokens: prompt.length,
-            completion_tokens: response.length, //TODO
-            total_tokens: prompt.length + response.length, //TODO
+            completion_tokens: tokensGenerated,
+            total_tokens: prompt.length + tokensGenerated, //TODO Not sure how to get tokens in prompt
         },
         choices: [
             {
@@ -220,8 +240,77 @@ async function createCompletion(
     };
 }
 
-function createTokenStream() {
-    throw Error("This API has not been completed yet!");
+function _internal_createTokenStream(stream,model,
+    messages,
+    options = defaultCompletionOptions,callback = undefined) {
+    const { prompt, promptContext, verbose } = preparePromptAndContext(model,messages,options);
+
+
+    if (verbose) {
+        console.debug("Sending Prompt:\n" + prompt);
+    }
+
+    model.generate(prompt, promptContext,(tokenId, token, total) => {
+        stream.push(token);
+        
+        if(callback !== undefined){
+            return callback(tokenId,token,total);
+        }
+
+        return true;
+    }).then(() => {
+        stream.end()
+    })
+
+    return stream;
+}
+
+function _createTokenStream(model,
+    messages,
+    options = defaultCompletionOptions,callback = undefined) {
+   
+   // Silent crash if we dont do this here
+   const stream = new Stream.PassThrough({
+     encoding: 'utf-8'
+   });
+   return _internal_createTokenStream(stream,model,messages,options,callback);
+}
+
+async function* generateTokens(model,
+    messages,
+    options = defaultCompletionOptions, callback = undefined) {
+    const stream = _createTokenStream(model,messages,options,callback)
+
+    let bHasFinished = false;
+    let activeDataCallback = undefined;
+    const finishCallback = () => {
+        bHasFinished = true;
+        if(activeDataCallback !== undefined){
+            activeDataCallback(undefined);
+        }
+    }
+
+    stream.on("finish",finishCallback)
+
+    while (!bHasFinished) {
+        const token = await new Promise((res) => {
+
+            activeDataCallback = (d) => {
+                stream.off("data",activeDataCallback)
+                activeDataCallback = undefined
+                res(d);
+            }
+            stream.on('data', activeDataCallback)
+        })
+
+        if (token == undefined) {
+            break;
+        }
+
+        yield token;
+    }
+
+    stream.off("finish",finishCallback);
 }
 
 module.exports = {
@@ -238,5 +327,5 @@ module.exports = {
     downloadModel,
     retrieveModel,
     loadModel,
-    createTokenStream,
+    generateTokens
 };

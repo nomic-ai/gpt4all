@@ -2,7 +2,8 @@ import logging
 import time
 from typing import List
 from uuid import uuid4
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from gpt4all import GPT4All
 from pydantic import BaseModel, Field
 from api_v1.settings import settings
 from fastapi.responses import StreamingResponse
@@ -18,6 +19,7 @@ class ChatCompletionMessage(BaseModel):
 class ChatCompletionRequest(BaseModel):
     model: str = Field(settings.model, description='The model to generate a completion from.')
     messages: List[ChatCompletionMessage] = Field(..., description='Messages for the chat completion.')
+    temperature: float = Field(settings.temp, description='Model temperature')
 
 class ChatCompletionChoice(BaseModel):
     message: ChatCompletionMessage
@@ -45,15 +47,41 @@ async def chat_completion(request: ChatCompletionRequest):
     '''
     Completes a GPT4All model response based on the last message in the chat.
     '''
-    # Example: Echo the last message content with some modification
+    # GPU is not implemented yet
+    if settings.inference_mode == "gpu":
+        raise HTTPException(status_code=400,
+              detail=f"Not implemented yet: Can only infer in CPU mode.")
+
+    # we only support the configured model
+    if request.model != settings.model:
+        raise HTTPException(status_code=400,
+              detail=f"The GPT4All inference server is booted to only infer: `{settings.model}`")
+
+    # run only of we have a message
     if request.messages:
-        last_message = request.messages[-1].content
-        response_content = f"Echo: {last_message}"
+        model = GPT4All(model_name=settings.model, model_path=settings.gpt4all_path)
+
+        # format system message and conversation history correctly
+        formatted_messages = ""
+        for message in request.messages:
+            formatted_messages += f"<|im_start|>{message.role}\n{message.content}<|im_end|>\n"
+
+        # the LLM will complete the response of the assistant
+        formatted_messages += "<|im_start|>assistant\n"
+        response = model.generate(
+            prompt=formatted_messages,
+            temp=request.temperature
+            )
+
+        # the LLM may continue to hallucinate the conversation, but we want only the first response
+        # so, cut off everything after first <|im_end|>
+        index = response.find("<|im_end|>")
+        response_content = response[:index].strip()
     else:
         response_content = "No messages received."
 
     # Create a chat message for the response
-    response_message = ChatCompletionMessage(role="system", content=response_content)
+    response_message = ChatCompletionMessage(role="assistant", content=response_content)
 
     # Create a choice object with the response message
     response_choice = ChatCompletionChoice(

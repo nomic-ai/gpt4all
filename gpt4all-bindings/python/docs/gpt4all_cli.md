@@ -5,7 +5,7 @@ The GPT4All command-line interface (CLI) is a Python script which is built on to
 package. The source code, README, and local build instructions can be found
 [here][repo-bindings-cli].
 
-[docs-bindings-python]: gpt4all_python.html
+[docs-bindings-python]: gpt4all_python.md
 [repo-bindings-python]: https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python
 [repo-bindings-cli]: https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/cli
 [typer]: https://typer.tiangolo.com/
