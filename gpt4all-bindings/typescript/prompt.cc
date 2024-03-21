@@ -4,18 +4,28 @@
 PromptWorker::PromptWorker(Napi::Env env, PromptWorkerConfig config)
     : promise(Napi::Promise::Deferred::New(env)), _config(config), AsyncWorker(env)
 {
-    if (_config.bHasTokenCallback)
+    if (_config.hasResponseCallback)
     {
-        _tsfn =
-            Napi::ThreadSafeFunction::New(config.tokenCallback.Env(), config.tokenCallback, "PromptWorker", 0, 1, this);
+        _responseCallbackFn =
+            Napi::ThreadSafeFunction::New(config.responseCallback.Env(), config.responseCallback, "PromptWorker", 0, 1, this);
+    }
+    
+    if (_config.hasPromptCallback)
+    {
+        _promptCallbackFn =
+            Napi::ThreadSafeFunction::New(config.promptCallback.Env(), config.promptCallback, "PromptWorker", 0, 1, this);
     }
 }
 
 PromptWorker::~PromptWorker()
 {
-    if (_config.bHasTokenCallback)
+    if (_config.hasResponseCallback)
     {
-        _tsfn.Release();
+        _responseCallbackFn.Release();
+    }
+    if (_config.hasPromptCallback)
+    {
+        _promptCallbackFn.Release();
     }
 }
 
@@ -46,9 +56,13 @@ void PromptWorker::Execute()
     //         "SUPRA",
     //         "About to prompt");
     // Call the C++ prompt method
+            
     wrapper->llModel->prompt(
-        _config.prompt, _config.promptTemplate, [](int32_t tid) { return true; },
-        [this](int32_t token_id, const std::string tok) { return ResponseCallback(token_id, tok); },
+        _config.prompt,
+        _config.promptTemplate,
+        [this](int32_t token_id) { return PromptCallback(token_id); },
+        // [](int32_t tid) { return true; },
+        [this](int32_t token_id, const std::string token) { return ResponseCallback(token_id, token); },
         [](bool isRecalculating) { return isRecalculating; }, wrapper->promptContext, _config.special,
         _config.fakeReply);
 
@@ -94,6 +108,7 @@ Napi::Promise PromptWorker::GetPromise()
     return promise.Promise();
 }
 
+
 bool PromptWorker::ResponseCallback(int32_t token_id, const std::string token)
 {
     if (token_id == -1)
@@ -101,7 +116,7 @@ bool PromptWorker::ResponseCallback(int32_t token_id, const std::string token)
         return false;
     }
 
-    if (!_config.bHasTokenCallback)
+    if (!_config.hasResponseCallback)
     {
         return true;
     }
@@ -110,23 +125,26 @@ bool PromptWorker::ResponseCallback(int32_t token_id, const std::string token)
 
     std::promise<bool> promise;
 
-    auto info = new TokenCallbackInfo();
+    auto info = new ResponseCallbackData();
     info->tokenId = token_id;
     info->token = token;
-    info->total = result;
-
+    
     auto future = promise.get_future();
 
     auto status =
-        _tsfn.BlockingCall(info, [&promise](Napi::Env env, Napi::Function jsCallback, TokenCallbackInfo *value) {
-            // Transform native data into JS data, passing it to the provided
-            // `jsCallback` -- the TSFN's JavaScript function.
-            auto token_id = Napi::Number::New(env, value->tokenId);
-            auto token = Napi::String::New(env, value->token);
-            auto total = Napi::String::New(env, value->total);
-            auto jsResult = jsCallback.Call({token_id, token, total}).ToBoolean();
-            promise.set_value(jsResult);
-            // We're finished with the data.
+        _responseCallbackFn.BlockingCall(info, [&promise](Napi::Env env, Napi::Function jsCallback, ResponseCallbackData *value) {
+            try {
+                // Transform native data into JS data, passing it to the provided
+                // `jsCallback` -- the TSFN's JavaScript function.
+                auto token_id = Napi::Number::New(env, value->tokenId);
+                auto token = Napi::String::New(env, value->token);
+                auto jsResult = jsCallback.Call({token_id, token}).ToBoolean();
+                promise.set_value(jsResult);
+            } catch (const Napi::Error& e) {
+                std::cerr << "Error in onResponseToken callback: " << e.what() << std::endl;
+                promise.set_value(false);
+            }
+
             delete value;
         });
     if (status != napi_ok)
@@ -142,7 +160,38 @@ bool PromptWorker::RecalculateCallback(bool isRecalculating)
     return isRecalculating;
 }
 
-bool PromptWorker::PromptCallback(int32_t tid)
+bool PromptWorker::PromptCallback(int32_t token_id)
 {
-    return true;
+    if (!_config.hasPromptCallback)
+    {
+        return true;
+    }
+
+    std::promise<bool> promise;
+
+    auto info = new PromptCallbackData();
+    info->tokenId = token_id;
+
+    auto future = promise.get_future();
+
+    auto status =
+        _promptCallbackFn.BlockingCall(info, [&promise](Napi::Env env, Napi::Function jsCallback, PromptCallbackData *value) {
+            try {
+                // Transform native data into JS data, passing it to the provided
+                // `jsCallback` -- the TSFN's JavaScript function.
+                auto token_id = Napi::Number::New(env, value->tokenId);
+                auto jsResult = jsCallback.Call({token_id}).ToBoolean();
+                promise.set_value(jsResult);
+            } catch (const Napi::Error& e) {
+                std::cerr << "Error in onPromptToken callback: " << e.what() << std::endl;
+                promise.set_value(false);
+            }
+            delete value;
+        });
+    if (status != napi_ok)
+    {
+        Napi::Error::Fatal("PromptWorkerPromptCallback", "Napi::ThreadSafeNapi::Function.NonBlockingCall() failed");
+    }
+
+    return future.get();
 }

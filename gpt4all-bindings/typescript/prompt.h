@@ -10,11 +10,15 @@
 #include <mutex>
 #include <thread>
 
-struct TokenCallbackInfo
+struct ResponseCallbackData
 {
     int32_t tokenId;
-    std::string total;
     std::string token;
+};
+
+struct PromptCallbackData
+{
+    int32_t tokenId;
 };
 
 struct LLModelWrapper
@@ -29,8 +33,10 @@ struct LLModelWrapper
 
 struct PromptWorkerConfig
 {
-    Napi::Function tokenCallback;
-    bool bHasTokenCallback = false;
+    Napi::Function responseCallback;
+    bool hasResponseCallback = false;
+    Napi::Function promptCallback;
+    bool hasPromptCallback = false;
     llmodel_model model;
     std::mutex *mutex;
     std::string prompt;
@@ -53,13 +59,14 @@ class PromptWorker : public Napi::AsyncWorker
 
     bool ResponseCallback(int32_t token_id, const std::string token);
     bool RecalculateCallback(bool isrecalculating);
-    bool PromptCallback(int32_t tid);
+    bool PromptCallback(int32_t token_id);
 
   private:
     Napi::Promise::Deferred promise;
     std::string result;
     PromptWorkerConfig _config;
-    Napi::ThreadSafeFunction _tsfn;
+    Napi::ThreadSafeFunction _responseCallbackFn;
+    Napi::ThreadSafeFunction _promptCallbackFn;
 };
 
 #endif // PREDICT_WORKER_H

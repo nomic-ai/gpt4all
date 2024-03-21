@@ -196,13 +196,7 @@ Napi::Value NodeModelWrapper::StateSize(const Napi::CallbackInfo &info)
     return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(GetInference())));
 }
 
-
-Napi::Array ChunkedFloatPtr(
-    float* embedding_ptr,
-    int embedding_size,
-    int text_len,
-    Napi::Env const& env
-    ) 
+Napi::Array ChunkedFloatPtr(float *embedding_ptr, int embedding_size, int text_len, Napi::Env const &env)
 {
     auto n_embd = embedding_size / text_len;
     // std::cout << "Embedding size: " << embedding_size << std::endl;
@@ -210,7 +204,8 @@ Napi::Array ChunkedFloatPtr(
     // std::cout << "Chunk size (n_embd): " << n_embd << std::endl;
     Napi::Array result = Napi::Array::New(env, text_len);
     auto count = 0;
-    for (int i = 0; i < embedding_size; i += n_embd) {
+    for (int i = 0; i < embedding_size; i += n_embd)
+    {
         int end = std::min(i + n_embd, embedding_size);
         // possible bounds error?
         // Constructs a container with as many elements as the range [first,last), with each element emplace-constructed
@@ -290,12 +285,8 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
 
 /**
  * Generate a response using the model.
- * @param model A pointer to the llmodel_model instance.
  * @param prompt A string representing the input prompt.
- * @param prompt_callback A callback function for handling the processing of prompt.
- * @param response_callback A callback function for handling the generated response.
- * @param recalculate_callback A callback function for handling recalculation requests.
- * @param ctx A pointer to the llmodel_prompt_context structure.
+ * @param options Inference options.
  */
 Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
 {
@@ -341,32 +332,57 @@ Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
             .ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
-    // Assign the remaining properties
-    if (inputObject.Has("nPast"))
-        promptContext.n_past = inputObject.Get("nPast").As<Napi::Number>().Int32Value();
-    if (inputObject.Has("nPredict"))
-        promptContext.n_predict = inputObject.Get("nPredict").As<Napi::Number>().Int32Value();
-    if (inputObject.Has("topK"))
-        promptContext.top_k = inputObject.Get("topK").As<Napi::Number>().Int32Value();
-    if (inputObject.Has("topP"))
-        promptContext.top_p = inputObject.Get("topP").As<Napi::Number>().FloatValue();
-    if (inputObject.Has("minP"))
-        promptContext.min_p = inputObject.Get("minP").As<Napi::Number>().FloatValue();
-    if (inputObject.Has("temp"))
-        promptContext.temp = inputObject.Get("temp").As<Napi::Number>().FloatValue();
-    if (inputObject.Has("nBatch"))
-        promptContext.n_batch = inputObject.Get("nBatch").As<Napi::Number>().Int32Value();
-    if (inputObject.Has("repeatPenalty"))
-        promptContext.repeat_penalty = inputObject.Get("repeatPenalty").As<Napi::Number>().FloatValue();
-    if (inputObject.Has("repeatLastN"))
-        promptContext.repeat_last_n = inputObject.Get("repeatLastN").As<Napi::Number>().Int32Value();
-    if (inputObject.Has("contextErase"))
-        promptContext.context_erase = inputObject.Get("contextErase").As<Napi::Number>().FloatValue();
 
-    if (info.Length() >= 3 && info[2].IsFunction())
+    // Assign the remaining properties
+    if (inputObject.Has("nPast") && inputObject.Get("nPast").IsNumber())
     {
-        promptWorkerConfig.bHasTokenCallback = true;
-        promptWorkerConfig.tokenCallback = info[2].As<Napi::Function>();
+        promptContext.n_past = inputObject.Get("nPast").As<Napi::Number>().Int32Value();
+    }
+    if (inputObject.Has("nPredict") && inputObject.Get("nPredict").IsNumber())
+    {
+        promptContext.n_predict = inputObject.Get("nPredict").As<Napi::Number>().Int32Value();
+    }
+    if (inputObject.Has("topK") && inputObject.Get("topK").IsNumber())
+    {
+        promptContext.top_k = inputObject.Get("topK").As<Napi::Number>().Int32Value();
+    }
+    if (inputObject.Has("topP") && inputObject.Get("topP").IsNumber())
+    {
+        promptContext.top_p = inputObject.Get("topP").As<Napi::Number>().FloatValue();
+    }
+    if (inputObject.Has("minP") && inputObject.Get("minP").IsNumber())
+    {
+        promptContext.min_p = inputObject.Get("minP").As<Napi::Number>().FloatValue();
+    }
+    if (inputObject.Has("temp") && inputObject.Get("temp").IsNumber())
+    {
+        promptContext.temp = inputObject.Get("temp").As<Napi::Number>().FloatValue();
+    }
+    if (inputObject.Has("nBatch") && inputObject.Get("nBatch").IsNumber())
+    {
+        promptContext.n_batch = inputObject.Get("nBatch").As<Napi::Number>().Int32Value();
+    }
+    if (inputObject.Has("repeatPenalty") && inputObject.Get("repeatPenalty").IsNumber())
+    {
+        promptContext.repeat_penalty = inputObject.Get("repeatPenalty").As<Napi::Number>().FloatValue();
+    }
+    if (inputObject.Has("repeatLastN") && inputObject.Get("repeatLastN").IsNumber())
+    {
+        promptContext.repeat_last_n = inputObject.Get("repeatLastN").As<Napi::Number>().Int32Value();
+    }
+    if (inputObject.Has("contextErase") && inputObject.Get("contextErase").IsNumber())
+    {
+        promptContext.context_erase = inputObject.Get("contextErase").As<Napi::Number>().FloatValue();
+    }
+    if (inputObject.Has("onPromptToken") && inputObject.Get("onPromptToken").IsFunction())
+    {
+        promptWorkerConfig.promptCallback = inputObject.Get("onPromptToken").As<Napi::Function>();
+        promptWorkerConfig.hasPromptCallback = true;
+    }
+    if (inputObject.Has("onResponseToken") && inputObject.Get("onResponseToken").IsFunction())
+    {
+        promptWorkerConfig.responseCallback = inputObject.Get("onResponseToken").As<Napi::Function>();
+        promptWorkerConfig.hasResponseCallback = true;
     }
 
     // copy to protect llmodel resources when splitting to new thread

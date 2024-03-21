@@ -21,7 +21,7 @@ class InferenceModel {
         return this.activeChatSession;
     }
 
-    async generate(input, options = DEFAULT_PROMPT_CONTEXT, onToken) {
+    async generate(input, options = DEFAULT_PROMPT_CONTEXT) {
         const { verbose, ...otherOptions } = options;
         const promptContext = {
             promptTemplate: this.config.promptTemplate,
@@ -82,28 +82,56 @@ class InferenceModel {
         }
 
         let tokensGenerated = 0;
+        let tokensIngested = 0;
 
         const response = await this.llm.infer(
             prompt,
             {
                 ...promptContext,
                 nPast,
+                onPromptToken: (tokenId) => {
+                    let continueIngestion = true;
+                    tokensIngested++;
+                    if (options.onPromptToken) {
+                        // catch errors because if they go through cpp they will loose stacktraces
+                        try {
+                            // don't cancel ingestion unless user explicitly returns false
+                            continueIngestion =
+                                options.onPromptToken(tokenId) !== false;
+                        } catch (e) {
+                            console.error(
+                                "Error in onPromptToken callback",
+                                e,
+                            );
+                            continueIngestion = false;
+                        }
+                    }
+                    return continueIngestion;
+                },
+                onResponseToken: (tokenId, token) => {
+                    // console.debug("onResponseToken", {tokenId, token});
+                    let continueGeneration = true;
+                    tokensGenerated++;
+                    if (options.onResponseToken) {
+                        try {
+                            // don't cancel the generation unless user explicitly returns false
+                            continueGeneration =
+                                options.onResponseToken(tokenId, token) !== false;
+                        } catch (err) {
+                            console.error(
+                                "Error in onResponseToken callback",
+                                err,
+                            );
+                            continueGeneration = false;
+                        }
+                    }
+                    return continueGeneration;
+                },
             },
-            (tokenId, text, fullText) => {
-                let continueGeneration = true;
-
-                if (onToken) {
-                    // don't wanna cancel the generation unless user explicitly returns false
-                    continueGeneration =
-                        onToken(tokenId, text, fullText) !== false;
-                }
-
-                tokensGenerated++;
-                return continueGeneration;
-            }
         );
 
         response.tokensGenerated = tokensGenerated;
+        response.tokensIngested = tokensIngested;
 
         if (verbose) {
             console.debug("Finished completion:\n", response);

@@ -18,10 +18,7 @@ interface ModelConfig {
     url?: string;
 }
 
-/**
- * Callback for controlling token generation. Return false to stop token generation.
- */
-type TokenCallback = (tokenId: number, token: string, total: string) => boolean;
+
 
 /**
  * Options for the chat session.
@@ -64,7 +61,6 @@ declare class ChatSession {
     generate(
         prompt: string,
         options?: CompletionOptions,
-        callback?: TokenCallback
     ): Promise<CompletionResult>;
 }
 
@@ -90,13 +86,11 @@ declare class InferenceModel {
      * Prompts the model with a given input and optional parameters.
      * @param input The prompt input.
      * @param options Prompt context and other options.
-     * @param callback Token generation callback.
      * @returns The model's response to the prompt.
      */
     generate(
         prompt: string,
         options?: CompletionOptions,
-        callback?: TokenCallback
     ): Promise<CompletionResult>;
 
     /**
@@ -132,9 +126,14 @@ declare class EmbeddingModel {
 /**
  * Shape of LLModel's inference result.
  */
-interface InferenceResult {
+interface LLModelInferenceResult {
     text: string;
     nPast: number;
+}
+
+interface LLModelInferenceOptions extends Partial<LLModelPromptContext> {
+    onResponseToken?: (tokenId: number, token: string) => boolean;
+    onPromptToken?: (tokenId: number) => boolean;
 }
 
 /**
@@ -180,15 +179,13 @@ declare class LLModel {
      * This is the raw output from model.
      * Use the prompt function exported for a value
      * @param prompt The prompt input.
-     * @param promptContext Optional parameters for the prompt context.
-     * @param callback - optional callback to control token generation.
-     * @returns The result of the model prompt.
+     * @param options Optional parameters for the generation.
+     * @returns The result of the generation.
      */
     infer(
         prompt: string,
-        promptContext: Partial<LLModelPromptContext>,
-        callback?: TokenCallback
-    ): Promise<InferenceResult>;
+        options: LLModelInferenceOptions,
+    ): Promise<LLModelInferenceResult>;
 
     /**
      * Embed text with the model. Keep in mind that
@@ -341,24 +338,19 @@ interface InferenceProvider {
     generate(
         input: CompletionInput,
         options?: CompletionOptions,
-        callback?: TokenCallback
     ): Promise<CompletionResult>;
 }
 
 /**
  * Options for creating a completion.
  */
-interface CompletionOptions extends Partial<LLModelPromptContext> {
+interface CompletionOptions extends InferenceOptions {
     /**
      * Indicates if verbose logging is enabled.
      * @default false
      */
     verbose?: boolean;
 
-    /**
-     * Callback for controlling token generation. Return false to stop processing.
-     */
-    onToken?: TokenCallback;
 }
 
 type CompletionInput = string | Message[];

@@ -147,18 +147,13 @@ async function createCompletion(
     const response = await provider.generate(
         input,
         completionOptions,
-        options.onToken
     );
 
     return {
         model: provider.modelName,
         usage: {
-            // TODO find a way to determine input token count reliably.
-            // using nPastDelta fails when the context window is exceeded.
-            // prompt_tokens: nPastDelta - tokensGenerated,
-            // total_tokens: nPastDelta,
-            prompt_tokens: 0,
-            total_tokens: 0,
+            prompt_tokens: response.tokensIngested,
+            total_tokens: response.tokensIngested + response.tokensGenerated,
             completion_tokens: response.tokensGenerated,
             n_past_tokens: response.nPast,
         },
@@ -187,10 +182,10 @@ function createCompletionStream(
 
     const completionPromise = createCompletion(provider, input, {
         ...options,
-        onToken: (tokenId, text, fullText) => {
-            completionStream.push(text);
-            if (options.onToken) {
-                return options.onToken(tokenId, text, fullText);
+        onResponseToken: (tokenId, token) => {
+            completionStream.push(token);
+            if (options.onResponseToken) {
+                return options.onResponseToken(tokenId, token);
             }
         },
     }).then((result) => {

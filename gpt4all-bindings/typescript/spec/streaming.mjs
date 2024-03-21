@@ -31,8 +31,8 @@ process.stdout.write("\n");
 
 process.stdout.write("### Callback:");
 await gpt.createCompletion(model, "Why not just callbacks?", {
-    onToken: (tokenId, tokenText) => {
-        process.stdout.write(tokenText);
+    onResponseToken: (tokenId, token) => {
+        process.stdout.write(token);
     },
 });
 process.stdout.write("\n");
