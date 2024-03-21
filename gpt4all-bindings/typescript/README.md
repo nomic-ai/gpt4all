@@ -10,6 +10,8 @@ npm install gpt4all@latest
 pnpm install gpt4all@latest
 
 ```
+## Breaking changes in version 4!!
+*   See [Transition](#changes)
 ## Contents 
 *   See [API Reference](#api-reference)
 *   See [Examples](#api-example)
@@ -235,5 +237,11 @@ This package has been stabilizing over time development, and breaking changes ma
 *   \[x] have more people test on other platforms (mac tester needed)
 *   \[x] switch to new pluggable backend
 
+## Changes
+This repository serves as the new bindings for nodejs users.
+- If you were a user of [these bindings](https://github.com/nomic-ai/gpt4all-ts), they are outdated.
+- Version 4 includes the follow breaking changes
+    * `createEmbedding` & `EmbeddingModel.embed()` returns an object, EmbeddingResult, instead of a float32array.
+    * 
 
 ### API Reference

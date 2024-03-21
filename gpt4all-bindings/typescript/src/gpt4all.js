@@ -84,12 +84,12 @@ async function loadModel(modelName, options = {}) {
     }
 }
 
-function createEmbedding(model, text, options) {
+function createEmbedding(model, text, options={}) {
     let {
         dimensionality = undefined,
         long_text_mode = "mean",
         atlas = false,
-    } = options ?? {};
+    } = options;
 
     if (dimensionality === undefined) {
         dimensionality = -1;

@@ -117,7 +117,11 @@ declare class EmbeddingModel {
     llm: LLModel;
     config: ModelConfig;
 
-    embed(text: string): EmbeddingResult;
+    embed(text: string|string[],
+          prefix: string|undefined,
+          dimensionality: number,
+          do_mean: boolean,
+          atlas: boolean): EmbeddingResult;
 
     /**
      * delete and cleanup the native model
@@ -409,9 +413,9 @@ interface EmbedddingOptions {
     prefix?: string
     /**
      *The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
-     * @default determines on the model
+     * @default determines on the model being used.
      */
-    dimensionality: number;
+    dimensionality?: number;
     /**
      * How to handle texts longer than the model can accept. One of `mean` or `truncate`.
      * @default "mean"
@@ -433,8 +437,8 @@ interface EmbedddingOptions {
  */
 declare function createEmbedding(
     model: EmbeddingModel,
-    text: string,
-    options: EmbedddingOptions
+    text: string | string[],
+    options?: EmbedddingOptions
 ): EmbeddingResult;
 
 /**
@@ -723,4 +727,5 @@ export {
     RetrieveModelOptions,
     DownloadModelOptions,
     GpuDevice,
+    EmbeddingResult
 };
