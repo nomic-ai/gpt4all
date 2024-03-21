@@ -292,7 +292,7 @@ class GPT4All:
             verbose: If True (default), print debug messages.
             url: the models remote url (e.g. may be hosted on HF)
             expected_size: The expected size of the download.
-            expected_md5: The exected MD5 hash of the download.
+            expected_md5: The expected MD5 hash of the download.
 
         Returns:
             Model file destination.
