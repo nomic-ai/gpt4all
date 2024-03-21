@@ -26,10 +26,10 @@ import { createCompletion, loadModel } from '../src/gpt4all.js'
 const model = await loadModel('mistral-7b-openorca.gguf2.Q4_0.gguf', { verbose: true, device: 'gpu' });
 
 const completion1 = await createCompletion(model, 'What is 1 + 1?', { verbose: true, })
-console.log(completion1.message)
+console.log(completion1.choices[0].message)
 
 const completion2 = await createCompletion(model, 'And if we add two?', {  verbose: true  })
-console.log(completion2.message)
+console.log(completion2.choices[0].message)
 
 model.dispose()
 ```
