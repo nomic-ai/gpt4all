@@ -362,7 +362,7 @@ class GPT4All:
                             bar.update(len(chunk))
                     if hsh.hexdigest() != expected_md5.lower():
                         raise ValueError(f"Expected MD5 hash of {expected_md5!r}, got {hsh.hexdigest()!r}")
-            except Exception:
+            except:
                 if verbose:
                     print("Cleaning up the interrupted download...", file=sys.stderr)
                 try:
