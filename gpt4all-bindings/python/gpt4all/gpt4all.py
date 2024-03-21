@@ -356,7 +356,7 @@ class GPT4All:
                 if expected_md5 is not None:
                     partf.seek(0)
                     hsh = hashlib.md5()
-                    with tqdm(desc="Verifying", total=total_size_in_bytes, unit="iB", unit_scale=True) as bar:
+                    with tqdm(desc="Verifying", total=file_size, unit="iB", unit_scale=True) as bar:
                         while chunk := partf.read(block_size):
                             hsh.update(chunk)
                             bar.update(len(chunk))
