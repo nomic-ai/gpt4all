@@ -86,7 +86,7 @@ describe("listModels", () => {
         expect(fetch).toHaveBeenCalledTimes(0);
         expect(models[0]).toEqual(fakeModel);
     });
-    
+
     it("should throw an error if neither url nor file is specified", async () => {
         await expect(listModels(null)).rejects.toThrow(
             "No model list source specified. Please specify either a url or a file."
@@ -140,10 +140,10 @@ describe("downloadModel", () => {
         mockAbortController.mockReset();
         mockFetch.mockClear();
         global.fetch.mockRestore();
-        
+
         const rootDefaultPath = path.resolve(DEFAULT_DIRECTORY),
               partialPath = path.resolve(rootDefaultPath, fakeModelName+'.part'),
-              fullPath = path.resolve(rootDefaultPath, fakeModelName+'.bin')  
+              fullPath = path.resolve(rootDefaultPath, fakeModelName+'.bin')
 
         //if tests fail, remove the created files
         // acts as cleanup if tests fail

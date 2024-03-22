@@ -12,7 +12,7 @@ pnpm install gpt4all@latest
 ```
 ## Breaking changes in version 4!!
 *   See [Transition](#changes)
-## Contents 
+## Contents
 *   See [API Reference](#api-reference)
 *   See [Examples](#api-example)
 *   See [Developing](#develop)
@@ -108,7 +108,7 @@ console.log(createEmbedding(embedder, "Maybe Minecraft was the friends we made a
 ```
 
 ### Streaming responses
-```js 
+```js
 import { loadModel, createCompletionStream } from "../src/gpt4all.js";
 
 const model = await loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
@@ -127,7 +127,7 @@ model.dispose();
 
 ```
 
-### Async Generators 
+### Async Generators
 ```js
 import { loadModel, createCompletionGenerator } from "../src/gpt4all.js";
 
@@ -146,19 +146,19 @@ process.stdout.write("\n");
 model.dispose();
 
 ```
-### Offline usage 
+### Offline usage
 do this b4 going offline
 ```sh
 curl -L https://gpt4all.io/models/models3.json -o ./models3.json
 ```
-```js 
+```js
 import { createCompletion, loadModel } from 'gpt4all'
 
 //make sure u downloaded the models before going offline!
-const model = await loadModel('mistral-7b-openorca.gguf2.Q4_0.gguf', { 
+const model = await loadModel('mistral-7b-openorca.gguf2.Q4_0.gguf', {
     verbose: true,
     device: 'gpu',
-    modelConfigFile: "./models3.json" 
+    modelConfigFile: "./models3.json"
 });
 
 await createCompletion(model, 'What is 1 + 1?', { verbose: true })
@@ -212,7 +212,7 @@ git submodule update --init --recursive
 ```sh
 yarn build:backend
 ```
-This will build platform-dependent dynamic libraries, and will be located in runtimes/(platform)/native 
+This will build platform-dependent dynamic libraries, and will be located in runtimes/(platform)/native
 
 ### Test
 
@@ -263,7 +263,7 @@ This package has been stabilizing over time development, and breaking changes ma
 *   \[ ] NPM bundle size reduction via optionalDependencies strategy (need help)
     *   Should include prebuilds to avoid painful node-gyp errors
 *   \[x] createChatSession ( the python equivalent to create\_chat\_session )
-*   \[x] generateTokens, the new name for createTokenStream. As of 3.2.0, this is released but not 100% tested. Check spec/generator.mjs! 
+*   \[x] generateTokens, the new name for createTokenStream. As of 3.2.0, this is released but not 100% tested. Check spec/generator.mjs!
 *   \[x] ~~createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)~~ May not implement unless someone else can complete
 *   \[x] prompt models via a threadsafe function in order to have proper non blocking behavior in nodejs
 *   \[x] generateTokens is the new name for this^
@@ -279,6 +279,6 @@ This repository serves as the new bindings for nodejs users.
     * `createEmbedding` & `EmbeddingModel.embed()` returns an object, `EmbeddingResult`, instead of a float32array.
     * Removed deprecated types `ModelType` and `ModelFile`
     * Removed deprecated initiation of model by string path only
-    
+
 
 ### API Reference

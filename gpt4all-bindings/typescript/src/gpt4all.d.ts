@@ -400,9 +400,9 @@ declare function createCompletionGenerator(
 /**
  * Options for generating one or more embeddings.
  */
-interface EmbedddingOptions { 
+interface EmbedddingOptions {
     /**
-     * The model-specific prefix representing the embedding task, without the trailing colon. For Nomic Embed 
+     * The model-specific prefix representing the embedding task, without the trailing colon. For Nomic Embed
      * this can be `search_query`, `search_document`, `classification`, or `clustering`.
      */
     prefix?: string
@@ -417,7 +417,7 @@ interface EmbedddingOptions {
      */
      long_text_mode?: string
     /**
-     * Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens 
+     * Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens
      * with long_text_mode="mean" will raise an error. Disabled by default.
      * @default false
      */
@@ -502,7 +502,7 @@ interface LLModelPromptContext {
      * @default 4096
      * */
     nPredict: number;
-    
+
     /**
      * Template for user / assistant message pairs.
      * %1 is required and will be replaced by the user input.
@@ -534,10 +534,10 @@ interface LLModelPromptContext {
      * When using a higher value for top-P (eg., 0.95), the generated text becomes more diverse.
      * On the other hand, a lower value (eg., 0.1) produces more focused and conservative text.
      * @default 0.9
-     * 
+     *
      * */
     topP: number;
-    
+
     /**
      * The minimum probability of a token to be considered.
      * @default 0.0

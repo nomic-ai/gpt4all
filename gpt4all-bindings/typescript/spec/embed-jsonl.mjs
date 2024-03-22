@@ -11,7 +11,7 @@ const url = "https://huggingface.co/datasets/sentence-transformers/embedding-tra
 const stream = await fetch(url)
         .then(res => Readable.fromWeb(res.body));
 
-const lineReader = readline.createInterface({ 
+const lineReader = readline.createInterface({
     input: stream.pipe(unzip),
     crlfDelay: Infinity
 })

@@ -279,7 +279,7 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
     } else {
         res.Set("embeddings", embedmat);
     }
-    
+
     return res;
 }
 

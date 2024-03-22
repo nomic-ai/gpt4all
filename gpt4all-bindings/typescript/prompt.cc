@@ -9,7 +9,7 @@ PromptWorker::PromptWorker(Napi::Env env, PromptWorkerConfig config)
         _responseCallbackFn =
             Napi::ThreadSafeFunction::New(config.responseCallback.Env(), config.responseCallback, "PromptWorker", 0, 1, this);
     }
-    
+
     if (_config.hasPromptCallback)
     {
         _promptCallbackFn =
@@ -56,7 +56,7 @@ void PromptWorker::Execute()
     //         "SUPRA",
     //         "About to prompt");
     // Call the C++ prompt method
-            
+
     wrapper->llModel->prompt(
         _config.prompt,
         _config.promptTemplate,
@@ -128,7 +128,7 @@ bool PromptWorker::ResponseCallback(int32_t token_id, const std::string token)
     auto info = new ResponseCallbackData();
     info->tokenId = token_id;
     info->token = token;
-    
+
     auto future = promise.get_future();
 
     auto status =
