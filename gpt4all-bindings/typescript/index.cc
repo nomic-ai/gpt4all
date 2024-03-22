@@ -78,11 +78,6 @@ Napi::Value NodeModelWrapper::GetType(const Napi::CallbackInfo &info)
     return Napi::String::New(info.Env(), type);
 }
 
-// Napi::Value NodeModelWrapper::GetContextWindowSize(const Napi::CallbackInfo &info)
-// {
-//     return Napi::Number::New(info.Env(), nCtx);
-// }
-
 Napi::Value NodeModelWrapper::InitGpuByString(const Napi::CallbackInfo &info)
 {
     auto env = info.Env();

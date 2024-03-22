@@ -6,14 +6,14 @@ PromptWorker::PromptWorker(Napi::Env env, PromptWorkerConfig config)
 {
     if (_config.hasResponseCallback)
     {
-        _responseCallbackFn =
-            Napi::ThreadSafeFunction::New(config.responseCallback.Env(), config.responseCallback, "PromptWorker", 0, 1, this);
+        _responseCallbackFn = Napi::ThreadSafeFunction::New(config.responseCallback.Env(), config.responseCallback,
+                                                            "PromptWorker", 0, 1, this);
     }
 
     if (_config.hasPromptCallback)
     {
-        _promptCallbackFn =
-            Napi::ThreadSafeFunction::New(config.promptCallback.Env(), config.promptCallback, "PromptWorker", 0, 1, this);
+        _promptCallbackFn = Napi::ThreadSafeFunction::New(config.promptCallback.Env(), config.promptCallback,
+                                                          "PromptWorker", 0, 1, this);
     }
 }
 
@@ -52,16 +52,10 @@ void PromptWorker::Execute()
     wrapper->promptContext.repeat_last_n = ctx->repeat_last_n;
     wrapper->promptContext.contextErase = ctx->context_erase;
 
-    // Napi::Error::Fatal(
-    //         "SUPRA",
-    //         "About to prompt");
     // Call the C++ prompt method
 
     wrapper->llModel->prompt(
-        _config.prompt,
-        _config.promptTemplate,
-        [this](int32_t token_id) { return PromptCallback(token_id); },
-        // [](int32_t tid) { return true; },
+        _config.prompt, _config.promptTemplate, [this](int32_t token_id) { return PromptCallback(token_id); },
         [this](int32_t token_id, const std::string token) { return ResponseCallback(token_id, token); },
         [](bool isRecalculating) { return isRecalculating; }, wrapper->promptContext, _config.special,
         _config.fakeReply);
@@ -108,7 +102,6 @@ Napi::Promise PromptWorker::GetPromise()
     return promise.Promise();
 }
 
-
 bool PromptWorker::ResponseCallback(int32_t token_id, const std::string token)
 {
     if (token_id == -1)
@@ -131,16 +124,19 @@ bool PromptWorker::ResponseCallback(int32_t token_id, const std::string token)
 
     auto future = promise.get_future();
 
-    auto status =
-        _responseCallbackFn.BlockingCall(info, [&promise](Napi::Env env, Napi::Function jsCallback, ResponseCallbackData *value) {
-            try {
+    auto status = _responseCallbackFn.BlockingCall(
+        info, [&promise](Napi::Env env, Napi::Function jsCallback, ResponseCallbackData *value) {
+            try
+            {
                 // Transform native data into JS data, passing it to the provided
                 // `jsCallback` -- the TSFN's JavaScript function.
                 auto token_id = Napi::Number::New(env, value->tokenId);
                 auto token = Napi::String::New(env, value->token);
                 auto jsResult = jsCallback.Call({token_id, token}).ToBoolean();
                 promise.set_value(jsResult);
-            } catch (const Napi::Error& e) {
+            }
+            catch (const Napi::Error &e)
+            {
                 std::cerr << "Error in onResponseToken callback: " << e.what() << std::endl;
                 promise.set_value(false);
             }
@@ -174,15 +170,18 @@ bool PromptWorker::PromptCallback(int32_t token_id)
 
     auto future = promise.get_future();
 
-    auto status =
-        _promptCallbackFn.BlockingCall(info, [&promise](Napi::Env env, Napi::Function jsCallback, PromptCallbackData *value) {
-            try {
+    auto status = _promptCallbackFn.BlockingCall(
+        info, [&promise](Napi::Env env, Napi::Function jsCallback, PromptCallbackData *value) {
+            try
+            {
                 // Transform native data into JS data, passing it to the provided
                 // `jsCallback` -- the TSFN's JavaScript function.
                 auto token_id = Napi::Number::New(env, value->tokenId);
                 auto jsResult = jsCallback.Call({token_id}).ToBoolean();
                 promise.set_value(jsResult);
-            } catch (const Napi::Error& e) {
+            }
+            catch (const Napi::Error &e)
+            {
                 std::cerr << "Error in onPromptToken callback: " << e.what() << std::endl;
                 promise.set_value(false);
             }

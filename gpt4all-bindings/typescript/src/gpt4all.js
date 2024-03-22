@@ -119,13 +119,7 @@ function createEmbedding(model, text, options={}) {
                 `Long text mode must be one of 'mean' or 'truncate', got ${long_text_mode}`
             );
     }
-    /**
-   text = info[0]
-   auto prefix = info[1].As<Napi::String>().Utf8Value();
-   auto dimensionality = info[2].As<Napi::Number>().Int32Value();
-   auto do_mean = info[3].As<Napi::Boolean>().Value();
-   auto atlas = info[4].As<Napi::Boolean>().Value();
-  */
+
     return model.embed(text, options?.prefix, dimensionality, do_mean, atlas);
 }
 
@@ -163,9 +157,7 @@ async function createCompletion(
                     role: "assistant",
                     content: response.text,
                 },
-                // index: 0,
-                // logprobs: null,
-                // finish_reason: "length",
+                // TODO some completion APIs also provide logprobs and finish_reason, could look into adding those
             },
         ],
     };

@@ -93,7 +93,7 @@ class InferenceModel {
                 let continueIngestion = true;
                 tokensIngested++;
                 if (options.onPromptToken) {
-                    // catch errors because if they go through cpp they will lose stacktraces
+                    // catch errors because if they go through cpp they will loose stacktraces
                     try {
                         // don't cancel ingestion unless user explicitly returns false
                         continueIngestion =
@@ -106,7 +106,6 @@ class InferenceModel {
                 return continueIngestion;
             },
             onResponseToken: (tokenId, token) => {
-                // console.debug("onResponseToken", {tokenId, token});
                 let continueGeneration = true;
                 tokensGenerated++;
                 if (options.onResponseToken) {
