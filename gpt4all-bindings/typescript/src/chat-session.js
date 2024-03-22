@@ -40,6 +40,8 @@ class ChatSession {
             this.model.activeChatSession = this;
         }
 
+        let tokensIngested = 0;
+
         // ingest system prompt
 
         if (this.systemPrompt) {
@@ -50,29 +52,35 @@ class ChatSession {
                 nBatch: this.promptContext.nBatch,
                 // verbose: true,
             });
+            tokensIngested += res.tokensIngested;
             this.promptContext.nPast = res.nPast;
         }
 
         // ingest initial messages
         if (this.messages.length > 0) {
-            await this.ingestMessages(this.messages);
+            tokensIngested += await this.ingestMessages(this.messages);
         }
 
         this.initialized = true;
+
+        return tokensIngested;
     }
 
     async ingestMessages(messages) {
         const turns = prepareMessagesForIngest(messages);
 
         // send the message pairs to the model
+        let tokensIngested = 0;
 
         for (const turn of turns) {
             const res = await this.model.generate(turn.user, {
                 ...this.promptContext,
                 fakeReply: turn.assistant,
             });
+            tokensIngested += res.tokensIngested;
             this.promptContext.nPast = res.nPast;
         }
+        return tokensIngested;
     }
 
     async generate(input, options = DEFAULT_PROMPT_CONTEXT, callback) {
@@ -81,8 +89,10 @@ class ChatSession {
                 "Chat session is not active. Create a new chat session or call initialize to continue."
             );
         }
+        let tokensIngested = 0;
+
         if (!this.initialized) {
-            await this.initialize();
+            tokensIngested += await this.initialize();
         }
 
         let prompt = input;
@@ -104,12 +114,19 @@ class ChatSession {
             }
 
             if (messagesToIngest.length > 0) {
-                await this.ingestMessages(otherMessages);
+                tokensIngested += await this.ingestMessages(messagesToIngest);
                 this.messages.push(...messagesToIngest);
             }
 
             if (tailingUserMessage) {
                 prompt = tailingUserMessage;
+            } else {
+                return {
+                    text: "",
+                    nPast: this.promptContext.nPast,
+                    tokensIngested,
+                    tokensGenerated: 0,
+                };
             }
         }
 
@@ -123,6 +140,7 @@ class ChatSession {
         );
 
         this.promptContext.nPast = response.nPast;
+        response.tokensIngested += tokensIngested;
 
         this.messages.push({
             role: "user",

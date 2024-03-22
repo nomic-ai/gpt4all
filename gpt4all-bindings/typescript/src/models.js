@@ -41,6 +41,7 @@ class InferenceModel {
 
         let prompt = input;
         let nPast = promptContext.nPast;
+        let tokensIngested = 0;
 
         if (Array.isArray(input)) {
             // assuming input is a messages array
@@ -64,6 +65,7 @@ class InferenceModel {
                     special: true,
                 });
                 nPast = sysRes.nPast;
+                tokensIngested += sysRes.tokensIngested;
                 messages.shift();
             }
 
@@ -77,58 +79,49 @@ class InferenceModel {
                     nPast,
                     fakeReply: turn.assistant,
                 });
+                tokensIngested += turnRes.tokensIngested;
                 nPast = turnRes.nPast;
             }
         }
 
         let tokensGenerated = 0;
-        let tokensIngested = 0;
 
-        const response = await this.llm.infer(
-            prompt,
-            {
-                ...promptContext,
-                nPast,
-                onPromptToken: (tokenId) => {
-                    let continueIngestion = true;
-                    tokensIngested++;
-                    if (options.onPromptToken) {
-                        // catch errors because if they go through cpp they will loose stacktraces
-                        try {
-                            // don't cancel ingestion unless user explicitly returns false
-                            continueIngestion =
-                                options.onPromptToken(tokenId) !== false;
-                        } catch (e) {
-                            console.error(
-                                "Error in onPromptToken callback",
-                                e,
-                            );
-                            continueIngestion = false;
-                        }
+        const response = await this.llm.infer(prompt, {
+            ...promptContext,
+            nPast,
+            onPromptToken: (tokenId) => {
+                let continueIngestion = true;
+                tokensIngested++;
+                if (options.onPromptToken) {
+                    // catch errors because if they go through cpp they will loose stacktraces
+                    try {
+                        // don't cancel ingestion unless user explicitly returns false
+                        continueIngestion =
+                            options.onPromptToken(tokenId) !== false;
+                    } catch (e) {
+                        console.error("Error in onPromptToken callback", e);
+                        continueIngestion = false;
                     }
-                    return continueIngestion;
-                },
-                onResponseToken: (tokenId, token) => {
-                    // console.debug("onResponseToken", {tokenId, token});
-                    let continueGeneration = true;
-                    tokensGenerated++;
-                    if (options.onResponseToken) {
-                        try {
-                            // don't cancel the generation unless user explicitly returns false
-                            continueGeneration =
-                                options.onResponseToken(tokenId, token) !== false;
-                        } catch (err) {
-                            console.error(
-                                "Error in onResponseToken callback",
-                                err,
-                            );
-                            continueGeneration = false;
-                        }
-                    }
-                    return continueGeneration;
-                },
+                }
+                return continueIngestion;
             },
-        );
+            onResponseToken: (tokenId, token) => {
+                // console.debug("onResponseToken", {tokenId, token});
+                let continueGeneration = true;
+                tokensGenerated++;
+                if (options.onResponseToken) {
+                    try {
+                        // don't cancel the generation unless user explicitly returns false
+                        continueGeneration =
+                            options.onResponseToken(tokenId, token) !== false;
+                    } catch (err) {
+                        console.error("Error in onResponseToken callback", err);
+                        continueGeneration = false;
+                    }
+                }
+                return continueGeneration;
+            },
+        });
 
         response.tokensGenerated = tokensGenerated;
         response.tokensIngested = tokensIngested;
