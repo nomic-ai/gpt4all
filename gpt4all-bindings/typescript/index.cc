@@ -255,6 +255,7 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
         }
     }
     std::vector<const char *> str_ptrs;
+    str_ptrs.reserve(text_arr.size() + 1);
     for (size_t i = 0; i < text_arr.size(); ++i)
         str_ptrs.push_back(text_arr[i].c_str());
     str_ptrs.push_back(nullptr);
