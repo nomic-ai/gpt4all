@@ -264,7 +264,7 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
     float *embeds = llmodel_embed(GetInference(), str_ptrs.data(),  &embedding_size,
                                   prefix.IsUndefined() ? nullptr : prefix.As<Napi::String>().Utf8Value().c_str(),
                                   dimensionality, &token_count, do_mean, atlas, &_err);
-    if (_err)
+    if (!embeds)
     {
         // i dont wanna deal with c strings lol
         std::string err(_err);
