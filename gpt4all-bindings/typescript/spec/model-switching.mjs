@@ -2,6 +2,7 @@ import { loadModel, createCompletion } from "../src/gpt4all.js";
 
 const model1 = await loadModel("Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf", {
     device: "gpu",
+    nCtx: 4096,
 });
 
 const chat1 = await model1.createChatSession({
@@ -14,25 +15,25 @@ const chat1turn1 = await createCompletion(
     chat1,
     "Outline a short story concept for adults. About why bananas are rather blue than bread is green at night sometimes. Not too long."
 );
-console.log(chat1turn1);
+console.debug(chat1turn1.choices[0].message);
 
 const chat1turn2 = await createCompletion(
     chat1,
     "Lets sprinkle some plot twists. And a cliffhanger at the end."
 );
-console.log(chat1turn2);
+console.debug(chat1turn2.choices[0].message);
 
 const chat1turn3 = await createCompletion(
     chat1,
     "Analyze your plot. Find the weak points."
 );
-console.log(chat1turn3);
+console.debug(chat1turn3.choices[0].message);
 
 const chat1turn4 = await createCompletion(
     chat1,
     "Rewrite it based on the analysis."
 );
-console.log(chat1turn4);
+console.debug(chat1turn4.choices[0].message);
 
 model1.dispose();
 
@@ -48,9 +49,12 @@ const chat2turn1 = await createCompletion(
     chat2,
     "Give three ideas how this plot could be improved."
 );
-console.log(chat2turn1);
+console.debug(chat2turn1.choices[0].message);
 
-const chat2turn2 = await createCompletion(chat2, "Revise the plot, applying your ideas.");
-console.log(chat2turn2);
+const chat2turn2 = await createCompletion(
+    chat2,
+    "Revise the plot, applying your ideas."
+);
+console.debug(chat2turn2.choices[0].message);
 
 model2.dispose();

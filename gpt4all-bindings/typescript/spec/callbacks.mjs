@@ -13,7 +13,7 @@ const res = await createCompletion(
         onPromptToken: (tokenId) => {
             console.debug("onPromptToken", { tokenId });
             // throwing an error will cancel
-            // throw new Error("This is an error");
+            throw new Error("This is an error");
             // const foo = thisMethodDoesNotExist();
             // returning false will cancel as well
             // return false;

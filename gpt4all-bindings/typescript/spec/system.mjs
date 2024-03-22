@@ -13,7 +13,7 @@ const chat = await model.createChatSession({
     systemPrompt: "<|im_start|>system\nRoleplay as Batman. Answer as if you are Batman, never say you're an Assistant.\n<|im_end|>",
 });
 const turn1 = await createCompletion(chat, "You have any plans tonight?");
-console.log(turn1);
+console.log(turn1.choices[0].message);
 // "I'm afraid I must decline any personal invitations tonight. As Batman, I have a responsibility to protect Gotham City."
 
 model.dispose();

@@ -26,4 +26,4 @@ const responses = await Promise.all([
     createCompletion(model2, "What is 1 + 2?", promptContext),
     createCompletion(model3, "What is 1 + 3?", promptContext),
 ]);
-console.log(responses.map((res) => res.message));
+console.log(responses.map((res) => res.choices[0].message));

@@ -18,4 +18,4 @@ const res = await createCompletion(
         verbose: true,
     }
 );
-console.debug(res);
+console.debug(res.choices[0].message);
