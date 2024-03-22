@@ -100,6 +100,9 @@ declare class InferenceModel {
 }
 
 interface EmbeddingResult {
+    /**
+     * Encoded token count. Includes overlap but specifically excludes tokens used for the prefix/task_type, BOS/CLS token, and EOS/SEP token
+     **/
     n_prompt_tokens: number;
     embeddings: Float32Array | Float32Array[]
 }
@@ -453,13 +456,13 @@ interface CompletionResult {
 
     /** Token usage report. */
     usage: {
-        /** The number of tokens used in the prompt. Currently not available and always 0. */
+        /** The number of tokens ingested during the completion. */
         prompt_tokens: number;
 
-        /** The number of tokens used in the completion. */
+        /** The number of tokens generated in the completion. */
         completion_tokens: number;
 
-        /** The total number of tokens used. Currently not available and always 0. */
+        /** The total number of tokens used. */
         total_tokens: number;
 
         /** Number of tokens used in the conversation. */
