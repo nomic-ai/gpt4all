@@ -18,20 +18,83 @@ pnpm install gpt4all@latest
 *   See [Developing](#develop)
 *   GPT4ALL nodejs bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
 *   [spare change](https://github.com/sponsors/jacoobes) for a college student? 🤑
-## Api Example
+## Api Examples
 ### Chat Completion
+
+Use a chat session to keep context between completions. This is useful for efficient back and forth conversations.
+
 ```js
-import { createCompletion, loadModel } from '../src/gpt4all.js'
+import { createCompletion, loadModel } from "../src/gpt4all.js";
 
-const model = await loadModel('mistral-7b-openorca.gguf2.Q4_0.gguf', { verbose: true, device: 'gpu' });
+const model = await loadModel("orca-mini-3b-gguf2-q4_0.gguf", {
+    verbose: true, // logs loaded model configuration
+    device: "gpu", // defaults to 'cpu'
+    nCtx: 2048, // the maximum sessions context window size.
+});
 
-const completion1 = await createCompletion(model, 'What is 1 + 1?', { verbose: true, })
-console.log(completion1.choices[0].message)
+// initialize a chat session on the model. a model instance can have only one chat session at a time.
+const chat = await model.createChatSession({
+    // any completion options set here will be used as default for all completions in this chat session
+    temperature: 0.8,
+    // a custom systemPrompt can be set here. note that the template depends on the model.
+    // if unset, the systemPrompt that comes with the model will be used.
+    systemPrompt: "### System:\nYou are an advanced mathematician.\n\n",
+});
 
-const completion2 = await createCompletion(model, 'And if we add two?', {  verbose: true  })
-console.log(completion2.choices[0].message)
+// create a completion using a string as input
+const res1 = await createCompletion(chat, "What is 1 + 1?");
+console.debug(res1.choices[0].message);
 
-model.dispose()
+// multiple messages can be input to the conversation at once.
+// note that if the last message is not of role 'user', an empty message will be returned.
+await createCompletion(chat, [
+    {
+        role: "user",
+        content: "What is 2 + 2?",
+    },
+    {
+        role: "assistant",
+        content: "It's 5.",
+    },
+]);
+
+const res3 = await createCompletion(chat, "Could you recalculate that?");
+console.debug(res3.choices[0].message);
+
+model.dispose();
+```
+
+### Stateless usage
+You can use the model without a chat session. This is useful for one-off completions.
+
+```js
+import { createCompletion, loadModel } from "../src/gpt4all.js";
+
+const model = await loadModel("orca-mini-3b-gguf2-q4_0.gguf");
+
+// createCompletion methods can also be used on the model directly.
+// context is not maintained between completions.
+const res1 = await createCompletion(model, "What is 1 + 1?");
+console.debug(res1.choices[0].message);
+
+// a whole conversation can be input as well.
+// note that if the last message is not of role 'user', an error will be thrown.
+const res2 = await createCompletion(model, [
+    {
+        role: "user",
+        content: "What is 2 + 2?",
+    },
+    {
+        role: "assistant",
+        content: "It's 5.",
+    },
+    {
+        role: "user",
+        content: "Could you recalculate that?",
+    },
+]);
+console.debug(res2.choices[0].message);
+
 ```
 
 ### Embedding
@@ -43,73 +106,45 @@ const embedder = await loadModel("nomic-embed-text-v1.5.f16.gguf", { verbose: tr
 
 console.log(createEmbedding(embedder, "Maybe Minecraft was the friends we made along the way"));
 ```
-### Chat Sessions 
-```js 
-import { loadModel, createCompletion } from "../src/gpt4all.js";
 
-const model = await loadModel("orca-mini-3b-gguf2-q4_0.gguf", {
-    verbose: true,
-    device: "gpu",
-});
-
-const chat = await model.createChatSession();
-
-await createCompletion(
-    chat,
-    "Why are bananas rather blue than bread at night sometimes?",
-    {
-        verbose: true,
-    }
-);
-await createCompletion(chat, "Are you sure?", { verbose: true, });
-
-```
 ### Streaming responses
 ```js 
-import gpt from "../src/gpt4all.js";
+import { loadModel, createCompletionStream } from "../src/gpt4all.js";
 
-const model = await gpt.loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
+const model = await loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
     device: "gpu",
 });
 
-process.stdout.write("### Stream:");
-const stream = gpt.createCompletionStream(model, "How are you?");
+process.stdout.write("Output: ");
+const stream = createCompletionStream(model, "How are you?");
 stream.tokens.on("data", (data) => {
     process.stdout.write(data);
 });
 //wait till stream finishes. We cannot continue until this one is done.
 await stream.result;
 process.stdout.write("\n");
-
-process.stdout.write("### Stream with pipe:");
-const stream2 = gpt.createCompletionStream(
-    model,
-    "Please say something nice about node streams."
-);
-stream2.tokens.pipe(process.stdout);
-await stream2.result;
-process.stdout.write("\n");
-
-console.log("done");
 model.dispose();
+
 ```
 
 ### Async Generators 
 ```js
-import gpt from "../src/gpt4all.js";
+import { loadModel, createCompletionGenerator } from "../src/gpt4all.js";
 
-const model = await gpt.loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
-    device: "gpu",
-});
+const model = await loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf");
 
-process.stdout.write("### Generator:");
-const gen = gpt.createCompletionGenerator(model, "Redstone in Minecraft is Turing Complete. Let that sink in. (let it in!)");
+process.stdout.write("Output: ");
+const gen = createCompletionGenerator(
+    model,
+    "Redstone in Minecraft is Turing Complete. Let that sink in. (let it in!)"
+);
 for await (const chunk of gen) {
     process.stdout.write(chunk);
 }
 
 process.stdout.write("\n");
 model.dispose();
+
 ```
 ### Offline usage 
 do this b4 going offline
