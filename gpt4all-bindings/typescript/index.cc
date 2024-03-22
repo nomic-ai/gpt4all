@@ -248,6 +248,7 @@ Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
     {
         auto jsarr = info[0].As<Napi::Array>();
         size_t len = jsarr.Length();
+        text_arr.reserve(len);
         for (size_t i = 0; i < len; ++i)
         {
             std::string str = jsarr.Get(i).As<Napi::String>().Utf8Value();
