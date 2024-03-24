@@ -1,7 +1,7 @@
 <h1 align="center">GPT4All</h1>
 
 <p align="center">Open-source large language models that run locally on your CPU and nearly any GPU</p>
-
+new bee
 <p align="center">
 <a href="https://gpt4all.io">GPT4All Website and Models</a>
 </p>
