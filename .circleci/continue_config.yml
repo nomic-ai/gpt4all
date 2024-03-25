@@ -370,13 +370,13 @@ jobs:
       - run:
           name: Make Documentation
           command: |
-            cd gpt4all-bindings/python/
+            cd gpt4all-bindings/python
             mkdocs build
       - run:
           name: Deploy Documentation
           command: |
-            cd gpt4all-bindings/python/
-            aws s3 cp ./site s3://docs.gpt4all.io/ --recursive | cat
+            cd gpt4all-bindings/python
+            aws s3 sync --delete site/ s3://docs.gpt4all.io/
       - run:
           name: Invalidate docs.gpt4all.io cloudfront
           command: aws cloudfront create-invalidation --distribution-id E1STQOW63QL2OH --paths "/*"
