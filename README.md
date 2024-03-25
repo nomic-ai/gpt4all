@@ -47,7 +47,7 @@ A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4
 ### What's New ([Issue Tracker](https://github.com/orgs/nomic-ai/projects/2))
 - **October 19th, 2023**: GGUF Support Launches with Support for:
     - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
-    - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4_0, Q6 quantizations in GGUF.
+    - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4\_0 and Q4\_1 quantizations in GGUF.
     - Offline build support for running old versions of the GPT4All Local LLM Chat Client.
 - **September 18th, 2023**: [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) launches supporting local LLM inference on AMD, Intel, Samsung, Qualcomm and NVIDIA GPUs.
 - **August 15th, 2023**: GPT4All API launches allowing inference of local LLMs from docker containers.
