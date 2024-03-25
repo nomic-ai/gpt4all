@@ -90,6 +90,7 @@ setup(
         'requests',
         'tqdm',
         'importlib_resources; python_version < "3.9"',
+        'typing-extensions>=4.3.0; python_version >= "3.9" and python_version < "3.11"',
     ],
     extras_require={
         'dev': [

@@ -9,12 +9,18 @@ import sys
 import threading
 from enum import Enum
 from queue import Queue
-from typing import Any, Callable, Generic, Iterable, TypedDict, TypeVar, overload
+from typing import Any, Callable, Generic, Iterable, TypeVar, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
 else:
     import importlib_resources
+
+if (3, 9) <= sys.version_info < (3, 11):
+    # python 3.9 broke generic TypedDict, python 3.11 fixed it
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
 
 EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
