@@ -1,6 +1,6 @@
 import {
-	loadModel,
-	createCompletion,
+    loadModel,
+    createCompletion,
 } from "../src/gpt4all.js";
 
 const modelOptions = {
