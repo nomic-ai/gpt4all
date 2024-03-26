@@ -89,6 +89,11 @@ class ChatSession {
                 "Chat session is not active. Create a new chat session or call initialize to continue."
             );
         }
+        if (options.nPast > this.promptContext.nPast) {
+            throw new Error(
+                `nPast cannot be greater than ${this.promptContext.nPast}.`
+            );
+        }
         let tokensIngested = 0;
 
         if (!this.initialized) {

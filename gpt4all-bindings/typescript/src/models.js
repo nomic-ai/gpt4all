@@ -31,6 +31,10 @@ class InferenceModel {
                 DEFAULT_PROMPT_CONTEXT.temp,
             ...otherOptions,
         };
+        
+        if (promptContext.nPast < 0) {
+            throw new Error("nPast must be a non-negative integer.");
+        }
 
         if (verbose) {
             console.debug("Generating completion", {
@@ -46,7 +50,7 @@ class InferenceModel {
         if (Array.isArray(input)) {
             // assuming input is a messages array
             // -> tailing user message will be used as the final prompt. its required.
-            // -> leading system message will be ingested, further system messages will be ignored
+            // -> leading system message will be ingested as systemPrompt, further system messages will be ignored
             // -> all other messages will be ingested with fakeReply
             // -> model/context will only be kept for this completion; "stateless"
             nPast = 0;
