@@ -18,8 +18,6 @@ const {
     createPrompt,
     createCompletion,
 } = require("../src/gpt4all.js");
-const { mock } = require("node:test");
-const { mkdirp } = require("mkdirp");
 
 describe("config", () => {
     test("default paths constants are available and correct", () => {

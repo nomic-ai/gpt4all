@@ -1,8 +1,7 @@
-const { createWriteStream, existsSync, statSync } = require("node:fs");
+const { createWriteStream, existsSync, statSync, mkdirSync } = require("node:fs");
 const fsp = require("node:fs/promises");
 const { performance } = require("node:perf_hooks");
 const path = require("node:path");
-const { mkdirp } = require("mkdirp");
 const md5File = require("md5-file");
 const {
     DEFAULT_DIRECTORY,
@@ -138,7 +137,7 @@ function downloadModel(modelName, options = {}) {
         downloadOptions.url ??
         `https://gpt4all.io/models/gguf/${modelFileName}`;
 
-    mkdirp.sync(downloadOptions.modelPath);
+    mkdirSync(downloadOptions.modelPath, { recursive: true });
 
     if (existsSync(finalModelPath)) {
         throw Error(`Model already exists at ${finalModelPath}`);
@@ -248,7 +247,7 @@ async function retrieveModel(modelName, options = {}) {
         verbose: false,
         ...options,
     };
-    await mkdirp(retrieveOptions.modelPath);
+    mkdirSync(retrieveOptions.modelPath, { recursive: true });
 
     const modelFileName = appendBinSuffixIfMissing(modelName);
     const fullModelPath = path.join(retrieveOptions.modelPath, modelFileName);
