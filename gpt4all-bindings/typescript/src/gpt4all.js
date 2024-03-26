@@ -87,7 +87,7 @@ async function loadModel(modelName, options = {}) {
 function createEmbedding(model, text, options={}) {
     let {
         dimensionality = undefined,
-        long_text_mode = "mean",
+        longTextMode = "mean",
         atlas = false,
     } = options;
 
@@ -106,21 +106,21 @@ function createEmbedding(model, text, options={}) {
         }
     }
 
-    let do_mean;
-    switch (long_text_mode) {
+    let doMean;
+    switch (longTextMode) {
         case "mean":
-            do_mean = true;
+            doMean = true;
             break;
         case "truncate":
-            do_mean = false;
+            doMean = false;
             break;
         default:
             throw new Error(
-                `Long text mode must be one of 'mean' or 'truncate', got ${long_text_mode}`
+                `Long text mode must be one of 'mean' or 'truncate', got ${longTextMode}`
             );
     }
 
-    return model.embed(text, options?.prefix, dimensionality, do_mean, atlas);
+    return model.embed(text, options?.prefix, dimensionality, doMean, atlas);
 }
 
 const defaultCompletionOptions = {
@@ -138,7 +138,7 @@ async function createCompletion(
         ...options,
     };
 
-    const response = await provider.generate(
+    const result = await provider.generate(
         input,
         completionOptions,
     );
@@ -146,16 +146,16 @@ async function createCompletion(
     return {
         model: provider.modelName,
         usage: {
-            prompt_tokens: response.tokensIngested,
-            total_tokens: response.tokensIngested + response.tokensGenerated,
-            completion_tokens: response.tokensGenerated,
-            n_past_tokens: response.nPast,
+            prompt_tokens: result.tokensIngested,
+            total_tokens: result.tokensIngested + result.tokensGenerated,
+            completion_tokens: result.tokensGenerated,
+            n_past_tokens: result.nPast,
         },
         choices: [
             {
                 message: {
                     role: "assistant",
-                    content: response.text,
+                    content: result.text,
                 },
                 // TODO some completion APIs also provide logprobs and finish_reason, could look into adding those
             },
