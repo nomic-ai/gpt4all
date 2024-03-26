@@ -63,13 +63,13 @@ class InferenceModel {
             if (input[0].role === "system") {
                 // needs to be a pre-templated prompt ala '<|im_start|>system\nYou are an advanced mathematician.\n<|im_end|>\n'
                 const systemPrompt = input[0].content;
-                const sysRes = await this.llm.infer(systemPrompt, {
+                const systemRes = await this.llm.infer(systemPrompt, {
                     promptTemplate: "%1",
                     nPredict: 0,
                     special: true,
                 });
-                nPast = sysRes.nPast;
-                tokensIngested += sysRes.tokensIngested;
+                nPast = systemRes.nPast;
+                tokensIngested += systemRes.tokensIngested;
                 messages.shift();
             }
 
@@ -90,7 +90,7 @@ class InferenceModel {
 
         let tokensGenerated = 0;
 
-        const response = await this.llm.infer(prompt, {
+        const result = await this.llm.infer(prompt, {
             ...promptContext,
             nPast,
             onPromptToken: (tokenId) => {
@@ -126,14 +126,14 @@ class InferenceModel {
             },
         });
 
-        response.tokensGenerated = tokensGenerated;
-        response.tokensIngested = tokensIngested;
+        result.tokensGenerated = tokensGenerated;
+        result.tokensIngested = tokensIngested;
 
         if (verbose) {
-            console.debug("Finished completion:\n", response);
+            console.debug("Finished completion:\n", result);
         }
 
-        return response;
+        return result;
     }
 
     dispose() {

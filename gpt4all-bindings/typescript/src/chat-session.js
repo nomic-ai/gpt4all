@@ -5,7 +5,7 @@ class ChatSession {
     model;
     modelName;
     /**
-     * @type {unknown[]}
+     * @type {import('./gpt4all').ChatMessage[]}
      */
     messages;
     /**
@@ -21,8 +21,9 @@ class ChatSession {
      */
     initialized;
 
-    constructor(model, opts = {}) {
-        const { messages, systemPrompt, ...otherOpts } = opts;
+    constructor(model, chatSessionOpts = {}) {
+        const { messages, systemPrompt, ...sessionDefaultPromptContext } =
+            chatSessionOpts;
         this.model = model;
         this.modelName = model.llm.name();
         this.messages = messages ?? [];
@@ -30,12 +31,12 @@ class ChatSession {
         this.initialized = false;
         this.promptContext = {
             ...DEFAULT_PROMPT_CONTEXT,
-            ...otherOpts,
+            ...sessionDefaultPromptContext,
             nPast: 0,
         };
     }
 
-    async initialize() {
+    async initialize(completionOpts = {}) {
         if (this.model.activeChatSession !== this) {
             this.model.activeChatSession = this;
         }
@@ -45,20 +46,23 @@ class ChatSession {
         // ingest system prompt
 
         if (this.systemPrompt) {
-            const res = await this.model.generate(this.systemPrompt, {
+            const systemRes = await this.model.generate(this.systemPrompt, {
                 promptTemplate: "%1",
                 nPredict: 0,
                 special: true,
                 nBatch: this.promptContext.nBatch,
                 // verbose: true,
             });
-            tokensIngested += res.tokensIngested;
-            this.promptContext.nPast = res.nPast;
+            tokensIngested += systemRes.tokensIngested;
+            this.promptContext.nPast = systemRes.nPast;
         }
 
         // ingest initial messages
         if (this.messages.length > 0) {
-            tokensIngested += await this.ingestMessages(this.messages);
+            tokensIngested += await this.ingestMessages(
+                this.messages,
+                completionOpts
+            );
         }
 
         this.initialized = true;
@@ -66,30 +70,31 @@ class ChatSession {
         return tokensIngested;
     }
 
-    async ingestMessages(messages) {
+    async ingestMessages(messages, completionOpts = {}) {
         const turns = prepareMessagesForIngest(messages);
 
         // send the message pairs to the model
         let tokensIngested = 0;
 
         for (const turn of turns) {
-            const res = await this.model.generate(turn.user, {
+            const turnRes = await this.model.generate(turn.user, {
                 ...this.promptContext,
+                ...completionOpts,
                 fakeReply: turn.assistant,
             });
-            tokensIngested += res.tokensIngested;
-            this.promptContext.nPast = res.nPast;
+            tokensIngested += turnRes.tokensIngested;
+            this.promptContext.nPast = turnRes.nPast;
         }
         return tokensIngested;
     }
 
-    async generate(input, options = DEFAULT_PROMPT_CONTEXT, callback) {
+    async generate(input, completionOpts = {}) {
         if (this.model.activeChatSession !== this) {
             throw new Error(
                 "Chat session is not active. Create a new chat session or call initialize to continue."
             );
         }
-        if (options.nPast > this.promptContext.nPast) {
+        if (completionOpts.nPast > this.promptContext.nPast) {
             throw new Error(
                 `nPast cannot be greater than ${this.promptContext.nPast}.`
             );
@@ -97,7 +102,7 @@ class ChatSession {
         let tokensIngested = 0;
 
         if (!this.initialized) {
-            tokensIngested += await this.initialize();
+            tokensIngested += await this.initialize(completionOpts);
         }
 
         let prompt = input;
@@ -119,7 +124,10 @@ class ChatSession {
             }
 
             if (messagesToIngest.length > 0) {
-                tokensIngested += await this.ingestMessages(messagesToIngest);
+                tokensIngested += await this.ingestMessages(
+                    messagesToIngest,
+                    completionOpts
+                );
                 this.messages.push(...messagesToIngest);
             }
 
@@ -135,17 +143,13 @@ class ChatSession {
             }
         }
 
-        const response = await this.model.generate(
-            prompt,
-            {
-                ...this.promptContext,
-                ...options,
-            },
-            callback
-        );
+        const result = await this.model.generate(prompt, {
+            ...this.promptContext,
+            ...completionOpts,
+        });
 
-        this.promptContext.nPast = response.nPast;
-        response.tokensIngested += tokensIngested;
+        this.promptContext.nPast = result.nPast;
+        result.tokensIngested += tokensIngested;
 
         this.messages.push({
             role: "user",
@@ -153,10 +157,10 @@ class ChatSession {
         });
         this.messages.push({
             role: "assistant",
-            content: response.text,
+            content: result.text,
         });
 
-        return response;
+        return result;
     }
 }
 
