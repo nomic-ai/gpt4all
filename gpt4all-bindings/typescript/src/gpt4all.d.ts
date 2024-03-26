@@ -18,8 +18,6 @@ interface ModelConfig {
     url?: string;
 }
 
-
-
 /**
  * Options for the chat session.
  */
@@ -35,63 +33,96 @@ interface ChatSessionOptions extends Partial<LLModelPromptContext> {
     messages?: Message[];
 }
 
-declare class ChatSession {
+/**
+ * ChatSession utilizes an InferenceModel for efficient processing of chat conversations.
+ */
+declare class ChatSession implements InferenceProvider {
     constructor(model: InferenceModel, options: ChatSessionOptions);
+    /**
+     * The underlying InferenceModel used for generating completions.
+     */
     model: InferenceModel;
+    /**
+     * The name of the model.
+     */
     modelName: string;
+    /**
+     * The messages that have been exchanged in this chat session.
+     */
     messages: Message[];
+    /**
+     * The system prompt that has been ingested at the beginning of the chat session.
+     */
     systemPrompt: string;
-    promptTemplate: string;
+    /**
+     * The current prompt context of the chat session.
+     */
+    promptContext: LLModelPromptContext;
 
     /**
      * Ingests system prompt and initial messages.
      * Sets this chat session as the active chat session of the model.
      * @param options The options for the chat session.
+     * @returns The number of tokens ingested during initialization. systemPrompt + messages.
      */
-    initialize(options: ChatSessionOptions): Promise<void>;
+    initialize(options: ChatSessionOptions): Promise<number>;
 
     /**
      * Prompts the model in chat-session context.
-     * @param prompt The prompt input.
-     * @param options Prompt context and other options.
-     * @param callback Token generation callback.
-     * @returns The model's response to the prompt.
+     * @param {CompletionInput} input Input string or message array.
+     * @param {CompletionOptions} options Prompt context and other options.
+     * @returns {Promise<InferenceResult>} The inference result.
      * @throws {Error} If the chat session is not the active chat session of the model.
+     * @throws {Error} If nPast is set to a value higher than what has been ingested in the session.
      */
     generate(
-        prompt: string,
+        input: CompletionInput,
         options?: CompletionOptions,
-    ): Promise<CompletionResult>;
+    ): Promise<InferenceResult>;
 }
 
 /**
- * InferenceModel represents an LLM which can make chat predictions, similar to GPT transformers.
+ * Shape of InferenceModel generations.
  */
-declare class InferenceModel {
+interface InferenceResult extends LLModelInferenceResult {
+    tokensIngested: number;
+    tokensGenerated: number;
+}
+
+/**
+ * InferenceModel represents an LLM which can make next-token predictions.
+ */
+declare class InferenceModel implements InferenceProvider {
     constructor(llm: LLModel, config: ModelConfig);
+    /** The native LLModel */
     llm: LLModel;
+    /** The configuration the instance was constructed with. */
     config: ModelConfig;
+    /** The active chat session of the model. */
     activeChatSession?: ChatSession;
+    /** The name of the model. */
     modelName: string;
-    nPast: number;
 
     /**
-     * Create a chat session with the model.
-     * @param options The options for the chat session.
-     * @returns The chat session.
+     * Create a chat session with the model and set it as the active chat session of this model.
+     * A model instance can only have one active chat session at a time.
+     * @param {ChatSessionOptions} options The options for the chat session.
+     * @returns {Promise<ChatSession>} The chat session.
      */
     createChatSession(options?: ChatSessionOptions): Promise<ChatSession>;
 
     /**
      * Prompts the model with a given input and optional parameters.
-     * @param input The prompt input.
-     * @param options Prompt context and other options.
-     * @returns The model's response to the prompt.
+     * @param {CompletionInput} input The prompt input.
+     * @param {CompletionOptions} options Prompt context and other options.
+     * @returns {Promise<InferenceResult>} The model's response to the prompt.
+     * @throws {Error} If nPast is set to a value smaller than 0.
+     * @throws {Error} If a messages array without a tailing user message is provided.
      */
     generate(
         prompt: string,
         options?: CompletionOptions,
-    ): Promise<CompletionResult>;
+    ): Promise<InferenceResult>;
 
     /**
      * delete and cleanup the native model
@@ -99,26 +130,112 @@ declare class InferenceModel {
     dispose(): void;
 }
 
-interface EmbeddingResult {
+/**
+ * Options for generating one or more embeddings.
+ */
+interface EmbedddingOptions {
+    /**
+     * The model-specific prefix representing the embedding task, without the trailing colon. For Nomic Embed
+     * this can be `search_query`, `search_document`, `classification`, or `clustering`.
+     */
+    prefix?: string
+    /**
+     *The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
+     * @default determines on the model being used.
+     */
+    dimensionality?: number;
+    /**
+     * How to handle texts longer than the model can accept. One of `mean` or `truncate`.
+     * @default "mean"
+     */
+    longTextMode?: "mean" | "truncate";
+    /**
+     * Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens
+     * with long_text_mode="mean" will raise an error. Disabled by default.
+     * @default false
+     */
+    atlas?: boolean
+}
+
+/**
+ * The nodejs moral equivalent to python binding's Embed4All().embed()
+ * meow
+ * @param {EmbeddingModel} model The embedding model instance.
+ * @param {string} text Text to embed.
+ * @param {EmbeddingOptions} options Optional parameters for the embedding.
+ * @returns {EmbeddingResult} The embedding result.
+ * @throws {Error} If dimensionality is set to a value smaller than 1.
+ */
+declare function createEmbedding(
+    model: EmbeddingModel,
+    text: string,
+    options?: EmbedddingOptions
+): EmbeddingResult<Float32Array>;
+
+/**
+ * Overload that takes multiple strings to embed.
+ * @param {EmbeddingModel} model The embedding model instance.
+ * @param {string[]} texts Texts to embed.
+ * @param {EmbeddingOptions} options Optional parameters for the embedding.
+ * @returns {EmbeddingResult} The embedding result.
+ * @throws {Error} If dimensionality is set to a value smaller than 1.
+ */
+declare function createEmbedding(
+    model: EmbeddingModel,
+    text: string[],
+    options?: EmbedddingOptions
+): EmbeddingResult<Float32Array[]>;
+
+interface EmbeddingResult<T>{
     /**
      * Encoded token count. Includes overlap but specifically excludes tokens used for the prefix/task_type, BOS/CLS token, and EOS/SEP token
      **/
     n_prompt_tokens: number;
-    embeddings: Float32Array | Float32Array[]
+    
+    embeddings: T
 }
 /**
  * EmbeddingModel represents an LLM which can create embeddings, which are float arrays
  */
 declare class EmbeddingModel {
     constructor(llm: LLModel, config: ModelConfig);
+    /** The native LLModel */
     llm: LLModel;
+    /** The configuration the instance was constructed with. */
     config: ModelConfig;
 
-    embed(text: string|string[],
-          prefix: string|undefined,
-          dimensionality: number,
-          do_mean: boolean,
-          atlas: boolean): EmbeddingResult;
+    /**
+     * Create an embedding from a given input string.
+     * @param {string} text
+     * @param {string} prefix
+     * @param {number} dimensionality
+     * @param {boolean} doMean
+     * @param {boolean} atlas
+     * @returns {EmbeddingResult<Float32Array>} The embedding result.
+     */
+    embed(
+        text: string,
+        prefix: string,
+        dimensionality: number,
+        doMean: boolean,
+        atlas: boolean
+    ): EmbeddingResult<Float32Array>;
+    /**
+     * Create an embedding from a given input text array.
+     * @param {string[]} text
+     * @param {string} prefix
+     * @param {number} dimensionality
+     * @param {boolean} doMean
+     * @param {boolean} atlas
+     * @returns {EmbeddingResult<Float32Array[]>} The embedding result.
+     */
+    embed(
+        text: string[],
+        prefix: string,
+        dimensionality: number,
+        doMean: boolean,
+        atlas: boolean
+    ): EmbeddingResult<Float32Array[]>;
 
     /**
      * delete and cleanup the native model
@@ -135,8 +252,17 @@ interface LLModelInferenceResult {
 }
 
 interface LLModelInferenceOptions extends Partial<LLModelPromptContext> {
-    onResponseToken?: (tokenId: number, token: string) => boolean;
-    onPromptToken?: (tokenId: number) => boolean;
+    /** Callback for response tokens, called for each generated token.
+     * @param {number} tokenId The token id.
+     * @param {string} token The token.
+     * @returns {boolean | undefined} Whether to continue generating tokens.
+     * */
+    onResponseToken?: (tokenId: number, token: string) => boolean | void;
+    /** Callback for prompt tokens, called for each input token in the prompt.
+     * @param {number} tokenId The token id.
+     * @returns {boolean | undefined} Whether to continue ingesting the prompt.
+     * */
+    onPromptToken?: (tokenId: number) => boolean | void;
 }
 
 /**
@@ -146,7 +272,7 @@ interface LLModelInferenceOptions extends Partial<LLModelPromptContext> {
 declare class LLModel {
     /**
      * Initialize a new LLModel.
-     * @param path Absolute path to the model file.
+     * @param {string} path Absolute path to the model file.
      * @throws {Error} If the model file does not exist.
      */
     constructor(options: LLModelOptions);
@@ -178,25 +304,40 @@ declare class LLModel {
     setThreadCount(newNumber: number): void;
 
     /**
-     * Prompt the model with a given input and optional parameters.
-     * This is the raw output from model.
-     * Use the prompt function exported for a value
-     * @param prompt The prompt input.
-     * @param options Optional parameters for the generation.
-     * @returns The result of the generation.
+     * Prompt the model directly with a given input string and optional parameters.
+     * Use the higher level createCompletion methods for a more user-friendly interface.
+     * @param {string} prompt The prompt input.
+     * @param {LLModelInferenceOptions} options Optional parameters for the generation.
+     * @returns {LLModelInferenceResult} The response text and final context size.
      */
     infer(
         prompt: string,
         options: LLModelInferenceOptions,
     ): Promise<LLModelInferenceResult>;
-
+    
     /**
-     * Embed text with the model. Keep in mind that
-     * Use the prompt function exported for a value
-     * @param text The prompt input.
-     * @returns The result of the model prompt.
+     * Embed text with the model. See EmbeddingOptions for more information.
+     * Use the higher level createEmbedding methods for a more user-friendly interface.
+     * @param {string} text
+     * @param {string} prefix
+     * @param {number} dimensionality
+     * @param {boolean} doMean
+     * @param {boolean} atlas
+     * @returns {Float32Array} The embedding of the text.
      */
-    embed(text: string): Float32Array;
+    embed(text: string, prefix: string, dimensionality: number, doMean: boolean, atlas: boolean): Float32Array;
+    
+    /**
+     * Embed multiple texts with the model. See EmbeddingOptions for more information.
+     * Use the higher level createEmbedding methods for a more user-friendly interface.
+     * @param {string[]} texts
+     * @param {string} prefix
+     * @param {number} dimensionality
+     * @param {boolean} doMean
+     * @param {boolean} atlas
+     * @returns {Float32Array[]} The embeddings of the texts.
+     */
+    embed(texts: string, prefix: string, dimensionality: number, doMean: boolean, atlas: boolean): Float32Array[];
 
     /**
      * Whether the model is loaded or not.
@@ -229,7 +370,7 @@ declare class LLModel {
 
     /**
      * GPUs that are usable for this LLModel
-     * @param nCtx Maximum size of context window
+     * @param {number} nCtx Maximum size of context window
      * @throws if hasGpuDevice returns false (i think)
      * @returns
      */
@@ -335,27 +476,30 @@ declare function loadModel(
 
 /**
  * Interface for inference, implemented by InferenceModel and ChatSession.
+ * Implement your own InferenceProvider to create completions with custom models or chat sessions.
  */
 interface InferenceProvider {
     modelName: string;
     generate(
         input: CompletionInput,
         options?: CompletionOptions,
-    ): Promise<CompletionResult>;
+    ): Promise<InferenceResult>;
 }
 
 /**
  * Options for creating a completion.
  */
-interface CompletionOptions extends InferenceOptions {
+interface CompletionOptions extends LLModelInferenceOptions {
     /**
      * Indicates if verbose logging is enabled.
      * @default false
      */
     verbose?: boolean;
-
 }
 
+/**
+ * The input for creating a completion. May be a string or an array of messages.
+ */
 type CompletionInput = string | Message[];
 
 /**
@@ -385,7 +529,7 @@ declare function createCompletionStream(
 ): CompletionStreamReturn;
 
 /**
- * Creates an async generator of tokens
+ * Async generator variant of createCompletion, yields tokens as they are generated and returns the completion result.
  * @param {InferenceProvider} provider - The inference model object or chat session
  * @param {CompletionInput} input - The input string or message array
  * @param {CompletionOptions} options - The options for creating the completion.
@@ -396,45 +540,6 @@ declare function createCompletionGenerator(
     input: CompletionInput,
     options: CompletionOptions
 ): AsyncGenerator<string, CompletionResult>;
-
-/**
- * Options for generating one or more embeddings.
- */
-interface EmbedddingOptions {
-    /**
-     * The model-specific prefix representing the embedding task, without the trailing colon. For Nomic Embed
-     * this can be `search_query`, `search_document`, `classification`, or `clustering`.
-     */
-    prefix?: string
-    /**
-     *The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
-     * @default determines on the model being used.
-     */
-    dimensionality?: number;
-    /**
-     * How to handle texts longer than the model can accept. One of `mean` or `truncate`.
-     * @default "mean"
-     */
-     long_text_mode?: string
-    /**
-     * Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens
-     * with long_text_mode="mean" will raise an error. Disabled by default.
-     * @default false
-     */
-     atlas?: boolean
-}
-/**
- * The nodejs moral equivalent to python binding's Embed4All().embed()
- * meow
- * @param {EmbeddingModel} model - The language model object.
- * @param {string} text - text to embed
- * @returns {EmbeddingResult} The completion result.
- */
-declare function createEmbedding(
-    model: EmbeddingModel,
-    text: string | string[],
-    options?: EmbedddingOptions
-): EmbeddingResult;
 
 /**
  * A message in the conversation.
@@ -479,7 +584,7 @@ interface CompletionResult {
  * The result of a streamed completion, containing a stream of tokens and a promise that resolves to the completion result.
  */
 interface CompletionStreamReturn {
-    tokens: ReadableStream;
+    tokens: NodeJS.ReadableStream;
     result: Promise<CompletionResult>;
 }
 
@@ -494,7 +599,11 @@ interface LLModelPromptContext {
     tokensSize: number;
 
     /** The number of tokens in the past conversation.
-     * This controls how far back the model looks when generating completions.
+     * This may be used to "roll back" the conversation to a previous state.
+     * Note that for most use cases the default value should be sufficient and this should not be set.
+     * @default 0 For completions using InferenceModel, meaning the model will only consider the input prompt.
+     * @default nPast For completions using ChatSession. This means the context window will be automatically determined
+     * and possibly resized (see contextErase) to keep the conversation performant.
      * */
     nPast: number;
 
@@ -503,10 +612,9 @@ interface LLModelPromptContext {
      * */
     nPredict: number;
 
-    /**
-     * Template for user / assistant message pairs.
+    /** Template for user / assistant message pairs.
      * %1 is required and will be replaced by the user input.
-     * %2 is optional and will be replaced by the assistant response.
+     * %2 is optional and will be replaced by the assistant response. If not present, the assistant response will be appended.
      */
     promptTemplate?: string;
 
@@ -549,7 +657,7 @@ interface LLModelPromptContext {
      * (eg., 1.2) increase randomness, resulting in more imaginative and diverse text. Lower temperatures (eg., 0.5)
      * make the output more focused, predictable, and conservative. When the temperature is set to 0, the output
      * becomes completely deterministic, always selecting the most probable next token and producing identical results
-     * each time. A safe range would be around 0.6 - 0.85, but you are free to search what value fits best for you.
+     * each time. Try what value fits best for your use case and model.
      * @default 0.1
      * @alias temperature
      * */
@@ -582,6 +690,7 @@ interface LLModelPromptContext {
     repeatLastN: number;
 
     /** The percentage of context to erase if the context window is exceeded.
+     * Set it to a lower value to keep context for longer at the cost of performance.
      * @default 0.75
      * */
     contextErase: number;
