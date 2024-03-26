@@ -30,14 +30,20 @@ interface ChatSessionOptions extends Partial<LLModelPromptContext> {
     /**
      * Messages to ingest on initialization.
      */
-    messages?: Message[];
+    messages?: ChatMessage[];
 }
 
 /**
  * ChatSession utilizes an InferenceModel for efficient processing of chat conversations.
  */
-declare class ChatSession implements InferenceProvider {
-    constructor(model: InferenceModel, options: ChatSessionOptions);
+declare class ChatSession implements CompletionProvider {
+    /**
+     * Constructs a new ChatSession using the provided InferenceModel and options.
+     * Does not set the chat session as the active chat session until initialize is called.
+     * @param {InferenceModel} model An InferenceModel instance.
+     * @param {ChatSessionOptions} [options] Options for the chat session including default completion options.
+     */
+    constructor(model: InferenceModel, options?: ChatSessionOptions);
     /**
      * The underlying InferenceModel used for generating completions.
      */
@@ -49,7 +55,7 @@ declare class ChatSession implements InferenceProvider {
     /**
      * The messages that have been exchanged in this chat session.
      */
-    messages: Message[];
+    messages: ChatMessage[];
     /**
      * The system prompt that has been ingested at the beginning of the chat session.
      */
@@ -62,22 +68,22 @@ declare class ChatSession implements InferenceProvider {
     /**
      * Ingests system prompt and initial messages.
      * Sets this chat session as the active chat session of the model.
-     * @param options The options for the chat session.
-     * @returns The number of tokens ingested during initialization. systemPrompt + messages.
+     * @param {CompletionOptions} [options] Set completion options for initialization.
+     * @returns {Promise<number>} The number of tokens ingested during initialization. systemPrompt + messages.
      */
-    initialize(options: ChatSessionOptions): Promise<number>;
+    initialize(completionOpts?: CompletionOptions): Promise<number>;
 
     /**
      * Prompts the model in chat-session context.
      * @param {CompletionInput} input Input string or message array.
-     * @param {CompletionOptions} options Prompt context and other options.
+     * @param {CompletionOptions} [options] Set completion options for this generation.
      * @returns {Promise<InferenceResult>} The inference result.
      * @throws {Error} If the chat session is not the active chat session of the model.
      * @throws {Error} If nPast is set to a value higher than what has been ingested in the session.
      */
     generate(
         input: CompletionInput,
-        options?: CompletionOptions,
+        options?: CompletionOptions
     ): Promise<InferenceResult>;
 }
 
@@ -92,7 +98,7 @@ interface InferenceResult extends LLModelInferenceResult {
 /**
  * InferenceModel represents an LLM which can make next-token predictions.
  */
-declare class InferenceModel implements InferenceProvider {
+declare class InferenceModel implements CompletionProvider {
     constructor(llm: LLModel, config: ModelConfig);
     /** The native LLModel */
     llm: LLModel;
@@ -121,7 +127,7 @@ declare class InferenceModel implements InferenceProvider {
      */
     generate(
         prompt: string,
-        options?: CompletionOptions,
+        options?: CompletionOptions
     ): Promise<InferenceResult>;
 
     /**
@@ -138,7 +144,7 @@ interface EmbedddingOptions {
      * The model-specific prefix representing the embedding task, without the trailing colon. For Nomic Embed
      * this can be `search_query`, `search_document`, `classification`, or `clustering`.
      */
-    prefix?: string
+    prefix?: string;
     /**
      *The embedding dimension, for use with Matryoshka-capable models. Defaults to full-size.
      * @default determines on the model being used.
@@ -154,7 +160,7 @@ interface EmbedddingOptions {
      * with long_text_mode="mean" will raise an error. Disabled by default.
      * @default false
      */
-    atlas?: boolean
+    atlas?: boolean;
 }
 
 /**
@@ -177,7 +183,7 @@ declare function createEmbedding(
  * @param {EmbeddingModel} model The embedding model instance.
  * @param {string[]} texts Texts to embed.
  * @param {EmbeddingOptions} options Optional parameters for the embedding.
- * @returns {EmbeddingResult} The embedding result.
+ * @returns {EmbeddingResult<Float32Array[]>} The embedding result.
  * @throws {Error} If dimensionality is set to a value smaller than 1.
  */
 declare function createEmbedding(
@@ -186,13 +192,16 @@ declare function createEmbedding(
     options?: EmbedddingOptions
 ): EmbeddingResult<Float32Array[]>;
 
-interface EmbeddingResult<T>{
+/**
+ * The resulting embedding.
+ */
+interface EmbeddingResult<T> {
     /**
      * Encoded token count. Includes overlap but specifically excludes tokens used for the prefix/task_type, BOS/CLS token, and EOS/SEP token
      **/
     n_prompt_tokens: number;
-    
-    embeddings: T
+
+    embeddings: T;
 }
 /**
  * EmbeddingModel represents an LLM which can create embeddings, which are float arrays
@@ -205,7 +214,7 @@ declare class EmbeddingModel {
     config: ModelConfig;
 
     /**
-     * Create an embedding from a given input string.
+     * Create an embedding from a given input string. See EmbeddingOptions.
      * @param {string} text
      * @param {string} prefix
      * @param {number} dimensionality
@@ -221,7 +230,7 @@ declare class EmbeddingModel {
         atlas: boolean
     ): EmbeddingResult<Float32Array>;
     /**
-     * Create an embedding from a given input text array.
+     * Create an embedding from a given input text array. See EmbeddingOptions.
      * @param {string[]} text
      * @param {string} prefix
      * @param {number} dimensionality
@@ -278,7 +287,7 @@ declare class LLModel {
     constructor(options: LLModelOptions);
 
     /** undefined or user supplied */
-    type(): string|undefined;
+    type(): string | undefined;
 
     /** The name of the model. */
     name(): string;
@@ -312,9 +321,9 @@ declare class LLModel {
      */
     infer(
         prompt: string,
-        options: LLModelInferenceOptions,
+        options: LLModelInferenceOptions
     ): Promise<LLModelInferenceResult>;
-    
+
     /**
      * Embed text with the model. See EmbeddingOptions for more information.
      * Use the higher level createEmbedding methods for a more user-friendly interface.
@@ -325,8 +334,14 @@ declare class LLModel {
      * @param {boolean} atlas
      * @returns {Float32Array} The embedding of the text.
      */
-    embed(text: string, prefix: string, dimensionality: number, doMean: boolean, atlas: boolean): Float32Array;
-    
+    embed(
+        text: string,
+        prefix: string,
+        dimensionality: number,
+        doMean: boolean,
+        atlas: boolean
+    ): Float32Array;
+
     /**
      * Embed multiple texts with the model. See EmbeddingOptions for more information.
      * Use the higher level createEmbedding methods for a more user-friendly interface.
@@ -337,7 +352,13 @@ declare class LLModel {
      * @param {boolean} atlas
      * @returns {Float32Array[]} The embeddings of the texts.
      */
-    embed(texts: string, prefix: string, dimensionality: number, doMean: boolean, atlas: boolean): Float32Array[];
+    embed(
+        texts: string,
+        prefix: string,
+        dimensionality: number,
+        doMean: boolean,
+        atlas: boolean
+    ): Float32Array[];
 
     /**
      * Whether the model is loaded or not.
@@ -419,17 +440,17 @@ interface LoadModelOptions {
      * Enable verbose logging.
      */
     verbose?: boolean;
-   /**
-    * The processing unit on which the model will run. It can be set to
-    * - "cpu": Model will run on the central processing unit.
-    * - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
-    * - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
-    * - "gpu name": Model will run on the GPU that matches the name if it's available.
-    * Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
-    * instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
-    * model.
-    * @default "cpu"
-    */
+    /**
+     * The processing unit on which the model will run. It can be set to
+     * - "cpu": Model will run on the central processing unit.
+     * - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
+     * - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
+     * - "gpu name": Model will run on the GPU that matches the name if it's available.
+     * Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
+     * instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
+     * model.
+     * @default "cpu"
+     */
     device?: string;
     /**
      * The Maximum window size of this model
@@ -475,14 +496,14 @@ declare function loadModel(
 ): Promise<InferenceModel | EmbeddingModel>;
 
 /**
- * Interface for inference, implemented by InferenceModel and ChatSession.
- * Implement your own InferenceProvider to create completions with custom models or chat sessions.
+ * Interface for createCompletion methods, implemented by InferenceModel and ChatSession.
+ * Implement your own CompletionProvider or extend ChatSession to generate completions with custom logic.
  */
-interface InferenceProvider {
+interface CompletionProvider {
     modelName: string;
     generate(
         input: CompletionInput,
-        options?: CompletionOptions,
+        options?: CompletionOptions
     ): Promise<InferenceResult>;
 }
 
@@ -500,43 +521,51 @@ interface CompletionOptions extends LLModelInferenceOptions {
 /**
  * The input for creating a completion. May be a string or an array of messages.
  */
-type CompletionInput = string | Message[];
+type CompletionInput = string | ChatMessage[];
 
 /**
  * The nodejs equivalent to python binding's chat_completion
- * @param {InferenceProvider} provider - The inference model object or chat session
+ * @param {CompletionProvider} provider - The inference model object or chat session
  * @param {CompletionInput} input - The input string or message array
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {CompletionResult} The completion result.
  */
 declare function createCompletion(
-    provider: InferenceProvider,
+    provider: CompletionProvider,
     input: CompletionInput,
     options?: CompletionOptions
 ): Promise<CompletionResult>;
 
 /**
  * Streaming variant of createCompletion, returns a stream of tokens and a promise that resolves to the completion result.
- * @param {InferenceProvider} provider - The inference model object or chat session
+ * @param {CompletionProvider} provider - The inference model object or chat session
  * @param {CompletionInput} input - The input string or message array
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {CompletionStreamReturn} An object of token stream and the completion result promise.
  */
 declare function createCompletionStream(
-    provider: InferenceProvider,
+    provider: CompletionProvider,
     input: CompletionInput,
     options?: CompletionOptions
 ): CompletionStreamReturn;
 
 /**
+ * The result of a streamed completion, containing a stream of tokens and a promise that resolves to the completion result.
+ */
+interface CompletionStreamReturn {
+    tokens: NodeJS.ReadableStream;
+    result: Promise<CompletionResult>;
+}
+
+/**
  * Async generator variant of createCompletion, yields tokens as they are generated and returns the completion result.
- * @param {InferenceProvider} provider - The inference model object or chat session
+ * @param {CompletionProvider} provider - The inference model object or chat session
  * @param {CompletionInput} input - The input string or message array
  * @param {CompletionOptions} options - The options for creating the completion.
  * @returns {AsyncGenerator<string>} The stream of generated tokens
  */
 declare function createCompletionGenerator(
-    provider: InferenceProvider,
+    provider: CompletionProvider,
     input: CompletionInput,
     options: CompletionOptions
 ): AsyncGenerator<string, CompletionResult>;
@@ -544,7 +573,7 @@ declare function createCompletionGenerator(
 /**
  * A message in the conversation.
  */
-interface Message {
+interface ChatMessage {
     /** The role of the message. */
     role: "system" | "assistant" | "user";
 
@@ -576,16 +605,8 @@ interface CompletionResult {
 
     /** The generated completion. */
     choices: Array<{
-        message: Message;
+        message: ChatMessage;
     }>;
-}
-
-/**
- * The result of a streamed completion, containing a stream of tokens and a promise that resolves to the completion result.
- */
-interface CompletionStreamReturn {
-    tokens: NodeJS.ReadableStream;
-    result: Promise<CompletionResult>;
 }
 
 /**
@@ -803,18 +824,28 @@ interface DownloadController {
 }
 
 export {
-    ModelConfig,
-    InferenceModel,
-    InferenceProvider,
-    EmbeddingModel,
-    ChatSession,
     LLModel,
     LLModelPromptContext,
-    Message,
+    ModelConfig,
+    InferenceModel,
+    InferenceResult,
+    EmbeddingModel,
+    EmbeddingResult,
+    ChatSession,
+    ChatMessage,
+    CompletionInput,
+    CompletionProvider,
     CompletionOptions,
-    CompletionResult as CompletionReturn,
+    CompletionResult,
     LoadModelOptions,
+    DownloadController,
+    RetrieveModelOptions,
+    DownloadModelOptions,
+    GpuDevice,
     loadModel,
+    downloadModel,
+    retrieveModel,
+    listModels,
     createCompletion,
     createCompletionStream,
     createCompletionGenerator,
@@ -824,12 +855,4 @@ export {
     DEFAULT_MODEL_CONFIG,
     DEFAULT_PROMPT_CONTEXT,
     DEFAULT_MODEL_LIST_URL,
-    downloadModel,
-    retrieveModel,
-    listModels,
-    DownloadController,
-    RetrieveModelOptions,
-    DownloadModelOptions,
-    GpuDevice,
-    EmbeddingResult
 };
