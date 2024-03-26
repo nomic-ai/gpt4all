@@ -67,7 +67,7 @@ function prepareMessagesForIngest(messages) {
     // make sure the first message is a user message
     // if its not, the turns will be out of order
     if (userAssistantMessages[0].role !== "user") {
-        initialMessages.unshift({
+        userAssistantMessages.unshift({
             role: "user",
             content: "",
         });
