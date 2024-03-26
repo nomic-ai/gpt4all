@@ -48,7 +48,7 @@ process.stdout.write("### 2nd Generator:");
 const gen2 = createCompletionGenerator(model, "If 3 + 3 is 5, what is 2 + 2?");
 
 let chunk = await gen2.next();
-while (chunk.done === false) {
+while (!chunk.done) {
     process.stdout.write(chunk.value);
     chunk = await gen2.next();
 }
