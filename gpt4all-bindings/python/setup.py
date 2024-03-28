@@ -68,7 +68,7 @@ def get_long_description():
 
 setup(
     name=package_name,
-    version="2.3.2",
+    version="2.3.3",
     description="Python bindings for GPT4All",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",

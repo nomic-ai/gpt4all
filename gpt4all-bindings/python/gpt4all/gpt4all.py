@@ -11,6 +11,7 @@ import time
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
+from types import TracebackType
 from typing import TYPE_CHECKING, Any, Iterable, Literal, Protocol, overload
 
 import requests
@@ -22,7 +23,7 @@ from . import _pyllmodel
 from ._pyllmodel import EmbedResult as EmbedResult
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing_extensions import Self, TypeAlias
 
 if sys.platform == 'darwin':
     import fcntl
@@ -53,6 +54,18 @@ class Embed4All:
         if model_name is None:
             model_name = 'all-MiniLM-L6-v2.gguf2.f16.gguf'
         self.gpt4all = GPT4All(model_name, n_threads=n_threads, **kwargs)
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(
+        self, typ: type[BaseException] | None, value: BaseException | None, tb: TracebackType | None,
+    ) -> None:
+        self.close()
+
+    def close(self) -> None:
+        """Delete the model instance and free associated system resources."""
+        self.gpt4all.close()
 
     # return_dict=False
     @overload
@@ -189,6 +202,18 @@ class GPT4All:
 
         self._history: list[MessageType] | None = None
         self._current_prompt_template: str = "{0}"
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(
+        self, typ: type[BaseException] | None, value: BaseException | None, tb: TracebackType | None,
+    ) -> None:
+        self.close()
+
+    def close(self) -> None:
+        """Delete the model instance and free associated system resources."""
+        self.model.close()
 
     @property
     def current_chat_session(self) -> list[MessageType] | None:

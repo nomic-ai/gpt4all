@@ -9,7 +9,7 @@ import sys
 import threading
 from enum import Enum
 from queue import Queue
-from typing import Any, Callable, Generic, Iterable, TypeVar, overload
+from typing import Any, Callable, Generic, Iterable, NoReturn, TypeVar, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
@@ -200,13 +200,22 @@ class LLModel:
         if model is None:
             s = err.value
             raise RuntimeError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
-        self.model = model
+        self.model: ctypes.c_void_p | None = model
 
     def __del__(self, llmodel=llmodel):
         if hasattr(self, 'model'):
+            self.close()
+
+    def close(self) -> None:
+        if self.model is not None:
             llmodel.llmodel_model_destroy(self.model)
+            self.model = None
+
+    def _raise_closed(self) -> NoReturn:
+        raise ValueError("Attempted operation on a closed LLModel")
 
     def _list_gpu(self, mem_required: int) -> list[LLModelGPUDevice]:
+        assert self.model is not None
         num_devices = ctypes.c_int32(0)
         devices_ptr = llmodel.llmodel_available_gpu_devices(self.model, mem_required, ctypes.byref(num_devices))
         if not devices_ptr:
@@ -214,6 +223,9 @@ class LLModel:
         return devices_ptr[:num_devices.value]
 
     def init_gpu(self, device: str):
+        if self.model is None:
+            self._raise_closed()
+
         mem_required = llmodel.llmodel_required_mem(self.model, self.model_path, self.n_ctx, self.ngl)
 
         if llmodel.llmodel_gpu_init_gpu_device_by_string(self.model, mem_required, device.encode()):
@@ -246,14 +258,21 @@ class LLModel:
         -------
         True if model loaded successfully, False otherwise
         """
+        if self.model is None:
+            self._raise_closed()
+
         return llmodel.llmodel_loadModel(self.model, self.model_path, self.n_ctx, self.ngl)
 
     def set_thread_count(self, n_threads):
+        if self.model is None:
+            self._raise_closed()
         if not llmodel.llmodel_isModelLoaded(self.model):
             raise Exception("Model not loaded")
         llmodel.llmodel_setThreadCount(self.model, n_threads)
 
     def thread_count(self):
+        if self.model is None:
+            self._raise_closed()
         if not llmodel.llmodel_isModelLoaded(self.model):
             raise Exception("Model not loaded")
         return llmodel.llmodel_threadCount(self.model)
@@ -322,6 +341,9 @@ class LLModel:
         if not text:
             raise ValueError("text must not be None or empty")
 
+        if self.model is None:
+            self._raise_closed()
+
         if (single_text := isinstance(text, str)):
             text = [text]
 
@@ -387,6 +409,9 @@ class LLModel:
         None
         """
 
+        if self.model is None:
+            self._raise_closed()
+
         self.buffer.clear()
         self.buff_expecting_cont_bytes = 0
 
@@ -419,6 +444,9 @@ class LLModel:
     def prompt_model_streaming(
         self, prompt: str, prompt_template: str, callback: ResponseCallbackType = empty_response_callback, **kwargs
     ) -> Iterable[str]:
+        if self.model is None:
+            self._raise_closed()
+
         output_queue: Queue[str | Sentinel] = Queue()
 
         # Put response tokens into an output queue
