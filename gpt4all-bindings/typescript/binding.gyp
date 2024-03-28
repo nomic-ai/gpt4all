@@ -6,12 +6,12 @@
         "<!@(node -p \"require('node-addon-api').include\")",
         "../../gpt4all-backend",
       ],
-      "sources": [ 
+      "sources": [
         # PREVIOUS VERSION: had to required the sources, but with newest changes do not need to
         #"../../gpt4all-backend/llama.cpp/examples/common.cpp",
         #"../../gpt4all-backend/llama.cpp/ggml.c",
         #"../../gpt4all-backend/llama.cpp/llama.cpp",
-        # "../../gpt4all-backend/utils.cpp", 
+        # "../../gpt4all-backend/utils.cpp",
         "../../gpt4all-backend/llmodel_c.cpp",
         "../../gpt4all-backend/llmodel.cpp",
         "prompt.cc",
@@ -40,7 +40,7 @@
                     "AdditionalOptions": [
                         "/std:c++20",
                         "/EHsc",
-                  ], 
+                  ],
                 },
             },
         }],

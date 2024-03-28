@@ -10,45 +10,170 @@ npm install gpt4all@latest
 pnpm install gpt4all@latest
 
 ```
-
-The original [GPT4All typescript bindings](https://github.com/nomic-ai/gpt4all-ts) are now out of date.
-
-*   New bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
-*   The nodejs api has made strides to mirror the python api. It is not 100% mirrored, but many pieces of the api resemble its python counterpart.
-*   Everything should work out the box.
+## Breaking changes in version 4!!
+*   See [Transition](#changes)
+## Contents
 *   See [API Reference](#api-reference)
-
+*   See [Examples](#api-example)
+*   See [Developing](#develop)
+*   GPT4ALL nodejs bindings created by [jacoobes](https://github.com/jacoobes), [limez](https://github.com/iimez) and the [nomic ai community](https://home.nomic.ai), for all to use.
+*   [spare change](https://github.com/sponsors/jacoobes) for a college student? 🤑
+## Api Examples
 ### Chat Completion
 
+Use a chat session to keep context between completions. This is useful for efficient back and forth conversations.
+
 ```js
-import { createCompletion, loadModel } from '../src/gpt4all.js'
+import { createCompletion, loadModel } from "../src/gpt4all.js";
 
-const model = await loadModel('mistral-7b-openorca.Q4_0.gguf', { verbose: true });
+const model = await loadModel("orca-mini-3b-gguf2-q4_0.gguf", {
+    verbose: true, // logs loaded model configuration
+    device: "gpu", // defaults to 'cpu'
+    nCtx: 2048, // the maximum sessions context window size.
+});
 
-const response = await createCompletion(model, [
-    { role : 'system', content: 'You are meant to be annoying and unhelpful.'  },
-    { role : 'user', content: 'What is 1 + 1?'  } 
+// initialize a chat session on the model. a model instance can have only one chat session at a time.
+const chat = await model.createChatSession({
+    // any completion options set here will be used as default for all completions in this chat session
+    temperature: 0.8,
+    // a custom systemPrompt can be set here. note that the template depends on the model.
+    // if unset, the systemPrompt that comes with the model will be used.
+    systemPrompt: "### System:\nYou are an advanced mathematician.\n\n",
+});
+
+// create a completion using a string as input
+const res1 = await createCompletion(chat, "What is 1 + 1?");
+console.debug(res1.choices[0].message);
+
+// multiple messages can be input to the conversation at once.
+// note that if the last message is not of role 'user', an empty message will be returned.
+await createCompletion(chat, [
+    {
+        role: "user",
+        content: "What is 2 + 2?",
+    },
+    {
+        role: "assistant",
+        content: "It's 5.",
+    },
 ]);
+
+const res3 = await createCompletion(chat, "Could you recalculate that?");
+console.debug(res3.choices[0].message);
+
+model.dispose();
+```
+
+### Stateless usage
+You can use the model without a chat session. This is useful for one-off completions.
+
+```js
+import { createCompletion, loadModel } from "../src/gpt4all.js";
+
+const model = await loadModel("orca-mini-3b-gguf2-q4_0.gguf");
+
+// createCompletion methods can also be used on the model directly.
+// context is not maintained between completions.
+const res1 = await createCompletion(model, "What is 1 + 1?");
+console.debug(res1.choices[0].message);
+
+// a whole conversation can be input as well.
+// note that if the last message is not of role 'user', an error will be thrown.
+const res2 = await createCompletion(model, [
+    {
+        role: "user",
+        content: "What is 2 + 2?",
+    },
+    {
+        role: "assistant",
+        content: "It's 5.",
+    },
+    {
+        role: "user",
+        content: "Could you recalculate that?",
+    },
+]);
+console.debug(res2.choices[0].message);
 
 ```
 
 ### Embedding
 
 ```js
-import { createEmbedding, loadModel } from '../src/gpt4all.js'
+import { loadModel, createEmbedding } from '../src/gpt4all.js'
 
-const model = await loadModel('ggml-all-MiniLM-L6-v2-f16', { verbose: true });
+const embedder = await loadModel("nomic-embed-text-v1.5.f16.gguf", { verbose: true, type: 'embedding'})
 
-const fltArray = createEmbedding(model, "Pain is inevitable, suffering optional");
+console.log(createEmbedding(embedder, "Maybe Minecraft was the friends we made along the way"));
 ```
 
+### Streaming responses
+```js
+import { loadModel, createCompletionStream } from "../src/gpt4all.js";
+
+const model = await loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf", {
+    device: "gpu",
+});
+
+process.stdout.write("Output: ");
+const stream = createCompletionStream(model, "How are you?");
+stream.tokens.on("data", (data) => {
+    process.stdout.write(data);
+});
+//wait till stream finishes. We cannot continue until this one is done.
+await stream.result;
+process.stdout.write("\n");
+model.dispose();
+
+```
+
+### Async Generators
+```js
+import { loadModel, createCompletionGenerator } from "../src/gpt4all.js";
+
+const model = await loadModel("mistral-7b-openorca.gguf2.Q4_0.gguf");
+
+process.stdout.write("Output: ");
+const gen = createCompletionGenerator(
+    model,
+    "Redstone in Minecraft is Turing Complete. Let that sink in. (let it in!)"
+);
+for await (const chunk of gen) {
+    process.stdout.write(chunk);
+}
+
+process.stdout.write("\n");
+model.dispose();
+
+```
+### Offline usage
+do this b4 going offline
+```sh
+curl -L https://gpt4all.io/models/models3.json -o ./models3.json
+```
+```js
+import { createCompletion, loadModel } from 'gpt4all'
+
+//make sure u downloaded the models before going offline!
+const model = await loadModel('mistral-7b-openorca.gguf2.Q4_0.gguf', {
+    verbose: true,
+    device: 'gpu',
+    modelConfigFile: "./models3.json"
+});
+
+await createCompletion(model, 'What is 1 + 1?', { verbose: true })
+
+model.dispose();
+```
+
+## Develop
 ### Build Instructions
 
-*   binding.gyp is compile config
+*   `binding.gyp` is compile config
 *   Tested on Ubuntu. Everything seems to work fine
 *   Tested on Windows. Everything works fine.
 *   Sparse testing on mac os.
-*   MingW works as well to build the gpt4all-backend. **HOWEVER**, this package works only with MSVC built dlls.
+*   MingW script works to build the gpt4all-backend. We left it there just in case. **HOWEVER**, this package works only with MSVC built dlls.
 
 ### Requirements
 
@@ -76,23 +201,18 @@ cd gpt4all-bindings/typescript
 *   To Build and Rebuild:
 
 ```sh
-yarn
+node scripts/prebuild.js
 ```
 *   llama.cpp git submodule for gpt4all can be possibly absent. If this is the case, make sure to run in llama.cpp parent directory
 
 ```sh
-git submodule update --init --depth 1 --recursive
+git submodule update --init --recursive
 ```
 
 ```sh
 yarn build:backend
 ```
-
-This will build platform-dependent dynamic libraries, and will be located in runtimes/(platform)/native The only current way to use them is to put them in the current working directory of your application. That is, **WHEREVER YOU RUN YOUR NODE APPLICATION**
-
-*   llama-xxxx.dll is required.
-*   According to whatever model you are using, you'll need to select the proper model loader.
-    *   For example, if you running an Mosaic MPT model, you will need to select the mpt-(buildvariant).(dynamiclibrary)
+This will build platform-dependent dynamic libraries, and will be located in runtimes/(platform)/native
 
 ### Test
 
@@ -130,17 +250,20 @@ yarn test
 
 *   why your model may be spewing bull 💩
     *   The downloaded model is broken (just reinstall or download from official site)
-    *   That's it so far
+*   Your model is hanging after a call to generate tokens.
+    * Is `nPast` set too high? This may cause your model to hang (03/16/2024), Linux Mint, Ubuntu 22.04
+*  Your GPU usage is still high after node.js exits.
+    * Make sure to call `model.dispose()`!!!
 
 ### Roadmap
 
-This package is in active development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
+This package has been stabilizing over time development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
 
 *   \[ ] Purely offline. Per the gui, which can be run completely offline, the bindings should be as well.
 *   \[ ] NPM bundle size reduction via optionalDependencies strategy (need help)
     *   Should include prebuilds to avoid painful node-gyp errors
-*   \[ ] createChatSession ( the python equivalent to create\_chat\_session )
-*   \[x] generateTokens, the new name for createTokenStream. As of 3.2.0, this is released but not 100% tested. Check spec/generator.mjs! 
+*   \[x] createChatSession ( the python equivalent to create\_chat\_session )
+*   \[x] generateTokens, the new name for createTokenStream. As of 3.2.0, this is released but not 100% tested. Check spec/generator.mjs!
 *   \[x] ~~createTokenStream, an async iterator that streams each token emitted from the model. Planning on following this [example](https://github.com/nodejs/node-addon-examples/tree/main/threadsafe-async-iterator)~~ May not implement unless someone else can complete
 *   \[x] prompt models via a threadsafe function in order to have proper non blocking behavior in nodejs
 *   \[x] generateTokens is the new name for this^
@@ -148,6 +271,14 @@ This package is in active development, and breaking changes may happen until the
 *   \[x] publish to npm under alpha tag `gpt4all@alpha`
 *   \[x] have more people test on other platforms (mac tester needed)
 *   \[x] switch to new pluggable backend
+
+## Changes
+This repository serves as the new bindings for nodejs users.
+- If you were a user of [these bindings](https://github.com/nomic-ai/gpt4all-ts), they are outdated.
+- Version 4 includes the follow breaking changes
+    * `createEmbedding` & `EmbeddingModel.embed()` returns an object, `EmbeddingResult`, instead of a float32array.
+    * Removed deprecated types `ModelType` and `ModelFile`
+    * Removed deprecated initiation of model by string path only
 
 
 ### API Reference

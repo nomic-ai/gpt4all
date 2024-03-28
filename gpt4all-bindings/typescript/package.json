@@ -1,6 +1,6 @@
 {
   "name": "gpt4all",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "packageManager": "yarn@3.6.1",
   "main": "src/gpt4all.js",
   "repository": "nomic-ai/gpt4all",
@@ -22,7 +22,6 @@
   ],
   "dependencies": {
     "md5-file": "^5.0.0",
-    "mkdirp": "^3.0.1",
     "node-addon-api": "^6.1.0",
     "node-gyp-build": "^4.6.0"
   },

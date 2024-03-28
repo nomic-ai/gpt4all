@@ -7,7 +7,6 @@ const {
     listModels,
     downloadModel,
     appendBinSuffixIfMissing,
-    normalizePromptContext,
 } = require("../src/util.js");
 const {
     DEFAULT_DIRECTORY,
@@ -19,8 +18,6 @@ const {
     createPrompt,
     createCompletion,
 } = require("../src/gpt4all.js");
-const { mock } = require("node:test");
-const { mkdirp } = require("mkdirp");
 
 describe("config", () => {
     test("default paths constants are available and correct", () => {
@@ -87,7 +84,7 @@ describe("listModels", () => {
         expect(fetch).toHaveBeenCalledTimes(0);
         expect(models[0]).toEqual(fakeModel);
     });
-    
+
     it("should throw an error if neither url nor file is specified", async () => {
         await expect(listModels(null)).rejects.toThrow(
             "No model list source specified. Please specify either a url or a file."
@@ -141,10 +138,10 @@ describe("downloadModel", () => {
         mockAbortController.mockReset();
         mockFetch.mockClear();
         global.fetch.mockRestore();
-        
+
         const rootDefaultPath = path.resolve(DEFAULT_DIRECTORY),
               partialPath = path.resolve(rootDefaultPath, fakeModelName+'.part'),
-              fullPath = path.resolve(rootDefaultPath, fakeModelName+'.bin')  
+              fullPath = path.resolve(rootDefaultPath, fakeModelName+'.bin')
 
         //if tests fail, remove the created files
         // acts as cleanup if tests fail
@@ -205,47 +202,4 @@ describe("downloadModel", () => {
     // TODO
     // test("should be able to cancel and resume a download", async () => {
     // });
-});
-
-describe("normalizePromptContext", () => {
-    it("should convert a dict with camelCased keys to snake_case", () => {
-        const camelCased = {
-            topK: 20,
-            repeatLastN: 10,
-        };
-
-        const expectedSnakeCased = {
-            top_k: 20,
-            repeat_last_n: 10,
-        };
-
-        const result = normalizePromptContext(camelCased);
-        expect(result).toEqual(expectedSnakeCased);
-    });
-
-    it("should convert a mixed case dict to snake_case, last value taking precedence", () => {
-        const mixedCased = {
-            topK: 20,
-            top_k: 10,
-            repeatLastN: 10,
-        };
-
-        const expectedSnakeCased = {
-            top_k: 10,
-            repeat_last_n: 10,
-        };
-
-        const result = normalizePromptContext(mixedCased);
-        expect(result).toEqual(expectedSnakeCased);
-    });
-
-    it("should not modify already snake cased dict", () => {
-        const snakeCased = {
-            top_k: 10,
-            repeast_last_n: 10,
-        };
-
-        const result = normalizePromptContext(snakeCased);
-        expect(result).toEqual(snakeCased);
-    });
 });
