@@ -13,6 +13,8 @@
 #include <sys/sysctl.h>
 #elif defined(_WIN32)
 #include <windows.h>
+#elif defined(__FreeBSD__)
+#include <sys/sysctl.h>
 #endif
 
 static long long getSystemTotalRAMInBytes()
@@ -41,6 +43,10 @@ static long long getSystemTotalRAMInBytes()
     memoryStatus.dwLength = sizeof(memoryStatus);
     GlobalMemoryStatusEx(&memoryStatus);
     totalRAM = memoryStatus.ullTotalPhys;
+#elif defined(__FreeBSD__)
+    int mib[2] = {CTL_HW, HW_PHYSMEM};
+    size_t length = sizeof(totalRAM);
+    sysctl(mib, 2, &totalRAM, &length, NULL, 0);
 #endif
 
     return totalRAM;
