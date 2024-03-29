@@ -68,6 +68,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
   set(METAL_SHADER_FILE ../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal)
 endif()
 
+set(APP_ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/icons/favicon.icns")
+set_source_files_properties(${APP_ICON_FILE} PROPERTIES
+    MACOSX_PACKAGE_LOCATION "Resources")
+
 qt_add_executable(chat
     main.cpp
     chat.h chat.cpp
@@ -87,6 +91,7 @@ qt_add_executable(chat
     logger.h logger.cpp
     responsetext.h responsetext.cpp
     ${METAL_SHADER_FILE}
+    ${APP_ICON_FILE}
 )
 
 qt_add_qml_module(chat
