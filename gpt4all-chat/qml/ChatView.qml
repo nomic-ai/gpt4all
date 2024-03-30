@@ -841,6 +841,32 @@ Rectangle {
                             }
                         }
 
+                        Text {
+                            Layout.alignment: Qt.AlignHCenter
+                            textFormat: Text.StyledText
+                            text: qsTr(
+                            "<p></p><a href=\"https://docs.gpt4all.io/index.html\">Documentation
+                            ")
+                            onLinkActivated: { Qt.openUrlExternally("https://docs.gpt4all.io/index.html") }
+                            color: theme.textColor
+                            linkColor: theme.linkColor
+                            font.pixelSize: theme.fontSizeLarge
+                            wrapMode: Text.WordWrap
+                        }
+
+                        Text {
+                            Layout.alignment: Qt.AlignHCenter
+                            textFormat: Text.StyledText
+                            text: qsTr(
+                            "<a href=\"https://docs.gpt4all.io/gpt4all_faq.html\">Frequently Asked Questions
+                            ")
+                            onLinkActivated: { Qt.openUrlExternally("https://docs.gpt4all.io/gpt4all_faq.html") }
+                            color: theme.textColor
+                            linkColor: theme.linkColor
+                            font.pixelSize: theme.fontSizeLarge
+                            wrapMode: Text.WordWrap
+                        }
+
                         MyButton {
                             id: downloadButton
                             visible: LLM.isNetworkOnline
