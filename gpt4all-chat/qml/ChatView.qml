@@ -845,9 +845,9 @@ Rectangle {
                             Layout.alignment: Qt.AlignHCenter
                             textFormat: Text.StyledText
                             text: qsTr(
-                            "<p></p><a href=\"https://docs.gpt4all.io/index.html\">Documentation
+                            "<p></p><a href=\"https://docs.gpt4all.io/gpt4all_chat.html\">Documentation
                             ")
-                            onLinkActivated: { Qt.openUrlExternally("https://docs.gpt4all.io/index.html") }
+                            onLinkActivated: { Qt.openUrlExternally("https://docs.gpt4all.io/gpt4all_chat.html") }
                             color: theme.textColor
                             linkColor: theme.linkColor
                             font.pixelSize: theme.fontSizeLarge
