@@ -103,11 +103,11 @@ qt_add_qml_module(chat
       qml/ChatDrawer.qml
       qml/ChatView.qml
       qml/CollectionsDialog.qml
-      qml/ModelDownloaderDialog.qml
+      qml/ModelDownloaderView.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
       qml/ThumbsDownDialog.qml
-      qml/SettingsDialog.qml
+      qml/SettingsView.qml
       qml/StartupDialog.qml
       qml/PopupDialog.qml
       qml/AboutDialog.qml

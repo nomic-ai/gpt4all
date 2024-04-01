@@ -230,18 +230,18 @@ Window {
             }
         }
 
-        ModelDownloaderDialog {
+        ModelDownloaderView {
             id: downloadView
             Layout.fillWidth: true
             Layout.fillHeight: true
             Item {
                 Accessible.role: Accessible.Dialog
                 Accessible.name: qsTr("Download new models")
-                Accessible.description: qsTr("Dialog for downloading new models")
+                Accessible.description: qsTr("View for downloading new models")
             }
         }
 
-        SettingsDialog {
+        SettingsView {
             id: settingsDialog
             Layout.fillWidth: true
             Layout.fillHeight: true
