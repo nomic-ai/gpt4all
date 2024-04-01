@@ -390,33 +390,33 @@ QtObject {
     property color iconBackgroundViewBar: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue200;
+                return iconBackgroundLight;
             case "Dark":
-                return green400;
+                return iconBackgroundLight;
             default:
-                return green700;
+                return green600;
         }
     }
 
     property color iconBackgroundViewBarToggled: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple400;
+                return iconBackgroundHovered;
             case "Dark":
-                return accentColor;
+                return green400;
             default:
-                return black;
+                return green950;
         }
     }
 
     property color iconBackgroundViewBarHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue400;
+                return iconBackgroundHovered;
             case "Dark":
-                return green600;
+                return iconBackgroundHovered;
             default:
-                return green500;
+                return green950;
         }
     }
 

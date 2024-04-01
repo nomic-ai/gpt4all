@@ -27,11 +27,12 @@ Button {
         anchors.fill: parent
         Rectangle {
             anchors.fill: parent
-            color: "transparent"
+            color: myButton.toggledColor
             visible: myButton.toggled
             border.color: myButton.toggledColor
             border.width: myButton.toggledWidth
-            radius: 10
+            radius: 6
+            opacity: .2
         }
         Image {
             id: image
