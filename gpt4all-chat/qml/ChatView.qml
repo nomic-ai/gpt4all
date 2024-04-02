@@ -520,7 +520,7 @@ Rectangle {
                         topPadding: 8
                         bottomPadding: 8
                         textColor: hovered || toggled ? theme.iconBackgroundHovered : theme.iconBackgroundLight
-                        text: qsTr("local docs")
+                        text: qsTr("LocalDocs")
                         fontPixelSize: theme.fontSizeSmall
 
                         property bool toggled: currentChat.collectionList.length
