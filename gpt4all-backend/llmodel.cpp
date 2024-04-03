@@ -213,9 +213,9 @@ LLModel *LLModel::Implementation::constructDefaultLlama() {
     return llama.get();
 }
 
-std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices() {
+std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices(size_t memoryRequired) {
     auto *llama = constructDefaultLlama();
-    if (llama) { return llama->availableGPUDevices(0); }
+    if (llama) { return llama->availableGPUDevices(memoryRequired); }
     return {};
 }
 

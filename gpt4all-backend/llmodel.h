@@ -38,7 +38,7 @@ public:
         std::string_view buildVariant() const { return m_buildVariant; }
 
         static LLModel *construct(const std::string &modelPath, std::string buildVariant = "auto", int n_ctx = 2048);
-        static std::vector<GPUDevice> availableGPUDevices();
+        static std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired = 0);
         static int32_t maxContextLength(const std::string &modelPath);
         static int32_t layerCount(const std::string &modelPath);
         static bool isEmbeddingModel(const std::string &modelPath);

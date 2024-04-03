@@ -240,12 +240,11 @@ struct llmodel_gpu_device_cpp: llmodel_gpu_device {
 
 static_assert(sizeof(llmodel_gpu_device_cpp) == sizeof(llmodel_gpu_device));
 
-struct llmodel_gpu_device* llmodel_available_gpu_devices(llmodel_model model, size_t memoryRequired, int* num_devices)
+struct llmodel_gpu_device *llmodel_available_gpu_devices(size_t memoryRequired, int *num_devices)
 {
     static thread_local std::unique_ptr<llmodel_gpu_device_cpp[]> c_devices;
 
-    auto *wrapper = static_cast<LLModelWrapper *>(model);
-    auto devices = wrapper->llModel->availableGPUDevices(memoryRequired);
+    auto devices = LLModel::Implementation::availableGPUDevices(memoryRequired);
     *num_devices = devices.size();
 
     if (devices.empty()) { return nullptr; /* no devices */ }

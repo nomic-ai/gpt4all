@@ -138,7 +138,7 @@ llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
 llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).encode())
 
-llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
+llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
 llmodel.llmodel_available_gpu_devices.restype = ctypes.POINTER(LLModelGPUDevice)
 
 llmodel.llmodel_gpu_init_gpu_device_by_string.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.c_char_p]
@@ -214,10 +214,10 @@ class LLModel:
     def _raise_closed(self) -> NoReturn:
         raise ValueError("Attempted operation on a closed LLModel")
 
-    def _list_gpu(self, mem_required: int) -> list[LLModelGPUDevice]:
-        assert self.model is not None
+    @staticmethod
+    def _list_gpu(mem_required: int) -> list[LLModelGPUDevice]:
         num_devices = ctypes.c_int32(0)
-        devices_ptr = llmodel.llmodel_available_gpu_devices(self.model, mem_required, ctypes.byref(num_devices))
+        devices_ptr = llmodel.llmodel_available_gpu_devices(mem_required, ctypes.byref(num_devices))
         if not devices_ptr:
             raise ValueError("Unable to retrieve available GPU devices")
         return devices_ptr[:num_devices.value]
