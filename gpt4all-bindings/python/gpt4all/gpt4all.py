@@ -19,8 +19,7 @@ from requests.exceptions import ChunkedEncodingError
 from tqdm import tqdm
 from urllib3.exceptions import IncompleteRead, ProtocolError
 
-from . import _pyllmodel
-from ._pyllmodel import EmbedResult as EmbedResult
+from ._pyllmodel import EmbedResult as EmbedResult, LLModel, ResponseCallbackType, empty_response_callback
 
 if TYPE_CHECKING:
     from typing_extensions import Self, TypeAlias
@@ -192,7 +191,7 @@ class GPT4All:
         self.model_type = model_type
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
-        self.model = _pyllmodel.LLModel(self.config["path"], n_ctx, ngl)
+        self.model = LLModel(self.config["path"], n_ctx, ngl)
         if device is not None and device != "cpu":
             self.model.init_gpu(device)
         self.model.load_model()
@@ -419,19 +418,19 @@ class GPT4All:
     def generate(
         self, prompt: str, *, max_tokens: int = ..., temp: float = ..., top_k: int = ..., top_p: float = ...,
         min_p: float = ..., repeat_penalty: float = ..., repeat_last_n: int = ..., n_batch: int = ...,
-        n_predict: int | None = ..., streaming: Literal[False] = ..., callback: _pyllmodel.ResponseCallbackType = ...,
+        n_predict: int | None = ..., streaming: Literal[False] = ..., callback: ResponseCallbackType = ...,
     ) -> str: ...
     @overload
     def generate(
         self, prompt: str, *, max_tokens: int = ..., temp: float = ..., top_k: int = ..., top_p: float = ...,
         min_p: float = ..., repeat_penalty: float = ..., repeat_last_n: int = ..., n_batch: int = ...,
-        n_predict: int | None = ..., streaming: Literal[True], callback: _pyllmodel.ResponseCallbackType = ...,
+        n_predict: int | None = ..., streaming: Literal[True], callback: ResponseCallbackType = ...,
     ) -> Iterable[str]: ...
     @overload
     def generate(
         self, prompt: str, *, max_tokens: int = ..., temp: float = ..., top_k: int = ..., top_p: float = ...,
         min_p: float = ..., repeat_penalty: float = ..., repeat_last_n: int = ..., n_batch: int = ...,
-        n_predict: int | None = ..., streaming: bool, callback: _pyllmodel.ResponseCallbackType = ...,
+        n_predict: int | None = ..., streaming: bool, callback: ResponseCallbackType = ...,
     ) -> Any: ...
 
     def generate(
@@ -448,7 +447,7 @@ class GPT4All:
         n_batch: int = 8,
         n_predict: int | None = None,
         streaming: bool = False,
-        callback: _pyllmodel.ResponseCallbackType = _pyllmodel.empty_response_callback,
+        callback: ResponseCallbackType = empty_response_callback,
     ) -> Any:
         """
         Generate outputs from any GPT4All model.
@@ -494,7 +493,7 @@ class GPT4All:
                 if reset:
                     # ingest system prompt
                     self.model.prompt_model(self._history[0]["content"], "%1",
-                                            _pyllmodel.empty_response_callback,
+                                            empty_response_callback,
                                             n_batch=n_batch, n_predict=0, special=True)
                 prompt_template = self._current_prompt_template.format("%1", "%2")
             else:
@@ -523,9 +522,9 @@ class GPT4All:
             output_collector = self._history
 
         def _callback_wrapper(
-            callback: _pyllmodel.ResponseCallbackType,
+            callback: ResponseCallbackType,
             output_collector: list[MessageType],
-        ) -> _pyllmodel.ResponseCallbackType:
+        ) -> ResponseCallbackType:
             def _callback(token_id: int, response: str) -> bool:
                 nonlocal callback, output_collector
 
