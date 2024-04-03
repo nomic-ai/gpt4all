@@ -43,7 +43,7 @@ class Embed4All:
 
     MIN_DIMENSIONALITY = 64
 
-    def __init__(self, model_name: str | None = None, n_threads: int | None = None, **kwargs):
+    def __init__(self, model_name: str | None = None, *, n_threads: int | None = None, **kwargs):
         """
         Constructor
 
@@ -156,6 +156,7 @@ class GPT4All:
     def __init__(
         self,
         model_name: str,
+        *,
         model_path: str | os.PathLike[str] | None = None,
         model_type: str | None = None,
         allow_download: bool = True,
