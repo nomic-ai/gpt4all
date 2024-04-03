@@ -48,9 +48,9 @@ struct llmodel_prompt_context {
 };
 
 struct llmodel_gpu_device {
-    int index = 0;
-    int type = 0;           // same as VkPhysicalDeviceType
-    size_t heapSize = 0;
+    int index;
+    int type; // same as VkPhysicalDeviceType
+    size_t heapSize;
     const char * name;
     const char * vendor;
 };
