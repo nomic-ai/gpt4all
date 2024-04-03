@@ -598,6 +598,9 @@ class GPT4All:
         """
         Helper method for building a prompt from list of messages using the self._current_prompt_template as a template for each message.
 
+        Warning:
+            This function was deprecated in version 2.3.0, and will be removed in a future release.
+
         Args:
             messages:  List of dictionaries. Each dictionary should have a "role" key
                 with value of "system", "assistant", or "user" and a "content" key with a
