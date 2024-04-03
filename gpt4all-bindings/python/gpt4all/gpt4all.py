@@ -588,6 +588,16 @@ class GPT4All:
             self._history = None
             self._current_prompt_template = "{0}"
 
+    @staticmethod
+    def list_gpus() -> list[str]:
+        """
+        List the names of the available GPU devices.
+
+        Returns:
+            A list of strings representing the names of the available GPU devices.
+        """
+        return LLModel.list_gpus()
+
     def _format_chat_prompt_template(
         self,
         messages: list[MessageType],

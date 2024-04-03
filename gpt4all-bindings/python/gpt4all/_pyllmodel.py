@@ -215,12 +215,21 @@ class LLModel:
         raise ValueError("Attempted operation on a closed LLModel")
 
     @staticmethod
-    def _list_gpu(mem_required: int) -> list[LLModelGPUDevice]:
+    def list_gpus(mem_required: int = 0) -> list[str]:
+        """
+        List the names of the available GPU devices with at least `mem_required` bytes of VRAM.
+
+        Args:
+            mem_required: The minimum amount of VRAM, in bytes
+
+        Returns:
+            A list of strings representing the names of the available GPU devices.
+        """
         num_devices = ctypes.c_int32(0)
         devices_ptr = llmodel.llmodel_available_gpu_devices(mem_required, ctypes.byref(num_devices))
         if not devices_ptr:
             raise ValueError("Unable to retrieve available GPU devices")
-        return devices_ptr[:num_devices.value]
+        return [d.name.decode() for d in devices_ptr[:num_devices.value]]
 
     def init_gpu(self, device: str):
         if self.model is None:
@@ -232,14 +241,10 @@ class LLModel:
             return
 
         # Retrieve all GPUs without considering memory requirements.
-        num_devices = ctypes.c_int32(0)
-        all_devices_ptr = llmodel.llmodel_available_gpu_devices(self.model, 0, ctypes.byref(num_devices))
-        if not all_devices_ptr:
-            raise ValueError("Unable to retrieve list of all GPU devices")
-        all_gpus = [d.name.decode() for d in all_devices_ptr[:num_devices.value]]
+        all_gpus = self.list_gpus()
 
         # Retrieve GPUs that meet the memory requirements using list_gpu
-        available_gpus = [device.name.decode() for device in self._list_gpu(mem_required)]
+        available_gpus = self.list_gpus(mem_required)
 
         # Identify GPUs that are unavailable due to insufficient memory or features
         unavailable_gpus = set(all_gpus).difference(available_gpus)
