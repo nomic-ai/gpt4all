@@ -43,16 +43,18 @@ class Embed4All:
 
     MIN_DIMENSIONALITY = 64
 
-    def __init__(self, model_name: str | None = None, *, n_threads: int | None = None, **kwargs):
+    def __init__(self, model_name: str | None = None, *, n_threads: int | None = None, device: str | None = "cpu", **kwargs: Any):
         """
         Constructor
 
         Args:
             n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
+            device: The processing unit on which the embedding model will run. See the `GPT4All` constructor for more info.
+            kwargs: Remaining keyword arguments are passed to the `GPT4All` constructor.
         """
         if model_name is None:
             model_name = 'all-MiniLM-L6-v2.gguf2.f16.gguf'
-        self.gpt4all = GPT4All(model_name, n_threads=n_threads, **kwargs)
+        self.gpt4all = GPT4All(model_name, n_threads=n_threads, device=device, **kwargs)
 
     def __enter__(self) -> Self:
         return self
