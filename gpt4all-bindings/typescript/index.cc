@@ -36,7 +36,7 @@ Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo &info)
     auto env = info.Env();
     int num_devices = 0;
     auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str(), nCtx, nGpuLayers);
-    llmodel_gpu_device *all_devices = llmodel_available_gpu_devices(GetInference(), mem_size, &num_devices);
+    llmodel_gpu_device *all_devices = llmodel_available_gpu_devices(mem_size, &num_devices);
     if (all_devices == nullptr)
     {
         Napi::Error::New(env, "Unable to retrieve list of all GPU devices").ThrowAsJavaScriptException();

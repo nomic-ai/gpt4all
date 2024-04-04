@@ -4,6 +4,7 @@
 #include <cerrno>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <utility>
 
@@ -221,28 +222,45 @@ const char *llmodel_get_implementation_search_path()
     return LLModel::Implementation::implementationsSearchPath().c_str();
 }
 
-struct llmodel_gpu_device* llmodel_available_gpu_devices(llmodel_model model, size_t memoryRequired, int* num_devices)
-{
-    auto *wrapper = static_cast<LLModelWrapper *>(model);
-    std::vector<LLModel::GPUDevice> devices = wrapper->llModel->availableGPUDevices(memoryRequired);
+// RAII wrapper around a C-style struct
+struct llmodel_gpu_device_cpp: llmodel_gpu_device {
+    llmodel_gpu_device_cpp() = default;
 
-    // Set the num_devices
+    llmodel_gpu_device_cpp(const llmodel_gpu_device_cpp  &) = delete;
+    llmodel_gpu_device_cpp(      llmodel_gpu_device_cpp &&) = delete;
+
+    const llmodel_gpu_device_cpp &operator=(const llmodel_gpu_device_cpp  &) = delete;
+          llmodel_gpu_device_cpp &operator=(      llmodel_gpu_device_cpp &&) = delete;
+
+    ~llmodel_gpu_device_cpp() {
+        free(const_cast<char *>(name));
+        free(const_cast<char *>(vendor));
+    }
+};
+
+static_assert(sizeof(llmodel_gpu_device_cpp) == sizeof(llmodel_gpu_device));
+
+struct llmodel_gpu_device *llmodel_available_gpu_devices(size_t memoryRequired, int *num_devices)
+{
+    static thread_local std::unique_ptr<llmodel_gpu_device_cpp[]> c_devices;
+
+    auto devices = LLModel::Implementation::availableGPUDevices(memoryRequired);
     *num_devices = devices.size();
 
-    if (*num_devices == 0) return nullptr;  // Return nullptr if no devices are found
+    if (devices.empty()) { return nullptr; /* no devices */ }
 
-    // Allocate memory for the output array
-    struct llmodel_gpu_device* output = (struct llmodel_gpu_device*) malloc(*num_devices * sizeof(struct llmodel_gpu_device));
-
-    for (int i = 0; i < *num_devices; i++) {
-        output[i].index = devices[i].index;
-        output[i].type = devices[i].type;
-        output[i].heapSize = devices[i].heapSize;
-        output[i].name = strdup(devices[i].name.c_str());  // Convert std::string to char* and allocate memory
-        output[i].vendor = strdup(devices[i].vendor.c_str());  // Convert std::string to char* and allocate memory
+    c_devices = std::make_unique<llmodel_gpu_device_cpp[]>(devices.size());
+    for (unsigned i = 0; i < devices.size(); i++) {
+        const auto &dev  =   devices[i];
+              auto &cdev = c_devices[i];
+        cdev.index    = dev.index;
+        cdev.type     = dev.type;
+        cdev.heapSize = dev.heapSize;
+        cdev.name     = strdup(dev.name.c_str());
+        cdev.vendor   = strdup(dev.vendor.c_str());
     }
 
-    return output;
+    return c_devices.get();
 }
 
 bool llmodel_gpu_init_gpu_device_by_string(llmodel_model model, size_t memoryRequired, const char *device)

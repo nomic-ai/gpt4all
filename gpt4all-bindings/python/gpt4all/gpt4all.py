@@ -19,8 +19,7 @@ from requests.exceptions import ChunkedEncodingError
 from tqdm import tqdm
 from urllib3.exceptions import IncompleteRead, ProtocolError
 
-from . import _pyllmodel
-from ._pyllmodel import EmbedResult as EmbedResult
+from ._pyllmodel import EmbedResult as EmbedResult, LLModel, ResponseCallbackType, empty_response_callback
 
 if TYPE_CHECKING:
     from typing_extensions import Self, TypeAlias
@@ -44,16 +43,18 @@ class Embed4All:
 
     MIN_DIMENSIONALITY = 64
 
-    def __init__(self, model_name: str | None = None, n_threads: int | None = None, **kwargs):
+    def __init__(self, model_name: str | None = None, *, n_threads: int | None = None, device: str | None = "cpu", **kwargs: Any):
         """
         Constructor
 
         Args:
             n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
+            device: The processing unit on which the embedding model will run. See the `GPT4All` constructor for more info.
+            kwargs: Remaining keyword arguments are passed to the `GPT4All` constructor.
         """
         if model_name is None:
             model_name = 'all-MiniLM-L6-v2.gguf2.f16.gguf'
-        self.gpt4all = GPT4All(model_name, n_threads=n_threads, **kwargs)
+        self.gpt4all = GPT4All(model_name, n_threads=n_threads, device=device, **kwargs)
 
     def __enter__(self) -> Self:
         return self
@@ -157,6 +158,7 @@ class GPT4All:
     def __init__(
         self,
         model_name: str,
+        *,
         model_path: str | os.PathLike[str] | None = None,
         model_type: str | None = None,
         allow_download: bool = True,
@@ -181,7 +183,7 @@ class GPT4All:
                 - "cpu": Model will run on the central processing unit.
                 - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
                 - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
-                Alternatively, a specific GPU name can also be provided, and the model will run on the GPU that matches the name if it's available.
+                - A specific device name from the list returned by `GPT4All.list_gpus()`.
                 Default is "cpu".
 
                 Note: If a selected GPU device does not have sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the model.
@@ -192,7 +194,7 @@ class GPT4All:
         self.model_type = model_type
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
-        self.model = _pyllmodel.LLModel(self.config["path"], n_ctx, ngl)
+        self.model = LLModel(self.config["path"], n_ctx, ngl)
         if device is not None and device != "cpu":
             self.model.init_gpu(device)
         self.model.load_model()
@@ -419,19 +421,19 @@ class GPT4All:
     def generate(
         self, prompt: str, *, max_tokens: int = ..., temp: float = ..., top_k: int = ..., top_p: float = ...,
         min_p: float = ..., repeat_penalty: float = ..., repeat_last_n: int = ..., n_batch: int = ...,
-        n_predict: int | None = ..., streaming: Literal[False] = ..., callback: _pyllmodel.ResponseCallbackType = ...,
+        n_predict: int | None = ..., streaming: Literal[False] = ..., callback: ResponseCallbackType = ...,
     ) -> str: ...
     @overload
     def generate(
         self, prompt: str, *, max_tokens: int = ..., temp: float = ..., top_k: int = ..., top_p: float = ...,
         min_p: float = ..., repeat_penalty: float = ..., repeat_last_n: int = ..., n_batch: int = ...,
-        n_predict: int | None = ..., streaming: Literal[True], callback: _pyllmodel.ResponseCallbackType = ...,
+        n_predict: int | None = ..., streaming: Literal[True], callback: ResponseCallbackType = ...,
     ) -> Iterable[str]: ...
     @overload
     def generate(
         self, prompt: str, *, max_tokens: int = ..., temp: float = ..., top_k: int = ..., top_p: float = ...,
         min_p: float = ..., repeat_penalty: float = ..., repeat_last_n: int = ..., n_batch: int = ...,
-        n_predict: int | None = ..., streaming: bool, callback: _pyllmodel.ResponseCallbackType = ...,
+        n_predict: int | None = ..., streaming: bool, callback: ResponseCallbackType = ...,
     ) -> Any: ...
 
     def generate(
@@ -448,7 +450,7 @@ class GPT4All:
         n_batch: int = 8,
         n_predict: int | None = None,
         streaming: bool = False,
-        callback: _pyllmodel.ResponseCallbackType = _pyllmodel.empty_response_callback,
+        callback: ResponseCallbackType = empty_response_callback,
     ) -> Any:
         """
         Generate outputs from any GPT4All model.
@@ -494,7 +496,7 @@ class GPT4All:
                 if reset:
                     # ingest system prompt
                     self.model.prompt_model(self._history[0]["content"], "%1",
-                                            _pyllmodel.empty_response_callback,
+                                            empty_response_callback,
                                             n_batch=n_batch, n_predict=0, special=True)
                 prompt_template = self._current_prompt_template.format("%1", "%2")
             else:
@@ -523,9 +525,9 @@ class GPT4All:
             output_collector = self._history
 
         def _callback_wrapper(
-            callback: _pyllmodel.ResponseCallbackType,
+            callback: ResponseCallbackType,
             output_collector: list[MessageType],
-        ) -> _pyllmodel.ResponseCallbackType:
+        ) -> ResponseCallbackType:
             def _callback(token_id: int, response: str) -> bool:
                 nonlocal callback, output_collector
 
@@ -589,6 +591,16 @@ class GPT4All:
             self._history = None
             self._current_prompt_template = "{0}"
 
+    @staticmethod
+    def list_gpus() -> list[str]:
+        """
+        List the names of the available GPU devices.
+
+        Returns:
+            A list of strings representing the names of the available GPU devices.
+        """
+        return LLModel.list_gpus()
+
     def _format_chat_prompt_template(
         self,
         messages: list[MessageType],
@@ -597,6 +609,9 @@ class GPT4All:
     ) -> str:
         """
         Helper method for building a prompt from list of messages using the self._current_prompt_template as a template for each message.
+
+        Warning:
+            This function was deprecated in version 2.3.0, and will be removed in a future release.
 
         Args:
             messages:  List of dictionaries. Each dictionary should have a "role" key

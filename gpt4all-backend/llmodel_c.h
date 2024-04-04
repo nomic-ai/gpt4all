@@ -48,9 +48,9 @@ struct llmodel_prompt_context {
 };
 
 struct llmodel_gpu_device {
-    int index = 0;
-    int type = 0;           // same as VkPhysicalDeviceType
-    size_t heapSize = 0;
+    int index;
+    int type; // same as VkPhysicalDeviceType
+    size_t heapSize;
     const char * name;
     const char * vendor;
 };
@@ -241,9 +241,10 @@ const char *llmodel_get_implementation_search_path();
 
 /**
  * Get a list of available GPU devices given the memory required.
+ * @param memoryRequired The minimum amount of VRAM, in bytes
  * @return A pointer to an array of llmodel_gpu_device's whose number is given by num_devices.
  */
-struct llmodel_gpu_device* llmodel_available_gpu_devices(llmodel_model model, size_t memoryRequired, int* num_devices);
+struct llmodel_gpu_device* llmodel_available_gpu_devices(size_t memoryRequired, int* num_devices);
 
 /**
  * Initializes a GPU device based on a specified string criterion.

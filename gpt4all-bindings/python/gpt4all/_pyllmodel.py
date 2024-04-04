@@ -138,7 +138,7 @@ llmodel.llmodel_threadCount.restype = ctypes.c_int32
 
 llmodel.llmodel_set_implementation_search_path(str(MODEL_LIB_PATH).encode())
 
-llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
+llmodel.llmodel_available_gpu_devices.argtypes = [ctypes.c_size_t, ctypes.POINTER(ctypes.c_int32)]
 llmodel.llmodel_available_gpu_devices.restype = ctypes.POINTER(LLModelGPUDevice)
 
 llmodel.llmodel_gpu_init_gpu_device_by_string.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.c_char_p]
@@ -214,13 +214,22 @@ class LLModel:
     def _raise_closed(self) -> NoReturn:
         raise ValueError("Attempted operation on a closed LLModel")
 
-    def _list_gpu(self, mem_required: int) -> list[LLModelGPUDevice]:
-        assert self.model is not None
+    @staticmethod
+    def list_gpus(mem_required: int = 0) -> list[str]:
+        """
+        List the names of the available GPU devices with at least `mem_required` bytes of VRAM.
+
+        Args:
+            mem_required: The minimum amount of VRAM, in bytes
+
+        Returns:
+            A list of strings representing the names of the available GPU devices.
+        """
         num_devices = ctypes.c_int32(0)
-        devices_ptr = llmodel.llmodel_available_gpu_devices(self.model, mem_required, ctypes.byref(num_devices))
+        devices_ptr = llmodel.llmodel_available_gpu_devices(mem_required, ctypes.byref(num_devices))
         if not devices_ptr:
             raise ValueError("Unable to retrieve available GPU devices")
-        return devices_ptr[:num_devices.value]
+        return [d.name.decode() for d in devices_ptr[:num_devices.value]]
 
     def init_gpu(self, device: str):
         if self.model is None:
@@ -231,23 +240,13 @@ class LLModel:
         if llmodel.llmodel_gpu_init_gpu_device_by_string(self.model, mem_required, device.encode()):
             return
 
-        # Retrieve all GPUs without considering memory requirements.
-        num_devices = ctypes.c_int32(0)
-        all_devices_ptr = llmodel.llmodel_available_gpu_devices(self.model, 0, ctypes.byref(num_devices))
-        if not all_devices_ptr:
-            raise ValueError("Unable to retrieve list of all GPU devices")
-        all_gpus = [d.name.decode() for d in all_devices_ptr[:num_devices.value]]
-
-        # Retrieve GPUs that meet the memory requirements using list_gpu
-        available_gpus = [device.name.decode() for device in self._list_gpu(mem_required)]
-
-        # Identify GPUs that are unavailable due to insufficient memory or features
+        all_gpus = self.list_gpus()
+        available_gpus = self.list_gpus(mem_required)
         unavailable_gpus = set(all_gpus).difference(available_gpus)
 
-        # Formulate the error message
-        error_msg = "Unable to initialize model on GPU: '{}'.".format(device)
-        error_msg += "\nAvailable GPUs: {}.".format(available_gpus)
-        error_msg += "\nUnavailable GPUs due to insufficient memory or features: {}.".format(unavailable_gpus)
+        error_msg = "Unable to initialize model on GPU: {!r}".format(device)
+        error_msg += "\nAvailable GPUs: {}".format(available_gpus)
+        error_msg += "\nUnavailable GPUs due to insufficient memory or features: {}".format(unavailable_gpus)
         raise ValueError(error_msg)
 
     def load_model(self) -> bool:
