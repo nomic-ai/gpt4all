@@ -2,17 +2,15 @@
 
 <p align="center">Open-source large language models that run locally on your CPU and nearly any GPU</p>
 
+
 <p align="center">
-<a href="https://gpt4all.io">GPT4All Website and Models</a>
+Join the <a href="https://discord.gg/tyc74KNVK3?event=1227642051294658621">GPT4All 2024 Roadmap Townhall</a> on April 18, 2024 at 12pm EST
 </p>
 
 <p align="center">
-<a href="https://docs.gpt4all.io">GPT4All Documentation</a>
+<a href="https://gpt4all.io">GPT4All Website and Models</a> • <a href="https://docs.gpt4all.io">GPT4All Documentation</a> • <a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
 
-<p align="center">
-<a href="https://discord.gg/mGZE39AS3e">Discord</a>
-</p>
 
 <p align="center">
 <a href="https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html">🦜️🔗 Official Langchain Backend</a> 
@@ -34,9 +32,6 @@ Run on an M1 macOS Device (not sped up!)
 </p>
 
 ## GPT4All: An ecosystem of open-source on-edge large language models.
-
-> [!IMPORTANT]
-> GPT4All v2.5.0 and newer only supports models in GGUF format (.gguf). Models used with a previous version of GPT4All (.bin extension) will no longer work.
 
 GPT4All is an ecosystem to run **powerful** and **customized** large language models that work locally on consumer grade CPUs and any GPU. Note that your CPU needs to support [AVX or AVX2 instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions).
 
