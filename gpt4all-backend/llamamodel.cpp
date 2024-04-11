@@ -751,8 +751,12 @@ void LLamaModel::embedInternal(
 
         tokens.resize(text.length()+4);
         int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), wantBOS, false);
-        assert(useEOS == (eos_token != -1 && tokens[n_tokens - 1] == eos_token));
-        tokens.resize(n_tokens - useEOS); // erase EOS/SEP
+        if (n_tokens) {
+            assert(useEOS == (eos_token != -1 && tokens[n_tokens - 1] == eos_token));
+            tokens.resize(n_tokens - useEOS); // erase EOS/SEP
+        } else {
+            tokens.clear();
+        }
     };
 
     // tokenize the texts
