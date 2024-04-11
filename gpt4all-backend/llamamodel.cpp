@@ -325,7 +325,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     bool isEmbedding = is_embedding_arch(llama_model_arch(d_ptr->model));
     const int n_ctx_train = llama_n_ctx_train(d_ptr->model);
     if (isEmbedding) {
-        d_ptr->ctx_params.n_batch = n_ctx_train;
+        d_ptr->ctx_params.n_batch = n_ctx;
     } else {
         if (n_ctx > n_ctx_train) {
             std::cerr << "warning: model was trained on only " << n_ctx_train << " context tokens ("
@@ -734,7 +734,7 @@ void LLamaModel::embedInternal(
 ) {
     typedef std::vector<LLModel::Token> TokenString;
     static constexpr int32_t atlasMaxLength = 8192;
-    static constexpr int chunkOverlap = 8; // Atlas overlaps n_batch-sized chunks of input by 8 tokens
+    static constexpr int chunkOverlap = 8; // Atlas overlaps chunks of input by 8 tokens
 
     const llama_token bos_token = llama_token_bos(d_ptr->model);
     const llama_token eos_token = llama_token_eos(d_ptr->model);
@@ -786,9 +786,14 @@ void LLamaModel::embedInternal(
         tokenize(prefix + ':', prefixTokens, true);
     }
 
+    // n_ctx_train: max sequence length of model (RoPE scaling not implemented)
+    const uint32_t n_ctx_train = llama_n_ctx_train(d_ptr->model);
+    // n_batch (equals n_ctx): max tokens per call to llama_decode (one more more sequences)
     const uint32_t n_batch = llama_n_batch(d_ptr->ctx);
-    const uint32_t max_len = n_batch - (prefixTokens.size() + useEOS); // minus BOS/CLS and EOS/SEP
-    if (chunkOverlap >= max_len) {
+
+    // effective sequence length minus prefix and SEP token
+    const uint32_t max_len = std::min(n_ctx_train, n_batch) - (prefixTokens.size() + useEOS);
+    if (max_len <= chunkOverlap) {
         throw std::logic_error("max chunk length of " + std::to_string(max_len) + " is smaller than overlap of " +
                                std::to_string(chunkOverlap) + " tokens");
     }
