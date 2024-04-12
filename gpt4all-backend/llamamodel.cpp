@@ -158,7 +158,7 @@ static int32_t get_arch_key_u32(std::string const &modelPath, std::string const 
 
 struct LLamaPrivate {
     const std::string modelPath;
-    bool modelLoaded;
+    bool modelLoaded = false;
     int device = -1;
     llama_model *model = nullptr;
     llama_context *ctx = nullptr;
@@ -166,13 +166,11 @@ struct LLamaPrivate {
     llama_context_params ctx_params;
     int64_t n_threads = 0;
     std::vector<LLModel::Token> end_tokens;
-    const char *backend_name;
+    const char *backend_name = nullptr;
 };
 
 LLamaModel::LLamaModel()
-    : d_ptr(new LLamaPrivate) {
-    d_ptr->modelLoaded = false;
-}
+    : d_ptr(new LLamaPrivate) {}
 
 // default hparams (LLaMA 7B)
 struct llama_file_hparams {
