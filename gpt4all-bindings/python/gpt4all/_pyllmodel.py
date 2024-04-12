@@ -370,7 +370,6 @@ class LLModel:
 
         def wrap_cancel_cb(batch_sizes: ctypes.POINTER(ctypes.c_uint), n_batch: int, backend: bytes) -> bool:
             assert cancel_cb is not None
-            print('n_batch', n_batch)
             return cancel_cb(batch_sizes[:n_batch], backend.decode())
 
         cancel_cb_wrapper = None if cancel_cb is None else EmbCancelCallback(wrap_cancel_cb)
