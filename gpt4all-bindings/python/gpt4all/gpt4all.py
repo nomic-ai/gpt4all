@@ -19,7 +19,8 @@ from requests.exceptions import ChunkedEncodingError
 from tqdm import tqdm
 from urllib3.exceptions import IncompleteRead, ProtocolError
 
-from ._pyllmodel import EmbedResult as EmbedResult, LLModel, ResponseCallbackType, empty_response_callback
+from ._pyllmodel import (CancellationError as CancellationError, EmbCancelCallbackType, EmbedResult as EmbedResult,
+                         LLModel, ResponseCallbackType, empty_response_callback)
 
 if TYPE_CHECKING:
     from typing_extensions import Self, TypeAlias
@@ -72,34 +73,36 @@ class Embed4All:
     @overload
     def embed(
         self, text: str, *, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
-        return_dict: Literal[False] = ..., atlas: bool = ...,
+        return_dict: Literal[False] = ..., atlas: bool = ..., cancel_cb: EmbCancelCallbackType | None = ...,
     ) -> list[float]: ...
     @overload
     def embed(
         self, text: list[str], *, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
-        return_dict: Literal[False] = ..., atlas: bool = ...,
+        return_dict: Literal[False] = ..., atlas: bool = ..., cancel_cb: EmbCancelCallbackType | None = ...,
     ) -> list[list[float]]: ...
     @overload
     def embed(
         self, text: str | list[str], *, prefix: str | None = ..., dimensionality: int | None = ...,
         long_text_mode: str = ..., return_dict: Literal[False] = ..., atlas: bool = ...,
+        cancel_cb: EmbCancelCallbackType | None = ...,
     ) -> list[Any]: ...
 
     # return_dict=True
     @overload
     def embed(
         self, text: str, *, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
-        return_dict: Literal[True], atlas: bool = ...,
+        return_dict: Literal[True], atlas: bool = ..., cancel_cb: EmbCancelCallbackType | None = ...,
     ) -> EmbedResult[list[float]]: ...
     @overload
     def embed(
         self, text: list[str], *, prefix: str | None = ..., dimensionality: int | None = ..., long_text_mode: str = ...,
-        return_dict: Literal[True], atlas: bool = ...,
+        return_dict: Literal[True], atlas: bool = ..., cancel_cb: EmbCancelCallbackType | None = ...,
     ) -> EmbedResult[list[list[float]]]: ...
     @overload
     def embed(
         self, text: str | list[str], *, prefix: str | None = ..., dimensionality: int | None = ...,
         long_text_mode: str = ..., return_dict: Literal[True], atlas: bool = ...,
+        cancel_cb: EmbCancelCallbackType | None = ...,
     ) -> EmbedResult[list[Any]]: ...
 
     # return type unknown
@@ -107,11 +110,13 @@ class Embed4All:
     def embed(
         self, text: str | list[str], *, prefix: str | None = ..., dimensionality: int | None = ...,
         long_text_mode: str = ..., return_dict: bool = ..., atlas: bool = ...,
+        cancel_cb: EmbCancelCallbackType | None = ...,
     ) -> Any: ...
 
     def embed(
         self, text: str | list[str], *, prefix: str | None = None, dimensionality: int | None = None,
         long_text_mode: str = "mean", return_dict: bool = False, atlas: bool = False,
+        cancel_cb: EmbCancelCallbackType | None = None,
     ) -> Any:
         """
         Generate one or more embeddings.
@@ -127,10 +132,14 @@ class Embed4All:
             return_dict: Return the result as a dict that includes the number of prompt tokens processed.
             atlas: Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens
                 with long_text_mode="mean" will raise an error. Disabled by default.
+            cancel_cb: Called with arguments (batch_sizes, backend_name). Return true to cancel embedding.
 
         Returns:
             With return_dict=False, an embedding or list of embeddings of your text(s).
             With return_dict=True, a dict with keys 'embeddings' and 'n_prompt_tokens'.
+
+        Raises:
+            CancellationError: If cancel_cb returned True and embedding was canceled.
         """
         if dimensionality is None:
             dimensionality = -1
@@ -146,7 +155,7 @@ class Embed4All:
             do_mean = {"mean": True, "truncate": False}[long_text_mode]
         except KeyError:
             raise ValueError(f"Long text mode must be one of 'mean' or 'truncate', got {long_text_mode!r}")
-        result = self.gpt4all.model.generate_embeddings(text, prefix, dimensionality, do_mean, atlas)
+        result = self.gpt4all.model.generate_embeddings(text, prefix, dimensionality, do_mean, atlas, cancel_cb)
         return result if return_dict else result['embeddings']
 
 

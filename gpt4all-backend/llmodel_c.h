@@ -83,6 +83,15 @@ typedef bool (*llmodel_response_callback)(int32_t token_id, const char *response
 typedef bool (*llmodel_recalculate_callback)(bool is_recalculating);
 
 /**
+ * Embedding cancellation callback for use with llmodel_embed.
+ * @param batch_sizes The number of tokens in each batch that will be embedded.
+ * @param n_batch The number of batches that will be embedded.
+ * @param backend The backend that will be used for embedding. One of "cpu", "kompute", or "metal".
+ * @return True to cancel llmodel_embed, false to continue.
+ */
+typedef bool (*llmodel_emb_cancel_callback)(unsigned *batch_sizes, unsigned n_batch, const char *backend);
+
+/**
  * Create a llmodel instance.
  * Recognises correct model type from file at model_path
  * @param model_path A string representing the path to the model file.
@@ -198,12 +207,14 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
  * truncate.
  * @param atlas Try to be fully compatible with the Atlas API. Currently, this means texts longer than 8192 tokens with
  * long_text_mode="mean" will raise an error. Disabled by default.
+ * @param cancel_cb Cancellation callback, or NULL. See the documentation of llmodel_emb_cancel_callback.
  * @param error Return location for a malloc()ed string that will be set on error, or NULL.
  * @return A pointer to an array of floating point values passed to the calling method which then will
  * be responsible for lifetime of this memory. NULL if an error occurred.
  */
 float *llmodel_embed(llmodel_model model, const char **texts, size_t *embedding_size, const char *prefix,
-                     int dimensionality, size_t *token_count, bool do_mean, bool atlas, const char **error);
+                     int dimensionality, size_t *token_count, bool do_mean, bool atlas,
+                     llmodel_emb_cancel_callback cancel_cb, const char **error);
 
 /**
  * Frees the memory allocated by the llmodel_embedding function.

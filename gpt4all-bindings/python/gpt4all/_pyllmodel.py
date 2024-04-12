@@ -9,7 +9,7 @@ import sys
 import threading
 from enum import Enum
 from queue import Queue
-from typing import Any, Callable, Generic, Iterable, NoReturn, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, NoReturn, TypeVar, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
@@ -21,6 +21,9 @@ if (3, 9) <= sys.version_info < (3, 11):
     from typing_extensions import TypedDict
 else:
     from typing import TypedDict
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
 
 EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
@@ -95,6 +98,7 @@ llmodel.llmodel_isModelLoaded.restype = ctypes.c_bool
 PromptCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32)
 ResponseCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32, ctypes.c_char_p)
 RecalculateCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_bool)
+EmbCancelCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_char_p)
 
 llmodel.llmodel_prompt.argtypes = [
     ctypes.c_void_p,
@@ -119,6 +123,7 @@ llmodel.llmodel_embed.argtypes = [
     ctypes.POINTER(ctypes.c_size_t),
     ctypes.c_bool,
     ctypes.c_bool,
+    EmbCancelCallback,
     ctypes.POINTER(ctypes.c_char_p),
 ]
 
@@ -155,6 +160,7 @@ llmodel.llmodel_has_gpu_device.restype = ctypes.c_bool
 
 ResponseCallbackType = Callable[[int, str], bool]
 RawResponseCallbackType = Callable[[int, bytes], bool]
+EmbCancelCallbackType: TypeAlias = 'Callable[[list[int], str], bool]'
 
 
 def empty_response_callback(token_id: int, response: str) -> bool:
@@ -169,6 +175,10 @@ class Sentinel(Enum):
 class EmbedResult(Generic[EmbeddingsType], TypedDict):
     embeddings: EmbeddingsType
     n_prompt_tokens: int
+
+
+class CancellationError(Exception):
+    """raised when embedding is canceled"""
 
 
 class LLModel:
@@ -323,19 +333,22 @@ class LLModel:
 
     @overload
     def generate_embeddings(
-        self, text: str, prefix: str, dimensionality: int, do_mean: bool, atlas: bool,
+        self, text: str, prefix: str, dimensionality: int, do_mean: bool, atlas: bool, cancel_cb: EmbCancelCallbackType,
     ) -> EmbedResult[list[float]]: ...
     @overload
     def generate_embeddings(
         self, text: list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+        cancel_cb: EmbCancelCallbackType,
     ) -> EmbedResult[list[list[float]]]: ...
     @overload
     def generate_embeddings(
         self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+        cancel_cb: EmbCancelCallbackType,
     ) -> EmbedResult[list[Any]]: ...
 
     def generate_embeddings(
         self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+        cancel_cb: EmbCancelCallbackType,
     ) -> EmbedResult[list[Any]]:
         if not text:
             raise ValueError("text must not be None or empty")
@@ -355,14 +368,23 @@ class LLModel:
         for i, t in enumerate(text):
             c_texts[i] = t.encode()
 
+        def wrap_cancel_cb(batch_sizes: ctypes.POINTER(ctypes.c_uint), n_batch: int, backend: bytes) -> bool:
+            assert cancel_cb is not None
+            print('n_batch', n_batch)
+            return cancel_cb(batch_sizes[:n_batch], backend.decode())
+
+        cancel_cb_wrapper = None if cancel_cb is None else EmbCancelCallback(wrap_cancel_cb)
+
         # generate the embeddings
         embedding_ptr = llmodel.llmodel_embed(
             self.model, c_texts, ctypes.byref(embedding_size), c_prefix, dimensionality, ctypes.byref(token_count),
-            do_mean, atlas, ctypes.byref(error),
+            do_mean, atlas, cancel_cb_wrapper, ctypes.byref(error),
         )
 
         if not embedding_ptr:
             msg = "(unknown error)" if error.value is None else error.value.decode()
+            if msg == "operation was canceled":
+                raise CancellationError(msg)
             raise RuntimeError(f'Failed to generate embeddings: {msg}')
 
         # extract output
