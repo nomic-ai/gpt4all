@@ -158,7 +158,7 @@ static int32_t get_arch_key_u32(std::string const &modelPath, std::string const 
 
 struct LLamaPrivate {
     const std::string modelPath;
-    bool modelLoaded;
+    bool modelLoaded = false;
     int device = -1;
     llama_model *model = nullptr;
     llama_context *ctx = nullptr;
@@ -166,12 +166,11 @@ struct LLamaPrivate {
     llama_context_params ctx_params;
     int64_t n_threads = 0;
     std::vector<LLModel::Token> end_tokens;
+    const char *backend_name = nullptr;
 };
 
 LLamaModel::LLamaModel()
-    : d_ptr(new LLamaPrivate) {
-    d_ptr->modelLoaded = false;
-}
+    : d_ptr(new LLamaPrivate) {}
 
 // default hparams (LLaMA 7B)
 struct llama_file_hparams {
@@ -291,6 +290,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->model_params.progress_callback = &LLModel::staticProgressCallback;
     d_ptr->model_params.progress_callback_user_data = this;
 
+    d_ptr->backend_name = "cpu"; // default
+
 #ifdef GGML_USE_KOMPUTE
     if (d_ptr->device != -1) {
         d_ptr->model_params.main_gpu = d_ptr->device;
@@ -301,6 +302,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
     if (llama_verbose()) {
         std::cerr << "llama.cpp: using Metal" << std::endl;
+        d_ptr->backend_name = "metal";
     }
 
     // always fully offload on Metal
@@ -364,6 +366,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 #ifdef GGML_USE_KOMPUTE
     if (usingGPUDevice() && ggml_vk_has_device()) {
         std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
+        d_ptr->backend_name = "kompute";
     }
 #endif
 
@@ -674,7 +677,7 @@ void LLamaModel::embed(
 
 void LLamaModel::embed(
     const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
-    size_t *tokenCount, bool doMean, bool atlas
+    size_t *tokenCount, bool doMean, bool atlas, LLModel::EmbedCancelCallback *cancelCb
 ) {
     if (!d_ptr->model)
         throw std::logic_error("no model is loaded");
@@ -712,7 +715,7 @@ void LLamaModel::embed(
         throw std::invalid_argument(ss.str());
     }
 
-    embedInternal(texts, embeddings, *prefix, dimensionality, tokenCount, doMean, atlas, spec);
+    embedInternal(texts, embeddings, *prefix, dimensionality, tokenCount, doMean, atlas, cancelCb, spec);
 }
 
 // MD5 hash of "nomic empty"
@@ -730,7 +733,7 @@ double getL2NormScale(T *start, T *end) {
 
 void LLamaModel::embedInternal(
     const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
-    size_t *tokenCount, bool doMean, bool atlas, const EmbModelSpec *spec
+    size_t *tokenCount, bool doMean, bool atlas, LLModel::EmbedCancelCallback *cancelCb, const EmbModelSpec *spec
 ) {
     typedef std::vector<LLModel::Token> TokenString;
     static constexpr int32_t atlasMaxLength = 8192;
@@ -822,6 +825,23 @@ void LLamaModel::embedInternal(
     }
     inputs.clear();
 
+    if (cancelCb) {
+        // copy of batching code below, but just count tokens instead of running inference
+        unsigned nBatchTokens = 0;
+        std::vector<unsigned> batchSizes;
+        for (const auto &inp: batches) {
+            if (nBatchTokens + inp.batch.size() > n_batch) {
+                batchSizes.push_back(nBatchTokens);
+                nBatchTokens = 0;
+            }
+            nBatchTokens += inp.batch.size();
+        }
+        batchSizes.push_back(nBatchTokens);
+        if (cancelCb(batchSizes.data(), batchSizes.size(), d_ptr->backend_name)) {
+            throw std::runtime_error("operation was canceled");
+        }
+    }
+
     // initialize batch
     struct llama_batch batch = llama_batch_init(n_batch, 0, 1);
 
@@ -871,7 +891,7 @@ void LLamaModel::embedInternal(
     };
 
     // break into batches
-    for (auto &inp: batches) {
+    for (const auto &inp: batches) {
         // encode if at capacity
         if (batch.n_tokens + inp.batch.size() > n_batch) {
             decode();

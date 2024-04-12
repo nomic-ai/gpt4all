@@ -105,12 +105,15 @@ public:
                         bool special = false,
                         std::string *fakeReply = nullptr);
 
+    using EmbedCancelCallback = bool(unsigned *batchSizes, unsigned nBatch, const char *backend);
+
     virtual size_t embeddingSize() const {
         throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
     }
     // user-specified prefix
     virtual void embed(const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix,
-                       int dimensionality = -1, size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false);
+                       int dimensionality = -1, size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false,
+                       EmbedCancelCallback *cancelCb = nullptr);
     // automatic prefix
     virtual void embed(const std::vector<std::string> &texts, float *embeddings, bool isRetrieval,
                        int dimensionality = -1, size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false);

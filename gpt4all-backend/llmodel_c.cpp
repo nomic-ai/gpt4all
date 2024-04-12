@@ -159,7 +159,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
 
 float *llmodel_embed(
     llmodel_model model, const char **texts, size_t *embedding_size, const char *prefix, int dimensionality,
-    size_t *token_count, bool do_mean, bool atlas, const char **error
+    size_t *token_count, bool do_mean, bool atlas, llmodel_emb_cancel_callback cancel_cb, const char **error
 ) {
     auto *wrapper = static_cast<LLModelWrapper *>(model);
 
@@ -185,7 +185,7 @@ float *llmodel_embed(
         if (prefix) { prefixStr = prefix; }
 
         embedding = new float[embd_size];
-        wrapper->llModel->embed(textsVec, embedding, prefixStr, dimensionality, token_count, do_mean, atlas);
+        wrapper->llModel->embed(textsVec, embedding, prefixStr, dimensionality, token_count, do_mean, atlas, cancel_cb);
     } catch (std::exception const &e) {
         llmodel_set_error(error, e.what());
         return nullptr;
