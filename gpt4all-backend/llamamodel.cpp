@@ -302,8 +302,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
     if (llama_verbose()) {
         std::cerr << "llama.cpp: using Metal" << std::endl;
-        d_ptr->backend_name = "metal";
     }
+    d_ptr->backend_name = "metal";
 
     // always fully offload on Metal
     // TODO(cebtenzzre): use this parameter to allow using more than 53% of system RAM to load a model
