@@ -343,7 +343,7 @@ class LLModel:
         if self.model is None:
             self._raise_closed()
 
-        if (single_text := isinstance(text, str)):
+        if single_text := isinstance(text, str):
             text = [text]
 
         # prepare input

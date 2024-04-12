@@ -871,7 +871,7 @@ void LLamaModel::embedInternal(
     };
 
     // break into batches
-    for (auto &inp: batches) {
+    for (const auto &inp: batches) {
         // encode if at capacity
         if (batch.n_tokens + inp.batch.size() > n_batch) {
             decode();
