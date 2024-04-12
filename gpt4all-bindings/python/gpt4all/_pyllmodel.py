@@ -372,7 +372,7 @@ class LLModel:
             assert cancel_cb is not None
             return cancel_cb(batch_sizes[:n_batch], backend.decode())
 
-        cancel_cb_wrapper = None if cancel_cb is None else EmbCancelCallback(wrap_cancel_cb)
+        cancel_cb_wrapper = EmbCancelCallback(0x0 if cancel_cb is None else wrap_cancel_cb)
 
         # generate the embeddings
         embedding_ptr = llmodel.llmodel_embed(
