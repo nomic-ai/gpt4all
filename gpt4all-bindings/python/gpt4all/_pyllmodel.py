@@ -232,10 +232,14 @@ class LLModel:
 
     @property
     def backend(self) -> Literal["cpu", "kompute", "metal"]:
+        if self.model is None:
+            self._raise_closed()
         return llmodel.llmodel_model_backend_name(self.model).decode()
 
     @property
     def device(self) -> str | None:
+        if self.model is None:
+            self._raise_closed()
         dev = llmodel.llmodel_model_gpu_device_name(self.model)
         return None if dev is None else dev.decode()
 
