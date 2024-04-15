@@ -503,7 +503,8 @@ class GPT4All:
             if fct_func is GPT4All._format_chat_prompt_template:
                 if reset:
                     # ingest system prompt
-                    self.model.prompt_model(self._history[0]["content"], "%1",
+                    # use "%1%2" and not "%1" to avoid implicit whitespace
+                    self.model.prompt_model(self._history[0]["content"], "%1%2",
                                             empty_response_callback,
                                             n_batch=n_batch, n_predict=0, reset_context=True, special=True)
                 prompt_template = self._current_prompt_template.format("%1", "%2")
