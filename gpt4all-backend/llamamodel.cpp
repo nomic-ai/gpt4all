@@ -560,7 +560,7 @@ bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) co
 #endif
 }
 
-bool LLamaModel::hasGPUDevice()
+bool LLamaModel::hasGPUDevice() const
 {
 #if defined(GGML_USE_KOMPUTE)
     return d_ptr->device != -1;
@@ -569,7 +569,7 @@ bool LLamaModel::hasGPUDevice()
 #endif
 }
 
-bool LLamaModel::usingGPUDevice()
+bool LLamaModel::usingGPUDevice() const
 {
 #if defined(GGML_USE_KOMPUTE)
     bool hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
@@ -582,11 +582,11 @@ bool LLamaModel::usingGPUDevice()
 #endif
 }
 
-const char *LLamaModel::backendName() {
+const char *LLamaModel::backendName() const {
     return d_ptr->backend_name;
 }
 
-const char *LLamaModel::gpuDeviceName() {
+const char *LLamaModel::gpuDeviceName() const {
 #if defined(GGML_USE_KOMPUTE)
     if (usingGPUDevice()) {
         return ggml_vk_current_device().name;
