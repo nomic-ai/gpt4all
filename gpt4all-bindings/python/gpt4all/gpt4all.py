@@ -497,7 +497,6 @@ class GPT4All:
         if self._history is not None:
             # check if there is only one message, i.e. system prompt:
             reset = len(self._history) == 1
-            generate_kwargs["reset_context"] = reset
             self._history.append({"role": "user", "content": prompt})
 
             fct_func = self._format_chat_prompt_template.__func__  # type: ignore[attr-defined]
@@ -506,7 +505,7 @@ class GPT4All:
                     # ingest system prompt
                     self.model.prompt_model(self._history[0]["content"], "%1",
                                             empty_response_callback,
-                                            n_batch=n_batch, n_predict=0, special=True)
+                                            n_batch=n_batch, n_predict=0, reset_context=True, special=True)
                 prompt_template = self._current_prompt_template.format("%1", "%2")
             else:
                 warnings.warn(
@@ -519,6 +518,7 @@ class GPT4All:
                     self._history[0]["content"] if reset else "",
                 )
                 prompt_template = "%1"
+                generate_kwargs["reset_context"] = reset
         else:
             prompt_template = "%1"
             generate_kwargs["reset_context"] = True
