@@ -348,22 +348,23 @@ class LLModel:
 
     @overload
     def generate_embeddings(
-        self, text: str, prefix: str, dimensionality: int, do_mean: bool, atlas: bool, cancel_cb: EmbCancelCallbackType,
+        self, text: str, prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+        cancel_cb: EmbCancelCallbackType | None,
     ) -> EmbedResult[list[float]]: ...
     @overload
     def generate_embeddings(
         self, text: list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
-        cancel_cb: EmbCancelCallbackType,
+        cancel_cb: EmbCancelCallbackType | None,
     ) -> EmbedResult[list[list[float]]]: ...
     @overload
     def generate_embeddings(
         self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
-        cancel_cb: EmbCancelCallbackType,
+        cancel_cb: EmbCancelCallbackType | None,
     ) -> EmbedResult[list[Any]]: ...
 
     def generate_embeddings(
         self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
-        cancel_cb: EmbCancelCallbackType,
+        cancel_cb: EmbCancelCallbackType | None,
     ) -> EmbedResult[list[Any]]:
         if not text:
             raise ValueError("text must not be None or empty")
@@ -383,11 +384,11 @@ class LLModel:
         for i, t in enumerate(text):
             c_texts[i] = t.encode()
 
-        def wrap_cancel_cb(batch_sizes: ctypes.POINTER(ctypes.c_uint), n_batch: int, backend: bytes) -> bool:
+        def wrap_cancel_cb(batch_sizes: Any, n_batch: int, backend: bytes) -> bool:
             assert cancel_cb is not None
             return cancel_cb(batch_sizes[:n_batch], backend.decode())
 
-        cancel_cb_wrapper = EmbCancelCallback(0x0 if cancel_cb is None else wrap_cancel_cb)
+        cancel_cb_wrapper = EmbCancelCallback() if cancel_cb is None else EmbCancelCallback(wrap_cancel_cb)
 
         # generate the embeddings
         embedding_ptr = llmodel.llmodel_embed(
