@@ -365,7 +365,9 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
 #ifdef GGML_USE_KOMPUTE
     if (usingGPUDevice() && ggml_vk_has_device()) {
-        std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
+        if (llama_verbose()) {
+            std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
+        }
         d_ptr->backend_name = "kompute";
     }
 #endif
