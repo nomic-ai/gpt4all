@@ -35,6 +35,8 @@ public:
     bool initializeGPUDevice(int device, std::string *unavail_reason = nullptr) const override;
     bool hasGPUDevice() override;
     bool usingGPUDevice() override;
+    const char *backendName() override;
+    const char *gpuDeviceName() override;
 
     size_t embeddingSize() const override;
     // user-specified prefix

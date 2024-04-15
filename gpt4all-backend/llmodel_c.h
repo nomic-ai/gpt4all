@@ -295,6 +295,16 @@ bool llmodel_gpu_init_gpu_device_by_int(llmodel_model model, int device);
  */
 bool llmodel_has_gpu_device(llmodel_model model);
 
+/**
+ * @return The name of the llama.cpp backend currently in use. One of "cpu", "kompute", or "metal".
+ */
+const char *llmodel_model_backend_name(llmodel_model model);
+
+/**
+ * @return The name of the GPU device currently in use, or NULL for backends other than Kompute.
+ */
+const char *llmodel_model_gpu_device_name(llmodel_model model);
+
 #ifdef __cplusplus
 }
 #endif

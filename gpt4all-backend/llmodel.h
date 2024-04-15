@@ -146,6 +146,8 @@ public:
 
     virtual bool hasGPUDevice() { return false; }
     virtual bool usingGPUDevice() { return false; }
+    virtual const char *backendName() { return "cpu"; }
+    virtual const char *gpuDeviceName() { return nullptr; }
 
     void setProgressCallback(ProgressCallback callback) { m_progressCallback = callback; }
 

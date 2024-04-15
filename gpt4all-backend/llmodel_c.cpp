@@ -286,3 +286,15 @@ bool llmodel_has_gpu_device(llmodel_model model)
     auto *wrapper = static_cast<LLModelWrapper *>(model);
     return wrapper->llModel->hasGPUDevice();
 }
+
+const char *llmodel_model_backend_name(llmodel_model model)
+{
+    auto *wrapper = static_cast<LLModelWrapper *>(model);
+    return wrapper->llModel->backendName();
+}
+
+const char *llmodel_model_gpu_device_name(llmodel_model model)
+{
+    auto *wrapper = static_cast<LLModelWrapper *>(model);
+    return wrapper->llModel->gpuDeviceName();
+}

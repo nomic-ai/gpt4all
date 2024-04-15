@@ -227,6 +227,16 @@ class GPT4All:
         self.model.close()
 
     @property
+    def backend(self) -> Literal["cpu", "kompute", "metal"]:
+        """The name of the llama.cpp backend currently in use. One of "cpu", "kompute", or "metal"."""
+        return self.model.backend
+
+    @property
+    def device(self) -> str | None:
+        """The name of the GPU device currently in use, or None for backends other than Kompute."""
+        return self.model.device
+
+    @property
     def current_chat_session(self) -> list[MessageType] | None:
         return None if self._history is None else list(self._history)
 

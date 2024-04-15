@@ -9,7 +9,7 @@ import sys
 import threading
 from enum import Enum
 from queue import Queue
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, NoReturn, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Literal, NoReturn, TypeVar, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
@@ -158,6 +158,12 @@ llmodel.llmodel_gpu_init_gpu_device_by_int.restype = ctypes.c_bool
 llmodel.llmodel_has_gpu_device.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_has_gpu_device.restype = ctypes.c_bool
 
+llmodel.llmodel_model_backend_name.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_model_backend_name.restype = ctypes.c_char_p
+
+llmodel.llmodel_model_gpu_device_name.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_model_gpu_device_name.restype = ctypes.c_char_p
+
 ResponseCallbackType = Callable[[int, str], bool]
 RawResponseCallbackType = Callable[[int, bytes], bool]
 EmbCancelCallbackType: TypeAlias = 'Callable[[list[int], str], bool]'
@@ -223,6 +229,15 @@ class LLModel:
 
     def _raise_closed(self) -> NoReturn:
         raise ValueError("Attempted operation on a closed LLModel")
+
+    @property
+    def backend(self) -> Literal["cpu", "kompute", "metal"]:
+        return llmodel.llmodel_model_backend_name(self.model).decode()
+
+    @property
+    def device(self) -> str | None:
+        dev = llmodel.llmodel_model_gpu_device_name(self.model)
+        return None if dev is None else dev.decode()
 
     @staticmethod
     def list_gpus(mem_required: int = 0) -> list[str]:

@@ -364,7 +364,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->end_tokens = {llama_token_eos(d_ptr->model)};
 
 #ifdef GGML_USE_KOMPUTE
-    if (usingGPUDevice() && ggml_vk_has_device()) {
+    if (usingGPUDevice()) {
         if (llama_verbose()) {
             std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
         }
@@ -572,12 +572,27 @@ bool LLamaModel::hasGPUDevice()
 bool LLamaModel::usingGPUDevice()
 {
 #if defined(GGML_USE_KOMPUTE)
-    return hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
+    bool hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
+    assert(!hasDevice || ggml_vk_has_device());
+    return hasDevice;
 #elif defined(GGML_USE_METAL)
     return true;
 #else
     return false;
 #endif
+}
+
+const char *LLamaModel::backendName() {
+    return d_ptr->backend_name;
+}
+
+const char *LLamaModel::gpuDeviceName() {
+#if defined(GGML_USE_KOMPUTE)
+    if (usingGPUDevice()) {
+        return ggml_vk_current_device().name;
+    }
+#endif
+    return nullptr;
 }
 
 void llama_batch_add(
