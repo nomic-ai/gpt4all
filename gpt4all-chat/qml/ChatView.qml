@@ -885,7 +885,7 @@ Rectangle {
 
                     delegate: TextArea {
                         id: myTextArea
-                        text: value + references
+                        text: value + (MySettings.localDocsShowReferences ? references : "")
                         anchors.horizontalCenter: listView.contentItem.horizontalCenter
                         width: Math.min(1280, listView.contentItem.width)
                         color: {
