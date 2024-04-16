@@ -14,6 +14,20 @@ from typing_extensions import Annotated
 import typer
 from gpt4all import GPT4All
 
+# Set default values
+n_predict_default = 200
+n_predict = n_predict_default
+
+def getUserTokens(n_tokens_start):
+	print(f"Tokens = {n_tokens_start}; ")
+	t_input = input("New max tokens? ")
+	if t_input.isdigit():
+		t_input=int(t_input)
+		if t_input > 0: 
+			print(f"New tokens {t_input}")
+			global n_predict
+			n_predict=t_input
+	else: print("Invalid entry")
 
 MESSAGES = [
     {"role": "system", "content": "You are a helpful assistant."},
@@ -25,12 +39,14 @@ SPECIAL_COMMANDS = {
     "/reset": lambda messages: messages.clear(),
     "/exit": lambda _: sys.exit(),
     "/clear": lambda _: print("\n" * 100),
-    "/help": lambda _: print("Special commands: /reset, /exit, /help and /clear"),
+    "/help": lambda _: print("Special commands: /reset, /exit, /help, /tokens and /clear"),
+    "/tokens": lambda _: getUserTokens(n_predict),
 }
 
 VersionInfo = namedtuple('VersionInfo', ['major', 'minor', 'micro'])
 VERSION_INFO = VersionInfo(1, 0, 2)
 VERSION = '.'.join(map(str, VERSION_INFO))  # convert to string form, like: '1.2.3'
+
 
 CLI_START_MESSAGE = f"""
     
@@ -117,7 +133,7 @@ def _old_loop(gpt4all_instance):
             tokens_size=0,
             n_past=0,
             n_ctx=0,
-            n_predict=200,
+            n_predict=n_predict,
             top_k=40,
             top_p=0.9,
             min_p=0.0,
@@ -153,7 +169,7 @@ def _new_loop(gpt4all_instance):
             response_generator = gpt4all_instance.generate(
                 message,
                 # preferential kwargs for chat ux
-                max_tokens=200,
+                max_tokens=n_predict,
                 temp=0.9,
                 top_k=40,
                 top_p=0.9,
