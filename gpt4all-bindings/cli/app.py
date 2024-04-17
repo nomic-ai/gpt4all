@@ -15,19 +15,21 @@ import typer
 from gpt4all import GPT4All
 
 # Set default values
-n_predict_default = 200
-n_predict = n_predict_default
+n_predict = 200
 
 def getUserTokens(n_tokens_start):
-	print(f"Tokens = {n_tokens_start}; ")
-	t_input = input("New max tokens? ")
-	if t_input.isdigit():
-		t_input=int(t_input)
-		if t_input > 0: 
-			print(f"New tokens {t_input}")
-			global n_predict
-			n_predict=t_input
-	else: print("Invalid entry")
+    print(f"Tokens = {n_tokens_start}")
+    try:
+        t_input = int(input("New max tokens? "))
+    except ValueError as ve: 
+        print(f"Invalid entry; only positive integers are allowed\n")
+        return
+    if t_input > 0:  
+        print(f"New tokens {t_input}")
+        global n_predict
+        n_predict = t_input
+    else: 
+        print("Invalid entry; only positive integers are allowed")
 
 MESSAGES = [
     {"role": "system", "content": "You are a helpful assistant."},
