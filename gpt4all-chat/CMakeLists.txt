@@ -103,11 +103,11 @@ qt_add_qml_module(chat
       qml/ChatDrawer.qml
       qml/ChatView.qml
       qml/CollectionsDialog.qml
-      qml/ModelDownloaderView.qml
+      qml/ModelDownloaderDialog.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
       qml/ThumbsDownDialog.qml
-      qml/SettingsView.qml
+      qml/SettingsDialog.qml
       qml/StartupDialog.qml
       qml/PopupDialog.qml
       qml/AboutDialog.qml
@@ -146,8 +146,6 @@ qt_add_qml_module(chat
       icons/edit.svg
       icons/image.svg
       icons/info.svg
-      icons/local-docs.svg
-      icons/models.svg
       icons/search.svg
       icons/trash.svg
       icons/network.svg

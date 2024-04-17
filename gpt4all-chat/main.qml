@@ -43,6 +43,29 @@ Window {
         font.pixelSize: theme.fontSizeLarge
     }
 
+    SettingsDialog {
+        id: settingsDialog
+        anchors.centerIn: parent
+        width: Math.min(1920, window.width - (window.width * .1))
+        height: window.height - (window.height * .1)
+        onDownloadClicked: {
+            downloadNewModels.showEmbeddingModels = true
+            downloadNewModels.open()
+        }
+    }
+
+    ModelDownloaderDialog {
+        id: downloadNewModels
+        anchors.centerIn: parent
+        width: Math.min(1920, window.width - (window.width * .1))
+        height: window.height - (window.height * .1)
+        Item {
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTr("Download new models")
+            Accessible.description: qsTr("Dialog for downloading new models")
+        }
+    }
+
     NetworkDialog {
         id: networkDialog
         anchors.centerIn: parent
@@ -101,56 +124,48 @@ Window {
             MyToolButton {
                 id: chatButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarToggled : theme.iconBackgroundViewBar
-                backgroundColorHovered: toggled ? backgroundColor : theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 40
-                Layout.preferredHeight: 40
-                Layout.alignment: Qt.AlignCenter
+                backgroundColorHovered: theme.iconBackgroundViewBarHovered
                 toggledWidth: 0
-                toggled: stackLayout.currentIndex === 0
-                toggledColor: theme.iconBackgroundViewBarToggled
+                toggled: true
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
                 scale: 1.5
                 source: "qrc:/gpt4all/icons/chat.svg"
                 Accessible.name: qsTr("Chat view")
                 Accessible.description: qsTr("Chat view to interact with models")
                 onClicked: {
-                    stackLayout.currentIndex = 0
                 }
             }
 
             MyToolButton {
                 id: searchButton
-                backgroundColor: toggled ? theme.iconBackgroundViewBarToggled : theme.iconBackgroundViewBar
-                backgroundColorHovered: toggled ? backgroundColor : theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 40
-                Layout.preferredHeight: 40
-                toggledWidth: 0
-                toggled: stackLayout.currentIndex === 1
-                toggledColor: theme.iconBackgroundViewBarToggled
+                backgroundColor: theme.iconBackgroundViewBar
+                backgroundColorHovered: theme.iconBackgroundViewBarHovered
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
                 scale: 1.5
-                source: "qrc:/gpt4all/icons/models.svg"
+                source: "qrc:/gpt4all/icons/search.svg"
                 Accessible.name: qsTr("Search")
                 Accessible.description: qsTr("Launch a dialog to download new models")
                 onClicked: {
-                    stackLayout.currentIndex = 1
+                    downloadNewModels.showEmbeddingModels = false
+                    downloadNewModels.open()
                 }
             }
 
             MyToolButton {
                 id: settingsButton
-                backgroundColor: toggled ? theme.iconBackgroundViewBarToggled : theme.iconBackgroundViewBar
-                backgroundColorHovered: toggled ? backgroundColor : theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 40
-                Layout.preferredHeight: 40
-                toggledWidth: 0
-                toggledColor: theme.iconBackgroundViewBarToggled
-                toggled: stackLayout.currentIndex === 2
+                backgroundColor: theme.iconBackgroundViewBar
+                backgroundColorHovered: theme.iconBackgroundViewBarHovered
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
                 scale: 1.5
                 source: "qrc:/gpt4all/icons/settings.svg"
                 Accessible.name: qsTr("Settings")
                 Accessible.description: qsTr("Reveals a dialogue with settings")
 
                 onClicked: {
-                    stackLayout.currentIndex = 2
+                    settingsDialog.open()
                 }
             }
         }
@@ -166,8 +181,8 @@ Window {
 
             MyToolButton {
                 id: networkButton
-                backgroundColor: toggled ? theme.iconBackgroundViewBarToggled : theme.iconBackgroundViewBar
-                backgroundColorHovered: toggled ? backgroundColor : theme.iconBackgroundViewBarHovered
+                backgroundColor: theme.iconBackgroundViewBar
+                backgroundColorHovered: theme.iconBackgroundViewBarHovered
                 toggledColor: theme.iconBackgroundViewBar
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
@@ -203,52 +218,10 @@ Window {
         }
     }
 
-    StackLayout {
-        id: stackLayout
+    ChatView {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: viewBar.right
         anchors.right: parent.right
-
-        ChatView {
-            id: chatView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            Connections {
-                target: chatView
-                function onDownloadViewRequested(showEmbeddingModels) {
-                    console.log("onDownloadViewRequested")
-                    stackLayout.currentIndex = 1;
-                    if (showEmbeddingModels)
-                        downloadView.showEmbeddingModels();
-                }
-                function onSettingsViewRequested(page) {
-                    settingsDialog.pageToDisplay = page;
-                    stackLayout.currentIndex = 2;
-                }
-            }
-        }
-
-        ModelDownloaderView {
-            id: downloadView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Item {
-                Accessible.role: Accessible.Dialog
-                Accessible.name: qsTr("Download new models")
-                Accessible.description: qsTr("View for downloading new models")
-            }
-        }
-
-        SettingsView {
-            id: settingsDialog
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            onDownloadClicked: {
-                stackLayout.currentIndex = 1
-                downloadView.showEmbeddingModels()
-            }
-        }
     }
 }

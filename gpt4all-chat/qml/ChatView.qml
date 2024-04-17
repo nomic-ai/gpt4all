@@ -21,8 +21,6 @@ Rectangle {
 
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
-    signal settingsViewRequested(int page)
-    signal downloadViewRequested(bool showEmbeddingModels)
 
     color: theme.black
 
@@ -33,6 +31,13 @@ Rectangle {
 
     Connections {
         target: firstStartDialog
+        function onClosed() {
+            startupDialogs();
+        }
+    }
+
+    Connections {
+        target: downloadNewModels
         function onClosed() {
             startupDialogs();
         }
@@ -85,15 +90,15 @@ Rectangle {
             return;
         }
 
-        // check for any current models and if not, open download view once
+        // check for any current models and if not, open download dialog once
         if (!hasShownModelDownload && ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
-            downloadViewRequested();
+            downloadNewModels.open();
             hasShownModelDownload = true;
             return;
         }
 
         // check for new version
-        if (Download.hasNewerRelease && !firstStartDialog.opened) {
+        if (Download.hasNewerRelease && !firstStartDialog.opened && !downloadNewModels.opened) {
             newVersionDialog.open();
             return;
         }
@@ -291,29 +296,22 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 20
 
-            Rectangle {
+            MyToolButton {
+                id: drawerButton
                 Layout.alignment: Qt.AlignLeft
                 Layout.leftMargin: 30
-                Layout.fillWidth: true
-                Layout.preferredWidth: 100
-                Layout.topMargin: 20
-                color: "transparent"
-                Layout.preferredHeight: childrenRect.height
-                MyToolButton {
-                    id: drawerButton
-                    anchors.left: parent.left
-                    backgroundColor: theme.iconBackgroundLight
-                    width: 40
-                    height: 40
-                    scale: 1.5
-                    padding: 15
-                    source: conversation.state === "expanded" ? "qrc:/gpt4all/icons/left_panel_open.svg" : "qrc:/gpt4all/icons/left_panel_closed.svg"
-                    Accessible.role: Accessible.ButtonMenu
-                    Accessible.name: qsTr("Chat panel")
-                    Accessible.description: qsTr("Chat panel with options")
-                    onClicked: {
-                        conversation.toggleLeftPanel()
-                    }
+                backgroundColor: theme.iconBackgroundLight
+                width: 40
+                height: 40
+                scale: 1.5
+                z: 200
+                padding: 15
+                source: conversation.state === "expanded" ? "qrc:/gpt4all/icons/left_panel_open.svg" : "qrc:/gpt4all/icons/left_panel_closed.svg"
+                Accessible.role: Accessible.ButtonMenu
+                Accessible.name: qsTr("Chat panel")
+                Accessible.description: qsTr("Chat panel with options")
+                onClicked: {
+                    conversation.toggleLeftPanel()
                 }
             }
 
@@ -322,7 +320,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                Layout.preferredWidth: 100
+                Layout.minimumWidth: 375
                 Layout.maximumWidth: 675
                 enabled: !currentChat.isServer
                     && !window.trySwitchContextInProgress
@@ -480,64 +478,83 @@ Rectangle {
                 }
             }
 
-            Rectangle {
-                color: "transparent"
+            RowLayout {
                 Layout.alignment: Qt.AlignRight
                 Layout.rightMargin: 30
-                Layout.fillWidth: true
-                Layout.preferredWidth: 100
-                Layout.preferredHeight: childrenRect.height
-                Layout.topMargin: 20
+                spacing: 20
 
-                RowLayout {
-                    spacing: 20
-                    anchors.right: parent.right
-                    MyButton {
-                        id: collectionsButton
-                        Image {
-                            id: collectionsImage
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.left: parent.left
-                            anchors.leftMargin: 15
-                            width: 24
-                            height: 24
-                            mipmap: true
-                            source: "qrc:/gpt4all/icons/db.svg"
-                        }
+                MyToolButton {
+                    id: resetContextButton
+                    backgroundColor: theme.iconBackgroundLight
+                    width: 40
+                    height: 40
+                    z: 200
+                    padding: 15
+                    source: "qrc:/gpt4all/icons/regenerate.svg"
 
-                        ColorOverlay {
-                            anchors.fill: collectionsImage
-                            source: collectionsImage
-                            color: collectionsButton.hovered || collectionsImage.toggled ? theme.iconBackgroundHovered : theme.iconBackgroundLight
-                        }
+                    Accessible.name: text
+                    Accessible.description: qsTr("Reset the context and erase current conversation")
 
-                        leftPadding: 50
-                        borderWidth: 0
-                        backgroundColor: theme.mainComboBackground
-                        backgroundColorHovered: theme.conversationButtonBackgroundHovered
-                        backgroundRadius: 5
-                        padding: 15
-                        topPadding: 8
-                        bottomPadding: 8
-                        textColor: hovered || toggled ? theme.iconBackgroundHovered : theme.iconBackgroundLight
-                        text: qsTr("LocalDocs")
-                        fontPixelSize: theme.fontSizeSmall
+                    onClicked: {
+                        Network.sendResetContext(chatModel.count)
+                        currentChat.reset();
+                        currentChat.processSystemPrompt();
+                    }
+                }
 
-                        property bool toggled: currentChat.collectionList.length
-                        background: Rectangle {
-                            radius: collectionsButton.backgroundRadius
-                            color: collectionsButton.toggled ? collectionsButton.backgroundColorHovered : collectionsButton.backgroundColor
-                        }
+                MyToolButton {
+                    id: copyButton
+                    backgroundColor: theme.iconBackgroundLight
+                    width: 40
+                    height: 40
+                    z: 200
+                    padding: 15
+                    source: "qrc:/gpt4all/icons/copy.svg"
+                    Accessible.name: qsTr("Copy")
+                    Accessible.description: qsTr("Copy the conversation to the clipboard")
 
-                        Accessible.name: qsTr("Add documents")
-                        Accessible.description: qsTr("add collections of documents to the chat")
+                    TextEdit{
+                        id: copyEdit
+                        visible: false
+                    }
 
-                        onClicked: {
-                            collectionsDialog.open()
-                        }
+                    onClicked: {
+                        var conversation = getConversation()
+                        copyEdit.text = conversation
+                        copyEdit.selectAll()
+                        copyEdit.copy()
+                        copyMessage.open()
+                    }
+                }
+
+                MyToolButton {
+                    id: collectionsButton
+                    backgroundColor: theme.iconBackgroundLight
+                    width: 40
+                    height: 42.5
+                    z: 200
+                    padding: 15
+                    toggled: currentChat.collectionList.length
+                    source: "qrc:/gpt4all/icons/db.svg"
+                    Accessible.name: qsTr("Add documents")
+                    Accessible.description: qsTr("add collections of documents to the chat")
+
+                    onClicked: {
+                        collectionsDialog.open()
                     }
                 }
             }
+        }
+    }
+
+    SettingsDialog {
+        id: settingsDialog
+        anchors.centerIn: parent
+        width: Math.min(1920, window.width - (window.width * .1))
+        height: window.height - (window.height * .1)
+        onDownloadClicked: {
+            downloadNewModels.showEmbeddingModels = true
+            downloadNewModels.open()
         }
     }
 
@@ -552,7 +569,8 @@ Rectangle {
         id: collectionsDialog
         anchors.centerIn: parent
         onAddRemoveClicked: {
-            settingsViewRequested(2 /*page 2*/)
+            settingsDialog.pageToDisplay = 2;
+            settingsDialog.open();
         }
     }
 
@@ -659,6 +677,18 @@ Rectangle {
             border.width: 1
             border.color: theme.dialogBorder
             radius: 10
+        }
+    }
+
+    ModelDownloaderDialog {
+        id: downloadNewModels
+        anchors.centerIn: parent
+        width: Math.min(1920, window.width - (window.width * .1))
+        height: window.height - (window.height * .1)
+        Item {
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTr("Download new models")
+            Accessible.description: qsTr("Dialog for downloading new models")
         }
     }
 
@@ -847,7 +877,7 @@ Rectangle {
                             padding: 18
                             leftPadding: 50
                             Image {
-                                id: downloadImage
+                                id: image
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.left: parent.left
                                 anchors.leftMargin: 15
@@ -857,13 +887,12 @@ Rectangle {
                                 source: "qrc:/gpt4all/icons/download.svg"
                             }
                             ColorOverlay {
-                                anchors.fill: downloadImage
-                                source: downloadImage
+                                anchors.fill: image
+                                source: image
                                 color: theme.accentColor
                             }
                             onClicked: {
-                                console.log("download button")
-                                downloadViewRequested(false /*showEmbeddingModels*/);
+                                downloadNewModels.open();
                             }
                         }
                     }
