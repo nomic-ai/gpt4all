@@ -40,6 +40,7 @@ Learn more in the [documentation](https://docs.gpt4all.io).
 A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4All open-source ecosystem software. **Nomic AI** supports and maintains this software ecosystem to enforce quality and security alongside spearheading the effort to allow any person or enterprise to easily train and deploy their own on-edge large language models.
 
 ### What's New ([Issue Tracker](https://github.com/orgs/nomic-ai/projects/2))
+- [Latest Release ](https://github.com/nomic-ai/gpt4all/releases)
 - **October 19th, 2023**: GGUF Support Launches with Support for:
     - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
     - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4\_0 and Q4\_1 quantizations in GGUF.
