@@ -102,9 +102,9 @@ Each item should have an issue link below.
     - [ ] Design new user interface and gather community feedback
     - [ ] Implement the new user interface and experience.
 - Installer and Update Improvements
-    - [ ] Seemless native installation and update process on OSX
-    - [ ] Seemless native installation and update process on Windows
-    - [ ] Seemless native installation and update process on Linux
+    - [ ] Seamless native installation and update process on OSX
+    - [ ] Seamless native installation and update process on Windows
+    - [ ] Seamless native installation and update process on Linux
 - Model discoverability improvements:
     - [x] Support huggingface model discoverability
     - [ ] Support Nomic hosted model discoverability
