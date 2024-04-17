@@ -40,6 +40,7 @@ Learn more in the [documentation](https://docs.gpt4all.io).
 A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4All open-source ecosystem software. **Nomic AI** supports and maintains this software ecosystem to enforce quality and security alongside spearheading the effort to allow any person or enterprise to easily train and deploy their own on-edge large language models.
 
 ### What's New ([Issue Tracker](https://github.com/orgs/nomic-ai/projects/2))
+- [Latest Release ](https://github.com/nomic-ai/gpt4all/releases)
 - **October 19th, 2023**: GGUF Support Launches with Support for:
     - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
     - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4\_0 and Q4\_1 quantizations in GGUF.
@@ -85,6 +86,58 @@ Please see CONTRIBUTING.md and follow the issues, bug reports, and PR markdown t
 Check project discord, with project owners, or through existing issues/PRs to avoid duplicate work.
 Please make sure to tag all of the above with relevant project identifiers or your contribution could potentially get lost.
 Example tags: `backend`, `bindings`, `python-bindings`, `documentation`, etc.
+
+
+## GPT4All 2024 Roadmap
+To contribute to the development of any of the below roadmap items, make or find the corresponding issue and cross-reference the [in-progress task](https://github.com/orgs/nomic-ai/projects/2/views/1).
+
+Each item should have an issue link below.
+
+- Chat UI Language Localization (localize UI into the native languages of users)
+    - [ ] Chinese
+    - [ ] German
+    - [ ] French
+    - [ ] Portuguese
+    - [ ] Your native language here. 
+- UI Redesign: an internal effort at Nomic to improve the UI/UX of gpt4all for all users.
+    - [ ] Design new user interface and gather community feedback
+    - [ ] Implement the new user interface and experience.
+- Installer and Update Improvements
+    - [ ] Seamless native installation and update process on OSX
+    - [ ] Seamless native installation and update process on Windows
+    - [ ] Seamless native installation and update process on Linux
+- Model discoverability improvements:
+    - [x] Support huggingface model discoverability
+    - [ ] Support Nomic hosted model discoverability
+- LocalDocs (towards a local perplexity)
+    - Multilingual LocalDocs Support
+        - [ ] Create an multilingual experience
+        - [ ] Incorporate a multilingual embedding model
+        - [ ] Specify a preferred multilingual LLM for localdocs
+    - Improved RAG techniques
+        - [ ] Query augmentation and re-writing
+        - [ ] Improved chunking and text extraction from arbitrary modalities
+            - [ ] Custom PDF extractor past the QT default (charts, tables, text)
+        - [ ] Faster indexing and local exact search with v1.5 hamming embeddings and reranking (skip ANN index construction!)
+    - Support queries like 'summarize X document'
+    - Multimodal LocalDocs support with Nomic Embed
+    - Nomic Dataset Integration with real-time LocalDocs
+        - [ ] Include an option to allow the export of private LocalDocs collections to Nomic Atlas for debugging data/chat quality
+        - [ ] Allow optional sharing of LocalDocs collections between users.
+        - [ ] Allow the import of a LocalDocs collection from an Atlas Datasets
+            - Chat with live version of Wikipedia, Chat with Pubmed, chat with the latest snapshot of world news.
+- First class Multilingual LLM Support
+    - [ ] Recommend and set a default LLM for German
+    - [ ] Recommend and set a default LLM for English
+    - [ ] Recommend and set a default LLM for Chinese
+    - [ ] Recommend and set a default LLM for Spanish
+
+- Server Mode improvements
+    - Improved UI and new requested features:
+        - [ ] Fix outstanding bugs and feature requests around networking configurations.
+        - [ ] Support Nomic Embed inferencing
+        - [ ] First class documentation
+        - [ ] Improving developer use and quality of server mode (e.g. support larger batches)
 
 ## Technical Reports
 
