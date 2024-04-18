@@ -83,7 +83,9 @@ bool Download::isFirstStart() const
     bool first = lastVersionStarted != QCoreApplication::applicationVersion();
     settings.setValue("download/lastVersionStarted", QCoreApplication::applicationVersion());
     settings.sync();
-    return first;
+
+    const auto *mySettings = MySettings::globalInstance();
+    return first || !mySettings->isNetworkUsageStatsActiveSet() || !mySettings->isNetworkIsActiveSet();
 }
 
 void Download::updateReleaseNotes()

@@ -140,7 +140,7 @@ model release that uses your data!")
 
                 RadioButton {
                     id: optInStatisticsRadioYes
-                    checked: false
+                    checked: MySettings.networkUsageStatsActive
                     text: qsTr("Yes")
                     font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.RadioButton
@@ -182,6 +182,7 @@ model release that uses your data!")
                 }
                 RadioButton {
                     id: optInStatisticsRadioNo
+                    checked: MySettings.isNetworkUsageStatsActiveSet() && !MySettings.networkUsageStatsActive
                     text: qsTr("No")
                     font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.RadioButton
@@ -254,7 +255,7 @@ model release that uses your data!")
 
                 RadioButton {
                     id: optInNetworkRadioYes
-                    checked: false
+                    checked: MySettings.networkIsActive
                     text: qsTr("Yes")
                     font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.RadioButton
@@ -296,6 +297,7 @@ model release that uses your data!")
                 }
                 RadioButton {
                     id: optInNetworkRadioNo
+                    checked: MySettings.isNetworkIsActiveSet() && !MySettings.networkIsActive
                     text: qsTr("No")
                     font.pixelSize: theme.fontSizeLarge
                     Accessible.role: Accessible.RadioButton
