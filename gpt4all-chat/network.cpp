@@ -14,6 +14,8 @@
 
 //#define DEBUG
 
+static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
+
 #if defined(Q_OS_MAC)
 #include <sys/sysctl.h>
 std::string getCPUModel() {
@@ -167,7 +169,7 @@ void Network::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &erro
 void Network::sendOptOut()
 {
     QJsonObject properties;
-    properties.insert("token", "ce362e568ddaee16ed243eaffb5860a2");
+    properties.insert("token", MIXPANEL_TOKEN);
     properties.insert("time", QDateTime::currentSecsSinceEpoch());
     properties.insert("distinct_id", m_uniqueId);
     properties.insert("$insert_id", generateUniqueId());
@@ -214,7 +216,15 @@ void Network::sendStartup()
     m_shouldSendStartup = true;
     if (m_ipify.isEmpty())
         return; // when it completes it will send
-    sendMixpanelEvent("startup");
+
+    const QSize display = QGuiApplication::primaryScreen()->size();
+    sendMixpanelEvent("startup", {
+        {"display", QString("%1x%2").arg(display.width()).arg(display.height())},
+        {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
+#if defined(Q_OS_MAC)
+        {"cpu", QString::fromStdString(getCPUModel())},
+#endif
+    });
 }
 
 void Network::sendCheckForUpdates()
@@ -373,7 +383,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
 
     Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject properties;
-    properties.insert("token", "ce362e568ddaee16ed243eaffb5860a2");
+    properties.insert("token", MIXPANEL_TOKEN);
     properties.insert("time", QDateTime::currentSecsSinceEpoch());
     properties.insert("distinct_id", m_uniqueId);
     properties.insert("$insert_id", generateUniqueId());
@@ -385,16 +395,6 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
     properties.insert("model", ChatListModel::globalInstance()->currentChat()->modelInfo().filename());
     properties.insert("requestedDevice", MySettings::globalInstance()->device());
     properties.insert("actualDevice", ChatListModel::globalInstance()->currentChat()->device());
-
-    // Some additional startup information
-    if (ev == "startup") {
-        const QSize display = QGuiApplication::primaryScreen()->size();
-        properties.insert("display", QString("%1x%2").arg(display.width()).arg(display.height()));
-        properties.insert("ram", LLM::globalInstance()->systemTotalRAMInGB());
-#if defined(Q_OS_MAC)
-        properties.insert("cpu", QString::fromStdString(getCPUModel()));
-#endif
-    }
 
     for (const auto& p : values)
         properties.insert(p.key, p.value);
