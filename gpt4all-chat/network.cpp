@@ -35,7 +35,6 @@ Network *Network::globalInstance()
 
 Network::Network()
     : QObject{nullptr}
-    , m_shouldSendStartup(false)
 {
     QSettings settings;
     settings.sync();
@@ -199,12 +198,6 @@ void Network::sendModelLoaded()
 
 void Network::sendStartup()
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    m_shouldSendStartup = true;
-    if (m_ipify.isEmpty())
-        return; // when it completes it will send
-
     const auto *display = QGuiApplication::primaryScreen();
     sendMixpanelEvent("startup", {
         {"$screen_dpi", display->physicalDotsPerInch()},
@@ -327,8 +320,7 @@ void Network::handleIpifyFinished()
 #endif
     reply->deleteLater();
 
-    if (m_shouldSendStartup)
-        sendStartup();
+    sendMixpanelEvent("ipify_finished");
 }
 
 void Network::handleMixpanelFinished()

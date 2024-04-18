@@ -46,7 +46,6 @@ private:
     bool packageAndSendJson(const QString &ingestId, const QString &json);
 
 private:
-    bool m_shouldSendStartup;
     QString m_ipify;
     QString m_uniqueId;
     QString m_sessionId;
