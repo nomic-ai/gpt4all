@@ -228,9 +228,12 @@ void Chat::responseStopped()
     emit responseStateChanged();
     if (m_generatedName.isEmpty())
         emit generateNameRequested();
-    // FIXME(cebtenzzre): this also fires if the first response is regenerated
-    if (chatModel()->count() < 3)
-        Network::globalInstance()->sendMixpanelEvent("chat_started");
+
+    Network::globalInstance()->sendMixpanelEvent("response_complete", {
+        {"first", m_firstResponse},
+        {"message_count", chatModel()->count()},
+    });
+    m_firstResponse = false;
 }
 
 ModelInfo Chat::modelInfo() const

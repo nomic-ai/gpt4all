@@ -175,6 +175,7 @@ private:
     bool m_shouldDeleteLater = false;
     float m_modelLoadingPercentage = 0.0f;
     LocalDocsCollectionsModel *m_collectionModel;
+    bool m_firstResponse = true;
 };
 
 #endif // CHAT_H
