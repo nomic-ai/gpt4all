@@ -124,7 +124,6 @@ Q_SIGNALS:
     void responseChanged(const QString &response);
     void promptProcessing();
     void responseStopped();
-    void sendStartup();
     void sendModelLoaded();
     void generatedNameChanged(const QString &name);
     void stateChanged();

@@ -74,7 +74,6 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_restoreStateFromText(false)
 {
     moveToThread(&m_llmThread);
-    connect(this, &ChatLLM::sendStartup, Network::globalInstance(), &Network::sendStartup);
     connect(this, &ChatLLM::sendModelLoaded, Network::globalInstance(), &Network::sendModelLoaded);
     connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
         Qt::QueuedConnection); // explicitly queued
@@ -416,12 +415,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #endif
         emit modelLoadingPercentageChanged(isModelLoaded() ? 1.0f : 0.0f);
 
-        static bool isFirstLoad = true;
-        if (isFirstLoad) {
-            emit sendStartup();
-            isFirstLoad = false;
-        } else
-            emit sendModelLoaded();
+        emit sendModelLoaded();
     } else {
         if (!m_isServer)
             LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store

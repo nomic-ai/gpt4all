@@ -26,6 +26,7 @@ Rectangle {
 
     // Startup code
     Component.onCompleted: {
+        Network.sendStartup()
         startupDialogs();
     }
 
