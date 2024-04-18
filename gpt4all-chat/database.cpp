@@ -410,8 +410,8 @@ bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
 {
     if (!q.prepare(UPDATE_DOCUMENT_TIME_SQL))
         return false;
-    q.addBindValue(id);
     q.addBindValue(document_time);
+    q.addBindValue(id);
     return q.exec();
 }
 

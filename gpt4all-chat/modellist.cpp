@@ -12,7 +12,7 @@
 
 const char * const KNOWN_EMBEDDING_MODELS[] {
     "all-MiniLM-L6-v2.gguf2.f16.gguf",
-    "nomic-embed-text-v1.txt",
+    "gpt4all-nomic-embed-text-v1.rmodel",
 };
 
 QString ModelInfo::id() const
@@ -1178,7 +1178,7 @@ void ModelList::updateModelsFromDirectory()
             it.next();
             if (!it.fileInfo().isDir()) {
                 QString filename = it.fileName();
-                if (filename.startsWith("chatgpt-") && filename.endsWith(".txt")) {
+                if (filename.endsWith(".txt") && (filename.startsWith("chatgpt-") || filename.startsWith("nomic-"))) {
                     QString apikey;
                     QString modelname(filename);
                     modelname.chop(4); // strip ".txt" extension
@@ -1648,7 +1648,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             "<li>You can apply for an API key <a href=\"https://atlas.nomic.ai/\">with Nomic Atlas.</a></li>");
         const QString modelName = "Nomic Embed";
         const QString id = modelName;
-        const QString modelFilename = "nomic-embed-text-v1.txt"; // FIXME: This should be made to use '.rmodel' as well
+        const QString modelFilename = "gpt4all-nomic-embed-text-v1.rmodel";
         if (contains(modelFilename))
             changeId(modelFilename, id);
         if (!contains(id))

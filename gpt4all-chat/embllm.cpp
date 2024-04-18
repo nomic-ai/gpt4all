@@ -42,12 +42,17 @@ bool EmbeddingLLMWorker::loadModel()
     }
 
     auto filename = fileInfo.fileName();
-    bool isNomic = filename.startsWith("nomic-") && filename.endsWith(".txt");
+    bool isNomic = filename.startsWith("gpt4all-nomic-") && filename.endsWith(".rmodel");
     if (isNomic) {
         QFile file(filePath);
-        file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text);
-        QTextStream stream(&file);
-        m_nomicAPIKey = stream.readAll();
+        if (!file.open(QIODeviceBase::ReadOnly)) {
+            qWarning() << "failed to open" << filePath << ":" << file.errorString();
+            m_model = nullptr;
+            return false;
+        }
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        QJsonObject obj = doc.object();
+        m_nomicAPIKey = obj["apiKey"].toString();
         file.close();
         return true;
     }

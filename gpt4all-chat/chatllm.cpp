@@ -283,10 +283,10 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             QString modelName;
             {
                 QFile file(filePath);
-                file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text);
-                QTextStream stream(&file);
-                QString text = stream.readAll();
-                QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
+                bool success = file.open(QIODeviceBase::ReadOnly);
+                (void)success;
+                Q_ASSERT(success);
+                QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
                 QJsonObject obj = doc.object();
                 apiKey = obj["apiKey"].toString();
                 modelName = obj["modelName"].toString();
