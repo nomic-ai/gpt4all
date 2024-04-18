@@ -144,8 +144,10 @@ public:
         return false;
     }
 
-    virtual bool hasGPUDevice() { return false; }
-    virtual bool usingGPUDevice() { return false; }
+    virtual bool hasGPUDevice() const { return false; }
+    virtual bool usingGPUDevice() const { return false; }
+    virtual const char *backendName() const { return "cpu"; }
+    virtual const char *gpuDeviceName() const { return nullptr; }
 
     void setProgressCallback(ProgressCallback callback) { m_progressCallback = callback; }
 

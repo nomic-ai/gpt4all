@@ -33,8 +33,10 @@ public:
     std::vector<GPUDevice> availableGPUDevices(size_t memoryRequired) const override;
     bool initializeGPUDevice(size_t memoryRequired, const std::string &name) const override;
     bool initializeGPUDevice(int device, std::string *unavail_reason = nullptr) const override;
-    bool hasGPUDevice() override;
-    bool usingGPUDevice() override;
+    bool hasGPUDevice() const override;
+    bool usingGPUDevice() const override;
+    const char *backendName() const override;
+    const char *gpuDeviceName() const override;
 
     size_t embeddingSize() const override;
     // user-specified prefix

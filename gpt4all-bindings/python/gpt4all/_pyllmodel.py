@@ -9,7 +9,7 @@ import sys
 import threading
 from enum import Enum
 from queue import Queue
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, NoReturn, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Literal, NoReturn, TypeVar, overload
 
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
@@ -158,6 +158,12 @@ llmodel.llmodel_gpu_init_gpu_device_by_int.restype = ctypes.c_bool
 llmodel.llmodel_has_gpu_device.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_has_gpu_device.restype = ctypes.c_bool
 
+llmodel.llmodel_model_backend_name.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_model_backend_name.restype = ctypes.c_char_p
+
+llmodel.llmodel_model_gpu_device_name.argtypes = [ctypes.c_void_p]
+llmodel.llmodel_model_gpu_device_name.restype = ctypes.c_char_p
+
 ResponseCallbackType = Callable[[int, str], bool]
 RawResponseCallbackType = Callable[[int, bytes], bool]
 EmbCancelCallbackType: TypeAlias = 'Callable[[list[int], str], bool]'
@@ -223,6 +229,19 @@ class LLModel:
 
     def _raise_closed(self) -> NoReturn:
         raise ValueError("Attempted operation on a closed LLModel")
+
+    @property
+    def backend(self) -> Literal["cpu", "kompute", "metal"]:
+        if self.model is None:
+            self._raise_closed()
+        return llmodel.llmodel_model_backend_name(self.model).decode()
+
+    @property
+    def device(self) -> str | None:
+        if self.model is None:
+            self._raise_closed()
+        dev = llmodel.llmodel_model_gpu_device_name(self.model)
+        return None if dev is None else dev.decode()
 
     @staticmethod
     def list_gpus(mem_required: int = 0) -> list[str]:
@@ -333,22 +352,23 @@ class LLModel:
 
     @overload
     def generate_embeddings(
-        self, text: str, prefix: str, dimensionality: int, do_mean: bool, atlas: bool, cancel_cb: EmbCancelCallbackType,
+        self, text: str, prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
+        cancel_cb: EmbCancelCallbackType | None,
     ) -> EmbedResult[list[float]]: ...
     @overload
     def generate_embeddings(
         self, text: list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
-        cancel_cb: EmbCancelCallbackType,
+        cancel_cb: EmbCancelCallbackType | None,
     ) -> EmbedResult[list[list[float]]]: ...
     @overload
     def generate_embeddings(
         self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
-        cancel_cb: EmbCancelCallbackType,
+        cancel_cb: EmbCancelCallbackType | None,
     ) -> EmbedResult[list[Any]]: ...
 
     def generate_embeddings(
         self, text: str | list[str], prefix: str | None, dimensionality: int, do_mean: bool, atlas: bool,
-        cancel_cb: EmbCancelCallbackType,
+        cancel_cb: EmbCancelCallbackType | None,
     ) -> EmbedResult[list[Any]]:
         if not text:
             raise ValueError("text must not be None or empty")
@@ -368,11 +388,11 @@ class LLModel:
         for i, t in enumerate(text):
             c_texts[i] = t.encode()
 
-        def wrap_cancel_cb(batch_sizes: ctypes.POINTER(ctypes.c_uint), n_batch: int, backend: bytes) -> bool:
+        def wrap_cancel_cb(batch_sizes: Any, n_batch: int, backend: bytes) -> bool:
             assert cancel_cb is not None
             return cancel_cb(batch_sizes[:n_batch], backend.decode())
 
-        cancel_cb_wrapper = EmbCancelCallback(0x0 if cancel_cb is None else wrap_cancel_cb)
+        cancel_cb_wrapper = EmbCancelCallback() if cancel_cb is None else EmbCancelCallback(wrap_cancel_cb)
 
         # generate the embeddings
         embedding_ptr = llmodel.llmodel_embed(
