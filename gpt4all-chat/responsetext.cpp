@@ -1045,8 +1045,6 @@ void ResponseText::handleCodeBlocks()
     static const QRegularExpression reCode("```(.*?)(```|$)", QRegularExpression::DotMatchesEverythingOption);
     QRegularExpressionMatchIterator iCode = reCode.globalMatch(doc->toPlainText());
 
-    static const QRegularExpression reWhitespace("^\\s*(\\w+)");
-
     QList<QRegularExpressionMatch> matchesCode;
     while (iCode.hasNext())
         matchesCode.append(iCode.next());
@@ -1062,9 +1060,13 @@ void ResponseText::handleCodeBlocks()
         QString capturedText = matchesCode[index].captured(1);
         QString codeLanguage;
 
-        QRegularExpressionMatch match = reWhitespace.match(capturedText);
-        if (match.hasMatch()) {
-            const QString firstWord = match.captured(1).trimmed();
+        QStringList lines = capturedText.split('\n');
+        if (lines.last().isEmpty()) {
+            lines.removeLast();
+        }
+
+        if (lines.count() >= 2) {
+            const auto &firstWord = lines.first();
             if (firstWord == "python"
                 || firstWord == "cpp"
                 || firstWord == "c++"
@@ -1082,11 +1084,9 @@ void ResponseText::handleCodeBlocks()
                 || firstWord == "html"
                 || firstWord == "php") {
                 codeLanguage = firstWord;
-                capturedText.remove(0, match.captured(0).length());
             }
+            lines.removeFirst();
         }
-
-        const QStringList lines = capturedText.split('\n');
 
         QTextFrame *mainFrame = cursor.currentFrame();
         cursor.setCharFormat(textFormat);
@@ -1140,10 +1140,6 @@ void ResponseText::handleCodeBlocks()
             }
         } else {
             codeCursor.insertText(lines.join("\n"));
-        }
-        if (codeCursor.position() > 0) {
-            codeCursor.setPosition(codeCursor.position() - 1);
-            codeCursor.deleteChar();
         }
 
         cursor = mainFrame->lastCursorPosition();
