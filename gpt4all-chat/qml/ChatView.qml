@@ -71,7 +71,7 @@ Rectangle {
 
     function startupDialogs() {
         if (!LLM.compatHardware()) {
-            Network.sendNonCompatHardware();
+            Network.sendMixpanelEvent("noncompat_hardware")
             errorCompatHardware.open();
             return;
         }
@@ -733,7 +733,7 @@ Rectangle {
         Accessible.description: qsTr("Reset the context and erase current conversation")
 
         onClicked: {
-            Network.sendResetContext(chatModel.count)
+            Network.sendMixpanelEvent("reset_context", { "length": chatModel.count })
             currentChat.reset();
             currentChat.processSystemPrompt();
         }

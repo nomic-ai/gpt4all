@@ -40,7 +40,7 @@ Rectangle {
             Accessible.description: qsTr("Create a new chat")
             onClicked: {
                 ChatListModel.addChat();
-                Network.sendNewChat(ChatListModel.count)
+                Network.sendMixpanelEvent("new_chat", {"number_of_chats": ChatListModel.count})
             }
         }
 
@@ -111,7 +111,7 @@ Rectangle {
                             if (chatName.readOnly)
                                 return;
                             changeName();
-                            Network.sendRenameChat()
+                            Network.sendMixpanelEvent("rename_chat")
                         }
                         function changeName() {
                             ChatListModel.get(index).name = chatName.text
@@ -195,7 +195,7 @@ Rectangle {
                                 }
                                 onClicked: {
                                     ChatListModel.removeChat(ChatListModel.get(index))
-                                    Network.sendRemoveChat()
+                                    Network.sendMixpanelEvent("remove_chat")
                                 }
                                 Accessible.role: Accessible.Button
                                 Accessible.name: qsTr("Confirm chat deletion")

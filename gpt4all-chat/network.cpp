@@ -194,20 +194,7 @@ void Network::sendOptOut()
 
 void Network::sendModelLoaded()
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
     sendMixpanelEvent("model_load");
-}
-
-void Network::sendResetContext(int conversationLength)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-
-    KeyValue kv;
-    kv.key = QString("length");
-    kv.value = QJsonValue(conversationLength);
-    sendMixpanelEvent("reset_context", QVector<KeyValue>{kv});
 }
 
 void Network::sendStartup()
@@ -229,156 +216,12 @@ void Network::sendStartup()
     });
 }
 
-void Network::sendCheckForUpdates()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("check_for_updates");
-}
-
-void Network::sendModelDownloaderDialog()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("download_dialog");
-}
-
-void Network::sendInstallModel(const QString &model)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    sendMixpanelEvent("install_model", QVector<KeyValue>{kv});
-}
-
-void Network::sendRemoveModel(const QString &model)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    sendMixpanelEvent("remove_model", QVector<KeyValue>{kv});
-}
-
-void Network::sendDownloadStarted(const QString &model)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    sendMixpanelEvent("download_started", QVector<KeyValue>{kv});
-}
-
-void Network::sendDownloadCanceled(const QString &model)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    sendMixpanelEvent("download_canceled", QVector<KeyValue>{kv});
-}
-
-void Network::sendDownloadError(const QString &model, int code, const QString &errorString)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    KeyValue kvCode;
-    kvCode.key = QString("code");
-    kvCode.value = QJsonValue(code);
-    KeyValue kvError;
-    kvError.key = QString("error");
-    kvError.value = QJsonValue(errorString);
-    sendMixpanelEvent("download_error", QVector<KeyValue>{kv, kvCode, kvError});
-}
-
-void Network::sendDownloadFinished(const QString &model, bool success)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    KeyValue kvSuccess;
-    kvSuccess.key = QString("success");
-    kvSuccess.value = QJsonValue(success);
-    sendMixpanelEvent("download_finished", QVector<KeyValue>{kv, kvSuccess});
-}
-
-void Network::sendSettingsDialog()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("settings_dialog");
-}
-
 void Network::sendNetworkToggled(bool isActive)
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("isActive");
-    kv.value = QJsonValue(isActive);
-    sendMixpanelEvent("network_toggled", QVector<KeyValue>{kv});
+    sendMixpanelEvent("network_toggled", { {"isActive", isActive} });
 }
 
-void Network::sendNewChat(int count)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("number_of_chats");
-    kv.value = QJsonValue(count);
-    sendMixpanelEvent("new_chat", QVector<KeyValue>{kv});
-}
-
-void Network::sendRemoveChat()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("remove_chat");
-}
-
-void Network::sendRenameChat()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("rename_chat");
-}
-
-void Network::sendChatStarted()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("chat_started");
-}
-
-void Network::sendRecalculatingContext(int conversationLength)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-
-    KeyValue kv;
-    kv.key = QString("length");
-    kv.value = QJsonValue(conversationLength);
-    sendMixpanelEvent("recalc_context", QVector<KeyValue>{kv});
-}
-
-void Network::sendNonCompatHardware()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("noncompat_hardware");
-}
-
-void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &values)
+void Network::sendMixpanelEvent(const QString &ev, const QVariantMap &props)
 {
     if (!MySettings::globalInstance()->networkUsageStatsActive())
         return;
@@ -411,8 +254,8 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
     properties.insert("actualDevice", curChat->device());
     properties.insert("usingServer", curChat->isServer());
 
-    for (const auto& p : values)
-        properties.insert(p.key, p.value);
+    for (const auto &[key, value]: props.asKeyValueRange())
+        properties.insert(key, QJsonValue::fromVariant(value));
 
     QJsonObject event;
     event.insert("event", ev);

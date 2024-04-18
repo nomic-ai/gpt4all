@@ -16,7 +16,7 @@ MyDialog {
     modal: true
     padding: 20
     onOpened: {
-        Network.sendSettingsDialog();
+        Network.sendMixpanelEvent("settings_dialog")
     }
 
     signal downloadClicked
