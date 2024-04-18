@@ -200,17 +200,6 @@ QtObject {
         }
     }
 
-    property color viewBarBackground: {
-        switch (MySettings.chatTheme) {
-            case "LegacyDark":
-                return blue950;
-            case "Dark":
-                return darkgray300;
-            default:
-                return gray300;
-        }
-    }
-
     property color progressForeground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
@@ -384,39 +373,6 @@ QtObject {
                 return accentColor;
             default:
                 return accentColor;
-        }
-    }
-
-    property color iconBackgroundViewBar: {
-        switch (MySettings.chatTheme) {
-            case "LegacyDark":
-                return iconBackgroundLight;
-            case "Dark":
-                return iconBackgroundLight;
-            default:
-                return green600;
-        }
-    }
-
-    property color iconBackgroundViewBarToggled: {
-        switch (MySettings.chatTheme) {
-            case "LegacyDark":
-                return iconBackgroundHovered;
-            case "Dark":
-                return green400;
-            default:
-                return green950;
-        }
-    }
-
-    property color iconBackgroundViewBarHovered: {
-        switch (MySettings.chatTheme) {
-            case "LegacyDark":
-                return iconBackgroundHovered;
-            case "Dark":
-                return iconBackgroundHovered;
-            default:
-                return green950;
         }
     }
 
