@@ -42,6 +42,7 @@ Network::Network()
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
     settings.sync();
+    m_sessionId = generateUniqueId();
     connect(MySettings::globalInstance(), &MySettings::networkIsActiveChanged, this, &Network::handleIsActiveChanged);
     connect(MySettings::globalInstance(), &MySettings::networkUsageStatsActiveChanged, this, &Network::handleUsageStatsActiveChanged);
     if (MySettings::globalInstance()->networkIsActive())
@@ -217,9 +218,10 @@ void Network::sendStartup()
     if (m_ipify.isEmpty())
         return; // when it completes it will send
 
-    const QSize display = QGuiApplication::primaryScreen()->size();
+    const auto *display = QGuiApplication::primaryScreen();
     sendMixpanelEvent("startup", {
-        {"display", QString("%1x%2").arg(display.width()).arg(display.height())},
+        {"$screen_dpi", display->physicalDotsPerInch()},
+        {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
 #if defined(Q_OS_MAC)
         {"cpu", QString::fromStdString(getCPUModel())},
@@ -396,6 +398,10 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
 
     // standard properties
     properties.insert("$os", QSysInfo::prettyProductName());
+    properties.insert("$app_version_string", QCoreApplication::applicationVersion());
+
+    // recommended properties
+    properties.insert("session_id", m_sessionId);
 
     // custom properties
     const auto &curChat = ChatListModel::globalInstance()->currentChat();
@@ -403,6 +409,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
     properties.insert("model", curChat->modelInfo().filename());
     properties.insert("requestedDevice", MySettings::globalInstance()->device());
     properties.insert("actualDevice", curChat->device());
+    properties.insert("usingServer", curChat->isServer());
 
     for (const auto& p : values)
         properties.insert(p.key, p.value);

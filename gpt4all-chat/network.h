@@ -65,6 +65,7 @@ private:
     bool m_shouldSendStartup;
     QString m_ipify;
     QString m_uniqueId;
+    QString m_sessionId;
     QNetworkAccessManager m_networkManager;
     QVector<QNetworkReply*> m_activeUploads;
 
