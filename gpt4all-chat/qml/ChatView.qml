@@ -1289,9 +1289,11 @@ Rectangle {
                     var listElement = chatModel.get(index);
 
                     if (currentChat.responseInProgress) {
+                        Network.sendMixpanelEvent("stop_generating_clicked")
                         listElement.stopped = true
                         currentChat.stopGenerating()
                     } else {
+                        Network.sendMixpanelEvent("regenerate_clicked")
                         currentChat.regenerateResponse()
                         if (chatModel.count) {
                             if (listElement.name === qsTr("Response: ")) {
@@ -1406,6 +1408,7 @@ Rectangle {
                     if (textInput.text === "")
                         return
 
+                    Network.sendMixpanelEvent("send_message")
                     currentChat.stopGenerating()
                     currentChat.newPromptResponsePair(textInput.text);
                     currentChat.prompt(textInput.text,
