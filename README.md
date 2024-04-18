@@ -2,11 +2,6 @@
 
 <p align="center">Open-source large language models that run locally on your CPU and nearly any GPU</p>
 
-
-<p align="center">
-Join the <a href="https://discord.gg/tyc74KNVK3?event=1227642051294658621">GPT4All 2024 Roadmap Townhall</a> on April 18, 2024 at 12pm EST
-</p>
-
 <p align="center">
 <a href="https://gpt4all.io">GPT4All Website and Models</a> • <a href="https://docs.gpt4all.io">GPT4All Documentation</a> • <a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
