@@ -383,18 +383,26 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
 
     Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject properties;
+
+    // basic properties
     properties.insert("token", MIXPANEL_TOKEN);
     properties.insert("time", QDateTime::currentSecsSinceEpoch());
-    properties.insert("distinct_id", m_uniqueId);
+    properties.insert("distinct_id", m_uniqueId); // effectively a device ID
     properties.insert("$insert_id", generateUniqueId());
-    properties.insert("$os", QSysInfo::prettyProductName());
+
+    // reserved properties
     if (!m_ipify.isEmpty())
         properties.insert("ip", m_ipify);
-    properties.insert("name", QCoreApplication::applicationName() + " v"
-        + QCoreApplication::applicationVersion());
-    properties.insert("model", ChatListModel::globalInstance()->currentChat()->modelInfo().filename());
+
+    // standard properties
+    properties.insert("$os", QSysInfo::prettyProductName());
+
+    // custom properties
+    const auto &curChat = ChatListModel::globalInstance()->currentChat();
+    properties.insert("name", QCoreApplication::applicationName() + " v" + QCoreApplication::applicationVersion());
+    properties.insert("model", curChat->modelInfo().filename());
     properties.insert("requestedDevice", MySettings::globalInstance()->device());
-    properties.insert("actualDevice", ChatListModel::globalInstance()->currentChat()->device());
+    properties.insert("actualDevice", curChat->device());
 
     for (const auto& p : values)
         properties.insert(p.key, p.value);
