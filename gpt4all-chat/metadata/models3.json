@@ -10,7 +10,7 @@
     "parameters": "8 billion",
     "quant": "q4_0",
     "type": "LLaMA3",
-    "description": "<ul><li>Fast responses</li><li>Chat based model</li><li>Accepts system prompts in Llama 3 format</li><li>Trained by Meta</li></ul>",
+    "description": "<ul><li>Fast responses</li><li>Chat based model</li><li>Accepts system prompts in Llama 3 format</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3/license/\">Meta Llama 3 Community License</a></li></ul>",
     "url": "https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf",
     "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2<|eot_id|>",
     "systemPrompt": ""
