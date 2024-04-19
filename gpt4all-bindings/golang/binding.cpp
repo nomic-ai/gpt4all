@@ -35,8 +35,9 @@ void* load_model(const char *fname, int n_threads) {
 std::string res = "";
 void * mm;
 
-void model_prompt( const char *prompt, void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, int top_k,
-                            float top_p, float min_p, float temp, int n_batch,float ctx_erase)
+void model_prompt(const char *prompt, const char *prompt_template, int special, const char *fake_reply, 
+                    void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, 
+                    int top_k, float top_p, float min_p, float temp, int n_batch,float ctx_erase)
 {
     llmodel_model* model = (llmodel_model*) m;
 
@@ -88,11 +89,11 @@ void model_prompt( const char *prompt, void *m, char* result, int repeat_last_n,
     prompt_context->temp = temp;
     prompt_context->n_batch = n_batch;    
 
-    llmodel_prompt(model, prompt,
+    llmodel_prompt(model, prompt, prompt_template,
                         lambda_prompt,
                         lambda_response,
                     lambda_recalculate,
-                    prompt_context );
+                    prompt_context, special, fake_reply);
 
     strcpy(result, res.c_str()); 
 

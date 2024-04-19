@@ -47,7 +47,7 @@ func main() {
 	for {
 		text := readMultiLineInput(reader)
 
-		_, err := l.Predict(text, gpt4all.SetTokens(tokens), gpt4all.SetTopK(90), gpt4all.SetTopP(0.86))
+		_, err := l.Predict(text, "", "", gpt4all.SetTokens(tokens), gpt4all.SetTopK(90), gpt4all.SetTopP(0.86))
 		if err != nil {
 			panic(err)
 		}
