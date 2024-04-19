@@ -535,8 +535,9 @@ QSqlError initDb()
 
 Database::Database(int chunkSize)
     : QObject(nullptr)
-    , m_watcher(new QFileSystemWatcher(this))
     , m_chunkSize(chunkSize)
+    , m_scanTimer(new QTimer(this))
+    , m_watcher(new QFileSystemWatcher(this))
     , m_embLLM(new EmbeddingLLM)
     , m_embeddings(new Embeddings(this))
 {
@@ -559,8 +560,8 @@ void Database::scheduleNext(int folder_id, size_t countForFolder)
         emit updateIndexing(folder_id, false);
         emit updateInstalled(folder_id, true);
     }
-    if (!m_docsToScan.isEmpty())
-        QTimer::singleShot(0, this, &Database::scanQueue);
+    if (m_docsToScan.isEmpty())
+        m_scanTimer->stop();
 }
 
 void Database::handleDocumentError(const QString &errorMessage,
@@ -721,7 +722,6 @@ void Database::removeFolderFromDocumentQueue(int folder_id)
         return;
     m_docsToScan.remove(folder_id);
     emit removeFolderById(folder_id);
-    emit docsToScanChanged();
 }
 
 void Database::enqueueDocumentInternal(const DocumentInfo &info, bool prepend)
@@ -745,13 +745,15 @@ void Database::enqueueDocuments(int folder_id, const QVector<DocumentInfo> &info
     const size_t bytes = countOfBytes(folder_id);
     emit updateCurrentBytesToIndex(folder_id, bytes);
     emit updateTotalBytesToIndex(folder_id, bytes);
-    emit docsToScanChanged();
+    m_scanTimer->start();
 }
 
 void Database::scanQueue()
 {
-    if (m_docsToScan.isEmpty())
+    if (m_docsToScan.isEmpty()) {
+        m_scanTimer->stop();
         return;
+    }
 
     DocumentInfo info = dequeueDocument();
     const size_t countForFolder = countOfDocuments(info.folder);
@@ -925,7 +927,7 @@ void Database::start()
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Database::directoryChanged);
     connect(m_embLLM, &EmbeddingLLM::embeddingsGenerated, this, &Database::handleEmbeddingsGenerated);
     connect(m_embLLM, &EmbeddingLLM::errorGenerated, this, &Database::handleErrorGenerated);
-    connect(this, &Database::docsToScanChanged, this, &Database::scanQueue);
+    m_scanTimer->callOnTimeout(this, &Database::scanQueue);
     if (!QSqlDatabase::drivers().contains("QSQLITE")) {
         qWarning() << "ERROR: missing sqllite driver";
     } else {

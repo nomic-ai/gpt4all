@@ -109,6 +109,7 @@ private:
 
 private:
     int m_chunkSize;
+    QTimer *m_scanTimer;
     QMap<int, QQueue<DocumentInfo>> m_docsToScan;
     QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
