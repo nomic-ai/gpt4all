@@ -24,7 +24,7 @@ func main() {
 		return true
 	})
 
-	_, err = model.Predict("Here are 4 steps to create a website:", gpt4all.SetTemperature(0.1))
+	_, err = model.Predict("Here are 4 steps to create a website:", "", "", gpt4all.SetTemperature(0.1))
 	if err != nil {
 		panic(err)
 	}
