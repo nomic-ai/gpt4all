@@ -60,7 +60,7 @@ public:
 public Q_SLOTS:
     void scanQueue();
     void scanDocuments(int folder_id, const QString &folder_path);
-    void addFolder(const QString &collection, const QString &path);
+    void addFolder(const QString &collection, const QString &path, bool fromDb);
     void removeFolder(const QString &collection, const QString &path);
     void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void cleanDB();
@@ -78,7 +78,7 @@ Q_SIGNALS:
     void updateTotalBytesToIndex(int folder_id, size_t totalBytesToIndex);
     void updateCurrentEmbeddingsToIndex(int folder_id, size_t currentBytesToIndex);
     void updateTotalEmbeddingsToIndex(int folder_id, size_t totalBytesToIndex);
-    void addCollectionItem(const CollectionItem &item);
+    void addCollectionItem(const CollectionItem &item, bool fromDb);
     void removeFolderById(int folder_id);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 

@@ -66,7 +66,7 @@ void LocalDocs::addFolder(const QString &collection, const QString &path)
 {
     const QUrl url(path);
     const QString localPath = url.isLocalFile() ? url.toLocalFile() : path;
-    emit requestAddFolder(collection, localPath);
+    emit requestAddFolder(collection, localPath, false);
 }
 
 void LocalDocs::removeFolder(const QString &collection, const QString &path)

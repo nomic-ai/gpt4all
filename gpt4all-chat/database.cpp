@@ -490,7 +490,7 @@ QSqlError initDb()
     i.collection = collection_name;
     i.folder_path = folder_path;
     i.folder_id = folder_id;
-    emit addCollectionItem(i);
+    emit addCollectionItem(i, false);
 
     // Add a document
     int document_time = 123456789;
@@ -958,10 +958,10 @@ void Database::addCurrentFolders()
     emit collectionListUpdated(collections);
 
     for (const auto &i : collections)
-        addFolder(i.collection, i.folder_path);
+        addFolder(i.collection, i.folder_path, true);
 }
 
-void Database::addFolder(const QString &collection, const QString &path)
+void Database::addFolder(const QString &collection, const QString &path, bool fromDb)
 {
     QFileInfo info(path);
     if (!info.exists() || !info.isReadable()) {
@@ -1003,7 +1003,7 @@ void Database::addFolder(const QString &collection, const QString &path)
         i.collection = collection;
         i.folder_path = path;
         i.folder_id = folder_id;
-        emit addCollectionItem(i);
+        emit addCollectionItem(i, fromDb);
     }
 
     addFolderToWatch(path);

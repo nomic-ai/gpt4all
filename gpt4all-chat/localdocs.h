@@ -26,7 +26,7 @@ public Q_SLOTS:
     void aboutToQuit();
 
 Q_SIGNALS:
-    void requestAddFolder(const QString &collection, const QString &path);
+    void requestAddFolder(const QString &collection, const QString &path, bool fromDb);
     void requestRemoveFolder(const QString &collection, const QString &path);
     void requestChunkSizeChange(int chunkSize);
     void localDocsModelChanged();

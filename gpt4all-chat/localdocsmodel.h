@@ -55,7 +55,7 @@ public Q_SLOTS:
     void updateTotalBytesToIndex(int folder_id, size_t totalBytesToIndex);
     void updateCurrentEmbeddingsToIndex(int folder_id, size_t currentBytesToIndex);
     void updateTotalEmbeddingsToIndex(int folder_id, size_t totalBytesToIndex);
-    void addCollectionItem(const CollectionItem &item);
+    void addCollectionItem(const CollectionItem &item, bool fromDb);
     void removeFolderById(int folder_id);
     void removeCollectionPath(const QString &name, const QString &path);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
@@ -65,6 +65,7 @@ private:
     void updateField(int folder_id, T value,
         const std::function<void(CollectionItem&, T)>& updater,
         const QVector<int>& roles);
+    void removeCollectionIf(std::function<bool(CollectionItem)> const &predicate);
 
 private:
     QList<CollectionItem> m_collectionList;
