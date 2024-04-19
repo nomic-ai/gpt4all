@@ -1,10 +1,10 @@
 [
   {
     "order": "a",
-    "md5sum": "046ab8ff018c0755ce5048e45df1a57b",
+    "md5sum": "c87ad09e1e4c8f9c35a5fcef52b6f1c9",
     "name": "Llama 3 Instruct",
     "filename": "Meta-Llama-3-8B-Instruct.Q4_0.gguf",
-    "filesize": "4661724416",
+    "filesize": "4661724384",
     "requires": "2.7.1",
     "ramrequired": "8",
     "parameters": "8 billion",
