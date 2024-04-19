@@ -191,19 +191,6 @@ void LocalDocsModel::removeCollectionPath(const QString &name, const QString &pa
     }
 }
 
-void LocalDocsModel::removeCollectionItem(const QString &collectionName)
-{
-    for (int i = 0; i < m_collectionList.size();) {
-        if (m_collectionList.at(i).collection == collectionName) {
-            beginRemoveRows(QModelIndex(), i, i);
-            m_collectionList.removeAt(i);
-            endRemoveRows();
-        } else {
-            ++i;
-        }
-    }
-}
-
 void LocalDocsModel::collectionListUpdated(const QList<CollectionItem> &collectionList)
 {
     beginResetModel();

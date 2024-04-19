@@ -50,8 +50,6 @@ LocalDocs::LocalDocs()
         m_localDocsModel, &LocalDocsModel::addCollectionItem, Qt::QueuedConnection);
     connect(m_database, &Database::removeFolderById,
         m_localDocsModel, &LocalDocsModel::removeFolderById, Qt::QueuedConnection);
-    connect(m_database, &Database::removeCollectionItem,
-        m_localDocsModel, &LocalDocsModel::removeCollectionItem, Qt::QueuedConnection);
     connect(m_database, &Database::collectionListUpdated,
         m_localDocsModel, &LocalDocsModel::collectionListUpdated, Qt::QueuedConnection);
 

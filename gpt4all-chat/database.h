@@ -80,7 +80,6 @@ Q_SIGNALS:
     void updateTotalEmbeddingsToIndex(int folder_id, size_t totalBytesToIndex);
     void addCollectionItem(const CollectionItem &item);
     void removeFolderById(int folder_id);
-    void removeCollectionItem(const QString &collectionName);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
 private Q_SLOTS:
