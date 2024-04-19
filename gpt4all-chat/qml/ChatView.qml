@@ -738,7 +738,7 @@ Rectangle {
         Accessible.description: qsTr("Reset the context and erase current conversation")
 
         onClicked: {
-            Network.sendMixpanelEvent("reset_context", { "length": chatModel.count })
+            Network.trackChatEvent("reset_context", { "length": chatModel.count })
             currentChat.reset();
             currentChat.processSystemPrompt();
         }
@@ -1293,11 +1293,11 @@ Rectangle {
                     var listElement = chatModel.get(index);
 
                     if (currentChat.responseInProgress) {
-                        Network.sendMixpanelEvent("stop_generating_clicked")
+                        Network.trackChatEvent("stop_generating_clicked")
                         listElement.stopped = true
                         currentChat.stopGenerating()
                     } else {
-                        Network.sendMixpanelEvent("regenerate_clicked")
+                        Network.trackChatEvent("regenerate_clicked")
                         currentChat.regenerateResponse()
                         if (chatModel.count) {
                             if (listElement.name === qsTr("Response: ")) {
@@ -1412,7 +1412,7 @@ Rectangle {
                     if (textInput.text === "")
                         return
 
-                    Network.sendMixpanelEvent("send_message")
+                    Network.trackChatEvent("send_message")
                     currentChat.stopGenerating()
                     currentChat.newPromptResponsePair(textInput.text);
                     currentChat.prompt(textInput.text,

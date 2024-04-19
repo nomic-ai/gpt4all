@@ -193,7 +193,7 @@ void Network::sendOptOut()
 
 void Network::sendModelLoaded()
 {
-    sendMixpanelEvent("model_load", {
+    trackChatEvent("model_load", {
         {"requestedDevice", MySettings::globalInstance()->device()},
         {"usingServer", ChatListModel::globalInstance()->currentChat()->isServer()},
     });
@@ -215,6 +215,14 @@ void Network::sendStartup()
 void Network::sendNetworkToggled(bool isActive)
 {
     sendMixpanelEvent("network_toggled", { {"isActive", isActive} });
+}
+
+void Network::trackChatEvent(const QString &ev, QVariantMap props)
+{
+    const auto &curChat = ChatListModel::globalInstance()->currentChat();
+    props.insert("model", curChat->modelInfo().filename());
+    props.insert("actualDevice", curChat->device());
+    sendMixpanelEvent(ev, props);
 }
 
 void Network::sendMixpanelEvent(const QString &ev, const QVariantMap &props)
@@ -243,10 +251,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVariantMap &props)
     properties.insert("session_id", m_sessionId);
 
     // custom properties
-    const auto &curChat = ChatListModel::globalInstance()->currentChat();
     properties.insert("name", QCoreApplication::applicationName() + " v" + QCoreApplication::applicationVersion());
-    properties.insert("model", curChat->modelInfo().filename());
-    properties.insert("actualDevice", curChat->device());
 
     for (const auto &[key, value]: props.asKeyValueRange())
         properties.insert(key, QJsonValue::fromVariant(value));

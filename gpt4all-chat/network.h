@@ -19,6 +19,7 @@ public:
 
     Q_INVOKABLE QString generateUniqueId() const;
     Q_INVOKABLE bool sendConversation(const QString &ingestId, const QString &conversation);
+    Q_INVOKABLE void trackChatEvent(const QString &event, QVariantMap props = QVariantMap());
     Q_INVOKABLE void sendMixpanelEvent(const QString &event, const QVariantMap &props = QVariantMap());
 
 Q_SIGNALS:

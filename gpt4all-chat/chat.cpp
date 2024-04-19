@@ -229,7 +229,7 @@ void Chat::responseStopped()
     if (m_generatedName.isEmpty())
         emit generateNameRequested();
 
-    Network::globalInstance()->sendMixpanelEvent("response_complete", {
+    Network::globalInstance()->trackChatEvent("response_complete", {
         {"first", m_firstResponse},
         {"message_count", chatModel()->count()},
     });
@@ -335,7 +335,7 @@ void Chat::generatedNameChanged(const QString &name)
 
 void Chat::handleRecalculating()
 {
-    Network::globalInstance()->sendMixpanelEvent("recalc_context", { {"length", m_chatModel->count()} });
+    Network::globalInstance()->trackChatEvent("recalc_context", { {"length", m_chatModel->count()} });
     emit recalcChanged();
 }
 
