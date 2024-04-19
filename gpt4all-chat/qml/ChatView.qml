@@ -30,6 +30,10 @@ Rectangle {
         startupDialogs();
     }
 
+    Component.onDestruction: {
+        Network.sendMixpanelEvent("session_end")
+    }
+
     Connections {
         target: firstStartDialog
         function onClosed() {
