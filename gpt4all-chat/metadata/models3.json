@@ -1,6 +1,22 @@
 [
   {
     "order": "a",
+    "md5sum": "c87ad09e1e4c8f9c35a5fcef52b6f1c9",
+    "name": "Llama 3 Instruct",
+    "filename": "Meta-Llama-3-8B-Instruct.Q4_0.gguf",
+    "filesize": "4661724384",
+    "requires": "2.7.1",
+    "ramrequired": "8",
+    "parameters": "8 billion",
+    "quant": "q4_0",
+    "type": "LLaMA3",
+    "description": "<ul><li>Fast responses</li><li>Chat based model</li><li>Accepts system prompts in Llama 3 format</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3/license/\">Meta Llama 3 Community License</a></li></ul>",
+    "url": "https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf",
+    "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2<|eot_id|>",
+    "systemPrompt": ""
+  },
+  {
+    "order": "b",
     "md5sum": "a5f6b4eabd3992da4d7fb7f020f921eb",
     "name": "Nous Hermes 2 Mistral DPO",
     "filename": "Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf",
@@ -14,22 +30,6 @@
     "url": "https://huggingface.co/NousResearch/Nous-Hermes-2-Mistral-7B-DPO-GGUF/resolve/main/Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
     "systemPrompt": ""
-  },
-  {
-    "order": "b",
-    "md5sum": "f692417a22405d80573ac10cb0cd6c6a",
-    "name": "Mistral OpenOrca",
-    "filename": "mistral-7b-openorca.gguf2.Q4_0.gguf",
-    "filesize": "4108928128",
-    "requires": "2.5.0",
-    "ramrequired": "8",
-    "parameters": "7 billion",
-    "quant": "q4_0",
-    "type": "Mistral",
-    "description": "<strong>Strong overall fast chat model</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by Mistral AI<li>Finetuned on OpenOrca dataset curated via <a href=\"https://atlas.nomic.ai/\">Nomic Atlas</a><li>Licensed for commercial use</ul>",
-    "url": "https://gpt4all.io/models/gguf/mistral-7b-openorca.gguf2.Q4_0.gguf",
-    "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
-    "systemPrompt": "<|im_start|>system\nYou are MistralOrca, a large language model trained by Alignment Lab AI.\n<|im_end|>\n"
   },
   {
     "order": "c",
@@ -49,6 +49,22 @@
   },
   {
     "order": "d",
+    "md5sum": "f692417a22405d80573ac10cb0cd6c6a",
+    "name": "Mistral OpenOrca",
+    "filename": "mistral-7b-openorca.gguf2.Q4_0.gguf",
+    "filesize": "4108928128",
+    "requires": "2.7.1",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "Mistral",
+    "description": "<strong>Strong overall fast chat model</strong><br><ul><li>Fast responses</li><li>Chat based model</li><li>Trained by Mistral AI<li>Finetuned on OpenOrca dataset curated via <a href=\"https://atlas.nomic.ai/\">Nomic Atlas</a><li>Licensed for commercial use</ul>",
+    "url": "https://gpt4all.io/models/gguf/mistral-7b-openorca.gguf2.Q4_0.gguf",
+    "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
+    "systemPrompt": "<|im_start|>system\nYou are MistralOrca, a large language model trained by Alignment Lab AI.\n<|im_end|>\n"
+  },
+  {
+    "order": "e",
     "md5sum": "c4c78adf744d6a20f05c8751e3961b84",
     "name": "GPT4All Falcon",
     "filename": "gpt4all-falcon-newbpe-q4_0.gguf",
@@ -64,7 +80,7 @@
     "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
   },
   {
-    "order": "e",
+    "order": "f",
     "md5sum": "00c8593ba57f5240f59662367b3ed4a5",
     "name": "Orca 2 (Medium)",
     "filename": "orca-2-7b.Q4_0.gguf",
@@ -79,7 +95,7 @@
     "url": "https://gpt4all.io/models/gguf/orca-2-7b.Q4_0.gguf"
   },
   {
-    "order": "f",
+    "order": "g",
     "md5sum": "3c0d63c4689b9af7baa82469a6f51a19",
     "name": "Orca 2 (Full)",
     "filename": "orca-2-13b.Q4_0.gguf",
@@ -94,7 +110,7 @@
     "url": "https://gpt4all.io/models/gguf/orca-2-13b.Q4_0.gguf"
   },
   {
-    "order": "g",
+    "order": "h",
     "md5sum": "5aff90007499bce5c64b1c0760c0b186",
     "name": "Wizard v1.2",
     "filename": "wizardlm-13b-v1.2.Q4_0.gguf",
@@ -109,7 +125,23 @@
     "url": "https://gpt4all.io/models/gguf/wizardlm-13b-v1.2.Q4_0.gguf"
   },
   {
-    "order": "h",
+    "order": "i",
+    "md5sum": "31b47b4e8c1816b62684ac3ca373f9e1",
+    "name": "Ghost 7B v0.9.1",
+    "filename": "ghost-7b-v0.9.1-Q4_0.gguf",
+    "filesize": "4108916960",
+    "requires": "2.7.1",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "Mistral",
+    "description": "<strong>Ghost 7B v0.9.1</strong> fast, powerful and smooth for Vietnamese and English languages.",
+    "url": "https://huggingface.co/lamhieu/ghost-7b-v0.9.1-gguf/resolve/main/ghost-7b-v0.9.1-Q4_0.gguf",
+    "promptTemplate": "<|user|>\n%1</s>\n<|assistant|>\n%2</s>\n",
+    "systemPrompt": "<|system|>\nYou are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior.\n</s>"
+  },
+  {
+    "order": "j",
     "md5sum": "3d12810391d04d1153b692626c0c6e16",
     "name": "Hermes",
     "filename": "nous-hermes-llama2-13b.Q4_0.gguf",
@@ -125,7 +157,7 @@
     "promptTemplate": "### Instruction:\n%1\n\n### Response:\n"
   },
   {
-    "order": "i",
+    "order": "k",
     "md5sum": "40388eb2f8d16bb5d08c96fdfaac6b2c",
     "name": "Snoozy",
     "filename": "gpt4all-13b-snoozy-q4_0.gguf",
@@ -140,12 +172,12 @@
     "url": "https://gpt4all.io/models/gguf/gpt4all-13b-snoozy-q4_0.gguf"
   },
   {
-    "order": "j",
+    "order": "l",
     "md5sum": "15dcb4d7ea6de322756449c11a0b7545",
     "name": "MPT Chat",
     "filename": "mpt-7b-chat-newbpe-q4_0.gguf",
     "filesize": "3912373472",
-    "requires": "2.6.0",
+    "requires": "2.7.1",
     "removedIn": "2.7.3",
     "ramrequired": "8",
     "parameters": "7 billion",
@@ -157,7 +189,7 @@
     "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n"
   },
   {
-    "order": "j",
+    "order": "l",
     "md5sum": "ab5d8e8a2f79365ea803c1f1d0aa749d",
     "name": "MPT Chat",
     "filename": "mpt-7b-chat.gguf4.Q4_0.gguf",
@@ -173,7 +205,7 @@
     "systemPrompt": "<|im_start|>system\n- You are a helpful assistant chatbot trained by MosaicML.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>\n"
   },
   {
-    "order": "k",
+    "order": "m",
     "md5sum": "0e769317b90ac30d6e09486d61fefa26",
     "name": "Mini Orca (Small)",
     "filename": "orca-mini-3b-gguf2-q4_0.gguf",
@@ -189,7 +221,7 @@
     "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
-    "order": "l",
+    "order": "n",
     "md5sum": "c232f17e09bca4b7ee0b5b1f4107c01e",
     "disableGUI": "true",
     "name": "Replit",
@@ -206,7 +238,7 @@
     "url": "https://gpt4all.io/models/gguf/replit-code-v1_5-3b-newbpe-q4_0.gguf"
   },
   {
-    "order": "m",
+    "order": "o",
     "md5sum": "70841751ccd95526d3dcfa829e11cd4c",
     "disableGUI": "true",
     "name": "Starcoder",
@@ -223,7 +255,7 @@
     "url": "https://gpt4all.io/models/gguf/starcoder-newbpe-q4_0.gguf"
   },
   {
-    "order": "n",
+    "order": "p",
     "md5sum": "e973dd26f0ffa6e46783feaea8f08c83",
     "disableGUI": "true",
     "name": "Rift coder",
@@ -240,7 +272,7 @@
     "url": "https://gpt4all.io/models/gguf/rift-coder-v0-7b-q4_0.gguf"
   },
   {
-    "order": "o",
+    "order": "q",
     "md5sum": "e479e6f38b59afc51a470d1953a6bfc7",
     "disableGUI": "true",
     "name": "SBert",
@@ -258,7 +290,7 @@
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
   },
   {
-    "order": "o",
+    "order": "q",
     "md5sum": "dd90e2cb7f8e9316ac3796cece9883b5",
     "name": "SBert",
     "filename": "all-MiniLM-L6-v2.gguf2.f16.gguf",
@@ -273,7 +305,7 @@
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2.gguf2.f16.gguf"
   },
   {
-    "order": "p",
+    "order": "r",
     "md5sum": "919de4dd6f25351bcb0223790db1932d",
     "name": "EM German Mistral",
     "filename": "em_german_mistral_v01.Q4_0.gguf",
@@ -289,7 +321,7 @@
     "systemPrompt": "Du bist ein hilfreicher Assistent. "
   },
   {
-    "order": "q",
+    "order": "s",
     "md5sum": "60ea031126f82db8ddbbfecc668315d2",
     "disableGUI": "true",
     "name": "Nomic Embed Text v1",
@@ -306,7 +338,7 @@
     "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.f16.gguf"
   },
   {
-    "order": "r",
+    "order": "t",
     "md5sum": "a5401e7f7e46ed9fcaed5b60a281d547",
     "disableGUI": "true",
     "name": "Nomic Embed Text v1.5",
@@ -321,21 +353,5 @@
     "systemPrompt": "",
     "description": "nomic-embed-text-v1.5",
     "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf"
-  },
-  {
-    "order": "g",
-    "md5sum": "31b47b4e8c1816b62684ac3ca373f9e1",
-    "name": "Ghost 7B v0.9.1",
-    "filename": "ghost-7b-v0.9.1-Q4_0.gguf",
-    "filesize": "4108916960",
-    "requires": "2.5.0",
-    "ramrequired": "8",
-    "parameters": "7 billion",
-    "quant": "q4_0",
-    "type": "Mistral",
-    "description": "<strong>Ghost 7B v0.9.1</strong> fast, powerful and smooth for Vietnamese and English languages.",
-    "url": "https://huggingface.co/lamhieu/ghost-7b-v0.9.1-gguf/resolve/main/ghost-7b-v0.9.1-Q4_0.gguf",
-    "promptTemplate": "<|user|>\n%1</s>\n<|assistant|>\n%2</s>\n",
-    "systemPrompt": "<|system|>\nYou are Ghost created by Lam Hieu. You are a helpful and knowledgeable assistant. You like to help and always give honest information, in its original language. In communication, you are always respectful, equal and promote positive behavior.\n</s>"
   }
 ]
