@@ -1,6 +1,8 @@
 #include "network.h"
-#include "llm.h"
+
 #include "chatlistmodel.h"
+#include "llm.h"
+#include "localdocs.h"
 #include "mysettings.h"
 
 #include <QCoreApplication>
@@ -222,6 +224,8 @@ void Network::trackChatEvent(const QString &ev, QVariantMap props)
     const auto &curChat = ChatListModel::globalInstance()->currentChat();
     props.insert("model", curChat->modelInfo().filename());
     props.insert("actualDevice", curChat->device());
+    props.insert("doc_collections_enabled", curChat->collectionList().count());
+    props.insert("doc_collections_total", LocalDocs::globalInstance()->localDocsModel()->rowCount());
     sendMixpanelEvent(ev, props);
 }
 
