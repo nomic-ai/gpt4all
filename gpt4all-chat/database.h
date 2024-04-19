@@ -11,6 +11,8 @@
 #include "embllm.h"
 
 class Embeddings;
+class QTimer;
+
 struct DocumentInfo
 {
     int folder;
@@ -106,11 +108,13 @@ private:
     void removeFolderFromDocumentQueue(int folder_id);
     void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
+    void updateIndexingStatus();
 
 private:
     int m_chunkSize;
     QTimer *m_scanTimer;
     QMap<int, QQueue<DocumentInfo>> m_docsToScan;
+    bool m_isIndexing = false;
     QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
     QFileSystemWatcher *m_watcher;

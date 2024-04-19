@@ -1,7 +1,9 @@
 #include "database.h"
-#include "mysettings.h"
-#include "embllm.h"
+
 #include "embeddings.h"
+#include "embllm.h"
+#include "mysettings.h"
+#include "network.h"
 
 #include <QTimer>
 #include <QPdfDocument>
@@ -560,8 +562,10 @@ void Database::scheduleNext(int folder_id, size_t countForFolder)
         emit updateIndexing(folder_id, false);
         emit updateInstalled(folder_id, true);
     }
-    if (m_docsToScan.isEmpty())
+    if (m_docsToScan.isEmpty()) {
         m_scanTimer->stop();
+        updateIndexingStatus();
+    }
 }
 
 void Database::handleDocumentError(const QString &errorMessage,
@@ -752,6 +756,7 @@ void Database::scanQueue()
 {
     if (m_docsToScan.isEmpty()) {
         m_scanTimer->stop();
+        updateIndexingStatus();
         return;
     }
 
@@ -959,6 +964,8 @@ void Database::addCurrentFolders()
 
     for (const auto &i : collections)
         addFolder(i.collection, i.folder_path, true);
+
+    updateIndexingStatus();
 }
 
 void Database::addFolder(const QString &collection, const QString &path, bool fromDb)
@@ -1008,6 +1015,10 @@ void Database::addFolder(const QString &collection, const QString &path, bool fr
 
     addFolderToWatch(path);
     scanDocuments(folder_id, path);
+
+    if (!fromDb) {
+        updateIndexingStatus();
+    }
 }
 
 void Database::removeFolder(const QString &collection, const QString &path)
@@ -1288,4 +1299,15 @@ void Database::directoryChanged(const QString &path)
 
     // Rescan the documents associated with the folder
     scanDocuments(folder_id, path);
+    updateIndexingStatus();
+}
+
+void Database::updateIndexingStatus() {
+    Q_ASSERT(m_scanTimer->isActive() || m_docsToScan.isEmpty());
+    if (!m_isIndexing && m_scanTimer->isActive()) {
+        Network::globalInstance()->sendMixpanelEvent("localdocs_indexing_start");
+    } else if (m_isIndexing && !m_scanTimer->isActive()) {
+        Network::globalInstance()->sendMixpanelEvent("localdocs_indexing_complete");
+    }
+    m_isIndexing = m_scanTimer->isActive();
 }
