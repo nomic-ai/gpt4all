@@ -17,6 +17,29 @@ class LLModel {
 public:
     using Token = int32_t;
 
+    class BadArchError: public std::runtime_error {
+    public:
+        BadArchError(std::string arch)
+            : runtime_error("Unsupported model architecture: " + arch)
+            , m_arch(std::move(arch))
+            {}
+
+        const std::string &arch() const noexcept { return m_arch; }
+
+    private:
+        std::string m_arch;
+    };
+
+    class MissingImplementationError: public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+    class UnsupportedModelError: public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
     struct GPUDevice {
         int index;
         int type;

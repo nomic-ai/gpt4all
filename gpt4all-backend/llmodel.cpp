@@ -142,11 +142,11 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
     }
 
     if (!buildVariantMatched)
-        throw std::runtime_error("Could not find any implementations for build variant: " + buildVariant);
+        throw MissingImplementationError("Could not find any implementations for build variant: " + buildVariant);
     if (!archName)
-        throw std::runtime_error("Unsupported file format");
+        throw UnsupportedModelError("Unsupported file format");
 
-    throw std::runtime_error("Unsupported model architecture: " + archName.value());
+    throw BadArchError(std::move(*archName));
 }
 
 LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant, int n_ctx) {
