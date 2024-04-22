@@ -54,7 +54,7 @@ public:
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
     Q_INVOKABLE void installModel(const QString &modelFile, const QString &apiKey);
     Q_INVOKABLE void removeModel(const QString &modelFile);
-    Q_INVOKABLE bool isFirstStart() const;
+    Q_INVOKABLE bool isFirstStart(bool writeVersion = false) const;
 
 public Q_SLOTS:
     void updateReleaseNotes();

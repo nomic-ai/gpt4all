@@ -1,6 +1,7 @@
 #include "network.h"
 
 #include "chatlistmodel.h"
+#include "download.h"
 #include "llm.h"
 #include "localdocs.h"
 #include "mysettings.h"
@@ -44,31 +45,30 @@ Network::Network()
     settings.setValue("uniqueId", m_uniqueId);
     settings.sync();
     m_sessionId = generateUniqueId();
-    connect(MySettings::globalInstance(), &MySettings::networkIsActiveChanged, this, &Network::handleIsActiveChanged);
-    connect(MySettings::globalInstance(), &MySettings::networkUsageStatsActiveChanged, this, &Network::handleUsageStatsActiveChanged);
-    if (MySettings::globalInstance()->networkIsActive())
+
+    const auto *mySettings = MySettings::globalInstance();
+    connect(mySettings, &MySettings::networkIsActiveChanged, this, &Network::handleIsActiveChanged);
+    connect(mySettings, &MySettings::networkUsageStatsActiveChanged, this, &Network::handleUsageStatsActiveChanged);
+
+    m_hasSentOptOut = !Download::globalInstance()->isFirstStart() && !mySettings->networkUsageStatsActive();
+
+    if (mySettings->networkIsActive())
         sendHealth();
-    if (MySettings::globalInstance()->networkUsageStatsActive())
-        sendIpify();
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Network::handleSslErrors);
+}
+
+// NOTE: this won't be useful until we make it possible to change this via the settings page
+void Network::handleUsageStatsActiveChanged()
+{
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
+        m_sendUsageStats = false;
 }
 
 void Network::handleIsActiveChanged()
 {
     if (MySettings::globalInstance()->networkUsageStatsActive())
         sendHealth();
-}
-
-void Network::handleUsageStatsActiveChanged()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        sendOptOut();
-    else {
-        // model might be loaded already when user opt-in for first time
-        sendStartup();
-        sendIpify();
-    }
 }
 
 QString Network::generateUniqueId() const
@@ -203,6 +203,21 @@ void Network::sendModelLoaded()
 
 void Network::sendStartup()
 {
+    const auto *mySettings = MySettings::globalInstance();
+    Q_ASSERT(mySettings->isNetworkUsageStatsActiveSet());
+    if (!mySettings->networkUsageStatsActive()) {
+        // send a single opt-out per session after the user has made their selections,
+        // unless this is a normal start (same version) and the user was already opted out
+        if (!m_hasSentOptOut) {
+            sendOptOut();
+            m_hasSentOptOut = true;
+        }
+        return;
+    }
+
+    // only chance to enable usage stats is at the start of a new session
+    m_sendUsageStats = true;
+
     const auto *display = QGuiApplication::primaryScreen();
     sendMixpanelEvent("startup", {
         {"$screen_dpi", display->physicalDotsPerInch()},
@@ -212,6 +227,7 @@ void Network::sendStartup()
         {"cpu", QString::fromStdString(getCPUModel())},
 #endif
     });
+    sendIpify();
 }
 
 void Network::sendNetworkToggled(bool isActive)
@@ -231,7 +247,7 @@ void Network::trackChatEvent(const QString &ev, QVariantMap props)
 
 void Network::sendMixpanelEvent(const QString &ev, const QVariantMap &props)
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
+    if (!m_sendUsageStats)
         return;
 
     Q_ASSERT(ChatListModel::globalInstance()->currentChat());
@@ -280,7 +296,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVariantMap &props)
 
 void Network::sendIpify()
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive() || !m_ipify.isEmpty())
+    if (!m_sendUsageStats || !m_ipify.isEmpty())
         return;
 
     QUrl ipifyUrl("https://api.ipify.org");
@@ -295,7 +311,7 @@ void Network::sendIpify()
 
 void Network::sendMixpanel(const QByteArray &json, bool isOptOut)
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive() && !isOptOut)
+    if (!m_sendUsageStats)
         return;
 
     QUrl trackUrl("https://api.mixpanel.com/track");
@@ -311,7 +327,6 @@ void Network::sendMixpanel(const QByteArray &json, bool isOptOut)
 
 void Network::handleIpifyFinished()
 {
-    Q_ASSERT(MySettings::globalInstance()->networkUsageStatsActive());
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply)
         return;

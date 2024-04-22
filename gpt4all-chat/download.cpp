@@ -75,13 +75,13 @@ bool Download::hasNewerRelease() const
     return compareVersions(versions.first(), currentVersion);
 }
 
-bool Download::isFirstStart() const
+bool Download::isFirstStart(bool writeVersion) const
 {
     QSettings settings;
     settings.sync();
     QString lastVersionStarted = settings.value("download/lastVersionStarted").toString();
     bool first = lastVersionStarted != QCoreApplication::applicationVersion();
-    if (first) {
+    if (first && writeVersion) {
         settings.setValue("download/lastVersionStarted", QCoreApplication::applicationVersion());
         // let the user select these again
         settings.remove("network/usageStatsActive");

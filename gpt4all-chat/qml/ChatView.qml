@@ -26,7 +26,6 @@ Rectangle {
 
     // Startup code
     Component.onCompleted: {
-        Network.sendStartup()
         startupDialogs();
     }
 
@@ -71,7 +70,7 @@ Rectangle {
     }
 
     property bool hasShownModelDownload: false
-    property bool hasShownFirstStart: false
+    property bool hasCheckedFirstStart: false
     property bool hasShownSettingsAccess: false
 
     function startupDialogs() {
@@ -89,11 +88,14 @@ Rectangle {
         }
 
         // check for first time start of this version
-        if (!hasShownFirstStart && Download.isFirstStart()) {
+        if (!hasCheckedFirstStart && Download.isFirstStart(/*writeVersion*/ true)) {
             firstStartDialog.open();
-            hasShownFirstStart = true;
             return;
         }
+        hasCheckedFirstStart = true
+
+        // send startup or opt-out now that the user has made their choice
+        Network.sendStartup()
 
         // check for any current models and if not, open download dialog once
         if (!hasShownModelDownload && ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
