@@ -559,7 +559,7 @@ void Database::scheduleNext(int folder_id, size_t countForFolder)
 {
     emit updateCurrentDocsToIndex(folder_id, countForFolder);
     if (!countForFolder) {
-        emit updateIndexing(folder_id, false);
+        updateFolderStatus(folder_id, FolderStatus::Complete);
         emit updateInstalled(folder_id, true);
     }
     if (m_docsToScan.isEmpty()) {
@@ -822,6 +822,8 @@ void Database::scanQueue()
         }
     }
 
+    updateFolderStatus(folder_id, FolderStatus::Embedding);
+
     QSqlDatabase::database().transaction();
     Q_ASSERT(document_id != -1);
     if (info.isPdf()) {
@@ -922,7 +924,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     }
 
     if (!infos.isEmpty()) {
-        emit updateIndexing(folder_id, true);
+        updateFolderStatus(folder_id, FolderStatus::Started);
         enqueueDocuments(folder_id, infos);
     }
 }
@@ -1310,4 +1312,44 @@ void Database::updateIndexingStatus() {
         Network::globalInstance()->sendMixpanelEvent("localdocs_indexing_complete");
     }
     m_isIndexing = m_scanTimer->isActive();
+}
+
+void Database::updateFolderStatus(int folder_id, Database::FolderStatus status) {
+    FolderStatusRecord *lastRecord = nullptr;
+    if (m_foldersBeingIndexed.contains(folder_id)) {
+        lastRecord = &m_foldersBeingIndexed[folder_id];
+    }
+    Q_ASSERT(lastRecord || status == FolderStatus::Started);
+
+    switch (status) {
+        case FolderStatus::Started:
+            if (lastRecord == nullptr) {
+                // record timestamp but don't send an event yet
+                m_foldersBeingIndexed.insert(folder_id, { QDateTime::currentMSecsSinceEpoch(), false });
+                emit updateIndexing(folder_id, true);
+            }
+            break;
+        case FolderStatus::Embedding:
+            if (!lastRecord->wasDirty) {
+                // send start event with the original timestamp for folders that need updating
+                Network::globalInstance()->sendMixpanelEvent("localdocs_folder_indexing", {
+                    {"folder_id", folder_id},
+                    {"time", lastRecord->startTime},
+                });
+                lastRecord->wasDirty = true;
+            }
+            break;
+        case FolderStatus::Complete:
+            if (lastRecord->wasDirty) {
+                // send complete event for folders that were updated
+                qint64 durationMs = QDateTime::currentMSecsSinceEpoch() - lastRecord->startTime;
+                Network::globalInstance()->sendMixpanelEvent("localdocs_folder_complete", {
+                    {"folder_id", folder_id},
+                    {"$duration", durationMs / 1000.},
+                });
+                emit updateIndexing(folder_id, false);
+            }
+            m_foldersBeingIndexed.remove(folder_id);
+            break;
+    }
 }

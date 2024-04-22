@@ -94,6 +94,9 @@ private Q_SLOTS:
     void handleErrorGenerated(int folder_id, const QString &error);
 
 private:
+    enum class FolderStatus { Started, Embedding, Complete };
+    struct FolderStatusRecord { qint64 startTime; bool wasDirty; };
+
     void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
     size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
         const QString &title, const QString &author, const QString &subject, const QString &keywords, int page,
@@ -109,12 +112,14 @@ private:
     void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
     void updateIndexingStatus();
+    void updateFolderStatus(int folder_id, FolderStatus status);
 
 private:
     int m_chunkSize;
     QTimer *m_scanTimer;
     QMap<int, QQueue<DocumentInfo>> m_docsToScan;
     bool m_isIndexing = false;
+    QMap<int, FolderStatusRecord> m_foldersBeingIndexed;
     QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
     QFileSystemWatcher *m_watcher;
