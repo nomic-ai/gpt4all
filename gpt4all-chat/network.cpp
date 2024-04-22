@@ -198,7 +198,7 @@ void Network::sendModelLoaded()
 {
     trackChatEvent("model_load", {
         {"requestedDevice", MySettings::globalInstance()->device()},
-        {"usingServer", ChatListModel::globalInstance()->currentChat()->isServer()},
+        {"using_server", ChatListModel::globalInstance()->currentChat()->isServer()},
     });
 }
 
@@ -260,25 +260,17 @@ void Network::sendMixpanelEvent(const QString &ev, const QVariantMap &props)
     Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject properties;
 
-    // basic properties
     properties.insert("token", MIXPANEL_TOKEN);
     if (!props.contains("time"))
         properties.insert("time", QDateTime::currentMSecsSinceEpoch());
     properties.insert("distinct_id", m_uniqueId); // effectively a device ID
     properties.insert("$insert_id", generateUniqueId());
 
-    // reserved properties
     if (!m_ipify.isEmpty())
         properties.insert("ip", m_ipify);
 
-    // standard properties
     properties.insert("$os", QSysInfo::prettyProductName());
-    properties.insert("$app_version_string", QCoreApplication::applicationVersion());
-
-    // recommended properties
     properties.insert("session_id", m_sessionId);
-
-    // custom properties
     properties.insert("name", QCoreApplication::applicationName() + " v" + QCoreApplication::applicationVersion());
 
     for (const auto &[key, value]: props.asKeyValueRange())
