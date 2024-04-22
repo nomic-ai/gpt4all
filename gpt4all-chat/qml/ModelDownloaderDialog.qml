@@ -19,7 +19,7 @@ MyDialog {
     property bool showEmbeddingModels: false
 
     onOpened: {
-        Network.sendMixpanelEvent("download_dialog")
+        Network.trackEvent("download_dialog")
 
         if (showEmbeddingModels) {
             ModelList.downloadableModels.expanded = true

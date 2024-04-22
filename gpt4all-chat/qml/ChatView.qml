@@ -30,7 +30,7 @@ Rectangle {
     }
 
     Component.onDestruction: {
-        Network.sendMixpanelEvent("session_end")
+        Network.trackEvent("session_end")
     }
 
     Connections {
@@ -75,7 +75,7 @@ Rectangle {
 
     function startupDialogs() {
         if (!LLM.compatHardware()) {
-            Network.sendMixpanelEvent("noncompat_hardware")
+            Network.trackEvent("noncompat_hardware")
             errorCompatHardware.open();
             return;
         }

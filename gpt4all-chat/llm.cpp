@@ -49,7 +49,7 @@ bool LLM::checkForUpdates() const
     #pragma message "offline installer build will not check for updates!"
     return QDesktopServices::openUrl(QUrl("https://gpt4all.io/"));
     #else
-    Network::globalInstance()->sendMixpanelEvent("check_for_updates");
+    Network::globalInstance()->trackEvent("check_for_updates");
 
 #if defined(Q_OS_LINUX)
     QString tool("maintenancetool");

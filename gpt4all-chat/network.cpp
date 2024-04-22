@@ -220,7 +220,7 @@ void Network::sendStartup()
     m_sendUsageStats = true;
 
     const auto *display = QGuiApplication::primaryScreen();
-    sendMixpanelEvent("startup", {
+    trackEvent("startup", {
         {"$screen_dpi", display->physicalDotsPerInch()},
         {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
@@ -232,14 +232,14 @@ void Network::sendStartup()
 
     // mirror opt-out logic so the ratio can be used to infer totals
     if (!m_hasSentOptIn) {
-        sendMixpanelEvent("opt_in");
+        trackEvent("opt_in");
         m_hasSentOptIn = true;
     }
 }
 
 void Network::sendNetworkToggled(bool isActive)
 {
-    sendMixpanelEvent("network_toggled", { {"isActive", isActive} });
+    trackEvent("network_toggled", { {"isActive", isActive} });
 }
 
 void Network::trackChatEvent(const QString &ev, QVariantMap props)
@@ -249,10 +249,10 @@ void Network::trackChatEvent(const QString &ev, QVariantMap props)
     props.insert("actualDevice", curChat->device());
     props.insert("doc_collections_enabled", curChat->collectionList().count());
     props.insert("doc_collections_total", LocalDocs::globalInstance()->localDocsModel()->rowCount());
-    sendMixpanelEvent(ev, props);
+    trackEvent(ev, props);
 }
 
-void Network::sendMixpanelEvent(const QString &ev, const QVariantMap &props)
+void Network::trackEvent(const QString &ev, const QVariantMap &props)
 {
     if (!m_sendUsageStats)
         return;
@@ -345,7 +345,7 @@ void Network::handleIpifyFinished()
 #endif
     reply->deleteLater();
 
-    sendMixpanelEvent("ipify_finished");
+    trackEvent("ipify_finished");
 }
 
 void Network::handleMixpanelFinished()

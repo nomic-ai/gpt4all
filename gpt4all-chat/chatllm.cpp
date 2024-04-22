@@ -312,17 +312,17 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 m_llModelInfo.model = LLModel::Implementation::construct(filePath.toStdString(), buildVariant, n_ctx);
             } catch (const LLModel::MissingImplementationError &e) {
                 constructError = e.what();
-                Network::globalInstance()->sendMixpanelEvent("error_missing_model_impl", {
+                Network::globalInstance()->trackEvent("error_missing_model_impl", {
                     {"model", modelInfo.filename()},
                 });
             } catch (const LLModel::UnsupportedModelError &e) {
                 constructError = e.what();
-                Network::globalInstance()->sendMixpanelEvent("error_unsupported_model_file", {
+                Network::globalInstance()->trackEvent("error_unsupported_model_file", {
                     {"model", modelInfo.filename()},
                 });
             } catch (const LLModel::BadArchError &e) {
                 constructError = e.what();
-                Network::globalInstance()->sendMixpanelEvent("error_unsupported_model_arch", {
+                Network::globalInstance()->trackEvent("error_unsupported_model_arch", {
                     {"model", modelInfo.filename()},
                     {"arch", QString::fromStdString(e.arch())},
                 });
@@ -387,7 +387,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     // llama_init_from_file returned nullptr
                     emit reportDevice("CPU");
                     emit reportFallbackReason("<br>GPU loading failed (out of VRAM?)");
-                    Network::globalInstance()->sendMixpanelEvent("error_gpu_load_failed", {
+                    Network::globalInstance()->trackEvent("error_gpu_load_failed", {
                         {"model", modelInfo.filename()},
                         {"actualDevice", actualDevice},
                     });
@@ -398,7 +398,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     // for instance if the quantization method is not supported on Vulkan yet
                     emit reportDevice("CPU");
                     emit reportFallbackReason("<br>model or quant has no GPU support");
-                    Network::globalInstance()->sendMixpanelEvent("error_gpu_unsupported_model", {
+                    Network::globalInstance()->trackEvent("error_gpu_unsupported_model", {
                         {"model", modelInfo.filename()},
                     });
                 }
@@ -410,7 +410,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
                     m_llModelInfo = LLModelInfo();
                     emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename()));
-                    Network::globalInstance()->sendMixpanelEvent("error_model_load_failed", {
+                    Network::globalInstance()->trackEvent("error_model_load_failed", {
                         {"model", modelInfo.filename()},
                     });
                 } else {

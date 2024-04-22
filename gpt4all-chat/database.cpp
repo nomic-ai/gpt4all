@@ -1309,9 +1309,9 @@ void Database::directoryChanged(const QString &path)
 void Database::updateIndexingStatus() {
     Q_ASSERT(m_scanTimer->isActive() || m_docsToScan.isEmpty());
     if (!m_isIndexing && m_scanTimer->isActive()) {
-        Network::globalInstance()->sendMixpanelEvent("localdocs_indexing_start");
+        Network::globalInstance()->trackEvent("localdocs_indexing_start");
     } else if (m_isIndexing && !m_scanTimer->isActive()) {
-        Network::globalInstance()->sendMixpanelEvent("localdocs_indexing_complete");
+        Network::globalInstance()->trackEvent("localdocs_indexing_complete");
     }
     m_isIndexing = m_scanTimer->isActive();
 }
@@ -1336,7 +1336,7 @@ void Database::updateFolderStatus(int folder_id, Database::FolderStatus status, 
                 Q_ASSERT(atStart);
                 // send start event with the original timestamp for folders that need updating
                 const auto *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
-                Network::globalInstance()->sendMixpanelEvent("localdocs_folder_indexing", {
+                Network::globalInstance()->trackEvent("localdocs_folder_indexing", {
                     {"folder_id", folder_id},
                     {"is_new_collection", lastRecord->isNew},
                     {"document_count", lastRecord->numDocs},
@@ -1352,7 +1352,7 @@ void Database::updateFolderStatus(int folder_id, Database::FolderStatus status, 
             if (lastRecord->docsChanged) {
                 // send complete event for folders that were updated
                 qint64 durationMs = QDateTime::currentMSecsSinceEpoch() - lastRecord->startTime;
-                Network::globalInstance()->sendMixpanelEvent("localdocs_folder_complete", {
+                Network::globalInstance()->trackEvent("localdocs_folder_complete", {
                     {"folder_id", folder_id},
                     {"is_new_collection", lastRecord->isNew},
                     {"documents_total", lastRecord->numDocs},

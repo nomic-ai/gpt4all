@@ -166,7 +166,7 @@ void LocalDocsModel::addCollectionItem(const CollectionItem &item, bool fromDb)
     endInsertRows();
 
     if (!fromDb) {
-        Network::globalInstance()->sendMixpanelEvent("doc_collection_add", {
+        Network::globalInstance()->trackEvent("doc_collection_add", {
             {"collection_count", m_collectionList.count()},
         });
     }
@@ -179,7 +179,7 @@ void LocalDocsModel::removeCollectionIf(std::function<bool(CollectionItem)> cons
             m_collectionList.removeAt(i);
             endRemoveRows();
 
-            Network::globalInstance()->sendMixpanelEvent("doc_collection_remove", {
+            Network::globalInstance()->trackEvent("doc_collection_remove", {
                 {"collection_count", m_collectionList.count()},
             });
         } else {

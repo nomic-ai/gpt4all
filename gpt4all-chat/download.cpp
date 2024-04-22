@@ -138,7 +138,7 @@ void Download::downloadModel(const QString &modelFile)
     ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::DownloadingRole, true }});
     ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
     QString url = !info.url().isEmpty() ? info.url() : "http://gpt4all.io/models/gguf/" + modelFile;
-    Network::globalInstance()->sendMixpanelEvent("download_started", { {"model", modelFile} });
+    Network::globalInstance()->trackEvent("download_started", { {"model", modelFile} });
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::User, modelFile);
     request.setRawHeader("range", QString("bytes=%1-").arg(tempFile->pos()).toUtf8());
@@ -160,7 +160,7 @@ void Download::cancelDownload(const QString &modelFile)
         QNetworkReply *modelReply = m_activeDownloads.keys().at(i);
         QUrl url = modelReply->request().url();
         if (url.toString().endsWith(modelFile)) {
-            Network::globalInstance()->sendMixpanelEvent("download_canceled", { {"model", modelFile} });
+            Network::globalInstance()->trackEvent("download_canceled", { {"model", modelFile} });
 
             // Disconnect the signals
             disconnect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
@@ -185,7 +185,7 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
     if (apiKey.isEmpty())
         return;
 
-    Network::globalInstance()->sendMixpanelEvent("install_model", { {"model", modelFile} });
+    Network::globalInstance()->trackEvent("install_model", { {"model", modelFile} });
 
     QString filePath = MySettings::globalInstance()->modelPath() + modelFile;
     QFile file(filePath);
@@ -224,7 +224,7 @@ void Download::removeModel(const QString &modelFile)
         shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.description() == "" /*indicates sideloaded*/);
         if (shouldRemoveInstalled)
             ModelList::globalInstance()->removeInstalled(info);
-        Network::globalInstance()->sendMixpanelEvent("remove_model", { {"model", modelFile} });
+        Network::globalInstance()->trackEvent("remove_model", { {"model", modelFile} });
         file.remove();
     }
 
@@ -340,7 +340,7 @@ void Download::handleErrorOccurred(QNetworkReply::NetworkError code)
             .arg(modelReply->errorString());
     qWarning() << error;
     ModelList::globalInstance()->updateDataByFilename(modelFilename, {{ ModelList::DownloadErrorRole, error }});
-    Network::globalInstance()->sendMixpanelEvent("download_error", {
+    Network::globalInstance()->trackEvent("download_error", {
         {"model", modelFilename},
         {"code", (int)code},
         {"error", modelReply->errorString()},
@@ -527,7 +527,7 @@ void Download::handleHashAndSaveFinished(bool success, const QString &error,
     // The hash and save should send back with tempfile closed
     Q_ASSERT(!tempFile->isOpen());
     QString modelFilename = modelReply->request().attribute(QNetworkRequest::User).toString();
-    Network::globalInstance()->sendMixpanelEvent("download_finished", { {"model", modelFilename}, {"success", success} });
+    Network::globalInstance()->trackEvent("download_finished", { {"model", modelFilename}, {"success", success} });
 
     QVector<QPair<int, QVariant>> data {
         { ModelList::CalcHashRole, false },
