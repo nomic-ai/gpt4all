@@ -1,0 +1,30 @@
+[package]
+name = "gpt4all"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+authors = ["Dima"]
+description = "Rust bindings for GPT4All"
+license = "MIT"
+documentation = "https://docs.rs/gpt4all"
+homepage = "https://gpt4all.io/"
+repository = "https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/rust"
+
+# Specify excluded folders from publishing
+exclude = [ "scripts", "README.md" ]
+
+[dependencies]
+derive_builder = "0.20.0"
+reqwest = { version = "0.12.2", features = ["json", "stream"] }
+serde = { version = "1.0.197", features = ["derive"] }
+futures = "0.3.30"
+md-5 = "0.10.6"
+dirs = "5.0.1"
+
+[lib]
+name = "gpt4all"
+crate-type = ["dylib"]
+
+[build-dependencies]
+bindgen = "0.69.4"
+walkdir = "2.5.0"
