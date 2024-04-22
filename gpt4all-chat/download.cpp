@@ -81,8 +81,13 @@ bool Download::isFirstStart() const
     settings.sync();
     QString lastVersionStarted = settings.value("download/lastVersionStarted").toString();
     bool first = lastVersionStarted != QCoreApplication::applicationVersion();
-    settings.setValue("download/lastVersionStarted", QCoreApplication::applicationVersion());
-    settings.sync();
+    if (first) {
+        settings.setValue("download/lastVersionStarted", QCoreApplication::applicationVersion());
+        // let the user select these again
+        settings.remove("network/usageStatsActive");
+        settings.remove("network/isActive");
+        settings.sync();
+    }
 
     const auto *mySettings = MySettings::globalInstance();
     return first || !mySettings->isNetworkUsageStatsActiveSet() || !mySettings->isNetworkIsActiveSet();
