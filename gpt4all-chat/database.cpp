@@ -822,11 +822,11 @@ void Database::scanQueue()
         }
     }
 
-    updateFolderStatus(folder_id, FolderStatus::Embedding);
-
     QSqlDatabase::database().transaction();
     Q_ASSERT(document_id != -1);
     if (info.isPdf()) {
+        updateFolderStatus(folder_id, FolderStatus::Embedding, -1, info.currentPage == 0);
+
         QPdfDocument doc;
         if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
             handleDocumentError("ERROR: Could not load pdf",
@@ -859,6 +859,8 @@ void Database::scanQueue()
             emit subtractCurrentBytesToIndex(info.folder, bytes - (bytesPerPage * doc.pageCount()));
         }
     } else {
+        updateFolderStatus(folder_id, FolderStatus::Embedding, -1, info.currentPosition == 0);
+
         QFile file(document_path);
         if (!file.open(QIODevice::ReadOnly)) {
             handleDocumentError("ERROR: Cannot open file for scanning",
@@ -893,7 +895,7 @@ void Database::scanQueue()
     return scheduleNext(folder_id, countForFolder);
 }
 
-void Database::scanDocuments(int folder_id, const QString &folder_path)
+void Database::scanDocuments(int folder_id, const QString &folder_path, bool isNew)
 {
 #if defined(DEBUG)
     qDebug() << "scanning folder for documents" << folder_path;
@@ -924,7 +926,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     }
 
     if (!infos.isEmpty()) {
-        updateFolderStatus(folder_id, FolderStatus::Started);
+        updateFolderStatus(folder_id, FolderStatus::Started, infos.count(), false, isNew);
         enqueueDocuments(folder_id, infos);
     }
 }
@@ -1016,7 +1018,7 @@ void Database::addFolder(const QString &collection, const QString &path, bool fr
     }
 
     addFolderToWatch(path);
-    scanDocuments(folder_id, path);
+    scanDocuments(folder_id, path, !fromDb);
 
     if (!fromDb) {
         updateIndexingStatus();
@@ -1300,7 +1302,7 @@ void Database::directoryChanged(const QString &path)
     cleanDB();
 
     // Rescan the documents associated with the folder
-    scanDocuments(folder_id, path);
+    scanDocuments(folder_id, path, false);
     updateIndexingStatus();
 }
 
@@ -1314,7 +1316,7 @@ void Database::updateIndexingStatus() {
     m_isIndexing = m_scanTimer->isActive();
 }
 
-void Database::updateFolderStatus(int folder_id, Database::FolderStatus status) {
+void Database::updateFolderStatus(int folder_id, Database::FolderStatus status, int numDocs, bool atStart, bool isNew) {
     FolderStatusRecord *lastRecord = nullptr;
     if (m_foldersBeingIndexed.contains(folder_id)) {
         lastRecord = &m_foldersBeingIndexed[folder_id];
@@ -1325,26 +1327,34 @@ void Database::updateFolderStatus(int folder_id, Database::FolderStatus status) 
         case FolderStatus::Started:
             if (lastRecord == nullptr) {
                 // record timestamp but don't send an event yet
-                m_foldersBeingIndexed.insert(folder_id, { QDateTime::currentMSecsSinceEpoch(), false });
+                m_foldersBeingIndexed.insert(folder_id, { QDateTime::currentMSecsSinceEpoch(), isNew, numDocs });
                 emit updateIndexing(folder_id, true);
             }
             break;
         case FolderStatus::Embedding:
-            if (!lastRecord->wasDirty) {
+            if (!lastRecord->docsChanged) {
+                Q_ASSERT(atStart);
                 // send start event with the original timestamp for folders that need updating
                 Network::globalInstance()->sendMixpanelEvent("localdocs_folder_indexing", {
                     {"folder_id", folder_id},
+                    {"is_new_collection", lastRecord->isNew},
+                    {"document_count", lastRecord->numDocs},
                     {"time", lastRecord->startTime},
                 });
-                lastRecord->wasDirty = true;
             }
+            lastRecord->docsChanged += atStart;
+            lastRecord->chunksRead++;
             break;
         case FolderStatus::Complete:
-            if (lastRecord->wasDirty) {
+            if (lastRecord->docsChanged) {
                 // send complete event for folders that were updated
                 qint64 durationMs = QDateTime::currentMSecsSinceEpoch() - lastRecord->startTime;
                 Network::globalInstance()->sendMixpanelEvent("localdocs_folder_complete", {
                     {"folder_id", folder_id},
+                    {"is_new_collection", lastRecord->isNew},
+                    {"documents_total", lastRecord->numDocs},
+                    {"documents_changed", lastRecord->docsChanged},
+                    {"chunks_read", lastRecord->chunksRead},
                     {"$duration", durationMs / 1000.},
                 });
                 emit updateIndexing(folder_id, false);
