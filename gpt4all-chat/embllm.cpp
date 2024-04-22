@@ -57,7 +57,14 @@ bool EmbeddingLLMWorker::loadModel()
         return true;
     }
 
-    m_model = LLModel::Implementation::construct(filePath.toStdString());
+    try {
+        m_model = LLModel::Implementation::construct(filePath.toStdString());
+    } catch (const std::exception &e) {
+        qWarning() << "WARNING: Could not load embedding model:" << e.what();
+        m_model = nullptr;
+        return false;
+    }
+
     // NOTE: explicitly loads model on CPU to avoid GPU OOM
     // TODO(cebtenzzre): support GPU-accelerated embeddings
     bool success = m_model->loadModel(filePath.toStdString(), 2048, 0);

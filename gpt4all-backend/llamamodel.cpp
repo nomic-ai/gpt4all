@@ -104,7 +104,7 @@ static int llama_sample_top_p_top_k(
     return llama_sample_token(ctx, &candidates_p);
 }
 
-std::string get_arch_name(gguf_context *ctx_gguf) {
+const char *get_arch_name(gguf_context *ctx_gguf) {
     std::string arch_name;
     const int kid = gguf_find_key(ctx_gguf, "general.architecture");
     enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
@@ -961,28 +961,23 @@ DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT bool magic_match(const char *fname) {
+DLL_EXPORT char *get_file_arch(const char *fname) {
     auto *ctx = load_gguf(fname);
-    if (!ctx)
-        return false;
-
-    std::string arch = get_arch_name(ctx);
-
-    bool valid = true;
-
-    if (std::find(KNOWN_ARCHES.begin(), KNOWN_ARCHES.end(), arch) == KNOWN_ARCHES.end()) {
-        // not supported by this version of llama.cpp
-        if (arch != "gptj") { // we support this via another module
-            std::cerr << __func__ << ": unsupported model architecture: " << arch << "\n";
+    char *arch = nullptr;
+    if (ctx) {
+        std::string arch = get_arch_name(ctx);
+        if (is_embedding_arch(arch) && gguf_find_key(ctx, (arch + ".pooling_type").c_str()) < 0) {
+            // old bert.cpp embedding model
+        } else {
+            arch = strdup(arch.c_str());
         }
-        valid = false;
     }
-
-    if (valid && is_embedding_arch(arch) && gguf_find_key(ctx, (arch + ".pooling_type").c_str()) < 0)
-        valid = false; // old pre-llama.cpp embedding model, e.g. all-MiniLM-L6-v2-f16.gguf
-
     gguf_free(ctx);
-    return valid;
+    return arch;
+}
+
+DLL_EXPORT bool is_arch_supported(const char *arch) {
+    return std::find(KNOWN_ARCHES.begin(), KNOWN_ARCHES.end(), std::string(arch)) < KNOWN_ARCHES.end();
 }
 
 DLL_EXPORT LLModel *construct() {

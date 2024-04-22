@@ -53,7 +53,8 @@ public:
         static const Implementation *implementation(const char *fname, const std::string &buildVariant);
         static LLModel *constructDefaultLlama();
 
-        bool (*m_magicMatch)(const char *fname);
+        char *(*m_getFileArch)(const char *fname);
+        bool (*m_isArchSupported)(const char *arch);
         LLModel *(*m_construct)();
 
         std::string_view m_modelType;

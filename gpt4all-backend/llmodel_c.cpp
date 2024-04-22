@@ -40,11 +40,6 @@ llmodel_model llmodel_model_create2(const char *model_path, const char *build_va
         return nullptr;
     }
 
-    if (!llModel) {
-        llmodel_set_error(error, "Model format not supported (no matching implementation found)");
-        return nullptr;
-    }
-
     auto wrapper = new LLModelWrapper;
     wrapper->llModel = llModel;
     return wrapper;

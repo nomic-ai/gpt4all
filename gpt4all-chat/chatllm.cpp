@@ -306,7 +306,13 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             if (m_forceMetal)
                 buildVariant = "metal";
 #endif
-            m_llModelInfo.model = LLModel::Implementation::construct(filePath.toStdString(), buildVariant, n_ctx);
+            QString constructError;
+            try {
+                m_llModelInfo.model = LLModel::Implementation::construct(filePath.toStdString(), buildVariant, n_ctx);
+            } catch (const std::exception &e) {
+                constructError = e.what();
+                m_llModelInfo.model = nullptr;
+            }
 
             if (m_llModelInfo.model) {
                 if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
@@ -402,7 +408,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 if (!m_isServer)
                     LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
                 m_llModelInfo = LLModelInfo();
-                emit modelLoadingError(QString("Could not load model due to invalid format for %1").arg(modelInfo.filename()));
+                emit modelLoadingError(QString("Error loading %1: %2").arg(modelInfo.filename()).arg(constructError));
             }
         }
 #if defined(DEBUG_MODEL_LOADING)
