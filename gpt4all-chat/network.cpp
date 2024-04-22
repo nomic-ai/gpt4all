@@ -172,7 +172,7 @@ void Network::sendOptOut()
 {
     QJsonObject properties;
     properties.insert("token", MIXPANEL_TOKEN);
-    properties.insert("time", QDateTime::currentSecsSinceEpoch());
+    properties.insert("time", QDateTime::currentMSecsSinceEpoch());
     properties.insert("distinct_id", m_uniqueId);
     properties.insert("$insert_id", generateUniqueId());
 
@@ -239,7 +239,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVariantMap &props)
 
     // basic properties
     properties.insert("token", MIXPANEL_TOKEN);
-    properties.insert("time", QDateTime::currentSecsSinceEpoch());
+    properties.insert("time", QDateTime::currentMSecsSinceEpoch());
     properties.insert("distinct_id", m_uniqueId); // effectively a device ID
     properties.insert("$insert_id", generateUniqueId());
 
