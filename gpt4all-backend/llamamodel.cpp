@@ -962,7 +962,10 @@ DLL_EXPORT const char *get_build_variant() {
 }
 
 DLL_EXPORT bool magic_match(const char *fname) {
-    auto * ctx = load_gguf(fname);
+    auto *ctx = load_gguf(fname);
+    if (!ctx)
+        return false;
+
     std::string arch = get_arch_name(ctx);
 
     bool valid = true;
