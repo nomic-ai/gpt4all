@@ -353,5 +353,21 @@
     "systemPrompt": "",
     "description": "nomic-embed-text-v1.5",
     "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf"
+  },
+  {
+    "order": "u",
+    "md5sum": "1b3945bdb224a9036e0f04963ab1bef6",
+    "name": "Ghost 7B Alpha",
+    "filename": "ghost-7b-alpha-Q4_0.gguf",
+    "filesize": "4108917408",
+    "requires": "2.7.1",
+    "ramrequired": "8",
+    "parameters": "7 billion",
+    "quant": "q4_0",
+    "type": "Mistral",
+    "description": "<strong>Ghost 7B Alpha</strong>. The large generation of language models focuses on optimizing excellent reasoning, multi-task knowledge, and tools support.",
+    "url": "https://huggingface.co/ghost-x/ghost-7b-alpha-gguf/resolve/main/ghost-7b-alpha-Q4_0.gguf",
+    "promptTemplate": "<|user|>\n%1</s>\n<|assistant|>\n%2</s>\n",
+    "systemPrompt": "<|system|>\n</s>"
   }
 ]
