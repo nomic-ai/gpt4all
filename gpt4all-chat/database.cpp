@@ -1335,10 +1335,13 @@ void Database::updateFolderStatus(int folder_id, Database::FolderStatus status, 
             if (!lastRecord->docsChanged) {
                 Q_ASSERT(atStart);
                 // send start event with the original timestamp for folders that need updating
+                const auto *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
                 Network::globalInstance()->sendMixpanelEvent("localdocs_folder_indexing", {
                     {"folder_id", folder_id},
                     {"is_new_collection", lastRecord->isNew},
                     {"document_count", lastRecord->numDocs},
+                    {"embedding_model", embeddingModels->defaultModelInfo().filename()},
+                    {"chunk_size", m_chunkSize},
                     {"time", lastRecord->startTime},
                 });
             }
