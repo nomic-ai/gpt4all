@@ -48,6 +48,7 @@ private:
 
 private:
     bool m_sendUsageStats = false;
+    bool m_hasSentOptIn;
     bool m_hasSentOptOut;
     QString m_ipify;
     QString m_uniqueId;

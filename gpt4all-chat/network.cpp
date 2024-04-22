@@ -50,6 +50,7 @@ Network::Network()
     connect(mySettings, &MySettings::networkIsActiveChanged, this, &Network::handleIsActiveChanged);
     connect(mySettings, &MySettings::networkUsageStatsActiveChanged, this, &Network::handleUsageStatsActiveChanged);
 
+    m_hasSentOptIn  = !Download::globalInstance()->isFirstStart() &&  mySettings->networkUsageStatsActive();
     m_hasSentOptOut = !Download::globalInstance()->isFirstStart() && !mySettings->networkUsageStatsActive();
 
     if (mySettings->networkIsActive())
@@ -228,6 +229,12 @@ void Network::sendStartup()
 #endif
     });
     sendIpify();
+
+    // mirror opt-out logic so the ratio can be used to infer totals
+    if (!m_hasSentOptIn) {
+        sendMixpanelEvent("opt_in");
+        m_hasSentOptIn = true;
+    }
 }
 
 void Network::sendNetworkToggled(bool isActive)
