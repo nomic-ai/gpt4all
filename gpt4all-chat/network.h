@@ -28,7 +28,6 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void sendOptOut();
-    void sendModelLoaded();
     void sendStartup();
 
 private Q_SLOTS:

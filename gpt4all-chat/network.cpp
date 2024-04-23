@@ -230,14 +230,6 @@ void Network::sendOptOut()
 #endif
 }
 
-void Network::sendModelLoaded()
-{
-    trackChatEvent("model_load", {
-        {"requestedDevice", MySettings::globalInstance()->device()},
-        {"using_server", ChatListModel::globalInstance()->currentChat()->isServer()},
-    });
-}
-
 void Network::sendStartup()
 {
     const auto *mySettings = MySettings::globalInstance();

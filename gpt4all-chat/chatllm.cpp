@@ -76,7 +76,6 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_restoreStateFromText(false)
 {
     moveToThread(&m_llmThread);
-    connect(this, &ChatLLM::sendModelLoaded, Network::globalInstance(), &Network::sendModelLoaded);
     connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
         Qt::QueuedConnection); // explicitly queued
     connect(this, &ChatLLM::shouldTrySwitchContextChanged, this, &ChatLLM::handleShouldTrySwitchContextChanged,
@@ -299,6 +298,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             model->setAPIKey(apiKey);
             m_llModelInfo.model = model;
         } else {
+            QElapsedTimer modelLoadTimer;
+            modelLoadTimer.start();
+
             auto n_ctx = MySettings::globalInstance()->modelContextLength(modelInfo);
             m_ctx.n_ctx = n_ctx;
             auto ngl = MySettings::globalInstance()->modelGpuLayers(modelInfo);
@@ -429,6 +431,12 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                             emit modelLoadingError(QString("Could not determine model type for %1").arg(modelInfo.filename()));
                         }
                     }
+
+                    Network::globalInstance()->trackChatEvent("model_load", {
+                        {"requestedDevice", requestedDevice},
+                        {"using_server", m_isServer},
+                        {"$duration", modelLoadTimer.elapsed() / 1000.},
+                    });
                 }
             } else {
                 if (!m_isServer)
@@ -446,8 +454,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         fflush(stdout);
 #endif
         emit modelLoadingPercentageChanged(isModelLoaded() ? 1.0f : 0.0f);
-
-        emit sendModelLoaded();
     } else {
         if (!m_isServer)
             LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
