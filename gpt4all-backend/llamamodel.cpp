@@ -965,11 +965,11 @@ DLL_EXPORT char *get_file_arch(const char *fname) {
     auto *ctx = load_gguf(fname);
     char *arch = nullptr;
     if (ctx) {
-        std::string arch = get_arch_name(ctx);
-        if (is_embedding_arch(arch) && gguf_find_key(ctx, (arch + ".pooling_type").c_str()) < 0) {
+        std::string archStr = get_arch_name(ctx);
+        if (is_embedding_arch(archStr) && gguf_find_key(ctx, (archStr + ".pooling_type").c_str()) < 0) {
             // old bert.cpp embedding model
         } else {
-            arch = strdup(arch.c_str());
+            arch = strdup(archStr.c_str());
         }
     }
     gguf_free(ctx);
