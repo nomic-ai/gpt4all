@@ -6,6 +6,8 @@
 #include "localdocs.h"
 #include "mysettings.h"
 
+#include <cmath>
+
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QUuid>
@@ -255,7 +257,7 @@ void Network::sendStartup()
 
     const auto *display = QGuiApplication::primaryScreen();
     trackEvent("startup", {
-        {"$screen_dpi", display->physicalDotsPerInch()},
+        {"$screen_dpi", std::round(display->physicalDotsPerInch())},
         {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
         {"cpu", getCPUModel()},
