@@ -1315,12 +1315,14 @@ void Database::directoryChanged(const QString &path)
 
 void Database::updateIndexingStatus() {
     Q_ASSERT(m_scanTimer->isActive() || m_docsToScan.isEmpty());
-    if (!m_isIndexing && m_scanTimer->isActive()) {
+    if (m_indexingStartTime == -1 && m_scanTimer->isActive()) {
         Network::globalInstance()->trackEvent("localdocs_indexing_start");
-    } else if (m_isIndexing && !m_scanTimer->isActive()) {
-        Network::globalInstance()->trackEvent("localdocs_indexing_complete");
+        m_indexingStartTime = QDateTime::currentMSecsSinceEpoch();
+    } else if (m_indexingStartTime != -1 && !m_scanTimer->isActive()) {
+        qint64 durationMs = QDateTime::currentMSecsSinceEpoch() - m_indexingStartTime;
+        Network::globalInstance()->trackEvent("localdocs_indexing_complete", { {"$duration", durationMs / 1000.} });
+        m_indexingStartTime = -1;
     }
-    m_isIndexing = m_scanTimer->isActive();
 }
 
 void Database::updateFolderStatus(int folder_id, Database::FolderStatus status, int numDocs, bool atStart, bool isNew) {
