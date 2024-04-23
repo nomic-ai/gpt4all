@@ -1315,13 +1315,13 @@ void Database::directoryChanged(const QString &path)
 
 void Database::updateIndexingStatus() {
     Q_ASSERT(m_scanTimer->isActive() || m_docsToScan.isEmpty());
-    if (m_indexingStartTime == -1 && m_scanTimer->isActive()) {
+    if (!m_indexingTimer.isValid() && m_scanTimer->isActive()) {
         Network::globalInstance()->trackEvent("localdocs_indexing_start");
-        m_indexingStartTime = QDateTime::currentMSecsSinceEpoch();
-    } else if (m_indexingStartTime != -1 && !m_scanTimer->isActive()) {
-        qint64 durationMs = QDateTime::currentMSecsSinceEpoch() - m_indexingStartTime;
+        m_indexingTimer.start();
+    } else if (m_indexingTimer.isValid() && !m_scanTimer->isActive()) {
+        qint64 durationMs = m_indexingTimer.elapsed();
         Network::globalInstance()->trackEvent("localdocs_indexing_complete", { {"$duration", durationMs / 1000.} });
-        m_indexingStartTime = -1;
+        m_indexingTimer.invalidate();
     }
 }
 

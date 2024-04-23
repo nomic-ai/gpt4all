@@ -1,12 +1,13 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include <QObject>
-#include <QtSql>
-#include <QQueue>
+#include <QElapsedTimer>
 #include <QFileInfo>
-#include <QThread>
 #include <QFileSystemWatcher>
+#include <QObject>
+#include <QQueue>
+#include <QThread>
+#include <QtSql>
 
 #include "embllm.h"
 
@@ -118,7 +119,7 @@ private:
     int m_chunkSize;
     QTimer *m_scanTimer;
     QMap<int, QQueue<DocumentInfo>> m_docsToScan;
-    qint64 m_indexingStartTime = -1;
+    QElapsedTimer m_indexingTimer;
     QMap<int, FolderStatusRecord> m_foldersBeingIndexed;
     QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
