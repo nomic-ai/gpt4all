@@ -46,6 +46,9 @@ Network::Network()
     settings.sync();
     m_sessionId = generateUniqueId();
 
+    // allow sendMixpanel to be called from any thread
+    connect(this, &Network::requestMixpanel, this, &Network::sendMixpanel, Qt::QueuedConnection);
+
     const auto *mySettings = MySettings::globalInstance();
     connect(mySettings, &MySettings::networkIsActiveChanged, this, &Network::handleIsActiveChanged);
     connect(mySettings, &MySettings::networkUsageStatsActiveChanged, this, &Network::handleUsageStatsActiveChanged);
@@ -186,7 +189,7 @@ void Network::sendOptOut()
 
     QJsonDocument doc;
     doc.setArray(array);
-    sendMixpanel(doc.toJson(QJsonDocument::Compact), true /*isOptOut*/);
+    emit requestMixpanel(doc.toJson(QJsonDocument::Compact), true /*isOptOut*/);
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable("opt_out"), qPrintable(doc.toJson(QJsonDocument::Indented)));
@@ -285,7 +288,7 @@ void Network::trackEvent(const QString &ev, const QVariantMap &props)
 
     QJsonDocument doc;
     doc.setArray(array);
-    sendMixpanel(doc.toJson(QJsonDocument::Compact));
+    emit requestMixpanel(doc.toJson(QJsonDocument::Compact));
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable(ev), qPrintable(doc.toJson(QJsonDocument::Indented)));
