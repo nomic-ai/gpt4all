@@ -273,6 +273,7 @@ void Network::trackChatEvent(const QString &ev, QVariantMap props)
     props.insert("doc_collections_enabled", curChat->collectionList().count());
     props.insert("doc_collections_total", LocalDocs::globalInstance()->localDocsModel()->rowCount());
     props.insert("datalake_active", MySettings::globalInstance()->networkIsActive());
+    props.insert("using_server", ChatListModel::globalInstance()->currentChat()->isServer());
     trackEvent(ev, props);
 }
 

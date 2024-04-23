@@ -440,7 +440,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         emit modelLoadingPercentageChanged(isModelLoaded() ? 1.0f : 0.0f);
 
         modelLoadProps.insert("requestedDevice", MySettings::globalInstance()->device());
-        modelLoadProps.insert("using_server", m_isServer);
         modelLoadProps.insert("model", modelInfo.filename());
         Network::globalInstance()->trackChatEvent("model_load", modelLoadProps);
     } else {
