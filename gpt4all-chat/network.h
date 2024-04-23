@@ -30,7 +30,6 @@ public Q_SLOTS:
     void sendOptOut();
     void sendModelLoaded();
     void sendStartup();
-    Q_INVOKABLE void sendNetworkToggled(bool active);
 
 private Q_SLOTS:
     void handleIpifyFinished();

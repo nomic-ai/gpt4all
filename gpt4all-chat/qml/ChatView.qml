@@ -558,7 +558,6 @@ Rectangle {
         onClicked: {
             if (MySettings.networkIsActive) {
                 MySettings.networkIsActive = false
-                Network.sendNetworkToggled(false);
             } else
                 networkDialog.open()
         }

@@ -230,6 +230,7 @@ void Network::sendStartup()
 #if defined(Q_OS_MAC)
         {"cpu", QString::fromStdString(getCPUModel())},
 #endif
+        {"datalake_active", mySettings->networkIsActive()},
     });
     sendIpify();
 
@@ -240,11 +241,6 @@ void Network::sendStartup()
     }
 }
 
-void Network::sendNetworkToggled(bool isActive)
-{
-    trackEvent("network_toggled", { {"isActive", isActive} });
-}
-
 void Network::trackChatEvent(const QString &ev, QVariantMap props)
 {
     const auto &curChat = ChatListModel::globalInstance()->currentChat();
@@ -252,6 +248,7 @@ void Network::trackChatEvent(const QString &ev, QVariantMap props)
     props.insert("actualDevice", curChat->device());
     props.insert("doc_collections_enabled", curChat->collectionList().count());
     props.insert("doc_collections_total", LocalDocs::globalInstance()->localDocsModel()->rowCount());
+    props.insert("datalake_active", MySettings::globalInstance()->networkIsActive());
     trackEvent(ev, props);
 }
 
