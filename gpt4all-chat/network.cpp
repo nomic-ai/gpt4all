@@ -267,7 +267,8 @@ void Network::sendStartup()
 void Network::trackChatEvent(const QString &ev, QVariantMap props)
 {
     const auto &curChat = ChatListModel::globalInstance()->currentChat();
-    props.insert("model", curChat->modelInfo().filename());
+    if (!props.contains("model"))
+        props.insert("model", curChat->modelInfo().filename());
     props.insert("actualDevice", curChat->device());
     props.insert("doc_collections_enabled", curChat->collectionList().count());
     props.insert("doc_collections_total", LocalDocs::globalInstance()->localDocsModel()->rowCount());

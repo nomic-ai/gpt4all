@@ -278,6 +278,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     m_llModelInfo.fileInfo = fileInfo;
 
     if (fileInfo.exists()) {
+        QVariantMap modelLoadProps;
         if (modelInfo.isOnline) {
             QString apiKey;
             QString modelName;
@@ -315,21 +316,15 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             try {
                 m_llModelInfo.model = LLModel::Implementation::construct(filePath.toStdString(), buildVariant, n_ctx);
             } catch (const LLModel::MissingImplementationError &e) {
+                modelLoadProps.insert("error", "missing_model_impl");
                 constructError = e.what();
-                Network::globalInstance()->trackEvent("error_missing_model_impl", {
-                    {"model", modelInfo.filename()},
-                });
             } catch (const LLModel::UnsupportedModelError &e) {
+                modelLoadProps.insert("error", "unsupported_model_file");
                 constructError = e.what();
-                Network::globalInstance()->trackEvent("error_unsupported_model_file", {
-                    {"model", modelInfo.filename()},
-                });
             } catch (const LLModel::BadArchError &e) {
                 constructError = e.what();
-                Network::globalInstance()->trackEvent("error_unsupported_model_arch", {
-                    {"model", modelInfo.filename()},
-                    {"arch", QString::fromStdString(e.arch())},
-                });
+                modelLoadProps.insert("error", "unsupported_model_arch");
+                modelLoadProps.insert("model_arch", QString::fromStdString(e.arch()));
             }
 
             if (m_llModelInfo.model) {
@@ -391,10 +386,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     // llama_init_from_file returned nullptr
                     emit reportDevice("CPU");
                     emit reportFallbackReason("<br>GPU loading failed (out of VRAM?)");
-                    Network::globalInstance()->trackEvent("error_gpu_load_failed", {
-                        {"model", modelInfo.filename()},
-                        {"actualDevice", actualDevice},
-                    });
+                    modelLoadProps.insert("cpu_fallback_reason", "gpu_load_failed");
                     success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, 0);
                 } else if (!m_llModelInfo.model->usingGPUDevice()) {
                     // ggml_vk_init was not called in llama.cpp
@@ -402,9 +394,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     // for instance if the quantization method is not supported on Vulkan yet
                     emit reportDevice("CPU");
                     emit reportFallbackReason("<br>model or quant has no GPU support");
-                    Network::globalInstance()->trackEvent("error_gpu_unsupported_model", {
-                        {"model", modelInfo.filename()},
-                    });
+                    modelLoadProps.insert("cpu_fallback_reason", "gpu_unsupported_model");
                 }
 
                 if (!success) {
@@ -414,9 +404,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
                     m_llModelInfo = LLModelInfo();
                     emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename()));
-                    Network::globalInstance()->trackEvent("error_model_load_failed", {
-                        {"model", modelInfo.filename()},
-                    });
+                    modelLoadProps.insert("error", "loadmodel_failed");
                 } else {
                     switch (m_llModelInfo.model->implementation().modelType()[0]) {
                     case 'L': m_llModelType = LLModelType::LLAMA_; break;
@@ -432,11 +420,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         }
                     }
 
-                    Network::globalInstance()->trackChatEvent("model_load", {
-                        {"requestedDevice", requestedDevice},
-                        {"using_server", m_isServer},
-                        {"$duration", modelLoadTimer.elapsed() / 1000.},
-                    });
+                    modelLoadProps.insert("$duration", modelLoadTimer.elapsed() / 1000.);
                 }
             } else {
                 if (!m_isServer)
@@ -454,6 +438,11 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         fflush(stdout);
 #endif
         emit modelLoadingPercentageChanged(isModelLoaded() ? 1.0f : 0.0f);
+
+        modelLoadProps.insert("requestedDevice", MySettings::globalInstance()->device());
+        modelLoadProps.insert("using_server", m_isServer);
+        modelLoadProps.insert("model", modelInfo.filename());
+        Network::globalInstance()->trackChatEvent("model_load", modelLoadProps);
     } else {
         if (!m_isServer)
             LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
