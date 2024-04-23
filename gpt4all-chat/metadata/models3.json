@@ -206,6 +206,22 @@
   },
   {
     "order": "m",
+    "md5sum": "f8347badde9bfc2efbe89124d78ddaf5",
+    "name": "Phi-3 Mini Instruct",
+    "filename": "Phi-3-mini-4k-instruct.Q4_0.gguf",
+    "filesize": "2176181568",
+    "requires": "2.7.1",
+    "ramrequired": "4",
+    "parameters": "4 billion",
+    "quant": "q4_0",
+    "type": "Phi-3",
+    "description": "<ul><li>Very fast responses</li><li>Chat based model</li><li>Accepts system prompts in Phi-3 format</li><li>Trained by Microsoft</li><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li></ul>",
+    "url": "https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf",
+    "promptTemplate": "<|user|>\n%1<|end|>\n<|assistant|>\n%2<|end|>\n",
+    "systemPrompt": ""
+  },
+  {
+    "order": "n",
     "md5sum": "0e769317b90ac30d6e09486d61fefa26",
     "name": "Mini Orca (Small)",
     "filename": "orca-mini-3b-gguf2-q4_0.gguf",
@@ -215,13 +231,13 @@
     "parameters": "3 billion",
     "quant": "q4_0",
     "type": "OpenLLaMa",
-    "description": "<strong>Small version of new model with novel dataset</strong><br><ul><li>Instruction based<li>Explain tuned datasets<li>Orca Research Paper dataset construction approaches<li>Cannot be used commercially</ul>",
+    "description": "<strong>Small version of new model with novel dataset</strong><br><ul><li>Very fast responses</li><li>Instruction based</li><li>Explain tuned datasets</li><li>Orca Research Paper dataset construction approaches</li><li>Cannot be used commercially</li></ul>",
     "url": "https://gpt4all.io/models/gguf/orca-mini-3b-gguf2-q4_0.gguf",
     "promptTemplate": "### User:\n%1\n\n### Response:\n",
     "systemPrompt": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n"
   },
   {
-    "order": "n",
+    "order": "o",
     "md5sum": "c232f17e09bca4b7ee0b5b1f4107c01e",
     "disableGUI": "true",
     "name": "Replit",
@@ -238,7 +254,7 @@
     "url": "https://gpt4all.io/models/gguf/replit-code-v1_5-3b-newbpe-q4_0.gguf"
   },
   {
-    "order": "o",
+    "order": "p",
     "md5sum": "70841751ccd95526d3dcfa829e11cd4c",
     "disableGUI": "true",
     "name": "Starcoder",
@@ -255,7 +271,7 @@
     "url": "https://gpt4all.io/models/gguf/starcoder-newbpe-q4_0.gguf"
   },
   {
-    "order": "p",
+    "order": "q",
     "md5sum": "e973dd26f0ffa6e46783feaea8f08c83",
     "disableGUI": "true",
     "name": "Rift coder",
@@ -272,7 +288,7 @@
     "url": "https://gpt4all.io/models/gguf/rift-coder-v0-7b-q4_0.gguf"
   },
   {
-    "order": "q",
+    "order": "r",
     "md5sum": "e479e6f38b59afc51a470d1953a6bfc7",
     "disableGUI": "true",
     "name": "SBert",
@@ -290,7 +306,7 @@
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2-f16.gguf"
   },
   {
-    "order": "q",
+    "order": "r",
     "md5sum": "dd90e2cb7f8e9316ac3796cece9883b5",
     "name": "SBert",
     "filename": "all-MiniLM-L6-v2.gguf2.f16.gguf",
@@ -305,7 +321,7 @@
     "url": "https://gpt4all.io/models/gguf/all-MiniLM-L6-v2.gguf2.f16.gguf"
   },
   {
-    "order": "r",
+    "order": "s",
     "md5sum": "919de4dd6f25351bcb0223790db1932d",
     "name": "EM German Mistral",
     "filename": "em_german_mistral_v01.Q4_0.gguf",
@@ -321,7 +337,7 @@
     "systemPrompt": "Du bist ein hilfreicher Assistent. "
   },
   {
-    "order": "s",
+    "order": "t",
     "md5sum": "60ea031126f82db8ddbbfecc668315d2",
     "disableGUI": "true",
     "name": "Nomic Embed Text v1",
@@ -338,7 +354,7 @@
     "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.f16.gguf"
   },
   {
-    "order": "t",
+    "order": "u",
     "md5sum": "a5401e7f7e46ed9fcaed5b60a281d547",
     "disableGUI": "true",
     "name": "Nomic Embed Text v1.5",
