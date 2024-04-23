@@ -20,14 +20,45 @@
 static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
 
 #if defined(Q_OS_MAC)
+
 #include <sys/sysctl.h>
-std::string getCPUModel() {
+static QString getCPUModel() {
     char buffer[256];
     size_t bufferlen = sizeof(buffer);
     sysctlbyname("machdep.cpu.brand_string", &buffer, &bufferlen, NULL, 0);
-    return std::string(buffer);
+    return buffer;
 }
+
+#elif defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
+
+#define get_cpuid(level, a, b, c, d) asm volatile("cpuid" : "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "0" (level) : "memory")
+
+static QString getCPUModel() {
+    unsigned regs[12];
+
+    // EAX=800000000h: Get Highest Extended Function Implemented
+    get_cpuid(0x80000000, regs[0], regs[1], regs[2], regs[3]);
+    if (regs[0] < 0x80000004)
+        return "(unknown)";
+
+    // EAX=800000002h-800000004h: Processor Brand String
+    get_cpuid(0x80000002, regs[0], regs[1], regs[ 2], regs[ 3]);
+    get_cpuid(0x80000003, regs[4], regs[5], regs[ 6], regs[ 7]);
+    get_cpuid(0x80000004, regs[8], regs[9], regs[10], regs[11]);
+
+    char str[sizeof(regs) + 1];
+    memcpy(str, regs, sizeof(regs));
+    str[sizeof(regs)] = 0;
+
+    return QString(str).trimmed();
+}
+
+#else
+
+static QString getCPUModel() { return "(non-x86)"; }
+
 #endif
+
 
 class MyNetwork: public Network { };
 Q_GLOBAL_STATIC(MyNetwork, networkInstance)
@@ -227,9 +258,7 @@ void Network::sendStartup()
         {"$screen_dpi", display->physicalDotsPerInch()},
         {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
-#if defined(Q_OS_MAC)
-        {"cpu", QString::fromStdString(getCPUModel())},
-#endif
+        {"cpu", getCPUModel()},
         {"datalake_active", mySettings->networkIsActive()},
     });
     sendIpify();
