@@ -376,7 +376,7 @@ void Network::handleIpifyFinished()
 #endif
     reply->deleteLater();
 
-    trackEvent("ipify_finished");
+    trackEvent("ipify_complete");
 }
 
 void Network::handleMixpanelFinished()
