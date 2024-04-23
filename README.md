@@ -106,7 +106,7 @@ Each item should have an issue link below.
     - [ ] Support Nomic hosted model discoverability
 - LocalDocs (towards a local perplexity)
     - Multilingual LocalDocs Support
-        - [ ] Create an multilingual experience
+        - [ ] Create a multilingual experience
         - [ ] Incorporate a multilingual embedding model
         - [ ] Specify a preferred multilingual LLM for localdocs
     - Improved RAG techniques
