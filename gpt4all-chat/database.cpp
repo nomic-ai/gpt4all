@@ -948,10 +948,11 @@ void Database::start()
     if (m_embeddings->fileExists() && !m_embeddings->load())
         qWarning() << "ERROR: Could not load embeddings";
 
-    addCurrentFolders();
+    int nAdded = addCurrentFolders();
+    Network::globalInstance()->trackEvent("localdocs_startup", { {"doc_collections_total", nAdded} });
 }
 
-void Database::addCurrentFolders()
+int Database::addCurrentFolders()
 {
 #if defined(DEBUG)
     qDebug() << "addCurrentFolders";
@@ -961,23 +962,26 @@ void Database::addCurrentFolders()
     QList<CollectionItem> collections;
     if (!selectAllFromCollections(q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
-        return;
+        return 0;
     }
 
     emit collectionListUpdated(collections);
 
+    int nAdded = 0;
     for (const auto &i : collections)
-        addFolder(i.collection, i.folder_path, true);
+        nAdded += addFolder(i.collection, i.folder_path, true);
 
     updateIndexingStatus();
+
+    return nAdded;
 }
 
-void Database::addFolder(const QString &collection, const QString &path, bool fromDb)
+bool Database::addFolder(const QString &collection, const QString &path, bool fromDb)
 {
     QFileInfo info(path);
     if (!info.exists() || !info.isReadable()) {
         qWarning() << "ERROR: Cannot add folder that doesn't exist or not readable" << path;
-        return;
+        return false;
     }
 
     QSqlQuery q;
@@ -986,13 +990,13 @@ void Database::addFolder(const QString &collection, const QString &path, bool fr
     // See if the folder exists in the db
     if (!selectFolder(q, path, &folder_id)) {
         qWarning() << "ERROR: Cannot select folder from path" << path << q.lastError();
-        return;
+        return false;
     }
 
     // Add the folder
     if (folder_id == -1 && !addFolderToDB(q, path, &folder_id)) {
         qWarning() << "ERROR: Cannot add folder to db with path" << path << q.lastError();
-        return;
+        return false;
     }
 
     Q_ASSERT(folder_id != -1);
@@ -1001,13 +1005,14 @@ void Database::addFolder(const QString &collection, const QString &path, bool fr
     QList<int> folders;
     if (!selectFoldersFromCollection(q, collection, &folders)) {
         qWarning() << "ERROR: Cannot select folders from collections" << collection << q.lastError();
-        return;
+        return false;
     }
 
+    bool added = false;
     if (!folders.contains(folder_id)) {
         if (!addCollection(q, collection, folder_id)) {
             qWarning() << "ERROR: Cannot add folder to collection" << collection << path << q.lastError();
-            return;
+            return false;
         }
 
         CollectionItem i;
@@ -1015,6 +1020,7 @@ void Database::addFolder(const QString &collection, const QString &path, bool fr
         i.folder_path = path;
         i.folder_id = folder_id;
         emit addCollectionItem(i, fromDb);
+        added = true;
     }
 
     addFolderToWatch(path);
@@ -1023,6 +1029,8 @@ void Database::addFolder(const QString &collection, const QString &path, bool fr
     if (!fromDb) {
         updateIndexingStatus();
     }
+
+    return added;
 }
 
 void Database::removeFolder(const QString &collection, const QString &path)

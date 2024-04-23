@@ -62,7 +62,7 @@ public:
 public Q_SLOTS:
     void scanQueue();
     void scanDocuments(int folder_id, const QString &folder_path, bool isNew);
-    void addFolder(const QString &collection, const QString &path, bool fromDb);
+    bool addFolder(const QString &collection, const QString &path, bool fromDb);
     void removeFolder(const QString &collection, const QString &path);
     void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void cleanDB();
@@ -89,7 +89,7 @@ private Q_SLOTS:
     void directoryChanged(const QString &path);
     bool addFolderToWatch(const QString &path);
     bool removeFolderFromWatch(const QString &path);
-    void addCurrentFolders();
+    int addCurrentFolders();
     void handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
     void handleErrorGenerated(int folder_id, const QString &error);
 
