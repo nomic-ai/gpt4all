@@ -179,7 +179,7 @@ void Chat::promptProcessing()
     emit responseStateChanged();
 }
 
-void Chat::responseStopped()
+void Chat::responseStopped(qint64 promptResponseMs)
 {
     m_tokenSpeed = QString();
     emit tokenSpeedChanged();
@@ -232,6 +232,7 @@ void Chat::responseStopped()
     Network::globalInstance()->trackChatEvent("response_complete", {
         {"first", m_firstResponse},
         {"message_count", chatModel()->count()},
+        {"$duration", promptResponseMs / 1000.},
     });
     m_firstResponse = false;
 }

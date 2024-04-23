@@ -123,7 +123,7 @@ Q_SIGNALS:
     void modelLoadingWarning(const QString &warning);
     void responseChanged(const QString &response);
     void promptProcessing();
-    void responseStopped();
+    void responseStopped(qint64 promptResponseMs);
     void sendModelLoaded();
     void generatedNameChanged(const QString &name);
     void stateChanged();

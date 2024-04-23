@@ -143,7 +143,7 @@ private Q_SLOTS:
     void handleResponseChanged(const QString &response);
     void handleModelLoadingPercentageChanged(float);
     void promptProcessing();
-    void responseStopped();
+    void responseStopped(qint64 promptResponseMs);
     void generatedNameChanged(const QString &name);
     void handleRecalculating();
     void handleModelLoadingError(const QString &error);

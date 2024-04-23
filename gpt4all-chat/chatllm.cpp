@@ -7,6 +7,8 @@
 #include "mysettings.h"
 #include "../gpt4all-backend/llmodel.h"
 
+#include <QElapsedTimer>
+
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
 
@@ -656,6 +658,8 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     printf("%s", qPrintable(prompt));
     fflush(stdout);
 #endif
+    QElapsedTimer totalTime;
+    totalTime.start();
     m_timer->start();
     if (!docsContext.isEmpty()) {
         auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode localdocs context without a response
@@ -668,12 +672,13 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     fflush(stdout);
 #endif
     m_timer->stop();
+    qint64 elapsed = totalTime.elapsed();
     std::string trimmed = trim_whitespace(m_response);
     if (trimmed != m_response) {
         m_response = trimmed;
         emit responseChanged(QString::fromStdString(m_response));
     }
-    emit responseStopped();
+    emit responseStopped(elapsed);
     return true;
 }
 
