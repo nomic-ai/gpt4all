@@ -216,7 +216,7 @@
     "quant": "q4_0",
     "type": "Phi-3",
     "description": "<ul><li>Very fast responses</li><li>Chat based model</li><li>Accepts system prompts in Phi-3 format</li><li>Trained by Microsoft</li><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li><li>No restrictions on commercial use</li></ul>",
-    "url": "https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf",
+    "url": "https://gpt4all.io/models/gguf/Phi-3-mini-4k-instruct.Q4_0.gguf",
     "promptTemplate": "<|user|>\n%1<|end|>\n<|assistant|>\n%2<|end|>\n",
     "systemPrompt": ""
   },
