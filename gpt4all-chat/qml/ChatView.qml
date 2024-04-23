@@ -90,16 +90,19 @@ Rectangle {
         }
 
         // check for first time start of this version
-        if (!hasCheckedFirstStart && Download.isFirstStart(/*writeVersion*/ true)) {
-            firstStartDialog.open();
-            return;
-        }
-        hasCheckedFirstStart = true
+        if (!hasCheckedFirstStart) {
+            if (Download.isFirstStart(/*writeVersion*/ true)) {
+                firstStartDialog.open();
+                return;
+            }
 
-        // send startup or opt-out now that the user has made their choice
-        Network.sendStartup()
-        // start localdocs
-        LocalDocs.requestStart()
+            // send startup or opt-out now that the user has made their choice
+            Network.sendStartup()
+            // start localdocs
+            LocalDocs.requestStart()
+
+            hasCheckedFirstStart = true
+        }
 
         // check for any current models and if not, open download dialog once
         if (!hasShownModelDownload && ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
