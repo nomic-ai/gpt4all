@@ -544,7 +544,6 @@ Database::Database(int chunkSize)
     , m_embeddings(new Embeddings(this))
 {
     moveToThread(&m_dbThread);
-    connect(&m_dbThread, &QThread::started, this, &Database::start);
     m_dbThread.setObjectName("database");
     m_dbThread.start();
 }

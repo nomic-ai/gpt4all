@@ -18,6 +18,8 @@ LocalDocs::LocalDocs()
     // Create the DB with the chunk size from settings
     m_database = new Database(MySettings::globalInstance()->localDocsChunkSize());
 
+    connect(this, &LocalDocs::requestStart, m_database,
+        &Database::start, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestAddFolder, m_database,
         &Database::addFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestRemoveFolder, m_database,

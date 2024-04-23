@@ -1,16 +1,18 @@
+import Qt5Compat.GraphicalEffects
 import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
-import llm
+
 import chatlistmodel
 import download
-import modellist
-import network
 import gpt4all
+import llm
+import localdocs
+import modellist
 import mysettings
+import network
 
 Rectangle {
     id: window
@@ -96,6 +98,8 @@ Rectangle {
 
         // send startup or opt-out now that the user has made their choice
         Network.sendStartup()
+        // start localdocs
+        LocalDocs.requestStart()
 
         // check for any current models and if not, open download dialog once
         if (!hasShownModelDownload && ModelList.installedModels.count === 0 && !firstStartDialog.opened) {

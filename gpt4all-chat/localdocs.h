@@ -26,6 +26,7 @@ public Q_SLOTS:
     void aboutToQuit();
 
 Q_SIGNALS:
+    void requestStart();
     void requestAddFolder(const QString &collection, const QString &path, bool fromDb);
     void requestRemoveFolder(const QString &collection, const QString &path);
     void requestChunkSizeChange(int chunkSize);

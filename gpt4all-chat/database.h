@@ -60,6 +60,7 @@ public:
     virtual ~Database();
 
 public Q_SLOTS:
+    void start();
     void scanQueue();
     void scanDocuments(int folder_id, const QString &folder_path, bool isNew);
     bool addFolder(const QString &collection, const QString &path, bool fromDb);
@@ -85,7 +86,6 @@ Q_SIGNALS:
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
 private Q_SLOTS:
-    void start();
     void directoryChanged(const QString &path);
     bool addFolderToWatch(const QString &path);
     bool removeFolderFromWatch(const QString &path);
