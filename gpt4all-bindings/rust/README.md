@@ -4,7 +4,7 @@ This package contains a set of Rust bindings around the `llmodel` C-API.
 
 Package on Crates: - **Crates.io**: [gpt4all](https://crates.io/crates/gpt4all)
 
-Currently tested only on **MacOS**, **Linux (ubuntu)**
+Currently tested only on **macOS**, **Linux (ubuntu)**
 
 ### Prerequisites
 
@@ -31,7 +31,6 @@ As an alternative to downloading via cargo, you may build the Rust bindings from
 1. Clone GPT4All and change directory:
 ```
 git clone --recurse-submodules https://github.com/nomic-ai/gpt4all.git
-cd gpt4all/gpt4all-backend
 ```
 
 2. Add the local GPT4All Rust crate to your project's Cargo.toml:
@@ -41,6 +40,18 @@ gpt4all = { path = "..path_to_gpt4all../gpt4all/gpt4all-bindings/rust" }
 ```
 
 ## Usage
+
+### Model Source
+Repository with available models: [models](https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/metadata/models3.json)
+
+```rust
+async fn download_model() {
+    Gpt4AllModelSource::default()
+    .download("nomic-embed-text-v1.f16.gguf")
+    .await
+    .expect("Failed to download the model");
+}
+```
 
 ### Completions
 Test it out! In a Rust script:
@@ -52,7 +63,7 @@ fn main() {
 
     // load completion model (should already be downloaded and located at default directory 'HOME_DIR/.cache/gpt4all)
     let model = model_loader
-        .load_completion_model(NOUS_HERMES_MODEL_FILE, CompletionModelConfig {
+        .load_completion_model("Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf", CompletionModelConfig {
             // configure default prompt template for loaded model
             default_prompt_template: Some("<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n".to_string()),
         })
@@ -61,16 +72,19 @@ fn main() {
     // use stateless prompting use case
     let stateless_prompting_builder = StatelessPromptingBuilder::new(&model)
         .system_description("<|im_start|>system\nYou are helpful and kind math teacher.\n<|im_end|>\n")
-        .add_reply_expectation("5 + 8, explain for me", "5 + 8 = 13 :)")
-        .add_reply_expectation("10 + 8, explain for me", "10 + 8 = 18 :)")
-        .add_reply_expectation("1 + 8, explain for me", "1 + 8 = 9 :)");
+        .add_reply_expectation("5 + 8 ?", "5 + 8 = 13 :)")
+        .add_reply_expectation("10 + 8 ?", "10 + 8 = 18 :)")
+        .add_reply_expectation("1 + 8 ? ", "1 + 8 = 9 :)");
     
     let stateless_prompting = stateless_prompting_builder.build();
 
     // ask question
-    let answer = stateless_prompting.ask("What is 5 + 5?\n");
+    let answer = stateless_prompting.ask("5 + 5 ?\n");
     
     println!("{}", answer);
+    
+    // free allocated resources
+    model.dispose();
 }
 ```
 
@@ -98,6 +112,9 @@ fn main() {
     let embedding = embedding_model
         .create_embedding(embedding_options)
         .expect("failed to create embedding");
+
+    // free allocated resources
+    model.dispose();
 }
 ```
 
