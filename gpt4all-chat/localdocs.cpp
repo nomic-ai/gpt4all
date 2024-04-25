@@ -18,6 +18,8 @@ LocalDocs::LocalDocs()
     // Create the DB with the chunk size from settings
     m_database = new Database(MySettings::globalInstance()->localDocsChunkSize());
 
+    connect(this, &LocalDocs::requestStart, m_database,
+        &Database::start, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestAddFolder, m_database,
         &Database::addFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestRemoveFolder, m_database,
@@ -50,8 +52,6 @@ LocalDocs::LocalDocs()
         m_localDocsModel, &LocalDocsModel::addCollectionItem, Qt::QueuedConnection);
     connect(m_database, &Database::removeFolderById,
         m_localDocsModel, &LocalDocsModel::removeFolderById, Qt::QueuedConnection);
-    connect(m_database, &Database::removeCollectionItem,
-        m_localDocsModel, &LocalDocsModel::removeCollectionItem, Qt::QueuedConnection);
     connect(m_database, &Database::collectionListUpdated,
         m_localDocsModel, &LocalDocsModel::collectionListUpdated, Qt::QueuedConnection);
 
@@ -68,7 +68,7 @@ void LocalDocs::addFolder(const QString &collection, const QString &path)
 {
     const QUrl url(path);
     const QString localPath = url.isLocalFile() ? url.toLocalFile() : path;
-    emit requestAddFolder(collection, localPath);
+    emit requestAddFolder(collection, localPath, false);
 }
 
 void LocalDocs::removeFolder(const QString &collection, const QString &path)

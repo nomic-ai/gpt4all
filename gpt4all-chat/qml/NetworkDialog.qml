@@ -100,16 +100,10 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     }
 
     onAccepted: {
-        if (MySettings.networkIsActive)
-            return
-        MySettings.networkIsActive = true;
-        Network.sendNetworkToggled(true);
+        MySettings.networkIsActive = true
     }
 
     onRejected: {
-        if (!MySettings.networkIsActive)
-            return
-        MySettings.networkIsActive = false;
-        Network.sendNetworkToggled(false);
+        MySettings.networkIsActive = false
     }
 }

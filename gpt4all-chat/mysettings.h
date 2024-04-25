@@ -129,8 +129,10 @@ public:
     QString networkAttribution() const;
     void setNetworkAttribution(const QString &a);
     bool networkIsActive() const;
+    Q_INVOKABLE bool isNetworkIsActiveSet() const;
     void setNetworkIsActive(bool b);
     bool networkUsageStatsActive() const;
+    Q_INVOKABLE bool isNetworkUsageStatsActiveSet() const;
     void setNetworkUsageStatsActive(bool b);
     int networkPort() const;
     void setNetworkPort(int c);

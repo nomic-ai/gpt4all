@@ -785,7 +785,7 @@ const std::vector<LLModel::Token> &GPTJ::endTokens() const
     return fres;
 }
 
-std::string get_arch_name(gguf_context *ctx_gguf) {
+const char *get_arch_name(gguf_context *ctx_gguf) {
     std::string arch_name;
     const int kid = gguf_find_key(ctx_gguf, "general.architecture");
     enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
@@ -814,21 +814,25 @@ DLL_EXPORT const char *get_build_variant() {
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT bool magic_match(const char * fname) {
+DLL_EXPORT char *get_file_arch(const char *fname) {
     struct ggml_context * ctx_meta = NULL;
     struct gguf_init_params params = {
         /*.no_alloc = */ true,
         /*.ctx      = */ &ctx_meta,
     };
     gguf_context *ctx_gguf = gguf_init_from_file(fname, params);
-    if (!ctx_gguf)
-        return false;
 
-    bool isValid = gguf_get_version(ctx_gguf) <= 3;
-    isValid = isValid && get_arch_name(ctx_gguf) == "gptj";
+    char *arch = nullptr;
+    if (ctx_gguf && gguf_get_version(ctx_gguf) <= 3) {
+        arch = strdup(get_arch_name(ctx_gguf));
+    }
 
     gguf_free(ctx_gguf);
-    return isValid;
+    return arch;
+}
+
+DLL_EXPORT bool is_arch_supported(const char *arch) {
+    return !strcmp(arch, "gptj");
 }
 
 DLL_EXPORT LLModel *construct() {

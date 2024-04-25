@@ -1,16 +1,19 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include <QObject>
-#include <QtSql>
-#include <QQueue>
+#include <QElapsedTimer>
 #include <QFileInfo>
-#include <QThread>
 #include <QFileSystemWatcher>
+#include <QObject>
+#include <QQueue>
+#include <QThread>
+#include <QtSql>
 
 #include "embllm.h"
 
 class Embeddings;
+class QTimer;
+
 struct DocumentInfo
 {
     int folder;
@@ -58,9 +61,10 @@ public:
     virtual ~Database();
 
 public Q_SLOTS:
+    void start();
     void scanQueue();
-    void scanDocuments(int folder_id, const QString &folder_path);
-    void addFolder(const QString &collection, const QString &path);
+    void scanDocuments(int folder_id, const QString &folder_path, bool isNew);
+    bool addFolder(const QString &collection, const QString &path, bool fromDb);
     void removeFolder(const QString &collection, const QString &path);
     void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void cleanDB();
@@ -78,21 +82,22 @@ Q_SIGNALS:
     void updateTotalBytesToIndex(int folder_id, size_t totalBytesToIndex);
     void updateCurrentEmbeddingsToIndex(int folder_id, size_t currentBytesToIndex);
     void updateTotalEmbeddingsToIndex(int folder_id, size_t totalBytesToIndex);
-    void addCollectionItem(const CollectionItem &item);
+    void addCollectionItem(const CollectionItem &item, bool fromDb);
     void removeFolderById(int folder_id);
-    void removeCollectionItem(const QString &collectionName);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
 private Q_SLOTS:
-    void start();
     void directoryChanged(const QString &path);
     bool addFolderToWatch(const QString &path);
     bool removeFolderFromWatch(const QString &path);
-    void addCurrentFolders();
+    int addCurrentFolders();
     void handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
     void handleErrorGenerated(int folder_id, const QString &error);
 
 private:
+    enum class FolderStatus { Started, Embedding, Complete };
+    struct FolderStatusRecord { qint64 startTime; bool isNew; int numDocs, docsChanged, chunksRead; };
+
     void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
     size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
         const QString &title, const QString &author, const QString &subject, const QString &keywords, int page,
@@ -107,10 +112,15 @@ private:
     void removeFolderFromDocumentQueue(int folder_id);
     void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
+    void updateIndexingStatus();
+    void updateFolderStatus(int folder_id, FolderStatus status, int numDocs = -1, bool atStart = false, bool isNew = false);
 
 private:
     int m_chunkSize;
+    QTimer *m_scanTimer;
     QMap<int, QQueue<DocumentInfo>> m_docsToScan;
+    QElapsedTimer m_indexingTimer;
+    QMap<int, FolderStatusRecord> m_foldersBeingIndexed;
     QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
     QFileSystemWatcher *m_watcher;

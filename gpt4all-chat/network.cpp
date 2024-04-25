@@ -1,7 +1,12 @@
 #include "network.h"
-#include "llm.h"
+
 #include "chatlistmodel.h"
+#include "download.h"
+#include "llm.h"
+#include "localdocs.h"
 #include "mysettings.h"
+
+#include <cmath>
 
 #include <QCoreApplication>
 #include <QGuiApplication>
@@ -14,15 +19,48 @@
 
 //#define DEBUG
 
+static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
+
 #if defined(Q_OS_MAC)
+
 #include <sys/sysctl.h>
-std::string getCPUModel() {
+static QString getCPUModel() {
     char buffer[256];
     size_t bufferlen = sizeof(buffer);
     sysctlbyname("machdep.cpu.brand_string", &buffer, &bufferlen, NULL, 0);
-    return std::string(buffer);
+    return buffer;
 }
+
+#elif defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
+
+#define get_cpuid(level, a, b, c, d) asm volatile("cpuid" : "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "0" (level) : "memory")
+
+static QString getCPUModel() {
+    unsigned regs[12];
+
+    // EAX=800000000h: Get Highest Extended Function Implemented
+    get_cpuid(0x80000000, regs[0], regs[1], regs[2], regs[3]);
+    if (regs[0] < 0x80000004)
+        return "(unknown)";
+
+    // EAX=800000002h-800000004h: Processor Brand String
+    get_cpuid(0x80000002, regs[0], regs[1], regs[ 2], regs[ 3]);
+    get_cpuid(0x80000003, regs[4], regs[5], regs[ 6], regs[ 7]);
+    get_cpuid(0x80000004, regs[8], regs[9], regs[10], regs[11]);
+
+    char str[sizeof(regs) + 1];
+    memcpy(str, regs, sizeof(regs));
+    str[sizeof(regs)] = 0;
+
+    return QString(str).trimmed();
+}
+
+#else
+
+static QString getCPUModel() { return "(non-x86)"; }
+
 #endif
+
 
 class MyNetwork: public Network { };
 Q_GLOBAL_STATIC(MyNetwork, networkInstance)
@@ -33,38 +71,41 @@ Network *Network::globalInstance()
 
 Network::Network()
     : QObject{nullptr}
-    , m_shouldSendStartup(false)
 {
     QSettings settings;
     settings.sync();
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
     settings.sync();
-    connect(MySettings::globalInstance(), &MySettings::networkIsActiveChanged, this, &Network::handleIsActiveChanged);
-    connect(MySettings::globalInstance(), &MySettings::networkUsageStatsActiveChanged, this, &Network::handleUsageStatsActiveChanged);
-    if (MySettings::globalInstance()->networkIsActive())
+    m_sessionId = generateUniqueId();
+
+    // allow sendMixpanel to be called from any thread
+    connect(this, &Network::requestMixpanel, this, &Network::sendMixpanel, Qt::QueuedConnection);
+
+    const auto *mySettings = MySettings::globalInstance();
+    connect(mySettings, &MySettings::networkIsActiveChanged, this, &Network::handleIsActiveChanged);
+    connect(mySettings, &MySettings::networkUsageStatsActiveChanged, this, &Network::handleUsageStatsActiveChanged);
+
+    m_hasSentOptIn  = !Download::globalInstance()->isFirstStart() &&  mySettings->networkUsageStatsActive();
+    m_hasSentOptOut = !Download::globalInstance()->isFirstStart() && !mySettings->networkUsageStatsActive();
+
+    if (mySettings->networkIsActive())
         sendHealth();
-    if (MySettings::globalInstance()->networkUsageStatsActive())
-        sendIpify();
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Network::handleSslErrors);
+}
+
+// NOTE: this won't be useful until we make it possible to change this via the settings page
+void Network::handleUsageStatsActiveChanged()
+{
+    if (!MySettings::globalInstance()->networkUsageStatsActive())
+        m_sendUsageStats = false;
 }
 
 void Network::handleIsActiveChanged()
 {
     if (MySettings::globalInstance()->networkUsageStatsActive())
         sendHealth();
-}
-
-void Network::handleUsageStatsActiveChanged()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        sendOptOut();
-    else {
-        // model might be loaded already when user opt-in for first time
-        sendStartup();
-        sendIpify();
-    }
 }
 
 QString Network::generateUniqueId() const
@@ -167,8 +208,8 @@ void Network::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &erro
 void Network::sendOptOut()
 {
     QJsonObject properties;
-    properties.insert("token", "ce362e568ddaee16ed243eaffb5860a2");
-    properties.insert("time", QDateTime::currentSecsSinceEpoch());
+    properties.insert("token", MIXPANEL_TOKEN);
+    properties.insert("time", QDateTime::currentMSecsSinceEpoch());
     properties.insert("distinct_id", m_uniqueId);
     properties.insert("$insert_id", generateUniqueId());
 
@@ -181,7 +222,7 @@ void Network::sendOptOut()
 
     QJsonDocument doc;
     doc.setArray(array);
-    sendMixpanel(doc.toJson(QJsonDocument::Compact), true /*isOptOut*/);
+    emit requestMixpanel(doc.toJson(QJsonDocument::Compact), true /*isOptOut*/);
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable("opt_out"), qPrintable(doc.toJson(QJsonDocument::Indented)));
@@ -189,215 +230,76 @@ void Network::sendOptOut()
 #endif
 }
 
-void Network::sendModelLoaded()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("model_load");
-}
-
-void Network::sendResetContext(int conversationLength)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-
-    KeyValue kv;
-    kv.key = QString("length");
-    kv.value = QJsonValue(conversationLength);
-    sendMixpanelEvent("reset_context", QVector<KeyValue>{kv});
-}
-
 void Network::sendStartup()
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
+    const auto *mySettings = MySettings::globalInstance();
+    Q_ASSERT(mySettings->isNetworkUsageStatsActiveSet());
+    if (!mySettings->networkUsageStatsActive()) {
+        // send a single opt-out per session after the user has made their selections,
+        // unless this is a normal start (same version) and the user was already opted out
+        if (!m_hasSentOptOut) {
+            sendOptOut();
+            m_hasSentOptOut = true;
+        }
         return;
-    m_shouldSendStartup = true;
-    if (m_ipify.isEmpty())
-        return; // when it completes it will send
-    sendMixpanelEvent("startup");
+    }
+
+    // only chance to enable usage stats is at the start of a new session
+    m_sendUsageStats = true;
+
+    const auto *display = QGuiApplication::primaryScreen();
+    trackEvent("startup", {
+        {"$screen_dpi", std::round(display->physicalDotsPerInch())},
+        {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
+        {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
+        {"cpu", getCPUModel()},
+        {"datalake_active", mySettings->networkIsActive()},
+    });
+    sendIpify();
+
+    // mirror opt-out logic so the ratio can be used to infer totals
+    if (!m_hasSentOptIn) {
+        trackEvent("opt_in");
+        m_hasSentOptIn = true;
+    }
 }
 
-void Network::sendCheckForUpdates()
+void Network::trackChatEvent(const QString &ev, QVariantMap props)
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("check_for_updates");
+    const auto &curChat = ChatListModel::globalInstance()->currentChat();
+    if (!props.contains("model"))
+        props.insert("model", curChat->modelInfo().filename());
+    props.insert("actualDevice", curChat->device());
+    props.insert("doc_collections_enabled", curChat->collectionList().count());
+    props.insert("doc_collections_total", LocalDocs::globalInstance()->localDocsModel()->rowCount());
+    props.insert("datalake_active", MySettings::globalInstance()->networkIsActive());
+    props.insert("using_server", ChatListModel::globalInstance()->currentChat()->isServer());
+    trackEvent(ev, props);
 }
 
-void Network::sendModelDownloaderDialog()
+void Network::trackEvent(const QString &ev, const QVariantMap &props)
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("download_dialog");
-}
-
-void Network::sendInstallModel(const QString &model)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    sendMixpanelEvent("install_model", QVector<KeyValue>{kv});
-}
-
-void Network::sendRemoveModel(const QString &model)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    sendMixpanelEvent("remove_model", QVector<KeyValue>{kv});
-}
-
-void Network::sendDownloadStarted(const QString &model)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    sendMixpanelEvent("download_started", QVector<KeyValue>{kv});
-}
-
-void Network::sendDownloadCanceled(const QString &model)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    sendMixpanelEvent("download_canceled", QVector<KeyValue>{kv});
-}
-
-void Network::sendDownloadError(const QString &model, int code, const QString &errorString)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    KeyValue kvCode;
-    kvCode.key = QString("code");
-    kvCode.value = QJsonValue(code);
-    KeyValue kvError;
-    kvError.key = QString("error");
-    kvError.value = QJsonValue(errorString);
-    sendMixpanelEvent("download_error", QVector<KeyValue>{kv, kvCode, kvError});
-}
-
-void Network::sendDownloadFinished(const QString &model, bool success)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("model");
-    kv.value = QJsonValue(model);
-    KeyValue kvSuccess;
-    kvSuccess.key = QString("success");
-    kvSuccess.value = QJsonValue(success);
-    sendMixpanelEvent("download_finished", QVector<KeyValue>{kv, kvSuccess});
-}
-
-void Network::sendSettingsDialog()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("settings_dialog");
-}
-
-void Network::sendNetworkToggled(bool isActive)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("isActive");
-    kv.value = QJsonValue(isActive);
-    sendMixpanelEvent("network_toggled", QVector<KeyValue>{kv});
-}
-
-void Network::sendNewChat(int count)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    KeyValue kv;
-    kv.key = QString("number_of_chats");
-    kv.value = QJsonValue(count);
-    sendMixpanelEvent("new_chat", QVector<KeyValue>{kv});
-}
-
-void Network::sendRemoveChat()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("remove_chat");
-}
-
-void Network::sendRenameChat()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("rename_chat");
-}
-
-void Network::sendChatStarted()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("chat_started");
-}
-
-void Network::sendRecalculatingContext(int conversationLength)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-
-    KeyValue kv;
-    kv.key = QString("length");
-    kv.value = QJsonValue(conversationLength);
-    sendMixpanelEvent("recalc_context", QVector<KeyValue>{kv});
-}
-
-void Network::sendNonCompatHardware()
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
-        return;
-    sendMixpanelEvent("noncompat_hardware");
-}
-
-void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &values)
-{
-    if (!MySettings::globalInstance()->networkUsageStatsActive())
+    if (!m_sendUsageStats)
         return;
 
     Q_ASSERT(ChatListModel::globalInstance()->currentChat());
     QJsonObject properties;
-    properties.insert("token", "ce362e568ddaee16ed243eaffb5860a2");
-    properties.insert("time", QDateTime::currentSecsSinceEpoch());
-    properties.insert("distinct_id", m_uniqueId);
+
+    properties.insert("token", MIXPANEL_TOKEN);
+    if (!props.contains("time"))
+        properties.insert("time", QDateTime::currentMSecsSinceEpoch());
+    properties.insert("distinct_id", m_uniqueId); // effectively a device ID
     properties.insert("$insert_id", generateUniqueId());
-    properties.insert("$os", QSysInfo::prettyProductName());
+
     if (!m_ipify.isEmpty())
         properties.insert("ip", m_ipify);
-    properties.insert("name", QCoreApplication::applicationName() + " v"
-        + QCoreApplication::applicationVersion());
-    properties.insert("model", ChatListModel::globalInstance()->currentChat()->modelInfo().filename());
-    properties.insert("requestedDevice", MySettings::globalInstance()->device());
-    properties.insert("actualDevice", ChatListModel::globalInstance()->currentChat()->device());
 
-    // Some additional startup information
-    if (ev == "startup") {
-        const QSize display = QGuiApplication::primaryScreen()->size();
-        properties.insert("display", QString("%1x%2").arg(display.width()).arg(display.height()));
-        properties.insert("ram", LLM::globalInstance()->systemTotalRAMInGB());
-#if defined(Q_OS_MAC)
-        properties.insert("cpu", QString::fromStdString(getCPUModel()));
-#endif
-    }
+    properties.insert("$os", QSysInfo::prettyProductName());
+    properties.insert("session_id", m_sessionId);
+    properties.insert("name", QCoreApplication::applicationName() + " v" + QCoreApplication::applicationVersion());
 
-    for (const auto& p : values)
-        properties.insert(p.key, p.value);
+    for (const auto &[key, value]: props.asKeyValueRange())
+        properties.insert(key, QJsonValue::fromVariant(value));
 
     QJsonObject event;
     event.insert("event", ev);
@@ -408,7 +310,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
 
     QJsonDocument doc;
     doc.setArray(array);
-    sendMixpanel(doc.toJson(QJsonDocument::Compact));
+    emit requestMixpanel(doc.toJson(QJsonDocument::Compact));
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable(ev), qPrintable(doc.toJson(QJsonDocument::Indented)));
@@ -418,7 +320,7 @@ void Network::sendMixpanelEvent(const QString &ev, const QVector<KeyValue> &valu
 
 void Network::sendIpify()
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive() || !m_ipify.isEmpty())
+    if (!m_sendUsageStats || !m_ipify.isEmpty())
         return;
 
     QUrl ipifyUrl("https://api.ipify.org");
@@ -433,7 +335,7 @@ void Network::sendIpify()
 
 void Network::sendMixpanel(const QByteArray &json, bool isOptOut)
 {
-    if (!MySettings::globalInstance()->networkUsageStatsActive() && !isOptOut)
+    if (!m_sendUsageStats)
         return;
 
     QUrl trackUrl("https://api.mixpanel.com/track");
@@ -449,7 +351,6 @@ void Network::sendMixpanel(const QByteArray &json, bool isOptOut)
 
 void Network::handleIpifyFinished()
 {
-    Q_ASSERT(MySettings::globalInstance()->networkUsageStatsActive());
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply)
         return;
@@ -469,8 +370,7 @@ void Network::handleIpifyFinished()
 #endif
     reply->deleteLater();
 
-    if (m_shouldSendStartup)
-        sendStartup();
+    trackEvent("ipify_complete");
 }
 
 void Network::handleMixpanelFinished()

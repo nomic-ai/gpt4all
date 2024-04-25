@@ -16,7 +16,7 @@ MyDialog {
     modal: true
     padding: 20
     onOpened: {
-        Network.sendSettingsDialog();
+        Network.trackEvent("settings_dialog")
     }
 
     signal downloadClicked

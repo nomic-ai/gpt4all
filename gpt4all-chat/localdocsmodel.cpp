@@ -1,6 +1,7 @@
 #include "localdocsmodel.h"
 
 #include "localdocs.h"
+#include "network.h"
 
 LocalDocsCollectionsModel::LocalDocsCollectionsModel(QObject *parent)
     : QSortFilterProxyModel(parent)
@@ -158,50 +159,43 @@ void LocalDocsModel::updateTotalEmbeddingsToIndex(int folder_id, size_t totalEmb
         [](CollectionItem& item, size_t val) { item.totalEmbeddingsToIndex += val; }, {TotalEmbeddingsToIndexRole});
 }
 
-void LocalDocsModel::addCollectionItem(const CollectionItem &item)
+void LocalDocsModel::addCollectionItem(const CollectionItem &item, bool fromDb)
 {
     beginInsertRows(QModelIndex(), m_collectionList.size(), m_collectionList.size());
     m_collectionList.append(item);
     endInsertRows();
+
+    if (!fromDb) {
+        Network::globalInstance()->trackEvent("doc_collection_add", {
+            {"collection_count", m_collectionList.count()},
+        });
+    }
+}
+
+void LocalDocsModel::removeCollectionIf(std::function<bool(CollectionItem)> const &predicate) {
+    for (int i = 0; i < m_collectionList.size();) {
+        if (predicate(m_collectionList.at(i))) {
+            beginRemoveRows(QModelIndex(), i, i);
+            m_collectionList.removeAt(i);
+            endRemoveRows();
+
+            Network::globalInstance()->trackEvent("doc_collection_remove", {
+                {"collection_count", m_collectionList.count()},
+            });
+        } else {
+            ++i;
+        }
+    }
 }
 
 void LocalDocsModel::removeFolderById(int folder_id)
 {
-    for (int i = 0; i < m_collectionList.size();) {
-        if (m_collectionList.at(i).folder_id == folder_id) {
-            beginRemoveRows(QModelIndex(), i, i);
-            m_collectionList.removeAt(i);
-            endRemoveRows();
-        } else {
-            ++i;
-        }
-    }
+    removeCollectionIf([folder_id](const auto &c) { return c.folder_id == folder_id; });
 }
 
 void LocalDocsModel::removeCollectionPath(const QString &name, const QString &path)
 {
-    for (int i = 0; i < m_collectionList.size();) {
-        if (m_collectionList.at(i).collection == name && m_collectionList.at(i).folder_path == path) {
-            beginRemoveRows(QModelIndex(), i, i);
-            m_collectionList.removeAt(i);
-            endRemoveRows();
-        } else {
-            ++i;
-        }
-    }
-}
-
-void LocalDocsModel::removeCollectionItem(const QString &collectionName)
-{
-    for (int i = 0; i < m_collectionList.size();) {
-        if (m_collectionList.at(i).collection == collectionName) {
-            beginRemoveRows(QModelIndex(), i, i);
-            m_collectionList.removeAt(i);
-            endRemoveRows();
-        } else {
-            ++i;
-        }
-    }
+    removeCollectionIf([&name, &path](const auto &c) { return c.collection == name && c.folder_path == path; });
 }
 
 void LocalDocsModel::collectionListUpdated(const QList<CollectionItem> &collectionList)

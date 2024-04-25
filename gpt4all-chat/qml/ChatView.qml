@@ -1,16 +1,18 @@
+import Qt5Compat.GraphicalEffects
 import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
-import llm
+
 import chatlistmodel
 import download
-import modellist
-import network
 import gpt4all
+import llm
+import localdocs
+import modellist
 import mysettings
+import network
 
 Rectangle {
     id: window
@@ -27,6 +29,10 @@ Rectangle {
     // Startup code
     Component.onCompleted: {
         startupDialogs();
+    }
+
+    Component.onDestruction: {
+        Network.trackEvent("session_end")
     }
 
     Connections {
@@ -66,12 +72,12 @@ Rectangle {
     }
 
     property bool hasShownModelDownload: false
-    property bool hasShownFirstStart: false
+    property bool hasCheckedFirstStart: false
     property bool hasShownSettingsAccess: false
 
     function startupDialogs() {
         if (!LLM.compatHardware()) {
-            Network.sendNonCompatHardware();
+            Network.trackEvent("noncompat_hardware")
             errorCompatHardware.open();
             return;
         }
@@ -84,10 +90,18 @@ Rectangle {
         }
 
         // check for first time start of this version
-        if (!hasShownFirstStart && Download.isFirstStart()) {
-            firstStartDialog.open();
-            hasShownFirstStart = true;
-            return;
+        if (!hasCheckedFirstStart) {
+            if (Download.isFirstStart(/*writeVersion*/ true)) {
+                firstStartDialog.open();
+                return;
+            }
+
+            // send startup or opt-out now that the user has made their choice
+            Network.sendStartup()
+            // start localdocs
+            LocalDocs.requestStart()
+
+            hasCheckedFirstStart = true
         }
 
         // check for any current models and if not, open download dialog once
@@ -547,7 +561,6 @@ Rectangle {
         onClicked: {
             if (MySettings.networkIsActive) {
                 MySettings.networkIsActive = false
-                Network.sendNetworkToggled(false);
             } else
                 networkDialog.open()
         }
@@ -733,7 +746,7 @@ Rectangle {
         Accessible.description: qsTr("Reset the context and erase current conversation")
 
         onClicked: {
-            Network.sendResetContext(chatModel.count)
+            Network.trackChatEvent("reset_context", { "length": chatModel.count })
             currentChat.reset();
             currentChat.processSystemPrompt();
         }
@@ -1288,9 +1301,11 @@ Rectangle {
                     var listElement = chatModel.get(index);
 
                     if (currentChat.responseInProgress) {
+                        Network.trackChatEvent("stop_generating_clicked")
                         listElement.stopped = true
                         currentChat.stopGenerating()
                     } else {
+                        Network.trackChatEvent("regenerate_clicked")
                         currentChat.regenerateResponse()
                         if (chatModel.count) {
                             if (listElement.name === qsTr("Response: ")) {
@@ -1405,6 +1420,7 @@ Rectangle {
                     if (textInput.text === "")
                         return
 
+                    Network.trackChatEvent("send_message")
                     currentChat.stopGenerating()
                     currentChat.newPromptResponsePair(textInput.text);
                     currentChat.prompt(textInput.text,

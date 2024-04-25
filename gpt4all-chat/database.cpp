@@ -1,7 +1,9 @@
 #include "database.h"
-#include "mysettings.h"
-#include "embllm.h"
+
 #include "embeddings.h"
+#include "embllm.h"
+#include "mysettings.h"
+#include "network.h"
 
 #include <QTimer>
 #include <QPdfDocument>
@@ -490,7 +492,7 @@ QSqlError initDb()
     i.collection = collection_name;
     i.folder_path = folder_path;
     i.folder_id = folder_id;
-    emit addCollectionItem(i);
+    emit addCollectionItem(i, false);
 
     // Add a document
     int document_time = 123456789;
@@ -535,13 +537,13 @@ QSqlError initDb()
 
 Database::Database(int chunkSize)
     : QObject(nullptr)
-    , m_watcher(new QFileSystemWatcher(this))
     , m_chunkSize(chunkSize)
+    , m_scanTimer(new QTimer(this))
+    , m_watcher(new QFileSystemWatcher(this))
     , m_embLLM(new EmbeddingLLM)
     , m_embeddings(new Embeddings(this))
 {
     moveToThread(&m_dbThread);
-    connect(&m_dbThread, &QThread::started, this, &Database::start);
     m_dbThread.setObjectName("database");
     m_dbThread.start();
 }
@@ -556,11 +558,13 @@ void Database::scheduleNext(int folder_id, size_t countForFolder)
 {
     emit updateCurrentDocsToIndex(folder_id, countForFolder);
     if (!countForFolder) {
-        emit updateIndexing(folder_id, false);
+        updateFolderStatus(folder_id, FolderStatus::Complete);
         emit updateInstalled(folder_id, true);
     }
-    if (!m_docsToScan.isEmpty())
-        QTimer::singleShot(0, this, &Database::scanQueue);
+    if (m_docsToScan.isEmpty()) {
+        m_scanTimer->stop();
+        updateIndexingStatus();
+    }
 }
 
 void Database::handleDocumentError(const QString &errorMessage,
@@ -721,7 +725,6 @@ void Database::removeFolderFromDocumentQueue(int folder_id)
         return;
     m_docsToScan.remove(folder_id);
     emit removeFolderById(folder_id);
-    emit docsToScanChanged();
 }
 
 void Database::enqueueDocumentInternal(const DocumentInfo &info, bool prepend)
@@ -745,13 +748,16 @@ void Database::enqueueDocuments(int folder_id, const QVector<DocumentInfo> &info
     const size_t bytes = countOfBytes(folder_id);
     emit updateCurrentBytesToIndex(folder_id, bytes);
     emit updateTotalBytesToIndex(folder_id, bytes);
-    emit docsToScanChanged();
+    m_scanTimer->start();
 }
 
 void Database::scanQueue()
 {
-    if (m_docsToScan.isEmpty())
+    if (m_docsToScan.isEmpty()) {
+        m_scanTimer->stop();
+        updateIndexingStatus();
         return;
+    }
 
     DocumentInfo info = dequeueDocument();
     const size_t countForFolder = countOfDocuments(info.folder);
@@ -818,6 +824,8 @@ void Database::scanQueue()
     QSqlDatabase::database().transaction();
     Q_ASSERT(document_id != -1);
     if (info.isPdf()) {
+        updateFolderStatus(folder_id, FolderStatus::Embedding, -1, info.currentPage == 0);
+
         QPdfDocument doc;
         if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
             handleDocumentError("ERROR: Could not load pdf",
@@ -850,6 +858,8 @@ void Database::scanQueue()
             emit subtractCurrentBytesToIndex(info.folder, bytes - (bytesPerPage * doc.pageCount()));
         }
     } else {
+        updateFolderStatus(folder_id, FolderStatus::Embedding, -1, info.currentPosition == 0);
+
         QFile file(document_path);
         if (!file.open(QIODevice::ReadOnly)) {
             handleDocumentError("ERROR: Cannot open file for scanning",
@@ -884,7 +894,7 @@ void Database::scanQueue()
     return scheduleNext(folder_id, countForFolder);
 }
 
-void Database::scanDocuments(int folder_id, const QString &folder_path)
+void Database::scanDocuments(int folder_id, const QString &folder_path, bool isNew)
 {
 #if defined(DEBUG)
     qDebug() << "scanning folder for documents" << folder_path;
@@ -915,7 +925,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     }
 
     if (!infos.isEmpty()) {
-        emit updateIndexing(folder_id, true);
+        updateFolderStatus(folder_id, FolderStatus::Started, infos.count(), false, isNew);
         enqueueDocuments(folder_id, infos);
     }
 }
@@ -925,7 +935,7 @@ void Database::start()
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Database::directoryChanged);
     connect(m_embLLM, &EmbeddingLLM::embeddingsGenerated, this, &Database::handleEmbeddingsGenerated);
     connect(m_embLLM, &EmbeddingLLM::errorGenerated, this, &Database::handleErrorGenerated);
-    connect(this, &Database::docsToScanChanged, this, &Database::scanQueue);
+    m_scanTimer->callOnTimeout(this, &Database::scanQueue);
     if (!QSqlDatabase::drivers().contains("QSQLITE")) {
         qWarning() << "ERROR: missing sqllite driver";
     } else {
@@ -937,10 +947,11 @@ void Database::start()
     if (m_embeddings->fileExists() && !m_embeddings->load())
         qWarning() << "ERROR: Could not load embeddings";
 
-    addCurrentFolders();
+    int nAdded = addCurrentFolders();
+    Network::globalInstance()->trackEvent("localdocs_startup", { {"doc_collections_total", nAdded} });
 }
 
-void Database::addCurrentFolders()
+int Database::addCurrentFolders()
 {
 #if defined(DEBUG)
     qDebug() << "addCurrentFolders";
@@ -950,21 +961,26 @@ void Database::addCurrentFolders()
     QList<CollectionItem> collections;
     if (!selectAllFromCollections(q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
-        return;
+        return 0;
     }
 
     emit collectionListUpdated(collections);
 
+    int nAdded = 0;
     for (const auto &i : collections)
-        addFolder(i.collection, i.folder_path);
+        nAdded += addFolder(i.collection, i.folder_path, true);
+
+    updateIndexingStatus();
+
+    return nAdded;
 }
 
-void Database::addFolder(const QString &collection, const QString &path)
+bool Database::addFolder(const QString &collection, const QString &path, bool fromDb)
 {
     QFileInfo info(path);
     if (!info.exists() || !info.isReadable()) {
         qWarning() << "ERROR: Cannot add folder that doesn't exist or not readable" << path;
-        return;
+        return false;
     }
 
     QSqlQuery q;
@@ -973,13 +989,13 @@ void Database::addFolder(const QString &collection, const QString &path)
     // See if the folder exists in the db
     if (!selectFolder(q, path, &folder_id)) {
         qWarning() << "ERROR: Cannot select folder from path" << path << q.lastError();
-        return;
+        return false;
     }
 
     // Add the folder
     if (folder_id == -1 && !addFolderToDB(q, path, &folder_id)) {
         qWarning() << "ERROR: Cannot add folder to db with path" << path << q.lastError();
-        return;
+        return false;
     }
 
     Q_ASSERT(folder_id != -1);
@@ -988,24 +1004,32 @@ void Database::addFolder(const QString &collection, const QString &path)
     QList<int> folders;
     if (!selectFoldersFromCollection(q, collection, &folders)) {
         qWarning() << "ERROR: Cannot select folders from collections" << collection << q.lastError();
-        return;
+        return false;
     }
 
+    bool added = false;
     if (!folders.contains(folder_id)) {
         if (!addCollection(q, collection, folder_id)) {
             qWarning() << "ERROR: Cannot add folder to collection" << collection << path << q.lastError();
-            return;
+            return false;
         }
 
         CollectionItem i;
         i.collection = collection;
         i.folder_path = path;
         i.folder_id = folder_id;
-        emit addCollectionItem(i);
+        emit addCollectionItem(i, fromDb);
+        added = true;
     }
 
     addFolderToWatch(path);
-    scanDocuments(folder_id, path);
+    scanDocuments(folder_id, path, !fromDb);
+
+    if (!fromDb) {
+        updateIndexingStatus();
+    }
+
+    return added;
 }
 
 void Database::removeFolder(const QString &collection, const QString &path)
@@ -1285,5 +1309,69 @@ void Database::directoryChanged(const QString &path)
     cleanDB();
 
     // Rescan the documents associated with the folder
-    scanDocuments(folder_id, path);
+    scanDocuments(folder_id, path, false);
+    updateIndexingStatus();
+}
+
+void Database::updateIndexingStatus() {
+    Q_ASSERT(m_scanTimer->isActive() || m_docsToScan.isEmpty());
+    if (!m_indexingTimer.isValid() && m_scanTimer->isActive()) {
+        Network::globalInstance()->trackEvent("localdocs_indexing_start");
+        m_indexingTimer.start();
+    } else if (m_indexingTimer.isValid() && !m_scanTimer->isActive()) {
+        qint64 durationMs = m_indexingTimer.elapsed();
+        Network::globalInstance()->trackEvent("localdocs_indexing_complete", { {"$duration", durationMs / 1000.} });
+        m_indexingTimer.invalidate();
+    }
+}
+
+void Database::updateFolderStatus(int folder_id, Database::FolderStatus status, int numDocs, bool atStart, bool isNew) {
+    FolderStatusRecord *lastRecord = nullptr;
+    if (m_foldersBeingIndexed.contains(folder_id)) {
+        lastRecord = &m_foldersBeingIndexed[folder_id];
+    }
+    Q_ASSERT(lastRecord || status == FolderStatus::Started);
+
+    switch (status) {
+        case FolderStatus::Started:
+            if (lastRecord == nullptr) {
+                // record timestamp but don't send an event yet
+                m_foldersBeingIndexed.insert(folder_id, { QDateTime::currentMSecsSinceEpoch(), isNew, numDocs });
+                emit updateIndexing(folder_id, true);
+            }
+            break;
+        case FolderStatus::Embedding:
+            if (!lastRecord->docsChanged) {
+                Q_ASSERT(atStart);
+                // send start event with the original timestamp for folders that need updating
+                const auto *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
+                Network::globalInstance()->trackEvent("localdocs_folder_indexing", {
+                    {"folder_id", folder_id},
+                    {"is_new_collection", lastRecord->isNew},
+                    {"document_count", lastRecord->numDocs},
+                    {"embedding_model", embeddingModels->defaultModelInfo().filename()},
+                    {"chunk_size", m_chunkSize},
+                    {"time", lastRecord->startTime},
+                });
+            }
+            lastRecord->docsChanged += atStart;
+            lastRecord->chunksRead++;
+            break;
+        case FolderStatus::Complete:
+            if (lastRecord->docsChanged) {
+                // send complete event for folders that were updated
+                qint64 durationMs = QDateTime::currentMSecsSinceEpoch() - lastRecord->startTime;
+                Network::globalInstance()->trackEvent("localdocs_folder_complete", {
+                    {"folder_id", folder_id},
+                    {"is_new_collection", lastRecord->isNew},
+                    {"documents_total", lastRecord->numDocs},
+                    {"documents_changed", lastRecord->docsChanged},
+                    {"chunks_read", lastRecord->chunksRead},
+                    {"$duration", durationMs / 1000.},
+                });
+            }
+            m_foldersBeingIndexed.remove(folder_id);
+            emit updateIndexing(folder_id, false);
+            break;
+    }
 }

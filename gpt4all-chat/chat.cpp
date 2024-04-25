@@ -179,7 +179,7 @@ void Chat::promptProcessing()
     emit responseStateChanged();
 }
 
-void Chat::responseStopped()
+void Chat::responseStopped(qint64 promptResponseMs)
 {
     m_tokenSpeed = QString();
     emit tokenSpeedChanged();
@@ -228,8 +228,13 @@ void Chat::responseStopped()
     emit responseStateChanged();
     if (m_generatedName.isEmpty())
         emit generateNameRequested();
-    if (chatModel()->count() < 3)
-        Network::globalInstance()->sendChatStarted();
+
+    Network::globalInstance()->trackChatEvent("response_complete", {
+        {"first", m_firstResponse},
+        {"message_count", chatModel()->count()},
+        {"$duration", promptResponseMs / 1000.},
+    });
+    m_firstResponse = false;
 }
 
 ModelInfo Chat::modelInfo() const
@@ -331,7 +336,7 @@ void Chat::generatedNameChanged(const QString &name)
 
 void Chat::handleRecalculating()
 {
-    Network::globalInstance()->sendRecalculatingContext(m_chatModel->count());
+    Network::globalInstance()->trackChatEvent("recalc_context", { {"length", m_chatModel->count()} });
     emit recalcChanged();
 }
 

@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -49,14 +50,17 @@ LLModel::Implementation::Implementation(Dlhandle &&dlhandle_)
     auto get_build_variant = m_dlhandle->get<const char *()>("get_build_variant");
     assert(get_build_variant);
     m_buildVariant = get_build_variant();
-    m_magicMatch = m_dlhandle->get<bool(const char*)>("magic_match");
-    assert(m_magicMatch);
+    m_getFileArch = m_dlhandle->get<char *(const char *)>("get_file_arch");
+    assert(m_getFileArch);
+    m_isArchSupported = m_dlhandle->get<bool(const char *)>("is_arch_supported");
+    assert(m_isArchSupported);
     m_construct = m_dlhandle->get<LLModel *()>("construct");
     assert(m_construct);
 }
 
 LLModel::Implementation::Implementation(Implementation &&o)
-    : m_magicMatch(o.m_magicMatch)
+    : m_getFileArch(o.m_getFileArch)
+    , m_isArchSupported(o.m_isArchSupported)
     , m_construct(o.m_construct)
     , m_modelType(o.m_modelType)
     , m_buildVariant(o.m_buildVariant)
@@ -123,18 +127,26 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
 
 const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant) {
     bool buildVariantMatched = false;
+    std::optional<std::string> archName;
     for (const auto& i : implementationList()) {
         if (buildVariant != i.m_buildVariant) continue;
         buildVariantMatched = true;
 
-        if (!i.m_magicMatch(fname)) continue;
-        return &i;
+        char *arch = i.m_getFileArch(fname);
+        if (!arch) continue;
+        archName = arch;
+
+        bool archSupported = i.m_isArchSupported(arch);
+        free(arch);
+        if (archSupported) return &i;
     }
 
     if (!buildVariantMatched)
-        throw std::runtime_error("Could not find any implementations for build variant: " + buildVariant);
+        throw MissingImplementationError("Could not find any implementations for build variant: " + buildVariant);
+    if (!archName)
+        throw UnsupportedModelError("Unsupported file format");
 
-    return nullptr; // unsupported model format
+    throw BadArchError(std::move(*archName));
 }
 
 LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant, int n_ctx) {
@@ -144,7 +156,11 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
     #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
         if (buildVariant == "auto") {
             size_t total_mem = getSystemTotalRAMInBytes();
-            impl = implementation(modelPath.c_str(), "metal");
+            try {
+                impl = implementation(modelPath.c_str(), "metal");
+            } catch (const std::exception &e) {
+                // fall back to CPU
+            }
             if(impl) {
                 LLModel* metalimpl = impl->m_construct();
                 metalimpl->m_implementation = impl;
@@ -177,7 +193,6 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
             }
         }
         impl = implementation(modelPath.c_str(), buildVariant);
-        if (!impl) return nullptr;
     }
 
     // Construct and return llmodel implementation
