@@ -1369,9 +1369,9 @@ void Database::updateFolderStatus(int folder_id, Database::FolderStatus status, 
                     {"chunks_read", lastRecord->chunksRead},
                     {"$duration", durationMs / 1000.},
                 });
-                emit updateIndexing(folder_id, false);
             }
             m_foldersBeingIndexed.remove(folder_id);
+            emit updateIndexing(folder_id, false);
             break;
     }
 }
