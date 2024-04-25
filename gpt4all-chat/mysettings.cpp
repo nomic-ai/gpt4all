@@ -919,13 +919,14 @@ bool MySettings::isNetworkIsActiveSet() const
 
 void MySettings::setNetworkIsActive(bool b)
 {
-    if (networkIsActive() == b)
-        return;
-
     QSettings setting;
-    setting.setValue("network/isActive", b);
     setting.sync();
-    emit networkIsActiveChanged();
+    auto cur = setting.value("network/isActive");
+    if (!cur.isValid() || cur.toBool() != b) {
+        setting.setValue("network/isActive", b);
+        setting.sync();
+        emit networkIsActiveChanged();
+    }
 }
 
 bool MySettings::networkUsageStatsActive() const
@@ -944,11 +945,12 @@ bool MySettings::isNetworkUsageStatsActiveSet() const
 
 void MySettings::setNetworkUsageStatsActive(bool b)
 {
-    if (networkUsageStatsActive() == b)
-        return;
-
     QSettings setting;
-    setting.setValue("network/usageStatsActive", b);
     setting.sync();
-    emit networkUsageStatsActiveChanged();
+    auto cur = setting.value("network/usageStatsActive");
+    if (!cur.isValid() || cur.toBool() != b) {
+        setting.setValue("network/usageStatsActive", b);
+        setting.sync();
+        emit networkUsageStatsActiveChanged();
+    }
 }

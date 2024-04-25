@@ -77,6 +77,8 @@ bool Download::hasNewerRelease() const
 
 bool Download::isFirstStart(bool writeVersion) const
 {
+    auto *mySettings = MySettings::globalInstance();
+
     QSettings settings;
     settings.sync();
     QString lastVersionStarted = settings.value("download/lastVersionStarted").toString();
@@ -87,9 +89,10 @@ bool Download::isFirstStart(bool writeVersion) const
         settings.remove("network/usageStatsActive");
         settings.remove("network/isActive");
         settings.sync();
+        emit mySettings->networkUsageStatsActiveChanged();
+        emit mySettings->networkIsActiveChanged();
     }
 
-    const auto *mySettings = MySettings::globalInstance();
     return first || !mySettings->isNetworkUsageStatsActiveSet() || !mySettings->isNetworkIsActiveSet();
 }
 

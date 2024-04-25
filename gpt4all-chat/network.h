@@ -27,7 +27,6 @@ Q_SIGNALS:
     void requestMixpanel(const QByteArray &json, bool isOptOut = false);
 
 public Q_SLOTS:
-    void sendOptOut();
     void sendStartup();
 
 private Q_SLOTS:
@@ -41,6 +40,7 @@ private Q_SLOTS:
     void sendMixpanel(const QByteArray &json, bool isOptOut);
 
 private:
+    void sendOptOut();
     void sendHealth();
     void sendIpify();
     bool packageAndSendJson(const QString &ingestId, const QString &json);
