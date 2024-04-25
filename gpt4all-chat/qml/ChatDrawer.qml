@@ -39,8 +39,8 @@ Rectangle {
             text: qsTr("\uFF0B New chat")
             Accessible.description: qsTr("Create a new chat")
             onClicked: {
-                Network.trackChatEvent("new_chat", {"number_of_chats": ChatListModel.count + 1})
                 ChatListModel.addChat();
+                Network.trackEvent("new_chat", {"number_of_chats": ChatListModel.count})
             }
         }
 
