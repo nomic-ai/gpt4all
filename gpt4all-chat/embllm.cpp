@@ -97,16 +97,7 @@ bool EmbeddingLLMWorker::isNomic() const
 // this function is always called for retrieval tasks
 std::vector<float> EmbeddingLLMWorker::generateSyncEmbedding(const QString &text)
 {
-    if (!hasModel() && !loadModel()) {
-        qWarning() << "WARNING: Could not load model for embeddings";
-        return {};
-    }
-
-    if (isNomic()) {
-        qWarning() << "WARNING: Request to generate sync embeddings for non-local model invalid";
-        return {};
-    }
-
+    Q_ASSERT(isNomic());
     std::vector<float> embedding(m_model->embeddingSize());
     try {
         m_model->embed({text.toStdString()}, embedding.data(), true);
@@ -306,16 +297,21 @@ EmbeddingLLM::~EmbeddingLLM()
 
 std::vector<float> EmbeddingLLM::generateEmbeddings(const QString &text)
 {
+    if (!m_embeddingWorker->hasModel() && !m_embeddingWorker->loadModel()) {
+        qWarning() << "WARNING: Could not load model for embeddings";
+        return {};
+    }
+
     if (!m_embeddingWorker->isNomic()) {
         return m_embeddingWorker->generateSyncEmbedding(text);
-    } else {
-        EmbeddingLLMWorker worker;
-        connect(this, &EmbeddingLLM::requestSyncEmbedding, &worker,
-            &EmbeddingLLMWorker::requestSyncEmbedding, Qt::QueuedConnection);
-        emit requestSyncEmbedding(text);
-        worker.wait();
-        return worker.lastResponse();
     }
+
+    EmbeddingLLMWorker worker;
+    connect(this, &EmbeddingLLM::requestSyncEmbedding, &worker,
+        &EmbeddingLLMWorker::requestSyncEmbedding, Qt::QueuedConnection);
+    emit requestSyncEmbedding(text);
+    worker.wait();
+    return worker.lastResponse();
 }
 
 void EmbeddingLLM::generateAsyncEmbeddings(const QVector<EmbeddingChunk> &chunks)
