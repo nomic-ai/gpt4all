@@ -753,5 +753,44 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.7.4",
+    "notes":
+"
+<b>&mdash; What's New &mdash;</b>
+* Add a right-click menu to the chat (by @kryotek777 in PR #2108)
+* Change the left sidebar to stay open (PR #2117)
+* Limit the width of text in the chat (PR #2118)
+* Move to llama.cpp's SBert implementation (PR #2086)
+* Support models provided by the Mistral AI API (by @Olyxz16 in PR #2053)
+* Models List: Add Ghost 7B v0.9.1 (by @lh0x00 in PR #2127)
+* Add Documentation and FAQ links to the New Chat page (by @3Simplex in PR #2183)
+* Models List: Simplify Mistral OpenOrca system prompt (PR #2220)
+* Models List: Add Llama 3 Instruct (PR #2242)
+* Models List: Add Phi-3 Mini Instruct (PR #2252)
+* Improve accuracy of anonymous usage statistics (PR #2238)
+
+<b>&mdash; Fixes &mdash;</b>
+* Detect unsupported CPUs correctly on Windows (PR #2141)
+* Fix the colors used by the server chat (PR #2150)
+* Fix startup issues when encountering non-Latin characters in paths (PR #2162)
+* Fix issues causing LocalDocs context links to not work sometimes (PR #2218)
+* Fix incorrect display of certain code block syntax in the chat (PR #2232)
+* Fix an issue causing unnecessary indexing of document collections on startup (PR #2236)
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Lam Hieu (`@lh0x00`)
+* 3Simplex (`@3Simplex`)
+* Kryotek (`@kryotek777`)
+* Olyxz16 (`@Olyxz16`)
+* Robin Verduijn (`@robinverduijn`)
+* Tim453 (`@Tim453`)
+* Xu Zhen (`@xuzhen`)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]
