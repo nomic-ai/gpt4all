@@ -33,20 +33,26 @@ static QString getCPUModel() {
 
 #elif defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
 
-#define get_cpuid(level, a, b, c, d) asm volatile("cpuid" : "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "0" (level) : "memory")
+#ifndef _MSC_VER
+static void get_cpuid(int level, int *regs) {
+    asm volatile("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3]) : "0" (level) : "memory");
+}
+#else
+#define get_cpuid(level, regs) __cpuid(regs, level)
+#endif
 
 static QString getCPUModel() {
-    unsigned regs[12];
+    int regs[12];
 
     // EAX=800000000h: Get Highest Extended Function Implemented
-    get_cpuid(0x80000000, regs[0], regs[1], regs[2], regs[3]);
+    get_cpuid(0x80000000, regs);
     if (regs[0] < 0x80000004)
         return "(unknown)";
 
     // EAX=800000002h-800000004h: Processor Brand String
-    get_cpuid(0x80000002, regs[0], regs[1], regs[ 2], regs[ 3]);
-    get_cpuid(0x80000003, regs[4], regs[5], regs[ 6], regs[ 7]);
-    get_cpuid(0x80000004, regs[8], regs[9], regs[10], regs[11]);
+    get_cpuid(0x80000002, regs);
+    get_cpuid(0x80000003, regs + 4);
+    get_cpuid(0x80000004, regs + 8);
 
     char str[sizeof(regs) + 1];
     memcpy(str, regs, sizeof(regs));
