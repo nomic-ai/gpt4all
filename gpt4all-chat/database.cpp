@@ -972,7 +972,7 @@ int Database::addCurrentFolders()
 
     updateIndexingStatus();
 
-    return nAdded;
+    return collections.count() + nAdded;
 }
 
 bool Database::addFolder(const QString &collection, const QString &path, bool fromDb)
