@@ -6,12 +6,14 @@ class InferenceModel {
     llm;
     modelName;
     config;
+    stopWord;
     activeChatSession;
 
     constructor(llmodel, config) {
         this.llm = llmodel;
         this.config = config;
         this.modelName = this.llm.name();
+        this.stopWord = ["\n\n\n\n\n\n\n", ...(this.config.stopWord || [])]
     }
 
     async createChatSession(options) {
@@ -110,9 +112,9 @@ class InferenceModel {
                 return continueIngestion;
             },
             onResponseToken: (tokenId, token) => {
-                let continueGeneration = true;
+                let continueGeneration = !this.stopWord.includes(_token) && this.stopWord.find(w=>!_token.includes(w))
                 tokensGenerated++;
-                if (options.onResponseToken) {
+                if (continueGeneration && options.onResponseToken) {
                     try {
                         // don't cancel the generation unless user explicitly returns false
                         continueGeneration =
