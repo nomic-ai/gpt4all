@@ -68,7 +68,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 
     # Include GGML
     set(LLAMA_K_QUANTS YES)
-    include_ggml(llama.cpp-mainline -mainline-${BUILD_VARIANT} ON)
+    include_ggml(llama.cpp-mainline -mainline-${BUILD_VARIANT})
 
     # Function for preparing individual implementations
     function(prepare_target TARGET_NAME BASE_LIB)
