@@ -97,7 +97,7 @@ bool EmbeddingLLMWorker::isNomic() const
 // this function is always called for retrieval tasks
 std::vector<float> EmbeddingLLMWorker::generateSyncEmbedding(const QString &text)
 {
-    Q_ASSERT(isNomic());
+    Q_ASSERT(!isNomic());
     std::vector<float> embedding(m_model->embeddingSize());
     try {
         m_model->embed({text.toStdString()}, embedding.data(), true);
