@@ -1,8 +1,8 @@
 package gpt4all
 
 type PredictOptions struct {
-	ContextSize, RepeatLastN, Tokens, TopK, Batch  int
-	TopP, MinP, Temperature, ContextErase, RepeatPenalty float64
+	ContextSize, RepeatLastN, Tokens, TopK, Batch, Special int
+	TopP, MinP, Temperature, ContextErase, RepeatPenalty   float64
 }
 
 type PredictOption func(p *PredictOptions)
@@ -11,9 +11,10 @@ var DefaultOptions PredictOptions = PredictOptions{
 	Tokens:        200,
 	TopK:          10,
 	TopP:          0.90,
-        MinP:          0.0,
+	MinP:          0.0,
 	Temperature:   0.96,
 	Batch:         1,
+	Special:       0,
 	ContextErase:  0.55,
 	ContextSize:   1024,
 	RepeatLastN:   10,
@@ -90,6 +91,17 @@ func SetTemperature(temp float64) PredictOption {
 func SetBatch(size int) PredictOption {
 	return func(p *PredictOptions) {
 		p.Batch = size
+	}
+}
+
+// SetSpecial is true if special tokens in the prompt should be processed, false otherwise.
+func SetSpecial(special bool) PredictOption {
+	return func(p *PredictOptions) {
+		if special {
+			p.Special = 1
+		} else {
+			p.Special = 0
+		}
 	}
 }
 

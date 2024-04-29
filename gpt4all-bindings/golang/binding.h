@@ -6,8 +6,9 @@ extern "C" {
 
 void* load_model(const char *fname, int n_threads);
 
-void model_prompt( const char *prompt, void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, int top_k,
-                            float top_p, float min_p, float temp, int n_batch,float ctx_erase);
+void model_prompt(const char *prompt, const char *prompt_template, int special, const char *fake_reply, 
+                    void *m, char* result, int repeat_last_n, float repeat_penalty, int n_ctx, int tokens, 
+                    int top_k, float top_p, float min_p, float temp, int n_batch,float ctx_erase);
 
 void free_model(void *state_ptr);
 
