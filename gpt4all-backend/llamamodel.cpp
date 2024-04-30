@@ -33,8 +33,9 @@ static constexpr int GGUF_VER_MAX = 3;
 static const char * const modelType_ = "LLaMA";
 
 static const std::vector<const char *> KNOWN_ARCHES {
-    "baichuan", "bert", "bloom", "codeshell", "falcon", "gemma", "gpt2", "llama", "mpt", "nomic-bert", "orion",
-    "persimmon", "phi2", "plamo", "qwen", "qwen2", "refact", "stablelm", "starcoder"
+    "baichuan", "bert", "bloom", "codeshell", "command-r", "dbrx", "falcon", "gemma", "gpt2", "llama", "mamba", "mpt",
+    "nomic-bert", "olmo", "orion", "persimmon", "phi2", "phi3", "plamo", "qwen2moe", "qwen2", "qwen", "refact",
+    "stablelm", "starcoder", "xverse",
 };
 
 static const std::vector<const char *> EMBEDDING_ARCHES {
