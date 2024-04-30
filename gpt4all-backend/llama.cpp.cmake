@@ -53,6 +53,11 @@ set(LLAMA_CUDA_PEER_MAX_BATCH_SIZE "128" CACHE STRING
                                              "llama: max. batch size for using peer access")
 option(LLAMA_CUDA_NO_PEER_COPY               "llama: do not use peer to peer copies"            OFF)
 #option(LLAMA_CLBLAST                         "llama: use CLBlast"                               OFF)
+#option(LLAMA_VULKAN                          "llama: use Vulkan"                                OFF)
+option(LLAMA_VULKAN_CHECK_RESULTS            "llama: run Vulkan op checks"                      OFF)
+option(LLAMA_VULKAN_DEBUG                    "llama: enable Vulkan debug output"                OFF)
+option(LLAMA_VULKAN_VALIDATE                 "llama: enable Vulkan validation"                  OFF)
+option(LLAMA_VULKAN_RUN_TESTS                "llama: run Vulkan tests"                          OFF)
 #option(LLAMA_METAL                           "llama: use Metal"                                 ${LLAMA_METAL_DEFAULT})
 option(LLAMA_METAL_NDEBUG                    "llama: disable Metal debugging"                   OFF)
 option(LLAMA_METAL_SHADER_DEBUG              "llama: compile Metal with -fno-fast-math"         OFF)
@@ -435,9 +440,40 @@ function(include_ggml SUFFIX)
         endif()
     endif()
 
+    if (LLAMA_VULKAN)
+        find_package(Vulkan)
+        if (NOT Vulkan_FOUND)
+            message(FATAL_ERROR "Vulkan not found")
+        endif()
+
+        set(GGML_HEADERS_VULKAN ${DIRECTORY}/ggml-vulkan.h)
+        set(GGML_SOURCES_VULKAN ${DIRECTORY}/ggml-vulkan.cpp)
+
+        list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_VULKAN)
+
+        if (LLAMA_VULKAN_CHECK_RESULTS)
+            list(APPEND GGML_COMPILE_DEFS GGML_VULKAN_CHECK_RESULTS)
+        endif()
+
+        if (LLAMA_VULKAN_DEBUG)
+            list(APPEND GGML_COMPILE_DEFS GGML_VULKAN_DEBUG)
+        endif()
+
+        if (LLAMA_VULKAN_VALIDATE)
+            list(APPEND GGML_COMPILE_DEFS GGML_VULKAN_VALIDATE)
+        endif()
+
+        if (LLAMA_VULKAN_RUN_TESTS)
+            list(APPEND GGML_COMPILE_DEFS GGML_VULKAN_RUN_TESTS)
+        endif()
+
+        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} Vulkan::Vulkan)
+    endif()
+
     set(LLAMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY})
 
     if (LLAMA_KOMPUTE AND NOT GGML_KOMPUTE_ONCE)
+        set(GGML_KOMPUTE_ONCE ON PARENT_SCOPE)
         if (NOT EXISTS "${LLAMA_DIR}/kompute/CMakeLists.txt")
             message(FATAL_ERROR "Kompute not found")
         endif()
@@ -584,8 +620,6 @@ function(include_ggml SUFFIX)
             DEPENDS generated_shaders
             COMMENT "Ensuring shaders are generated before compiling ggml-kompute.cpp"
         )
-
-        set(GGML_KOMPUTE_ONCE ON PARENT_SCOPE)
     endif()
 
     if (LLAMA_KOMPUTE)
@@ -834,6 +868,7 @@ function(include_ggml SUFFIX)
                 ${GGML_SOURCES_OPENCL}    ${GGML_HEADERS_OPENCL}
                 ${GGML_SOURCES_METAL}     ${GGML_HEADERS_METAL}
                 ${GGML_SOURCES_KOMPUTE}   ${GGML_HEADERS_KOMPUTE}
+                ${GGML_SOURCES_VULKAN}    ${GGML_HEADERS_VULKAN}
                 ${GGML_SOURCES_LLAMAFILE} ${GGML_HEADERS_LLAMAFILE}
                 )
 
