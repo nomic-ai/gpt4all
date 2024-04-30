@@ -2,15 +2,25 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(APPLE)
-  option(BUILD_UNIVERSAL "Build a Universal binary on macOS" ON)
-  if(BUILD_UNIVERSAL)
+if (APPLE)
+    set(LLMODEL_KOMPUTE_DEFAULT OFF)
+else()
+    set(LLMODEL_KOMPUTE_DEFAULT ON)
+endif()
+
+if (APPLE)
+    option(BUILD_UNIVERSAL "Build a Universal binary on macOS" ON)
+endif()
+option(LLMODEL_KOMPUTE     "llama: use Kompute"                ${LLMODEL_KOMPUTE_DEFAULT})
+
+if (APPLE)
+  if (BUILD_UNIVERSAL)
     # Build a Universal binary on macOS
     # This requires that the found Qt library is compiled as Universal binaries.
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
   else()
     # Build for the host architecture on macOS
-    if(NOT CMAKE_OSX_ARCHITECTURES)
+    if (NOT CMAKE_OSX_ARCHITECTURES)
       set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}" CACHE STRING "" FORCE)
     endif()
   endif()
@@ -39,6 +49,7 @@ else()
     message(STATUS "Interprocedural optimization support detected")
 endif()
 
+set(DIRECTORY llama.cpp-mainline)
 include(llama.cpp.cmake)
 
 set(BUILD_VARIANTS default avxonly)
@@ -61,14 +72,19 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     set(LLAMA_FMA  ${GPT4ALL_ALLOW_NON_AVX})
 
     if (BUILD_VARIANT STREQUAL metal)
-        set(LLAMA_METAL YES)
+        set(LLAMA_METAL   YES)
+        set(LLAMA_KOMPUTE NO)
+    elseif (LLMODEL_KOMPUTE)
+        set(LLAMA_METAL   NO)
+        set(LLAMA_KOMPUTE YES)
     else()
-        set(LLAMA_METAL NO)
+        set(LLAMA_METAL   NO)
+        set(LLAMA_KOMPUTE NO)
     endif()
 
     # Include GGML
     set(LLAMA_K_QUANTS YES)
-    include_ggml(llama.cpp-mainline -mainline-${BUILD_VARIANT})
+    include_ggml(-mainline-${BUILD_VARIANT})
 
     # Function for preparing individual implementations
     function(prepare_target TARGET_NAME BASE_LIB)
