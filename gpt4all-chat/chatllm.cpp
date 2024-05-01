@@ -346,6 +346,11 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
                 emit reportFallbackReason(""); // no fallback yet
 
+                auto approxDeviceMemGB = [](const LLModel::GPUDevice *dev) {
+                    float memGB = dev->heapSize / float(1024 * 1024 * 1024);
+                    return std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
+                };
+
                 std::vector<LLModel::GPUDevice> availableDevices;
                 const LLModel::GPUDevice *defaultDevice = nullptr;
                 {
@@ -356,7 +361,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         float memGB = defaultDevice->heapSize / float(1024 * 1024 * 1024);
                         memGB = std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
                         modelLoadProps.insert("default_device", QString::fromStdString(defaultDevice->name));
-                        modelLoadProps.insert("default_device_mem", memGB);
+                        modelLoadProps.insert("default_device_mem", approxDeviceMemGB(defaultDevice));
                     }
                 }
 
@@ -383,6 +388,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         emit reportFallbackReason(QString::fromStdString("<br>" + unavail_reason));
                     } else {
                         actualDevice = QString::fromStdString(device->name);
+                        modelLoadProps.insert("requested_device_mem", approxDeviceMemGB(device));
                     }
                 }
 
