@@ -7,6 +7,16 @@
 #include "mysettings.h"
 #include "../gpt4all-backend/llmodel.h"
 
+#include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <cstddef>
+#include <functional>
+#include <limits>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <QElapsedTimer>
 
 //#define DEBUG
