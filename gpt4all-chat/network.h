@@ -37,7 +37,7 @@ private Q_SLOTS:
     void handleMixpanelFinished();
     void handleIsActiveChanged();
     void handleUsageStatsActiveChanged();
-    void sendMixpanel(const QByteArray &json, bool isOptOut);
+    void sendMixpanel(const QByteArray &json);
 
 private:
     void sendOptOut();
