@@ -215,6 +215,13 @@ else()
     install(TARGETS llama-mainline-kompute-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
     install(TARGETS llamamodel-mainline-kompute DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
     install(TARGETS llamamodel-mainline-kompute-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+
+    install(TARGETS llama-mainline-cuda DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    install(TARGETS llama-mainline-cuda-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    install(TARGETS llamamodel-mainline-cuda DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
+        RUNTIME_DEPENDENCIES POST_INCLUDE_REGEXES "(^|/)(lib)?(cuda(rt)?|cublas(Lt)?)\\." POST_EXCLUDE_REGEXES .
+    )
+    install(TARGETS llamamodel-mainline-cuda-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
 
 set(CPACK_GENERATOR "IFW")

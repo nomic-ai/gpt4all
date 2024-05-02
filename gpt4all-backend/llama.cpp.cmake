@@ -361,83 +361,83 @@ function(include_ggml SUFFIX)
 
     if (LLAMA_CUDA)
         cmake_minimum_required(VERSION 3.17)
+        get_property(LANGS GLOBAL PROPERTY ENABLED_LANGUAGES)
+        if (NOT CUDA IN_LIST LANGS)
+            message(FATAL_ERROR "The CUDA language must be enabled.")
+        endif()
 
         find_package(CUDAToolkit)
-        if (CUDAToolkit_FOUND)
-            message(STATUS "CUDA found")
-
-            enable_language(CUDA)
-
-            set(GGML_HEADERS_CUDA ${DIRECTORY}/ggml-cuda.h)
-
-            file(GLOB GGML_SOURCES_CUDA "${DIRECTORY}/ggml-cuda/*.cu")
-            list(APPEND GGML_SOURCES_CUDA "ggml-cuda.cu")
-
-            list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_CUDA)
-            if (LLAMA_CUDA_FORCE_DMMV)
-                list(APPEND GGML_COMPILE_DEFS GGML_CUDA_FORCE_DMMV)
-            endif()
-            if (LLAMA_CUDA_FORCE_MMQ)
-                list(APPEND GGML_COMPILE_DEFS GGML_CUDA_FORCE_MMQ)
-            endif()
-            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
-            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
-            if (LLAMA_CUDA_F16)
-                list(APPEND GGML_COMPILE_DEFS GGML_CUDA_F16)
-            endif()
-            list(APPEND GGML_COMPILE_DEFS K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
-            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_PEER_MAX_BATCH_SIZE=${LLAMA_CUDA_PEER_MAX_BATCH_SIZE})
-            if (LLAMA_CUDA_NO_PEER_COPY)
-                list(APPEND GGML_COMPILE_DEFS GGML_CUDA_NO_PEER_COPY)
-            endif()
-
-            if (LLAMA_STATIC)
-                if (WIN32)
-                    # As of 12.3.1 CUDA Tookit for Windows does not offer a static cublas library
-                    set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cudart_static CUDA::cublas CUDA::cublasLt)
-                else ()
-                    set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cudart_static CUDA::cublas_static CUDA::cublasLt_static)
-                endif()
-            else()
-                set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cudart CUDA::cublas CUDA::cublasLt)
-            endif()
-
-            set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cuda_driver)
-
-            if (DEFINED CMAKE_CUDA_ARCHITECTURES)
-                set(GGML_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
-            else()
-                # 52 == lowest CUDA 12 standard
-                # 60 == f16 CUDA intrinsics
-                # 61 == integer CUDA intrinsics
-                # 70 == compute capability at which unrolling a loop in mul_mat_q kernels is faster
-                if (LLAMA_CUDA_F16 OR LLAMA_CUDA_DMMV_F16)
-                    set(GGML_CUDA_ARCHITECTURES "60;61;70") # needed for f16 CUDA intrinsics
-                else()
-                    set(GGML_CUDA_ARCHITECTURES "52;61;70") # lowest CUDA 12 standard + lowest for integer intrinsics
-                    #set(GGML_CUDA_ARCHITECTURES "") # use this to compile much faster, but only F16 models work
-                endif()
-            endif()
-            message(STATUS "Using CUDA architectures: ${GGML_CUDA_ARCHITECTURES}")
-        else()
-            message(WARNING "CUDA not found")
+        if (NOT CUDAToolkit_FOUND)
+            message(FATAL_ERROR "CUDA not found")
         endif()
+        message(STATUS "CUDA found")
+
+        set(GGML_HEADERS_CUDA ${DIRECTORY}/ggml-cuda.h)
+
+        file(GLOB GGML_SOURCES_CUDA "${DIRECTORY}/ggml-cuda/*.cu")
+        list(APPEND GGML_SOURCES_CUDA "${DIRECTORY}/ggml-cuda.cu")
+
+        list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_CUDA)
+        if (LLAMA_CUDA_FORCE_DMMV)
+            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_FORCE_DMMV)
+        endif()
+        if (LLAMA_CUDA_FORCE_MMQ)
+            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_FORCE_MMQ)
+        endif()
+        list(APPEND GGML_COMPILE_DEFS GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
+        list(APPEND GGML_COMPILE_DEFS GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
+        if (LLAMA_CUDA_F16)
+            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_F16)
+        endif()
+        list(APPEND GGML_COMPILE_DEFS K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
+        list(APPEND GGML_COMPILE_DEFS GGML_CUDA_PEER_MAX_BATCH_SIZE=${LLAMA_CUDA_PEER_MAX_BATCH_SIZE})
+        if (LLAMA_CUDA_NO_PEER_COPY)
+            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_NO_PEER_COPY)
+        endif()
+
+        if (LLAMA_STATIC)
+            if (WIN32)
+                # As of 12.3.1 CUDA Tookit for Windows does not offer a static cublas library
+                set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cudart_static CUDA::cublas CUDA::cublasLt)
+            else ()
+                set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cudart_static CUDA::cublas_static CUDA::cublasLt_static)
+            endif()
+        else()
+            set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cudart CUDA::cublas CUDA::cublasLt)
+        endif()
+
+        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cuda_driver)
+
+        if (DEFINED CMAKE_CUDA_ARCHITECTURES)
+            set(GGML_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
+        else()
+            # 52 == lowest CUDA 12 standard
+            # 60 == f16 CUDA intrinsics
+            # 61 == integer CUDA intrinsics
+            # 70 == compute capability at which unrolling a loop in mul_mat_q kernels is faster
+            if (LLAMA_CUDA_F16 OR LLAMA_CUDA_DMMV_F16)
+                set(GGML_CUDA_ARCHITECTURES "60;61;70") # needed for f16 CUDA intrinsics
+            else()
+                set(GGML_CUDA_ARCHITECTURES "52;61;70") # lowest CUDA 12 standard + lowest for integer intrinsics
+                #set(GGML_CUDA_ARCHITECTURES "") # use this to compile much faster, but only F16 models work
+            endif()
+        endif()
+        message(STATUS "Using CUDA architectures: ${GGML_CUDA_ARCHITECTURES}")
     endif()
 
     if (LLAMA_CLBLAST)
         find_package(CLBlast)
-        if (CLBlast_FOUND)
-            message(STATUS "CLBlast found")
-
-            set(GGML_HEADERS_OPENCL ${DIRECTORY}/ggml-opencl.h)
-            set(GGML_SOURCES_OPENCL ${DIRECTORY}/ggml-opencl.cpp)
-
-            list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_CLBLAST)
-
-            set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} clblast)
-        else()
-            message(WARNING "CLBlast not found")
+        if (NOT CLBlast_FOUND)
+            message(FATAL_ERROR "CLBlast not found")
         endif()
+        message(STATUS "CLBlast found")
+
+        set(GGML_HEADERS_OPENCL ${DIRECTORY}/ggml-opencl.h)
+        set(GGML_SOURCES_OPENCL ${DIRECTORY}/ggml-opencl.cpp)
+
+        list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_CLBLAST)
+
+        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} clblast)
     endif()
 
     if (LLAMA_VULKAN)
@@ -445,6 +445,7 @@ function(include_ggml SUFFIX)
         if (NOT Vulkan_FOUND)
             message(FATAL_ERROR "Vulkan not found")
         endif()
+        message(STATUS "Vulkan found")
 
         set(GGML_HEADERS_VULKAN ${DIRECTORY}/ggml-vulkan.h)
         set(GGML_SOURCES_VULKAN ${DIRECTORY}/ggml-vulkan.cpp)
@@ -658,6 +659,7 @@ function(include_ggml SUFFIX)
                 execute_process(
                     COMMAND ${NVCC_CMD} -Xcompiler "-dumpfullversion -dumpversion"
                     OUTPUT_VARIABLE CUDA_CCVER
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
                     ERROR_QUIET
                 )
             else()
