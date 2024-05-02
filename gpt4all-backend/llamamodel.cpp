@@ -163,6 +163,7 @@ struct LLamaPrivate {
     const std::string modelPath;
     bool modelLoaded = false;
     int device = -1;
+    std::string deviceName; // used for Vulkan but not Kompute
     llama_model *model = nullptr;
     llama_context *ctx = nullptr;
     llama_model_params model_params;
@@ -299,6 +300,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     if (d_ptr->device != -1) {
         d_ptr->model_params.main_gpu = d_ptr->device;
         d_ptr->model_params.n_gpu_layers = ngl;
+        d_ptr->model_params.split_mode = LLAMA_SPLIT_MODE_NONE;
     }
 #elif defined(GGML_USE_METAL)
     (void)ngl;
@@ -319,6 +321,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     if (!d_ptr->model) {
         fflush(stdout);
         d_ptr->device = -1;
+        d_ptr->deviceName.clear();
         std::cerr << "LLAMA ERROR: failed to load model from " << modelPath << std::endl;
         return false;
     }
@@ -361,6 +364,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
         llama_free_model(d_ptr->model);
         d_ptr->model = nullptr;
         d_ptr->device = -1;
+        d_ptr->deviceName.clear();
         return false;
     }
 
@@ -515,7 +519,7 @@ int32_t LLamaModel::layerCount(std::string const &modelPath) const
 }
 
 #ifdef GGML_USE_VULKAN
-static const char * getVulkanVendorName(uint32_t vendorID) {
+static const char *getVulkanVendorName(uint32_t vendorID) {
     switch (vendorID) {
         case 0x10DE: return "nvidia";
         case 0x1002: return "amd";
@@ -571,7 +575,21 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
 bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &name) const
 {
 #ifdef GGML_USE_VULKAN
-    return false; // TODO(jared): implement
+    auto devices = availableGPUDevices(memoryRequired);
+
+    auto dev_it = devices.begin();
+    if (name == "amd" || name == "nvidia" || name == "intel") {
+        dev_it = std::find_if(dev_it, devices.end(), [&name](auto &dev) { return dev.vendor == name; });
+    } else if (name != "gpu") {
+        dev_it = std::find_if(dev_it, devices.end(), [&name](auto &dev) { return dev.name == name; });
+    }
+
+    if (dev_it < devices.end()) {
+        d_ptr->device     = dev_it->index;
+        d_ptr->deviceName = dev_it->name;
+        return true;
+    }
+    return false;
 #elif defined(GGML_USE_KOMPUTE)
     ggml_vk_device device;
     bool ok = ggml_vk_get_device(&device, memoryRequired, name.c_str());
@@ -591,6 +609,11 @@ bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) co
 #if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN)
     (void)unavail_reason;
     d_ptr->device = device;
+#ifdef GGML_USE_VULKAN
+    auto devices = availableGPUDevices();
+    auto it = std::find_if(devices.begin(), devices.end(), [device](auto &dev) { return dev.index == device; });
+    d_ptr->deviceName = it < devices.end() ? it->name : "(unknown)";
+#endif
     return true;
 #else
     (void)device;
@@ -614,11 +637,11 @@ bool LLamaModel::usingGPUDevice() const
 {
     bool hasDevice;
 
-#if defined(GGML_USE_KOMPUTE)
+#ifdef GGML_USE_KOMPUTE
     hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
     assert(!hasDevice || ggml_vk_has_device());
 #elif defined(GGML_USE_VULKAN)
-    hasDevice = d_ptr->model_params.n_gpu_layers > 0;
+    hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
 #elif defined(GGML_USE_METAL)
     hasDevice = true;
 #else
@@ -633,13 +656,13 @@ const char *LLamaModel::backendName() const {
 }
 
 const char *LLamaModel::gpuDeviceName() const {
-#if defined(GGML_USE_KOMPUTE)
     if (usingGPUDevice()) {
+#ifdef GGML_USE_KOMPUTE
         return ggml_vk_current_device().name;
-    }
 #elif defined(GGML_USE_VULKAN)
-    return "Vulkan"; // TODO(jared): be more specific
+        return d_ptr->deviceName.c_str();
 #endif
+    }
     return nullptr;
 }
 
