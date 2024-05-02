@@ -68,6 +68,8 @@ public:
         static void setImplementationsSearchPath(const std::string &path);
         static const std::string &implementationsSearchPath();
         static bool hasSupportedCPU();
+        // 0 for no, 1 for yes, -1 for non-x86_64
+        static int cpuSupportsAVX2();
 
     private:
         Implementation(Dlhandle &&);

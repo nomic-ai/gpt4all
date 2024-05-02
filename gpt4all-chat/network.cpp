@@ -259,6 +259,7 @@ void Network::sendStartup()
         {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
         {"cpu", getCPUModel()},
+        {"cpu_supports_avx2", LLModel::Implementation::cpuSupportsAVX2()},
         {"datalake_active", mySettings->networkIsActive()},
     });
     sendIpify();

@@ -33,13 +33,13 @@ std::string s_implementations_search_path = ".";
     }
 
     // AVX via EAX=1: Processor Info and Feature Bits, bit 28 of ECX
-    #define cpu_supports_avx()  (get_cpu_info(1, 2) & (1 << 28))
+    #define cpu_supports_avx()  !!(get_cpu_info(1, 2) & (1 << 28))
     // AVX2 via EAX=7, ECX=0: Extended Features, bit 5 of EBX
-    #define cpu_supports_avx2() (get_cpu_info(7, 1) & (1 <<  5))
+    #define cpu_supports_avx2() !!(get_cpu_info(7, 1) & (1 <<  5))
 #else
     // gcc/clang
-    #define cpu_supports_avx()  __builtin_cpu_supports("avx")
-    #define cpu_supports_avx2() __builtin_cpu_supports("avx2")
+    #define cpu_supports_avx()  !!__builtin_cpu_supports("avx")
+    #define cpu_supports_avx2() !!__builtin_cpu_supports("avx2")
 #endif
 
 LLModel::Implementation::Implementation(Dlhandle &&dlhandle_)
@@ -259,4 +259,8 @@ const std::string& LLModel::Implementation::implementationsSearchPath() {
 
 bool LLModel::Implementation::hasSupportedCPU() {
     return cpu_supports_avx() != 0;
+}
+
+int LLModel::Implementation::cpuSupportsAVX2() {
+    return cpu_supports_avx2();
 }
