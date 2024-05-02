@@ -25,6 +25,8 @@
 #   include <ggml-kompute.h>
 #elif GGML_USE_VULKAN
 #   include <ggml-vulkan.h>
+#elif GGML_USE_CUDA
+#   include <ggml-cuda.h>
 #endif
 
 using namespace std::string_literals;
@@ -163,7 +165,7 @@ struct LLamaPrivate {
     const std::string modelPath;
     bool modelLoaded = false;
     int device = -1;
-    std::string deviceName; // used for Vulkan but not Kompute
+    std::string deviceName;
     llama_model *model = nullptr;
     llama_context *ctx = nullptr;
     llama_model_params model_params;
@@ -296,7 +298,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
     d_ptr->backend_name = "cpu"; // default
 
-#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN)
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     if (d_ptr->device != -1) {
         d_ptr->model_params.main_gpu = d_ptr->device;
         d_ptr->model_params.n_gpu_layers = ngl;
@@ -370,18 +372,18 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
     d_ptr->end_tokens = {llama_token_eos(d_ptr->model)};
 
-#ifdef GGML_USE_KOMPUTE
     if (usingGPUDevice()) {
+#ifdef GGML_USE_KOMPUTE
         if (llama_verbose()) {
             std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
         }
         d_ptr->backend_name = "kompute";
-    }
 #elif defined(GGML_USE_VULKAN)
-    if (usingGPUDevice()) {
         d_ptr->backend_name = "vulkan";
-    }
+#elif defined(GGML_USE_CUDA)
+        d_ptr->backend_name = "cuda";
 #endif
+    }
 
     m_supportsEmbedding = isEmbedding;
     m_supportsCompletion = !isEmbedding;
@@ -531,22 +533,33 @@ static const char *getVulkanVendorName(uint32_t vendorID) {
 
 std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired) const
 {
-#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN)
+#if 1 && defined(GGML_USE_CUDA)
+    return {{
+        /* index    = */ 0,
+        /* type     = */ 2,
+        /* heapSize = */ 0,
+        /* name     = */ "GPU 0",
+        /* vendor   = */ "nvidia",
+    }};
+#elif defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     size_t count = 0;
 
 #ifdef GGML_USE_KOMPUTE
-    auto *vkDevices = ggml_vk_available_devices(memoryRequired, &count);
-#else // defined(GGML_USE_VULKAN)
+    auto *lcppDevices = ggml_vk_available_devices(memoryRequired, &count);
+#elif defined(GGML_USE_VULKAN)
     (void)memoryRequired; // hasn't been used since GGUF was added
-    auto *vkDevices = ggml_vk_available_devices(&count);
+    auto *lcppDevices = ggml_vk_available_devices(&count);
+#else // defined(GGML_USE_CUDA)
+    (void)memoryRequired;
+    auto *lcppDevices = ggml_cuda_available_devices(&count);
 #endif
 
-    if (vkDevices) {
+    if (lcppDevices) {
         std::vector<LLModel::GPUDevice> devices;
         devices.reserve(count);
 
         for (size_t i = 0; i < count; ++i) {
-            auto & dev = vkDevices[i];
+            auto & dev = lcppDevices[i];
             devices.emplace_back(
                 /* index    = */ dev.index,
                 /* type     = */ dev.type,
@@ -554,19 +567,25 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
                 /* name     = */ dev.name,
 #ifdef GGML_USE_KOMPUTE
                 /* vendor   = */ dev.vendor
-#else // defined(GGML_USE_VULKAN)
+#elif defined(GGML_USE_VULKAN)
                 /* vendor   = */ getVulkanVendorName(dev.vendorID)
+#else // defined(GGML_USE_CUDA)
+                /* vendor   = */ "nvidia"
 #endif
             );
+#ifndef GGML_USE_CUDA
             ggml_vk_device_destroy(&dev);
+#else
+            ggml_cuda_device_destroy(&dev);
+#endif
         }
 
-        free(vkDevices);
+        free(lcppDevices);
         return devices;
     }
 #else
     (void)memoryRequired;
-    std::cerr << __func__ << ": built without Vulkan\n";
+    std::cerr << __func__ << ": built without a GPU backend\n";
 #endif
 
     return {};
@@ -574,7 +593,7 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
 
 bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &name) const
 {
-#ifdef GGML_USE_VULKAN
+#if defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     auto devices = availableGPUDevices(memoryRequired);
 
     auto dev_it = devices.begin();
@@ -606,10 +625,10 @@ bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &n
 
 bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) const
 {
-#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN)
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     (void)unavail_reason;
     d_ptr->device = device;
-#ifdef GGML_USE_VULKAN
+#ifndef GGML_USE_KOMPUTE
     auto devices = availableGPUDevices();
     auto it = std::find_if(devices.begin(), devices.end(), [device](auto &dev) { return dev.index == device; });
     d_ptr->deviceName = it < devices.end() ? it->name : "(unknown)";
@@ -626,7 +645,7 @@ bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) co
 
 bool LLamaModel::hasGPUDevice() const
 {
-#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN)
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     return d_ptr->device != -1;
 #else
     return false;
@@ -640,7 +659,7 @@ bool LLamaModel::usingGPUDevice() const
 #ifdef GGML_USE_KOMPUTE
     hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
     assert(!hasDevice || ggml_vk_has_device());
-#elif defined(GGML_USE_VULKAN)
+#elif defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
 #elif defined(GGML_USE_METAL)
     hasDevice = true;
@@ -659,7 +678,7 @@ const char *LLamaModel::gpuDeviceName() const {
     if (usingGPUDevice()) {
 #ifdef GGML_USE_KOMPUTE
         return ggml_vk_current_device().name;
-#elif defined(GGML_USE_VULKAN)
+#elif defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
         return d_ptr->deviceName.c_str();
 #endif
     }

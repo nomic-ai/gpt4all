@@ -86,11 +86,9 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     static auto* libs = new std::vector<Implementation>([] () {
         std::vector<Implementation> fres;
 
-        std::string impl_name_re = "(gptj|llamamodel-mainline)";
+        std::string impl_name_re = "(gptj|llamamodel-mainline)-(cpu|metal|kompute|vulkan|cuda)";
         if (cpu_supports_avx2() == 0) {
             impl_name_re += "-avxonly";
-        } else {
-            impl_name_re += "-(default|metal)";
         }
         std::regex re(impl_name_re);
         auto search_in_directory = [&](const std::string& paths) {
@@ -187,9 +185,9 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
         //TODO: Auto-detect CUDA/OpenCL
         if (buildVariant == "auto") {
             if (cpu_supports_avx2() == 0) {
-                buildVariant = "avxonly";
+                buildVariant = "cpu-avxonly";
             } else {
-                buildVariant = "default";
+                buildVariant = "cuda";
             }
         }
         impl = implementation(modelPath.c_str(), buildVariant);
