@@ -52,6 +52,8 @@ set(LLAMA_CUDA_KQUANTS_ITER "2" CACHE STRING "llama: iters./thread per block for
 set(LLAMA_CUDA_PEER_MAX_BATCH_SIZE "128" CACHE STRING
                                              "llama: max. batch size for using peer access")
 option(LLAMA_CUDA_NO_PEER_COPY               "llama: do not use peer to peer copies"            OFF)
+#option(LLAMA_HIPBLAS                         "llama: use hipBLAS"                               OFF)
+option(LLAMA_HIP_UMA                         "llama: use HIP unified memory architecture"       OFF)
 #option(LLAMA_CLBLAST                         "llama: use CLBlast"                               OFF)
 #option(LLAMA_VULKAN                          "llama: use Vulkan"                                OFF)
 option(LLAMA_VULKAN_CHECK_RESULTS            "llama: run Vulkan op checks"                      OFF)
@@ -366,11 +368,7 @@ function(include_ggml SUFFIX)
             message(FATAL_ERROR "The CUDA language must be enabled.")
         endif()
 
-        find_package(CUDAToolkit)
-        if (NOT CUDAToolkit_FOUND)
-            message(FATAL_ERROR "CUDA not found")
-        endif()
-        message(STATUS "CUDA found")
+        find_package(CUDAToolkit REQUIRED)
 
         set(GGML_HEADERS_CUDA ${DIRECTORY}/ggml-cuda.h)
 
@@ -426,11 +424,7 @@ function(include_ggml SUFFIX)
     endif()
 
     if (LLAMA_CLBLAST)
-        find_package(CLBlast)
-        if (NOT CLBlast_FOUND)
-            message(FATAL_ERROR "CLBlast not found")
-        endif()
-        message(STATUS "CLBlast found")
+        find_package(CLBlast REQUIRED)
 
         set(GGML_HEADERS_OPENCL ${DIRECTORY}/ggml-opencl.h)
         set(GGML_SOURCES_OPENCL ${DIRECTORY}/ggml-opencl.cpp)
@@ -441,11 +435,7 @@ function(include_ggml SUFFIX)
     endif()
 
     if (LLAMA_VULKAN)
-        find_package(Vulkan)
-        if (NOT Vulkan_FOUND)
-            message(FATAL_ERROR "Vulkan not found")
-        endif()
-        message(STATUS "Vulkan found")
+        find_package(Vulkan REQUIRED)
 
         set(GGML_HEADERS_VULKAN ${DIRECTORY}/ggml-vulkan.h)
         set(GGML_SOURCES_VULKAN ${DIRECTORY}/ggml-vulkan.cpp)
@@ -469,6 +459,77 @@ function(include_ggml SUFFIX)
         endif()
 
         set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} Vulkan::Vulkan)
+    endif()
+
+    if (LLAMA_HIPBLAS)
+        if ($ENV{ROCM_PATH})
+            set(ROCM_PATH $ENV{ROCM_PATH})
+        else()
+            set(ROCM_PATH /opt/rocm)
+        endif()
+        list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+
+        string(REGEX MATCH "hipcc(\.bat)?$" CXX_IS_HIPCC "${CMAKE_CXX_COMPILER}")
+
+        if (CXX_IS_HIPCC AND UNIX)
+            message(WARNING "Setting hipcc as the C++ compiler is legacy behavior."
+                " Prefer setting the HIP compiler directly. See README for details.")
+        else()
+            # Forward AMDGPU_TARGETS to CMAKE_HIP_ARCHITECTURES.
+            if (AMDGPU_TARGETS AND NOT CMAKE_HIP_ARCHITECTURES)
+                set(CMAKE_HIP_ARCHITECTURES ${AMDGPU_ARGETS})
+            endif()
+            cmake_minimum_required(VERSION 3.21)
+            get_property(LANGS GLOBAL PROPERTY ENABLED_LANGUAGES)
+            if (NOT HIP IN_LIST LANGS)
+                message(FATAL_ERROR "The HIP language must be enabled.")
+            endif()
+        endif()
+        find_package(hip     REQUIRED)
+        find_package(hipblas REQUIRED)
+        find_package(rocblas REQUIRED)
+
+        message(STATUS "HIP and hipBLAS found")
+
+        set(GGML_HEADERS_ROCM ${DIRECTORY}/ggml-cuda.h)
+
+        file(GLOB GGML_SOURCES_ROCM "${DIRECTORY}/ggml-rocm/*.cu")
+        list(APPEND GGML_SOURCES_ROCM "${DIRECTORY}/ggml-rocm.cu")
+
+        list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_HIPBLAS GGML_USE_CUDA)
+
+        if (LLAMA_HIP_UMA)
+            list(APPEND GGML_COMPILE_DEFS GGML_HIP_UMA)
+        endif()
+
+        if (LLAMA_CUDA_FORCE_DMMV)
+            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_FORCE_DMMV)
+        endif()
+
+        if (LLAMA_CUDA_FORCE_MMQ)
+            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_FORCE_MMQ)
+        endif()
+
+        if (LLAMA_CUDA_NO_PEER_COPY)
+            list(APPEND GGML_COMPILE_DEFS GGML_CUDA_NO_PEER_COPY)
+        endif()
+
+        list(APPEND GGML_COMPILE_DEFS GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
+        list(APPEND GGML_COMPILE_DEFS GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
+        list(APPEND GGML_COMPILE_DEFS K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
+
+        if (CXX_IS_HIPCC)
+            set_source_files_properties(${GGML_SOURCES_ROCM} PROPERTIES LANGUAGE CXX)
+            set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} hip::device)
+        else()
+            set_source_files_properties(${GGML_SOURCES_ROCM} PROPERTIES LANGUAGE HIP)
+        endif()
+
+        if (LLAMA_STATIC)
+            message(FATAL_ERROR "Static linking not supported for HIP/ROCm")
+        endif()
+
+        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} PUBLIC hip::host roc::rocblas roc::hipblas)
     endif()
 
     set(LLAMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY})
@@ -871,6 +932,7 @@ function(include_ggml SUFFIX)
                 ${GGML_SOURCES_METAL}     ${GGML_HEADERS_METAL}
                 ${GGML_SOURCES_KOMPUTE}   ${GGML_HEADERS_KOMPUTE}
                 ${GGML_SOURCES_VULKAN}    ${GGML_HEADERS_VULKAN}
+                ${GGML_SOURCES_ROCM}      ${GGML_HEADERS_ROCM}
                 ${GGML_SOURCES_LLAMAFILE} ${GGML_HEADERS_LLAMAFILE}
                 )
 
