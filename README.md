@@ -3,12 +3,17 @@
 <p align="center">Open-source large language models that run locally on your CPU and nearly any GPU</p>
 
 <p align="center">
-<a href="https://gpt4all.io">GPT4All Website and Models</a> • <a href="https://docs.gpt4all.io">GPT4All Documentation</a> • <a href="https://discord.gg/mGZE39AS3e">Discord</a>
+<a href="https://gpt4all.io">GPT4All Models</a> • <a href="https://docs.gpt4all.io">GPT4All Documentation</a> • <a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
 
 
 <p align="center">
 <a href="https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html">🦜️🔗 Official Langchain Backend</a> 
+</p>
+
+
+<p align="center">
+<a href="https://forms.nomic.ai/gpt4all-release-notes-signup">Sign up for updates and news</a> 
 </p>
 
 <p align="center">
