@@ -792,5 +792,24 @@
 * Xu Zhen (`@xuzhen`)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.7.5",
+    "notes":
+"
+<b>&mdash; What's New &mdash;</b>
+* Improve accuracy of anonymous usage statistics (PR #2297, PR #2299)
+
+<b>&mdash; Fixes &mdash;</b>
+* Fix some issues with anonymous usage statistics (PR #2270, PR #2296)
+* Default to GPU with most VRAM on Windows and Linux, not least (PR #2297)
+* Fix initial failure to generate embeddings with Nomic Embed (PR #2284)
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]
