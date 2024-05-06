@@ -10,6 +10,8 @@
 #include <string_view>
 #include <vector>
 
+using namespace std::string_literals;
+
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
 class Dlhandle;
@@ -51,6 +53,8 @@ public:
         GPUDevice(const char *backend, int index, int type, size_t heapSize, std::string name, std::string vendor):
             backend(backend), index(index), type(type), heapSize(heapSize), name(std::move(name)),
             vendor(std::move(vendor)) {}
+
+        std::string uiName() const { return backend == "cuda"s ? "CUDA: " + name : name; }
     };
 
     class Implementation {

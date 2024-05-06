@@ -68,7 +68,7 @@ MySettings::MySettings()
     std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
     QVector<QString> deviceList{ "Auto" };
     for (LLModel::GPUDevice &d : devices)
-        deviceList << QString::fromStdString(d.name);
+        deviceList << QString::fromStdString(d.uiName());
     deviceList << "CPU";
     setDeviceList(deviceList);
 }
