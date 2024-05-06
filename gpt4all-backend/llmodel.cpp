@@ -12,6 +12,7 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -208,51 +209,67 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::s
     return fres;
 }
 
-LLModel *LLModel::Implementation::constructDefaultLlama() {
-    static std::unique_ptr<LLModel> llama([]() -> LLModel * {
-        const std::vector<LLModel::Implementation> *impls;
-        try {
-            impls = &implementationList();
-        } catch (const std::runtime_error &e) {
-            std::cerr << __func__ << ": implementationList failed: " << e.what() << "\n";
-            return nullptr;
-        }
+LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::string> &backend) {
+    static std::unordered_map<std::string, std::unique_ptr<LLModel>> m_llamas;
 
-        const LLModel::Implementation *impl = nullptr;
-        for (const auto &i: *impls) {
-            if (i.m_buildVariant == "metal" || i.m_modelType != "LLaMA") continue;
+    auto desiredVariant = applyCPUVariant(backend.value_or(DEFAULT_BUILD_VARIANT));
+    auto it = m_llamas.find(desiredVariant);
+    if (it != m_llamas.end())
+        return it->second.get(); // cached
+
+    const std::vector<LLModel::Implementation> *impls;
+    try {
+        impls = &implementationList();
+    } catch (const std::runtime_error &e) {
+        std::cerr << __func__ << ": implementationList failed: " << e.what() << "\n";
+        return nullptr;
+    }
+
+    const LLModel::Implementation *impl = nullptr;
+    for (const auto &i: *impls) {
+        if (i.m_modelType == "LLaMA" && i.m_buildVariant == desiredVariant) {
             impl = &i;
+            break;
         }
-        if (!impl) {
-            std::cerr << __func__ << ": could not find llama.cpp implementation\n";
-            return nullptr;
-        }
+    }
+    if (!impl) {
+        std::cerr << __func__ << ": could not find Llama implementation for variant: " << desiredVariant << "\n";
+        return nullptr;
+    }
 
-        auto fres = impl->m_construct();
-        fres->m_implementation = impl;
-        return fres;
-    }());
-    return llama.get();
+    auto *fres = impl->m_construct();
+    fres->m_implementation = impl;
+    m_llamas[desiredVariant] = std::unique_ptr<LLModel>(fres);
+    return fres;
 }
 
 std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices(size_t memoryRequired) {
-    auto *llama = constructDefaultLlama();
-    if (llama) { return llama->availableGPUDevices(memoryRequired); }
-    return {};
+    std::vector<LLModel::GPUDevice> devices;
+#ifndef __APPLE__
+    static const std::string backends[] = {"kompute", "cuda"};
+    for (const auto &backend: backends) {
+        auto *llama = constructGlobalLlama(backend);
+        if (llama) {
+            auto backendDevs = llama->availableGPUDevices(memoryRequired);
+            devices.insert(devices.end(), backendDevs.begin(), backendDevs.end());
+        }
+    }
+#endif
+    return devices;
 }
 
 int32_t LLModel::Implementation::maxContextLength(const std::string &modelPath) {
-    auto *llama = constructDefaultLlama();
+    auto *llama = constructGlobalLlama();
     return llama ? llama->maxContextLength(modelPath) : -1;
 }
 
 int32_t LLModel::Implementation::layerCount(const std::string &modelPath) {
-    auto *llama = constructDefaultLlama();
+    auto *llama = constructGlobalLlama();
     return llama ? llama->layerCount(modelPath) : -1;
 }
 
 bool LLModel::Implementation::isEmbeddingModel(const std::string &modelPath) {
-    auto *llama = constructDefaultLlama();
+    auto *llama = constructGlobalLlama();
     return llama && llama->isEmbeddingModel(modelPath);
 }
 

@@ -76,7 +76,7 @@ public:
 
         static const std::vector<Implementation> &implementationList();
         static const Implementation *implementation(const char *fname, const std::string &buildVariant);
-        static LLModel *constructDefaultLlama();
+        static LLModel *constructGlobalLlama(const std::optional<std::string> &backend = std::nullopt);
 
         char *(*m_getFileArch)(const char *fname);
         bool (*m_isArchSupported)(const char *arch);
