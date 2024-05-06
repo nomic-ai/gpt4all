@@ -533,15 +533,7 @@ static const char *getVulkanVendorName(uint32_t vendorID) {
 
 std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired) const
 {
-#if 1 && defined(GGML_USE_CUDA)
-    return {{
-        /* index    = */ 0,
-        /* type     = */ 2,
-        /* heapSize = */ 0,
-        /* name     = */ "GPU 0",
-        /* vendor   = */ "nvidia",
-    }};
-#elif defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     size_t count = 0;
 
 #ifdef GGML_USE_KOMPUTE
@@ -560,19 +552,27 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
 
         for (size_t i = 0; i < count; ++i) {
             auto & dev = lcppDevices[i];
+
             devices.emplace_back(
                 /* index    = */ dev.index,
+#ifdef GGML_USE_KOMPUTE
                 /* type     = */ dev.type,
                 /* heapSize = */ dev.heapSize,
                 /* name     = */ dev.name,
-#ifdef GGML_USE_KOMPUTE
                 /* vendor   = */ dev.vendor
 #elif defined(GGML_USE_VULKAN)
+                /* type     = */ dev.type,
+                /* heapSize = */ dev.heapSize,
+                /* name     = */ dev.name,
                 /* vendor   = */ getVulkanVendorName(dev.vendorID)
 #else // defined(GGML_USE_CUDA)
+                /* type     = */ 2, // vk::PhysicalDeviceType::eDiscreteGpu
+                /* heapSize = */ dev.heapSize,
+                /* name     = */ dev.name,
                 /* vendor   = */ "nvidia"
 #endif
             );
+
 #ifndef GGML_USE_CUDA
             ggml_vk_device_destroy(&dev);
 #else
