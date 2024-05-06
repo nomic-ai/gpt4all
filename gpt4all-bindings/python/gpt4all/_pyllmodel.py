@@ -201,9 +201,11 @@ class LLModel:
         Maximum size of context window
     ngl : int
         Number of GPU layers to use (Vulkan)
+    backend : str
+        Backend to use. One of 'auto', 'cpu', 'metal', 'kompute', or 'cuda'.
     """
 
-    def __init__(self, model_path: str, n_ctx: int, ngl: int):
+    def __init__(self, model_path: str, n_ctx: int, ngl: int, backend: str):
         self.model_path = model_path.encode()
         self.n_ctx = n_ctx
         self.ngl = ngl
@@ -213,7 +215,7 @@ class LLModel:
 
         # Construct a model implementation
         err = ctypes.c_char_p()
-        model = llmodel.llmodel_model_create2(self.model_path, b"auto", ctypes.byref(err))
+        model = llmodel.llmodel_model_create2(self.model_path, backend.encode(), ctypes.byref(err))
         if model is None:
             s = err.value
             raise RuntimeError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
@@ -232,7 +234,7 @@ class LLModel:
         raise ValueError("Attempted operation on a closed LLModel")
 
     @property
-    def backend(self) -> Literal["cpu", "kompute", "metal"]:
+    def backend(self) -> Literal["cpu", "kompute", "cuda", "metal"]:
         if self.model is None:
             self._raise_closed()
         return llmodel.llmodel_model_backend_name(self.model).decode()
@@ -259,7 +261,7 @@ class LLModel:
         devices_ptr = llmodel.llmodel_available_gpu_devices(mem_required, ctypes.byref(num_devices))
         if not devices_ptr:
             raise ValueError("Unable to retrieve available GPU devices")
-        return [d.name.decode() for d in devices_ptr[:num_devices.value]]
+        return [f'{d.backend.decode()}:{d.name.decode()}' for d in devices_ptr[:num_devices.value]]
 
     def init_gpu(self, device: str):
         if self.model is None:

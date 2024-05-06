@@ -602,9 +602,12 @@ bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &n
     auto devices = availableGPUDevices(memoryRequired);
 
     auto dev_it = devices.begin();
+#ifndef GGML_USE_CUDA
     if (name == "amd" || name == "nvidia" || name == "intel") {
         dev_it = std::find_if(dev_it, devices.end(), [&name](auto &dev) { return dev.vendor == name; });
-    } else if (name != "gpu") {
+    } else
+#endif
+    if (name != "gpu") {
         dev_it = std::find_if(dev_it, devices.end(), [&name](auto &dev) { return dev.name == name; });
     }
 
