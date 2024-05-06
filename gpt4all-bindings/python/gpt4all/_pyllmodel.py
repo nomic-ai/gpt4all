@@ -71,6 +71,7 @@ class LLModelPromptContext(ctypes.Structure):
 
 class LLModelGPUDevice(ctypes.Structure):
     _fields_ = [
+        ("backend", ctypes.c_char_p),
         ("index", ctypes.c_int32),
         ("type", ctypes.c_int32),
         ("heapSize", ctypes.c_size_t),

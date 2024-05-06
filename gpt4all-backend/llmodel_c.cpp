@@ -248,6 +248,7 @@ struct llmodel_gpu_device *llmodel_available_gpu_devices(size_t memoryRequired, 
     for (unsigned i = 0; i < devices.size(); i++) {
         const auto &dev  =   devices[i];
               auto &cdev = c_devices[i];
+        cdev.backend  = dev.backend;
         cdev.index    = dev.index;
         cdev.type     = dev.type;
         cdev.heapSize = dev.heapSize;

@@ -41,14 +41,16 @@ public:
     };
 
     struct GPUDevice {
+        const char *backend;
         int index;
         int type;
         size_t heapSize;
         std::string name;
         std::string vendor;
 
-        GPUDevice(int index, int type, size_t heapSize, std::string name, std::string vendor):
-            index(index), type(type), heapSize(heapSize), name(std::move(name)), vendor(std::move(vendor)) {}
+        GPUDevice(const char *backend, int index, int type, size_t heapSize, std::string name, std::string vendor):
+            backend(backend), index(index), type(type), heapSize(heapSize), name(std::move(name)),
+            vendor(std::move(vendor)) {}
     };
 
     class Implementation {

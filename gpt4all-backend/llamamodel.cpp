@@ -554,18 +554,23 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
             auto & dev = lcppDevices[i];
 
             devices.emplace_back(
-                /* index    = */ dev.index,
 #ifdef GGML_USE_KOMPUTE
+                /* backend  = */ "kompute",
+                /* index    = */ dev.index,
                 /* type     = */ dev.type,
                 /* heapSize = */ dev.heapSize,
                 /* name     = */ dev.name,
                 /* vendor   = */ dev.vendor
 #elif defined(GGML_USE_VULKAN)
+                /* backend  = */ "vulkan",
+                /* index    = */ dev.index,
                 /* type     = */ dev.type,
                 /* heapSize = */ dev.heapSize,
                 /* name     = */ dev.name,
                 /* vendor   = */ getVulkanVendorName(dev.vendorID)
 #else // defined(GGML_USE_CUDA)
+                /* backend  = */ "cuda",
+                /* index    = */ dev.index,
                 /* type     = */ 2, // vk::PhysicalDeviceType::eDiscreteGpu
                 /* heapSize = */ dev.heapSize,
                 /* name     = */ dev.name,
