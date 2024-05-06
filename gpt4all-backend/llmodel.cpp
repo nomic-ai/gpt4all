@@ -18,6 +18,12 @@
 #include <intrin.h>
 #endif
 
+#ifdef __APPLE__
+static const char DEFAULT_BUILD_VARIANT[] = "cpu";
+#else
+static const char DEFAULT_BUILD_VARIANT[] = "kompute";
+#endif
+
 std::string s_implementations_search_path = ".";
 
 #if !(defined(__x86_64__) || defined(_M_X64))
@@ -123,6 +129,13 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     return *libs;
 }
 
+static std::string applyCPUVariant(const std::string &buildVariant) {
+    if (buildVariant != "metal" && cpu_supports_avx2() == 0) {
+        return buildVariant + "-avxonly";
+    }
+    return buildVariant;
+}
+
 const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant) {
     bool buildVariantMatched = false;
     std::optional<std::string> archName;
@@ -140,60 +153,56 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
     }
 
     if (!buildVariantMatched)
-        throw MissingImplementationError("Could not find any implementations for build variant: " + buildVariant);
+        return nullptr;
     if (!archName)
         throw UnsupportedModelError("Unsupported file format");
 
     throw BadArchError(std::move(*archName));
 }
 
-LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant, int n_ctx) {
-    // Get correct implementation
+LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string backend, int n_ctx) {
     const Implementation* impl = nullptr;
 
-    #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
-        if (buildVariant == "auto") {
-            size_t total_mem = getSystemTotalRAMInBytes();
-            try {
-                impl = implementation(modelPath.c_str(), "metal");
-            } catch (const std::exception &e) {
-                // fall back to CPU
-            }
-            if(impl) {
-                LLModel* metalimpl = impl->m_construct();
-                metalimpl->m_implementation = impl;
-                /* TODO(cebtenzzre): after we fix requiredMem, we should change this to happen at
-                 * load time, not construct time. right now n_ctx is incorrectly hardcoded 2048 in
-                 * most (all?) places where this is called, causing underestimation of required
-                 * memory. */
-                size_t req_mem = metalimpl->requiredMem(modelPath, n_ctx, 100);
-                float req_to_total = (float) req_mem / (float) total_mem;
-                // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
-                if (req_to_total >= 0.53) {
-                    delete metalimpl;
-                    impl = nullptr;
-                } else {
-                    return metalimpl;
-                }
+#if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
+    if (backend == "auto") {
+        size_t total_mem = getSystemTotalRAMInBytes();
+        impl = implementation(modelPath.c_str(), "metal");
+        if (impl) {
+            LLModel* metalimpl = impl->m_construct();
+            metalimpl->m_implementation = impl;
+            /* TODO(cebtenzzre): after we fix requiredMem, we should change this to happen at
+             * load time, not construct time. right now n_ctx is incorrectly hardcoded 2048 in
+             * most (all?) places where this is called, causing underestimation of required
+             * memory. */
+            size_t req_mem = metalimpl->requiredMem(modelPath, n_ctx, 100);
+            float req_to_total = (float) req_mem / (float) total_mem;
+            // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
+            if (req_to_total >= 0.53) {
+                delete metalimpl;
+                impl = nullptr;
+            } else {
+                return metalimpl;
             }
         }
-    #else
-        (void)n_ctx;
-    #endif
+    }
+#else
+    (void)n_ctx;
+#endif
 
     if (!impl) {
-        //TODO: Auto-detect CUDA/OpenCL
+        std::string buildVariant = backend;
         if (buildVariant == "auto") {
-            if (cpu_supports_avx2() == 0) {
-                buildVariant = "cpu-avxonly";
-            } else {
-                buildVariant = "cuda";
-            }
+            buildVariant = DEFAULT_BUILD_VARIANT;
         }
+        buildVariant = applyCPUVariant(buildVariant);
         impl = implementation(modelPath.c_str(), buildVariant);
     }
 
-    // Construct and return llmodel implementation
+    if (!impl) {
+        throw MissingImplementationError("Could not find any implementations for backend: " + backend);
+    }
+
+    // Construct llmodel implementation
     auto fres = impl->m_construct();
     fres->m_implementation = impl;
     return fres;

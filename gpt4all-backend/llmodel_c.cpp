@@ -31,10 +31,10 @@ static void llmodel_set_error(const char **errptr, const char *message) {
     }
 }
 
-llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, const char **error) {
+llmodel_model llmodel_model_create2(const char *model_path, const char *backend, const char **error) {
     LLModel *llModel;
     try {
-        llModel = LLModel::Implementation::construct(model_path, build_variant);
+        llModel = LLModel::Implementation::construct(model_path, backend);
     } catch (const std::exception& e) {
         llmodel_set_error(error, e.what());
         return nullptr;
