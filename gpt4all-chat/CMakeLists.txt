@@ -202,15 +202,20 @@ install(TARGETS llmodel DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 
 # We should probably iterate through the list of the cmake for backend, but these need to be installed
 # to the this component's dir for the finicky qt installer to work
-install(TARGETS gptj-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS gptj-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llama-mainline-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llama-mainline-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llamamodel-mainline-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llamamodel-mainline-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 if (APPLE)
+    install(TARGETS gptj-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    install(TARGETS gptj-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+
+    install(TARGETS llama-mainline-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    install(TARGETS llama-mainline-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    install(TARGETS llamamodel-mainline-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    install(TARGETS llamamodel-mainline-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+
     install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 else()
+    install(TARGETS gptj-kompute DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    install(TARGETS gptj-kompute-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+
     install(TARGETS llama-mainline-kompute DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
     install(TARGETS llama-mainline-kompute-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
     install(TARGETS llamamodel-mainline-kompute DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
