@@ -758,6 +758,7 @@ Database::Database(int chunkSize)
 
 Database::~Database()
 {
+    delete m_embLLM;
     m_dbThread.quit();
     m_dbThread.wait();
     delete m_embLLM;
