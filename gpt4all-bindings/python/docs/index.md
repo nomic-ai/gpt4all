@@ -26,7 +26,6 @@ is organized as a monorepo with the following structure:
 - **gpt4all-backend**: The GPT4All backend maintains and exposes a universal, performance optimized C API for running inference with multi-billion parameter Transformer Decoders.
 This C API is then bound to any higher level programming language such as C++, Python, Go, etc.
 - **gpt4all-bindings**: GPT4All bindings contain a variety of high-level programming languages that implement the C API. Each directory is a bound programming language. The [CLI](gpt4all_cli.md) is included here, as well.
-- **gpt4all-api**: The GPT4All API (under initial development) exposes REST API endpoints for gathering completions and embeddings from large language models.
 - **gpt4all-chat**: GPT4All Chat is an OS native chat application that runs on macOS, Windows and Linux. It is the easiest way to run local, privacy aware chat assistants on everyday hardware. You can download it on the [GPT4All Website](https://gpt4all.io) and read its source code in the monorepo.
 
 Explore detailed documentation for the backend, bindings and chat client in the sidebar.

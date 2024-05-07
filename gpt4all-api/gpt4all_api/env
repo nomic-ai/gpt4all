@@ -1,3 +1,0 @@
-# Add your GGUF compatible model LLM here. ie: MODEL_BIN="mistral-7b-instruct-v0.1.Q4_0", rename file ".env"
-# Make sure this LLM matches the model you placed inside the models folder
-MODEL_BIN=""
