@@ -369,6 +369,7 @@ function(include_ggml SUFFIX)
         endif()
 
         find_package(CUDAToolkit REQUIRED)
+        set(CUDAToolkit_BIN_DIR ${CUDAToolkit_BIN_DIR} PARENT_SCOPE)
 
         set(GGML_HEADERS_CUDA ${DIRECTORY}/ggml-cuda.h)
 

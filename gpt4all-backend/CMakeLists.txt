@@ -135,6 +135,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
             gptj.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
         prepare_target(gptj llama-mainline)
     endif()
+
+    if (BUILD_VARIANT STREQUAL cuda)
+        set(CUDAToolkit_BIN_DIR ${CUDAToolkit_BIN_DIR} PARENT_SCOPE)
+    endif()
 endforeach()
 
 add_library(llmodel

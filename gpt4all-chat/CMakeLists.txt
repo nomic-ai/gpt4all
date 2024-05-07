@@ -231,7 +231,9 @@ else()
 
     install(
         TARGETS llamamodel-mainline-cuda DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
-        RUNTIME_DEPENDENCIES POST_INCLUDE_REGEXES "(^|/)(lib)?(cuda(rt)?|cublas(Lt)?)\\." POST_EXCLUDE_REGEXES .
+        RUNTIME_DEPENDENCIES PRE_EXCLUDE_REGEXES "^(nvcuda|api-ms-.*)\\.dll$"
+                             POST_INCLUDE_REGEXES "(^|[/\\\\])(lib)?(cuda|cublas)" POST_EXCLUDE_REGEXES .
+                             DIRECTORIES "${CUDAToolkit_BIN_DIR}"  # needed on Windows (with MSVC at least)
     )
 endif()
 
