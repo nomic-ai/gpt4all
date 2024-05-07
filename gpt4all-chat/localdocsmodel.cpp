@@ -164,12 +164,6 @@ void LocalDocsModel::addCollectionItem(const CollectionItem &item, bool fromDb)
     beginInsertRows(QModelIndex(), m_collectionList.size(), m_collectionList.size());
     m_collectionList.append(item);
     endInsertRows();
-
-    if (!fromDb) {
-        Network::globalInstance()->trackEvent("doc_collection_add", {
-            {"collection_count", m_collectionList.count()},
-        });
-    }
 }
 
 void LocalDocsModel::removeCollectionIf(std::function<bool(CollectionItem)> const &predicate) {
