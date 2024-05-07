@@ -9,6 +9,8 @@
 
 #define EMBEDDINGS_VERSION 0
 
+// FIXME!!!!! We can't hardcode like this for different embedding models
+
 const int s_dim = 384;              // Dimension of the elements
 const int s_ef_construction = 200;  // Controls index search speed/build speed tradeoff
 const int s_M = 16;                 // Tightly connected with internal dimensionality of the data
