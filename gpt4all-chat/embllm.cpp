@@ -5,6 +5,7 @@ EmbeddingLLMWorker::EmbeddingLLMWorker()
     : QObject(nullptr)
     , m_networkManager(new QNetworkAccessManager(this))
     , m_model(nullptr)
+    , m_stopGenerating(false)
 {
     moveToThread(&m_workerThread);
     connect(this, &EmbeddingLLMWorker::finished, &m_workerThread, &QThread::quit, Qt::DirectConnection);
@@ -14,6 +15,10 @@ EmbeddingLLMWorker::EmbeddingLLMWorker()
 
 EmbeddingLLMWorker::~EmbeddingLLMWorker()
 {
+    m_stopGenerating = true;
+    m_workerThread.quit();
+    m_workerThread.wait();
+
     if (m_model) {
         delete m_model;
         m_model = nullptr;
@@ -148,6 +153,9 @@ void EmbeddingLLMWorker::requestSyncEmbedding(const QString &text)
 // this function is always called for storage into the database
 void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &chunks)
 {
+    if (m_stopGenerating)
+        return;
+
     if (!hasModel() && !loadModel()) {
         qWarning() << "WARNING: Could not load model for embeddings";
         return;
