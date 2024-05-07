@@ -472,65 +472,6 @@ QSqlError initDb()
     if (!q.exec(DOCUMENTS_SQL))
         return q.lastError();
 
-#if defined(DEBUG_EXAMPLE)
-    // Add a folder
-    QString folder_path = "/example/folder";
-    int folder_id;
-    if (!addFolderToDB(q, folder_path, &folder_id)) {
-        qDebug() << "Error adding folder:" << q.lastError().text();
-        return q.lastError();
-    }
-
-    // Add a collection
-    QString collection_name = "Example Collection";
-    if (!addCollection(q, collection_name, folder_id)) {
-        qDebug() << "Error adding collection:" << q.lastError().text();
-        return q.lastError();
-    }
-
-    CollectionItem i;
-    i.collection = collection_name;
-    i.folder_path = folder_path;
-    i.folder_id = folder_id;
-    emit addCollectionItem(i, false);
-
-    // Add a document
-    int document_time = 123456789;
-    int document_id;
-    QString document_path = "/example/folder/document1.txt";
-    if (!addDocument(q, folder_id, document_time, document_path, &document_id)) {
-        qDebug() << "Error adding document:" << q.lastError().text();
-        return q.lastError();
-    }
-
-    // Add chunks to the document
-    QString chunk_text1 = "This is an example chunk.";
-    QString chunk_text2 = "Another example chunk.";
-    QString embedding_path = "/example/embeddings/embedding1.bin";
-    QString file = "document1.txt";
-    QString title;
-    QString author;
-    QString subject;
-    QString keywords;
-    int page = -1;
-    int from = -1;
-    int to = -1;;
-    int embedding_id = 1;
-
-    if (!addChunk(q, document_id, 1, chunk_text1, file, title, author, subject, keywords, page, from, to, embedding_id, embedding_path) ||
-        !addChunk(q, document_id, 2, chunk_text2, file, title, author, subject, keywords, page, from, to, embedding_id, embedding_path)) {
-        qDebug() << "Error adding chunks:" << q.lastError().text();
-        return q.lastError();
-    }
-
-    // Perform a search
-    QList<QString> collection_names = {collection_name};
-    QString search_text = "example";
-    if (!selectChunk(q, collection_names, search_text, 3)) {
-        qDebug() << "Error selecting chunks:" << q.lastError().text();
-        return q.lastError();
-    }
-#endif
 
     return QSqlError();
 }
