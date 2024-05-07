@@ -91,3 +91,10 @@ print(output)
 - Note regarding the Microsoft toolchain: Compiling with MSVC is possible, but not the official way to
   go about it at the moment. MSVC doesn't produce DLLs with a `lib` prefix, which the bindings expect.
   You'd have to amend that yourself.
+
+- If you are getting the following error even after downloading the model locally and trying to run the code locally without internet, then use the ```allow_download=False``` flag. example: ```model = Embed4All(allow_download=False)```. The error:
+  ```
+  ConnectionError: HTTPSConnectionPool(host='gpt4all.io', port=443): Max retries exceeded with url: /models/models3.json
+  (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x10601a4a0>: Failed to resolve 'gpt4all.io'
+  ([Errno 8] nodename nor servname provided, or not known)"))
+  ```
