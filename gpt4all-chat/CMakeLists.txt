@@ -213,20 +213,26 @@ if (APPLE)
 
     install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 else()
-    install(TARGETS gptj-kompute DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-    install(TARGETS gptj-kompute-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    set_property(TARGET llamamodel-mainline-cuda llamamodel-mainline-cuda-avxonly APPEND PROPERTY INSTALL_RPATH "$ORIGIN")
 
-    install(TARGETS llama-mainline-kompute DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-    install(TARGETS llama-mainline-kompute-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-    install(TARGETS llamamodel-mainline-kompute DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-    install(TARGETS llamamodel-mainline-kompute-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+    install(
+        TARGETS gptj-kompute
+                gptj-kompute-avxonly
+                llama-mainline-kompute
+                llama-mainline-kompute-avxonly
+                llama-mainline-cuda
+                llama-mainline-cuda-avxonly
+                llamamodel-mainline-kompute
+                llamamodel-mainline-kompute-avxonly
+                # llamamodel-mainline-cuda installed below
+                llamamodel-mainline-cuda-avxonly
+        DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
+    )
 
-    install(TARGETS llama-mainline-cuda DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-    install(TARGETS llama-mainline-cuda-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-    install(TARGETS llamamodel-mainline-cuda DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
+    install(
+        TARGETS llamamodel-mainline-cuda DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
         RUNTIME_DEPENDENCIES POST_INCLUDE_REGEXES "(^|/)(lib)?(cuda(rt)?|cublas(Lt)?)\\." POST_EXCLUDE_REGEXES .
     )
-    install(TARGETS llamamodel-mainline-cuda-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 endif()
 
 set(CPACK_GENERATOR "IFW")
