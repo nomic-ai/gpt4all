@@ -541,7 +541,6 @@ function(include_ggml SUFFIX)
         endif()
         message(STATUS "Kompute found")
 
-        list(APPEND GGML_COMPILE_DEFS VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
         find_package(Vulkan COMPONENTS glslc REQUIRED)
         find_program(glslc_executable NAMES glslc HINTS Vulkan::glslc)
         if (NOT glslc_executable)
@@ -685,6 +684,8 @@ function(include_ggml SUFFIX)
     endif()
 
     if (LLAMA_KOMPUTE)
+        list(APPEND GGML_COMPILE_DEFS VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
+
         # Add the stamp to the main sources to ensure dependency tracking
         set(GGML_SOURCES_KOMPUTE ${LLAMA_DIR}/ggml-kompute.cpp ${CMAKE_CURRENT_BINARY_DIR}/ggml-kompute.stamp)
         set(GGML_HEADERS_KOMPUTE ${LLAMA_DIR}/ggml-kompute.h)
