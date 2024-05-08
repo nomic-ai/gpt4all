@@ -228,7 +228,7 @@ void Network::sendOptOut()
 
     QJsonDocument doc;
     doc.setArray(array);
-    emit requestMixpanel(doc.toJson(QJsonDocument::Compact), true /*isOptOut*/);
+    emit requestMixpanel(doc.toJson(QJsonDocument::Compact));
 
 #if defined(DEBUG)
     printf("%s %s\n", qPrintable("opt_out"), qPrintable(doc.toJson(QJsonDocument::Indented)));
@@ -259,6 +259,7 @@ void Network::sendStartup()
         {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
         {"cpu", getCPUModel()},
+        {"cpu_supports_avx2", LLModel::Implementation::cpuSupportsAVX2()},
         {"datalake_active", mySettings->networkIsActive()},
     });
     sendIpify();
@@ -339,11 +340,8 @@ void Network::sendIpify()
     connect(reply, &QNetworkReply::finished, this, &Network::handleIpifyFinished);
 }
 
-void Network::sendMixpanel(const QByteArray &json, bool isOptOut)
+void Network::sendMixpanel(const QByteArray &json)
 {
-    if (!m_sendUsageStats)
-        return;
-
     QUrl trackUrl("https://api.mixpanel.com/track");
     QNetworkRequest request(trackUrl);
     QSslConfiguration conf = request.sslConfiguration();

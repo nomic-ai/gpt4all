@@ -7,6 +7,16 @@
 #include "mysettings.h"
 #include "../gpt4all-backend/llmodel.h"
 
+#include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <cstddef>
+#include <functional>
+#include <limits>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <QElapsedTimer>
 
 //#define DEBUG
@@ -348,20 +358,36 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     return m_shouldBeLoaded;
                 });
 
-                // Pick the best match for the device
-                QString actualDevice = m_llModelInfo.model->implementation().buildVariant() == "metal" ? "Metal" : "CPU";
-                if (requestedDevice == "CPU") {
-                    emit reportFallbackReason(""); // fallback not applicable
-                } else {
-                    const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString(), n_ctx, ngl);
-                    std::vector<LLModel::GPUDevice> availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
-                    LLModel::GPUDevice *device = nullptr;
+                emit reportFallbackReason(""); // no fallback yet
 
+                auto approxDeviceMemGB = [](const LLModel::GPUDevice *dev) {
+                    float memGB = dev->heapSize / float(1024 * 1024 * 1024);
+                    return std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
+                };
+
+                std::vector<LLModel::GPUDevice> availableDevices;
+                const LLModel::GPUDevice *defaultDevice = nullptr;
+                {
+                    const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString(), n_ctx, ngl);
+                    availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
                     // NB: relies on the fact that Kompute devices are listed first
-                    if (!availableDevices.empty() && requestedDevice == "Auto" && availableDevices.front().type == 2 /*a discrete gpu*/) {
-                        device = &availableDevices.front();
-                    } else {
-                        for (LLModel::GPUDevice &d : availableDevices) {
+                    if (!availableDevices.empty() && availableDevices.front().type == 2 /*a discrete gpu*/) {
+                        defaultDevice = &availableDevices.front();
+                        float memGB = defaultDevice->heapSize / float(1024 * 1024 * 1024);
+                        memGB = std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
+                        modelLoadProps.insert("default_device", QString::fromStdString(defaultDevice->name));
+                        modelLoadProps.insert("default_device_mem", approxDeviceMemGB(defaultDevice));
+                    }
+                }
+
+                bool isMetal = m_llModelInfo.model->implementation().buildVariant() == "metal";
+
+                // Pick the best match for the device
+                QString actualDevice = isMetal ? "Metal" : "CPU";
+                if (!isMetal && requestedDevice != "CPU") {
+                    const auto *device = defaultDevice;
+                    if (requestedDevice != "Auto") {
+                        for (const LLModel::GPUDevice &d : availableDevices) {
                             if (QString::fromStdString(d.selectionName()) == requestedDevice) {
                                 device = &d;
                                 break;
@@ -369,7 +395,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         }
                     }
 
-                    emit reportFallbackReason(""); // no fallback yet
                     std::string unavail_reason;
                     if (!device) {
                         // GPU not available
@@ -377,6 +402,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         emit reportFallbackReason(QString::fromStdString("<br>" + unavail_reason));
                     } else {
                         actualDevice = QString::fromStdString(device->reportedName());
+                        modelLoadProps.insert("requested_device_mem", approxDeviceMemGB(device));
                     }
                 }
 
