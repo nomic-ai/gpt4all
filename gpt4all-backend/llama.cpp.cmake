@@ -606,6 +606,7 @@ function(include_ggml SUFFIX)
             endforeach()
         endfunction()
 
+        set(KOMPUTE_OPT_BUILT_IN_VULKAN_HEADER_TAG "v1.3.239" CACHE STRING "Kompute Vulkan headers tag")
         set(KOMPUTE_OPT_LOG_LEVEL Critical CACHE STRING "Kompute log level")
         set(FMT_INSTALL OFF)
         add_subdirectory(${LLAMA_DIR}/kompute)
