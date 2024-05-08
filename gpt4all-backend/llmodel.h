@@ -54,7 +54,8 @@ public:
             backend(backend), index(index), type(type), heapSize(heapSize), name(std::move(name)),
             vendor(std::move(vendor)) {}
 
-        std::string uiName() const { return backend == "cuda"s ? "CUDA: " + name : name; }
+        std::string selectionName() const { return backend == "cuda"s ? "CUDA: " + name  : name; }
+        std::string reportedName()  const { return backend == "cuda"s ? name + " (CUDA)" : name; }
     };
 
     class Implementation {

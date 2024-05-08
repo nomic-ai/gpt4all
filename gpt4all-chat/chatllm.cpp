@@ -362,7 +362,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         device = &availableDevices.front();
                     } else {
                         for (LLModel::GPUDevice &d : availableDevices) {
-                            if (QString::fromStdString(d.uiName()) == requestedDevice) {
+                            if (QString::fromStdString(d.selectionName()) == requestedDevice) {
                                 device = &d;
                                 break;
                             }
@@ -376,7 +376,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     } else if (!m_llModelInfo.model->initializeGPUDevice(device->index, &unavail_reason)) {
                         emit reportFallbackReason(QString::fromStdString("<br>" + unavail_reason));
                     } else {
-                        actualDevice = QString::fromStdString(device->name);
+                        actualDevice = QString::fromStdString(device->reportedName());
                     }
                 }
 
