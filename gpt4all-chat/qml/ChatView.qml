@@ -1069,7 +1069,7 @@ Rectangle {
                             anchors.fill: parent
                             acceptedButtons: Qt.RightButton
 
-                            onClicked: {
+                            onClicked: (mouse) => {
                                 if (mouse.button === Qt.RightButton) {
                                     conversationContextMenu.x = conversationMouseArea.mouseX
                                     conversationContextMenu.y = conversationMouseArea.mouseY
@@ -1441,7 +1441,7 @@ Rectangle {
                     anchors.fill: parent
                     acceptedButtons: Qt.RightButton
 
-                    onClicked: {
+                    onClicked: (mouse) => {
                         if (mouse.button === Qt.RightButton) {
                             textInputContextMenu.x = textInputMouseArea.mouseX
                             textInputContextMenu.y = textInputMouseArea.mouseY
