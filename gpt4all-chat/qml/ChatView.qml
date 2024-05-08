@@ -1082,11 +1082,19 @@ Rectangle {
                             id: conversationContextMenu
                             MenuItem {
                                 text: qsTr("Copy")
+                                enabled: myTextArea.selectedText !== ""
+                                height: enabled ? implicitHeight : 0
                                 onTriggered: myTextArea.copy()
                             }
                             MenuItem {
-                                text: qsTr("Select All")
-                                onTriggered: myTextArea.selectAll()
+                                text: qsTr("Copy Message")
+                                enabled: myTextArea.selectedText === ""
+                                height: enabled ? implicitHeight : 0
+                                onTriggered: {
+                                    myTextArea.selectAll()
+                                    myTextArea.copy()
+                                    myTextArea.deselect()
+                                }
                             }
                         }
 
@@ -1454,10 +1462,14 @@ Rectangle {
                     id: textInputContextMenu
                     MenuItem {
                         text: qsTr("Cut")
+                        enabled: textInput.selectedText !== ""
+                        height: enabled ? implicitHeight : 0
                         onTriggered: textInput.cut()
                     }
                     MenuItem {
                         text: qsTr("Copy")
+                        enabled: textInput.selectedText !== ""
+                        height: enabled ? implicitHeight : 0
                         onTriggered: textInput.copy()
                     }
                     MenuItem {
