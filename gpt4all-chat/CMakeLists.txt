@@ -198,35 +198,48 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llmodel DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+
+install(
+    TARGETS llmodel
+    LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
+    RUNTIME DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
+)
 
 # We should probably iterate through the list of the cmake for backend, but these need to be installed
 # to the this component's dir for the finicky qt installer to work
 if (APPLE)
-    install(
-        TARGETS llamamodel-mainline-cpu
-                llamamodel-mainline-cpu-avxonly
-                llamamodel-mainline-metal
-                gptj-cpu
-                gptj-cpu-avxonly
-        DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
+    set(MODEL_IMPL_TARGETS
+        llamamodel-mainline-cpu
+        llamamodel-mainline-cpu-avxonly
+        llamamodel-mainline-metal
+        gptj-cpu
+        gptj-cpu-avxonly
     )
 else()
+    set(MODEL_IMPL_TARGETS
+        llamamodel-mainline-kompute
+        llamamodel-mainline-kompute-avxonly
+        gptj-kompute
+        gptj-kompute-avxonly
+    )
+endif()
+
+install(
+    TARGETS ${MODEL_IMPL_TARGETS}
+    LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
+    RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
+)
+
+if (NOT APPLE)
     set_property(TARGET llamamodel-mainline-cuda llamamodel-mainline-cuda-avxonly
                  APPEND PROPERTY INSTALL_RPATH "$ORIGIN")
 
     install(
-        TARGETS llamamodel-mainline-kompute
-                llamamodel-mainline-kompute-avxonly
-                gptj-kompute
-                gptj-kompute-avxonly
-        DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
-    )
-    install(
         TARGETS llamamodel-mainline-cuda
                 llamamodel-mainline-cuda-avxonly
         RUNTIME_DEPENDENCY_SET llama-cuda-deps
-        DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
+        LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
+        RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
     )
     if (WIN32)
         install(
