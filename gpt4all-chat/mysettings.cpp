@@ -65,10 +65,14 @@ MySettings::MySettings()
 {
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
-    std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
     QVector<QString> deviceList{ "Auto" };
+#if defined(Q_OS_MAC) && defined(__aarch64__)
+    deviceList << "Metal";
+#else
+    std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
     for (LLModel::GPUDevice &d : devices)
         deviceList << QString::fromStdString(d.selectionName());
+#endif
     deviceList << "CPU";
     setDeviceList(deviceList);
 }
