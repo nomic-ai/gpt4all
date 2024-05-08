@@ -203,32 +203,40 @@ install(TARGETS llmodel DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 # We should probably iterate through the list of the cmake for backend, but these need to be installed
 # to the this component's dir for the finicky qt installer to work
 if (APPLE)
-    install(TARGETS gptj-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-    install(TARGETS gptj-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-
-    install(TARGETS llamamodel-mainline-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-    install(TARGETS llamamodel-mainline-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-
-    install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-else()
-    set_property(TARGET llamamodel-mainline-cuda llamamodel-mainline-cuda-avxonly APPEND PROPERTY INSTALL_RPATH "$ORIGIN")
-
     install(
-        TARGETS gptj-kompute
-                gptj-kompute-avxonly
-                llamamodel-mainline-kompute
-                llamamodel-mainline-kompute-avxonly
-                # llamamodel-mainline-cuda installed below
-                llamamodel-mainline-cuda-avxonly
+        TARGETS llamamodel-mainline-cpu
+                llamamodel-mainline-cpu-avxonly
+                llamamodel-mainline-metal
+                gptj-cpu
+                gptj-cpu-avxonly
         DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
     )
+else()
+    set_property(TARGET llamamodel-mainline-cuda llamamodel-mainline-cuda-avxonly
+                 APPEND PROPERTY INSTALL_RPATH "$ORIGIN")
 
     install(
-        TARGETS llamamodel-mainline-cuda DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
-        RUNTIME_DEPENDENCIES PRE_EXCLUDE_REGEXES "^(nvcuda|api-ms-.*)\\.dll$|^libcuda\\.so"
-                             POST_INCLUDE_REGEXES "(^|[/\\\\])(lib)?(cuda|cublas)" POST_EXCLUDE_REGEXES .
-                             DIRECTORIES "${CUDAToolkit_BIN_DIR}"  # needed on Windows (with MSVC at least)
+        TARGETS llamamodel-mainline-kompute
+                llamamodel-mainline-kompute-avxonly
+                gptj-kompute
+                gptj-kompute-avxonly
+        DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
     )
+    install(
+        TARGETS llamamodel-mainline-cuda
+                llamamodel-mainline-cuda-avxonly
+        RUNTIME_DEPENDENCY_SET llama-cuda-deps
+        DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
+    )
+    if (WIN32)
+        install(
+            RUNTIME_DEPENDENCY_SET llama-cuda-deps
+            PRE_EXCLUDE_REGEXES "^(nvcuda|api-ms-.*)\\.dll$"
+            POST_INCLUDE_REGEXES "(^|[/\\\\])(lib)?(cuda|cublas)" POST_EXCLUDE_REGEXES .
+            DIRECTORIES "${CUDAToolkit_BIN_DIR}"
+            DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
+        )
+    endif()
 endif()
 
 set(CPACK_GENERATOR "IFW")
