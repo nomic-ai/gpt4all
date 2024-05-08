@@ -130,7 +130,7 @@ void ChatLLM::handleThreadStarted()
 
 void ChatLLM::handleForceMetalChanged(bool forceMetal)
 {
-#if defined(Q_OS_MAC) && defined(__arm__)
+#if defined(Q_OS_MAC) && defined(__aarch64__)
     m_forceMetal = forceMetal;
     if (isModelLoaded() && m_shouldBeLoaded) {
         m_reloadingToChangeVariant = true;
@@ -321,7 +321,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #if !defined(Q_OS_MAC)
             if (requestedDevice.startsWith("CUDA: "))
                 backend = "cuda";
-#elif defined(__arm__)
+#elif defined(__aarch64__)
             if (m_forceMetal)
                 backend = "metal";
 #endif
