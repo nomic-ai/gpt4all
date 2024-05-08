@@ -206,8 +206,6 @@ if (APPLE)
     install(TARGETS gptj-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
     install(TARGETS gptj-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 
-    install(TARGETS llama-mainline-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-    install(TARGETS llama-mainline-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
     install(TARGETS llamamodel-mainline-cpu DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
     install(TARGETS llamamodel-mainline-cpu-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
 
@@ -218,10 +216,6 @@ else()
     install(
         TARGETS gptj-kompute
                 gptj-kompute-avxonly
-                llama-mainline-kompute
-                llama-mainline-kompute-avxonly
-                llama-mainline-cuda
-                llama-mainline-cuda-avxonly
                 llamamodel-mainline-kompute
                 llamamodel-mainline-kompute-avxonly
                 # llamamodel-mainline-cuda installed below
