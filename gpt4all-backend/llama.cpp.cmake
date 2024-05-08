@@ -607,6 +607,7 @@ function(include_ggml SUFFIX)
         endfunction()
 
         set(KOMPUTE_OPT_LOG_LEVEL Critical CACHE STRING "Kompute log level")
+        set(FMT_INSTALL OFF)
         add_subdirectory(${LLAMA_DIR}/kompute)
 
         # Compile our shaders
