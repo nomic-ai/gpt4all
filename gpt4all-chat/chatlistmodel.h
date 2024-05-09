@@ -114,20 +114,6 @@ public:
         emit countChanged();
     }
 
-    void setNewChat(Chat* chat)
-    {
-        // Don't add a new chat if we already have one
-        if (m_newChat)
-            return;
-
-        m_newChat = chat;
-        connect(m_newChat->chatModel(), &ChatModel::countChanged,
-            this, &ChatListModel::newChatCountChanged);
-        connect(m_newChat, &Chat::nameChanged,
-            this, &ChatListModel::nameChanged);
-        setCurrentChat(m_newChat);
-    }
-
     Q_INVOKABLE void removeChat(Chat* chat)
     {
         Q_ASSERT(chat != m_serverChat);
