@@ -31,12 +31,19 @@ public:
         InstalledRole,
         IndexingRole,
         ErrorRole,
+        ForceIndexingRole,
         CurrentDocsToIndexRole,
         TotalDocsToIndexRole,
         CurrentBytesToIndexRole,
         TotalBytesToIndexRole,
         CurrentEmbeddingsToIndexRole,
-        TotalEmbeddingsToIndexRole
+        TotalEmbeddingsToIndexRole,
+        TotalDocsRole,
+        TotalWordsRole,
+        TotalTokensRole,
+        LastUpdateRole,
+        FileCurrentlyProcessingRole,
+        EmbeddingModelRole
     };
 
     explicit LocalDocsModel(QObject *parent = nullptr);
@@ -45,29 +52,14 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
 public Q_SLOTS:
-    void updateInstalled(int folder_id, bool b);
-    void updateIndexing(int folder_id, bool b);
-    void updateError(int folder_id, const QString &error);
-    void updateCurrentDocsToIndex(int folder_id, size_t currentDocsToIndex);
-    void updateTotalDocsToIndex(int folder_id, size_t totalDocsToIndex);
-    void subtractCurrentBytesToIndex(int folder_id, size_t subtractedBytes);
-    void updateCurrentBytesToIndex(int folder_id, size_t currentBytesToIndex);
-    void updateTotalBytesToIndex(int folder_id, size_t totalBytesToIndex);
-    void updateCurrentEmbeddingsToIndex(int folder_id, size_t currentBytesToIndex);
-    void updateTotalEmbeddingsToIndex(int folder_id, size_t totalBytesToIndex);
-    void addCollectionItem(const CollectionItem &item, bool fromDb);
+    void updateCollectionItem(const CollectionItem&);
+    void addCollectionItem(const CollectionItem &item);
     void removeFolderById(int folder_id);
     void removeCollectionPath(const QString &name, const QString &path);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
 private:
-    template<typename T>
-    void updateField(int folder_id, T value,
-        const std::function<void(CollectionItem&, T)>& updater,
-        const QVector<int>& roles);
     void removeCollectionIf(std::function<bool(CollectionItem)> const &predicate);
-
-private:
     QList<CollectionItem> m_collectionList;
 };
 

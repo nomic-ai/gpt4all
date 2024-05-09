@@ -11,12 +11,12 @@
 //#define DEBUG
 //#define DEBUG_EXAMPLE
 
-#define LOCALDOCS_VERSION 1
+#define LOCALDOCS_VERSION 2
 
 const auto INSERT_CHUNK_SQL = QLatin1String(R"(
     insert into chunks(document_id, chunk_text,
-        file, title, author, subject, keywords, page, line_from, line_to)
-        values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        file, title, author, subject, keywords, page, line_from, line_to, words)
+        values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     )");
 
 const auto INSERT_CHUNK_FTS_SQL = QLatin1String(R"(
@@ -36,7 +36,8 @@ const auto DELETE_CHUNKS_FTS_SQL = QLatin1String(R"(
 const auto CHUNKS_SQL = QLatin1String(R"(
     create table chunks(document_id integer, chunk_id integer primary key autoincrement, chunk_text varchar,
         file varchar, title varchar, author varchar, subject varchar, keywords varchar,
-        page integer, line_from integer, line_to integer);
+        page integer, line_from integer, line_to integer, words integer default 0, tokens integer default 0,
+        has_embedding integer default 0);
     )");
 
 const auto FTS_CHUNKS_SQL = QLatin1String(R"(
@@ -72,9 +73,44 @@ const auto SELECT_NGRAM_SQL = QLatin1String(R"(
     limit %2;
     )");
 
+const auto SELECT_FILE_FOR_CHUNK_SQL = QLatin1String(R"(
+    select c.file
+    from chunks c
+    where c.chunk_id = ?;
+    )");
+
+bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
+    if (!q.prepare(SELECT_FILE_FOR_CHUNK_SQL))
+        return false;
+    q.addBindValue(chunk_id);
+    if (!q.exec())
+        return false;
+    if (q.next())
+        file = q.value(0).toString();
+    return true;
+}
+
+const auto SELECT_UNCOMPLETED_CHUNKS_SQL = QLatin1String(R"(
+    select c.chunk_id, c.chunk_text as chunk, d.folder_id
+    from chunks c
+    join documents d ON c.document_id = d.id
+    where c.has_embedding != 1 and d.folder_id = ?;
+    )");
+
+const auto SELECT_COUNT_CHUNKS_SQL = QLatin1String(R"(
+    select count(c.chunk_id) as total_chunks
+    from chunks c
+    join documents d on c.document_id = d.id
+    where d.folder_id = ?;
+    )");
+
+const auto UPDATE_CHUNK_HAS_EMBEDDING = QLatin1String(R"(
+    update chunks set has_embedding = 1 where chunk_id = ?;
+    )");
+
 bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text,
     const QString &file, const QString &title, const QString &author, const QString &subject, const QString &keywords,
-    int page, int from, int to, int *chunk_id)
+    int page, int from, int to, int words, int *chunk_id)
 {
     {
         if (!q.prepare(INSERT_CHUNK_SQL))
@@ -89,6 +125,7 @@ bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text,
         q.addBindValue(page);
         q.addBindValue(from);
         q.addBindValue(to);
+        q.addBindValue(words);
         if (!q.exec())
             return false;
     }
@@ -135,6 +172,42 @@ bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
             return false;
     }
 
+    return true;
+}
+
+bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChunk> *chunks) {
+    if (!q.prepare(SELECT_UNCOMPLETED_CHUNKS_SQL))
+        return false;
+    q.addBindValue(folder_id);
+    if (!q.exec())
+        return false;
+    while (q.next()) {
+        EmbeddingChunk i;
+        i.chunk_id = q.value(0).toInt();
+        i.chunk = q.value(1).toString();
+        i.folder_id = q.value(2).toInt();
+        chunks->append(i);
+    }
+    return true;
+}
+
+bool selectCountChunks(QSqlQuery &q, int folder_id, int *count) {
+    if (!q.prepare(SELECT_COUNT_CHUNKS_SQL))
+        return false;
+    q.addBindValue(folder_id);
+    if (!q.exec())
+        return false;
+    if (q.next())
+        *count = q.value(0).toInt();
+    return true;
+}
+
+bool updateChunkHasEmbedding(QSqlQuery &q, int chunk_id) {
+    if (!q.prepare(UPDATE_CHUNK_HAS_EMBEDDING))
+        return false;
+    q.addBindValue(chunk_id);
+    if (!q.exec())
+        return false;
     return true;
 }
 
@@ -201,7 +274,7 @@ bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QSt
 }
 
 const auto INSERT_COLLECTION_SQL = QLatin1String(R"(
-    insert into collections(collection_name, folder_id) values(?, ?);
+    insert into collections(collection_name, folder_id, last_update_time, embedding_model, force_indexing) values(?, ?, ?, ?, ?);
     )");
 
 const auto DELETE_COLLECTION_SQL = QLatin1String(R"(
@@ -209,30 +282,52 @@ const auto DELETE_COLLECTION_SQL = QLatin1String(R"(
     )");
 
 const auto COLLECTIONS_SQL = QLatin1String(R"(
-    create table collections(collection_name varchar, folder_id integer, unique(collection_name, folder_id));
+    create table collections(collection_name varchar, folder_id integer, last_update_time integer, embedding_model varchar, force_indexing integer, unique(collection_name, folder_id));
     )");
 
 const auto SELECT_FOLDERS_FROM_COLLECTIONS_SQL = QLatin1String(R"(
-    select folder_id from collections where collection_name = ?;
+    select f.id, f.folder_path
+    from collections c
+    join folders f on c.folder_id = f.id
+    where collection_name = ?;
     )");
 
 const auto SELECT_COLLECTIONS_FROM_FOLDER_SQL = QLatin1String(R"(
     select collection_name from collections where folder_id = ?;
     )");
 
-const auto SELECT_COLLECTIONS_SQL = QLatin1String(R"(
+const auto SELECT_COLLECTIONS_SQL_V1 = QLatin1String(R"(
     select c.collection_name, f.folder_path, f.id
     from collections c
     join folders f on c.folder_id = f.id
     order by c.collection_name asc, f.folder_path asc;
     )");
 
-bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
+const auto SELECT_COLLECTIONS_SQL_V2 = QLatin1String(R"(
+    select c.collection_name, f.folder_path, f.id, c.last_update_time, c.embedding_model, c.force_indexing
+    from collections c
+    join folders f on c.folder_id = f.id
+    order by c.collection_name asc, f.folder_path asc;
+    )");
+
+const auto UPDATE_COLLECTION_FORCE_INDEXING = QLatin1String(R"(
+    update collections
+    set force_indexing = 0
+    where collection_name = ?;
+    )");
+
+bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id,
+                   const QDateTime &last_update,
+                   const QString &embedding_model,
+                   bool force_indexing)
 {
     if (!q.prepare(INSERT_COLLECTION_SQL))
         return false;
     q.addBindValue(collection_name);
     q.addBindValue(folder_id);
+    q.addBindValue(last_update);
+    q.addBindValue(embedding_model);
+    q.addBindValue(force_indexing);
     return q.exec();
 }
 
@@ -245,14 +340,14 @@ bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_i
     return q.exec();
 }
 
-bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<int> *folderIds) {
+bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<QPair<int, QString>> *folders) {
     if (!q.prepare(SELECT_FOLDERS_FROM_COLLECTIONS_SQL))
         return false;
     q.addBindValue(collection_name);
     if (!q.exec())
         return false;
     while (q.next())
-        folderIds->append(q.value(0).toInt());
+        folders->append({q.value(0).toInt(), q.value(1).toString()});
     return true;
 }
 
@@ -267,9 +362,21 @@ bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *co
     return true;
 }
 
-bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collections) {
-    if (!q.prepare(SELECT_COLLECTIONS_SQL))
+bool selectAllFromCollections(int version, QSqlQuery &q, QList<CollectionItem> *collections) {
+
+    switch (version) {
+    case 1:
+        if (!q.prepare(SELECT_COLLECTIONS_SQL_V1))
+            return false;
+        break;
+    case 2:
+        if (!q.prepare(SELECT_COLLECTIONS_SQL_V2))
+            return false;
+        break;
+    default:
         return false;
+    }
+
     if (!q.exec())
         return false;
     while (q.next()) {
@@ -279,8 +386,28 @@ bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collections) 
         i.folder_id = q.value(2).toInt();
         i.indexing = false;
         i.installed = true;
+
+        if (version > 1) {
+            i.lastUpdate = q.value(3).toDateTime();
+            i.embeddingModel = q.value(4).toString();
+            i.forceIndexing = q.value(5).toBool();
+        }
+
+        // We force indexing flag if the version does not match
+        if (version < LOCALDOCS_VERSION)
+            i.forceIndexing = true;
+
         collections->append(i);
     }
+    return true;
+}
+
+bool updateCollectionForceIndexing(QSqlQuery &q, const QString &collection_name) {
+    if (!q.prepare(UPDATE_COLLECTION_FORCE_INDEXING))
+        return false;
+    q.addBindValue(collection_name);
+    if (!q.exec())
+        return false;
     return true;
 }
 
@@ -388,6 +515,13 @@ const auto SELECT_ALL_DOCUMENTS_SQL = QLatin1String(R"(
     select id, document_path from documents;
     )");
 
+const auto SELECT_COUNT_STATISTICS_SQL = QLatin1String(R"(
+    select count(distinct d.id) as total_docs, sum(c.words) as total_words, sum(c.tokens) as total_tokens
+    from documents d
+    left join chunks c on d.id = c.document_id
+    where d.folder_id = ?;
+    )");
+
 bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QString &document_path, int *document_id)
 {
     if (!q.prepare(INSERT_DOCUMENTS_SQL))
@@ -442,11 +576,84 @@ bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
     return true;
 }
 
-QSqlError initDb()
+bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *total_words, int *total_tokens) {
+    if (!q.prepare(SELECT_COUNT_STATISTICS_SQL))
+        return false;
+    q.addBindValue(folder_id);
+    if (!q.exec())
+        return false;
+    if (q.next()) {
+        *total_docs = q.value(0).toInt();
+        *total_words = q.value(1).toInt();
+        *total_tokens = q.value(2).toInt();
+    }
+    return true;
+}
+
+QSqlError Database::initDb()
 {
-    QString dbPath = MySettings::globalInstance()->modelPath()
-        + QString("localdocs_v%1.db").arg(LOCALDOCS_VERSION);
+    /*
+     * Support upgrade path from older versions:
+     *
+     *  1. Detect and load dbPath with older versions
+     *  2. Provide versioned SQL select statements
+     *  3. By default mark all collections of older versions as force indexing and present to the user
+     *     the an 'update' button letting them know a breaking change happened and that the collection
+     *     will need to be indexed again
+     *  4. Upgrade the tables to the new version
+     *  5. For some version upgrades we may be able to write bespoke code that does not require a
+     *     forced indexing of older collections, but in lieu of specific versioned upgrades the default
+     *     will require forced indexing to be safe
+     */
+
+    // Iterate through the files and find the one with the largest version number
+    QDirIterator dbIt(MySettings::globalInstance()->modelPath(), QDir::Files);
+    QRegularExpression regex("localdocs_v(\\d+)\\.db");
+    QRegularExpressionMatch match;
+
+    QString filename;
+    int version = 0;
+
+    while (dbIt.hasNext()) {
+        dbIt.next();
+        QString currentFilename = dbIt.fileName();
+        match = regex.match(currentFilename);
+        if (match.hasMatch()) {
+            int versionNumber = match.captured(1).toInt();
+            if (versionNumber > version) {
+                version = versionNumber;
+                filename = currentFilename;
+            }
+        }
+    }
+
+    // If we're upgrading, then we need to do a select on the current version of the collections table,
+    // then delete the current db file, create the new one and populate the collections table and mark
+    // them as needing forced indexing
+
+    QList<CollectionItem> collections;
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    if (version != LOCALDOCS_VERSION) {
+#if defined(DEBUG)
+        qDebug() << "Older localdocs version found" << version << "upgrade to" << LOCALDOCS_VERSION;
+#endif
+        const QString oldDatabasePath = MySettings::globalInstance()->modelPath() + filename;
+        db.setDatabaseName(oldDatabasePath);
+
+        if (!db.open())
+            qWarning() << "ERROR: Could not open old db file" << db.lastError();
+
+        // Select the current collections which will be marked to force indexing
+        QSqlQuery q;
+        if (!selectAllFromCollections(version, q, &collections))
+            qWarning() << "ERROR: Could not open select old collections" << q.lastError();
+
+        // Remove the old database
+        db.close();
+        QFile::remove(oldDatabasePath);
+    }
+
+    QString dbPath = MySettings::globalInstance()->modelPath() + QString("localdocs_v%1.db").arg(LOCALDOCS_VERSION);
     db.setDatabaseName(dbPath);
 
     if (!db.open())
@@ -472,6 +679,8 @@ QSqlError initDb()
     if (!q.exec(DOCUMENTS_SQL))
         return q.lastError();
 
+    for (const CollectionItem &item : collections)
+        addForcedCollection(item);
 
     return QSqlError();
 }
@@ -496,13 +705,48 @@ Database::~Database()
     m_dbThread.wait();
 }
 
+CollectionItem Database::guiCollectionItem(int folder_id) const
+{
+    Q_ASSERT(m_collectionMap.contains(folder_id));
+    return m_collectionMap.value(folder_id);
+}
+
+void Database::updateGuiForCollectionItem(const CollectionItem &item)
+{
+    m_collectionMap.insert(item.folder_id, item);
+    emit requestUpdateGuiForCollectionItem(item);
+}
+
+void Database::addGuiCollectionItem(const CollectionItem &item)
+{
+    m_collectionMap.insert(item.folder_id, item);
+    emit requestAddGuiCollectionItem(item);
+}
+
+void Database::removeGuiFolderById(int folder_id)
+{
+    m_collectionMap.remove(folder_id);
+    emit requestRemoveGuiFolderById(folder_id);
+}
+
+void Database::guiCollectionListUpdated(const QList<CollectionItem> &collectionList)
+{
+    for (const auto &i : collectionList)
+        m_collectionMap.insert(i.folder_id, i);
+    emit requestGuiCollectionListUpdated(collectionList);
+}
+
 void Database::scheduleNext(int folder_id, size_t countForFolder)
 {
-    emit updateCurrentDocsToIndex(folder_id, countForFolder);
+    CollectionItem item = guiCollectionItem(folder_id);
+    item.currentDocsToIndex = countForFolder;
     if (!countForFolder) {
-        updateFolderStatus(folder_id, FolderStatus::Complete);
-        emit updateInstalled(folder_id, true);
+        sendChunkList(); // send any remaining embedding chunks to llm
+        item.indexing = false;
+        item.installed = true;
     }
+    updateGuiForCollectionItem(item);
+    if (m_docsToScan.isEmpty())
         m_scanTimer->stop();
 }
 
@@ -521,14 +765,17 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
     int line_to = -1;
     QList<QString> words;
     int chunks = 0;
+    int addedWords = 0;
 
-    QVector<EmbeddingChunk> chunkList;
+    CollectionItem item = guiCollectionItem(folder_id);
+    item.fileCurrentlyProcessing = file;
 
     while (!stream.atEnd()) {
         QString word;
         stream >> word;
         charCount += word.length();
-        words.append(word);
+        if (!word.isEmpty())
+            words.append(word);
         if (charCount + words.size() - 1 >= m_chunkSize || stream.atEnd()) {
             const QString chunk = words.join(" ");
             QSqlQuery q;
@@ -544,28 +791,19 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
                 page,
                 line_from,
                 line_to,
+                words.size(),
                 &chunk_id
             )) {
                 qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
             }
 
-#if 1
+            addedWords += words.size();
+
             EmbeddingChunk toEmbed;
             toEmbed.folder_id = folder_id;
             toEmbed.chunk_id = chunk_id;
             toEmbed.chunk = chunk;
-            chunkList << toEmbed;
-            if (chunkList.count() == 100) {
-                m_embLLM->generateAsyncEmbeddings(chunkList);
-                emit updateTotalEmbeddingsToIndex(folder_id, 100);
-                chunkList.clear();
-            }
-#else
-            const std::vector<float> result = m_embLLM->generateEmbeddings(chunk);
-            if (!m_embeddings->add(result, chunk_id))
-                qWarning() << "ERROR: Cannot add point to embeddings index";
-#endif
-
+            appendChunk(toEmbed);
             ++chunks;
 
             words.clear();
@@ -576,13 +814,27 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
         }
     }
 
-    if (!chunkList.isEmpty()) {
-        m_embLLM->generateAsyncEmbeddings(chunkList);
-        emit updateTotalEmbeddingsToIndex(folder_id, chunkList.count());
-        chunkList.clear();
+    if (chunks) {
+        item = guiCollectionItem(folder_id);
+        item.totalEmbeddingsToIndex += chunks;
+        item.totalWords += addedWords;
+        updateGuiForCollectionItem(item);
     }
 
     return stream.pos();
+}
+
+void Database::appendChunk(const EmbeddingChunk &chunk)
+{
+    m_chunkList.reserve(100);
+    m_chunkList.append(chunk);
+    if (m_chunkList.size() >= m_chunkList.capacity())
+        sendChunkList();
+}
+
+void Database::sendChunkList() {
+    m_embLLM->generateAsyncEmbeddings(m_chunkList);
+    m_chunkList.clear();
 }
 
 void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddings)
@@ -590,19 +842,34 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
     if (embeddings.isEmpty())
         return;
 
+    // FIXME: Replace this with an arrow file on disk
     int folder_id = 0;
+    QSqlQuery q;
     for (auto e : embeddings) {
         folder_id = e.folder_id;
         if (!m_embeddings->add(e.embedding, e.chunk_id))
             qWarning() << "ERROR: Cannot add point to embeddings index";
+        else {
+            updateChunkHasEmbedding(q, e.chunk_id);
+        }
     }
-    emit updateCurrentEmbeddingsToIndex(folder_id, embeddings.count());
+
+    QString file;
+    if (!selectFileForChunk(q, embeddings.first().chunk_id, file))
+        qWarning() << "ERROR: Cannot find file for chunk";
+
+    CollectionItem item = guiCollectionItem(folder_id);
+    item.currentEmbeddingsToIndex += embeddings.count();
+    item.fileCurrentlyProcessing = file;
+    updateGuiForCollectionItem(item);
     m_embeddings->save();
 }
 
 void Database::handleErrorGenerated(int folder_id, const QString &error)
 {
-    emit updateError(folder_id, error);
+    CollectionItem item = guiCollectionItem(folder_id);
+    item.error = error;
+    updateGuiForCollectionItem(item);
 }
 
 void Database::removeEmbeddingsByDocumentId(int document_id)
@@ -663,7 +930,7 @@ void Database::removeFolderFromDocumentQueue(int folder_id)
     if (!m_docsToScan.contains(folder_id))
         return;
     m_docsToScan.remove(folder_id);
-    emit removeFolderById(folder_id);
+    removeGuiFolderById(folder_id);
 }
 
 void Database::enqueueDocumentInternal(const DocumentInfo &info, bool prepend)
@@ -682,11 +949,14 @@ void Database::enqueueDocuments(int folder_id, const QVector<DocumentInfo> &info
     for (int i = 0; i < infos.size(); ++i)
         enqueueDocumentInternal(infos[i]);
     const size_t count = countOfDocuments(folder_id);
-    emit updateCurrentDocsToIndex(folder_id, count);
-    emit updateTotalDocsToIndex(folder_id, count);
+
+    CollectionItem item = guiCollectionItem(folder_id);
+    item.currentDocsToIndex = count;
+    item.totalDocsToIndex = count;
     const size_t bytes = countOfBytes(folder_id);
-    emit updateCurrentBytesToIndex(folder_id, bytes);
-    emit updateTotalBytesToIndex(folder_id, bytes);
+    item.currentBytesToIndex = bytes;
+    item.totalBytesToIndex = bytes;
+    updateGuiForCollectionItem(item);
     m_scanTimer->start();
 }
 
@@ -738,6 +1008,7 @@ void Database::scanQueue()
                     existing_id, document_path, q.lastError());
                 return scheduleNext(folder_id, countForFolder);
             }
+            updateCollectionStatistics();
         }
     }
 
@@ -755,6 +1026,10 @@ void Database::scanQueue()
                 handleDocumentError("ERROR: Could not add document",
                     document_id, document_path, q.lastError());
                 return scheduleNext(folder_id, countForFolder);
+            } else {
+                CollectionItem item = guiCollectionItem(folder_id);
+                item.totalDocs += 1;
+                updateGuiForCollectionItem(item);
             }
         }
     }
@@ -784,14 +1059,17 @@ void Database::scanQueue()
             doc.metaData(QPdfDocument::MetaDataField::Keywords).toString(),
             pageIndex + 1
         );
-        emit subtractCurrentBytesToIndex(info.folder, bytesPerPage);
+        CollectionItem item = guiCollectionItem(info.folder);
+        item.currentBytesToIndex -= bytesPerPage;
+        updateGuiForCollectionItem(item);
         if (info.currentPage < doc.pageCount()) {
             info.currentPage += 1;
             info.currentlyProcessing = true;
             enqueueDocumentInternal(info, true /*prepend*/);
             return scheduleNext(folder_id, countForFolder + 1);
         } else {
-            emit subtractCurrentBytesToIndex(info.folder, bytes - (bytesPerPage * doc.pageCount()));
+            item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
+            updateGuiForCollectionItem(item);
         }
     } else {
         QFile file(document_path);
@@ -816,7 +1094,9 @@ void Database::scanQueue()
             QString() /*subject*/, QString() /*keywords*/, -1 /*page*/, 100 /*maxChunks*/);
         file.close();
         const size_t bytesChunked = pos - byteIndex;
-        emit subtractCurrentBytesToIndex(info.folder, bytesChunked);
+        CollectionItem item = guiCollectionItem(info.folder);
+        item.currentBytesToIndex -= bytesChunked;
+        updateGuiForCollectionItem(item);
         if (info.currentPosition < bytes) {
             info.currentPosition = pos;
             info.currentlyProcessing = true;
@@ -859,6 +1139,9 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     }
 
     if (!infos.isEmpty()) {
+        CollectionItem item = guiCollectionItem(folder_id);
+        item.indexing = true;
+        updateGuiForCollectionItem(item);
         enqueueDocuments(folder_id, infos);
     }
 }
@@ -880,6 +1163,7 @@ void Database::start()
     if (m_embeddings->fileExists() && !m_embeddings->load())
         qWarning() << "ERROR: Could not load embeddings";
 
+    addCurrentFolders();
 }
 
 void Database::addCurrentFolders()
@@ -890,18 +1174,149 @@ void Database::addCurrentFolders()
 
     QSqlQuery q;
     QList<CollectionItem> collections;
-    if (!selectAllFromCollections(q, &collections)) {
+    if (!selectAllFromCollections(LOCALDOCS_VERSION, q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
         return;
     }
 
-    emit collectionListUpdated(collections);
+    guiCollectionListUpdated(collections);
 
+    for (const auto &i : collections) {
+        if (!i.forceIndexing) {
+            scheduleUncompletedEmbeddings(i.folder_id);
+            addFolder(i.collection, i.folder_path);
+        }
+    }
 
+    updateCollectionStatistics();
+}
 
+void Database::scheduleUncompletedEmbeddings(int folder_id)
+{
+    QList<EmbeddingChunk> chunkList;
+    QSqlQuery q;
+    if (!selectAllUncompletedChunks(q, folder_id, &chunkList)) {
+        qWarning() << "ERROR: Cannot select uncompleted chunks" << q.lastError();
+        return;
+    }
+
+    if (chunkList.isEmpty())
+        return;
+
+    int total = 0;
+    if (!selectCountChunks(q, folder_id, &total)) {
+        qWarning() << "ERROR: Cannot count total chunks" << q.lastError();
+        return;
+    }
+
+    CollectionItem item = guiCollectionItem(folder_id);
+    item.totalEmbeddingsToIndex = total;
+    item.currentEmbeddingsToIndex = total - chunkList.size();
+    updateGuiForCollectionItem(item);
+
+    const int batchSize = 100;
+    for (int i = 0; i < chunkList.size(); i += batchSize) {
+        QList<EmbeddingChunk> batch = chunkList.mid(i, qMin(batchSize, chunkList.size() - i));
+        m_embLLM->generateAsyncEmbeddings(batch);
+    }
+}
+
+void Database::updateCollectionStatistics()
+{
+    QSqlQuery q;
+    QList<CollectionItem> collections;
+    if (!selectAllFromCollections(LOCALDOCS_VERSION, q, &collections)) {
+        qWarning() << "ERROR: Cannot select collections" << q.lastError();
+        return;
+    }
+
+    for (const auto &i : collections) {
+        int total_docs = 0;
+        int total_words = 0;
+        int total_tokens = 0;
+        if (!selectCountStatistics(q, i.folder_id, &total_docs, &total_words, &total_tokens)) {
+            qWarning() << "ERROR: could not count statistics for folder" << q.lastError();
+        } else {
+            CollectionItem item = guiCollectionItem(i.folder_id);
+            item.totalDocs = total_docs;
+            item.totalWords = total_words;
+            item.totalTokens = total_tokens;
+            updateGuiForCollectionItem(item);
+        }
+    }
 }
 
 void Database::addForcedCollection(const CollectionItem &collection)
+{
+    // These are collection items that came from an older version of localdocs which require
+    // forced indexing that should only be done when the user has explicitly asked for them to be
+    // indexed again
+    const QString path = collection.folder_path;
+
+    QFileInfo info(path);
+    if (!info.exists() || !info.isReadable()) {
+        qWarning() << "ERROR: Cannot add folder that doesn't exist or not readable" << path;
+        return;
+    }
+
+    QSqlQuery q;
+    int folder_id = -1;
+
+    // See if the folder exists in the db
+    if (!selectFolder(q, path, &folder_id)) {
+        qWarning() << "ERROR: Cannot select folder from path" << path << q.lastError();
+        return;
+    }
+
+    // Add the folder
+    if (folder_id == -1 && !addFolderToDB(q, path, &folder_id)) {
+        qWarning() << "ERROR: Cannot add folder to db with path" << path << q.lastError();
+        return;
+    }
+
+    Q_ASSERT(folder_id != -1);
+
+    if (!addCollection(q, collection.collection, folder_id,
+                       QDateTime() /*last_update*/,
+                       m_embLLM->model() /*embedding_model*/,
+                       true /*force_indexing*/)) {
+        qWarning() << "ERROR: Cannot add folder to collection" << collection.collection << path << q.lastError();
+        return;
+    }
+
+    addGuiCollectionItem(collection);
+}
+
+void Database::forceIndexing(const QString &collection)
+{
+    QSqlQuery q;
+    QList<QPair<int, QString>> folders;
+    if (!selectFoldersFromCollection(q, collection, &folders)) {
+        qWarning() << "ERROR: Cannot select folders from collections" << collection << q.lastError();
+        return;
+    }
+
+    if (!updateCollectionForceIndexing(q, collection)) {
+        qWarning() << "ERROR: Cannot update collection" << collection << q.lastError();
+        return;
+    }
+
+    for (const auto& folder : folders) {
+        CollectionItem item = guiCollectionItem(folder.first);
+        item.forceIndexing = false;
+        updateGuiForCollectionItem(item);
+        addFolder(collection, folder.second);
+    }
+}
+
+bool containsFolderId(const QList<QPair<int, QString>> &folders, int folder_id) {
+    for (const auto& folder : folders)
+        if (folder.first == folder_id)
+            return true;
+    return false;
+}
+
+void Database::addFolder(const QString &collection, const QString &path)
 {
     QFileInfo info(path);
     if (!info.exists() || !info.isReadable()) {
@@ -921,40 +1336,36 @@ void Database::addForcedCollection(const CollectionItem &collection)
     // Add the folder
     if (folder_id == -1 && !addFolderToDB(q, path, &folder_id)) {
         qWarning() << "ERROR: Cannot add folder to db with path" << path << q.lastError();
+        return;
     }
 
     Q_ASSERT(folder_id != -1);
 
     // See if the folder has already been added to the collection
-    QList<int> folders;
+    QList<QPair<int, QString>> folders;
     if (!selectFoldersFromCollection(q, collection, &folders)) {
         qWarning() << "ERROR: Cannot select folders from collections" << collection << q.lastError();
-        return false;
+        return;
     }
 
-    bool added = false;
-    if (!folders.contains(folder_id)) {
-        if (!addCollection(q, collection, folder_id)) {
+    if (!containsFolderId(folders, folder_id)) {
+        if (!addCollection(q, collection, folder_id,
+                           QDateTime() /*last_update*/,
+                           m_embLLM->model() /*embedding_model*/,
+                           false /*force_indexing*/)) {
             qWarning() << "ERROR: Cannot add folder to collection" << collection << path << q.lastError();
-            return false;
+            return;
         }
 
         CollectionItem i;
         i.collection = collection;
         i.folder_path = path;
         i.folder_id = folder_id;
-        emit addCollectionItem(i, fromDb);
-        added = true;
+        addGuiCollectionItem(i);
     }
 
     addFolderToWatch(path);
-    scanDocuments(folder_id, path, !fromDb);
-
-    if (!fromDb) {
-        updateIndexingStatus();
-    }
-
-    return added;
+    scanDocuments(folder_id, path);
 }
 
 void Database::removeFolder(const QString &collection, const QString &path)
@@ -1032,8 +1443,7 @@ void Database::removeFolderInternal(const QString &collection, int folder_id, co
         return;
     }
 
-    emit removeFolderById(folder_id);
-
+    removeGuiFolderById(folder_id);
     removeFolderFromWatch(path);
 }
 
@@ -1117,7 +1527,7 @@ void Database::cleanDB()
     // Scan all folders in db to make sure they still exist
     QSqlQuery q;
     QList<CollectionItem> collections;
-    if (!selectAllFromCollections(q, &collections)) {
+    if (!selectAllFromCollections(LOCALDOCS_VERSION, q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
         return;
     }
@@ -1166,6 +1576,8 @@ void Database::cleanDB()
             qWarning() << "ERROR: Cannot remove document_id" << document_id << query.lastError();
         }
     }
+
+    updateCollectionStatistics();
 }
 
 void Database::changeChunkSize(int chunkSize)
@@ -1205,6 +1617,7 @@ void Database::changeChunkSize(int chunkSize)
         }
     }
     addCurrentFolders();
+    updateCollectionStatistics();
 }
 
 void Database::directoryChanged(const QString &path)

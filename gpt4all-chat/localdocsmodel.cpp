@@ -51,6 +51,8 @@ QVariant LocalDocsModel::data(const QModelIndex &index, int role) const
             return item.indexing;
         case ErrorRole:
             return item.error;
+        case ForceIndexingRole:
+            return item.forceIndexing;
         case CurrentDocsToIndexRole:
             return item.currentDocsToIndex;
         case TotalDocsToIndexRole:
@@ -63,6 +65,18 @@ QVariant LocalDocsModel::data(const QModelIndex &index, int role) const
             return quint64(item.currentEmbeddingsToIndex);
         case TotalEmbeddingsToIndexRole:
             return quint64(item.totalEmbeddingsToIndex);
+        case TotalDocsRole:
+            return quint64(item.totalDocs);
+        case TotalWordsRole:
+            return quint64(item.totalWords);
+        case TotalTokensRole:
+            return quint64(item.totalTokens);
+        case LastUpdateRole:
+            return item.lastUpdate;
+        case FileCurrentlyProcessingRole:
+            return item.fileCurrentlyProcessing;
+        case EmbeddingModelRole:
+            return item.embeddingModel;
     }
 
     return QVariant();
@@ -76,90 +90,73 @@ QHash<int, QByteArray> LocalDocsModel::roleNames() const
     roles[InstalledRole] = "installed";
     roles[IndexingRole] = "indexing";
     roles[ErrorRole] = "error";
+    roles[ForceIndexingRole] = "forceIndexing";
     roles[CurrentDocsToIndexRole] = "currentDocsToIndex";
     roles[TotalDocsToIndexRole] = "totalDocsToIndex";
     roles[CurrentBytesToIndexRole] = "currentBytesToIndex";
     roles[TotalBytesToIndexRole] = "totalBytesToIndex";
     roles[CurrentEmbeddingsToIndexRole] = "currentEmbeddingsToIndex";
     roles[TotalEmbeddingsToIndexRole] = "totalEmbeddingsToIndex";
+    roles[TotalDocsRole] = "totalDocs";
+    roles[TotalWordsRole] = "totalWords";
+    roles[TotalTokensRole] = "totalTokens";
+    roles[LastUpdateRole] = "lastUpdate";
+    roles[FileCurrentlyProcessingRole] = "fileCurrentlyProcessing";
+    roles[EmbeddingModelRole] = "embeddingModel";
     return roles;
 }
 
-template<typename T>
-void LocalDocsModel::updateField(int folder_id, T value,
-    const std::function<void(CollectionItem&, T)>& updater,
-    const QVector<int>& roles)
+void LocalDocsModel::updateCollectionItem(const CollectionItem &item)
 {
     for (int i = 0; i < m_collectionList.size(); ++i) {
-        if (m_collectionList.at(i).folder_id != folder_id)
+        CollectionItem &stored = m_collectionList[i];
+        if (stored.folder_id != item.folder_id)
             continue;
 
-        updater(m_collectionList[i], value);
-        emit dataChanged(this->index(i), this->index(i), roles);
+        QVector<int> changed;
+        if (stored.collection != item.collection)
+            changed.append(CollectionRole);
+        if (stored.folder_path != item.folder_path)
+            changed.append(FolderPathRole);
+        if (stored.installed != item.installed)
+            changed.append(InstalledRole);
+        if (stored.indexing != item.indexing)
+            changed.append(IndexingRole);
+        if (stored.error != item.error)
+            changed.append(ErrorRole);
+        if (stored.forceIndexing != item.forceIndexing)
+            changed.append(ForceIndexingRole);
+        if (stored.currentDocsToIndex != item.currentDocsToIndex)
+            changed.append(CurrentDocsToIndexRole);
+        if (stored.totalDocsToIndex != item.totalDocsToIndex)
+            changed.append(TotalDocsToIndexRole);
+        if (stored.currentBytesToIndex != item.currentBytesToIndex)
+            changed.append(CurrentBytesToIndexRole);
+        if (stored.totalBytesToIndex != item.totalBytesToIndex)
+            changed.append(TotalBytesToIndexRole);
+        if (stored.currentEmbeddingsToIndex != item.currentEmbeddingsToIndex)
+            changed.append(CurrentEmbeddingsToIndexRole);
+        if (stored.totalEmbeddingsToIndex != item.totalEmbeddingsToIndex)
+            changed.append(TotalEmbeddingsToIndexRole);
+        if (stored.totalDocs != item.totalDocs)
+            changed.append(TotalDocsRole);
+        if (stored.totalWords != item.totalWords)
+            changed.append(TotalWordsRole);
+        if (stored.totalTokens != item.totalTokens)
+            changed.append(TotalTokensRole);
+        if (stored.lastUpdate != item.lastUpdate)
+            changed.append(LastUpdateRole);
+        if (stored.fileCurrentlyProcessing != item.fileCurrentlyProcessing)
+            changed.append(FileCurrentlyProcessingRole);
+        if (stored.embeddingModel != item.embeddingModel)
+            changed.append(EmbeddingModelRole);
+
+        stored = item;
+        emit dataChanged(this->index(i), this->index(i), changed);
     }
 }
 
-void LocalDocsModel::updateInstalled(int folder_id, bool b)
-{
-    updateField<bool>(folder_id, b,
-        [](CollectionItem& item, bool val) { item.installed = val; }, {InstalledRole});
-}
-
-void LocalDocsModel::updateIndexing(int folder_id, bool b)
-{
-    updateField<bool>(folder_id, b,
-        [](CollectionItem& item, bool val) { item.indexing = val; }, {IndexingRole});
-}
-
-void LocalDocsModel::updateError(int folder_id, const QString &error)
-{
-    updateField<QString>(folder_id, error,
-        [](CollectionItem& item, QString val) { item.error = val; }, {ErrorRole});
-}
-
-void LocalDocsModel::updateCurrentDocsToIndex(int folder_id, size_t currentDocsToIndex)
-{
-    updateField<size_t>(folder_id, currentDocsToIndex,
-        [](CollectionItem& item, size_t val) { item.currentDocsToIndex = val; }, {CurrentDocsToIndexRole});
-}
-
-void LocalDocsModel::updateTotalDocsToIndex(int folder_id, size_t totalDocsToIndex)
-{
-    updateField<size_t>(folder_id, totalDocsToIndex,
-        [](CollectionItem& item, size_t val) { item.totalDocsToIndex = val; }, {TotalDocsToIndexRole});
-}
-
-void LocalDocsModel::subtractCurrentBytesToIndex(int folder_id, size_t subtractedBytes)
-{
-    updateField<size_t>(folder_id, subtractedBytes,
-        [](CollectionItem& item, size_t val) { item.currentBytesToIndex -= val; }, {CurrentBytesToIndexRole});
-}
-
-void LocalDocsModel::updateCurrentBytesToIndex(int folder_id, size_t currentBytesToIndex)
-{
-    updateField<size_t>(folder_id, currentBytesToIndex,
-        [](CollectionItem& item, size_t val) { item.currentBytesToIndex = val; }, {CurrentBytesToIndexRole});
-}
-
-void LocalDocsModel::updateTotalBytesToIndex(int folder_id, size_t totalBytesToIndex)
-{
-    updateField<size_t>(folder_id, totalBytesToIndex,
-        [](CollectionItem& item, size_t val) { item.totalBytesToIndex = val; }, {TotalBytesToIndexRole});
-}
-
-void LocalDocsModel::updateCurrentEmbeddingsToIndex(int folder_id, size_t currentEmbeddingsToIndex)
-{
-    updateField<size_t>(folder_id, currentEmbeddingsToIndex,
-        [](CollectionItem& item, size_t val) { item.currentEmbeddingsToIndex += val; }, {CurrentEmbeddingsToIndexRole});
-}
-
-void LocalDocsModel::updateTotalEmbeddingsToIndex(int folder_id, size_t totalEmbeddingsToIndex)
-{
-    updateField<size_t>(folder_id, totalEmbeddingsToIndex,
-        [](CollectionItem& item, size_t val) { item.totalEmbeddingsToIndex += val; }, {TotalEmbeddingsToIndexRole});
-}
-
-void LocalDocsModel::addCollectionItem(const CollectionItem &item, bool fromDb)
+void LocalDocsModel::addCollectionItem(const CollectionItem &item)
 {
     beginInsertRows(QModelIndex(), m_collectionList.size(), m_collectionList.size());
     m_collectionList.append(item);
