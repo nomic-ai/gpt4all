@@ -11,8 +11,8 @@ Button {
     leftPadding: 18
     property color textColor: MySettings.chatTheme === "Dark" ? theme.green800 : theme.green600
     property color mutedTextColor: textColor
-    property color backgroundColor: MySettings.chatTheme === "Dark" ? theme.green400 : theme.green200
-    property color backgroundColorHovered: theme.green300
+    property color backgroundColor: MySettings.chatTheme === "Dark" ? theme.green400 : theme.green100
+    property color backgroundColorHovered: theme.green200
     property real  borderWidth: 0
     property color borderColor: "transparent"
     property real fontPixelSize: theme.fontSizeLarge

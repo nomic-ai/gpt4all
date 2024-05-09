@@ -16,20 +16,29 @@ Rectangle {
         id: theme
     }
 
-    signal downloadClicked
-    signal aboutClicked
+    color: theme.viewBackground
 
-    color: theme.containerBackground
+    Rectangle {
+        id: borderRight
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        width: 2
+        color: theme.dividerColor
+    }
 
     Item {
-        anchors.fill: parent
-        anchors.margins: 10
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: borderRight.left
+        anchors.margins: 20
 
         Accessible.role: Accessible.Pane
         Accessible.name: qsTr("Drawer")
         Accessible.description: qsTr("Main navigation drawer")
 
-        MyButton {
+        MySettingsButton {
             id: newChat
             anchors.left: parent.left
             anchors.right: parent.right
@@ -50,7 +59,7 @@ Rectangle {
             anchors.rightMargin: -10
             anchors.topMargin: 10
             anchors.top: newChat.bottom
-            anchors.bottom: checkForUpdatesButton.top
+            anchors.bottom: parent.bottom
             anchors.bottomMargin: 10
             ScrollBar.vertical.policy: ScrollBar.AlwaysOff
             clip: true
@@ -234,46 +243,6 @@ Rectangle {
                 Accessible.role: Accessible.List
                 Accessible.name: qsTr("List of chats")
                 Accessible.description: qsTr("List of chats in the drawer dialog")
-            }
-        }
-
-        MyButton {
-            id: checkForUpdatesButton
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: downloadButton.top
-            anchors.bottomMargin: 10
-            text: qsTr("Updates")
-            font.pixelSize: theme.fontSizeLarge
-            Accessible.description: qsTr("Launch an external application that will check for updates to the installer")
-            onClicked: {
-                if (!LLM.checkForUpdates())
-                    checkForUpdatesError.open()
-            }
-        }
-
-        MyButton {
-            id: downloadButton
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: aboutButton.top
-            anchors.bottomMargin: 10
-            text: qsTr("Downloads")
-            Accessible.description: qsTr("Launch a dialog to download new models")
-            onClicked: {
-                downloadClicked()
-            }
-        }
-
-        MyButton {
-            id: aboutButton
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            text: qsTr("About")
-            Accessible.description: qsTr("Launch a dialog to show the about page")
-            onClicked: {
-                aboutClicked()
             }
         }
     }

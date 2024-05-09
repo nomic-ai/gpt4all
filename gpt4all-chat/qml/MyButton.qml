@@ -17,11 +17,13 @@ Button {
     property real  borderWidth: MySettings.chatTheme === "LegacyDark" ? 1 : 0
     property color borderColor: theme.buttonBorder
     property real  fontPixelSize: theme.fontSizeLarge
+    property bool  fontPixelBold: false
     contentItem: Text {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter
         color: myButton.enabled ? textColor : mutedTextColor
         font.pixelSize: fontPixelSize
+        font.bold: fontPixelBold
         Accessible.role: Accessible.Button
         Accessible.name: text
     }

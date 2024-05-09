@@ -11,21 +11,15 @@ import modellist
 import network
 import mysettings
 
-MyDialog {
+Rectangle {
     id: modelDownloaderDialog
-    modal: true
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    padding: 10
-    property bool showEmbeddingModels: false
+    color: theme.containerBackground
 
-    onOpened: {
-        Network.trackEvent("download_dialog")
-
-        if (showEmbeddingModels) {
-            ModelList.downloadableModels.expanded = true
-            var targetModelIndex = ModelList.defaultEmbeddingModelIndex
-            modelListView.positionViewAtIndex(targetModelIndex, ListView.Beginning)
-        }
+    function showEmbeddingModels() {
+        Network.sendModelDownloaderDialog();
+        ModelList.downloadableModels.expanded = true
+        var targetModelIndex = ModelList.defaultEmbeddingModelIndex
+        modelListView.positionViewAtIndex(targetModelIndex, ListView.Beginning)
     }
 
     PopupDialog {
@@ -36,7 +30,7 @@ MyDialog {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: 20
         spacing: 30
 
         Label {

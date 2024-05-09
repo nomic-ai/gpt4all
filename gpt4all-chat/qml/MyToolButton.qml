@@ -9,9 +9,13 @@ Button {
     padding: 10
     property color backgroundColor: theme.iconBackgroundDark
     property color backgroundColorHovered: theme.iconBackgroundHovered
+    property color toggledColor: theme.accentColor
+    property real toggledWidth: 1
     property bool toggled: false
     property alias source: image.source
     property alias fillMode: image.fillMode
+    property alias imageWidth: image.sourceSize.width
+    property alias imageHeight: image.sourceSize.height
     contentItem: Text {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter
@@ -25,18 +29,20 @@ Button {
         anchors.fill: parent
         Rectangle {
             anchors.fill: parent
-            color: "transparent"
+            color: myButton.toggledColor
             visible: myButton.toggled
-            border.color: theme.accentColor
-            border.width: 1
-            radius: 10
+            border.color: myButton.toggledColor
+            border.width: myButton.toggledWidth
+            radius: 15
         }
         Image {
             id: image
             anchors.centerIn: parent
+            visible: false
+            fillMode: Image.PreserveAspectFit
             mipmap: true
-            width: 30
-            height: 30
+            sourceSize.width: 32
+            sourceSize.height: 32
         }
         ColorOverlay {
             anchors.fill: image

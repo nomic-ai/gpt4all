@@ -98,4 +98,17 @@ MyDialog {
             Accessible.description: qsTr("Contains embedded link to https://home.nomic.ai")
         }
     }
+
+    MyButton {
+        id: checkForUpdatesButton
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        text: qsTr("Check for updates...")
+        font.pixelSize: theme.fontSizeLarge
+        Accessible.description: qsTr("Launch an external application that will check for updates to the installer")
+        onClicked: {
+            if (!LLM.checkForUpdates())
+                checkForUpdatesError.open()
+        }
+    }
 }
