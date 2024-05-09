@@ -2,9 +2,10 @@
 <component type="desktop">
     <id>io.gpt4all.gpt4all</id>
     <metadata_license>CC0-1.0</metadata_license>
-    <project_license>MIT License</project_license>
+    <project_license>MIT</project_license>
     <name>GPT4ALL</name>
-    <summary>Open-source assistant-style large language models that run locally on your CPU and GPU</summary>
+    <summary>Open-source assistant</summary>
+    <developer_name>Nomic-ai</developer_name>
     <description>
         <p>Cross platform Qt based GUI for GPT4All</p>
         <ul>
@@ -29,18 +30,10 @@
     <url type="bugtracker">https://github.com/nomic-ai/gpt4all/issues</url>
     <url type="vcs-browser">https://github.com/nomic-ai/gpt4all</url>
     <releases>
-      <release version="2.4.19" date="2023-09-16">
-        <description>
-          <p>
-            <ul>
-              <li>A bugfix for crashes on systems that have a corrupted Vulkan driver or a corrupted version of the Vulkan shared library</li>
-            </ul>
-          </p>
-        </description>
-        </release>              
+      <release version="2.7.5" date="2024-05-03"></release>              
     </releases>
     <launchable type="desktop-id">io.gpt4all.gpt4all.desktop</launchable>
-    <content_rating type="oars-1.0">
+    <content_rating type="oars-1.1">
         <content_attribute id="language-profanity">mild</content_attribute>
         <content_attribute id="language-humor">moderate</content_attribute>
         <content_attribute id="language-discrimination">mild</content_attribute>
