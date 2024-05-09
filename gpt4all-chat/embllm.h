@@ -69,6 +69,7 @@ public:
     EmbeddingLLM();
     virtual ~EmbeddingLLM();
 
+    QString model() const;
     bool loadModel();
     bool hasModel() const;
 

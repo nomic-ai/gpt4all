@@ -303,6 +303,20 @@ EmbeddingLLM::~EmbeddingLLM()
     m_embeddingWorker = nullptr;
 }
 
+QString EmbeddingLLM::model() const
+{
+    const EmbeddingModels *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
+    if (!embeddingModels->count())
+        return QString("Unknown");
+
+    const ModelInfo defaultModel = embeddingModels->defaultModelInfo();
+    if (!defaultModel.name().isEmpty())
+        return defaultModel.name();
+    else if (!defaultModel.id().isEmpty())
+        return defaultModel.id();
+    return defaultModel.filename();
+}
+
 std::vector<float> EmbeddingLLM::generateEmbeddings(const QString &text)
 {
     if (!m_embeddingWorker->hasModel() && !m_embeddingWorker->loadModel()) {
