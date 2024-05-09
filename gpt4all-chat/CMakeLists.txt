@@ -216,21 +216,24 @@ install(
 
 # We should probably iterate through the list of the cmake for backend, but these need to be installed
 # to the this component's dir for the finicky qt installer to work
-if (APPLE)
-    set(MODEL_IMPL_TARGETS
-        llamamodel-mainline-cpu
-        llamamodel-mainline-cpu-avxonly
-        llamamodel-mainline-metal
-        gptj-cpu
-        gptj-cpu-avxonly
-    )
-else()
+if (LLMODEL_KOMPUTE)
     set(MODEL_IMPL_TARGETS
         llamamodel-mainline-kompute
         llamamodel-mainline-kompute-avxonly
         gptj-kompute
         gptj-kompute-avxonly
     )
+else()
+    set(MODEL_IMPL_TARGETS
+        llamamodel-mainline-cpu
+        llamamodel-mainline-cpu-avxonly
+        gptj-cpu
+        gptj-cpu-avxonly
+    )
+endif()
+
+if (APPLE)
+    list(APPEND MODEL_IMPL_TARGETS llamamodel-mainline-metal)
 endif()
 
 install(
@@ -239,7 +242,7 @@ install(
     RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
 )
 
-if (NOT APPLE)
+if (LLMODEL_CUDA)
     set_property(TARGET llamamodel-mainline-cuda llamamodel-mainline-cuda-avxonly
                  APPEND PROPERTY INSTALL_RPATH "$ORIGIN")
 
