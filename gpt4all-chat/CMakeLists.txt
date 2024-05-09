@@ -65,7 +65,7 @@ add_subdirectory(../gpt4all-backend llmodel)
 
 set(METAL_SHADER_FILE)
 if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-  set(METAL_SHADER_FILE ../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal)
+    set(METAL_SHADER_FILE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib)
 endif()
 
 set(APP_ICON_RESOURCE)
@@ -185,7 +185,6 @@ if(METAL_SHADER_FILE)
     set_target_properties(chat PROPERTIES
         RESOURCE ${METAL_SHADER_FILE}
     )
-    configure_file(${METAL_SHADER_FILE} bin/ggml-metal.metal COPYONLY)
 endif()
 
 target_compile_definitions(chat

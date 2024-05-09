@@ -45,7 +45,7 @@ def copy_prebuilt_C_lib(src_dir, dest_dir, dest_build_dir):
                 d = os.path.join(dest_dir, item)
                 shutil.copy2(s, d)
                 files_copied += 1
-            if item.endswith(lib_ext) or item.endswith('.metal'):
+            if item.endswith(lib_ext) or item.endswith('.metallib'):
                 s = os.path.join(dirpath, item)
                 d = os.path.join(dest_build_dir, item)
                 shutil.copy2(s, d)
