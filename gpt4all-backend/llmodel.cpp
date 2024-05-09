@@ -216,14 +216,14 @@ LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::
 
     std::vector<std::string> desiredBackends;
     if (backend) {
-        desiredBackends.push_back(backend);
+        desiredBackends.push_back(backend.value());
     } else {
-        desiredBackends.insert(desiredVariants.end(), DEFAULT_BACKENDS, std::end(DEFAULT_BACKENDS));
+        desiredBackends.insert(desiredBackends.end(), DEFAULT_BACKENDS, std::end(DEFAULT_BACKENDS));
     }
 
     const Implementation *impl = nullptr;
 
-    for (const auto &desiredBackend: desiredVariants) {
+    for (const auto &desiredBackend: desiredBackends) {
         auto cacheIt = implCache.find(desiredBackend);
         if (cacheIt != implCache.end())
             return cacheIt->second.get(); // cached
@@ -243,7 +243,7 @@ LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::
         }
     }
 
-    std::cerr << __func__ << ": could not find Llama implementation for backend: " << backend << "\n";
+    std::cerr << __func__ << ": could not find Llama implementation for backend: " << backend.value_or("default") << "\n";
     return nullptr;
 }
 
