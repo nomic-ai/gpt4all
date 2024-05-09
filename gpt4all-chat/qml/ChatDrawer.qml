@@ -61,6 +61,9 @@ Rectangle {
                 anchors.fill: parent
                 anchors.rightMargin: 10
                 model: ChatListModel
+
+                Component.onCompleted: ChatListModel.loadChats()
+
                 ScrollBar.vertical: ScrollBar {
                     parent: conversationList.parent
                     anchors.top: conversationList.top

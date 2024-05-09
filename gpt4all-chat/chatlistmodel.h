@@ -81,6 +81,8 @@ public:
     bool shouldSaveChatGPTChats() const;
     void setShouldSaveChatGPTChats(bool b);
 
+    Q_INVOKABLE void loadChats();
+
     Q_INVOKABLE void addChat()
     {
         // Select the existing new chat if we already have one

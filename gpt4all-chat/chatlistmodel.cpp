@@ -15,7 +15,9 @@ ChatListModel *ChatListModel::globalInstance()
 }
 
 ChatListModel::ChatListModel()
-    : QAbstractListModel(nullptr)
+    : QAbstractListModel(nullptr) {}
+
+void ChatListModel::loadChats()
 {
     addChat();
 
@@ -26,7 +28,6 @@ ChatListModel::ChatListModel()
     thread->start();
 
     connect(MySettings::globalInstance(), &MySettings::serverChatChanged, this, &ChatListModel::handleServerEnabledChanged);
-
 }
 
 void ChatListModel::removeChatFile(Chat *chat) const
