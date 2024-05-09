@@ -191,12 +191,12 @@ class GPT4All:
             n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
             device: The processing unit on which the GPT4All model will run. It can be set to:
                 - "cpu": Model will run on the central processing unit.
+                - "gpu": Use Metal on ARM64 macOS, otherwise the same as "kompute".
                 - "kompute": Use the best GPU provided by the Kompute backend.
                 - "cuda": Use the best GPU provided by the CUDA backend.
-                - "amd", "nvidia": Use the best available GPU from the specified vendor.
-                - A specific device name from the list returned by `GPT4All.list_gpus()` (not available on macOS).
-                Default is "metal" on ARM64 macOS, "cpu" otherwise.
-                "gpu" is a deprecated alias for "kompute".
+                - "amd", "nvidia": Use the best GPU provided by the Kompute backend from this vendor.
+                - A specific device name from the list returned by `GPT4All.list_gpus()`.
+                Default is Metal on ARM64 macOS, "cpu" otherwise.
 
                 Note: If a selected GPU device does not have sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the model.
             n_ctx: Maximum size of context window
