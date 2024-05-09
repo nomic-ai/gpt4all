@@ -16,6 +16,7 @@ public:
 
     LocalDocsModel *localDocsModel() const { return m_localDocsModel; }
 
+    Q_INVOKABLE void forceIndexing(const QString &collection);
     Q_INVOKABLE void addFolder(const QString &collection, const QString &path);
     Q_INVOKABLE void removeFolder(const QString &collection, const QString &path);
 
@@ -27,6 +28,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void requestStart();
+    void requestForceIndexing(const QString &collection);
     void requestAddFolder(const QString &collection, const QString &path);
     void requestRemoveFolder(const QString &collection, const QString &path);
     void requestChunkSizeChange(int chunkSize);

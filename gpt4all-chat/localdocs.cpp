@@ -20,6 +20,8 @@ LocalDocs::LocalDocs()
 
     connect(this, &LocalDocs::requestStart, m_database,
         &Database::start, Qt::QueuedConnection);
+    connect(this, &LocalDocs::requestForceIndexing, m_database,
+        &Database::forceIndexing, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestAddFolder, m_database,
         &Database::addFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestRemoveFolder, m_database,
@@ -28,31 +30,13 @@ LocalDocs::LocalDocs()
         &Database::changeChunkSize, Qt::QueuedConnection);
 
     // Connections for modifying the model and keeping it updated with the database
-    connect(m_database, &Database::updateInstalled,
-        m_localDocsModel, &LocalDocsModel::updateInstalled, Qt::QueuedConnection);
-    connect(m_database, &Database::updateIndexing,
-        m_localDocsModel, &LocalDocsModel::updateIndexing, Qt::QueuedConnection);
-    connect(m_database, &Database::updateError,
-        m_localDocsModel, &LocalDocsModel::updateError, Qt::QueuedConnection);
-    connect(m_database, &Database::updateCurrentDocsToIndex,
-        m_localDocsModel, &LocalDocsModel::updateCurrentDocsToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateTotalDocsToIndex,
-        m_localDocsModel, &LocalDocsModel::updateTotalDocsToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::subtractCurrentBytesToIndex,
-        m_localDocsModel, &LocalDocsModel::subtractCurrentBytesToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateCurrentBytesToIndex,
-        m_localDocsModel, &LocalDocsModel::updateCurrentBytesToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateTotalBytesToIndex,
-        m_localDocsModel, &LocalDocsModel::updateTotalBytesToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateCurrentEmbeddingsToIndex,
-            m_localDocsModel, &LocalDocsModel::updateCurrentEmbeddingsToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateTotalEmbeddingsToIndex,
-            m_localDocsModel, &LocalDocsModel::updateTotalEmbeddingsToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::addCollectionItem,
+    connect(m_database, &Database::requestUpdateGuiForCollectionItem,
+        m_localDocsModel, &LocalDocsModel::updateCollectionItem, Qt::QueuedConnection);
+    connect(m_database, &Database::requestAddGuiCollectionItem,
         m_localDocsModel, &LocalDocsModel::addCollectionItem, Qt::QueuedConnection);
-    connect(m_database, &Database::removeFolderById,
+    connect(m_database, &Database::requestRemoveGuiFolderById,
         m_localDocsModel, &LocalDocsModel::removeFolderById, Qt::QueuedConnection);
-    connect(m_database, &Database::collectionListUpdated,
+    connect(m_database, &Database::requestGuiCollectionListUpdated,
         m_localDocsModel, &LocalDocsModel::collectionListUpdated, Qt::QueuedConnection);
 
     connect(qApp, &QCoreApplication::aboutToQuit, this, &LocalDocs::aboutToQuit);
@@ -62,6 +46,11 @@ void LocalDocs::aboutToQuit()
 {
     delete m_database;
     m_database = nullptr;
+}
+
+void LocalDocs::forceIndexing(const QString &collection)
+{
+    emit requestForceIndexing(collection);
 }
 
 void LocalDocs::addFolder(const QString &collection, const QString &path)
