@@ -2,22 +2,31 @@
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <TargetFramework>net8.0</TargetFramework>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn),1573,1591,1712,CS0649</NoWarn>
     </PropertyGroup>
+
     <ItemGroup>
         <!-- Windows -->
-        <None Include="..\runtimes\win-x64\native\*.dll" Pack="true" PackagePath="runtimes\win-x64\native\%(Filename)%(Extension)" />
+        <None Include="..\runtimes\win32-x64\native\*.dll" Condition="$([MSBuild]::IsOSPlatform('Windows'))" Visible="false">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+
         <!-- Linux -->
-        <None Include="..\runtimes\linux-x64\native\*.so" Pack="true" PackagePath="runtimes\linux-x64\native\%(Filename)%(Extension)" />
+        <None Include="..\runtimes\linux-x64\native\*.so" Condition="$([MSBuild]::IsOSPlatform('Linux'))" Visible="false">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+
         <!-- MacOS -->
-        <None Include="..\runtimes\osx\native\*.dylib" Pack="true" PackagePath="runtimes\osx\native\%(Filename)%(Extension)" />
-        <Content Include="..\runtimes\osx\native\*.metal" Pack="true" PackagePath="contentFiles\any\any;content">
-            <PackageCopyToOutput>true</PackageCopyToOutput>
-        </Content>
+        <None Include="..\runtimes\osx\native\*.dylib" Pack="true" Condition="$([MSBuild]::IsOSPlatform('OSX'))" Visible="false">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
+
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     </ItemGroup>
+ 
 </Project>
