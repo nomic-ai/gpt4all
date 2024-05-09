@@ -19,7 +19,7 @@ Component.prototype.createOperations = function()
                     targetDirectory + "/bin/chat.exe",
                     "@UserProfile@/Desktop/GPT4All.lnk",
                     "workingDirectory=" + targetDirectory + "/bin",
-                    "iconPath=" + targetDirectory + "/favicon.ico",
+                    "iconPath=" + targetDirectory + "/gpt4all.ico",
                     "iconId=0", "description=Open GPT4All");
             } catch (e) {
                 print("ERROR: creating desktop shortcut" + e);
@@ -28,7 +28,7 @@ Component.prototype.createOperations = function()
                 targetDirectory + "/bin/chat.exe",
                 "@StartMenuDir@/GPT4All.lnk",
                 "workingDirectory=" + targetDirectory + "/bin",
-                "iconPath=" + targetDirectory + "/favicon.ico",
+                "iconPath=" + targetDirectory + "/gpt4all.ico",
                 "iconId=0", "description=Open GPT4All");
         } else if (systemInfo.productType === "osx") {
             var gpt4allAppPath = targetDirectory + "/bin/gpt4all.app";
