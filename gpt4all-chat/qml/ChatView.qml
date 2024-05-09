@@ -1069,7 +1069,7 @@ Rectangle {
                             anchors.fill: parent
                             acceptedButtons: Qt.RightButton
 
-                            onClicked: {
+                            onClicked: (mouse) => {
                                 if (mouse.button === Qt.RightButton) {
                                     conversationContextMenu.x = conversationMouseArea.mouseX
                                     conversationContextMenu.y = conversationMouseArea.mouseY
@@ -1082,11 +1082,19 @@ Rectangle {
                             id: conversationContextMenu
                             MenuItem {
                                 text: qsTr("Copy")
+                                enabled: myTextArea.selectedText !== ""
+                                height: enabled ? implicitHeight : 0
                                 onTriggered: myTextArea.copy()
                             }
                             MenuItem {
-                                text: qsTr("Select All")
-                                onTriggered: myTextArea.selectAll()
+                                text: qsTr("Copy Message")
+                                enabled: myTextArea.selectedText === ""
+                                height: enabled ? implicitHeight : 0
+                                onTriggered: {
+                                    myTextArea.selectAll()
+                                    myTextArea.copy()
+                                    myTextArea.deselect()
+                                }
                             }
                         }
 
@@ -1408,11 +1416,11 @@ Rectangle {
                 Accessible.role: Accessible.EditableText
                 Accessible.name: placeholderText
                 Accessible.description: qsTr("Send messages/prompts to the model")
-                Keys.onReturnPressed: (event)=> {
-                    if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
-                        event.accepted = false;
-                    else {
-                        editingFinished();
+                Keys.onReturnPressed: (event) => {
+                    if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier) {
+                        event.accepted = false
+                    } else if (!currentChat.responseInProgress) {
+                        editingFinished()
                         sendMessage()
                     }
                 }
@@ -1441,7 +1449,7 @@ Rectangle {
                     anchors.fill: parent
                     acceptedButtons: Qt.RightButton
 
-                    onClicked: {
+                    onClicked: (mouse) => {
                         if (mouse.button === Qt.RightButton) {
                             textInputContextMenu.x = textInputMouseArea.mouseX
                             textInputContextMenu.y = textInputMouseArea.mouseY
@@ -1454,10 +1462,14 @@ Rectangle {
                     id: textInputContextMenu
                     MenuItem {
                         text: qsTr("Cut")
+                        enabled: textInput.selectedText !== ""
+                        height: enabled ? implicitHeight : 0
                         onTriggered: textInput.cut()
                     }
                     MenuItem {
                         text: qsTr("Copy")
+                        enabled: textInput.selectedText !== ""
+                        height: enabled ? implicitHeight : 0
                         onTriggered: textInput.copy()
                     }
                     MenuItem {
@@ -1482,6 +1494,7 @@ Rectangle {
             width: 30
             height: 30
             visible: !currentChat.isServer
+            enabled: !currentChat.responseInProgress
             source: "qrc:/gpt4all/icons/send_message.svg"
             Accessible.name: qsTr("Send message")
             Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")

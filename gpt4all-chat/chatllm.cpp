@@ -796,13 +796,13 @@ void ChatLLM::generateName()
     if (!isModelLoaded())
         return;
 
-    std::string instructPrompt("### Instruction:\n%1\n### Response:\n"); // standard Alpaca
+    auto promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
     auto promptFunc = std::bind(&ChatLLM::handleNamePrompt, this, std::placeholders::_1);
     auto responseFunc = std::bind(&ChatLLM::handleNameResponse, this, std::placeholders::_1, std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleNameRecalculate, this, std::placeholders::_1);
     LLModel::PromptContext ctx = m_ctx;
-    m_llModelInfo.model->prompt("Describe response above in three words.", instructPrompt, promptFunc, responseFunc,
-                                recalcFunc, ctx);
+    m_llModelInfo.model->prompt("Describe the above conversation in three words or less.",
+                                promptTemplate.toStdString(), promptFunc, responseFunc, recalcFunc, ctx);
     std::string trimmed = trim_whitespace(m_nameResponse);
     if (trimmed != m_nameResponse) {
         m_nameResponse = trimmed;
