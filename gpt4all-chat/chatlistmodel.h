@@ -83,9 +83,11 @@ public:
 
     Q_INVOKABLE void addChat()
     {
-        // Don't add a new chat if we already have one
-        if (m_newChat)
+        // Select the existing new chat if we already have one
+        if (m_newChat) {
+            setCurrentChat(m_newChat);
             return;
+        }
 
         // Create a new chat pointer and connect it to determine when it is populated
         m_newChat = new Chat(this);
