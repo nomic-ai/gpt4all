@@ -19,10 +19,12 @@
 #include <intrin.h>
 #endif
 
-#ifdef __APPLE__
-static const char DEFAULT_BUILD_VARIANT[] = "cpu";
+#ifndef __APPLE__
+static const std::string DEFAULT_BACKENDS[] = {"kompute", "cpu"};
+#elif defined(__aarch64__)
+static const std::string DEFAULT_BACKENDS[] = {"metal", "cpu"};
 #else
-static const char DEFAULT_BUILD_VARIANT[] = "kompute";
+static const std::string DEFAULT_BACKENDS[] = {"cpu"};
 #endif
 
 std::string s_implementations_search_path = ".";
@@ -161,63 +163,50 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
     throw BadArchError(std::move(*archName));
 }
 
-LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string backend, int n_ctx) {
-    const Implementation* impl = nullptr;
+LLModel *LLModel::Implementation::construct(const std::string &modelPath, const std::string &backend, int n_ctx) {
+    std::vector<std::string> desiredBackends;
+    if (backend != "auto") {
+        desiredBackends.push_back(backend);
+    } else {
+        desiredBackends.insert(desiredBackends.end(), DEFAULT_BACKENDS, std::end(DEFAULT_BACKENDS));
+    }
 
-#if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
-    if (backend == "auto") {
-        size_t total_mem = getSystemTotalRAMInBytes();
-        impl = implementation(modelPath.c_str(), "metal");
+    for (const auto &desiredBackend: desiredBackends) {
+        const auto *impl = implementation(modelPath.c_str(), applyCPUVariant(desiredBackend));
+
         if (impl) {
-            LLModel* metalimpl = impl->m_construct();
-            metalimpl->m_implementation = impl;
+            // Construct llmodel implementation
+            auto *fres = impl->m_construct();
+            fres->m_implementation = impl;
+
+#if defined(__APPLE__) && defined(__aarch64__) // FIXME: See if metal works for intel macs
             /* TODO(cebtenzzre): after we fix requiredMem, we should change this to happen at
              * load time, not construct time. right now n_ctx is incorrectly hardcoded 2048 in
              * most (all?) places where this is called, causing underestimation of required
              * memory. */
-            size_t req_mem = metalimpl->requiredMem(modelPath, n_ctx, 100);
-            float req_to_total = (float) req_mem / (float) total_mem;
-            // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
-            if (req_to_total >= 0.53) {
-                delete metalimpl;
-                impl = nullptr;
-            } else {
-                return metalimpl;
+            if (backend == "auto" && desiredBackend == "metal") {
+                // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
+                size_t req_mem = fres->requiredMem(modelPath, n_ctx, 100);
+                if (req_mem >= size_t(0.53f * getSystemTotalRAMInBytes())) {
+                    delete fres;
+                    continue;
+                }
             }
-        }
-    }
 #else
-    (void)n_ctx;
+            (void)n_ctx;
 #endif
 
-    if (!impl) {
-        std::string buildVariant = backend;
-        if (buildVariant == "auto") {
-            buildVariant = DEFAULT_BUILD_VARIANT;
+            return fres;
         }
-        buildVariant = applyCPUVariant(buildVariant);
-        impl = implementation(modelPath.c_str(), buildVariant);
     }
 
-    if (!impl) {
-        throw MissingImplementationError("Could not find any implementations for backend: " + backend);
-    }
-
-    // Construct llmodel implementation
-    auto fres = impl->m_construct();
-    fres->m_implementation = impl;
-    return fres;
+    throw MissingImplementationError("Could not find any implementations for backend: " + backend);
 }
 
 LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::string> &backend) {
-    static std::unordered_map<std::string, std::unique_ptr<LLModel>> m_llamas;
+    static std::unordered_map<std::string, std::unique_ptr<LLModel>> implCache;
 
-    auto desiredVariant = applyCPUVariant(backend.value_or(DEFAULT_BUILD_VARIANT));
-    auto it = m_llamas.find(desiredVariant);
-    if (it != m_llamas.end())
-        return it->second.get(); // cached
-
-    const std::vector<LLModel::Implementation> *impls;
+    const std::vector<Implementation> *impls;
     try {
         impls = &implementationList();
     } catch (const std::runtime_error &e) {
@@ -225,22 +214,37 @@ LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::
         return nullptr;
     }
 
-    const LLModel::Implementation *impl = nullptr;
-    for (const auto &i: *impls) {
-        if (i.m_modelType == "LLaMA" && i.m_buildVariant == desiredVariant) {
-            impl = &i;
-            break;
-        }
-    }
-    if (!impl) {
-        std::cerr << __func__ << ": could not find Llama implementation for variant: " << desiredVariant << "\n";
-        return nullptr;
+    std::vector<std::string> desiredBackends;
+    if (backend) {
+        desiredBackends.push_back(backend);
+    } else {
+        desiredBackends.insert(desiredVariants.end(), DEFAULT_BACKENDS, std::end(DEFAULT_BACKENDS));
     }
 
-    auto *fres = impl->m_construct();
-    fres->m_implementation = impl;
-    m_llamas[desiredVariant] = std::unique_ptr<LLModel>(fres);
-    return fres;
+    const Implementation *impl = nullptr;
+
+    for (const auto &desiredBackend: desiredVariants) {
+        auto cacheIt = implCache.find(desiredBackend);
+        if (cacheIt != implCache.end())
+            return cacheIt->second.get(); // cached
+
+        for (const auto &i: *impls) {
+            if (i.m_modelType == "LLaMA" && i.m_buildVariant == applyCPUVariant(desiredBackend)) {
+                impl = &i;
+                break;
+            }
+        }
+
+        if (impl) {
+            auto *fres = impl->m_construct();
+            fres->m_implementation = impl;
+            implCache[desiredBackend] = std::unique_ptr<LLModel>(fres);
+            return fres;
+        }
+    }
+
+    std::cerr << __func__ << ": could not find Llama implementation for backend: " << backend << "\n";
+    return nullptr;
 }
 
 std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices(size_t memoryRequired) {
