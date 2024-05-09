@@ -148,18 +148,30 @@ qt_add_qml_module(chat
       icons/send_message.svg
       icons/stop_generating.svg
       icons/regenerate.svg
+      icons/chat.svg
+      icons/changelog.svg
       icons/close.svg
       icons/copy.svg
       icons/db.svg
+      icons/discord.svg
       icons/download.svg
       icons/settings.svg
       icons/eject.svg
       icons/edit.svg
+      icons/github.svg
+      icons/globe.svg
+      icons/home.svg
       icons/image.svg
+      icons/info.svg
+      icons/local-docs.svg
+      icons/models.svg
+      icons/nomic_logo.svg
+      icons/search.svg
       icons/trash.svg
       icons/network.svg
       icons/thumbs_up.svg
       icons/thumbs_down.svg
+      icons/twitter.svg
       icons/left_panel_closed.svg
       icons/left_panel_open.svg
       icons/logo.svg
