@@ -40,8 +40,9 @@ A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4
     - Offline build support for running old versions of the GPT4All Local LLM Chat Client.
 - **September 18th, 2023**: [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) launches supporting local LLM inference on NVIDIA and AMD GPUs.
 - **July 2023**: Stable support for LocalDocs, a feature that allows you to privately and locally chat with your data.
-- **June 28th, 2023**: Docker-based API server launches allowing inference of local LLMs from an OpenAI-compatible HTTP endpoint.
+- **June 28th, 2023**: [Docker-based API server] launches allowing inference of local LLMs from an OpenAI-compatible HTTP endpoint.
 
+[Docker-based API server]: https://github.com/nomic-ai/gpt4all/tree/cef74c2be20f5b697055d5b8b506861c7b997fab/gpt4all-api
 
 ### Building From Source
 
