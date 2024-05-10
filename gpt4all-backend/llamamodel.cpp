@@ -36,14 +36,44 @@ static constexpr int GGUF_VER_MAX = 3;
 
 static const char * const modelType_ = "LLaMA";
 
+// note: same order as LLM_ARCH_NAMES in llama.cpp
 static const std::vector<const char *> KNOWN_ARCHES {
-    "baichuan", "bert", "bloom", "codeshell", "command-r", "dbrx", "falcon", "gemma", "gpt2", "llama", "mamba", "mpt",
-    "nomic-bert", "olmo", "orion", "persimmon", "phi2", "phi3", "plamo", "qwen2moe", "qwen2", "qwen", "refact",
-    "stablelm", "starcoder", "xverse",
+    "llama",
+    "falcon",
+    // "grok", -- 314B parameters
+    "gpt2",
+    // "gptj", -- no inference code
+    // "gptneox", -- no inference code
+    "mpt",
+    "baichuan",
+    "starcoder",
+    // "persimmon", -- CUDA generates garbage
+    "refact",
+    "bert",
+    "nomic-bert",
+    "bloom",
+    "stablelm",
+    "qwen",
+    "qwen2",
+    "qwen2moe",
+    "phi2",
+    "phi3",
+    // "plamo", -- https://github.com/ggerganov/llama.cpp/issues/5669
+    "codeshell",
+    "orion",
+    "internlm2",
+    // "minicpm", -- CUDA generates garbage
+    "gemma",
+    "starcoder2",
+    // "mamba", -- CUDA missing SSM_CONV
+    "xverse",
+    "command-r",
+    // "dbrx", -- 16x12B parameters
+    "olmo",
 };
 
 static const std::vector<const char *> EMBEDDING_ARCHES {
-    "bert", "nomic-bert"
+    "bert", "nomic-bert",
 };
 
 static bool is_embedding_arch(const std::string &arch) {
