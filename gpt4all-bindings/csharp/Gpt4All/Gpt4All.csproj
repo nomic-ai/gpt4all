@@ -10,19 +10,10 @@
 
     <ItemGroup>
         <!-- Windows -->
-        <None Include="..\runtimes\win32-x64\native\*.dll" Condition="$([MSBuild]::IsOSPlatform('Windows'))" Visible="false">
+        <Content Include="..\runtimes\win32-x64\native\*.dll" Condition="$([MSBuild]::IsOSPlatform('Windows'))" Visible="false" PackagePath="lib\$(TargetFramework)">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-
-        <!-- Linux -->
-        <None Include="..\runtimes\linux-x64\native\*.so" Condition="$([MSBuild]::IsOSPlatform('Linux'))" Visible="false">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-
-        <!-- MacOS -->
-        <None Include="..\runtimes\osx\native\*.dylib" Pack="true" Condition="$([MSBuild]::IsOSPlatform('OSX'))" Visible="false">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
