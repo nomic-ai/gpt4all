@@ -16,4 +16,5 @@
       llmodel_recalculate_callback=RecalculateCallback `
       llmodel_gpu_device=GPUDevice `
       llmodel_prompt_context=PromptContext `
+      llmodel_emb_cancel_callback=EmbCancelCallback `
     --output .\Bindings

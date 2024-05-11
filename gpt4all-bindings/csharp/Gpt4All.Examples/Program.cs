@@ -1,22 +1,47 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Gpt4All;
 
-using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder
-    .SetMinimumLevel(LogLevel.Trace)
-    .AddConsole());
+// Usage: dotnet run --project Gpt4All.Examples <operation> <model> 
+// Example: dotnet run --project Gpt4All.Examples embed ".\models\nomic-embed-text-v1.f16.gguf"
+if (args.Length < 3)
+{
+    Console.WriteLine("Usage: dotnet run --project Gpt4All.Examples <operation> <model> [options]");
+    return;
+}
 
-var logger = loggerFactory.CreateLogger<Program>();
-//var modelPath = "C:\\Users\\jrobb\\source\\temp\\gpt4all\\gpt4all-bindings\\csharp\\models\\orca-mini-3b-gguf2-q4_0.gguf";
-//using var model = new Gpt4All.LLModel(modelPath, logger);
-//var response = model.Generate("Hello, how are you? My name is Justin", "You are a helpful AI Assistant");
-//Console.WriteLine("RESPONSE:");
-//Console.WriteLine(response.Response);
+var operation = args[0];
+var modelPath = args[1];
 
-//response = model.Generate("What was my name?", "You are a helpful AI Assistant", response.PromptContext);
-//Console.WriteLine("RESPONSE:");
-//Console.WriteLine(response.Response);
+if (operation == "embed")
+{
+    if (args.Length < 4)
+    {
+        Console.WriteLine("Usage: dotnet run --project Gpt4All.Examples embed <model> <input> <dims>");
+        return;
+    }
 
-var modelPath = "C:\\Users\\jrobb\\source\\personal\\content-embedder\\models\\nomic-embed-text-v1.f16.gguf";
-using var model = new Gpt4All.LLModel(modelPath, logger);
-var response = model.Embed(["Hello, how are you? My name is Justin"], 768);
-Console.WriteLine("RESPONSE:");
-Console.WriteLine(string.Join(",", response));
+    var input = args[3];
+    var dims = int.Parse(args[4]);
+
+    using var embedModel = ModelFactory.CreateLLModel(modelPath);
+    var embedResponse = embedModel.Embed(new[] { input }, dims);
+    Console.WriteLine(string.Join(",", embedResponse.Embeddings));
+}
+if (operation == "prompt")
+{
+    if (args.Length < 4)
+    {
+        Console.WriteLine("Usage: dotnet run --project Gpt4All.Examples prompt <model> <prompt> <promptTemplate>");
+        return;
+    }
+
+    var prompt = args[3];
+    var promptTemplate = args[4];
+
+    using var model = ModelFactory.CreateLLModel(modelPath);
+    var response = model.Generate(prompt, promptTemplate);
+    Console.WriteLine(response.Response);
+}
+else
+{
+    Console.WriteLine($"Unknown operation: {operation}. Must be one of embed, prompt");
+}

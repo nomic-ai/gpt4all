@@ -1,24 +1,23 @@
-﻿using System.Runtime.InteropServices;
-using System.Text;
-using Gpt4All.Bindings;
+﻿using System.Text;
 using Gpt4All.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Gpt4All;
 
 public class LLModel : IDisposable
 {
     private readonly string _model;
+    private readonly INativeInteropWrapper _interopWrapper;
     private readonly ILogger _logger;
 
-    private IntPtr _handle;
+    private IntPtr _modelPtr;
     private bool _loaded;
 
-    public LLModel(string model, ILogger? logger = null)
+    internal LLModel(string model, INativeInteropWrapper interopWrapper, ILogger logger)
     {
         _model = model;
-        _logger = logger ?? NullLogger.Instance;
+        _logger = logger;
+        _interopWrapper = interopWrapper;
     }
 
     public void Dispose()
@@ -27,139 +26,117 @@ public class LLModel : IDisposable
         DestroyModel();
     }
 
-    public unsafe IEnumerable<float> Embed(IEnumerable<string> stringToEmbed, int dimensionality = 768, string? prefix = null, bool doMean = false, bool atlas = false)
+    public unsafe EmbedResponse Embed(
+        IEnumerable<string> stringToEmbed,
+        int dimensionality = 768,
+        string? prefix = null,
+        bool doMean = false,
+        bool atlas = false,
+        CancellationToken cancelToken = default
+    )
     {
         LoadModel();
 
-        var strings = stringToEmbed.ToArray();
-        IntPtr[] stringsPtrArr;
-        Marshal2UnmananagedArray(strings, out stringsPtrArr);
-        var stringsPtr = (nint*)Marshal.UnsafeAddrOfPinnedArrayElement(stringsPtrArr, 0);
-        var prefixPtr = prefix is not null ? StrToPtr(prefix) : IntPtr.Zero;
-        byte b_doMean = doMean ? (byte)1 : (byte)0;
-        byte b_atlas = atlas ? (byte)1 : (byte)0;
+        try
+        {
+            var texts = stringToEmbed.ToArray();
+            long tokenCount;
 
-        nuint embeddingSize;
-        nuint tokenCount;
-        IntPtr error;
-        var embeds = NativeMethods.llmodel_embed(_handle, stringsPtr, &embeddingSize, prefixPtr, dimensionality, &tokenCount, b_doMean, b_atlas, IntPtr.Zero, &error);
+            var embeddings = _interopWrapper.Embed(
+                _modelPtr,
+                texts,
+                prefix,
+                dimensionality,
+                doMean,
+                atlas,
+                (batchSizes, numberOfBatches, backend) =>
+                {
+                    return !cancelToken.IsCancellationRequested;
+                },
+                out tokenCount);
 
-        float[] embeddings;
-        MarshalUnmananagedArray2Struct((nint)embeds, (int)embeddingSize, out embeddings);
-        return embeddings;
+            return new EmbedResponse
+            {
+                Embeddings = embeddings,
+                TokenCount = tokenCount
+            };
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error embedding strings");
+            throw;
+        }
     }
 
-    public unsafe GenerateResponse Generate(
+    public GenerateResponse Generate(
         string prompt,
-        string template,
-        Models.PromptContext? context = null,
+        string promptTemplate,
+        PromptContext? context = null,
         CancellationToken cancelToken = default)
     {
         LoadModel();
 
-        // Map from context
-        context ??= new Models.PromptContext();
-        var ctx = new Bindings.PromptContext
+        try
         {
-            context_erase = context.ContextErase,
-            min_p = context.MinP,
-            n_batch = context.NBatch,
-            n_ctx = context.NCtx,
-            n_past = context.NPast,
-            n_predict = context.NPredict,
-            repeat_last_n = context.RepeatLastN,
-            repeat_penalty = context.RepeatPenalty,
-            temp = context.Temp,
-            top_k = context.TopK,
-            top_p = context.TopP,
-        };
+            // Map from context
+            var totalTokens = 0;
+            var stringBuilder = new StringBuilder();
+            var useContext = context ?? new();
 
-        if (context?.Logits is not null)
-        {
-            float[] logits = context.Logits.ToArray();
-            ctx.logits_size = (nuint)logits.Length;
-            ctx.logits = (float*)Marshal.UnsafeAddrOfPinnedArrayElement(logits, 0);
-        }
+            var newContext = _interopWrapper.Prompt(
+                _modelPtr,
+                prompt,
+                promptTemplate,
+                (tokenId) =>
+                {
+                    totalTokens++;
+                    return !cancelToken.IsCancellationRequested;
+                },
+                (tokenId, response) =>
+                {
+                    totalTokens++;
+                    stringBuilder.Append(response);
+                    return !cancelToken.IsCancellationRequested;
+                },
+                (isRecalculating) =>
+                {
+                    return !cancelToken.IsCancellationRequested;
+                },
+                useContext,
+                false,
+                null
+            );
 
-        if (context?.Tokens is not null)
-        {
-            int[] tokens = context.Tokens.ToArray();
-            ctx.tokens_size = (nuint)tokens.Length;
-            ctx.tokens = (int*)Marshal.UnsafeAddrOfPinnedArrayElement(tokens, 0);
-        }
-
-        var totalTokens = 0;
-        var builder = new StringBuilder();
-
-        NativeMethods.llmodel_prompt(
-            _handle,
-            StrToPtr(prompt),
-            StrToPtr(template),
-            (tokenId) =>
+            return new GenerateResponse
             {
-                totalTokens++;
-                return !cancelToken.IsCancellationRequested;
-            },
-            (tokenId, response) =>
-            {
-                _logger.LogInformation("Token ID: {TokenId}", tokenId);
-                totalTokens++;
-                builder.Append(PtrToStr(response));
-                return !cancelToken.IsCancellationRequested;
-            },
-            (isRecalculating) =>
-            {
-                return !cancelToken.IsCancellationRequested;
-            },
-            &ctx,
-            0,
-            IntPtr.Zero
-        );
-
-        // Map to context
-        context = new Models.PromptContext
-        {
-            ContextErase = ctx.context_erase,
-            MinP = ctx.min_p,
-            NBatch = ctx.n_batch,
-            NCtx = ctx.n_ctx,
-            NPast = ctx.n_past,
-            NPredict = ctx.n_predict,
-            RepeatLastN = ctx.repeat_last_n,
-            RepeatPenalty = ctx.repeat_penalty,
-            Temp = ctx.temp,
-            TopK = ctx.top_k,
-            TopP = ctx.top_p,
-        };
-
-        if (ctx.logits != default)
-        {
-            float[] logits;
-            MarshalUnmananagedArray2Struct((nint)ctx.logits, (int)ctx.logits_size, out logits);
-            context.Logits = logits;
+                PromptContext = newContext,
+                Response = stringBuilder.ToString(),
+                TotalTokens = totalTokens
+            };
         }
-
-        if (ctx.tokens != default)
+        catch (Exception e)
         {
-            int[] tokens;
-            MarshalUnmananagedArray2Struct((nint)ctx.tokens, (int)ctx.tokens_size, out tokens);
-            context.Tokens = tokens;
+            _logger.LogError(e, "Error generating outputs");
+            throw;
         }
-
-        return new GenerateResponse(builder.ToString(), totalTokens, context);
     }
 
     private unsafe void DestroyModel()
     {
-        if (_loaded && _handle != IntPtr.Zero)
+        if (_loaded && _modelPtr != IntPtr.Zero)
         {
-            NativeMethods.llmodel_model_destroy(_handle);
-            _handle = IntPtr.Zero;
-            _logger.LogInformation("Model destroyed");
+            _interopWrapper.ModelDestroy(_modelPtr);
+            _modelPtr = IntPtr.Zero;
+            _loaded = false;
+            _logger.LogDebug("Model destroyed");
+        }
+        else
+        {
+            _logger.LogDebug("Model already destroyed or never loaded");
         }
     }
 
-    private unsafe void LoadModel(int nCtx = 2048, int ngl = 100)
+    private unsafe void LoadModel(int maxContextSize = 2048, int numGpuLayers = 100)
     {
         if (_loaded)
         {
@@ -167,67 +144,41 @@ public class LLModel : IDisposable
         }
 
         var handle = CreateModel();
-        var loaded = NativeMethods.llmodel_loadModel(handle, StrToPtr(_model), nCtx, ngl);
-        if (!Bool(loaded))
+        var loaded = _interopWrapper.LoadModel(handle, _model, maxContextSize, numGpuLayers);
+        if (!loaded)
         {
+            _logger.LogError("Error loading model");
             throw new Exception("Error loading model");
         }
 
+        _logger.LogDebug("Model loaded successfully");
         _loaded = true;
     }
 
     private unsafe IntPtr CreateModel(string buildVariant = "auto")
     {
-        // TODO: Ensure file exists
-
-        var pathToExecutable = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
-        NativeMethods.llmodel_set_implementation_search_path(StrToPtr(pathToExecutable));
-
-        var error_ptr = IntPtr.Zero;
-        _handle = NativeMethods.llmodel_model_create2(StrToPtr(_model), StrToPtr(buildVariant), &error_ptr);
-        if (error_ptr != IntPtr.Zero)
+        // Ensure model exists
+        if (!File.Exists(_model))
         {
-            var error = Marshal.PtrToStringAnsi(error_ptr) ?? "Error creating model";
-            throw new Exception(error);
+            _logger.LogError("Model file not found: {Model}", _model);
+            throw new FileNotFoundException("Model file not found", _model);
         }
 
-        if (_handle == IntPtr.Zero)
+        // Set library path
+        var pathToLibrary = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
+        _interopWrapper.SetImplementationSearchPath(pathToLibrary);
+
+        try
         {
-            throw new Exception("Error creating model");
+            // Create the model
+            _modelPtr = _interopWrapper.ModelCreate(_model, buildVariant);
+            _logger.LogInformation("Model created successfully");
+            return _modelPtr;
         }
-
-        _logger.LogInformation("Model created successfully");
-        return _handle;
-    }
-
-    private static void MarshalUnmananagedArray2Struct<T>(IntPtr unmanagedArray, int length, out T[] mangagedArray)
-    {
-        var size = Marshal.SizeOf(typeof(T));
-        mangagedArray = new T[length];
-
-        for (int i = 0; i < length; i++)
+        catch (Exception e)
         {
-            IntPtr ins = new IntPtr(unmanagedArray.ToInt64() + i * size);
-            var marshalled = Marshal.PtrToStructure<T>(ins);
-            if (marshalled is null)
-            {
-                throw new Exception("Error marshalling unmanaged array to struct");
-            }
-            mangagedArray[i] = marshalled;
+            _logger.LogError(e, "Error creating model");
+            throw;
         }
     }
-
-    private static void Marshal2UnmananagedArray(string[] array, out IntPtr[] mangagedArray)
-    {
-        mangagedArray = new IntPtr[array.Length];
-        for (int i = 0; i < array.Length; i++)
-        {
-            var marshalled = StrToPtr(array[i]);
-            mangagedArray[i] = marshalled;
-        }
-    }
-
-    private static bool Bool(byte b) => b == 1;
-    private static IntPtr StrToPtr(string text) => Marshal.StringToHGlobalAnsi(text);
-    private static string? PtrToStr(IntPtr ptr) => Marshal.PtrToStringAnsi(ptr);
 }
