@@ -6,9 +6,9 @@ gpt4all-chat from source.
 
 ## Prerequisites
 
-On Windows and Linux, building GPT4All requires the complete Vulkan SDK. You may download it from here: https://vulkan.lunarg.com/sdk/home
+You will need a compiler. On Windows, you should install Visual Studio with the C++ Development components. On macOS, you will need the full version of Xcode&mdash;Xcode Command Line Tools lacks certain required tools. On Linux, you will need a GCC or Clang toolchain with C++ support.
 
-macOS users do not need Vulkan, as GPT4All will use Metal instead.
+On Windows and Linux, building GPT4All with full GPU support requires the [Vulkan SDK](https://vulkan.lunarg.com/sdk/home) and the latest [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads).
 
 ## Note for Linux users
 
