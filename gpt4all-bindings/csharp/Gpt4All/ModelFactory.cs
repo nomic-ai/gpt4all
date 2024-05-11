@@ -12,14 +12,16 @@ namespace Gpt4All
             var services = new ServiceCollection();
             services.AddLogging(builder => builder.AddConsole());
             services.AddSingleton<INativeInteropWrapper, NativeInteropWrapper>();
+            services.AddSingleton<IIOWrapper, IOWrapper>();
             serviceProvider = services.BuildServiceProvider();
         }
 
         public static LLModel CreateLLModel(string modelPath, ILogger? logger = null)
         {
             logger ??= serviceProvider.GetRequiredService<ILogger<LLModel>>();
-            var wrapper = serviceProvider.GetRequiredService<INativeInteropWrapper>();
-            return new LLModel(modelPath, wrapper, logger);
+            var nativeWrapper = serviceProvider.GetRequiredService<INativeInteropWrapper>();
+            var ioWrapper = serviceProvider.GetRequiredService<IIOWrapper>();
+            return new LLModel(modelPath, nativeWrapper, logger, ioWrapper);
         }
     }
 }

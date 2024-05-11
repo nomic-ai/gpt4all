@@ -7,17 +7,19 @@ namespace Gpt4All;
 public class LLModel : IDisposable
 {
     private readonly string _model;
+    private readonly IIOWrapper _ioWRapper;
     private readonly INativeInteropWrapper _interopWrapper;
     private readonly ILogger _logger;
 
     private IntPtr _modelPtr;
     private bool _loaded;
 
-    internal LLModel(string model, INativeInteropWrapper interopWrapper, ILogger logger)
+    internal LLModel(string model, INativeInteropWrapper interopWrapper, ILogger logger, IIOWrapper ioWRapper)
     {
         _model = model;
         _logger = logger;
         _interopWrapper = interopWrapper;
+        _ioWRapper = ioWRapper;
     }
 
     public void Dispose()
@@ -158,7 +160,7 @@ public class LLModel : IDisposable
     private unsafe IntPtr CreateModel(string buildVariant = "auto")
     {
         // Ensure model exists
-        if (!File.Exists(_model))
+        if (!_ioWRapper.FileExists(_model))
         {
             _logger.LogError("Model file not found: {Model}", _model);
             throw new FileNotFoundException("Model file not found", _model);
