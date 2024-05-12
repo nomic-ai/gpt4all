@@ -53,7 +53,7 @@ cmake --build build --parallel
 
 2. Install the Python package:
 ```
-cd ../../gpt4all-bindings/python
+cd ../gpt4all-bindings/python
 pip install -e .
 ```
 
