@@ -790,7 +790,23 @@ QString MySettings::device() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("device", default_device).toString();
+    auto value = setting.value("device");
+    if (!value.isValid())
+        return default_device;
+
+    auto device = value.toString();
+    if (!device.isEmpty()) {
+        auto deviceStr = device.toStdString();
+        auto newNameStr = LLModel::GPUDevice::updateSelectionName(deviceStr);
+        if (newNameStr != deviceStr) {
+            auto newName = QString::fromStdString(newNameStr);
+            qWarning() << "updating device name:" << device << "->" << newName;
+            device = newName;
+            setting.setValue("device", device);
+            setting.sync();
+        }
+    }
+    return device;
 }
 
 void MySettings::setDevice(const QString &u)

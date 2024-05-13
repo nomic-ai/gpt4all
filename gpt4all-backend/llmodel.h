@@ -1,6 +1,7 @@
 #ifndef LLMODEL_H
 #define LLMODEL_H
 
+#include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <functional>
@@ -8,6 +9,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 using namespace std::string_literals;
@@ -54,8 +56,24 @@ public:
             backend(backend), index(index), type(type), heapSize(heapSize), name(std::move(name)),
             vendor(std::move(vendor)) {}
 
-        std::string selectionName() const { return backend == "cuda"s ? "CUDA: " + name  : name; }
-        std::string reportedName()  const { return backend == "cuda"s ? name + " (CUDA)" : name; }
+        std::string selectionName() const { return m_backendNames.at(backend) + ": " + name; }
+        std::string reportedName()  const { return name + " (" + m_backendNames.at(backend) + ")"; }
+
+        static std::string updateSelectionName(const std::string &name) {
+            if (name == "Auto" || name == "CPU" || name == "Metal")
+                return name;
+            auto it = std::find_if(m_backendNames.begin(), m_backendNames.end(), [&name](const auto &entry) {
+                return name.starts_with(entry.second + ": ");
+            });
+            if (it != m_backendNames.end())
+                return name;
+            return "Vulkan: " + name; // previously, there were only Vulkan devices
+        }
+
+    private:
+        static inline const std::unordered_map<std::string, std::string> m_backendNames {
+            {"cuda", "CUDA"}, {"kompute", "Vulkan"},
+        };
     };
 
     class Implementation {
