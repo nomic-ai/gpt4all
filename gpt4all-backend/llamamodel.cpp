@@ -405,7 +405,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     if (usingGPUDevice()) {
 #ifdef GGML_USE_KOMPUTE
         if (llama_verbose()) {
-            std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
+            std::cerr << "llama.cpp: using Vulkan on " << d_ptr->deviceName << std::endl;
         }
         d_ptr->backend_name = "kompute";
 #elif defined(GGML_USE_VULKAN)
@@ -652,6 +652,8 @@ bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &n
     bool ok = ggml_vk_get_device(&device, memoryRequired, name.c_str());
     if (ok) {
         d_ptr->device = device.index;
+        d_ptr->deviceName = device.name;
+        ggml_vk_device_destroy(&device);
         return true;
     }
 #else
@@ -665,17 +667,15 @@ bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) co
 {
 #if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     (void)unavail_reason;
-    d_ptr->device = device;
-#ifndef GGML_USE_KOMPUTE
     auto devices = availableGPUDevices();
     auto it = std::find_if(devices.begin(), devices.end(), [device](auto &dev) { return dev.index == device; });
+    d_ptr->device = device;
     d_ptr->deviceName = it < devices.end() ? it->name : "(unknown)";
-#endif
     return true;
 #else
     (void)device;
     if (unavail_reason) {
-        *unavail_reason = "built without Kompute";
+        *unavail_reason = "built without a GPU backend";
     }
     return false;
 #endif
@@ -714,9 +714,7 @@ const char *LLamaModel::backendName() const {
 
 const char *LLamaModel::gpuDeviceName() const {
     if (usingGPUDevice()) {
-#ifdef GGML_USE_KOMPUTE
-        return ggml_vk_current_device().name;
-#elif defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
         return d_ptr->deviceName.c_str();
 #endif
     }
