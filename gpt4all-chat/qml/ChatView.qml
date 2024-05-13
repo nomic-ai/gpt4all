@@ -124,7 +124,6 @@ Rectangle {
 
     property bool isCurrentlyLoading: false
     property real modelLoadingPercentage: 0.0
-    property bool trySwitchContextInProgress: false
 
     PopupDialog {
         id: errorCompatHardware
@@ -340,7 +339,7 @@ Rectangle {
                     implicitWidth: 575
                     width: window.width >= 750 ? implicitWidth : implicitWidth - (750 - window.width)
                     enabled: !currentChat.isServer
-                        && !window.trySwitchContextInProgress
+                        && !currentChat.trySwitchContextInProgress
                         && !window.isCurrentlyLoading
                     model: ModelList.installedModels
                     valueRole: "id"
@@ -360,12 +359,6 @@ Rectangle {
                             window.modelLoadingPercentage = currentChat.modelLoadingPercentage;
                             window.isCurrentlyLoading = currentChat.modelLoadingPercentage !== 0.0
                                 && currentChat.modelLoadingPercentage !== 1.0;
-                        }
-                        function onTrySwitchContextOfLoadedModelAttempted() {
-                            window.trySwitchContextInProgress = true;
-                        }
-                        function onTrySwitchContextOfLoadedModelCompleted() {
-                            window.trySwitchContextInProgress = false;
                         }
                     }
                     Connections {
@@ -406,7 +399,7 @@ Rectangle {
                         text: {
                             if (currentChat.modelLoadingError !== "")
                                 return qsTr("Model loading error...")
-                            if (window.trySwitchContextInProgress)
+                            if (currentChat.trySwitchContextInProgress)
                                 return qsTr("Switching context...")
                             if (currentModelName() === "")
                                 return qsTr("Choose a model...")
@@ -474,7 +467,7 @@ Rectangle {
                     MyMiniButton {
                         id: reloadButton
                         visible: currentChat.modelLoadingError === ""
-                            && !window.trySwitchContextInProgress
+                            && !currentChat.trySwitchContextInProgress
                             && !window.isCurrentlyLoading
                             && (currentChat.isModelLoaded || currentModelName() !== "")
                         z: 500
@@ -1344,7 +1337,7 @@ Rectangle {
                 textColor: theme.textColor
                 visible: !currentChat.isServer
                     && !currentChat.isModelLoaded
-                    && !window.trySwitchContextInProgress
+                    && !currentChat.trySwitchContextInProgress
                     && !window.isCurrentlyLoading
                     && currentModelName() !== ""
 

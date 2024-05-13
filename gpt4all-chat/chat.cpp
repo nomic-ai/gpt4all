@@ -54,7 +54,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::reportFallbackReason, this, &Chat::handleFallbackReasonChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::trySwitchContextOfLoadedModelCompleted, this, &Chat::trySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::trySwitchContextOfLoadedModelCompleted, this, &Chat::handleTrySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
     connect(this, &Chat::modelChangeRequested, m_llmodel, &ChatLLM::modelChangeRequested, Qt::QueuedConnection);
@@ -320,7 +320,8 @@ void Chat::forceReloadModel()
 
 void Chat::trySwitchContextOfLoadedModel()
 {
-    emit trySwitchContextOfLoadedModelAttempted();
+    m_trySwitchContextInProgress = true;
+    emit trySwitchContextInProgressChanged();
     m_llmodel->setShouldTrySwitchContext(true);
 }
 
@@ -378,6 +379,11 @@ void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
 
     m_modelInfo = modelInfo;
     emit modelInfoChanged();
+}
+
+void Chat::handleTrySwitchContextOfLoadedModelCompleted() {
+    m_trySwitchContextInProgress = false;
+    emit trySwitchContextInProgressChanged();
 }
 
 bool Chat::serialize(QDataStream &stream, int version) const
