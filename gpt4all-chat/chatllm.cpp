@@ -420,6 +420,16 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 emit reportDevice(actualDevice);
 
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, ngl);
+
+                if (!m_shouldBeLoaded) {
+                    m_llModelInfo.model.reset();
+                    if (!m_isServer)
+                        LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
+                    m_llModelInfo = LLModelInfo();
+                    emit modelLoadingPercentageChanged(0.0f);
+                    return false;
+                }
+
                 if (actualDevice == "CPU") {
                     // we asked llama.cpp to use the CPU
                 } else if (!success) {
@@ -428,6 +438,15 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     emit reportFallbackReason("<br>GPU loading failed (out of VRAM?)");
                     modelLoadProps.insert("cpu_fallback_reason", "gpu_load_failed");
                     success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, 0);
+
+                    if (!m_shouldBeLoaded) {
+                        m_llModelInfo.model.reset();
+                        if (!m_isServer)
+                            LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
+                        m_llModelInfo = LLModelInfo();
+                        emit modelLoadingPercentageChanged(0.0f);
+                        return false;
+                    }
                 } else if (!m_llModelInfo.model->usingGPUDevice()) {
                     // ggml_vk_init was not called in llama.cpp
                     // We might have had to fallback to CPU after load if the model is not possible to accelerate
