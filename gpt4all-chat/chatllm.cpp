@@ -37,10 +37,10 @@ private:
     LLModelStore()
     {
         // seed with empty model
-        m_availableModels.push_back(LLModelInfo());
+        m_availableModel = LLModelInfo();
     }
     ~LLModelStore() {}
-    std::vector<LLModelInfo> m_availableModels;
+    std::optional<LLModelInfo> m_availableModel;
     QMutex m_mutex;
     QWaitCondition m_condition;
     friend class MyLLModelStore;
@@ -56,18 +56,18 @@ LLModelStore *LLModelStore::globalInstance()
 LLModelInfo LLModelStore::acquireModel()
 {
     QMutexLocker locker(&m_mutex);
-    while (m_availableModels.empty())
+    while (!m_availableModel)
         m_condition.wait(locker.mutex());
-    auto first = std::move(m_availableModels.front());
-    m_availableModels.pop_back();
+    auto first = std::move(*m_availableModel);
+    m_availableModel.reset();
     return first;
 }
 
 void LLModelStore::releaseModel(LLModelInfo &&info)
 {
     QMutexLocker locker(&m_mutex);
-    m_availableModels.push_back(std::move(info));
-    Q_ASSERT(m_availableModels.size() < 2);
+    Q_ASSERT(!m_availableModel);
+    m_availableModel = std::move(info);
     m_condition.wakeAll();
 }
 
