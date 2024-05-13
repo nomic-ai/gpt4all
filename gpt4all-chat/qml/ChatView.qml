@@ -122,8 +122,6 @@ Rectangle {
         return ModelList.modelInfo(currentChat.modelInfo.id).name;
     }
 
-    property bool isCurrentlyLoading: false
-
     PopupDialog {
         id: errorCompatHardware
         anchors.centerIn: parent
@@ -339,25 +337,17 @@ Rectangle {
                     width: window.width >= 750 ? implicitWidth : implicitWidth - (750 - window.width)
                     enabled: !currentChat.isServer
                         && !currentChat.trySwitchContextInProgress
-                        && !window.isCurrentlyLoading
+                        && !currentChat.isCurrentlyLoading
                     model: ModelList.installedModels
                     valueRole: "id"
                     textRole: "name"
 
                     function changeModel(index) {
-                        window.isCurrentlyLoading = true;
                         currentChat.stopGenerating()
                         currentChat.reset();
                         currentChat.modelInfo = ModelList.modelInfo(comboBox.valueAt(index))
                     }
 
-                    Connections {
-                        target: currentChat
-                        function onModelLoadingPercentageChanged() {
-                            window.isCurrentlyLoading = currentChat.modelLoadingPercentage !== 0.0
-                                && currentChat.modelLoadingPercentage !== 1.0;
-                        }
-                    }
                     Connections {
                         target: switchModelDialog
                         function onAccepted() {
@@ -374,7 +364,7 @@ Rectangle {
                         }
                         contentItem: Item {
                             Rectangle {
-                                visible: window.isCurrentlyLoading
+                                visible: currentChat.isCurrentlyLoading
                                 anchors.bottom: parent.bottom
                                 width: modelProgress.visualPosition * parent.width
                                 height: 10
@@ -402,7 +392,7 @@ Rectangle {
                                 return qsTr("Choose a model...")
                             if (currentChat.modelLoadingPercentage === 0.0)
                                 return qsTr("Reload \u00B7 ") + currentModelName()
-                            if (window.isCurrentlyLoading)
+                            if (currentChat.isCurrentlyLoading)
                                 return qsTr("Loading \u00B7 ") + currentModelName()
                             return currentModelName()
                         }
@@ -446,7 +436,7 @@ Rectangle {
 
                     MyMiniButton {
                         id: ejectButton
-                        visible: currentChat.isModelLoaded && !window.isCurrentlyLoading
+                        visible: currentChat.isModelLoaded && !currentChat.isCurrentlyLoading
                         z: 500
                         anchors.right: parent.right
                         anchors.rightMargin: 50
@@ -465,7 +455,7 @@ Rectangle {
                         id: reloadButton
                         visible: currentChat.modelLoadingError === ""
                             && !currentChat.trySwitchContextInProgress
-                            && !window.isCurrentlyLoading
+                            && !currentChat.isCurrentlyLoading
                             && (currentChat.isModelLoaded || currentModelName() !== "")
                         z: 500
                         anchors.right: ejectButton.visible ? ejectButton.left : parent.right
@@ -1335,7 +1325,7 @@ Rectangle {
                 visible: !currentChat.isServer
                     && !currentChat.isModelLoaded
                     && !currentChat.trySwitchContextInProgress
-                    && !window.isCurrentlyLoading
+                    && !currentChat.isCurrentlyLoading
                     && currentModelName() !== ""
 
                 Image {

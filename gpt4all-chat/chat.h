@@ -17,6 +17,7 @@ class Chat : public QObject
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(ChatModel *chatModel READ chatModel NOTIFY chatModelChanged)
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
+    Q_PROPERTY(bool isCurrentlyLoading READ isCurrentlyLoading NOTIFY isCurrentlyLoadingChanged)
     Q_PROPERTY(float modelLoadingPercentage READ modelLoadingPercentage NOTIFY modelLoadingPercentageChanged)
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
     Q_PROPERTY(ModelInfo modelInfo READ modelInfo WRITE setModelInfo NOTIFY modelInfoChanged)
@@ -63,8 +64,9 @@ public:
 
     Q_INVOKABLE void reset();
     Q_INVOKABLE void processSystemPrompt();
-    Q_INVOKABLE bool isModelLoaded() const;
-    Q_INVOKABLE float modelLoadingPercentage() const;
+    bool  isModelLoaded()          const { return m_modelLoadingPercentage == 1.0f; }
+    bool  isCurrentlyLoading()     const { return m_modelLoadingPercentage > 0.0f && m_modelLoadingPercentage < 1.0f; }
+    float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
     Q_INVOKABLE void prompt(const QString &prompt);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void stopGenerating();
@@ -116,6 +118,7 @@ Q_SIGNALS:
     void nameChanged();
     void chatModelChanged();
     void isModelLoadedChanged();
+    void isCurrentlyLoadingChanged();
     void modelLoadingPercentageChanged();
     void modelLoadingWarning(const QString &warning);
     void responseChanged();
@@ -181,6 +184,7 @@ private:
     LocalDocsCollectionsModel *m_collectionModel;
     bool m_firstResponse = true;
     bool m_trySwitchContextInProgress = false;
+    bool m_isCurrentlyLoading = false;
 };
 
 #endif // CHAT_H

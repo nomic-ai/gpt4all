@@ -95,16 +95,6 @@ void Chat::processSystemPrompt()
     emit processSystemPromptRequested();
 }
 
-bool Chat::isModelLoaded() const
-{
-    return m_modelLoadingPercentage == 1.0f;
-}
-
-float Chat::modelLoadingPercentage() const
-{
-    return m_modelLoadingPercentage;
-}
-
 void Chat::resetResponseState()
 {
     if (m_responseInProgress && m_responseState == Chat::LocalDocsRetrieval)
@@ -167,9 +157,16 @@ void Chat::handleModelLoadingPercentageChanged(float loadingPercentage)
     if (loadingPercentage == m_modelLoadingPercentage)
         return;
 
+    bool wasLoading = isCurrentlyLoading();
+    bool wasLoaded = isModelLoaded();
+
     m_modelLoadingPercentage = loadingPercentage;
     emit modelLoadingPercentageChanged();
-    if (m_modelLoadingPercentage == 1.0f || m_modelLoadingPercentage == 0.0f)
+
+    if (isCurrentlyLoading() != wasLoading)
+        emit isCurrentlyLoadingChanged();
+
+    if (isModelLoaded() != wasLoaded)
         emit isModelLoadedChanged();
 }
 
@@ -248,11 +245,15 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
         return;
 
     m_modelLoadingPercentage = std::numeric_limits<float>::min(); // small non-zero positive value
+    emit modelLoadingPercentageChanged();
     emit isModelLoadedChanged();
+
     m_modelLoadingError = QString();
     emit modelLoadingErrorChanged();
+
     m_modelInfo = modelInfo;
     emit modelInfoChanged();
+
     emit modelChangeRequested(modelInfo);
 }
 
