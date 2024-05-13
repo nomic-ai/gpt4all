@@ -30,16 +30,17 @@ public:
     static LLModelStore *globalInstance();
 
     LLModelInfo acquireModel(); // will block until llmodel is ready
-    void releaseModel(const LLModelInfo &info); // must be called when you are done
+    void releaseModel(LLModelInfo &&info); // must be called when you are done
+    void destroy();
 
 private:
     LLModelStore()
     {
         // seed with empty model
-        m_availableModels.append(LLModelInfo());
+        m_availableModels.push_back(LLModelInfo());
     }
     ~LLModelStore() {}
-    QVector<LLModelInfo> m_availableModels;
+    std::vector<LLModelInfo> m_availableModels;
     QMutex m_mutex;
     QWaitCondition m_condition;
     friend class MyLLModelStore;
@@ -55,17 +56,25 @@ LLModelStore *LLModelStore::globalInstance()
 LLModelInfo LLModelStore::acquireModel()
 {
     QMutexLocker locker(&m_mutex);
-    while (m_availableModels.isEmpty())
+    while (m_availableModels.empty())
         m_condition.wait(locker.mutex());
-    return m_availableModels.takeFirst();
+    auto first = std::move(m_availableModels.front());
+    m_availableModels.pop_back();
+    return first;
 }
 
-void LLModelStore::releaseModel(const LLModelInfo &info)
+void LLModelStore::releaseModel(LLModelInfo &&info)
 {
     QMutexLocker locker(&m_mutex);
-    m_availableModels.append(info);
-    Q_ASSERT(m_availableModels.count() < 2);
+    m_availableModels.push_back(std::move(info));
+    Q_ASSERT(m_availableModels.size() < 2);
     m_condition.wakeAll();
+}
+
+void LLModelStore::destroy()
+{
+    QMutexLocker locker(&m_mutex);
+    m_availableModel.reset();
 }
 
 ChatLLM::ChatLLM(Chat *parent, bool isServer)
@@ -108,7 +117,8 @@ ChatLLM::~ChatLLM()
     destroy();
 }
 
-void ChatLLM::destroy() {
+void ChatLLM::destroy()
+{
     m_stopGenerating = true;
     m_llmThread.quit();
     m_llmThread.wait();
@@ -116,9 +126,13 @@ void ChatLLM::destroy() {
     // The only time we should have a model loaded here is on shutdown
     // as we explicitly unload the model in all other circumstances
     if (isModelLoaded()) {
-        delete m_llModelInfo.model;
-        m_llModelInfo.model = nullptr;
+        m_llModelInfo.model.reset();
     }
+}
+
+void ChatLLM::destroyStore()
+{
+    LLModelStore::globalInstance()->destroy();
 }
 
 void ChatLLM::handleThreadStarted()
@@ -180,21 +194,20 @@ bool ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
 
     m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
 #if defined(DEBUG_MODEL_LOADING)
-        qDebug() << "acquired model from store" << m_llmThread.objectName() << m_llModelInfo.model;
+        qDebug() << "acquired model from store" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
 
     // The store gave us no already loaded model, the wrong type of model, then give it back to the
     // store and fail
     if (!m_llModelInfo.model || m_llModelInfo.fileInfo != fileInfo) {
-        LLModelStore::globalInstance()->releaseModel(m_llModelInfo);
-        m_llModelInfo = LLModelInfo();
+        LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
         m_shouldTrySwitchContext = false;
         emit trySwitchContextOfLoadedModelCompleted(false);
         return false;
     }
 
 #if defined(DEBUG_MODEL_LOADING)
-    qDebug() << "store had our model" << m_llmThread.objectName() << m_llModelInfo.model;
+    qDebug() << "store had our model" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
 
     // We should be loaded and now we are
@@ -237,27 +250,25 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (alreadyAcquired) {
         resetContext();
 #if defined(DEBUG_MODEL_LOADING)
-        qDebug() << "already acquired model deleted" << m_llmThread.objectName() << m_llModelInfo.model;
+        qDebug() << "already acquired model deleted" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
-        delete m_llModelInfo.model;
-        m_llModelInfo.model = nullptr;
+        m_llModelInfo.model.reset();
     } else if (!m_isServer) {
         // This is a blocking call that tries to retrieve the model we need from the model store.
         // If it succeeds, then we just have to restore state. If the store has never had a model
         // returned to it, then the modelInfo.model pointer should be null which will happen on startup
         m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
 #if defined(DEBUG_MODEL_LOADING)
-        qDebug() << "acquired model from store" << m_llmThread.objectName() << m_llModelInfo.model;
+        qDebug() << "acquired model from store" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
         // At this point it is possible that while we were blocked waiting to acquire the model from the
         // store, that our state was changed to not be loaded. If this is the case, release the model
         // back into the store and quit loading
         if (!m_shouldBeLoaded) {
 #if defined(DEBUG_MODEL_LOADING)
-            qDebug() << "no longer need model" << m_llmThread.objectName() << m_llModelInfo.model;
+            qDebug() << "no longer need model" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
-            LLModelStore::globalInstance()->releaseModel(m_llModelInfo);
-            m_llModelInfo = LLModelInfo();
+            LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
             emit modelLoadingPercentageChanged(0.0f);
             return false;
         }
@@ -265,7 +276,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         // Check if the store just gave us exactly the model we were looking for
         if (m_llModelInfo.model && m_llModelInfo.fileInfo == fileInfo && !m_reloadingToChangeVariant) {
 #if defined(DEBUG_MODEL_LOADING)
-            qDebug() << "store had our model" << m_llmThread.objectName() << m_llModelInfo.model;
+            qDebug() << "store had our model" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
             restoreState();
             emit modelLoadingPercentageChanged(1.0f);
@@ -279,10 +290,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         } else {
             // Release the memory since we have to switch to a different model.
 #if defined(DEBUG_MODEL_LOADING)
-            qDebug() << "deleting model" << m_llmThread.objectName() << m_llModelInfo.model;
+            qDebug() << "deleting model" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
-            delete m_llModelInfo.model;
-            m_llModelInfo.model = nullptr;
+            m_llModelInfo.model.reset();
         }
     }
 
@@ -312,7 +322,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             model->setModelName(modelName);
             model->setRequestURL(modelInfo.url());
             model->setAPIKey(apiKey);
-            m_llModelInfo.model = model;
+            m_llModelInfo.model.reset(model);
         } else {
             QElapsedTimer modelLoadTimer;
             modelLoadTimer.start();
@@ -327,9 +337,10 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 buildVariant = "metal";
 #endif
             QString constructError;
-            m_llModelInfo.model = nullptr;
+            m_llModelInfo.model.reset();
             try {
-                m_llModelInfo.model = LLModel::Implementation::construct(filePath.toStdString(), buildVariant, n_ctx);
+                auto *model = LLModel::Implementation::construct(filePath.toStdString(), buildVariant, n_ctx);
+                m_llModelInfo.model.reset(model);
             } catch (const LLModel::MissingImplementationError &e) {
                 modelLoadProps.insert("error", "missing_model_impl");
                 constructError = e.what();
@@ -427,10 +438,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 }
 
                 if (!success) {
-                    delete m_llModelInfo.model;
-                    m_llModelInfo.model = nullptr;
+                    m_llModelInfo.model.reset();
                     if (!m_isServer)
-                        LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
+                        LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                     m_llModelInfo = LLModelInfo();
                     emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename()));
                     modelLoadProps.insert("error", "loadmodel_failed");
@@ -440,10 +450,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     case 'G': m_llModelType = LLModelType::GPTJ_; break;
                     default:
                         {
-                            delete m_llModelInfo.model;
-                            m_llModelInfo.model = nullptr;
+                            m_llModelInfo.model.reset();
                             if (!m_isServer)
-                                LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
+                                LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                             m_llModelInfo = LLModelInfo();
                             emit modelLoadingError(QString("Could not determine model type for %1").arg(modelInfo.filename()));
                         }
@@ -453,13 +462,13 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 }
             } else {
                 if (!m_isServer)
-                    LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
+                    LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                 m_llModelInfo = LLModelInfo();
                 emit modelLoadingError(QString("Error loading %1: %2").arg(modelInfo.filename()).arg(constructError));
             }
         }
 #if defined(DEBUG_MODEL_LOADING)
-        qDebug() << "new model" << m_llmThread.objectName() << m_llModelInfo.model;
+        qDebug() << "new model" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
         restoreState();
 #if defined(DEBUG)
@@ -473,7 +482,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         Network::globalInstance()->trackChatEvent("model_load", modelLoadProps);
     } else {
         if (!m_isServer)
-            LLModelStore::globalInstance()->releaseModel(m_llModelInfo); // release back into the store
+            LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo)); // release back into the store
         m_llModelInfo = LLModelInfo();
         emit modelLoadingError(QString("Could not find file for model %1").arg(modelInfo.filename()));
     }
@@ -482,7 +491,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         setModelInfo(modelInfo);
         processSystemPrompt();
     }
-    return m_llModelInfo.model;
+    return bool(m_llModelInfo.model);
 }
 
 bool ChatLLM::isModelLoaded() const
@@ -708,7 +717,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
 void ChatLLM::setShouldBeLoaded(bool b)
 {
 #if defined(DEBUG_MODEL_LOADING)
-    qDebug() << "setShouldBeLoaded" << m_llmThread.objectName() << b << m_llModelInfo.model;
+    qDebug() << "setShouldBeLoaded" << m_llmThread.objectName() << b << m_llModelInfo.model.get();
 #endif
     m_shouldBeLoaded = b; // atomic
     emit shouldBeLoadedChanged();
@@ -748,17 +757,15 @@ void ChatLLM::unloadModel()
         saveState();
 
 #if defined(DEBUG_MODEL_LOADING)
-    qDebug() << "unloadModel" << m_llmThread.objectName() << m_llModelInfo.model;
+    qDebug() << "unloadModel" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
 
     if (m_forceUnloadModel) {
-        delete m_llModelInfo.model;
-        m_llModelInfo.model = nullptr;
+        m_llModelInfo.model.reset();
         m_forceUnloadModel = false;
     }
 
-    LLModelStore::globalInstance()->releaseModel(m_llModelInfo);
-    m_llModelInfo = LLModelInfo();
+    LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
 }
 
 void ChatLLM::reloadModel()
@@ -770,7 +777,7 @@ void ChatLLM::reloadModel()
         return;
 
 #if defined(DEBUG_MODEL_LOADING)
-    qDebug() << "reloadModel" << m_llmThread.objectName() << m_llModelInfo.model;
+    qDebug() << "reloadModel" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
     const ModelInfo m = modelInfo();
     if (m.name().isEmpty())
@@ -1007,7 +1014,7 @@ void ChatLLM::saveState()
         m_state.clear();
         QDataStream stream(&m_state, QIODeviceBase::WriteOnly);
         stream.setVersion(QDataStream::Qt_6_4);
-        ChatAPI *chatAPI = static_cast<ChatAPI*>(m_llModelInfo.model);
+        ChatAPI *chatAPI = static_cast<ChatAPI*>(m_llModelInfo.model.get());
         stream << chatAPI->context();
         return;
     }
@@ -1028,7 +1035,7 @@ void ChatLLM::restoreState()
     if (m_llModelType == LLModelType::API_) {
         QDataStream stream(&m_state, QIODeviceBase::ReadOnly);
         stream.setVersion(QDataStream::Qt_6_4);
-        ChatAPI *chatAPI = static_cast<ChatAPI*>(m_llModelInfo.model);
+        ChatAPI *chatAPI = static_cast<ChatAPI*>(m_llModelInfo.model.get());
         QList<QString> context;
         stream >> context;
         chatAPI->setContext(context);

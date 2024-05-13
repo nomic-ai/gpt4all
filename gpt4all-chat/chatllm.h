@@ -5,6 +5,8 @@
 #include <QThread>
 #include <QFileInfo>
 
+#include <memory>
+
 #include "database.h"
 #include "modellist.h"
 #include "../gpt4all-backend/llmodel.h"
@@ -16,7 +18,7 @@ enum LLModelType {
 };
 
 struct LLModelInfo {
-    LLModel *model = nullptr;
+    std::unique_ptr<LLModel> model;
     QFileInfo fileInfo;
     // NOTE: This does not store the model type or name on purpose as this is left for ChatLLM which
     // must be able to serialize the information even if it is in the unloaded state
@@ -72,6 +74,7 @@ public:
     virtual ~ChatLLM();
 
     void destroy();
+    static void destroyStore();
     bool isModelLoaded() const;
     void regenerateResponse();
     void resetResponse();
