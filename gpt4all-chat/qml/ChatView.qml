@@ -123,7 +123,6 @@ Rectangle {
     }
 
     property bool isCurrentlyLoading: false
-    property real modelLoadingPercentage: 0.0
 
     PopupDialog {
         id: errorCompatHardware
@@ -346,7 +345,6 @@ Rectangle {
                     textRole: "name"
 
                     function changeModel(index) {
-                        window.modelLoadingPercentage = 0.0;
                         window.isCurrentlyLoading = true;
                         currentChat.stopGenerating()
                         currentChat.reset();
@@ -356,7 +354,6 @@ Rectangle {
                     Connections {
                         target: currentChat
                         function onModelLoadingPercentageChanged() {
-                            window.modelLoadingPercentage = currentChat.modelLoadingPercentage;
                             window.isCurrentlyLoading = currentChat.modelLoadingPercentage !== 0.0
                                 && currentChat.modelLoadingPercentage !== 1.0;
                         }
@@ -370,7 +367,7 @@ Rectangle {
 
                     background: ProgressBar {
                         id: modelProgress
-                        value: window.modelLoadingPercentage
+                        value: currentChat.modelLoadingPercentage
                         background: Rectangle {
                             color: theme.mainComboBackground
                             radius: 10
