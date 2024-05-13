@@ -185,7 +185,7 @@ bool ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
     // modelInfo is empty, then this should fail
     if (isModelLoaded() || m_isServer || m_reloadingToChangeVariant || modelInfo.name().isEmpty()) {
         m_shouldTrySwitchContext = false;
-        emit trySwitchContextOfLoadedModelCompleted(false);
+        emit trySwitchContextOfLoadedModelCompleted(0);
         return false;
     }
 
@@ -202,7 +202,7 @@ bool ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
     if (!m_llModelInfo.model || m_llModelInfo.fileInfo != fileInfo) {
         LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
         m_shouldTrySwitchContext = false;
-        emit trySwitchContextOfLoadedModelCompleted(false);
+        emit trySwitchContextOfLoadedModelCompleted(0);
         return false;
     }
 
@@ -214,10 +214,12 @@ bool ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
     m_shouldBeLoaded = true;
     m_shouldTrySwitchContext = false;
 
+    emit trySwitchContextOfLoadedModelCompleted(2);
+
     // Restore, signal and process
     restoreState();
     emit modelLoadingPercentageChanged(1.0f);
-    emit trySwitchContextOfLoadedModelCompleted(true);
+    emit trySwitchContextOfLoadedModelCompleted(0);
     processSystemPrompt();
     return true;
 }

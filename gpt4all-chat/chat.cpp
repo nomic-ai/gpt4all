@@ -313,7 +313,7 @@ void Chat::forceReloadModel()
 
 void Chat::trySwitchContextOfLoadedModel()
 {
-    m_trySwitchContextInProgress = true;
+    m_trySwitchContextInProgress = 1;
     emit trySwitchContextInProgressChanged();
     m_llmodel->setShouldTrySwitchContext(true);
 }
@@ -376,8 +376,8 @@ void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
     emit modelInfoChanged();
 }
 
-void Chat::handleTrySwitchContextOfLoadedModelCompleted() {
-    m_trySwitchContextInProgress = false;
+void Chat::handleTrySwitchContextOfLoadedModelCompleted(int value) {
+    m_trySwitchContextInProgress = value;
     emit trySwitchContextInProgressChanged();
 }
 

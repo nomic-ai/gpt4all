@@ -31,7 +31,8 @@ class Chat : public QObject
     Q_PROPERTY(QString device READ device NOTIFY deviceChanged);
     Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY fallbackReasonChanged);
     Q_PROPERTY(LocalDocsCollectionsModel *collectionModel READ collectionModel NOTIFY collectionModelChanged)
-    Q_PROPERTY(bool trySwitchContextInProgress READ trySwitchContextInProgress NOTIFY trySwitchContextInProgressChanged)
+    // 0=no, 1=waiting, 2=working
+    Q_PROPERTY(int trySwitchContextInProgress READ trySwitchContextInProgress NOTIFY trySwitchContextInProgressChanged)
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -108,7 +109,7 @@ public:
     QString device() const { return m_device; }
     QString fallbackReason() const { return m_fallbackReason; }
 
-    bool trySwitchContextInProgress() const { return m_trySwitchContextInProgress; }
+    int trySwitchContextInProgress() const { return m_trySwitchContextInProgress; }
 
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt);
@@ -142,7 +143,6 @@ Q_SIGNALS:
     void deviceChanged();
     void fallbackReasonChanged();
     void collectionModelChanged();
-    void trySwitchContextOfLoadedModelCompleted(bool);
     void trySwitchContextInProgressChanged();
 
 private Q_SLOTS:
@@ -158,7 +158,7 @@ private Q_SLOTS:
     void handleFallbackReasonChanged(const QString &device);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
     void handleModelInfoChanged(const ModelInfo &modelInfo);
-    void handleTrySwitchContextOfLoadedModelCompleted();
+    void handleTrySwitchContextOfLoadedModelCompleted(int value);
 
 private:
     QString m_id;
@@ -183,7 +183,7 @@ private:
     float m_modelLoadingPercentage = 0.0f;
     LocalDocsCollectionsModel *m_collectionModel;
     bool m_firstResponse = true;
-    bool m_trySwitchContextInProgress = false;
+    int m_trySwitchContextInProgress = 0;
     bool m_isCurrentlyLoading = false;
 };
 

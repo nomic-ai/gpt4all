@@ -386,7 +386,9 @@ Rectangle {
                         text: {
                             if (currentChat.modelLoadingError !== "")
                                 return qsTr("Model loading error...")
-                            if (currentChat.trySwitchContextInProgress)
+                            if (currentChat.trySwitchContextInProgress == 1)
+                                return qsTr("Waiting for model...")
+                            if (currentChat.trySwitchContextInProgress == 2)
                                 return qsTr("Switching context...")
                             if (currentModelName() === "")
                                 return qsTr("Choose a model...")
