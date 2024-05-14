@@ -237,6 +237,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     emit modelLoadingError("");
     emit reportFallbackReason("");
     emit reportDevice("");
+    m_pristineLoadedState = false;
 
     QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
@@ -726,6 +727,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
         emit responseChanged(QString::fromStdString(m_response));
     }
     emit responseStopped(elapsed);
+    m_pristineLoadedState = false;
     return true;
 }
 
@@ -775,6 +777,7 @@ void ChatLLM::unloadModel()
     }
 
     LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
+    m_pristineLoadedState = false;
 }
 
 void ChatLLM::reloadModel()
@@ -813,6 +816,7 @@ void ChatLLM::generateName()
         m_nameResponse = trimmed;
         emit generatedNameChanged(QString::fromStdString(m_nameResponse));
     }
+    m_pristineLoadedState = false;
 }
 
 void ChatLLM::handleChatIdChanged(const QString &id)
@@ -952,7 +956,10 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
     // If we do not deserialize the KV or it is discarded, then we need to restore the state from the
     // text only. This will be a costly operation, but the chat has to be restored from the text archive
     // alone.
-    m_restoreStateFromText = !deserializeKV || discardKV;
+    if (!deserializeKV || discardKV) {
+        m_restoreStateFromText = true;
+        m_pristineLoadedState = true;
+    }
 
     if (!deserializeKV) {
 #if defined(DEBUG)
@@ -1016,7 +1023,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
 
 void ChatLLM::saveState()
 {
-    if (!isModelLoaded())
+    if (!isModelLoaded() || m_pristineLoadedState)
         return;
 
     if (m_llModelType == LLModelType::API_) {
@@ -1063,13 +1070,18 @@ void ChatLLM::restoreState()
     if (m_llModelInfo.model->stateSize() == m_state.size()) {
         m_llModelInfo.model->restoreState(static_cast<const uint8_t*>(reinterpret_cast<void*>(m_state.data())));
         m_processedSystemPrompt = true;
+        m_pristineLoadedState = true;
     } else {
         qWarning() << "restoring state from text because" << m_llModelInfo.model->stateSize() << "!=" << m_state.size();
         m_restoreStateFromText = true;
     }
 
-    m_state.clear();
-    m_state.squeeze();
+    // free local state copy unless unload is pending
+    if (m_shouldBeLoaded) {
+        m_state.clear();
+        m_state.squeeze();
+        m_pristineLoadedState = false;
+    }
 }
 
 void ChatLLM::processSystemPrompt()
@@ -1123,6 +1135,7 @@ void ChatLLM::processSystemPrompt()
 #endif
 
     m_processedSystemPrompt = m_stopGenerating == false;
+    m_pristineLoadedState = false;
 }
 
 void ChatLLM::processRestoreStateFromText()
@@ -1181,4 +1194,6 @@ void ChatLLM::processRestoreStateFromText()
 
     m_isRecalc = false;
     emit recalcChanged();
+
+    m_pristineLoadedState = false;
 }

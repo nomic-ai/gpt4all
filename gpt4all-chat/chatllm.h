@@ -182,6 +182,10 @@ private:
     bool m_reloadingToChangeVariant;
     bool m_processedSystemPrompt;
     bool m_restoreStateFromText;
+    // m_pristineLoadedState is set if saveSate is unnecessary, either because:
+    // - an unload was queued during LLModel::restoreState()
+    // - the chat will be restored from text and hasn't been interacted with yet
+    bool m_pristineLoadedState = false;
     QVector<QPair<QString, QString>> m_stateFromText;
 };
 
