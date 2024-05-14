@@ -182,7 +182,9 @@ void ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
 
     // If we're already loaded or a server or we're reloading to change the variant/device or the
     // modelInfo is empty, then this should fail
-    if (isModelLoaded() || m_isServer || m_reloadingToChangeVariant || modelInfo.name().isEmpty()) {
+    if (
+        isModelLoaded() || m_isServer || m_reloadingToChangeVariant || modelInfo.name().isEmpty() || !m_shouldBeLoaded
+    ) {
         emit trySwitchContextOfLoadedModelCompleted(0);
         return;
     }
@@ -197,7 +199,7 @@ void ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
 
     // The store gave us no already loaded model, the wrong type of model, then give it back to the
     // store and fail
-    if (!m_llModelInfo.model || m_llModelInfo.fileInfo != fileInfo) {
+    if (!m_llModelInfo.model || m_llModelInfo.fileInfo != fileInfo || !m_shouldBeLoaded) {
         LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
         emit trySwitchContextOfLoadedModelCompleted(0);
         return;
@@ -206,9 +208,6 @@ void ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
 #if defined(DEBUG_MODEL_LOADING)
     qDebug() << "store had our model" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
-
-    // We should be loaded and now we are
-    m_shouldBeLoaded = true;
 
     emit trySwitchContextOfLoadedModelCompleted(2);
 
@@ -741,6 +740,7 @@ void ChatLLM::setShouldBeLoaded(bool b)
 
 void ChatLLM::requestTrySwitchContext()
 {
+    m_shouldBeLoaded = true; // atomic
     emit trySwitchContextRequested(modelInfo());
 }
 
