@@ -244,16 +244,8 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
     if (m_modelInfo == modelInfo && isModelLoaded())
         return;
 
-    m_modelLoadingPercentage = std::numeric_limits<float>::min(); // small non-zero positive value
-    emit modelLoadingPercentageChanged();
-    emit isModelLoadedChanged();
-
-    m_modelLoadingError = QString();
-    emit modelLoadingErrorChanged();
-
     m_modelInfo = modelInfo;
     emit modelInfoChanged();
-
     emit modelChangeRequested(modelInfo);
 }
 
@@ -344,8 +336,10 @@ void Chat::handleRecalculating()
 
 void Chat::handleModelLoadingError(const QString &error)
 {
-    auto stream = qWarning().noquote() << "ERROR:" << error << "id";
-    stream.quote() << id();
+    if (!error.isEmpty()) {
+        auto stream = qWarning().noquote() << "ERROR:" << error << "id";
+        stream.quote() << id();
+    }
     m_modelLoadingError = error;
     emit modelLoadingErrorChanged();
 }

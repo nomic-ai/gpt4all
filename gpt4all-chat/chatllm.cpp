@@ -223,6 +223,12 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     if (isModelLoaded() && this->modelInfo() == modelInfo)
         return true;
 
+    // reset status
+    emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
+    emit modelLoadingError("");
+    emit reportFallbackReason("");
+    emit reportDevice("");
+
     QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
 
@@ -235,7 +241,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #endif
         delete m_llModelInfo.model;
         m_llModelInfo.model = nullptr;
-        emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
     } else if (!m_isServer) {
         // This is a blocking call that tries to retrieve the model we need from the model store.
         // If it succeeds, then we just have to restore state. If the store has never had a model
@@ -353,8 +358,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     emit modelLoadingPercentageChanged(progress);
                     return m_shouldBeLoaded;
                 });
-
-                emit reportFallbackReason(""); // no fallback yet
 
                 auto approxDeviceMemGB = [](const LLModel::GPUDevice *dev) {
                     float memGB = dev->heapSize / float(1024 * 1024 * 1024);
