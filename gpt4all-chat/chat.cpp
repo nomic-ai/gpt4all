@@ -315,7 +315,7 @@ void Chat::trySwitchContextOfLoadedModel()
 {
     m_trySwitchContextInProgress = 1;
     emit trySwitchContextInProgressChanged();
-    m_llmodel->setShouldTrySwitchContext(true);
+    m_llmodel->requestTrySwitchContext();
 }
 
 void Chat::generatedNameChanged(const QString &name)

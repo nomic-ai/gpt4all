@@ -85,7 +85,6 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_shouldBeLoaded(false)
     , m_forceUnloadModel(false)
     , m_markedForDeletion(false)
-    , m_shouldTrySwitchContext(false)
     , m_stopGenerating(false)
     , m_timer(nullptr)
     , m_isServer(isServer)
@@ -97,7 +96,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
         Qt::QueuedConnection); // explicitly queued
-    connect(this, &ChatLLM::shouldTrySwitchContextChanged, this, &ChatLLM::handleShouldTrySwitchContextChanged,
+    connect(this, &ChatLLM::trySwitchContextRequested, this, &ChatLLM::trySwitchContextOfLoadedModel,
         Qt::QueuedConnection); // explicitly queued
     connect(parent, &Chat::idChanged, this, &ChatLLM::handleChatIdChanged);
     connect(&m_llmThread, &QThread::started, this, &ChatLLM::handleThreadStarted);
@@ -175,7 +174,7 @@ bool ChatLLM::loadDefaultModel()
     return loadModel(defaultModel);
 }
 
-bool ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
+void ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
 {
     // We're trying to see if the store already has the model fully loaded that we wish to use
     // and if so we just acquire it from the store and switch the context and return true. If the
@@ -184,9 +183,8 @@ bool ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
     // If we're already loaded or a server or we're reloading to change the variant/device or the
     // modelInfo is empty, then this should fail
     if (isModelLoaded() || m_isServer || m_reloadingToChangeVariant || modelInfo.name().isEmpty()) {
-        m_shouldTrySwitchContext = false;
         emit trySwitchContextOfLoadedModelCompleted(0);
-        return false;
+        return;
     }
 
     QString filePath = modelInfo.dirpath + modelInfo.filename();
@@ -201,9 +199,8 @@ bool ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
     // store and fail
     if (!m_llModelInfo.model || m_llModelInfo.fileInfo != fileInfo) {
         LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
-        m_shouldTrySwitchContext = false;
         emit trySwitchContextOfLoadedModelCompleted(0);
-        return false;
+        return;
     }
 
 #if defined(DEBUG_MODEL_LOADING)
@@ -212,7 +209,6 @@ bool ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
 
     // We should be loaded and now we are
     m_shouldBeLoaded = true;
-    m_shouldTrySwitchContext = false;
 
     emit trySwitchContextOfLoadedModelCompleted(2);
 
@@ -221,7 +217,6 @@ bool ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
     emit modelLoadingPercentageChanged(1.0f);
     emit trySwitchContextOfLoadedModelCompleted(0);
     processSystemPrompt();
-    return true;
 }
 
 bool ChatLLM::loadModel(const ModelInfo &modelInfo)
@@ -744,10 +739,9 @@ void ChatLLM::setShouldBeLoaded(bool b)
     emit shouldBeLoadedChanged();
 }
 
-void ChatLLM::setShouldTrySwitchContext(bool b)
+void ChatLLM::requestTrySwitchContext()
 {
-    m_shouldTrySwitchContext = b; // atomic
-    emit shouldTrySwitchContextChanged();
+    emit trySwitchContextRequested(modelInfo());
 }
 
 void ChatLLM::handleShouldBeLoadedChanged()
@@ -756,12 +750,6 @@ void ChatLLM::handleShouldBeLoadedChanged()
         reloadModel();
     else
         unloadModel();
-}
-
-void ChatLLM::handleShouldTrySwitchContextChanged()
-{
-    if (m_shouldTrySwitchContext)
-        trySwitchContextOfLoadedModel(modelInfo());
 }
 
 void ChatLLM::unloadModel()

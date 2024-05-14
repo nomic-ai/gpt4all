@@ -84,7 +84,7 @@ public:
 
     bool shouldBeLoaded() const { return m_shouldBeLoaded; }
     void setShouldBeLoaded(bool b);
-    void setShouldTrySwitchContext(bool b);
+    void requestTrySwitchContext();
     void setForceUnloadModel(bool b) { m_forceUnloadModel = b; }
     void setMarkedForDeletion(bool b) { m_markedForDeletion = b; }
 
@@ -104,7 +104,7 @@ public:
 public Q_SLOTS:
     bool prompt(const QList<QString> &collectionList, const QString &prompt);
     bool loadDefaultModel();
-    bool trySwitchContextOfLoadedModel(const ModelInfo &modelInfo);
+    void trySwitchContextOfLoadedModel(const ModelInfo &modelInfo);
     bool loadModel(const ModelInfo &modelInfo);
     void modelChangeRequested(const ModelInfo &modelInfo);
     void unloadModel();
@@ -112,7 +112,6 @@ public Q_SLOTS:
     void generateName();
     void handleChatIdChanged(const QString &id);
     void handleShouldBeLoadedChanged();
-    void handleShouldTrySwitchContextChanged();
     void handleThreadStarted();
     void handleForceMetalChanged(bool forceMetal);
     void handleDeviceChanged();
@@ -131,7 +130,7 @@ Q_SIGNALS:
     void stateChanged();
     void threadStarted();
     void shouldBeLoadedChanged();
-    void shouldTrySwitchContextChanged();
+    void trySwitchContextRequested(const ModelInfo &modelInfo);
     void trySwitchContextOfLoadedModelCompleted(int value);
     void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void reportSpeed(const QString &speed);
@@ -175,7 +174,6 @@ private:
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;
-    std::atomic<bool> m_shouldTrySwitchContext;
     std::atomic<bool> m_isRecalc;
     std::atomic<bool> m_forceUnloadModel;
     std::atomic<bool> m_markedForDeletion;
