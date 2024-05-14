@@ -1326,6 +1326,7 @@ Rectangle {
                 textColor: theme.textColor
                 visible: !currentChat.isServer
                     && !currentChat.isModelLoaded
+                    && currentChat.modelLoadingError === ""
                     && !currentChat.trySwitchContextInProgress
                     && !currentChat.isCurrentlyLoading
                     && currentModelName() !== ""
