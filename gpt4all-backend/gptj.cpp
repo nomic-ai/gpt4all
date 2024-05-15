@@ -786,12 +786,14 @@ const std::vector<LLModel::Token> &GPTJ::endTokens() const
 }
 
 const char *get_arch_name(gguf_context *ctx_gguf) {
-    std::string arch_name;
     const int kid = gguf_find_key(ctx_gguf, "general.architecture");
+    if (kid == -1)
+        throw std::runtime_error("key not found in model: general.architecture");
+
     enum gguf_type ktype = gguf_get_kv_type(ctx_gguf, kid);
-    if (ktype != GGUF_TYPE_STRING) {
-        throw std::runtime_error("ERROR: Can't get general architecture from gguf file.");
-    }
+    if (ktype != GGUF_TYPE_STRING)
+        throw std::runtime_error("key general.architecture has wrong type");
+
     return gguf_get_val_str(ctx_gguf, kid);
 }
 
@@ -824,7 +826,11 @@ DLL_EXPORT char *get_file_arch(const char *fname) {
 
     char *arch = nullptr;
     if (ctx_gguf && gguf_get_version(ctx_gguf) <= 3) {
-        arch = strdup(get_arch_name(ctx_gguf));
+        try {
+            arch = strdup(get_arch_name(ctx_gguf));
+        } catch (const std::runtime_error &) {
+            // cannot read key -> return null
+        }
     }
 
     gguf_free(ctx_gguf);

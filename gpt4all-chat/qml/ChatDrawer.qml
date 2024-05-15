@@ -39,7 +39,8 @@ Rectangle {
             text: qsTr("\uFF0B New chat")
             Accessible.description: qsTr("Create a new chat")
             onClicked: {
-                ChatListModel.addChat();
+                ChatListModel.addChat()
+                conversationList.positionViewAtIndex(0, ListView.Beginning)
                 Network.trackEvent("new_chat", {"number_of_chats": ChatListModel.count})
             }
         }
@@ -60,6 +61,9 @@ Rectangle {
                 anchors.fill: parent
                 anchors.rightMargin: 10
                 model: ChatListModel
+
+                Component.onCompleted: ChatListModel.loadChats()
+
                 ScrollBar.vertical: ScrollBar {
                     parent: conversationList.parent
                     anchors.top: conversationList.top

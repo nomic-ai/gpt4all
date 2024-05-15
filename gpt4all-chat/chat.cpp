@@ -54,7 +54,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::reportFallbackReason, this, &Chat::handleFallbackReasonChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::trySwitchContextOfLoadedModelCompleted, this, &Chat::trySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::trySwitchContextOfLoadedModelCompleted, this, &Chat::handleTrySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
 
     connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
     connect(this, &Chat::modelChangeRequested, m_llmodel, &ChatLLM::modelChangeRequested, Qt::QueuedConnection);
@@ -93,16 +93,6 @@ void Chat::reset()
 void Chat::processSystemPrompt()
 {
     emit processSystemPromptRequested();
-}
-
-bool Chat::isModelLoaded() const
-{
-    return m_modelLoadingPercentage == 1.0f;
-}
-
-float Chat::modelLoadingPercentage() const
-{
-    return m_modelLoadingPercentage;
 }
 
 void Chat::resetResponseState()
@@ -167,9 +157,16 @@ void Chat::handleModelLoadingPercentageChanged(float loadingPercentage)
     if (loadingPercentage == m_modelLoadingPercentage)
         return;
 
+    bool wasLoading = isCurrentlyLoading();
+    bool wasLoaded = isModelLoaded();
+
     m_modelLoadingPercentage = loadingPercentage;
     emit modelLoadingPercentageChanged();
-    if (m_modelLoadingPercentage == 1.0f || m_modelLoadingPercentage == 0.0f)
+
+    if (isCurrentlyLoading() != wasLoading)
+        emit isCurrentlyLoadingChanged();
+
+    if (isModelLoaded() != wasLoaded)
         emit isModelLoadedChanged();
 }
 
@@ -247,10 +244,6 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
     if (m_modelInfo == modelInfo && isModelLoaded())
         return;
 
-    m_modelLoadingPercentage = std::numeric_limits<float>::min(); // small non-zero positive value
-    emit isModelLoadedChanged();
-    m_modelLoadingError = QString();
-    emit modelLoadingErrorChanged();
     m_modelInfo = modelInfo;
     emit modelInfoChanged();
     emit modelChangeRequested(modelInfo);
@@ -320,8 +313,9 @@ void Chat::forceReloadModel()
 
 void Chat::trySwitchContextOfLoadedModel()
 {
-    emit trySwitchContextOfLoadedModelAttempted();
-    m_llmodel->setShouldTrySwitchContext(true);
+    m_trySwitchContextInProgress = 1;
+    emit trySwitchContextInProgressChanged();
+    m_llmodel->requestTrySwitchContext();
 }
 
 void Chat::generatedNameChanged(const QString &name)
@@ -342,8 +336,10 @@ void Chat::handleRecalculating()
 
 void Chat::handleModelLoadingError(const QString &error)
 {
-    auto stream = qWarning().noquote() << "ERROR:" << error << "id";
-    stream.quote() << id();
+    if (!error.isEmpty()) {
+        auto stream = qWarning().noquote() << "ERROR:" << error << "id";
+        stream.quote() << id();
+    }
     m_modelLoadingError = error;
     emit modelLoadingErrorChanged();
 }
@@ -378,6 +374,11 @@ void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
 
     m_modelInfo = modelInfo;
     emit modelInfoChanged();
+}
+
+void Chat::handleTrySwitchContextOfLoadedModelCompleted(int value) {
+    m_trySwitchContextInProgress = value;
+    emit trySwitchContextInProgressChanged();
 }
 
 bool Chat::serialize(QDataStream &stream, int version) const

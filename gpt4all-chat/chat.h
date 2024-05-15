@@ -17,6 +17,7 @@ class Chat : public QObject
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(ChatModel *chatModel READ chatModel NOTIFY chatModelChanged)
     Q_PROPERTY(bool isModelLoaded READ isModelLoaded NOTIFY isModelLoadedChanged)
+    Q_PROPERTY(bool isCurrentlyLoading READ isCurrentlyLoading NOTIFY isCurrentlyLoadingChanged)
     Q_PROPERTY(float modelLoadingPercentage READ modelLoadingPercentage NOTIFY modelLoadingPercentageChanged)
     Q_PROPERTY(QString response READ response NOTIFY responseChanged)
     Q_PROPERTY(ModelInfo modelInfo READ modelInfo WRITE setModelInfo NOTIFY modelInfoChanged)
@@ -30,6 +31,8 @@ class Chat : public QObject
     Q_PROPERTY(QString device READ device NOTIFY deviceChanged);
     Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY fallbackReasonChanged);
     Q_PROPERTY(LocalDocsCollectionsModel *collectionModel READ collectionModel NOTIFY collectionModelChanged)
+    // 0=no, 1=waiting, 2=working
+    Q_PROPERTY(int trySwitchContextInProgress READ trySwitchContextInProgress NOTIFY trySwitchContextInProgressChanged)
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -62,8 +65,9 @@ public:
 
     Q_INVOKABLE void reset();
     Q_INVOKABLE void processSystemPrompt();
-    Q_INVOKABLE bool isModelLoaded() const;
-    Q_INVOKABLE float modelLoadingPercentage() const;
+    bool  isModelLoaded()          const { return m_modelLoadingPercentage == 1.0f; }
+    bool  isCurrentlyLoading()     const { return m_modelLoadingPercentage > 0.0f && m_modelLoadingPercentage < 1.0f; }
+    float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
     Q_INVOKABLE void prompt(const QString &prompt);
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void stopGenerating();
@@ -105,6 +109,8 @@ public:
     QString device() const { return m_device; }
     QString fallbackReason() const { return m_fallbackReason; }
 
+    int trySwitchContextInProgress() const { return m_trySwitchContextInProgress; }
+
 public Q_SLOTS:
     void serverNewPromptResponsePair(const QString &prompt);
 
@@ -113,6 +119,7 @@ Q_SIGNALS:
     void nameChanged();
     void chatModelChanged();
     void isModelLoadedChanged();
+    void isCurrentlyLoadingChanged();
     void modelLoadingPercentageChanged();
     void modelLoadingWarning(const QString &warning);
     void responseChanged();
@@ -136,8 +143,7 @@ Q_SIGNALS:
     void deviceChanged();
     void fallbackReasonChanged();
     void collectionModelChanged();
-    void trySwitchContextOfLoadedModelAttempted();
-    void trySwitchContextOfLoadedModelCompleted(bool);
+    void trySwitchContextInProgressChanged();
 
 private Q_SLOTS:
     void handleResponseChanged(const QString &response);
@@ -152,6 +158,7 @@ private Q_SLOTS:
     void handleFallbackReasonChanged(const QString &device);
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
     void handleModelInfoChanged(const ModelInfo &modelInfo);
+    void handleTrySwitchContextOfLoadedModelCompleted(int value);
 
 private:
     QString m_id;
@@ -176,6 +183,8 @@ private:
     float m_modelLoadingPercentage = 0.0f;
     LocalDocsCollectionsModel *m_collectionModel;
     bool m_firstResponse = true;
+    int m_trySwitchContextInProgress = 0;
+    bool m_isCurrentlyLoading = false;
 };
 
 #endif // CHAT_H

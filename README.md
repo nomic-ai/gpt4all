@@ -33,6 +33,13 @@ Learn more in the [documentation](https://docs.gpt4all.io).
 A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4All software. **Nomic AI** supports and maintains this software ecosystem to enforce quality and security alongside spearheading the effort to allow any person or enterprise to easily deploy their own on-edge large language models.
 
 
+### Installation
+
+The recommended way to install GPT4All is to use one of the online installers linked above in this README, which are also available at the [GPT4All website](https://gpt4all.io/). These require an internet connection at install time, are slightly easier to use on macOS due to code signing, and provide a version of GPT4All that can check for updates.
+
+An alternative way to install GPT4All is to use one of the offline installers available on the [Releases page](https://github.com/nomic-ai/gpt4all/releases). These do not require an internet connection at install time, and can be used to install an older version of GPT4All if so desired. But using these requires acknowledging a security warning on macOS, and they provide a version of GPT4All that is unable to notify you of updates, so you should enable notifications for Releases on this repository (Watch > Custom > Releases) or sign up for announcements in our [Discord server](https://discord.gg/mGZE39AS3e).
+
+
 ### What's New
 - **October 19th, 2023**: GGUF Support Launches with Support for:
     - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
@@ -43,6 +50,7 @@ A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4
 - **June 28th, 2023**: [Docker-based API server] launches allowing inference of local LLMs from an OpenAI-compatible HTTP endpoint.
 
 [Docker-based API server]: https://github.com/nomic-ai/gpt4all/tree/cef74c2be20f5b697055d5b8b506861c7b997fab/gpt4all-api
+
 
 ### Building From Source
 
