@@ -940,6 +940,8 @@ void LLamaModel::embedInternal(
     }
 
     if (tokenCount) { *tokenCount = totalTokens; }
+
+    llama_batch_free(batch);
 }
 
 #if defined(_WIN32)
