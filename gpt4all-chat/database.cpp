@@ -552,6 +552,7 @@ Database::~Database()
 {
     m_dbThread.quit();
     m_dbThread.wait();
+    delete m_embLLM;
 }
 
 void Database::scheduleNext(int folder_id, size_t countForFolder)

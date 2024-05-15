@@ -58,6 +58,7 @@ private:
     QNetworkAccessManager *m_networkManager;
     std::vector<float> m_lastResponse;
     LLModel *m_model = nullptr;
+    std::atomic<bool> m_stopGenerating;
     QThread m_workerThread;
 };
 
