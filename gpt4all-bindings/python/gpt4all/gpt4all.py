@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import platform
 import re
 import sys
 import time
@@ -44,7 +45,7 @@ class Embed4All:
 
     MIN_DIMENSIONALITY = 64
 
-    def __init__(self, model_name: str | None = None, *, n_threads: int | None = None, device: str | None = "cpu", **kwargs: Any):
+    def __init__(self, model_name: str | None = None, *, n_threads: int | None = None, device: str | None = None, **kwargs: Any):
         """
         Constructor
 
@@ -172,7 +173,7 @@ class GPT4All:
         model_type: str | None = None,
         allow_download: bool = True,
         n_threads: int | None = None,
-        device: str | None = "cpu",
+        device: str | None = None,
         n_ctx: int = 2048,
         ngl: int = 100,
         verbose: bool = False,
@@ -190,29 +191,55 @@ class GPT4All:
             n_threads: number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
             device: The processing unit on which the GPT4All model will run. It can be set to:
                 - "cpu": Model will run on the central processing unit.
-                - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
-                - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
+                - "gpu": Use Metal on ARM64 macOS, otherwise the same as "kompute".
+                - "kompute": Use the best GPU provided by the Kompute backend.
+                - "cuda": Use the best GPU provided by the CUDA backend.
+                - "amd", "nvidia": Use the best GPU provided by the Kompute backend from this vendor.
                 - A specific device name from the list returned by `GPT4All.list_gpus()`.
-                Default is "cpu".
+                Default is Metal on ARM64 macOS, "cpu" otherwise.
 
                 Note: If a selected GPU device does not have sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the model.
             n_ctx: Maximum size of context window
             ngl: Number of GPU layers to use (Vulkan)
             verbose: If True, print debug messages.
         """
+
         self.model_type = model_type
+        self._history: list[MessageType] | None = None
+        self._current_prompt_template: str = "{0}"
+
+        device_init = None
+        if sys.platform == 'darwin':
+            if device is None:
+                backend = 'auto'  # 'auto' is effectively 'metal' due to currently non-functional fallback
+            elif device == 'cpu':
+                backend = 'cpu'
+            else:
+                if platform.machine() != 'arm64' or device != 'gpu':
+                    raise ValueError(f'Unknown device for this platform: {device}')
+                backend = 'metal'
+        else:
+            backend = 'kompute'
+            if device is None or device == 'cpu':
+                pass  # use kompute with no device
+            elif device in ('cuda', 'kompute'):
+                backend = device
+                device_init = 'gpu'
+            elif device.startswith('cuda:'):
+                backend = 'cuda'
+                device_init = device.removeprefix('cuda:')
+            else:
+                device_init = device.removeprefix('kompute:')
+
         # Retrieve model and download if allowed
         self.config: ConfigType = self.retrieve_model(model_name, model_path=model_path, allow_download=allow_download, verbose=verbose)
-        self.model = LLModel(self.config["path"], n_ctx, ngl)
-        if device is not None and device != "cpu":
-            self.model.init_gpu(device)
+        self.model = LLModel(self.config["path"], n_ctx, ngl, backend)
+        if device_init is not None:
+            self.model.init_gpu(device_init)
         self.model.load_model()
         # Set n_threads
         if n_threads is not None:
             self.model.set_thread_count(n_threads)
-
-        self._history: list[MessageType] | None = None
-        self._current_prompt_template: str = "{0}"
 
     def __enter__(self) -> Self:
         return self
@@ -227,13 +254,13 @@ class GPT4All:
         self.model.close()
 
     @property
-    def backend(self) -> Literal["cpu", "kompute", "metal"]:
-        """The name of the llama.cpp backend currently in use. One of "cpu", "kompute", or "metal"."""
+    def backend(self) -> Literal["cpu", "kompute", "cuda", "metal"]:
+        """The name of the llama.cpp backend currently in use. One of "cpu", "kompute", "cuda", or "metal"."""
         return self.model.backend
 
     @property
     def device(self) -> str | None:
-        """The name of the GPU device currently in use, or None for backends other than Kompute."""
+        """The name of the GPU device currently in use, or None for backends other than Kompute or CUDA."""
         return self.model.device
 
     @property

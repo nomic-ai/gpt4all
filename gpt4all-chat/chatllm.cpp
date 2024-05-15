@@ -143,7 +143,7 @@ void ChatLLM::handleThreadStarted()
 
 void ChatLLM::handleForceMetalChanged(bool forceMetal)
 {
-#if defined(Q_OS_MAC) && defined(__arm__)
+#if defined(Q_OS_MAC) && defined(__aarch64__)
     m_forceMetal = forceMetal;
     if (isModelLoaded() && m_shouldBeLoaded) {
         m_reloadingToChangeVariant = true;
@@ -324,19 +324,29 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             QElapsedTimer modelLoadTimer;
             modelLoadTimer.start();
 
+            auto requestedDevice = MySettings::globalInstance()->device();
             auto n_ctx = MySettings::globalInstance()->modelContextLength(modelInfo);
             m_ctx.n_ctx = n_ctx;
             auto ngl = MySettings::globalInstance()->modelGpuLayers(modelInfo);
 
-            std::string buildVariant = "auto";
-#if defined(Q_OS_MAC) && defined(__arm__)
-            if (m_forceMetal)
-                buildVariant = "metal";
+            std::string backend = "auto";
+#ifdef Q_OS_MAC
+            if (requestedDevice == "CPU") {
+                backend = "cpu";
+            } else if (m_forceMetal) {
+#ifdef __aarch64__
+                backend = "metal";
 #endif
+            }
+#else // !defined(Q_OS_MAC)
+            if (requestedDevice.startsWith("CUDA: "))
+                backend = "cuda";
+#endif
+
             QString constructError;
             m_llModelInfo.model.reset();
             try {
-                auto *model = LLModel::Implementation::construct(filePath.toStdString(), buildVariant, n_ctx);
+                auto *model = LLModel::Implementation::construct(filePath.toStdString(), backend, n_ctx);
                 m_llModelInfo.model.reset(model);
             } catch (const LLModel::MissingImplementationError &e) {
                 modelLoadProps.insert("error", "missing_model_impl");
@@ -378,6 +388,8 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 {
                     const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString(), n_ctx, ngl);
                     availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
+                    // Pick the best device
+                    // NB: relies on the fact that Kompute devices are listed first
                     if (!availableDevices.empty() && availableDevices.front().type == 2 /*a discrete gpu*/) {
                         defaultDevice = &availableDevices.front();
                         float memGB = defaultDevice->heapSize / float(1024 * 1024 * 1024);
@@ -387,16 +399,18 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     }
                 }
 
-                const QString requestedDevice = MySettings::globalInstance()->device();
-                bool isMetal = m_llModelInfo.model->implementation().buildVariant() == "metal";
+                QString actualDevice("CPU");
 
-                // Pick the best match for the device
-                QString actualDevice = isMetal ? "Metal" : "CPU";
-                if (!isMetal && requestedDevice != "CPU") {
+#if defined(Q_OS_MAC) && defined(__aarch64__)
+                if (m_llModelInfo.model->implementation().buildVariant() == "metal")
+                    actualDevice = "Metal";
+#else
+                if (requestedDevice != "CPU") {
                     const auto *device = defaultDevice;
                     if (requestedDevice != "Auto") {
+                        // Use the selected device
                         for (const LLModel::GPUDevice &d : availableDevices) {
-                            if (QString::fromStdString(d.name) == requestedDevice) {
+                            if (QString::fromStdString(d.selectionName()) == requestedDevice) {
                                 device = &d;
                                 break;
                             }
@@ -409,14 +423,14 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     } else if (!m_llModelInfo.model->initializeGPUDevice(device->index, &unavail_reason)) {
                         emit reportFallbackReason(QString::fromStdString("<br>" + unavail_reason));
                     } else {
-                        actualDevice = QString::fromStdString(device->name);
+                        actualDevice = QString::fromStdString(device->reportedName());
                         modelLoadProps.insert("requested_device_mem", approxDeviceMemGB(device));
                     }
                 }
+#endif
 
                 // Report which device we're actually using
                 emit reportDevice(actualDevice);
-
                 bool success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, ngl);
 
                 if (!m_shouldBeLoaded) {

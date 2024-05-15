@@ -31,10 +31,10 @@ static void llmodel_set_error(const char **errptr, const char *message) {
     }
 }
 
-llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, const char **error) {
+llmodel_model llmodel_model_create2(const char *model_path, const char *backend, const char **error) {
     LLModel *llModel;
     try {
-        llModel = LLModel::Implementation::construct(model_path, build_variant);
+        llModel = LLModel::Implementation::construct(model_path, backend);
     } catch (const std::exception& e) {
         llmodel_set_error(error, e.what());
         return nullptr;
@@ -248,6 +248,7 @@ struct llmodel_gpu_device *llmodel_available_gpu_devices(size_t memoryRequired, 
     for (unsigned i = 0; i < devices.size(); i++) {
         const auto &dev  =   devices[i];
               auto &cdev = c_devices[i];
+        cdev.backend  = dev.backend;
         cdev.index    = dev.index;
         cdev.type     = dev.type;
         cdev.heapSize = dev.heapSize;

@@ -17,8 +17,8 @@ if(APPLE)
 endif()
 
 set(APP_VERSION_MAJOR 2)
-set(APP_VERSION_MINOR 7)
-set(APP_VERSION_PATCH 6)
+set(APP_VERSION_MINOR 8)
+set(APP_VERSION_PATCH 0)
 set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 
 # Include the binary directory for the generated header file
@@ -65,7 +65,7 @@ add_subdirectory(../gpt4all-backend llmodel)
 
 set(METAL_SHADER_FILE)
 if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-  set(METAL_SHADER_FILE ../gpt4all-backend/llama.cpp-mainline/ggml-metal.metal)
+    set(METAL_SHADER_FILE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib)
 endif()
 
 set(APP_ICON_RESOURCE)
@@ -185,7 +185,6 @@ if(METAL_SHADER_FILE)
     set_target_properties(chat PROPERTIES
         RESOURCE ${METAL_SHADER_FILE}
     )
-    configure_file(${METAL_SHADER_FILE} bin/ggml-metal.metal COPYONLY)
 endif()
 
 target_compile_definitions(chat
@@ -207,18 +206,61 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 install(TARGETS chat DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llmodel DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+
+install(
+    TARGETS llmodel
+    LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
+    RUNTIME DESTINATION bin COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
+)
 
 # We should probably iterate through the list of the cmake for backend, but these need to be installed
 # to the this component's dir for the finicky qt installer to work
-install(TARGETS gptj-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS gptj-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llama-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llama-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llamamodel-mainline-avxonly DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-install(TARGETS llamamodel-mainline-default DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
-if(APPLE)
-install(TARGETS llamamodel-mainline-metal DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN})
+if (LLMODEL_KOMPUTE)
+    set(MODEL_IMPL_TARGETS
+        llamamodel-mainline-kompute
+        llamamodel-mainline-kompute-avxonly
+        gptj-kompute
+        gptj-kompute-avxonly
+    )
+else()
+    set(MODEL_IMPL_TARGETS
+        llamamodel-mainline-cpu
+        llamamodel-mainline-cpu-avxonly
+        gptj-cpu
+        gptj-cpu-avxonly
+    )
+endif()
+
+if (APPLE)
+    list(APPEND MODEL_IMPL_TARGETS llamamodel-mainline-metal)
+endif()
+
+install(
+    TARGETS ${MODEL_IMPL_TARGETS}
+    LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
+    RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
+)
+
+if (LLMODEL_CUDA)
+    set_property(TARGET llamamodel-mainline-cuda llamamodel-mainline-cuda-avxonly
+                 APPEND PROPERTY INSTALL_RPATH "$ORIGIN")
+
+    install(
+        TARGETS llamamodel-mainline-cuda
+                llamamodel-mainline-cuda-avxonly
+        RUNTIME_DEPENDENCY_SET llama-cuda-deps
+        LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
+        RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
+    )
+    if (WIN32)
+        install(
+            RUNTIME_DEPENDENCY_SET llama-cuda-deps
+            PRE_EXCLUDE_REGEXES "^(nvcuda|api-ms-.*)\\.dll$"
+            POST_INCLUDE_REGEXES "(^|[/\\\\])(lib)?(cuda|cublas)" POST_EXCLUDE_REGEXES .
+            DIRECTORIES "${CUDAToolkit_BIN_DIR}"
+            DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}
+        )
+    endif()
 endif()
 
 set(CPACK_GENERATOR "IFW")

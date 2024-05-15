@@ -45,7 +45,7 @@ def copy_prebuilt_C_lib(src_dir, dest_dir, dest_build_dir):
                 d = os.path.join(dest_dir, item)
                 shutil.copy2(s, d)
                 files_copied += 1
-            if item.endswith(lib_ext) or item.endswith('.metal'):
+            if item.endswith(lib_ext) or item.endswith('.metallib'):
                 s = os.path.join(dirpath, item)
                 d = os.path.join(dest_build_dir, item)
                 shutil.copy2(s, d)
@@ -68,7 +68,7 @@ def get_long_description():
 
 setup(
     name=package_name,
-    version="2.6.0",
+    version="2.7.0",
     description="Python bindings for GPT4All",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",

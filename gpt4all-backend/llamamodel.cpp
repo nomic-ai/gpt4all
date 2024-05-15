@@ -22,7 +22,11 @@
 #include <llama.h>
 #include <ggml.h>
 #ifdef GGML_USE_KOMPUTE
-#include <ggml-kompute.h>
+#   include <ggml-kompute.h>
+#elif GGML_USE_VULKAN
+#   include <ggml-vulkan.h>
+#elif GGML_USE_CUDA
+#   include <ggml-cuda.h>
 #endif
 
 using namespace std::string_literals;
@@ -32,13 +36,44 @@ static constexpr int GGUF_VER_MAX = 3;
 
 static const char * const modelType_ = "LLaMA";
 
+// note: same order as LLM_ARCH_NAMES in llama.cpp
 static const std::vector<const char *> KNOWN_ARCHES {
-    "baichuan", "bert", "bloom", "codeshell", "falcon", "gemma", "gpt2", "llama", "mpt", "nomic-bert", "orion",
-    "persimmon", "phi2", "plamo", "qwen", "qwen2", "refact", "stablelm", "starcoder"
+    "llama",
+    "falcon",
+    // "grok", -- 314B parameters
+    "gpt2",
+    // "gptj", -- no inference code
+    // "gptneox", -- no inference code
+    "mpt",
+    "baichuan",
+    "starcoder",
+    // "persimmon", -- CUDA generates garbage
+    "refact",
+    "bert",
+    "nomic-bert",
+    "bloom",
+    "stablelm",
+    "qwen",
+    "qwen2",
+    "qwen2moe",
+    "phi2",
+    "phi3",
+    // "plamo", -- https://github.com/ggerganov/llama.cpp/issues/5669
+    "codeshell",
+    "orion",
+    "internlm2",
+    // "minicpm", -- CUDA generates garbage
+    "gemma",
+    "starcoder2",
+    // "mamba", -- CUDA missing SSM_CONV
+    "xverse",
+    "command-r",
+    // "dbrx", -- 16x12B parameters
+    "olmo",
 };
 
 static const std::vector<const char *> EMBEDDING_ARCHES {
-    "bert", "nomic-bert"
+    "bert", "nomic-bert",
 };
 
 static bool is_embedding_arch(const std::string &arch) {
@@ -170,6 +205,7 @@ struct LLamaPrivate {
     const std::string modelPath;
     bool modelLoaded = false;
     int device = -1;
+    std::string deviceName;
     llama_model *model = nullptr;
     llama_context *ctx = nullptr;
     llama_model_params model_params;
@@ -313,10 +349,11 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 
     d_ptr->backend_name = "cpu"; // default
 
-#ifdef GGML_USE_KOMPUTE
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     if (d_ptr->device != -1) {
         d_ptr->model_params.main_gpu = d_ptr->device;
         d_ptr->model_params.n_gpu_layers = ngl;
+        d_ptr->model_params.split_mode = LLAMA_SPLIT_MODE_NONE;
     }
 #elif defined(GGML_USE_METAL)
     (void)ngl;
@@ -337,6 +374,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     if (!d_ptr->model) {
         fflush(stdout);
         d_ptr->device = -1;
+        d_ptr->deviceName.clear();
         std::cerr << "LLAMA ERROR: failed to load model from " << modelPath << std::endl;
         return false;
     }
@@ -379,19 +417,24 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
         llama_free_model(d_ptr->model);
         d_ptr->model = nullptr;
         d_ptr->device = -1;
+        d_ptr->deviceName.clear();
         return false;
     }
 
     d_ptr->end_tokens = {llama_token_eos(d_ptr->model)};
 
-#ifdef GGML_USE_KOMPUTE
     if (usingGPUDevice()) {
+#ifdef GGML_USE_KOMPUTE
         if (llama_verbose()) {
-            std::cerr << "llama.cpp: using Vulkan on " << ggml_vk_current_device().name << std::endl;
+            std::cerr << "llama.cpp: using Vulkan on " << d_ptr->deviceName << std::endl;
         }
         d_ptr->backend_name = "kompute";
-    }
+#elif defined(GGML_USE_VULKAN)
+        d_ptr->backend_name = "vulkan";
+#elif defined(GGML_USE_CUDA)
+        d_ptr->backend_name = "cuda";
 #endif
+    }
 
     m_supportsEmbedding = isEmbedding;
     m_supportsCompletion = !isEmbedding;
@@ -452,7 +495,18 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
 
 std::string LLamaModel::tokenToString(Token id) const
 {
-    return llama_token_to_piece(d_ptr->ctx, id);
+    std::vector<char> result(8, 0);
+    const int n_tokens = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), false);
+    if (n_tokens < 0) {
+        result.resize(-n_tokens);
+        int check = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), false);
+        GGML_ASSERT(check == -n_tokens);
+    }
+    else {
+        result.resize(n_tokens);
+    }
+
+    return std::string(result.data(), result.size());
 }
 
 LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
@@ -517,34 +571,77 @@ int32_t LLamaModel::layerCount(std::string const &modelPath) const
     return get_arch_key_u32(modelPath, "block_count");
 }
 
+#ifdef GGML_USE_VULKAN
+static const char *getVulkanVendorName(uint32_t vendorID) {
+    switch (vendorID) {
+        case 0x10DE: return "nvidia";
+        case 0x1002: return "amd";
+        case 0x8086: return "intel";
+        default:     return "unknown";
+    }
+}
+#endif
+
 std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired) const
 {
-#ifdef GGML_USE_KOMPUTE
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     size_t count = 0;
-    auto * vkDevices = ggml_vk_available_devices(memoryRequired, &count);
 
-    if (vkDevices) {
+#ifdef GGML_USE_KOMPUTE
+    auto *lcppDevices = ggml_vk_available_devices(memoryRequired, &count);
+#elif defined(GGML_USE_VULKAN)
+    (void)memoryRequired; // hasn't been used since GGUF was added
+    auto *lcppDevices = ggml_vk_available_devices(&count);
+#else // defined(GGML_USE_CUDA)
+    (void)memoryRequired;
+    auto *lcppDevices = ggml_cuda_available_devices(&count);
+#endif
+
+    if (lcppDevices) {
         std::vector<LLModel::GPUDevice> devices;
         devices.reserve(count);
 
         for (size_t i = 0; i < count; ++i) {
-            auto & dev = vkDevices[i];
+            auto & dev = lcppDevices[i];
+
             devices.emplace_back(
+#ifdef GGML_USE_KOMPUTE
+                /* backend  = */ "kompute",
                 /* index    = */ dev.index,
                 /* type     = */ dev.type,
                 /* heapSize = */ dev.heapSize,
                 /* name     = */ dev.name,
                 /* vendor   = */ dev.vendor
+#elif defined(GGML_USE_VULKAN)
+                /* backend  = */ "vulkan",
+                /* index    = */ dev.index,
+                /* type     = */ dev.type,
+                /* heapSize = */ dev.heapSize,
+                /* name     = */ dev.name,
+                /* vendor   = */ getVulkanVendorName(dev.vendorID)
+#else // defined(GGML_USE_CUDA)
+                /* backend  = */ "cuda",
+                /* index    = */ dev.index,
+                /* type     = */ 2, // vk::PhysicalDeviceType::eDiscreteGpu
+                /* heapSize = */ dev.heapSize,
+                /* name     = */ dev.name,
+                /* vendor   = */ "nvidia"
+#endif
             );
+
+#ifndef GGML_USE_CUDA
             ggml_vk_device_destroy(&dev);
+#else
+            ggml_cuda_device_destroy(&dev);
+#endif
         }
 
-        free(vkDevices);
+        free(lcppDevices);
         return devices;
     }
 #else
     (void)memoryRequired;
-    std::cerr << __func__ << ": built without Kompute\n";
+    std::cerr << __func__ << ": built without a GPU backend\n";
 #endif
 
     return {};
@@ -552,11 +649,32 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
 
 bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &name) const
 {
-#if defined(GGML_USE_KOMPUTE)
+#if defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
+    auto devices = availableGPUDevices(memoryRequired);
+
+    auto dev_it = devices.begin();
+#ifndef GGML_USE_CUDA
+    if (name == "amd" || name == "nvidia" || name == "intel") {
+        dev_it = std::find_if(dev_it, devices.end(), [&name](auto &dev) { return dev.vendor == name; });
+    } else
+#endif
+    if (name != "gpu") {
+        dev_it = std::find_if(dev_it, devices.end(), [&name](auto &dev) { return dev.name == name; });
+    }
+
+    if (dev_it < devices.end()) {
+        d_ptr->device     = dev_it->index;
+        d_ptr->deviceName = dev_it->name;
+        return true;
+    }
+    return false;
+#elif defined(GGML_USE_KOMPUTE)
     ggml_vk_device device;
     bool ok = ggml_vk_get_device(&device, memoryRequired, name.c_str());
     if (ok) {
         d_ptr->device = device.index;
+        d_ptr->deviceName = device.name;
+        ggml_vk_device_destroy(&device);
         return true;
     }
 #else
@@ -568,14 +686,17 @@ bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &n
 
 bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) const
 {
-#if defined(GGML_USE_KOMPUTE)
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     (void)unavail_reason;
+    auto devices = availableGPUDevices();
+    auto it = std::find_if(devices.begin(), devices.end(), [device](auto &dev) { return dev.index == device; });
     d_ptr->device = device;
+    d_ptr->deviceName = it < devices.end() ? it->name : "(unknown)";
     return true;
 #else
     (void)device;
     if (unavail_reason) {
-        *unavail_reason = "built without Kompute";
+        *unavail_reason = "built without a GPU backend";
     }
     return false;
 #endif
@@ -583,7 +704,7 @@ bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) co
 
 bool LLamaModel::hasGPUDevice() const
 {
-#if defined(GGML_USE_KOMPUTE)
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     return d_ptr->device != -1;
 #else
     return false;
@@ -592,15 +713,20 @@ bool LLamaModel::hasGPUDevice() const
 
 bool LLamaModel::usingGPUDevice() const
 {
-#if defined(GGML_USE_KOMPUTE)
-    bool hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
+    bool hasDevice;
+
+#ifdef GGML_USE_KOMPUTE
+    hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
     assert(!hasDevice || ggml_vk_has_device());
-    return hasDevice;
+#elif defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
+    hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
 #elif defined(GGML_USE_METAL)
-    return true;
+    hasDevice = true;
 #else
-    return false;
+    hasDevice = false;
 #endif
+
+    return hasDevice;
 }
 
 const char *LLamaModel::backendName() const {
@@ -608,11 +734,11 @@ const char *LLamaModel::backendName() const {
 }
 
 const char *LLamaModel::gpuDeviceName() const {
-#if defined(GGML_USE_KOMPUTE)
     if (usingGPUDevice()) {
-        return ggml_vk_current_device().name;
-    }
+#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
+        return d_ptr->deviceName.c_str();
 #endif
+    }
     return nullptr;
 }
 

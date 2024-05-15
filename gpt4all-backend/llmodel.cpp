@@ -12,10 +12,19 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #ifdef _MSC_VER
 #include <intrin.h>
+#endif
+
+#ifndef __APPLE__
+static const std::string DEFAULT_BACKENDS[] = {"kompute", "cpu"};
+#elif defined(__aarch64__)
+static const std::string DEFAULT_BACKENDS[] = {"metal", "cpu"};
+#else
+static const std::string DEFAULT_BACKENDS[] = {"cpu"};
 #endif
 
 std::string s_implementations_search_path = ".";
@@ -86,11 +95,9 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     static auto* libs = new std::vector<Implementation>([] () {
         std::vector<Implementation> fres;
 
-        std::string impl_name_re = "(gptj|llamamodel-mainline)";
+        std::string impl_name_re = "(gptj|llamamodel-mainline)-(cpu|metal|kompute|vulkan|cuda)";
         if (cpu_supports_avx2() == 0) {
             impl_name_re += "-avxonly";
-        } else {
-            impl_name_re += "-(default|metal)";
         }
         std::regex re(impl_name_re);
         auto search_in_directory = [&](const std::string& paths) {
@@ -125,6 +132,13 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     return *libs;
 }
 
+static std::string applyCPUVariant(const std::string &buildVariant) {
+    if (buildVariant != "metal" && cpu_supports_avx2() == 0) {
+        return buildVariant + "-avxonly";
+    }
+    return buildVariant;
+}
+
 const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant) {
     bool buildVariantMatched = false;
     std::optional<std::string> archName;
@@ -142,110 +156,124 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
     }
 
     if (!buildVariantMatched)
-        throw MissingImplementationError("Could not find any implementations for build variant: " + buildVariant);
+        return nullptr;
     if (!archName)
         throw UnsupportedModelError("Unsupported file format");
 
     throw BadArchError(std::move(*archName));
 }
 
-LLModel *LLModel::Implementation::construct(const std::string &modelPath, std::string buildVariant, int n_ctx) {
-    // Get correct implementation
-    const Implementation* impl = nullptr;
-
-    #if defined(__APPLE__) && defined(__arm64__) // FIXME: See if metal works for intel macs
-        if (buildVariant == "auto") {
-            size_t total_mem = getSystemTotalRAMInBytes();
-            try {
-                impl = implementation(modelPath.c_str(), "metal");
-            } catch (const std::exception &e) {
-                // fall back to CPU
-            }
-            if(impl) {
-                LLModel* metalimpl = impl->m_construct();
-                metalimpl->m_implementation = impl;
-                /* TODO(cebtenzzre): after we fix requiredMem, we should change this to happen at
-                 * load time, not construct time. right now n_ctx is incorrectly hardcoded 2048 in
-                 * most (all?) places where this is called, causing underestimation of required
-                 * memory. */
-                size_t req_mem = metalimpl->requiredMem(modelPath, n_ctx, 100);
-                float req_to_total = (float) req_mem / (float) total_mem;
-                // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
-                if (req_to_total >= 0.53) {
-                    delete metalimpl;
-                    impl = nullptr;
-                } else {
-                    return metalimpl;
-                }
-            }
-        }
-    #else
-        (void)n_ctx;
-    #endif
-
-    if (!impl) {
-        //TODO: Auto-detect CUDA/OpenCL
-        if (buildVariant == "auto") {
-            if (cpu_supports_avx2() == 0) {
-                buildVariant = "avxonly";
-            } else {
-                buildVariant = "default";
-            }
-        }
-        impl = implementation(modelPath.c_str(), buildVariant);
+LLModel *LLModel::Implementation::construct(const std::string &modelPath, const std::string &backend, int n_ctx) {
+    std::vector<std::string> desiredBackends;
+    if (backend != "auto") {
+        desiredBackends.push_back(backend);
+    } else {
+        desiredBackends.insert(desiredBackends.end(), DEFAULT_BACKENDS, std::end(DEFAULT_BACKENDS));
     }
 
-    // Construct and return llmodel implementation
-    auto fres = impl->m_construct();
-    fres->m_implementation = impl;
-    return fres;
+    for (const auto &desiredBackend: desiredBackends) {
+        const auto *impl = implementation(modelPath.c_str(), applyCPUVariant(desiredBackend));
+
+        if (impl) {
+            // Construct llmodel implementation
+            auto *fres = impl->m_construct();
+            fres->m_implementation = impl;
+
+#if defined(__APPLE__) && defined(__aarch64__) // FIXME: See if metal works for intel macs
+            /* TODO(cebtenzzre): after we fix requiredMem, we should change this to happen at
+             * load time, not construct time. right now n_ctx is incorrectly hardcoded 2048 in
+             * most (all?) places where this is called, causing underestimation of required
+             * memory. */
+            if (backend == "auto" && desiredBackend == "metal") {
+                // on a 16GB M2 Mac a 13B q4_0 (0.52) works for me but a 13B q4_K_M (0.55) does not
+                size_t req_mem = fres->requiredMem(modelPath, n_ctx, 100);
+                if (req_mem >= size_t(0.53f * getSystemTotalRAMInBytes())) {
+                    delete fres;
+                    continue;
+                }
+            }
+#else
+            (void)n_ctx;
+#endif
+
+            return fres;
+        }
+    }
+
+    throw MissingImplementationError("Could not find any implementations for backend: " + backend);
 }
 
-LLModel *LLModel::Implementation::constructDefaultLlama() {
-    static std::unique_ptr<LLModel> llama([]() -> LLModel * {
-        const std::vector<LLModel::Implementation> *impls;
-        try {
-            impls = &implementationList();
-        } catch (const std::runtime_error &e) {
-            std::cerr << __func__ << ": implementationList failed: " << e.what() << "\n";
-            return nullptr;
-        }
+LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::string> &backend) {
+    static std::unordered_map<std::string, std::unique_ptr<LLModel>> implCache;
 
-        const LLModel::Implementation *impl = nullptr;
+    const std::vector<Implementation> *impls;
+    try {
+        impls = &implementationList();
+    } catch (const std::runtime_error &e) {
+        std::cerr << __func__ << ": implementationList failed: " << e.what() << "\n";
+        return nullptr;
+    }
+
+    std::vector<std::string> desiredBackends;
+    if (backend) {
+        desiredBackends.push_back(backend.value());
+    } else {
+        desiredBackends.insert(desiredBackends.end(), DEFAULT_BACKENDS, std::end(DEFAULT_BACKENDS));
+    }
+
+    const Implementation *impl = nullptr;
+
+    for (const auto &desiredBackend: desiredBackends) {
+        auto cacheIt = implCache.find(desiredBackend);
+        if (cacheIt != implCache.end())
+            return cacheIt->second.get(); // cached
+
         for (const auto &i: *impls) {
-            if (i.m_buildVariant == "metal" || i.m_modelType != "LLaMA") continue;
-            impl = &i;
-        }
-        if (!impl) {
-            std::cerr << __func__ << ": could not find llama.cpp implementation\n";
-            return nullptr;
+            if (i.m_modelType == "LLaMA" && i.m_buildVariant == applyCPUVariant(desiredBackend)) {
+                impl = &i;
+                break;
+            }
         }
 
-        auto fres = impl->m_construct();
-        fres->m_implementation = impl;
-        return fres;
-    }());
-    return llama.get();
+        if (impl) {
+            auto *fres = impl->m_construct();
+            fres->m_implementation = impl;
+            implCache[desiredBackend] = std::unique_ptr<LLModel>(fres);
+            return fres;
+        }
+    }
+
+    std::cerr << __func__ << ": could not find Llama implementation for backend: " << backend.value_or("default") << "\n";
+    return nullptr;
 }
 
 std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices(size_t memoryRequired) {
-    auto *llama = constructDefaultLlama();
-    if (llama) { return llama->availableGPUDevices(memoryRequired); }
-    return {};
+    std::vector<LLModel::GPUDevice> devices;
+#ifndef __APPLE__
+    static const std::string backends[] = {"kompute", "cuda"};
+    for (const auto &backend: backends) {
+        auto *llama = constructGlobalLlama(backend);
+        if (llama) {
+            auto backendDevs = llama->availableGPUDevices(memoryRequired);
+            devices.insert(devices.end(), backendDevs.begin(), backendDevs.end());
+        }
+    }
+#endif
+    return devices;
 }
 
 int32_t LLModel::Implementation::maxContextLength(const std::string &modelPath) {
-    auto *llama = constructDefaultLlama();
+    auto *llama = constructGlobalLlama();
     return llama ? llama->maxContextLength(modelPath) : -1;
 }
 
 int32_t LLModel::Implementation::layerCount(const std::string &modelPath) {
-    auto *llama = constructDefaultLlama();
+    auto *llama = constructGlobalLlama();
     return llama ? llama->layerCount(modelPath) : -1;
 }
 
 bool LLModel::Implementation::isEmbeddingModel(const std::string &modelPath) {
-    auto *llama = constructDefaultLlama();
+    auto *llama = constructGlobalLlama();
     return llama && llama->isEmbeddingModel(modelPath);
 }
 

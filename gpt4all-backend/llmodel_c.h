@@ -48,6 +48,7 @@ struct llmodel_prompt_context {
 };
 
 struct llmodel_gpu_device {
+    const char * backend;
     int index;
     int type; // same as VkPhysicalDeviceType
     size_t heapSize;
@@ -86,7 +87,7 @@ typedef bool (*llmodel_recalculate_callback)(bool is_recalculating);
  * Embedding cancellation callback for use with llmodel_embed.
  * @param batch_sizes The number of tokens in each batch that will be embedded.
  * @param n_batch The number of batches that will be embedded.
- * @param backend The backend that will be used for embedding. One of "cpu", "kompute", or "metal".
+ * @param backend The backend that will be used for embedding. One of "cpu", "kompute", "cuda", or "metal".
  * @return True to cancel llmodel_embed, false to continue.
  */
 typedef bool (*llmodel_emb_cancel_callback)(unsigned *batch_sizes, unsigned n_batch, const char *backend);
@@ -103,11 +104,11 @@ DEPRECATED llmodel_model llmodel_model_create(const char *model_path);
  * Create a llmodel instance.
  * Recognises correct model type from file at model_path
  * @param model_path A string representing the path to the model file; will only be used to detect model type.
- * @param build_variant A string representing the implementation to use (auto, default, avxonly, ...),
+ * @param backend A string representing the implementation to use. One of 'auto', 'cpu', 'metal', 'kompute', or 'cuda'.
  * @param error A pointer to a string; will only be set on error.
  * @return A pointer to the llmodel_model instance; NULL on error.
  */
-llmodel_model llmodel_model_create2(const char *model_path, const char *build_variant, const char **error);
+llmodel_model llmodel_model_create2(const char *model_path, const char *backend, const char **error);
 
 /**
  * Destroy a llmodel instance.

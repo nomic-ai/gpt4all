@@ -97,7 +97,9 @@ jobs:
           command: |
             wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
             sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
-            sudo apt update && sudo apt install -y libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxext6 libxfixes3 libxi6 libxrender1 libxcb1 libxcb-cursor0 libxcb-glx0 libxcb-keysyms1 libxcb-image0 libxcb-shm0 libxcb-icccm4 libxcb-sync1 libxcb-xfixes0 libxcb-shape0 libxcb-randr0 libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 bison build-essential flex gperf python3 gcc g++ libgl1-mesa-dev libwayland-dev vulkan-sdk patchelf
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            sudo dpkg -i cuda-keyring_1.1-1_all.deb
+            sudo apt update && sudo apt install -y libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxext6 libxfixes3 libxi6 libxrender1 libxcb1 libxcb-cursor0 libxcb-glx0 libxcb-keysyms1 libxcb-image0 libxcb-shm0 libxcb-icccm4 libxcb-sync1 libxcb-xfixes0 libxcb-shape0 libxcb-randr0 libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 bison build-essential flex gperf python3 gcc g++ libgl1-mesa-dev libwayland-dev vulkan-sdk patchelf cuda-compiler-12-4 libcublas-dev-12-4 libnvidia-compute-550-server libmysqlclient21 libodbc2 libpq5
       - run:
           name: Installing Qt
           command: |
@@ -121,6 +123,7 @@ jobs:
             set -eo pipefail
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
             export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
+            export PATH=$PATH:/usr/local/cuda/bin
             mkdir build
             cd build
             mkdir upload
@@ -162,6 +165,11 @@ jobs:
           command: |
             Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
+          name: Install CUDA Toolkit
+          command: |
+            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe -OutFile cuda_12.4.1_windows_network.exe
+            .\cuda_12.4.1_windows_network.exe -s cudart_12.4 nvcc_12.4 cublas_12.4 cublas_dev_12.4
       - run:
           name: Build
           command: |
@@ -218,7 +226,9 @@ jobs:
           command: |
             wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
             sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
-            sudo apt update && sudo apt install -y libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxext6 libxfixes3 libxi6 libxrender1 libxcb1 libxcb-cursor0 libxcb-glx0 libxcb-keysyms1 libxcb-image0 libxcb-shm0 libxcb-icccm4 libxcb-sync1 libxcb-xfixes0 libxcb-shape0 libxcb-randr0 libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 bison build-essential flex gperf python3 gcc g++ libgl1-mesa-dev libwayland-dev vulkan-sdk
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            sudo dpkg -i cuda-keyring_1.1-1_all.deb
+            sudo apt update && sudo apt install -y libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxext6 libxfixes3 libxi6 libxrender1 libxcb1 libxcb-cursor0 libxcb-glx0 libxcb-keysyms1 libxcb-image0 libxcb-shm0 libxcb-icccm4 libxcb-sync1 libxcb-xfixes0 libxcb-shape0 libxcb-randr0 libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 bison build-essential flex gperf python3 gcc g++ libgl1-mesa-dev libwayland-dev vulkan-sdk cuda-compiler-12-4 libcublas-dev-12-4 libnvidia-compute-550-server libmysqlclient21 libodbc2 libpq5
       - run:
           name: Installing Qt
           command: |
@@ -235,6 +245,7 @@ jobs:
           name: Build
           command: |
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
+            export PATH=$PATH:/usr/local/cuda/bin
             ~/Qt/Tools/CMake/bin/cmake -DCMAKE_BUILD_TYPE=Release -S gpt4all-chat -B build
             ~/Qt/Tools/CMake/bin/cmake --build build --target all
 
@@ -269,6 +280,11 @@ jobs:
           command: |
             Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
+          name: Install CUDA Toolkit
+          command: |
+            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe -OutFile cuda_12.4.1_windows_network.exe
+            .\cuda_12.4.1_windows_network.exe -s cudart_12.4 nvcc_12.4 cublas_12.4 cublas_dev_12.4
       - run:
           name: Build
           command: |
@@ -394,12 +410,15 @@ jobs:
           command: |
             wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
             sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            sudo dpkg -i cuda-keyring_1.1-1_all.deb
             sudo apt-get update
-            sudo apt-get install -y cmake build-essential vulkan-sdk
+            sudo apt-get install -y cmake build-essential vulkan-sdk cuda-compiler-12-4 libcublas-dev-12-4 libnvidia-compute-550-server libmysqlclient21 libodbc2 libpq5
             pip install setuptools wheel cmake
       - run:
           name: Build C library
           command: |
+            export PATH=$PATH:/usr/local/cuda/bin
             git submodule update --init --recursive
             cd gpt4all-backend
             cmake -B build
@@ -459,6 +478,11 @@ jobs:
           command: |
             Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
+          name: Install CUDA Toolkit
+          command: |
+            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe -OutFile cuda_12.4.1_windows_network.exe
+            .\cuda_12.4.1_windows_network.exe -s cudart_12.4 nvcc_12.4 cublas_12.4 cublas_dev_12.4
       - run:
           name: Install dependencies
           command:
@@ -530,11 +554,14 @@ jobs:
           command: |
             wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
             sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list            
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            sudo dpkg -i cuda-keyring_1.1-1_all.deb
             sudo apt-get update
-            sudo apt-get install -y cmake build-essential vulkan-sdk
+            sudo apt-get install -y cmake build-essential vulkan-sdk cuda-compiler-12-4 libcublas-dev-12-4 libnvidia-compute-550-server libmysqlclient21 libodbc2 libpq5
       - run:
           name: Build Libraries
           command: |
+            export PATH=$PATH:/usr/local/cuda/bin
             cd gpt4all-backend
             mkdir -p runtimes/build
             cd runtimes/build
@@ -600,6 +627,11 @@ jobs:
             Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
       - run:
+          name: Install CUDA Toolkit
+          command: |
+            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe -OutFile cuda_12.4.1_windows_network.exe
+            .\cuda_12.4.1_windows_network.exe -s cudart_12.4 nvcc_12.4 cublas_12.4 cublas_dev_12.4
+      - run:
           name: Install dependencies
           command: |
             choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
@@ -642,6 +674,11 @@ jobs:
           command: |
             Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
+          name: Install CUDA Toolkit
+          command: |
+            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe -OutFile cuda_12.4.1_windows_network.exe
+            .\cuda_12.4.1_windows_network.exe -s cudart_12.4 nvcc_12.4 cublas_12.4 cublas_dev_12.4
       - run:
           name: Install dependencies
           command: |

@@ -65,10 +65,14 @@ MySettings::MySettings()
 {
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
-    std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
     QVector<QString> deviceList{ "Auto" };
+#if defined(Q_OS_MAC) && defined(__aarch64__)
+    deviceList << "Metal";
+#else
+    std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
     for (LLModel::GPUDevice &d : devices)
-        deviceList << QString::fromStdString(d.name);
+        deviceList << QString::fromStdString(d.selectionName());
+#endif
     deviceList << "CPU";
     setDeviceList(deviceList);
 }
@@ -786,7 +790,23 @@ QString MySettings::device() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("device", default_device).toString();
+    auto value = setting.value("device");
+    if (!value.isValid())
+        return default_device;
+
+    auto device = value.toString();
+    if (!device.isEmpty()) {
+        auto deviceStr = device.toStdString();
+        auto newNameStr = LLModel::GPUDevice::updateSelectionName(deviceStr);
+        if (newNameStr != deviceStr) {
+            auto newName = QString::fromStdString(newNameStr);
+            qWarning() << "updating device name:" << device << "->" << newName;
+            device = newName;
+            setting.setValue("device", device);
+            setting.sync();
+        }
+    }
+    return device;
 }
 
 void MySettings::setDevice(const QString &u)
