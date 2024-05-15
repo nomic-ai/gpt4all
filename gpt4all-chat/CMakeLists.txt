@@ -185,6 +185,7 @@ if(METAL_SHADER_FILE)
     set_target_properties(chat PROPERTIES
         RESOURCE ${METAL_SHADER_FILE}
     )
+    add_dependencies(chat ggml-metal)
 endif()
 
 target_compile_definitions(chat
