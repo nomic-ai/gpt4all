@@ -195,7 +195,11 @@ public:
     int count() const { return m_chats.size(); }
 
     // stop ChatLLM threads for clean shutdown
-    void destroyChats() { for (auto *chat: m_chats) { chat->destroy(); } }
+    void destroyChats()
+    {
+        for (auto *chat: m_chats) { chat->destroy(); }
+        ChatLLM::destroyStore();
+    }
 
     void removeChatFile(Chat *chat) const;
     Q_INVOKABLE void saveChats();
