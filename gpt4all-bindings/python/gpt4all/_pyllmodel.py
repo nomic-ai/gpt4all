@@ -29,6 +29,7 @@ EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
 
 # Find CUDA libraries from the official packages
+cuda_found = False
 if platform.system() in ('Linux', 'Windows'):
     try:
         from nvidia import cuda_runtime, cublas
@@ -45,6 +46,7 @@ if platform.system() in ('Linux', 'Windows'):
         # preload the CUDA libs so the backend can find them
         ctypes.CDLL(os.path.join(cuda_runtime.__path__[0], cudalib), mode=ctypes.RTLD_GLOBAL)
         ctypes.CDLL(os.path.join(cublas.__path__[0], cublaslib), mode=ctypes.RTLD_GLOBAL)
+        cuda_found = True
 
 
 # TODO: provide a config file to make this more robust
@@ -237,7 +239,16 @@ class LLModel:
         model = llmodel.llmodel_model_create2(self.model_path, backend.encode(), ctypes.byref(err))
         if model is None:
             s = err.value
-            raise RuntimeError(f"Unable to instantiate model: {'null' if s is None else s.decode()}")
+            errmsg = 'null' if s is None else s.decode()
+
+            if (
+                backend == 'cuda'
+                and not cuda_found
+                and errmsg.startswith('Could not find any implementations for backend')
+            ):
+                print('WARNING: CUDA runtime libraries not found. Try `pip install "gpt4all[cuda]"`\n', file=sys.stderr)
+
+            raise RuntimeError(f"Unable to instantiate model: {errmsg}")
         self.model: ctypes.c_void_p | None = model
 
     def __del__(self, llmodel=llmodel):
