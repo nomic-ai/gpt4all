@@ -15,8 +15,16 @@
 #include <unordered_map>
 #include <vector>
 
+#ifdef _WIN32
+#   define WIN32_LEAN_AND_MEAN
+#   ifndef NOMINMAX
+#       define NOMINMAX
+#   endif
+#   include <windows.h>
+#endif
+
 #ifdef _MSC_VER
-#include <intrin.h>
+#   include <intrin.h>
 #endif
 
 #ifndef __APPLE__
@@ -85,6 +93,20 @@ static bool isImplementation(const Dlhandle &dl) {
     return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
+// Add the CUDA Toolkit to the DLL search path on Windows.
+// This is necessary for chat.exe to find CUDA when started from Qt Creator.
+static void addCudaSearchPath() {
+#ifdef _WIN32
+    if (const auto *cudaPath = _wgetenv(L"CUDA_PATH")) {
+        auto libDir = std::wstring(cudaPath) + L"\\bin";
+        if (!AddDllDirectory(libDir.c_str())) {
+            auto err = GetLastError();
+            std::wcerr << L"AddDllDirectory(\"" << libDir << L"\") failed with error 0x" << std::hex << err << L"\n";
+        }
+    }
+#endif
+}
+
 const std::vector<LLModel::Implementation> &LLModel::Implementation::implementationList() {
     if (cpu_supports_avx() == 0) {
         throw std::runtime_error("CPU does not support AVX");
@@ -94,6 +116,8 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     // individual models without the cleanup of the static list interfering
     static auto* libs = new std::vector<Implementation>([] () {
         std::vector<Implementation> fres;
+
+        addCudaSearchPath();
 
         std::string impl_name_re = "(gptj|llamamodel-mainline)-(cpu|metal|kompute|vulkan|cuda)";
         if (cpu_supports_avx2() == 0) {

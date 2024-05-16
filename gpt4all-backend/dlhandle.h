@@ -58,12 +58,13 @@ public:
 #include <string>
 #include <exception>
 #include <stdexcept>
+
+#define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
-    #define NOMINMAX
+#   define NOMINMAX
 #endif
 #include <windows.h>
 #include <libloaderapi.h>
-
 
 
 class Dlhandle {
