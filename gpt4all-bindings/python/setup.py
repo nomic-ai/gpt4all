@@ -91,6 +91,8 @@ setup(
         'tqdm',
         'importlib_resources; python_version < "3.9"',
         'typing-extensions>=4.3.0; python_version >= "3.9" and python_version < "3.11"',
+        'nvidia-cuda-runtime-cu12; platform_system == "Windows" or platform_system == "Linux"',
+        'nvidia-cublas-cu12; platform_system == "Windows" or platform_system == "Linux"',
     ],
     extras_require={
         'dev': [

@@ -28,6 +28,25 @@ if TYPE_CHECKING:
 EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
 
+# Find CUDA libraries from the official packages
+if platform.system() in ('Linux', 'Windows'):
+    try:
+        from nvidia import cuda_runtime, cublas
+    except ImportError:
+        pass  # CUDA is optional
+    else:
+        if platform.system() == 'Linux':
+            cudalib   = 'lib/libcudart.so.12'
+            cublaslib = 'lib/libcublas.so.12'
+        else:  # Windows
+            cudalib   = r'bin\cudart64_12.dll'
+            cublaslib = r'bin\cublas64_12.dll'
+
+        # preload the CUDA libs so the backend can find them
+        ctypes.CDLL(os.path.join(cuda_runtime.__path__[0], cudalib), mode=ctypes.RTLD_GLOBAL)
+        ctypes.CDLL(os.path.join(cublas.__path__[0], cublaslib), mode=ctypes.RTLD_GLOBAL)
+
+
 # TODO: provide a config file to make this more robust
 MODEL_LIB_PATH = importlib_resources.files("gpt4all") / "llmodel_DO_NOT_MODIFY" / "build"
 
