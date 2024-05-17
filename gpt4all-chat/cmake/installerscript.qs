@@ -30,7 +30,7 @@ Component.prototype.createOperations = function()
                 "workingDirectory=" + targetDirectory + "/bin",
                 "iconPath=" + targetDirectory + "/gpt4all.ico",
                 "iconId=0", "description=Open GPT4All");
-        } else if (systemInfo.productType === "osx") {
+        } else if (systemInfo.productType === "macos" || systemInfo.productType === "osx") {
             var gpt4allAppPath = targetDirectory + "/bin/gpt4all.app";
             var symlinkPath = targetDirectory + "/../GPT4All.app";
             // Remove the symlink if it already exists
@@ -56,7 +56,7 @@ Component.prototype.createOperationsForArchive = function(archive)
 {
     component.createOperationsForArchive(archive);
 
-    if (systemInfo.productType === "osx") {
+    if (systemInfo.productType === "macos" || systemInfo.productType === "osx") {
         var uninstallTargetDirectory = installer.value("TargetDir");
         var symlinkPath = uninstallTargetDirectory + "/../GPT4All.app";
 
