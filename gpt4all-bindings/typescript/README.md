@@ -196,23 +196,29 @@ git clone https://github.com/nomic-ai/gpt4all.git
 cd gpt4all-bindings/typescript
 ```
 
-*   The below shell commands assume the current working directory is `typescript`.
-
-*   To Build and Rebuild:
-
-```sh
-node scripts/prebuild.js
-```
-*   llama.cpp git submodule for gpt4all can be possibly absent. If this is the case, make sure to run in llama.cpp parent directory
+llama.cpp git submodule for gpt4all can be possibly absent or outdated. Make sure to run
 
 ```sh
 git submodule update --init --recursive
 ```
 
+The below shell commands assume the current working directory is `typescript`.
+
+Using yarn
+
 ```sh
-yarn build:backend
+yarn install
+yarn build
 ```
-This will build platform-dependent dynamic libraries, and will be located in runtimes/(platform)/native
+
+Using npm
+
+```sh
+npm install
+npm run build
+```
+
+The `build:runtimes` script will create runtime libraries for your platform in `runtimes` and `build:prebuilds` will create the bindings in `prebuilds`. `build` is a shortcut for both.
 
 ### Test
 

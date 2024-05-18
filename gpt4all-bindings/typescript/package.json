@@ -5,10 +5,10 @@
   "main": "src/gpt4all.js",
   "repository": "nomic-ai/gpt4all",
   "scripts": {
-    "install": "node-gyp-build",
     "test": "jest",
-    "build:backend": "node scripts/build.js",
-    "build": "node-gyp-build",
+    "build": "npm run build:runtimes && npm run build:prebuilds",
+    "build:runtimes": "node scripts/build.js",
+    "build:prebuilds": "node scripts/prebuild.js",
     "docs:build": "node scripts/docs.js && documentation readme ./src/gpt4all.d.ts --parse-extension js d.ts --format md --section \"API Reference\" --readme-file ../python/docs/gpt4all_nodejs.md"
   },
   "files": [
