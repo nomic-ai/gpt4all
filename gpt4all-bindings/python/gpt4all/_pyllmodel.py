@@ -274,11 +274,12 @@ class LLModel:
 
         all_gpus = self.list_gpus()
         available_gpus = self.list_gpus(mem_required)
-        unavailable_gpus = set(all_gpus).difference(available_gpus)
+        unavailable_gpus = [g for g in all_gpus if g not in available_gpus]
 
-        error_msg = "Unable to initialize model on GPU: {!r}".format(device)
-        error_msg += "\nAvailable GPUs: {}".format(available_gpus)
-        error_msg += "\nUnavailable GPUs due to insufficient memory or features: {}".format(unavailable_gpus)
+        error_msg = (f"Unable to initialize model on GPU: {device!r}" +
+                     f"\nAvailable GPUs: {available_gpus}")
+        if unavailable_gpus:
+            error_msg += f"\nUnavailable GPUs due to insufficient memory: {unavailable_gpus}"
         raise ValueError(error_msg)
 
     def load_model(self) -> bool:
