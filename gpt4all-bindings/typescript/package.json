@@ -6,6 +6,8 @@
   "repository": "nomic-ai/gpt4all",
   "scripts": {
     "test": "jest",
+    "clean": "rimraf build runtimes prebuilds",
+    "prebuild": "npm run clean",
     "build": "npm run build:runtimes && npm run build:prebuilds",
     "build:runtimes": "node scripts/build.js",
     "build:prebuilds": "node scripts/prebuild.js",
@@ -30,7 +32,8 @@
     "documentation": "^14.0.2",
     "jest": "^29.5.0",
     "prebuildify": "^5.0.1",
-    "prettier": "^2.8.8"
+    "prettier": "^2.8.8",
+    "rimraf": "^5.0.7"
   },
   "optionalDependencies": {
     "node-gyp": "9.x.x"
