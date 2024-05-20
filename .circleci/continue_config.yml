@@ -565,8 +565,8 @@ jobs:
             cd gpt4all-backend
             mkdir -p runtimes/build
             cd runtimes/build
-            cmake ../..
-            cmake --build . --parallel --config Release
+            cmake ../.. -DCMAKE_BUILD_TYPE=Release
+            cmake --build . --parallel
             mkdir ../linux-x64
             cp -L *.so ../linux-x64 # otherwise persist_to_workspace seems to mess symlinks
       - persist_to_workspace:

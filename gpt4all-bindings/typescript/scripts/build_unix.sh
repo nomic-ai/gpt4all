@@ -22,7 +22,7 @@ BUILD_DIR="$BASE_DIR/build"
 rm -rf "$BASE_DIR"
 mkdir -p "$NATIVE_DIR" "$BUILD_DIR"
 
-cmake -S ../../gpt4all-backend -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release &&
+cmake -S ../../gpt4all-backend -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo &&
 cmake --build "$BUILD_DIR" --parallel && {
   cp "$BUILD_DIR"/libgptj*.$LIB_EXT   "$NATIVE_DIR"/
   cp "$BUILD_DIR"/libllama*.$LIB_EXT  "$NATIVE_DIR"/
