@@ -93,7 +93,15 @@ setup(
         'typing-extensions>=4.3.0; python_version >= "3.9" and python_version < "3.11"',
     ],
     extras_require={
+        'cuda': [
+            'nvidia-cuda-runtime-cu12',
+            'nvidia-cublas-cu12',
+        ],
+        'all': [
+            'gpt4all[cuda]; platform_system == "Windows" or platform_system == "Linux"',
+        ],
         'dev': [
+            'gpt4all[all]',
             'pytest',
             'twine',
             'wheel',
