@@ -307,14 +307,12 @@ QString EmbeddingLLM::model() const
 {
     const EmbeddingModels *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
     if (!embeddingModels->count())
-        return QString("Unknown");
+        return QString();
 
     const ModelInfo defaultModel = embeddingModels->defaultModelInfo();
     if (!defaultModel.name().isEmpty())
         return defaultModel.name();
-    else if (!defaultModel.id().isEmpty())
-        return defaultModel.id();
-    return defaultModel.filename();
+    return QString();
 }
 
 std::vector<float> EmbeddingLLM::generateEmbeddings(const QString &text)

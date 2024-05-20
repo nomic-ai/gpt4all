@@ -12,6 +12,7 @@
 //#define DEBUG_EXAMPLE
 
 #define LOCALDOCS_VERSION 2
+static int s_batchSize = 100;
 
 const auto INSERT_CHUNK_SQL = QLatin1String(R"(
     insert into chunks(document_id, chunk_text,
@@ -87,7 +88,7 @@ bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
         return false;
     if (q.next())
         file = q.value(0).toString();
-    return true;
+    return !file.isEmpty();
 }
 
 const auto SELECT_UNCOMPLETED_CHUNKS_SQL = QLatin1String(R"(
@@ -175,7 +176,7 @@ bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
     return true;
 }
 
-bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChunk> *chunks) {
+bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChunk> &chunks) {
     if (!q.prepare(SELECT_UNCOMPLETED_CHUNKS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -186,19 +187,19 @@ bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChun
         i.chunk_id = q.value(0).toInt();
         i.chunk = q.value(1).toString();
         i.folder_id = q.value(2).toInt();
-        chunks->append(i);
+        chunks.append(i);
     }
     return true;
 }
 
-bool selectCountChunks(QSqlQuery &q, int folder_id, int *count) {
+bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
     if (!q.prepare(SELECT_COUNT_CHUNKS_SQL))
         return false;
     q.addBindValue(folder_id);
     if (!q.exec())
         return false;
     if (q.next())
-        *count = q.value(0).toInt();
+        count = q.value(0).toInt();
     return true;
 }
 
@@ -374,6 +375,7 @@ bool selectAllFromCollections(int version, QSqlQuery &q, QList<CollectionItem> *
             return false;
         break;
     default:
+        Q_UNREACHABLE();
         return false;
     }
 
@@ -406,9 +408,7 @@ bool updateCollectionForceIndexing(QSqlQuery &q, const QString &collection_name)
     if (!q.prepare(UPDATE_COLLECTION_FORCE_INDEXING))
         return false;
     q.addBindValue(collection_name);
-    if (!q.exec())
-        return false;
-    return true;
+    return q.exec();
 }
 
 const auto INSERT_FOLDERS_SQL = QLatin1String(R"(
@@ -633,7 +633,7 @@ QSqlError Database::initDb()
 
     QList<CollectionItem> collections;
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    if (version != LOCALDOCS_VERSION) {
+    if (version && version != LOCALDOCS_VERSION) {
 #if defined(DEBUG)
         qDebug() << "Older localdocs version found" << version << "upgrade to" << LOCALDOCS_VERSION;
 #endif
@@ -826,9 +826,9 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
 
 void Database::appendChunk(const EmbeddingChunk &chunk)
 {
-    m_chunkList.reserve(100);
+    m_chunkList.reserve(s_batchSize);
     m_chunkList.append(chunk);
-    if (m_chunkList.size() >= m_chunkList.capacity())
+    if (m_chunkList.size() >= s_batchSize)
         sendChunkList();
 }
 
@@ -843,6 +843,7 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
         return;
 
     // FIXME: Replace this with an arrow file on disk
+    // FIXME: Add the tokens information
     int folder_id = 0;
     QSqlQuery q;
     for (auto e : embeddings) {
@@ -1195,7 +1196,7 @@ void Database::scheduleUncompletedEmbeddings(int folder_id)
 {
     QList<EmbeddingChunk> chunkList;
     QSqlQuery q;
-    if (!selectAllUncompletedChunks(q, folder_id, &chunkList)) {
+    if (!selectAllUncompletedChunks(q, folder_id, chunkList)) {
         qWarning() << "ERROR: Cannot select uncompleted chunks" << q.lastError();
         return;
     }
@@ -1204,7 +1205,7 @@ void Database::scheduleUncompletedEmbeddings(int folder_id)
         return;
 
     int total = 0;
-    if (!selectCountChunks(q, folder_id, &total)) {
+    if (!selectCountChunks(q, folder_id, total)) {
         qWarning() << "ERROR: Cannot count total chunks" << q.lastError();
         return;
     }
@@ -1214,9 +1215,8 @@ void Database::scheduleUncompletedEmbeddings(int folder_id)
     item.currentEmbeddingsToIndex = total - chunkList.size();
     updateGuiForCollectionItem(item);
 
-    const int batchSize = 100;
-    for (int i = 0; i < chunkList.size(); i += batchSize) {
-        QList<EmbeddingChunk> batch = chunkList.mid(i, qMin(batchSize, chunkList.size() - i));
+    for (int i = 0; i < chunkList.size(); i += s_batchSize) {
+        QList<EmbeddingChunk> batch = chunkList.mid(i, s_batchSize);
         m_embLLM->generateAsyncEmbeddings(batch);
     }
 }
@@ -1246,17 +1246,12 @@ void Database::updateCollectionStatistics()
     }
 }
 
-void Database::addForcedCollection(const CollectionItem &collection)
+int checkAndAddFolderToDB(const QString &path)
 {
-    // These are collection items that came from an older version of localdocs which require
-    // forced indexing that should only be done when the user has explicitly asked for them to be
-    // indexed again
-    const QString path = collection.folder_path;
-
     QFileInfo info(path);
     if (!info.exists() || !info.isReadable()) {
         qWarning() << "ERROR: Cannot add folder that doesn't exist or not readable" << path;
-        return;
+        return -1;
     }
 
     QSqlQuery q;
@@ -1265,20 +1260,40 @@ void Database::addForcedCollection(const CollectionItem &collection)
     // See if the folder exists in the db
     if (!selectFolder(q, path, &folder_id)) {
         qWarning() << "ERROR: Cannot select folder from path" << path << q.lastError();
-        return;
+        return -1;
     }
 
     // Add the folder
     if (folder_id == -1 && !addFolderToDB(q, path, &folder_id)) {
         qWarning() << "ERROR: Cannot add folder to db with path" << path << q.lastError();
-        return;
+        return -1;
     }
 
     Q_ASSERT(folder_id != -1);
+    return folder_id;
+}
 
+void Database::addForcedCollection(const CollectionItem &collection)
+{
+    // These are collection items that came from an older version of localdocs which require
+    // forced indexing that should only be done when the user has explicitly asked for them to be
+    // indexed again
+    const QString path = collection.folder_path;
+
+    const int folder_id = checkAndAddFolderToDB(path);
+    if (folder_id == -1)
+        return;
+
+    const QString model = m_embLLM->model();
+    if (model.isEmpty()) {
+        qWarning() << "ERROR: We have no embedding model";
+        return;
+    }
+
+    QSqlQuery q;
     if (!addCollection(q, collection.collection, folder_id,
                        QDateTime() /*last_update*/,
-                       m_embLLM->model() /*embedding_model*/,
+                       model /*embedding_model*/,
                        true /*force_indexing*/)) {
         qWarning() << "ERROR: Cannot add folder to collection" << collection.collection << path << q.lastError();
         return;
@@ -1318,40 +1333,28 @@ bool containsFolderId(const QList<QPair<int, QString>> &folders, int folder_id) 
 
 void Database::addFolder(const QString &collection, const QString &path)
 {
-    QFileInfo info(path);
-    if (!info.exists() || !info.isReadable()) {
-        qWarning() << "ERROR: Cannot add folder that doesn't exist or not readable" << path;
+    const int folder_id = checkAndAddFolderToDB(path);
+    if (folder_id == -1)
         return;
-    }
-
-    QSqlQuery q;
-    int folder_id = -1;
-
-    // See if the folder exists in the db
-    if (!selectFolder(q, path, &folder_id)) {
-        qWarning() << "ERROR: Cannot select folder from path" << path << q.lastError();
-        return;
-    }
-
-    // Add the folder
-    if (folder_id == -1 && !addFolderToDB(q, path, &folder_id)) {
-        qWarning() << "ERROR: Cannot add folder to db with path" << path << q.lastError();
-        return;
-    }
-
-    Q_ASSERT(folder_id != -1);
 
     // See if the folder has already been added to the collection
+    QSqlQuery q;
     QList<QPair<int, QString>> folders;
     if (!selectFoldersFromCollection(q, collection, &folders)) {
         qWarning() << "ERROR: Cannot select folders from collections" << collection << q.lastError();
         return;
     }
 
+    const QString model = m_embLLM->model();
+    if (model.isEmpty()) {
+        qWarning() << "ERROR: We have no embedding model";
+        return;
+    }
+
     if (!containsFolderId(folders, folder_id)) {
         if (!addCollection(q, collection, folder_id,
                            QDateTime() /*last_update*/,
-                           m_embLLM->model() /*embedding_model*/,
+                           model /*embedding_model*/,
                            false /*force_indexing*/)) {
             qWarning() << "ERROR: Cannot add folder to collection" << collection << path << q.lastError();
             return;
