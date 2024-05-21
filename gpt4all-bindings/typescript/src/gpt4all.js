@@ -174,10 +174,10 @@ function createCompletionStream(
 
     const completionPromise = createCompletion(provider, input, {
         ...options,
-        onResponseToken: (tokenId, token) => {
-            completionStream.push(token);
-            if (options.onResponseToken) {
-                return options.onResponseToken(tokenId, token);
+        onResponseTokens: (tokens) => {
+            completionStream.push(tokens.text);
+            if (options.onResponseTokens) {
+                return options.onResponseTokens(tokens);
             }
         },
     }).then((result) => {
