@@ -1,7 +1,12 @@
 #include "utils.h"
 
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
+#include <iterator>
 #include <regex>
+#include <utility>
 
 void replace(std::string & str, const std::string & needle, const std::string & replacement) {
     size_t pos = 0;

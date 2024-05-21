@@ -1,12 +1,12 @@
-#include "llmodel.h"
 #include "dlhandle.h"
-#include "sysinfo.h"
+#include "llmodel.h"
 
 #include <cassert>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <regex>
@@ -25,6 +25,10 @@
 
 #ifdef _MSC_VER
 #   include <intrin.h>
+#endif
+
+#if defined(__APPLE__) && defined(__aarch64__)
+#   include "sysinfo.h" // for getSystemTotalRAMInBytes
 #endif
 
 #ifndef __APPLE__
