@@ -657,13 +657,6 @@ interface LLModelPromptContext {
      */
     promptTemplate?: string;
 
-    /** The context window size. Do not use, it has no effect. See loadModel options.
-     * THIS IS DEPRECATED!!!
-     * Use loadModel's nCtx option instead.
-     * @default 2048
-     */
-    nCtx: number;
-
     /** The top-k logits to sample from.
      * Top-K sampling selects the next token only from the top K most likely tokens predicted by the model.
      * It helps reduce the risk of generating low-probability or nonsensical tokens, but it may also limit
