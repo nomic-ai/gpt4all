@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)  # for PROJECT_IS_TOP_LEVEL
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -141,7 +141,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         prepare_target(gptj llama-mainline)
     endif()
 
-    if (BUILD_VARIANT STREQUAL cuda)
+    if (NOT PROJECT_IS_TOP_LEVEL AND BUILD_VARIANT STREQUAL cuda)
         set(CUDAToolkit_BIN_DIR ${CUDAToolkit_BIN_DIR} PARENT_SCOPE)
     endif()
 endforeach()
