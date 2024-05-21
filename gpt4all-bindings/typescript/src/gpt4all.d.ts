@@ -263,10 +263,10 @@ interface LLModelInferenceResult {
 interface LLModelInferenceOptions extends Partial<LLModelPromptContext> {
     /** Callback for response tokens, called for each generated token.
      * @param {number} tokenId The token id.
-     * @param {string} token The token.
+     * @param {Uint8Array} bytes The token bytes.
      * @returns {boolean | undefined} Whether to continue generating tokens.
      * */
-    onResponseToken?: (tokenId: number, token: string) => boolean | void;
+    onResponseToken?: (tokenId: number, bytes: Uint8Array) => boolean | void;
     /** Callback for prompt tokens, called for each input token in the prompt.
      * @param {number} tokenId The token id.
      * @returns {boolean | undefined} Whether to continue ingesting the prompt.
@@ -507,15 +507,33 @@ interface CompletionProvider {
     ): Promise<InferenceResult>;
 }
 
+interface CompletionTokens {
+    /** The token ids. */
+    tokenIds: number[];
+    /** The token text. May be an empty string. */
+    text: string;
+}
+
 /**
  * Options for creating a completion.
  */
-interface CompletionOptions extends LLModelInferenceOptions {
+interface CompletionOptions extends Partial<LLModelPromptContext> {
     /**
      * Indicates if verbose logging is enabled.
      * @default false
      */
     verbose?: boolean;
+
+    /** Called every time new tokens can be decoded to text.
+     * @param {CompletionTokens} tokens The token ids and decoded text.
+     * @returns {boolean | undefined} Whether to continue generating tokens.
+     * */
+    onResponseTokens?: (tokens: CompletionTokens) => boolean | void;
+    /** Callback for prompt tokens, called for each input token in the prompt.
+     * @param {number} tokenId The token id.
+     * @returns {boolean | undefined} Whether to continue ingesting the prompt.
+     * */
+    onPromptToken?: (tokenId: number) => boolean | void;
 }
 
 /**
