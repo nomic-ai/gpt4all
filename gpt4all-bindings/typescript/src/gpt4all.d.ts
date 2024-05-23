@@ -443,8 +443,10 @@ interface LoadModelOptions {
     /**
      * The processing unit on which the model will run. It can be set to
      * - "cpu": Model will run on the central processing unit.
-     * - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
-     * - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
+     * - "kompute": Model will run using the kompute (vulkan) gpu backend
+     * - "cuda": Model will run using the cuda gpu backend
+     * - "gpu": Use Metal on ARM64 macOS, otherwise the same as "kompute"
+     * - "amd", "nvidia":  Use the best GPU provided by the Kompute backend from this vendor.
      * - "gpu name": Model will run on the GPU that matches the name if it's available.
      * Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
      * instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
