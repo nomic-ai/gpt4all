@@ -188,6 +188,8 @@ model.dispose();
 *   python 3
 *   On Windows and Linux, building GPT4All requires the complete Vulkan SDK. You may download it from here: https://vulkan.lunarg.com/sdk/home
 *   macOS users do not need Vulkan, as GPT4All will use Metal instead.
+*   CUDA Toolkit >= 11.4  (you can bypass this with adding a custom flag to build step)
+    -  Windows: There is difficulty compiling with cuda if the Visual Studio IDE is NOT present.
 
 ### Build (from source)
 
@@ -265,7 +267,7 @@ yarn test
 
 This package has been stabilizing over time development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
 
-*   \[ ] Purely offline. Per the gui, which can be run completely offline, the bindings should be as well.
+*   \[x] [Purely offline](#Offline-usage). Per the gui, which can be run completely offline, the bindings should be as well. 
 *   \[ ] NPM bundle size reduction via optionalDependencies strategy (need help)
     *   Should include prebuilds to avoid painful node-gyp errors
 *   \[x] createChatSession ( the python equivalent to create\_chat\_session )
@@ -282,7 +284,7 @@ This package has been stabilizing over time development, and breaking changes ma
 This repository serves as the new bindings for nodejs users.
 - If you were a user of [these bindings](https://github.com/nomic-ai/gpt4all-ts), they are outdated.
 - Version 4 includes the follow breaking changes
-    * `createEmbedding` & `EmbeddingModel.embed()` returns an object, `EmbeddingResult`, instead of a float32array.
+    * `createEmbedding` & `EmbeddingModel.embed()` returns an object, `EmbeddingResult`, instead of a Float32Array.
     * Removed deprecated types `ModelType` and `ModelFile`
     * Removed deprecated initiation of model by string path only
 
