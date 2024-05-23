@@ -116,7 +116,7 @@ class InferenceModel {
                 let continueIngestion = true;
                 tokensIngested++;
                 if (options.onPromptToken) {
-                    // catch here because if errors bubble through cpp they will loose stacktraces
+                    // catch here because if errors bubble through cpp they will looe stacktraces
                     try {
                         // don't cancel ingestion unless user explicitly returns false
                         continueIngestion =
