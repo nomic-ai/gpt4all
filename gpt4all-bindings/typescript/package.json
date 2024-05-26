@@ -5,6 +5,7 @@
   "main": "src/gpt4all.js",
   "repository": "nomic-ai/gpt4all",
   "scripts": {
+    "test:ci": "jest test/ci.test.js",
     "test": "jest",
     "clean": "rimraf build runtimes prebuilds",
     "prebuild": "npm run clean",

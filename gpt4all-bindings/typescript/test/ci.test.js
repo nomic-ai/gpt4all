@@ -2,7 +2,6 @@ const path = require("node:path");
 const os = require("node:os");
 const fsp = require("node:fs/promises");
 const { existsSync } = require('node:fs');
-const { LLModel } = require("node-gyp-build")(path.resolve(__dirname, ".."));
 const {
     listModels,
     downloadModel,
@@ -13,11 +12,8 @@ const {
     DEFAULT_LIBRARIES_DIRECTORY,
     DEFAULT_MODEL_LIST_URL,
 } = require("../src/config.js");
-const {
-    loadModel,
-    createPrompt,
-    createCompletion,
-} = require("../src/gpt4all.js");
+
+// these tests do not require an internet connection or an actual model
 
 describe("config", () => {
     test("default paths constants are available and correct", () => {
