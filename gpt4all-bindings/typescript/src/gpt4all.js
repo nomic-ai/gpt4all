@@ -37,9 +37,8 @@ async function loadModel(modelName, options = {}) {
         type: "inference",
         allowDownload: true,
         verbose: false,
-        device: "cpu",
         nCtx: 2048,
-        ngl: 100,
+        nGpuLayers: options.ngl ?? 100,
         ...options,
     };
 
@@ -54,27 +53,76 @@ async function loadModel(modelName, options = {}) {
         typeof loadOptions.librariesPath === "string",
         "Libraries path should be a string"
     );
-    const existingPaths = loadOptions.librariesPath
+    const existingLibPaths = loadOptions.librariesPath
         .split(";")
         .filter(existsSync)
         .join(";");
-
+        
     const llmOptions = {
-        model_name: appendBinSuffixIfMissing(modelName),
-        model_path: loadOptions.modelPath,
-        library_path: existingPaths,
-        device: loadOptions.device,
+        modelFile: modelConfig.path,
+        librariesPath: existingLibPaths,
         nCtx: loadOptions.nCtx,
-        ngl: loadOptions.ngl,
+        nGpuLayers: loadOptions.nGpuLayers,
     };
+
+    let initDevice;
+    if (process.platform === "darwin") {
+        if (!loadOptions.device) {
+            llmOptions.backend = "auto"; // 'auto' is effectively 'metal' due to currently non-functional fallback
+        } else if (loadOptions.device === "cpu") {
+            llmOptions.backend = "cpu";
+        } else {
+            if (os.arch() !== "arm64" || loadOptions.device !== "gpu") {
+                throw new Error(
+                    `Unknown device for this platform: ${loadOptions.device}`
+                );
+            }
+            llmOptions.backend = "metal";
+        }
+    } else {
+        llmOptions.backend = "kompute";
+        if (!loadOptions.device || loadOptions.device === "cpu") {
+            // use kompute with no device
+        } else if (
+            loadOptions.device === "cuda" ||
+            loadOptions.device === "kompute"
+        ) {
+            llmOptions.backend = loadOptions.device;
+            initDevice = "gpu";
+        } else if (loadOptions.device.startsWith("cuda:")) {
+            llmOptions.backend = "cuda";
+            initDevice = loadOptions.device.replace(/^cuda:/, "");
+        } else {
+            initDevice = loadOptions.device.replace(/^kompute:/, "");
+        }
+    }
 
     if (loadOptions.verbose) {
         console.debug("Creating LLModel:", {
+            initDevice,
             llmOptions,
             modelConfig,
         });
     }
     const llmodel = new LLModel(llmOptions);
+    if (initDevice) {
+        const gpuInitSuccess = llmodel.initGpu(initDevice);
+        if (!gpuInitSuccess) {
+            const availableDevices = llmodel.getGpuDevices();
+            const deviceNames = availableDevices
+                .map((device) => device.name)
+                .join(", ");
+            console.warn(
+                `Failed to initialize GPU device "${initDevice}" - Available devices: ${deviceNames}`
+            );
+        }
+    }
+    llmodel.load();
+    
+    if (loadOptions.nThreads) {
+        llmodel.setThreadCount(loadOptions.nThreads);
+    }
+
     if (loadOptions.type === "embedding") {
         return new EmbeddingModel(llmodel, modelConfig);
     } else if (loadOptions.type === "inference") {
@@ -84,7 +132,7 @@ async function loadModel(modelName, options = {}) {
     }
 }
 
-function createEmbedding(model, text, options={}) {
+function createEmbedding(model, text, options = {}) {
     let {
         dimensionality = undefined,
         longTextMode = "mean",
@@ -138,10 +186,7 @@ async function createCompletion(
         ...options,
     };
 
-    const result = await provider.generate(
-        input,
-        completionOptions,
-    );
+    const result = await provider.generate(input, completionOptions);
 
     return {
         model: provider.modelName,

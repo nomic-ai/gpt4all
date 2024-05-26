@@ -11,7 +11,7 @@ class InferenceModel {
     constructor(llmodel, config) {
         this.llm = llmodel;
         this.config = config;
-        this.modelName = this.llm.name();
+        this.modelName = this.llm.getName();
     }
 
     async createChatSession(options) {
@@ -107,7 +107,7 @@ class InferenceModel {
             }
             return continueGeneration;
             
-        })
+        });
 
         const result = await this.llm.infer(prompt, {
             ...promptContext,
@@ -156,6 +156,7 @@ class TokenDecoder {
         this.buffer = [];
         this.tokenIds = [];
         this.buffExpectingContBytes = 0;
+        this.textDecoder = new TextDecoder();
     }
 
     decode(tokenId, bytes) {
@@ -200,7 +201,7 @@ class TokenDecoder {
     }
 
     _decodeBuffer() {
-        return new TextDecoder().decode(new Uint8Array(this.buffer));
+        return this.textDecoder.decode(new Uint8Array(this.buffer));
     }
 }
 
