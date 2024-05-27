@@ -1,14 +1,14 @@
 {
   "targets": [
     {
-      "target_name": "gpt4all", # gpt4all-ts will cause compile error
+      "target_name": "gpt4all",
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
-        "../../gpt4all-backend",
+        "backend",
       ],
       "sources": [
-        "../../gpt4all-backend/llmodel_c.cpp",
-        "../../gpt4all-backend/llmodel.cpp",
+        "backend/llmodel_c.cpp",
+        "backend/llmodel.cpp",
         "prompt.cc",
         "index.cc",
        ],
