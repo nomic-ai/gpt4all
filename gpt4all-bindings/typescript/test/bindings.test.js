@@ -35,7 +35,7 @@ describe("llmodel", () => {
     });
 
     test("cpu inference", async () => {
-        const res = await model.llm.infer("whats the capitol of france?", {
+        const res = await model.llm.infer("what is the capital of france?", {
             temp: 0,
             promptTemplate: model.config.promptTemplate,
             nPredict: 10,
@@ -56,7 +56,7 @@ describe("llmodel", () => {
     });
 
     test("gpu inference", async () => {
-        const res = await model.llm.infer("whats the capitol of france?", {
+        const res = await model.llm.infer("what is the capital of france?", {
             temp: 0,
             promptTemplate: model.config.promptTemplate,
             nPredict: 10,
