@@ -929,12 +929,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^20.1.5":
+"@types/node@npm:*":
   version: 20.10.5
   resolution: "@types/node@npm:20.10.5"
   dependencies:
     undici-types: ~5.26.4
   checksum: e216b679f545a8356960ce985a0e53c3a58fff0eacd855e180b9e223b8db2b5bd07b744a002b8c1f0c37f9194648ab4578533b5c12df2ec10cc02f61d20948d2
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^20.12.12":
+  version: 20.12.12
+  resolution: "@types/node@npm:20.12.12"
+  dependencies:
+    undici-types: ~5.26.4
+  checksum: 5373983874b9af7c216e7ca5d26b32a8d9829c703a69f1e66f2113598b5be8582c0e009ca97369f1ec9a6282b3f92812208d06eb1e9fc3bd9b939b022303d042
   languageName: node
   linkType: hard
 
@@ -1994,15 +2003,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"execspawn@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "execspawn@npm:1.0.1"
-  dependencies:
-    util-extend: ^1.0.1
-  checksum: fc2be7fb6de7b4c4cd779ca3f6cf4bf19f0fd22e7967194dcec3c379ac7d914587652c933bac774f0b6bba8f15069969921065553f1e19eb58e25ab675f68689
-  languageName: node
-  linkType: hard
-
 "exit@npm:^0.1.2":
   version: 0.1.2
   resolution: "exit@npm:0.1.2"
@@ -2311,15 +2311,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "gpt4all@workspace:."
   dependencies:
-    "@types/node": ^20.1.5
+    "@types/node": ^20.12.12
     documentation: ^14.0.2
-    jest: ^29.5.0
+    jest: ^29.7.0
     md5-file: ^5.0.0
-    node-addon-api: ^6.1.0
+    node-addon-api: ^8.0.0
     node-gyp: 9.x.x
-    node-gyp-build: ^4.6.0
-    prebuildify: ^5.0.1
-    prettier: ^2.8.8
+    node-gyp-build: ^4.8.1
+    prebuildify: ^6.0.1
+    prettier: ^3.2.5
     rimraf: ^5.0.7
   dependenciesMeta:
     node-gyp:
@@ -3298,7 +3298,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest@npm:^29.5.0":
+"jest@npm:^29.7.0":
   version: 29.7.0
   resolution: "jest@npm:29.7.0"
   dependencies:
@@ -4340,23 +4340,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-addon-api@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "node-addon-api@npm:6.1.0"
+"node-addon-api@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "node-addon-api@npm:8.0.0"
   dependencies:
     node-gyp: latest
-  checksum: 3a539510e677cfa3a833aca5397300e36141aca064cdc487554f2017110709a03a95da937e98c2a14ec3c626af7b2d1b6dabe629a481f9883143d0d5bff07bf2
+  checksum: 4996f919b40125b435beff2744a43d846e649421f97321c58a7e205c125514b2bb0f5b299291876fdbcecb47ecf06e507e9f59d2848b6e495abf99fe585e8a47
   languageName: node
   linkType: hard
 
-"node-gyp-build@npm:^4.6.0":
-  version: 4.7.1
-  resolution: "node-gyp-build@npm:4.7.1"
+"node-gyp-build@npm:^4.8.1":
+  version: 4.8.1
+  resolution: "node-gyp-build@npm:4.8.1"
   bin:
     node-gyp-build: bin.js
     node-gyp-build-optional: optional.js
     node-gyp-build-test: build-test.js
-  checksum: 2ef8248021489db03be3e8098977cdc797b80a9b12b77c6dcb89b0dc89b8c62e6a482672ee298f61021740ae7f080fb33154cfec8fb158cec620f57b0fae87c0
+  checksum: fe6e95da6f4608c1a98655f6bf2fe4e8dd9c877cd13256056a8acaf585cc7f98718823fe9366be11b78c2f332d5a184b00cf07a4af96c9d8fea45f640c019f98
   languageName: node
   linkType: hard
 
@@ -4732,11 +4732,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prebuildify@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "prebuildify@npm:5.0.1"
+"prebuildify@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "prebuildify@npm:6.0.1"
   dependencies:
-    execspawn: ^1.0.1
     minimist: ^1.2.5
     mkdirp-classic: ^0.5.3
     node-abi: ^3.3.0
@@ -4745,16 +4744,16 @@ __metadata:
     tar-fs: ^2.1.0
   bin:
     prebuildify: bin.js
-  checksum: d71a6410efe8a2819d629eff3290c57c6e125ca87004682d97caca18feedf498d492ab3af933a640ffbcb675b6b38fd4f51337e160916ab09cccef6c6719258c
+  checksum: 33b7ba29134d518ddfef7698434ecd0ac816b13ba603d7a5acf8590e04d7f736b24584e63da50e87c25b4a1e35588d54848d57cdf4cf09e625e843d1a583d930
   languageName: node
   linkType: hard
 
-"prettier@npm:^2.8.8":
-  version: 2.8.8
-  resolution: "prettier@npm:2.8.8"
+"prettier@npm:^3.2.5":
+  version: 3.2.5
+  resolution: "prettier@npm:3.2.5"
   bin:
-    prettier: bin-prettier.js
-  checksum: b49e409431bf129dd89238d64299ba80717b57ff5a6d1c1a8b1a28b590d998a34e083fa13573bc732bb8d2305becb4c9a4407f8486c81fa7d55100eb08263cf8
+    prettier: bin/prettier.cjs
+  checksum: 2ee4e1417572372afb7a13bb446b34f20f1bf1747db77cf6ccaf57a9be005f2f15c40f903d41a6b79eec3f57fff14d32a20fb6dee1f126da48908926fe43c311
   languageName: node
   linkType: hard
 
@@ -5675,13 +5674,6 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2
-  languageName: node
-  linkType: hard
-
-"util-extend@npm:^1.0.1":
-  version: 1.0.3
-  resolution: "util-extend@npm:1.0.3"
-  checksum: da57f399b331f40fe2cea5409b1f4939231433db9b52dac5593e4390a98b7b0d1318a0daefbcc48123fffe5026ef49f418b3e4df7a4cd7649a2583e559c608a5
   languageName: node
   linkType: hard
 
