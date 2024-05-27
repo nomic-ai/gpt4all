@@ -1,4 +1,5 @@
 test/
 spec/
-scripts/
+scripts/*
+!scripts/assert-backend-sources.js
 build
