@@ -5,7 +5,7 @@
   "main": "src/gpt4all.js",
   "repository": "nomic-ai/gpt4all",
   "scripts": {
-    "install": "node scripts/assert-backend-sources.js && node-gyp-build",
+    "install": "node ./scripts/assert-backend-sources.js && node-gyp-build",
     "test:ci": "jest test/ci.test.js",
     "test": "jest",
     "clean": "rimraf build runtimes prebuilds backend",
@@ -28,7 +28,7 @@
   "dependencies": {
     "md5-file": "^5.0.0",
     "node-addon-api": "^8.0.0",
-    "node-gyp-build": "^4.8.1"
+    "node-gyp-build": "~4.8.0"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
