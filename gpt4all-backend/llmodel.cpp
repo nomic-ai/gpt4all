@@ -121,27 +121,27 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
 
         addCudaSearchPath();
 
-        std::string impl_name_re = "(gptj|llamamodel-mainline)-(cpu|metal|kompute|vulkan|cuda)";
+        PathString impl_name_re = PATH_LITERAL("(gptj|llamamodel-mainline)-(cpu|metal|kompute|vulkan|cuda)");
         if (cpu_supports_avx2() == 0) {
-            impl_name_re += "-avxonly";
+            impl_name_re += PATH_LITERAL("-avxonly");
         }
-        std::regex re(impl_name_re);
+        PathRegex re(impl_name_re);
         auto search_in_directory = [&](const std::string& paths) {
             std::stringstream ss(paths);
             std::string path;
             // Split the paths string by the delimiter and process each path.
             while (std::getline(ss, path, ';')) {
-                fs::path fs_path(path);
+                auto fs_path = pathFromUtf8(path);
                 // Iterate over all libraries
                 for (const auto& f : fs::directory_iterator(fs_path)) {
                     const fs::path& p = f.path();
 
                     if (p.extension() != LIB_FILE_EXT) continue;
-                    if (!std::regex_search(p.stem().string(), re)) continue;
+                    if (!std::regex_search(p.stem().native(), re)) continue;
 
                     // Add to list if model implementation
                     try {
-                        Dlhandle dl(p.string());
+                        Dlhandle dl(p.native());
                         if (!isImplementation(dl))
                             continue;
                         fres.emplace_back(Implementation(std::move(dl)));
