@@ -386,7 +386,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     bool isEmbedding = is_embedding_arch(llama_model_arch(d_ptr->model));
     const int n_ctx_train = llama_n_ctx_train(d_ptr->model);
     if (isEmbedding) {
-        d_ptr->ctx_params.n_batch = n_ctx;
+        d_ptr->ctx_params.n_batch  = n_ctx;
+        d_ptr->ctx_params.n_ubatch = n_ctx;
     } else {
         if (n_ctx > n_ctx_train) {
             std::cerr << "warning: model was trained on only " << n_ctx_train << " context tokens ("
