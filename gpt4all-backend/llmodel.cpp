@@ -1,5 +1,5 @@
 #include "llmodel.h"
-#include "dlhandle.h"
+#include "oscompat.h"
 #include "sysinfo.h"
 
 #include <cassert>
