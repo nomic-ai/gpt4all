@@ -141,12 +141,18 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
                     if (!std::regex_search(p.stem().string(), re)) continue;
 
                     // Add to list if model implementation
+                    Dlhandle dl;
                     try {
-                        Dlhandle dl(p);
-                        if (!isImplementation(dl))
-                            continue;
-                        fres.emplace_back(Implementation(std::move(dl)));
-                    } catch (...) {}
+                        dl = Dlhandle(p);
+                    } catch (const Dlhandle::Exception &e) {
+                        std::cerr << "Failed to load " << p.filename().string() << ": " << e.what() << "\n";
+                        continue;
+                    }
+                    if (!isImplementation(dl)) {
+                        std::cerr << "Not an implementation: " << p.filename().string() << "\n";
+                        continue;
+                    }
+                    fres.emplace_back(Implementation(std::move(dl)));
                 }
             }
         };
