@@ -42,7 +42,6 @@ This setup wraps your gpt4all model interactions within a monitored session, cap
 
 Once you've set up data collection with OpenLIT, you can visualize and analyze this information to better understand your application's performance:
 
-- **Review Your Data:** Connect to OpenLIT's UI to start exploring performance metrics. Visit the OpenLIT [Quickstart Guide](https://docs.openlit.io/latest/quickstart) for step-by-step details.
+- **Using OpenLIT UI:** Connect to OpenLIT's UI to start exploring performance metrics. Visit the OpenLIT [Quickstart Guide](https://docs.openlit.io/latest/quickstart) for step-by-step details.
 
-- **Integrate with Observability Tools:** If you use tools like Grafana or DataDog, you can integrate the data collected by OpenLIT. For instructions on setting up these connections, check the OpenLIT [Connections Guide](https://docs.openlit.io/latest/connections/intro).
-- 
+- **Integrate with existing Observability Tools:** If you use tools like Grafana or DataDog, you can integrate the data collected by OpenLIT. For instructions on setting up these connections, check the OpenLIT [Connections Guide](https://docs.openlit.io/latest/connections/intro).
