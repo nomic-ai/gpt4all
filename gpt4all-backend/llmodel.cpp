@@ -27,6 +27,8 @@
 #   include <intrin.h>
 #endif
 
+namespace fs = std::filesystem;
+
 #ifndef __APPLE__
 static const std::string DEFAULT_BACKENDS[] = {"kompute", "cpu"};
 #elif defined(__aarch64__)
@@ -129,10 +131,10 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
             std::string path;
             // Split the paths string by the delimiter and process each path.
             while (std::getline(ss, path, ';')) {
-                std::filesystem::path fs_path(path);
+                fs::path fs_path(path);
                 // Iterate over all libraries
-                for (const auto& f : std::filesystem::directory_iterator(fs_path)) {
-                    const std::filesystem::path& p = f.path();
+                for (const auto& f : fs::directory_iterator(fs_path)) {
+                    const fs::path& p = f.path();
 
                     if (p.extension() != LIB_FILE_EXT) continue;
                     if (!std::regex_search(p.stem().string(), re)) continue;
