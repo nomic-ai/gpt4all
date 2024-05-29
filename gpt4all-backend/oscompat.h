@@ -9,20 +9,6 @@
 namespace fs = std::filesystem;
 
 
-// platform-aware Unicode paths
-
-#ifndef _WIN32
-#   define PATH_LITERAL(s) s
-#else
-#   define PATH_LITERAL(s) L##s
-#endif
-
-using PathString = fs::path::string_type;
-using PathRegex  = std::basic_regex<fs::path::value_type>;
-
-fs::path pathFromUtf8(const std::string &utf8);
-
-
 class Dlhandle {
     void *chandle = nullptr;
 
@@ -33,7 +19,7 @@ public:
     };
 
     Dlhandle() = default;
-    Dlhandle(const PathString &fpath);
+    Dlhandle(const fs::path &fpath);
     Dlhandle(const Dlhandle &o) = delete;
     Dlhandle(Dlhandle &&o)
         : chandle(o.chandle)
