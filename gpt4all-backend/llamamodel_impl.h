@@ -48,6 +48,8 @@ public:
                size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false) override;
 
 private:
+    void testModel(); // used for CUDA to eagerly allocate memory
+
     std::unique_ptr<LLamaPrivate> d_ptr;
     bool m_supportsEmbedding = false;
     bool m_supportsCompletion = false;
