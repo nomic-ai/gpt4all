@@ -9,6 +9,7 @@
 class LocalDocs : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool databaseValid READ databaseValid NOTIFY databaseValidChanged)
     Q_PROPERTY(LocalDocsModel *localDocsModel READ localDocsModel NOTIFY localDocsModelChanged)
 
 public:
@@ -22,6 +23,8 @@ public:
 
     Database *database() const { return m_database; }
 
+    bool databaseValid() const { return m_database->isValid(); }
+
 public Q_SLOTS:
     void handleChunkSizeChanged();
     void aboutToQuit();
@@ -33,6 +36,7 @@ Q_SIGNALS:
     void requestRemoveFolder(const QString &collection, const QString &path);
     void requestChunkSizeChange(int chunkSize);
     void localDocsModelChanged();
+    void databaseValidChanged();
 
 private:
     LocalDocsModel *m_localDocsModel;

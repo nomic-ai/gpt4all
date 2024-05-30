@@ -310,9 +310,7 @@ QString EmbeddingLLM::model() const
         return QString();
 
     const ModelInfo defaultModel = embeddingModels->defaultModelInfo();
-    if (!defaultModel.name().isEmpty())
-        return defaultModel.name();
-    return QString();
+    return defaultModel.name(); // empty name is an error
 }
 
 std::vector<float> EmbeddingLLM::generateEmbeddings(const QString &text)

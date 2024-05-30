@@ -28,6 +28,8 @@ LocalDocs::LocalDocs()
         &Database::removeFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestChunkSizeChange, m_database,
         &Database::changeChunkSize, Qt::QueuedConnection);
+    connect(m_database, &Database::databaseValidChanged,
+        this, &LocalDocs::databaseValidChanged, Qt::QueuedConnection);
 
     // Connections for modifying the model and keeping it updated with the database
     connect(m_database, &Database::requestUpdateGuiForCollectionItem,

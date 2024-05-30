@@ -86,9 +86,10 @@ bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
     q.addBindValue(chunk_id);
     if (!q.exec())
         return false;
-    if (q.next())
-        file = q.value(0).toString();
-    return !file.isEmpty();
+    if (!q.next())
+        return false;
+    file = q.value(0).toString();
+    return true;
 }
 
 const auto SELECT_UNCOMPLETED_CHUNKS_SQL = QLatin1String(R"(
@@ -198,8 +199,11 @@ bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
     q.addBindValue(folder_id);
     if (!q.exec())
         return false;
-    if (q.next())
-        count = q.value(0).toInt();
+    if (!q.next()) {
+        count = 0;
+        return false;
+    }
+    count = q.value(0).toInt();
     return true;
 }
 
@@ -590,7 +594,7 @@ bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *to
     return true;
 }
 
-QSqlError Database::initDb()
+bool Database::initDb()
 {
     /*
      * Support upgrade path from older versions:
@@ -627,62 +631,115 @@ QSqlError Database::initDb()
         }
     }
 
+    const QString oldDatabasePath = MySettings::globalInstance()->modelPath() + filename;
+
     // If we're upgrading, then we need to do a select on the current version of the collections table,
     // then delete the current db file, create the new one and populate the collections table and mark
     // them as needing forced indexing
 
     QList<CollectionItem> collections;
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    bool shouldRemoveOldDb = false;
     if (version && version != LOCALDOCS_VERSION) {
 #if defined(DEBUG)
         qDebug() << "Older localdocs version found" << version << "upgrade to" << LOCALDOCS_VERSION;
 #endif
-        const QString oldDatabasePath = MySettings::globalInstance()->modelPath() + filename;
         db.setDatabaseName(oldDatabasePath);
 
-        if (!db.open())
+        if (!db.open()) {
             qWarning() << "ERROR: Could not open old db file" << db.lastError();
+            return false;
+        }
 
         // Select the current collections which will be marked to force indexing
         QSqlQuery q;
-        if (!selectAllFromCollections(version, q, &collections))
+        if (!selectAllFromCollections(version, q, &collections)) {
             qWarning() << "ERROR: Could not open select old collections" << q.lastError();
+            return false;
+        }
 
-        // Remove the old database
         db.close();
-        QFile::remove(oldDatabasePath);
+        // Mark the old database for removal
+        shouldRemoveOldDb = true;
     }
 
     QString dbPath = MySettings::globalInstance()->modelPath() + QString("localdocs_v%1.db").arg(LOCALDOCS_VERSION);
     db.setDatabaseName(dbPath);
 
-    if (!db.open())
-        return db.lastError();
+    if (!db.open()) {
+        qWarning() << "ERROR: opening db" << db.lastError().text();
+        return false;
+    }
 
     QStringList tables = db.tables();
     if (tables.contains("chunks", Qt::CaseInsensitive))
-        return QSqlError();
+        return true; // the database already exists
+
+    if (!db.transaction()) {
+        db.close();
+        QFile::remove(dbPath);
+        qWarning() << "ERROR: failed to create new database transaction" << db.lastError().text();
+        return false;
+    }
 
     QSqlQuery q;
-    if (!q.exec(CHUNKS_SQL))
-        return q.lastError();
+    if (!q.exec(CHUNKS_SQL)) {
+        db.close();
+        QFile::remove(dbPath);
+        qWarning() << "ERROR: failed to create chunks table" << q.lastError().text();
+        return false;
+    }
 
-    if (!q.exec(FTS_CHUNKS_SQL))
-        return q.lastError();
+    if (!q.exec(FTS_CHUNKS_SQL)) {
+        db.close();
+        QFile::remove(dbPath);
+        qWarning() << "ERROR: failed to create fts chunks table" << q.lastError().text();
+        return false;
+    }
 
-    if (!q.exec(COLLECTIONS_SQL))
-        return q.lastError();
+    if (!q.exec(COLLECTIONS_SQL)) {
+        db.close();
+        QFile::remove(dbPath);
+        qWarning() << "ERROR: failed to create collections table" << q.lastError().text();
+        return false;
+    }
 
-    if (!q.exec(FOLDERS_SQL))
-        return q.lastError();
+    if (!q.exec(FOLDERS_SQL)) {
+        db.close();
+        QFile::remove(dbPath);
+        qWarning() << "ERROR: failed to create folders table" << q.lastError().text();
+        return false;
+    }
 
-    if (!q.exec(DOCUMENTS_SQL))
-        return q.lastError();
+    if (!q.exec(DOCUMENTS_SQL)) {
+        db.close();
+        QFile::remove(dbPath);
+        qWarning() << "ERROR: failed to create documents table" << q.lastError().text();
+        return false;
+    }
 
+    bool success = true;
     for (const CollectionItem &item : collections)
-        addForcedCollection(item);
+        success = addForcedCollection(item) && success;
 
-    return QSqlError();
+    if (!success) {
+        db.close();
+        QFile::remove(dbPath);
+        qWarning() << "ERROR: failed to add previous collections to new database";
+        return false;
+    }
+
+    if (!db.commit()) {
+        db.close();
+        QFile::remove(dbPath);
+        qWarning() << "ERROR: failed to commit new database transaction";
+        return false;
+    }
+
+    if (shouldRemoveOldDb)
+        QFile::remove(oldDatabasePath);
+
+    return true;
 }
 
 Database::Database(int chunkSize)
@@ -692,6 +749,7 @@ Database::Database(int chunkSize)
     , m_watcher(new QFileSystemWatcher(this))
     , m_embLLM(new EmbeddingLLM)
     , m_embeddings(new Embeddings(this))
+    , m_databaseValid(true)
 {
     moveToThread(&m_dbThread);
     m_dbThread.setObjectName("database");
@@ -1155,16 +1213,20 @@ void Database::start()
     m_scanTimer->callOnTimeout(this, &Database::scanQueue);
     if (!QSqlDatabase::drivers().contains("QSQLITE")) {
         qWarning() << "ERROR: missing sqlite driver";
+        m_databaseValid = false;
     } else {
-        QSqlError err = initDb();
-        if (err.type() != QSqlError::NoError)
-            qWarning() << "ERROR: initializing db" << err.text();
+        m_databaseValid = initDb();
     }
 
-    if (m_embeddings->fileExists() && !m_embeddings->load())
+    if (m_embeddings->fileExists() && !m_embeddings->load()) {
         qWarning() << "ERROR: Could not load embeddings";
+        m_databaseValid = false;
+    }
 
-    addCurrentFolders();
+    if (!m_databaseValid)
+        emit databaseValidChanged();
+    else
+        addCurrentFolders();
 }
 
 void Database::addCurrentFolders()
@@ -1273,7 +1335,7 @@ int checkAndAddFolderToDB(const QString &path)
     return folder_id;
 }
 
-void Database::addForcedCollection(const CollectionItem &collection)
+bool Database::addForcedCollection(const CollectionItem &collection)
 {
     // These are collection items that came from an older version of localdocs which require
     // forced indexing that should only be done when the user has explicitly asked for them to be
@@ -1282,12 +1344,12 @@ void Database::addForcedCollection(const CollectionItem &collection)
 
     const int folder_id = checkAndAddFolderToDB(path);
     if (folder_id == -1)
-        return;
+        return false;
 
     const QString model = m_embLLM->model();
     if (model.isEmpty()) {
         qWarning() << "ERROR: We have no embedding model";
-        return;
+        return false;
     }
 
     QSqlQuery q;
@@ -1296,10 +1358,11 @@ void Database::addForcedCollection(const CollectionItem &collection)
                        model /*embedding_model*/,
                        true /*force_indexing*/)) {
         qWarning() << "ERROR: Cannot add folder to collection" << collection.collection << path << q.lastError();
-        return;
+        return false;
     }
 
     addGuiCollectionItem(collection);
+    return true;
 }
 
 void Database::forceIndexing(const QString &collection)

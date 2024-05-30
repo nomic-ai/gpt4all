@@ -71,6 +71,8 @@ public:
     Database(int chunkSize);
     virtual ~Database();
 
+    bool isValid() const { return m_databaseValid; }
+
 public Q_SLOTS:
     void start();
     void scanQueue();
@@ -88,6 +90,7 @@ Q_SIGNALS:
     void requestAddGuiCollectionItem(const CollectionItem &item);
     void requestRemoveGuiFolderById(int folder_id);
     void requestGuiCollectionListUpdated(const QList<CollectionItem> &collectionList);
+    void databaseValidChanged();
 
 private Q_SLOTS:
     void directoryChanged(const QString &path);
@@ -98,8 +101,8 @@ private Q_SLOTS:
     void handleErrorGenerated(int folder_id, const QString &error);
 
 private:
-    QSqlError initDb();
-    void addForcedCollection(const CollectionItem &collection);
+    bool initDb();
+    bool addForcedCollection(const CollectionItem &collection);
     void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
     size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
         const QString &title, const QString &author, const QString &subject, const QString &keywords, int page,
@@ -136,6 +139,7 @@ private:
     Embeddings *m_embeddings;
     QVector<EmbeddingChunk> m_chunkList;
     QHash<int, CollectionItem> m_collectionMap; // used only for tracking indexing/embedding progress
+    std::atomic<bool> m_databaseValid;
 };
 
 #endif // DATABASE_H
