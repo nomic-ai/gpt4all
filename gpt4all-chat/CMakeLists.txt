@@ -112,14 +112,17 @@ qt_add_qml_module(chat
     NO_CACHEGEN
     QML_FILES
       main.qml
+      qml/AddCollectionView.qml
+      qml/AddModelView.qml
       qml/ChatDrawer.qml
       qml/ChatView.qml
       qml/CollectionsDialog.qml
-      qml/ModelDownloaderDialog.qml
+      qml/HomeView.qml
+      qml/ModelDownloaderView.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
       qml/ThumbsDownDialog.qml
-      qml/SettingsDialog.qml
+      qml/SettingsView.qml
       qml/StartupDialog.qml
       qml/PopupDialog.qml
       qml/AboutDialog.qml
@@ -127,6 +130,7 @@ qt_add_qml_module(chat
       qml/ModelSettings.qml
       qml/ApplicationSettings.qml
       qml/LocalDocsSettings.qml
+      qml/LocalDocsView.qml
       qml/SwitchModelDialog.qml
       qml/MySettingsTab.qml
       qml/MySettingsStack.qml
@@ -138,12 +142,14 @@ qt_add_qml_module(chat
       qml/MyComboBox.qml
       qml/MyDialog.qml
       qml/MyDirectoryField.qml
+      qml/MyFancyLink.qml
       qml/MyTextArea.qml
       qml/MyTextField.qml
       qml/MyCheckBox.qml
       qml/MyBusyIndicator.qml
       qml/MyMiniButton.qml
       qml/MyToolButton.qml
+      qml/MyWelcomeButton.qml
     RESOURCES
       icons/send_message.svg
       icons/stop_generating.svg

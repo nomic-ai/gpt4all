@@ -11,21 +11,17 @@ import modellist
 import network
 import mysettings
 
-MyDialog {
+Rectangle {
     id: modelDownloaderDialog
-    modal: true
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    padding: 10
-    property bool showEmbeddingModels: false
+    color: theme.containerBackground
 
-    onOpened: {
-        Network.trackEvent("download_dialog")
+    signal addModelViewRequested()
 
-        if (showEmbeddingModels) {
-            ModelList.downloadableModels.expanded = true
-            var targetModelIndex = ModelList.defaultEmbeddingModelIndex
-            modelListView.positionViewAtIndex(targetModelIndex, ListView.Beginning)
-        }
+    function showEmbeddingModels() {
+        Network.sendModelDownloaderDialog();
+        ModelList.downloadableModels.expanded = true
+        var targetModelIndex = ModelList.defaultEmbeddingModelIndex
+        modelListView.positionViewAtIndex(targetModelIndex, ListView.Beginning)
     }
 
     PopupDialog {
@@ -34,227 +30,47 @@ MyDialog {
         shouldTimeOut: false
     }
 
+
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: 20
         spacing: 30
 
-        Label {
-            id: listLabel
-            text: qsTr("Discover and Download Models")
-            visible: true
-            Layout.fillWidth: true
-            horizontalAlignment: Qt.AlignHCenter
-            verticalAlignment: Qt.AlignVCenter
-            color: theme.titleTextColor
-            font.pixelSize: theme.fontSizeLargest
-            font.bold: true
-        }
-
         RowLayout {
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignCenter
-            Layout.margins: 0
-            spacing: 10
-            MyTextField {
-                id: discoverField
-                property string textBeingSearched: ""
-                readOnly: ModelList.discoverInProgress
-                Layout.alignment: Qt.AlignCenter
-                Layout.preferredWidth: 720
-                Layout.preferredHeight: 90
-                font.pixelSize: theme.fontSizeLarger
-                placeholderText: qsTr("Discover and download models by keyword search...")
-                Accessible.role: Accessible.EditableText
-                Accessible.name: placeholderText
-                Accessible.description: qsTr("Text field for discovering and filtering downloadable models")
-                Connections {
-                    target: ModelList
-                    function onDiscoverInProgressChanged() {
-                        if (ModelList.discoverInProgress) {
-                            discoverField.textBeingSearched = discoverField.text;
-                            discoverField.text = qsTr("Searching \u00B7 ") + discoverField.textBeingSearched;
-                        } else {
-                            discoverField.text = discoverField.textBeingSearched;
-                            discoverField.textBeingSearched = "";
-                        }
-                    }
-                }
-                background: ProgressBar {
-                    id: discoverProgressBar
-                    indeterminate: ModelList.discoverInProgress && ModelList.discoverProgress === 0.0
-                    value: ModelList.discoverProgress
-                    background: Rectangle {
-                        color: theme.controlBackground
-                        radius: 10
-                    }
-                    contentItem: Item {
-                        Rectangle {
-                            visible: ModelList.discoverInProgress
-                            anchors.bottom: parent.bottom
-                            width: discoverProgressBar.visualPosition * parent.width
-                            height: 10
-                            radius: 2
-                            color: theme.progressForeground
-                        }
-                    }
+            Layout.alignment: Qt.AlignTop
+            spacing: 50
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignLeft
+                Layout.minimumWidth: 200
+                spacing: 5
+
+                Text {
+                    id: welcome
+                    text: qsTr("Installed Models")
+                    font.pixelSize: theme.fontSizeBanner
+                    color: theme.titleTextColor
                 }
 
-                Keys.onReturnPressed: (event)=> {
-                    if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
-                        event.accepted = false;
-                    else {
-                        editingFinished();
-                        sendDiscovery()
-                    }
-                }
-                function sendDiscovery() {
-                    ModelList.downloadableModels.discoverAndFilter(discoverField.text);
-                }
-                RowLayout {
-                    spacing: 0
-                    anchors.right: discoverField.right
-                    anchors.verticalCenter: discoverField.verticalCenter
-                    anchors.rightMargin: 15
-                    visible: !ModelList.discoverInProgress
-                    MyMiniButton {
-                        id: clearDiscoverButton
-                        backgroundColor: theme.textColor
-                        backgroundColorHovered: theme.iconBackgroundDark
-                        visible: discoverField.text !== ""
-                        contentItem: Text {
-                            color: clearDiscoverButton.hovered ? theme.iconBackgroundDark : theme.textColor
-                            text: "\u2715"
-                            font.pixelSize: theme.fontSizeLarge
-                        }
-                        onClicked: {
-                            discoverField.text = ""
-                            discoverField.sendDiscovery() // should clear results
-                        }
-                    }
-                    MyMiniButton {
-                        backgroundColor: theme.textColor
-                        backgroundColorHovered: theme.iconBackgroundDark
-                        source: "qrc:/gpt4all/icons/settings.svg"
-                        onClicked: {
-                            discoveryTools.visible = !discoveryTools.visible
-                        }
-                    }
-                    MyMiniButton {
-                        id: sendButton
-                        enabled: !ModelList.discoverInProgress
-                        backgroundColor: theme.textColor
-                        backgroundColorHovered: theme.iconBackgroundDark
-                        source: "qrc:/gpt4all/icons/send_message.svg"
-                        Accessible.name: qsTr("Initiate model discovery and filtering")
-                        Accessible.description: qsTr("Triggers discovery and filtering of models")
-                        onClicked: {
-                            discoverField.sendDiscovery()
-                        }
-                    }
+                Text {
+                    text: qsTr("Locally installed large language models")
+                    font.pixelSize: theme.fontSizeLarge
+                    color: theme.mutedTextColor
                 }
             }
-        }
 
-        RowLayout {
-            id: discoveryTools
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignCenter
-            Layout.margins: 0
-            spacing: 20
-            visible: false
-            MyComboBox {
-                id: comboSort
-                model: [qsTr("Default"), qsTr("Likes"), qsTr("Downloads"), qsTr("Recent")]
-                currentIndex: ModelList.discoverSort
-                contentItem: Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    rightPadding: 30
-                    color: theme.textColor
-                    text: {
-                        return qsTr("Sort by: ") + comboSort.displayText
-                    }
-                    font.pixelSize: theme.fontSizeLarger
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                }
-                onActivated: function (index) {
-                    ModelList.discoverSort = index;
-                }
+            Rectangle {
+                Layout.fillWidth: true
+                height: 0
             }
-            MyComboBox {
-                id: comboSortDirection
-                model: [qsTr("Asc"), qsTr("Desc")]
-                currentIndex: {
-                    if (ModelList.discoverSortDirection === 1)
-                        return 0
-                    else
-                        return 1;
-                }
-                contentItem: Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    rightPadding: 30
-                    color: theme.textColor
-                    text: {
-                        return qsTr("Sort dir: ") + comboSortDirection.displayText
-                    }
-                    font.pixelSize: theme.fontSizeLarger
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                }
-                onActivated: function (index) {
-                    if (index === 0)
-                        ModelList.discoverSortDirection = 1;
-                    else
-                        ModelList.discoverSortDirection = -1;
-                }
-            }
-            MyComboBox {
-                id: comboLimit
-                model: ["5", "10", "20", "50", "100", qsTr("None")]
-                currentIndex: {
-                    if (ModelList.discoverLimit === 5)
-                        return 0;
-                    else if (ModelList.discoverLimit === 10)
-                        return 1;
-                    else if (ModelList.discoverLimit === 20)
-                        return 2;
-                    else if (ModelList.discoverLimit === 50)
-                        return 3;
-                    else if (ModelList.discoverLimit === 100)
-                        return 4;
-                    else if (ModelList.discoverLimit === -1)
-                        return 5;
-                }
-                contentItem: Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    rightPadding: 30
-                    color: theme.textColor
-                    text: {
-                        return qsTr("Limit: ") + comboLimit.displayText
-                    }
-                    font.pixelSize: theme.fontSizeLarger
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                }
-                onActivated: function (index) {
-                    switch (index) {
-                    case 0:
-                        ModelList.discoverLimit = 5; break;
-                    case 1:
-                        ModelList.discoverLimit = 10; break;
-                    case 2:
-                        ModelList.discoverLimit = 20; break;
-                    case 3:
-                        ModelList.discoverLimit = 50; break;
-                    case 4:
-                        ModelList.discoverLimit = 100; break;
-                    case 5:
-                        ModelList.discoverLimit = -1; break;
-                    }
+
+            MyButton {
+                Layout.alignment: Qt.AlignTop | Qt.AlignRight
+                text: qsTr("\uFF0B Add Model")
+                onClicked: {
+                    addModelViewRequested()
                 }
             }
         }
@@ -290,12 +106,16 @@ MyDialog {
                 id: modelListView
                 model: ModelList.downloadableModels
                 boundsBehavior: Flickable.StopAtBounds
+                spacing: 30
 
                 delegate: Rectangle {
                     id: delegateItem
                     width: modelListView.width
-                    height: childrenRect.height
-                    color: index % 2 === 0 ? theme.darkContrast : theme.lightContrast
+                    height: childrenRect.height + 60
+                    color: theme.conversationBackground
+                    radius: 10
+                    border.width: 1
+                    border.color: theme.controlBorder
 
                     GridLayout {
                         columns: 2
@@ -318,6 +138,7 @@ MyDialog {
 
                         Rectangle {
                             id: actionBox
+                            visible: false
                             width: childrenRect.width + 20
                             color: theme.containerBackground
                             border.color: theme.accentColor
@@ -576,22 +397,22 @@ MyDialog {
                     }
                 }
 
-                footer: Component {
-                    Rectangle {
-                        width: modelListView.width
-                        height: expandButton.height + 80
-                        color: ModelList.downloadableModels.count % 2 === 0 ? theme.darkContrast : theme.lightContrast
-                        MySettingsButton {
-                            id: expandButton
-                            anchors.centerIn: parent
-                            padding: 40
-                            text: ModelList.downloadableModels.expanded ? qsTr("Show fewer models") : qsTr("Show more models")
-                            onClicked: {
-                                ModelList.downloadableModels.expanded = !ModelList.downloadableModels.expanded;
-                            }
-                        }
-                    }
-                }
+//                footer: Component {
+//                    Rectangle {
+//                        width: modelListView.width
+//                        height: expandButton.height + 80
+//                        color: ModelList.downloadableModels.count % 2 === 0 ? theme.darkContrast : theme.lightContrast
+//                        MySettingsButton {
+//                            id: expandButton
+//                            anchors.centerIn: parent
+//                            padding: 40
+//                            text: ModelList.downloadableModels.expanded ? qsTr("Show fewer models") : qsTr("Show more models")
+//                            onClicked: {
+//                                ModelList.downloadableModels.expanded = !ModelList.downloadableModels.expanded;
+//                            }
+//                        }
+//                    }
+//                }
             }
         }
 

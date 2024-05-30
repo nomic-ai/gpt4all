@@ -69,6 +69,7 @@ Item {
 
             Item {
                 Layout.fillWidth: true
+                Layout.topMargin: 20
                 height: restoreDefaultsButton.height
                 MySettingsButton {
                     id: restoreDefaultsButton

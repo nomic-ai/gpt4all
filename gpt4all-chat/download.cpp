@@ -62,6 +62,8 @@ ReleaseInfo Download::releaseInfo() const
     const QString currentVersion = QCoreApplication::applicationVersion();
     if (m_releaseMap.contains(currentVersion))
         return m_releaseMap.value(currentVersion);
+    if (!m_releaseMap.empty())
+        return m_releaseMap.last();
     return ReleaseInfo();
 }
 

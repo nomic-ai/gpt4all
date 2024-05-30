@@ -31,9 +31,10 @@ Button {
         Image {
             id: image
             anchors.centerIn: parent
+            visible: false
             mipmap: true
-            width: 20
-            height: 20
+            sourceSize.width: 20
+            sourceSize.height: 20
         }
         ColorOverlay {
             anchors.fill: image

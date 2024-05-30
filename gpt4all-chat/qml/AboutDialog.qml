@@ -74,7 +74,7 @@ MyDialog {
             wrapMode: Text.WordWrap
             text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
             font.pixelSize: theme.fontSizeLarge
-            onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
+//            onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
             color: theme.textColor
             linkColor: theme.linkColor
 
@@ -89,13 +89,26 @@ MyDialog {
             wrapMode: Text.WordWrap
             text: qsTr("Thank you to <a href=\"https://home.nomic.ai\">Nomic AI</a> and the community for contributing so much great data, code, ideas, and energy to the growing open source AI ecosystem!")
             font.pixelSize: theme.fontSizeLarge
-            onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
+//            onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
             color: theme.textColor
             linkColor: theme.linkColor
 
             Accessible.role: Accessible.Paragraph
             Accessible.name: qsTr("Thank you blurb")
             Accessible.description: qsTr("Contains embedded link to https://home.nomic.ai")
+        }
+    }
+
+    MyButton {
+        id: checkForUpdatesButton
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        text: qsTr("Check for updates...")
+        font.pixelSize: theme.fontSizeLarge
+        Accessible.description: qsTr("Launch an external application that will check for updates to the installer")
+        onClicked: {
+            if (!LLM.checkForUpdates())
+                checkForUpdatesError.open()
         }
     }
 }

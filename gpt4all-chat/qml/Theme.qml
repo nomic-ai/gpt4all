@@ -26,6 +26,10 @@ QtObject {
     property color gray900: Qt.hsla(25/360, 0.05, 0.31)
     property color gray950: Qt.hsla(25/360, 0.05, 0.15)
 
+    property color grayRed0: "#e7dfdf"
+    property color grayRed500: "#a48e8e"
+    property color grayRed900: "#766060"
+
     // darkmode
     property color darkgray0: Qt.hsla(25/360, 0.05, 0.23)
     property color darkgray50: Qt.hsla(25/360, 0.05, 0.21)
@@ -169,12 +173,43 @@ QtObject {
         }
     }
 
+    property color dividerColor: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return blue950;
+            case "Dark":
+                return darkgray200;
+            default:
+                return grayRed0;
+        }
+    }
+
+    property color conversationDivider: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return blue900;
+            case "Dark":
+                return darkgray100;
+            default:
+                return gray100;
+        }
+    }
+
     property color conversationBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue500;
             default:
-                return containerBackground;
+                return white;
+        }
+    }
+
+    property color viewBackground: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return blue600;
+            default:
+                return gray50;
         }
     }
 
@@ -196,7 +231,18 @@ QtObject {
             case "Dark":
                 return darkgray200;
             default:
-                return gray200;
+                return gray100;
+        }
+    }
+
+    property color viewBarBackground: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return blue950;
+            case "Dark":
+                return darkgray300;
+            default:
+                return gray100;
         }
     }
 
@@ -229,7 +275,7 @@ QtObject {
             case "Dark":
                 return "#000000";
             default:
-                return "#000000";
+                return white;
         }
     }
 
@@ -343,6 +389,90 @@ QtObject {
         }
     }
 
+    property color collectionButtonBackground: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green50;
+        }
+    }
+
+    property color collectionButtonBackgroundHovered: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green100;
+        }
+    }
+
+    property color welcomeButtonBackground: {
+        switch (MySettings.chatTheme) {
+            default:
+                return theme.green100;
+        }
+    }
+
+    property color welcomeButtonBorder: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green300;
+        }
+    }
+
+    property color welcomeButtonBorderHovered: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green400;
+        }
+    }
+
+    property color welcomeButtonText: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green700;
+        }
+    }
+
+    property color welcomeButtonTextHovered: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green800;
+        }
+    }
+
+    property color fancyLinkText: {
+        switch (MySettings.chatTheme) {
+            default:
+                return grayRed900;
+        }
+    }
+
+    property color fancyLinkTextHovered: {
+        switch (MySettings.chatTheme) {
+            default:
+                return textColor;
+        }
+    }
+
+    property color changeLogColor: {
+        switch (MySettings.chatTheme) {
+            default:
+                return grayRed900;
+        }
+    }
+
+    property color logoColor: {
+        switch (MySettings.chatTheme) {
+            default:
+                return grayRed500;
+        }
+    }
+
+    property color logoColorHovered: {
+        switch (MySettings.chatTheme) {
+            default:
+                return grayRed900;
+        }
+    }
+
     property color iconBackgroundDark: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
@@ -361,7 +491,7 @@ QtObject {
             case "Dark":
                 return darkwhite;
             default:
-                return white;
+                return gray500;
         }
     }
 
@@ -373,6 +503,39 @@ QtObject {
                 return accentColor;
             default:
                 return accentColor;
+        }
+    }
+
+    property color iconBackgroundViewBar: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return iconBackgroundLight;
+            case "Dark":
+                return iconBackgroundLight;
+            default:
+                return green500;
+        }
+    }
+
+    property color iconBackgroundViewBarToggled: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return iconBackgroundLight;
+            case "Dark":
+                return iconBackgroundLight;
+            default:
+                return green200;
+        }
+    }
+
+    property color iconBackgroundViewBarHovered: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return iconBackgroundHovered;
+            case "Dark":
+                return iconBackgroundHovered;
+            default:
+                return green600;
         }
     }
 
@@ -460,7 +623,7 @@ QtObject {
             case "Dark":
                 return green400;
             default:
-                return green700;
+                return black;
         }
     }
 
@@ -515,7 +678,7 @@ QtObject {
             case "Dark":
                 return green700;
             default:
-                return green700;
+                return "transparent";
         }
     }
 
@@ -566,4 +729,10 @@ QtObject {
     property real  fontSizeLargest: MySettings.fontSize === "Small" ?
         fontSize + 7 : MySettings.fontSize === "Medium" ?
             fontSize + 12 : fontSize + 14
+    property real  fontSizeBannerSmall: MySettings.fontSize === "Small" ?
+        fontSize + 17 : MySettings.fontSize === "Medium" ?
+            fontSize + 22 : fontSize + 24
+    property real  fontSizeBanner: MySettings.fontSize === "Small" ?
+        fontSize + 47 : MySettings.fontSize === "Medium" ?
+            fontSize + 52 : fontSize + 54
 }

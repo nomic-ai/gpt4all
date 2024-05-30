@@ -30,10 +30,10 @@ Item {
         Label {
             id: titleLabelText
             anchors.left: parent.left
-            color: theme.titleTextColor
+            color: theme.grayRed900
             topPadding: 10
             bottomPadding: 10
-            font.pixelSize: theme.fontSizeLargest
+            font.pixelSize: theme.fontSizeLarge
             font.bold: true
         }
     }
@@ -44,8 +44,8 @@ Item {
         anchors.rightMargin: 15
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 3
-        color: theme.accentColor
+        height: 2
+        color: theme.grayRed500
     }
 
     TabBar {
@@ -89,8 +89,8 @@ Item {
         anchors.rightMargin: 15
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 3
-        color: theme.accentColor
+        height: 2
+        color: theme.grayRed500
     }
 
     FolderDialog {
@@ -107,6 +107,7 @@ Item {
     StackLayout {
         id: stackLayout
         anchors.top: tabTitlesModel.count > 1 ? dividerTabBar.bottom : titleLabel.bottom
+        anchors.topMargin: 20
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
