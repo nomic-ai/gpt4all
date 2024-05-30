@@ -393,6 +393,10 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
             std::cerr << "warning: model was trained on only " << n_ctx_train << " context tokens ("
                       << n_ctx << " specified)\n";
         }
+
+        // GPT4All defaults to 128 tokens which is also the hardcoded maximum
+        d_ptr->ctx_params.n_batch  = LLMODEL_MAX_PROMPT_BATCH;
+        d_ptr->ctx_params.n_ubatch = LLMODEL_MAX_PROMPT_BATCH;
     }
 
     d_ptr->ctx_params.n_ctx   = n_ctx;
