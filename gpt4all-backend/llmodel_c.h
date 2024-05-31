@@ -1,9 +1,9 @@
 #ifndef LLMODEL_C_H
 #define LLMODEL_C_H
 
-#include <stdint.h>
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #ifdef __GNUC__
 #define DEPRECATED __attribute__ ((deprecated))

@@ -3,6 +3,9 @@
 
 #include "llmodel.h"
 
+#include <ggml.h>
+#include <llama.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -25,8 +28,6 @@
 #include <thread>
 #include <vector>
 
-#include <llama.h>
-#include <ggml.h>
 #ifdef GGML_USE_KOMPUTE
 #   include <ggml-kompute.h>
 #elif GGML_USE_VULKAN

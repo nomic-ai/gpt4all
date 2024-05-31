@@ -1,5 +1,6 @@
-#include "llmodel.h"
 #include "llmodel_c.h"
+
+#include "llmodel.h"
 
 #include <algorithm>
 #include <cstdio>

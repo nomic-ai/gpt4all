@@ -5,6 +5,8 @@
 #include "llmodel_shared.h"
 #include "utils.h"
 
+#include <ggml.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cinttypes>
@@ -21,9 +23,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-#include <ggml.h>
-
 
 namespace {
 const char *modelType_ = "GPT-J";
