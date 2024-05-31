@@ -1,10 +1,13 @@
 #include "llmodel.h"
 
+#include "dlhandle.h"
+
 #include <cassert>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <regex>
@@ -12,9 +15,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "dlhandle.h"
-#include "sysinfo.h"
 
 #ifdef _WIN32
 #   define WIN32_LEAN_AND_MEAN
@@ -26,6 +26,10 @@
 
 #ifdef _MSC_VER
 #   include <intrin.h>
+#endif
+
+#if defined(__APPLE__) && defined(__aarch64__)
+#   include "sysinfo.h" // for getSystemTotalRAMInBytes
 #endif
 
 namespace fs = std::filesystem;

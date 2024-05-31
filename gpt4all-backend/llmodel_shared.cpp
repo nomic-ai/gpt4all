@@ -1,10 +1,17 @@
 #include "llmodel.h"
 
+#include <algorithm>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
 #include <iostream>
+#include <optional>
 #include <regex>
+#include <stdexcept>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 // TODO(cebtenzzre): replace this with llama_kv_cache_seq_shift for llamamodel (GPT-J needs this as-is)
 void LLModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {

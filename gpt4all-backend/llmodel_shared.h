@@ -1,8 +1,10 @@
 #pragma once
-#include <cstdint>
-#include <cstddef>
-#include <vector>
+
 #include <ggml.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 
 struct llm_buffer {
     uint8_t * addr = NULL;

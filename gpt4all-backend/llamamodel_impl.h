@@ -4,11 +4,12 @@
 #ifndef LLAMAMODEL_H
 #define LLAMAMODEL_H
 
+#include "llmodel.h"
+
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
-#include "llmodel.h"
 
 struct LLamaPrivate;
 struct EmbModelSpec;
