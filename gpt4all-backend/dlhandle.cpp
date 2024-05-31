@@ -5,7 +5,6 @@
 #   include <dlfcn.h>
 #else
 #   include <algorithm>
-#   include <filesystem>
 #   include <sstream>
 #   define WIN32_LEAN_AND_MEAN
 #   ifndef NOMINMAX

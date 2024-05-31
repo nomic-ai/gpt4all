@@ -1,7 +1,6 @@
 #pragma once
 
 #include <filesystem>
-#include <regex>
 #include <stdexcept>
 #include <string>
 #include <utility>
