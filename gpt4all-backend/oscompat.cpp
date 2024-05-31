@@ -24,7 +24,7 @@ namespace fs = std::filesystem;
 Dlhandle::Dlhandle(const fs::path &fpath) {
     chandle = dlopen(fpath.c_str(), RTLD_LAZY | RTLD_LOCAL);
     if (!chandle) {
-        throw Exception("dlopen(\"" + fpath.filename().c_str() + "\"): " + dlerror());
+        throw Exception("dlopen(\"" + fpath.filename().string() + "\"): " + dlerror());
     }
 }
 
