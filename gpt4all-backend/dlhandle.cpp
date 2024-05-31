@@ -1,3 +1,5 @@
+#include "dlhandle.h"
+
 #include <filesystem>
 #include <string>
 
@@ -11,8 +13,6 @@
 #   endif
 #   include <windows.h>
 #endif
-
-#include "dlhandle.h"
 
 namespace fs = std::filesystem;
 
