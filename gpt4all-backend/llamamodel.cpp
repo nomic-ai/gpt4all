@@ -393,7 +393,8 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     bool isEmbedding = is_embedding_arch(llama_model_arch(d_ptr->model));
     const int n_ctx_train = llama_n_ctx_train(d_ptr->model);
     if (isEmbedding) {
-        d_ptr->ctx_params.n_batch = n_ctx;
+        d_ptr->ctx_params.n_batch  = n_ctx;
+        d_ptr->ctx_params.n_ubatch = n_ctx;
     } else {
         if (n_ctx > n_ctx_train) {
             std::cerr << "warning: model was trained on only " << n_ctx_train << " context tokens ("
@@ -927,11 +928,11 @@ void LLamaModel::embedInternal(
         int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), wantBOS, false);
         if (n_tokens) {
             (void)eos_token;
-            assert(useEOS == (eos_token != -1 && tokens[n_tokens - 1] == eos_token));
-            tokens.resize(n_tokens - useEOS); // erase EOS/SEP
-        } else {
-            tokens.clear();
+            assert((useEOS && wantBOS) == (eos_token != -1 && tokens[n_tokens - 1] == eos_token));
+            if (useEOS && wantBOS)
+                n_tokens--; // erase EOS/SEP
         }
+        tokens.resize(n_tokens);
     };
 
     // tokenize the texts

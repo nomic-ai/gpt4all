@@ -421,7 +421,7 @@ jobs:
             export PATH=$PATH:/usr/local/cuda/bin
             git submodule update --init --recursive
             cd gpt4all-backend
-            cmake -B build
+            cmake -B build -DCMAKE_BUILD_TYPE=Release
             cmake --build build --parallel
       - run:
           name: Build wheel
@@ -451,7 +451,7 @@ jobs:
           command: |
             git submodule update --init  # don't use --recursive because macOS doesn't use Kompute
             cd gpt4all-backend
-            cmake -B build -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             cmake --build build --parallel
       - run:
           name: Build wheel
@@ -466,13 +466,17 @@ jobs:
             - "*.whl"
 
   build-py-windows:
-    executor:
-      name: win/default
+    machine:
+      image: 'windows-server-2019-vs2019:2022.08.1'
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
     steps:
       - checkout
       - run:
-          name: Install MinGW64
-          command: choco install -y mingw --force --no-progress
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
       - run:
           name: Install VulkanSDK
           command: |
@@ -486,31 +490,40 @@ jobs:
       - run:
           name: Install dependencies
           command:
-            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+            choco install -y cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System'
       - run:
           name: Install Python dependencies
           command: pip install setuptools wheel cmake
       - run:
           name: Build C library
           command: |
-            git submodule update --init --recursive
-            cd gpt4all-backend
-            $Env:Path += ";C:\ProgramData\mingw64\mingw64\bin"
-            $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
+            # Visual Studio setup
+            # I would use Enter-VsDevShell but it causes cudafe++ to segfault
+            $Env:PATH += ";C:\Program Files (x86)\Windows Kits\10\bin\x64"
+            $Env:PATH += ";C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
+            $Env:PATH += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64"
+            $Env:LIB  = "C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\ucrt\x64"
+            $Env:LIB += ";C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x64"
+            $Env:LIB += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64"
+            $Env:LIB += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\lib\x64"
+            $Env:INCLUDE  = "C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\ucrt"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\um"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\shared"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\winrt"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\cppwinrt"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\VS\include"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\include"
+
+            $Env:PATH += ";C:\VulkanSDK\1.3.261.1\bin"
             $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
-            cmake -G "MinGW Makefiles" -B build -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -DKOMPUTE_OPT_USE_BUILT_IN_VULKAN_HEADER=OFF
+            cd gpt4all-backend
+            cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON
             cmake --build build --parallel
       - run:
           name: Build wheel
-          # TODO: As part of this task, we need to move mingw64 binaries into package.
-          # This is terrible and needs a more robust solution eventually.
           command: |
             cd gpt4all-bindings/python
-            cd gpt4all
-            mkdir llmodel_DO_NOT_MODIFY
-            mkdir llmodel_DO_NOT_MODIFY/build/
-            cp 'C:\ProgramData\mingw64\mingw64\bin\*dll' 'llmodel_DO_NOT_MODIFY/build/'
-            cd ..
             python setup.py bdist_wheel --plat-name=win_amd64
       - store_artifacts:
           path: gpt4all-bindings/python/dist

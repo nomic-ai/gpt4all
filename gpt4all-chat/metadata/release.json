@@ -811,5 +811,42 @@
 * Adam Treat (Nomic AI)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "2.8.0",
+    "notes":
+"
+<b>&mdash; What's New &mdash;</b>
+* Context Menu: Replace \"Select All\" on message with \"Copy Message\" (PR #2324)
+* Context Menu: Hide Copy/Cut when nothing is selected (PR #2324)
+* Improve speed of context switch after quickly switching between several chats (PR #2343)
+* New Chat: Always switch to the new chat when the button is clicked (PR #2330)
+* New Chat: Always scroll to the top of the list when the button is clicked (PR #2330)
+* Update to latest llama.cpp as of May 9, 2024 (PR #2310)
+* **Add support for the llama.cpp CUDA backend** (PR #2310, PR #2357)
+  * Nomic Vulkan is still used by default, but CUDA devices can now be selected in Settings
+  * When in use: Greatly improved prompt processing and generation speed on some devices
+  * When in use: GPU support for Q5\_0, Q5\_1, Q8\_0, K-quants, I-quants, and Mixtral
+* Add support for InternLM models (PR #2310)
+
+<b>&mdash; Fixes &mdash;</b>
+* Do not allow sending a message while the LLM is responding (PR #2323)
+* Fix poor quality of generated chat titles with many models (PR #2322)
+* Set the window icon correctly on Windows (PR #2321)
+* Fix a few memory leaks (PR #2328, PR #2348, PR #2310)
+* Do not crash if a model file has no architecture key (PR #2346)
+* Fix several instances of model loading progress displaying incorrectly (PR #2337, PR #2343)
+* New Chat: Fix the new chat being scrolled above the top of the list on startup (PR #2330)
+* macOS: Show a \"Metal\" device option, and actually use the CPU when \"CPU\" is selected (PR #2310)
+* Remove unsupported Mamba, Persimmon, and PLaMo models from the whitelist (PR #2310)
+* Fix GPT4All.desktop being created by offline installers on macOS (PR #2361)
+",
+    "contributors":
+"
+* Jared Van Bortel (Nomic AI)
+* Adam Treat (Nomic AI)
+* Tim453 (`@Tim453`)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]

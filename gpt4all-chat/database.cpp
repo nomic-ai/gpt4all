@@ -938,7 +938,7 @@ void Database::start()
     connect(m_embLLM, &EmbeddingLLM::errorGenerated, this, &Database::handleErrorGenerated);
     m_scanTimer->callOnTimeout(this, &Database::scanQueue);
     if (!QSqlDatabase::drivers().contains("QSQLITE")) {
-        qWarning() << "ERROR: missing sqllite driver";
+        qWarning() << "ERROR: missing sqlite driver";
     } else {
         QSqlError err = initDb();
         if (err.type() != QSqlError::NoError)
