@@ -14,7 +14,7 @@
 #   include <windows.h>
 #endif
 
-#include "oscompat.h"
+#include "dlhandle.h"
 
 namespace fs = std::filesystem;
 

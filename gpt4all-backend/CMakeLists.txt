@@ -149,7 +149,7 @@ endforeach()
 add_library(llmodel
     llmodel.h llmodel.cpp llmodel_shared.cpp
     llmodel_c.h llmodel_c.cpp
-    oscompat.cpp
+    dlhandle.cpp
 )
 target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
