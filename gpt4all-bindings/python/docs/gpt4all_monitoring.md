@@ -17,7 +17,7 @@ Open your terminal and run:
 pip install openlit
 ```
 
-### 2. Setup Your Monitoring for your Application
+### 2. Setup Monitoring for your Application
 In your application, initiate OpenLIT as outlined below:
 
 ```python
