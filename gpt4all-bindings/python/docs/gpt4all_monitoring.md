@@ -1,10 +1,10 @@
 # Monitoring
 
-Use OpenTelemetry to monitor your LLM application in real-time. OpenLIT simplifies the process of gathering insights on interactions, usage metrics, and more, enabling you to optimize the performance and reliability of your GPT4All based LLM application.
+Leverage OpenTelemetry to perform real-time monitoring of your LLM application using [OpenLIT](https://github.com/openlit/openlit). This tool helps you easily collect data on user interactions, performance metrics, and other key information, which can assist in enhancing the functionality and dependability of your GPT4All based LLM application.
 
 ## How it works?
 
-OpenLIT extends the capabilities of the gpt4all Python SDK by adding automated data instrumentation. It monitors the `generate` and `embedding` functions, generating OpenTelemetry data (traces and metrics) that help you understand how your application performs under various conditions. This telemetry data can be easily integrated with popular observability platforms like Grafana and DataDog, which allows for in-depth analysis and visualization.
+OpenLIT adds automatic OTel instrumentation to the GPT4all SDK. It covers the `generate` and `embedding` functions, helping to track LLM usage by gathering inputs and outputs. This allows users to monitor and evaluate the performance and behavior of their LLM application in different environments. Additionally, you have the flexibility to view and analyze the generated traces and metrics either in the OpenLIT UI or by exporting them to widely used observability tools like Grafana and DataDog for more comprehensive analysis and visualization.
 
 ## Getting Started
 
@@ -17,8 +17,8 @@ Open your terminal and run:
 pip install openlit
 ```
 
-### 2. Setup Your Application for Monitoring
-In your Python script, configure OpenLIT to work with gpt4all:
+### 2. Setup Your Monitoring for your Application
+In your application, initiate OpenLIT as outlined below:
 
 ```python
 from gpt4all import GPT4All
@@ -36,7 +36,7 @@ with model.chat_session():
 
     print(model.current_chat_session)
 ```
-This setup wraps your gpt4all model interactions within a monitored session, capturing valuable data about each request and response.
+This setup wraps your gpt4all model interactions, capturing valuable data about each request and response.
 
 ### Visualize
 
