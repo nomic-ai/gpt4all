@@ -229,7 +229,7 @@ Raw Data:
   - Explorer: https://atlas.nomic.ai/map/gpt4all_data_clean
 - [GPT4All-J Dataset](https://huggingface.co/datasets/nomic-ai/gpt4all-j-prompt-generations)
    -  Explorer Indexed on Prompts: https://atlas.nomic.ai/map/gpt4all-j-prompts-curated
-   -  Exporer Indexed on Responses: https://atlas.nomic.ai/map/gpt4all-j-response-curated
+   -  Explorer Indexed on Responses: https://atlas.nomic.ai/map/gpt4all-j-response-curated
 
 We are not distributing a LLaMa 7B checkpoint.
 

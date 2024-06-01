@@ -1,74 +1,15 @@
-#ifndef DLHANDLE_H
-#define DLHANDLE_H
-#ifndef _WIN32
-#include <string>
-#include <stdexcept>
-#include <utility>
-#include <dlfcn.h>
+#pragma once
 
-
-
-class Dlhandle {
-    void *chandle;
-
-public:
-    class Exception : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-    };
-
-    Dlhandle() : chandle(nullptr) {}
-    Dlhandle(const std::string& fpath, int flags = RTLD_LAZY | RTLD_LOCAL) {
-        chandle = dlopen(fpath.c_str(), flags);
-        if (!chandle) {
-            throw Exception("dlopen(\""+fpath+"\"): "+dlerror());
-        }
-    }
-    Dlhandle(const Dlhandle& o) = delete;
-    Dlhandle(Dlhandle&& o) : chandle(o.chandle) {
-        o.chandle = nullptr;
-    }
-    ~Dlhandle() {
-        if (chandle) dlclose(chandle);
-    }
-
-    auto operator =(Dlhandle&& o) {
-        chandle = std::exchange(o.chandle, nullptr);
-    }
-
-    bool is_valid() const {
-        return chandle != nullptr;
-    }
-    operator bool() const {
-        return is_valid();
-    }
-
-    template<typename T>
-    T* get(const std::string& fname) const {
-        auto fres = reinterpret_cast<T*>(dlsym(chandle, fname.c_str()));
-        return (dlerror()==NULL)?fres:nullptr;
-    }
-    auto get_fnc(const std::string& fname) const {
-        return get<void*(...)>(fname);
-    }
-};
-#else
-#include <algorithm>
 #include <filesystem>
-#include <string>
-#include <exception>
 #include <stdexcept>
+#include <string>
+#include <utility>
 
-#define WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#   define NOMINMAX
-#endif
-#include <windows.h>
-#include <libloaderapi.h>
+namespace fs = std::filesystem;
 
 
 class Dlhandle {
-    HMODULE chandle;
+    void *chandle = nullptr;
 
 public:
     class Exception : public std::runtime_error {
@@ -76,34 +17,31 @@ public:
         using std::runtime_error::runtime_error;
     };
 
-    Dlhandle() : chandle(nullptr) {}
-    Dlhandle(const std::string& fpath) {
-        std::string afpath = std::filesystem::absolute(fpath).string();
-        std::replace(afpath.begin(), afpath.end(), '/', '\\');
-        chandle = LoadLibraryExA(afpath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
-        if (!chandle) {
-            throw Exception("dlopen(\""+fpath+"\"): Error");
-        }
-    }
-    Dlhandle(const Dlhandle& o) = delete;
-    Dlhandle(Dlhandle&& o) : chandle(o.chandle) {
+    Dlhandle() = default;
+    Dlhandle(const fs::path &fpath);
+    Dlhandle(const Dlhandle &o) = delete;
+    Dlhandle(Dlhandle &&o)
+        : chandle(o.chandle)
+    {
         o.chandle = nullptr;
     }
-    ~Dlhandle() {
-        if (chandle) FreeLibrary(chandle);
+
+    ~Dlhandle();
+
+    Dlhandle &operator=(Dlhandle &&o) {
+        chandle = std::exchange(o.chandle, nullptr);
+        return *this;
     }
 
-    bool is_valid() const {
-        return chandle != nullptr;
+    template <typename T>
+    T *get(const std::string &symbol) const {
+        return reinterpret_cast<T *>(get_internal(symbol.c_str()));
     }
 
-    template<typename T>
-    T* get(const std::string& fname) const {
-        return reinterpret_cast<T*>(GetProcAddress(chandle, fname.c_str()));
+    auto get_fnc(const std::string &symbol) const {
+        return get<void*(...)>(symbol);
     }
-    auto get_fnc(const std::string& fname) const {
-        return get<void*(...)>(fname);
-    }
+
+private:
+    void *get_internal(const char *symbol) const;
 };
-#endif
-#endif // DLHANDLE_H

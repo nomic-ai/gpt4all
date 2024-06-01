@@ -1,33 +1,28 @@
 #define GPTJ_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "gptj_impl.h"
 
-#include "utils.h"
+#include "llmodel.h"
 #include "llmodel_shared.h"
+#include "utils.h"
 
+#include <ggml.h>
+
+#include <algorithm>
 #include <cassert>
 #include <cinttypes>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <map>
-#include <string>
-#include <vector>
+#include <ctime>
 #include <iostream>
-#if defined(_WIN32) && defined(_MSC_VER)
-    #define WIN32_LEAN_AND_MEAN
-    #ifndef NOMINMAX
-        #define NOMINMAX
-    #endif
-    #include <windows.h>
-    #include <io.h>
-    #include <stdio.h>
-#else
-    #include <unistd.h>
-#endif
+#include <map>
+#include <memory>
+#include <random>
 #include <sstream>
-#include <unordered_set>
-#include <ggml.h>
-
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
 
 namespace {
 const char *modelType_ = "GPT-J";
