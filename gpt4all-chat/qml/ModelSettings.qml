@@ -308,7 +308,7 @@ MySettingsTab {
                 id: contextLengthLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Context Length")
-                helpText: qsTr("Converstion context window")
+                helpText: qsTr("Conversation context window")
                 Layout.row: 0
                 Layout.column: 0
             }
