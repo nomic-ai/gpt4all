@@ -14,6 +14,7 @@ const backendDeps = [
     "llmodel_c.h",
     "sysinfo.h",
     "dlhandle.h",
+    "dlhandle.cpp",
 ];
 
 const sourcePath = path.resolve(__dirname, "../../../gpt4all-backend");
