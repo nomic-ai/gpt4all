@@ -9,6 +9,7 @@
       "sources": [
         "backend/llmodel_c.cpp",
         "backend/llmodel.cpp",
+        "backend/dlhandle.cpp",
         "prompt.cc",
         "index.cc",
        ],
