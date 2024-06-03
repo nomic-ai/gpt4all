@@ -11,7 +11,7 @@ class InferenceModel {
     constructor(llmodel, config) {
         this.llm = llmodel;
         this.config = config;
-        this.modelName = this.llm.name();
+        this.modelName = this.llm.getName();
     }
 
     async createChatSession(options) {
@@ -89,6 +89,25 @@ class InferenceModel {
         }
 
         let tokensGenerated = 0;
+        
+        const decoder = new TokenDecoder((tokenIds, text) => {
+            let continueGeneration = true;
+            tokensGenerated += tokenIds.length;
+            
+            if (options.onResponseTokens) {
+                // catch here because if errors bubble through cpp they will loose stacktraces
+                try {
+                    // don't cancel the generation unless user explicitly returns false
+                    continueGeneration =
+                        options.onResponseTokens({ tokenIds, text }) !== false;
+                } catch (err) {
+                    console.error("Error in onResponseToken callback", err);
+                    continueGeneration = false;
+                }
+            }
+            return continueGeneration;
+            
+        });
 
         const result = await this.llm.infer(prompt, {
             ...promptContext,
@@ -97,7 +116,7 @@ class InferenceModel {
                 let continueIngestion = true;
                 tokensIngested++;
                 if (options.onPromptToken) {
-                    // catch errors because if they go through cpp they will loose stacktraces
+                    // catch here because if errors bubble through cpp they will looe stacktraces
                     try {
                         // don't cancel ingestion unless user explicitly returns false
                         continueIngestion =
@@ -109,20 +128,8 @@ class InferenceModel {
                 }
                 return continueIngestion;
             },
-            onResponseToken: (tokenId, token) => {
-                let continueGeneration = true;
-                tokensGenerated++;
-                if (options.onResponseToken) {
-                    try {
-                        // don't cancel the generation unless user explicitly returns false
-                        continueGeneration =
-                            options.onResponseToken(tokenId, token) !== false;
-                    } catch (err) {
-                        console.error("Error in onResponseToken callback", err);
-                        continueGeneration = false;
-                    }
-                }
-                return continueGeneration;
+            onResponseToken: (tokenId, bytes) => {
+                return decoder.decode(tokenId, bytes);
             },
         });
 
@@ -138,6 +145,63 @@ class InferenceModel {
 
     dispose() {
         this.llm.dispose();
+    }
+}
+
+// see https://github.com/nomic-ai/gpt4all/pull/1281
+class TokenDecoder {
+
+    constructor(callback) {
+        this.callback = callback;
+        this.buffer = [];
+        this.tokenIds = [];
+        this.buffExpectingContBytes = 0;
+        this.textDecoder = new TextDecoder();
+    }
+
+    decode(tokenId, bytes) {
+        const decoded = [];
+        this.tokenIds.push(tokenId);
+
+        for (let i = 0; i < bytes.length; i++) {
+            const byte = bytes[i];
+            const bits = byte.toString(2).padStart(8, '0');
+            const highOnes = bits.split('0')[0];
+
+            if (highOnes.length === 1) {
+                // Continuation byte
+                this.buffer.push(byte);
+                this.buffExpectingContBytes -= 1;
+            } else {
+                // Beginning of a byte sequence
+                if (this.buffer.length > 0) {
+                    decoded.push(this._decodeBuffer());
+                    this.buffer = [];
+                }
+
+                this.buffer.push(byte);
+                this.buffExpectingContBytes = Math.max(0, highOnes.length - 1);
+            }
+
+            if (this.buffExpectingContBytes <= 0) {
+                // Received the whole sequence or an out-of-place continuation byte
+                decoded.push(this._decodeBuffer());
+                this.buffer = [];
+                this.buffExpectingContBytes = 0;
+            }
+        }
+
+        if (decoded.length === 0 && this.buffExpectingContBytes > 0) {
+            // Wait for more continuation bytes
+            return true;
+        }
+        const tokenIds = this.tokenIds;
+        this.tokenIds = [];
+        return this.callback(tokenIds, decoded.join(''));
+    }
+
+    _decodeBuffer() {
+        return this.textDecoder.decode(new Uint8Array(this.buffer));
     }
 }
 
@@ -160,6 +224,7 @@ class EmbeddingModel {
 }
 
 module.exports = {
+    TokenDecoder,
     InferenceModel,
     EmbeddingModel,
 };

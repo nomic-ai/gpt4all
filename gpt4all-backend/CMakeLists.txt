@@ -79,6 +79,7 @@ if (LLMODEL_ROCM)
 endif()
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
+include(CheckCXXCompilerFlag)
 
 # Go through each build variant
 foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)

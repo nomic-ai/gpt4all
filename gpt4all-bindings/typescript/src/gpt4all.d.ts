@@ -5,10 +5,27 @@ interface LLModelOptions {
     /**
      * Model architecture. This argument currently does not have any functionality and is just used as descriptive identifier for user.
      */
-    type?: string;
-    model_name: string;
-    model_path: string;
-    library_path?: string;
+    modelType?: string;
+    /**
+     * Absolute path to the model file.
+     */
+    modelFile: string;
+    /**
+     * Path to the llmodel implementation shared objects. This can be a single path or a list of paths separated by ';' delimiter.
+     */
+    librariesPath?: string;
+    /**
+     * A string representing the implementation to use. One of 'auto', 'cpu', 'metal', 'kompute', or 'cuda'.
+     */
+    backend: string;
+    /**
+     * The maximum window size of this model.
+     */
+    nCtx: number;
+    /**
+     * Number of GPU layers to use (Vulkan)
+     */
+    nGpuLayers: number;
 }
 
 interface ModelConfig {
@@ -263,10 +280,10 @@ interface LLModelInferenceResult {
 interface LLModelInferenceOptions extends Partial<LLModelPromptContext> {
     /** Callback for response tokens, called for each generated token.
      * @param {number} tokenId The token id.
-     * @param {string} token The token.
+     * @param {Uint8Array} bytes The token bytes.
      * @returns {boolean | undefined} Whether to continue generating tokens.
      * */
-    onResponseToken?: (tokenId: number, token: string) => boolean | void;
+    onResponseToken?: (tokenId: number, bytes: Uint8Array) => boolean | void;
     /** Callback for prompt tokens, called for each input token in the prompt.
      * @param {number} tokenId The token id.
      * @returns {boolean | undefined} Whether to continue ingesting the prompt.
@@ -281,30 +298,42 @@ interface LLModelInferenceOptions extends Partial<LLModelPromptContext> {
 declare class LLModel {
     /**
      * Initialize a new LLModel.
-     * @param {string} path Absolute path to the model file.
-     * @throws {Error} If the model file does not exist.
+     * @param {LLModelOptions} options LLModel options.
+     * @throws {Error} If the model can't be loaded or necessary runtimes are not found.
      */
     constructor(options: LLModelOptions);
+    /**
+     * Loads the LLModel.
+     * @return {boolean} true if the model was loaded successfully, false otherwise.
+     */
+    load(): boolean;
+    
+    /**
+     * Initiate a GPU by a string identifier. See LoadModelOptions.device for more information
+     * @param {string} device  'amd' | 'nvidia' | 'intel' | 'gpu' | gpu name.
+     * @return {boolean} true if the GPU was initialized successfully, false otherwise.
+     */
+    initGpu(device: string): boolean;
 
     /** undefined or user supplied */
-    type(): string | undefined;
+    getType(): string | undefined;
 
     /** The name of the model. */
-    name(): string;
+    getName(): string;
 
     /**
      * Get the size of the internal state of the model.
      * NOTE: This state data is specific to the type of model you have created.
      * @return the size in bytes of the internal state of the model
      */
-    stateSize(): number;
+    getStateSize(): number;
 
     /**
      * Get the number of threads used for model inference.
      * The default is the number of physical cores your computer has.
      * @returns The number of threads used for model inference.
      */
-    threadCount(): number;
+    getThreadCount(): number;
 
     /**
      * Set the number of threads used for model inference.
@@ -376,14 +405,6 @@ declare class LLModel {
     getLibraryPath(): string;
 
     /**
-     * Initiate a GPU by a string identifier.
-     * @param {number} memory_required Should be in the range size_t or will throw
-     * @param {string} device_name  'amd' | 'nvidia' | 'intel' | 'gpu' | gpu name.
-     * read LoadModelOptions.device for more information
-     */
-    initGpuByString(memory_required: number, device_name: string): boolean;
-
-    /**
      * From C documentation
      * @returns True if a GPU device is successfully initialized, false otherwise.
      */
@@ -391,11 +412,10 @@ declare class LLModel {
 
     /**
      * GPUs that are usable for this LLModel
-     * @param {number} nCtx Maximum size of context window
-     * @throws if hasGpuDevice returns false (i think)
-     * @returns
+     * @throws if gpu device list is not available
+     * @returns an array of GpuDevice objects
      */
-    listGpu(nCtx: number): GpuDevice[];
+    getGpuDevices(): GpuDevice[];
 
     /**
      * delete and cleanup the native model
@@ -414,6 +434,7 @@ interface GpuDevice {
     heapSize: number;
     name: string;
     vendor: string;
+    backend: string;
 }
 
 /**
@@ -443,13 +464,15 @@ interface LoadModelOptions {
     /**
      * The processing unit on which the model will run. It can be set to
      * - "cpu": Model will run on the central processing unit.
-     * - "gpu": Model will run on the best available graphics processing unit, irrespective of its vendor.
-     * - "amd", "nvidia", "intel": Model will run on the best available GPU from the specified vendor.
+     * - "kompute": Model will run using the kompute (vulkan) gpu backend
+     * - "cuda": Model will run using the cuda gpu backend
+     * - "gpu": Use Metal on ARM64 macOS, otherwise the same as "kompute"
+     * - "amd", "nvidia":  Use the best GPU provided by the Kompute backend from this vendor.
      * - "gpu name": Model will run on the GPU that matches the name if it's available.
      * Note: If a GPU device lacks sufficient RAM to accommodate the model, an error will be thrown, and the GPT4All
      * instance will be rendered invalid. It's advised to ensure the device has enough memory before initiating the
      * model.
-     * @default "cpu"
+     * @default Metal on ARM64 macOS, "cpu" otherwise.
      */
     device?: string;
     /**
@@ -458,10 +481,16 @@ interface LoadModelOptions {
      */
     nCtx?: number;
     /**
-     * Number of gpu layers needed
+     * Number of GPU layers to use (Vulkan)
      * @default 100
+     * @alias ngl
      */
+    nGpuLayers?: number;
     ngl?: number;
+    /**
+     * Number of CPU threads used by GPT4All. Default is None, then the number of threads are determined automatically.
+     */
+    nThreads?: number;
 }
 
 interface InferenceModelOptions extends LoadModelOptions {
@@ -507,15 +536,33 @@ interface CompletionProvider {
     ): Promise<InferenceResult>;
 }
 
+interface CompletionTokens {
+    /** The token ids. */
+    tokenIds: number[];
+    /** The token text. May be an empty string. */
+    text: string;
+}
+
 /**
  * Options for creating a completion.
  */
-interface CompletionOptions extends LLModelInferenceOptions {
+interface CompletionOptions extends Partial<LLModelPromptContext> {
     /**
      * Indicates if verbose logging is enabled.
      * @default false
      */
     verbose?: boolean;
+
+    /** Called every time new tokens can be decoded to text.
+     * @param {CompletionTokens} tokens The token ids and decoded text.
+     * @returns {boolean | undefined} Whether to continue generating tokens.
+     * */
+    onResponseTokens?: (tokens: CompletionTokens) => boolean | void;
+    /** Callback for prompt tokens, called for each input token in the prompt.
+     * @param {number} tokenId The token id.
+     * @returns {boolean | undefined} Whether to continue ingesting the prompt.
+     * */
+    onPromptToken?: (tokenId: number) => boolean | void;
 }
 
 /**
@@ -638,13 +685,6 @@ interface LLModelPromptContext {
      * %2 is optional and will be replaced by the assistant response. If not present, the assistant response will be appended.
      */
     promptTemplate?: string;
-
-    /** The context window size. Do not use, it has no effect. See loadModel options.
-     * THIS IS DEPRECATED!!!
-     * Use loadModel's nCtx option instead.
-     * @default 2048
-     */
-    nCtx: number;
 
     /** The top-k logits to sample from.
      * Top-K sampling selects the next token only from the top K most likely tokens predicted by the model.

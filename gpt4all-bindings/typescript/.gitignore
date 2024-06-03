@@ -8,4 +8,5 @@ prebuilds/
 !.yarn/sdks
 !.yarn/versions
 runtimes/
+backend/
 compile_flags.txt
