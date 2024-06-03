@@ -1,8 +1,9 @@
 #include "chatlistmodel.h"
 #include "mysettings.h"
 
-#include <QFile>
 #include <QDataStream>
+#include <QFile>
+#include <QGuiApplication>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
 #define CHAT_FORMAT_VERSION 7
@@ -223,7 +224,7 @@ void ChatsRestoreThread::run()
         qDebug() << "deserializing chat" << f.file;
 
         Chat *chat = new Chat;
-        chat->moveToThread(qApp->thread());
+        chat->moveToThread(qGuiApp->thread());
         if (!chat->deserialize(in, version)) {
             qWarning() << "ERROR: Couldn't deserialize chat from file:" << file.fileName();
         } else {

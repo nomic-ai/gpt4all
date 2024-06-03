@@ -10,12 +10,12 @@
 
 #include <QCoreApplication>
 #include <QGuiApplication>
-#include <QUuid>
-#include <QJsonDocument>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkRequest>
 #include <QScreen>
+#include <QUuid>
 
 //#define DEBUG
 
@@ -162,7 +162,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     QByteArray body(newDoc.toJson(QJsonDocument::Compact));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *jsonReply = m_networkManager.post(request, body);
-    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &Network::handleJsonUploadFinished);
     m_activeUploads.append(jsonReply);
     return true;
@@ -336,7 +336,7 @@ void Network::sendIpify()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *reply = m_networkManager.get(request);
-    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &Network::handleIpifyFinished);
 }
 
@@ -349,7 +349,7 @@ void Network::sendMixpanel(const QByteArray &json)
     request.setSslConfiguration(conf);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *trackReply = m_networkManager.post(request, json);
-    connect(qApp, &QCoreApplication::aboutToQuit, trackReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, trackReply, &QNetworkReply::abort);
     connect(trackReply, &QNetworkReply::finished, this, &Network::handleMixpanelFinished);
 }
 
@@ -411,7 +411,7 @@ void Network::sendHealth()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *healthReply = m_networkManager.get(request);
-    connect(qApp, &QCoreApplication::aboutToQuit, healthReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, healthReply, &QNetworkReply::abort);
     connect(healthReply, &QNetworkReply::finished, this, &Network::handleHealthFinished);
 }
 

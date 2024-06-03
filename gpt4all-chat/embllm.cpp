@@ -1,6 +1,8 @@
 #include "embllm.h"
 #include "modellist.h"
 
+#include <QGuiApplication>
+
 EmbeddingLLMWorker::EmbeddingLLMWorker()
     : QObject(nullptr)
     , m_networkManager(new QNetworkAccessManager(this))
@@ -128,7 +130,7 @@ void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QStrin
     request.setRawHeader("Authorization", authorization.toUtf8());
     request.setAttribute(QNetworkRequest::User, userData);
     QNetworkReply *reply = m_networkManager->post(request, doc.toJson(QJsonDocument::Compact));
-    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &EmbeddingLLMWorker::handleFinished);
 }
 

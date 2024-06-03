@@ -5,11 +5,12 @@
 #include <iostream>
 
 #include <QCoreApplication>
-#include <QThread>
 #include <QEventLoop>
+#include <QGuiApplication>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
+#include <QThread>
 
 //#define DEBUG
 
@@ -192,7 +193,7 @@ void ChatAPIWorker::request(const QString &apiKey,
     request.setRawHeader("Authorization", authorization.toUtf8());
     m_networkManager = new QNetworkAccessManager(this);
     QNetworkReply *reply = m_networkManager->post(request, array);
-    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &ChatAPIWorker::handleFinished);
     connect(reply, &QNetworkReply::readyRead, this, &ChatAPIWorker::handleReadyRead);
     connect(reply, &QNetworkReply::errorOccurred, this, &ChatAPIWorker::handleErrorOccurred);

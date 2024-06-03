@@ -1,6 +1,8 @@
 #include "localdocs.h"
 #include "mysettings.h"
 
+#include <QGuiApplication>
+
 class MyLocalDocs: public LocalDocs { };
 Q_GLOBAL_STATIC(MyLocalDocs, localDocsInstance)
 LocalDocs *LocalDocs::globalInstance()
@@ -55,7 +57,7 @@ LocalDocs::LocalDocs()
     connect(m_database, &Database::collectionListUpdated,
         m_localDocsModel, &LocalDocsModel::collectionListUpdated, Qt::QueuedConnection);
 
-    connect(qApp, &QCoreApplication::aboutToQuit, this, &LocalDocs::aboutToQuit);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, this, &LocalDocs::aboutToQuit);
 }
 
 void LocalDocs::aboutToQuit()
