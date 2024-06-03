@@ -1,9 +1,23 @@
 #include "chat.h"
+
 #include "chatlistmodel.h"
 #include "mysettings.h"
-#include "modellist.h"
 #include "network.h"
 #include "server.h"
+#include "database.h"
+
+#include <QDataStream>
+#include <QDateTime>
+#include <QDebug>
+#include <QLatin1String>
+#include <QMap>
+#include <QString>
+#include <QStringList>
+#include <QTextStream>
+#include <Qt>
+#include <QtGlobal>
+
+#include <utility>
 
 Chat::Chat(QObject *parent)
     : QObject(parent)

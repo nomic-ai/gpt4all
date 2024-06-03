@@ -1,16 +1,23 @@
 #include "chatapi.h"
 
-#include <string>
-#include <vector>
-#include <iostream>
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QCoreApplication>
-#include <QEventLoop>
 #include <QGuiApplication>
+#include <QDebug>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
 #include <QThread>
+#include <QUrl>
+#include <QVariant>
+#include <Qt>
+#include <QtGlobal>
+#include <QtLogging>
+
+#include <iostream>
 
 //#define DEBUG
 

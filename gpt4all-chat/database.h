@@ -3,16 +3,26 @@
 
 #include <QElapsedTimer>
 #include <QFileInfo>
-#include <QFileSystemWatcher>
+#include <QLatin1String>
+#include <QList>
+#include <QMap>
 #include <QObject>
 #include <QQueue>
+#include <QString>
 #include <QThread>
+#include <QVector>
+#include <QtGlobal>
 #include <QtSql>
 
-#include "embllm.h"
+#include <cstddef>
 
+class EmbeddingLLM;
 class Embeddings;
+class QFileSystemWatcher;
+class QSqlError;
+class QTextStream;
 class QTimer;
+struct EmbeddingResult;
 
 struct DocumentInfo
 {

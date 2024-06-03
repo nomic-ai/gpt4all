@@ -1,9 +1,21 @@
 #include "chatlistmodel.h"
+
+#include "database.h" // IWYU pragma: keep
 #include "mysettings.h"
 
 #include <QDataStream>
+#include <QDir>
+#include <QElapsedTimer>
 #include <QFile>
+#include <QFileInfo>
+#include <QGlobalStatic>
 #include <QGuiApplication>
+#include <QIODevice>
+#include <QSettings>
+#include <QString>
+#include <Qt>
+
+#include <algorithm>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
 #define CHAT_FORMAT_VERSION 7

@@ -1,11 +1,27 @@
 #include "chatllm.h"
+
 #include "chat.h"
 #include "chatapi.h"
+#include "database.h"
 #include "localdocs.h"
-#include "modellist.h"
-#include "network.h"
 #include "mysettings.h"
-#include "../gpt4all-backend/llmodel.h"
+#include "network.h"
+
+#include <QDataStream>
+#include <QDebug>
+#include <QFile>
+#include <QGlobalStatic>
+#include <QIODevice>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QList>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QSet>
+#include <QVariantMap>
+#include <QWaitCondition>
+#include <Qt>
+#include <QtLogging>
 
 #include <algorithm>
 #include <cctype>
@@ -13,11 +29,9 @@
 #include <cstddef>
 #include <functional>
 #include <limits>
-#include <string>
+#include <optional>
 #include <utility>
 #include <vector>
-
-#include <QElapsedTimer>
 
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING

@@ -2,7 +2,24 @@
 #define MODELLIST_H
 
 #include <QAbstractListModel>
+#include <QByteArray>
+#include <QDateTime>
+#include <QHash>
+#include <QList>
+#include <QMutex>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QObject>
+#include <QPair>
+#include <QSortFilterProxyModel>
+#include <QString>
+#include <Qt>
+#include <QtGlobal>
 #include <QtQml>
+#include <QVariant>
+#include <QVector>
+
+class QSslError;
 
 struct ModelInfo {
     Q_GADGET

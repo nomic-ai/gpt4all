@@ -1,13 +1,43 @@
 #include "modellist.h"
+
 #include "mysettings.h"
 #include "network.h"
+
 #include "../gpt4all-backend/llmodel.h"
 
+#include <QChar>
+#include <QCoreApplication>
+#include <QDebug>
+#include <QDir>
+#include <QDirIterator>
+#include <QEventLoop>
 #include <QFile>
+#include <QFileInfo>
+#include <QGlobalStatic>
 #include <QGuiApplication>
-#include <QStandardPaths>
+#include <QIODevice>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QNetworkRequest>
+#include <QObject>
+#include <QRegularExpression>
+#include <QSettings>
+#include <QSslConfiguration>
+#include <QSslError>
+#include <QSslSocket>
+#include <QTextStream>
+#include <QTimer>
+#include <QtLogging>
+#include <QUrl>
+
 #include <algorithm>
 #include <compare>
+#include <cstddef>
+#include <iterator>
+#include <string>
+#include <utility>
 
 //#define USE_LOCAL_MODELSJSON
 

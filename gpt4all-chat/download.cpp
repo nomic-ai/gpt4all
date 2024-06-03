@@ -1,19 +1,37 @@
 #include "download.h"
-#include "network.h"
+
 #include "modellist.h"
 #include "mysettings.h"
+#include "network.h"
 
+#include <QByteArray>
 #include <QCoreApplication>
-#include <QDir>
+#include <QDebug>
+#include <QGlobalStatic>
 #include <QGuiApplication>
+#include <QIODevice>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QNetworkAccessManager>
+#include <QJsonValue>
+#include <QList>
 #include <QNetworkRequest>
+#include <QPair>
 #include <QSettings>
-#include <QStandardPaths>
+#include <QSslConfiguration>
+#include <QSslError>
+#include <QSslSocket>
+#include <QStringList>
+#include <QTextStream>
 #include <QUrl>
+#include <QVariant>
+#include <QVector>
+#include <Qt>
+#include <QtLogging>
+
+#include <algorithm>
+#include <cstddef>
+#include <utility>
 
 class MyDownload: public Download { };
 Q_GLOBAL_STATIC(MyDownload, downloadInstance)

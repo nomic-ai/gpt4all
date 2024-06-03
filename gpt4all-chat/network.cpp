@@ -1,21 +1,44 @@
 #include "network.h"
 
+#include "chat.h"
 #include "chatlistmodel.h"
 #include "download.h"
 #include "llm.h"
 #include "localdocs.h"
+#include "localdocsmodel.h"
+#include "modellist.h"
 #include "mysettings.h"
 
-#include <cmath>
+#include "../gpt4all-backend/llmodel.h"
 
+#include <QByteArray>
 #include <QCoreApplication>
+#include <QDateTime>
+#include <QDebug>
+#include <QGlobalStatic>
 #include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QList>
+#include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QScreen>
+#include <QSettings>
+#include <QSize>
+#include <QSslConfiguration>
+#include <QSslError>
+#include <QSslSocket>
+#include <QSysInfo>
+#include <Qt>
+#include <QtGlobal>
+#include <QtLogging>
+#include <QUrl>
 #include <QUuid>
+
+#include <cmath>
+#include <cstring>
+#include <utility>
 
 //#define DEBUG
 

@@ -2,8 +2,17 @@
 #define CHATMODEL_H
 
 #include <QAbstractListModel>
-#include <QtQml>
+#include <QByteArray>
 #include <QDataStream>
+#include <QHash>
+#include <QList>
+#include <QObject>
+#include <QPair>
+#include <QString>
+#include <QVariant>
+#include <QVector>
+#include <Qt>
+#include <QtGlobal>
 
 struct ChatItem
 {

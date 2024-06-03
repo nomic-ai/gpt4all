@@ -1,10 +1,14 @@
 #include "logger.h"
 
-#include <QFile>
-#include <QDebug>
-#include <QStandardPaths>
 #include <QDateTime>
+#include <QDebug>
+#include <QGlobalStatic>
+#include <QIODevice>
+#include <QStandardPaths>
+
+#include <cstdio>
 #include <iostream>
+#include <string>
 
 class MyLogger: public Logger { };
 Q_GLOBAL_STATIC(MyLogger, loggerInstance)

@@ -1,7 +1,13 @@
 #include "localdocs.h"
+
+#include "database.h"
 #include "mysettings.h"
 
+#include <QCoreApplication>
+#include <QGlobalStatic>
 #include <QGuiApplication>
+#include <QUrl>
+#include <Qt>
 
 class MyLocalDocs: public LocalDocs { };
 Q_GLOBAL_STATIC(MyLocalDocs, localDocsInstance)

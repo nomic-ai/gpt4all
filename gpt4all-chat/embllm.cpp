@@ -1,7 +1,31 @@
 #include "embllm.h"
+
 #include "modellist.h"
 
+#include "../gpt4all-backend/llmodel.h"
+
+#include <QCoreApplication>
+#include <QDebug>
+#include <QFile>
+#include <QFileInfo>
 #include <QGuiApplication>
+#include <QIODevice>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QList>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QUrl>
+#include <Qt>
+#include <QtGlobal>
+#include <QtLogging>
+
+#include <exception>
+#include <string>
+#include <utility>
 
 EmbeddingLLMWorker::EmbeddingLLMWorker()
     : QObject(nullptr)

@@ -1,20 +1,22 @@
 #include "llm.h"
+
 #include "../gpt4all-backend/llmodel.h"
 #include "../gpt4all-backend/sysinfo.h"
 
 #include <QCoreApplication>
-#include <QDesktopServices>
-#include <QDir>
-#include <QFile>
+#include <QDebug>
+#include <QFileInfo>
+#include <QGlobalStatic>
+#include <QNetworkInformation>
 #include <QProcess>
-#include <QResource>
 #include <QSettings>
 #include <QUrl>
-#include <QNetworkInformation>
-#include <fstream>
+#include <QtLogging>
+
+#include <string>
 
 #ifndef GPT4ALL_OFFLINE_INSTALLER
-#include "network.h"
+#   include "network.h"
 #endif
 
 class MyLLM: public LLM { };
