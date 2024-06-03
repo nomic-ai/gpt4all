@@ -72,7 +72,7 @@ async function loadModel(modelName, options = {}) {
         } else if (loadOptions.device === "cpu") {
             llmOptions.backend = "cpu";
         } else {
-            if (os.arch() !== "arm64" || loadOptions.device !== "gpu") {
+            if (process.arch !== "arm64" || loadOptions.device !== "gpu") {
                 throw new Error(
                     `Unknown device for this platform: ${loadOptions.device}`
                 );
@@ -80,9 +80,10 @@ async function loadModel(modelName, options = {}) {
             llmOptions.backend = "metal";
         }
     } else {
-        llmOptions.backend = "kompute";
+        // default to kompute. use cpu for arm64 because we currently dont build kompute runtimes for arm64
+        llmOptions.backend = process.arch === "arm64" ? "cpu" : "kompute";
         if (!loadOptions.device || loadOptions.device === "cpu") {
-            // use kompute with no device
+            // use the default backend
         } else if (
             loadOptions.device === "cuda" ||
             loadOptions.device === "kompute"
