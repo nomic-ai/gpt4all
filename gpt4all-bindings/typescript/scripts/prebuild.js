@@ -11,12 +11,12 @@ async function createPrebuilds(combinations) {
         try {
             await createPrebuild(opts);
             console.log(
-                `Build succeeded for platform ${opts.platform} and architecture ${opts.arch}`
+                `Build succeeded for platform ${opts.platform} and architecture ${opts.arch}`,
             );
         } catch (err) {
             console.error(
                 `Error building for platform ${opts.platform} and architecture ${opts.arch}:`,
-                err
+                err,
             );
         }
     }
@@ -48,9 +48,14 @@ if(process.platform === 'win32') {
    ]
 } else if(process.platform === 'darwin') {
     prebuildConfigs = [
-       { platform: "darwin", arch: "x64" },
-       { platform: "darwin", arch: "arm64" },
-    ]
+        { platform: "linux", arch: "x64" },
+        { platform: "linux", arch: "arm64" },
+    ];
+} else if (process.platform === "darwin") {
+    prebuildConfigs = [
+        { platform: "darwin", arch: "x64" },
+        { platform: "darwin", arch: "arm64" },
+    ];
 }
 
 createPrebuilds(prebuildConfigs)
