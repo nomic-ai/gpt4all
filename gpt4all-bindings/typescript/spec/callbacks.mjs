@@ -1,6 +1,7 @@
+import { promises as fs } from "node:fs";
 import { loadModel, createCompletion } from "../src/gpt4all.js";
 
-const model = await loadModel("Phi-3-mini-4k-instruct.Q4_0.gguf", {
+const model = await loadModel("Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf", {
     verbose: true,
     device: "gpu",
 });
@@ -11,15 +12,14 @@ const res = await createCompletion(
     {
         onPromptToken: (tokenId) => {
             console.debug("onPromptToken", { tokenId });
-            // errors within the callback will cancel ingestion, inference will still run
+            // throwing an error will cancel
             throw new Error("This is an error");
             // const foo = thisMethodDoesNotExist();
             // returning false will cancel as well
             // return false;
         },
-        onResponseTokens: ({ tokenIds, text }) => {
-            // console.debug("onResponseToken", { tokenIds, text });
-            process.stdout.write(text);
+        onResponseToken: (tokenId, token) => {
+            console.debug("onResponseToken", { tokenId, token });
             // same applies here
         },
     }

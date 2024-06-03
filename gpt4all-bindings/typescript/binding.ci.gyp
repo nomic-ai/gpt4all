@@ -4,7 +4,7 @@
       "target_name": "gpt4all", # gpt4all-ts will cause compile error
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
-        "../../gpt4all-backend",
+        "gpt4all-backend",
       ],
       "sources": [
         # PREVIOUS VERSION: had to required the sources, but with newest changes do not need to
@@ -12,8 +12,8 @@
         #"../../gpt4all-backend/llama.cpp/ggml.c",
         #"../../gpt4all-backend/llama.cpp/llama.cpp",
         # "../../gpt4all-backend/utils.cpp",
-        "../../gpt4all-backend/llmodel_c.cpp",
-        "../../gpt4all-backend/llmodel.cpp",
+        "gpt4all-backend/llmodel_c.cpp",
+        "gpt4all-backend/llmodel.cpp",
         "prompt.cc",
         "index.cc",
        ],

@@ -188,8 +188,6 @@ model.dispose();
 *   python 3
 *   On Windows and Linux, building GPT4All requires the complete Vulkan SDK. You may download it from here: https://vulkan.lunarg.com/sdk/home
 *   macOS users do not need Vulkan, as GPT4All will use Metal instead.
-*   CUDA Toolkit >= 11.4  (you can bypass this with adding a custom flag to build step)
-    -  Windows: There is difficulty compiling with cuda if the Visual Studio IDE is NOT present.
 
 ### Build (from source)
 
@@ -198,29 +196,23 @@ git clone https://github.com/nomic-ai/gpt4all.git
 cd gpt4all-bindings/typescript
 ```
 
-llama.cpp git submodule for gpt4all can be possibly absent or outdated. Make sure to run
+*   The below shell commands assume the current working directory is `typescript`.
+
+*   To Build and Rebuild:
+
+```sh
+node scripts/prebuild.js
+```
+*   llama.cpp git submodule for gpt4all can be possibly absent. If this is the case, make sure to run in llama.cpp parent directory
 
 ```sh
 git submodule update --init --recursive
 ```
 
-The below shell commands assume the current working directory is `typescript`.
-
-Using yarn
-
 ```sh
-yarn install
-yarn build
+yarn build:backend
 ```
-
-Using npm
-
-```sh
-npm install
-npm run build
-```
-
-The `build:runtimes` script will create runtime libraries for your platform in `runtimes` and `build:prebuilds` will create the bindings in `prebuilds`. `build` is a shortcut for both.
+This will build platform-dependent dynamic libraries, and will be located in runtimes/(platform)/native
 
 ### Test
 
@@ -267,7 +259,7 @@ yarn test
 
 This package has been stabilizing over time development, and breaking changes may happen until the api stabilizes. Here's what's the todo list:
 
-*   \[x] [Purely offline](#Offline-usage). Per the gui, which can be run completely offline, the bindings should be as well. 
+*   \[ ] Purely offline. Per the gui, which can be run completely offline, the bindings should be as well.
 *   \[ ] NPM bundle size reduction via optionalDependencies strategy (need help)
     *   Should include prebuilds to avoid painful node-gyp errors
 *   \[x] createChatSession ( the python equivalent to create\_chat\_session )
@@ -284,7 +276,7 @@ This package has been stabilizing over time development, and breaking changes ma
 This repository serves as the new bindings for nodejs users.
 - If you were a user of [these bindings](https://github.com/nomic-ai/gpt4all-ts), they are outdated.
 - Version 4 includes the follow breaking changes
-    * `createEmbedding` & `EmbeddingModel.embed()` returns an object, `EmbeddingResult`, instead of a Float32Array.
+    * `createEmbedding` & `EmbeddingModel.embed()` returns an object, `EmbeddingResult`, instead of a float32array.
     * Removed deprecated types `ModelType` and `ModelFile`
     * Removed deprecated initiation of model by string path only
 

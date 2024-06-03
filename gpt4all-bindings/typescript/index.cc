@@ -3,24 +3,23 @@
 
 Napi::Function NodeModelWrapper::GetClass(Napi::Env env)
 {
-    Napi::Function self = DefineClass(
-        env, "LLModel",
-        {InstanceMethod("load", &NodeModelWrapper::Load),
-         InstanceMethod("initGpu", &NodeModelWrapper::InitGpu),
-         InstanceMethod("infer", &NodeModelWrapper::Infer),
-         InstanceMethod("embed", &NodeModelWrapper::Embed),
-         InstanceMethod("isModelLoaded", &NodeModelWrapper::IsModelLoaded),
-         InstanceMethod("getType", &NodeModelWrapper::GetType),
-         InstanceMethod("getName", &NodeModelWrapper::GetName),
-         InstanceMethod("getStateSize", &NodeModelWrapper::GetStateSize),
-         InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
-         InstanceMethod("getThreadCount", &NodeModelWrapper::GetThreadCount),
-         InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
-         InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice),
-         InstanceMethod("getGpuDevices", &NodeModelWrapper::GetGpuDevices),
-         InstanceMethod("getRequiredMemory", &NodeModelWrapper::GetRequiredMemory),
-         InstanceMethod("dispose", &NodeModelWrapper::Dispose)});
+    Napi::Function self = DefineClass(env, "LLModel",
+                                      {InstanceMethod("type", &NodeModelWrapper::GetType),
+                                       InstanceMethod("isModelLoaded", &NodeModelWrapper::IsModelLoaded),
+                                       InstanceMethod("name", &NodeModelWrapper::GetName),
+                                       InstanceMethod("stateSize", &NodeModelWrapper::StateSize),
+                                       InstanceMethod("infer", &NodeModelWrapper::Infer),
+                                       InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
+                                       InstanceMethod("embed", &NodeModelWrapper::GenerateEmbedding),
+                                       InstanceMethod("threadCount", &NodeModelWrapper::ThreadCount),
+                                       InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
+                                       InstanceMethod("initGpuByString", &NodeModelWrapper::InitGpuByString),
+                                       InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice),
+                                       InstanceMethod("listGpu", &NodeModelWrapper::GetGpuDevices),
+                                       InstanceMethod("memoryNeeded", &NodeModelWrapper::GetRequiredMemory),
+                                       InstanceMethod("dispose", &NodeModelWrapper::Dispose)});
     // Keep a static reference to the constructor
+    //
     Napi::FunctionReference *constructor = new Napi::FunctionReference();
     *constructor = Napi::Persistent(self);
     env.SetInstanceData(constructor);
@@ -30,13 +29,13 @@ Napi::Value NodeModelWrapper::GetRequiredMemory(const Napi::CallbackInfo &info)
 {
     auto env = info.Env();
     return Napi::Number::New(
-        env, static_cast<uint32_t>(llmodel_required_mem(GetInference(), model_file.c_str(), n_ctx, n_gpu_layers)));
+        env, static_cast<uint32_t>(llmodel_required_mem(GetInference(), full_model_path.c_str(), nCtx, nGpuLayers)));
 }
 Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo &info)
 {
     auto env = info.Env();
     int num_devices = 0;
-    auto mem_size = llmodel_required_mem(GetInference(), model_file.c_str(), n_ctx, n_gpu_layers);
+    auto mem_size = llmodel_required_mem(GetInference(), full_model_path.c_str(), nCtx, nGpuLayers);
     llmodel_gpu_device *all_devices = llmodel_available_gpu_devices(mem_size, &num_devices);
     if (all_devices == nullptr)
     {
@@ -64,7 +63,6 @@ Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo &info)
         js_gpu_device["heapSize"] = static_cast<uint32_t>(gpu_device.heapSize);
         js_gpu_device["name"] = gpu_device.name;
         js_gpu_device["vendor"] = gpu_device.vendor;
-        js_gpu_device["backend"] = gpu_device.backend;
 
         js_array[i] = js_gpu_device;
     }
@@ -73,13 +71,35 @@ Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo &info)
 
 Napi::Value NodeModelWrapper::GetType(const Napi::CallbackInfo &info)
 {
-    if (model_type.empty())
+    if (type.empty())
     {
         return info.Env().Undefined();
     }
-    return Napi::String::New(info.Env(), model_type);
+    return Napi::String::New(info.Env(), type);
 }
 
+Napi::Value NodeModelWrapper::InitGpuByString(const Napi::CallbackInfo &info)
+{
+    auto env = info.Env();
+    size_t memory_required = static_cast<size_t>(info[0].As<Napi::Number>().Uint32Value());
+
+    std::string gpu_device_identifier = info[1].As<Napi::String>();
+
+    size_t converted_value;
+    if (memory_required <= std::numeric_limits<size_t>::max())
+    {
+        converted_value = static_cast<size_t>(memory_required);
+    }
+    else
+    {
+        Napi::Error::New(env, "invalid number for memory size. Exceeded bounds for memory.")
+            .ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    auto result = llmodel_gpu_init_gpu_device_by_string(GetInference(), converted_value, gpu_device_identifier.c_str());
+    return Napi::Boolean::New(env, result);
+}
 Napi::Value NodeModelWrapper::HasGpuDevice(const Napi::CallbackInfo &info)
 {
     return Napi::Boolean::New(info.Env(), llmodel_has_gpu_device(GetInference()));
@@ -90,61 +110,82 @@ NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo &info) : Napi::Objec
     auto env = info.Env();
     auto config_object = info[0].As<Napi::Object>();
 
-    // sets the directories where runtime libs are to be searched
-    llmodel_set_implementation_search_path(config_object.Has("librariesPath")
-                                               ? config_object.Get("librariesPath").As<Napi::String>().Utf8Value().c_str()
-                                               : ".");
+    // sets the directory where models (gguf files) are to be searched
+    llmodel_set_implementation_search_path(
+        config_object.Has("library_path") ? config_object.Get("library_path").As<Napi::String>().Utf8Value().c_str()
+                                          : ".");
 
-    model_file = config_object.Get("modelFile").As<Napi::String>().Utf8Value();
-    model_name = model_file.substr(model_file.find_last_of("/\\") + 1);
-    backend = config_object.Get("backend").As<Napi::String>().Utf8Value();
-    n_ctx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
-    n_gpu_layers = config_object.Get("nGpuLayers").As<Napi::Number>().Int32Value();
+    std::string model_name = config_object.Get("model_name").As<Napi::String>();
+    fs::path model_path = config_object.Get("model_path").As<Napi::String>().Utf8Value();
+    std::string full_weight_path = (model_path / fs::path(model_name)).string();
 
-    const char *err;
-    inference_ = llmodel_model_create2(model_file.c_str(), backend.c_str(), &err);
+    name = model_name.empty() ? model_path.filename().string() : model_name;
+    full_model_path = full_weight_path;
+    nCtx = config_object.Get("nCtx").As<Napi::Number>().Int32Value();
+    nGpuLayers = config_object.Get("ngl").As<Napi::Number>().Int32Value();
+
+    const char *e;
+    inference_ = llmodel_model_create2(full_weight_path.c_str(), "auto", &e);
     if (!inference_)
     {
-        Napi::Error::New(env, err).ThrowAsJavaScriptException();
+        Napi::Error::New(env, e).ThrowAsJavaScriptException();
         return;
     }
     if (GetInference() == nullptr)
     {
         std::cerr << "Tried searching libraries in \"" << llmodel_get_implementation_search_path() << "\"" << std::endl;
-        std::cerr << "Tried using model weights in \"" << model_file << "\"" << std::endl;
+        std::cerr << "Tried searching for model weight in \"" << full_weight_path << "\"" << std::endl;
         std::cerr << "Do you have runtime libraries installed?" << std::endl;
         Napi::Error::New(env, "Had an issue creating llmodel object, inference is null").ThrowAsJavaScriptException();
         return;
     }
-    // optional
-    if (config_object.Has("modelType"))
+
+    std::string device = config_object.Get("device").As<Napi::String>();
+    if (device != "cpu")
     {
-        model_type = config_object.Get("modelType").As<Napi::String>();
+        size_t mem = llmodel_required_mem(GetInference(), full_weight_path.c_str(), nCtx, nGpuLayers);
+
+        auto success = llmodel_gpu_init_gpu_device_by_string(GetInference(), mem, device.c_str());
+        if (!success)
+        {
+            // https://github.com/nomic-ai/gpt4all/blob/3acbef14b7c2436fe033cae9036e695d77461a16/gpt4all-bindings/python/gpt4all/pyllmodel.py#L215
+            // Haven't implemented this but it is still open to contribution
+            std::cout << "WARNING: Failed to init GPU\n";
+        }
+    }
+
+    auto success = llmodel_loadModel(GetInference(), full_weight_path.c_str(), nCtx, nGpuLayers);
+    if (!success)
+    {
+        Napi::Error::New(env, "Failed to load model at given path").ThrowAsJavaScriptException();
+        return;
+    }
+    // optional
+    if (config_object.Has("model_type"))
+    {
+        type = config_object.Get("model_type").As<Napi::String>();
     }
 };
 
-Napi::Value NodeModelWrapper::Load(const Napi::CallbackInfo &info)
-{
-    auto env = info.Env();
-    auto success = llmodel_loadModel(GetInference(), model_file.c_str(), n_ctx, n_gpu_layers);
-    return Napi::Boolean::New(env, success);
-}
-
-Napi::Value NodeModelWrapper::InitGpu(const Napi::CallbackInfo &info)
-{
-    auto env = info.Env();
-    auto device = info[0].As<Napi::String>().Utf8Value();
-    size_t mem_required = llmodel_required_mem(GetInference(), model_file.c_str(), n_ctx, n_gpu_layers);
-    auto success = llmodel_gpu_init_gpu_device_by_string(GetInference(), mem_required, device.c_str());
-    return Napi::Boolean::New(env, success);
-}
-
+//  NodeModelWrapper::~NodeModelWrapper() {
+//    if(GetInference() != nullptr) {
+//        std::cout << "Debug: deleting model\n";
+//        llmodel_model_destroy(inference_);
+//        std::cout << (inference_ == nullptr);
+//    }
+//  }
+//  void NodeModelWrapper::Finalize(Napi::Env env) {
+//    if(inference_ != nullptr) {
+//        std::cout << "Debug: deleting model\n";
+//
+//    }
+//  }
 Napi::Value NodeModelWrapper::IsModelLoaded(const Napi::CallbackInfo &info)
 {
     return Napi::Boolean::New(info.Env(), llmodel_isModelLoaded(GetInference()));
 }
 
-Napi::Value NodeModelWrapper::GetStateSize(const Napi::CallbackInfo &info)
+Napi::Value NodeModelWrapper::StateSize(const Napi::CallbackInfo &info)
 {
     // Implement the binding for the stateSize method
     return Napi::Number::New(info.Env(), static_cast<int64_t>(llmodel_get_state_size(GetInference())));
@@ -179,7 +220,7 @@ Napi::Array ChunkedFloatPtr(float *embedding_ptr, int embedding_size, int text_l
     return result;
 }
 
-Napi::Value NodeModelWrapper::Embed(const Napi::CallbackInfo &info)
+Napi::Value NodeModelWrapper::GenerateEmbedding(const Napi::CallbackInfo &info)
 {
     auto env = info.Env();
 
@@ -215,7 +256,7 @@ Napi::Value NodeModelWrapper::Embed(const Napi::CallbackInfo &info)
         str_ptrs.push_back(text_arr[i].c_str());
     str_ptrs.push_back(nullptr);
     const char *_err = nullptr;
-    float *embeds = llmodel_embed(GetInference(), str_ptrs.data(), &embedding_size,
+    float *embeds = llmodel_embed(GetInference(), str_ptrs.data(),  &embedding_size,
                                   prefix.IsUndefined() ? nullptr : prefix.As<Napi::String>().Utf8Value().c_str(),
                                   dimensionality, &token_count, do_mean, atlas, nullptr, &_err);
     if (!embeds)
@@ -230,12 +271,9 @@ Napi::Value NodeModelWrapper::Embed(const Napi::CallbackInfo &info)
     llmodel_free_embedding(embeds);
     auto res = Napi::Object::New(env);
     res.Set("n_prompt_tokens", token_count);
-    if (is_single_text)
-    {
+    if(is_single_text) {
         res.Set("embeddings", embedmat.Get(static_cast<uint32_t>(0)));
-    }
-    else
-    {
+    } else {
         res.Set("embeddings", embedmat);
     }
 
@@ -270,7 +308,7 @@ Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
     llmodel_prompt_context promptContext = {.logits = nullptr,
                                             .tokens = nullptr,
                                             .n_past = 0,
-                                            .n_ctx = n_ctx,
+                                            .n_ctx = nCtx,
                                             .n_predict = 4096,
                                             .top_k = 40,
                                             .top_p = 0.9f,
@@ -284,12 +322,6 @@ Napi::Value NodeModelWrapper::Infer(const Napi::CallbackInfo &info)
     PromptWorkerConfig promptWorkerConfig;
 
     auto inputObject = info[1].As<Napi::Object>();
-
-    if (!inputObject.Has("promptTemplate"))
-    {
-        Napi::Error::New(info.Env(), "Missing Prompt Template").ThrowAsJavaScriptException();
-        return info.Env().Undefined();
-    }
 
     if (inputObject.Has("logits") || inputObject.Has("tokens"))
     {
@@ -393,9 +425,9 @@ void NodeModelWrapper::SetThreadCount(const Napi::CallbackInfo &info)
 
 Napi::Value NodeModelWrapper::GetName(const Napi::CallbackInfo &info)
 {
-    return Napi::String::New(info.Env(), model_name);
+    return Napi::String::New(info.Env(), name);
 }
-Napi::Value NodeModelWrapper::GetThreadCount(const Napi::CallbackInfo &info)
+Napi::Value NodeModelWrapper::ThreadCount(const Napi::CallbackInfo &info)
 {
     return Napi::Number::New(info.Env(), llmodel_threadCount(GetInference()));
 }

@@ -38,8 +38,8 @@ process.stdout.write("\n");
 
 process.stdout.write("### Callback:");
 await createCompletion(model, "Why not just callbacks?", {
-    onResponseTokens: ({ text }) => {
-        process.stdout.write(text);
+    onResponseToken: (tokenId, token) => {
+        process.stdout.write(token);
     },
 });
 process.stdout.write("\n");

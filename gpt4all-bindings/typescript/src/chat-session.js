@@ -25,7 +25,7 @@ class ChatSession {
         const { messages, systemPrompt, ...sessionDefaultPromptContext } =
             chatSessionOpts;
         this.model = model;
-        this.modelName = model.llm.getName();
+        this.modelName = model.llm.name();
         this.messages = messages ?? [];
         this.systemPrompt = systemPrompt ?? model.config.systemPrompt;
         this.initialized = false;
