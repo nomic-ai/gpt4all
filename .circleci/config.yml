@@ -4,9 +4,16 @@ orbs:
   path-filtering: circleci/path-filtering@0.0.1
   continuation: circleci/continuation@0.0.1
 
+parameters:
+  nightly:
+    type: boolean
+    default: false
+
 workflows:
   version: 2.1
   generate-config:
+    when:
+      not: <<pipeline.parameters.nightly>>
     jobs:
       - path-filtering/filter:
           base-revision: main
@@ -20,13 +27,7 @@ workflows:
             gpt4all-chat/.* run-chat-workflow true
             .* run-default-workflow true
   nightly-ui-redesign:
-    triggers:
-      - schedule:
-          cron: "1 0 * * *" # execute job at 0001 hrs
-          filters:
-            branches:
-              only:
-                - major_new_ui_redesign
+    when: <<pipeline.parameters.nightly>>
     jobs:
       - continuation/continue:
           configuration_path: .circleci/continue_config.yml
