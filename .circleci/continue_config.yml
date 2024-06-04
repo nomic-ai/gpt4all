@@ -1065,7 +1065,7 @@ workflows:
     jobs:
       - default-job
   nightly-build-chat-offline-installers:
-    when: << pipeline.parameters.nightly-build-offline >>
+    when: << pipeline.parameters.run-nightly-ui-installer-build-workflow >>
     jobs:
       - build-offline-chat-installer-macos
       - build-offline-chat-installer-windows
