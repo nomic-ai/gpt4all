@@ -711,24 +711,15 @@ bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) co
 #endif
 }
 
-bool LLamaModel::hasGPUDevice() const
-{
-#if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
-    return d_ptr->device != -1;
-#else
-    return false;
-#endif
-}
-
 bool LLamaModel::usingGPUDevice() const
 {
     bool hasDevice;
 
 #ifdef GGML_USE_KOMPUTE
-    hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
+    hasDevice = d_ptr->device != -1 && d_ptr->model_params.n_gpu_layers > 0;
     assert(!hasDevice || ggml_vk_has_device());
 #elif defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
-    hasDevice = hasGPUDevice() && d_ptr->model_params.n_gpu_layers > 0;
+    hasDevice = d_ptr->device != -1 && d_ptr->model_params.n_gpu_layers > 0;
 #elif defined(GGML_USE_METAL)
     hasDevice = true;
 #else

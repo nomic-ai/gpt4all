@@ -196,7 +196,6 @@ public:
         return false;
     }
 
-    virtual bool hasGPUDevice() const { return false; }
     virtual bool usingGPUDevice() const { return false; }
     virtual const char *backendName() const { return "cpu"; }
     virtual const char *gpuDeviceName() const { return nullptr; }
