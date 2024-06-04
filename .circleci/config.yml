@@ -22,7 +22,7 @@ workflows:
   nightly-ui-redesign:
     triggers:
       - schedule:
-          chron: "1 0 * * *" # execute job at 0001 hrs
+          cron: "1 0 * * *" # execute job at 0001 hrs
           filters:
             branches:
               only:
@@ -30,5 +30,4 @@ workflows:
     jobs:
       - continuation/continue:
           configuration_path: .circleci/continue_config.yml
-          parameters:
-            build-chat-offline-installers: true
+          parameters: "{build-chat-offline-installers: true}"
