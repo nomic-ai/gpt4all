@@ -594,6 +594,9 @@ bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *to
     return true;
 }
 
+// FIXME_BLOCKER: jared: This code doesn't work.
+// - On the first launch, I already have localdocs_v2.db without doing anything.
+// - On the second launch, localdocs_v1.db is gone and all of my collections have disappeared.
 bool Database::initDb()
 {
     /*
