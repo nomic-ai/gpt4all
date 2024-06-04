@@ -5,18 +5,17 @@
 #include <QDateTime>
 #include <QFile>
 #include <QHash>
+#include <QList>
 #include <QMap>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QObject>
+#include <QSslError>
 #include <QString>
 #include <QThread>
 #include <QtGlobal>
 
 class QByteArray;
-class QFile;
-class QSslError;
-template <typename T> class QList;
 
 struct ReleaseInfo {
     Q_GADGET

@@ -4,6 +4,7 @@
 #include "chatllm.h"
 #include "database.h"
 
+#include <QHttpServerRequest>
 #include <QHttpServerResponse>
 #include <QObject>
 #include <QList>
@@ -11,7 +12,6 @@
 
 class Chat;
 class QHttpServer;
-class QHttpServerRequest;
 
 class Server : public ChatLLM
 {

@@ -14,12 +14,10 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include <QList>
 #include <QNetworkRequest>
 #include <QPair>
 #include <QSettings>
 #include <QSslConfiguration>
-#include <QSslError>
 #include <QSslSocket>
 #include <QStringList>
 #include <QTextStream>

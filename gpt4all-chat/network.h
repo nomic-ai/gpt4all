@@ -1,18 +1,17 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include <QByteArray>
 #include <QJsonValue>
+#include <QList>
 #include <QMap>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QObject>
+#include <QSslError>
 #include <QString>
 #include <QVariant>
 #include <QVector>
-
-class QByteArray;
-class QNetworkReply;
-class QSslError;
-template <typename T> class QList;
 
 struct KeyValue {
     QString key;

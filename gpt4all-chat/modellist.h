@@ -12,14 +12,13 @@
 #include <QObject>
 #include <QPair>
 #include <QSortFilterProxyModel>
+#include <QSslError>
 #include <QString>
+#include <QVariant>
+#include <QVector>
 #include <Qt>
 #include <QtGlobal>
 #include <QtQml>
-#include <QVariant>
-#include <QVector>
-
-class QSslError;
 
 struct ModelInfo {
     Q_GADGET

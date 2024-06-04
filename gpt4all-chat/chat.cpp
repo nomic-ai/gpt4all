@@ -4,7 +4,6 @@
 #include "mysettings.h"
 #include "network.h"
 #include "server.h"
-#include "database.h"
 
 #include <QDataStream>
 #include <QDateTime>

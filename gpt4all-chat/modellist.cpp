@@ -25,7 +25,6 @@
 #include <QRegularExpression>
 #include <QSettings>
 #include <QSslConfiguration>
-#include <QSslError>
 #include <QSslSocket>
 #include <QTextStream>
 #include <QTimer>

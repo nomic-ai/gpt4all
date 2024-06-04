@@ -9,7 +9,6 @@
 #include <QDebug>
 #include <QHostAddress>
 #include <QHttpServer>
-#include <QHttpServerRequest>
 #include <QHttpServerResponder>
 #include <QJsonArray>
 #include <QJsonDocument>
