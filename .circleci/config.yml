@@ -2,6 +2,7 @@ version: 2.1
 setup: true
 orbs:
   path-filtering: circleci/path-filtering@0.0.1
+  continuation: circleci/continuation@0.0.1
 
 workflows:
   version: 2.1
@@ -18,3 +19,16 @@ workflows:
             gpt4all-bindings/csharp/.* run-csharp-workflow true
             gpt4all-chat/.* run-chat-workflow true
             .* run-default-workflow true
+  nightly-ui-redesign:
+    triggers:
+      - schedule:
+          chron: "1 0 * * *" # execute job at 0001 hrs
+          filters:
+            branches:
+              only:
+                - major_new_ui_redesign
+    jobs:
+      - continuation/continue:
+          configuration_path: .circleci/continue_config.yml
+          parameters:
+            build-chat-offline-installers: true
