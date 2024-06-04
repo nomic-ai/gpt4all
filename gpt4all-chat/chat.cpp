@@ -50,8 +50,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::reportDevice, this, &Chat::handleDeviceChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::reportFallbackReason, this, &Chat::handleFallbackReasonChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::loadedModelInfoChanged, this, &Chat::loadedModelInfoChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::trySwitchContextOfLoadedModelCompleted, this, &Chat::handleTrySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
@@ -350,16 +349,19 @@ void Chat::handleTokenSpeedChanged(const QString &tokenSpeed)
     emit tokenSpeedChanged();
 }
 
-void Chat::handleDeviceChanged(const QString &device)
-{
-    m_device = device;
-    emit deviceChanged();
+QVariant Chat::deviceBackend() const {
+    auto backend = m_llmodel->deviceBackend();
+    return backend ? QVariant(backend.value()) : QVariant();
 }
 
-void Chat::handleFallbackReasonChanged(const QString &fallbackReason)
-{
-    m_fallbackReason = fallbackReason;
-    emit fallbackReasonChanged();
+QVariant Chat::device() const {
+    auto device = m_llmodel->device();
+    return device ? QVariant(device.value()) : QVariant();
+}
+
+QVariant Chat::fallbackReason() const {
+    auto fallbackReason = m_llmodel->fallbackReason();
+    return fallbackReason ? QVariant(fallbackReason.value()) : QVariant();
 }
 
 void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)

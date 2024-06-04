@@ -1363,7 +1363,21 @@ Rectangle {
             anchors.rightMargin: 30
             color: theme.mutedTextColor
             visible: currentChat.tokenSpeed !== ""
-            text: qsTr("Speed: ") + currentChat.tokenSpeed + "<br>" + qsTr("Device: ") + currentChat.device + currentChat.fallbackReason
+            text: {
+                const lines = [qsTr("Speed: ") + currentChat.tokenSpeed];
+                const device = currentChat.device;
+                const backend = currentChat.deviceBackend;
+                if (device !== null) {
+                    var deviceLine = qsTr("Device: ") + device;
+                    if (backend === "CUDA" || backend === "Vulkan")
+                        deviceLine += ` (${backend})`;
+                    lines.push(deviceLine);
+                }
+                const fallbackReason = currentChat.fallbackReason;
+                if (fallbackReason !== null && fallbackReason !== "")
+                    lines.push(fallbackReason);
+                return lines.join("<br/>");
+            }
             font.pixelSize: theme.fontSizeLarge
         }
 
