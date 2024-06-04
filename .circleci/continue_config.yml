@@ -23,6 +23,9 @@ parameters:
   run-csharp-workflow:
     type: boolean
     default: false
+  run-nightly-ui-installer-build-workflow:
+    type: boolean
+    default: false
 
 jobs:
   default-job:
@@ -1061,6 +1064,12 @@ workflows:
        - << pipeline.parameters.run-default-workflow >>
     jobs:
       - default-job
+  nightly-build-chat-offline-installers:
+    when: << pipeline.parameters.nightly-build-offline >>
+    jobs:
+      - build-offline-chat-installer-macos
+      - build-offline-chat-installer-windows
+      - build-offline-chat-installer-linux
   build-chat-offline-installers:
     when:
       or:

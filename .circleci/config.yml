@@ -31,4 +31,4 @@ workflows:
     jobs:
       - continuation/continue:
           configuration_path: .circleci/continue_config.yml
-          parameters: "{build-chat-offline-installers: true}"
+          parameters: "{run-nightly-ui-installer-build-workflow: true}"
