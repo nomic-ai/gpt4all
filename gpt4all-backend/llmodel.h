@@ -60,8 +60,10 @@ public:
 
         std::string selectionName() const {
             assert(backend == "cuda"s || backend == "kompute"s);
-            return s_backendNames.at(backend) + ": " + name;
+            return backendName() + ": " + name;
         }
+
+        std::string backendName() const { return backendIdToName(backend); }
 
         static std::string backendIdToName(const std::string &backend) { return s_backendNames.at(backend); }
 

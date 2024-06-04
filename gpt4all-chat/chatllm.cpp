@@ -400,6 +400,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                         memGB = std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
                         modelLoadProps.insert("default_device", QString::fromStdString(defaultDevice->name));
                         modelLoadProps.insert("default_device_mem", approxDeviceMemGB(defaultDevice));
+                        modelLoadProps.insert("default_device_backend", QString::fromStdString(defaultDevice->backendName()));
                     }
                 }
 
