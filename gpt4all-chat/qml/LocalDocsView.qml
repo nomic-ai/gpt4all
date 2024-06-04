@@ -289,7 +289,7 @@ Rectangle {
 
                         RowLayout {
                             Text {
-                                text: model.totalDocs + (model.totalDocs > 1 ? qsTr(" files – ") : qsTr(" file – ")) + model.totalWords + " words"
+                                text: "%1 – %2".arg(qsTr("%n file(s)", "", model.totalDocs)).arg(qsTr("%n word(s)", "", model.totalWords))
                                 elide: Text.ElideRight
                                 color: theme.green500
                                 font.pixelSize: theme.fontSizeSmaller
