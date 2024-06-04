@@ -2,11 +2,32 @@
 
 #include "embeddings.h"
 #include "embllm.h"
+#include "modellist.h"
 #include "mysettings.h"
 #include "network.h"
 
-#include <QTimer>
+#include <QDateTime>
+#include <QDebug>
+#include <QDir>
+#include <QDirIterator>
+#include <QFile>
+#include <QFileSystemWatcher>
+#include <QIODevice>
 #include <QPdfDocument>
+#include <QPdfSelection>
+#include <QRegularExpression>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QTextStream>
+#include <QTimer>
+#include <QVariant>
+#include <Qt>
+#include <QtLogging>
+
+#include <cmath>
+#include <utility>
+#include <vector>
 
 //#define DEBUG
 //#define DEBUG_EXAMPLE

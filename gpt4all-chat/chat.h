@@ -1,14 +1,19 @@
 #ifndef CHAT_H
 #define CHAT_H
 
-#include <QObject>
-#include <QtQml>
-#include <QDataStream>
-
 #include "chatllm.h"
 #include "chatmodel.h"
-#include "database.h"
-#include "localdocsmodel.h"
+#include "localdocsmodel.h" // IWYU pragma: keep
+#include "modellist.h"
+
+#include <QList>
+#include <QObject>
+#include <QQmlEngine>
+#include <QString>
+#include <QtGlobal>
+
+class QDataStream;
+struct ResultInfo;
 
 class Chat : public QObject
 {

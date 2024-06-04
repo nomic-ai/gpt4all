@@ -1,12 +1,16 @@
 #ifndef MYSETTINGS_H
 #define MYSETTINGS_H
 
+#include "modellist.h"
+
+#include <QDateTime>
+#include <QObject>
+#include <QString>
+#include <QVector>
+
 #include <cstdint>
 
-#include <QObject>
-#include <QMutex>
-
-#include "modellist.h"
+struct ModelInfo;
 
 class MySettings : public QObject
 {

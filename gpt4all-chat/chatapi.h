@@ -1,17 +1,23 @@
 #ifndef CHATAPI_H
 #define CHATAPI_H
 
-#include <stdexcept>
+#include "../gpt4all-backend/llmodel.h"
 
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QNetworkRequest>
 #include <QObject>
 #include <QString>
 #include <QStringList>
-#include <QThread>
+#include <QList>
 
-#include "../gpt4all-backend/llmodel.h"
+#include <cstddef>
+#include <cstdint>
+#include <stdexcept>
+#include <functional>
+#include <string>
+#include <vector>
+
+class QByteArray;
+class QNetworkAccessManager;
 
 class ChatAPI;
 class ChatAPIWorker : public QObject {

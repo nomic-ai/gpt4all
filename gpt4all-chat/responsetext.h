@@ -1,12 +1,20 @@
 #ifndef RESPONSETEXT_H
 #define RESPONSETEXT_H
 
+#include <QColor>
 #include <QObject>
 #include <QQmlEngine>
-#include <QQuickTextDocument>
+#include <QQuickTextDocument> // IWYU pragma: keep
+#include <QRectF>
+#include <QSizeF>
+#include <QString>
 #include <QSyntaxHighlighter>
-#include <QRegularExpression>
 #include <QTextObjectInterface>
+#include <QVector>
+
+class QPainter;
+class QTextDocument;
+class QTextFormat;
 
 class SyntaxHighlighter : public QSyntaxHighlighter {
     Q_OBJECT

@@ -1,13 +1,26 @@
 #include "mysettings.h"
+
 #include "modellist.h"
+
 #include "../gpt4all-backend/llmodel.h"
 
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QGlobalStatic>
+#include <QIODevice>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QThread>
+#include <QtLogging>
 #include <QUrl>
+#include <QVariant>
+
+#include <algorithm>
+#include <string>
+#include <thread>
+#include <vector>
 
 static int      default_threadCount         = std::min(4, (int32_t) std::thread::hardware_concurrency());
 static bool     default_saveChatsContext    = false;

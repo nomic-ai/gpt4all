@@ -1,18 +1,37 @@
 #include "download.h"
-#include "network.h"
+
 #include "modellist.h"
 #include "mysettings.h"
+#include "network.h"
 
+#include <QByteArray>
 #include <QCoreApplication>
-#include <QNetworkRequest>
-#include <QNetworkAccessManager>
+#include <QDebug>
+#include <QGlobalStatic>
+#include <QGuiApplication>
+#include <QIODevice>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QUrl>
-#include <QDir>
-#include <QStandardPaths>
+#include <QJsonValue>
+#include <QList>
+#include <QNetworkRequest>
+#include <QPair>
 #include <QSettings>
+#include <QSslConfiguration>
+#include <QSslError>
+#include <QSslSocket>
+#include <QStringList>
+#include <QTextStream>
+#include <QUrl>
+#include <QVariant>
+#include <QVector>
+#include <Qt>
+#include <QtLogging>
+
+#include <algorithm>
+#include <cstddef>
+#include <utility>
 
 class MyDownload: public Download { };
 Q_GLOBAL_STATIC(MyDownload, downloadInstance)
@@ -104,7 +123,7 @@ void Download::updateReleaseNotes()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
-    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &Download::handleReleaseJsonDownloadFinished);
 }
 
@@ -149,7 +168,7 @@ void Download::downloadModel(const QString &modelFile)
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *modelReply = m_networkManager.get(request);
-    connect(qApp, &QCoreApplication::aboutToQuit, modelReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, modelReply, &QNetworkReply::abort);
     connect(modelReply, &QNetworkReply::downloadProgress, this, &Download::handleDownloadProgress);
     connect(modelReply, &QNetworkReply::errorOccurred, this, &Download::handleErrorOccurred);
     connect(modelReply, &QNetworkReply::finished, this, &Download::handleModelDownloadFinished);

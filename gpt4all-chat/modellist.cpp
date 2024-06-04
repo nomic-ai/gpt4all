@@ -1,12 +1,43 @@
 #include "modellist.h"
+
 #include "mysettings.h"
 #include "network.h"
+
 #include "../gpt4all-backend/llmodel.h"
 
+#include <QChar>
+#include <QCoreApplication>
+#include <QDebug>
+#include <QDir>
+#include <QDirIterator>
+#include <QEventLoop>
 #include <QFile>
-#include <QStandardPaths>
+#include <QFileInfo>
+#include <QGlobalStatic>
+#include <QGuiApplication>
+#include <QIODevice>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QNetworkRequest>
+#include <QObject>
+#include <QRegularExpression>
+#include <QSettings>
+#include <QSslConfiguration>
+#include <QSslError>
+#include <QSslSocket>
+#include <QTextStream>
+#include <QTimer>
+#include <QtLogging>
+#include <QUrl>
+
 #include <algorithm>
 #include <compare>
+#include <cstddef>
+#include <iterator>
+#include <string>
+#include <utility>
 
 //#define USE_LOCAL_MODELSJSON
 
@@ -1278,7 +1309,7 @@ void ModelList::updateModelsFromJson()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
-    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     QEventLoop loop;
     connect(jsonReply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     QTimer::singleShot(1500, &loop, &QEventLoop::quit);
@@ -1322,7 +1353,7 @@ void ModelList::updateModelsFromJsonAsync()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *jsonReply = m_networkManager.get(request);
-    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &ModelList::handleModelsJsonDownloadFinished);
     connect(jsonReply, &QNetworkReply::errorOccurred, this, &ModelList::handleModelsJsonDownloadErrorOccurred);
 }
@@ -1914,7 +1945,7 @@ void ModelList::discoverSearch(const QString &search)
     QNetworkRequest request(hfUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *reply = m_networkManager.get(request);
-    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &ModelList::handleDiscoveryFinished);
     connect(reply, &QNetworkReply::errorOccurred, this, &ModelList::handleDiscoveryErrorOccurred);
 }
@@ -2022,7 +2053,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
         request.setAttribute(QNetworkRequest::User, jsonData);
         request.setAttribute(QNetworkRequest::UserMax, filename);
         QNetworkReply *reply = m_networkManager.head(request);
-        connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+        connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
         connect(reply, &QNetworkReply::finished, this, &ModelList::handleDiscoveryItemFinished);
         connect(reply, &QNetworkReply::errorOccurred, this, &ModelList::handleDiscoveryItemErrorOccurred);
     }
