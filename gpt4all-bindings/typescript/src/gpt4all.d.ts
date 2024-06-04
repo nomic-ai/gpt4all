@@ -405,12 +405,6 @@ declare class LLModel {
     getLibraryPath(): string;
 
     /**
-     * From C documentation
-     * @returns True if a GPU device is successfully initialized, false otherwise.
-     */
-    hasGpuDevice(): boolean;
-
-    /**
      * GPUs that are usable for this LLModel
      * @throws if gpu device list is not available
      * @returns an array of GpuDevice objects

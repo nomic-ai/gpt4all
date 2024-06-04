@@ -34,7 +34,6 @@ class NodeModelWrapper : public Napi::ObjectWrap<NodeModelWrapper>
      * The path that is used to search for the dynamic libraries
      */
     Napi::Value GetLibraryPath(const Napi::CallbackInfo &info);
-    Napi::Value HasGpuDevice(const Napi::CallbackInfo &info);
     Napi::Value GetGpuDevices(const Napi::CallbackInfo &info);
     Napi::Value GetRequiredMemory(const Napi::CallbackInfo &info);
     void Dispose(const Napi::CallbackInfo &info);

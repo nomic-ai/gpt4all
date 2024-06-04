@@ -16,7 +16,6 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env)
          InstanceMethod("setThreadCount", &NodeModelWrapper::SetThreadCount),
          InstanceMethod("getThreadCount", &NodeModelWrapper::GetThreadCount),
          InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
-         InstanceMethod("hasGpuDevice", &NodeModelWrapper::HasGpuDevice),
          InstanceMethod("getGpuDevices", &NodeModelWrapper::GetGpuDevices),
          InstanceMethod("getRequiredMemory", &NodeModelWrapper::GetRequiredMemory),
          InstanceMethod("dispose", &NodeModelWrapper::Dispose)});
@@ -78,11 +77,6 @@ Napi::Value NodeModelWrapper::GetType(const Napi::CallbackInfo &info)
         return info.Env().Undefined();
     }
     return Napi::String::New(info.Env(), model_type);
-}
-
-Napi::Value NodeModelWrapper::HasGpuDevice(const Napi::CallbackInfo &info)
-{
-    return Napi::Boolean::New(info.Env(), llmodel_has_gpu_device(GetInference()));
 }
 
 NodeModelWrapper::NodeModelWrapper(const Napi::CallbackInfo &info) : Napi::ObjectWrap<NodeModelWrapper>(info)
