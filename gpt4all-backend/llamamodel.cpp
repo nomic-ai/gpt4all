@@ -378,7 +378,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     (void)ngl;
 #endif
 
-    d_ptr->model = llama_load_model_from_file_gpt4all(modelPath.c_str(), &d_ptr->model_params);
+    d_ptr->model = llama_load_model_from_file(modelPath.c_str(), d_ptr->model_params);
     if (!d_ptr->model) {
         fflush(stdout);
         d_ptr->device = -1;
@@ -713,20 +713,14 @@ bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) co
 
 bool LLamaModel::usingGPUDevice() const
 {
-    bool hasDevice;
+    if (!d_ptr->model)
+        return false;
 
+    bool usingGPU = llama_model_using_gpu(d_ptr->model);
 #ifdef GGML_USE_KOMPUTE
-    hasDevice = d_ptr->device != -1 && d_ptr->model_params.n_gpu_layers > 0;
-    assert(!hasDevice || ggml_vk_has_device());
-#elif defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
-    hasDevice = d_ptr->device != -1 && d_ptr->model_params.n_gpu_layers > 0;
-#elif defined(GGML_USE_METAL)
-    hasDevice = true;
-#else
-    hasDevice = false;
+    assert(!usingGPU || ggml_vk_has_device());
 #endif
-
-    return hasDevice;
+    return usingGPU;
 }
 
 const char *LLamaModel::backendName() const {
@@ -737,6 +731,8 @@ const char *LLamaModel::gpuDeviceName() const {
     if (usingGPUDevice()) {
 #if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
         return d_ptr->deviceName.c_str();
+#elif defined(GGML_USE_METAL)
+        return "Metal";
 #endif
     }
     return nullptr;
