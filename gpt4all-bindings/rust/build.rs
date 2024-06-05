@@ -136,7 +136,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         let symlink_path = canonized_lib_folder.join("libllmodel.so.0");
         let target_path = canonized_lib_folder.join("libllmodel.so");
-        std::os::unix::fs::symlink(target_path, symlink_path)?;
+        std::os::unix::fs::symlink(target_path, symlink_path).ok();
     }
 
     // Tell cargo to look for shared libraries in the specified directory
