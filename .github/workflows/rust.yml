@@ -1,0 +1,77 @@
+---
+name: Rust
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'gpt4all-backend/**'
+      - 'gpt4all-bindings/rust/Cargo.toml'
+      - 'gpt4all-bindings/rust/Cargo.lock'
+      - 'gpt4all-bindings/rust/build.rs'
+      - 'gpt4all-bindings/rust/src/**'
+      - '.github/workflows/rust.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'gpt4all-backend/**'
+      - 'gpt4all-bindings/rust/Cargo.toml'
+      - 'gpt4all-bindings/rust/Cargo.lock'
+      - 'gpt4all-bindings/rust/build.rs'
+      - 'gpt4all-bindings/rust/src/**'
+      - '.github/workflows/rust.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      - name: Check format
+        working-directory: gpt4all-bindings/rust
+        run: cargo fmt --check
+      - name: Clippy
+        working-directory: gpt4all-bindings/rust
+        run: cargo clippy
+
+  build:
+    name: Build and Test (ubuntu-latest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install GLSL Shader Compiler
+        # https://ubuntu.pkgs.org/23.10/ubuntu-universe-amd64/libshaderc1_2023.2-1_amd64.deb.html
+        # https://ubuntu.pkgs.org/23.10/ubuntu-universe-amd64/glslc_2023.2-1_amd64.deb.html
+        run: |
+          curl -L http://archive.ubuntu.com/ubuntu/pool/universe/s/shaderc/libshaderc1_2023.2-1_amd64.deb -o libshaderc.deb
+          curl -L http://archive.ubuntu.com/ubuntu/pool/universe/s/shaderc/glslc_2023.2-1_amd64.deb -o glslc.deb
+          sudo dpkg -i libshaderc.deb
+          sudo dpkg -i glslc.deb
+      - name: Install Vulkan SDK and GLSL Tools
+        run: sudo apt-get install libvulkan-dev glslang-tools
+      - name: Find NVIDIA CUDA Toolkit
+        run: sudo apt-cache search cuda-toolkit
+      - name: Install NVIDIA CUDA Toolkit
+        # run: sudo apt-get install cuda-toolkit-12-5
+        run: sudo apt-get install nvidia-cuda-toolkit
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build
+        working-directory: gpt4all-bindings/rust
+        env:
+          KOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK: 'ON'
+        run: cargo build --verbose
+      - name: Run tests
+        working-directory: gpt4all-bindings/rust
+        run: cargo test --tests --verbose --all-features
+      - name: Run doctests
+        working-directory: gpt4all-bindings/rust
+        run: cargo test --doc --verbose --all-features

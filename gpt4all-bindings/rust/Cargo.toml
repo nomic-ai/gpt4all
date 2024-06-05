@@ -23,7 +23,7 @@ dirs = "5.0.1"
 
 [lib]
 name = "gpt4all"
-crate-type = ["dylib"]
+crate-type = ["dylib", "rlib"]
 
 [build-dependencies]
 bindgen = "0.69.4"
