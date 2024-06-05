@@ -17,6 +17,8 @@ Napi::Function NodeModelWrapper::GetClass(Napi::Env env)
          InstanceMethod("getThreadCount", &NodeModelWrapper::GetThreadCount),
          InstanceMethod("getLibraryPath", &NodeModelWrapper::GetLibraryPath),
          InstanceMethod("getGpuDevices", &NodeModelWrapper::GetGpuDevices),
+         InstanceMethod("getGpuDeviceName", &NodeModelWrapper::GetGpuDeviceName),
+         InstanceMethod("getBackendName", &NodeModelWrapper::GetBackendName),
          InstanceMethod("getRequiredMemory", &NodeModelWrapper::GetRequiredMemory),
          InstanceMethod("dispose", &NodeModelWrapper::Dispose)});
     // Keep a static reference to the constructor
@@ -63,7 +65,6 @@ Napi::Value NodeModelWrapper::GetGpuDevices(const Napi::CallbackInfo &info)
         js_gpu_device["heapSize"] = static_cast<uint32_t>(gpu_device.heapSize);
         js_gpu_device["name"] = gpu_device.name;
         js_gpu_device["vendor"] = gpu_device.vendor;
-        js_gpu_device["backend"] = gpu_device.backend;
 
         js_array[i] = js_gpu_device;
     }
@@ -383,6 +384,26 @@ void NodeModelWrapper::SetThreadCount(const Napi::CallbackInfo &info)
         Napi::Error::New(info.Env(), "Could not set thread count: argument 1 is NaN").ThrowAsJavaScriptException();
         return;
     }
+}
+
+Napi::Value NodeModelWrapper::GetGpuDeviceName(const Napi::CallbackInfo &info)
+{
+    auto device = llmodel_model_gpu_device_name(GetInference());
+    if (device == nullptr)
+    {
+        return info.Env().Undefined();
+    }
+    return Napi::String::New(info.Env(), device);
+}
+
+Napi::Value NodeModelWrapper::GetBackendName(const Napi::CallbackInfo &info)
+{
+    auto backend = llmodel_model_backend_name(GetInference());
+    if (backend == nullptr)
+    {
+        return info.Env().Undefined();
+    }
+    return Napi::String::New(info.Env(), backend);
 }
 
 Napi::Value NodeModelWrapper::GetName(const Napi::CallbackInfo &info)

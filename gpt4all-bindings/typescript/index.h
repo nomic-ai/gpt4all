@@ -36,6 +36,8 @@ class NodeModelWrapper : public Napi::ObjectWrap<NodeModelWrapper>
     Napi::Value GetLibraryPath(const Napi::CallbackInfo &info);
     Napi::Value GetGpuDevices(const Napi::CallbackInfo &info);
     Napi::Value GetRequiredMemory(const Napi::CallbackInfo &info);
+    Napi::Value GetBackendName(const Napi::CallbackInfo &info);
+    Napi::Value GetGpuDeviceName(const Napi::CallbackInfo &info);
     void Dispose(const Napi::CallbackInfo &info);
     /**
      * Creates the LLModel class

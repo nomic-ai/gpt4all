@@ -403,6 +403,16 @@ declare class LLModel {
      * Where to get the pluggable backend libraries
      */
     getLibraryPath(): string;
+    
+    /**
+     * Get the name of the GPU device that is being used.
+     */
+    getGpuDeviceName(): ?string;
+    
+    /**
+     * Get the name of the backend that is being used.
+     */
+    getBackendName(): string;
 
     /**
      * GPUs that are usable for this LLModel

@@ -21,6 +21,10 @@ describe("llmodel", () => {
         expect(type).toBeUndefined();
         const devices = model.llm.getGpuDevices();
         expect(Array.isArray(devices)).toBe(true);
+        const backendName = model.llm.getBackendName();
+        expect(typeof backendName).toBe('string');
+        const gpuName = model.llm.getGpuDeviceName();
+        expect(gpuName).toBeUndefined();
         const requiredMem = model.llm.getRequiredMemory();
         expect(typeof requiredMem).toBe('number');
         const threadCount = model.llm.getThreadCount();
@@ -49,6 +53,8 @@ describe("llmodel", () => {
         model = await loadModel(testModel, {
             device: "gpu",
         });
+        const gpuName = model.llm.getGpuDeviceName();
+        expect(gpuName).toBeDefined();
     });
 
     test("gpu inference", async () => {
