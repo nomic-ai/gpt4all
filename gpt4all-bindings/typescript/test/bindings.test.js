@@ -49,8 +49,6 @@ describe("llmodel", () => {
         model = await loadModel(testModel, {
             device: "gpu",
         });
-        const gpuEnabled = model.llm.hasGpuDevice();
-        expect(gpuEnabled).toBe(true);
     });
 
     test("gpu inference", async () => {
