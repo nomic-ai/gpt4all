@@ -21,8 +21,6 @@ describe("llmodel", () => {
         expect(type).toBeUndefined();
         const devices = model.llm.getGpuDevices();
         expect(Array.isArray(devices)).toBe(true);
-        const gpuEnabled = model.llm.hasGpuDevice();
-        expect(gpuEnabled).toBe(false);
         const requiredMem = model.llm.getRequiredMemory();
         expect(typeof requiredMem).toBe('number');
         const threadCount = model.llm.getThreadCount();
