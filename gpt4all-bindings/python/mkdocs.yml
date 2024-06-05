@@ -14,6 +14,7 @@ nav:
       - 'GPT4All in Python':
         - 'Generation': 'gpt4all_python.md'
         - 'Embedding': 'gpt4all_python_embedding.md'
+        - 'Monitoring with OpenLIT': 'gpt4all_monitoring.md'
       - 'GPT4ALL in NodeJs': 'gpt4all_nodejs.md'
       - 'gpt4all_cli.md'
     - 'Wiki':
