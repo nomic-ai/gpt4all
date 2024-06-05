@@ -24,6 +24,11 @@ On Ubuntu 23.04, this looks like:
 sudo apt install build-essential qt6-base-dev qt6-declarative-dev qt6-wayland-dev qt6-svg-dev qt6-httpserver-dev qt6-webengine-dev libqt6core5compat6 qml6-module-qt5compat-graphicaleffects libqt6shadertools6 qtcreator cmake ninja-build
 ```
 
+On Debian 12, this looks like:
+```
+sudo apt install build-essential qt6-base-dev qt6-declarative-dev qt6-wayland-dev qt6-wayland qt6-svg-dev qt6-httpserver-dev qt6-webengine-dev qt6-websockets-dev libqt6core5compat6 qml6-module-qt5compat-graphicaleffects libqt6shadertools6 qtcreator cmake ninja-build
+```
+
 On Fedora 39, this looks like:
 ```
 sudo dnf install make gcc gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtwayland-devel qt6-qtsvg-devel qt6-qthttpserver-devel qt6-qtwebengine-devel qt6-qt5compat qt5-qtgraphicaleffects qt6-qtshadertools qt-creator cmake ninja-build
