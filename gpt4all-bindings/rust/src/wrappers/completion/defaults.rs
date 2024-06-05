@@ -23,7 +23,7 @@ impl Default for CompletionContext {
 impl Default for CompletionRequest {
     fn default() -> Self {
         Self {
-            prompt: "".to_string(),
+            prompt: String::default(),
             prompt_template: MIN_VALID_PROMPT_TEMPLATE.to_string(),
             response_callback: |_| { true },
             context: Default::default(),

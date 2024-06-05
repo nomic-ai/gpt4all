@@ -1,12 +1,35 @@
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 use std::fs;
-use std::fs::File;
-use std::io::{Write};
 use std::path::PathBuf;
 
 // Import the StreamExt extension trait (files are large (GBs) => preloading to RAM is not a good idea)
 use futures::StreamExt;
 use md5::{Digest, Md5};
 use reqwest::Url;
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
+use crate::model_source::file_utils::FileDownloadError::{HashMismatchError, NetworkError};
+
+
+#[derive(Debug)]
+pub(crate) enum FileDownloadError {
+    /// Network Error.
+    NetworkError(String),
+    /// Integrity check failed.
+    HashMismatchError
+}
+
+impl Error for FileDownloadError { }
+
+impl Display for FileDownloadError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NetworkError(message) => f.write_str(message),
+            HashMismatchError => f.write_str("Integrity check failed.")
+        }
+    }
+}
 
 
 /// Downloads a file from a URL with integrity check based on MD5 hash.
@@ -21,18 +44,18 @@ use reqwest::Url;
 ///
 /// A `Result` containing `Ok(())` if the download is successful and the file integrity is verified,
 /// or an error of type `Box<dyn Error>` if any operation fails.
-pub(crate) async fn download_file_with_integrity(url: &str, file_path: &str, md5_expected: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) async fn download_file_with_integrity(url: &str, file_path: &str, md5_expected: &str) -> Result<(), Box<dyn Error>> {
     let url = Url::parse(url)?;
 
     let response = reqwest::get(url).await?;
 
     // Check if the request was successful (status code 2xx)
     if ! response.status().is_success() {
-        return Err(format!("Bad HTTP status code: {}", response.status().as_str()).into());
+        return Err(NetworkError(response.status().to_string()).into());
     }
 
     // Create a new file at the specified path
-    let mut file = File::create(&file_path)?;
+    let mut file = File::create(&file_path).await?;
 
     // Initialize MD5 hasher for integrity checks
     let mut hasher = Md5::new();
@@ -42,8 +65,9 @@ pub(crate) async fn download_file_with_integrity(url: &str, file_path: &str, md5
     while let Some(chunk_result) = download_stream.next().await {
         // save chunk + update hasher
         let chunk = chunk_result?;
+
+        file.write_all(&chunk).await?;
         hasher.update(&chunk);
-        file.write_all(&chunk)?;
     }
 
     // Calculate hash result
@@ -56,7 +80,7 @@ pub(crate) async fn download_file_with_integrity(url: &str, file_path: &str, md5
         if let Err(e) = fs::remove_file(&file_path) {
             eprintln!("Failed to remove file: {}", e);
         }
-        return Err("MD5 hash mismatch".into());
+        return Err(HashMismatchError.into());
     }
 
     Ok(())

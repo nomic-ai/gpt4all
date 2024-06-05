@@ -134,7 +134,7 @@ impl ModelLoader {
 
     /// Initializes the device for model computation.
     fn init_device(&self, model: llmodel_model, model_path: &CString) -> Result<(), ModelLoadingError> {
-        if self.model_load_options.device == Device::CPU { return Ok(()); } // CPU device is used by default
+        if self.model_load_options.device == Device::Cpu { return Ok(()); } // CPU device is used by default
 
         let mem_required = unsafe { llmodel_required_mem(model, model_path.as_ptr(), self.model_load_options.nCtx, self.model_load_options.ngl) };
 

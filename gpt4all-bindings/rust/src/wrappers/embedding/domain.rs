@@ -72,8 +72,8 @@ impl EmbeddingOptionsBuilder {
     }
 
     /// Sets the texts for which embeddings will be generated.
-    pub fn texts(mut self, texts: &Vec<String>) -> Self {
-        self.texts = texts.clone();
+    pub fn texts<T: Into<Vec<String>>>(mut self, texts: T) -> Self {
+        self.texts = texts.into();
         self
     }
 
@@ -84,7 +84,7 @@ impl EmbeddingOptionsBuilder {
     }
 
     /// Sets the model-specific prefix representing the embedding task.
-    pub fn prefix(mut self, prefix: &str) -> Self  {
+    pub fn prefix<T: ToString>(mut self, prefix: T) -> Self  {
         self.prefix = Some(prefix.to_string());
         self
     }

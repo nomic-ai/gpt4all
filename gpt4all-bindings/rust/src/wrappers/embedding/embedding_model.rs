@@ -1,4 +1,4 @@
-use std::ffi::{c_char, CString};
+use std::ffi::{c_char, CString, NulError};
 use std::ptr::{null, null_mut};
 use std::slice;
 
@@ -35,8 +35,9 @@ impl EmbeddingModel {
         // Collect texts into CString objects
         let texts: Vec<CString> = embedding_options.texts
             .iter()
-            .map(|text| CString::new(text.as_str()).expect("Failed to convert text to CString"))
-            .collect();
+            .map(|text| CString::new(text.as_str()))
+            .collect::<Result<Vec<CString>, NulError>>()
+            .map_err(|_| EmbeddingError::TextsConversionError)?;
 
         // Create a vector to hold the raw pointers to the C-style strings
         let mut texts_ptrs: Vec<*const c_char> = texts.iter().map(|text| text.as_ptr()).collect();

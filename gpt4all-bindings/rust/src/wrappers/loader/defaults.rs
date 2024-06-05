@@ -26,9 +26,9 @@ impl Default for ModelLoadOptions {
         Self {
             nCtx: 2048,
             ngl: 100,
-            device: Device::CPU,
+            device: Device::Cpu,
             threads: None,
-            build_variant: ModelBuildVariant::AUTO,
+            build_variant: ModelBuildVariant::Auto,
         }
     }
 }

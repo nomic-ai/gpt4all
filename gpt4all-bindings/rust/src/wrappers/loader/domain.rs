@@ -8,25 +8,25 @@ pub struct CompletionModelConfig {
 #[derive(Debug, Clone)]
 pub enum ModelBuildVariant {
     /// Automatically select the appropriate build variant.
-    AUTO,
+    Auto,
 
     /// Use the default build variant.
-    DEFAULT,
+    Default,
 
     /// Use the AVX-only build variant.
-    AVX_ONLY,
+    AvxOnly,
 
     /// Use build variant specified by a String.
-    CUSTOM(String)
+    Custom(String)
 }
 
 impl fmt::Display for ModelBuildVariant {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            ModelBuildVariant::AUTO => write!(f, "auto"),
-            ModelBuildVariant::DEFAULT => write!(f, "default"),
-            ModelBuildVariant::AVX_ONLY => write!(f, "avxonly"),
-            ModelBuildVariant::CUSTOM(build_variant) => write!(f, "{}", build_variant),
+            ModelBuildVariant::Auto => f.write_str("auto"),
+            ModelBuildVariant::Default => f.write_str("default"),
+            ModelBuildVariant::AvxOnly =>  f.write_str("avxonly"),
+            ModelBuildVariant::Custom(build_variant) => f.write_str(build_variant),
         }
     }
 }
@@ -52,26 +52,26 @@ pub struct ModelLoadOptions {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Device {
     /// Central Processing Unit
-    CPU,
+    Cpu,
     /// Graphics Processing Unit
-    GPU,
+    Gpu,
     /// Graphics Processing Unit specified by vendor name
     ///
     /// - "amd": AMD Graphics Processing Unit
     /// - "nvidia": NVIDIA Graphics Processing Unit
     /// - "intel": Intel Graphics Processing Unit
-    GPU_BY_VENDOR(String),
+    GpuByVendor(String),
     /// Graphics Processing Unit specified by name
-    GPU_BY_NAME(String),
+    GpuByName(String),
 }
 
 impl fmt::Display for Device {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Device::CPU => write!(f, "cpu"),
-            Device::GPU => write!(f, "gpu"),
-            Device::GPU_BY_VENDOR(vendor) => write!(f, "{}", vendor),
-            Device::GPU_BY_NAME(name) => write!(f, "{}", name)
+            Device::Cpu => f.write_str("cpu"),
+            Device::Gpu => f.write_str("gpu"),
+            Device::GpuByVendor(vendor) => f.write_str(vendor),
+            Device::GpuByName(name) => f.write_str(name)
         }
     }
 }

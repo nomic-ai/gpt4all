@@ -47,7 +47,7 @@ impl ModelSource for Gpt4AllModelSource {
 
         let model_info = available_models
             .iter().find(|&model_info| { model_info.file_name == model_file_name })
-            .ok_or(ModelSourceError::ModelNotFound)?;
+            .ok_or(ModelSourceError::ModelNotFoundError)?;
 
         let path =  self.folder.join(&model_info.file_name);
 

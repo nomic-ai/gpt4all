@@ -20,6 +20,7 @@ serde = { version = "1.0.197", features = ["derive"] }
 futures = "0.3.30"
 md-5 = "0.10.6"
 dirs = "5.0.1"
+tokio = "1.37.0"
 
 [lib]
 name = "gpt4all"

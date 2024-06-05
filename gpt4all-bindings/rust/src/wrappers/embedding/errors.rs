@@ -1,5 +1,5 @@
 use std::{error, fmt};
-use std::fmt::Formatter;
+use std::fmt::{Formatter};
 
 /// Represents errors that can occur during embedding operations.
 ///
@@ -7,7 +7,9 @@ use std::fmt::Formatter;
 #[derive(Debug)]
 pub enum EmbeddingError {
     /// Indicates that embedding creation failed with the provided error message.
-    BackendEmbedFailed(String)
+    BackendEmbedFailed(String),
+    /// 'embedding_options.texts' conversion to CString failed
+    TextsConversionError,
 }
 
 impl error::Error for EmbeddingError {}
@@ -15,7 +17,8 @@ impl error::Error for EmbeddingError {}
 impl fmt::Display for EmbeddingError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            EmbeddingError::BackendEmbedFailed(message) => write!(f, "{}", message)
+            EmbeddingError::BackendEmbedFailed(message) => f.write_str(&message),
+            EmbeddingError::TextsConversionError => f.write_str("'embedding_options.texts' conversion to CString failed")
         }
     }
 }
