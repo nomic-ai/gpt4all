@@ -84,8 +84,8 @@ impl EmbeddingOptionsBuilder {
     }
 
     /// Sets the model-specific prefix representing the embedding task.
-    pub fn prefix<T: ToString>(mut self, prefix: T) -> Self  {
-        self.prefix = Some(prefix.to_string());
+    pub fn prefix<T: AsRef<str>>(mut self, prefix: T) -> Self  {
+        self.prefix = Some(prefix.as_ref().to_string());
         self
     }
 
