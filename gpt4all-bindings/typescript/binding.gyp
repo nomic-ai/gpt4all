@@ -23,7 +23,8 @@
                 'NAPI_CPP_EXCEPTIONS',
             ],
             'cflags_cc': [
-                "-fexceptions"
+                "-fexceptions",
+                "-std=c++20"
             ]
         }],
         ['OS=="win"', {
