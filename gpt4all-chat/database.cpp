@@ -825,8 +825,6 @@ void Database::scheduleNext(int folder_id, size_t countForFolder)
         item.installed = true;
     }
     updateGuiForCollectionItem(item);
-    if (m_docsToScan.isEmpty())
-        m_scanTimer->stop();
 }
 
 void Database::handleDocumentError(const QString &errorMessage,
@@ -973,18 +971,6 @@ bool Database::getChunksByDocumentId(int document_id, QList<int> &chunkIds)
     return true;
 }
 
-bool Database::removeEmbeddingsByDocumentId(int document_id)
-{
-    QList<int> chunkIds;
-    if (!getChunksByDocumentId(document_id, chunkIds))
-        return false;
-
-    for (const auto &chunkId: chunkIds)
-        m_embeddings->remove(chunkId);
-
-    return true;
-}
-
 size_t Database::countOfDocuments(int folder_id) const
 {
     if (!m_docsToScan.contains(folder_id))
@@ -1050,13 +1036,35 @@ void Database::enqueueDocuments(int folder_id, const QVector<DocumentInfo> &info
     m_scanTimer->start();
 }
 
-void Database::scanQueue()
-{
-    if (m_docsToScan.isEmpty()) {
-        m_scanTimer->stop();
-        return;
+void Database::scanQueueBatch() {
+    QElapsedTimer timer;
+    timer.start();
+
+    int scanned = 0;
+    int lastToScan = m_docsToScan.count();
+
+    transaction();
+
+    // scan for up to 100ms or until we run out of documents
+    QList<int> chunksToRemove;
+    while (!m_docsToScan.isEmpty() && timer.elapsed() < 100) {
+        ++scanned;
+        if (!scanQueue(chunksToRemove)) {
+            rollback();
+            return;
+        }
     }
 
+    // failure is no longer an option, apply everything at once and hope this is effectively atomic
+    for (const auto &chunk: chunksToRemove)
+        m_embeddings->remove(chunk);
+    commit();
+    if (!chunksToRemove.isEmpty())
+        m_embeddings->save();
+}
+
+bool Database::scanQueue(QList<int> &chunksToRemove)
+{
     DocumentInfo info = dequeueDocument();
     const size_t countForFolder = countOfDocuments(info.folder);
     const int folder_id = info.folder;
@@ -1067,7 +1075,8 @@ void Database::scanQueue()
     // If the doc has since been deleted or no longer readable, then we schedule more work and return
     // leaving the cleanup for the cleanup handler
     if (!info.doc.exists() || !info.doc.isReadable()) {
-        return scheduleNext(folder_id, countForFolder);
+        scheduleNext(folder_id, countForFolder);
+        return true;
     }
 
     const qint64 document_time = info.doc.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
@@ -1081,7 +1090,8 @@ void Database::scanQueue()
     if (!selectDocument(q, document_path, &existing_id, &existing_time)) {
         handleDocumentError("ERROR: Cannot select document",
             existing_id, document_path, q.lastError());
-        return scheduleNext(folder_id, countForFolder);
+        scheduleNext(folder_id, countForFolder);
+        return false;
     }
 
     // If we have the document, we need to compare the last modification time and if it is newer
@@ -1090,17 +1100,20 @@ void Database::scanQueue()
         Q_ASSERT(existing_time != -1);
         if (document_time == existing_time) {
             // No need to rescan, but we do have to schedule next
-            return scheduleNext(folder_id, countForFolder);
-        } else {
-            if (removeEmbeddingsByDocumentId(existing_id))
-                m_embeddings->save();
-            if (!removeChunksByDocumentId(q, existing_id)) {
-                handleDocumentError("ERROR: Cannot remove chunks of document",
-                    existing_id, document_path, q.lastError());
-                return scheduleNext(folder_id, countForFolder);
-            }
-            updateCollectionStatistics();
+            scheduleNext(folder_id, countForFolder);
+            return true;
         }
+        if (!getChunksByDocumentId(existing_id, chunksToRemove)) {
+            scheduleNext(folder_id, countForFolder);
+            return false;
+        }
+        if (!removeChunksByDocumentId(q, existing_id)) {
+            handleDocumentError("ERROR: Cannot remove chunks of document",
+                existing_id, document_path, q.lastError());
+            scheduleNext(folder_id, countForFolder);
+            return false;
+        }
+        updateCollectionStatistics();
     }
 
     // Update the document_time for an existing document, or add it for the first time now
@@ -1110,22 +1123,22 @@ void Database::scanQueue()
             if (!updateDocument(q, document_id, document_time)) {
                 handleDocumentError("ERROR: Could not update document_time",
                     document_id, document_path, q.lastError());
-                return scheduleNext(folder_id, countForFolder);
+                scheduleNext(folder_id, countForFolder);
+                return false;
             }
         } else {
             if (!addDocument(q, folder_id, document_time, document_path, &document_id)) {
                 handleDocumentError("ERROR: Could not add document",
                     document_id, document_path, q.lastError());
-                return scheduleNext(folder_id, countForFolder);
-            } else {
-                CollectionItem item = guiCollectionItem(folder_id);
-                item.totalDocs += 1;
-                updateGuiForCollectionItem(item);
+                scheduleNext(folder_id, countForFolder);
+                return false;
             }
+
+            CollectionItem item = guiCollectionItem(folder_id);
+            item.totalDocs += 1;
+            updateGuiForCollectionItem(item);
         }
     }
-
-    QSqlDatabase::database().transaction();
 
     Q_ASSERT(document_id != -1);
     if (info.isPdf()) {
@@ -1133,7 +1146,8 @@ void Database::scanQueue()
         if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
             handleDocumentError("ERROR: Could not load pdf",
                 document_id, document_path, q.lastError());
-            return scheduleNext(folder_id, countForFolder);
+            scheduleNext(folder_id, countForFolder);
+            return false;
         }
         const size_t bytes = info.doc.size();
         const size_t bytesPerPage = std::floor(bytes / doc.pageCount());
@@ -1158,17 +1172,19 @@ void Database::scanQueue()
             info.currentPage += 1;
             info.currentlyProcessing = true;
             enqueueDocumentInternal(info, true /*prepend*/);
-            return scheduleNext(folder_id, countForFolder + 1);
-        } else {
-            item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
-            updateGuiForCollectionItem(item);
+            scheduleNext(folder_id, countForFolder + 1);
+            return true;
         }
+
+        item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
+        updateGuiForCollectionItem(item);
     } else {
         QFile file(document_path);
         if (!file.open(QIODevice::ReadOnly)) {
             handleDocumentError("ERROR: Cannot open file for scanning",
                                 existing_id, document_path, q.lastError());
-            return scheduleNext(folder_id, countForFolder);
+            scheduleNext(folder_id, countForFolder);
+            return false;
         }
 
         const size_t bytes = info.doc.size();
@@ -1177,7 +1193,8 @@ void Database::scanQueue()
         if (!stream.seek(byteIndex)) {
             handleDocumentError("ERROR: Cannot seek to pos for scanning",
                                 existing_id, document_path, q.lastError());
-            return scheduleNext(folder_id, countForFolder);
+            scheduleNext(folder_id, countForFolder);
+            return false;
         }
 #if defined(DEBUG)
         qDebug() << "scanning byteIndex" << byteIndex << "of" << bytes << document_path;
@@ -1193,12 +1210,13 @@ void Database::scanQueue()
             info.currentPosition = pos;
             info.currentlyProcessing = true;
             enqueueDocumentInternal(info, true /*prepend*/);
-            return scheduleNext(folder_id, countForFolder + 1);
+            scheduleNext(folder_id, countForFolder + 1);
+            return true;
         }
     }
 
-    QSqlDatabase::database().commit();
-    return scheduleNext(folder_id, countForFolder);
+    scheduleNext(folder_id, countForFolder);
+    return true;
 }
 
 void Database::scanDocuments(int folder_id, const QString &folder_path)
@@ -1245,7 +1263,7 @@ void Database::start()
     connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &Database::directoryChanged);
     connect(m_embLLM, &EmbeddingLLM::embeddingsGenerated, this, &Database::handleEmbeddingsGenerated);
     connect(m_embLLM, &EmbeddingLLM::errorGenerated, this, &Database::handleErrorGenerated);
-    m_scanTimer->callOnTimeout(this, &Database::scanQueue);
+    m_scanTimer->callOnTimeout(this, &Database::scanQueueBatch);
     if (!QSqlDatabase::drivers().contains("QSQLITE")) {
         qWarning() << "ERROR: missing sqlite driver";
         m_databaseValid = false;

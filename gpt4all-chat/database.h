@@ -76,7 +76,7 @@ public:
 
 public Q_SLOTS:
     void start();
-    void scanQueue();
+    void scanQueueBatch();
     void scanDocuments(int folder_id, const QString &folder_path);
     void forceIndexing(const QString &collection);
     void addFolder(const QString &collection, const QString &path);
@@ -115,7 +115,6 @@ private:
     void appendChunk(const EmbeddingChunk &chunk);
     void sendChunkList();
     bool getChunksByDocumentId(int document_id, QList<int> &chunkIds);
-    bool removeEmbeddingsByDocumentId(int document_id);
     void scheduleNext(int folder_id, size_t countForFolder);
     void handleDocumentError(const QString &errorMessage,
         int document_id, const QString &document_path, const QSqlError &error);
@@ -125,6 +124,7 @@ private:
     void removeFolderFromDocumentQueue(int folder_id);
     void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
+    bool scanQueue(QList<int> &chunksToRemove);
 
     CollectionItem guiCollectionItem(int folder_id) const;
     void updateGuiForCollectionItem(const CollectionItem &item);
