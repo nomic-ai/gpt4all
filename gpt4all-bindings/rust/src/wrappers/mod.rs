@@ -1,4 +1,4 @@
-pub mod embedding;
 pub mod completion;
-pub mod loader;
+pub mod embedding;
 mod ffi_utils;
+pub mod loader;

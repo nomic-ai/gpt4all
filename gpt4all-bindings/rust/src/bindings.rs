@@ -129,20 +129,20 @@ fn bindgen_test_layout___mbstate_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__mbstate8) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(__mbstate_t),
-        "::",
-        stringify!(__mbstate8)
+            "Offset of field: ",
+            stringify!(__mbstate_t),
+            "::",
+            stringify!(__mbstate8)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr)._mbstateL) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(__mbstate_t),
-        "::",
-        stringify!(_mbstateL)
+            "Offset of field: ",
+            stringify!(__mbstate_t),
+            "::",
+            stringify!(_mbstateL)
         )
     );
 }
@@ -203,30 +203,30 @@ fn bindgen_test_layout___darwin_pthread_handler_rec() {
         unsafe { ::std::ptr::addr_of!((*ptr).__routine) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(__darwin_pthread_handler_rec),
-        "::",
-        stringify!(__routine)
+            "Offset of field: ",
+            stringify!(__darwin_pthread_handler_rec),
+            "::",
+            stringify!(__routine)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__arg) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(__darwin_pthread_handler_rec),
-        "::",
-        stringify!(__arg)
+            "Offset of field: ",
+            stringify!(__darwin_pthread_handler_rec),
+            "::",
+            stringify!(__arg)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__next) as usize - ptr as usize },
         16usize,
         concat!(
-        "Offset of field: ",
-        stringify!(__darwin_pthread_handler_rec),
-        "::",
-        stringify!(__next)
+            "Offset of field: ",
+            stringify!(__darwin_pthread_handler_rec),
+            "::",
+            stringify!(__next)
         )
     );
 }
@@ -255,20 +255,20 @@ fn bindgen_test_layout__opaque_pthread_attr_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__sig) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_attr_t),
-        "::",
-        stringify!(__sig)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_attr_t),
+            "::",
+            stringify!(__sig)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__opaque) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_attr_t),
-        "::",
-        stringify!(__opaque)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_attr_t),
+            "::",
+            stringify!(__opaque)
         )
     );
 }
@@ -297,20 +297,20 @@ fn bindgen_test_layout__opaque_pthread_cond_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__sig) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_cond_t),
-        "::",
-        stringify!(__sig)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_cond_t),
+            "::",
+            stringify!(__sig)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__opaque) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_cond_t),
-        "::",
-        stringify!(__opaque)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_cond_t),
+            "::",
+            stringify!(__opaque)
         )
     );
 }
@@ -339,20 +339,20 @@ fn bindgen_test_layout__opaque_pthread_condattr_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__sig) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_condattr_t),
-        "::",
-        stringify!(__sig)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_condattr_t),
+            "::",
+            stringify!(__sig)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__opaque) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_condattr_t),
-        "::",
-        stringify!(__opaque)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_condattr_t),
+            "::",
+            stringify!(__opaque)
         )
     );
 }
@@ -381,20 +381,20 @@ fn bindgen_test_layout__opaque_pthread_mutex_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__sig) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_mutex_t),
-        "::",
-        stringify!(__sig)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_mutex_t),
+            "::",
+            stringify!(__sig)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__opaque) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_mutex_t),
-        "::",
-        stringify!(__opaque)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_mutex_t),
+            "::",
+            stringify!(__opaque)
         )
     );
 }
@@ -423,20 +423,20 @@ fn bindgen_test_layout__opaque_pthread_mutexattr_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__sig) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_mutexattr_t),
-        "::",
-        stringify!(__sig)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_mutexattr_t),
+            "::",
+            stringify!(__sig)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__opaque) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_mutexattr_t),
-        "::",
-        stringify!(__opaque)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_mutexattr_t),
+            "::",
+            stringify!(__opaque)
         )
     );
 }
@@ -465,20 +465,20 @@ fn bindgen_test_layout__opaque_pthread_once_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__sig) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_once_t),
-        "::",
-        stringify!(__sig)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_once_t),
+            "::",
+            stringify!(__sig)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__opaque) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_once_t),
-        "::",
-        stringify!(__opaque)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_once_t),
+            "::",
+            stringify!(__opaque)
         )
     );
 }
@@ -507,20 +507,20 @@ fn bindgen_test_layout__opaque_pthread_rwlock_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__sig) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_rwlock_t),
-        "::",
-        stringify!(__sig)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_rwlock_t),
+            "::",
+            stringify!(__sig)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__opaque) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_rwlock_t),
-        "::",
-        stringify!(__opaque)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_rwlock_t),
+            "::",
+            stringify!(__opaque)
         )
     );
 }
@@ -549,20 +549,20 @@ fn bindgen_test_layout__opaque_pthread_rwlockattr_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__sig) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_rwlockattr_t),
-        "::",
-        stringify!(__sig)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_rwlockattr_t),
+            "::",
+            stringify!(__sig)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__opaque) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_rwlockattr_t),
-        "::",
-        stringify!(__opaque)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_rwlockattr_t),
+            "::",
+            stringify!(__opaque)
         )
     );
 }
@@ -591,30 +591,30 @@ fn bindgen_test_layout__opaque_pthread_t() {
         unsafe { ::std::ptr::addr_of!((*ptr).__sig) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_t),
-        "::",
-        stringify!(__sig)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_t),
+            "::",
+            stringify!(__sig)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__cleanup_stack) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_t),
-        "::",
-        stringify!(__cleanup_stack)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_t),
+            "::",
+            stringify!(__cleanup_stack)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).__opaque) as usize - ptr as usize },
         16usize,
         concat!(
-        "Offset of field: ",
-        stringify!(_opaque_pthread_t),
-        "::",
-        stringify!(__opaque)
+            "Offset of field: ",
+            stringify!(_opaque_pthread_t),
+            "::",
+            stringify!(__opaque)
         )
     );
 }
@@ -687,150 +687,150 @@ fn bindgen_test_layout_llmodel_prompt_context() {
         unsafe { ::std::ptr::addr_of!((*ptr).logits) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(logits)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(logits)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).logits_size) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(logits_size)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(logits_size)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).tokens) as usize - ptr as usize },
         16usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(tokens)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(tokens)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).tokens_size) as usize - ptr as usize },
         24usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(tokens_size)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(tokens_size)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).n_past) as usize - ptr as usize },
         32usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(n_past)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(n_past)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).n_ctx) as usize - ptr as usize },
         36usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(n_ctx)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(n_ctx)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).n_predict) as usize - ptr as usize },
         40usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(n_predict)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(n_predict)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).top_k) as usize - ptr as usize },
         44usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(top_k)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(top_k)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).top_p) as usize - ptr as usize },
         48usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(top_p)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(top_p)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).min_p) as usize - ptr as usize },
         52usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(min_p)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(min_p)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).temp) as usize - ptr as usize },
         56usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(temp)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(temp)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).n_batch) as usize - ptr as usize },
         60usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(n_batch)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(n_batch)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).repeat_penalty) as usize - ptr as usize },
         64usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(repeat_penalty)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(repeat_penalty)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).repeat_last_n) as usize - ptr as usize },
         68usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(repeat_last_n)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(repeat_last_n)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).context_erase) as usize - ptr as usize },
         72usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_prompt_context),
-        "::",
-        stringify!(context_erase)
+            "Offset of field: ",
+            stringify!(llmodel_prompt_context),
+            "::",
+            stringify!(context_erase)
         )
     );
 }
@@ -861,63 +861,63 @@ fn bindgen_test_layout_llmodel_gpu_device() {
         unsafe { ::std::ptr::addr_of!((*ptr).index) as usize - ptr as usize },
         0usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_gpu_device),
-        "::",
-        stringify!(index)
+            "Offset of field: ",
+            stringify!(llmodel_gpu_device),
+            "::",
+            stringify!(index)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
         4usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_gpu_device),
-        "::",
-        stringify!(type_)
+            "Offset of field: ",
+            stringify!(llmodel_gpu_device),
+            "::",
+            stringify!(type_)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).heapSize) as usize - ptr as usize },
         8usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_gpu_device),
-        "::",
-        stringify!(heapSize)
+            "Offset of field: ",
+            stringify!(llmodel_gpu_device),
+            "::",
+            stringify!(heapSize)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).name) as usize - ptr as usize },
         16usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_gpu_device),
-        "::",
-        stringify!(name)
+            "Offset of field: ",
+            stringify!(llmodel_gpu_device),
+            "::",
+            stringify!(name)
         )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).vendor) as usize - ptr as usize },
         24usize,
         concat!(
-        "Offset of field: ",
-        stringify!(llmodel_gpu_device),
-        "::",
-        stringify!(vendor)
+            "Offset of field: ",
+            stringify!(llmodel_gpu_device),
+            "::",
+            stringify!(vendor)
         )
     );
 }
 #[doc = " Callback type for prompt processing.\n @param token_id The token id of the prompt.\n @return a bool indicating whether the model should keep processing."]
 pub type llmodel_prompt_callback =
-::std::option::Option<unsafe extern "C" fn(token_id: i32) -> bool>;
+    ::std::option::Option<unsafe extern "C" fn(token_id: i32) -> bool>;
 #[doc = " Callback type for response.\n @param token_id The token id of the response.\n @param response The response string. NOTE: a token_id of -1 indicates the string is an error string.\n @return a bool indicating whether the model should keep generating."]
 pub type llmodel_response_callback = ::std::option::Option<
     unsafe extern "C" fn(token_id: i32, response: *const ::std::os::raw::c_char) -> bool,
 >;
 #[doc = " Callback type for recalculation of context.\n @param whether the model is recalculating the context.\n @return a bool indicating whether the model should keep generating."]
 pub type llmodel_recalculate_callback =
-::std::option::Option<unsafe extern "C" fn(is_recalculating: bool) -> bool>;
+    ::std::option::Option<unsafe extern "C" fn(is_recalculating: bool) -> bool>;
 #[doc = " Embedding cancellation callback for use with llmodel_embed.\n @param batch_sizes The number of tokens in each batch that will be embedded.\n @param n_batch The number of batches that will be embedded.\n @param backend The backend that will be used for embedding. One of \"cpu\", \"kompute\", or \"metal\".\n @return True to cancel llmodel_embed, false to continue."]
 pub type llmodel_emb_cancel_callback = ::std::option::Option<
     unsafe extern "C" fn(

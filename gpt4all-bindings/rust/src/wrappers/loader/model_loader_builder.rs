@@ -3,7 +3,6 @@ use std::path::PathBuf;
 use crate::wrappers::loader::domain::ModelLoadOptions;
 use crate::wrappers::loader::model_loader::ModelLoader;
 
-
 /// Builder for creating instances of `ModelLoader`.
 pub struct ModelLoaderBuilder {
     model_folder: PathBuf,

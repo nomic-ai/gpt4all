@@ -4,33 +4,31 @@ use std::fs;
 use std::path::PathBuf;
 
 // Import the StreamExt extension trait (files are large (GBs) => preloading to RAM is not a good idea)
+use crate::model_source::file_utils::FileDownloadError::{HashMismatchError, NetworkError};
 use futures::StreamExt;
 use md5::{Digest, Md5};
 use reqwest::Url;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
-use crate::model_source::file_utils::FileDownloadError::{HashMismatchError, NetworkError};
-
 
 #[derive(Debug)]
 pub(crate) enum FileDownloadError {
     /// Network Error.
     NetworkError(String),
     /// Integrity check failed.
-    HashMismatchError
+    HashMismatchError,
 }
 
-impl Error for FileDownloadError { }
+impl Error for FileDownloadError {}
 
 impl Display for FileDownloadError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             NetworkError(message) => f.write_str(message),
-            HashMismatchError => f.write_str("Integrity check failed.")
+            HashMismatchError => f.write_str("Integrity check failed."),
         }
     }
 }
-
 
 /// Downloads a file from a URL with integrity check based on MD5 hash.
 ///
@@ -44,13 +42,17 @@ impl Display for FileDownloadError {
 ///
 /// A `Result` containing `Ok(())` if the download is successful and the file integrity is verified,
 /// or an error of type `Box<dyn Error>` if any operation fails.
-pub(crate) async fn download_file_with_integrity(url: &str, file_path: &str, md5_expected: &str) -> Result<(), Box<dyn Error>> {
+pub(crate) async fn download_file_with_integrity(
+    url: &str,
+    file_path: &str,
+    md5_expected: &str,
+) -> Result<(), Box<dyn Error>> {
     let url = Url::parse(url)?;
 
     let response = reqwest::get(url).await?;
 
     // Check if the request was successful (status code 2xx)
-    if ! response.status().is_success() {
+    if !response.status().is_success() {
         return Err(NetworkError(response.status().to_string()).into());
     }
 
@@ -86,7 +88,6 @@ pub(crate) async fn download_file_with_integrity(url: &str, file_path: &str, md5
     Ok(())
 }
 
-
 /// Function to get the model folder path as 'PathBuf' or create it if it does not exist
 pub(crate) fn get_or_create_home_dir_sub_folder(sub_folder: &str) -> PathBuf {
     let model_folder = if let Some(mut home_dir) = dirs::home_dir() {
@@ -97,7 +98,7 @@ pub(crate) fn get_or_create_home_dir_sub_folder(sub_folder: &str) -> PathBuf {
     };
 
     // Create the directory if it doesn't exist
-    if ! model_folder.exists() {
+    if !model_folder.exists() {
         if let Err(err) = fs::create_dir_all(&model_folder) {
             eprintln!("Failed to create model folder: {}", err);
         }

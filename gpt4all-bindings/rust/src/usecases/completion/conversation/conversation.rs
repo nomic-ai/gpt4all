@@ -1,7 +1,8 @@
 use crate::usecases::completion::conversation::context_overflow_strategies::strategy::ContextOverflowStrategy;
 use crate::wrappers::completion::completion_model::CompletionModel;
-use crate::wrappers::completion::domain::{CompletionRequest, CompletionExpectation, CompletionRequestBuilder, SystemDescription};
-
+use crate::wrappers::completion::domain::{
+    CompletionExpectation, CompletionRequest, CompletionRequestBuilder, SystemDescription,
+};
 
 /// Represents a conversation context with strategies to handle context overflow.
 pub struct Conversation<'a, Strategy: ContextOverflowStrategy> {
@@ -24,9 +25,8 @@ pub struct Conversation<'a, Strategy: ContextOverflowStrategy> {
     /// The context overflow strategy for handling context overflow.
     pub(crate) context_overflow_strategy: Strategy,
     /// Flag indicating whether the overflow strategy has been applied.
-    pub(crate) is_overflow_strategy_applied: bool
+    pub(crate) is_overflow_strategy_applied: bool,
 }
-
 
 impl<'a, Strategy: ContextOverflowStrategy> Conversation<'_, Strategy> {
     /// Generates a completion for the given message using the default prompt builder of the conversation.
@@ -37,10 +37,7 @@ impl<'a, Strategy: ContextOverflowStrategy> Conversation<'_, Strategy> {
     ///
     /// Returns the completion response as a string.
     pub fn ask(&mut self, message: &str) -> String {
-        let prompt = self.default_prompt_builder
-            .clone()
-            .prompt(message)
-            .build();
+        let prompt = self.default_prompt_builder.clone().prompt(message).build();
 
         self.create_completion(prompt)
     }
@@ -56,7 +53,8 @@ impl<'a, Strategy: ContextOverflowStrategy> Conversation<'_, Strategy> {
     ///
     /// Returns the completion response as a string.
     pub fn ask_streamed(&mut self, message: &str, response_callback: fn(&str) -> bool) -> String {
-        let prompt = self.default_prompt_builder
+        let prompt = self
+            .default_prompt_builder
             .clone()
             .prompt(message)
             .response_callback(response_callback)
@@ -72,7 +70,9 @@ impl<'a, Strategy: ContextOverflowStrategy> Conversation<'_, Strategy> {
         let description = self.description.clone();
         self.memoized_tokens_count = if let Some(description) = description {
             self.model.describe_system(description).memoized_token_count
-        } else { 0 };
+        } else {
+            0
+        };
     }
 
     /// Performs initial model training for the conversation, which includes describing the system and providing context with reply expectations.
@@ -82,7 +82,8 @@ impl<'a, Strategy: ContextOverflowStrategy> Conversation<'_, Strategy> {
         self.describe_system();
 
         for reply_expectation in &self.reply_expectations {
-            self.memoized_tokens_count = self.model
+            self.memoized_tokens_count = self
+                .model
                 .provide_completion_expectation(CompletionExpectation {
                     n_past: self.memoized_tokens_count,
                     ..reply_expectation.clone()
@@ -105,7 +106,7 @@ impl<'a, Strategy: ContextOverflowStrategy> Conversation<'_, Strategy> {
     /// Returns the completion response as a string.
     pub fn create_completion(&mut self, completion_request: CompletionRequest) -> String {
         // Apply overflow strategy (iff it is not currently being applied)
-        if ! self.is_overflow_strategy_applied {
+        if !self.is_overflow_strategy_applied {
             self.is_overflow_strategy_applied = true;
 
             self.context_overflow_strategy

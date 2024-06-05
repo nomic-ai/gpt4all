@@ -2,7 +2,7 @@ use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct CompletionModelConfig {
-    pub default_prompt_template: Option<String>
+    pub default_prompt_template: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -17,7 +17,7 @@ pub enum ModelBuildVariant {
     AvxOnly,
 
     /// Use build variant specified by a String.
-    Custom(String)
+    Custom(String),
 }
 
 impl fmt::Display for ModelBuildVariant {
@@ -25,7 +25,7 @@ impl fmt::Display for ModelBuildVariant {
         match self {
             ModelBuildVariant::Auto => f.write_str("auto"),
             ModelBuildVariant::Default => f.write_str("default"),
-            ModelBuildVariant::AvxOnly =>  f.write_str("avxonly"),
+            ModelBuildVariant::AvxOnly => f.write_str("avxonly"),
             ModelBuildVariant::Custom(build_variant) => f.write_str(build_variant),
         }
     }
@@ -46,7 +46,7 @@ pub struct ModelLoadOptions {
     pub threads: Option<i32>,
 
     /// The implementation to be used
-    pub build_variant: ModelBuildVariant
+    pub build_variant: ModelBuildVariant,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -71,7 +71,7 @@ impl fmt::Display for Device {
             Device::Cpu => f.write_str("cpu"),
             Device::Gpu => f.write_str("gpu"),
             Device::GpuByVendor(vendor) => f.write_str(vendor),
-            Device::GpuByName(name) => f.write_str(name)
+            Device::GpuByName(name) => f.write_str(name),
         }
     }
 }
@@ -88,9 +88,8 @@ pub struct GpuDevice {
     /// Name of the GPU device.
     pub name: String,
     /// Vendor of the GPU device.
-    pub vendor: String
+    pub vendor: String,
 }
-
 
 /// Builder for `ModelLoadOptions`
 #[derive(Debug, Clone)]

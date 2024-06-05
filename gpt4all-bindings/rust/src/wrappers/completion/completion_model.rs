@@ -1,9 +1,14 @@
 use std::ffi::CString;
 use std::ptr::null;
 
-use crate::bindings::{llmodel_model, llmodel_model_destroy, llmodel_prompt, llmodel_prompt_context};
+use crate::bindings::{
+    llmodel_model, llmodel_model_destroy, llmodel_prompt, llmodel_prompt_context,
+};
 use crate::wrappers::completion::defaults::MIN_VALID_PROMPT_TEMPLATE;
-use crate::wrappers::completion::domain::{CompletionModelInfo, CompletionRequest, CompletionContext, CompletionResponse, CompletionExpectation, CompletionRequestBuilder, SystemDescription};
+use crate::wrappers::completion::domain::{
+    CompletionContext, CompletionExpectation, CompletionModelInfo, CompletionRequest,
+    CompletionRequestBuilder, CompletionResponse, SystemDescription,
+};
 use crate::wrappers::completion::response_provider::ResponseProvider;
 
 /// Struct representing a language model used for completions.
@@ -14,9 +19,8 @@ pub struct CompletionModel {
     /// Information about the completion model.
     model_info: CompletionModelInfo,
     /// The maximum size of the context used by the model.
-    max_context_size: i32
+    max_context_size: i32,
 }
-
 
 impl CompletionModel {
     /// Creates a new `CompletionModel` instance.
@@ -28,16 +32,17 @@ impl CompletionModel {
     /// * `max_context_size` - The maximum size of the context used by the model.
     ///
     /// Returns the created `CompletionModel`.
-    pub fn new(raw_model: llmodel_model,
-               model_info: CompletionModelInfo,
-               max_context_size: i32) -> Self {
+    pub fn new(
+        raw_model: llmodel_model,
+        model_info: CompletionModelInfo,
+        max_context_size: i32,
+    ) -> Self {
         Self {
             raw_model,
             model_info,
             max_context_size,
         }
     }
-
 
     /// Creates a completion based on the provided completion request.
     pub fn create_completion(&self, completion_request: CompletionRequest) -> CompletionResponse {
@@ -51,23 +56,26 @@ impl CompletionModel {
         let prompt_context = &mut llmodel_prompt_context::from(completion_request.context);
 
         unsafe {
-            llmodel_prompt(self.raw_model,
-                           prompt.as_ptr(),
-                           prompt_template.as_ptr(),
-                           callbacks.prompt_callback,
-                           callbacks.response_callback,
-                           callbacks.recalculate_callback,
-                           prompt_context,
-                           false,
-                           null()
+            llmodel_prompt(
+                self.raw_model,
+                prompt.as_ptr(),
+                prompt_template.as_ptr(),
+                callbacks.prompt_callback,
+                callbacks.response_callback,
+                callbacks.recalculate_callback,
+                prompt_context,
+                false,
+                null(),
             );
         };
 
         let response = response_provider.extract_response();
 
-        CompletionResponse { message: Some(response), memoized_token_count: prompt_context.n_past }
+        CompletionResponse {
+            message: Some(response),
+            memoized_token_count: prompt_context.n_past,
+        }
     }
-
 
     /// Provide a system description to the completion model for contextualizing completion requests.
     /// This description helps the model understand the system or environment in which the completion is requested,
@@ -91,24 +99,31 @@ impl CompletionModel {
 
         // Call the low-level model prompt backend function
         unsafe {
-            llmodel_prompt(self.raw_model,
-                           description.as_ptr(),
-                           prompt_template.as_ptr(),
-                           callbacks.prompt_callback,
-                           callbacks.response_callback,
-                           callbacks.recalculate_callback,
-                           prompt_context,
-                           true,
-                           empty_reply.as_ptr()
+            llmodel_prompt(
+                self.raw_model,
+                description.as_ptr(),
+                prompt_template.as_ptr(),
+                callbacks.prompt_callback,
+                callbacks.response_callback,
+                callbacks.recalculate_callback,
+                prompt_context,
+                true,
+                empty_reply.as_ptr(),
             );
         }
 
         // Extract response and return CompletionResponse
-        CompletionResponse { message: None, memoized_token_count: prompt_context.n_past }
+        CompletionResponse {
+            message: None,
+            memoized_token_count: prompt_context.n_past,
+        }
     }
 
     /// Provide an example of the desired completion to guide the model in generating responses.
-    pub fn provide_completion_expectation(&self, completion_expectation: CompletionExpectation) -> CompletionResponse {
+    pub fn provide_completion_expectation(
+        &self,
+        completion_expectation: CompletionExpectation,
+    ) -> CompletionResponse {
         let response_provider = ResponseProvider::new();
         let callbacks = response_provider.get_callbacks();
 
@@ -122,25 +137,28 @@ impl CompletionModel {
         let expected_reply = CString::new(completion_expectation.fake_reply).unwrap();
 
         unsafe {
-            llmodel_prompt(self.raw_model,
-                           prompt.as_ptr(),
-                           prompt_template.as_ptr(),
-                           callbacks.prompt_callback,
-                           callbacks.response_callback,
-                           callbacks.recalculate_callback,
-                           prompt_context,
-                           false,
-                            expected_reply.as_ptr()
+            llmodel_prompt(
+                self.raw_model,
+                prompt.as_ptr(),
+                prompt_template.as_ptr(),
+                callbacks.prompt_callback,
+                callbacks.response_callback,
+                callbacks.recalculate_callback,
+                prompt_context,
+                false,
+                expected_reply.as_ptr(),
             );
         };
 
-        CompletionResponse { message: None, memoized_token_count: prompt_context.n_past }
+        CompletionResponse {
+            message: None,
+            memoized_token_count: prompt_context.n_past,
+        }
     }
 
     /// Returns a builder for constructing completion requests (with preset default 'prompt_template')
     pub fn completion_request_builder(&self) -> CompletionRequestBuilder {
-        CompletionRequestBuilder::new()
-            .prompt_template(&self.default_prompt_template())
+        CompletionRequestBuilder::new().prompt_template(&self.default_prompt_template())
     }
 
     /// Returns the default prompt template (from available 'CompletionModelInfo')
@@ -158,6 +176,8 @@ impl CompletionModel {
 
     /// Disposes of the CompletionModel instance, freeing associated resources.
     pub fn dispose(self) {
-        unsafe { llmodel_model_destroy(self.raw_model); }
+        unsafe {
+            llmodel_model_destroy(self.raw_model);
+        }
     }
 }

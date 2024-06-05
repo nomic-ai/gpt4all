@@ -1,6 +1,6 @@
-use std::{env, fs, io};
-use std::path::{Path,PathBuf};
+use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::{env, fs, io};
 use walkdir::WalkDir;
 
 /// Builds the CMake backend project.
@@ -9,7 +9,10 @@ use walkdir::WalkDir;
 /// * `backend_source_path` - The path to the backend source directory.
 /// * `build_dir_path` - The path to the directory where the project will be built.
 ///
-fn build_cmake_backend_project(backend_source_path: &PathBuf, build_dir_path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+fn build_cmake_backend_project(
+    backend_source_path: &PathBuf,
+    build_dir_path: &PathBuf,
+) -> Result<(), Box<dyn std::error::Error>> {
     // Temporary build folder
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR environment variable not set");
     let build_path_temp = Path::new(&out_dir).join("./build_temp");
@@ -49,15 +52,16 @@ fn build_cmake_backend_project(backend_source_path: &PathBuf, build_dir_path: &P
     }
 
     // Copy final build files
-    copy_prebuilt_c_lib(&build_path_temp, build_dir_path).expect("Failed to copy prebuilt C library files");
+    copy_prebuilt_c_lib(&build_path_temp, build_dir_path)
+        .expect("Failed to copy prebuilt C library files");
 
     // Remove Temporary build folder
-    fs::remove_dir_all(&build_path_temp).map_err(|err| format!("Error removing temporary build directory: {}", err))?;
+    fs::remove_dir_all(&build_path_temp)
+        .map_err(|err| format!("Error removing temporary build directory: {}", err))?;
 
     // Build Success
     Ok(())
 }
-
 
 /// Copies prebuilt C library files from the temporary build directory to the final build directory.
 ///
@@ -68,7 +72,7 @@ fn build_cmake_backend_project(backend_source_path: &PathBuf, build_dir_path: &P
 ///
 fn copy_prebuilt_c_lib(temp_build_path: &PathBuf, final_build_path: &PathBuf) -> io::Result<()> {
     // Create the final build directory if it doesn't exist
-    if ! final_build_path.exists() {
+    if !final_build_path.exists() {
         fs::create_dir_all(&final_build_path)?;
     }
 
@@ -84,11 +88,17 @@ fn copy_prebuilt_c_lib(temp_build_path: &PathBuf, final_build_path: &PathBuf) ->
             let file_name = src_path.file_name().unwrap().to_str().unwrap();
 
             // Check if the file has a supported extension (we need only library extensions)
-            if file_name.ends_with(".dll") || file_name.ends_with(".so") || file_name.ends_with(".dylib")  || file_name.ends_with(".metal") {
+            if file_name.ends_with(".dll")
+                || file_name.ends_with(".so")
+                || file_name.ends_with(".dylib")
+                || file_name.ends_with(".metal")
+            {
                 // Need Metal info only for macOS (linux/windows use Vulkan SDK)
                 #[cfg(not(target_os = "macos"))]
                 {
-                    if file_name.ends_with(".metal") { continue; }
+                    if file_name.ends_with(".metal") {
+                        continue;
+                    }
                 }
 
                 // Construct the destination path in the final build directory
@@ -126,7 +136,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // path.
         .canonicalize()?;
 
-
     // On Linux, Cargo expects the shared library to have a versioned
     // file name (e.g., libllmodel.so.0), but CMake may generate the shared library
     // without a version number (e.g., libllmodel.so). This code block creates a
@@ -140,7 +149,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Tell cargo to look for shared libraries in the specified directory
-    println!("cargo:rustc-link-search=native={}", canonized_lib_folder.display());
+    println!(
+        "cargo:rustc-link-search=native={}",
+        canonized_lib_folder.display()
+    );
 
     // Tell cargo to tell rustc to link against the `llmodel` library.
     println!("cargo:rustc-link-lib={}", "llmodel");

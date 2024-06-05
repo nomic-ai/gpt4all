@@ -11,18 +11,20 @@ pub enum ModelSourceError {
     /// Error downloading a model.
     ModelDownloadError,
     /// Model not found on the source.
-    ModelNotFoundError
+    ModelNotFoundError,
 }
 
-impl Error for ModelSourceError { }
+impl Error for ModelSourceError {}
 
 impl Display for ModelSourceError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ModelSourceError::FetchError => f.write_str("Error fetching available models"),
-            ModelSourceError::ModelInfoParsingError => f.write_str("Error parsing model information."),
+            ModelSourceError::ModelInfoParsingError => {
+                f.write_str("Error parsing model information.")
+            }
             ModelSourceError::ModelDownloadError => f.write_str("Error downloading a model."),
-            ModelSourceError::ModelNotFoundError => f.write_str("Model not found on the source.")
+            ModelSourceError::ModelNotFoundError => f.write_str("Model not found on the source."),
         }
     }
 }

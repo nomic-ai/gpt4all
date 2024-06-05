@@ -1,5 +1,5 @@
-use std::ptr::null_mut;
 use crate::bindings::llmodel_prompt_context;
+use std::ptr::null_mut;
 
 use crate::wrappers::completion::domain::CompletionContext;
 

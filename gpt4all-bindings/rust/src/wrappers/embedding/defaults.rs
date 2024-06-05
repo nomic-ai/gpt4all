@@ -1,4 +1,4 @@
-use crate::wrappers::embedding::domain::{EmbeddingOptions};
+use crate::wrappers::embedding::domain::EmbeddingOptions;
 
 impl Default for EmbeddingOptions {
     /// Returns a new `EmbeddingOptions` with default values.

@@ -15,7 +15,7 @@ impl Default for CompletionContext {
             n_batch: 8,
             repeat_penalty: 1.2,
             repeat_last_n: 10,
-            context_erase: 0.75
+            context_erase: 0.75,
         }
     }
 }
@@ -25,7 +25,7 @@ impl Default for CompletionRequest {
         Self {
             prompt: String::default(),
             prompt_template: MIN_VALID_PROMPT_TEMPLATE.to_string(),
-            response_callback: |_| { true },
+            response_callback: |_| true,
             context: Default::default(),
         }
     }

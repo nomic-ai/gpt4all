@@ -1,7 +1,9 @@
 use crate::usecases::completion::conversation::context_overflow_strategies::strategy::ContextOverflowStrategy;
 use crate::usecases::completion::conversation::conversation::Conversation;
 use crate::usecases::token_utils::TokenUtils;
-use crate::wrappers::completion::domain::{CompletionContextBuilder, CompletionExpectation, CompletionRequest, CompletionRequestBuilder};
+use crate::wrappers::completion::domain::{
+    CompletionContextBuilder, CompletionExpectation, CompletionRequest, CompletionRequestBuilder,
+};
 
 /// Summary strategy for managing conversation context overflow by summarizing the conversation.
 ///
@@ -32,7 +34,7 @@ impl SummaryStrategy {
         Self {
             summary_msg_token_count: estimated_prompt_tokens,
             summary_completion_max_token_count,
-            ask_summary_message: ask_summary_message.to_string()
+            ask_summary_message: ask_summary_message.to_string(),
         }
     }
 
@@ -44,17 +46,23 @@ impl SummaryStrategy {
     /// * `completion_request` - The completion request.
     ///
     /// Returns `true` if the conversation context will overflow; otherwise, `false`.
-    fn will_overflow(&self, conversation: &mut Conversation<'_, Self>, completion_request: &CompletionRequest) -> bool {
-        let estimated_prompt_tokens = TokenUtils::estimate_token_count(&completion_request.prompt) as i32;
+    fn will_overflow(
+        &self,
+        conversation: &mut Conversation<'_, Self>,
+        completion_request: &CompletionRequest,
+    ) -> bool {
+        let estimated_prompt_tokens =
+            TokenUtils::estimate_token_count(&completion_request.prompt) as i32;
 
-        let free_tokens_count = conversation.model.get_max_context_size() - (conversation.memoized_tokens_count + estimated_prompt_tokens);
+        let free_tokens_count = conversation.model.get_max_context_size()
+            - (conversation.memoized_tokens_count + estimated_prompt_tokens);
 
-        let reserved_token_count = self.summary_msg_token_count + self.summary_completion_max_token_count;
+        let reserved_token_count =
+            self.summary_msg_token_count + self.summary_completion_max_token_count;
 
         return free_tokens_count < reserved_token_count;
     }
 }
-
 
 impl Default for SummaryStrategy {
     /// Creates a default instance of the summary strategy.
@@ -70,7 +78,7 @@ impl Default for SummaryStrategy {
         Self {
             summary_msg_token_count: summary_msg_token_count as i32,
             summary_completion_max_token_count: completion_token_count as i32,
-            ask_summary_message: default_summary_msg.to_string()
+            ask_summary_message: default_summary_msg.to_string(),
         }
     }
 }
@@ -82,29 +90,39 @@ impl ContextOverflowStrategy for SummaryStrategy {
     ///
     /// * `conversation` - A mutable reference to the conversation.
     /// * `completion_request` - The completion request.
-    fn apply_if_overflows(&self, conversation: &mut Conversation<'_, Self>, completion_request: &CompletionRequest) {
-        if ! self.will_overflow(conversation, completion_request) { return }
+    fn apply_if_overflows(
+        &self,
+        conversation: &mut Conversation<'_, Self>,
+        completion_request: &CompletionRequest,
+    ) {
+        if !self.will_overflow(conversation, completion_request) {
+            return;
+        }
 
         // STEP 1: ASK FOR THE CURRENT CONVERSATION CONTEXT SUMMARY
         let summary = conversation.create_completion(
             CompletionRequestBuilder::new()
                 .prompt(&self.ask_summary_message)
-                .context(CompletionContextBuilder::new()
-                    .n_predict(self.summary_completion_max_token_count)
-                    .build())
-                .build()
+                .context(
+                    CompletionContextBuilder::new()
+                        .n_predict(self.summary_completion_max_token_count)
+                        .build(),
+                )
+                .build(),
         );
 
         // STEP 2: DESCRIBE SYSTEM (SYSTEM DESCRIPTION RESETS THE CONTEXT)
         conversation.describe_system();
 
         // STEP 3: FEED WITH SUMMARY
-        let response = conversation.model.provide_completion_expectation(CompletionExpectation {
-            prompt: "Summary of our previous conversation: ".to_string() + &summary,
-            prompt_template: conversation.model.default_prompt_template(),
-            fake_reply: "".to_string(),
-            n_past: conversation.memoized_tokens_count
-        });
+        let response = conversation
+            .model
+            .provide_completion_expectation(CompletionExpectation {
+                prompt: "Summary of our previous conversation: ".to_string() + &summary,
+                prompt_template: conversation.model.default_prompt_template(),
+                fake_reply: "".to_string(),
+                n_past: conversation.memoized_tokens_count,
+            });
 
         conversation.memoized_tokens_count = response.memoized_token_count;
     }

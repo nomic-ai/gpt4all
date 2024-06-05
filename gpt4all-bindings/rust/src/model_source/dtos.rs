@@ -1,6 +1,5 @@
-use serde::Deserialize;
 use crate::model_source::domain::ModelInfo;
-
+use serde::Deserialize;
 
 /// Data transfer object for deserializing model information.
 #[derive(Deserialize)]
@@ -30,7 +29,7 @@ pub struct ModelInfoDto {
     pub system_prompt: Option<String>,
     /// Indicates whether the model is an embedding model.
     #[serde(rename = "embeddingModel")]
-    pub embedding_model: Option<bool>
+    pub embedding_model: Option<bool>,
 }
 
 impl From<ModelInfoDto> for ModelInfo {
@@ -43,9 +42,7 @@ impl From<ModelInfoDto> for ModelInfo {
             description: model_info_dto.description,
             system_prompt: model_info_dto.system_prompt,
             prompt_template: model_info_dto.prompt_template,
-            is_embedding_model: model_info_dto
-                .embedding_model
-                .unwrap_or(false)
+            is_embedding_model: model_info_dto.embedding_model.unwrap_or(false),
         }
     }
 }

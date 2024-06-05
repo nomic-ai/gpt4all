@@ -1,8 +1,7 @@
-use crate::usecases::completion::conversation::conversation::Conversation;
 use crate::usecases::completion::conversation::context_overflow_strategies::strategy::ContextOverflowStrategy;
+use crate::usecases::completion::conversation::conversation::Conversation;
 use crate::wrappers::completion::completion_model::CompletionModel;
 use crate::wrappers::completion::domain::{CompletionExpectation, SystemDescription};
-
 
 /// A builder for creating Conversation instances.
 pub struct ConversationBuilder<'a, Strategy: ContextOverflowStrategy> {
@@ -10,9 +9,8 @@ pub struct ConversationBuilder<'a, Strategy: ContextOverflowStrategy> {
     description: Option<SystemDescription>,
     reply_expectations: Vec<CompletionExpectation>,
     memoized_tokens_count: i32,
-    context_overflow_strategy: Strategy
+    context_overflow_strategy: Strategy,
 }
-
 
 impl<'a, Strategy: ContextOverflowStrategy> ConversationBuilder<'a, Strategy> {
     /// Creates a new ConversationBuilder instance.
@@ -24,7 +22,13 @@ impl<'a, Strategy: ContextOverflowStrategy> ConversationBuilder<'a, Strategy> {
     ///
     /// Returns a new ConversationBuilder instance.
     pub fn new(model: &'a CompletionModel, context_overflow_strategy: Strategy) -> Self {
-        Self { model, description: None, reply_expectations: vec![], memoized_tokens_count: 0, context_overflow_strategy }
+        Self {
+            model,
+            description: None,
+            reply_expectations: vec![],
+            memoized_tokens_count: 0,
+            context_overflow_strategy,
+        }
     }
 
     /// Sets the system description for the conversation.
@@ -35,7 +39,9 @@ impl<'a, Strategy: ContextOverflowStrategy> ConversationBuilder<'a, Strategy> {
     ///
     /// Returns a mutable reference to the ConversationBuilder instance.
     pub fn system_description(mut self, system_description: &str) -> Self {
-        self.description = Some(SystemDescription { system_prompt: system_description.to_string() });
+        self.description = Some(SystemDescription {
+            system_prompt: system_description.to_string(),
+        });
         self
     }
 

@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone)]
 pub struct CompletionModelInfo {
     /// Optional field containing the default prompt template used by the model.
@@ -18,9 +17,8 @@ pub struct CompletionRequest {
     /// The function should return a boolean indicating whether the generating should continue (`true`) or stop (`false`).
     pub response_callback: fn(&str) -> bool,
     /// Context for completion, containing parameters for generating completions.
-    pub context: CompletionContext
+    pub context: CompletionContext,
 }
-
 
 /// Struct representing the completion context.
 #[derive(Debug, Clone)]
@@ -167,7 +165,7 @@ pub struct CompletionExpectation {
     /// The expected fake reply for the completion.
     pub fake_reply: String,
     /// Number of tokens in past conversation to keep in context.
-    pub n_past: i32
+    pub n_past: i32,
 }
 
 /// Struct representing a response from a completion request.
@@ -176,9 +174,8 @@ pub struct CompletionResponse {
     pub message: Option<String>,
     /// The count of all memoized tokens currently present in context,
     /// including tokens from the latest 'CompletionRequest.prompt' and 'CompletionResponse.message'.
-    pub memoized_token_count: i32
+    pub memoized_token_count: i32,
 }
-
 
 #[derive(Debug, Clone)]
 pub struct CompletionRequestBuilder {
@@ -237,7 +234,6 @@ impl CompletionRequestBuilder {
         }
     }
 }
-
 
 /// Represents a description of the system or environment for contextualizing completion requests.
 /// It should follow a specific format or template that aligns with the requirements of the used model.

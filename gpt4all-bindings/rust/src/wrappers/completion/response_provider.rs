@@ -1,13 +1,14 @@
+use crate::bindings::{
+    llmodel_prompt_callback, llmodel_recalculate_callback, llmodel_response_callback,
+};
 use std::ffi::CStr;
 use std::os::raw::c_char;
 use std::ptr::addr_of_mut;
-use crate::bindings::{llmodel_prompt_callback, llmodel_recalculate_callback, llmodel_response_callback};
-
 
 // Struct to hold response data and callbacks for response handling
 pub(crate) struct ResponseProvider {
     response_holder: String,
-    response_part_callback: Option<fn(response_part: &str) -> bool>
+    response_part_callback: Option<fn(response_part: &str) -> bool>,
 }
 
 // This static variable holds the response provider instance, providing context to the extern "C" function.
@@ -20,12 +21,11 @@ static mut RESPONSE_PROVIDER: ResponseProvider = ResponseProvider {
     response_part_callback: None,
 };
 
-
 // Struct to hold callbacks for low-level C library model interactions
 pub(crate) struct PromptCallbacks {
     pub prompt_callback: llmodel_prompt_callback,
     pub response_callback: llmodel_response_callback,
-    pub recalculate_callback: llmodel_recalculate_callback
+    pub recalculate_callback: llmodel_recalculate_callback,
 }
 
 // Singleton implementation of the ResponseProvider
@@ -42,7 +42,7 @@ impl ResponseProvider {
             //  -- https://github.com/rust-lang/rust/issues/114447
             let raw_pointer = addr_of_mut!(RESPONSE_PROVIDER);
 
-            return &mut *raw_pointer
+            return &mut *raw_pointer;
         }
     }
 
@@ -78,7 +78,7 @@ impl ResponseProvider {
         PromptCallbacks {
             prompt_callback: Some(Self::prompt_callback),
             response_callback: Some(Self::response_callback),
-            recalculate_callback: Some(Self::recalculate_callback)
+            recalculate_callback: Some(Self::recalculate_callback),
         }
     }
 
@@ -93,8 +93,9 @@ impl ResponseProvider {
     /// # Returns
     ///
     /// A boolean value indicating whether the model should keep processing.
-    extern "C" fn prompt_callback(token_id: i32) -> bool { true }
-
+    extern "C" fn prompt_callback(token_id: i32) -> bool {
+        true
+    }
 
     /// Callback function for response in the low-level C library model interactions.
     ///
@@ -111,11 +112,10 @@ impl ResponseProvider {
     extern "C" fn response_callback(token_id: i32, response: *const c_char) -> bool {
         let response_part = unsafe { CStr::from_ptr(response) };
         if let Ok(response_str) = response_part.to_str() {
-            unsafe { return RESPONSE_PROVIDER.add_response( response_str ) }
+            unsafe { return RESPONSE_PROVIDER.add_response(response_str) }
         }
         true
     }
-
 
     /// Adds a response part to the response holder and calls the response part callback if set.
     ///
@@ -131,7 +131,8 @@ impl ResponseProvider {
     /// A boolean value indicating whether the processing should continue (`true`) or stop (`false`).
     fn add_response(&mut self, response_part: &str) -> bool {
         self.response_holder += response_part;
-        self.response_part_callback.map_or(true, |callback| callback(response_part))
+        self.response_part_callback
+            .map_or(true, |callback| callback(response_part))
     }
 
     /// Callback function for recalculation of context in the low-level C library model interactions.
@@ -145,5 +146,7 @@ impl ResponseProvider {
     /// # Returns
     ///
     /// A boolean value indicating whether the model should keep generating.
-    extern "C" fn recalculate_callback(is_recalculating: bool) -> bool { is_recalculating }
+    extern "C" fn recalculate_callback(is_recalculating: bool) -> bool {
+        is_recalculating
+    }
 }

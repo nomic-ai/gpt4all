@@ -1,11 +1,10 @@
-use std::path::Path;
 use crate::model_source::file_utils::get_or_create_home_dir_sub_folder;
 use crate::wrappers::loader::domain::{Device, ModelBuildVariant, ModelLoadOptions};
 use crate::wrappers::loader::model_loader::ModelLoader;
+use std::path::Path;
 
 /// Sub-folder of home directory of your OS
 const DEFAULT_MODELS_FOLDER: &str = ".cache/gpt4all";
-
 
 impl Default for ModelLoader {
     fn default() -> Self {
@@ -13,9 +12,7 @@ impl Default for ModelLoader {
 
         Self {
             model_folder: get_or_create_home_dir_sub_folder(DEFAULT_MODELS_FOLDER),
-            libraries_search_paths: vec![
-                Path::new(out_dir).join("build")
-            ],
+            libraries_search_paths: vec![Path::new(out_dir).join("build")],
             model_load_options: Default::default(),
         }
     }

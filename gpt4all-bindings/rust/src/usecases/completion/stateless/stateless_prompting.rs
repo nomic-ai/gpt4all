@@ -1,6 +1,7 @@
 use crate::wrappers::completion::completion_model::CompletionModel;
-use crate::wrappers::completion::domain::{CompletionRequest, CompletionExpectation, CompletionRequestBuilder, SystemDescription};
-
+use crate::wrappers::completion::domain::{
+    CompletionExpectation, CompletionRequest, CompletionRequestBuilder, SystemDescription,
+};
 
 /// A struct for stateless prompting operations.
 ///
@@ -22,9 +23,8 @@ pub struct StatelessPrompting<'a> {
     /// Default completion request builder.
     ///
     /// This builder is used in `ask` and `ask_streamed` calls.
-    pub(crate) default_completion_request_builder: CompletionRequestBuilder
+    pub(crate) default_completion_request_builder: CompletionRequestBuilder,
 }
-
 
 impl<'a> StatelessPrompting<'a> {
     /// Generates a completion for the given message.
@@ -35,7 +35,8 @@ impl<'a> StatelessPrompting<'a> {
     ///
     /// Returns the completion response as a string.
     pub fn ask(&self, message: &str) -> String {
-        let prompt = self.default_completion_request_builder
+        let prompt = self
+            .default_completion_request_builder
             .clone()
             .prompt(message)
             .build();
@@ -54,7 +55,8 @@ impl<'a> StatelessPrompting<'a> {
     ///
     /// Returns the completion response as a string.
     pub fn ask_streamed(&self, message: &str, response_callback: fn(&str) -> bool) -> String {
-        let prompt = self.default_completion_request_builder
+        let prompt = self
+            .default_completion_request_builder
             .clone()
             .prompt(message)
             .response_callback(response_callback)
@@ -77,11 +79,14 @@ impl<'a> StatelessPrompting<'a> {
         let description = self.description.clone();
         context_tokens_count = if let Some(description) = description {
             self.model.describe_system(description).memoized_token_count
-        } else { 0 };
+        } else {
+            0
+        };
 
         // Provide reply expectations before every completion request
         for reply_expectation in &self.reply_expectations {
-            context_tokens_count = self.model
+            context_tokens_count = self
+                .model
                 .provide_completion_expectation(CompletionExpectation {
                     n_past: context_tokens_count,
                     ..reply_expectation.clone()

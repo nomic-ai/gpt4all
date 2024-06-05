@@ -9,7 +9,7 @@ impl From<llmodel_gpu_device> for GpuDevice {
             device_type: value.type_,
             heap_size: value.heapSize,
             name: string_from_ptr(value.name).unwrap_or_default(),
-            vendor: string_from_ptr(value.vendor).unwrap_or_default()
+            vendor: string_from_ptr(value.vendor).unwrap_or_default(),
         }
     }
 }

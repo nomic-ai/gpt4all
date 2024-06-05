@@ -8,6 +8,6 @@
 mod bindings; // -- Include generated bindings
 
 // Public modules
-pub mod wrappers;
-pub mod usecases;
 pub mod model_source;
+pub mod usecases;
+pub mod wrappers;

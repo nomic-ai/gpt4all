@@ -1,6 +1,5 @@
-use crate::wrappers::completion::domain::CompletionRequest;
 use crate::usecases::completion::conversation::conversation::Conversation;
-
+use crate::wrappers::completion::domain::CompletionRequest;
 
 /// Trait for implementing context overflow strategies for a conversation use-case
 pub trait ContextOverflowStrategy: Clone {
@@ -10,5 +9,9 @@ pub trait ContextOverflowStrategy: Clone {
     ///
     /// * `conversation` - Mutable reference to the conversation instance.
     /// * `completion_request` - The CompletionRequest containing the prompt data.
-    fn apply_if_overflows(&self, conversation: &mut Conversation<'_, Self>, completion_request: &CompletionRequest);
+    fn apply_if_overflows(
+        &self,
+        conversation: &mut Conversation<'_, Self>,
+        completion_request: &CompletionRequest,
+    );
 }

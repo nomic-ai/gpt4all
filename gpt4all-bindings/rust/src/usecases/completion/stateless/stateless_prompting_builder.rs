@@ -2,7 +2,6 @@ use crate::usecases::completion::stateless::stateless_prompting::StatelessPrompt
 use crate::wrappers::completion::completion_model::CompletionModel;
 use crate::wrappers::completion::domain::{CompletionExpectation, SystemDescription};
 
-
 /// Builder for constructing stateless prompting instances.
 pub struct StatelessPromptingBuilder<'a> {
     /// Reference to the wrapper instance LLCompletionModel used for prompting.
@@ -16,9 +15,8 @@ pub struct StatelessPromptingBuilder<'a> {
     /// Vector of reply expectations.
     ///
     /// These expectations will be set before each completion (ask).
-    reply_expectations: Vec<CompletionExpectation>
+    reply_expectations: Vec<CompletionExpectation>,
 }
-
 
 impl<'a> StatelessPromptingBuilder<'a> {
     /// Creates a new StatelessPromptingBuilder instance.
@@ -27,7 +25,11 @@ impl<'a> StatelessPromptingBuilder<'a> {
     ///
     /// * `model` - Reference to the wrapper LLCompletionModel instance used for prompting.
     pub fn new(model: &'a CompletionModel) -> Self {
-        Self { model, description: None, reply_expectations: vec![] }
+        Self {
+            model,
+            description: None,
+            reply_expectations: vec![],
+        }
     }
 
     /// Sets the system description.
@@ -39,7 +41,9 @@ impl<'a> StatelessPromptingBuilder<'a> {
     ///
     /// Returns a reference to self for method chaining.
     pub fn system_description(mut self, system_description: &str) -> Self {
-        self.description = Some(SystemDescription { system_prompt: system_description.to_string() });
+        self.description = Some(SystemDescription {
+            system_prompt: system_description.to_string(),
+        });
         self
     }
 
@@ -60,7 +64,6 @@ impl<'a> StatelessPromptingBuilder<'a> {
         });
         self
     }
-
 
     /// Builds a StatelessPrompting instance.
     ///

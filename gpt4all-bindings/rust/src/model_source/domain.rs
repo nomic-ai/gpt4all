@@ -5,7 +5,9 @@ pub trait ModelSource {
     /// Asynchronously fetches available models from the source.
     ///
     /// Returns a future that resolves to a vector of `ModelInfo` or an error if fetching fails.
-    fn fetch_all_models(&self) -> impl std::future::Future<Output = Result<Vec<ModelInfo>, ModelSourceError>> + Send;
+    fn fetch_all_models(
+        &self,
+    ) -> impl std::future::Future<Output = Result<Vec<ModelInfo>, ModelSourceError>> + Send;
 
     /// Asynchronously downloads a model file.
     ///
@@ -14,10 +16,15 @@ pub trait ModelSource {
     /// * `model_file_name` - The name of the model file to download.
     ///
     /// Returns a future that resolves to the path of the downloaded file or an error if download fails.
-    fn download(&self, model_file_name: &str) -> impl std::future::Future<Output = Result<String, ModelSourceError>> + Send;
+    fn download(
+        &self,
+        model_file_name: &str,
+    ) -> impl std::future::Future<Output = Result<String, ModelSourceError>> + Send;
 
     /// Retrieves the names of local models from provided folder (already downloaded from GPT-4-All repository).
-    fn get_local_models(&self) -> impl std::future::Future<Output = Result<Vec<String>, ModelSourceError>> + Send;
+    fn get_local_models(
+        &self,
+    ) -> impl std::future::Future<Output = Result<Vec<String>, ModelSourceError>> + Send;
 }
 
 /// Information about a model available for download.
@@ -38,5 +45,5 @@ pub struct ModelInfo {
     /// System prompt for the model (if known and model type is for completions).
     pub system_prompt: Option<String>,
     /// Indicates whether the model is an embedding model.
-    pub is_embedding_model: bool
+    pub is_embedding_model: bool,
 }

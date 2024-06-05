@@ -1,6 +1,6 @@
-pub mod gpt4all_model_source;
+mod defaults;
 pub mod domain;
+mod dtos;
 pub mod errors;
 pub(crate) mod file_utils;
-mod dtos;
-mod defaults;
+pub mod gpt4all_model_source;

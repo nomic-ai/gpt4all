@@ -1,5 +1,5 @@
+use std::fmt::Formatter;
 use std::{error, fmt};
-use std::fmt::{Formatter};
 
 /// Represents errors that can occur during embedding operations.
 ///
@@ -18,7 +18,9 @@ impl fmt::Display for EmbeddingError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             EmbeddingError::BackendEmbedFailed(message) => f.write_str(&message),
-            EmbeddingError::TextsConversionError => f.write_str("'embedding_options.texts' conversion to CString failed")
+            EmbeddingError::TextsConversionError => {
+                f.write_str("'embedding_options.texts' conversion to CString failed")
+            }
         }
     }
 }

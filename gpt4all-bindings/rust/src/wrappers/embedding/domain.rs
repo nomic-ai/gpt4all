@@ -2,7 +2,7 @@
 #[derive(Debug)]
 pub struct Embedding {
     /// The vectors representing the text embeddings.
-    pub vectors: Vec<Vec<f32>>
+    pub vectors: Vec<Vec<f32>>,
 }
 
 impl Embedding {
@@ -11,7 +11,6 @@ impl Embedding {
         Self { vectors }
     }
 }
-
 
 /// Options for generating embeddings using the model.
 pub struct EmbeddingOptions {
@@ -32,9 +31,8 @@ pub struct EmbeddingOptions {
     /// Try to be fully compatible with the Atlas API.
     /// Currently, this means texts longer than 8192 tokens with do_mean="true" will raise an error.
     /// Disabled by default.
-    pub atlas: bool
+    pub atlas: bool,
 }
-
 
 /// Builder for constructing `EmbeddingOptions`.
 pub struct EmbeddingOptionsBuilder {
@@ -54,7 +52,7 @@ pub struct EmbeddingOptionsBuilder {
     /// Try to be fully compatible with the Atlas API.
     /// Currently, this means texts longer than 8192 tokens with long_text_mode="mean" will raise an error.
     /// Disabled by default.
-    atlas: bool
+    atlas: bool,
 }
 
 impl EmbeddingOptionsBuilder {
@@ -84,7 +82,7 @@ impl EmbeddingOptionsBuilder {
     }
 
     /// Sets the model-specific prefix representing the embedding task.
-    pub fn prefix<T: AsRef<str>>(mut self, prefix: T) -> Self  {
+    pub fn prefix<T: AsRef<str>>(mut self, prefix: T) -> Self {
         self.prefix = Some(prefix.as_ref().to_string());
         self
     }

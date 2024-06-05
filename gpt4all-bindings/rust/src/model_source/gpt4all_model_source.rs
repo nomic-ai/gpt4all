@@ -12,16 +12,19 @@ pub struct Gpt4AllModelSource {
     /// The URL of the GPT-4-All repository.
     pub url: String,
     /// The local folder where models will be stored after downloading.
-    pub folder: PathBuf
+    pub folder: PathBuf,
 }
 
 impl Gpt4AllModelSource {
     /// Internal method to fetch available model information DTOs from the repository.
     async fn _fetch_available_models(&self) -> Result<Vec<ModelInfoDto>, ModelSourceError> {
-        let response = reqwest::get(&self.url).await.map_err(|_| ModelSourceError::FetchError)?;
+        let response = reqwest::get(&self.url)
+            .await
+            .map_err(|_| ModelSourceError::FetchError)?;
 
         let model_info_dto: Vec<ModelInfoDto> = response
-            .json().await
+            .json()
+            .await
             .map_err(|_| ModelSourceError::ModelInfoParsingError)?;
 
         Ok(model_info_dto)
@@ -33,10 +36,7 @@ impl ModelSource for Gpt4AllModelSource {
     async fn fetch_all_models(&self) -> Result<Vec<ModelInfo>, ModelSourceError> {
         let model_info_dto = self._fetch_available_models().await?;
 
-        let model_info = model_info_dto
-            .into_iter()
-            .map(ModelInfo::from)
-            .collect();
+        let model_info = model_info_dto.into_iter().map(ModelInfo::from).collect();
 
         Ok(model_info)
     }
@@ -46,21 +46,22 @@ impl ModelSource for Gpt4AllModelSource {
         let available_models = self._fetch_available_models().await?;
 
         let model_info = available_models
-            .iter().find(|&model_info| { model_info.file_name == model_file_name })
+            .iter()
+            .find(|&model_info| model_info.file_name == model_file_name)
             .ok_or(ModelSourceError::ModelNotFoundError)?;
 
-        let path =  self.folder.join(&model_info.file_name);
+        let path = self.folder.join(&model_info.file_name);
 
-        let path_str = path
-            .to_str()
-            .ok_or(ModelDownloadError)?
-            .to_string();
+        let path_str = path.to_str().ok_or(ModelDownloadError)?.to_string();
 
         // If model is already downloaded, just return the path
-        if path.exists() { return Ok(path_str) }
+        if path.exists() {
+            return Ok(path_str);
+        }
 
         download_file_with_integrity(&model_info.url, &path_str, &model_info.md5sum)
-            .await.map_err(|_| { ModelDownloadError })?;
+            .await
+            .map_err(|_| ModelDownloadError)?;
 
         Ok(path_str)
     }
@@ -76,7 +77,8 @@ impl ModelSource for Gpt4AllModelSource {
                     // Check if the entry is a file and has the extension .gguf
                     if let Some(file_name) = entry.file_name().to_str() {
                         if entry.file_type().map(|ft| ft.is_file()).unwrap_or(false)
-                            && file_name.ends_with(".gguf") {
+                            && file_name.ends_with(".gguf")
+                        {
                             local_models.push(file_name.to_string());
                         }
                     }
