@@ -25,6 +25,12 @@ fn build_cmake_backend_project(backend_source_path: &PathBuf, build_dir_path: &P
         .output()?;
 
     if !cmake_build.status.success() {
+        if let Ok(str) = std::str::from_utf8(&cmake_build.stdout) {
+            println!("{}", str);
+        }
+        if let Ok(str) = std::str::from_utf8(&cmake_build.stderr) {
+            eprintln!("{}", str);
+        }
         return Err(format!("Failed to generate build files: {}", cmake_build.status).into());
     }
 
@@ -110,7 +116,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let build_dir_path = out_dir_path.join("build");
 
     // Build C Lib
-    build_cmake_backend_project(&backend_source_path, &build_dir_path)?;
+    if let Err(e) = build_cmake_backend_project(&backend_source_path, &build_dir_path) {
+        eprintln!("Failed to build backend project with CMake");
+        return Err(e);
+    }
 
     let canonized_lib_folder = build_dir_path
         // Canonicalize the path as `rustc-link-search` requires an absolute
