@@ -102,6 +102,7 @@ qt_add_executable(chat
     server.h server.cpp
     logger.h logger.cpp
     responsetext.h responsetext.cpp
+    oscompat.h oscompat.cpp
     ${METAL_SHADER_FILE}
     ${APP_ICON_RESOURCE}
 )

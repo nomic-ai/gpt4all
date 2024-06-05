@@ -594,6 +594,24 @@ bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *to
     return true;
 }
 
+void Database::transaction()
+{
+    bool ok = QSqlDatabase::database().transaction();
+    Q_ASSERT(ok);
+}
+
+void Database::commit()
+{
+    bool ok = QSqlDatabase::database().commit();
+    Q_ASSERT(ok);
+}
+
+void Database::rollback()
+{
+    bool ok = QSqlDatabase::database().rollback();
+    Q_ASSERT(ok);
+}
+
 // FIXME_BLOCKER: jared: This code doesn't work.
 // - On the first launch, I already have localdocs_v2.db without doing anything.
 // - On the second launch, localdocs_v1.db is gone and all of my collections have disappeared.
@@ -934,27 +952,37 @@ void Database::handleErrorGenerated(int folder_id, const QString &error)
     updateGuiForCollectionItem(item);
 }
 
-void Database::removeEmbeddingsByDocumentId(int document_id)
+bool Database::getChunksByDocumentId(int document_id, QList<int> &chunkIds)
 {
     QSqlQuery q;
 
     if (!q.prepare(SELECT_CHUNKS_BY_DOCUMENT_SQL)) {
         qWarning() << "ERROR: Cannot prepare sql for select chunks by document" << q.lastError();
-        return;
+        return false;
     }
 
     q.addBindValue(document_id);
 
     if (!q.exec()) {
         qWarning() << "ERROR: Cannot exec sql for select chunks by document" << q.lastError();
-        return;
+        return false;
     }
 
-    while (q.next()) {
-        const int chunk_id = q.value(0).toInt();
-        m_embeddings->remove(chunk_id);
-    }
-    m_embeddings->save();
+    while (q.next())
+        chunkIds.append(q.value(0).toInt());
+    return true;
+}
+
+bool Database::removeEmbeddingsByDocumentId(int document_id)
+{
+    QList<int> chunkIds;
+    if (!getChunksByDocumentId(document_id, chunkIds))
+        return false;
+
+    for (const auto &chunkId: chunkIds)
+        m_embeddings->remove(chunkId);
+
+    return true;
 }
 
 size_t Database::countOfDocuments(int folder_id) const
@@ -1064,7 +1092,8 @@ void Database::scanQueue()
             // No need to rescan, but we do have to schedule next
             return scheduleNext(folder_id, countForFolder);
         } else {
-            removeEmbeddingsByDocumentId(existing_id);
+            if (removeEmbeddingsByDocumentId(existing_id))
+                m_embeddings->save();
             if (!removeChunksByDocumentId(q, existing_id)) {
                 handleDocumentError("ERROR: Cannot remove chunks of document",
                     existing_id, document_path, q.lastError());
@@ -1097,6 +1126,7 @@ void Database::scanQueue()
     }
 
     QSqlDatabase::database().transaction();
+
     Q_ASSERT(document_id != -1);
     if (info.isPdf()) {
         QPdfDocument doc;
@@ -1166,6 +1196,7 @@ void Database::scanQueue()
             return scheduleNext(folder_id, countForFolder + 1);
         }
     }
+
     QSqlDatabase::database().commit();
     return scheduleNext(folder_id, countForFolder);
 }
@@ -1474,15 +1505,17 @@ void Database::removeFolderInternal(const QString &collection, int folder_id, co
         return;
     }
 
+    transaction();
+
     // Remove it from the collections
     if (!removeCollection(q, collection, folder_id)) {
         qWarning() << "ERROR: Cannot remove collection" << collection << folder_id << q.lastError();
-        return;
+        return rollback();
     }
 
     // If the folder is associated with more than one collection, then return
     if (collections.count() > 1)
-        return;
+        return commit();
 
     // First remove all upcoming jobs associated with this folder
     removeFolderFromDocumentQueue(folder_id);
@@ -1491,27 +1524,37 @@ void Database::removeFolderInternal(const QString &collection, int folder_id, co
     QList<int> documentIds;
     if (!selectDocuments(q, folder_id, &documentIds)) {
         qWarning() << "ERROR: Cannot select documents" << folder_id << q.lastError();
-        return;
+        return rollback();
     }
 
     // Remove all chunks and documents associated with this folder
+    QList<int> chunksToRemove;
     for (int document_id : documentIds) {
-        removeEmbeddingsByDocumentId(document_id);
+        if (!getChunksByDocumentId(document_id, chunksToRemove))
+            return rollback();
         if (!removeChunksByDocumentId(q, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << q.lastError();
-            return;
+            return rollback();
         }
 
         if (!removeDocument(q, document_id)) {
             qWarning() << "ERROR: Cannot remove document_id" << document_id << q.lastError();
-            return;
+            return rollback();
         }
     }
 
     if (!removeFolderFromDB(q, folder_id)) {
         qWarning() << "ERROR: Cannot remove folder_id" << folder_id << q.lastError();
-        return;
+        return rollback();
     }
+
+    // failure is no longer an option, apply everything at once and hope this is effectively atomic
+    // TODO(jared): check the embeddings file for stale entries on startup
+    for (const auto &chunk: chunksToRemove)
+        m_embeddings->remove(chunk);
+    commit();
+    if (!chunksToRemove.isEmpty())
+        m_embeddings->save();
 
     removeGuiFolderById(folder_id);
     removeFolderFromWatch(path);
@@ -1624,6 +1667,9 @@ void Database::cleanDB()
         return;
     }
 
+    transaction();
+
+    QList<int> chunksToRemove;
     while (q.next()) {
         int document_id = q.value(0).toInt();
         QString document_path = q.value(1).toString();
@@ -1636,16 +1682,28 @@ void Database::cleanDB()
 #endif
 
         // Remove all chunks and documents that either don't exist or have become unreadable
+        if (!getChunksByDocumentId(document_id, chunksToRemove))
+            return rollback();
         QSqlQuery query;
-        removeEmbeddingsByDocumentId(document_id);
         if (!removeChunksByDocumentId(query, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << query.lastError();
+            rollback();
+            return updateCollectionStatistics();
         }
 
         if (!removeDocument(query, document_id)) {
             qWarning() << "ERROR: Cannot remove document_id" << document_id << query.lastError();
+            rollback();
+            return updateCollectionStatistics();
         }
     }
+
+    // failure is no longer an option, apply everything at once and hope this is effectively atomic
+    for (const auto &chunk: chunksToRemove)
+        m_embeddings->remove(chunk);
+    commit();
+    if (!chunksToRemove.isEmpty())
+        m_embeddings->save();
 
     updateCollectionStatistics();
 }
@@ -1673,19 +1731,33 @@ void Database::changeChunkSize(int chunkSize)
         return;
     }
 
+    transaction();
+
+    QList<int> chunksToRemove;
     while (q.next()) {
         int document_id = q.value(0).toInt();
         // Remove all chunks and documents to change the chunk size
         QSqlQuery query;
-        removeEmbeddingsByDocumentId(document_id);
+        if (!getChunksByDocumentId(document_id, chunksToRemove))
+            return rollback();
         if (!removeChunksByDocumentId(query, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << query.lastError();
+            return rollback();
         }
 
         if (!removeDocument(query, document_id)) {
             qWarning() << "ERROR: Cannot remove document_id" << document_id << query.lastError();
+            return rollback();
         }
     }
+
+    // failure is no longer an option, apply everything at once and hope this is effectively atomic
+    for (const auto &chunk: chunksToRemove)
+        m_embeddings->remove(chunk);
+    commit();
+    if (!chunksToRemove.isEmpty())
+        m_embeddings->save();
+
     addCurrentFolders();
     updateCollectionStatistics();
 }

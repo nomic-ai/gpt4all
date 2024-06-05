@@ -4,6 +4,7 @@
 #include <QElapsedTimer>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include <QList>
 #include <QObject>
 #include <QQueue>
 #include <QThread>
@@ -101,6 +102,10 @@ private Q_SLOTS:
     void handleErrorGenerated(int folder_id, const QString &error);
 
 private:
+    static void transaction();
+    static void commit();
+    static void rollback();
+
     bool initDb();
     bool addForcedCollection(const CollectionItem &collection);
     void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
@@ -109,7 +114,8 @@ private:
         int maxChunks = -1);
     void appendChunk(const EmbeddingChunk &chunk);
     void sendChunkList();
-    void removeEmbeddingsByDocumentId(int document_id);
+    bool getChunksByDocumentId(int document_id, QList<int> &chunkIds);
+    bool removeEmbeddingsByDocumentId(int document_id);
     void scheduleNext(int folder_id, size_t countForFolder);
     void handleDocumentError(const QString &errorMessage,
         int document_id, const QString &document_path, const QSqlError &error);

@@ -19,6 +19,7 @@ public:
     bool load();
     bool load(qint64 maxElements);
     bool save();
+    void syncDir();
     bool isLoaded() const;
     bool fileExists() const;
     bool resize(qint64 size);
@@ -40,6 +41,8 @@ private:
     QString m_filePath;
     hnswlib::InnerProductSpace *m_space;
     hnswlib::HierarchicalNSW<float> *m_hnsw;
+    bool m_fileExists = false; // we opened and/or created the file
+    bool m_filePersisted = false; // dentry has been flushed to disk
 };
 
 #endif // EMBEDDINGS_H

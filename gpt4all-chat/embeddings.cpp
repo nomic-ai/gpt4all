@@ -1,11 +1,13 @@
 #include "embeddings.h"
 
+#include "mysettings.h"
+#include "oscompat.h"
+
+#include "hnswlib/hnswlib.h"
+
 #include <QFile>
 #include <QFileInfo>
 #include <QDebug>
-
-#include "mysettings.h"
-#include "hnswlib/hnswlib.h"
 
 #define EMBEDDINGS_VERSION 0
 
@@ -40,6 +42,7 @@ bool Embeddings::load()
         qWarning() << "ERROR: loading embeddings file does not exist" << m_filePath;
         return false;
     }
+    m_fileExists = true;
 
     if (!info.isReadable()) {
         qWarning() << "ERROR: loading embeddings file is not readable" << m_filePath;
@@ -83,7 +86,42 @@ bool Embeddings::save()
         qWarning() << "ERROR: could not save hnswlib index:" << e.what();
         return false;
     }
+
+    m_fileExists = true;
+
+    QFile file(m_filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "failed to open" << m_filePath;
+    } else if (!gpt4all_fsync(file.handle())) {
+        int err = errno;
+        qWarning().nospace() << "failed to sync " << m_filePath << ": " << strerror(err);
+    }
+
+    syncDir();
     return true;
+}
+
+void Embeddings::syncDir() {
+    if (m_filePersisted)
+        return; // already done
+
+    if (!m_fileExists) {
+        // ensure the file exists
+        QFile file(m_filePath);
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_fileExists = true;
+    }
+
+    QFileInfo info(m_filePath);
+    QString dir = info.dir().path();
+    if (!gpt4all_syncdir(dir)) {
+        int err = errno;
+        qWarning().nospace() << "failed to sync " << dir << ": " << strerror(err);
+        return;
+    }
+
+    m_filePersisted = true;
 }
 
 bool Embeddings::isLoaded() const
