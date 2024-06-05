@@ -247,7 +247,7 @@ impl CompletionRequestBuilder {
 /// Example 1: Mistral OpenOrca
 ///
 /// ```
-///
+/// # use gpt4all::wrappers::completion::domain::SystemDescription;
 /// let system_description = SystemDescription {
 ///     system_prompt: "system\nYou are MistralOrca, a large language model trained by Alignment Lab AI.\n\n".to_string(),
 /// };
@@ -256,7 +256,7 @@ impl CompletionRequestBuilder {
 /// Example 2: Mini Orca (Small)
 ///
 /// ```
-///
+/// # use gpt4all::wrappers::completion::domain::SystemDescription;
 /// let system_description = SystemDescription {
 ///     system_prompt: "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n".to_string(),
 /// };
