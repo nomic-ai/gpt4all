@@ -14,7 +14,6 @@
         # "../../gpt4all-backend/utils.cpp",
         "../../gpt4all-backend/llmodel_c.cpp",
         "../../gpt4all-backend/llmodel.cpp",
-        "../../gpt4all-backend/dlhandle.cpp",
         "prompt.cc",
         "index.cc",
        ],
