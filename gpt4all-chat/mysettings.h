@@ -5,6 +5,7 @@
 
 #include <QDateTime>
 #include <QObject>
+#include <QSettings>
 #include <QString>
 #include <QVector>
 
@@ -98,7 +99,7 @@ public:
     void setSaveChatsContext(bool b);
     bool serverChat() const;
     void setServerChat(bool b);
-    QString modelPath() const;
+    QString modelPath();
     void setModelPath(const QString &p);
     QString userDefaultModel() const;
     void setUserDefaultModel(const QString &u);
@@ -108,7 +109,7 @@ public:
     void setFontSize(const QString &u);
     bool forceMetal() const;
     void setForceMetal(bool b);
-    QString device() const;
+    QString device();
     void setDevice(const QString &u);
     int32_t contextLength() const;
     void setContextLength(int32_t value);
@@ -178,6 +179,7 @@ Q_SIGNALS:
     void deviceListChanged();
 
 private:
+    QSettings m_settings;
     bool m_forceMetal;
     QVector<QString> m_deviceList;
 

@@ -8,7 +8,6 @@
 #include <QFileInfo>
 #include <QGlobalStatic>
 #include <QIODevice>
-#include <QSettings>
 #include <QStandardPaths>
 #include <QThread>
 #include <QtLogging>
@@ -78,8 +77,6 @@ MySettings *MySettings::globalInstance()
 MySettings::MySettings()
     : QObject{nullptr}
 {
-    QSettings::setDefaultFormat(QSettings::IniFormat);
-
     QVector<QString> deviceList{ "Auto" };
 #if defined(Q_OS_MAC) && defined(__aarch64__)
     deviceList << "Metal";
@@ -142,14 +139,12 @@ void MySettings::restoreLocalDocsDefaults()
 
 void MySettings::eraseModel(const ModelInfo &m)
 {
-    QSettings settings;
-    settings.remove(QString("model-%1").arg(m.id()));
+    m_settings.remove(QString("model-%1").arg(m.id()));
 }
 
 QString MySettings::modelName(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/name",
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/name",
         !m.m_name.isEmpty() ? m.m_name : m.m_filename).toString();
 }
 
@@ -158,19 +153,17 @@ void MySettings::setModelName(const ModelInfo &m, const QString &name, bool forc
     if ((modelName(m) == name || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if ((m.m_name == name || m.m_filename == name) && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/name");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/name");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/name", name);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/name", name);
     if (!force)
         emit nameChanged(m);
 }
 
 QString MySettings::modelFilename(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/filename", m.m_filename).toString();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/filename", m.m_filename).toString();
 }
 
 void MySettings::setModelFilename(const ModelInfo &m, const QString &filename, bool force)
@@ -178,19 +171,17 @@ void MySettings::setModelFilename(const ModelInfo &m, const QString &filename, b
     if ((modelFilename(m) == filename || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_filename == filename && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/filename");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/filename");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/filename", filename);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/filename", filename);
     if (!force)
         emit filenameChanged(m);
 }
 
 QString MySettings::modelDescription(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/description", m.m_description).toString();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/description", m.m_description).toString();
 }
 
 void MySettings::setModelDescription(const ModelInfo &m, const QString &d, bool force)
@@ -198,17 +189,15 @@ void MySettings::setModelDescription(const ModelInfo &m, const QString &d, bool 
     if ((modelDescription(m) == d || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_description == d && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/description");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/description");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/description", d);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/description", d);
 }
 
 QString MySettings::modelUrl(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/url", m.m_url).toString();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/url", m.m_url).toString();
 }
 
 void MySettings::setModelUrl(const ModelInfo &m, const QString &u, bool force)
@@ -216,17 +205,15 @@ void MySettings::setModelUrl(const ModelInfo &m, const QString &u, bool force)
     if ((modelUrl(m) == u || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_url == u && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/url");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/url");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/url", u);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/url", u);
 }
 
 QString MySettings::modelQuant(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/quant", m.m_quant).toString();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/quant", m.m_quant).toString();
 }
 
 void MySettings::setModelQuant(const ModelInfo &m, const QString &q, bool force)
@@ -234,17 +221,15 @@ void MySettings::setModelQuant(const ModelInfo &m, const QString &q, bool force)
     if ((modelUrl(m) == q || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_quant == q && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/quant");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/quant");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/quant", q);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/quant", q);
 }
 
 QString MySettings::modelType(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/type", m.m_type).toString();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/type", m.m_type).toString();
 }
 
 void MySettings::setModelType(const ModelInfo &m, const QString &t, bool force)
@@ -252,17 +237,15 @@ void MySettings::setModelType(const ModelInfo &m, const QString &t, bool force)
     if ((modelType(m) == t || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_type == t && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/type");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/type");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/type", t);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/type", t);
 }
 
 bool MySettings::modelIsClone(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/isClone", m.m_isClone).toBool();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/isClone", m.m_isClone).toBool();
 }
 
 void MySettings::setModelIsClone(const ModelInfo &m, bool b, bool force)
@@ -270,17 +253,15 @@ void MySettings::setModelIsClone(const ModelInfo &m, bool b, bool force)
     if ((modelIsClone(m) == b || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_isClone == b && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/isClone");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/isClone");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/isClone", b);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/isClone", b);
 }
 
 bool MySettings::modelIsDiscovered(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/isDiscovered", m.m_isDiscovered).toBool();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/isDiscovered", m.m_isDiscovered).toBool();
 }
 
 void MySettings::setModelIsDiscovered(const ModelInfo &m, bool b, bool force)
@@ -288,17 +269,15 @@ void MySettings::setModelIsDiscovered(const ModelInfo &m, bool b, bool force)
     if ((modelIsDiscovered(m) == b || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_isDiscovered == b && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/isDiscovered");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/isDiscovered");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/isDiscovered", b);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/isDiscovered", b);
 }
 
 int MySettings::modelLikes(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/likes", m.m_likes).toInt();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/likes", m.m_likes).toInt();
 }
 
 void MySettings::setModelLikes(const ModelInfo &m, int l, bool force)
@@ -306,17 +285,15 @@ void MySettings::setModelLikes(const ModelInfo &m, int l, bool force)
     if ((modelLikes(m) == l || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_likes == l && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/likes");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/likes");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/likes", l);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/likes", l);
 }
 
 int MySettings::modelDownloads(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/downloads", m.m_downloads).toInt();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/downloads", m.m_downloads).toInt();
 }
 
 void MySettings::setModelDownloads(const ModelInfo &m, int d, bool force)
@@ -324,17 +301,15 @@ void MySettings::setModelDownloads(const ModelInfo &m, int d, bool force)
     if ((modelDownloads(m) == d || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_downloads == d && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/downloads");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/downloads");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/downloads", d);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/downloads", d);
 }
 
 QDateTime MySettings::modelRecency(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/recency", m.m_recency).toDateTime();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/recency", m.m_recency).toDateTime();
 }
 
 void MySettings::setModelRecency(const ModelInfo &m, const QDateTime &r, bool force)
@@ -342,17 +317,15 @@ void MySettings::setModelRecency(const ModelInfo &m, const QDateTime &r, bool fo
     if ((modelRecency(m) == r || m.id().isEmpty()) && !force)
         return;
 
-    QSettings setting;
     if (m.m_recency == r && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/recency");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/recency");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/recency", r);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/recency", r);
 }
 
 double MySettings::modelTemperature(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/temperature", m.m_temperature).toDouble();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/temperature", m.m_temperature).toDouble();
 }
 
 void MySettings::setModelTemperature(const ModelInfo &m, double t, bool force)
@@ -360,25 +333,22 @@ void MySettings::setModelTemperature(const ModelInfo &m, double t, bool force)
     if (modelTemperature(m) == t && !force)
         return;
 
-    QSettings setting;
     if (m.m_temperature == t && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/temperature");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/temperature");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/temperature", t);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/temperature", t);
     if (!force)
         emit temperatureChanged(m);
 }
 
 double MySettings::modelTopP(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/topP", m.m_topP).toDouble();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/topP", m.m_topP).toDouble();
 }
 
 double MySettings::modelMinP(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/minP", m.m_minP).toDouble();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/minP", m.m_minP).toDouble();
 }
 
 void MySettings::setModelTopP(const ModelInfo &m, double p, bool force)
@@ -386,11 +356,10 @@ void MySettings::setModelTopP(const ModelInfo &m, double p, bool force)
     if (modelTopP(m) == p && !force)
         return;
 
-    QSettings setting;
     if (m.m_topP == p && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/topP");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/topP");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/topP", p);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/topP", p);
     if (!force)
         emit topPChanged(m);
 }
@@ -400,19 +369,17 @@ void MySettings::setModelMinP(const ModelInfo &m, double p, bool force)
     if (modelMinP(m) == p && !force)
         return;
 
-    QSettings setting;
     if (m.m_minP == p && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/minP");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/minP");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/minP", p);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/minP", p);
     if (!force)
         emit minPChanged(m);
 }
 
 int MySettings::modelTopK(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/topK", m.m_topK).toInt();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/topK", m.m_topK).toInt();
 }
 
 void MySettings::setModelTopK(const ModelInfo &m, int k, bool force)
@@ -420,19 +387,17 @@ void MySettings::setModelTopK(const ModelInfo &m, int k, bool force)
     if (modelTopK(m) == k && !force)
         return;
 
-    QSettings setting;
     if (m.m_topK == k && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/topK");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/topK");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/topK", k);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/topK", k);
     if (!force)
         emit topKChanged(m);
 }
 
 int MySettings::modelMaxLength(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/maxLength", m.m_maxLength).toInt();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/maxLength", m.m_maxLength).toInt();
 }
 
 void MySettings::setModelMaxLength(const ModelInfo &m, int l, bool force)
@@ -440,19 +405,17 @@ void MySettings::setModelMaxLength(const ModelInfo &m, int l, bool force)
     if (modelMaxLength(m) == l && !force)
         return;
 
-    QSettings setting;
     if (m.m_maxLength == l && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/maxLength");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/maxLength");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/maxLength", l);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/maxLength", l);
     if (!force)
         emit maxLengthChanged(m);
 }
 
 int MySettings::modelPromptBatchSize(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/promptBatchSize", m.m_promptBatchSize).toInt();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/promptBatchSize", m.m_promptBatchSize).toInt();
 }
 
 void MySettings::setModelPromptBatchSize(const ModelInfo &m, int s, bool force)
@@ -460,19 +423,17 @@ void MySettings::setModelPromptBatchSize(const ModelInfo &m, int s, bool force)
     if (modelPromptBatchSize(m) == s && !force)
         return;
 
-    QSettings setting;
     if (m.m_promptBatchSize == s && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/promptBatchSize");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/promptBatchSize");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/promptBatchSize", s);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/promptBatchSize", s);
     if (!force)
         emit promptBatchSizeChanged(m);
 }
 
 int MySettings::modelContextLength(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/contextLength", m.m_contextLength).toInt();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/contextLength", m.m_contextLength).toInt();
 }
 
 void MySettings::setModelContextLength(const ModelInfo &m, int l, bool force)
@@ -480,19 +441,17 @@ void MySettings::setModelContextLength(const ModelInfo &m, int l, bool force)
     if (modelContextLength(m) == l && !force)
         return;
 
-    QSettings setting;
     if (m.m_contextLength == l && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/contextLength");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/contextLength");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/contextLength", l);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/contextLength", l);
     if (!force)
         emit contextLengthChanged(m);
 }
 
 int MySettings::modelGpuLayers(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/gpuLayers", m.m_gpuLayers).toInt();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/gpuLayers", m.m_gpuLayers).toInt();
 }
 
 void MySettings::setModelGpuLayers(const ModelInfo &m, int l, bool force)
@@ -500,19 +459,17 @@ void MySettings::setModelGpuLayers(const ModelInfo &m, int l, bool force)
     if (modelGpuLayers(m) == l && !force)
         return;
 
-    QSettings setting;
     if (m.m_gpuLayers == l && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/gpuLayers");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/gpuLayers");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/gpuLayers", l);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/gpuLayers", l);
     if (!force)
         emit gpuLayersChanged(m);
 }
 
 double MySettings::modelRepeatPenalty(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/repeatPenalty", m.m_repeatPenalty).toDouble();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/repeatPenalty", m.m_repeatPenalty).toDouble();
 }
 
 void MySettings::setModelRepeatPenalty(const ModelInfo &m, double p, bool force)
@@ -520,19 +477,17 @@ void MySettings::setModelRepeatPenalty(const ModelInfo &m, double p, bool force)
     if (modelRepeatPenalty(m) == p && !force)
         return;
 
-    QSettings setting;
     if (m.m_repeatPenalty == p && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/repeatPenalty");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/repeatPenalty");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/repeatPenalty", p);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/repeatPenalty", p);
     if (!force)
         emit repeatPenaltyChanged(m);
 }
 
 int MySettings::modelRepeatPenaltyTokens(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens", m.m_repeatPenaltyTokens).toInt();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens", m.m_repeatPenaltyTokens).toInt();
 }
 
 void MySettings::setModelRepeatPenaltyTokens(const ModelInfo &m, int t, bool force)
@@ -540,19 +495,17 @@ void MySettings::setModelRepeatPenaltyTokens(const ModelInfo &m, int t, bool for
     if (modelRepeatPenaltyTokens(m) == t && !force)
         return;
 
-    QSettings setting;
     if (m.m_repeatPenaltyTokens == t && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens", t);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens", t);
     if (!force)
         emit repeatPenaltyTokensChanged(m);
 }
 
 QString MySettings::modelPromptTemplate(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/promptTemplate", m.m_promptTemplate).toString();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/promptTemplate", m.m_promptTemplate).toString();
 }
 
 void MySettings::setModelPromptTemplate(const ModelInfo &m, const QString &t, bool force)
@@ -560,19 +513,17 @@ void MySettings::setModelPromptTemplate(const ModelInfo &m, const QString &t, bo
     if (modelPromptTemplate(m) == t && !force)
         return;
 
-    QSettings setting;
     if (m.m_promptTemplate == t && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/promptTemplate");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/promptTemplate");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/promptTemplate", t);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/promptTemplate", t);
     if (!force)
         emit promptTemplateChanged(m);
 }
 
 QString MySettings::modelSystemPrompt(const ModelInfo &m) const
 {
-    QSettings setting;
-    return setting.value(QString("model-%1").arg(m.id()) + "/systemPrompt", m.m_systemPrompt).toString();
+    return m_settings.value(QString("model-%1").arg(m.id()) + "/systemPrompt", m.m_systemPrompt).toString();
 }
 
 void MySettings::setModelSystemPrompt(const ModelInfo &m, const QString &p, bool force)
@@ -580,19 +531,17 @@ void MySettings::setModelSystemPrompt(const ModelInfo &m, const QString &p, bool
     if (modelSystemPrompt(m) == p && !force)
         return;
 
-    QSettings setting;
     if (m.m_systemPrompt == p && !m.shouldSaveMetadata())
-        setting.remove(QString("model-%1").arg(m.id()) + "/systemPrompt");
+        m_settings.remove(QString("model-%1").arg(m.id()) + "/systemPrompt");
     else
-        setting.setValue(QString("model-%1").arg(m.id()) + "/systemPrompt", p);
+        m_settings.setValue(QString("model-%1").arg(m.id()) + "/systemPrompt", p);
     if (!force)
         emit systemPromptChanged(m);
 }
 
 int MySettings::threadCount() const
 {
-    QSettings setting;
-    int c = setting.value("threadCount", defaults::threadCount).toInt();
+    int c = m_settings.value("threadCount", defaults::threadCount).toInt();
     // The old thread setting likely left many people with 0 in settings config file, which means
     // we should reset it to the default going forward
     if (c <= 0)
@@ -609,15 +558,13 @@ void MySettings::setThreadCount(int c)
 
     c = std::max(c, 1);
     c = std::min(c, QThread::idealThreadCount());
-    QSettings setting;
-    setting.setValue("threadCount", c);
+    m_settings.setValue("threadCount", c);
     emit threadCountChanged();
 }
 
 bool MySettings::saveChatsContext() const
 {
-    QSettings setting;
-    return setting.value("saveChatsContext", defaults::saveChatsContext).toBool();
+    return m_settings.value("saveChatsContext", defaults::saveChatsContext).toBool();
 }
 
 void MySettings::setSaveChatsContext(bool b)
@@ -625,15 +572,13 @@ void MySettings::setSaveChatsContext(bool b)
     if (saveChatsContext() == b)
         return;
 
-    QSettings setting;
-    setting.setValue("saveChatsContext", b);
+    m_settings.setValue("saveChatsContext", b);
     emit saveChatsContextChanged();
 }
 
 bool MySettings::serverChat() const
 {
-    QSettings setting;
-    return setting.value("serverChat", defaults::serverChat).toBool();
+    return m_settings.value("serverChat", defaults::serverChat).toBool();
 }
 
 void MySettings::setServerChat(bool b)
@@ -641,15 +586,13 @@ void MySettings::setServerChat(bool b)
     if (serverChat() == b)
         return;
 
-    QSettings setting;
-    setting.setValue("serverChat", b);
+    m_settings.setValue("serverChat", b);
     emit serverChatChanged();
 }
 
 int MySettings::networkPort() const
 {
-    QSettings setting;
-    return setting.value("networkPort", defaults::networkPort).toInt();
+    return m_settings.value("networkPort", defaults::networkPort).toInt();
 }
 
 void MySettings::setNetworkPort(int c)
@@ -657,24 +600,22 @@ void MySettings::setNetworkPort(int c)
     if (networkPort() == c)
         return;
 
-    QSettings setting;
-    setting.setValue("networkPort", c);
+    m_settings.setValue("networkPort", c);
     emit networkPortChanged();
 }
 
-QString MySettings::modelPath() const
+QString MySettings::modelPath()
 {
-    QSettings setting;
     // We have to migrate the old setting because I changed the setting key recklessly in v2.4.11
     // which broke a lot of existing installs
-    const bool containsOldSetting = setting.contains("modelPaths");
+    const bool containsOldSetting = m_settings.contains("modelPaths");
     if (containsOldSetting) {
-        const bool containsNewSetting = setting.contains("modelPath");
+        const bool containsNewSetting = m_settings.contains("modelPath");
         if (!containsNewSetting)
-            setting.setValue("modelPath", setting.value("modelPaths"));
-        setting.remove("modelPaths");
+            m_settings.setValue("modelPath", m_settings.value("modelPaths"));
+        m_settings.remove("modelPaths");
     }
-    return setting.value("modelPath", defaultLocalModelsPath()).toString();
+    return m_settings.value("modelPath", defaultLocalModelsPath()).toString();
 }
 
 void MySettings::setModelPath(const QString &p)
@@ -684,15 +625,13 @@ void MySettings::setModelPath(const QString &p)
     QString canonical = QFileInfo(filePath).canonicalFilePath() + "/";
     if (modelPath() == canonical)
         return;
-    QSettings setting;
-    setting.setValue("modelPath", canonical);
+    m_settings.setValue("modelPath", canonical);
     emit modelPathChanged();
 }
 
 QString MySettings::userDefaultModel() const
 {
-    QSettings setting;
-    return setting.value("userDefaultModel", defaults::userDefaultModel).toString();
+    return m_settings.value("userDefaultModel", defaults::userDefaultModel).toString();
 }
 
 void MySettings::setUserDefaultModel(const QString &u)
@@ -700,15 +639,13 @@ void MySettings::setUserDefaultModel(const QString &u)
     if (userDefaultModel() == u)
         return;
 
-    QSettings setting;
-    setting.setValue("userDefaultModel", u);
+    m_settings.setValue("userDefaultModel", u);
     emit userDefaultModelChanged();
 }
 
 QString MySettings::chatTheme() const
 {
-    QSettings setting;
-    return setting.value("chatTheme", defaults::chatTheme).toString();
+    return m_settings.value("chatTheme", defaults::chatTheme).toString();
 }
 
 void MySettings::setChatTheme(const QString &u)
@@ -716,15 +653,13 @@ void MySettings::setChatTheme(const QString &u)
     if (chatTheme() == u)
         return;
 
-    QSettings setting;
-    setting.setValue("chatTheme", u);
+    m_settings.setValue("chatTheme", u);
     emit chatThemeChanged();
 }
 
 QString MySettings::fontSize() const
 {
-    QSettings setting;
-    return setting.value("fontSize", defaults::fontSize).toString();
+    return m_settings.value("fontSize", defaults::fontSize).toString();
 }
 
 void MySettings::setFontSize(const QString &u)
@@ -732,15 +667,13 @@ void MySettings::setFontSize(const QString &u)
     if (fontSize() == u)
         return;
 
-    QSettings setting;
-    setting.setValue("fontSize", u);
+    m_settings.setValue("fontSize", u);
     emit fontSizeChanged();
 }
 
-QString MySettings::device() const
+QString MySettings::device()
 {
-    QSettings setting;
-    auto value = setting.value("device");
+    auto value = m_settings.value("device");
     if (!value.isValid())
         return defaults::device;
 
@@ -752,7 +685,7 @@ QString MySettings::device() const
             auto newName = QString::fromStdString(newNameStr);
             qWarning() << "updating device name:" << device << "->" << newName;
             device = newName;
-            setting.setValue("device", device);
+            m_settings.setValue("device", device);
         }
     }
     return device;
@@ -763,8 +696,7 @@ void MySettings::setDevice(const QString &u)
     if (device() == u)
         return;
 
-    QSettings setting;
-    setting.setValue("device", u);
+    m_settings.setValue("device", u);
     emit deviceChanged();
 }
 
@@ -783,8 +715,7 @@ void MySettings::setForceMetal(bool b)
 
 QString MySettings::lastVersionStarted() const
 {
-    QSettings setting;
-    return setting.value("lastVersionStarted", defaults::lastVersionStarted).toString();
+    return m_settings.value("lastVersionStarted", defaults::lastVersionStarted).toString();
 }
 
 void MySettings::setLastVersionStarted(const QString &v)
@@ -792,15 +723,13 @@ void MySettings::setLastVersionStarted(const QString &v)
     if (lastVersionStarted() == v)
         return;
 
-    QSettings setting;
-    setting.setValue("lastVersionStarted", v);
+    m_settings.setValue("lastVersionStarted", v);
     emit lastVersionStartedChanged();
 }
 
 int MySettings::localDocsChunkSize() const
 {
-    QSettings setting;
-    return setting.value("localdocs/chunkSize", defaults::localDocsChunkSize).toInt();
+    return m_settings.value("localdocs/chunkSize", defaults::localDocsChunkSize).toInt();
 }
 
 void MySettings::setLocalDocsChunkSize(int s)
@@ -808,15 +737,13 @@ void MySettings::setLocalDocsChunkSize(int s)
     if (localDocsChunkSize() == s)
         return;
 
-    QSettings setting;
-    setting.setValue("localdocs/chunkSize", s);
+    m_settings.setValue("localdocs/chunkSize", s);
     emit localDocsChunkSizeChanged();
 }
 
 int MySettings::localDocsRetrievalSize() const
 {
-    QSettings setting;
-    return setting.value("localdocs/retrievalSize", defaults::localDocsRetrievalSize).toInt();
+    return m_settings.value("localdocs/retrievalSize", defaults::localDocsRetrievalSize).toInt();
 }
 
 void MySettings::setLocalDocsRetrievalSize(int s)
@@ -824,15 +751,13 @@ void MySettings::setLocalDocsRetrievalSize(int s)
     if (localDocsRetrievalSize() == s)
         return;
 
-    QSettings setting;
-    setting.setValue("localdocs/retrievalSize", s);
+    m_settings.setValue("localdocs/retrievalSize", s);
     emit localDocsRetrievalSizeChanged();
 }
 
 bool MySettings::localDocsShowReferences() const
 {
-    QSettings setting;
-    return setting.value("localdocs/showReferences", defaults::localDocsShowReferences).toBool();
+    return m_settings.value("localdocs/showReferences", defaults::localDocsShowReferences).toBool();
 }
 
 void MySettings::setLocalDocsShowReferences(bool b)
@@ -840,15 +765,13 @@ void MySettings::setLocalDocsShowReferences(bool b)
     if (localDocsShowReferences() == b)
         return;
 
-    QSettings setting;
-    setting.setValue("localdocs/showReferences", b);
+    m_settings.setValue("localdocs/showReferences", b);
     emit localDocsShowReferencesChanged();
 }
 
 QString MySettings::networkAttribution() const
 {
-    QSettings setting;
-    return setting.value("network/attribution", defaults::networkAttribution).toString();
+    return m_settings.value("network/attribution", defaults::networkAttribution).toString();
 }
 
 void MySettings::setNetworkAttribution(const QString &a)
@@ -856,51 +779,44 @@ void MySettings::setNetworkAttribution(const QString &a)
     if (networkAttribution() == a)
         return;
 
-    QSettings setting;
-    setting.setValue("network/attribution", a);
+    m_settings.setValue("network/attribution", a);
     emit networkAttributionChanged();
 }
 
 bool MySettings::networkIsActive() const
 {
-    QSettings setting;
-    return setting.value("network/isActive", defaults::networkIsActive).toBool();
+    return m_settings.value("network/isActive", defaults::networkIsActive).toBool();
 }
 
 bool MySettings::isNetworkIsActiveSet() const
 {
-    QSettings setting;
-    return setting.value("network/isActive").isValid();
+    return m_settings.value("network/isActive").isValid();
 }
 
 void MySettings::setNetworkIsActive(bool b)
 {
-    QSettings setting;
-    auto cur = setting.value("network/isActive");
+    auto cur = m_settings.value("network/isActive");
     if (!cur.isValid() || cur.toBool() != b) {
-        setting.setValue("network/isActive", b);
+        m_settings.setValue("network/isActive", b);
         emit networkIsActiveChanged();
     }
 }
 
 bool MySettings::networkUsageStatsActive() const
 {
-    QSettings setting;
-    return setting.value("network/usageStatsActive", defaults::networkUsageStatsActive).toBool();
+    return m_settings.value("network/usageStatsActive", defaults::networkUsageStatsActive).toBool();
 }
 
 bool MySettings::isNetworkUsageStatsActiveSet() const
 {
-    QSettings setting;
-    return setting.value("network/usageStatsActive").isValid();
+    return m_settings.value("network/usageStatsActive").isValid();
 }
 
 void MySettings::setNetworkUsageStatsActive(bool b)
 {
-    QSettings setting;
-    auto cur = setting.value("network/usageStatsActive");
+    auto cur = m_settings.value("network/usageStatsActive");
     if (!cur.isValid() || cur.toBool() != b) {
-        setting.setValue("network/usageStatsActive", b);
+        m_settings.setValue("network/usageStatsActive", b);
         emit networkUsageStatsActiveChanged();
     }
 }
