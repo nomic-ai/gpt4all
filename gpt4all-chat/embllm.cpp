@@ -24,7 +24,6 @@
 #include <QtLogging>
 
 #include <exception>
-#include <string>
 #include <utility>
 
 EmbeddingLLMWorker::EmbeddingLLMWorker()

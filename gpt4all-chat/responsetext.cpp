@@ -10,15 +10,16 @@
 #include <QPainter>
 #include <QQuickTextDocument>
 #include <QRegularExpression>
-#include <Qt>
 #include <QTextBlock>
 #include <QTextCharFormat>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextFrame>
+#include <QTextFrameFormat>
 #include <QTextTableCell>
-#include <QtGlobal>
 #include <QVariant>
+#include <Qt>
+#include <QtGlobal>
 
 enum Language {
     None,

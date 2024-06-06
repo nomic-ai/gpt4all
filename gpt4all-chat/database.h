@@ -3,7 +3,6 @@
 
 #include "embllm.h" // IWYU pragma: keep
 
-#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QLatin1String>
 #include <QList>
@@ -14,12 +13,9 @@
 #include <QString>
 #include <QThread>
 #include <QVector>
-#include <QtGlobal>
-#include <QtSql>
 
 #include <cstddef>
 
-class EmbeddingLLM;
 class Embeddings;
 class QFileSystemWatcher;
 class QSqlError;

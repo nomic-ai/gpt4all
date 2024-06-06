@@ -15,6 +15,7 @@
 #include <QTextStream>
 #include <Qt>
 #include <QtGlobal>
+#include <QtLogging>
 
 #include <utility>
 

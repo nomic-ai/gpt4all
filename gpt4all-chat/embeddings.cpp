@@ -6,12 +6,17 @@
 #include "hnswlib/hnswlib.h"
 
 #include <QDebug>
+#include <QDir>
+#include <QFile>
 #include <QFileInfo>
+#include <QIODevice>
 #include <QtGlobal>
 #include <QtLogging>
 
 #include <algorithm>
 #include <atomic>
+#include <cerrno>
+#include <cstring>
 #include <exception>
 #include <queue>
 #include <string>

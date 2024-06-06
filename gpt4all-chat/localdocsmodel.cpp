@@ -3,7 +3,9 @@
 #include "localdocs.h"
 #include "network.h"
 
+#include <QDateTime>
 #include <QMap>
+#include <QVector>
 #include <QtGlobal>
 
 #include <utility>

@@ -1,14 +1,13 @@
 #include "database.h"
 
 #include "embeddings.h"
-#include "modellist.h"
 #include "mysettings.h"
-#include "network.h"
 
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QIODevice>
@@ -21,6 +20,7 @@
 #include <QTimer>
 #include <QVariant>
 #include <Qt>
+#include <QtGlobal>
 #include <QtLogging>
 
 #include <cmath>

@@ -13,8 +13,6 @@
 #include <QUrl>
 #include <QtLogging>
 
-#include <string>
-
 #ifndef GPT4ALL_OFFLINE_INSTALLER
 #   include "network.h"
 #endif

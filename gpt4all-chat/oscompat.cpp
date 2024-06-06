@@ -1,5 +1,6 @@
 #include "oscompat.h"
 
+#include <QByteArray>
 #include <QString>
 #include <QtGlobal>
 
