@@ -10,6 +10,7 @@
 #include <QMap>
 #include <QObject>
 #include <QQueue>
+#include <QSqlDatabase>
 #include <QString>
 #include <QThread>
 #include <QVector>
@@ -112,11 +113,12 @@ private Q_SLOTS:
     void handleErrorGenerated(int folder_id, const QString &error);
 
 private:
-    static void transaction();
-    static void commit();
-    static void rollback();
+    void transaction();
+    void commit();
+    void rollback();
 
     bool initDb();
+    int checkAndAddFolderToDB(const QString &path);
     bool addForcedCollection(const CollectionItem &collection);
     void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
     size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
@@ -145,6 +147,7 @@ private:
     void updateCollectionStatistics();
 
 private:
+    QSqlDatabase m_db;
     int m_chunkSize;
     QTimer *m_scanTimer;
     QMap<int, QQueue<DocumentInfo>> m_docsToScan;

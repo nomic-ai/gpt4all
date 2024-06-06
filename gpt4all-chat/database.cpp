@@ -15,7 +15,6 @@
 #include <QPdfDocument>
 #include <QPdfSelection>
 #include <QRegularExpression>
-#include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QTextStream>
@@ -616,19 +615,19 @@ bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *to
 
 void Database::transaction()
 {
-    bool ok = QSqlDatabase::database().transaction();
+    bool ok = m_db.transaction();
     Q_ASSERT(ok);
 }
 
 void Database::commit()
 {
-    bool ok = QSqlDatabase::database().commit();
+    bool ok = m_db.commit();
     Q_ASSERT(ok);
 }
 
 void Database::rollback()
 {
-    bool ok = QSqlDatabase::database().rollback();
+    bool ok = m_db.rollback();
     Q_ASSERT(ok);
 }
 
@@ -679,81 +678,80 @@ bool Database::initDb()
     // them as needing forced indexing
 
     QList<CollectionItem> collections;
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     bool shouldRemoveOldDb = false;
     if (version && version != LOCALDOCS_VERSION) {
 #if defined(DEBUG)
         qDebug() << "Older localdocs version found" << version << "upgrade to" << LOCALDOCS_VERSION;
 #endif
-        db.setDatabaseName(oldDatabasePath);
+        m_db.setDatabaseName(oldDatabasePath);
 
-        if (!db.open()) {
-            qWarning() << "ERROR: Could not open old db file" << db.lastError();
+        if (!m_db.open()) {
+            qWarning() << "ERROR: Could not open old db file" << m_db.lastError();
             return false;
         }
 
         // Select the current collections which will be marked to force indexing
-        QSqlQuery q;
+        QSqlQuery q(m_db);
         if (!selectAllFromCollections(version, q, &collections)) {
             qWarning() << "ERROR: Could not open select old collections" << q.lastError();
             return false;
         }
 
-        db.close();
+        m_db.close();
         // Mark the old database for removal
         shouldRemoveOldDb = true;
     }
 
     QString dbPath = MySettings::globalInstance()->modelPath() + QString("localdocs_v%1.db").arg(LOCALDOCS_VERSION);
-    db.setDatabaseName(dbPath);
+    m_db.setDatabaseName(dbPath);
 
-    if (!db.open()) {
-        qWarning() << "ERROR: opening db" << db.lastError().text();
+    if (!m_db.open()) {
+        qWarning() << "ERROR: opening db" << m_db.lastError().text();
         return false;
     }
 
-    QStringList tables = db.tables();
+    QStringList tables = m_db.tables();
     if (tables.contains("chunks", Qt::CaseInsensitive))
         return true; // the database already exists
 
-    if (!db.transaction()) {
-        db.close();
+    if (!m_db.transaction()) {
+        m_db.close();
         QFile::remove(dbPath);
-        qWarning() << "ERROR: failed to create new database transaction" << db.lastError().text();
+        qWarning() << "ERROR: failed to create new database transaction" << m_db.lastError().text();
         return false;
     }
 
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     if (!q.exec(CHUNKS_SQL)) {
-        db.close();
+        m_db.close();
         QFile::remove(dbPath);
         qWarning() << "ERROR: failed to create chunks table" << q.lastError().text();
         return false;
     }
 
     if (!q.exec(FTS_CHUNKS_SQL)) {
-        db.close();
+        m_db.close();
         QFile::remove(dbPath);
         qWarning() << "ERROR: failed to create fts chunks table" << q.lastError().text();
         return false;
     }
 
     if (!q.exec(COLLECTIONS_SQL)) {
-        db.close();
+        m_db.close();
         QFile::remove(dbPath);
         qWarning() << "ERROR: failed to create collections table" << q.lastError().text();
         return false;
     }
 
     if (!q.exec(FOLDERS_SQL)) {
-        db.close();
+        m_db.close();
         QFile::remove(dbPath);
         qWarning() << "ERROR: failed to create folders table" << q.lastError().text();
         return false;
     }
 
     if (!q.exec(DOCUMENTS_SQL)) {
-        db.close();
+        m_db.close();
         QFile::remove(dbPath);
         qWarning() << "ERROR: failed to create documents table" << q.lastError().text();
         return false;
@@ -764,14 +762,14 @@ bool Database::initDb()
         success = addForcedCollection(item) && success;
 
     if (!success) {
-        db.close();
+        m_db.close();
         QFile::remove(dbPath);
         qWarning() << "ERROR: failed to add previous collections to new database";
         return false;
     }
 
-    if (!db.commit()) {
-        db.close();
+    if (!m_db.commit()) {
+        m_db.close();
         QFile::remove(dbPath);
         qWarning() << "ERROR: failed to commit new database transaction";
         return false;
@@ -792,6 +790,11 @@ Database::Database(int chunkSize)
     , m_embeddings(new Embeddings(this))
     , m_databaseValid(true)
 {
+    m_db = QSqlDatabase::database(QSqlDatabase::defaultConnection, false);
+    if (!m_db.isValid())
+        m_db = QSqlDatabase::addDatabase("QSQLITE");
+    Q_ASSERT(m_db.isValid());
+
     moveToThread(&m_dbThread);
     m_dbThread.setObjectName("database");
     m_dbThread.start();
@@ -875,7 +878,7 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
             words.append(word);
         if (charCount + words.size() - 1 >= m_chunkSize || stream.atEnd()) {
             const QString chunk = words.join(" ");
-            QSqlQuery q;
+            QSqlQuery q(m_db);
             int chunk_id = 0;
             if (!addChunk(q,
                 document_id,
@@ -942,7 +945,7 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
     // FIXME: Replace this with an arrow file on disk
     // FIXME: Add the tokens information
     int folder_id = 0;
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     for (auto e : embeddings) {
         folder_id = e.folder_id;
         if (!m_embeddings->add(e.embedding, e.chunk_id))
@@ -972,7 +975,7 @@ void Database::handleErrorGenerated(int folder_id, const QString &error)
 
 bool Database::getChunksByDocumentId(int document_id, QList<int> &chunkIds)
 {
-    QSqlQuery q;
+    QSqlQuery q(m_db);
 
     if (!q.prepare(SELECT_CHUNKS_BY_DOCUMENT_SQL)) {
         qWarning() << "ERROR: Cannot prepare sql for select chunks by document" << q.lastError();
@@ -1104,7 +1107,7 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
     const bool currentlyProcessing = info.currentlyProcessing;
 
     // Check and see if we already have this document
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     int existing_id = -1;
     qint64 existing_time = -1;
     if (!selectDocument(q, document_path, &existing_id, &existing_time)) {
@@ -1308,7 +1311,7 @@ void Database::addCurrentFolders()
     qDebug() << "addCurrentFolders";
 #endif
 
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     QList<CollectionItem> collections;
     if (!selectAllFromCollections(LOCALDOCS_VERSION, q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
@@ -1330,7 +1333,7 @@ void Database::addCurrentFolders()
 void Database::scheduleUncompletedEmbeddings(int folder_id)
 {
     QList<EmbeddingChunk> chunkList;
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     if (!selectAllUncompletedChunks(q, folder_id, chunkList)) {
         qWarning() << "ERROR: Cannot select uncompleted chunks" << q.lastError();
         return;
@@ -1358,7 +1361,7 @@ void Database::scheduleUncompletedEmbeddings(int folder_id)
 
 void Database::updateCollectionStatistics()
 {
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     QList<CollectionItem> collections;
     if (!selectAllFromCollections(LOCALDOCS_VERSION, q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
@@ -1381,7 +1384,7 @@ void Database::updateCollectionStatistics()
     }
 }
 
-int checkAndAddFolderToDB(const QString &path)
+int Database::checkAndAddFolderToDB(const QString &path)
 {
     QFileInfo info(path);
     if (!info.exists() || !info.isReadable()) {
@@ -1389,7 +1392,7 @@ int checkAndAddFolderToDB(const QString &path)
         return -1;
     }
 
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     int folder_id = -1;
 
     // See if the folder exists in the db
@@ -1425,7 +1428,7 @@ bool Database::addForcedCollection(const CollectionItem &collection)
         return false;
     }
 
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     if (!addCollection(q, collection.collection, folder_id,
                        QDateTime() /*last_update*/,
                        model /*embedding_model*/,
@@ -1440,7 +1443,7 @@ bool Database::addForcedCollection(const CollectionItem &collection)
 
 void Database::forceIndexing(const QString &collection)
 {
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     QList<QPair<int, QString>> folders;
     if (!selectFoldersFromCollection(q, collection, &folders)) {
         qWarning() << "ERROR: Cannot select folders from collections" << collection << q.lastError();
@@ -1474,7 +1477,7 @@ void Database::addFolder(const QString &collection, const QString &path)
         return;
 
     // See if the folder has already been added to the collection
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     QList<QPair<int, QString>> folders;
     if (!selectFoldersFromCollection(q, collection, &folders)) {
         qWarning() << "ERROR: Cannot select folders from collections" << collection << q.lastError();
@@ -1513,7 +1516,7 @@ void Database::removeFolder(const QString &collection, const QString &path)
     qDebug() << "removeFolder" << path;
 #endif
 
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     int folder_id = -1;
 
     // See if the folder exists in the db
@@ -1536,7 +1539,7 @@ void Database::removeFolder(const QString &collection, const QString &path)
 void Database::removeFolderInternal(const QString &collection, int folder_id, const QString &path)
 {
     // Determine if the folder is used by more than one collection
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     QList<QString> collections;
     if (!selectCollectionsFromFolder(q, folder_id, &collections)) {
         qWarning() << "ERROR: Cannot select collections from folder" << folder_id << q.lastError();
@@ -1621,7 +1624,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
 #endif
 
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     if (m_embeddings->isLoaded()) {
         std::vector<float> result = m_embLLM->generateEmbeddings(text);
         if (result.empty()) {
@@ -1676,7 +1679,7 @@ void Database::cleanDB()
 #endif
 
     // Scan all folders in db to make sure they still exist
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     QList<CollectionItem> collections;
     if (!selectAllFromCollections(LOCALDOCS_VERSION, q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
@@ -1722,7 +1725,7 @@ void Database::cleanDB()
         // Remove all chunks and documents that either don't exist or have become unreadable
         if (!getChunksByDocumentId(document_id, chunksToRemove))
             return rollback();
-        QSqlQuery query;
+        QSqlQuery query(m_db);
         if (!removeChunksByDocumentId(query, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << query.lastError();
             rollback();
@@ -1757,7 +1760,7 @@ void Database::changeChunkSize(int chunkSize)
 
     m_chunkSize = chunkSize;
 
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     // Scan all documents in db to make sure they still exist
     if (!q.prepare(SELECT_ALL_DOCUMENTS_SQL)) {
         qWarning() << "ERROR: Cannot prepare sql for select all documents" << q.lastError();
@@ -1775,7 +1778,7 @@ void Database::changeChunkSize(int chunkSize)
     while (q.next()) {
         int document_id = q.value(0).toInt();
         // Remove all chunks and documents to change the chunk size
-        QSqlQuery query;
+        QSqlQuery query(m_db);
         if (!getChunksByDocumentId(document_id, chunksToRemove))
             return rollback();
         if (!removeChunksByDocumentId(query, document_id)) {
@@ -1806,7 +1809,7 @@ void Database::directoryChanged(const QString &path)
     qDebug() << "directoryChanged" << path;
 #endif
 
-    QSqlQuery q;
+    QSqlQuery q(m_db);
     int folder_id = -1;
 
     // Lookup the folder_id in the db
