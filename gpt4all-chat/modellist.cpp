@@ -562,7 +562,6 @@ ModelInfo ModelList::defaultModelInfo() const
     QMutexLocker locker(&m_mutex);
 
     QSettings settings;
-    settings.sync();
 
     // The user default model can be set by the user in the settings dialog. The "default" user
     // default model is "Application default" which signals we should use the logic here.
@@ -1723,7 +1722,6 @@ void ModelList::updateDiscoveredInstalled(const ModelInfo &info)
 void ModelList::updateModelsFromSettings()
 {
     QSettings settings;
-    settings.sync();
     QStringList groups = settings.childGroups();
     for (const QString g : groups) {
         if (!g.startsWith("model-"))

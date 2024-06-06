@@ -98,10 +98,8 @@ Network::Network()
     : QObject{nullptr}
 {
     QSettings settings;
-    settings.sync();
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
-    settings.sync();
     m_sessionId = generateUniqueId();
 
     // allow sendMixpanel to be called from any thread
