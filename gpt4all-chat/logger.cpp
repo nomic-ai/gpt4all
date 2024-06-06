@@ -10,6 +10,8 @@
 #include <iostream>
 #include <string>
 
+using namespace Qt::Literals::StringLiterals;
+
 class MyLogger: public Logger { };
 Q_GLOBAL_STATIC(MyLogger, loggerInstance)
 Logger *Logger::globalInstance()
@@ -61,7 +63,7 @@ void Logger::messageHandler(QtMsgType type, const QMessageLogContext &, const QS
     // Get time and date
     auto timestamp = QDateTime::currentDateTime().toString();
     // Write message
-    const std::string out = QString("[%1] (%2): %4\n").arg(typeString, timestamp, msg).toStdString();
+    const std::string out = u"[%1] (%2): %3\n"_s.arg(typeString, timestamp, msg).toStdString();
     logger->m_file.write(out.c_str());
     logger->m_file.flush();
     std::cerr << out;

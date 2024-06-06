@@ -22,6 +22,8 @@
 #include <memory>
 #include <string>
 
+using namespace Qt::Literals::StringLiterals;
+
 class QDataStream;
 
 enum LLModelType {
@@ -68,7 +70,7 @@ private Q_SLOTS:
     void handleTimeout()
     {
         m_elapsed += m_time.restart();
-        emit report(QString("%1 tokens/sec").arg(m_tokens / float(m_elapsed / 1000.0f), 0, 'g', 2));
+        emit report(u"%1 tokens/sec"_s.arg(m_tokens / float(m_elapsed / 1000.0f), 0, 'g', 2));
     }
 
 private:

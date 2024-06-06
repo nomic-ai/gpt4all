@@ -26,6 +26,8 @@
 #include <exception>
 #include <utility>
 
+using namespace Qt::Literals::StringLiterals;
+
 EmbeddingLLMWorker::EmbeddingLLMWorker()
     : QObject(nullptr)
     , m_networkManager(new QNetworkAccessManager(this))
@@ -147,7 +149,7 @@ void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QStrin
     QJsonDocument doc(root);
 
     QUrl nomicUrl("https://api-atlas.nomic.ai/v1/embedding/text");
-    const QString authorization = QString("Bearer %1").arg(m_nomicAPIKey).trimmed();
+    const QString authorization = u"Bearer %1"_s.arg(m_nomicAPIKey).trimmed();
     QNetworkRequest request(nomicUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", authorization.toUtf8());
@@ -278,11 +280,11 @@ void EmbeddingLLMWorker::handleFinished()
         QString errorDetails;
         QString replyErrorString = reply->errorString().trimmed();
         QByteArray replyContent = reply->readAll().trimmed();
-        errorDetails = QString("ERROR: Nomic Atlas responded with error code \"%1\"").arg(code);
+        errorDetails = u"ERROR: Nomic Atlas responded with error code \"%1\""_s.arg(code);
         if (!replyErrorString.isEmpty())
-            errorDetails += QString(". Error Details: \"%1\"").arg(replyErrorString);
+            errorDetails += u". Error Details: \"%1\""_s.arg(replyErrorString);
         if (!replyContent.isEmpty())
-            errorDetails += QString(". Response Content: \"%1\"").arg(QString::fromUtf8(replyContent));
+            errorDetails += u". Response Content: \"%1\""_s.arg(QString::fromUtf8(replyContent));
         qWarning() << errorDetails;
         emit errorGenerated(folder_id, errorDetails);
         return;

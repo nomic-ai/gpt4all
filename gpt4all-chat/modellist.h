@@ -20,6 +20,8 @@
 #include <QtGlobal>
 #include <QtQml>
 
+using namespace Qt::Literals::StringLiterals;
+
 struct ModelInfo {
     Q_GADGET
     Q_PROPERTY(QString id READ id WRITE setId)
@@ -423,13 +425,13 @@ public:
 
     static inline QString toFileSize(quint64 sz) {
         if (sz < 1024) {
-            return QString("%1 bytes").arg(sz);
+            return u"%1 bytes"_s.arg(sz);
         } else if (sz < 1024 * 1024) {
-            return QString("%1 KB").arg(qreal(sz) / 1024, 0, 'g', 3);
+            return u"%1 KB"_s.arg(qreal(sz) / 1024, 0, 'g', 3);
         } else if (sz < 1024 * 1024 * 1024) {
-            return  QString("%1 MB").arg(qreal(sz) / (1024 * 1024), 0, 'g', 3);
+            return u"%1 MB"_s.arg(qreal(sz) / (1024 * 1024), 0, 'g', 3);
         } else {
-            return QString("%1 GB").arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
+            return u"%1 GB"_s.arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
         }
     }
 

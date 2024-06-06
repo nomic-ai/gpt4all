@@ -19,6 +19,8 @@
 #include <thread>
 #include <vector>
 
+using namespace Qt::Literals::StringLiterals;
+
 namespace defaults {
 
 static const int      threadCount             = std::min(4, (int32_t) std::thread::hardware_concurrency());
@@ -44,7 +46,7 @@ static QString defaultLocalModelsPath()
 {
     QString localPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
         + "/";
-    QString testWritePath = localPath + QString("test_write.txt");
+    QString testWritePath = localPath + u"test_write.txt"_s;
     QString canonicalLocalPath = QFileInfo(localPath).canonicalFilePath() + "/";
     QDir localDir(localPath);
     if (!localDir.exists()) {
@@ -139,12 +141,12 @@ void MySettings::restoreLocalDocsDefaults()
 
 void MySettings::eraseModel(const ModelInfo &m)
 {
-    m_settings.remove(QString("model-%1").arg(m.id()));
+    m_settings.remove(u"model-%1"_s.arg(m.id()));
 }
 
 QString MySettings::modelName(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/name",
+    return m_settings.value(u"model-%1/name"_s.arg(m.id()),
         !m.m_name.isEmpty() ? m.m_name : m.m_filename).toString();
 }
 
@@ -154,16 +156,16 @@ void MySettings::setModelName(const ModelInfo &m, const QString &name, bool forc
         return;
 
     if ((m.m_name == name || m.m_filename == name) && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/name");
+        m_settings.remove(u"model-%1/name"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/name", name);
+        m_settings.setValue(u"model-%1/name"_s.arg(m.id()), name);
     if (!force)
         emit nameChanged(m);
 }
 
 QString MySettings::modelFilename(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/filename", m.m_filename).toString();
+    return m_settings.value(u"model-%1/filename"_s.arg(m.id()), m.m_filename).toString();
 }
 
 void MySettings::setModelFilename(const ModelInfo &m, const QString &filename, bool force)
@@ -172,16 +174,16 @@ void MySettings::setModelFilename(const ModelInfo &m, const QString &filename, b
         return;
 
     if (m.m_filename == filename && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/filename");
+        m_settings.remove(u"model-%1/filename"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/filename", filename);
+        m_settings.setValue(u"model-%1/filename"_s.arg(m.id()), filename);
     if (!force)
         emit filenameChanged(m);
 }
 
 QString MySettings::modelDescription(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/description", m.m_description).toString();
+    return m_settings.value(u"model-%1/description"_s.arg(m.id()), m.m_description).toString();
 }
 
 void MySettings::setModelDescription(const ModelInfo &m, const QString &d, bool force)
@@ -190,14 +192,14 @@ void MySettings::setModelDescription(const ModelInfo &m, const QString &d, bool 
         return;
 
     if (m.m_description == d && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/description");
+        m_settings.remove(u"model-%1/description"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/description", d);
+        m_settings.setValue(u"model-%1/description"_s.arg(m.id()), d);
 }
 
 QString MySettings::modelUrl(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/url", m.m_url).toString();
+    return m_settings.value(u"model-%1/url"_s.arg(m.id()), m.m_url).toString();
 }
 
 void MySettings::setModelUrl(const ModelInfo &m, const QString &u, bool force)
@@ -206,14 +208,14 @@ void MySettings::setModelUrl(const ModelInfo &m, const QString &u, bool force)
         return;
 
     if (m.m_url == u && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/url");
+        m_settings.remove(u"model-%1/url"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/url", u);
+        m_settings.setValue(u"model-%1/url"_s.arg(m.id()), u);
 }
 
 QString MySettings::modelQuant(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/quant", m.m_quant).toString();
+    return m_settings.value(u"model-%1/quant"_s.arg(m.id()), m.m_quant).toString();
 }
 
 void MySettings::setModelQuant(const ModelInfo &m, const QString &q, bool force)
@@ -222,14 +224,14 @@ void MySettings::setModelQuant(const ModelInfo &m, const QString &q, bool force)
         return;
 
     if (m.m_quant == q && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/quant");
+        m_settings.remove(u"model-%1/quant"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/quant", q);
+        m_settings.setValue(u"model-%1/quant"_s.arg(m.id()), q);
 }
 
 QString MySettings::modelType(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/type", m.m_type).toString();
+    return m_settings.value(u"model-%1/type"_s.arg(m.id()), m.m_type).toString();
 }
 
 void MySettings::setModelType(const ModelInfo &m, const QString &t, bool force)
@@ -238,14 +240,14 @@ void MySettings::setModelType(const ModelInfo &m, const QString &t, bool force)
         return;
 
     if (m.m_type == t && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/type");
+        m_settings.remove(u"model-%1/type"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/type", t);
+        m_settings.setValue(u"model-%1/type"_s.arg(m.id()), t);
 }
 
 bool MySettings::modelIsClone(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/isClone", m.m_isClone).toBool();
+    return m_settings.value(u"model-%1/isClone"_s.arg(m.id()), m.m_isClone).toBool();
 }
 
 void MySettings::setModelIsClone(const ModelInfo &m, bool b, bool force)
@@ -254,14 +256,14 @@ void MySettings::setModelIsClone(const ModelInfo &m, bool b, bool force)
         return;
 
     if (m.m_isClone == b && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/isClone");
+        m_settings.remove(u"model-%1/isClone"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/isClone", b);
+        m_settings.setValue(u"model-%1/isClone"_s.arg(m.id()), b);
 }
 
 bool MySettings::modelIsDiscovered(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/isDiscovered", m.m_isDiscovered).toBool();
+    return m_settings.value(u"model-%1/isDiscovered"_s.arg(m.id()), m.m_isDiscovered).toBool();
 }
 
 void MySettings::setModelIsDiscovered(const ModelInfo &m, bool b, bool force)
@@ -270,14 +272,14 @@ void MySettings::setModelIsDiscovered(const ModelInfo &m, bool b, bool force)
         return;
 
     if (m.m_isDiscovered == b && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/isDiscovered");
+        m_settings.remove(u"model-%1/isDiscovered"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/isDiscovered", b);
+        m_settings.setValue(u"model-%1/isDiscovered"_s.arg(m.id()), b);
 }
 
 int MySettings::modelLikes(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/likes", m.m_likes).toInt();
+    return m_settings.value(u"model-%1/likes"_s.arg(m.id()), m.m_likes).toInt();
 }
 
 void MySettings::setModelLikes(const ModelInfo &m, int l, bool force)
@@ -286,14 +288,14 @@ void MySettings::setModelLikes(const ModelInfo &m, int l, bool force)
         return;
 
     if (m.m_likes == l && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/likes");
+        m_settings.remove(u"model-%1/likes"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/likes", l);
+        m_settings.setValue(u"model-%1/likes"_s.arg(m.id()), l);
 }
 
 int MySettings::modelDownloads(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/downloads", m.m_downloads).toInt();
+    return m_settings.value(u"model-%1/downloads"_s.arg(m.id()), m.m_downloads).toInt();
 }
 
 void MySettings::setModelDownloads(const ModelInfo &m, int d, bool force)
@@ -302,14 +304,14 @@ void MySettings::setModelDownloads(const ModelInfo &m, int d, bool force)
         return;
 
     if (m.m_downloads == d && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/downloads");
+        m_settings.remove(u"model-%1/downloads"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/downloads", d);
+        m_settings.setValue(u"model-%1/downloads"_s.arg(m.id()), d);
 }
 
 QDateTime MySettings::modelRecency(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/recency", m.m_recency).toDateTime();
+    return m_settings.value(u"model-%1/recency"_s.arg(m.id()), m.m_recency).toDateTime();
 }
 
 void MySettings::setModelRecency(const ModelInfo &m, const QDateTime &r, bool force)
@@ -318,14 +320,14 @@ void MySettings::setModelRecency(const ModelInfo &m, const QDateTime &r, bool fo
         return;
 
     if (m.m_recency == r && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/recency");
+        m_settings.remove(u"model-%1/recency"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/recency", r);
+        m_settings.setValue(u"model-%1/recency"_s.arg(m.id()), r);
 }
 
 double MySettings::modelTemperature(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/temperature", m.m_temperature).toDouble();
+    return m_settings.value(u"model-%1/temperature"_s.arg(m.id()), m.m_temperature).toDouble();
 }
 
 void MySettings::setModelTemperature(const ModelInfo &m, double t, bool force)
@@ -334,21 +336,21 @@ void MySettings::setModelTemperature(const ModelInfo &m, double t, bool force)
         return;
 
     if (m.m_temperature == t && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/temperature");
+        m_settings.remove(u"model-%1/temperature"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/temperature", t);
+        m_settings.setValue(u"model-%1/temperature"_s.arg(m.id()), t);
     if (!force)
         emit temperatureChanged(m);
 }
 
 double MySettings::modelTopP(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/topP", m.m_topP).toDouble();
+    return m_settings.value(u"model-%1/topP"_s.arg(m.id()), m.m_topP).toDouble();
 }
 
 double MySettings::modelMinP(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/minP", m.m_minP).toDouble();
+    return m_settings.value(u"model-%1/minP"_s.arg(m.id()), m.m_minP).toDouble();
 }
 
 void MySettings::setModelTopP(const ModelInfo &m, double p, bool force)
@@ -357,9 +359,9 @@ void MySettings::setModelTopP(const ModelInfo &m, double p, bool force)
         return;
 
     if (m.m_topP == p && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/topP");
+        m_settings.remove(u"model-%1/topP"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/topP", p);
+        m_settings.setValue(u"model-%1/topP"_s.arg(m.id()), p);
     if (!force)
         emit topPChanged(m);
 }
@@ -370,16 +372,16 @@ void MySettings::setModelMinP(const ModelInfo &m, double p, bool force)
         return;
 
     if (m.m_minP == p && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/minP");
+        m_settings.remove(u"model-%1/minP"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/minP", p);
+        m_settings.setValue(u"model-%1/minP"_s.arg(m.id()), p);
     if (!force)
         emit minPChanged(m);
 }
 
 int MySettings::modelTopK(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/topK", m.m_topK).toInt();
+    return m_settings.value(u"model-%1/topK"_s.arg(m.id()), m.m_topK).toInt();
 }
 
 void MySettings::setModelTopK(const ModelInfo &m, int k, bool force)
@@ -388,16 +390,16 @@ void MySettings::setModelTopK(const ModelInfo &m, int k, bool force)
         return;
 
     if (m.m_topK == k && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/topK");
+        m_settings.remove(u"model-%1/topK"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/topK", k);
+        m_settings.setValue(u"model-%1/topK"_s.arg(m.id()), k);
     if (!force)
         emit topKChanged(m);
 }
 
 int MySettings::modelMaxLength(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/maxLength", m.m_maxLength).toInt();
+    return m_settings.value(u"model-%1/maxLength"_s.arg(m.id()), m.m_maxLength).toInt();
 }
 
 void MySettings::setModelMaxLength(const ModelInfo &m, int l, bool force)
@@ -406,16 +408,16 @@ void MySettings::setModelMaxLength(const ModelInfo &m, int l, bool force)
         return;
 
     if (m.m_maxLength == l && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/maxLength");
+        m_settings.remove(u"model-%1/maxLength"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/maxLength", l);
+        m_settings.setValue(u"model-%1/maxLength"_s.arg(m.id()), l);
     if (!force)
         emit maxLengthChanged(m);
 }
 
 int MySettings::modelPromptBatchSize(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/promptBatchSize", m.m_promptBatchSize).toInt();
+    return m_settings.value(u"model-%1/promptBatchSize"_s.arg(m.id()), m.m_promptBatchSize).toInt();
 }
 
 void MySettings::setModelPromptBatchSize(const ModelInfo &m, int s, bool force)
@@ -424,16 +426,16 @@ void MySettings::setModelPromptBatchSize(const ModelInfo &m, int s, bool force)
         return;
 
     if (m.m_promptBatchSize == s && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/promptBatchSize");
+        m_settings.remove(u"model-%1/promptBatchSize"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/promptBatchSize", s);
+        m_settings.setValue(u"model-%1/promptBatchSize"_s.arg(m.id()), s);
     if (!force)
         emit promptBatchSizeChanged(m);
 }
 
 int MySettings::modelContextLength(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/contextLength", m.m_contextLength).toInt();
+    return m_settings.value(u"model-%1/contextLength"_s.arg(m.id()), m.m_contextLength).toInt();
 }
 
 void MySettings::setModelContextLength(const ModelInfo &m, int l, bool force)
@@ -442,16 +444,16 @@ void MySettings::setModelContextLength(const ModelInfo &m, int l, bool force)
         return;
 
     if (m.m_contextLength == l && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/contextLength");
+        m_settings.remove(u"model-%1/contextLength"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/contextLength", l);
+        m_settings.setValue(u"model-%1/contextLength"_s.arg(m.id()), l);
     if (!force)
         emit contextLengthChanged(m);
 }
 
 int MySettings::modelGpuLayers(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/gpuLayers", m.m_gpuLayers).toInt();
+    return m_settings.value(u"model-%1/gpuLayers"_s.arg(m.id()), m.m_gpuLayers).toInt();
 }
 
 void MySettings::setModelGpuLayers(const ModelInfo &m, int l, bool force)
@@ -460,16 +462,16 @@ void MySettings::setModelGpuLayers(const ModelInfo &m, int l, bool force)
         return;
 
     if (m.m_gpuLayers == l && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/gpuLayers");
+        m_settings.remove(u"model-%1/gpuLayers"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/gpuLayers", l);
+        m_settings.setValue(u"model-%1/gpuLayers"_s.arg(m.id()), l);
     if (!force)
         emit gpuLayersChanged(m);
 }
 
 double MySettings::modelRepeatPenalty(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/repeatPenalty", m.m_repeatPenalty).toDouble();
+    return m_settings.value(u"model-%1/repeatPenalty"_s.arg(m.id()), m.m_repeatPenalty).toDouble();
 }
 
 void MySettings::setModelRepeatPenalty(const ModelInfo &m, double p, bool force)
@@ -478,16 +480,16 @@ void MySettings::setModelRepeatPenalty(const ModelInfo &m, double p, bool force)
         return;
 
     if (m.m_repeatPenalty == p && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/repeatPenalty");
+        m_settings.remove(u"model-%1/repeatPenalty"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/repeatPenalty", p);
+        m_settings.setValue(u"model-%1/repeatPenalty"_s.arg(m.id()), p);
     if (!force)
         emit repeatPenaltyChanged(m);
 }
 
 int MySettings::modelRepeatPenaltyTokens(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens", m.m_repeatPenaltyTokens).toInt();
+    return m_settings.value(u"model-%1/repeatPenaltyTokens"_s.arg(m.id()), m.m_repeatPenaltyTokens).toInt();
 }
 
 void MySettings::setModelRepeatPenaltyTokens(const ModelInfo &m, int t, bool force)
@@ -496,16 +498,16 @@ void MySettings::setModelRepeatPenaltyTokens(const ModelInfo &m, int t, bool for
         return;
 
     if (m.m_repeatPenaltyTokens == t && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens");
+        m_settings.remove(u"model-%1/repeatPenaltyTokens"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/repeatPenaltyTokens", t);
+        m_settings.setValue(u"model-%1/repeatPenaltyTokens"_s.arg(m.id()), t);
     if (!force)
         emit repeatPenaltyTokensChanged(m);
 }
 
 QString MySettings::modelPromptTemplate(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/promptTemplate", m.m_promptTemplate).toString();
+    return m_settings.value(u"model-%1/promptTemplate"_s.arg(m.id()), m.m_promptTemplate).toString();
 }
 
 void MySettings::setModelPromptTemplate(const ModelInfo &m, const QString &t, bool force)
@@ -514,16 +516,16 @@ void MySettings::setModelPromptTemplate(const ModelInfo &m, const QString &t, bo
         return;
 
     if (m.m_promptTemplate == t && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/promptTemplate");
+        m_settings.remove(u"model-%1/promptTemplate"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/promptTemplate", t);
+        m_settings.setValue(u"model-%1/promptTemplate"_s.arg(m.id()), t);
     if (!force)
         emit promptTemplateChanged(m);
 }
 
 QString MySettings::modelSystemPrompt(const ModelInfo &m) const
 {
-    return m_settings.value(QString("model-%1").arg(m.id()) + "/systemPrompt", m.m_systemPrompt).toString();
+    return m_settings.value(u"model-%1/systemPrompt"_s.arg(m.id()), m.m_systemPrompt).toString();
 }
 
 void MySettings::setModelSystemPrompt(const ModelInfo &m, const QString &p, bool force)
@@ -532,9 +534,9 @@ void MySettings::setModelSystemPrompt(const ModelInfo &m, const QString &p, bool
         return;
 
     if (m.m_systemPrompt == p && !m.shouldSaveMetadata())
-        m_settings.remove(QString("model-%1").arg(m.id()) + "/systemPrompt");
+        m_settings.remove(u"model-%1/systemPrompt"_s.arg(m.id()));
     else
-        m_settings.setValue(QString("model-%1").arg(m.id()) + "/systemPrompt", p);
+        m_settings.setValue(u"model-%1/systemPrompt"_s.arg(m.id()), p);
     if (!force)
         emit systemPromptChanged(m);
 }

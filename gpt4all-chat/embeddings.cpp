@@ -22,6 +22,8 @@
 #include <string>
 #include <utility>
 
+using namespace Qt::Literals::StringLiterals;
+
 #define EMBEDDINGS_VERSION 0
 
 // FIXME!!!!! We can't hardcode like this for different embedding models
@@ -37,7 +39,7 @@ Embeddings::Embeddings(QObject *parent)
     , m_hnsw(nullptr)
 {
     m_filePath = MySettings::globalInstance()->modelPath()
-        + QString("embeddings_v%1.dat").arg(EMBEDDINGS_VERSION);
+        + u"embeddings_v%1.dat"_s.arg(EMBEDDINGS_VERSION);
 }
 
 Embeddings::~Embeddings()
