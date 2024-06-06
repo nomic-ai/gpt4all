@@ -208,28 +208,28 @@ void MySettings::setModelSetting(const QString &name, const ModelInfo &info, con
         QMetaObject::invokeMethod(this, u"%1Changed"_s.arg(name).toLatin1().constData(), Q_ARG(ModelInfo, info));
 }
 
-QString   MySettings::modelFilename           (const ModelInfo &info) const { return getModelSetting("filename", info).toString(); }
-QString   MySettings::modelDescription        (const ModelInfo &info) const { return getModelSetting("description", info).toString(); }
-QString   MySettings::modelUrl                (const ModelInfo &info) const { return getModelSetting("url", info).toString(); }
-QString   MySettings::modelQuant              (const ModelInfo &info) const { return getModelSetting("quant", info).toString(); }
-QString   MySettings::modelType               (const ModelInfo &info) const { return getModelSetting("type", info).toString(); }
-bool      MySettings::modelIsClone            (const ModelInfo &info) const { return getModelSetting("isClone", info).toBool(); }
-bool      MySettings::modelIsDiscovered       (const ModelInfo &info) const { return getModelSetting("isDiscovered", info).toBool(); }
-int       MySettings::modelLikes              (const ModelInfo &info) const { return getModelSetting("likes", info).toInt(); }
-int       MySettings::modelDownloads          (const ModelInfo &info) const { return getModelSetting("downloads", info).toInt(); }
-QDateTime MySettings::modelRecency            (const ModelInfo &info) const { return getModelSetting("recency", info).toDateTime(); }
-double    MySettings::modelTemperature        (const ModelInfo &info) const { return getModelSetting("temperature", info).toDouble(); }
-double    MySettings::modelTopP               (const ModelInfo &info) const { return getModelSetting("topP", info).toDouble(); }
-double    MySettings::modelMinP               (const ModelInfo &info) const { return getModelSetting("minP", info).toDouble(); }
-int       MySettings::modelTopK               (const ModelInfo &info) const { return getModelSetting("topK", info).toInt(); }
-int       MySettings::modelMaxLength          (const ModelInfo &info) const { return getModelSetting("maxLength", info).toInt(); }
-int       MySettings::modelPromptBatchSize    (const ModelInfo &info) const { return getModelSetting("promptBatchSize", info).toInt(); }
-int       MySettings::modelContextLength      (const ModelInfo &info) const { return getModelSetting("contextLength", info).toInt(); }
-int       MySettings::modelGpuLayers          (const ModelInfo &info) const { return getModelSetting("gpuLayers", info).toInt(); }
-double    MySettings::modelRepeatPenalty      (const ModelInfo &info) const { return getModelSetting("repeatPenalty", info).toDouble(); }
+QString   MySettings::modelFilename           (const ModelInfo &info) const { return getModelSetting("filename",            info).toString(); }
+QString   MySettings::modelDescription        (const ModelInfo &info) const { return getModelSetting("description",         info).toString(); }
+QString   MySettings::modelUrl                (const ModelInfo &info) const { return getModelSetting("url",                 info).toString(); }
+QString   MySettings::modelQuant              (const ModelInfo &info) const { return getModelSetting("quant",               info).toString(); }
+QString   MySettings::modelType               (const ModelInfo &info) const { return getModelSetting("type",                info).toString(); }
+bool      MySettings::modelIsClone            (const ModelInfo &info) const { return getModelSetting("isClone",             info).toBool(); }
+bool      MySettings::modelIsDiscovered       (const ModelInfo &info) const { return getModelSetting("isDiscovered",        info).toBool(); }
+int       MySettings::modelLikes              (const ModelInfo &info) const { return getModelSetting("likes",               info).toInt(); }
+int       MySettings::modelDownloads          (const ModelInfo &info) const { return getModelSetting("downloads",           info).toInt(); }
+QDateTime MySettings::modelRecency            (const ModelInfo &info) const { return getModelSetting("recency",             info).toDateTime(); }
+double    MySettings::modelTemperature        (const ModelInfo &info) const { return getModelSetting("temperature",         info).toDouble(); }
+double    MySettings::modelTopP               (const ModelInfo &info) const { return getModelSetting("topP",                info).toDouble(); }
+double    MySettings::modelMinP               (const ModelInfo &info) const { return getModelSetting("minP",                info).toDouble(); }
+int       MySettings::modelTopK               (const ModelInfo &info) const { return getModelSetting("topK",                info).toInt(); }
+int       MySettings::modelMaxLength          (const ModelInfo &info) const { return getModelSetting("maxLength",           info).toInt(); }
+int       MySettings::modelPromptBatchSize    (const ModelInfo &info) const { return getModelSetting("promptBatchSize",     info).toInt(); }
+int       MySettings::modelContextLength      (const ModelInfo &info) const { return getModelSetting("contextLength",       info).toInt(); }
+int       MySettings::modelGpuLayers          (const ModelInfo &info) const { return getModelSetting("gpuLayers",           info).toInt(); }
+double    MySettings::modelRepeatPenalty      (const ModelInfo &info) const { return getModelSetting("repeatPenalty",       info).toDouble(); }
 int       MySettings::modelRepeatPenaltyTokens(const ModelInfo &info) const { return getModelSetting("repeatPenaltyTokens", info).toInt(); }
-QString   MySettings::modelPromptTemplate     (const ModelInfo &info) const { return getModelSetting("promptTemplate", info).toString(); }
-QString   MySettings::modelSystemPrompt       (const ModelInfo &info) const { return getModelSetting("systemPrompt", info).toString(); }
+QString   MySettings::modelPromptTemplate     (const ModelInfo &info) const { return getModelSetting("promptTemplate",      info).toString(); }
+QString   MySettings::modelSystemPrompt       (const ModelInfo &info) const { return getModelSetting("systemPrompt",        info).toString(); }
 
 void MySettings::setModelFilename(const ModelInfo &info, const QString &value, bool force)
 {
@@ -364,29 +364,29 @@ void MySettings::setThreadCount(int value)
     emit threadCountChanged();
 }
 
-bool    MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext").toBool(); }
-bool    MySettings::serverChat() const              { return getBasicSetting("serverChat").toBool(); }
-int     MySettings::networkPort() const             { return getBasicSetting("networkPort").toInt(); }
-QString MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel").toString(); }
-QString MySettings::chatTheme() const               { return getBasicSetting("chatTheme").toString(); }
-QString MySettings::fontSize() const                { return getBasicSetting("fontSize").toString(); }
-QString MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted").toString(); }
-int     MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize").toInt(); }
-int     MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize").toInt(); }
+bool    MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
+bool    MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
+int     MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
+QString MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
+QString MySettings::chatTheme() const               { return getBasicSetting("chatTheme"               ).toString(); }
+QString MySettings::fontSize() const                { return getBasicSetting("fontSize"                ).toString(); }
+QString MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted"      ).toString(); }
+int     MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize"     ).toInt(); }
+int     MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
 bool    MySettings::localDocsShowReferences() const { return getBasicSetting("localdocs/showReferences").toBool(); }
-QString MySettings::networkAttribution() const      { return getBasicSetting("network/attribution").toString(); }
+QString MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
 
-void MySettings::setSaveChatsContext(bool value)             { setBasicSetting("saveChatsContext", value); }
-void MySettings::setServerChat(bool value)                   { setBasicSetting("serverChat", value); }
-void MySettings::setNetworkPort(int value)                   { setBasicSetting("networkPort", value); }
-void MySettings::setUserDefaultModel(const QString &value)   { setBasicSetting("userDefaultModel", value); }
-void MySettings::setChatTheme(const QString &value)          { setBasicSetting("chatTheme", value); }
-void MySettings::setFontSize(const QString &value)           { setBasicSetting("fontSize", value); }
-void MySettings::setLastVersionStarted(const QString &value) { setBasicSetting("lastVersionStarted", value); }
-void MySettings::setLocalDocsChunkSize(int value)            { setBasicSetting("localdocs/chunkSize", value, "localDocsChunkSize"); }
-void MySettings::setLocalDocsRetrievalSize(int value)        { setBasicSetting("localdocs/retrievalSize", value, "localDocsRetrievalSize"); }
+void MySettings::setSaveChatsContext(bool value)             { setBasicSetting("saveChatsContext",         value); }
+void MySettings::setServerChat(bool value)                   { setBasicSetting("serverChat",               value); }
+void MySettings::setNetworkPort(int value)                   { setBasicSetting("networkPort",              value); }
+void MySettings::setUserDefaultModel(const QString &value)   { setBasicSetting("userDefaultModel",         value); }
+void MySettings::setChatTheme(const QString &value)          { setBasicSetting("chatTheme",                value); }
+void MySettings::setFontSize(const QString &value)           { setBasicSetting("fontSize",                 value); }
+void MySettings::setLastVersionStarted(const QString &value) { setBasicSetting("lastVersionStarted",       value); }
+void MySettings::setLocalDocsChunkSize(int value)            { setBasicSetting("localdocs/chunkSize",      value, "localDocsChunkSize"); }
+void MySettings::setLocalDocsRetrievalSize(int value)        { setBasicSetting("localdocs/retrievalSize",  value, "localDocsRetrievalSize"); }
 void MySettings::setLocalDocsShowReferences(bool value)      { setBasicSetting("localdocs/showReferences", value, "localDocsShowReferences"); }
-void MySettings::setNetworkAttribution(const QString &value) { setBasicSetting("network/attribution", value, "networkAttribution"); }
+void MySettings::setNetworkAttribution(const QString &value) { setBasicSetting("network/attribution",      value, "networkAttribution"); }
 
 QString MySettings::modelPath()
 {
