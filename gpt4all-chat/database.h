@@ -26,6 +26,11 @@ class QSqlError;
 class QTextStream;
 class QTimer;
 
+// minimum supported version
+static const int LOCALDOCS_MIN_VER = 1;
+// current version
+static const int LOCALDOCS_VERSION = 2;
+
 struct DocumentInfo
 {
     int folder;
@@ -117,7 +122,11 @@ private:
     void commit();
     void rollback();
 
-    bool initDb();
+    bool hasContent();
+    // not found -> 0, , exists and has content -> 1, error -> -1
+    int openDatabase(const QString &modelPath, bool create = true, int ver = LOCALDOCS_VERSION);
+    bool openLatestDb(const QString &modelPath, QList<CollectionItem> &oldCollections);
+    bool initDb(const QString &modelPath, const QList<CollectionItem> &oldCollections);
     int checkAndAddFolderToDB(const QString &path);
     bool addForcedCollection(const CollectionItem &collection);
     void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
