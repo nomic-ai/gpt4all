@@ -3,6 +3,11 @@
 #include "localdocs.h"
 #include "network.h"
 
+#include <QMap>
+#include <QtGlobal>
+
+#include <utility>
+
 LocalDocsCollectionsModel::LocalDocsCollectionsModel(QObject *parent)
     : QSortFilterProxyModel(parent)
 {

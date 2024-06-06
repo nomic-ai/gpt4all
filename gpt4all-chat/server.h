@@ -2,9 +2,16 @@
 #define SERVER_H
 
 #include "chatllm.h"
+#include "database.h"
 
+#include <QHttpServerRequest>
+#include <QHttpServerResponse>
 #include <QObject>
-#include <QtHttpServer/QHttpServer>
+#include <QList>
+#include <QString>
+
+class Chat;
+class QHttpServer;
 
 class Server : public ChatLLM
 {

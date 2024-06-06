@@ -1,8 +1,22 @@
 #ifndef CHATLISTMODEL_H
 #define CHATLISTMODEL_H
 
-#include <QAbstractListModel>
 #include "chat.h"
+#include "chatllm.h"
+#include "chatmodel.h"
+
+#include <QAbstractListModel>
+#include <QByteArray>
+#include <QDebug>
+#include <QHash>
+#include <QList>
+#include <QObject>
+#include <QThread>
+#include <QVariant>
+#include <QVector>
+#include <Qt>
+#include <QtGlobal>
+#include <QtLogging>
 
 class ChatsRestoreThread : public QThread
 {

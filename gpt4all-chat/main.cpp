@@ -1,18 +1,23 @@
-#include <QDirIterator>
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QQmlContext>
-
-#include "llm.h"
-#include "modellist.h"
 #include "chatlistmodel.h"
-#include "localdocs.h"
-#include "download.h"
-#include "network.h"
-#include "mysettings.h"
 #include "config.h"
+#include "download.h"
+#include "llm.h"
+#include "localdocs.h"
 #include "logger.h"
+#include "modellist.h"
+#include "mysettings.h"
+#include "network.h"
+
 #include "../gpt4all-backend/llmodel.h"
+
+#include <QCoreApplication>
+#include <QGuiApplication>
+#include <QObject>
+#include <QQmlApplicationEngine>
+#include <QQmlEngine>
+#include <QString>
+#include <Qt>
+#include <QUrl>
 
 int main(int argc, char *argv[])
 {

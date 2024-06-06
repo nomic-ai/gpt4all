@@ -67,6 +67,7 @@ An alternative way to install GPT4All is to use one of the offline installers av
 
 * :parrot::link: [Langchain](https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html)
 * :card_file_box: [Weaviate Vector Database](https://github.com/weaviate/weaviate) - [module docs](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-gpt4all)
+* :telescope: [OpenLIT (OTel-native Monitoring)](https://github.com/openlit/openlit) - [Docs](https://docs.openlit.io/latest/integrations/gpt4all)
 
 
 ## Contributing

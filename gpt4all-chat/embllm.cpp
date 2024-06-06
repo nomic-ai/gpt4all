@@ -1,5 +1,31 @@
 #include "embllm.h"
+
 #include "modellist.h"
+
+#include "../gpt4all-backend/llmodel.h"
+
+#include <QCoreApplication>
+#include <QDebug>
+#include <QFile>
+#include <QFileInfo>
+#include <QGuiApplication>
+#include <QIODevice>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QList>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QUrl>
+#include <Qt>
+#include <QtGlobal>
+#include <QtLogging>
+
+#include <exception>
+#include <string>
+#include <utility>
 
 EmbeddingLLMWorker::EmbeddingLLMWorker()
     : QObject(nullptr)
@@ -128,7 +154,7 @@ void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QStrin
     request.setRawHeader("Authorization", authorization.toUtf8());
     request.setAttribute(QNetworkRequest::User, userData);
     QNetworkReply *reply = m_networkManager->post(request, doc.toJson(QJsonDocument::Compact));
-    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &EmbeddingLLMWorker::handleFinished);
 }
 

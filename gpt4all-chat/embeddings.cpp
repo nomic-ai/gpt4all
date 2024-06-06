@@ -5,9 +5,17 @@
 
 #include "hnswlib/hnswlib.h"
 
-#include <QFile>
-#include <QFileInfo>
 #include <QDebug>
+#include <QFileInfo>
+#include <QtGlobal>
+#include <QtLogging>
+
+#include <algorithm>
+#include <atomic>
+#include <exception>
+#include <queue>
+#include <string>
+#include <utility>
 
 #define EMBEDDINGS_VERSION 0
 

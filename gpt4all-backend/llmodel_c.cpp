@@ -1,12 +1,18 @@
 #include "llmodel_c.h"
+
 #include "llmodel.h"
 
-#include <cerrno>
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <exception>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
-#include <utility>
+#include <string>
+#include <vector>
 
 struct LLModelWrapper {
     LLModel *llModel = nullptr;

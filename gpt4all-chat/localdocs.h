@@ -1,10 +1,12 @@
 #ifndef LOCALDOCS_H
 #define LOCALDOCS_H
 
-#include "localdocsmodel.h"
-#include "database.h"
+#include "localdocsmodel.h" // IWYU pragma: keep
 
 #include <QObject>
+#include <QString>
+
+class Database;
 
 class LocalDocs : public QObject
 {

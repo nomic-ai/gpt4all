@@ -1,26 +1,33 @@
 #define LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "llamamodel_impl.h"
 
+#include "llmodel.h"
+
+#include <ggml.h>
+#include <llama.h>
+
+#include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <initializer_list>
 #include <iomanip>
 #include <iostream>
-#include <map>
+#include <iterator>
+#include <memory>
 #include <numeric>
-#include <random>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <thread>
-#include <unordered_set>
 #include <vector>
 
-#include <llama.h>
-#include <ggml.h>
 #ifdef GGML_USE_KOMPUTE
 #   include <ggml-kompute.h>
 #elif GGML_USE_VULKAN
@@ -30,6 +37,7 @@
 #endif
 
 using namespace std::string_literals;
+
 
 // Maximum supported GGUF version
 static constexpr int GGUF_VER_MAX = 3;
