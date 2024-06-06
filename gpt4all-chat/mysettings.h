@@ -10,6 +10,7 @@
 #include <QVector>
 
 #include <cstdint>
+#include <optional>
 
 class MySettings : public QObject
 {
@@ -94,23 +95,23 @@ public:
 
     // Application settings
     int threadCount() const;
-    void setThreadCount(int c);
+    void setThreadCount(int value);
     bool saveChatsContext() const;
-    void setSaveChatsContext(bool b);
+    void setSaveChatsContext(bool value);
     bool serverChat() const;
-    void setServerChat(bool b);
+    void setServerChat(bool value);
     QString modelPath();
-    void setModelPath(const QString &p);
+    void setModelPath(const QString &value);
     QString userDefaultModel() const;
-    void setUserDefaultModel(const QString &u);
+    void setUserDefaultModel(const QString &value);
     QString chatTheme() const;
-    void setChatTheme(const QString &u);
+    void setChatTheme(const QString &value);
     QString fontSize() const;
-    void setFontSize(const QString &u);
+    void setFontSize(const QString &value);
     bool forceMetal() const;
-    void setForceMetal(bool b);
+    void setForceMetal(bool value);
     QString device();
-    void setDevice(const QString &u);
+    void setDevice(const QString &value);
     int32_t contextLength() const;
     void setContextLength(int32_t value);
     int32_t gpuLayers() const;
@@ -118,30 +119,30 @@ public:
 
     // Release/Download settings
     QString lastVersionStarted() const;
-    void setLastVersionStarted(const QString &v);
+    void setLastVersionStarted(const QString &value);
 
     // Localdocs settings
     int localDocsChunkSize() const;
-    void setLocalDocsChunkSize(int s);
+    void setLocalDocsChunkSize(int value);
     int localDocsRetrievalSize() const;
-    void setLocalDocsRetrievalSize(int s);
+    void setLocalDocsRetrievalSize(int value);
     bool localDocsShowReferences() const;
-    void setLocalDocsShowReferences(bool b);
+    void setLocalDocsShowReferences(bool value);
 
     // Network settings
     QString networkAttribution() const;
-    void setNetworkAttribution(const QString &a);
+    void setNetworkAttribution(const QString &value);
     bool networkIsActive() const;
     Q_INVOKABLE bool isNetworkIsActiveSet() const;
-    void setNetworkIsActive(bool b);
+    void setNetworkIsActive(bool value);
     bool networkUsageStatsActive() const;
     Q_INVOKABLE bool isNetworkUsageStatsActiveSet() const;
-    void setNetworkUsageStatsActive(bool b);
+    void setNetworkUsageStatsActive(bool value);
     int networkPort() const;
-    void setNetworkPort(int c);
+    void setNetworkPort(int value);
 
     QVector<QString> deviceList() const;
-    void setDeviceList(const QVector<QString> &deviceList);
+    void setDeviceList(const QVector<QString> &value);
 
 Q_SIGNALS:
     void nameChanged(const ModelInfo &model);
@@ -187,6 +188,9 @@ private:
     explicit MySettings();
     ~MySettings() {}
     friend class MyPrivateSettings;
+
+    QVariant getBasicSetting(const QString &name) const;
+    void setBasicSetting(const QString &name, const QVariant &value, std::optional<QString> signal = std::nullopt);
 };
 
 #endif // MYSETTINGS_H

@@ -8,11 +8,13 @@
 #include <QFileInfo>
 #include <QGlobalStatic>
 #include <QIODevice>
+#include <QMetaObject>
 #include <QStandardPaths>
+#include <QStringList>
 #include <QThread>
-#include <QtLogging>
 #include <QUrl>
 #include <QVariant>
+#include <QtLogging>
 
 #include <algorithm>
 #include <string>
@@ -23,24 +25,27 @@ using namespace Qt::Literals::StringLiterals;
 
 namespace defaults {
 
-static const int      threadCount             = std::min(4, (int32_t) std::thread::hardware_concurrency());
-static const bool     saveChatsContext        = false;
-static const bool     serverChat              = false;
-static const QString  userDefaultModel        = "Application default";
-static const bool     forceMetal              = false;
-static const QString  lastVersionStarted      = "";
-static const int      localDocsChunkSize      = 256;
-static const QString  chatTheme               = "Dark";
-static const QString  fontSize                = "Small";
-static const int      localDocsRetrievalSize  = 3;
-static const bool     localDocsShowReferences = true;
-static const QString  networkAttribution      = "";
-static const bool     networkIsActive         = false;
-static const int      networkPort             = 4891;
-static const bool     networkUsageStatsActive = false;
-static const QString  device                  = "Auto";
+static const int     threadCount             = std::min(4, (int32_t) std::thread::hardware_concurrency());
+static const bool    forceMetal              = false;
+static const bool    networkIsActive         = false;
+static const bool    networkUsageStatsActive = false;
+static const QString device                  = "Auto";
 
 } // namespace defaults
+
+static const QVariantMap basicDefaults {
+    { "saveChatsContext",         false },
+    { "serverChat",               false },
+    { "userDefaultModel",         "Application default" },
+    { "lastVersionStarted",       "" },
+    { "localDocs/chunkSize",      256 },
+    { "chatTheme",                "Dark" },
+    { "fontSize",                 "Small" },
+    { "localDocs/retrievalSize",  3 },
+    { "localDocs/showReferences", true },
+    { "network/attribution",      "" },
+    { "networkPort",              4891, },
+};
 
 static QString defaultLocalModelsPath()
 {
@@ -91,14 +96,28 @@ MySettings::MySettings()
     setDeviceList(deviceList);
 }
 
+QVariant MySettings::getBasicSetting(const QString &name) const
+{
+    return m_settings.value(name, basicDefaults.value(name));
+}
+
+void MySettings::setBasicSetting(const QString &name, const QVariant &value, std::optional<QString> signal)
+{
+    if (getBasicSetting(name) == value)
+        return;
+
+    m_settings.setValue(name, value);
+    QMetaObject::invokeMethod(this, u"%1Changed"_s.arg(signal.value_or(name)).toLatin1().constData());
+}
+
 Q_INVOKABLE QVector<QString> MySettings::deviceList() const
 {
     return m_deviceList;
 }
 
-void MySettings::setDeviceList(const QVector<QString> &deviceList)
+void MySettings::setDeviceList(const QVector<QString> &value)
 {
-    m_deviceList = deviceList;
+    m_deviceList = value;
     emit deviceListChanged();
 }
 
@@ -120,23 +139,23 @@ void MySettings::restoreModelDefaults(const ModelInfo &model)
 
 void MySettings::restoreApplicationDefaults()
 {
-    setChatTheme(defaults::chatTheme);
-    setFontSize(defaults::fontSize);
+    setChatTheme(basicDefaults.value("chatTheme").toString());
+    setFontSize(basicDefaults.value("fontSize").toString());
     setDevice(defaults::device);
     setThreadCount(defaults::threadCount);
-    setSaveChatsContext(defaults::saveChatsContext);
-    setServerChat(defaults::serverChat);
-    setNetworkPort(defaults::networkPort);
+    setSaveChatsContext(basicDefaults.value("saveChatsContext").toBool());
+    setServerChat(basicDefaults.value("serverChat").toBool());
+    setNetworkPort(basicDefaults.value("networkPort").toInt());
     setModelPath(defaultLocalModelsPath());
-    setUserDefaultModel(defaults::userDefaultModel);
+    setUserDefaultModel(basicDefaults.value("userDefaultModel").toString());
     setForceMetal(defaults::forceMetal);
 }
 
 void MySettings::restoreLocalDocsDefaults()
 {
-    setLocalDocsChunkSize(defaults::localDocsChunkSize);
-    setLocalDocsRetrievalSize(defaults::localDocsRetrievalSize);
-    setLocalDocsShowReferences(defaults::localDocsShowReferences);
+    setLocalDocsChunkSize(basicDefaults.value("localDocs/chunkSize").toInt());
+    setLocalDocsRetrievalSize(basicDefaults.value("localDocs/retrievalSize").toInt());
+    setLocalDocsShowReferences(basicDefaults.value("localDocs/showReferences").toBool());
 }
 
 void MySettings::eraseModel(const ModelInfo &m)
@@ -553,58 +572,40 @@ int MySettings::threadCount() const
     return c;
 }
 
-void MySettings::setThreadCount(int c)
+void MySettings::setThreadCount(int value)
 {
-    if (threadCount() == c)
+    if (threadCount() == value)
         return;
 
-    c = std::max(c, 1);
-    c = std::min(c, QThread::idealThreadCount());
-    m_settings.setValue("threadCount", c);
+    value = std::max(value, 1);
+    value = std::min(value, QThread::idealThreadCount());
+    m_settings.setValue("threadCount", value);
     emit threadCountChanged();
 }
 
-bool MySettings::saveChatsContext() const
-{
-    return m_settings.value("saveChatsContext", defaults::saveChatsContext).toBool();
-}
+bool    MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext").toBool(); }
+bool    MySettings::serverChat() const              { return getBasicSetting("serverChat").toBool(); }
+int     MySettings::networkPort() const             { return getBasicSetting("networkPort").toInt(); }
+QString MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel").toString(); }
+QString MySettings::chatTheme() const               { return getBasicSetting("chatTheme").toString(); }
+QString MySettings::fontSize() const                { return getBasicSetting("fontSize").toString(); }
+QString MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted").toString(); }
+int     MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize").toInt(); }
+int     MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize").toInt(); }
+bool    MySettings::localDocsShowReferences() const { return getBasicSetting("localdocs/showReferences").toBool(); }
+QString MySettings::networkAttribution() const      { return getBasicSetting("network/attribution").toString(); }
 
-void MySettings::setSaveChatsContext(bool b)
-{
-    if (saveChatsContext() == b)
-        return;
-
-    m_settings.setValue("saveChatsContext", b);
-    emit saveChatsContextChanged();
-}
-
-bool MySettings::serverChat() const
-{
-    return m_settings.value("serverChat", defaults::serverChat).toBool();
-}
-
-void MySettings::setServerChat(bool b)
-{
-    if (serverChat() == b)
-        return;
-
-    m_settings.setValue("serverChat", b);
-    emit serverChatChanged();
-}
-
-int MySettings::networkPort() const
-{
-    return m_settings.value("networkPort", defaults::networkPort).toInt();
-}
-
-void MySettings::setNetworkPort(int c)
-{
-    if (networkPort() == c)
-        return;
-
-    m_settings.setValue("networkPort", c);
-    emit networkPortChanged();
-}
+void MySettings::setSaveChatsContext(bool value)             { setBasicSetting("saveChatsContext", value); }
+void MySettings::setServerChat(bool value)                   { setBasicSetting("serverChat", value); }
+void MySettings::setNetworkPort(int value)                   { setBasicSetting("networkPort", value); }
+void MySettings::setUserDefaultModel(const QString &value)   { setBasicSetting("userDefaultModel", value); }
+void MySettings::setChatTheme(const QString &value)          { setBasicSetting("chatTheme", value); }
+void MySettings::setFontSize(const QString &value)           { setBasicSetting("fontSize", value); }
+void MySettings::setLastVersionStarted(const QString &value) { setBasicSetting("lastVersionStarted", value); }
+void MySettings::setLocalDocsChunkSize(int value)            { setBasicSetting("localdocs/chunkSize", value, "localDocsChunkSize"); }
+void MySettings::setLocalDocsRetrievalSize(int value)        { setBasicSetting("localdocs/retrievalSize", value, "localDocsRetrievalSize"); }
+void MySettings::setLocalDocsShowReferences(bool value)      { setBasicSetting("localdocs/showReferences", value, "localDocsShowReferences"); }
+void MySettings::setNetworkAttribution(const QString &value) { setBasicSetting("network/attribution", value, "networkAttribution"); }
 
 QString MySettings::modelPath()
 {
@@ -620,57 +621,15 @@ QString MySettings::modelPath()
     return m_settings.value("modelPath", defaultLocalModelsPath()).toString();
 }
 
-void MySettings::setModelPath(const QString &p)
+void MySettings::setModelPath(const QString &value)
 {
-    QString filePath = (p.startsWith("file://") ?
-                        QUrl(p).toLocalFile() : p);
+    QString filePath = (value.startsWith("file://") ?
+                        QUrl(value).toLocalFile() : value);
     QString canonical = QFileInfo(filePath).canonicalFilePath() + "/";
     if (modelPath() == canonical)
         return;
     m_settings.setValue("modelPath", canonical);
     emit modelPathChanged();
-}
-
-QString MySettings::userDefaultModel() const
-{
-    return m_settings.value("userDefaultModel", defaults::userDefaultModel).toString();
-}
-
-void MySettings::setUserDefaultModel(const QString &u)
-{
-    if (userDefaultModel() == u)
-        return;
-
-    m_settings.setValue("userDefaultModel", u);
-    emit userDefaultModelChanged();
-}
-
-QString MySettings::chatTheme() const
-{
-    return m_settings.value("chatTheme", defaults::chatTheme).toString();
-}
-
-void MySettings::setChatTheme(const QString &u)
-{
-    if (chatTheme() == u)
-        return;
-
-    m_settings.setValue("chatTheme", u);
-    emit chatThemeChanged();
-}
-
-QString MySettings::fontSize() const
-{
-    return m_settings.value("fontSize", defaults::fontSize).toString();
-}
-
-void MySettings::setFontSize(const QString &u)
-{
-    if (fontSize() == u)
-        return;
-
-    m_settings.setValue("fontSize", u);
-    emit fontSizeChanged();
 }
 
 QString MySettings::device()
@@ -693,12 +652,12 @@ QString MySettings::device()
     return device;
 }
 
-void MySettings::setDevice(const QString &u)
+void MySettings::setDevice(const QString &value)
 {
-    if (device() == u)
+    if (device() == value)
         return;
 
-    m_settings.setValue("device", u);
+    m_settings.setValue("device", value);
     emit deviceChanged();
 }
 
@@ -707,82 +666,12 @@ bool MySettings::forceMetal() const
     return m_forceMetal;
 }
 
-void MySettings::setForceMetal(bool b)
+void MySettings::setForceMetal(bool value)
 {
-    if (m_forceMetal == b)
+    if (m_forceMetal == value)
         return;
-    m_forceMetal = b;
-    emit forceMetalChanged(b);
-}
-
-QString MySettings::lastVersionStarted() const
-{
-    return m_settings.value("lastVersionStarted", defaults::lastVersionStarted).toString();
-}
-
-void MySettings::setLastVersionStarted(const QString &v)
-{
-    if (lastVersionStarted() == v)
-        return;
-
-    m_settings.setValue("lastVersionStarted", v);
-    emit lastVersionStartedChanged();
-}
-
-int MySettings::localDocsChunkSize() const
-{
-    return m_settings.value("localdocs/chunkSize", defaults::localDocsChunkSize).toInt();
-}
-
-void MySettings::setLocalDocsChunkSize(int s)
-{
-    if (localDocsChunkSize() == s)
-        return;
-
-    m_settings.setValue("localdocs/chunkSize", s);
-    emit localDocsChunkSizeChanged();
-}
-
-int MySettings::localDocsRetrievalSize() const
-{
-    return m_settings.value("localdocs/retrievalSize", defaults::localDocsRetrievalSize).toInt();
-}
-
-void MySettings::setLocalDocsRetrievalSize(int s)
-{
-    if (localDocsRetrievalSize() == s)
-        return;
-
-    m_settings.setValue("localdocs/retrievalSize", s);
-    emit localDocsRetrievalSizeChanged();
-}
-
-bool MySettings::localDocsShowReferences() const
-{
-    return m_settings.value("localdocs/showReferences", defaults::localDocsShowReferences).toBool();
-}
-
-void MySettings::setLocalDocsShowReferences(bool b)
-{
-    if (localDocsShowReferences() == b)
-        return;
-
-    m_settings.setValue("localdocs/showReferences", b);
-    emit localDocsShowReferencesChanged();
-}
-
-QString MySettings::networkAttribution() const
-{
-    return m_settings.value("network/attribution", defaults::networkAttribution).toString();
-}
-
-void MySettings::setNetworkAttribution(const QString &a)
-{
-    if (networkAttribution() == a)
-        return;
-
-    m_settings.setValue("network/attribution", a);
-    emit networkAttributionChanged();
+    m_forceMetal = value;
+    emit forceMetalChanged(value);
 }
 
 bool MySettings::networkIsActive() const
@@ -795,11 +684,11 @@ bool MySettings::isNetworkIsActiveSet() const
     return m_settings.value("network/isActive").isValid();
 }
 
-void MySettings::setNetworkIsActive(bool b)
+void MySettings::setNetworkIsActive(bool value)
 {
     auto cur = m_settings.value("network/isActive");
-    if (!cur.isValid() || cur.toBool() != b) {
-        m_settings.setValue("network/isActive", b);
+    if (!cur.isValid() || cur.toBool() != value) {
+        m_settings.setValue("network/isActive", value);
         emit networkIsActiveChanged();
     }
 }
@@ -814,11 +703,11 @@ bool MySettings::isNetworkUsageStatsActiveSet() const
     return m_settings.value("network/usageStatsActive").isValid();
 }
 
-void MySettings::setNetworkUsageStatsActive(bool b)
+void MySettings::setNetworkUsageStatsActive(bool value)
 {
     auto cur = m_settings.value("network/usageStatsActive");
-    if (!cur.isValid() || cur.toBool() != b) {
-        m_settings.setValue("network/usageStatsActive", b);
+    if (!cur.isValid() || cur.toBool() != value) {
+        m_settings.setValue("network/usageStatsActive", value);
         emit networkUsageStatsActiveChanged();
     }
 }
