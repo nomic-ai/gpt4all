@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <QGlobalStatic>
 #include <QIODevice>
+#include <QMap>
 #include <QMetaObject>
 #include <QStandardPaths>
 #include <QStringList>
@@ -121,20 +122,20 @@ void MySettings::setDeviceList(const QVector<QString> &value)
     emit deviceListChanged();
 }
 
-void MySettings::restoreModelDefaults(const ModelInfo &model)
+void MySettings::restoreModelDefaults(const ModelInfo &info)
 {
-    setModelTemperature(model, model.m_temperature);
-    setModelTopP(model, model.m_topP);
-    setModelMinP(model, model.m_minP);
-    setModelTopK(model, model.m_topK);;
-    setModelMaxLength(model, model.m_maxLength);
-    setModelPromptBatchSize(model, model.m_promptBatchSize);
-    setModelContextLength(model, model.m_contextLength);
-    setModelGpuLayers(model, model.m_gpuLayers);
-    setModelRepeatPenalty(model, model.m_repeatPenalty);
-    setModelRepeatPenaltyTokens(model, model.m_repeatPenaltyTokens);
-    setModelPromptTemplate(model, model.m_promptTemplate);
-    setModelSystemPrompt(model, model.m_systemPrompt);
+    setModelTemperature(info, info.m_temperature);
+    setModelTopP(info, info.m_topP);
+    setModelMinP(info, info.m_minP);
+    setModelTopK(info, info.m_topK);;
+    setModelMaxLength(info, info.m_maxLength);
+    setModelPromptBatchSize(info, info.m_promptBatchSize);
+    setModelContextLength(info, info.m_contextLength);
+    setModelGpuLayers(info, info.m_gpuLayers);
+    setModelRepeatPenalty(info, info.m_repeatPenalty);
+    setModelRepeatPenaltyTokens(info, info.m_repeatPenaltyTokens);
+    setModelPromptTemplate(info, info.m_promptTemplate);
+    setModelSystemPrompt(info, info.m_systemPrompt);
 }
 
 void MySettings::restoreApplicationDefaults()
@@ -158,406 +159,186 @@ void MySettings::restoreLocalDocsDefaults()
     setLocalDocsShowReferences(basicDefaults.value("localDocs/showReferences").toBool());
 }
 
-void MySettings::eraseModel(const ModelInfo &m)
+void MySettings::eraseModel(const ModelInfo &info)
 {
-    m_settings.remove(u"model-%1"_s.arg(m.id()));
+    m_settings.remove(u"model-%1"_s.arg(info.id()));
 }
 
-QString MySettings::modelName(const ModelInfo &m) const
+QString MySettings::modelName(const ModelInfo &info) const
 {
-    return m_settings.value(u"model-%1/name"_s.arg(m.id()),
-        !m.m_name.isEmpty() ? m.m_name : m.m_filename).toString();
+    return m_settings.value(u"model-%1/name"_s.arg(info.id()),
+        !info.m_name.isEmpty() ? info.m_name : info.m_filename).toString();
 }
 
-void MySettings::setModelName(const ModelInfo &m, const QString &name, bool force)
+void MySettings::setModelName(const ModelInfo &info, const QString &value, bool force)
 {
-    if ((modelName(m) == name || m.id().isEmpty()) && !force)
+    if ((modelName(info) == value || info.id().isEmpty()) && !force)
         return;
 
-    if ((m.m_name == name || m.m_filename == name) && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/name"_s.arg(m.id()));
+    if ((info.m_name == value || info.m_filename == value) && !info.shouldSaveMetadata())
+        m_settings.remove(u"model-%1/name"_s.arg(info.id()));
     else
-        m_settings.setValue(u"model-%1/name"_s.arg(m.id()), name);
+        m_settings.setValue(u"model-%1/name"_s.arg(info.id()), value);
     if (!force)
-        emit nameChanged(m);
+        emit nameChanged(info);
 }
 
-QString MySettings::modelFilename(const ModelInfo &m) const
+static QString modelSettingName(const ModelInfo &info, const QString &name)
 {
-    return m_settings.value(u"model-%1/filename"_s.arg(m.id()), m.m_filename).toString();
+    return u"model-%1/%2"_s.arg(info.id(), name);
 }
 
-void MySettings::setModelFilename(const ModelInfo &m, const QString &filename, bool force)
+QVariant MySettings::getModelSetting(const QString &name, const ModelInfo &info) const
 {
-    if ((modelFilename(m) == filename || m.id().isEmpty()) && !force)
+    return m_settings.value(modelSettingName(info, name), info.getFields().value(name));
+}
+
+void MySettings::setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
+                                 bool signal)
+{
+    if (!force && (info.id().isEmpty() || getModelSetting(name, info) == value))
         return;
 
-    if (m.m_filename == filename && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/filename"_s.arg(m.id()));
+    QString settingName = modelSettingName(info, name);
+    if (info.getFields().value(name) == value && !info.shouldSaveMetadata())
+        m_settings.remove(settingName);
     else
-        m_settings.setValue(u"model-%1/filename"_s.arg(m.id()), filename);
-    if (!force)
-        emit filenameChanged(m);
+        m_settings.setValue(settingName, name);
+    if (signal && !force)
+        QMetaObject::invokeMethod(this, u"%1Changed"_s.arg(name).toLatin1().constData(), Q_ARG(ModelInfo, info));
 }
 
-QString MySettings::modelDescription(const ModelInfo &m) const
+QString   MySettings::modelFilename           (const ModelInfo &info) const { return getModelSetting("filename", info).toString(); }
+QString   MySettings::modelDescription        (const ModelInfo &info) const { return getModelSetting("description", info).toString(); }
+QString   MySettings::modelUrl                (const ModelInfo &info) const { return getModelSetting("url", info).toString(); }
+QString   MySettings::modelQuant              (const ModelInfo &info) const { return getModelSetting("quant", info).toString(); }
+QString   MySettings::modelType               (const ModelInfo &info) const { return getModelSetting("type", info).toString(); }
+bool      MySettings::modelIsClone            (const ModelInfo &info) const { return getModelSetting("isClone", info).toBool(); }
+bool      MySettings::modelIsDiscovered       (const ModelInfo &info) const { return getModelSetting("isDiscovered", info).toBool(); }
+int       MySettings::modelLikes              (const ModelInfo &info) const { return getModelSetting("likes", info).toInt(); }
+int       MySettings::modelDownloads          (const ModelInfo &info) const { return getModelSetting("downloads", info).toInt(); }
+QDateTime MySettings::modelRecency            (const ModelInfo &info) const { return getModelSetting("recency", info).toDateTime(); }
+double    MySettings::modelTemperature        (const ModelInfo &info) const { return getModelSetting("temperature", info).toDouble(); }
+double    MySettings::modelTopP               (const ModelInfo &info) const { return getModelSetting("topP", info).toDouble(); }
+double    MySettings::modelMinP               (const ModelInfo &info) const { return getModelSetting("minP", info).toDouble(); }
+int       MySettings::modelTopK               (const ModelInfo &info) const { return getModelSetting("topK", info).toInt(); }
+int       MySettings::modelMaxLength          (const ModelInfo &info) const { return getModelSetting("maxLength", info).toInt(); }
+int       MySettings::modelPromptBatchSize    (const ModelInfo &info) const { return getModelSetting("promptBatchSize", info).toInt(); }
+int       MySettings::modelContextLength      (const ModelInfo &info) const { return getModelSetting("contextLength", info).toInt(); }
+int       MySettings::modelGpuLayers          (const ModelInfo &info) const { return getModelSetting("gpuLayers", info).toInt(); }
+double    MySettings::modelRepeatPenalty      (const ModelInfo &info) const { return getModelSetting("repeatPenalty", info).toDouble(); }
+int       MySettings::modelRepeatPenaltyTokens(const ModelInfo &info) const { return getModelSetting("repeatPenaltyTokens", info).toInt(); }
+QString   MySettings::modelPromptTemplate     (const ModelInfo &info) const { return getModelSetting("promptTemplate", info).toString(); }
+QString   MySettings::modelSystemPrompt       (const ModelInfo &info) const { return getModelSetting("systemPrompt", info).toString(); }
+
+void MySettings::setModelFilename(const ModelInfo &info, const QString &value, bool force)
 {
-    return m_settings.value(u"model-%1/description"_s.arg(m.id()), m.m_description).toString();
+    setModelSetting("filename", info, value, force, true);
 }
 
-void MySettings::setModelDescription(const ModelInfo &m, const QString &d, bool force)
+void MySettings::setModelDescription(const ModelInfo &info, const QString &value, bool force)
 {
-    if ((modelDescription(m) == d || m.id().isEmpty()) && !force)
-        return;
-
-    if (m.m_description == d && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/description"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/description"_s.arg(m.id()), d);
+    setModelSetting("description", info, value, force, true);
 }
 
-QString MySettings::modelUrl(const ModelInfo &m) const
+void MySettings::setModelUrl(const ModelInfo &info, const QString &value, bool force)
 {
-    return m_settings.value(u"model-%1/url"_s.arg(m.id()), m.m_url).toString();
+    setModelSetting("url", info, value, force);
 }
 
-void MySettings::setModelUrl(const ModelInfo &m, const QString &u, bool force)
+void MySettings::setModelQuant(const ModelInfo &info, const QString &value, bool force)
 {
-    if ((modelUrl(m) == u || m.id().isEmpty()) && !force)
-        return;
-
-    if (m.m_url == u && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/url"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/url"_s.arg(m.id()), u);
+    setModelSetting("quant", info, value, force);
 }
 
-QString MySettings::modelQuant(const ModelInfo &m) const
+void MySettings::setModelType(const ModelInfo &info, const QString &value, bool force)
 {
-    return m_settings.value(u"model-%1/quant"_s.arg(m.id()), m.m_quant).toString();
+    setModelSetting("type", info, value, force);
 }
 
-void MySettings::setModelQuant(const ModelInfo &m, const QString &q, bool force)
+void MySettings::setModelIsClone(const ModelInfo &info, bool value, bool force)
 {
-    if ((modelUrl(m) == q || m.id().isEmpty()) && !force)
-        return;
-
-    if (m.m_quant == q && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/quant"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/quant"_s.arg(m.id()), q);
+    setModelSetting("isClone", info, value, force);
 }
 
-QString MySettings::modelType(const ModelInfo &m) const
+void MySettings::setModelIsDiscovered(const ModelInfo &info, bool value, bool force)
 {
-    return m_settings.value(u"model-%1/type"_s.arg(m.id()), m.m_type).toString();
+    setModelSetting("isDiscovered", info, value, force);
 }
 
-void MySettings::setModelType(const ModelInfo &m, const QString &t, bool force)
+void MySettings::setModelLikes(const ModelInfo &info, int value, bool force)
 {
-    if ((modelType(m) == t || m.id().isEmpty()) && !force)
-        return;
-
-    if (m.m_type == t && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/type"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/type"_s.arg(m.id()), t);
+    setModelSetting("likes", info, value, force);
 }
 
-bool MySettings::modelIsClone(const ModelInfo &m) const
+void MySettings::setModelDownloads(const ModelInfo &info, int value, bool force)
 {
-    return m_settings.value(u"model-%1/isClone"_s.arg(m.id()), m.m_isClone).toBool();
+    setModelSetting("downloads", info, value, force);
 }
 
-void MySettings::setModelIsClone(const ModelInfo &m, bool b, bool force)
+void MySettings::setModelRecency(const ModelInfo &info, const QDateTime &value, bool force)
 {
-    if ((modelIsClone(m) == b || m.id().isEmpty()) && !force)
-        return;
-
-    if (m.m_isClone == b && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/isClone"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/isClone"_s.arg(m.id()), b);
+    setModelSetting("recency", info, value, force);
 }
 
-bool MySettings::modelIsDiscovered(const ModelInfo &m) const
+void MySettings::setModelTemperature(const ModelInfo &info, double value, bool force)
 {
-    return m_settings.value(u"model-%1/isDiscovered"_s.arg(m.id()), m.m_isDiscovered).toBool();
+    setModelSetting("temperature", info, value, force, true);
 }
 
-void MySettings::setModelIsDiscovered(const ModelInfo &m, bool b, bool force)
+void MySettings::setModelTopP(const ModelInfo &info, double value, bool force)
 {
-    if ((modelIsDiscovered(m) == b || m.id().isEmpty()) && !force)
-        return;
-
-    if (m.m_isDiscovered == b && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/isDiscovered"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/isDiscovered"_s.arg(m.id()), b);
+    setModelSetting("topP", info, value, force, true);
 }
 
-int MySettings::modelLikes(const ModelInfo &m) const
+void MySettings::setModelMinP(const ModelInfo &info, double value, bool force)
 {
-    return m_settings.value(u"model-%1/likes"_s.arg(m.id()), m.m_likes).toInt();
+    setModelSetting("minP", info, value, force, true);
 }
 
-void MySettings::setModelLikes(const ModelInfo &m, int l, bool force)
+void MySettings::setModelTopK(const ModelInfo &info, int value, bool force)
 {
-    if ((modelLikes(m) == l || m.id().isEmpty()) && !force)
-        return;
-
-    if (m.m_likes == l && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/likes"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/likes"_s.arg(m.id()), l);
+    setModelSetting("topK", info, value, force, true);
 }
 
-int MySettings::modelDownloads(const ModelInfo &m) const
+void MySettings::setModelMaxLength(const ModelInfo &info, int value, bool force)
 {
-    return m_settings.value(u"model-%1/downloads"_s.arg(m.id()), m.m_downloads).toInt();
+    setModelSetting("maxLength", info, value, force, true);
 }
 
-void MySettings::setModelDownloads(const ModelInfo &m, int d, bool force)
+void MySettings::setModelPromptBatchSize(const ModelInfo &info, int value, bool force)
 {
-    if ((modelDownloads(m) == d || m.id().isEmpty()) && !force)
-        return;
-
-    if (m.m_downloads == d && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/downloads"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/downloads"_s.arg(m.id()), d);
+    setModelSetting("promptBatchSize", info, value, force, true);
 }
 
-QDateTime MySettings::modelRecency(const ModelInfo &m) const
+void MySettings::setModelContextLength(const ModelInfo &info, int value, bool force)
 {
-    return m_settings.value(u"model-%1/recency"_s.arg(m.id()), m.m_recency).toDateTime();
+    setModelSetting("contextLength", info, value, force, true);
 }
 
-void MySettings::setModelRecency(const ModelInfo &m, const QDateTime &r, bool force)
+void MySettings::setModelGpuLayers(const ModelInfo &info, int value, bool force)
 {
-    if ((modelRecency(m) == r || m.id().isEmpty()) && !force)
-        return;
-
-    if (m.m_recency == r && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/recency"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/recency"_s.arg(m.id()), r);
+    setModelSetting("gpuLayers", info, value, force, true);
 }
 
-double MySettings::modelTemperature(const ModelInfo &m) const
+void MySettings::setModelRepeatPenalty(const ModelInfo &info, double value, bool force)
 {
-    return m_settings.value(u"model-%1/temperature"_s.arg(m.id()), m.m_temperature).toDouble();
+    setModelSetting("repeatPenalty", info, value, force, true);
 }
 
-void MySettings::setModelTemperature(const ModelInfo &m, double t, bool force)
+void MySettings::setModelRepeatPenaltyTokens(const ModelInfo &info, int value, bool force)
 {
-    if (modelTemperature(m) == t && !force)
-        return;
-
-    if (m.m_temperature == t && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/temperature"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/temperature"_s.arg(m.id()), t);
-    if (!force)
-        emit temperatureChanged(m);
+    setModelSetting("repeatPenaltyTokens", info, value, force, true);
 }
 
-double MySettings::modelTopP(const ModelInfo &m) const
+void MySettings::setModelPromptTemplate(const ModelInfo &info, const QString &value, bool force)
 {
-    return m_settings.value(u"model-%1/topP"_s.arg(m.id()), m.m_topP).toDouble();
+    setModelSetting("promptTemplate", info, value, force, true);
 }
 
-double MySettings::modelMinP(const ModelInfo &m) const
+void MySettings::setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force)
 {
-    return m_settings.value(u"model-%1/minP"_s.arg(m.id()), m.m_minP).toDouble();
-}
-
-void MySettings::setModelTopP(const ModelInfo &m, double p, bool force)
-{
-    if (modelTopP(m) == p && !force)
-        return;
-
-    if (m.m_topP == p && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/topP"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/topP"_s.arg(m.id()), p);
-    if (!force)
-        emit topPChanged(m);
-}
-
-void MySettings::setModelMinP(const ModelInfo &m, double p, bool force)
-{
-    if (modelMinP(m) == p && !force)
-        return;
-
-    if (m.m_minP == p && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/minP"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/minP"_s.arg(m.id()), p);
-    if (!force)
-        emit minPChanged(m);
-}
-
-int MySettings::modelTopK(const ModelInfo &m) const
-{
-    return m_settings.value(u"model-%1/topK"_s.arg(m.id()), m.m_topK).toInt();
-}
-
-void MySettings::setModelTopK(const ModelInfo &m, int k, bool force)
-{
-    if (modelTopK(m) == k && !force)
-        return;
-
-    if (m.m_topK == k && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/topK"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/topK"_s.arg(m.id()), k);
-    if (!force)
-        emit topKChanged(m);
-}
-
-int MySettings::modelMaxLength(const ModelInfo &m) const
-{
-    return m_settings.value(u"model-%1/maxLength"_s.arg(m.id()), m.m_maxLength).toInt();
-}
-
-void MySettings::setModelMaxLength(const ModelInfo &m, int l, bool force)
-{
-    if (modelMaxLength(m) == l && !force)
-        return;
-
-    if (m.m_maxLength == l && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/maxLength"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/maxLength"_s.arg(m.id()), l);
-    if (!force)
-        emit maxLengthChanged(m);
-}
-
-int MySettings::modelPromptBatchSize(const ModelInfo &m) const
-{
-    return m_settings.value(u"model-%1/promptBatchSize"_s.arg(m.id()), m.m_promptBatchSize).toInt();
-}
-
-void MySettings::setModelPromptBatchSize(const ModelInfo &m, int s, bool force)
-{
-    if (modelPromptBatchSize(m) == s && !force)
-        return;
-
-    if (m.m_promptBatchSize == s && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/promptBatchSize"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/promptBatchSize"_s.arg(m.id()), s);
-    if (!force)
-        emit promptBatchSizeChanged(m);
-}
-
-int MySettings::modelContextLength(const ModelInfo &m) const
-{
-    return m_settings.value(u"model-%1/contextLength"_s.arg(m.id()), m.m_contextLength).toInt();
-}
-
-void MySettings::setModelContextLength(const ModelInfo &m, int l, bool force)
-{
-    if (modelContextLength(m) == l && !force)
-        return;
-
-    if (m.m_contextLength == l && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/contextLength"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/contextLength"_s.arg(m.id()), l);
-    if (!force)
-        emit contextLengthChanged(m);
-}
-
-int MySettings::modelGpuLayers(const ModelInfo &m) const
-{
-    return m_settings.value(u"model-%1/gpuLayers"_s.arg(m.id()), m.m_gpuLayers).toInt();
-}
-
-void MySettings::setModelGpuLayers(const ModelInfo &m, int l, bool force)
-{
-    if (modelGpuLayers(m) == l && !force)
-        return;
-
-    if (m.m_gpuLayers == l && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/gpuLayers"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/gpuLayers"_s.arg(m.id()), l);
-    if (!force)
-        emit gpuLayersChanged(m);
-}
-
-double MySettings::modelRepeatPenalty(const ModelInfo &m) const
-{
-    return m_settings.value(u"model-%1/repeatPenalty"_s.arg(m.id()), m.m_repeatPenalty).toDouble();
-}
-
-void MySettings::setModelRepeatPenalty(const ModelInfo &m, double p, bool force)
-{
-    if (modelRepeatPenalty(m) == p && !force)
-        return;
-
-    if (m.m_repeatPenalty == p && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/repeatPenalty"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/repeatPenalty"_s.arg(m.id()), p);
-    if (!force)
-        emit repeatPenaltyChanged(m);
-}
-
-int MySettings::modelRepeatPenaltyTokens(const ModelInfo &m) const
-{
-    return m_settings.value(u"model-%1/repeatPenaltyTokens"_s.arg(m.id()), m.m_repeatPenaltyTokens).toInt();
-}
-
-void MySettings::setModelRepeatPenaltyTokens(const ModelInfo &m, int t, bool force)
-{
-    if (modelRepeatPenaltyTokens(m) == t && !force)
-        return;
-
-    if (m.m_repeatPenaltyTokens == t && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/repeatPenaltyTokens"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/repeatPenaltyTokens"_s.arg(m.id()), t);
-    if (!force)
-        emit repeatPenaltyTokensChanged(m);
-}
-
-QString MySettings::modelPromptTemplate(const ModelInfo &m) const
-{
-    return m_settings.value(u"model-%1/promptTemplate"_s.arg(m.id()), m.m_promptTemplate).toString();
-}
-
-void MySettings::setModelPromptTemplate(const ModelInfo &m, const QString &t, bool force)
-{
-    if (modelPromptTemplate(m) == t && !force)
-        return;
-
-    if (m.m_promptTemplate == t && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/promptTemplate"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/promptTemplate"_s.arg(m.id()), t);
-    if (!force)
-        emit promptTemplateChanged(m);
-}
-
-QString MySettings::modelSystemPrompt(const ModelInfo &m) const
-{
-    return m_settings.value(u"model-%1/systemPrompt"_s.arg(m.id()), m.m_systemPrompt).toString();
-}
-
-void MySettings::setModelSystemPrompt(const ModelInfo &m, const QString &p, bool force)
-{
-    if (modelSystemPrompt(m) == p && !force)
-        return;
-
-    if (m.m_systemPrompt == p && !m.shouldSaveMetadata())
-        m_settings.remove(u"model-%1/systemPrompt"_s.arg(m.id()));
-    else
-        m_settings.setValue(u"model-%1/systemPrompt"_s.arg(m.id()), p);
-    if (!force)
-        emit systemPromptChanged(m);
+    setModelSetting("systemPrompt", info, value, force, true);
 }
 
 int MySettings::threadCount() const

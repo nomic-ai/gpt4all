@@ -341,6 +341,33 @@ bool ModelInfo::shouldSaveMetadata() const
     return installed && (isClone() || isDiscovered() || description() == "" /*indicates sideloaded*/);
 }
 
+QVariantMap ModelInfo::getFields() const {
+    return {
+        { "filename",            m_filename },
+        { "description",         m_description },
+        { "url",                 m_url },
+        { "quant",               m_quant },
+        { "type",                m_type },
+        { "isClone",             m_isClone },
+        { "isDiscovered",        m_isDiscovered },
+        { "likes",               m_likes },
+        { "downloads",           m_downloads },
+        { "recency",             m_recency },
+        { "temperature",         m_temperature },
+        { "topP",                m_topP },
+        { "minP",                m_minP },
+        { "topK",                m_topK },
+        { "maxLength",           m_maxLength },
+        { "promptBatchSize",     m_promptBatchSize },
+        { "contextLength",       m_contextLength },
+        { "gpuLayers",           m_gpuLayers },
+        { "repeatPenalty",       m_repeatPenalty },
+        { "repeatPenaltyTokens", m_repeatPenaltyTokens },
+        { "promptTemplate",      m_promptTemplate },
+        { "systemPrompt",        m_systemPrompt },
+    };
+}
+
 EmbeddingModels::EmbeddingModels(QObject *parent, bool requireInstalled)
     : QSortFilterProxyModel(parent)
 {

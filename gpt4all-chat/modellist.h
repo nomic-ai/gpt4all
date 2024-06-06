@@ -171,6 +171,8 @@ public:
     bool shouldSaveMetadata() const;
 
 private:
+    QVariantMap getFields() const;
+
     QString m_id;
     QString m_name;
     QString m_filename;
