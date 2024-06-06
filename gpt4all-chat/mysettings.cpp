@@ -20,22 +20,26 @@
 #include <thread>
 #include <vector>
 
-static int      default_threadCount         = std::min(4, (int32_t) std::thread::hardware_concurrency());
-static bool     default_saveChatsContext    = false;
-static bool     default_serverChat          = false;
-static QString  default_userDefaultModel    = "Application default";
-static bool     default_forceMetal          = false;
-static QString  default_lastVersionStarted  = "";
-static int      default_localDocsChunkSize  = 256;
-static QString  default_chatTheme           = "Dark";
-static QString  default_fontSize            = "Small";
-static int      default_localDocsRetrievalSize  = 3;
-static bool     default_localDocsShowReferences = true;
-static QString  default_networkAttribution      = "";
-static bool     default_networkIsActive         = false;
-static int      default_networkPort         = 4891;
-static bool     default_networkUsageStatsActive = false;
-static QString  default_device              = "Auto";
+namespace defaults {
+
+static const int      threadCount             = std::min(4, (int32_t) std::thread::hardware_concurrency());
+static const bool     saveChatsContext        = false;
+static const bool     serverChat              = false;
+static const QString  userDefaultModel        = "Application default";
+static const bool     forceMetal              = false;
+static const QString  lastVersionStarted      = "";
+static const int      localDocsChunkSize      = 256;
+static const QString  chatTheme               = "Dark";
+static const QString  fontSize                = "Small";
+static const int      localDocsRetrievalSize  = 3;
+static const bool     localDocsShowReferences = true;
+static const QString  networkAttribution      = "";
+static const bool     networkIsActive         = false;
+static const int      networkPort             = 4891;
+static const bool     networkUsageStatsActive = false;
+static const QString  device                  = "Auto";
+
+} // namespace defaults
 
 static QString defaultLocalModelsPath()
 {
@@ -117,23 +121,23 @@ void MySettings::restoreModelDefaults(const ModelInfo &model)
 
 void MySettings::restoreApplicationDefaults()
 {
-    setChatTheme(default_chatTheme);
-    setFontSize(default_fontSize);
-    setDevice(default_device);
-    setThreadCount(default_threadCount);
-    setSaveChatsContext(default_saveChatsContext);
-    setServerChat(default_serverChat);
-    setNetworkPort(default_networkPort);
+    setChatTheme(defaults::chatTheme);
+    setFontSize(defaults::fontSize);
+    setDevice(defaults::device);
+    setThreadCount(defaults::threadCount);
+    setSaveChatsContext(defaults::saveChatsContext);
+    setServerChat(defaults::serverChat);
+    setNetworkPort(defaults::networkPort);
     setModelPath(defaultLocalModelsPath());
-    setUserDefaultModel(default_userDefaultModel);
-    setForceMetal(default_forceMetal);
+    setUserDefaultModel(defaults::userDefaultModel);
+    setForceMetal(defaults::forceMetal);
 }
 
 void MySettings::restoreLocalDocsDefaults()
 {
-    setLocalDocsChunkSize(default_localDocsChunkSize);
-    setLocalDocsRetrievalSize(default_localDocsRetrievalSize);
-    setLocalDocsShowReferences(default_localDocsShowReferences);
+    setLocalDocsChunkSize(defaults::localDocsChunkSize);
+    setLocalDocsRetrievalSize(defaults::localDocsRetrievalSize);
+    setLocalDocsShowReferences(defaults::localDocsShowReferences);
 }
 
 void MySettings::eraseModel(const ModelInfo &m)
@@ -636,11 +640,11 @@ int MySettings::threadCount() const
 {
     QSettings setting;
     setting.sync();
-    int c = setting.value("threadCount", default_threadCount).toInt();
+    int c = setting.value("threadCount", defaults::threadCount).toInt();
     // The old thread setting likely left many people with 0 in settings config file, which means
     // we should reset it to the default going forward
     if (c <= 0)
-        c = default_threadCount;
+        c = defaults::threadCount;
     c = std::max(c, 1);
     c = std::min(c, QThread::idealThreadCount());
     return c;
@@ -663,7 +667,7 @@ bool MySettings::saveChatsContext() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("saveChatsContext", default_saveChatsContext).toBool();
+    return setting.value("saveChatsContext", defaults::saveChatsContext).toBool();
 }
 
 void MySettings::setSaveChatsContext(bool b)
@@ -681,7 +685,7 @@ bool MySettings::serverChat() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("serverChat", default_serverChat).toBool();
+    return setting.value("serverChat", defaults::serverChat).toBool();
 }
 
 void MySettings::setServerChat(bool b)
@@ -699,7 +703,7 @@ int MySettings::networkPort() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("networkPort", default_networkPort).toInt();
+    return setting.value("networkPort", defaults::networkPort).toInt();
 }
 
 void MySettings::setNetworkPort(int c)
@@ -747,7 +751,7 @@ QString MySettings::userDefaultModel() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("userDefaultModel", default_userDefaultModel).toString();
+    return setting.value("userDefaultModel", defaults::userDefaultModel).toString();
 }
 
 void MySettings::setUserDefaultModel(const QString &u)
@@ -765,7 +769,7 @@ QString MySettings::chatTheme() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("chatTheme", default_chatTheme).toString();
+    return setting.value("chatTheme", defaults::chatTheme).toString();
 }
 
 void MySettings::setChatTheme(const QString &u)
@@ -783,7 +787,7 @@ QString MySettings::fontSize() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("fontSize", default_fontSize).toString();
+    return setting.value("fontSize", defaults::fontSize).toString();
 }
 
 void MySettings::setFontSize(const QString &u)
@@ -803,7 +807,7 @@ QString MySettings::device() const
     setting.sync();
     auto value = setting.value("device");
     if (!value.isValid())
-        return default_device;
+        return defaults::device;
 
     auto device = value.toString();
     if (!device.isEmpty()) {
@@ -848,7 +852,7 @@ QString MySettings::lastVersionStarted() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("lastVersionStarted", default_lastVersionStarted).toString();
+    return setting.value("lastVersionStarted", defaults::lastVersionStarted).toString();
 }
 
 void MySettings::setLastVersionStarted(const QString &v)
@@ -866,7 +870,7 @@ int MySettings::localDocsChunkSize() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("localdocs/chunkSize", default_localDocsChunkSize).toInt();
+    return setting.value("localdocs/chunkSize", defaults::localDocsChunkSize).toInt();
 }
 
 void MySettings::setLocalDocsChunkSize(int s)
@@ -884,7 +888,7 @@ int MySettings::localDocsRetrievalSize() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("localdocs/retrievalSize", default_localDocsRetrievalSize).toInt();
+    return setting.value("localdocs/retrievalSize", defaults::localDocsRetrievalSize).toInt();
 }
 
 void MySettings::setLocalDocsRetrievalSize(int s)
@@ -902,7 +906,7 @@ bool MySettings::localDocsShowReferences() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("localdocs/showReferences", default_localDocsShowReferences).toBool();
+    return setting.value("localdocs/showReferences", defaults::localDocsShowReferences).toBool();
 }
 
 void MySettings::setLocalDocsShowReferences(bool b)
@@ -920,7 +924,7 @@ QString MySettings::networkAttribution() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("network/attribution", default_networkAttribution).toString();
+    return setting.value("network/attribution", defaults::networkAttribution).toString();
 }
 
 void MySettings::setNetworkAttribution(const QString &a)
@@ -938,7 +942,7 @@ bool MySettings::networkIsActive() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("network/isActive", default_networkIsActive).toBool();
+    return setting.value("network/isActive", defaults::networkIsActive).toBool();
 }
 
 bool MySettings::isNetworkIsActiveSet() const
@@ -964,7 +968,7 @@ bool MySettings::networkUsageStatsActive() const
 {
     QSettings setting;
     setting.sync();
-    return setting.value("network/usageStatsActive", default_networkUsageStatsActive).toBool();
+    return setting.value("network/usageStatsActive", defaults::networkUsageStatsActive).toBool();
 }
 
 bool MySettings::isNetworkUsageStatsActiveSet() const
