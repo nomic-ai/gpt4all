@@ -1,6 +1,7 @@
 #ifndef CHATLLM_H
 #define CHATLLM_H
 
+#include "database.h" // IWYU pragma: keep
 #include "modellist.h"
 
 #include "../gpt4all-backend/llmodel.h"
@@ -8,6 +9,7 @@
 #include <QByteArray>
 #include <QElapsedTimer>
 #include <QFileInfo>
+#include <QList>
 #include <QObject>
 #include <QPair>
 #include <QString>
@@ -21,8 +23,6 @@
 #include <string>
 
 class QDataStream;
-struct ResultInfo;
-template <typename T> class QList;
 
 enum LLModelType {
     GPTJ_,

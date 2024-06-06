@@ -1,7 +1,6 @@
 #include "database.h"
 
 #include "embeddings.h"
-#include "embllm.h"
 #include "modellist.h"
 #include "mysettings.h"
 #include "network.h"

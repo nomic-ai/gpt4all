@@ -1,7 +1,7 @@
 #ifndef MYSETTINGS_H
 #define MYSETTINGS_H
 
-#include "modellist.h"
+#include "modellist.h" // IWYU pragma: keep
 
 #include <QDateTime>
 #include <QObject>
@@ -9,8 +9,6 @@
 #include <QVector>
 
 #include <cstdint>
-
-struct ModelInfo;
 
 class MySettings : public QObject
 {

@@ -3,6 +3,7 @@
 
 #include "../gpt4all-backend/llmodel.h"
 
+#include <QByteArray>
 #include <QNetworkReply>
 #include <QObject>
 #include <QString>
@@ -16,7 +17,6 @@
 #include <string>
 #include <vector>
 
-class QByteArray;
 class QNetworkAccessManager;
 
 class ChatAPI;

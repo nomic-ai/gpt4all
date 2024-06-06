@@ -11,7 +11,6 @@
 
 #include "../gpt4all-backend/llmodel.h"
 
-#include <QByteArray>
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDebug>
@@ -20,14 +19,11 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QList>
-#include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QScreen>
 #include <QSettings>
 #include <QSize>
 #include <QSslConfiguration>
-#include <QSslError>
 #include <QSslSocket>
 #include <QSysInfo>
 #include <Qt>

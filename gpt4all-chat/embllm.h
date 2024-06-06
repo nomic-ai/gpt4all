@@ -2,7 +2,6 @@
 #define EMBLLM_H
 
 #include <QByteArray>
-#include <QNetworkAccessManager>
 #include <QObject>
 #include <QString>
 #include <QStringList>

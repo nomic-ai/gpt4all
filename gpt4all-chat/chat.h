@@ -3,6 +3,7 @@
 
 #include "chatllm.h"
 #include "chatmodel.h"
+#include "database.h" // IWYU pragma: keep
 #include "localdocsmodel.h" // IWYU pragma: keep
 #include "modellist.h"
 
@@ -13,7 +14,6 @@
 #include <QtGlobal>
 
 class QDataStream;
-struct ResultInfo;
 
 class Chat : public QObject
 {

@@ -1,7 +1,5 @@
 #include "mysettings.h"
 
-#include "modellist.h"
-
 #include "../gpt4all-backend/llmodel.h"
 
 #include <QDebug>
