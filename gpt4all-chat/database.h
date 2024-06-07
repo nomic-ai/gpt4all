@@ -94,7 +94,6 @@ public Q_SLOTS:
     void addFolder(const QString &collection, const QString &path);
     void removeFolder(const QString &collection, const QString &path);
     void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
-    void cleanDB();
     void changeChunkSize(int chunkSize);
 
 Q_SIGNALS:
@@ -143,6 +142,7 @@ private:
     void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
     bool scanQueue(QList<int> &chunksToRemove);
+    bool cleanDB();
 
     CollectionItem guiCollectionItem(int folder_id) const;
     void updateGuiForCollectionItem(const CollectionItem &item);

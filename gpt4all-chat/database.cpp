@@ -1266,6 +1266,7 @@ void Database::start()
         qWarning() << "ERROR: Could not load embeddings";
         m_databaseValid = false;
     } else {
+        cleanDB();
         addCurrentFolders();
     }
 
@@ -1644,7 +1645,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     }
 }
 
-void Database::cleanDB()
+bool Database::cleanDB()
 {
 #if defined(DEBUG)
     qDebug() << "cleanDB";
@@ -1655,7 +1656,7 @@ void Database::cleanDB()
     QList<CollectionItem> collections;
     if (!selectAllFromCollections(q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
-        return;
+        return false;
     }
 
     transaction();
@@ -1668,20 +1669,24 @@ void Database::cleanDB()
 #if defined(DEBUG)
             qDebug() << "clean db removing folder" << i.folder_id << i.folder_path;
 #endif
-            if (!removeFolderInternal(i.collection, i.folder_id, i.folder_path, chunksToRemove))
-                return rollback();
+            if (!removeFolderInternal(i.collection, i.folder_id, i.folder_path, chunksToRemove)) {
+                rollback();
+                return false;
+            }
         }
     }
 
     // Scan all documents in db to make sure they still exist
     if (!q.prepare(SELECT_ALL_DOCUMENTS_SQL)) {
         qWarning() << "ERROR: Cannot prepare sql for select all documents" << q.lastError();
-        return rollback();
+        rollback();
+        return false;
     }
 
     if (!q.exec()) {
         qWarning() << "ERROR: Cannot exec sql for select all documents" << q.lastError();
-        return rollback();
+        rollback();
+        return false;
     }
 
     while (q.next()) {
@@ -1696,19 +1701,21 @@ void Database::cleanDB()
 #endif
 
         // Remove all chunks and documents that either don't exist or have become unreadable
-        if (!getChunksByDocumentId(document_id, chunksToRemove))
-            return rollback();
+        if (!getChunksByDocumentId(document_id, chunksToRemove)) {
+            rollback();
+            return false;
+        }
         QSqlQuery query(m_db);
         if (!removeChunksByDocumentId(query, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << query.lastError();
             rollback();
-            return;
+            return false;
         }
 
         if (!removeDocument(query, document_id)) {
             qWarning() << "ERROR: Cannot remove document_id" << document_id << query.lastError();
             rollback();
-            return;
+            return false;
         }
     }
 
@@ -1719,7 +1726,7 @@ void Database::cleanDB()
     if (!chunksToRemove.isEmpty())
         m_embeddings->save();
 
-    updateCollectionStatistics();
+    return true;
 }
 
 void Database::changeChunkSize(int chunkSize)
@@ -1800,7 +1807,8 @@ void Database::directoryChanged(const QString &path)
     }
 
     // Clean the database
-    cleanDB();
+    if (cleanDB())
+        updateCollectionStatistics();
 
     // Rescan the documents associated with the folder
     scanDocuments(folder_id, path);
