@@ -371,6 +371,20 @@ function(include_ggml SUFFIX)
         find_package(CUDAToolkit REQUIRED)
         set(CUDAToolkit_BIN_DIR ${CUDAToolkit_BIN_DIR} PARENT_SCOPE)
 
+        if (NOT DEFINED GGML_CUDA_ARCHITECTURES)
+            # 52 == lowest CUDA 12 standard
+            # 60 == f16 CUDA intrinsics
+            # 61 == integer CUDA intrinsics
+            # 70 == compute capability at which unrolling a loop in mul_mat_q kernels is faster
+            if (LLAMA_CUDA_F16 OR LLAMA_CUDA_DMMV_F16)
+                set(GGML_CUDA_ARCHITECTURES "60;61;70") # needed for f16 CUDA intrinsics
+            else()
+                set(GGML_CUDA_ARCHITECTURES "52;61;70") # lowest CUDA 12 standard + lowest for integer intrinsics
+                #set(GGML_CUDA_ARCHITECTURES "OFF") # use this to compile much faster, but only F16 models work
+            endif()
+        endif()
+        message(STATUS "Using CUDA architectures: ${GGML_CUDA_ARCHITECTURES}")
+
         set(GGML_HEADERS_CUDA ${DIRECTORY}/ggml-cuda.h)
 
         file(GLOB GGML_SOURCES_CUDA "${DIRECTORY}/ggml-cuda/*.cu")
@@ -406,22 +420,6 @@ function(include_ggml SUFFIX)
         endif()
 
         set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cuda_driver)
-
-        if (DEFINED CMAKE_CUDA_ARCHITECTURES)
-            set(GGML_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
-        else()
-            # 52 == lowest CUDA 12 standard
-            # 60 == f16 CUDA intrinsics
-            # 61 == integer CUDA intrinsics
-            # 70 == compute capability at which unrolling a loop in mul_mat_q kernels is faster
-            if (LLAMA_CUDA_F16 OR LLAMA_CUDA_DMMV_F16)
-                set(GGML_CUDA_ARCHITECTURES "60;61;70") # needed for f16 CUDA intrinsics
-            else()
-                set(GGML_CUDA_ARCHITECTURES "52;61;70") # lowest CUDA 12 standard + lowest for integer intrinsics
-                #set(GGML_CUDA_ARCHITECTURES "") # use this to compile much faster, but only F16 models work
-            endif()
-        endif()
-        message(STATUS "Using CUDA architectures: ${GGML_CUDA_ARCHITECTURES}")
     endif()
 
     if (LLAMA_CLBLAST)
