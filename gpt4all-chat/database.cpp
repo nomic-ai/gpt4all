@@ -1221,7 +1221,8 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     // FIXME_BLOCKER: This should be configurable
     static const QList<QString> extensions { "txt", "pdf", "md", "rst" };
 
-    QDirIterator it(folder_path, QDir::Readable | QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(folder_path, QDir::Readable | QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
     QVector<DocumentInfo> infos;
     while (it.hasNext()) {
         it.next();
@@ -1576,20 +1577,26 @@ bool Database::removeFolderInternal(const QString &collection, int folder_id, co
     return true;
 }
 
-bool Database::addFolderToWatch(const QString &path)
+void Database::addFolderToWatch(const QString &path)
 {
 #if defined(DEBUG)
     qDebug() << "addFolderToWatch" << path;
 #endif
-    return m_watcher->addPath(path);
+    if (!m_watcher->addPath(path))
+        qWarning() << "Database::addFolderToWatch: failed to watch" << path;
 }
 
-bool Database::removeFolderFromWatch(const QString &path)
+void Database::removeFolderFromWatch(const QString &path)
 {
 #if defined(DEBUG)
     qDebug() << "removeFolderFromWatch" << path;
 #endif
-    return m_watcher->removePath(path);
+    QDirIterator it(path, QDir::Readable | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    QStringList children { path };
+    while (it.hasNext())
+        children.append(it.next());
+
+    m_watcher->removePaths(children);
 }
 
 void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize,
@@ -1791,21 +1798,26 @@ void Database::directoryChanged(const QString &path)
     qDebug() << "directoryChanged" << path;
 #endif
 
-    QSqlQuery q(m_db);
+    // search for a collection that contains this folder (we watch subdirectories)
     int folder_id = -1;
+    QDir dir(path);
+    for (;;) {
+        QSqlQuery q(m_db);
+        if (!selectFolder(q, dir.path(), &folder_id)) {
+            qWarning() << "ERROR: Cannot select folder from path" << dir.path() << q.lastError();
+            return;
+        }
+        if (folder_id != -1)
+            break;
 
-    // Lookup the folder_id in the db
-    if (!selectFolder(q, path, &folder_id)) {
-        qWarning() << "ERROR: Cannot select folder from path" << path << q.lastError();
-        return;
-    }
-
-    // If we don't have a folder_id in the db, then something bad has happened
-    Q_ASSERT(folder_id != -1);
-    if (folder_id == -1) {
-        qWarning() << "ERROR: Watched folder does not exist in db" << path;
-        m_watcher->removePath(path);
-        return;
+        // check next parent
+        if (!dir.cdUp()) {
+            if (!dir.isRoot()) break; // folder removed
+            Q_ASSERT(false);
+            qWarning() << "ERROR: Watched folder does not exist in db" << path;
+            m_watcher->removePath(path);
+            return;
+        }
     }
 
     // Clean the database
@@ -1813,5 +1825,6 @@ void Database::directoryChanged(const QString &path)
         updateCollectionStatistics();
 
     // Rescan the documents associated with the folder
-    scanDocuments(folder_id, path);
+    if (folder_id != -1)
+        scanDocuments(folder_id, path);
 }

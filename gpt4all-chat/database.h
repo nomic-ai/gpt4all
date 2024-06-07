@@ -106,8 +106,6 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void directoryChanged(const QString &path);
-    bool addFolderToWatch(const QString &path);
-    bool removeFolderFromWatch(const QString &path);
     void addCurrentFolders();
     void handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
     void handleErrorGenerated(int folder_id, const QString &error);
@@ -143,6 +141,8 @@ private:
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
     bool scanQueue(QList<int> &chunksToRemove);
     bool cleanDB();
+    void addFolderToWatch(const QString &path);
+    void removeFolderFromWatch(const QString &path);
 
     CollectionItem guiCollectionItem(int folder_id) const;
     void updateGuiForCollectionItem(const CollectionItem &item);
