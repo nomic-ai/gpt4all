@@ -968,6 +968,7 @@ void Database::start()
     if (m_embeddings->fileExists() && !m_embeddings->load())
         qWarning() << "ERROR: Could not load embeddings";
 
+    cleanDB();
     int nAdded = addCurrentFolders();
     Network::globalInstance()->trackEvent("localdocs_startup", { {"doc_collections_total", nAdded} });
 }
