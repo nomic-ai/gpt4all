@@ -1221,9 +1221,6 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     // FIXME_BLOCKER: This should be configurable
     static const QList<QString> extensions { "txt", "pdf", "md", "rst" };
 
-    QDir dir(folder_path);
-    Q_ASSERT(dir.exists());
-    Q_ASSERT(dir.isReadable());
     QDirIterator it(folder_path, QDir::Readable | QDir::Files, QDirIterator::Subdirectories);
     QVector<DocumentInfo> infos;
     while (it.hasNext()) {
