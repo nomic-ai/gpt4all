@@ -125,7 +125,8 @@ private:
     bool initDb(const QString &modelPath, const QList<CollectionItem> &oldCollections);
     int checkAndAddFolderToDB(const QString &path);
     bool addForcedCollection(const CollectionItem &collection);
-    void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
+    bool removeFolderInternal(const QString &collection, int folder_id, const QString &path,
+                              QList<int> &chunksToRemove);
     size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
         const QString &title, const QString &author, const QString &subject, const QString &keywords, int page,
         int maxChunks = -1);
