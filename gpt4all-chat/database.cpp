@@ -1292,7 +1292,8 @@ void Database::addCurrentFolders()
     for (const auto &i : collections) {
         if (!i.forceIndexing) {
             scheduleUncompletedEmbeddings(i.folder_id);
-            addFolder(i.collection, i.folder_path);
+            addFolderToWatch(i.folder_path);
+            scanDocuments(i.folder_id, i.folder_path);
         }
     }
 
@@ -1428,7 +1429,8 @@ void Database::forceIndexing(const QString &collection)
         CollectionItem item = guiCollectionItem(folder.first);
         item.forceIndexing = false;
         updateGuiForCollectionItem(item);
-        addFolder(collection, folder.second);
+        addFolderToWatch(folder.second);
+        scanDocuments(folder.first, folder.second);
     }
 }
 
