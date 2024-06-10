@@ -145,13 +145,12 @@ Rectangle {
 
                         Rectangle {
                             color: "transparent"
-                            width: 100
+                            width: 82
                             height: 100
                             Image {
                                 id: changelogImg
                                 anchors.centerIn: parent
-                                sourceSize.width: 64
-                                sourceSize.height: 64
+                                sourceSize: Qt.size(40, 40)
                                 mipmap: true
                                 visible: false
                                 source: "qrc:/gpt4all/icons/changelog.svg"
@@ -173,7 +172,7 @@ Rectangle {
 
                             TextArea {
                                 id: textArea
-                                padding: 30
+                                padding: 10
                                 color: theme.changeLogColor
                                 font.pixelSize: theme.fontSizeLarge
                                 textFormat: TextEdit.MarkdownText
@@ -210,15 +209,15 @@ Rectangle {
             border.color: theme.dividerColor
             radius: 6
             z: 200
-            height: 50
+            height: 30
             color: theme.conversationBackground
 
             RowLayout {
                 anchors.fill: parent
                 spacing: 0
                 RowLayout {
-                    Layout.alignment: Qt.AlignLeft
-                    spacing: 40
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                    spacing: 4
 
                     MyFancyLink {
                         text: qsTr("Changelog")
@@ -246,13 +245,14 @@ Rectangle {
                 }
 
                 RowLayout {
-                    Layout.alignment: Qt.AlignRight
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                     spacing: 40
 
                     MyFancyLink {
                         text: qsTr("GPT4All.io")
                         imageSource: "qrc:/gpt4all/icons/globe.svg"
                         onClicked: { Qt.openUrlExternally("https://gpt4all.io") }
+                        rightPadding: 15
                     }
                 }
             }

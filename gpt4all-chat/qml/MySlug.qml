@@ -8,7 +8,7 @@ Label {
     padding: 3
     rightPadding: 9
     leftPadding: 9
-    font.pixelSize: theme.fontSizeFixedSmall
+    font.pixelSize: theme.fontSizeSmall
     background: Rectangle {
         radius: 6
         border.width: 1

@@ -13,9 +13,8 @@ MyButton {
         id: myimage
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
-        anchors.leftMargin: 15
-        sourceSize.width: 24
-        sourceSize.height: 24
+        anchors.leftMargin: 12
+        sourceSize: Qt.size(15, 15)
         mipmap: true
         visible: false
     }
@@ -26,14 +25,14 @@ MyButton {
         color: fancyLink.hovered ? theme.fancyLinkTextHovered : theme.fancyLinkText
     }
 
-    leftPadding: 50
     borderWidth: 0
     backgroundColor: "transparent"
     backgroundColorHovered: "transparent"
     fontPixelBold: true
-    padding: 15
-    topPadding: 8
-    bottomPadding: 8
+    leftPadding: 35
+    rightPadding: 8
+    topPadding: 1
+    bottomPadding: 1
     textColor: fancyLink.hovered ? theme.fancyLinkTextHovered : theme.fancyLinkText
     fontPixelSize: theme.fontSizeSmall
     background: Rectangle {
