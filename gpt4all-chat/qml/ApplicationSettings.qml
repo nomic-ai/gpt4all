@@ -266,22 +266,14 @@ MySettingsTab {
             Layout.row: 8
             Layout.column: 0
         }
-        MyComboBox {
+        MyCheckBox {
             id: saveChatsContextBox
             Layout.row: 8
             Layout.column: 2
-            Layout.minimumWidth: 200
-            Layout.maximumWidth: 200
             Layout.alignment: Qt.AlignRight
-            model: [qsTr("Yes"), qsTr("No")]
-            function updateModel() {
-                saveChatsContextBox.currentIndex = !MySettings.saveChatsContext;
-            }
-            Component.onCompleted: {
-                saveChatsContextBox.updateModel()
-            }
-            onActivated: {
-                MySettings.saveChatsContext = (saveChatsContextBox.currentIndex === 0)
+            checked: MySettings.saveChatsContext
+            onClicked: {
+                MySettings.saveChatsContext = !MySettings.saveChatsContext
             }
             ToolTip.text: qsTr("WARNING: Saving chats to disk can be ~2GB per chat")
             ToolTip.visible: hovered
@@ -293,22 +285,14 @@ MySettingsTab {
             Layout.row: 9
             Layout.column: 0
         }
-        MyComboBox {
+        MyCheckBox {
             id: serverChatBox
             Layout.row: 9
             Layout.column: 2
-            Layout.minimumWidth: 200
-            Layout.maximumWidth: 200
             Layout.alignment: Qt.AlignRight
-            model: [qsTr("Yes"), qsTr("No")]
-            function updateModel() {
-                serverChatBox.currentIndex = !MySettings.serverChat;
-            }
-            Component.onCompleted: {
-                serverChatBox.updateModel()
-            }
-            onActivated: {
-                MySettings.serverChat = (serverChatBox.currentIndex === 0)
+            checked: MySettings.serverChat
+            onClicked: {
+                MySettings.serverChat = !MySettings.serverChat
             }
             ToolTip.text: qsTr("WARNING: This enables the gui to act as a local REST web server(OpenAI API compliant) for API requests and will increase your RAM usage as well")
             ToolTip.visible: hovered
@@ -354,22 +338,14 @@ MySettingsTab {
             Layout.row: 11
             Layout.column: 0
         }
-        MyComboBox {
+        MyCheckBox {
             id: gpuOverrideBox
             Layout.row: 11
             Layout.column: 2
-            Layout.minimumWidth: 200
-            Layout.maximumWidth: 200
             Layout.alignment: Qt.AlignRight
-            model: [qsTr("Yes"), qsTr("No")]
-            function updateModel() {
-                gpuOverrideBox.currentIndex = !MySettings.forceMetal;
-            }
-            Component.onCompleted: {
-                gpuOverrideBox.updateModel()
-            }
-            onActivated: {
-                MySettings.forceMetal = (gpuOverrideBox.currentIndex === 0)
+            checked: MySettings.forceMetal
+            onClicked: {
+                MySettings.forceMetal = !MySettings.forceMetal
             }
             ToolTip.text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibility the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
             ToolTip.visible: hovered
