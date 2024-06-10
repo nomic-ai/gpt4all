@@ -718,24 +718,19 @@ QtObject {
         }
     }
 
-    property real fontSizeFixedSmall: 16
-    property real fontSize: Qt.application.font.pixelSize
+    property real fontSizeLargeCapped: MySettings.fontSize === "Small"  ? 12 : 17
 
-    property real fontSizeSmaller: fontSizeLarge - 4
-    property real fontSizeSmall: fontSizeLarge - 2
-    property real  fontSizeLarge: MySettings.fontSize === "Small" ?
-        fontSize : MySettings.fontSize === "Medium" ?
-            fontSize + 5 : fontSize + 10
-    property real  fontSizeLarger: MySettings.fontSize === "Small" ?
-        fontSize + 2 : MySettings.fontSize === "Medium" ?
-            fontSize + 7 : fontSize + 12
-    property real  fontSizeLargest: MySettings.fontSize === "Small" ?
-        fontSize + 7 : MySettings.fontSize === "Medium" ?
-            fontSize + 12 : fontSize + 14
-    property real  fontSizeBannerSmall: MySettings.fontSize === "Small" ?
-        fontSize + 17 : MySettings.fontSize === "Medium" ?
-            fontSize + 22 : fontSize + 24
-    property real  fontSizeBanner: MySettings.fontSize === "Small" ?
-        fontSize + 47 : MySettings.fontSize === "Medium" ?
-            fontSize + 52 : fontSize + 54
+    property real fontSizeLarge:       MySettings.fontSize === "Small"  ? 12 :
+                                       MySettings.fontSize === "Medium" ? 17 :
+                                                                          22
+
+    property real fontSizeLargest:     MySettings.fontSize === "Small"  ? 19 :
+                                       MySettings.fontSize === "Medium" ? 24 :
+                                                                          26
+
+    property real fontSizeSmaller:     fontSizeLarge   -  4
+    property real fontSizeSmall:       fontSizeLarge   -  2
+    property real fontSizeLarger:      fontSizeLarge   +  2
+    property real fontSizeBannerSmall: fontSizeLargest + 10
+    property real fontSizeBanner:      fontSizeLargest + 40
 }
