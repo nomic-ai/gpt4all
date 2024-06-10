@@ -24,7 +24,7 @@
 
 #define EMBEDDINGS_VERSION 0
 
-// FIXME!!!!! We can't hardcode like this for different embedding models
+// FIXME_BLOCKER !!!!! We can't hardcode like this for different embedding models
 
 const int s_dim = 384;              // Dimension of the elements
 const int s_ef_construction = 200;  // Controls index search speed/build speed tradeoff
