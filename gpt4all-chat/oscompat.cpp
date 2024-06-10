@@ -12,10 +12,8 @@
 #   include <windows.h>
 #   include <errno.h>
 #else
-#   include <fcntl.h> // for open, fcntl
-#   ifndef Q_OS_DARWIN
-#       include <unistd.h> // for fsync, fdatasync
-#   endif
+#   include <fcntl.h>
+#   include <unistd.h>
 #endif
 
 bool gpt4all_fsync(int fd) {
