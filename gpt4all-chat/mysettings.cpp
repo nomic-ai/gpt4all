@@ -35,17 +35,17 @@ static const QString device                  = "Auto";
 } // namespace defaults
 
 static const QVariantMap basicDefaults {
+    { "chatTheme",                "Dark" },
+    { "fontSize",                 "Small" },
+    { "lastVersionStarted",       "" },
+    { "networkPort",              4891, },
     { "saveChatsContext",         false },
     { "serverChat",               false },
     { "userDefaultModel",         "Application default" },
-    { "lastVersionStarted",       "" },
-    { "localDocs/chunkSize",      256 },
-    { "chatTheme",                "Dark" },
-    { "fontSize",                 "Small" },
-    { "localDocs/retrievalSize",  3 },
-    { "localDocs/showReferences", true },
+    { "localdocs/chunkSize",      256 },
+    { "localdocs/retrievalSize",  3 },
+    { "localdocs/showReferences", true },
     { "network/attribution",      "" },
-    { "networkPort",              4891, },
 };
 
 static QString defaultLocalModelsPath()
