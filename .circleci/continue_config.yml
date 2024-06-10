@@ -1,8 +1,8 @@
 version: 2.1
 orbs:
-  win: circleci/windows@5.0
-  python: circleci/python@1.2
-  node: circleci/node@5.1
+  win: circleci/windows@5.0.0
+  python: circleci/python@2.1.1
+  node: circleci/node@5.2.0
 
 parameters:
   run-all-workflows:
@@ -27,7 +27,7 @@ parameters:
 jobs:
   default-job:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.11
     steps:
       - run: echo "CircleCI pipeline triggered"
   build-offline-chat-installer-macos:
@@ -81,7 +81,7 @@ jobs:
           path: build/upload
   build-offline-chat-installer-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:2024.04.4
     steps:
       - checkout
       - run:
@@ -210,7 +210,7 @@ jobs:
           path: build/upload
   build-gpt4all-chat-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:2024.04.4
     steps:
       - checkout
       - run:
@@ -399,12 +399,12 @@ jobs:
 
   build-py-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:2024.04.4
     steps:
       - checkout
       - run:
           name: Set Python Version
-          command: pyenv global 3.11.2
+          command: pyenv global 3.11.9
       - run:
           name: Install dependencies
           command: |
@@ -554,7 +554,7 @@ jobs:
 
   build-bindings-backend-linux:
     machine:
-      image: ubuntu-2204:2023.04.2
+      image: ubuntu-2204:2024.04.4
     steps:
       - checkout
       - run:
