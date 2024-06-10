@@ -23,7 +23,7 @@ Rectangle {
     signal chatViewRequested()
     signal localDocsViewRequested()
     signal settingsViewRequested(int page)
-    signal downloadViewRequested(bool showEmbeddingModels)
+    signal addModelViewRequested()
     property bool shouldShowFirstStart: false
 
     ColumnLayout {
@@ -105,7 +105,7 @@ Rectangle {
                     description: qsTr("Explore and download models")
                     imageSource: "qrc:/gpt4all/icons/models.svg"
                     onClicked: {
-                        downloadViewRequested(false /*show embedding models*/)
+                        addModelViewRequested()
                     }
                 }
             }

@@ -61,7 +61,6 @@ Window {
         }
     }
 
-    property bool hasShownModelDownload: false
     property bool hasCheckedFirstStart: false
     property bool hasShownSettingsAccess: false
 
@@ -92,13 +91,6 @@ Window {
             LocalDocs.requestStart()
 
             hasCheckedFirstStart = true
-        }
-
-        // check for any current models and if not, open download view once
-        if (!hasShownModelDownload && ModelList.installedModels.count === 0 && !firstStartDialog.opened) {
-            downloadViewRequested();
-            hasShownModelDownload = true;
-            return;
         }
 
         // check for new version
@@ -330,21 +322,21 @@ Window {
             }
 
             MyToolButton {
-                id: searchButton
+                id: modelsButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
                 Layout.preferredWidth: 70
                 Layout.preferredHeight: 70
                 toggledWidth: 0
-                toggled: downloadView.isShown()
+                toggled: modelsView.isShown()
                 toggledColor: theme.iconBackgroundViewBarToggled
                 imageWidth: 50
                 imageHeight: 50
                 source: "qrc:/gpt4all/icons/models.svg"
-                Accessible.name: qsTr("Search")
-                Accessible.description: qsTr("Models view to explore and download models")
+                Accessible.name: qsTr("Models")
+                Accessible.description: qsTr("Models view for installed models")
                 onClicked: {
-                    downloadView.show()
+                    modelsView.show()
                 }
             }
 
@@ -353,12 +345,12 @@ Window {
                 text: qsTr("Models")
                 font.pixelSize: theme.fontSizeFixedSmall
                 font.bold: true
-                color: searchButton.hovered ? searchButton.backgroundColorHovered : searchButton.backgroundColor
+                color: modelsButton.hovered ? modelsButton.backgroundColorHovered : modelsButton.backgroundColor
                 Layout.preferredWidth: 70
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
-                        downloadView.show()
+                        modelsView.show()
                     }
                 }
             }
@@ -540,8 +532,8 @@ Window {
                 function onLocalDocsViewRequested() {
                     localDocsView.show();
                 }
-                function onDownloadViewRequested(showEmbeddingModels) {
-                    downloadView.show(showEmbeddingModels);
+                function onAddModelViewRequested() {
+                    addModelView.show();
                 }
                 function onSettingsViewRequested(page) {
                     settingsView.show(page);
@@ -564,25 +556,22 @@ Window {
 
             Connections {
                 target: chatView
-                function onDownloadViewRequested(showEmbeddingModels) {
-                    downloadView.show(showEmbeddingModels);
-                }
                 function onSettingsViewRequested(page) {
                     settingsView.show(page);
                 }
             }
         }
 
-        ModelDownloaderView {
-            id: downloadView
+        ModelsView {
+            id: modelsView
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            function show(showEmbeddingModels) {
+            function show() {
                 stackLayout.currentIndex = 2;
+                // FIXME_BLOCKER This should be removed and we should be changing the names of the
+                // classes here in ModelList for the proxy/filter models
                 ModelList.downloadableModels.expanded = true
-                if (showEmbeddingModels)
-                    downloadView.showEmbeddingModels();
             }
 
             function isShown() {
@@ -590,12 +579,12 @@ Window {
             }
 
             Item {
-                Accessible.name: qsTr("Download new models")
-                Accessible.description: qsTr("View for downloading new models")
+                Accessible.name: qsTr("Installed models")
+                Accessible.description: qsTr("View of installed models")
             }
 
             Connections {
-                target: downloadView
+                target: modelsView
                 function onAddModelViewRequested() {
                     addModelView.show();
                 }
@@ -636,10 +625,6 @@ Window {
             function isShown() {
                 return stackLayout.currentIndex === 4
             }
-
-            onDownloadClicked: {
-                downloadView.show(true /*showEmbeddingModels*/)
-            }
         }
 
         AddCollectionView {
@@ -676,8 +661,8 @@ Window {
 
             Connections {
                 target: addModelView
-                function onModelViewRequested() {
-                    downloadView.show();
+                function onModelsViewRequested() {
+                    modelsView.show();
                 }
             }
         }

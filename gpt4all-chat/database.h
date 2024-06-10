@@ -94,7 +94,6 @@ public Q_SLOTS:
     void addFolder(const QString &collection, const QString &path);
     void removeFolder(const QString &collection, const QString &path);
     void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
-    void cleanDB();
     void changeChunkSize(int chunkSize);
 
 Q_SIGNALS:
@@ -107,8 +106,6 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void directoryChanged(const QString &path);
-    bool addFolderToWatch(const QString &path);
-    bool removeFolderFromWatch(const QString &path);
     void addCurrentFolders();
     void handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
     void handleErrorGenerated(int folder_id, const QString &error);
@@ -125,7 +122,8 @@ private:
     bool initDb(const QString &modelPath, const QList<CollectionItem> &oldCollections);
     int checkAndAddFolderToDB(const QString &path);
     bool addForcedCollection(const CollectionItem &collection);
-    void removeFolderInternal(const QString &collection, int folder_id, const QString &path);
+    bool removeFolderInternal(const QString &collection, int folder_id, const QString &path,
+                              QList<int> &chunksToRemove);
     size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
         const QString &title, const QString &author, const QString &subject, const QString &keywords, int page,
         int maxChunks = -1);
@@ -142,6 +140,9 @@ private:
     void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
     bool scanQueue(QList<int> &chunksToRemove);
+    bool cleanDB();
+    void addFolderToWatch(const QString &path);
+    void removeFolderFromWatch(const QString &path);
 
     CollectionItem guiCollectionItem(int folder_id) const;
     void updateGuiForCollectionItem(const CollectionItem &item);

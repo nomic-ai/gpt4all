@@ -23,7 +23,7 @@ Rectangle {
     }
 
     color: theme.viewBackground
-    signal modelViewRequested()
+    signal modelsViewRequested()
 
     ColumnLayout {
         id: mainArea
@@ -61,7 +61,7 @@ Rectangle {
                 }
 
                 onClicked: {
-                    modelViewRequested()
+                    modelsViewRequested()
                 }
             }
         }

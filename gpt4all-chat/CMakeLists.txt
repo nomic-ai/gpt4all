@@ -119,7 +119,7 @@ qt_add_qml_module(chat
       qml/ChatView.qml
       qml/CollectionsDialog.qml
       qml/HomeView.qml
-      qml/ModelDownloaderView.qml
+      qml/ModelsView.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
       qml/ThumbsDownDialog.qml

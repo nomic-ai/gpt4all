@@ -24,7 +24,6 @@ Rectangle {
     signal chatViewRequested()
     signal localDocsViewRequested()
     signal settingsViewRequested(int page)
-    signal downloadViewRequested(bool showEmbeddingModels)
     signal addCollectionViewRequested()
 
     ColumnLayout {

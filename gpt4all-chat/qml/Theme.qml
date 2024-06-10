@@ -5,6 +5,9 @@ import mysettings
 
 QtObject {
 
+    // FIXME_BLOCKER Need full support dark mode
+    // FIXME_BLCOKER Need full support for legacy dark mode
+
     // black and white
     property color black: Qt.hsla(231/360, 0.15, 0.19)
     property color white: Qt.hsla(0, 0, 1)

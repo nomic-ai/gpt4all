@@ -1221,10 +1221,8 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     // FIXME_BLOCKER: This should be configurable
     static const QList<QString> extensions { "txt", "pdf", "md", "rst" };
 
-    QDir dir(folder_path);
-    Q_ASSERT(dir.exists());
-    Q_ASSERT(dir.isReadable());
-    QDirIterator it(folder_path, QDir::Readable | QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(folder_path, QDir::Readable | QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
     QVector<DocumentInfo> infos;
     while (it.hasNext()) {
         it.next();
@@ -1269,6 +1267,7 @@ void Database::start()
         qWarning() << "ERROR: Could not load embeddings";
         m_databaseValid = false;
     } else {
+        cleanDB();
         addCurrentFolders();
     }
 
@@ -1294,7 +1293,8 @@ void Database::addCurrentFolders()
     for (const auto &i : collections) {
         if (!i.forceIndexing) {
             scheduleUncompletedEmbeddings(i.folder_id);
-            addFolder(i.collection, i.folder_path);
+            addFolderToWatch(i.folder_path);
+            scanDocuments(i.folder_id, i.folder_path);
         }
     }
 
@@ -1430,7 +1430,8 @@ void Database::forceIndexing(const QString &collection)
         CollectionItem item = guiCollectionItem(folder.first);
         item.forceIndexing = false;
         updateGuiForCollectionItem(item);
-        addFolder(collection, folder.second);
+        addFolderToWatch(folder.second);
+        scanDocuments(folder.first, folder.second);
     }
 }
 
@@ -1504,30 +1505,42 @@ void Database::removeFolder(const QString &collection, const QString &path)
         return;
     }
 
-    removeFolderInternal(collection, folder_id, path);
+    transaction();
+
+    QList<int> chunksToRemove;
+    if (removeFolderInternal(collection, folder_id, path, chunksToRemove)) {
+        // failure is no longer an option, apply everything at once and hope this is effectively atomic
+        // TODO(jared): check the embeddings file for stale entries on startup
+        for (const auto &chunk: chunksToRemove)
+            m_embeddings->remove(chunk);
+        commit();
+        if (!chunksToRemove.isEmpty())
+            m_embeddings->save();
+    } else {
+        rollback();
+    }
 }
 
-void Database::removeFolderInternal(const QString &collection, int folder_id, const QString &path)
+bool Database::removeFolderInternal(const QString &collection, int folder_id, const QString &path,
+                                    QList<int> &chunksToRemove)
 {
     // Determine if the folder is used by more than one collection
     QSqlQuery q(m_db);
     QList<QString> collections;
     if (!selectCollectionsFromFolder(q, folder_id, &collections)) {
         qWarning() << "ERROR: Cannot select collections from folder" << folder_id << q.lastError();
-        return;
+        return false;
     }
-
-    transaction();
 
     // Remove it from the collections
     if (!removeCollection(q, collection, folder_id)) {
         qWarning() << "ERROR: Cannot remove collection" << collection << folder_id << q.lastError();
-        return rollback();
+        return false;
     }
 
     // If the folder is associated with more than one collection, then return
     if (collections.count() > 1)
-        return commit();
+        return true;
 
     // First remove all upcoming jobs associated with this folder
     removeFolderFromDocumentQueue(folder_id);
@@ -1536,56 +1549,54 @@ void Database::removeFolderInternal(const QString &collection, int folder_id, co
     QList<int> documentIds;
     if (!selectDocuments(q, folder_id, &documentIds)) {
         qWarning() << "ERROR: Cannot select documents" << folder_id << q.lastError();
-        return rollback();
+        return false;
     }
 
     // Remove all chunks and documents associated with this folder
-    QList<int> chunksToRemove;
     for (int document_id : documentIds) {
         if (!getChunksByDocumentId(document_id, chunksToRemove))
-            return rollback();
+            return false;
         if (!removeChunksByDocumentId(q, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << q.lastError();
-            return rollback();
+            return false;
         }
 
         if (!removeDocument(q, document_id)) {
             qWarning() << "ERROR: Cannot remove document_id" << document_id << q.lastError();
-            return rollback();
+            return false;
         }
     }
 
     if (!removeFolderFromDB(q, folder_id)) {
         qWarning() << "ERROR: Cannot remove folder_id" << folder_id << q.lastError();
-        return rollback();
+        return false;
     }
-
-    // failure is no longer an option, apply everything at once and hope this is effectively atomic
-    // TODO(jared): check the embeddings file for stale entries on startup
-    for (const auto &chunk: chunksToRemove)
-        m_embeddings->remove(chunk);
-    commit();
-    if (!chunksToRemove.isEmpty())
-        m_embeddings->save();
 
     removeGuiFolderById(folder_id);
     removeFolderFromWatch(path);
+    return true;
 }
 
-bool Database::addFolderToWatch(const QString &path)
+void Database::addFolderToWatch(const QString &path)
 {
 #if defined(DEBUG)
     qDebug() << "addFolderToWatch" << path;
 #endif
-    return m_watcher->addPath(path);
+    if (!m_watcher->addPath(path))
+        qWarning() << "Database::addFolderToWatch: failed to watch" << path;
 }
 
-bool Database::removeFolderFromWatch(const QString &path)
+void Database::removeFolderFromWatch(const QString &path)
 {
 #if defined(DEBUG)
     qDebug() << "removeFolderFromWatch" << path;
 #endif
-    return m_watcher->removePath(path);
+    QDirIterator it(path, QDir::Readable | QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    QStringList children { path };
+    while (it.hasNext())
+        children.append(it.next());
+
+    m_watcher->removePaths(children);
 }
 
 void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize,
@@ -1643,7 +1654,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     }
 }
 
-void Database::cleanDB()
+bool Database::cleanDB()
 {
 #if defined(DEBUG)
     qDebug() << "cleanDB";
@@ -1654,9 +1665,12 @@ void Database::cleanDB()
     QList<CollectionItem> collections;
     if (!selectAllFromCollections(q, &collections)) {
         qWarning() << "ERROR: Cannot select collections" << q.lastError();
-        return;
+        return false;
     }
 
+    transaction();
+
+    QList<int> chunksToRemove;
     for (const auto &i : collections) {
         // Find the path for the folder
         QFileInfo info(i.folder_path);
@@ -1664,24 +1678,26 @@ void Database::cleanDB()
 #if defined(DEBUG)
             qDebug() << "clean db removing folder" << i.folder_id << i.folder_path;
 #endif
-            removeFolderInternal(i.collection, i.folder_id, i.folder_path);
+            if (!removeFolderInternal(i.collection, i.folder_id, i.folder_path, chunksToRemove)) {
+                rollback();
+                return false;
+            }
         }
     }
 
     // Scan all documents in db to make sure they still exist
     if (!q.prepare(SELECT_ALL_DOCUMENTS_SQL)) {
         qWarning() << "ERROR: Cannot prepare sql for select all documents" << q.lastError();
-        return;
+        rollback();
+        return false;
     }
 
     if (!q.exec()) {
         qWarning() << "ERROR: Cannot exec sql for select all documents" << q.lastError();
-        return;
+        rollback();
+        return false;
     }
 
-    transaction();
-
-    QList<int> chunksToRemove;
     while (q.next()) {
         int document_id = q.value(0).toInt();
         QString document_path = q.value(1).toString();
@@ -1694,19 +1710,21 @@ void Database::cleanDB()
 #endif
 
         // Remove all chunks and documents that either don't exist or have become unreadable
-        if (!getChunksByDocumentId(document_id, chunksToRemove))
-            return rollback();
+        if (!getChunksByDocumentId(document_id, chunksToRemove)) {
+            rollback();
+            return false;
+        }
         QSqlQuery query(m_db);
         if (!removeChunksByDocumentId(query, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << query.lastError();
             rollback();
-            return updateCollectionStatistics();
+            return false;
         }
 
         if (!removeDocument(query, document_id)) {
             qWarning() << "ERROR: Cannot remove document_id" << document_id << query.lastError();
             rollback();
-            return updateCollectionStatistics();
+            return false;
         }
     }
 
@@ -1717,7 +1735,7 @@ void Database::cleanDB()
     if (!chunksToRemove.isEmpty())
         m_embeddings->save();
 
-    updateCollectionStatistics();
+    return true;
 }
 
 void Database::changeChunkSize(int chunkSize)
@@ -1780,26 +1798,33 @@ void Database::directoryChanged(const QString &path)
     qDebug() << "directoryChanged" << path;
 #endif
 
-    QSqlQuery q(m_db);
+    // search for a collection that contains this folder (we watch subdirectories)
     int folder_id = -1;
+    QDir dir(path);
+    for (;;) {
+        QSqlQuery q(m_db);
+        if (!selectFolder(q, dir.path(), &folder_id)) {
+            qWarning() << "ERROR: Cannot select folder from path" << dir.path() << q.lastError();
+            return;
+        }
+        if (folder_id != -1)
+            break;
 
-    // Lookup the folder_id in the db
-    if (!selectFolder(q, path, &folder_id)) {
-        qWarning() << "ERROR: Cannot select folder from path" << path << q.lastError();
-        return;
-    }
-
-    // If we don't have a folder_id in the db, then something bad has happened
-    Q_ASSERT(folder_id != -1);
-    if (folder_id == -1) {
-        qWarning() << "ERROR: Watched folder does not exist in db" << path;
-        m_watcher->removePath(path);
-        return;
+        // check next parent
+        if (!dir.cdUp()) {
+            if (!dir.isRoot()) break; // folder removed
+            Q_ASSERT(false);
+            qWarning() << "ERROR: Watched folder does not exist in db" << path;
+            m_watcher->removePath(path);
+            return;
+        }
     }
 
     // Clean the database
-    cleanDB();
+    if (cleanDB())
+        updateCollectionStatistics();
 
     // Rescan the documents associated with the folder
-    scanDocuments(folder_id, path);
+    if (folder_id != -1)
+        scanDocuments(folder_id, path);
 }

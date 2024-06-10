@@ -33,7 +33,7 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: ["Dark", "Light", "LegacyDark"]
+            model: [qsTr("Dark"), qsTr("Light"), qsTr("LegacyDark")]
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("Color theme")
             Accessible.description: qsTr("Color theme for the chat client to use")
@@ -204,11 +204,32 @@ MySettingsTab {
                 }
             }
         }
+
+        ColumnLayout {
+            Layout.row: 6
+            Layout.column: 0
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            spacing: 10
+            Label {
+                color: theme.grayRed900
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: "Advanced"
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 2
+                color: theme.grayRed500 // FIXME_BLOCKER This needs to be abstracted into Theme when the light mode is complete
+            }
+        }
+
         MySettingsLabel {
             id: nThreadsLabel
             text: qsTr("CPU Threads")
             helpText: qsTr("Number of CPU threads for inference")
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 0
         }
         MyTextField {
@@ -218,8 +239,10 @@ MySettingsTab {
             ToolTip.text: qsTr("Amount of processing threads to use bounded by 1 and number of logical processors")
             ToolTip.visible: hovered
             Layout.alignment: Qt.AlignRight
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
             validator: IntValidator {
                 bottom: 1
             }
@@ -240,12 +263,12 @@ MySettingsTab {
             id: saveChatsContextLabel
             text: qsTr("Save chat context")
             helpText: qsTr("Save chat context to disk")
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 0
         }
         MyCheckBox {
             id: saveChatsContextBox
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.saveChatsContext
@@ -259,12 +282,12 @@ MySettingsTab {
             id: serverChatLabel
             text: qsTr("Enable API server")
             helpText: qsTr("A local http server running on local port")
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 0
         }
         MyCheckBox {
             id: serverChatBox
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.serverChat
@@ -278,7 +301,7 @@ MySettingsTab {
             id: serverPortLabel
             text: qsTr("API Server Port:")
             helpText: qsTr("A local port to run the server (Requires restart")
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 0
         }
         MyTextField {
@@ -288,8 +311,10 @@ MySettingsTab {
             font.pixelSize: theme.fontSizeLarge
             ToolTip.text: qsTr("Api server port. WARNING: You need to restart the application for it to take effect")
             ToolTip.visible: hovered
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
             Layout.alignment: Qt.AlignRight
             validator: IntValidator {
                 bottom: 1
@@ -307,57 +332,32 @@ MySettingsTab {
             Accessible.name: serverPortField.text
             Accessible.description: ToolTip.text
         }
+        MySettingsLabel {
+            id: gpuOverrideLabel
+            text: qsTr("Force Metal (macOS+arm)")
+            Layout.row: 11
+            Layout.column: 0
+        }
+        MyCheckBox {
+            id: gpuOverrideBox
+            Layout.row: 11
+            Layout.column: 2
+            Layout.alignment: Qt.AlignRight
+            checked: MySettings.forceMetal
+            onClicked: {
+                MySettings.forceMetal = !MySettings.forceMetal
+            }
+            ToolTip.text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibility the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
+            ToolTip.visible: hovered
+        }
+
         Rectangle {
-            Layout.row: 10
+            Layout.row: 12
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
             height: 2
             color: theme.grayRed500
-        }
-    }
-    advancedSettings: GridLayout {
-        columns: 3
-        rowSpacing: 10
-        columnSpacing: 10
-        Rectangle {
-            Layout.row: 2
-            Layout.column: 0
-            Layout.fillWidth: true
-            Layout.columnSpan: 3
-            height: 3
-            color: theme.accentColor
-        }
-        MySettingsLabel {
-            id: gpuOverrideLabel
-            text: qsTr("Force Metal (macOS+arm)")
-            Layout.row: 1
-            Layout.column: 0
-        }
-        RowLayout {
-            Layout.row: 1
-            Layout.column: 1
-            Layout.columnSpan: 2
-            MyCheckBox {
-                id: gpuOverrideBox
-                checked: MySettings.forceMetal
-                onClicked: {
-                    MySettings.forceMetal = !MySettings.forceMetal
-                }
-            }
-
-            Item {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignTop
-                Layout.minimumHeight: warningLabel.height
-                MySettingsLabel {
-                    id: warningLabel
-                    width: parent.width
-                    color: theme.textErrorColor
-                    wrapMode: Text.WordWrap
-                    text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibility the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
-                }
-            }
         }
     }
 }

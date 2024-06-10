@@ -24,7 +24,6 @@ Rectangle {
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
     signal settingsViewRequested(int page)
-    signal downloadViewRequested(bool showEmbeddingModels)
 
     color: theme.viewBackground
 
@@ -534,132 +533,11 @@ Rectangle {
                                 }
                             }
 
-/*
-                            Text {
-                                Layout.alignment: Qt.AlignHCenter
-                                text: qsTr("GPT4All")
-                                color: theme.titleTextColor
-                                font.pixelSize: theme.fontSizeLargest + 15
-                                font.bold: true
-                                horizontalAlignment: Qt.AlignHCenter
-                                wrapMode: Text.WordWrap
-                            }
+                            // FIXME_BLOCKER Need answer for turning on/off datalake in settings which
+                            // used to be part of the main UI
 
-                            Text {
-                                Layout.alignment: Qt.AlignHCenter
-                                textFormat: Text.StyledText
-                                text: qsTr(
-                                          "<ul>
-                            <li>Run privacy-aware local chatbots.
-                            <li>No internet required to use.
-                            <li>CPU and GPU acceleration.
-                            <li>Chat with your local data and documents.
-                            <li>Built by Nomic AI and forever open-source.
-                            </ul>
-                            ")
-                                color: theme.textColor
-                                font.pixelSize: theme.fontSizeLarge
-                                wrapMode: Text.WordWrap
-                            }
-
-                            RowLayout {
-                                spacing: 10
-                                Layout.alignment: Qt.AlignHCenter
-                                Layout.topMargin: 30
-                                MySlug {
-                                    text: "MISTRAL"
-                                    color: theme.red600
-                                }
-                                MySlug {
-                                    text: "FALCON"
-                                    color: theme.green600
-                                }
-                                MySlug {
-                                    text: "LLAMA"
-                                    color: theme.purple500
-                                }
-                                MySlug {
-                                    text: "LLAMA2"
-                                    color: theme.red400
-                                }
-                                MySlug {
-                                    text: "MPT"
-                                    color: theme.green700
-                                }
-                                MySlug {
-                                    text: "REPLIT"
-                                    color: theme.yellow700
-                                }
-                                MySlug {
-                                    text: "STARCODER"
-                                    color: theme.purple400
-                                }
-                                MySlug {
-                                    text: "SBERT"
-                                    color: theme.yellow600
-                                }
-                                MySlug {
-                                    text: "GPT-J"
-                                    color: theme.gray600
-                                }
-                            }
-
-                            Text {
-                                Layout.alignment: Qt.AlignHCenter
-                                textFormat: Text.StyledText
-                                text: qsTr(
-                                          "<p></p><a href=\"https://docs.gpt4all.io/gpt4all_chat.html\">Documentation
-                            ")
-                                onLinkActivated: { Qt.openUrlExternally("https://docs.gpt4all.io/gpt4all_chat.html") }
-                                color: theme.textColor
-                                linkColor: theme.linkColor
-                                font.pixelSize: theme.fontSizeLarge
-                                wrapMode: Text.WordWrap
-                            }
-
-                            Text {
-                                Layout.alignment: Qt.AlignHCenter
-                                textFormat: Text.StyledText
-                                text: qsTr(
-                                          "<a href=\"https://docs.gpt4all.io/gpt4all_faq.html\">Frequently Asked Questions
-                            ")
-                                onLinkActivated: { Qt.openUrlExternally("https://docs.gpt4all.io/gpt4all_faq.html") }
-                                color: theme.textColor
-                                linkColor: theme.linkColor
-                                font.pixelSize: theme.fontSizeLarge
-                                wrapMode: Text.WordWrap
-                            }
-
-                            MyButton {
-                                id: downloadButton
-                                visible: LLM.isNetworkOnline
-                                Layout.alignment: Qt.AlignHCenter
-                                Layout.topMargin: 40
-                                text: qsTr("Download models")
-                                fontPixelSize: theme.fontSizeLargest + 10
-                                padding: 18
-                                leftPadding: 50
-                                Image {
-                                    id: downloadImage
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 15
-                                    sourceSize.width: 24
-                                    sourceSize.height: 24
-                                    mipmap: true
-                                    visible: false
-                                    source: "qrc:/gpt4all/icons/download.svg"
-                                }
-                                ColorOverlay {
-                                    anchors.fill: downloadImage
-                                    source: downloadImage
-                                    color: theme.accentColor
-                                }
-                                onClicked: {
-                                    console.log("download button")
-                                    downloadViewRequested(false);
-                                }
-                            }*/
+                            // FIXME_BLOCKER Need to decide if we it is acceptable to keep server chat
+                            // in the chat view or break it out into own view for this initial new ui release
                         }
                     }
 

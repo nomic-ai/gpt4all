@@ -171,7 +171,7 @@ Rectangle {
                 }
             }
 
-            // FIXME: Must include advanced settings
+            // FIXME_BLOCKER: Must include advanced settings
         }
     }
 }

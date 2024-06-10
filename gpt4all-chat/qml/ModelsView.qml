@@ -12,17 +12,10 @@ import network
 import mysettings
 
 Rectangle {
-    id: modelDownloaderDialog
+    id: modelsView
     color: theme.containerBackground
 
     signal addModelViewRequested()
-
-    function showEmbeddingModels() {
-        Network.sendModelDownloaderDialog();
-        ModelList.downloadableModels.expanded = true
-        var targetModelIndex = ModelList.defaultEmbeddingModelIndex
-        modelListView.positionViewAtIndex(targetModelIndex, ListView.Beginning)
-    }
 
     PopupDialog {
         id: downloadingErrorPopup
