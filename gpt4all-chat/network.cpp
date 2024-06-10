@@ -36,6 +36,8 @@
 #include <cstring>
 #include <utility>
 
+using namespace Qt::Literals::StringLiterals;
+
 //#define DEBUG
 
 static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
@@ -98,10 +100,8 @@ Network::Network()
     : QObject{nullptr}
 {
     QSettings settings;
-    settings.sync();
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
-    settings.sync();
     m_sessionId = generateUniqueId();
 
     // allow sendMixpanel to be called from any thread
@@ -275,7 +275,7 @@ void Network::sendStartup()
     const auto *display = QGuiApplication::primaryScreen();
     trackEvent("startup", {
         {"$screen_dpi", std::round(display->physicalDotsPerInch())},
-        {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
+        {"display", u"%1x%2"_s.arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
         {"cpu", getCPUModel()},
         {"cpu_supports_avx2", LLModel::Implementation::cpuSupportsAVX2()},
