@@ -38,6 +38,8 @@
 #include <string>
 #include <utility>
 
+using namespace Qt::Literals::StringLiterals;
+
 //#define USE_LOCAL_MODELSJSON
 
 const char * const KNOWN_EMBEDDING_MODELS[] {
@@ -339,6 +341,33 @@ bool ModelInfo::shouldSaveMetadata() const
     return installed && (isClone() || isDiscovered() || description() == "" /*indicates sideloaded*/);
 }
 
+QVariantMap ModelInfo::getFields() const {
+    return {
+        { "filename",            m_filename },
+        { "description",         m_description },
+        { "url",                 m_url },
+        { "quant",               m_quant },
+        { "type",                m_type },
+        { "isClone",             m_isClone },
+        { "isDiscovered",        m_isDiscovered },
+        { "likes",               m_likes },
+        { "downloads",           m_downloads },
+        { "recency",             m_recency },
+        { "temperature",         m_temperature },
+        { "topP",                m_topP },
+        { "minP",                m_minP },
+        { "topK",                m_topK },
+        { "maxLength",           m_maxLength },
+        { "promptBatchSize",     m_promptBatchSize },
+        { "contextLength",       m_contextLength },
+        { "gpuLayers",           m_gpuLayers },
+        { "repeatPenalty",       m_repeatPenalty },
+        { "repeatPenaltyTokens", m_repeatPenaltyTokens },
+        { "promptTemplate",      m_promptTemplate },
+        { "systemPrompt",        m_systemPrompt },
+    };
+}
+
 EmbeddingModels::EmbeddingModels(QObject *parent, bool requireInstalled)
     : QSortFilterProxyModel(parent)
 {
@@ -562,7 +591,6 @@ ModelInfo ModelList::defaultModelInfo() const
     QMutexLocker locker(&m_mutex);
 
     QSettings settings;
-    settings.sync();
 
     // The user default model can be set by the user in the settings dialog. The "default" user
     // default model is "Application default" which signals we should use the logic here.
@@ -1227,7 +1255,7 @@ void ModelList::updateModelsFromDirectory()
                     obj.insert("modelName", modelname);
                     QJsonDocument doc(obj);
 
-                    auto newfilename = QString("gpt4all-%1.rmodel").arg(modelname);
+                    auto newfilename = u"gpt4all-%1.rmodel"_s.arg(modelname);
                     QFile newfile(path + newfilename);
                     if (newfile.open(QIODevice::ReadWrite)) {
                         QTextStream out(&newfile);
@@ -1299,9 +1327,9 @@ void ModelList::updateModelsFromDirectory()
 void ModelList::updateModelsFromJson()
 {
 #if defined(USE_LOCAL_MODELSJSON)
-    QUrl jsonUrl("file://" + QDir::homePath() + QString("/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json").arg(MODELS_VERSION));
+    QUrl jsonUrl("file://" + QDir::homePath() + u"/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json"_s.arg(MODELS_VERSION));
 #else
-    QUrl jsonUrl(QString("http://gpt4all.io/models/models%1.json").arg(MODELS_VERSION));
+    QUrl jsonUrl(u"http://gpt4all.io/models/models%1.json"_s.arg(MODELS_VERSION));
 #endif
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
@@ -1343,9 +1371,9 @@ void ModelList::updateModelsFromJsonAsync()
     emit asyncModelRequestOngoingChanged();
 
 #if defined(USE_LOCAL_MODELSJSON)
-    QUrl jsonUrl("file://" + QDir::homePath() + QString("/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json").arg(MODELS_VERSION));
+    QUrl jsonUrl("file://" + QDir::homePath() + u"/dev/large_language_models/gpt4all/gpt4all-chat/metadata/models%1.json"_s.arg(MODELS_VERSION));
 #else
-    QUrl jsonUrl(QString("http://gpt4all.io/models/models%1.json").arg(MODELS_VERSION));
+    QUrl jsonUrl(u"http://gpt4all.io/models/models%1.json"_s.arg(MODELS_VERSION));
 #endif
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
@@ -1383,7 +1411,7 @@ void ModelList::handleModelsJsonDownloadErrorOccurred(QNetworkReply::NetworkErro
     if (!reply)
         return;
 
-    qWarning() << QString("ERROR: Modellist download failed with error code \"%1-%2\"")
+    qWarning() << u"ERROR: Modellist download failed with error code \"%1-%2\""_s
                       .arg(code).arg(reply->errorString());
 }
 
@@ -1450,8 +1478,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         QString versionRemoved = obj["removedIn"].toString();
         QString url = obj["url"].toString();
         QByteArray modelHash = obj["md5sum"].toString().toLatin1();
-        bool isDefault = obj.contains("isDefault") && obj["isDefault"] == QString("true");
-        bool disableGUI = obj.contains("disableGUI") && obj["disableGUI"] == QString("true");
+        bool isDefault = obj.contains("isDefault") && obj["isDefault"] == u"true"_s;
+        bool disableGUI = obj.contains("disableGUI") && obj["disableGUI"] == u"true"_s;
         QString description = obj["description"].toString();
         QString order = obj["order"].toString();
         int ramrequired = obj["ramrequired"].toString().toInt();
@@ -1723,7 +1751,6 @@ void ModelList::updateDiscoveredInstalled(const ModelInfo &info)
 void ModelList::updateModelsFromSettings()
 {
     QSettings settings;
-    settings.sync();
     QStringList groups = settings.childGroups();
     for (const QString g : groups) {
         if (!g.startsWith("model-"))
@@ -1923,8 +1950,8 @@ void ModelList::discoverSearch(const QString &search)
     emit discoverInProgressChanged();
 
     QStringList searchParams = search.split(QRegularExpression("\\s+")); // split by whitespace
-    QString searchString = QString("search=%1&").arg(searchParams.join('+'));
-    QString limitString = m_discoverLimit > 0 ? QString("limit=%1&").arg(m_discoverLimit) : QString();
+    QString searchString = u"search=%1&"_s.arg(searchParams.join('+'));
+    QString limitString = m_discoverLimit > 0 ? u"limit=%1&"_s.arg(m_discoverLimit) : QString();
 
     QString sortString;
     switch (m_discoverSort) {
@@ -1937,9 +1964,9 @@ void ModelList::discoverSearch(const QString &search)
         sortString = "sort=lastModified&"; break;
     }
 
-    QString directionString = !sortString.isEmpty() ? QString("direction=%1&").arg(m_discoverSortDirection) : QString();
+    QString directionString = !sortString.isEmpty() ? u"direction=%1&"_s.arg(m_discoverSortDirection) : QString();
 
-    QUrl hfUrl(QString("https://huggingface.co/api/models?filter=gguf&%1%2%3%4full=true&config=true").arg(searchString).arg(limitString).arg(sortString).arg(directionString));
+    QUrl hfUrl(u"https://huggingface.co/api/models?filter=gguf&%1%2%3%4full=true&config=true"_s.arg(searchString).arg(limitString).arg(sortString).arg(directionString));
 
     QNetworkRequest request(hfUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -1965,7 +1992,7 @@ void ModelList::handleDiscoveryErrorOccurred(QNetworkReply::NetworkError code)
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (!reply)
         return;
-    qWarning() << QString("ERROR: Discovery failed with error code \"%1-%2\"")
+    qWarning() << u"ERROR: Discovery failed with error code \"%1-%2\""_s
                       .arg(code).arg(reply->errorString()).toStdString();
 }
 
@@ -2045,7 +2072,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
         QString filename = file.second;
         ++m_discoverNumberOfResults;
 
-        QUrl url(QString("https://huggingface.co/%1/resolve/main/%2").arg(repo_id).arg(filename));
+        QUrl url(u"https://huggingface.co/%1/resolve/main/%2"_s.arg(repo_id).arg(filename));
         QNetworkRequest request(url);
         request.setRawHeader("Accept-Encoding", "identity");
         request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::ManualRedirectPolicy);
@@ -2155,6 +2182,6 @@ void ModelList::handleDiscoveryItemErrorOccurred(QNetworkReply::NetworkError cod
     if (!reply)
         return;
 
-    qWarning() << QString("ERROR: Discovery item failed with error code \"%1-%2\"")
+    qWarning() << u"ERROR: Discovery item failed with error code \"%1-%2\""_s
                       .arg(code).arg(reply->errorString()).toStdString();
 }

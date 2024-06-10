@@ -32,6 +32,8 @@
 #include <utility>
 #include <vector>
 
+using namespace Qt::Literals::StringLiterals;
+
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
 
@@ -181,7 +183,7 @@ bool ChatLLM::loadDefaultModel()
 {
     ModelInfo defaultModel = ModelList::globalInstance()->defaultModelInfo();
     if (defaultModel.filename().isEmpty()) {
-        emit modelLoadingError(QString("Could not find any model to load"));
+        emit modelLoadingError(u"Could not find any model to load"_qs);
         return false;
     }
     return loadModel(defaultModel);
@@ -293,7 +295,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             setModelInfo(modelInfo);
             Q_ASSERT(!m_modelInfo.filename().isEmpty());
             if (m_modelInfo.filename().isEmpty())
-                emit modelLoadingError(QString("Modelinfo is left null for %1").arg(modelInfo.filename()));
+                emit modelLoadingError(u"Modelinfo is left null for %1"_s.arg(modelInfo.filename()));
             else
                 processSystemPrompt();
             return true;
@@ -378,9 +380,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     static QSet<QString> warned;
                     auto fname = modelInfo.filename();
                     if (!warned.contains(fname)) {
-                        emit modelLoadingWarning(QString(
-                            "%1 is known to be broken. Please get a replacement via the download dialog."
-                        ).arg(fname));
+                        emit modelLoadingWarning(
+                            u"%1 is known to be broken. Please get a replacement via the download dialog."_s.arg(fname)
+                        );
                         warned.insert(fname); // don't warn again until restart
                     }
                 }
@@ -486,7 +488,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     if (!m_isServer)
                         LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                     m_llModelInfo = LLModelInfo();
-                    emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename()));
+                    emit modelLoadingError(u"Could not load model due to invalid model file for %1"_s.arg(modelInfo.filename()));
                     modelLoadProps.insert("error", "loadmodel_failed");
                 } else {
                     switch (m_llModelInfo.model->implementation().modelType()[0]) {
@@ -498,7 +500,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                             if (!m_isServer)
                                 LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                             m_llModelInfo = LLModelInfo();
-                            emit modelLoadingError(QString("Could not determine model type for %1").arg(modelInfo.filename()));
+                            emit modelLoadingError(u"Could not determine model type for %1"_s.arg(modelInfo.filename()));
                         }
                     }
 
@@ -508,7 +510,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 if (!m_isServer)
                     LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                 m_llModelInfo = LLModelInfo();
-                emit modelLoadingError(QString("Error loading %1: %2").arg(modelInfo.filename()).arg(constructError));
+                emit modelLoadingError(u"Error loading %1: %2"_s.arg(modelInfo.filename()).arg(constructError));
             }
         }
 #if defined(DEBUG_MODEL_LOADING)
@@ -528,7 +530,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         if (!m_isServer)
             LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo)); // release back into the store
         m_llModelInfo = LLModelInfo();
-        emit modelLoadingError(QString("Could not find file for model %1").arg(modelInfo.filename()));
+        emit modelLoadingError(u"Could not find file for model %1"_s.arg(modelInfo.filename()));
     }
 
     if (m_llModelInfo.model) {

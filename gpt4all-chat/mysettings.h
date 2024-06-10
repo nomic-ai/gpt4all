@@ -5,10 +5,12 @@
 
 #include <QDateTime>
 #include <QObject>
+#include <QSettings>
 #include <QString>
 #include <QVector>
 
 #include <cstdint>
+#include <optional>
 
 class MySettings : public QObject
 {
@@ -36,80 +38,80 @@ public:
     static MySettings *globalInstance();
 
     // Restore methods
-    Q_INVOKABLE void restoreModelDefaults(const ModelInfo &model);
+    Q_INVOKABLE void restoreModelDefaults(const ModelInfo &info);
     Q_INVOKABLE void restoreApplicationDefaults();
     Q_INVOKABLE void restoreLocalDocsDefaults();
 
     // Model/Character settings
-    void eraseModel(const ModelInfo &m);
-    QString modelName(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelName(const ModelInfo &m, const QString &name, bool force = false);
-    QString modelFilename(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelFilename(const ModelInfo &m, const QString &filename, bool force = false);
+    void eraseModel(const ModelInfo &info);
+    QString modelName(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelName(const ModelInfo &info, const QString &name, bool force = false);
+    QString modelFilename(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelFilename(const ModelInfo &info, const QString &filename, bool force = false);
 
-    QString modelDescription(const ModelInfo &m) const;
-    void setModelDescription(const ModelInfo &m, const QString &d, bool force = false);
-    QString modelUrl(const ModelInfo &m) const;
-    void setModelUrl(const ModelInfo &m, const QString &u, bool force = false);
-    QString modelQuant(const ModelInfo &m) const;
-    void setModelQuant(const ModelInfo &m, const QString &q, bool force = false);
-    QString modelType(const ModelInfo &m) const;
-    void setModelType(const ModelInfo &m, const QString &t, bool force = false);
-    bool modelIsClone(const ModelInfo &m) const;
-    void setModelIsClone(const ModelInfo &m, bool b, bool force = false);
-    bool modelIsDiscovered(const ModelInfo &m) const;
-    void setModelIsDiscovered(const ModelInfo &m, bool b, bool force = false);
-    int modelLikes(const ModelInfo &m) const;
-    void setModelLikes(const ModelInfo &m, int l, bool force = false);
-    int modelDownloads(const ModelInfo &m) const;
-    void setModelDownloads(const ModelInfo &m, int d, bool force = false);
-    QDateTime modelRecency(const ModelInfo &m) const;
-    void setModelRecency(const ModelInfo &m, const QDateTime &r, bool force = false);
+    QString modelDescription(const ModelInfo &info) const;
+    void setModelDescription(const ModelInfo &info, const QString &value, bool force = false);
+    QString modelUrl(const ModelInfo &info) const;
+    void setModelUrl(const ModelInfo &info, const QString &value, bool force = false);
+    QString modelQuant(const ModelInfo &info) const;
+    void setModelQuant(const ModelInfo &info, const QString &value, bool force = false);
+    QString modelType(const ModelInfo &info) const;
+    void setModelType(const ModelInfo &info, const QString &value, bool force = false);
+    bool modelIsClone(const ModelInfo &info) const;
+    void setModelIsClone(const ModelInfo &info, bool value, bool force = false);
+    bool modelIsDiscovered(const ModelInfo &info) const;
+    void setModelIsDiscovered(const ModelInfo &info, bool value, bool force = false);
+    int modelLikes(const ModelInfo &info) const;
+    void setModelLikes(const ModelInfo &info, int value, bool force = false);
+    int modelDownloads(const ModelInfo &info) const;
+    void setModelDownloads(const ModelInfo &info, int value, bool force = false);
+    QDateTime modelRecency(const ModelInfo &info) const;
+    void setModelRecency(const ModelInfo &info, const QDateTime &value, bool force = false);
 
-    double modelTemperature(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelTemperature(const ModelInfo &m, double t, bool force = false);
-    double modelTopP(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelTopP(const ModelInfo &m, double p, bool force = false);
-    double modelMinP(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelMinP(const ModelInfo &m, double p, bool force = false);
-    int modelTopK(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelTopK(const ModelInfo &m, int k, bool force = false);
-    int modelMaxLength(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelMaxLength(const ModelInfo &m, int l, bool force = false);
-    int modelPromptBatchSize(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelPromptBatchSize(const ModelInfo &m, int s, bool force = false);
-    double modelRepeatPenalty(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelRepeatPenalty(const ModelInfo &m, double p, bool force = false);
-    int modelRepeatPenaltyTokens(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelRepeatPenaltyTokens(const ModelInfo &m, int t, bool force = false);
-    QString modelPromptTemplate(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelPromptTemplate(const ModelInfo &m, const QString &t, bool force = false);
-    QString modelSystemPrompt(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelSystemPrompt(const ModelInfo &m, const QString &p, bool force = false);
-    int modelContextLength(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelContextLength(const ModelInfo &m, int s, bool force = false);
-    int modelGpuLayers(const ModelInfo &m) const;
-    Q_INVOKABLE void setModelGpuLayers(const ModelInfo &m, int s, bool force = false);
+    double modelTemperature(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelTemperature(const ModelInfo &info, double value, bool force = false);
+    double modelTopP(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelTopP(const ModelInfo &info, double value, bool force = false);
+    double modelMinP(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelMinP(const ModelInfo &info, double value, bool force = false);
+    int modelTopK(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelTopK(const ModelInfo &info, int value, bool force = false);
+    int modelMaxLength(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelMaxLength(const ModelInfo &info, int value, bool force = false);
+    int modelPromptBatchSize(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelPromptBatchSize(const ModelInfo &info, int value, bool force = false);
+    double modelRepeatPenalty(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelRepeatPenalty(const ModelInfo &info, double value, bool force = false);
+    int modelRepeatPenaltyTokens(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelRepeatPenaltyTokens(const ModelInfo &info, int value, bool force = false);
+    QString modelPromptTemplate(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
+    QString modelSystemPrompt(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force = false);
+    int modelContextLength(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelContextLength(const ModelInfo &info, int value, bool force = false);
+    int modelGpuLayers(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelGpuLayers(const ModelInfo &info, int value, bool force = false);
 
     // Application settings
     int threadCount() const;
-    void setThreadCount(int c);
+    void setThreadCount(int value);
     bool saveChatsContext() const;
-    void setSaveChatsContext(bool b);
+    void setSaveChatsContext(bool value);
     bool serverChat() const;
-    void setServerChat(bool b);
-    QString modelPath() const;
-    void setModelPath(const QString &p);
+    void setServerChat(bool value);
+    QString modelPath();
+    void setModelPath(const QString &value);
     QString userDefaultModel() const;
-    void setUserDefaultModel(const QString &u);
+    void setUserDefaultModel(const QString &value);
     QString chatTheme() const;
-    void setChatTheme(const QString &u);
+    void setChatTheme(const QString &value);
     QString fontSize() const;
-    void setFontSize(const QString &u);
+    void setFontSize(const QString &value);
     bool forceMetal() const;
-    void setForceMetal(bool b);
-    QString device() const;
-    void setDevice(const QString &u);
+    void setForceMetal(bool value);
+    QString device();
+    void setDevice(const QString &value);
     int32_t contextLength() const;
     void setContextLength(int32_t value);
     int32_t gpuLayers() const;
@@ -117,46 +119,47 @@ public:
 
     // Release/Download settings
     QString lastVersionStarted() const;
-    void setLastVersionStarted(const QString &v);
+    void setLastVersionStarted(const QString &value);
 
     // Localdocs settings
     int localDocsChunkSize() const;
-    void setLocalDocsChunkSize(int s);
+    void setLocalDocsChunkSize(int value);
     int localDocsRetrievalSize() const;
-    void setLocalDocsRetrievalSize(int s);
+    void setLocalDocsRetrievalSize(int value);
     bool localDocsShowReferences() const;
-    void setLocalDocsShowReferences(bool b);
+    void setLocalDocsShowReferences(bool value);
 
     // Network settings
     QString networkAttribution() const;
-    void setNetworkAttribution(const QString &a);
+    void setNetworkAttribution(const QString &value);
     bool networkIsActive() const;
     Q_INVOKABLE bool isNetworkIsActiveSet() const;
-    void setNetworkIsActive(bool b);
+    void setNetworkIsActive(bool value);
     bool networkUsageStatsActive() const;
     Q_INVOKABLE bool isNetworkUsageStatsActiveSet() const;
-    void setNetworkUsageStatsActive(bool b);
+    void setNetworkUsageStatsActive(bool value);
     int networkPort() const;
-    void setNetworkPort(int c);
+    void setNetworkPort(int value);
 
     QVector<QString> deviceList() const;
-    void setDeviceList(const QVector<QString> &deviceList);
+    void setDeviceList(const QVector<QString> &value);
 
 Q_SIGNALS:
-    void nameChanged(const ModelInfo &model);
-    void filenameChanged(const ModelInfo &model);
-    void temperatureChanged(const ModelInfo &model);
-    void topPChanged(const ModelInfo &model);
-    void minPChanged(const ModelInfo &model);
-    void topKChanged(const ModelInfo &model);
-    void maxLengthChanged(const ModelInfo &model);
-    void promptBatchSizeChanged(const ModelInfo &model);
-    void contextLengthChanged(const ModelInfo &model);
-    void gpuLayersChanged(const ModelInfo &model);
-    void repeatPenaltyChanged(const ModelInfo &model);
-    void repeatPenaltyTokensChanged(const ModelInfo &model);
-    void promptTemplateChanged(const ModelInfo &model);
-    void systemPromptChanged(const ModelInfo &model);
+    void nameChanged(const ModelInfo &info);
+    void filenameChanged(const ModelInfo &info);
+    void descriptionChanged(const ModelInfo &info);
+    void temperatureChanged(const ModelInfo &info);
+    void topPChanged(const ModelInfo &info);
+    void minPChanged(const ModelInfo &info);
+    void topKChanged(const ModelInfo &info);
+    void maxLengthChanged(const ModelInfo &info);
+    void promptBatchSizeChanged(const ModelInfo &info);
+    void contextLengthChanged(const ModelInfo &info);
+    void gpuLayersChanged(const ModelInfo &info);
+    void repeatPenaltyChanged(const ModelInfo &info);
+    void repeatPenaltyTokensChanged(const ModelInfo &info);
+    void promptTemplateChanged(const ModelInfo &info);
+    void systemPromptChanged(const ModelInfo &info);
     void threadCountChanged();
     void saveChatsContextChanged();
     void serverChatChanged();
@@ -178,6 +181,7 @@ Q_SIGNALS:
     void deviceListChanged();
 
 private:
+    QSettings m_settings;
     bool m_forceMetal;
     QVector<QString> m_deviceList;
 
@@ -185,6 +189,12 @@ private:
     explicit MySettings();
     ~MySettings() {}
     friend class MyPrivateSettings;
+
+    QVariant getBasicSetting(const QString &name) const;
+    void setBasicSetting(const QString &name, const QVariant &value, std::optional<QString> signal = std::nullopt);
+    QVariant getModelSetting(const QString &name, const ModelInfo &info) const;
+    void setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
+                         bool signal = false);
 };
 
 #endif // MYSETTINGS_H

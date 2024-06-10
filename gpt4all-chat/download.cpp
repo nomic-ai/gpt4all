@@ -31,6 +31,8 @@
 #include <cstddef>
 #include <utility>
 
+using namespace Qt::Literals::StringLiterals;
+
 class MyDownload: public Download { };
 Q_GLOBAL_STATIC(MyDownload, downloadInstance)
 Download *Download::globalInstance()
@@ -99,7 +101,6 @@ bool Download::isFirstStart(bool writeVersion) const
     auto *mySettings = MySettings::globalInstance();
 
     QSettings settings;
-    settings.sync();
     QString lastVersionStarted = settings.value("download/lastVersionStarted").toString();
     bool first = lastVersionStarted != QCoreApplication::applicationVersion();
     if (first && writeVersion) {
@@ -107,7 +108,6 @@ bool Download::isFirstStart(bool writeVersion) const
         // let the user select these again
         settings.remove("network/usageStatsActive");
         settings.remove("network/isActive");
-        settings.sync();
         emit mySettings->networkUsageStatsActiveChanged();
         emit mySettings->networkIsActiveChanged();
     }
@@ -135,7 +135,7 @@ void Download::downloadModel(const QString &modelFile)
     qWarning() << "Opening temp file for writing:" << tempFile->fileName();
     if (!success) {
         const QString error
-            = QString("ERROR: Could not open temp file: %1 %2").arg(tempFile->fileName()).arg(modelFile);
+            = u"ERROR: Could not open temp file: %1 %2"_s.arg(tempFile->fileName()).arg(modelFile);
         qWarning() << error;
         clearRetry(modelFile);
         ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::DownloadErrorRole, error }});
@@ -163,7 +163,7 @@ void Download::downloadModel(const QString &modelFile)
     Network::globalInstance()->trackEvent("download_started", { {"model", modelFile} });
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::User, modelFile);
-    request.setRawHeader("range", QString("bytes=%1-").arg(tempFile->pos()).toUtf8());
+    request.setRawHeader("range", u"bytes=%1-"_s.arg(tempFile->pos()).toUtf8());
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
@@ -356,7 +356,7 @@ void Download::handleErrorOccurred(QNetworkReply::NetworkError code)
     clearRetry(modelFilename);
 
     const QString error
-        = QString("ERROR: Network error occurred attempting to download %1 code: %2 errorString %3")
+        = u"ERROR: Network error occurred attempting to download %1 code: %2 errorString %3"_s
             .arg(modelFilename)
             .arg(code)
             .arg(modelReply->errorString());
@@ -430,7 +430,7 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, QCryptographicHas
     // Reopen the tempFile for hashing
     if (!tempFile->open(QIODevice::ReadOnly)) {
         const QString error
-            = QString("ERROR: Could not open temp file for hashing: %1 %2").arg(tempFile->fileName()).arg(modelFilename);
+            = u"ERROR: Could not open temp file for hashing: %1 %2"_s.arg(tempFile->fileName()).arg(modelFilename);
         qWarning() << error;
         emit hashAndSaveFinished(false, error, tempFile, modelReply);
         return;
@@ -442,7 +442,7 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, QCryptographicHas
     if (hash.result().toHex() != expectedHash.toLatin1()) {
         tempFile->close();
         const QString error
-            = QString("ERROR: Download error hash did not match: %1 != %2 for %3")
+            = u"ERROR: Download error hash did not match: %1 != %2 for %3"_s
                 .arg(hash.result().toHex())
                 .arg(expectedHash.toLatin1())
                 .arg(modelFilename);
@@ -466,7 +466,7 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, QCryptographicHas
     // Reopen the tempFile for copying
     if (!tempFile->open(QIODevice::ReadOnly)) {
         const QString error
-            = QString("ERROR: Could not open temp file at finish: %1 %2").arg(tempFile->fileName()).arg(modelFilename);
+            = u"ERROR: Could not open temp file at finish: %1 %2"_s.arg(tempFile->fileName()).arg(modelFilename);
         qWarning() << error;
         emit hashAndSaveFinished(false, error, tempFile, modelReply);
         return;
@@ -486,7 +486,7 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, QCryptographicHas
     } else {
         QFile::FileError error = file.error();
         const QString errorString
-            = QString("ERROR: Could not save model to location: %1 failed with code %1").arg(saveFilePath).arg(error);
+            = u"ERROR: Could not save model to location: %1 failed with code %1"_s.arg(saveFilePath).arg(error);
         qWarning() << errorString;
         tempFile->close();
         emit hashAndSaveFinished(false, errorString, tempFile, modelReply);
@@ -507,7 +507,7 @@ void Download::handleModelDownloadFinished()
 
     if (modelReply->error()) {
         const QString errorString
-            = QString("ERROR: Downloading failed with code %1 \"%2\"").arg(modelReply->error()).arg(modelReply->errorString());
+            = u"ERROR: Downloading failed with code %1 \"%2\""_s.arg(modelReply->error()).arg(modelReply->errorString());
         qWarning() << errorString;
         modelReply->deleteLater();
         tempFile->deleteLater();
