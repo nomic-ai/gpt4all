@@ -24,7 +24,6 @@ Rectangle {
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
     signal settingsViewRequested(int page)
-    signal downloadViewRequested(bool showEmbeddingModels)
 
     color: theme.viewBackground
 

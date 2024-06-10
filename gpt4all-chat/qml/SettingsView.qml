@@ -15,7 +15,6 @@ Rectangle {
     id: settingsDialog
     color: theme.containerBackground
 
-    signal downloadClicked
     property alias pageToDisplay: listView.currentIndex
 
     Item {

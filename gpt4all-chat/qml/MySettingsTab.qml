@@ -11,7 +11,6 @@ Item {
     property bool showRestoreDefaultsButton: true
     property var openFolderDialog
     signal restoreDefaultsClicked
-    signal downloadClicked
 
     onContentItemChanged: function() {
         if (contentItem) {
