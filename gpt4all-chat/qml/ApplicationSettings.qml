@@ -33,7 +33,7 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: ["Dark", "Light", "LegacyDark"]
+            model: [qsTr("Dark"), qsTr("Light"), qsTr("LegacyDark")]
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("Color theme")
             Accessible.description: qsTr("Color theme for the chat client to use")
@@ -220,6 +220,8 @@ MySettingsTab {
             Layout.alignment: Qt.AlignRight
             Layout.row: 6
             Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
             validator: IntValidator {
                 bottom: 1
             }
@@ -243,14 +245,22 @@ MySettingsTab {
             Layout.row: 7
             Layout.column: 0
         }
-        MyCheckBox {
+        MyComboBox {
             id: saveChatsContextBox
             Layout.row: 7
             Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
             Layout.alignment: Qt.AlignRight
-            checked: MySettings.saveChatsContext
-            onClicked: {
-                MySettings.saveChatsContext = !MySettings.saveChatsContext
+            model: [qsTr("Yes"), qsTr("No")]
+            function updateModel() {
+                saveChatsContextBox.currentIndex = !MySettings.saveChatsContext;
+            }
+            Component.onCompleted: {
+                saveChatsContextBox.updateModel()
+            }
+            onActivated: {
+                MySettings.saveChatsContext = (saveChatsContextBox.currentIndex === 0)
             }
             ToolTip.text: qsTr("WARNING: Saving chats to disk can be ~2GB per chat")
             ToolTip.visible: hovered
@@ -262,14 +272,22 @@ MySettingsTab {
             Layout.row: 8
             Layout.column: 0
         }
-        MyCheckBox {
+        MyComboBox {
             id: serverChatBox
             Layout.row: 8
             Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
             Layout.alignment: Qt.AlignRight
-            checked: MySettings.serverChat
-            onClicked: {
-                MySettings.serverChat = !MySettings.serverChat
+            model: [qsTr("Yes"), qsTr("No")]
+            function updateModel() {
+                serverChatBox.currentIndex = !MySettings.serverChat;
+            }
+            Component.onCompleted: {
+                serverChatBox.updateModel()
+            }
+            onActivated: {
+                MySettings.serverChat = (serverChatBox.currentIndex === 0)
             }
             ToolTip.text: qsTr("WARNING: This enables the gui to act as a local REST web server(OpenAI API compliant) for API requests and will increase your RAM usage as well")
             ToolTip.visible: hovered
@@ -290,6 +308,8 @@ MySettingsTab {
             ToolTip.visible: hovered
             Layout.row: 9
             Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
             Layout.alignment: Qt.AlignRight
             validator: IntValidator {
                 bottom: 1
