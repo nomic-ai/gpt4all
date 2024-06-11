@@ -915,17 +915,22 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
 
     // FIXME: Replace this with an arrow file on disk
     // FIXME: Add the tokens information
-    int folder_id = 0;
-    QSqlQuery q(m_db);
+    int folder_id = -1;
+    QList<int> chunksToAdd;
     for (auto e : embeddings) {
-        folder_id = e.folder_id;
-        if (!m_embeddings->add(e.embedding, e.chunk_id))
+        if (folder_id == -1) {
+            folder_id = e.folder_id;
+        } else {
+            Q_ASSERT(folder_id == e.folder_id);
+        }
+        if (!m_embeddings->add(e.embedding, e.chunk_id)) {
             qWarning() << "ERROR: Cannot add point to embeddings index";
-        else {
-            updateChunkHasEmbedding(q, e.chunk_id);
+        } else {
+            chunksToAdd.append(e.chunk_id);
         }
     }
 
+    QSqlQuery q(m_db);
     QString file;
     if (!selectFileForChunk(q, embeddings.first().chunk_id, file))
         qWarning() << "ERROR: Cannot find file for chunk";
@@ -935,6 +940,12 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
     item.fileCurrentlyProcessing = file;
     updateGuiForCollectionItem(item);
     m_embeddings->save();
+
+    // record that we have these chunks *after* flushing the embeddings to disk
+    transaction();
+    for (int chunk_id: chunksToAdd)
+        updateChunkHasEmbedding(q, chunk_id);
+    commit();
 }
 
 void Database::handleErrorGenerated(int folder_id, const QString &error)
