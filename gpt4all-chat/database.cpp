@@ -32,6 +32,51 @@ using namespace Qt::Literals::StringLiterals;
 //#define DEBUG
 //#define DEBUG_EXAMPLE
 
+namespace {
+
+/* QFile that checks input for binary data. If seen, it fails the read and returns true
+ * for binarySeen(). */
+class BinaryDetectingFile: public QFile {
+public:
+    using QFile::QFile;
+
+    bool binarySeen() const { return m_binarySeen; }
+
+protected:
+    virtual qint64 readData(char *data, qint64 maxSize) override {
+        qint64 res = QFile::readData(data, maxSize);
+        return checkData(data, res);
+    }
+
+    virtual qint64 readLineData(char *data, qint64 maxSize) override {
+        qint64 res = QFile::readLineData(data, maxSize);
+        return checkData(data, res);
+    }
+
+private:
+    qint64 checkData(const char *data, qint64 size) {
+        Q_ASSERT(!isTextModeEnabled()); // We need raw bytes from the underlying QFile
+        if (size != -1 && !m_binarySeen) {
+            for (qint64 i = 0; i < size; i++) {
+                /* Control characters we should never see in plain text:
+                 * 0x00 NUL - 0x06 ACK
+                 * 0x0E SO  - 0x1A SUB
+                 * 0x1C FS  - 0x1F US */
+                auto c = static_cast<unsigned char>(data[i]);
+                if (c < 0x07 || (c >= 0x0E && c < 0x1B) || (c >= 0x1C && c < 0x20)) {
+                    m_binarySeen = true;
+                    break;
+                }
+            }
+        }
+        return m_binarySeen ? -1 : size;
+    }
+
+    bool m_binarySeen = false;
+};
+
+} // namespace
+
 static int s_batchSize = 100;
 
 static const QString INSERT_CHUNK_SQL = uR"(
@@ -916,29 +961,37 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
     // FIXME: Replace this with an arrow file on disk
     // FIXME: Add the tokens information
     int folder_id = -1;
+    QString lastFile;
     QList<int> chunksToAdd;
+    QSqlQuery q(m_db);
     for (auto e : embeddings) {
         if (folder_id == -1) {
             folder_id = e.folder_id;
         } else {
             Q_ASSERT(folder_id == e.folder_id);
         }
+
+        QString file;
+        if (!selectFileForChunk(q, e.chunk_id, file))
+            continue; // file already removed
+
         if (!m_embeddings->add(e.embedding, e.chunk_id)) {
             qWarning() << "ERROR: Cannot add point to embeddings index";
         } else {
             chunksToAdd.append(e.chunk_id);
         }
+        lastFile = file;
     }
-
-    QSqlQuery q(m_db);
-    QString file;
-    if (!selectFileForChunk(q, embeddings.first().chunk_id, file))
-        qWarning() << "ERROR: Cannot find file for chunk";
 
     CollectionItem item = guiCollectionItem(folder_id);
     item.currentEmbeddingsToIndex += embeddings.count();
-    item.fileCurrentlyProcessing = file;
+    if (!lastFile.isEmpty())
+        item.fileCurrentlyProcessing = lastFile;
     updateGuiForCollectionItem(item);
+
+    if (chunksToAdd.isEmpty())
+        return; // nothing to add
+
     m_embeddings->save();
 
     // record that we have these chunks *after* flushing the embeddings to disk
@@ -1165,12 +1218,13 @@ void Database::scanQueue(QList<int> &chunksToRemove)
         item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
         updateGuiForCollectionItem(item);
     } else {
-        QFile file(document_path);
+        BinaryDetectingFile file(document_path);
         if (!file.open(QIODevice::ReadOnly)) {
             handleDocumentError("ERROR: Cannot open file for scanning",
                                 existing_id, document_path, q.lastError());
             return scheduleNext(folder_id, countForFolder);
         }
+        Q_ASSERT(!file.isSequential()); // we need to seek
 
         const size_t bytes = info.doc.size();
         QTextStream stream(&file);
@@ -1192,8 +1246,25 @@ void Database::scanQueue(QList<int> &chunksToRemove)
         int pos = chunkStream(stream, info.folder, document_id, info.doc.fileName(), QString() /*title*/, QString() /*author*/,
             QString() /*subject*/, QString() /*keywords*/, -1 /*page*/, 100 /*maxChunks*/);
         if (pos < 0) {
-            handleDocumentError(u"ERROR: Failed to read file (status %1)"_s.arg(stream.status()),
-                                existing_id, document_path, q.lastError());
+            if (!file.binarySeen()) {
+                handleDocumentError(u"ERROR: Failed to read file (status %1)"_s.arg(stream.status()),
+                                    existing_id, document_path, q.lastError());
+                return scheduleNext(folder_id, countForFolder);
+            }
+
+            /* When we see a binary file, we treat it like an empty file so we know not to
+             * scan it again. All existing chunks are removed, and in-progress embeddings
+             * are ignored when they complete. */
+
+            qInfo() << "LocalDocs: Ignoring file with binary data:" << document_path;
+
+            getChunksByDocumentId(existing_id, chunksToRemove);
+            // this will also ensure in-flight embeddings are ignored
+            if (!removeChunksByDocumentId(q, existing_id)) {
+                handleDocumentError("ERROR: Cannot remove chunks of document",
+                    existing_id, document_path, q.lastError());
+            }
+            updateCollectionStatistics();
             return scheduleNext(folder_id, countForFolder);
         }
         file.close();
