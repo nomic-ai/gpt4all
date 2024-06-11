@@ -13,7 +13,7 @@ See their respective folders for language-specific documentation.
 <details><summary><b>Archived Bindings</b></summary>
 <br/>
 
-The following bindings have been removed from this repository due to lack of maintenance. If someone is interested in maintaining them, we can bring them back&mdash;feel free to message a developer on Dicsord if you are interested. Provided are links to their last available version (not necessarily the last working version).
+The following bindings have been removed from this repository due to lack of maintenance. If adopted, they can be brought back&mdash;feel free to message a developer on Dicsord if you are interested in maintaining one of them. Below are links to their last available version (not necessarily the last working version).
 - C#: [41c9013f](https://github.com/nomic-ai/gpt4all/tree/41c9013fa46a194b3e4fee6ced1b9d1b65e177ac/gpt4all-bindings/csharp)
 - Java: [41c9013f](https://github.com/nomic-ai/gpt4all/tree/41c9013fa46a194b3e4fee6ced1b9d1b65e177ac/gpt4all-bindings/java)
 - Go: [41c9013f](https://github.com/nomic-ai/gpt4all/tree/41c9013fa46a194b3e4fee6ced1b9d1b65e177ac/gpt4all-bindings/golang)
