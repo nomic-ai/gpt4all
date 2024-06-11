@@ -749,9 +749,10 @@ bool Database::initDb(const QString &modelPath, const QList<CollectionItem> &old
     return true;
 }
 
-Database::Database(int chunkSize)
+Database::Database(int chunkSize, const QStringList &extensions)
     : QObject(nullptr)
     , m_chunkSize(chunkSize)
+    , m_scannedFileExtensions(extensions)
     , m_scanTimer(new QTimer(this))
     , m_watcher(new QFileSystemWatcher(this))
     , m_embLLM(new EmbeddingLLM)
@@ -1216,9 +1217,6 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
     qDebug() << "scanning folder for documents" << folder_path;
 #endif
 
-    // FIXME_BLOCKER: This should be configurable
-    static const QList<QString> extensions { "txt", "pdf", "md", "rst" };
-
     QDirIterator it(folder_path, QDir::Readable | QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
                     QDirIterator::Subdirectories);
     QVector<DocumentInfo> infos;
@@ -1230,7 +1228,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
             continue;
         }
 
-        if (!extensions.contains(fileInfo.suffix()))
+        if (!m_scannedFileExtensions.contains(fileInfo.suffix()))
             continue;
 
         DocumentInfo info;
@@ -1700,7 +1698,7 @@ bool Database::cleanDB()
         int document_id = q.value(0).toInt();
         QString document_path = q.value(1).toString();
         QFileInfo info(document_path);
-        if (info.exists() && info.isReadable())
+        if (info.exists() && info.isReadable() && m_scannedFileExtensions.contains(info.suffix()))
             continue;
 
 #if defined(DEBUG)
@@ -1788,6 +1786,29 @@ void Database::changeChunkSize(int chunkSize)
 
     addCurrentFolders();
     updateCollectionStatistics();
+}
+
+void Database::changeFileExtensions(const QStringList &extensions)
+{
+#if defined(DEBUG)
+    qDebug() << "changeFileExtensions";
+#endif
+
+    m_scannedFileExtensions = extensions;
+
+    cleanDB();
+
+    QSqlQuery q(m_db);
+    QList<CollectionItem> collections;
+    if (!selectAllFromCollections(q, &collections)) {
+        qWarning() << "ERROR: Cannot select collections" << q.lastError();
+        return;
+    }
+
+    for (const auto &i : collections) {
+        if (!i.forceIndexing)
+            scanDocuments(i.folder_id, i.folder_path);
+    }
 }
 
 void Database::directoryChanged(const QString &path)

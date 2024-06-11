@@ -27,6 +27,7 @@ class MySettings : public QObject
     Q_PROPERTY(int localDocsChunkSize READ localDocsChunkSize WRITE setLocalDocsChunkSize NOTIFY localDocsChunkSizeChanged)
     Q_PROPERTY(int localDocsRetrievalSize READ localDocsRetrievalSize WRITE setLocalDocsRetrievalSize NOTIFY localDocsRetrievalSizeChanged)
     Q_PROPERTY(bool localDocsShowReferences READ localDocsShowReferences WRITE setLocalDocsShowReferences NOTIFY localDocsShowReferencesChanged)
+    Q_PROPERTY(QStringList localDocsFileExtensions READ localDocsFileExtensions WRITE setLocalDocsFileExtensions NOTIFY localDocsFileExtensionsChanged)
     Q_PROPERTY(QString networkAttribution READ networkAttribution WRITE setNetworkAttribution NOTIFY networkAttributionChanged)
     Q_PROPERTY(bool networkIsActive READ networkIsActive WRITE setNetworkIsActive NOTIFY networkIsActiveChanged)
     Q_PROPERTY(bool networkUsageStatsActive READ networkUsageStatsActive WRITE setNetworkUsageStatsActive NOTIFY networkUsageStatsActiveChanged)
@@ -128,6 +129,8 @@ public:
     void setLocalDocsRetrievalSize(int value);
     bool localDocsShowReferences() const;
     void setLocalDocsShowReferences(bool value);
+    QStringList localDocsFileExtensions() const;
+    void setLocalDocsFileExtensions(const QStringList &value);
 
     // Network settings
     QString networkAttribution() const;
@@ -172,6 +175,7 @@ Q_SIGNALS:
     void localDocsChunkSizeChanged();
     void localDocsRetrievalSizeChanged();
     void localDocsShowReferencesChanged();
+    void localDocsFileExtensionsChanged();
     void networkAttributionChanged();
     void networkIsActiveChanged();
     void networkPortChanged();
