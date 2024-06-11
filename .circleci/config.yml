@@ -15,6 +15,5 @@ workflows:
             gpt4all-backend/.* run-all-workflows true
             gpt4all-bindings/python/.* run-python-workflow true
             gpt4all-bindings/typescript/.* run-ts-workflow true
-            gpt4all-bindings/csharp/.* run-csharp-workflow true
             gpt4all-chat/.* run-chat-workflow true
             .* run-default-workflow true
