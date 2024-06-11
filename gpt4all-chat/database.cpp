@@ -893,37 +893,39 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
         if (!word.isEmpty())
             words.append(word);
         if (stream.status() || charCount + words.size() - 1 >= m_chunkSize) {
-            const QString chunk = words.join(" ");
-            QSqlQuery q(m_db);
-            int chunk_id = 0;
-            if (!addChunk(q,
-                document_id,
-                chunk,
-                file,
-                title,
-                author,
-                subject,
-                keywords,
-                page,
-                line_from,
-                line_to,
-                words.size(),
-                &chunk_id
-            )) {
-                qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
+            if (!words.isEmpty()) {
+                const QString chunk = words.join(" ");
+                QSqlQuery q(m_db);
+                int chunk_id = 0;
+                if (!addChunk(q,
+                    document_id,
+                    chunk,
+                    file,
+                    title,
+                    author,
+                    subject,
+                    keywords,
+                    page,
+                    line_from,
+                    line_to,
+                    words.size(),
+                    &chunk_id
+                )) {
+                    qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
+                }
+
+                addedWords += words.size();
+
+                EmbeddingChunk toEmbed;
+                toEmbed.folder_id = folder_id;
+                toEmbed.chunk_id = chunk_id;
+                toEmbed.chunk = chunk;
+                appendChunk(toEmbed);
+                ++chunks;
+
+                words.clear();
+                charCount = 0;
             }
-
-            addedWords += words.size();
-
-            EmbeddingChunk toEmbed;
-            toEmbed.folder_id = folder_id;
-            toEmbed.chunk_id = chunk_id;
-            toEmbed.chunk = chunk;
-            appendChunk(toEmbed);
-            ++chunks;
-
-            words.clear();
-            charCount = 0;
 
             if (stream.status() || (maxChunks > 0 && chunks == maxChunks))
                 break;
