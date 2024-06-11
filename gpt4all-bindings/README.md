@@ -1,5 +1,5 @@
 # GPT4All Language Bindings
-These are the language bindings for the GPT4All backend. They provide funcionality to load GPT4All models (and other llama.cpp models), generate text, and (in the case of the Python bindings) embed text as a vector representation.
+These are the language bindings for the GPT4All backend. They provide functionality to load GPT4All models (and other llama.cpp models), generate text, and (in the case of the Python bindings) embed text as a vector representation.
 
 See their respective folders for language-specific documentation.
 
