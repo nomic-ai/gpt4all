@@ -1182,11 +1182,17 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
         const size_t bytes = info.doc.size();
         QTextStream stream(&file);
         const size_t byteIndex = info.currentPosition;
-        if (!stream.seek(byteIndex)) {
-            handleDocumentError("ERROR: Cannot seek to pos for scanning",
-                                existing_id, document_path, q.lastError());
-            scheduleNext(folder_id, countForFolder);
-            return false;
+        if (byteIndex) {
+            /* Read the Unicode BOM to detect the encoding. Without this, QTextStream will
+             * always interpret the text as UTF-8 when byteIndex is nonzero. */
+            stream.read(1);
+
+            if (!stream.seek(byteIndex)) {
+                handleDocumentError("ERROR: Cannot seek to pos for scanning",
+                                    existing_id, document_path, q.lastError());
+                scheduleNext(folder_id, countForFolder);
+                return false;
+            }
         }
 #if defined(DEBUG)
         qDebug() << "scanning byteIndex" << byteIndex << "of" << bytes << document_path;
