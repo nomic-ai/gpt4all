@@ -839,13 +839,15 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
     CollectionItem item = guiCollectionItem(folder_id);
     item.fileCurrentlyProcessing = file;
 
-    while (!stream.atEnd()) {
+    for (;;) {
         QString word;
         stream >> word;
+        if (stream.status() && !stream.atEnd())
+            return -1;
         charCount += word.length();
         if (!word.isEmpty())
             words.append(word);
-        if (charCount + words.size() - 1 >= m_chunkSize || stream.atEnd()) {
+        if (stream.status() || charCount + words.size() - 1 >= m_chunkSize) {
             const QString chunk = words.join(" ");
             QSqlQuery q(m_db);
             int chunk_id = 0;
@@ -878,7 +880,7 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
             words.clear();
             charCount = 0;
 
-            if (maxChunks > 0 && chunks == maxChunks)
+            if (stream.status() || (maxChunks > 0 && chunks == maxChunks))
                 break;
         }
     }
@@ -1178,6 +1180,11 @@ void Database::scanQueue(QList<int> &chunksToRemove)
 #endif
         int pos = chunkStream(stream, info.folder, document_id, info.doc.fileName(), QString() /*title*/, QString() /*author*/,
             QString() /*subject*/, QString() /*keywords*/, -1 /*page*/, 100 /*maxChunks*/);
+        if (pos < 0) {
+            handleDocumentError(u"ERROR: Failed to read file (status %1)"_s.arg(stream.status()),
+                                existing_id, document_path, q.lastError());
+            return scheduleNext(folder_id, countForFolder);
+        }
         file.close();
         const size_t bytesChunked = pos - byteIndex;
         CollectionItem item = guiCollectionItem(info.folder);
