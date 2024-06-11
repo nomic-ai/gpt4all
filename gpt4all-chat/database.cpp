@@ -34,43 +34,43 @@ using namespace Qt::Literals::StringLiterals;
 
 static int s_batchSize = 100;
 
-const auto INSERT_CHUNK_SQL = QLatin1String(R"(
+static const auto INSERT_CHUNK_SQL = QLatin1String(R"(
     insert into chunks(document_id, chunk_text,
         file, title, author, subject, keywords, page, line_from, line_to, words)
         values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     )");
 
-const auto INSERT_CHUNK_FTS_SQL = QLatin1String(R"(
+static const auto INSERT_CHUNK_FTS_SQL = QLatin1String(R"(
     insert into chunks_fts(document_id, chunk_id, chunk_text,
         file, title, author, subject, keywords, page, line_from, line_to)
         values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     )");
 
-const auto DELETE_CHUNKS_SQL = QLatin1String(R"(
+static const auto DELETE_CHUNKS_SQL = QLatin1String(R"(
     delete from chunks WHERE document_id = ?;
     )");
 
-const auto DELETE_CHUNKS_FTS_SQL = QLatin1String(R"(
+static const auto DELETE_CHUNKS_FTS_SQL = QLatin1String(R"(
     delete from chunks_fts WHERE document_id = ?;
     )");
 
-const auto CHUNKS_SQL = QLatin1String(R"(
+static const auto CHUNKS_SQL = QLatin1String(R"(
     create table chunks(document_id integer, chunk_id integer primary key autoincrement, chunk_text varchar,
         file varchar, title varchar, author varchar, subject varchar, keywords varchar,
         page integer, line_from integer, line_to integer, words integer default 0, tokens integer default 0,
         has_embedding integer default 0);
     )");
 
-const auto FTS_CHUNKS_SQL = QLatin1String(R"(
+static const auto FTS_CHUNKS_SQL = QLatin1String(R"(
     create virtual table chunks_fts using fts5(document_id unindexed, chunk_id unindexed, chunk_text,
         file, title, author, subject, keywords, page, line_from, line_to, tokenize="trigram");
     )");
 
-const auto SELECT_CHUNKS_BY_DOCUMENT_SQL = QLatin1String(R"(
+static const auto SELECT_CHUNKS_BY_DOCUMENT_SQL = QLatin1String(R"(
     select chunk_id from chunks WHERE document_id = ?;
     )");
 
-const auto SELECT_CHUNKS_SQL = QLatin1String(R"(
+static const auto SELECT_CHUNKS_SQL = QLatin1String(R"(
     select chunks.chunk_id, documents.document_time,
         chunks.chunk_text, chunks.file, chunks.title, chunks.author, chunks.page,
         chunks.line_from, chunks.line_to
@@ -81,7 +81,7 @@ const auto SELECT_CHUNKS_SQL = QLatin1String(R"(
     where chunks.chunk_id in (%1) and collections.collection_name in (%2);
 )");
 
-const auto SELECT_NGRAM_SQL = QLatin1String(R"(
+static const auto SELECT_NGRAM_SQL = QLatin1String(R"(
     select chunks_fts.chunk_id, documents.document_time,
         chunks_fts.chunk_text, chunks_fts.file, chunks_fts.title, chunks_fts.author, chunks_fts.page,
         chunks_fts.line_from, chunks_fts.line_to
@@ -94,13 +94,13 @@ const auto SELECT_NGRAM_SQL = QLatin1String(R"(
     limit %2;
     )");
 
-const auto SELECT_FILE_FOR_CHUNK_SQL = QLatin1String(R"(
+static const auto SELECT_FILE_FOR_CHUNK_SQL = QLatin1String(R"(
     select c.file
     from chunks c
     where c.chunk_id = ?;
     )");
 
-bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
+static bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
     if (!q.prepare(SELECT_FILE_FOR_CHUNK_SQL))
         return false;
     q.addBindValue(chunk_id);
@@ -112,27 +112,27 @@ bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
     return true;
 }
 
-const auto SELECT_UNCOMPLETED_CHUNKS_SQL = QLatin1String(R"(
+static const auto SELECT_UNCOMPLETED_CHUNKS_SQL = QLatin1String(R"(
     select c.chunk_id, c.chunk_text as chunk, d.folder_id
     from chunks c
     join documents d ON c.document_id = d.id
     where c.has_embedding != 1 and d.folder_id = ?;
     )");
 
-const auto SELECT_COUNT_CHUNKS_SQL = QLatin1String(R"(
+static const auto SELECT_COUNT_CHUNKS_SQL = QLatin1String(R"(
     select count(c.chunk_id) as total_chunks
     from chunks c
     join documents d on c.document_id = d.id
     where d.folder_id = ?;
     )");
 
-const auto UPDATE_CHUNK_HAS_EMBEDDING = QLatin1String(R"(
+static const auto UPDATE_CHUNK_HAS_EMBEDDING = QLatin1String(R"(
     update chunks set has_embedding = 1 where chunk_id = ?;
     )");
 
-bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text,
-    const QString &file, const QString &title, const QString &author, const QString &subject, const QString &keywords,
-    int page, int from, int to, int words, int *chunk_id)
+static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
+                     const QString &title, const QString &author, const QString &subject, const QString &keywords,
+                     int page, int from, int to, int words, int *chunk_id)
 {
     {
         if (!q.prepare(INSERT_CHUNK_SQL))
@@ -176,7 +176,7 @@ bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text,
     return true;
 }
 
-bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
+static bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
 {
     {
         if (!q.prepare(DELETE_CHUNKS_SQL))
@@ -197,7 +197,7 @@ bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
     return true;
 }
 
-bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChunk> &chunks) {
+static bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChunk> &chunks) {
     if (!q.prepare(SELECT_UNCOMPLETED_CHUNKS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -213,7 +213,7 @@ bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChun
     return true;
 }
 
-bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
+static bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
     if (!q.prepare(SELECT_COUNT_CHUNKS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -227,7 +227,7 @@ bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
     return true;
 }
 
-bool updateChunkHasEmbedding(QSqlQuery &q, int chunk_id) {
+static bool updateChunkHasEmbedding(QSqlQuery &q, int chunk_id) {
     if (!q.prepare(UPDATE_CHUNK_HAS_EMBEDDING))
         return false;
     q.addBindValue(chunk_id);
@@ -236,7 +236,7 @@ bool updateChunkHasEmbedding(QSqlQuery &q, int chunk_id) {
     return true;
 }
 
-QStringList generateGrams(const QString &input, int N)
+static QStringList generateGrams(const QString &input, int N)
 {
     // Remove common English punctuation using QRegularExpression
     static QRegularExpression punctuation(R"([.,;:!?'"()\-])");
@@ -260,7 +260,7 @@ QStringList generateGrams(const QString &input, int N)
     return ngrams;
 }
 
-bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const std::vector<qint64> &chunk_ids, int retrievalSize)
+static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const std::vector<qint64> &chunk_ids, int retrievalSize)
 {
     QString chunk_ids_str = QString::number(chunk_ids[0]);
     for (size_t i = 1; i < chunk_ids.size(); ++i)
@@ -272,7 +272,7 @@ bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const std
     return q.exec();
 }
 
-bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QString &chunk_text, int retrievalSize)
+static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QString &chunk_text, int retrievalSize)
 {
     static QRegularExpression spaces("\\s+");
     const int N_WORDS = chunk_text.split(spaces).size();
@@ -298,53 +298,51 @@ bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QSt
     return true;
 }
 
-const auto INSERT_COLLECTION_SQL = QLatin1String(R"(
+static const auto INSERT_COLLECTION_SQL = QLatin1String(R"(
     insert into collections(collection_name, folder_id, last_update_time, embedding_model, force_indexing) values(?, ?, ?, ?, ?);
     )");
 
-const auto DELETE_COLLECTION_SQL = QLatin1String(R"(
+static const auto DELETE_COLLECTION_SQL = QLatin1String(R"(
     delete from collections where collection_name = ? and folder_id = ?;
     )");
 
-const auto COLLECTIONS_SQL = QLatin1String(R"(
+static const auto COLLECTIONS_SQL = QLatin1String(R"(
     create table collections(collection_name varchar, folder_id integer, last_update_time integer, embedding_model varchar, force_indexing integer, unique(collection_name, folder_id));
     )");
 
-const auto SELECT_FOLDERS_FROM_COLLECTIONS_SQL = QLatin1String(R"(
+static const auto SELECT_FOLDERS_FROM_COLLECTIONS_SQL = QLatin1String(R"(
     select f.id, f.folder_path
     from collections c
     join folders f on c.folder_id = f.id
     where collection_name = ?;
     )");
 
-const auto SELECT_COLLECTIONS_FROM_FOLDER_SQL = QLatin1String(R"(
+static const auto SELECT_COLLECTIONS_FROM_FOLDER_SQL = QLatin1String(R"(
     select collection_name from collections where folder_id = ?;
     )");
 
-const auto SELECT_COLLECTIONS_SQL_V1 = QLatin1String(R"(
+static const auto SELECT_COLLECTIONS_SQL_V1 = QLatin1String(R"(
     select c.collection_name, f.folder_path, f.id
     from collections c
     join folders f on c.folder_id = f.id
     order by c.collection_name asc, f.folder_path asc;
     )");
 
-const auto SELECT_COLLECTIONS_SQL_V2 = QLatin1String(R"(
+static const auto SELECT_COLLECTIONS_SQL_V2 = QLatin1String(R"(
     select c.collection_name, f.folder_path, f.id, c.last_update_time, c.embedding_model, c.force_indexing
     from collections c
     join folders f on c.folder_id = f.id
     order by c.collection_name asc, f.folder_path asc;
     )");
 
-const auto UPDATE_COLLECTION_FORCE_INDEXING = QLatin1String(R"(
+static const auto UPDATE_COLLECTION_FORCE_INDEXING = QLatin1String(R"(
     update collections
     set force_indexing = 0
     where collection_name = ?;
     )");
 
-bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id,
-                   const QDateTime &last_update,
-                   const QString &embedding_model,
-                   bool force_indexing)
+static bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id, const QDateTime &last_update,
+                          const QString &embedding_model, bool force_indexing)
 {
     if (!q.prepare(INSERT_COLLECTION_SQL))
         return false;
@@ -356,7 +354,7 @@ bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id,
     return q.exec();
 }
 
-bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
+static bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
 {
     if (!q.prepare(DELETE_COLLECTION_SQL))
         return false;
@@ -365,7 +363,7 @@ bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_i
     return q.exec();
 }
 
-bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<QPair<int, QString>> *folders) {
+static bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<QPair<int, QString>> *folders) {
     if (!q.prepare(SELECT_FOLDERS_FROM_COLLECTIONS_SQL))
         return false;
     q.addBindValue(collection_name);
@@ -376,7 +374,7 @@ bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, Q
     return true;
 }
 
-bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *collections) {
+static bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *collections) {
     if (!q.prepare(SELECT_COLLECTIONS_FROM_FOLDER_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -428,38 +426,38 @@ static bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collec
     return true;
 }
 
-bool updateCollectionForceIndexing(QSqlQuery &q, const QString &collection_name) {
+static bool updateCollectionForceIndexing(QSqlQuery &q, const QString &collection_name) {
     if (!q.prepare(UPDATE_COLLECTION_FORCE_INDEXING))
         return false;
     q.addBindValue(collection_name);
     return q.exec();
 }
 
-const auto INSERT_FOLDERS_SQL = QLatin1String(R"(
+static const auto INSERT_FOLDERS_SQL = QLatin1String(R"(
     insert into folders(folder_path) values(?);
     )");
 
-const auto DELETE_FOLDERS_SQL = QLatin1String(R"(
+static const auto DELETE_FOLDERS_SQL = QLatin1String(R"(
     delete from folders where id = ?;
     )");
 
-const auto SELECT_FOLDERS_FROM_PATH_SQL = QLatin1String(R"(
+static const auto SELECT_FOLDERS_FROM_PATH_SQL = QLatin1String(R"(
     select id from folders where folder_path = ?;
     )");
 
-const auto SELECT_FOLDERS_FROM_ID_SQL = QLatin1String(R"(
+static const auto SELECT_FOLDERS_FROM_ID_SQL = QLatin1String(R"(
     select folder_path from folders where id = ?;
     )");
 
-const auto SELECT_ALL_FOLDERPATHS_SQL = QLatin1String(R"(
+static const auto SELECT_ALL_FOLDERPATHS_SQL = QLatin1String(R"(
     select folder_path from folders;
     )");
 
-const auto FOLDERS_SQL = QLatin1String(R"(
+static const auto FOLDERS_SQL = QLatin1String(R"(
     create table folders(id integer primary key, folder_path varchar unique);
     )");
 
-bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
+static bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
 {
     if (!q.prepare(INSERT_FOLDERS_SQL))
         return false;
@@ -470,14 +468,14 @@ bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
     return true;
 }
 
-bool removeFolderFromDB(QSqlQuery &q, int folder_id) {
+static bool removeFolderFromDB(QSqlQuery &q, int folder_id) {
     if (!q.prepare(DELETE_FOLDERS_SQL))
         return false;
     q.addBindValue(folder_id);
     return q.exec();
 }
 
-bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
+static bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
     if (!q.prepare(SELECT_FOLDERS_FROM_PATH_SQL))
         return false;
     q.addBindValue(folder_path);
@@ -489,7 +487,7 @@ bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
     return true;
 }
 
-bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
+static bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
     if (!q.prepare(SELECT_FOLDERS_FROM_ID_SQL))
         return false;
     q.addBindValue(id);
@@ -501,7 +499,7 @@ bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
     return true;
 }
 
-bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
+static bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
     if (!q.prepare(SELECT_ALL_FOLDERPATHS_SQL))
         return false;
     if (!q.exec())
@@ -511,42 +509,42 @@ bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
     return true;
 }
 
-const auto INSERT_DOCUMENTS_SQL = QLatin1String(R"(
+static const auto INSERT_DOCUMENTS_SQL = QLatin1String(R"(
     insert into documents(folder_id, document_time, document_path) values(?, ?, ?);
     )");
 
-const auto UPDATE_DOCUMENT_TIME_SQL = QLatin1String(R"(
+static const auto UPDATE_DOCUMENT_TIME_SQL = QLatin1String(R"(
     update documents set document_time = ? where id = ?;
     )");
 
-const auto DELETE_DOCUMENTS_SQL = QLatin1String(R"(
+static const auto DELETE_DOCUMENTS_SQL = QLatin1String(R"(
     delete from documents where id = ?;
     )");
 
-const auto DOCUMENTS_SQL = QLatin1String(R"(
+static const auto DOCUMENTS_SQL = QLatin1String(R"(
     create table documents(id integer primary key, folder_id integer, document_time integer, document_path varchar unique);
     )");
 
-const auto SELECT_DOCUMENT_SQL = QLatin1String(R"(
+static const auto SELECT_DOCUMENT_SQL = QLatin1String(R"(
     select id, document_time from documents where document_path = ?;
     )");
 
-const auto SELECT_DOCUMENTS_SQL = QLatin1String(R"(
+static const auto SELECT_DOCUMENTS_SQL = QLatin1String(R"(
     select id from documents where folder_id = ?;
     )");
 
-const auto SELECT_ALL_DOCUMENTS_SQL = QLatin1String(R"(
+static const auto SELECT_ALL_DOCUMENTS_SQL = QLatin1String(R"(
     select id, document_path from documents;
     )");
 
-const auto SELECT_COUNT_STATISTICS_SQL = QLatin1String(R"(
+static const auto SELECT_COUNT_STATISTICS_SQL = QLatin1String(R"(
     select count(distinct d.id) as total_docs, sum(c.words) as total_words, sum(c.tokens) as total_tokens
     from documents d
     left join chunks c on d.id = c.document_id
     where d.folder_id = ?;
     )");
 
-bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QString &document_path, int *document_id)
+static bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QString &document_path, int *document_id)
 {
     if (!q.prepare(INSERT_DOCUMENTS_SQL))
         return false;
@@ -559,14 +557,14 @@ bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QStrin
     return true;
 }
 
-bool removeDocument(QSqlQuery &q, int document_id) {
+static bool removeDocument(QSqlQuery &q, int document_id) {
     if (!q.prepare(DELETE_DOCUMENTS_SQL))
         return false;
     q.addBindValue(document_id);
     return q.exec();
 }
 
-bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
+static bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
 {
     if (!q.prepare(UPDATE_DOCUMENT_TIME_SQL))
         return false;
@@ -575,7 +573,7 @@ bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
     return q.exec();
 }
 
-bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 *document_time) {
+static bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 *document_time) {
     if (!q.prepare(SELECT_DOCUMENT_SQL))
         return false;
     q.addBindValue(document_path);
@@ -589,7 +587,7 @@ bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 
     return true;
 }
 
-bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
+static bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
     if (!q.prepare(SELECT_DOCUMENTS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -600,7 +598,7 @@ bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
     return true;
 }
 
-bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *total_words, int *total_tokens) {
+static bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *total_words, int *total_tokens) {
     if (!q.prepare(SELECT_COUNT_STATISTICS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -1435,7 +1433,7 @@ void Database::forceIndexing(const QString &collection)
     }
 }
 
-bool containsFolderId(const QList<QPair<int, QString>> &folders, int folder_id) {
+static bool containsFolderId(const QList<QPair<int, QString>> &folders, int folder_id) {
     for (const auto& folder : folders)
         if (folder.first == folder_id)
             return true;
