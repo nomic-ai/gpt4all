@@ -6,7 +6,6 @@ See their respective folders for language-specific documentation.
 ### Languages
 - [Python](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python) (Nomic official, maintained by [@cebtenzzre](https://github.com/cebtenzzre))
 - [Node.js/Typescript](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/typescript) (community, maintained by [@jacoobes](https://github.com/jacoobes) and [@iimez](https://github.com/iimez))
-- [Go](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/golang) (unmaintained)
 
 <br/>
 <br/>
@@ -17,5 +16,6 @@ See their respective folders for language-specific documentation.
 The following bindings have been removed from this repository due to lack of maintenance. If someone is interested in maintaining them, we can bring them back&mdash;feel free to message a developer on Dicsord if you are interested. Provided are links to their last available version (not necessarily the last working version).
 - C#: [41c9013f](https://github.com/nomic-ai/gpt4all/tree/41c9013fa46a194b3e4fee6ced1b9d1b65e177ac/gpt4all-bindings/csharp)
 - Java: [41c9013f](https://github.com/nomic-ai/gpt4all/tree/41c9013fa46a194b3e4fee6ced1b9d1b65e177ac/gpt4all-bindings/java)
+- Go: [41c9013f](https://github.com/nomic-ai/gpt4all/tree/41c9013fa46a194b3e4fee6ced1b9d1b65e177ac/gpt4all-bindings/golang)
 
 </details>
