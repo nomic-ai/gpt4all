@@ -140,7 +140,7 @@ private:
     void removeFolderFromDocumentQueue(int folder_id);
     void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
-    bool scanQueue(QList<int> &chunksToRemove);
+    void scanQueue(QList<int> &chunksToRemove);
     bool cleanDB();
     void addFolderToWatch(const QString &path);
     void removeFolderFromWatch(const QString &path);

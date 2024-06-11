@@ -1032,20 +1032,12 @@ void Database::scanQueueBatch() {
     QElapsedTimer timer;
     timer.start();
 
-    int scanned = 0;
-    int lastToScan = m_docsToScan.count();
-
     transaction();
 
     // scan for up to 100ms or until we run out of documents
     QList<int> chunksToRemove;
-    while (!m_docsToScan.isEmpty() && timer.elapsed() < 100) {
-        ++scanned;
-        if (!scanQueue(chunksToRemove)) {
-            rollback();
-            return;
-        }
-    }
+    while (!m_docsToScan.isEmpty() && timer.elapsed() < 100)
+        scanQueue(chunksToRemove);
 
     // failure is no longer an option, apply everything at once and hope this is effectively atomic
     for (const auto &chunk: chunksToRemove)
@@ -1055,7 +1047,7 @@ void Database::scanQueueBatch() {
         m_embeddings->save();
 }
 
-bool Database::scanQueue(QList<int> &chunksToRemove)
+void Database::scanQueue(QList<int> &chunksToRemove)
 {
     DocumentInfo info = dequeueDocument();
     const size_t countForFolder = countOfDocuments(info.folder);
@@ -1066,10 +1058,8 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
 
     // If the doc has since been deleted or no longer readable, then we schedule more work and return
     // leaving the cleanup for the cleanup handler
-    if (!info.doc.exists() || !info.doc.isReadable()) {
-        scheduleNext(folder_id, countForFolder);
-        return true;
-    }
+    if (!info.doc.exists() || !info.doc.isReadable())
+        return scheduleNext(folder_id, countForFolder);
 
     const qint64 document_time = info.doc.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
     const QString document_path = info.doc.canonicalFilePath();
@@ -1082,8 +1072,7 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
     if (!selectDocument(q, document_path, &existing_id, &existing_time)) {
         handleDocumentError("ERROR: Cannot select document",
             existing_id, document_path, q.lastError());
-        scheduleNext(folder_id, countForFolder);
-        return false;
+        return scheduleNext(folder_id, countForFolder);
     }
 
     // If we have the document, we need to compare the last modification time and if it is newer
@@ -1092,18 +1081,14 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
         Q_ASSERT(existing_time != -1);
         if (document_time == existing_time) {
             // No need to rescan, but we do have to schedule next
-            scheduleNext(folder_id, countForFolder);
-            return true;
+            return scheduleNext(folder_id, countForFolder);
         }
-        if (!getChunksByDocumentId(existing_id, chunksToRemove)) {
-            scheduleNext(folder_id, countForFolder);
-            return false;
-        }
+        if (!getChunksByDocumentId(existing_id, chunksToRemove))
+            return scheduleNext(folder_id, countForFolder);
         if (!removeChunksByDocumentId(q, existing_id)) {
             handleDocumentError("ERROR: Cannot remove chunks of document",
                 existing_id, document_path, q.lastError());
-            scheduleNext(folder_id, countForFolder);
-            return false;
+            return scheduleNext(folder_id, countForFolder);
         }
         updateCollectionStatistics();
     }
@@ -1115,15 +1100,13 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
             if (!updateDocument(q, document_id, document_time)) {
                 handleDocumentError("ERROR: Could not update document_time",
                     document_id, document_path, q.lastError());
-                scheduleNext(folder_id, countForFolder);
-                return false;
+                return scheduleNext(folder_id, countForFolder);
             }
         } else {
             if (!addDocument(q, folder_id, document_time, document_path, &document_id)) {
                 handleDocumentError("ERROR: Could not add document",
                     document_id, document_path, q.lastError());
-                scheduleNext(folder_id, countForFolder);
-                return false;
+                return scheduleNext(folder_id, countForFolder);
             }
 
             CollectionItem item = guiCollectionItem(folder_id);
@@ -1138,8 +1121,7 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
         if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
             handleDocumentError("ERROR: Could not load pdf",
                 document_id, document_path, q.lastError());
-            scheduleNext(folder_id, countForFolder);
-            return false;
+            return scheduleNext(folder_id, countForFolder);
         }
         const size_t bytes = info.doc.size();
         const size_t bytesPerPage = std::floor(bytes / doc.pageCount());
@@ -1164,8 +1146,7 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
             info.currentPage += 1;
             info.currentlyProcessing = true;
             enqueueDocumentInternal(info, true /*prepend*/);
-            scheduleNext(folder_id, countForFolder + 1);
-            return true;
+            return scheduleNext(folder_id, countForFolder + 1);
         }
 
         item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
@@ -1175,8 +1156,7 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
         if (!file.open(QIODevice::ReadOnly)) {
             handleDocumentError("ERROR: Cannot open file for scanning",
                                 existing_id, document_path, q.lastError());
-            scheduleNext(folder_id, countForFolder);
-            return false;
+            return scheduleNext(folder_id, countForFolder);
         }
 
         const size_t bytes = info.doc.size();
@@ -1190,8 +1170,7 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
             if (!stream.seek(byteIndex)) {
                 handleDocumentError("ERROR: Cannot seek to pos for scanning",
                                     existing_id, document_path, q.lastError());
-                scheduleNext(folder_id, countForFolder);
-                return false;
+                return scheduleNext(folder_id, countForFolder);
             }
         }
 #if defined(DEBUG)
@@ -1208,13 +1187,11 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
             info.currentPosition = pos;
             info.currentlyProcessing = true;
             enqueueDocumentInternal(info, true /*prepend*/);
-            scheduleNext(folder_id, countForFolder + 1);
-            return true;
+            return scheduleNext(folder_id, countForFolder + 1);
         }
     }
 
-    scheduleNext(folder_id, countForFolder);
-    return true;
+    return scheduleNext(folder_id, countForFolder);
 }
 
 void Database::scanDocuments(int folder_id, const QString &folder_path)
@@ -1749,8 +1726,6 @@ void Database::changeChunkSize(int chunkSize)
     qDebug() << "changeChunkSize" << chunkSize;
 #endif
 
-    m_chunkSize = chunkSize;
-
     QSqlQuery q(m_db);
     // Scan all documents in db to make sure they still exist
     if (!q.prepare(SELECT_ALL_DOCUMENTS_SQL)) {
@@ -1790,6 +1765,7 @@ void Database::changeChunkSize(int chunkSize)
     if (!chunksToRemove.isEmpty())
         m_embeddings->save();
 
+    m_chunkSize = chunkSize;
     addCurrentFolders();
     updateCollectionStatistics();
 }
