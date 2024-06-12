@@ -1,3 +1,6 @@
+# NOTICE
+This document is largely out-of-date. GPT4All supports more than 20 model architectures via llama.cpp. If you have a question about GPT4All, try asking on our [Discord](https://discord.gg/mGZE39AS3e).
+
 # GPT4All FAQ
 
 ## What models are supported by the GPT4All ecosystem?

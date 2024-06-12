@@ -1,3 +1,6 @@
+> [!WARNING]
+> This document is largely out-of-date. GPT4All supports more than 20 model architectures via llama.cpp. If you have a question about GPT4All, try asking on our [Discord](https://discord.gg/mGZE39AS3e).
+
 # GPT4ALL Backend
 This directory contains the C/C++ model backend used by GPT4All for inference on the CPU. This backend acts as a universal library/wrapper for all models that the GPT4All ecosystem supports. Language bindings are built on top of this universal library. The native GPT4all Chat application directly uses this library for all inference.
 
