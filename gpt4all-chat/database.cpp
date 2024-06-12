@@ -79,6 +79,23 @@ private:
 
 static int s_batchSize = 100;
 
+static const QString INIT_DB_SQL[] = {
+    uR"(
+        create table chunks(document_id integer, chunk_id integer primary key autoincrement, chunk_text varchar,
+            file varchar, title varchar, author varchar, subject varchar, keywords varchar,
+            page integer, line_from integer, line_to integer, words integer default 0, tokens integer default 0,
+            has_embedding integer default 0);
+    )"_s, uR"(
+        create table collections(collection_name varchar, folder_id integer, last_update_time integer,
+            embedding_model varchar, force_indexing integer, unique(collection_name, folder_id));
+    )"_s, uR"(
+        create table folders(id integer primary key, folder_path varchar unique);
+    )"_s, uR"(
+        create table documents(id integer primary key, folder_id integer, document_time integer,
+            document_path varchar unique);
+    )"_s,
+};
+
 static const QString INSERT_CHUNK_SQL = uR"(
     insert into chunks(document_id, chunk_text,
         file, title, author, subject, keywords, page, line_from, line_to, words)
@@ -87,13 +104,6 @@ static const QString INSERT_CHUNK_SQL = uR"(
 
 static const QString DELETE_CHUNKS_SQL = uR"(
     delete from chunks WHERE document_id = ?;
-    )"_s;
-
-static const QString CHUNKS_SQL = uR"(
-    create table chunks(document_id integer, chunk_id integer primary key autoincrement, chunk_text varchar,
-        file varchar, title varchar, author varchar, subject varchar, keywords varchar,
-        page integer, line_from integer, line_to integer, words integer default 0, tokens integer default 0,
-        has_embedding integer default 0);
     )"_s;
 
 static const QString SELECT_CHUNKS_BY_DOCUMENT_SQL = uR"(
@@ -243,10 +253,6 @@ static const QString DELETE_COLLECTION_SQL = uR"(
     delete from collections where collection_name = ? and folder_id = ?;
     )"_s;
 
-static const QString COLLECTIONS_SQL = uR"(
-    create table collections(collection_name varchar, folder_id integer, last_update_time integer, embedding_model varchar, force_indexing integer, unique(collection_name, folder_id));
-    )"_s;
-
 static const QString SELECT_FOLDERS_FROM_COLLECTIONS_SQL = uR"(
     select f.id, f.folder_path
     from collections c
@@ -390,10 +396,6 @@ static const QString SELECT_ALL_FOLDERPATHS_SQL = uR"(
     select folder_path from folders;
     )"_s;
 
-static const QString FOLDERS_SQL = uR"(
-    create table folders(id integer primary key, folder_path varchar unique);
-    )"_s;
-
 static bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
 {
     if (!q.prepare(INSERT_FOLDERS_SQL))
@@ -456,10 +458,6 @@ static const QString UPDATE_DOCUMENT_TIME_SQL = uR"(
 
 static const QString DELETE_DOCUMENTS_SQL = uR"(
     delete from documents where id = ?;
-    )"_s;
-
-static const QString DOCUMENTS_SQL = uR"(
-    create table documents(id integer primary key, folder_id integer, document_time integer, document_path varchar unique);
     )"_s;
 
 static const QString SELECT_DOCUMENT_SQL = uR"(
@@ -642,28 +640,12 @@ bool Database::initDb(const QString &modelPath, const QList<CollectionItem> &old
     transaction();
 
     QSqlQuery q(m_db);
-    if (!q.exec(CHUNKS_SQL)) {
-        qWarning() << "ERROR: failed to create chunks table" << q.lastError();
-        rollback();
-        return false;
-    }
-
-    if (!q.exec(COLLECTIONS_SQL)) {
-        qWarning() << "ERROR: failed to create collections table" << q.lastError();
-        rollback();
-        return false;
-    }
-
-    if (!q.exec(FOLDERS_SQL)) {
-        qWarning() << "ERROR: failed to create folders table" << q.lastError();
-        rollback();
-        return false;
-    }
-
-    if (!q.exec(DOCUMENTS_SQL)) {
-        qWarning() << "ERROR: failed to create documents table" << q.lastError();
-        rollback();
-        return false;
+    for (const auto &cmd: INIT_DB_SQL) {
+        if (!q.exec(cmd)) {
+            qWarning() << "ERROR: failed to create tables" << q.lastError();
+            rollback();
+            return false;
+        }
     }
 
     for (const CollectionItem &item : oldCollections) {
