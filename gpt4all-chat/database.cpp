@@ -689,7 +689,7 @@ int Database::openDatabase(const QString &modelPath, bool create, int ver)
         return 0;
     m_db.setDatabaseName(dbPath);
     if (!m_db.open()) {
-        qWarning() << "ERROR: opening db" << m_db.lastError().text();
+        qWarning() << "ERROR: opening db" << m_db.lastError();
         return -1;
     }
     return hasContent();
@@ -751,31 +751,31 @@ bool Database::initDb(const QString &modelPath, const QList<CollectionItem> &old
 
     QSqlQuery q(m_db);
     if (!q.exec(CHUNKS_SQL)) {
-        qWarning() << "ERROR: failed to create chunks table" << q.lastError().text();
+        qWarning() << "ERROR: failed to create chunks table" << q.lastError();
         rollback();
         return false;
     }
 
     if (!q.exec(FTS_CHUNKS_SQL)) {
-        qWarning() << "ERROR: failed to create fts chunks table" << q.lastError().text();
+        qWarning() << "ERROR: failed to create fts chunks table" << q.lastError();
         rollback();
         return false;
     }
 
     if (!q.exec(COLLECTIONS_SQL)) {
-        qWarning() << "ERROR: failed to create collections table" << q.lastError().text();
+        qWarning() << "ERROR: failed to create collections table" << q.lastError();
         rollback();
         return false;
     }
 
     if (!q.exec(FOLDERS_SQL)) {
-        qWarning() << "ERROR: failed to create folders table" << q.lastError().text();
+        qWarning() << "ERROR: failed to create folders table" << q.lastError();
         rollback();
         return false;
     }
 
     if (!q.exec(DOCUMENTS_SQL)) {
-        qWarning() << "ERROR: failed to create documents table" << q.lastError().text();
+        qWarning() << "ERROR: failed to create documents table" << q.lastError();
         rollback();
         return false;
     }
@@ -867,7 +867,7 @@ void Database::scheduleNext(int folder_id, size_t countForFolder)
 void Database::handleDocumentError(const QString &errorMessage,
     int document_id, const QString &document_path, const QSqlError &error)
 {
-    qWarning() << errorMessage << document_id << document_path << error.text();
+    qWarning() << errorMessage << document_id << document_path << error;
 }
 
 size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
@@ -1688,12 +1688,12 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         }
         std::vector<qint64> embeddings = m_embeddings->search(result, retrievalSize);
         if (!selectChunk(q, collections, embeddings, retrievalSize)) {
-            qDebug() << "ERROR: selecting chunks:" << q.lastError().text();
+            qDebug() << "ERROR: selecting chunks:" << q.lastError();
             return;
         }
     } else {
         if (!selectChunk(q, collections, text, retrievalSize)) {
-            qDebug() << "ERROR: selecting chunks:" << q.lastError().text();
+            qDebug() << "ERROR: selecting chunks:" << q.lastError();
             return;
         }
     }
