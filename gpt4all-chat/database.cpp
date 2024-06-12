@@ -80,6 +80,9 @@ private:
 static int s_batchSize = 100;
 
 static const QString INIT_DB_SQL[] = {
+    // automatically free unused disk space
+    u"pragma auto_vacuum = FULL;"_s,
+    // create tables
     uR"(
         create table chunks(document_id integer, chunk_id integer primary key autoincrement, chunk_text varchar,
             file varchar, title varchar, author varchar, subject varchar, keywords varchar,
