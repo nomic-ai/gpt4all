@@ -1113,6 +1113,9 @@ void Database::scanQueueBatch() {
     commit();
     if (!chunksToRemove.isEmpty())
         m_embeddings->save();
+
+    if (m_docsToScan.isEmpty())
+        m_scanTimer->stop();
 }
 
 void Database::scanQueue(QList<int> &chunksToRemove)
