@@ -9,6 +9,7 @@
 #include <QMap>
 #include <QObject>
 #include <QQueue>
+#include <QSet>
 #include <QSqlDatabase>
 #include <QString>
 #include <QThread>
@@ -162,6 +163,7 @@ private:
     QList<ResultInfo> m_retrieve;
     QThread m_dbThread;
     QFileSystemWatcher *m_watcher;
+    QSet<QString> m_watchedPaths;
     EmbeddingLLM *m_embLLM;
     Embeddings *m_embeddings;
     QVector<EmbeddingChunk> m_chunkList;

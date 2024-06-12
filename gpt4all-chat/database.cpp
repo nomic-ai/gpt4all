@@ -1653,8 +1653,13 @@ void Database::addFolderToWatch(const QString &path)
 #if defined(DEBUG)
     qDebug() << "addFolderToWatch" << path;
 #endif
-    if (!m_watcher->addPath(path))
-        qWarning() << "Database::addFolderToWatch: failed to watch" << path;
+    // pre-check because addPath returns false for already watched paths
+    if (!m_watchedPaths.contains(path)) {
+        if (!m_watcher->addPath(path))
+            qWarning() << "Database::addFolderToWatch: failed to watch" << path;
+        // add unconditionally to suppress repeated warnings
+        m_watchedPaths << path;
+    }
 }
 
 void Database::removeFolderFromWatch(const QString &path)
@@ -1668,6 +1673,7 @@ void Database::removeFolderFromWatch(const QString &path)
         children.append(it.next());
 
     m_watcher->removePaths(children);
+    m_watchedPaths -= QSet(children.begin(), children.end());
 }
 
 void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize,
