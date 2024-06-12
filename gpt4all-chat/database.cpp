@@ -780,14 +780,12 @@ bool Database::initDb(const QString &modelPath, const QList<CollectionItem> &old
         return false;
     }
 
-    bool success = true;
-    for (const CollectionItem &item : oldCollections)
-        success &= addForcedCollection(item);
-
-    if (!success) {
-        qWarning() << "ERROR: failed to add previous collections to new database";
-        rollback();
-        return false;
+    for (const CollectionItem &item : oldCollections) {
+        if (!addForcedCollection(item)) {
+            qWarning() << "ERROR: failed to add previous collections to new database";
+            rollback();
+            return false;
+        }
     }
 
     commit();
