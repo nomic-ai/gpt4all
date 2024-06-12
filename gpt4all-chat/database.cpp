@@ -85,18 +85,8 @@ static const QString INSERT_CHUNK_SQL = uR"(
         values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     )"_s;
 
-static const QString INSERT_CHUNK_FTS_SQL = uR"(
-    insert into chunks_fts(document_id, chunk_id, chunk_text,
-        file, title, author, subject, keywords, page, line_from, line_to)
-        values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    )"_s;
-
 static const QString DELETE_CHUNKS_SQL = uR"(
     delete from chunks WHERE document_id = ?;
-    )"_s;
-
-static const QString DELETE_CHUNKS_FTS_SQL = uR"(
-    delete from chunks_fts WHERE document_id = ?;
     )"_s;
 
 static const QString CHUNKS_SQL = uR"(
@@ -104,11 +94,6 @@ static const QString CHUNKS_SQL = uR"(
         file varchar, title varchar, author varchar, subject varchar, keywords varchar,
         page integer, line_from integer, line_to integer, words integer default 0, tokens integer default 0,
         has_embedding integer default 0);
-    )"_s;
-
-static const QString FTS_CHUNKS_SQL = uR"(
-    create virtual table chunks_fts using fts5(document_id unindexed, chunk_id unindexed, chunk_text,
-        file, title, author, subject, keywords, page, line_from, line_to, tokenize="trigram");
     )"_s;
 
 static const QString SELECT_CHUNKS_BY_DOCUMENT_SQL = uR"(
@@ -125,19 +110,6 @@ static const QString SELECT_CHUNKS_SQL = uR"(
     join collections ON folders.id = collections.folder_id
     where chunks.chunk_id in (%1) and collections.collection_name in (%2);
 )"_s;
-
-static const QString SELECT_NGRAM_SQL = uR"(
-    select chunks_fts.chunk_id, documents.document_time,
-        chunks_fts.chunk_text, chunks_fts.file, chunks_fts.title, chunks_fts.author, chunks_fts.page,
-        chunks_fts.line_from, chunks_fts.line_to
-    from chunks_fts
-    join documents ON chunks_fts.document_id = documents.id
-    join folders ON documents.folder_id = folders.id
-    join collections ON folders.id = collections.folder_id
-    where chunks_fts match ? and collections.collection_name in (%1)
-    order by bm25(chunks_fts)
-    limit %2;
-    )"_s;
 
 static const QString SELECT_FILE_FOR_CHUNK_SQL = uR"(
     select c.file
@@ -201,45 +173,15 @@ static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, c
     if (!q.next())
         return false;
     *chunk_id = q.value(0).toInt();
-    {
-        if (!q.prepare(INSERT_CHUNK_FTS_SQL))
-            return false;
-        q.addBindValue(document_id);
-        q.addBindValue(*chunk_id);
-        q.addBindValue(chunk_text);
-        q.addBindValue(file);
-        q.addBindValue(title);
-        q.addBindValue(author);
-        q.addBindValue(subject);
-        q.addBindValue(keywords);
-        q.addBindValue(page);
-        q.addBindValue(from);
-        q.addBindValue(to);
-        if (!q.exec())
-            return false;
-    }
     return true;
 }
 
 static bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
 {
-    {
-        if (!q.prepare(DELETE_CHUNKS_SQL))
-            return false;
-        q.addBindValue(document_id);
-        if (!q.exec())
-            return false;
-    }
-
-    {
-        if (!q.prepare(DELETE_CHUNKS_FTS_SQL))
-            return false;
-        q.addBindValue(document_id);
-        if (!q.exec())
-            return false;
-    }
-
-    return true;
+    if (!q.prepare(DELETE_CHUNKS_SQL))
+        return false;
+    q.addBindValue(document_id);
+    return q.exec();
 }
 
 static bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChunk> &chunks) {
@@ -281,30 +223,6 @@ static bool updateChunkHasEmbedding(QSqlQuery &q, int chunk_id) {
     return true;
 }
 
-static QStringList generateGrams(const QString &input, int N)
-{
-    // Remove common English punctuation using QRegularExpression
-    static QRegularExpression punctuation(R"([.,;:!?'"()\-])");
-    QString cleanedInput = input;
-    cleanedInput = cleanedInput.remove(punctuation);
-
-    // Split the cleaned input into words using whitespace
-    static QRegularExpression spaces("\\s+");
-    QStringList words = cleanedInput.split(spaces, Qt::SkipEmptyParts);
-    N = qMin(words.size(), N);
-
-    // Generate all possible N-grams
-    QStringList ngrams;
-    for (int i = 0; i < words.size() - (N - 1); ++i) {
-        QStringList currentNgram;
-        for (int j = 0; j < N; ++j) {
-            currentNgram.append("\"" + words[i + j] + "\"");
-        }
-        ngrams.append("NEAR(" + currentNgram.join(" ") + ", " + QString::number(N) + ")");
-    }
-    return ngrams;
-}
-
 static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const std::vector<qint64> &chunk_ids, int retrievalSize)
 {
     QString chunk_ids_str = QString::number(chunk_ids[0]);
@@ -315,32 +233,6 @@ static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, co
     if (!q.prepare(formatted_query))
         return false;
     return q.exec();
-}
-
-static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QString &chunk_text, int retrievalSize)
-{
-    static QRegularExpression spaces("\\s+");
-    const int N_WORDS = chunk_text.split(spaces).size();
-    for (int N = N_WORDS; N > 2; N--) {
-        // first try trigrams
-        QList<QString> text = generateGrams(chunk_text, N);
-        QString orText = text.join(" OR ");
-        const QString collection_names_str = collection_names.join("', '");
-        const QString formatted_query = SELECT_NGRAM_SQL.arg("'" + collection_names_str + "'").arg(QString::number(retrievalSize));
-        if (!q.prepare(formatted_query))
-            return false;
-        q.addBindValue(orText);
-        bool success = q.exec();
-        if (!success) return false;
-        if (q.next()) {
-#if defined(DEBUG)
-            qDebug() << "hit on" << N << "before" << chunk_text << "after" << orText;
-#endif
-            q.previous();
-            return true;
-        }
-    }
-    return true;
 }
 
 static const QString INSERT_COLLECTION_SQL = uR"(
@@ -752,12 +644,6 @@ bool Database::initDb(const QString &modelPath, const QList<CollectionItem> &old
     QSqlQuery q(m_db);
     if (!q.exec(CHUNKS_SQL)) {
         qWarning() << "ERROR: failed to create chunks table" << q.lastError();
-        rollback();
-        return false;
-    }
-
-    if (!q.exec(FTS_CHUNKS_SQL)) {
-        qWarning() << "ERROR: failed to create fts chunks table" << q.lastError();
         rollback();
         return false;
     }
@@ -1683,23 +1569,21 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
 #endif
 
-    QSqlQuery q(m_db);
     if (m_embeddings->isLoaded()) {
-        std::vector<float> result = m_embLLM->generateEmbeddings(text);
-        if (result.empty()) {
-            qDebug() << "ERROR: generating embeddings returned a null result";
-            return;
-        }
-        std::vector<qint64> embeddings = m_embeddings->search(result, retrievalSize);
-        if (!selectChunk(q, collections, embeddings, retrievalSize)) {
-            qDebug() << "ERROR: selecting chunks:" << q.lastError();
-            return;
-        }
-    } else {
-        if (!selectChunk(q, collections, text, retrievalSize)) {
-            qDebug() << "ERROR: selecting chunks:" << q.lastError();
-            return;
-        }
+        qWarning() << "retrieveFromDB ERROR: embeddings are not loaded";
+        return;
+    }
+
+    std::vector<float> result = m_embLLM->generateEmbeddings(text);
+    if (result.empty()) {
+        qDebug() << "ERROR: generating embeddings returned a null result";
+        return;
+    }
+    std::vector<qint64> embeddings = m_embeddings->search(result, retrievalSize);
+    QSqlQuery q(m_db);
+    if (!selectChunk(q, collections, embeddings, retrievalSize)) {
+        qDebug() << "ERROR: selecting chunks:" << q.lastError();
+        return;
     }
 
     while (q.next()) {
