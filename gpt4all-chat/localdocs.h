@@ -28,6 +28,7 @@ public:
 
 public Q_SLOTS:
     void handleChunkSizeChanged();
+    void handleFileExtensionsChanged();
     void aboutToQuit();
 
 Q_SIGNALS:
@@ -36,6 +37,7 @@ Q_SIGNALS:
     void requestAddFolder(const QString &collection, const QString &path);
     void requestRemoveFolder(const QString &collection, const QString &path);
     void requestChunkSizeChange(int chunkSize);
+    void requestFileExtensionsChange(const QStringList &extensions);
     void localDocsModelChanged();
     void databaseValidChanged();
 

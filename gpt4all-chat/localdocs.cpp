@@ -22,9 +22,11 @@ LocalDocs::LocalDocs()
     , m_database(nullptr)
 {
     connect(MySettings::globalInstance(), &MySettings::localDocsChunkSizeChanged, this, &LocalDocs::handleChunkSizeChanged);
+    connect(MySettings::globalInstance(), &MySettings::localDocsFileExtensionsChanged, this, &LocalDocs::handleFileExtensionsChanged);
 
     // Create the DB with the chunk size from settings
-    m_database = new Database(MySettings::globalInstance()->localDocsChunkSize());
+    m_database = new Database(MySettings::globalInstance()->localDocsChunkSize(),
+                              MySettings::globalInstance()->localDocsFileExtensions());
 
     connect(this, &LocalDocs::requestStart, m_database,
         &Database::start, Qt::QueuedConnection);
@@ -36,6 +38,8 @@ LocalDocs::LocalDocs()
         &Database::removeFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestChunkSizeChange, m_database,
         &Database::changeChunkSize, Qt::QueuedConnection);
+    connect(this, &LocalDocs::requestFileExtensionsChange, m_database,
+        &Database::changeFileExtensions, Qt::QueuedConnection);
     connect(m_database, &Database::databaseValidChanged,
         this, &LocalDocs::databaseValidChanged, Qt::QueuedConnection);
 
@@ -79,4 +83,9 @@ void LocalDocs::removeFolder(const QString &collection, const QString &path)
 void LocalDocs::handleChunkSizeChanged()
 {
     emit requestChunkSizeChange(MySettings::globalInstance()->localDocsChunkSize());
+}
+
+void LocalDocs::handleFileExtensionsChanged()
+{
+    emit requestFileExtensionsChange(MySettings::globalInstance()->localDocsFileExtensions());
 }

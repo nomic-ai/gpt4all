@@ -32,45 +32,90 @@ using namespace Qt::Literals::StringLiterals;
 //#define DEBUG
 //#define DEBUG_EXAMPLE
 
+namespace {
+
+/* QFile that checks input for binary data. If seen, it fails the read and returns true
+ * for binarySeen(). */
+class BinaryDetectingFile: public QFile {
+public:
+    using QFile::QFile;
+
+    bool binarySeen() const { return m_binarySeen; }
+
+protected:
+    virtual qint64 readData(char *data, qint64 maxSize) override {
+        qint64 res = QFile::readData(data, maxSize);
+        return checkData(data, res);
+    }
+
+    virtual qint64 readLineData(char *data, qint64 maxSize) override {
+        qint64 res = QFile::readLineData(data, maxSize);
+        return checkData(data, res);
+    }
+
+private:
+    qint64 checkData(const char *data, qint64 size) {
+        Q_ASSERT(!isTextModeEnabled()); // We need raw bytes from the underlying QFile
+        if (size != -1 && !m_binarySeen) {
+            for (qint64 i = 0; i < size; i++) {
+                /* Control characters we should never see in plain text:
+                 * 0x00 NUL - 0x06 ACK
+                 * 0x0E SO  - 0x1A SUB
+                 * 0x1C FS  - 0x1F US */
+                auto c = static_cast<unsigned char>(data[i]);
+                if (c < 0x07 || (c >= 0x0E && c < 0x1B) || (c >= 0x1C && c < 0x20)) {
+                    m_binarySeen = true;
+                    break;
+                }
+            }
+        }
+        return m_binarySeen ? -1 : size;
+    }
+
+    bool m_binarySeen = false;
+};
+
+} // namespace
+
 static int s_batchSize = 100;
 
-const auto INSERT_CHUNK_SQL = QLatin1String(R"(
+static const QString INSERT_CHUNK_SQL = uR"(
     insert into chunks(document_id, chunk_text,
         file, title, author, subject, keywords, page, line_from, line_to, words)
         values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    )");
+    )"_s;
 
-const auto INSERT_CHUNK_FTS_SQL = QLatin1String(R"(
+static const QString INSERT_CHUNK_FTS_SQL = uR"(
     insert into chunks_fts(document_id, chunk_id, chunk_text,
         file, title, author, subject, keywords, page, line_from, line_to)
         values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    )");
+    )"_s;
 
-const auto DELETE_CHUNKS_SQL = QLatin1String(R"(
+static const QString DELETE_CHUNKS_SQL = uR"(
     delete from chunks WHERE document_id = ?;
-    )");
+    )"_s;
 
-const auto DELETE_CHUNKS_FTS_SQL = QLatin1String(R"(
+static const QString DELETE_CHUNKS_FTS_SQL = uR"(
     delete from chunks_fts WHERE document_id = ?;
-    )");
+    )"_s;
 
-const auto CHUNKS_SQL = QLatin1String(R"(
+static const QString CHUNKS_SQL = uR"(
     create table chunks(document_id integer, chunk_id integer primary key autoincrement, chunk_text varchar,
         file varchar, title varchar, author varchar, subject varchar, keywords varchar,
         page integer, line_from integer, line_to integer, words integer default 0, tokens integer default 0,
         has_embedding integer default 0);
-    )");
+    )"_s;
 
-const auto FTS_CHUNKS_SQL = QLatin1String(R"(
+static const QString FTS_CHUNKS_SQL = uR"(
     create virtual table chunks_fts using fts5(document_id unindexed, chunk_id unindexed, chunk_text,
         file, title, author, subject, keywords, page, line_from, line_to, tokenize="trigram");
-    )");
+    )"_s;
 
-const auto SELECT_CHUNKS_BY_DOCUMENT_SQL = QLatin1String(R"(
+static const QString SELECT_CHUNKS_BY_DOCUMENT_SQL = uR"(
     select chunk_id from chunks WHERE document_id = ?;
-    )");
+    )"_s;
 
-const auto SELECT_CHUNKS_SQL = QLatin1String(R"(
+static const QString SELECT_CHUNKS_SQL = uR"(
     select chunks.chunk_id, documents.document_time,
         chunks.chunk_text, chunks.file, chunks.title, chunks.author, chunks.page,
         chunks.line_from, chunks.line_to
@@ -79,9 +124,9 @@ const auto SELECT_CHUNKS_SQL = QLatin1String(R"(
     join folders ON documents.folder_id = folders.id
     join collections ON folders.id = collections.folder_id
     where chunks.chunk_id in (%1) and collections.collection_name in (%2);
-)");
+)"_s;
 
-const auto SELECT_NGRAM_SQL = QLatin1String(R"(
+static const QString SELECT_NGRAM_SQL = uR"(
     select chunks_fts.chunk_id, documents.document_time,
         chunks_fts.chunk_text, chunks_fts.file, chunks_fts.title, chunks_fts.author, chunks_fts.page,
         chunks_fts.line_from, chunks_fts.line_to
@@ -92,15 +137,15 @@ const auto SELECT_NGRAM_SQL = QLatin1String(R"(
     where chunks_fts match ? and collections.collection_name in (%1)
     order by bm25(chunks_fts)
     limit %2;
-    )");
+    )"_s;
 
-const auto SELECT_FILE_FOR_CHUNK_SQL = QLatin1String(R"(
+static const QString SELECT_FILE_FOR_CHUNK_SQL = uR"(
     select c.file
     from chunks c
     where c.chunk_id = ?;
-    )");
+    )"_s;
 
-bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
+static bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
     if (!q.prepare(SELECT_FILE_FOR_CHUNK_SQL))
         return false;
     q.addBindValue(chunk_id);
@@ -112,27 +157,27 @@ bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
     return true;
 }
 
-const auto SELECT_UNCOMPLETED_CHUNKS_SQL = QLatin1String(R"(
+static const QString SELECT_UNCOMPLETED_CHUNKS_SQL = uR"(
     select c.chunk_id, c.chunk_text as chunk, d.folder_id
     from chunks c
     join documents d ON c.document_id = d.id
     where c.has_embedding != 1 and d.folder_id = ?;
-    )");
+    )"_s;
 
-const auto SELECT_COUNT_CHUNKS_SQL = QLatin1String(R"(
+static const QString SELECT_COUNT_CHUNKS_SQL = uR"(
     select count(c.chunk_id) as total_chunks
     from chunks c
     join documents d on c.document_id = d.id
     where d.folder_id = ?;
-    )");
+    )"_s;
 
-const auto UPDATE_CHUNK_HAS_EMBEDDING = QLatin1String(R"(
+static const QString UPDATE_CHUNK_HAS_EMBEDDING_SQL = uR"(
     update chunks set has_embedding = 1 where chunk_id = ?;
-    )");
+    )"_s;
 
-bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text,
-    const QString &file, const QString &title, const QString &author, const QString &subject, const QString &keywords,
-    int page, int from, int to, int words, int *chunk_id)
+static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
+                     const QString &title, const QString &author, const QString &subject, const QString &keywords,
+                     int page, int from, int to, int words, int *chunk_id)
 {
     {
         if (!q.prepare(INSERT_CHUNK_SQL))
@@ -176,7 +221,7 @@ bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text,
     return true;
 }
 
-bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
+static bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
 {
     {
         if (!q.prepare(DELETE_CHUNKS_SQL))
@@ -197,7 +242,7 @@ bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
     return true;
 }
 
-bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChunk> &chunks) {
+static bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChunk> &chunks) {
     if (!q.prepare(SELECT_UNCOMPLETED_CHUNKS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -213,7 +258,7 @@ bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChun
     return true;
 }
 
-bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
+static bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
     if (!q.prepare(SELECT_COUNT_CHUNKS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -227,8 +272,8 @@ bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
     return true;
 }
 
-bool updateChunkHasEmbedding(QSqlQuery &q, int chunk_id) {
-    if (!q.prepare(UPDATE_CHUNK_HAS_EMBEDDING))
+static bool updateChunkHasEmbedding(QSqlQuery &q, int chunk_id) {
+    if (!q.prepare(UPDATE_CHUNK_HAS_EMBEDDING_SQL))
         return false;
     q.addBindValue(chunk_id);
     if (!q.exec())
@@ -236,7 +281,7 @@ bool updateChunkHasEmbedding(QSqlQuery &q, int chunk_id) {
     return true;
 }
 
-QStringList generateGrams(const QString &input, int N)
+static QStringList generateGrams(const QString &input, int N)
 {
     // Remove common English punctuation using QRegularExpression
     static QRegularExpression punctuation(R"([.,;:!?'"()\-])");
@@ -260,7 +305,7 @@ QStringList generateGrams(const QString &input, int N)
     return ngrams;
 }
 
-bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const std::vector<qint64> &chunk_ids, int retrievalSize)
+static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const std::vector<qint64> &chunk_ids, int retrievalSize)
 {
     QString chunk_ids_str = QString::number(chunk_ids[0]);
     for (size_t i = 1; i < chunk_ids.size(); ++i)
@@ -272,7 +317,7 @@ bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const std
     return q.exec();
 }
 
-bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QString &chunk_text, int retrievalSize)
+static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QString &chunk_text, int retrievalSize)
 {
     static QRegularExpression spaces("\\s+");
     const int N_WORDS = chunk_text.split(spaces).size();
@@ -298,53 +343,51 @@ bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const QSt
     return true;
 }
 
-const auto INSERT_COLLECTION_SQL = QLatin1String(R"(
+static const QString INSERT_COLLECTION_SQL = uR"(
     insert into collections(collection_name, folder_id, last_update_time, embedding_model, force_indexing) values(?, ?, ?, ?, ?);
-    )");
+    )"_s;
 
-const auto DELETE_COLLECTION_SQL = QLatin1String(R"(
+static const QString DELETE_COLLECTION_SQL = uR"(
     delete from collections where collection_name = ? and folder_id = ?;
-    )");
+    )"_s;
 
-const auto COLLECTIONS_SQL = QLatin1String(R"(
+static const QString COLLECTIONS_SQL = uR"(
     create table collections(collection_name varchar, folder_id integer, last_update_time integer, embedding_model varchar, force_indexing integer, unique(collection_name, folder_id));
-    )");
+    )"_s;
 
-const auto SELECT_FOLDERS_FROM_COLLECTIONS_SQL = QLatin1String(R"(
+static const QString SELECT_FOLDERS_FROM_COLLECTIONS_SQL = uR"(
     select f.id, f.folder_path
     from collections c
     join folders f on c.folder_id = f.id
     where collection_name = ?;
-    )");
+    )"_s;
 
-const auto SELECT_COLLECTIONS_FROM_FOLDER_SQL = QLatin1String(R"(
+static const QString SELECT_COLLECTIONS_FROM_FOLDER_SQL = uR"(
     select collection_name from collections where folder_id = ?;
-    )");
+    )"_s;
 
-const auto SELECT_COLLECTIONS_SQL_V1 = QLatin1String(R"(
+static const QString SELECT_COLLECTIONS_SQL_V1 = uR"(
     select c.collection_name, f.folder_path, f.id
     from collections c
     join folders f on c.folder_id = f.id
     order by c.collection_name asc, f.folder_path asc;
-    )");
+    )"_s;
 
-const auto SELECT_COLLECTIONS_SQL_V2 = QLatin1String(R"(
+static const QString SELECT_COLLECTIONS_SQL_V2 = uR"(
     select c.collection_name, f.folder_path, f.id, c.last_update_time, c.embedding_model, c.force_indexing
     from collections c
     join folders f on c.folder_id = f.id
     order by c.collection_name asc, f.folder_path asc;
-    )");
+    )"_s;
 
-const auto UPDATE_COLLECTION_FORCE_INDEXING = QLatin1String(R"(
+static const QString UPDATE_COLLECTION_FORCE_INDEXING_SQL = uR"(
     update collections
     set force_indexing = 0
     where collection_name = ?;
-    )");
+    )"_s;
 
-bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id,
-                   const QDateTime &last_update,
-                   const QString &embedding_model,
-                   bool force_indexing)
+static bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id, const QDateTime &last_update,
+                          const QString &embedding_model, bool force_indexing)
 {
     if (!q.prepare(INSERT_COLLECTION_SQL))
         return false;
@@ -356,7 +399,7 @@ bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id,
     return q.exec();
 }
 
-bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
+static bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
 {
     if (!q.prepare(DELETE_COLLECTION_SQL))
         return false;
@@ -365,7 +408,7 @@ bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_i
     return q.exec();
 }
 
-bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<QPair<int, QString>> *folders) {
+static bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<QPair<int, QString>> *folders) {
     if (!q.prepare(SELECT_FOLDERS_FROM_COLLECTIONS_SQL))
         return false;
     q.addBindValue(collection_name);
@@ -376,7 +419,7 @@ bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, Q
     return true;
 }
 
-bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *collections) {
+static bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *collections) {
     if (!q.prepare(SELECT_COLLECTIONS_FROM_FOLDER_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -428,38 +471,38 @@ static bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collec
     return true;
 }
 
-bool updateCollectionForceIndexing(QSqlQuery &q, const QString &collection_name) {
-    if (!q.prepare(UPDATE_COLLECTION_FORCE_INDEXING))
+static bool updateCollectionForceIndexing(QSqlQuery &q, const QString &collection_name) {
+    if (!q.prepare(UPDATE_COLLECTION_FORCE_INDEXING_SQL))
         return false;
     q.addBindValue(collection_name);
     return q.exec();
 }
 
-const auto INSERT_FOLDERS_SQL = QLatin1String(R"(
+static const QString INSERT_FOLDERS_SQL = uR"(
     insert into folders(folder_path) values(?);
-    )");
+    )"_s;
 
-const auto DELETE_FOLDERS_SQL = QLatin1String(R"(
+static const QString DELETE_FOLDERS_SQL = uR"(
     delete from folders where id = ?;
-    )");
+    )"_s;
 
-const auto SELECT_FOLDERS_FROM_PATH_SQL = QLatin1String(R"(
+static const QString SELECT_FOLDERS_FROM_PATH_SQL = uR"(
     select id from folders where folder_path = ?;
-    )");
+    )"_s;
 
-const auto SELECT_FOLDERS_FROM_ID_SQL = QLatin1String(R"(
+static const QString SELECT_FOLDERS_FROM_ID_SQL = uR"(
     select folder_path from folders where id = ?;
-    )");
+    )"_s;
 
-const auto SELECT_ALL_FOLDERPATHS_SQL = QLatin1String(R"(
+static const QString SELECT_ALL_FOLDERPATHS_SQL = uR"(
     select folder_path from folders;
-    )");
+    )"_s;
 
-const auto FOLDERS_SQL = QLatin1String(R"(
+static const QString FOLDERS_SQL = uR"(
     create table folders(id integer primary key, folder_path varchar unique);
-    )");
+    )"_s;
 
-bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
+static bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
 {
     if (!q.prepare(INSERT_FOLDERS_SQL))
         return false;
@@ -470,14 +513,14 @@ bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
     return true;
 }
 
-bool removeFolderFromDB(QSqlQuery &q, int folder_id) {
+static bool removeFolderFromDB(QSqlQuery &q, int folder_id) {
     if (!q.prepare(DELETE_FOLDERS_SQL))
         return false;
     q.addBindValue(folder_id);
     return q.exec();
 }
 
-bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
+static bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
     if (!q.prepare(SELECT_FOLDERS_FROM_PATH_SQL))
         return false;
     q.addBindValue(folder_path);
@@ -489,7 +532,7 @@ bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
     return true;
 }
 
-bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
+static bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
     if (!q.prepare(SELECT_FOLDERS_FROM_ID_SQL))
         return false;
     q.addBindValue(id);
@@ -501,7 +544,7 @@ bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
     return true;
 }
 
-bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
+static bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
     if (!q.prepare(SELECT_ALL_FOLDERPATHS_SQL))
         return false;
     if (!q.exec())
@@ -511,42 +554,42 @@ bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
     return true;
 }
 
-const auto INSERT_DOCUMENTS_SQL = QLatin1String(R"(
+static const QString INSERT_DOCUMENTS_SQL = uR"(
     insert into documents(folder_id, document_time, document_path) values(?, ?, ?);
-    )");
+    )"_s;
 
-const auto UPDATE_DOCUMENT_TIME_SQL = QLatin1String(R"(
+static const QString UPDATE_DOCUMENT_TIME_SQL = uR"(
     update documents set document_time = ? where id = ?;
-    )");
+    )"_s;
 
-const auto DELETE_DOCUMENTS_SQL = QLatin1String(R"(
+static const QString DELETE_DOCUMENTS_SQL = uR"(
     delete from documents where id = ?;
-    )");
+    )"_s;
 
-const auto DOCUMENTS_SQL = QLatin1String(R"(
+static const QString DOCUMENTS_SQL = uR"(
     create table documents(id integer primary key, folder_id integer, document_time integer, document_path varchar unique);
-    )");
+    )"_s;
 
-const auto SELECT_DOCUMENT_SQL = QLatin1String(R"(
+static const QString SELECT_DOCUMENT_SQL = uR"(
     select id, document_time from documents where document_path = ?;
-    )");
+    )"_s;
 
-const auto SELECT_DOCUMENTS_SQL = QLatin1String(R"(
+static const QString SELECT_DOCUMENTS_SQL = uR"(
     select id from documents where folder_id = ?;
-    )");
+    )"_s;
 
-const auto SELECT_ALL_DOCUMENTS_SQL = QLatin1String(R"(
+static const QString SELECT_ALL_DOCUMENTS_SQL = uR"(
     select id, document_path from documents;
-    )");
+    )"_s;
 
-const auto SELECT_COUNT_STATISTICS_SQL = QLatin1String(R"(
+static const QString SELECT_COUNT_STATISTICS_SQL = uR"(
     select count(distinct d.id) as total_docs, sum(c.words) as total_words, sum(c.tokens) as total_tokens
     from documents d
     left join chunks c on d.id = c.document_id
     where d.folder_id = ?;
-    )");
+    )"_s;
 
-bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QString &document_path, int *document_id)
+static bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QString &document_path, int *document_id)
 {
     if (!q.prepare(INSERT_DOCUMENTS_SQL))
         return false;
@@ -559,14 +602,14 @@ bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const QStrin
     return true;
 }
 
-bool removeDocument(QSqlQuery &q, int document_id) {
+static bool removeDocument(QSqlQuery &q, int document_id) {
     if (!q.prepare(DELETE_DOCUMENTS_SQL))
         return false;
     q.addBindValue(document_id);
     return q.exec();
 }
 
-bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
+static bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
 {
     if (!q.prepare(UPDATE_DOCUMENT_TIME_SQL))
         return false;
@@ -575,7 +618,7 @@ bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
     return q.exec();
 }
 
-bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 *document_time) {
+static bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 *document_time) {
     if (!q.prepare(SELECT_DOCUMENT_SQL))
         return false;
     q.addBindValue(document_path);
@@ -589,7 +632,7 @@ bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 
     return true;
 }
 
-bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
+static bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
     if (!q.prepare(SELECT_DOCUMENTS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -600,7 +643,7 @@ bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
     return true;
 }
 
-bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *total_words, int *total_tokens) {
+static bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *total_words, int *total_tokens) {
     if (!q.prepare(SELECT_COUNT_STATISTICS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -751,9 +794,10 @@ bool Database::initDb(const QString &modelPath, const QList<CollectionItem> &old
     return true;
 }
 
-Database::Database(int chunkSize)
+Database::Database(int chunkSize, const QStringList &extensions)
     : QObject(nullptr)
     , m_chunkSize(chunkSize)
+    , m_scannedFileExtensions(extensions)
     , m_scanTimer(new QTimer(this))
     , m_watcher(new QFileSystemWatcher(this))
     , m_embLLM(new EmbeddingLLM)
@@ -840,46 +884,50 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
     CollectionItem item = guiCollectionItem(folder_id);
     item.fileCurrentlyProcessing = file;
 
-    while (!stream.atEnd()) {
+    for (;;) {
         QString word;
         stream >> word;
+        if (stream.status() && !stream.atEnd())
+            return -1;
         charCount += word.length();
         if (!word.isEmpty())
             words.append(word);
-        if (charCount + words.size() - 1 >= m_chunkSize || stream.atEnd()) {
-            const QString chunk = words.join(" ");
-            QSqlQuery q(m_db);
-            int chunk_id = 0;
-            if (!addChunk(q,
-                document_id,
-                chunk,
-                file,
-                title,
-                author,
-                subject,
-                keywords,
-                page,
-                line_from,
-                line_to,
-                words.size(),
-                &chunk_id
-            )) {
-                qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
+        if (stream.status() || charCount + words.size() - 1 >= m_chunkSize) {
+            if (!words.isEmpty()) {
+                const QString chunk = words.join(" ");
+                QSqlQuery q(m_db);
+                int chunk_id = 0;
+                if (!addChunk(q,
+                    document_id,
+                    chunk,
+                    file,
+                    title,
+                    author,
+                    subject,
+                    keywords,
+                    page,
+                    line_from,
+                    line_to,
+                    words.size(),
+                    &chunk_id
+                )) {
+                    qWarning() << "ERROR: Could not insert chunk into db" << q.lastError();
+                }
+
+                addedWords += words.size();
+
+                EmbeddingChunk toEmbed;
+                toEmbed.folder_id = folder_id;
+                toEmbed.chunk_id = chunk_id;
+                toEmbed.chunk = chunk;
+                appendChunk(toEmbed);
+                ++chunks;
+
+                words.clear();
+                charCount = 0;
             }
 
-            addedWords += words.size();
-
-            EmbeddingChunk toEmbed;
-            toEmbed.folder_id = folder_id;
-            toEmbed.chunk_id = chunk_id;
-            toEmbed.chunk = chunk;
-            appendChunk(toEmbed);
-            ++chunks;
-
-            words.clear();
-            charCount = 0;
-
-            if (maxChunks > 0 && chunks == maxChunks)
+            if (stream.status() || (maxChunks > 0 && chunks == maxChunks))
                 break;
         }
     }
@@ -914,26 +962,45 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
 
     // FIXME: Replace this with an arrow file on disk
     // FIXME: Add the tokens information
-    int folder_id = 0;
+    int folder_id = -1;
+    QString lastFile;
+    QList<int> chunksToAdd;
     QSqlQuery q(m_db);
     for (auto e : embeddings) {
-        folder_id = e.folder_id;
-        if (!m_embeddings->add(e.embedding, e.chunk_id))
-            qWarning() << "ERROR: Cannot add point to embeddings index";
-        else {
-            updateChunkHasEmbedding(q, e.chunk_id);
+        if (folder_id == -1) {
+            folder_id = e.folder_id;
+        } else {
+            Q_ASSERT(folder_id == e.folder_id);
         }
-    }
 
-    QString file;
-    if (!selectFileForChunk(q, embeddings.first().chunk_id, file))
-        qWarning() << "ERROR: Cannot find file for chunk";
+        QString file;
+        if (!selectFileForChunk(q, e.chunk_id, file))
+            continue; // file already removed
+
+        if (!m_embeddings->add(e.embedding, e.chunk_id)) {
+            qWarning() << "ERROR: Cannot add point to embeddings index";
+        } else {
+            chunksToAdd.append(e.chunk_id);
+        }
+        lastFile = file;
+    }
 
     CollectionItem item = guiCollectionItem(folder_id);
     item.currentEmbeddingsToIndex += embeddings.count();
-    item.fileCurrentlyProcessing = file;
+    if (!lastFile.isEmpty())
+        item.fileCurrentlyProcessing = lastFile;
     updateGuiForCollectionItem(item);
+
+    if (chunksToAdd.isEmpty())
+        return; // nothing to add
+
     m_embeddings->save();
+
+    // record that we have these chunks *after* flushing the embeddings to disk
+    transaction();
+    for (int chunk_id: chunksToAdd)
+        updateChunkHasEmbedding(q, chunk_id);
+    commit();
 }
 
 void Database::handleErrorGenerated(int folder_id, const QString &error)
@@ -1033,20 +1100,12 @@ void Database::scanQueueBatch() {
     QElapsedTimer timer;
     timer.start();
 
-    int scanned = 0;
-    int lastToScan = m_docsToScan.count();
-
     transaction();
 
     // scan for up to 100ms or until we run out of documents
     QList<int> chunksToRemove;
-    while (!m_docsToScan.isEmpty() && timer.elapsed() < 100) {
-        ++scanned;
-        if (!scanQueue(chunksToRemove)) {
-            rollback();
-            return;
-        }
-    }
+    while (!m_docsToScan.isEmpty() && timer.elapsed() < 100)
+        scanQueue(chunksToRemove);
 
     // failure is no longer an option, apply everything at once and hope this is effectively atomic
     for (const auto &chunk: chunksToRemove)
@@ -1056,7 +1115,7 @@ void Database::scanQueueBatch() {
         m_embeddings->save();
 }
 
-bool Database::scanQueue(QList<int> &chunksToRemove)
+void Database::scanQueue(QList<int> &chunksToRemove)
 {
     DocumentInfo info = dequeueDocument();
     const size_t countForFolder = countOfDocuments(info.folder);
@@ -1067,10 +1126,8 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
 
     // If the doc has since been deleted or no longer readable, then we schedule more work and return
     // leaving the cleanup for the cleanup handler
-    if (!info.doc.exists() || !info.doc.isReadable()) {
-        scheduleNext(folder_id, countForFolder);
-        return true;
-    }
+    if (!info.doc.exists() || !info.doc.isReadable())
+        return scheduleNext(folder_id, countForFolder);
 
     const qint64 document_time = info.doc.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
     const QString document_path = info.doc.canonicalFilePath();
@@ -1083,8 +1140,7 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
     if (!selectDocument(q, document_path, &existing_id, &existing_time)) {
         handleDocumentError("ERROR: Cannot select document",
             existing_id, document_path, q.lastError());
-        scheduleNext(folder_id, countForFolder);
-        return false;
+        return scheduleNext(folder_id, countForFolder);
     }
 
     // If we have the document, we need to compare the last modification time and if it is newer
@@ -1093,18 +1149,14 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
         Q_ASSERT(existing_time != -1);
         if (document_time == existing_time) {
             // No need to rescan, but we do have to schedule next
-            scheduleNext(folder_id, countForFolder);
-            return true;
+            return scheduleNext(folder_id, countForFolder);
         }
-        if (!getChunksByDocumentId(existing_id, chunksToRemove)) {
-            scheduleNext(folder_id, countForFolder);
-            return false;
-        }
+        if (!getChunksByDocumentId(existing_id, chunksToRemove))
+            return scheduleNext(folder_id, countForFolder);
         if (!removeChunksByDocumentId(q, existing_id)) {
             handleDocumentError("ERROR: Cannot remove chunks of document",
                 existing_id, document_path, q.lastError());
-            scheduleNext(folder_id, countForFolder);
-            return false;
+            return scheduleNext(folder_id, countForFolder);
         }
         updateCollectionStatistics();
     }
@@ -1116,15 +1168,13 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
             if (!updateDocument(q, document_id, document_time)) {
                 handleDocumentError("ERROR: Could not update document_time",
                     document_id, document_path, q.lastError());
-                scheduleNext(folder_id, countForFolder);
-                return false;
+                return scheduleNext(folder_id, countForFolder);
             }
         } else {
             if (!addDocument(q, folder_id, document_time, document_path, &document_id)) {
                 handleDocumentError("ERROR: Could not add document",
                     document_id, document_path, q.lastError());
-                scheduleNext(folder_id, countForFolder);
-                return false;
+                return scheduleNext(folder_id, countForFolder);
             }
 
             CollectionItem item = guiCollectionItem(folder_id);
@@ -1139,8 +1189,7 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
         if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
             handleDocumentError("ERROR: Could not load pdf",
                 document_id, document_path, q.lastError());
-            scheduleNext(folder_id, countForFolder);
-            return false;
+            return scheduleNext(folder_id, countForFolder);
         }
         const size_t bytes = info.doc.size();
         const size_t bytesPerPage = std::floor(bytes / doc.pageCount());
@@ -1165,35 +1214,61 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
             info.currentPage += 1;
             info.currentlyProcessing = true;
             enqueueDocumentInternal(info, true /*prepend*/);
-            scheduleNext(folder_id, countForFolder + 1);
-            return true;
+            return scheduleNext(folder_id, countForFolder + 1);
         }
 
         item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
         updateGuiForCollectionItem(item);
     } else {
-        QFile file(document_path);
+        BinaryDetectingFile file(document_path);
         if (!file.open(QIODevice::ReadOnly)) {
             handleDocumentError("ERROR: Cannot open file for scanning",
                                 existing_id, document_path, q.lastError());
-            scheduleNext(folder_id, countForFolder);
-            return false;
+            return scheduleNext(folder_id, countForFolder);
         }
+        Q_ASSERT(!file.isSequential()); // we need to seek
 
         const size_t bytes = info.doc.size();
         QTextStream stream(&file);
         const size_t byteIndex = info.currentPosition;
-        if (!stream.seek(byteIndex)) {
-            handleDocumentError("ERROR: Cannot seek to pos for scanning",
-                                existing_id, document_path, q.lastError());
-            scheduleNext(folder_id, countForFolder);
-            return false;
+        if (byteIndex) {
+            /* Read the Unicode BOM to detect the encoding. Without this, QTextStream will
+             * always interpret the text as UTF-8 when byteIndex is nonzero. */
+            stream.read(1);
+
+            if (!stream.seek(byteIndex)) {
+                handleDocumentError("ERROR: Cannot seek to pos for scanning",
+                                    existing_id, document_path, q.lastError());
+                return scheduleNext(folder_id, countForFolder);
+            }
         }
 #if defined(DEBUG)
         qDebug() << "scanning byteIndex" << byteIndex << "of" << bytes << document_path;
 #endif
         int pos = chunkStream(stream, info.folder, document_id, info.doc.fileName(), QString() /*title*/, QString() /*author*/,
             QString() /*subject*/, QString() /*keywords*/, -1 /*page*/, 100 /*maxChunks*/);
+        if (pos < 0) {
+            if (!file.binarySeen()) {
+                handleDocumentError(u"ERROR: Failed to read file (status %1)"_s.arg(stream.status()),
+                                    existing_id, document_path, q.lastError());
+                return scheduleNext(folder_id, countForFolder);
+            }
+
+            /* When we see a binary file, we treat it like an empty file so we know not to
+             * scan it again. All existing chunks are removed, and in-progress embeddings
+             * are ignored when they complete. */
+
+            qInfo() << "LocalDocs: Ignoring file with binary data:" << document_path;
+
+            getChunksByDocumentId(existing_id, chunksToRemove);
+            // this will also ensure in-flight embeddings are ignored
+            if (!removeChunksByDocumentId(q, existing_id)) {
+                handleDocumentError("ERROR: Cannot remove chunks of document",
+                    existing_id, document_path, q.lastError());
+            }
+            updateCollectionStatistics();
+            return scheduleNext(folder_id, countForFolder);
+        }
         file.close();
         const size_t bytesChunked = pos - byteIndex;
         CollectionItem item = guiCollectionItem(info.folder);
@@ -1203,13 +1278,11 @@ bool Database::scanQueue(QList<int> &chunksToRemove)
             info.currentPosition = pos;
             info.currentlyProcessing = true;
             enqueueDocumentInternal(info, true /*prepend*/);
-            scheduleNext(folder_id, countForFolder + 1);
-            return true;
+            return scheduleNext(folder_id, countForFolder + 1);
         }
     }
 
-    scheduleNext(folder_id, countForFolder);
-    return true;
+    return scheduleNext(folder_id, countForFolder);
 }
 
 void Database::scanDocuments(int folder_id, const QString &folder_path)
@@ -1217,9 +1290,6 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
 #if defined(DEBUG)
     qDebug() << "scanning folder for documents" << folder_path;
 #endif
-
-    // FIXME_BLOCKER: This should be configurable
-    static const QList<QString> extensions { "txt", "pdf", "md", "rst" };
 
     QDirIterator it(folder_path, QDir::Readable | QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
                     QDirIterator::Subdirectories);
@@ -1232,7 +1302,7 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
             continue;
         }
 
-        if (!extensions.contains(fileInfo.suffix()))
+        if (!m_scannedFileExtensions.contains(fileInfo.suffix()))
             continue;
 
         DocumentInfo info;
@@ -1435,7 +1505,7 @@ void Database::forceIndexing(const QString &collection)
     }
 }
 
-bool containsFolderId(const QList<QPair<int, QString>> &folders, int folder_id) {
+static bool containsFolderId(const QList<QPair<int, QString>> &folders, int folder_id) {
     for (const auto& folder : folders)
         if (folder.first == folder_id)
             return true;
@@ -1702,7 +1772,7 @@ bool Database::cleanDB()
         int document_id = q.value(0).toInt();
         QString document_path = q.value(1).toString();
         QFileInfo info(document_path);
-        if (info.exists() && info.isReadable())
+        if (info.exists() && info.isReadable() && m_scannedFileExtensions.contains(info.suffix()))
             continue;
 
 #if defined(DEBUG)
@@ -1747,8 +1817,6 @@ void Database::changeChunkSize(int chunkSize)
     qDebug() << "changeChunkSize" << chunkSize;
 #endif
 
-    m_chunkSize = chunkSize;
-
     QSqlQuery q(m_db);
     // Scan all documents in db to make sure they still exist
     if (!q.prepare(SELECT_ALL_DOCUMENTS_SQL)) {
@@ -1788,8 +1856,32 @@ void Database::changeChunkSize(int chunkSize)
     if (!chunksToRemove.isEmpty())
         m_embeddings->save();
 
+    m_chunkSize = chunkSize;
     addCurrentFolders();
     updateCollectionStatistics();
+}
+
+void Database::changeFileExtensions(const QStringList &extensions)
+{
+#if defined(DEBUG)
+    qDebug() << "changeFileExtensions";
+#endif
+
+    m_scannedFileExtensions = extensions;
+
+    cleanDB();
+
+    QSqlQuery q(m_db);
+    QList<CollectionItem> collections;
+    if (!selectAllFromCollections(q, &collections)) {
+        qWarning() << "ERROR: Cannot select collections" << q.lastError();
+        return;
+    }
+
+    for (const auto &i : collections) {
+        if (!i.forceIndexing)
+            scanDocuments(i.folder_id, i.folder_path);
+    }
 }
 
 void Database::directoryChanged(const QString &path)

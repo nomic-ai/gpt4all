@@ -81,7 +81,7 @@ class Database : public QObject
 {
     Q_OBJECT
 public:
-    Database(int chunkSize);
+    Database(int chunkSize, const QStringList &extensions);
     virtual ~Database();
 
     bool isValid() const { return m_databaseValid; }
@@ -95,6 +95,7 @@ public Q_SLOTS:
     void removeFolder(const QString &collection, const QString &path);
     void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void changeChunkSize(int chunkSize);
+    void changeFileExtensions(const QStringList &extensions);
 
 Q_SIGNALS:
     // Signals for the gui only
@@ -139,7 +140,7 @@ private:
     void removeFolderFromDocumentQueue(int folder_id);
     void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
-    bool scanQueue(QList<int> &chunksToRemove);
+    void scanQueue(QList<int> &chunksToRemove);
     bool cleanDB();
     void addFolderToWatch(const QString &path);
     void removeFolderFromWatch(const QString &path);
@@ -155,6 +156,7 @@ private:
 private:
     QSqlDatabase m_db;
     int m_chunkSize;
+    QStringList m_scannedFileExtensions;
     QTimer *m_scanTimer;
     QMap<int, QQueue<DocumentInfo>> m_docsToScan;
     QList<ResultInfo> m_retrieve;

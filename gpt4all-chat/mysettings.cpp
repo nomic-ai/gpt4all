@@ -45,6 +45,7 @@ static const QVariantMap basicDefaults {
     { "localdocs/chunkSize",      256 },
     { "localdocs/retrievalSize",  3 },
     { "localdocs/showReferences", true },
+    { "localdocs/fileExtensions", QStringList { "txt", "pdf", "md", "rst" } },
     { "network/attribution",      "" },
 };
 
@@ -364,29 +365,31 @@ void MySettings::setThreadCount(int value)
     emit threadCountChanged();
 }
 
-bool    MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
-bool    MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
-int     MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
-QString MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
-QString MySettings::chatTheme() const               { return getBasicSetting("chatTheme"               ).toString(); }
-QString MySettings::fontSize() const                { return getBasicSetting("fontSize"                ).toString(); }
-QString MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted"      ).toString(); }
-int     MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize"     ).toInt(); }
-int     MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
-bool    MySettings::localDocsShowReferences() const { return getBasicSetting("localdocs/showReferences").toBool(); }
-QString MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
+bool        MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
+bool        MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
+int         MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
+QString     MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
+QString     MySettings::chatTheme() const               { return getBasicSetting("chatTheme"               ).toString(); }
+QString     MySettings::fontSize() const                { return getBasicSetting("fontSize"                ).toString(); }
+QString     MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted"      ).toString(); }
+int         MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize"     ).toInt(); }
+int         MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
+bool        MySettings::localDocsShowReferences() const { return getBasicSetting("localdocs/showReferences").toBool(); }
+QStringList MySettings::localDocsFileExtensions() const { return getBasicSetting("localdocs/fileExtensions").toStringList(); }
+QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
 
-void MySettings::setSaveChatsContext(bool value)             { setBasicSetting("saveChatsContext",         value); }
-void MySettings::setServerChat(bool value)                   { setBasicSetting("serverChat",               value); }
-void MySettings::setNetworkPort(int value)                   { setBasicSetting("networkPort",              value); }
-void MySettings::setUserDefaultModel(const QString &value)   { setBasicSetting("userDefaultModel",         value); }
-void MySettings::setChatTheme(const QString &value)          { setBasicSetting("chatTheme",                value); }
-void MySettings::setFontSize(const QString &value)           { setBasicSetting("fontSize",                 value); }
-void MySettings::setLastVersionStarted(const QString &value) { setBasicSetting("lastVersionStarted",       value); }
-void MySettings::setLocalDocsChunkSize(int value)            { setBasicSetting("localdocs/chunkSize",      value, "localDocsChunkSize"); }
-void MySettings::setLocalDocsRetrievalSize(int value)        { setBasicSetting("localdocs/retrievalSize",  value, "localDocsRetrievalSize"); }
-void MySettings::setLocalDocsShowReferences(bool value)      { setBasicSetting("localdocs/showReferences", value, "localDocsShowReferences"); }
-void MySettings::setNetworkAttribution(const QString &value) { setBasicSetting("network/attribution",      value, "networkAttribution"); }
+void MySettings::setSaveChatsContext(bool value)                      { setBasicSetting("saveChatsContext",         value); }
+void MySettings::setServerChat(bool value)                            { setBasicSetting("serverChat",               value); }
+void MySettings::setNetworkPort(int value)                            { setBasicSetting("networkPort",              value); }
+void MySettings::setUserDefaultModel(const QString &value)            { setBasicSetting("userDefaultModel",         value); }
+void MySettings::setChatTheme(const QString &value)                   { setBasicSetting("chatTheme",                value); }
+void MySettings::setFontSize(const QString &value)                    { setBasicSetting("fontSize",                 value); }
+void MySettings::setLastVersionStarted(const QString &value)          { setBasicSetting("lastVersionStarted",       value); }
+void MySettings::setLocalDocsChunkSize(int value)                     { setBasicSetting("localdocs/chunkSize",      value, "localDocsChunkSize"); }
+void MySettings::setLocalDocsRetrievalSize(int value)                 { setBasicSetting("localdocs/retrievalSize",  value, "localDocsRetrievalSize"); }
+void MySettings::setLocalDocsShowReferences(bool value)               { setBasicSetting("localdocs/showReferences", value, "localDocsShowReferences"); }
+void MySettings::setLocalDocsFileExtensions(const QStringList &value) { setBasicSetting("localdocs/fileExtensions", value, "localDocsFileExtensions"); }
+void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
 
 QString MySettings::modelPath()
 {
