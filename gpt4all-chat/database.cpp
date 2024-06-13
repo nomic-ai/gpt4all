@@ -84,18 +84,43 @@ static const QString INIT_DB_SQL[] = {
     u"pragma auto_vacuum = FULL;"_s,
     // create tables
     uR"(
-        create table chunks(document_id integer, chunk_id integer primary key autoincrement, chunk_text varchar,
-            file varchar, title varchar, author varchar, subject varchar, keywords varchar,
-            page integer, line_from integer, line_to integer, words integer default 0, tokens integer default 0,
-            has_embedding integer default 0);
+        create table chunks(
+            document_id   integer,
+            chunk_id      integer primary key autoincrement,
+            chunk_text    text,
+            file          text,
+            title         text,
+            author        text,
+            subject       text,
+            keywords      text,
+            page          integer,
+            line_from     integer,
+            line_to       integer,
+            words         integer default 0,
+            tokens        integer default 0,
+            has_embedding integer default 0
+        );
     )"_s, uR"(
-        create table collections(collection_name varchar, folder_id integer, last_update_time integer,
-            embedding_model varchar, force_indexing integer, unique(collection_name, folder_id));
+        create table collections(
+            collection_name  text,
+            folder_id        integer,
+            last_update_time integer,
+            embedding_model  text,
+            force_indexing   integer,
+            unique(collection_name, folder_id)
+        );
     )"_s, uR"(
-        create table folders(id integer primary key, folder_path varchar unique);
+        create table folders(
+            id          integer primary key,
+            folder_path text unique
+        );
     )"_s, uR"(
-        create table documents(id integer primary key, folder_id integer, document_time integer,
-            document_path varchar unique);
+        create table documents(
+            id            integer primary key,
+            folder_id     integer,
+            document_time integer,
+            document_path text unique
+        );
     )"_s,
 };
 
