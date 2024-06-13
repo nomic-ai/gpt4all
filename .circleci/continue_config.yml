@@ -263,6 +263,18 @@ jobs:
             Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe -OutFile cuda_12.4.1_windows_network.exe
             .\cuda_12.4.1_windows_network.exe -s cudart_12.4 nvcc_12.4 cublas_12.4 cublas_dev_12.4
       - run:
+          name: "Install Dotnet 8"
+          command: |
+            mkdir dotnet
+            cd dotnet
+            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
+            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
+            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
+            dotnet tool install --global AzureSignTool
+      - run:
           name: Build
           command: |
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\x64"
@@ -300,6 +312,41 @@ jobs:
             copy gpt4all-installer-win64.exe upload
       - store_artifacts:
           path: build/upload
+            # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+  sign-offline-chat-installer-windows:
+    machine:
+      image: 'windows-server-2019-vs2019:2022.08.1'
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      - run:
+          name: "Install Dotnet 8 && Azure Sign Tool"
+          command: |
+            mkdir dotnet
+            cd dotnet
+            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
+            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
+            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
+            dotnet tool install --global AzureSignTool
+      - run:
+          name: "Sign Windows Installer With AST"
+          command: |
+            AzureSignTool.exe sign -du "https://gpt4all.io/index.html" -kvu https://gpt4all.vault.azure.net -kvi "$Env:AZSignGUID" -kvs "$Env:AZSignPWD" -kvc "$Env:AZSignCertName" -kvt "$Env:AZSignTID" -tr http://timestamp.digicert.com -v "$($(Get-Location).Path)\build\upload\gpt4all-installer-win64.exe"
+      - store_artifacts:
+          path: build/upload
+
   build-gpt4all-chat-linux:
     machine:
       image: ubuntu-2204:2023.04.2
@@ -949,6 +996,9 @@ workflows:
       - build-offline-chat-installer-windows:
           requires:
             - hold
+      - sign-offline-chat-installer-windows:
+          requires:
+            - build-offline-chat-installer-windows
       - build-offline-chat-installer-linux:
           requires:
             - hold
