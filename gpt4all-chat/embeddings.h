@@ -2,11 +2,14 @@
 #define EMBEDDINGS_H
 
 #include <QObject>
+#include <QString>
+#include <QtGlobal>
+
+#include <vector>
 
 namespace hnswlib {
-    template <typename T>
-    class HierarchicalNSW;
     class InnerProductSpace;
+    template <typename T> class HierarchicalNSW;
 }
 
 class Embeddings : public QObject

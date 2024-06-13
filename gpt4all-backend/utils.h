@@ -2,11 +2,14 @@
 
 #pragma once
 
-#include <string>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <map>
-#include <vector>
 #include <random>
+#include <string>
 #include <thread>
+#include <vector>
 
 //
 // General purpose inline functions

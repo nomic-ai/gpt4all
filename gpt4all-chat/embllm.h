@@ -1,13 +1,19 @@
 #ifndef EMBLLM_H
 #define EMBLLM_H
 
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
+#include <QByteArray>
 #include <QObject>
+#include <QString>
 #include <QStringList>
 #include <QThread>
+#include <QVariant>
+#include <QVector>
 
-#include "../gpt4all-backend/llmodel.h"
+#include <atomic>
+#include <vector>
+
+class LLModel;
+class QNetworkAccessManager;
 
 struct EmbeddingChunk {
     int folder_id;

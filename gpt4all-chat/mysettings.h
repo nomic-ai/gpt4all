@@ -1,12 +1,14 @@
 #ifndef MYSETTINGS_H
 #define MYSETTINGS_H
 
-#include <cstdint>
+#include "modellist.h" // IWYU pragma: keep
 
+#include <QDateTime>
 #include <QObject>
-#include <QMutex>
+#include <QString>
+#include <QVector>
 
-#include "modellist.h"
+#include <cstdint>
 
 class MySettings : public QObject
 {

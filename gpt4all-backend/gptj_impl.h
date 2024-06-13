@@ -4,10 +4,11 @@
 #ifndef GPTJ_H
 #define GPTJ_H
 
-#include <string>
-#include <functional>
-#include <vector>
 #include "llmodel.h"
+
+#include <functional>
+#include <string>
+#include <vector>
 
 struct GPTJPrivate;
 class GPTJ : public LLModel {

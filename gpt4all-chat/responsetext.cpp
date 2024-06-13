@@ -1,13 +1,24 @@
 #include "responsetext.h"
 
-#include <QTextCharFormat>
-#include <QTextDocument>
-#include <QTextDocumentFragment>
-#include <QFontMetricsF>
-#include <QTextTableCell>
-#include <QGuiApplication>
+#include <QBrush>
+#include <QChar>
 #include <QClipboard>
+#include <QFont>
+#include <QFontMetricsF>
+#include <QGuiApplication>
+#include <QList>
 #include <QPainter>
+#include <QQuickTextDocument>
+#include <QRegularExpression>
+#include <Qt>
+#include <QTextBlock>
+#include <QTextCharFormat>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QTextFrame>
+#include <QTextTableCell>
+#include <QtGlobal>
+#include <QVariant>
 
 enum Language {
     None,

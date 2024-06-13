@@ -1,15 +1,28 @@
 #ifndef CHATLLM_H
 #define CHATLLM_H
 
-#include <QObject>
-#include <QThread>
-#include <QFileInfo>
-
-#include <memory>
-
-#include "database.h"
+#include "database.h" // IWYU pragma: keep
 #include "modellist.h"
+
 #include "../gpt4all-backend/llmodel.h"
+
+#include <QByteArray>
+#include <QElapsedTimer>
+#include <QFileInfo>
+#include <QList>
+#include <QObject>
+#include <QPair>
+#include <QString>
+#include <QThread>
+#include <QVector>
+#include <QtGlobal>
+
+#include <atomic>
+#include <cstdint>
+#include <memory>
+#include <string>
+
+class QDataStream;
 
 enum LLModelType {
     GPTJ_,

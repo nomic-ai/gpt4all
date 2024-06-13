@@ -1,8 +1,22 @@
 #ifndef LOCALDOCSMODEL_H
 #define LOCALDOCSMODEL_H
 
-#include <QAbstractListModel>
 #include "database.h"
+
+#include <QAbstractListModel>
+#include <QByteArray>
+#include <QHash>
+#include <QList>
+#include <QModelIndex>
+#include <QObject>
+#include <QSortFilterProxyModel>
+#include <QString>
+#include <QVariant>
+#include <QVector>
+#include <Qt>
+
+#include <cstddef>
+#include <functional>
 
 class LocalDocsCollectionsModel : public QSortFilterProxyModel
 {

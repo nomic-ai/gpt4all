@@ -2,6 +2,8 @@
 #define LLM_H
 
 #include <QObject>
+#include <QString>
+#include <QtGlobal>
 
 class LLM : public QObject
 {

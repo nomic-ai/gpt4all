@@ -20,9 +20,6 @@ parameters:
   run-ts-workflow:
     type: boolean
     default: false
-  run-csharp-workflow:
-    type: boolean
-    default: false
 
 jobs:
   default-job:
@@ -421,7 +418,7 @@ jobs:
             export PATH=$PATH:/usr/local/cuda/bin
             git submodule update --init --recursive
             cd gpt4all-backend
-            cmake -B build
+            cmake -B build -DCMAKE_BUILD_TYPE=Release
             cmake --build build --parallel
       - run:
           name: Build wheel
@@ -451,7 +448,7 @@ jobs:
           command: |
             git submodule update --init  # don't use --recursive because macOS doesn't use Kompute
             cd gpt4all-backend
-            cmake -B build -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             cmake --build build --parallel
       - run:
           name: Build wheel
@@ -466,13 +463,17 @@ jobs:
             - "*.whl"
 
   build-py-windows:
-    executor:
-      name: win/default
+    machine:
+      image: 'windows-server-2019-vs2019:2022.08.1'
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
     steps:
       - checkout
       - run:
-          name: Install MinGW64
-          command: choco install -y mingw --force --no-progress
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
       - run:
           name: Install VulkanSDK
           command: |
@@ -486,31 +487,40 @@ jobs:
       - run:
           name: Install dependencies
           command:
-            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+            choco install -y cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System'
       - run:
           name: Install Python dependencies
           command: pip install setuptools wheel cmake
       - run:
           name: Build C library
           command: |
-            git submodule update --init --recursive
-            cd gpt4all-backend
-            $Env:Path += ";C:\ProgramData\mingw64\mingw64\bin"
-            $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
+            # Visual Studio setup
+            # I would use Enter-VsDevShell but it causes cudafe++ to segfault
+            $Env:PATH += ";C:\Program Files (x86)\Windows Kits\10\bin\x64"
+            $Env:PATH += ";C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
+            $Env:PATH += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64"
+            $Env:LIB  = "C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\ucrt\x64"
+            $Env:LIB += ";C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x64"
+            $Env:LIB += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64"
+            $Env:LIB += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\lib\x64"
+            $Env:INCLUDE  = "C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\ucrt"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\um"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\shared"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\winrt"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\cppwinrt"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\VS\include"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include"
+            $Env:INCLUDE += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\include"
+
+            $Env:PATH += ";C:\VulkanSDK\1.3.261.1\bin"
             $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
-            cmake -G "MinGW Makefiles" -B build -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -DKOMPUTE_OPT_USE_BUILT_IN_VULKAN_HEADER=OFF
+            cd gpt4all-backend
+            cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON
             cmake --build build --parallel
       - run:
           name: Build wheel
-          # TODO: As part of this task, we need to move mingw64 binaries into package.
-          # This is terrible and needs a more robust solution eventually.
           command: |
             cd gpt4all-bindings/python
-            cd gpt4all
-            mkdir llmodel_DO_NOT_MODIFY
-            mkdir llmodel_DO_NOT_MODIFY/build/
-            cp 'C:\ProgramData\mingw64\mingw64\bin\*dll' 'llmodel_DO_NOT_MODIFY/build/'
-            cd ..
             python setup.py bdist_wheel --plat-name=win_amd64
       - store_artifacts:
           path: gpt4all-bindings/python/dist
@@ -607,57 +617,6 @@ jobs:
             - runtimes/osx-x64/*.metal
 
   build-bindings-backend-windows:
-    executor:
-      name: win/default
-      size: large
-      shell: powershell.exe -ExecutionPolicy Bypass
-    steps:
-      - checkout
-      - run:
-          name: Update Submodules
-          command: |
-            git submodule sync
-            git submodule update --init --recursive
-      - run:
-          name: Install MinGW64
-          command: choco install -y mingw --force --no-progress
-      - run:
-          name: Install VulkanSDK
-          command: |
-            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
-            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
-      - run:
-          name: Install CUDA Toolkit
-          command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe -OutFile cuda_12.4.1_windows_network.exe
-            .\cuda_12.4.1_windows_network.exe -s cudart_12.4 nvcc_12.4 cublas_12.4 cublas_dev_12.4
-      - run:
-          name: Install dependencies
-          command: |
-            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-      - run:
-          name: Build Libraries
-          command: |
-            $MinGWBin = "C:\ProgramData\mingw64\mingw64\bin"
-            $Env:Path += ";$MinGwBin"
-            $Env:Path += ";C:\Program Files\CMake\bin"
-            $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
-            $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
-            cd gpt4all-backend
-            mkdir runtimes/win-x64
-            cd runtimes/win-x64
-            cmake -G "MinGW Makefiles" -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON ../..
-            cmake --build . --parallel --config Release
-            cp "$MinGWBin\libgcc*.dll" .
-            cp "$MinGWBin\libstdc++*.dll" .
-            cp "$MinGWBin\libwinpthread*.dll" .
-            cp bin/*.dll .
-      - persist_to_workspace:
-          root: gpt4all-backend
-          paths:
-            - runtimes/win-x64/*.dll
-
-  build-bindings-backend-windows-msvc:
     machine:
       image: 'windows-server-2022-gui:2023.03.1'
       resource_class: windows.large
@@ -699,182 +658,6 @@ jobs:
           root: gpt4all-backend
           paths:
             - runtimes/win-x64_msvc/*.dll
-
-  build-csharp-linux:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: "Prepare Native Libs"
-          command: |
-            cd gpt4all-bindings/csharp
-            mkdir -p runtimes/linux-x64/native
-            cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
-            ls -R runtimes
-      - restore_cache:
-          keys:
-            - gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: "Install project dependencies"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet restore Gpt4All
-      - save_cache:
-          paths:
-            - ~/.nuget/packages
-          key: gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: Build C# Project
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet build Gpt4All --configuration Release --nologo
-      - run:
-          name: "Run C# Tests"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
-      - run:
-          name: Test results
-          command: |
-              cd gpt4all-bindings/csharp/Gpt4All.Tests
-              dotnet tool install -g trx2junit
-              export PATH="$PATH:$HOME/.dotnet/tools"
-              trx2junit TestResults/*.trx
-      - store_test_results:
-          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-
-  build-csharp-windows:
-    executor:
-      name: win/default
-      size: large
-      shell: powershell.exe -ExecutionPolicy Bypass
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - gpt4all-csharp-nuget-packages-win
-      - attach_workspace:
-          at: C:\Users\circleci\workspace
-      - run:
-          name: "Install .NET"
-          command: |
-            choco install -y dotnet-8.0-sdk
-      - run:
-          name: "Prepare Native Libs"
-          command: |
-            cd gpt4all-bindings/csharp
-            mkdir -p runtimes\win-x64\native
-            cp C:\Users\circleci\workspace\runtimes\win-x64\*.dll runtimes\win-x64\native\
-            ls -R runtimes
-      - run:
-          name: "Install project dependencies"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet.exe restore Gpt4All
-      - save_cache:
-          paths:
-            - C:\Users\circleci\.nuget\packages
-          key: gpt4all-csharp-nuget-packages-win
-      - run:
-          name: Build C# Project
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet.exe build Gpt4All --configuration Release --nologo
-      - run:
-          name: "Run C# Tests"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet.exe test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
-      - run:
-          name: Test results
-          command: |
-              cd gpt4all-bindings/csharp/Gpt4All.Tests
-              dotnet tool install -g trx2junit
-              $Env:Path += ";$Env:USERPROFILE\.dotnet\tools"
-              trx2junit TestResults/*.trx
-      - store_test_results:
-          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-
-  build-csharp-macos:
-    macos:
-      xcode: "14.0.0"
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: Install dependencies
-          command: |
-            brew tap isen-ng/dotnet-sdk-versions
-            brew install --cask dotnet-sdk8-0-100
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: "Prepare Native Libs"
-          command: |
-            cd gpt4all-bindings/csharp
-            mkdir -p runtimes/osx/native
-            cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
-            cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
-            ls -R runtimes
-      - run:
-          name: "Install project dependencies"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet restore Gpt4All
-      - save_cache:
-          paths:
-            - ~/.nuget/packages
-          key: gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: Build C# Project
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet build Gpt4All --configuration Release --nologo
-      - run:
-          name: "Run C# Tests"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
-      - run:
-          name: Test results
-          command: |
-              cd gpt4all-bindings/csharp/Gpt4All.Tests
-              dotnet tool install -g trx2junit
-              export PATH="$PATH:$HOME/.dotnet/tools"
-              trx2junit TestResults/*.trx
-      - store_test_results:
-          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-
-  store-and-upload-nupkgs:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - checkout
-      - restore_cache:
-           keys:
-             - gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: NuGet Pack
-          command: |
-            cd gpt4all-bindings/csharp
-            mkdir -p runtimes/linux-x64/native
-            cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
-            mkdir -p runtimes/win-x64/native
-            cp /tmp/workspace/runtimes/win-x64/*.dll runtimes/win-x64/native/
-            #mkdir -p runtimes/osx/native
-            #cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
-            #cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
-            dotnet pack ./Gpt4All/Gpt4All.csproj -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -c Release
-            dotnet nuget push ./Gpt4All/bin/Release/Gpt4All.*.nupkg -s $NUGET_URL -k $NUGET_TOKEN --skip-duplicate
-      - store_artifacts:
-          path: gpt4all-bindings/csharp/Gpt4All/bin/Release
 
   build-nodejs-linux: 
     docker: 
@@ -1140,12 +923,9 @@ workflows:
       or:
        - << pipeline.parameters.run-all-workflows >>
        - << pipeline.parameters.run-python-workflow >>
-       - << pipeline.parameters.run-csharp-workflow >>
        - << pipeline.parameters.run-ts-workflow >>
     jobs:
       - hold:
-          type: approval
-      - csharp-hold:
           type: approval
       - nuget-hold:
           type: approval
@@ -1166,12 +946,6 @@ workflows:
           requires:
             - hold
       - build-bindings-backend-windows:
-          filters:
-            branches:
-              only:
-          requires:
-            - hold
-      - build-bindings-backend-windows-msvc:
           filters:
             branches:
               only:
@@ -1201,7 +975,7 @@ workflows:
               only:
           requires:
             - nodejs-hold
-            - build-bindings-backend-windows-msvc
+            - build-bindings-backend-windows
       - build-nodejs-macos:
           filters:
             branches:
@@ -1209,36 +983,3 @@ workflows:
           requires:
             - nodejs-hold
             - build-bindings-backend-macos
-
-
-      # CSharp Jobs
-      - build-csharp-linux:
-          filters:
-            branches:
-              only:
-          requires:
-            - csharp-hold
-            - build-bindings-backend-linux
-      - build-csharp-windows:
-          filters:
-            branches:
-              only:
-          requires:
-            - csharp-hold
-            - build-bindings-backend-windows
-      - build-csharp-macos:
-          filters:
-            branches:
-              only:
-          requires:
-            - csharp-hold
-            - build-bindings-backend-macos
-      - store-and-upload-nupkgs:
-          filters:
-            branches:
-              only:
-          requires:
-            - nuget-hold
-            - build-csharp-windows
-            - build-csharp-linux
-            #- build-csharp-macos

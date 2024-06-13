@@ -1,13 +1,21 @@
 #ifndef DOWNLOAD_H
 #define DOWNLOAD_H
 
-#include <QObject>
+#include <QCryptographicHash>
+#include <QDateTime>
+#include <QFile>
+#include <QHash>
+#include <QList>
+#include <QMap>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QFile>
-#include <QVariant>
-#include <QTemporaryFile>
+#include <QObject>
+#include <QSslError>
+#include <QString>
 #include <QThread>
+#include <QtGlobal>
+
+class QByteArray;
 
 struct ReleaseInfo {
     Q_GADGET

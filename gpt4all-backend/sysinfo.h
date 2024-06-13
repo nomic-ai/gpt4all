@@ -2,17 +2,21 @@
 #define SYSINFO_H
 
 #include <fstream>
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 #if defined(__linux__)
-#include <unistd.h>
+#   include <unistd.h>
 #elif defined(__APPLE__)
-#include <sys/types.h>
-#include <sys/sysctl.h>
+#   include <sys/types.h>
+#   include <sys/sysctl.h>
 #elif defined(_WIN32)
-#include <windows.h>
+#   define WIN32_LEAN_AND_MEAN
+#   ifndef NOMINMAX
+#       define NOMINMAX
+#   endif
+#   include <windows.h>
 #endif
 
 static long long getSystemTotalRAMInBytes()

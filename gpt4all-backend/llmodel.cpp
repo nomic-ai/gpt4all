@@ -1,12 +1,13 @@
 #include "llmodel.h"
+
 #include "dlhandle.h"
-#include "sysinfo.h"
 
 #include <cassert>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <regex>
@@ -26,6 +27,12 @@
 #ifdef _MSC_VER
 #   include <intrin.h>
 #endif
+
+#if defined(__APPLE__) && defined(__aarch64__)
+#   include "sysinfo.h" // for getSystemTotalRAMInBytes
+#endif
+
+namespace fs = std::filesystem;
 
 #ifndef __APPLE__
 static const std::string DEFAULT_BACKENDS[] = {"kompute", "cpu"};
@@ -129,21 +136,27 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
             std::string path;
             // Split the paths string by the delimiter and process each path.
             while (std::getline(ss, path, ';')) {
-                std::filesystem::path fs_path(path);
+                std::u8string u8_path(path.begin(), path.end());
                 // Iterate over all libraries
-                for (const auto& f : std::filesystem::directory_iterator(fs_path)) {
-                    const std::filesystem::path& p = f.path();
+                for (const auto &f : fs::directory_iterator(u8_path)) {
+                    const fs::path &p = f.path();
 
                     if (p.extension() != LIB_FILE_EXT) continue;
                     if (!std::regex_search(p.stem().string(), re)) continue;
 
                     // Add to list if model implementation
+                    Dlhandle dl;
                     try {
-                        Dlhandle dl(p.string());
-                        if (!isImplementation(dl))
-                            continue;
-                        fres.emplace_back(Implementation(std::move(dl)));
-                    } catch (...) {}
+                        dl = Dlhandle(p);
+                    } catch (const Dlhandle::Exception &e) {
+                        std::cerr << "Failed to load " << p.filename().string() << ": " << e.what() << "\n";
+                        continue;
+                    }
+                    if (!isImplementation(dl)) {
+                        std::cerr << "Not an implementation: " << p.filename().string() << "\n";
+                        continue;
+                    }
+                    fres.emplace_back(Implementation(std::move(dl)));
                 }
             }
         };
