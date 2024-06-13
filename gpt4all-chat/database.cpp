@@ -98,7 +98,8 @@ static const QString INIT_DB_SQL[] = {
             line_to       integer,
             words         integer default 0 not null,
             tokens        integer default 0 not null,
-            has_embedding integer default 0 not null
+            has_embedding integer default 0 not null,
+            foreign key(document_id) references documents(id)
         );
     )"_s, uR"(
         create table collections(
@@ -107,7 +108,8 @@ static const QString INIT_DB_SQL[] = {
             last_update_time integer,
             embedding_model  text,
             force_indexing   integer not null,
-            unique(collection_name, folder_id)
+            unique(collection_name, folder_id),
+            foreign key(folder_id) references folders(id)
         );
     )"_s, uR"(
         create table folders(
@@ -119,7 +121,8 @@ static const QString INIT_DB_SQL[] = {
             id            integer primary key,
             folder_id     integer not null,
             document_time integer not null,
-            document_path text unique not null
+            document_path text unique not null,
+            foreign key(folder_id) references folders(id)
         );
     )"_s,
 };
@@ -1495,6 +1498,43 @@ bool Database::removeFolderInternal(const QString &collection, int folder_id, co
         return false;
     }
 
+    if (collections.count() == 1) {
+        // Remove the last reference to a folder
+
+        // First remove all upcoming jobs associated with this folder
+        removeFolderFromDocumentQueue(folder_id);
+
+        // Get a list of all documents associated with folder
+        QList<int> documentIds;
+        if (!selectDocuments(q, folder_id, &documentIds)) {
+            qWarning() << "ERROR: Cannot select documents" << folder_id << q.lastError();
+            return false;
+        }
+
+        // Remove all chunks and documents associated with this folder
+        for (int document_id : documentIds) {
+            if (!getChunksByDocumentId(document_id, chunksToRemove))
+                return false;
+            if (!removeChunksByDocumentId(q, document_id)) {
+                qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << q.lastError();
+                return false;
+            }
+
+            if (!removeDocument(q, document_id)) {
+                qWarning() << "ERROR: Cannot remove document_id" << document_id << q.lastError();
+                return false;
+            }
+        }
+
+        if (!removeFolderFromDB(q, folder_id)) {
+            qWarning() << "ERROR: Cannot remove folder_id" << folder_id << q.lastError();
+            return false;
+        }
+
+        m_collectionMap.remove(folder_id);
+        removeFolderFromWatch(path);
+    }
+
     // Remove it from the collections
     if (!removeCollection(q, collection, folder_id)) {
         qWarning() << "ERROR: Cannot remove collection" << collection << folder_id << q.lastError();
@@ -1502,43 +1542,6 @@ bool Database::removeFolderInternal(const QString &collection, int folder_id, co
     }
 
     removeGuiFolderById(collection, folder_id);
-
-    // If the folder is associated with more than one collection, then return
-    if (collections.count() > 1)
-        return true;
-
-    // First remove all upcoming jobs associated with this folder
-    removeFolderFromDocumentQueue(folder_id);
-
-    // Get a list of all documents associated with folder
-    QList<int> documentIds;
-    if (!selectDocuments(q, folder_id, &documentIds)) {
-        qWarning() << "ERROR: Cannot select documents" << folder_id << q.lastError();
-        return false;
-    }
-
-    // Remove all chunks and documents associated with this folder
-    for (int document_id : documentIds) {
-        if (!getChunksByDocumentId(document_id, chunksToRemove))
-            return false;
-        if (!removeChunksByDocumentId(q, document_id)) {
-            qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << q.lastError();
-            return false;
-        }
-
-        if (!removeDocument(q, document_id)) {
-            qWarning() << "ERROR: Cannot remove document_id" << document_id << q.lastError();
-            return false;
-        }
-    }
-
-    if (!removeFolderFromDB(q, folder_id)) {
-        qWarning() << "ERROR: Cannot remove folder_id" << folder_id << q.lastError();
-        return false;
-    }
-
-    m_collectionMap.remove(folder_id);
-    removeFolderFromWatch(path);
     return true;
 }
 
