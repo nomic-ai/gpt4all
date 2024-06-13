@@ -769,8 +769,9 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
     int maxChunks)
 {
     int charCount = 0;
-    int line_from = -1;
-    int line_to = -1;
+    // TODO: implement line_from/line_to
+    constexpr int line_from = -1;
+    constexpr int line_to = -1;
     QList<QString> words;
     int chunks = 0;
     int addedWords = 0;
