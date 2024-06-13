@@ -776,9 +776,6 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
     int chunks = 0;
     int addedWords = 0;
 
-    CollectionItem item = guiCollectionItem(folder_id);
-    item.fileCurrentlyProcessing = file;
-
     for (;;) {
         QString word;
         stream >> word;
@@ -828,7 +825,7 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
     }
 
     if (chunks) {
-        item = guiCollectionItem(folder_id);
+        CollectionItem item = guiCollectionItem(folder_id);
         item.totalEmbeddingsToIndex += chunks;
         item.totalWords += addedWords;
         updateGuiForCollectionItem(item);
