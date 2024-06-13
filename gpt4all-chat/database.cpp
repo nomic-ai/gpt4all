@@ -733,10 +733,9 @@ void Database::addGuiCollectionItem(const CollectionItem &item)
     emit requestAddGuiCollectionItem(item);
 }
 
-void Database::removeGuiFolderById(int folder_id)
+void Database::removeGuiFolderById(const QString &collection, int folder_id)
 {
-    m_collectionMap.remove(folder_id);
-    emit requestRemoveGuiFolderById(folder_id);
+    emit requestRemoveGuiFolderById(collection, folder_id);
 }
 
 void Database::guiCollectionListUpdated(const QList<CollectionItem> &collectionList)
@@ -958,7 +957,6 @@ void Database::removeFolderFromDocumentQueue(int folder_id)
     if (!m_docsToScan.contains(folder_id))
         return;
     m_docsToScan.remove(folder_id);
-    removeGuiFolderById(folder_id);
 }
 
 void Database::enqueueDocumentInternal(const DocumentInfo &info, bool prepend)
@@ -1503,6 +1501,8 @@ bool Database::removeFolderInternal(const QString &collection, int folder_id, co
         return false;
     }
 
+    removeGuiFolderById(collection, folder_id);
+
     // If the folder is associated with more than one collection, then return
     if (collections.count() > 1)
         return true;
@@ -1537,7 +1537,7 @@ bool Database::removeFolderInternal(const QString &collection, int folder_id, co
         return false;
     }
 
-    removeGuiFolderById(folder_id);
+    m_collectionMap.remove(folder_id);
     removeFolderFromWatch(path);
     return true;
 }

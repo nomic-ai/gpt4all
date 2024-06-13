@@ -102,7 +102,7 @@ Q_SIGNALS:
     // Signals for the gui only
     void requestUpdateGuiForCollectionItem(const CollectionItem &item);
     void requestAddGuiCollectionItem(const CollectionItem &item);
-    void requestRemoveGuiFolderById(int folder_id);
+    void requestRemoveGuiFolderById(const QString &collection, int folder_id);
     void requestGuiCollectionListUpdated(const QList<CollectionItem> &collectionList);
     void databaseValidChanged();
 
@@ -149,7 +149,7 @@ private:
     CollectionItem guiCollectionItem(int folder_id) const;
     void updateGuiForCollectionItem(const CollectionItem &item);
     void addGuiCollectionItem(const CollectionItem &item);
-    void removeGuiFolderById(int folder_id);
+    void removeGuiFolderById(const QString &collection, int folder_id);
     void guiCollectionListUpdated(const QList<CollectionItem> &collectionList);
     void scheduleUncompletedEmbeddings(int folder_id);
     void updateCollectionStatistics();

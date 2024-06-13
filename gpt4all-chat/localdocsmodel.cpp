@@ -121,8 +121,6 @@ void LocalDocsModel::updateCollectionItem(const CollectionItem &item)
             continue;
 
         QVector<int> changed;
-        if (stored.collection != item.collection)
-            changed.append(CollectionRole);
         if (stored.folder_path != item.folder_path)
             changed.append(FolderPathRole);
         if (stored.installed != item.installed)
@@ -158,7 +156,11 @@ void LocalDocsModel::updateCollectionItem(const CollectionItem &item)
         if (stored.embeddingModel != item.embeddingModel)
             changed.append(EmbeddingModelRole);
 
+        // preserve collection name as we ignore it for matching
+        QString collection = stored.collection;
         stored = item;
+        stored.collection = collection;
+
         emit dataChanged(this->index(i), this->index(i), changed);
     }
 }
@@ -186,9 +188,11 @@ void LocalDocsModel::removeCollectionIf(std::function<bool(CollectionItem)> cons
     }
 }
 
-void LocalDocsModel::removeFolderById(int folder_id)
+void LocalDocsModel::removeFolderById(const QString &collection, int folder_id)
 {
-    removeCollectionIf([folder_id](const auto &c) { return c.folder_id == folder_id; });
+    removeCollectionIf([collection, folder_id](const auto &c) {
+        return c.collection == collection && c.folder_id == folder_id;
+    });
 }
 
 void LocalDocsModel::removeCollectionPath(const QString &name, const QString &path)

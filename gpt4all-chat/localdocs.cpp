@@ -76,7 +76,6 @@ void LocalDocs::addFolder(const QString &collection, const QString &path)
 
 void LocalDocs::removeFolder(const QString &collection, const QString &path)
 {
-    m_localDocsModel->removeCollectionPath(collection, path);
     emit requestRemoveFolder(collection, path);
 }
 

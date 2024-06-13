@@ -65,7 +65,7 @@ public:
 public Q_SLOTS:
     void updateCollectionItem(const CollectionItem&);
     void addCollectionItem(const CollectionItem &item);
-    void removeFolderById(int folder_id);
+    void removeFolderById(const QString &collection, int folder_id);
     void removeCollectionPath(const QString &name, const QString &path);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
