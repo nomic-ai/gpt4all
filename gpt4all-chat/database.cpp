@@ -85,10 +85,10 @@ static const QString INIT_DB_SQL[] = {
     // create tables
     uR"(
         create table chunks(
-            document_id   integer,
+            document_id   integer not null,
             chunk_id      integer primary key autoincrement,
-            chunk_text    text,
-            file          text,
+            chunk_text    text not null,
+            file          text not null,
             title         text,
             author        text,
             subject       text,
@@ -96,30 +96,30 @@ static const QString INIT_DB_SQL[] = {
             page          integer,
             line_from     integer,
             line_to       integer,
-            words         integer default 0,
-            tokens        integer default 0,
-            has_embedding integer default 0
+            words         integer default 0 not null,
+            tokens        integer default 0 not null,
+            has_embedding integer default 0 not null
         );
     )"_s, uR"(
         create table collections(
-            collection_name  text,
-            folder_id        integer,
+            collection_name  text not null,
+            folder_id        integer not null,
             last_update_time integer,
             embedding_model  text,
-            force_indexing   integer,
+            force_indexing   integer not null,
             unique(collection_name, folder_id)
         );
     )"_s, uR"(
         create table folders(
             id          integer primary key,
-            folder_path text unique
+            folder_path text unique not null
         );
     )"_s, uR"(
         create table documents(
             id            integer primary key,
-            folder_id     integer,
-            document_time integer,
-            document_path text unique
+            folder_id     integer not null,
+            document_time integer not null,
+            document_path text unique not null
         );
     )"_s,
 };
