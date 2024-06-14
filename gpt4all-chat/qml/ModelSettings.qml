@@ -299,7 +299,6 @@ MySettingsTab {
             Layout.columnSpan: 2
             Layout.topMargin: 15
             Layout.fillWidth: true
-            Layout.minimumWidth: promptTemplate.width
             columns: 4
             rowSpacing: 30
             columnSpacing: 10
@@ -783,7 +782,6 @@ MySettingsTab {
             Layout.columnSpan: 2
             Layout.topMargin: 15
             Layout.fillWidth: true
-            Layout.minimumWidth: promptTemplate.width
             height: 2
             color: theme.grayRed500
         }
