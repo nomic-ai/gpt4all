@@ -24,6 +24,8 @@ ColumnLayout {
     }
     Label {
         id: helpTextLabel
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
         color: theme.settingsTitleTextColor
         text: mainTextLabel.text
         font.pixelSize: theme.fontSizeSmaller
