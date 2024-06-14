@@ -828,6 +828,7 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
 
     if (chunks) {
         CollectionItem item = guiCollectionItem(folder_id);
+        item.currentEmbeddingsToIndex += chunks;
         item.totalEmbeddingsToIndex += chunks;
         item.totalWords += addedWords;
         updateGuiForCollectionItem(item);
@@ -880,7 +881,7 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
     }
 
     CollectionItem item = guiCollectionItem(folder_id);
-    item.currentEmbeddingsToIndex += embeddings.count();
+    item.currentEmbeddingsToIndex -= embeddings.count();
     if (!lastFile.isEmpty())
         item.fileCurrentlyProcessing = lastFile;
     updateGuiForCollectionItem(item);
@@ -1287,7 +1288,7 @@ void Database::scheduleUncompletedEmbeddings(int folder_id)
 
     CollectionItem item = guiCollectionItem(folder_id);
     item.totalEmbeddingsToIndex = total;
-    item.currentEmbeddingsToIndex = total - chunkList.size();
+    item.currentEmbeddingsToIndex = chunkList.size();
     updateGuiForCollectionItem(item);
 
     for (int i = 0; i < chunkList.size(); i += s_batchSize) {

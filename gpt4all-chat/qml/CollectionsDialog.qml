@@ -94,10 +94,10 @@ MyDialog {
                     anchors.right: parent.right
                     anchors.margins: 20
                     anchors.leftMargin: 40
-                    visible: model.indexing || model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex || model.error !== ""
+                    visible: model.indexing || model.currentEmbeddingsToIndex !== 0 || model.error !== ""
                     value: model.error !== "" ? 0 : model.indexing ?
                         (model.totalBytesToIndex - model.currentBytesToIndex) / model.totalBytesToIndex :
-                        (model.currentEmbeddingsToIndex / model.totalEmbeddingsToIndex)
+                        ((model.totalEmbeddingsToIndex - model.currentEmbeddingsToIndex) / model.totalEmbeddingsToIndex)
                     background: Rectangle {
                         implicitHeight: 45
                         color: model.error ? theme.textErrorColor : theme.progressBackground

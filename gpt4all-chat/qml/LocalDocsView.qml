@@ -147,8 +147,8 @@ Rectangle {
                                         if (model.indexing)
                                             return (model.totalBytesToIndex - model.currentBytesToIndex) / model.totalBytesToIndex
 
-                                        if (model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex)
-                                            return (model.currentEmbeddingsToIndex / model.totalEmbeddingsToIndex)
+                                        if (model.currentEmbeddingsToIndex !== 0)
+                                            return (model.totalEmbeddingsToIndex - model.currentEmbeddingsToIndex) / model.totalEmbeddingsToIndex
 
                                         return 0
                                     }
@@ -162,7 +162,7 @@ Rectangle {
                                             if (model.indexing)
                                                  return "#fff9d2"//theme.progressBackground
 
-                                            if (model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex)
+                                            if (model.currentEmbeddingsToIndex !== 0)
                                                  return "#fff9d2"//theme.progressBackground
 
                                             if (model.forceIndexing)
@@ -199,7 +199,7 @@ Rectangle {
                                         if (model.indexing)
                                             return "#d16f0e"//theme.progressText
 
-                                        if (model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex)
+                                        if (model.currentEmbeddingsToIndex !== 0)
                                             return "#d16f0e"//theme.progressText
 
                                         if (model.forceIndexing)
@@ -216,7 +216,7 @@ Rectangle {
                                             return qsTr("INDEXING")
 
                                         // indicates generating the embeddings for any outstanding snippets
-                                        if (model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex)
+                                        if (model.currentEmbeddingsToIndex !== 0)
                                             return qsTr("EMBEDDING")
 
                                         if (model.forceIndexing)
@@ -254,7 +254,7 @@ Rectangle {
                                     if (model.indexing)
                                         return qsTr("Indexing in progress")
 
-                                    if (model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex)
+                                    if (model.currentEmbeddingsToIndex !== 0)
                                         return qsTr("Embedding in progress")
 
                                     if (model.forceIndexing)
@@ -271,7 +271,7 @@ Rectangle {
                             }
                             Text {
                                 visible: {
-                                    return model.indexing || model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex
+                                    return model.indexing || model.currentEmbeddingsToIndex !== 0
                                 }
                                 Layout.alignment: Qt.AlignRight
                                 text: {
@@ -308,8 +308,9 @@ Rectangle {
                             }
                             Text {
                                 Layout.leftMargin: 15
-                                visible: model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex
-                                text: model.currentEmbeddingsToIndex + " of " + model.totalEmbeddingsToIndex + " embeddings"
+                                visible: model.currentEmbeddingsToIndex !== 0
+                                text: (model.totalEmbeddingsToIndex - model.currentEmbeddingsToIndex) + " of "
+                                      + model.totalEmbeddingsToIndex + " embeddings"
                                 elide: Text.ElideRight
                                 color: theme.gray500
                                 font.pixelSize: theme.fontSizeSmaller
@@ -326,7 +327,7 @@ Rectangle {
                             id: fileProcessingRow
                             Layout.topMargin: 15
                             Layout.bottomMargin: 15
-                            visible: model.fileCurrentlyProcessing !== "" && (model.indexing || model.currentEmbeddingsToIndex !== model.totalEmbeddingsToIndex)
+                            visible: model.fileCurrentlyProcessing !== "" && (model.indexing || model.currentEmbeddingsToIndex !== 0)
                             MyBusyIndicator {
                                 Layout.alignment: Qt.AlignCenter
                                 Layout.preferredWidth: 12
