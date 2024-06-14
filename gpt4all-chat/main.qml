@@ -255,8 +255,8 @@ Window {
                 id: homeButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 60
+                Layout.preferredHeight: 60
                 Layout.alignment: Qt.AlignCenter
                 toggledWidth: 0
                 toggled: homeView.isShown()
@@ -277,7 +277,7 @@ Window {
                 font.pixelSize: theme.fontSizeLargeCapped
                 font.bold: true
                 color: homeButton.hovered ? homeButton.backgroundColorHovered : homeButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 60
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
@@ -290,8 +290,8 @@ Window {
                 id: chatButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 60
+                Layout.preferredHeight: 60
                 Layout.alignment: Qt.AlignCenter
                 toggledWidth: 0
                 toggled: chatView.isShown()
@@ -312,7 +312,7 @@ Window {
                 font.pixelSize: theme.fontSizeLargeCapped
                 font.bold: true
                 color: chatButton.hovered ? chatButton.backgroundColorHovered : chatButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 60
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
@@ -325,8 +325,8 @@ Window {
                 id: modelsButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 60
+                Layout.preferredHeight: 60
                 toggledWidth: 0
                 toggled: modelsView.isShown()
                 toggledColor: theme.iconBackgroundViewBarToggled
@@ -346,7 +346,7 @@ Window {
                 font.pixelSize: theme.fontSizeLargeCapped
                 font.bold: true
                 color: modelsButton.hovered ? modelsButton.backgroundColorHovered : modelsButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 60
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
@@ -359,8 +359,8 @@ Window {
                 id: localdocsButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 60
+                Layout.preferredHeight: 60
                 toggledWidth: 0
                 toggledColor: theme.iconBackgroundViewBarToggled
                 toggled: localDocsView.isShown()
@@ -380,7 +380,7 @@ Window {
                 font.pixelSize: theme.fontSizeLargeCapped
                 font.bold: true
                 color: localdocsButton.hovered ? localdocsButton.backgroundColorHovered : localdocsButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 60
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
@@ -393,8 +393,8 @@ Window {
                 id: settingsButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 60
+                Layout.preferredHeight: 60
                 toggledWidth: 0
                 toggledColor: theme.iconBackgroundViewBarToggled
                 toggled: settingsView.isShown()
@@ -414,7 +414,7 @@ Window {
                 font.pixelSize: theme.fontSizeLargeCapped
                 font.bold: true
                 color: settingsButton.hovered ? settingsButton.backgroundColorHovered : settingsButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 60
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
