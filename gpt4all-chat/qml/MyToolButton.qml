@@ -33,7 +33,7 @@ Button {
             visible: myButton.toggled
             border.color: myButton.toggledColor
             border.width: myButton.toggledWidth
-            radius: 15
+            radius: 10
         }
         Image {
             id: image
