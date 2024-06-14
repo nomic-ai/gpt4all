@@ -261,8 +261,8 @@ Window {
                 toggledWidth: 0
                 toggled: homeView.isShown()
                 toggledColor: theme.iconBackgroundViewBarToggled
-                imageWidth: 36
-                imageHeight: 36
+                imageWidth: 34
+                imageHeight: 34
                 source: "qrc:/gpt4all/icons/home.svg"
                 Accessible.name: qsTr("Home view")
                 Accessible.description: qsTr("Home view of application")
@@ -296,8 +296,8 @@ Window {
                 toggledWidth: 0
                 toggled: chatView.isShown()
                 toggledColor: theme.iconBackgroundViewBarToggled
-                imageWidth: 36
-                imageHeight: 36
+                imageWidth: 34
+                imageHeight: 34
                 source: "qrc:/gpt4all/icons/chat.svg"
                 Accessible.name: qsTr("Chat view")
                 Accessible.description: qsTr("Chat view to interact with models")
@@ -330,8 +330,8 @@ Window {
                 toggledWidth: 0
                 toggled: modelsView.isShown()
                 toggledColor: theme.iconBackgroundViewBarToggled
-                imageWidth: 36
-                imageHeight: 36
+                imageWidth: 34
+                imageHeight: 34
                 source: "qrc:/gpt4all/icons/models.svg"
                 Accessible.name: qsTr("Models")
                 Accessible.description: qsTr("Models view for installed models")
@@ -364,8 +364,8 @@ Window {
                 toggledWidth: 0
                 toggledColor: theme.iconBackgroundViewBarToggled
                 toggled: localDocsView.isShown()
-                imageWidth: 36
-                imageHeight: 36
+                imageWidth: 34
+                imageHeight: 34
                 source: "qrc:/gpt4all/icons/db.svg"
                 Accessible.name: qsTr("LocalDocs")
                 Accessible.description: qsTr("LocalDocs view to configure and use local docs")
@@ -398,8 +398,8 @@ Window {
                 toggledWidth: 0
                 toggledColor: theme.iconBackgroundViewBarToggled
                 toggled: settingsView.isShown()
-                imageWidth: 36
-                imageHeight: 36
+                imageWidth: 34
+                imageHeight: 34
                 source: "qrc:/gpt4all/icons/settings.svg"
                 Accessible.name: qsTr("Settings")
                 Accessible.description: qsTr("Settings view for application configuration")
