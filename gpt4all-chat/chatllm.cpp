@@ -510,7 +510,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 if (!m_isServer)
                     LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                 m_llModelInfo = LLModelInfo();
-                emit modelLoadingError(u"Error loading %1: %2"_s.arg(modelInfo.filename()).arg(constructError));
+                emit modelLoadingError(u"Error loading %1: %2"_s.arg(modelInfo.filename(), constructError));
             }
         }
 #if defined(DEBUG_MODEL_LOADING)

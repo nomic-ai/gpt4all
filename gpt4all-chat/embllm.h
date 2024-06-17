@@ -33,7 +33,7 @@ class EmbeddingLLMWorker : public QObject {
     Q_OBJECT
 public:
     EmbeddingLLMWorker();
-    virtual ~EmbeddingLLMWorker();
+    ~EmbeddingLLMWorker() override;
 
     void wait();
 
@@ -58,7 +58,7 @@ private Q_SLOTS:
     void handleFinished();
 
 private:
-    void sendAtlasRequest(const QStringList &texts, const QString &taskType, QVariant userData = {});
+    void sendAtlasRequest(const QStringList &texts, const QString &taskType, const QVariant &userData = {});
 
     QString m_nomicAPIKey;
     QNetworkAccessManager *m_networkManager;
@@ -73,7 +73,7 @@ class EmbeddingLLM : public QObject
     Q_OBJECT
 public:
     EmbeddingLLM();
-    virtual ~EmbeddingLLM();
+    ~EmbeddingLLM() override;
 
     QString model() const;
     bool loadModel();

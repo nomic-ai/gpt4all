@@ -245,7 +245,7 @@ void ChatAPIWorker::handleReadyRead()
         m_chat->callResponse(
             -1,
             u"ERROR: ChatAPIWorker::handleReadyRead got HTTP Error %1 %2: %3"_s
-                .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString()
+                .arg(code).arg(reply->errorString(), reply->readAll()).toStdString()
         );
         emit finished();
         return;

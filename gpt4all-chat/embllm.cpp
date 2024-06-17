@@ -13,7 +13,6 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonValue>
 #include <QList>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -140,7 +139,7 @@ std::vector<float> EmbeddingLLMWorker::generateSyncEmbedding(const QString &text
     return embedding;
 }
 
-void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QString &taskType, QVariant userData) {
+void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QString &taskType, const QVariant &userData) {
     QJsonObject root;
     root.insert("model", "nomic-embed-text-v1");
     root.insert("texts", QJsonArray::fromStringList(texts));
@@ -191,7 +190,7 @@ void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &ch
     if (m_nomicAPIKey.isEmpty()) {
         QVector<EmbeddingResult> results;
         results.reserve(chunks.size());
-        for (auto c : chunks) {
+        for (const auto &c: chunks) {
             EmbeddingResult result;
             result.folder_id = c.folder_id;
             result.chunk_id = c.chunk_id;
@@ -218,11 +217,11 @@ void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &ch
 std::vector<float> jsonArrayToVector(const QJsonArray &jsonArray) {
     std::vector<float> result;
 
-    for (const QJsonValue &innerValue : jsonArray) {
+    for (const auto &innerValue: jsonArray) {
         if (innerValue.isArray()) {
             QJsonArray innerArray = innerValue.toArray();
             result.reserve(result.size() + innerArray.size());
-            for (const QJsonValue &value : innerArray) {
+            for (const auto &value: innerArray) {
                 result.push_back(static_cast<float>(value.toDouble()));
             }
         }
@@ -244,7 +243,7 @@ QVector<EmbeddingResult> jsonArrayToEmbeddingResults(const QVector<EmbeddingChun
         const QJsonArray embeddingArray = embeddings.at(i).toArray();
 
         std::vector<float> embeddingVector;
-        for (const QJsonValue& value : embeddingArray)
+        for (const auto &value: embeddingArray)
             embeddingVector.push_back(static_cast<float>(value.toDouble()));
 
         EmbeddingResult result;

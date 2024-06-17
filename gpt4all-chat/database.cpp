@@ -43,12 +43,12 @@ public:
     bool binarySeen() const { return m_binarySeen; }
 
 protected:
-    virtual qint64 readData(char *data, qint64 maxSize) override {
+    qint64 readData(char *data, qint64 maxSize) override {
         qint64 res = QFile::readData(data, maxSize);
         return checkData(data, res);
     }
 
-    virtual qint64 readLineData(char *data, qint64 maxSize) override {
+    qint64 readLineData(char *data, qint64 maxSize) override {
         qint64 res = QFile::readLineData(data, maxSize);
         return checkData(data, res);
     }
@@ -270,7 +270,7 @@ static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, co
     for (size_t i = 1; i < chunk_ids.size(); ++i)
         chunk_ids_str += "," + QString::number(chunk_ids[i]);
     const QString collection_names_str = collection_names.join("', '");
-    const QString formatted_query = SELECT_CHUNKS_SQL.arg(chunk_ids_str).arg("'" + collection_names_str + "'");
+    const QString formatted_query = SELECT_CHUNKS_SQL.arg(chunk_ids_str, "'" + collection_names_str + "'");
     if (!q.prepare(formatted_query))
         return false;
     return q.exec();
@@ -606,7 +606,7 @@ int Database::openDatabase(const QString &modelPath, bool create, int ver)
     if (m_db.isOpen())
         m_db.close();
     auto dbPath = u"%1/localdocs_v%2.db"_s.arg(modelPath).arg(ver);
-    if (!create && !QFileInfo(dbPath).exists())
+    if (!create && !QFileInfo::exists(dbPath))
         return 0;
     m_db.setDatabaseName(dbPath);
     if (!m_db.open()) {
@@ -691,10 +691,10 @@ bool Database::initDb(const QString &modelPath, const QList<CollectionItem> &old
     return true;
 }
 
-Database::Database(int chunkSize, const QStringList &extensions)
+Database::Database(int chunkSize, QStringList extensions)
     : QObject(nullptr)
     , m_chunkSize(chunkSize)
-    , m_scannedFileExtensions(extensions)
+    , m_scannedFileExtensions(std::move(extensions))
     , m_scanTimer(new QTimer(this))
     , m_watcher(new QFileSystemWatcher(this))
     , m_embLLM(new EmbeddingLLM)
@@ -861,7 +861,7 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
     QString lastFile;
     QList<int> chunksToAdd;
     QSqlQuery q(m_db);
-    for (auto e : embeddings) {
+    for (const auto &e: embeddings) {
         if (folder_id == -1) {
             folder_id = e.folder_id;
         } else {
@@ -1306,7 +1306,7 @@ void Database::updateCollectionStatistics()
         return;
     }
 
-    for (const auto &i : collections) {
+    for (const auto &i: std::as_const(collections)) {
         int total_docs = 0;
         int total_words = 0;
         int total_tokens = 0;
@@ -1393,7 +1393,7 @@ void Database::forceIndexing(const QString &collection)
         return;
     }
 
-    for (const auto& folder : folders) {
+    for (const auto &folder: std::as_const(folders)) {
         CollectionItem item = guiCollectionItem(folder.first);
         item.forceIndexing = false;
         updateGuiForCollectionItem(item);
@@ -1647,7 +1647,7 @@ bool Database::cleanDB()
     transaction();
 
     QList<int> chunksToRemove;
-    for (const auto &i : collections) {
+    for (const auto &i: std::as_const(collections)) {
         // Find the path for the folder
         QFileInfo info(i.folder_path);
         if (!info.exists() || !info.isReadable()) {
@@ -1784,7 +1784,7 @@ void Database::changeFileExtensions(const QStringList &extensions)
         return;
     }
 
-    for (const auto &i : collections) {
+    for (const auto &i: std::as_const(collections)) {
         if (!i.forceIndexing)
             scanDocuments(i.folder_id, i.folder_path);
     }

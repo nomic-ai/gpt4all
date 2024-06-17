@@ -12,10 +12,13 @@
 #include <QSet>
 #include <QSqlDatabase>
 #include <QString>
+#include <QStringList>
 #include <QThread>
 #include <QVector>
 
 #include <cstddef>
+
+using namespace Qt::Literals::StringLiterals;
 
 class Embeddings;
 class QFileSystemWatcher;
@@ -36,7 +39,7 @@ struct DocumentInfo
     size_t currentPosition = 0;
     bool currentlyProcessing = false;
     bool isPdf() const {
-        return doc.suffix() == QLatin1String("pdf");
+        return doc.suffix() == u"pdf"_s;
     }
 };
 
@@ -82,8 +85,8 @@ class Database : public QObject
 {
     Q_OBJECT
 public:
-    Database(int chunkSize, const QStringList &extensions);
-    virtual ~Database();
+    Database(int chunkSize, QStringList extensions);
+    ~Database() override;
 
     bool isValid() const { return m_databaseValid; }
 

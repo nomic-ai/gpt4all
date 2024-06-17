@@ -1181,7 +1181,7 @@ void ModelList::removeInternal(const ModelInfo &model)
 QString ModelList::uniqueModelName(const ModelInfo &model) const
 {
     QMutexLocker locker(&m_mutex);
-    QRegularExpression re("^(.*)~(\\d+)$");
+    static const QRegularExpression re("^(.*)~(\\d+)$");
     QRegularExpressionMatch match = re.match(model.name());
     QString baseName;
     if (match.hasMatch())
@@ -1752,7 +1752,7 @@ void ModelList::updateModelsFromSettings()
 {
     QSettings settings;
     QStringList groups = settings.childGroups();
-    for (const QString g : groups) {
+    for (const QString &g: groups) {
         if (!g.startsWith("model-"))
             continue;
 
@@ -1940,7 +1940,7 @@ void ModelList::discoverSearch(const QString &search)
 
     m_discoverNumberOfResults = 0;
     m_discoverResultsCompleted = 0;
-    discoverProgressChanged();
+    emit discoverProgressChanged();
 
     if (search.isEmpty()) {
         return;
@@ -1949,7 +1949,8 @@ void ModelList::discoverSearch(const QString &search)
     m_discoverInProgress = true;
     emit discoverInProgressChanged();
 
-    QStringList searchParams = search.split(QRegularExpression("\\s+")); // split by whitespace
+    static const QRegularExpression wsRegex("\\s+");
+    QStringList searchParams = search.split(wsRegex); // split by whitespace
     QString searchString = u"search=%1&"_s.arg(searchParams.join('+'));
     QString limitString = m_discoverLimit > 0 ? u"limit=%1&"_s.arg(m_discoverLimit) : QString();
 
@@ -1966,7 +1967,8 @@ void ModelList::discoverSearch(const QString &search)
 
     QString directionString = !sortString.isEmpty() ? u"direction=%1&"_s.arg(m_discoverSortDirection) : QString();
 
-    QUrl hfUrl(u"https://huggingface.co/api/models?filter=gguf&%1%2%3%4full=true&config=true"_s.arg(searchString).arg(limitString).arg(sortString).arg(directionString));
+    QUrl hfUrl(u"https://huggingface.co/api/models?filter=gguf&%1%2%3%4full=true&config=true"_s
+               .arg(searchString, limitString, sortString, directionString));
 
     QNetworkRequest request(hfUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -2032,7 +2034,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
         qWarning() << "ERROR: Couldn't parse: " << jsonData << err.errorString();
         m_discoverNumberOfResults = 0;
         m_discoverResultsCompleted = 0;
-        discoverProgressChanged();
+        emit discoverProgressChanged();
         m_discoverInProgress = false;
         emit discoverInProgressChanged();
         return;
@@ -2072,7 +2074,7 @@ void ModelList::parseDiscoveryJsonFile(const QByteArray &jsonData)
         QString filename = file.second;
         ++m_discoverNumberOfResults;
 
-        QUrl url(u"https://huggingface.co/%1/resolve/main/%2"_s.arg(repo_id).arg(filename));
+        QUrl url(u"https://huggingface.co/%1/resolve/main/%2"_s.arg(repo_id, filename));
         QNetworkRequest request(url);
         request.setRawHeader("Accept-Encoding", "identity");
         request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::ManualRedirectPolicy);
@@ -2111,21 +2113,16 @@ void ModelList::handleDiscoveryItemFinished()
     QJsonObject config = obj["config"].toObject();
     QString type = config["model_type"].toString();
 
-    QByteArray repoCommitHeader = reply->rawHeader("X-Repo-Commit");
+    // QByteArray repoCommitHeader = reply->rawHeader("X-Repo-Commit");
     QByteArray linkedSizeHeader = reply->rawHeader("X-Linked-Size");
     QByteArray linkedEtagHeader = reply->rawHeader("X-Linked-Etag");
     // For some reason these seem to contain quotation marks ewww
     linkedEtagHeader.replace("\"", "");
     linkedEtagHeader.replace("\'", "");
-    QString locationHeader = reply->header(QNetworkRequest::LocationHeader).toString();
-
-    QString repoCommit = QString::fromUtf8(repoCommitHeader);
-    QString linkedSize = QString::fromUtf8(linkedSizeHeader);
-    QString linkedEtag = QString::fromUtf8(linkedEtagHeader);
+    // QString locationHeader = reply->header(QNetworkRequest::LocationHeader).toString();
 
     QString modelFilename = reply->request().attribute(QNetworkRequest::UserMax).toString();
-    QString modelFilesize = linkedSize;
-    modelFilesize = ModelList::toFileSize(modelFilesize.toULongLong());
+    QString modelFilesize = ModelList::toFileSize(QString(linkedSizeHeader).toULongLong());
 
     QString description = tr("<strong>Created by %1.</strong><br><ul>"
                              "<li>Published on %2."

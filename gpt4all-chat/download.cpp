@@ -130,12 +130,11 @@ void Download::updateReleaseNotes()
 void Download::downloadModel(const QString &modelFile)
 {
     QFile *tempFile = new QFile(ModelList::globalInstance()->incompleteDownloadPath(modelFile));
-    QDateTime modTime = tempFile->fileTime(QFile::FileModificationTime);
     bool success = tempFile->open(QIODevice::WriteOnly | QIODevice::Append);
     qWarning() << "Opening temp file for writing:" << tempFile->fileName();
     if (!success) {
         const QString error
-            = u"ERROR: Could not open temp file: %1 %2"_s.arg(tempFile->fileName()).arg(modelFile);
+            = u"ERROR: Could not open temp file: %1 %2"_s.arg(tempFile->fileName(), modelFile);
         qWarning() << error;
         clearRetry(modelFile);
         ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::DownloadErrorRole, error }});
@@ -178,8 +177,7 @@ void Download::downloadModel(const QString &modelFile)
 
 void Download::cancelDownload(const QString &modelFile)
 {
-    for (int i = 0; i < m_activeDownloads.size(); ++i) {
-        QNetworkReply *modelReply = m_activeDownloads.keys().at(i);
+    for (auto [modelReply, tempFile]: m_activeDownloads.asKeyValueRange()) {
         QUrl url = modelReply->request().url();
         if (url.toString().endsWith(modelFile)) {
             Network::globalInstance()->trackEvent("download_canceled", { {"model", modelFile} });
@@ -191,7 +189,6 @@ void Download::cancelDownload(const QString &modelFile)
             modelReply->abort(); // Abort the download
             modelReply->deleteLater(); // Schedule the reply for deletion
 
-            QFile *tempFile = m_activeDownloads.value(modelReply);
             tempFile->deleteLater();
             m_activeDownloads.remove(modelReply);
 
@@ -430,7 +427,7 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, QCryptographicHas
     // Reopen the tempFile for hashing
     if (!tempFile->open(QIODevice::ReadOnly)) {
         const QString error
-            = u"ERROR: Could not open temp file for hashing: %1 %2"_s.arg(tempFile->fileName()).arg(modelFilename);
+            = u"ERROR: Could not open temp file for hashing: %1 %2"_s.arg(tempFile->fileName(), modelFilename);
         qWarning() << error;
         emit hashAndSaveFinished(false, error, tempFile, modelReply);
         return;
@@ -443,9 +440,7 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, QCryptographicHas
         tempFile->close();
         const QString error
             = u"ERROR: Download error hash did not match: %1 != %2 for %3"_s
-                .arg(hash.result().toHex())
-                .arg(expectedHash.toLatin1())
-                .arg(modelFilename);
+                .arg(hash.result().toHex(), expectedHash.toLatin1(), modelFilename);
         qWarning() << error;
         tempFile->remove();
         emit hashAndSaveFinished(false, error, tempFile, modelReply);
@@ -466,7 +461,7 @@ void HashAndSaveFile::hashAndSave(const QString &expectedHash, QCryptographicHas
     // Reopen the tempFile for copying
     if (!tempFile->open(QIODevice::ReadOnly)) {
         const QString error
-            = u"ERROR: Could not open temp file at finish: %1 %2"_s.arg(tempFile->fileName()).arg(modelFilename);
+            = u"ERROR: Could not open temp file at finish: %1 %2"_s.arg(tempFile->fileName(), modelFilename);
         qWarning() << error;
         emit hashAndSaveFinished(false, error, tempFile, modelReply);
         return;

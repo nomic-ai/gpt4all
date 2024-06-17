@@ -64,7 +64,6 @@ ChatSaver::ChatSaver()
 
 void ChatListModel::saveChats()
 {
-    const QString savePath = MySettings::globalInstance()->modelPath();
     QVector<Chat*> toSave;
     for (Chat *chat : m_chats) {
         if (chat == m_serverChat)

@@ -847,7 +847,7 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
     else if (block.userState() == Php)
         rules = phpHighlightingRules();
 
-    for (const HighlightingRule &rule : qAsConst(rules)) {
+    for (const HighlightingRule &rule : std::as_const(rules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
