@@ -1,7 +1,8 @@
 #include "database.h"
 
-#include "embeddings.h"
 #include "mysettings.h"
+
+#include <usearch/index_plugins.hpp>
 
 #include <QDebug>
 #include <QDir>
@@ -22,12 +23,15 @@
 #include <QtGlobal>
 #include <QtLogging>
 
+#include <algorithm>
 #include <cmath>
 #include <optional>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 using namespace Qt::Literals::StringLiterals;
+namespace us = unum::usearch;
 
 //#define DEBUG
 //#define DEBUG_EXAMPLE
@@ -98,7 +102,6 @@ static const QString INIT_DB_SQL[] = {
             line_to       integer,
             words         integer default 0 not null,
             tokens        integer default 0 not null,
-            has_embedding integer default 0 not null,
             foreign key(document_id) references documents(id)
         );
     )"_s, uR"(
@@ -129,6 +132,17 @@ static const QString INIT_DB_SQL[] = {
             document_path text unique not null,
             foreign key(folder_id) references folders(id)
         );
+    )"_s, uR"(
+        create table embeddings(
+            model         text not null,
+            folder_id     integer not null,
+            chunk_id      integer not null,
+            embedding     blob not null,
+            primary key(model, folder_id, chunk_id),
+            foreign key(folder_id) references folders(id),
+            foreign key(chunk_id)  references chunks(id),
+            unique(model, chunk_id)
+        );
     )"_s,
 };
 
@@ -139,9 +153,16 @@ static const QString INSERT_CHUNK_SQL = uR"(
         returning id;
     )"_s;
 
-static const QString DELETE_CHUNKS_SQL = uR"(
-    delete from chunks WHERE document_id = ?;
-    )"_s;
+static const QString DELETE_CHUNKS_SQL[] = {
+    uR"(
+        delete from embeddings
+        where chunk_id in (
+            select id from chunks where document_id = ?
+        );
+    )"_s, uR"(
+        delete from chunks where document_id = ?;
+    )"_s,
+};
 
 static const QString SELECT_CHUNKS_BY_DOCUMENT_SQL = uR"(
     select id from chunks WHERE document_id = ?;
@@ -151,46 +172,36 @@ static const QString SELECT_CHUNKS_SQL = uR"(
     select c.id, d.document_time, d.document_path, c.chunk_text, c.file, c.title, c.author, c.page, c.line_from, c.line_to, co.name
     from chunks c
     join documents d on d.id = c.document_id
-    join folders f on f.id = d.folder_id
-    join collection_items ci on ci.folder_id = f.id
-    join collections co on co.id = ci.collection_id
-    where c.id in (%1) and co.name in (%2);
+    where c.id in (%1);
 )"_s;
 
-static const QString SELECT_FILE_FOR_CHUNK_SQL = uR"(
-    select c.file
-    from chunks c
-    where c.id = ?;
-    )"_s;
-
-static bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
-    if (!q.prepare(SELECT_FILE_FOR_CHUNK_SQL))
-        return false;
-    q.addBindValue(chunk_id);
-    if (!q.exec())
-        return false;
-    if (!q.next())
-        return false;
-    file = q.value(0).toString();
-    return true;
-}
-
 static const QString SELECT_UNCOMPLETED_CHUNKS_SQL = uR"(
-    select c.id, c.chunk_text, d.folder_id
+    select co.name, co.embedding_model, c.id, d.folder_id, c.chunk_text
     from chunks c
-    join documents d on c.document_id = d.id
-    where c.has_embedding != 1 and d.folder_id = ?;
+    join documents d on d.id = c.document_id
+    join folders f on f.id = d.folder_id
+    join collection_items ci on ci.folder_id = f.id
+    join collections co on co.id = ci.collection_id and co.embedding_model is not null
+    where not exists(
+        select 1
+        from embeddings e
+        where e.chunk_id = c.id and e.model = co.embedding_model
+    );
     )"_s;
 
 static const QString SELECT_COUNT_CHUNKS_SQL = uR"(
     select count(c.id)
     from chunks c
-    join documents d on c.document_id = d.id
+    join documents d on d.id = c.document_id
     where d.folder_id = ?;
     )"_s;
 
-static const QString UPDATE_CHUNK_HAS_EMBEDDING_SQL = uR"(
-    update chunks set has_embedding = 1 where id = ?;
+static const QString SELECT_CHUNK_FOLDER_SQL = uR"(
+    select d.folder_id
+    from chunks c
+    join documents d on d.id = c.document_id
+    join folders f on f.id = d.folder_id
+    where c.id = ?
     )"_s;
 
 static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
@@ -218,24 +229,40 @@ static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, c
 
 static bool removeChunksByDocumentId(QSqlQuery &q, int document_id)
 {
-    if (!q.prepare(DELETE_CHUNKS_SQL))
-        return false;
-    q.addBindValue(document_id);
-    return q.exec();
+    for (const auto &cmd: DELETE_CHUNKS_SQL) {
+        if (!q.prepare(cmd))
+            return false;
+        q.addBindValue(document_id);
+        if (!q.exec())
+            return false;
+    }
+    return true;
 }
 
-static bool selectAllUncompletedChunks(QSqlQuery &q, int folder_id, QList<EmbeddingChunk> &chunks) {
-    if (!q.prepare(SELECT_UNCOMPLETED_CHUNKS_SQL))
-        return false;
-    q.addBindValue(folder_id);
-    if (!q.exec())
+#define NAMED_PAIR(name, typea, a, typeb, b) \
+    struct name { typea a; typeb b; }; \
+    static bool operator==(const name &x, const name &y) { return x.a == y.a && x.b == y.b; } \
+    static size_t qHash(const name &x, size_t seed) { return qHashMulti(seed, x.a, x.b); }
+
+// struct compared by embedding key, can be extended with additional unique data
+NAMED_PAIR(EmbeddingKey, QString, embedding_model, int, chunk_id)
+
+namespace {
+    struct IncompleteChunk: EmbeddingKey { int folder_id; QString text; };
+} // namespace
+
+static bool selectAllUncompletedChunks(QSqlQuery &q, QHash<IncompleteChunk, QStringList> &chunks) {
+    if (!q.exec(SELECT_UNCOMPLETED_CHUNKS_SQL))
         return false;
     while (q.next()) {
-        EmbeddingChunk i;
-        i.chunk_id = q.value(0).toInt();
-        i.chunk = q.value(1).toString();
-        i.folder_id = q.value(2).toInt();
-        chunks.append(i);
+        QString collection = q.value(0).toString();
+        IncompleteChunk ic {
+            /*embedding_model =*/ q.value(1).toString(),
+            /*chunk_id        =*/ q.value(2).toInt(),
+            /*folder_id       =*/ q.value(3).toInt(),
+            /*text            =*/ q.value(4).toString(),
+        };
+        chunks[ic] << collection;
     }
     return true;
 }
@@ -254,25 +281,28 @@ static bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
     return true;
 }
 
-static bool updateChunkHasEmbedding(QSqlQuery &q, int chunk_id) {
-    if (!q.prepare(UPDATE_CHUNK_HAS_EMBEDDING_SQL))
-        return false;
-    q.addBindValue(chunk_id);
-    if (!q.exec())
-        return false;
-    return true;
-}
-
-static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, const std::vector<qint64> &chunk_ids, int retrievalSize)
+static bool selectChunk(QSqlQuery &q, const QList<int> &chunk_ids, int retrievalSize)
 {
     QString chunk_ids_str = QString::number(chunk_ids[0]);
     for (size_t i = 1; i < chunk_ids.size(); ++i)
         chunk_ids_str += "," + QString::number(chunk_ids[i]);
-    const QString collection_names_str = collection_names.join("', '");
-    const QString formatted_query = SELECT_CHUNKS_SQL.arg(chunk_ids_str, "'" + collection_names_str + "'");
+    const QString formatted_query = SELECT_CHUNKS_SQL.arg(chunk_ids_str);
     if (!q.prepare(formatted_query))
         return false;
     return q.exec();
+}
+
+bool sqlGetChunkFolders(QSqlQuery &q, const QList<int> &chunk_ids, QList<int> &folder_ids) {
+    if (!q.prepare(SELECT_CHUNK_FOLDER_SQL))
+        return false;
+
+    for (int id: chunk_ids) {
+        q.addBindValue(id);
+        if (!q.exec())
+            return false;
+        folder_ids << q.value(0).toInt();
+    }
+    return true;
 }
 
 static const QString INSERT_COLLECTION_SQL = uR"(
@@ -441,8 +471,11 @@ static const QString SELECT_FOLDERS_FROM_PATH_SQL = uR"(
     select id from folders where folder_path = ?;
     )"_s;
 
-static const QString SELECT_FOLDERS_FROM_ID_SQL = uR"(
-    select folder_path from folders where id = ?;
+static const QString GET_FOLDER_EMBEDDING_MODEL_SQL = uR"(
+    select co.embedding_model
+    from collections co
+    join collection_items ci on ci.collection_id = co.id
+    where ci.folder_id = ?;
     )"_s;
 
 static const QString SELECT_ALL_FOLDERPATHS_SQL = uR"(
@@ -479,15 +512,15 @@ static bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
     return true;
 }
 
-static bool selectFolder(QSqlQuery &q, int id, QString *folder_path) {
-    if (!q.prepare(SELECT_FOLDERS_FROM_ID_SQL))
+static bool sqlGetFolderEmbeddingModel(QSqlQuery &q, int id, QString &embedding_model) {
+    if (!q.prepare(GET_FOLDER_EMBEDDING_MODEL_SQL))
         return false;
     q.addBindValue(id);
-    if (!q.exec())
+    if (!q.exec() || !q.next())
         return false;
+    // FIXME(jared): there may be more than one if a folder is shared between collections
     Q_ASSERT(q.size() < 2);
-    if (q.next())
-        *folder_path = q.value(0).toString();
+    embedding_model = q.value(0).toString();
     return true;
 }
 
@@ -646,6 +679,76 @@ static bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, 
     return true;
 }
 
+// insert embedding only if still needed
+static const QString INSERT_EMBEDDING_SQL = uR"(
+    insert into embeddings(model, folder_id, chunk_id, embedding)
+    select :model, d.folder_id, :chunk_id, :embedding
+    from chunks c
+    join documents d on d.id = c.document_id
+    join folders f on f.id = d.folder_id
+    join collection_items ci on ci.folder_id = f.id
+    join collections co on co.id = ci.collection_id
+    where co.embedding_model = :model and c.id = :chunk_id
+    limit 1
+    returning folder_id;
+)"_s;
+
+static const QString GET_COLLECTION_EMBEDDINGS_SQL = uR"(
+    select e.chunk_id, e.embedding
+    from embeddings e
+    join collections co on co.embedding_model = e.model
+    join collection_items ci on ci.folder_id = e.folder_id and ci.collection_id = co.id
+    where co.name in ('%1');
+)"_s;
+
+static const QString GET_CHUNK_FILE_SQL = uR"(
+    select file from chunks where id = ?;
+)"_s;
+
+namespace {
+    struct Embedding { QString model; int chunk_id; QByteArray data; };
+    struct EmbeddingStat { QString lastFile; int nAdded; };
+} // namespace
+
+NAMED_PAIR(EmbeddingFolder, QString, embedding_model, int, folder_id)
+
+static bool sqlAddEmbeddings(QSqlQuery &q, const QList<Embedding> &embeddings, QHash<EmbeddingFolder, EmbeddingStat> &embeddingStats) {
+    if (!q.prepare(INSERT_EMBEDDING_SQL))
+        return false;
+
+    // insert embedding if needed
+    QList<std::tuple<int, int, QString>> addedEmbeddings;
+    for (const auto &e: embeddings) {
+        q.bindValue(":model", e.model);
+        q.bindValue(":chunk_id", e.chunk_id);
+        q.bindValue(":embedding", e.data);
+        if (!q.exec())
+            return false;
+
+        if (q.next()) {
+            int folder_id = q.value(0).toInt();
+            addedEmbeddings.append({folder_id, e.chunk_id, e.model});
+        }
+    }
+
+    if (!q.prepare(GET_CHUNK_FILE_SQL))
+        return false;
+
+    // populate statistics for each collection item
+    for (const auto &[folder_id, chunk_id, model]: std::as_const(addedEmbeddings)) {
+        auto &stat = embeddingStats[{ model, folder_id }];
+        stat.nAdded++;
+        if (stat.lastFile.isNull()) {
+            q.addBindValue(chunk_id);
+            if (!q.exec() || !q.next())
+                return false;
+            stat.lastFile = q.value(0).toString();
+        }
+    }
+
+    return true;
+}
+
 void Database::transaction()
 {
     bool ok = m_db.transaction();
@@ -769,7 +872,6 @@ Database::Database(int chunkSize, QStringList extensions)
     , m_scanTimer(new QTimer(this))
     , m_watcher(new QFileSystemWatcher(this))
     , m_embLLM(new EmbeddingLLM)
-    , m_embeddings(new Embeddings(this))
     , m_databaseValid(true)
 {
     m_db = QSqlDatabase::database(QSqlDatabase::defaultConnection, false);
@@ -838,9 +940,9 @@ void Database::handleDocumentError(const QString &errorMessage,
     qWarning() << errorMessage << document_id << document_path << error;
 }
 
-size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
-    const QString &title, const QString &author, const QString &subject, const QString &keywords, int page,
-    int maxChunks)
+size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &embedding_model,
+    const QString &file, const QString &title, const QString &author, const QString &subject, const QString &keywords,
+    int page, int maxChunks)
 {
     int charCount = 0;
     // TODO: implement line_from/line_to
@@ -883,6 +985,7 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
                 addedWords += words.size();
 
                 EmbeddingChunk toEmbed;
+                toEmbed.model = embedding_model;
                 toEmbed.folder_id = folder_id;
                 toEmbed.chunk_id = chunk_id;
                 toEmbed.chunk = chunk;
@@ -926,75 +1029,57 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
 {
     Q_ASSERT(!embeddings.isEmpty());
 
-    // FIXME: Replace this with an arrow file on disk
-    // FIXME: Add the tokens information
-    int folder_id = -1;
-    QString lastFile;
-    QList<int> chunksToAdd;
-    QSqlQuery q(m_db);
+    QList<Embedding> sqlEmbeddings;
     for (const auto &e: embeddings) {
-        if (folder_id == -1) {
-            folder_id = e.folder_id;
-        } else {
-            Q_ASSERT(folder_id == e.folder_id);
-        }
-
-        QString file;
-        if (!selectFileForChunk(q, e.chunk_id, file))
-            continue; // file already removed
-
-        if (!m_embeddings->add(e.embedding, e.chunk_id)) {
-            qWarning() << "ERROR: Cannot add point to embeddings index";
-        } else {
-            chunksToAdd.append(e.chunk_id);
-        }
-        lastFile = file;
+        auto data = QByteArray::fromRawData(
+            reinterpret_cast<const char *>(e.embedding.data()),
+            e.embedding.size() * sizeof(e.embedding.front())
+        );
+        sqlEmbeddings.append({e.model, e.chunk_id, std::move(data)});
     }
 
-    CollectionItem item = guiCollectionItem(folder_id);
-    item.currentEmbeddingsToIndex -= embeddings.count();
-    if (!lastFile.isEmpty())
-        item.fileCurrentlyProcessing = lastFile;
-    updateGuiForCollectionItem(item);
-
-    if (chunksToAdd.isEmpty())
-        return; // nothing to add
-
-    m_embeddings->save();
-
-    // record that we have these chunks *after* flushing the embeddings to disk
     transaction();
-    for (int chunk_id: chunksToAdd)
-        updateChunkHasEmbedding(q, chunk_id);
-    commit();
-}
 
-void Database::handleErrorGenerated(int folder_id, const QString &error)
-{
-    CollectionItem item = guiCollectionItem(folder_id);
-    item.error = error;
-    updateGuiForCollectionItem(item);
-}
-
-bool Database::getChunksByDocumentId(int document_id, QList<int> &chunkIds)
-{
     QSqlQuery q(m_db);
-
-    if (!q.prepare(SELECT_CHUNKS_BY_DOCUMENT_SQL)) {
-        qWarning() << "ERROR: Cannot prepare sql for select chunks by document" << q.lastError();
-        return false;
+    QHash<EmbeddingFolder, EmbeddingStat> stats;
+    if (!sqlAddEmbeddings(q, sqlEmbeddings, stats)) {
+        qWarning() << "Database ERROR: failed to add embeddings:" << q.lastError();
+        return rollback();
     }
 
-    q.addBindValue(document_id);
+    commit();
 
-    if (!q.exec()) {
-        qWarning() << "ERROR: Cannot exec sql for select chunks by document" << q.lastError();
-        return false;
+    // FIXME(jared): embedding counts are per-collectionitem, not per-folder
+    for (const auto &[key, stat]: std::as_const(stats).asKeyValueRange()) {
+        CollectionItem item = guiCollectionItem(key.folder_id);
+        item.currentEmbeddingsToIndex -= stat.nAdded;
+        item.fileCurrentlyProcessing = stat.lastFile;
+        updateGuiForCollectionItem(item);
+    }
+}
+
+void Database::handleErrorGenerated(const QVector<EmbeddingChunk> &chunks, const QString &error)
+{
+    /* FIXME(jared): errors are actually collection-specific because they are conditioned
+     * on the embedding model, but this sets the error on all collections for a given
+     * folder */
+
+    QList<int> chunk_ids;
+    chunk_ids.reserve(chunks.count());
+    for (const auto &c: chunks) { chunk_ids << c.chunk_id; }
+
+    QSqlQuery q(m_db);
+    QList<int> folder_ids;
+    if (!sqlGetChunkFolders(q, chunk_ids, folder_ids)) {
+        qWarning() << "Database ERROR: failed to get folder IDs:" << q.lastError();
+        return;
     }
 
-    while (q.next())
-        chunkIds.append(q.value(0).toInt());
-    return true;
+    for (int fid: folder_ids) {
+        CollectionItem item = guiCollectionItem(fid);
+        item.error = error;
+        updateGuiForCollectionItem(item);
+    }
 }
 
 size_t Database::countOfDocuments(int folder_id) const
@@ -1068,22 +1153,16 @@ void Database::scanQueueBatch() {
     transaction();
 
     // scan for up to 100ms or until we run out of documents
-    QList<int> chunksToRemove;
     while (!m_docsToScan.isEmpty() && timer.elapsed() < 100)
-        scanQueue(chunksToRemove);
+        scanQueue();
 
-    // failure is no longer an option, apply everything at once and hope this is effectively atomic
-    for (const auto &chunk: chunksToRemove)
-        m_embeddings->remove(chunk);
     commit();
-    if (!chunksToRemove.isEmpty())
-        m_embeddings->save();
 
     if (m_docsToScan.isEmpty())
         m_scanTimer->stop();
 }
 
-void Database::scanQueue(QList<int> &chunksToRemove)
+void Database::scanQueue()
 {
     DocumentInfo info = dequeueDocument();
     const size_t countForFolder = countOfDocuments(info.folder);
@@ -1119,8 +1198,6 @@ void Database::scanQueue(QList<int> &chunksToRemove)
             // No need to rescan, but we do have to schedule next
             return scheduleNext(folder_id, countForFolder);
         }
-        if (!getChunksByDocumentId(existing_id, chunksToRemove))
-            return scheduleNext(folder_id, countForFolder);
         if (!removeChunksByDocumentId(q, existing_id)) {
             handleDocumentError("ERROR: Cannot remove chunks of document",
                 existing_id, document_path, q.lastError());
@@ -1151,6 +1228,15 @@ void Database::scanQueue(QList<int> &chunksToRemove)
         }
     }
 
+    // Get the embedding model for this folder
+    // FIXME(jared): there can be more than one since we allow one folder to be in multiple collections
+    QString embedding_model;
+    if (!sqlGetFolderEmbeddingModel(q, folder_id, embedding_model)) {
+        handleDocumentError("ERROR: Could not get embedding model",
+            document_id, document_path, q.lastError());
+        return scheduleNext(folder_id, countForFolder);
+    }
+
     Q_ASSERT(document_id != -1);
     if (info.isPdf()) {
         QPdfDocument doc;
@@ -1168,7 +1254,7 @@ void Database::scanQueue(QList<int> &chunksToRemove)
         const QPdfSelection selection = doc.getAllText(pageIndex);
         QString text = selection.text();
         QTextStream stream(&text);
-        chunkStream(stream, info.folder, document_id, info.doc.fileName(),
+        chunkStream(stream, info.folder, document_id, embedding_model, info.doc.fileName(),
             doc.metaData(QPdfDocument::MetaDataField::Title).toString(),
             doc.metaData(QPdfDocument::MetaDataField::Author).toString(),
             doc.metaData(QPdfDocument::MetaDataField::Subject).toString(),
@@ -1213,8 +1299,9 @@ void Database::scanQueue(QList<int> &chunksToRemove)
 #if defined(DEBUG)
         qDebug() << "scanning byteIndex" << byteIndex << "of" << bytes << document_path;
 #endif
-        int pos = chunkStream(stream, info.folder, document_id, info.doc.fileName(), QString() /*title*/, QString() /*author*/,
-            QString() /*subject*/, QString() /*keywords*/, -1 /*page*/, 100 /*maxChunks*/);
+        int pos = chunkStream(stream, info.folder, document_id, embedding_model, info.doc.fileName(),
+            QString() /*title*/, QString() /*author*/, QString() /*subject*/, QString() /*keywords*/, -1 /*page*/,
+            100 /*maxChunks*/);
         if (pos < 0) {
             if (!file.binarySeen()) {
                 handleDocumentError(u"ERROR: Failed to read file (status %1)"_s.arg(stream.status()),
@@ -1228,7 +1315,6 @@ void Database::scanQueue(QList<int> &chunksToRemove)
 
             qInfo() << "LocalDocs: Ignoring file with binary data:" << document_path;
 
-            getChunksByDocumentId(existing_id, chunksToRemove);
             // this will also ensure in-flight embeddings are ignored
             if (!removeChunksByDocumentId(q, existing_id)) {
                 handleDocumentError("ERROR: Cannot remove chunks of document",
@@ -1301,11 +1387,8 @@ void Database::start()
         m_databaseValid = false;
     } else if (!initDb(modelPath, oldCollections)) {
         m_databaseValid = false;
-    } else if (m_embeddings->fileExists() && !m_embeddings->load()) {
-        qWarning() << "ERROR: Could not load embeddings";
-        m_databaseValid = false;
     } else {
-        cleanDB();
+        //cleanDB();
         addCurrentFolders();
     }
 
@@ -1328,9 +1411,10 @@ void Database::addCurrentFolders()
 
     guiCollectionListUpdated(collections);
 
+    scheduleUncompletedEmbeddings();
+
     for (const auto &i : collections) {
         if (!i.forceIndexing) {
-            scheduleUncompletedEmbeddings(i.folder_id);
             addFolderToWatch(i.folder_path);
             scanDocuments(i.folder_id, i.folder_path);
         }
@@ -1339,11 +1423,11 @@ void Database::addCurrentFolders()
     updateCollectionStatistics();
 }
 
-void Database::scheduleUncompletedEmbeddings(int folder_id)
+void Database::scheduleUncompletedEmbeddings()
 {
-    QList<EmbeddingChunk> chunkList;
+    QHash<IncompleteChunk, QStringList> chunkList;
     QSqlQuery q(m_db);
-    if (!selectAllUncompletedChunks(q, folder_id, chunkList)) {
+    if (!selectAllUncompletedChunks(q, chunkList)) {
         qWarning() << "ERROR: Cannot select uncompleted chunks" << q.lastError();
         return;
     }
@@ -1351,19 +1435,43 @@ void Database::scheduleUncompletedEmbeddings(int folder_id)
     if (chunkList.isEmpty())
         return;
 
-    int total = 0;
-    if (!selectCountChunks(q, folder_id, total)) {
-        qWarning() << "ERROR: Cannot count total chunks" << q.lastError();
-        return;
+    // map of folder_id -> chunk count
+    QMap<int, int> folderNChunks;
+    for (auto it = chunkList.keyBegin(), end = chunkList.keyEnd(); it != end; ++it) {
+        int folder_id = it->folder_id;
+
+        if (folderNChunks.contains(folder_id)) continue;
+        int total = 0;
+        if (!selectCountChunks(q, folder_id, total)) {
+            qWarning() << "ERROR: Cannot count total chunks" << q.lastError();
+            return;
+        }
+        folderNChunks.insert(folder_id, total);
     }
 
-    CollectionItem item = guiCollectionItem(folder_id);
-    item.totalEmbeddingsToIndex = total;
-    item.currentEmbeddingsToIndex = chunkList.size();
-    updateGuiForCollectionItem(item);
+    // map of (folder_id, collection) -> incomplete count
+    QMap<QPair<int, QString>, int> itemNIncomplete;
+    for (const auto &[chunk, collections]: std::as_const(chunkList).asKeyValueRange())
+        for (const auto &collection: std::as_const(collections))
+            itemNIncomplete[{ chunk.folder_id, collection }]++;
 
-    for (int i = 0; i < chunkList.size(); i += s_batchSize) {
-        QList<EmbeddingChunk> batch = chunkList.mid(i, s_batchSize);
+    for (const auto &[key, nIncomplete]: std::as_const(itemNIncomplete).asKeyValueRange()) {
+        const auto &[folder_id, collection] = key;
+
+        /* FIXME(jared): this needs to be split by collection because different
+         * collections have different embedding models */
+        int total = folderNChunks.value(folder_id);
+        CollectionItem item = guiCollectionItem(folder_id);
+        item.totalEmbeddingsToIndex = total;
+        item.currentEmbeddingsToIndex = nIncomplete;
+        updateGuiForCollectionItem(item);
+    }
+
+    for (auto it = chunkList.keyBegin(), end = chunkList.keyEnd(); it != end;) {
+        QList<EmbeddingChunk> batch;
+        for (; it != end && batch.size() < s_batchSize; ++it)
+            batch.append({ /*model*/ it->embedding_model, /*folder_id*/ it->folder_id, /*chunk_id*/ it->chunk_id, /*chunk*/ it->text });
+        Q_ASSERT(!batch.isEmpty());
         m_embLLM->generateDocEmbeddingsAsync(batch);
     }
 }
@@ -1519,22 +1627,14 @@ void Database::removeFolder(const QString &collection, const QString &path)
 
     transaction();
 
-    QList<int> chunksToRemove;
-    if (removeFolderInternal(collection, folder_id, path, chunksToRemove)) {
-        // failure is no longer an option, apply everything at once and hope this is effectively atomic
-        // TODO(jared): check the embeddings file for stale entries on startup
-        for (const auto &chunk: chunksToRemove)
-            m_embeddings->remove(chunk);
+    if (removeFolderInternal(collection, folder_id, path)) {
         commit();
-        if (!chunksToRemove.isEmpty())
-            m_embeddings->save();
     } else {
         rollback();
     }
 }
 
-bool Database::removeFolderInternal(const QString &collection, int folder_id, const QString &path,
-                                    QList<int> &chunksToRemove)
+bool Database::removeFolderInternal(const QString &collection, int folder_id, const QString &path)
 {
     // Remove it from the collection
     QSqlQuery q(m_db);
@@ -1569,8 +1669,6 @@ bool Database::removeFolderInternal(const QString &collection, int folder_id, co
 
     // Remove all chunks and documents associated with this folder
     for (int document_id: std::as_const(documentIds)) {
-        if (!getChunksByDocumentId(document_id, chunksToRemove))
-            return false;
         if (!removeChunksByDocumentId(q, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << q.lastError();
             return false;
@@ -1620,6 +1718,84 @@ void Database::removeFolderFromWatch(const QString &path)
     m_watchedPaths -= QSet(children.begin(), children.end());
 }
 
+QList<int> Database::searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections, int nNeighbors) {
+    constexpr int BATCH_SIZE = 2048;
+
+    const int n_embd = query.size();
+    const us::metric_punned_t metric(n_embd, us::metric_kind_t::ip_k); // inner product
+
+    QSqlQuery q(m_db);
+    if (!q.exec(GET_COLLECTION_EMBEDDINGS_SQL.arg(collections.join("', '")))) {
+        qWarning() << "Database ERROR: Failed to exec embeddings query:" << q.lastError();
+        return {};
+    }
+
+    us::executor_default_t executor(std::thread::hardware_concurrency());
+    us::exact_search_t search;
+
+    QList<int> batchChunkIds;
+    QList<float> batchEmbeddings;
+    batchChunkIds.reserve(BATCH_SIZE);
+    batchEmbeddings.reserve(BATCH_SIZE * n_embd);
+
+    struct Result { int chunkId; us::distance_punned_t dist; };
+    QList<Result> results;
+
+    while (q.at() != QSql::AfterLastRow) { // batches
+        batchChunkIds.clear();
+        batchEmbeddings.clear();
+
+        while (batchChunkIds.count() < BATCH_SIZE && q.next()) { // batch
+            batchChunkIds << q.value(0).toInt();
+            batchEmbeddings.resize(batchEmbeddings.size() + n_embd);
+            QVariant embdCol = q.value(1);
+            if (embdCol.userType() != QMetaType::QByteArray) {
+                qWarning() << "Database ERROR: Expected embedding to be blob, got" << embdCol.userType();
+                return {};
+            }
+            auto *embd = static_cast<const QByteArray *>(embdCol.constData());
+            const int embd_stride = n_embd * sizeof(float);
+            if (embd->size() != embd_stride) {
+                qWarning() << "Database ERROR: Expected embedding to be" << embd_stride << "bytes, got"
+                           << embd->size();
+                return {};
+            }
+            memcpy(&*(batchEmbeddings.end() - n_embd), embd->constData(), embd_stride);
+        }
+
+        int nBatch = batchChunkIds.count();
+        if (!nBatch)
+            break;
+
+        // get top-k nearest neighbors of this batch
+        int kBatch = qMin(nNeighbors, nBatch);
+        us::exact_search_results_t batchResults = search(
+            (us::byte_t const *)batchEmbeddings.data(), nBatch, n_embd * sizeof(float),
+            (us::byte_t const *)query.data(),           1,      n_embd * sizeof(float),
+            kBatch, metric
+        );
+
+        for (int i = 0; i < kBatch; ++i) {
+            auto offset = batchResults.at(0)[i].offset;
+            us::distance_punned_t distance = batchResults.at(0)[i].distance;
+            results.append({batchChunkIds[offset], distance});
+        }
+    }
+
+    // get top-k nearest neighbors of combined results
+    nNeighbors = qMin(nNeighbors, results.size());
+    std::partial_sort(
+        results.begin(), results.begin() + nNeighbors, results.end(),
+        [](const Result &a, const Result &b) { return a.dist < b.dist; }
+    );
+
+    QList<int> chunkIds;
+    chunkIds.reserve(nNeighbors);
+    for (int i = 0; i < nNeighbors; i++)
+        chunkIds << results[i].chunkId;
+    return chunkIds;
+}
+
 void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize,
     QList<ResultInfo> *results)
 {
@@ -1627,19 +1803,18 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
 #endif
 
-    if (!m_embeddings->isLoaded()) {
-        qWarning() << "retrieveFromDB ERROR: embeddings are not loaded";
-        return;
-    }
-
-    std::vector<float> result = m_embLLM->generateQueryEmbedding(text);
-    if (result.empty()) {
+    std::vector<float> queryEmbd = m_embLLM->generateQueryEmbedding(text);
+    if (queryEmbd.empty()) {
         qDebug() << "ERROR: generating embeddings returned a null result";
         return;
     }
-    std::vector<qint64> embeddings = m_embeddings->search(result, retrievalSize);
+
+    QList<int> searchResults = searchEmbeddings(queryEmbd, collections, retrievalSize);
+    if (searchResults.isEmpty())
+        return;
+
     QSqlQuery q(m_db);
-    if (!selectChunk(q, collections, embeddings, retrievalSize)) {
+    if (!selectChunk(q, searchResults, retrievalSize)) {
         qDebug() << "ERROR: selecting chunks:" << q.lastError();
         return;
     }
@@ -1696,7 +1871,6 @@ bool Database::cleanDB()
 
     transaction();
 
-    QList<int> chunksToRemove;
     for (const auto &i: std::as_const(collections)) {
         // Find the path for the folder
         QFileInfo info(i.folder_path);
@@ -1704,7 +1878,7 @@ bool Database::cleanDB()
 #if defined(DEBUG)
             qDebug() << "clean db removing folder" << i.folder_id << i.folder_path;
 #endif
-            if (!removeFolderInternal(i.collection, i.folder_id, i.folder_path, chunksToRemove)) {
+            if (!removeFolderInternal(i.collection, i.folder_id, i.folder_path)) {
                 rollback();
                 return false;
             }
@@ -1736,10 +1910,6 @@ bool Database::cleanDB()
 #endif
 
         // Remove all chunks and documents that either don't exist or have become unreadable
-        if (!getChunksByDocumentId(document_id, chunksToRemove)) {
-            rollback();
-            return false;
-        }
         QSqlQuery query(m_db);
         if (!removeChunksByDocumentId(query, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << query.lastError();
@@ -1754,13 +1924,7 @@ bool Database::cleanDB()
         }
     }
 
-    // failure is no longer an option, apply everything at once and hope this is effectively atomic
-    for (const auto &chunk: chunksToRemove)
-        m_embeddings->remove(chunk);
     commit();
-    if (!chunksToRemove.isEmpty())
-        m_embeddings->save();
-
     return true;
 }
 
@@ -1787,13 +1951,10 @@ void Database::changeChunkSize(int chunkSize)
 
     transaction();
 
-    QList<int> chunksToRemove;
     while (q.next()) {
         int document_id = q.value(0).toInt();
         // Remove all chunks and documents to change the chunk size
         QSqlQuery query(m_db);
-        if (!getChunksByDocumentId(document_id, chunksToRemove))
-            return rollback();
         if (!removeChunksByDocumentId(query, document_id)) {
             qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << query.lastError();
             return rollback();
@@ -1805,12 +1966,7 @@ void Database::changeChunkSize(int chunkSize)
         }
     }
 
-    // failure is no longer an option, apply everything at once and hope this is effectively atomic
-    for (const auto &chunk: chunksToRemove)
-        m_embeddings->remove(chunk);
     commit();
-    if (!chunksToRemove.isEmpty())
-        m_embeddings->save();
 
     m_chunkSize = chunkSize;
     addCurrentFolders();

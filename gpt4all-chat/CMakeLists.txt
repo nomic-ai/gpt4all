@@ -91,7 +91,6 @@ qt_add_executable(chat
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
     chatapi.h chatapi.cpp
     database.h database.cpp
-    embeddings.h embeddings.cpp
     download.h download.cpp
     embllm.cpp embllm.h
     localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
@@ -216,6 +215,13 @@ endif()
 
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
+
+# usearch uses the identifier 'slots' which conflicts with Qt's 'slots' keyword
+target_compile_definitions(chat PRIVATE QT_NO_SIGNALS_SLOTS_KEYWORDS)
+
+target_include_directories(chat PRIVATE usearch/include
+                                        usearch/fp16/include)
+
 if(LINUX)
   target_link_libraries(chat
       PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf Qt6::WaylandCompositor)

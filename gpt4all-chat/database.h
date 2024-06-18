@@ -22,7 +22,6 @@
 
 using namespace Qt::Literals::StringLiterals;
 
-class Embeddings;
 class QFileSystemWatcher;
 class QSqlError;
 class QTextStream;
@@ -155,7 +154,7 @@ private Q_SLOTS:
     void directoryChanged(const QString &path);
     void addCurrentFolders();
     void handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
-    void handleErrorGenerated(int folder_id, const QString &error);
+    void handleErrorGenerated(const QVector<EmbeddingChunk> &chunks, const QString &error);
 
 private:
     void transaction();
@@ -168,14 +167,12 @@ private:
     bool openLatestDb(const QString &modelPath, QList<CollectionItem> &oldCollections);
     bool initDb(const QString &modelPath, const QList<CollectionItem> &oldCollections);
     int checkAndAddFolderToDB(const QString &path);
-    bool removeFolderInternal(const QString &collection, int folder_id, const QString &path,
-                              QList<int> &chunksToRemove);
-    size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
-        const QString &title, const QString &author, const QString &subject, const QString &keywords, int page,
-        int maxChunks = -1);
+    bool removeFolderInternal(const QString &collection, int folder_id, const QString &path);
+    size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &embedding_model,
+        const QString &file, const QString &title, const QString &author, const QString &subject,
+        const QString &keywords, int page, int maxChunks = -1);
     void appendChunk(const EmbeddingChunk &chunk);
     void sendChunkList();
-    bool getChunksByDocumentId(int document_id, QList<int> &chunkIds);
     void scheduleNext(int folder_id, size_t countForFolder);
     void handleDocumentError(const QString &errorMessage,
         int document_id, const QString &document_path, const QSqlError &error);
@@ -185,17 +182,18 @@ private:
     void removeFolderFromDocumentQueue(int folder_id);
     void enqueueDocumentInternal(const DocumentInfo &info, bool prepend = false);
     void enqueueDocuments(int folder_id, const QVector<DocumentInfo> &infos);
-    void scanQueue(QList<int> &chunksToRemove);
+    void scanQueue();
     bool cleanDB();
     void addFolderToWatch(const QString &path);
     void removeFolderFromWatch(const QString &path);
+    QList<int> searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections, int nNeighbors);
 
     CollectionItem guiCollectionItem(int folder_id) const;
     void updateGuiForCollectionItem(const CollectionItem &item);
     void addGuiCollectionItem(const CollectionItem &item);
     void removeGuiFolderById(const QString &collection, int folder_id);
     void guiCollectionListUpdated(const QList<CollectionItem> &collectionList);
-    void scheduleUncompletedEmbeddings(int folder_id);
+    void scheduleUncompletedEmbeddings();
     void updateCollectionStatistics();
 
 private:
@@ -209,7 +207,6 @@ private:
     QFileSystemWatcher *m_watcher;
     QSet<QString> m_watchedPaths;
     EmbeddingLLM *m_embLLM;
-    Embeddings *m_embeddings;
     QVector<EmbeddingChunk> m_chunkList;
     QHash<int, CollectionItem> m_collectionMap; // used only for tracking indexing/embedding progress
     std::atomic<bool> m_databaseValid;

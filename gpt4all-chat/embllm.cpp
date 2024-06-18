@@ -217,6 +217,7 @@ void EmbeddingLLMWorker::docEmbeddingsRequested(const QVector<EmbeddingChunk> &c
         results.reserve(chunks.size());
         for (const auto &c: chunks) {
             EmbeddingResult result;
+            result.model = c.model;
             result.folder_id = c.folder_id;
             result.chunk_id = c.chunk_id;
             // TODO(cebtenzzre): take advantage of batched embeddings
@@ -277,6 +278,7 @@ QVector<EmbeddingResult> jsonArrayToEmbeddingResults(const QVector<EmbeddingChun
             embeddingVector.push_back(static_cast<float>(value.toDouble()));
 
         EmbeddingResult result;
+        result.model = chunk.model;
         result.folder_id = chunk.folder_id;
         result.chunk_id = chunk.chunk_id;
         result.embedding = std::move(embeddingVector);
@@ -297,10 +299,6 @@ void EmbeddingLLMWorker::handleFinished()
     if (retrievedData.isValid() && retrievedData.canConvert<QVector<EmbeddingChunk>>())
         chunks = retrievedData.value<QVector<EmbeddingChunk>>();
 
-    int folder_id = 0;
-    if (!chunks.isEmpty())
-        folder_id = chunks.first().folder_id;
-
     QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     Q_ASSERT(response.isValid());
     bool ok;
@@ -315,7 +313,7 @@ void EmbeddingLLMWorker::handleFinished()
         if (!replyContent.isEmpty())
             errorDetails += u". Response Content: \"%1\""_s.arg(QString::fromUtf8(replyContent));
         qWarning() << errorDetails;
-        emit errorGenerated(folder_id, errorDetails);
+        emit errorGenerated(chunks, errorDetails);
         return;
     }
 
@@ -369,6 +367,7 @@ QString EmbeddingLLM::model()
     return defaultModel.name(); // empty name is an error
 }
 
+// TODO(jared): embed using all necessary embedding models given collection
 std::vector<float> EmbeddingLLM::generateQueryEmbedding(const QString &text)
 {
     return m_embeddingWorker->generateQueryEmbedding(text);

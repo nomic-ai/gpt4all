@@ -17,6 +17,7 @@ class LLModel;
 class QNetworkAccessManager;
 
 struct EmbeddingChunk {
+    QString model; // TODO(jared): use to select model
     int folder_id;
     int chunk_id;
     QString chunk;
@@ -25,6 +26,7 @@ struct EmbeddingChunk {
 Q_DECLARE_METATYPE(EmbeddingChunk)
 
 struct EmbeddingResult {
+    QString model;
     int folder_id;
     int chunk_id;
     std::vector<float> embedding;
@@ -53,7 +55,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void requestAtlasQueryEmbedding(const QString &text);
     void embeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
-    void errorGenerated(int folder_id, const QString &error);
+    void errorGenerated(const QVector<EmbeddingChunk> &chunks, const QString &error);
     void finished();
 
 private Q_SLOTS:
@@ -89,7 +91,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void requestDocEmbeddings(const QVector<EmbeddingChunk> &chunks);
     void embeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
-    void errorGenerated(int folder_id, const QString &error);
+    void errorGenerated(const QVector<EmbeddingChunk> &chunks, const QString &error);
 
 private:
     EmbeddingLLMWorker *m_embeddingWorker;
