@@ -85,8 +85,8 @@ static const QString INIT_DB_SQL[] = {
     // create tables
     uR"(
         create table chunks(
+            id            integer primary key autoincrement,
             document_id   integer not null,
-            chunk_id      integer primary key autoincrement,
             chunk_text    text not null,
             file          text not null,
             title         text,
@@ -103,12 +103,12 @@ static const QString INIT_DB_SQL[] = {
         );
     )"_s, uR"(
         create table collections(
-            collection_name  text not null,
+            name             text not null,
             folder_id        integer not null,
             last_update_time integer,
             embedding_model  text,
             force_indexing   integer not null,
-            unique(collection_name, folder_id),
+            unique(name, folder_id),
             foreign key(folder_id) references folders(id)
         );
     )"_s, uR"(
@@ -138,24 +138,23 @@ static const QString DELETE_CHUNKS_SQL = uR"(
     )"_s;
 
 static const QString SELECT_CHUNKS_BY_DOCUMENT_SQL = uR"(
-    select chunk_id from chunks WHERE document_id = ?;
+    select id from chunks WHERE document_id = ?;
     )"_s;
 
 static const QString SELECT_CHUNKS_SQL = uR"(
-    select chunks.chunk_id, documents.document_time,
-        chunks.chunk_text, chunks.file, chunks.title, chunks.author, chunks.page,
+    select chunks.id, documents.document_time, chunks.chunk_text, chunks.file, chunks.title, chunks.author, chunks.page,
         chunks.line_from, chunks.line_to
     from chunks
     join documents ON chunks.document_id = documents.id
     join folders ON documents.folder_id = folders.id
     join collections ON folders.id = collections.folder_id
-    where chunks.chunk_id in (%1) and collections.collection_name in (%2);
+    where chunks.id in (%1) and collections.name in (%2);
 )"_s;
 
 static const QString SELECT_FILE_FOR_CHUNK_SQL = uR"(
     select c.file
     from chunks c
-    where c.chunk_id = ?;
+    where c.id = ?;
     )"_s;
 
 static bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
@@ -171,21 +170,21 @@ static bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
 }
 
 static const QString SELECT_UNCOMPLETED_CHUNKS_SQL = uR"(
-    select c.chunk_id, c.chunk_text as chunk, d.folder_id
+    select c.id, c.chunk_text as chunk, d.folder_id
     from chunks c
     join documents d ON c.document_id = d.id
     where c.has_embedding != 1 and d.folder_id = ?;
     )"_s;
 
 static const QString SELECT_COUNT_CHUNKS_SQL = uR"(
-    select count(c.chunk_id) as total_chunks
+    select count(c.id) as total_chunks
     from chunks c
     join documents d on c.document_id = d.id
     where d.folder_id = ?;
     )"_s;
 
 static const QString UPDATE_CHUNK_HAS_EMBEDDING_SQL = uR"(
-    update chunks set has_embedding = 1 where chunk_id = ?;
+    update chunks set has_embedding = 1 where id = ?;
     )"_s;
 
 static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
@@ -277,22 +276,22 @@ static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, co
 }
 
 static const QString INSERT_COLLECTION_SQL = uR"(
-    insert into collections(collection_name, folder_id, last_update_time, embedding_model, force_indexing) values(?, ?, ?, ?, ?);
+    insert into collections(name, folder_id, last_update_time, embedding_model, force_indexing) values(?, ?, ?, ?, ?);
     )"_s;
 
 static const QString DELETE_COLLECTION_SQL = uR"(
-    delete from collections where collection_name = ? and folder_id = ?;
+    delete from collections where name = ? and folder_id = ?;
     )"_s;
 
 static const QString SELECT_FOLDERS_FROM_COLLECTIONS_SQL = uR"(
     select f.id, f.folder_path
     from collections c
     join folders f on c.folder_id = f.id
-    where collection_name = ?;
+    where c.name = ?;
     )"_s;
 
 static const QString SELECT_COLLECTIONS_FROM_FOLDER_SQL = uR"(
-    select collection_name from collections where folder_id = ?;
+    select name from collections where folder_id = ?;
     )"_s;
 
 static const QString SELECT_COLLECTIONS_SQL_V1 = uR"(
@@ -303,16 +302,16 @@ static const QString SELECT_COLLECTIONS_SQL_V1 = uR"(
     )"_s;
 
 static const QString SELECT_COLLECTIONS_SQL_V2 = uR"(
-    select c.collection_name, f.folder_path, f.id, c.last_update_time, c.embedding_model, c.force_indexing
+    select c.name, f.folder_path, f.id, c.last_update_time, c.embedding_model, c.force_indexing
     from collections c
     join folders f on c.folder_id = f.id
-    order by c.collection_name asc, f.folder_path asc;
+    order by c.name asc, f.folder_path asc;
     )"_s;
 
 static const QString UPDATE_COLLECTION_FORCE_INDEXING_SQL = uR"(
     update collections
     set force_indexing = 0
-    where collection_name = ?;
+    where name = ?;
     )"_s;
 
 static bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id, const QDateTime &last_update,
