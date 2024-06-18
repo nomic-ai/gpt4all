@@ -75,7 +75,7 @@ public:
     EmbeddingLLM();
     ~EmbeddingLLM() override;
 
-    QString model() const;
+    static QString model();
     bool loadModel();
     bool hasModel() const;
 

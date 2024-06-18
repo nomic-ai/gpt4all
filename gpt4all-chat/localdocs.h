@@ -34,8 +34,8 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void requestStart();
-    void requestForceIndexing(const QString &collection);
-    void requestAddFolder(const QString &collection, const QString &path);
+    void requestForceIndexing(const QString &collection, const QString &embedding_model);
+    void requestAddFolder(const QString &collection, const QString &path, const QString &embedding_model);
     void requestRemoveFolder(const QString &collection, const QString &path);
     void requestChunkSizeChange(int chunkSize);
     void requestFileExtensionsChange(const QStringList &extensions);

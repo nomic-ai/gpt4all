@@ -329,7 +329,7 @@ EmbeddingLLM::~EmbeddingLLM()
     m_embeddingWorker = nullptr;
 }
 
-QString EmbeddingLLM::model() const
+QString EmbeddingLLM::model()
 {
     const EmbeddingModels *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
     if (!embeddingModels->count())

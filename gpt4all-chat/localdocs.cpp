@@ -1,6 +1,7 @@
 #include "localdocs.h"
 
 #include "database.h"
+#include "embllm.h"
 #include "mysettings.h"
 
 #include <QCoreApplication>
@@ -64,14 +65,27 @@ void LocalDocs::aboutToQuit()
 
 void LocalDocs::forceIndexing(const QString &collection)
 {
-    emit requestForceIndexing(collection);
+    const QString embedding_model = EmbeddingLLM::model();
+    if (embedding_model.isEmpty()) {
+        qWarning() << "ERROR: We have no embedding model";
+        return;
+    }
+
+    emit requestForceIndexing(collection, embedding_model);
 }
 
 void LocalDocs::addFolder(const QString &collection, const QString &path)
 {
     const QUrl url(path);
     const QString localPath = url.isLocalFile() ? url.toLocalFile() : path;
-    emit requestAddFolder(collection, localPath);
+
+    const QString embedding_model = EmbeddingLLM::model();
+    if (embedding_model.isEmpty()) {
+        qWarning() << "ERROR: We have no embedding model";
+        return;
+    }
+
+    emit requestAddFolder(collection, localPath, embedding_model);
 }
 
 void LocalDocs::removeFolder(const QString &collection, const QString &path)

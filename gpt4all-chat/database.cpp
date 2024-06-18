@@ -1374,8 +1374,10 @@ bool Database::addForcedCollection(const CollectionItem &collection)
     return true;
 }
 
-void Database::forceIndexing(const QString &collection)
+void Database::forceIndexing(const QString &collection, const QString &embedding_model)
 {
+    Q_ASSERT(!embedding_model.isNull());
+
     QSqlQuery q(m_db);
     QList<QPair<int, QString>> folders;
     if (!selectFoldersFromCollection(q, collection, &folders)) {
@@ -1383,13 +1385,7 @@ void Database::forceIndexing(const QString &collection)
         return;
     }
 
-    const QString model = m_embLLM->model();
-    if (model.isEmpty()) {
-        qWarning() << "ERROR: We have no embedding model";
-        return;
-    }
-
-    if (!setCollectionEmbeddingModel(q, collection, model)) {
+    if (!setCollectionEmbeddingModel(q, collection, embedding_model)) {
         qWarning().nospace() << "ERROR: Cannot set embedding model for collection " << collection << ": "
                              << q.lastError();
         return;
@@ -1397,7 +1393,7 @@ void Database::forceIndexing(const QString &collection)
 
     for (const auto &folder: std::as_const(folders)) {
         CollectionItem item = guiCollectionItem(folder.first);
-        item.embeddingModel = model;
+        item.embeddingModel = embedding_model;
         item.forceIndexing = false;
         updateGuiForCollectionItem(item);
         addFolderToWatch(folder.second);
@@ -1412,7 +1408,7 @@ static bool containsFolderId(const QList<QPair<int, QString>> &folders, int fold
     return false;
 }
 
-void Database::addFolder(const QString &collection, const QString &path)
+void Database::addFolder(const QString &collection, const QString &path, const QString &embedding_model)
 {
     const int folder_id = checkAndAddFolderToDB(path);
     if (folder_id == -1)
@@ -1426,16 +1422,10 @@ void Database::addFolder(const QString &collection, const QString &path)
         return;
     }
 
-    const QString model = m_embLLM->model();
-    if (model.isEmpty()) {
-        qWarning() << "ERROR: We have no embedding model";
-        return;
-    }
-
     if (!containsFolderId(folders, folder_id)) {
         if (!addCollection(q, collection, folder_id,
                            QDateTime() /*last_update*/,
-                           model /*embedding_model*/)) {
+                           embedding_model /*embedding_model*/)) {
             qWarning() << "ERROR: Cannot add folder to collection" << collection << path << q.lastError();
             return;
         }
