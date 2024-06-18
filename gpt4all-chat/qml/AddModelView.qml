@@ -374,6 +374,14 @@ Rectangle {
                                 onLinkActivated: Qt.openUrlExternally(link)
                             }
 
+                            // FIXME_BLOCKER Need to overhaul design here which must take into account
+                            // features not present in current figma including:
+                            // * Ability to cancel a current download
+                            // * Ability to resume a download
+                            // * The presentation of an error if encountered
+                            // * Whether to show already installed models
+                            // * Install of remote models with API keys
+                            // * The presentation of the progress bar
                             Rectangle {
                                 id: actionBox
                                 width: childrenRect.width + 20
