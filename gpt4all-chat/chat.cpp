@@ -90,10 +90,10 @@ void Chat::reset()
     emit resetContextRequested();
     m_id = Network::globalInstance()->generateUniqueId();
     emit idChanged(m_id);
-    // NOTE: We deliberately do no reset the name or creation date to indictate that this was originally
+    // NOTE: We deliberately do no reset the name or creation date to indicate that this was originally
     // an older chat that was reset for another purpose. Resetting this data will lead to the chat
     // name label changing back to 'New Chat' and showing up in the chat model list as a 'New Chat'
-    // further down in the list. This might surprise the user. In the future, we me might get rid of
+    // further down in the list. This might surprise the user. In the future, we might get rid of
     // the "reset context" button in the UI. Right now, by changing the model in the combobox dropdown
     // we effectively do a reset context. We *have* to do this right now when switching between different
     // types of models. The only way to get rid of that would be a very long recalculate where we rebuild
