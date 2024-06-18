@@ -23,6 +23,7 @@
 #include <QtLogging>
 
 #include <cmath>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -102,17 +103,23 @@ static const QString INIT_DB_SQL[] = {
         );
     )"_s, uR"(
         create table collections(
-            name             text not null,
-            folder_id        integer not null,
+            id               integer primary key,
+            name             text unique not null,
             last_update_time integer,
-            embedding_model  text,
-            unique(name, folder_id),
-            foreign key(folder_id) references folders(id)
+            embedding_model  text
         );
     )"_s, uR"(
         create table folders(
             id          integer primary key,
             folder_path text unique not null
+        );
+    )"_s, uR"(
+        create table collection_items(
+            collection_id integer not null,
+            folder_id     integer not null,
+            foreign key(collection_id) references collections(id)
+            foreign key(folder_id)     references folders(id),
+            unique(collection_id, folder_id)
         );
     )"_s, uR"(
         create table documents(
@@ -128,7 +135,8 @@ static const QString INIT_DB_SQL[] = {
 static const QString INSERT_CHUNK_SQL = uR"(
     insert into chunks(document_id, chunk_text,
         file, title, author, subject, keywords, page, line_from, line_to, words)
-        values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        returning id;
     )"_s;
 
 static const QString DELETE_CHUNKS_SQL = uR"(
@@ -189,26 +197,20 @@ static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, c
                      const QString &title, const QString &author, const QString &subject, const QString &keywords,
                      int page, int from, int to, int words, int *chunk_id)
 {
-    {
-        if (!q.prepare(INSERT_CHUNK_SQL))
-            return false;
-        q.addBindValue(document_id);
-        q.addBindValue(chunk_text);
-        q.addBindValue(file);
-        q.addBindValue(title);
-        q.addBindValue(author);
-        q.addBindValue(subject);
-        q.addBindValue(keywords);
-        q.addBindValue(page);
-        q.addBindValue(from);
-        q.addBindValue(to);
-        q.addBindValue(words);
-        if (!q.exec())
-            return false;
-    }
-    if (!q.exec("select last_insert_rowid();"))
+    if (!q.prepare(INSERT_CHUNK_SQL))
         return false;
-    if (!q.next())
+    q.addBindValue(document_id);
+    q.addBindValue(chunk_text);
+    q.addBindValue(file);
+    q.addBindValue(title);
+    q.addBindValue(author);
+    q.addBindValue(subject);
+    q.addBindValue(keywords);
+    q.addBindValue(page);
+    q.addBindValue(from);
+    q.addBindValue(to);
+    q.addBindValue(words);
+    if (!q.exec() || !q.next())
         return false;
     *chunk_id = q.value(0).toInt();
     return true;
@@ -274,7 +276,9 @@ static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, co
 }
 
 static const QString INSERT_COLLECTION_SQL = uR"(
-    insert into collections(name, folder_id, last_update_time, embedding_model) values(?, ?, ?, ?);
+    insert into collections(name, last_update_time, embedding_model)
+        values(?, ?, ?)
+        returning id;
     )"_s;
 
 static const QString DELETE_COLLECTION_SQL = uR"(
@@ -284,12 +288,9 @@ static const QString DELETE_COLLECTION_SQL = uR"(
 static const QString SELECT_FOLDERS_FROM_COLLECTIONS_SQL = uR"(
     select f.id, f.folder_path
     from collections c
-    join folders f on c.folder_id = f.id
+    join collection_items ci on ci.collection_id = c.id
+    join folders f on ci.folder_id = f.id
     where c.name = ?;
-    )"_s;
-
-static const QString SELECT_COLLECTIONS_FROM_FOLDER_SQL = uR"(
-    select name from collections where folder_id = ?;
     )"_s;
 
 static const QString SELECT_COLLECTIONS_SQL_V1 = uR"(
@@ -300,10 +301,17 @@ static const QString SELECT_COLLECTIONS_SQL_V1 = uR"(
     )"_s;
 
 static const QString SELECT_COLLECTIONS_SQL_V2 = uR"(
-    select c.name, f.folder_path, f.id, c.last_update_time, c.embedding_model
+    select c.id, c.name, f.folder_path, f.id, c.last_update_time, c.embedding_model
     from collections c
-    join folders f on c.folder_id = f.id
+    join collection_items ci on ci.collection_id = c.id
+    join folders f on ci.folder_id = f.id
     order by c.name asc, f.folder_path asc;
+    )"_s;
+
+static const QString SELECT_COLLECTION_BY_NAME_SQL = uR"(
+    select id, name, last_update_time, embedding_model
+    from collections c
+    where name = ?;
     )"_s;
 
 static const QString SET_COLLECTION_EMBEDDING_MODEL_SQL = uR"(
@@ -312,16 +320,20 @@ static const QString SET_COLLECTION_EMBEDDING_MODEL_SQL = uR"(
     where name = ?;
     )"_s;
 
-static bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id, const QDateTime &last_update,
-                          const QString &embedding_model)
+static bool addCollection(QSqlQuery &q, const QString &collection_name, const QDateTime &last_update,
+                          const QString &embedding_model, CollectionItem &item)
 {
     if (!q.prepare(INSERT_COLLECTION_SQL))
         return false;
     q.addBindValue(collection_name);
-    q.addBindValue(folder_id);
     q.addBindValue(last_update);
     q.addBindValue(embedding_model);
-    return q.exec();
+    if (!q.exec() || !q.next())
+        return false;
+    item.collection_id = q.value(0).toInt();
+    item.collection = collection_name;
+    item.embeddingModel = embedding_model;
+    return true;
 }
 
 static bool removeCollection(QSqlQuery &q, const QString &collection_name, int folder_id)
@@ -344,15 +356,33 @@ static bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_
     return true;
 }
 
-static bool selectCollectionsFromFolder(QSqlQuery &q, int folder_id, QList<QString> *collections) {
-    if (!q.prepare(SELECT_COLLECTIONS_FROM_FOLDER_SQL))
-        return false;
-    q.addBindValue(folder_id);
-    if (!q.exec())
-        return false;
-    while (q.next())
-        collections->append(q.value(0).toString());
-    return true;
+static QList<CollectionItem> sqlExtractCollections(QSqlQuery &q, bool with_folder = false, int version = LOCALDOCS_VERSION) {
+    QList<CollectionItem> collections;
+    while (q.next()) {
+        CollectionItem i;
+        int idx = 0;
+        if (version >= 2)
+            i.collection_id = q.value(idx++).toInt();
+        i.collection = q.value(idx++).toString();
+        if (with_folder) {
+            i.folder_path = q.value(idx++).toString();
+            i.folder_id = q.value(idx++).toInt();
+        }
+        i.indexing = false;
+        i.installed = true;
+
+        if (version >= 2) {
+            i.lastUpdate = q.value(idx++).toDateTime();
+            i.embeddingModel = q.value(idx++).toString();
+        }
+        if (i.embeddingModel.isNull()) {
+            // unknown embedding model -> need to re-index
+            i.forceIndexing = true;
+        }
+
+        collections << i;
+    }
+    return collections;
 }
 
 static bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collections, int version = LOCALDOCS_VERSION) {
@@ -373,25 +403,21 @@ static bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collec
 
     if (!q.exec())
         return false;
-    while (q.next()) {
-        CollectionItem i;
-        i.collection = q.value(0).toString();
-        i.folder_path = q.value(1).toString();
-        i.folder_id = q.value(2).toInt();
-        i.indexing = false;
-        i.installed = true;
+    *collections = sqlExtractCollections(q, true, version);
+    return true;
+}
 
-        if (version >= 2) {
-            i.lastUpdate = q.value(idx++).toDateTime();
-            i.embeddingModel = q.value(idx++).toString();
-        }
-        if (i.embeddingModel.isNull()) {
-            // unknown embedding model -> need to re-index
-            i.forceIndexing = true;
-        }
-
-        collections->append(i);
-    }
+static bool selectCollectionByName(QSqlQuery &q, const QString &name, std::optional<CollectionItem> &collection) {
+    if (!q.prepare(SELECT_COLLECTION_BY_NAME_SQL))
+        return false;
+    q.addBindValue(name);
+    if (!q.exec())
+        return false;
+    QList<CollectionItem> collections = sqlExtractCollections(q);
+    Q_ASSERT(collections.count() <= 1);
+    collection.reset();
+    if (!collections.isEmpty())
+        collection = collections.first();
     return true;
 }
 
@@ -473,6 +499,52 @@ static bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
     while (q.next())
         folder_paths->append(q.value(0).toString());
     return true;
+}
+
+static const QString INSERT_COLLECTION_ITEM_SQL = uR"(
+    insert into collection_items(collection_id, folder_id)
+    values(?, ?)
+    on conflict do nothing;
+)"_s;
+
+static const QString DELETE_COLLECTION_FOLDER_SQL = uR"(
+    delete from collection_items
+    where collection_id = (select id from collections where name = :name) and folder_id = :folder_id
+    returning (select count(*) from collection_items where folder_id = :folder_id);
+)"_s;
+
+static const QString PRUNE_COLLECTIONS_SQL = uR"(
+    delete from collections
+    where id not in (select collection_id from collection_items);
+)"_s;
+
+// 0 = already exists, 1 = added, -1 = error
+static int addCollectionItem(QSqlQuery &q, int collection_id, int folder_id)
+{
+    if (!q.prepare(INSERT_COLLECTION_ITEM_SQL))
+        return -1;
+    q.addBindValue(collection_id);
+    q.addBindValue(folder_id);
+    if (q.exec())
+        return q.numRowsAffected();
+    return -1;
+}
+
+// returns the number of remaining references to the folder, or -1 on error
+static int removeCollectionFolder(QSqlQuery &q, const QString &collection_name, int folder_id)
+{
+    if (!q.prepare(DELETE_COLLECTION_FOLDER_SQL))
+        return -1;
+    q.bindValue(":name", collection_name);
+    q.bindValue(":folder_id", folder_id);
+    if (!q.exec() || !q.next())
+        return -1;
+    return q.value(0).toInt();
+}
+
+static bool sqlPruneCollections(QSqlQuery &q)
+{
+    return q.exec(PRUNE_COLLECTIONS_SQL);
 }
 
 static const QString INSERT_DOCUMENTS_SQL = uR"(
@@ -675,8 +747,11 @@ bool Database::initDb(const QString &modelPath, const QList<CollectionItem> &old
         }
     }
 
+    /* These are collection items that came from an older version of localdocs which
+     * require forced indexing that should only be done when the user has explicitly asked
+     * for them to be indexed again */
     for (const CollectionItem &item : oldCollections) {
-        if (!addForcedCollection(item)) {
+        if (!addFolder(item.collection, item.folder_path, QString())) {
             qWarning() << "ERROR: failed to add previous collections to new database";
             rollback();
             return false;
@@ -1345,35 +1420,6 @@ int Database::checkAndAddFolderToDB(const QString &path)
     return folder_id;
 }
 
-bool Database::addForcedCollection(const CollectionItem &collection)
-{
-    // These are collection items that came from an older version of localdocs which require
-    // forced indexing that should only be done when the user has explicitly asked for them to be
-    // indexed again
-    const QString path = collection.folder_path;
-
-    const int folder_id = checkAndAddFolderToDB(path);
-    if (folder_id == -1)
-        return false;
-
-    const QString model = m_embLLM->model();
-    if (model.isEmpty()) {
-        qWarning() << "ERROR: We have no embedding model";
-        return false;
-    }
-
-    QSqlQuery q(m_db);
-    if (!addCollection(q, collection.collection, folder_id,
-                       QDateTime() /*last_update*/,
-                       QString() /*embedding_model*/)) {
-        qWarning() << "ERROR: Cannot add folder to collection" << collection.collection << path << q.lastError();
-        return false;
-    }
-
-    addGuiCollectionItem(collection);
-    return true;
-}
-
 void Database::forceIndexing(const QString &collection, const QString &embedding_model)
 {
     Q_ASSERT(!embedding_model.isNull());
@@ -1401,44 +1447,50 @@ void Database::forceIndexing(const QString &collection, const QString &embedding
     }
 }
 
-static bool containsFolderId(const QList<QPair<int, QString>> &folders, int folder_id) {
-    for (const auto& folder : folders)
-        if (folder.first == folder_id)
-            return true;
-    return false;
-}
-
-void Database::addFolder(const QString &collection, const QString &path, const QString &embedding_model)
+bool Database::addFolder(const QString &collection, const QString &path, const QString &embedding_model)
 {
+    // add the folder, if needed
     const int folder_id = checkAndAddFolderToDB(path);
     if (folder_id == -1)
-        return;
+        return false;
 
-    // See if the folder has already been added to the collection
+    std::optional<CollectionItem> item;
     QSqlQuery q(m_db);
-    QList<QPair<int, QString>> folders;
-    if (!selectFoldersFromCollection(q, collection, &folders)) {
-        qWarning() << "ERROR: Cannot select folders from collections" << collection << q.lastError();
-        return;
+    if (!selectCollectionByName(q, collection, item)) {
+        qWarning().nospace() << "Database ERROR: Cannot select collection " << collection << ": " << q.lastError();
+        return false;
     }
 
-    if (!containsFolderId(folders, folder_id)) {
-        if (!addCollection(q, collection, folder_id,
-                           QDateTime() /*last_update*/,
-                           embedding_model /*embedding_model*/)) {
-            qWarning() << "ERROR: Cannot add folder to collection" << collection << path << q.lastError();
-            return;
+    // add the collection, if needed
+    if (!item) {
+        item.emplace();
+        if (!addCollection(q, collection, QDateTime() /*last_update*/, embedding_model /*embedding_model*/, *item)) {
+            qWarning().nospace() << "ERROR: Cannot add collection " << collection << ": " << q.lastError();
+            return false;
         }
-
-        CollectionItem i;
-        i.collection = collection;
-        i.folder_path = path;
-        i.folder_id = folder_id;
-        addGuiCollectionItem(i);
     }
 
-    addFolderToWatch(path);
-    scanDocuments(folder_id, path);
+    // link the folder and the collection, if needed
+    int res = addCollectionItem(q, item->collection_id, folder_id);
+    if (res < 0) { // error
+        qWarning().nospace() << "Database ERROR: Cannot add folder " << path << " to collection " << collection << ": "
+                             << q.lastError();
+        return false;
+    }
+
+    // add the new collection item to the UI
+    if (res == 1) { // new item added
+        item->folder_path = path;
+        item->folder_id = folder_id;
+        addGuiCollectionItem(item.value());
+
+        // note: this is the existing embedding model if the collection was found
+        if (!item->embeddingModel.isNull()) {
+            addFolderToWatch(path);
+            scanDocuments(folder_id, path);
+        }
+    }
+    return true;
 }
 
 void Database::removeFolder(const QString &collection, const QString &path)
@@ -1483,58 +1535,59 @@ void Database::removeFolder(const QString &collection, const QString &path)
 bool Database::removeFolderInternal(const QString &collection, int folder_id, const QString &path,
                                     QList<int> &chunksToRemove)
 {
-    // Determine if the folder is used by more than one collection
+    // Remove it from the collection
     QSqlQuery q(m_db);
-    QList<QString> collections;
-    if (!selectCollectionsFromFolder(q, folder_id, &collections)) {
-        qWarning() << "ERROR: Cannot select collections from folder" << folder_id << q.lastError();
+    int nRemaining = removeCollectionFolder(q, collection, folder_id);
+    if (nRemaining == -1) {
+        qWarning().nospace() << "Database ERROR: Cannot remove collection " << collection << " from folder "
+                             << folder_id << ": " << q.lastError();
         return false;
     }
-
-    if (collections.count() == 1) {
-        // Remove the last reference to a folder
-
-        // First remove all upcoming jobs associated with this folder
-        removeFolderFromDocumentQueue(folder_id);
-
-        // Get a list of all documents associated with folder
-        QList<int> documentIds;
-        if (!selectDocuments(q, folder_id, &documentIds)) {
-            qWarning() << "ERROR: Cannot select documents" << folder_id << q.lastError();
-            return false;
-        }
-
-        // Remove all chunks and documents associated with this folder
-        for (int document_id : documentIds) {
-            if (!getChunksByDocumentId(document_id, chunksToRemove))
-                return false;
-            if (!removeChunksByDocumentId(q, document_id)) {
-                qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << q.lastError();
-                return false;
-            }
-
-            if (!removeDocument(q, document_id)) {
-                qWarning() << "ERROR: Cannot remove document_id" << document_id << q.lastError();
-                return false;
-            }
-        }
-
-        if (!removeFolderFromDB(q, folder_id)) {
-            qWarning() << "ERROR: Cannot remove folder_id" << folder_id << q.lastError();
-            return false;
-        }
-
-        m_collectionMap.remove(folder_id);
-        removeFolderFromWatch(path);
-    }
-
-    // Remove it from the collections
-    if (!removeCollection(q, collection, folder_id)) {
-        qWarning() << "ERROR: Cannot remove collection" << collection << folder_id << q.lastError();
-        return false;
-    }
-
     removeGuiFolderById(collection, folder_id);
+
+    if (!sqlPruneCollections(q)) {
+        qWarning() << "Database ERROR: Cannot prune collections:" << q.lastError();
+        return false;
+    }
+
+    // Keep folder if it is still referenced
+    if (nRemaining)
+        return true;
+
+    // Remove the last reference to a folder
+
+    // First remove all upcoming jobs associated with this folder
+    removeFolderFromDocumentQueue(folder_id);
+
+    // Get a list of all documents associated with folder
+    QList<int> documentIds;
+    if (!selectDocuments(q, folder_id, &documentIds)) {
+        qWarning() << "ERROR: Cannot select documents" << folder_id << q.lastError();
+        return false;
+    }
+
+    // Remove all chunks and documents associated with this folder
+    for (int document_id: std::as_const(documentIds)) {
+        if (!getChunksByDocumentId(document_id, chunksToRemove))
+            return false;
+        if (!removeChunksByDocumentId(q, document_id)) {
+            qWarning() << "ERROR: Cannot remove chunks of document_id" << document_id << q.lastError();
+            return false;
+        }
+
+        if (!removeDocument(q, document_id)) {
+            qWarning() << "ERROR: Cannot remove document_id" << document_id << q.lastError();
+            return false;
+        }
+    }
+
+    if (!removeFolderFromDB(q, folder_id)) {
+        qWarning() << "ERROR: Cannot remove folder_id" << folder_id << q.lastError();
+        return false;
+    }
+
+    m_collectionMap.remove(folder_id);
+    removeFolderFromWatch(path);
     return true;
 }
 

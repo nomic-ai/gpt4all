@@ -61,21 +61,28 @@ struct ResultInfo {
 };
 
 struct CollectionItem {
+    // -- Fields persisted to database --
+
+    int collection_id = -1;
+    int folder_id = -1;
     QString collection;
     QString folder_path;
-    int folder_id = -1;
-    bool installed = false; // not database
-    bool indexing = false; // not database
+    QString embeddingModel;
+
+    // -- Transient fields --
+
+    bool installed = false;
+    bool indexing = false;
     bool forceIndexing = false;
-    QString error; // not database
+    QString error;
 
     // progress
-    int currentDocsToIndex = 0; // not database
-    int totalDocsToIndex = 0; // not database
-    size_t currentBytesToIndex = 0; // not database
-    size_t totalBytesToIndex = 0; // not database
-    size_t currentEmbeddingsToIndex = 0; // not database
-    size_t totalEmbeddingsToIndex = 0; // not database
+    int currentDocsToIndex = 0;
+    int totalDocsToIndex = 0;
+    size_t currentBytesToIndex = 0;
+    size_t totalBytesToIndex = 0;
+    size_t currentEmbeddingsToIndex = 0;
+    size_t totalEmbeddingsToIndex = 0;
 
     // statistics
     size_t totalDocs = 0;
@@ -83,7 +90,6 @@ struct CollectionItem {
     size_t totalTokens = 0;
     QDateTime lastUpdate;
     QString fileCurrentlyProcessing;
-    QString embeddingModel;
 };
 Q_DECLARE_METATYPE(CollectionItem)
 
@@ -101,7 +107,7 @@ public Q_SLOTS:
     void scanQueueBatch();
     void scanDocuments(int folder_id, const QString &folder_path);
     void forceIndexing(const QString &collection, const QString &embedding_model);
-    void addFolder(const QString &collection, const QString &path, const QString &embedding_model);
+    bool addFolder(const QString &collection, const QString &path, const QString &embedding_model);
     void removeFolder(const QString &collection, const QString &path);
     void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
     void changeChunkSize(int chunkSize);
@@ -132,7 +138,6 @@ private:
     bool openLatestDb(const QString &modelPath, QList<CollectionItem> &oldCollections);
     bool initDb(const QString &modelPath, const QList<CollectionItem> &oldCollections);
     int checkAndAddFolderToDB(const QString &path);
-    bool addForcedCollection(const CollectionItem &collection);
     bool removeFolderInternal(const QString &collection, int folder_id, const QString &path,
                               QList<int> &chunksToRemove);
     size_t chunkStream(QTextStream &stream, int folder_id, int document_id, const QString &file,
