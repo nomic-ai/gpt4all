@@ -117,6 +117,7 @@ Rectangle {
                 width: listView.width
                 spacing: 30
                 Rectangle {
+                    visible: listView.count !== 0
                     Layout.topMargin: 30
                     Layout.fillWidth: true
                     height: 1
@@ -124,6 +125,7 @@ Rectangle {
                 }
                 MySettingsButton {
                     id: collectionSettings
+                    enabled: LocalDocs.databaseValid
                     Layout.alignment: Qt.AlignCenter
                     text: qsTr("\uFF0B Add Docs")
                     font.pixelSize: theme.fontSizeLarger
