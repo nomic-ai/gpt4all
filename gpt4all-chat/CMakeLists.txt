@@ -117,7 +117,7 @@ qt_add_qml_module(chat
       qml/AddModelView.qml
       qml/ChatDrawer.qml
       qml/ChatView.qml
-      qml/CollectionsDialog.qml
+      qml/CollectionsDrawer.qml
       qml/HomeView.qml
       qml/ModelsView.qml
       qml/NetworkDialog.qml

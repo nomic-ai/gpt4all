@@ -555,8 +555,8 @@ Window {
 
             Connections {
                 target: chatView
-                function onSettingsViewRequested(page) {
-                    settingsView.show(page);
+                function onAddCollectionViewRequested() {
+                    addCollectionView.show();
                 }
             }
         }

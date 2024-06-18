@@ -18,6 +18,8 @@ Rectangle {
 
     color: theme.viewBackground
 
+    // FIXME_BLOCKER We need to organize these by date created and show in the UI
+
     Rectangle {
         id: borderRight
         anchors.top: parent.top

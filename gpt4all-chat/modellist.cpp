@@ -454,6 +454,7 @@ DownloadableModels::DownloadableModels(QObject *parent)
 bool DownloadableModels::filterAcceptsRow(int sourceRow,
                                           const QModelIndex &sourceParent) const
 {
+    // FIXME_BLOCKER We can eliminate the 'expanded' code as the UI no longer uses this
     bool withinLimit = sourceRow < (m_expanded ? sourceModel()->rowCount() : m_limit);
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool isDownloadable = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();

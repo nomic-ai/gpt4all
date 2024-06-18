@@ -23,7 +23,7 @@ Rectangle {
 
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
-    signal settingsViewRequested(int page)
+    signal addCollectionViewRequested()
 
     color: theme.viewBackground
 
@@ -80,14 +80,6 @@ Rectangle {
             Accessible.role: Accessible.Dialog
             Accessible.name: qsTr("Switch model dialog")
             Accessible.description: qsTr("Warn the user if they switch models, then context will be erased")
-        }
-    }
-
-    CollectionsDialog {
-        id: collectionsDialog
-        anchors.centerIn: parent
-        onAddRemoveClicked: {
-            settingsViewRequested(2 /*page 2*/)
         }
     }
 
@@ -162,7 +154,7 @@ Rectangle {
     }
 
     ChatDrawer {
-        id: drawer
+        id: chatDrawer
         anchors.left: parent.left
         anchors.top: parent.top
         anchors.bottom: parent.bottom
@@ -179,7 +171,7 @@ Rectangle {
 
     Item {
         id: mainArea
-        anchors.left: drawer.right
+        anchors.left: chatDrawer.right
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
@@ -190,7 +182,7 @@ Rectangle {
                 name: "expanded"
                 AnchorChanges {
                     target: mainArea
-                    anchors.left: drawer.right
+                    anchors.left: chatDrawer.right
                 }
             },
             State {
@@ -249,7 +241,7 @@ Rectangle {
                         imageWidth: 40
                         imageHeight: 40
                         padding: 15
-                        source: conversation.state === "expanded" ? "qrc:/gpt4all/icons/left_panel_open.svg" : "qrc:/gpt4all/icons/left_panel_closed.svg"
+                        source: mainArea.state === "expanded" ? "qrc:/gpt4all/icons/left_panel_open.svg" : "qrc:/gpt4all/icons/left_panel_closed.svg"
                         Accessible.role: Accessible.ButtonMenu
                         Accessible.name: qsTr("Chat panel")
                         Accessible.description: qsTr("Chat panel with options")
@@ -264,7 +256,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 300
+                    Layout.preferredWidth: 250
                     Layout.maximumWidth: 675
                     enabled: !currentChat.isServer
                         && !currentChat.trySwitchContextInProgress
@@ -421,25 +413,6 @@ Rectangle {
                         anchors.right: parent.right
                         MyButton {
                             id: collectionsButton
-                            Image {
-                                id: collectionsImage
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.left: parent.left
-                                anchors.leftMargin: 15
-                                sourceSize.width: 24
-                                sourceSize.height: 24
-                                mipmap: true
-                                visible: false
-                                source: "qrc:/gpt4all/icons/db.svg"
-                            }
-
-                            ColorOverlay {
-                                anchors.fill: collectionsImage
-                                source: collectionsImage
-                                color: theme.green600
-                            }
-
-                            leftPadding: 50
                             borderWidth: 0
                             backgroundColor: theme.collectionButtonBackground
                             backgroundColorHovered: theme.collectionButtonBackgroundHovered
@@ -447,8 +420,65 @@ Rectangle {
                             padding: 15
                             topPadding: 8
                             bottomPadding: 8
-                            textColor: theme.green600
-                            text: qsTr("LocalDocs")
+
+                            contentItem: RowLayout {
+                                spacing: 10
+                                Item {
+                                    visible: currentChat.collectionList.length === 0
+                                    Layout.minimumWidth: collectionsImage.width
+                                    Layout.minimumHeight: collectionsImage.height
+                                    Image {
+                                        id: collectionsImage
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        sourceSize.width: 24
+                                        sourceSize.height: 24
+                                        mipmap: true
+                                        visible: false
+                                        source: "qrc:/gpt4all/icons/db.svg"
+                                    }
+
+                                    ColorOverlay {
+                                        anchors.fill: collectionsImage
+                                        source: collectionsImage
+                                        color: theme.green600
+                                    }
+                                }
+
+                                MyBusyIndicator {
+                                    visible: currentChat.collectionModel.updatingCount !== 0
+                                    color: theme.green400
+                                    size: 24
+                                    Layout.minimumWidth: 24
+                                    Layout.minimumHeight: 24
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: currentChat.collectionModel.updatingCount
+                                        color: theme.green600
+                                        font.pixelSize: 14 // fixed regardless of theme
+                                    }
+                                }
+
+                                Rectangle {
+                                    visible: currentChat.collectionList.length !== 0
+                                    radius: 6
+                                    color: theme.green600
+                                    Layout.minimumWidth: collectionsImage.width
+                                    Layout.minimumHeight: collectionsImage.height
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: currentChat.collectionList.length
+                                        color: theme.white
+                                        font.pixelSize: 14 // fixed regardless of theme
+                                    }
+                                }
+
+                                Text {
+                                    text: qsTr("LocalDocs")
+                                    color: theme.green600
+                                    font.pixelSize: theme.fontSizeLarge
+                                }
+                            }
+
                             fontPixelSize: theme.fontSizeLarge
 
                             property bool toggled: currentChat.collectionList.length
@@ -461,7 +491,7 @@ Rectangle {
                             Accessible.description: qsTr("add collections of documents to the chat")
 
                             onClicked: {
-                                collectionsDialog.open()
+                                conversation.toggleRightPanel()
                             }
                         }
                     }
@@ -478,6 +508,18 @@ Rectangle {
             height: 2
         }
 
+        CollectionsDrawer {
+            id: collectionsDrawer
+            anchors.right: parent.right
+            anchors.top: conversationDivider.bottom
+            anchors.bottom: parent.bottom
+            width: Math.max(180, Math.min(600, 0.23 * window.width))
+            color: theme.conversationBackground
+            onAddDocsClicked: {
+                addCollectionViewRequested()
+            }
+        }
+
         Rectangle {
             id: conversation
             color: theme.conversationBackground
@@ -485,6 +527,39 @@ Rectangle {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.top: conversationDivider.bottom
+            state: "collapsed"
+
+            states: [
+                State {
+                    name: "expanded"
+                    AnchorChanges {
+                        target: conversation
+                        anchors.right: collectionsDrawer.left
+                    }
+                },
+                State {
+                    name: "collapsed"
+                    AnchorChanges {
+                        target: conversation
+                        anchors.right: parent.right
+                    }
+                }
+            ]
+
+            function toggleRightPanel() {
+                if (conversation.state === "expanded") {
+                    conversation.state = "collapsed";
+                } else {
+                    conversation.state = "expanded";
+                }
+            }
+
+            transitions: Transition {
+                AnchorAnimation {
+                    easing.type: Easing.InOutQuad
+                    duration: 300
+                }
+            }
 
             ScrollView {
                 id: scrollView

@@ -14,6 +14,9 @@ LocalDocsCollectionsModel::LocalDocsCollectionsModel(QObject *parent)
     : QSortFilterProxyModel(parent)
 {
     setSourceModel(LocalDocs::globalInstance()->localDocsModel());
+
+    connect(LocalDocs::globalInstance()->localDocsModel(),
+        &LocalDocsModel::updatingChanged, this, &LocalDocsCollectionsModel::maybeTriggerUpdatingCountChanged);
 }
 
 bool LocalDocsCollectionsModel::filterAcceptsRow(int sourceRow,
@@ -28,6 +31,30 @@ void LocalDocsCollectionsModel::setCollections(const QList<QString> &collections
 {
     m_collections = collections;
     invalidateFilter();
+    maybeTriggerUpdatingCountChanged();
+}
+
+int LocalDocsCollectionsModel::updatingCount() const
+{
+    return m_updatingCount;
+}
+
+void LocalDocsCollectionsModel::maybeTriggerUpdatingCountChanged()
+{
+    int updatingCount = 0;
+    for (int row = 0; row < sourceModel()->rowCount(); ++row) {
+        QModelIndex index = sourceModel()->index(row, 0);
+        const QString collection = sourceModel()->data(index, LocalDocsModel::CollectionRole).toString();
+        if (!m_collections.contains(collection))
+            continue;
+        bool updating = sourceModel()->data(index, LocalDocsModel::UpdatingRole).toBool();
+        if (updating)
+            ++updatingCount;
+    }
+    if (updatingCount != m_updatingCount) {
+        m_updatingCount = updatingCount;
+        emit updatingCountChanged();
+    }
 }
 
 LocalDocsModel::LocalDocsModel(QObject *parent)
@@ -84,6 +111,8 @@ QVariant LocalDocsModel::data(const QModelIndex &index, int role) const
             return item.fileCurrentlyProcessing;
         case EmbeddingModelRole:
             return item.embeddingModel;
+        case UpdatingRole:
+            return item.indexing || item.currentEmbeddingsToIndex != item.totalEmbeddingsToIndex;
     }
 
     return QVariant();
@@ -110,6 +139,7 @@ QHash<int, QByteArray> LocalDocsModel::roleNames() const
     roles[LastUpdateRole] = "lastUpdate";
     roles[FileCurrentlyProcessingRole] = "fileCurrentlyProcessing";
     roles[EmbeddingModelRole] = "embeddingModel";
+    roles[UpdatingRole] = "updating";
     return roles;
 }
 
@@ -125,8 +155,10 @@ void LocalDocsModel::updateCollectionItem(const CollectionItem &item)
             changed.append(FolderPathRole);
         if (stored.installed != item.installed)
             changed.append(InstalledRole);
-        if (stored.indexing != item.indexing)
+        if (stored.indexing != item.indexing) {
             changed.append(IndexingRole);
+            changed.append(UpdatingRole);
+        }
         if (stored.error != item.error)
             changed.append(ErrorRole);
         if (stored.forceIndexing != item.forceIndexing)
@@ -139,10 +171,14 @@ void LocalDocsModel::updateCollectionItem(const CollectionItem &item)
             changed.append(CurrentBytesToIndexRole);
         if (stored.totalBytesToIndex != item.totalBytesToIndex)
             changed.append(TotalBytesToIndexRole);
-        if (stored.currentEmbeddingsToIndex != item.currentEmbeddingsToIndex)
+        if (stored.currentEmbeddingsToIndex != item.currentEmbeddingsToIndex) {
             changed.append(CurrentEmbeddingsToIndexRole);
-        if (stored.totalEmbeddingsToIndex != item.totalEmbeddingsToIndex)
+            changed.append(UpdatingRole);
+        }
+        if (stored.totalEmbeddingsToIndex != item.totalEmbeddingsToIndex) {
             changed.append(TotalEmbeddingsToIndexRole);
+            changed.append(UpdatingRole);
+        }
         if (stored.totalDocs != item.totalDocs)
             changed.append(TotalDocsRole);
         if (stored.totalWords != item.totalWords)
@@ -162,6 +198,9 @@ void LocalDocsModel::updateCollectionItem(const CollectionItem &item)
         stored.collection = collection;
 
         emit dataChanged(this->index(i), this->index(i), changed);
+
+        if (changed.contains(UpdatingRole))
+            emit updatingChanged(item.collection);
     }
 }
 

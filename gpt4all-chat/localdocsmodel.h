@@ -18,17 +18,26 @@
 class LocalDocsCollectionsModel : public QSortFilterProxyModel
 {
     Q_OBJECT
+    Q_PROPERTY(int updatingCount READ updatingCount NOTIFY updatingCountChanged)
 public:
     explicit LocalDocsCollectionsModel(QObject *parent);
 
 public Q_SLOTS:
     void setCollections(const QList<QString> &collections);
+    int updatingCount() const;
+
+Q_SIGNALS:
+    void updatingCountChanged();
+
+private Q_SLOT:
+    void maybeTriggerUpdatingCountChanged();
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
 private:
     QList<QString> m_collections;
+    int m_updatingCount = 0;
 };
 
 class LocalDocsModel : public QAbstractListModel
@@ -54,7 +63,8 @@ public:
         TotalTokensRole,
         LastUpdateRole,
         FileCurrentlyProcessingRole,
-        EmbeddingModelRole
+        EmbeddingModelRole,
+        UpdatingRole
     };
 
     explicit LocalDocsModel(QObject *parent = nullptr);
@@ -68,6 +78,9 @@ public Q_SLOTS:
     void removeFolderById(const QString &collection, int folder_id);
     void removeCollectionPath(const QString &name, const QString &path);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
+
+Q_SIGNALS:
+    void updatingChanged(const QString &collection);
 
 private:
     void removeCollectionIf(std::function<bool(CollectionItem)> const &predicate);
