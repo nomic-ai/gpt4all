@@ -11,7 +11,6 @@
 #include <QMap>
 #include <QMetaObject>
 #include <QStandardPaths>
-#include <QStringList>
 #include <QThread>
 #include <QUrl>
 #include <QVariant>

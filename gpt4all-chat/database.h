@@ -3,7 +3,9 @@
 
 #include "embllm.h" // IWYU pragma: keep
 
+#include <QDateTime>
 #include <QFileInfo>
+#include <QHash>
 #include <QLatin1String>
 #include <QList>
 #include <QMap>

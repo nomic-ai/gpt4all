@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QStringList>
 #include <QVector>
 
 #include <cstdint>

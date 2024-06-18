@@ -10,6 +10,7 @@
 #include <QPainter>
 #include <QQuickTextDocument>
 #include <QRegularExpression>
+#include <QStringList>
 #include <QTextBlock>
 #include <QTextCharFormat>
 #include <QTextCursor>

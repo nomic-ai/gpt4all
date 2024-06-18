@@ -16,6 +16,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QSet>
+#include <QStringList>
 #include <QVariantMap>
 #include <QWaitCondition>
 #include <Qt>

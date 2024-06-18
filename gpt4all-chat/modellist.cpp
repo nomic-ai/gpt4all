@@ -26,10 +26,11 @@
 #include <QSettings>
 #include <QSslConfiguration>
 #include <QSslSocket>
+#include <QStringList>
 #include <QTextStream>
 #include <QTimer>
-#include <QtLogging>
 #include <QUrl>
+#include <QtLogging>
 
 #include <algorithm>
 #include <compare>

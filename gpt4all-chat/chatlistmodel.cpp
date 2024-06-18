@@ -13,6 +13,7 @@
 #include <QIODevice>
 #include <QSettings>
 #include <QString>
+#include <QStringList>
 #include <Qt>
 
 #include <algorithm>
