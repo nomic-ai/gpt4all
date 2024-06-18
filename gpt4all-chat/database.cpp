@@ -824,7 +824,8 @@ void Database::scheduleNext(int folder_id, size_t countForFolder)
     CollectionItem item = guiCollectionItem(folder_id);
     item.currentDocsToIndex = countForFolder;
     if (!countForFolder) {
-        sendChunkList(); // send any remaining embedding chunks to llm
+        if (!m_chunkList.isEmpty())
+            sendChunkList(); // send any remaining embedding chunks to llm
         item.indexing = false;
         item.installed = true;
     }
@@ -923,8 +924,7 @@ void Database::sendChunkList() {
 
 void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddings)
 {
-    if (embeddings.isEmpty())
-        return;
+    Q_ASSERT(!embeddings.isEmpty());
 
     // FIXME: Replace this with an arrow file on disk
     // FIXME: Add the tokens information
