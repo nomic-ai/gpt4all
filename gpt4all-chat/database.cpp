@@ -107,7 +107,6 @@ static const QString INIT_DB_SQL[] = {
             folder_id        integer not null,
             last_update_time integer,
             embedding_model  text,
-            force_indexing   integer not null,
             unique(name, folder_id),
             foreign key(folder_id) references folders(id)
         );
@@ -276,7 +275,7 @@ static bool selectChunk(QSqlQuery &q, const QList<QString> &collection_names, co
 }
 
 static const QString INSERT_COLLECTION_SQL = uR"(
-    insert into collections(name, folder_id, last_update_time, embedding_model, force_indexing) values(?, ?, ?, ?, ?);
+    insert into collections(name, folder_id, last_update_time, embedding_model) values(?, ?, ?, ?);
     )"_s;
 
 static const QString DELETE_COLLECTION_SQL = uR"(
@@ -302,20 +301,20 @@ static const QString SELECT_COLLECTIONS_SQL_V1 = uR"(
     )"_s;
 
 static const QString SELECT_COLLECTIONS_SQL_V2 = uR"(
-    select c.name, f.folder_path, f.id, c.last_update_time, c.embedding_model, c.force_indexing
+    select c.name, f.folder_path, f.id, c.last_update_time, c.embedding_model
     from collections c
     join folders f on c.folder_id = f.id
     order by c.name asc, f.folder_path asc;
     )"_s;
 
-static const QString UPDATE_COLLECTION_FORCE_INDEXING_SQL = uR"(
+static const QString SET_COLLECTION_EMBEDDING_MODEL_SQL = uR"(
     update collections
-    set force_indexing = 0
+    set embedding_model = ?
     where name = ?;
     )"_s;
 
 static bool addCollection(QSqlQuery &q, const QString &collection_name, int folder_id, const QDateTime &last_update,
-                          const QString &embedding_model, bool force_indexing)
+                          const QString &embedding_model)
 {
     if (!q.prepare(INSERT_COLLECTION_SQL))
         return false;
@@ -323,7 +322,6 @@ static bool addCollection(QSqlQuery &q, const QString &collection_name, int fold
     q.addBindValue(folder_id);
     q.addBindValue(last_update);
     q.addBindValue(embedding_model);
-    q.addBindValue(force_indexing);
     return q.exec();
 }
 
@@ -384,24 +382,24 @@ static bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collec
         i.indexing = false;
         i.installed = true;
 
-        if (version > 1) {
-            i.lastUpdate = q.value(3).toDateTime();
-            i.embeddingModel = q.value(4).toString();
-            i.forceIndexing = q.value(5).toBool();
+        if (version >= 2) {
+            i.lastUpdate = q.value(idx++).toDateTime();
+            i.embeddingModel = q.value(idx++).toString();
         }
-
-        // We force indexing flag if the version does not match
-        if (version < LOCALDOCS_VERSION)
+        if (i.embeddingModel.isNull()) {
+            // unknown embedding model -> need to re-index
             i.forceIndexing = true;
+        }
 
         collections->append(i);
     }
     return true;
 }
 
-static bool updateCollectionForceIndexing(QSqlQuery &q, const QString &collection_name) {
-    if (!q.prepare(UPDATE_COLLECTION_FORCE_INDEXING_SQL))
+static bool setCollectionEmbeddingModel(QSqlQuery &q, const QString &collection_name, const QString &embedding_model) {
+    if (!q.prepare(SET_COLLECTION_EMBEDDING_MODEL_SQL))
         return false;
+    q.addBindValue(embedding_model);
     q.addBindValue(collection_name);
     return q.exec();
 }
@@ -1368,8 +1366,7 @@ bool Database::addForcedCollection(const CollectionItem &collection)
     QSqlQuery q(m_db);
     if (!addCollection(q, collection.collection, folder_id,
                        QDateTime() /*last_update*/,
-                       model /*embedding_model*/,
-                       true /*force_indexing*/)) {
+                       QString() /*embedding_model*/)) {
         qWarning() << "ERROR: Cannot add folder to collection" << collection.collection << path << q.lastError();
         return false;
     }
@@ -1387,13 +1384,21 @@ void Database::forceIndexing(const QString &collection)
         return;
     }
 
-    if (!updateCollectionForceIndexing(q, collection)) {
-        qWarning() << "ERROR: Cannot update collection" << collection << q.lastError();
+    const QString model = m_embLLM->model();
+    if (model.isEmpty()) {
+        qWarning() << "ERROR: We have no embedding model";
+        return;
+    }
+
+    if (!setCollectionEmbeddingModel(q, collection, model)) {
+        qWarning().nospace() << "ERROR: Cannot set embedding model for collection " << collection << ": "
+                             << q.lastError();
         return;
     }
 
     for (const auto &folder: std::as_const(folders)) {
         CollectionItem item = guiCollectionItem(folder.first);
+        item.embeddingModel = model;
         item.forceIndexing = false;
         updateGuiForCollectionItem(item);
         addFolderToWatch(folder.second);
@@ -1431,8 +1436,7 @@ void Database::addFolder(const QString &collection, const QString &path)
     if (!containsFolderId(folders, folder_id)) {
         if (!addCollection(q, collection, folder_id,
                            QDateTime() /*last_update*/,
-                           model /*embedding_model*/,
-                           false /*force_indexing*/)) {
+                           model /*embedding_model*/)) {
             qWarning() << "ERROR: Cannot add folder to collection" << collection << path << q.lastError();
             return;
         }
