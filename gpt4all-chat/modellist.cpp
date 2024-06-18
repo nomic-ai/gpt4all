@@ -456,10 +456,10 @@ bool DownloadableModels::filterAcceptsRow(int sourceRow,
     bool withinLimit = sourceRow < (m_expanded ? sourceModel()->rowCount() : m_limit);
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool isDownloadable = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
-    bool isInstalled = !sourceModel()->data(index, ModelList::InstalledRole).toString().isEmpty();
-    bool isIncomplete = !sourceModel()->data(index, ModelList::IncompleteRole).toString().isEmpty();
+    bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
+    bool isIncomplete = sourceModel()->data(index, ModelList::IncompleteRole).toBool();
     bool isClone = sourceModel()->data(index, ModelList::IsCloneRole).toBool();
-    return withinLimit && !isClone && (isDownloadable || isInstalled || isIncomplete);
+    return withinLimit && !isClone && !isInstalled && (isDownloadable || isIncomplete);
 }
 
 int DownloadableModels::count() const
