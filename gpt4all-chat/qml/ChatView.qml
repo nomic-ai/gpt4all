@@ -898,6 +898,7 @@ Rectangle {
             }
 
             RowLayout {
+                id: conversationButtons
                 anchors.bottom: textInputView.top
                 anchors.horizontalCenter: textInputView.horizontalCenter
                 anchors.bottomMargin: 20
@@ -982,14 +983,21 @@ Rectangle {
 
             Text {
                 id: device
-                anchors.bottom: textInputView.top
-                anchors.bottomMargin: 20
+                anchors.top: textInputView.bottom
+                anchors.bottom: parent.bottom
                 anchors.right: parent.right
                 anchors.rightMargin: 30
+                anchors.left: parent.left
+                anchors.leftMargin: 30
+                horizontalAlignment: Qt.AlignRight
+                verticalAlignment: Qt.AlignVCenter
                 color: theme.mutedTextColor
                 visible: currentChat.tokenSpeed !== ""
-                text: qsTr("Speed: ") + currentChat.tokenSpeed + "<br>" + qsTr("Device: ") + currentChat.device + currentChat.fallbackReason
-                font.pixelSize: theme.fontSizeLarge
+                elide: Text.ElideRight
+                wrapMode: Text.WordWrap
+                text: qsTr("Speed: ") + currentChat.tokenSpeed + " \u00B7 " + qsTr("Device: ") + currentChat.device + currentChat.fallbackReason
+                font.pixelSize: theme.fontSizeSmaller
+                font.bold: true
             }
 
             RectangularGlow {
