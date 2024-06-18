@@ -145,9 +145,9 @@ static const QString SELECT_CHUNKS_SQL = uR"(
     select chunks.id, documents.document_time, chunks.chunk_text, chunks.file, chunks.title, chunks.author, chunks.page,
         chunks.line_from, chunks.line_to
     from chunks
-    join documents ON chunks.document_id = documents.id
-    join folders ON documents.folder_id = folders.id
-    join collections ON folders.id = collections.folder_id
+    join documents on chunks.document_id = documents.id
+    join folders on documents.folder_id = folders.id
+    join collections on folders.id = collections.folder_id
     where chunks.id in (%1) and collections.name in (%2);
 )"_s;
 
@@ -170,14 +170,14 @@ static bool selectFileForChunk(QSqlQuery &q, int chunk_id, QString &file) {
 }
 
 static const QString SELECT_UNCOMPLETED_CHUNKS_SQL = uR"(
-    select c.id, c.chunk_text as chunk, d.folder_id
+    select c.id, c.chunk_text, d.folder_id
     from chunks c
-    join documents d ON c.document_id = d.id
+    join documents d on c.document_id = d.id
     where c.has_embedding != 1 and d.folder_id = ?;
     )"_s;
 
 static const QString SELECT_COUNT_CHUNKS_SQL = uR"(
-    select count(c.id) as total_chunks
+    select count(c.id)
     from chunks c
     join documents d on c.document_id = d.id
     where d.folder_id = ?;
@@ -503,7 +503,7 @@ static const QString SELECT_ALL_DOCUMENTS_SQL = uR"(
     )"_s;
 
 static const QString SELECT_COUNT_STATISTICS_SQL = uR"(
-    select count(distinct d.id) as total_docs, sum(c.words) as total_words, sum(c.tokens) as total_tokens
+    select count(distinct d.id), sum(c.words), sum(c.tokens)
     from documents d
     left join chunks c on d.id = c.document_id
     where d.folder_id = ?;
