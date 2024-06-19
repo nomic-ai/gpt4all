@@ -1464,6 +1464,7 @@ bool Database::addFolder(const QString &collection, const QString &path, const Q
     // add the collection, if needed
     if (!item) {
         item.emplace();
+        // FIXME_BROKEN The last update time is not getting added when the embedding completes...
         if (!addCollection(q, collection, QDateTime() /*last_update*/, embedding_model /*embedding_model*/, *item)) {
             qWarning().nospace() << "ERROR: Cannot add collection " << collection << ": " << q.lastError();
             return false;
