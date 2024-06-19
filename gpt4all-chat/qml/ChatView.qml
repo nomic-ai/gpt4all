@@ -424,7 +424,7 @@ Rectangle {
                             contentItem: RowLayout {
                                 spacing: 10
                                 Item {
-                                    visible: currentChat.collectionList.length === 0
+                                    visible: currentChat.collectionModel.count === 0
                                     Layout.minimumWidth: collectionsImage.width
                                     Layout.minimumHeight: collectionsImage.height
                                     Image {
@@ -459,14 +459,14 @@ Rectangle {
                                 }
 
                                 Rectangle {
-                                    visible: currentChat.collectionList.length !== 0
+                                    visible: currentChat.collectionModel.count !== 0
                                     radius: 6
                                     color: theme.green600
                                     Layout.minimumWidth: collectionsImage.width
                                     Layout.minimumHeight: collectionsImage.height
                                     Text {
                                         anchors.centerIn: parent
-                                        text: currentChat.collectionList.length
+                                        text: currentChat.collectionModel.count
                                         color: theme.white
                                         font.pixelSize: 14 // fixed regardless of theme
                                     }
@@ -481,7 +481,6 @@ Rectangle {
 
                             fontPixelSize: theme.fontSizeLarge
 
-                            property bool toggled: currentChat.collectionList.length
                             background: Rectangle {
                                 radius: collectionsButton.backgroundRadius
                                 color: collectionsButton.toggled ? collectionsButton.backgroundColorHovered : collectionsButton.backgroundColor

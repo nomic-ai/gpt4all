@@ -18,15 +18,18 @@
 class LocalDocsCollectionsModel : public QSortFilterProxyModel
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(int updatingCount READ updatingCount NOTIFY updatingCountChanged)
 public:
     explicit LocalDocsCollectionsModel(QObject *parent);
 
 public Q_SLOTS:
+    int count() const { return rowCount(); }
     void setCollections(const QList<QString> &collections);
     int updatingCount() const;
 
 Q_SIGNALS:
+    void countChanged();
     void updatingCountChanged();
 
 private Q_SLOT:

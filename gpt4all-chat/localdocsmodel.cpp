@@ -17,6 +17,10 @@ LocalDocsCollectionsModel::LocalDocsCollectionsModel(QObject *parent)
 
     connect(LocalDocs::globalInstance()->localDocsModel(),
         &LocalDocsModel::updatingChanged, this, &LocalDocsCollectionsModel::maybeTriggerUpdatingCountChanged);
+    connect(this, &LocalDocsCollectionsModel::rowsInserted, this, &LocalDocsCollectionsModel::countChanged);
+    connect(this, &LocalDocsCollectionsModel::rowsRemoved, this, &LocalDocsCollectionsModel::countChanged);
+    connect(this, &LocalDocsCollectionsModel::modelReset, this, &LocalDocsCollectionsModel::countChanged);
+    connect(this, &LocalDocsCollectionsModel::layoutChanged, this, &LocalDocsCollectionsModel::countChanged);
 }
 
 bool LocalDocsCollectionsModel::filterAcceptsRow(int sourceRow,
