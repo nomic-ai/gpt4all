@@ -95,7 +95,7 @@ public:
     void unloadAndDeleteLater();
     void markForDeletion();
 
-    qint64 creationDate() const { return m_creationDate; }
+    QDateTime creationDate() const { return QDateTime::fromSecsSinceEpoch(m_creationDate); }
     bool serialize(QDataStream &stream, int version) const;
     bool deserialize(QDataStream &stream, int version);
     bool isServer() const { return m_isServer; }
