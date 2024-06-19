@@ -337,7 +337,7 @@ void Chat::generatedNameChanged(const QString &name)
     // Only use the first three words maximum and remove newlines and extra spaces
     m_generatedName = name.simplified();
     QStringList words = m_generatedName.split(' ', Qt::SkipEmptyParts);
-    int wordCount = qMin(3, words.size());
+    int wordCount = qMin(7, words.size());
     m_name = words.mid(0, wordCount).join(' ');
     emit nameChanged();
 }
