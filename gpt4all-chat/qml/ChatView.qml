@@ -995,7 +995,7 @@ Rectangle {
                 visible: currentChat.tokenSpeed !== ""
                 elide: Text.ElideRight
                 wrapMode: Text.WordWrap
-                text: qsTr("Speed: ") + currentChat.tokenSpeed + " \u00B7 " + qsTr("Device: ") + currentChat.device + currentChat.fallbackReason
+                text: currentChat.tokenSpeed + " \u00B7 " + currentChat.device + currentChat.fallbackReason
                 font.pixelSize: theme.fontSizeSmaller
                 font.bold: true
             }
