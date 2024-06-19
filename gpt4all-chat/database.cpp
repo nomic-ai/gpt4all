@@ -1626,7 +1626,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
 #endif
 
-    if (m_embeddings->isLoaded()) {
+    if (!m_embeddings->isLoaded()) {
         qWarning() << "retrieveFromDB ERROR: embeddings are not loaded";
         return;
     }

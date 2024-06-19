@@ -112,7 +112,7 @@ QVariant LocalDocsModel::data(const QModelIndex &index, int role) const
         case EmbeddingModelRole:
             return item.embeddingModel;
         case UpdatingRole:
-            return item.indexing || item.currentEmbeddingsToIndex != item.totalEmbeddingsToIndex;
+            return item.indexing || item.currentEmbeddingsToIndex != 0;
     }
 
     return QVariant();
@@ -175,10 +175,8 @@ void LocalDocsModel::updateCollectionItem(const CollectionItem &item)
             changed.append(CurrentEmbeddingsToIndexRole);
             changed.append(UpdatingRole);
         }
-        if (stored.totalEmbeddingsToIndex != item.totalEmbeddingsToIndex) {
+        if (stored.totalEmbeddingsToIndex != item.totalEmbeddingsToIndex)
             changed.append(TotalEmbeddingsToIndexRole);
-            changed.append(UpdatingRole);
-        }
         if (stored.totalDocs != item.totalDocs)
             changed.append(TotalDocsRole);
         if (stored.totalWords != item.totalWords)
