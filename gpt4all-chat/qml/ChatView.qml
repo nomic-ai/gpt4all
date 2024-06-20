@@ -255,8 +255,7 @@ Rectangle {
                     id: comboBox
                     Layout.alignment: Qt.AlignHCenter
                     Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: 250
+                    Layout.preferredWidth: 350
                     Layout.maximumWidth: 675
                     enabled: !currentChat.isServer
                         && !currentChat.trySwitchContextInProgress
@@ -278,21 +277,29 @@ Rectangle {
                         }
                     }
 
-                    background: ProgressBar {
-                        id: modelProgress
-                        value: currentChat.modelLoadingPercentage
-                        background: Rectangle {
-                            color: theme.mainComboBackground
-                            radius: 10
-                        }
-                        contentItem: Item {
-                            Rectangle {
-                                visible: currentChat.isCurrentlyLoading
-                                anchors.bottom: parent.bottom
-                                width: modelProgress.visualPosition * parent.width
-                                height: 10
-                                radius: 2
-                                color: theme.progressForeground
+                    background: Rectangle {
+                        color: theme.mainComboBackground
+                        radius: 10
+                        ProgressBar {
+                            id: modelProgress
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            visible: currentChat.isCurrentlyLoading
+                            height: 10
+                            value: currentChat.modelLoadingPercentage
+                            background: Rectangle {
+                                color: theme.green100
+                                radius: 10
+                            }
+                            contentItem: Item {
+                                Rectangle {
+                                    anchors.bottom: parent.bottom
+                                    width: modelProgress.visualPosition * parent.width
+                                    height: 10
+                                    radius: 2
+                                    color: theme.green600
+                                }
                             }
                         }
                     }
