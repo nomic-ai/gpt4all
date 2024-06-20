@@ -361,13 +361,6 @@ Rectangle {
                             Layout.leftMargin: 15
                             Layout.topMargin: 15
                             Text {
-                                text: qsTr("Local Folder")
-                                elide: Text.ElideRight
-                                color: theme.green600
-                                font.bold: true
-                                font.pixelSize: theme.fontSizeSmall
-                            }
-                            Text {
                                 text: qsTr("Remove")
                                 elide: Text.ElideRight
                                 color: theme.red500
