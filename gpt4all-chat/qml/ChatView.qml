@@ -316,9 +316,9 @@ Rectangle {
                         text: {
                             if (currentChat.modelLoadingError !== "")
                                 return qsTr("Model loading error...")
-                            if (currentChat.trySwitchContextInProgress == 1)
+                            if (currentChat.trySwitchContextInProgress === 1)
                                 return qsTr("Waiting for model...")
-                            if (currentChat.trySwitchContextInProgress == 2)
+                            if (currentChat.trySwitchContextInProgress === 2)
                                 return qsTr("Switching context...")
                             if (currentModelName() === "")
                                 return qsTr("Choose a model...")
@@ -618,272 +618,264 @@ Rectangle {
                         }
                     }
 
-                    ListView {
-                        id: listView
-                        visible: ModelList.installedModels.count !== 0 && chatModel.count !== 0
+                    ColumnLayout {
                         anchors.fill: parent
-                        model: chatModel
+                        visible: ModelList.installedModels.count !== 0 && chatModel.count !== 0
+                        ListView {
+                            id: listView
+                            Layout.maximumWidth: 1280
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            Layout.margins: 20
+                            Layout.alignment: Qt.AlignHCenter
+                            spacing: 50
+                            model: chatModel
 
-                        ScrollBar.vertical: ScrollBar {
-                            policy: ScrollBar.AsNeeded
-                        }
-
-                        Accessible.role: Accessible.List
-                        Accessible.name: qsTr("Conversation with the model")
-                        Accessible.description: qsTr("prompt / response pairs from the conversation")
-
-                        delegate: TextArea {
-                            id: myTextArea
-                            text: value + (MySettings.localDocsShowReferences ? references : "")
-                            anchors.horizontalCenter: listView.contentItem.horizontalCenter
-                            width: Math.min(1280, listView.contentItem.width)
-                            color: {
-                                if (!currentChat.isServer)
-                                    return theme.textColor
-                                if (name === qsTr("Response: "))
-                                    return theme.white
-                                return theme.black
-                            }
-                            wrapMode: Text.WordWrap
-                            textFormat: TextEdit.PlainText
-                            focus: false
-                            readOnly: true
-                            font.pixelSize: theme.fontSizeLarge
-                            cursorVisible: currentResponse ? currentChat.responseInProgress : false
-                            cursorPosition: text.length
-                            background: Rectangle {
-                                opacity: 1.0
-                                color: name === qsTr("Response: ")
-                                       ? (currentChat.isServer ? theme.black : theme.lightContrast)
-                                       : (currentChat.isServer ? theme.white : theme.darkContrast)
-                            }
-                            TapHandler {
-                                id: tapHandler
-                                onTapped: function(eventPoint, button) {
-                                    var clickedPos = myTextArea.positionAt(eventPoint.position.x, eventPoint.position.y);
-                                    var link = responseText.getLinkAtPosition(clickedPos);
-                                    if (link.startsWith("context://")) {
-                                        var integer = parseInt(link.split("://")[1]);
-                                        referenceContextDialog.text = referencesContext[integer - 1];
-                                        referenceContextDialog.open();
-                                    } else {
-                                        var success = responseText.tryCopyAtPosition(clickedPos);
-                                        if (success)
-                                            copyCodeMessage.open();
-                                    }
-                                }
+                            ScrollBar.vertical: ScrollBar {
+                                policy: ScrollBar.AsNeeded
                             }
 
-                            MouseArea {
-                                id: conversationMouseArea
-                                anchors.fill: parent
-                                acceptedButtons: Qt.RightButton
+                            Accessible.role: Accessible.List
+                            Accessible.name: qsTr("Conversation with the model")
+                            Accessible.description: qsTr("prompt / response pairs from the conversation")
 
-                                onClicked: (mouse) => {
-                                    if (mouse.button === Qt.RightButton) {
-                                        conversationContextMenu.x = conversationMouseArea.mouseX
-                                        conversationContextMenu.y = conversationMouseArea.mouseY
-                                        conversationContextMenu.open()
-                                    }
-                                }
-                            }
-
-                            Menu {
-                                id: conversationContextMenu
-                                MenuItem {
-                                    text: qsTr("Copy")
-                                    enabled: myTextArea.selectedText !== ""
-                                    height: enabled ? implicitHeight : 0
-                                    onTriggered: myTextArea.copy()
-                                }
-                                MenuItem {
-                                    text: qsTr("Copy Message")
-                                    enabled: myTextArea.selectedText === ""
-                                    height: enabled ? implicitHeight : 0
-                                    onTriggered: {
-                                        myTextArea.selectAll()
-                                        myTextArea.copy()
-                                        myTextArea.deselect()
-                                    }
-                                }
-                            }
-
-                            ResponseText {
-                                id: responseText
-                            }
-
-                            Component.onCompleted: {
-                                responseText.setLinkColor(theme.linkColor);
-                                responseText.setHeaderColor(name === qsTr("Response: ") ? theme.darkContrast : theme.lightContrast);
-                                responseText.textDocument = textDocument
-                            }
-
-                            Accessible.role: Accessible.Paragraph
-                            Accessible.name: text
-                            Accessible.description: name === qsTr("Response: ") ? "The response by the model" : "The prompt by the user"
-
-                            topPadding: 20
-                            bottomPadding: 20
-                            leftPadding: 70
-                            rightPadding: 100
-
-                            Item {
-                                anchors.left: parent.left
-                                anchors.leftMargin: 60
-                                y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
-                                visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
-                                width: childrenRect.width
-                                height: childrenRect.height
-                                Row {
-                                    spacing: 5
-                                    MyBusyIndicator {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
-                                        Accessible.role: Accessible.Animation
-                                        Accessible.name: qsTr("Busy indicator")
-                                        Accessible.description: qsTr("The model is thinking")
-                                    }
-                                    Label {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        color: theme.mutedTextColor
-                                        text: {
-                                            switch (currentChat.responseState) {
-                                            case Chat.ResponseStopped: return qsTr("response stopped ...");
-                                            case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: ") + currentChat.collectionList.join(", ") + " ...";
-                                            case Chat.LocalDocsProcessing: return qsTr("searching localdocs: ") + currentChat.collectionList.join(", ") + " ...";
-                                            case Chat.PromptProcessing: return qsTr("processing ...")
-                                            case Chat.ResponseGeneration: return qsTr("generating response ...");
-                                            default: return ""; // handle unexpected values
+                            delegate: RowLayout {
+                                width: listView.contentItem.width
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    RowLayout {
+                                        spacing: 5
+                                        TextArea {
+                                            text: name === qsTr("Response: ") ? qsTr("GPT4All") : qsTr("You")
+                                            padding: 0
+                                            font.pixelSize: theme.fontSizeLargest
+                                            font.bold: true
+                                            color: theme.titleTextColor
+                                            readOnly: true
+                                        }
+                                        MyBusyIndicator {
+                                            visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
+                                            size: 24
+                                            running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
+                                            Accessible.role: Accessible.Animation
+                                            Accessible.name: qsTr("Busy indicator")
+                                            Accessible.description: qsTr("The model is thinking")
+                                        }
+                                        Text {
+                                            visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
+                                            color: theme.mutedTextColor
+                                            font.pixelSize: theme.fontSizeSmall
+                                            text: {
+                                                switch (currentChat.responseState) {
+                                                case Chat.ResponseStopped: return qsTr("response stopped ...");
+                                                case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: ") + currentChat.collectionList.join(", ") + " ...";
+                                                case Chat.LocalDocsProcessing: return qsTr("searching localdocs: ") + currentChat.collectionList.join(", ") + " ...";
+                                                case Chat.PromptProcessing: return qsTr("processing ...")
+                                                case Chat.ResponseGeneration: return qsTr("generating response ...");
+                                                default: return ""; // handle unexpected values
+                                                }
                                             }
                                         }
                                     }
-                                }
-                            }
 
-                            Rectangle {
-                                anchors.left: parent.left
-                                anchors.leftMargin: 20
-                                y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
-                                width: 30
-                                height: 30
-                                radius: 5
-                                color: name === qsTr("Response: ") ? theme.assistantColor : theme.userColor
+                                    TextArea {
+                                        id: myTextArea
+                                        text: value + (MySettings.localDocsShowReferences ? references : "")
+                                        Layout.fillWidth: true
+                                        padding: 0
+                                        color: {
+                                            if (!currentChat.isServer)
+                                                return theme.textColor
+                                            if (name === qsTr("Response: "))
+                                                return theme.white
+                                            return theme.black
+                                        }
+                                        wrapMode: Text.WordWrap
+                                        textFormat: TextEdit.PlainText
+                                        focus: false
+                                        readOnly: true
+                                        font.pixelSize: theme.fontSizeLarge
+                                        cursorVisible: currentResponse ? currentChat.responseInProgress : false
+                                        cursorPosition: text.length
+                                        TapHandler {
+                                            id: tapHandler
+                                            onTapped: function(eventPoint, button) {
+                                                var clickedPos = myTextArea.positionAt(eventPoint.position.x, eventPoint.position.y);
+                                                var link = responseText.getLinkAtPosition(clickedPos);
+                                                if (link.startsWith("context://")) {
+                                                    var integer = parseInt(link.split("://")[1]);
+                                                    referenceContextDialog.text = referencesContext[integer - 1];
+                                                    referenceContextDialog.open();
+                                                } else {
+                                                    var success = responseText.tryCopyAtPosition(clickedPos);
+                                                    if (success)
+                                                        copyCodeMessage.open();
+                                                }
+                                            }
+                                        }
 
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: name === qsTr("Response: ") ? "R" : "P"
-                                    color: "white"
-                                }
-                            }
+                                        MouseArea {
+                                            id: conversationMouseArea
+                                            anchors.fill: parent
+                                            acceptedButtons: Qt.RightButton
 
-                            ThumbsDownDialog {
-                                id: thumbsDownDialog
-                                property point globalPoint: mapFromItem(window,
-                                                                        window.width / 2 - width / 2,
-                                                                        window.height / 2 - height / 2)
-                                x: globalPoint.x
-                                y: globalPoint.y
-                                property string text: value
-                                response: newResponse === undefined || newResponse === "" ? text : newResponse
-                                onAccepted: {
-                                    var responseHasChanged = response !== text && response !== newResponse
-                                    if (thumbsDownState && !thumbsUpState && !responseHasChanged)
-                                        return
+                                            onClicked: (mouse) => {
+                                                if (mouse.button === Qt.RightButton) {
+                                                    conversationContextMenu.x = conversationMouseArea.mouseX
+                                                    conversationContextMenu.y = conversationMouseArea.mouseY
+                                                    conversationContextMenu.open()
+                                                }
+                                            }
+                                        }
 
-                                    chatModel.updateNewResponse(index, response)
-                                    chatModel.updateThumbsUpState(index, false)
-                                    chatModel.updateThumbsDownState(index, true)
-                                    Network.sendConversation(currentChat.id, getConversationJson());
-                                }
-                            }
+                                        Menu {
+                                            id: conversationContextMenu
+                                            MenuItem {
+                                                text: qsTr("Copy")
+                                                enabled: myTextArea.selectedText !== ""
+                                                height: enabled ? implicitHeight : 0
+                                                onTriggered: myTextArea.copy()
+                                            }
+                                            MenuItem {
+                                                text: qsTr("Copy Message")
+                                                enabled: myTextArea.selectedText === ""
+                                                height: enabled ? implicitHeight : 0
+                                                onTriggered: {
+                                                    myTextArea.selectAll()
+                                                    myTextArea.copy()
+                                                    myTextArea.deselect()
+                                                }
+                                            }
+                                        }
 
-                            Column {
-                                visible: name === qsTr("Response: ") &&
-                                         (!currentResponse || !currentChat.responseInProgress) && MySettings.networkIsActive
-                                anchors.right: parent.right
-                                anchors.rightMargin: 20
-                                y: parent.topPadding + (parent.positionToRectangle(0).height / 2) - (height / 2)
-                                spacing: 10
+                                        ResponseText {
+                                            id: responseText
+                                        }
 
-                                Item {
-                                    width: childrenRect.width
-                                    height: childrenRect.height
-                                    MyToolButton {
-                                        id: thumbsUp
-                                        width: 30
-                                        height: 30
-                                        opacity: thumbsUpState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
-                                        source: "qrc:/gpt4all/icons/thumbs_up.svg"
-                                        Accessible.name: qsTr("Thumbs up")
-                                        Accessible.description: qsTr("Gives a thumbs up to the response")
-                                        onClicked: {
-                                            if (thumbsUpState && !thumbsDownState)
+                                        Component.onCompleted: {
+                                            responseText.setLinkColor(theme.linkColor);
+                                            responseText.setHeaderColor(name === qsTr("Response: ") ? theme.darkContrast : theme.lightContrast);
+                                            responseText.textDocument = textDocument
+                                        }
+
+                                        Accessible.role: Accessible.Paragraph
+                                        Accessible.name: text
+                                        Accessible.description: name === qsTr("Response: ") ? "The response by the model" : "The prompt by the user"
+                                    }
+
+                                    ThumbsDownDialog {
+                                        id: thumbsDownDialog
+                                        property point globalPoint: mapFromItem(window,
+                                                                                window.width / 2 - width / 2,
+                                                                                window.height / 2 - height / 2)
+                                        x: globalPoint.x
+                                        y: globalPoint.y
+                                        property string text: value
+                                        response: newResponse === undefined || newResponse === "" ? text : newResponse
+                                        onAccepted: {
+                                            var responseHasChanged = response !== text && response !== newResponse
+                                            if (thumbsDownState && !thumbsUpState && !responseHasChanged)
                                                 return
 
-                                            chatModel.updateNewResponse(index, "")
-                                            chatModel.updateThumbsUpState(index, true)
-                                            chatModel.updateThumbsDownState(index, false)
+                                            chatModel.updateNewResponse(index, response)
+                                            chatModel.updateThumbsUpState(index, false)
+                                            chatModel.updateThumbsDownState(index, true)
                                             Network.sendConversation(currentChat.id, getConversationJson());
                                         }
                                     }
 
-                                    MyToolButton {
-                                        id: thumbsDown
-                                        anchors.top: thumbsUp.top
-                                        anchors.topMargin: 10
-                                        anchors.left: thumbsUp.right
-                                        anchors.leftMargin: 2
-                                        width: 30
-                                        height: 30
-                                        checked: thumbsDownState
-                                        opacity: thumbsDownState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
-                                        transform: [
-                                            Matrix4x4 {
-                                                matrix: Qt.matrix4x4(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-                                            },
-                                            Translate {
-                                                x: thumbsDown.width
+                                    Column {
+                                        Layout.alignment: Qt.AlignRight
+                                        Layout.rightMargin: 15
+                                        visible: name === qsTr("Response: ") &&
+                                                 (!currentResponse || !currentChat.responseInProgress) && MySettings.networkIsActive
+                                        spacing: 10
+
+                                        Item {
+                                            width: childrenRect.width
+                                            height: childrenRect.height
+                                            MyToolButton {
+                                                id: thumbsUp
+                                                width: 24
+                                                height: 24
+                                                imageWidth: width
+                                                imageHeight: height
+                                                opacity: thumbsUpState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
+                                                source: "qrc:/gpt4all/icons/thumbs_up.svg"
+                                                Accessible.name: qsTr("Thumbs up")
+                                                Accessible.description: qsTr("Gives a thumbs up to the response")
+                                                onClicked: {
+                                                    if (thumbsUpState && !thumbsDownState)
+                                                        return
+
+                                                    chatModel.updateNewResponse(index, "")
+                                                    chatModel.updateThumbsUpState(index, true)
+                                                    chatModel.updateThumbsDownState(index, false)
+                                                    Network.sendConversation(currentChat.id, getConversationJson());
+                                                }
                                             }
-                                        ]
-                                        source: "qrc:/gpt4all/icons/thumbs_down.svg"
-                                        Accessible.name: qsTr("Thumbs down")
-                                        Accessible.description: qsTr("Opens thumbs down dialog")
-                                        onClicked: {
-                                            thumbsDownDialog.open()
+
+                                            MyToolButton {
+                                                id: thumbsDown
+                                                anchors.top: thumbsUp.top
+                                                anchors.topMargin: 10
+                                                anchors.left: thumbsUp.right
+                                                anchors.leftMargin: 2
+                                                width: 24
+                                                height: 24
+                                                imageWidth: width
+                                                imageHeight: height
+                                                checked: thumbsDownState
+                                                opacity: thumbsDownState || thumbsUpState == thumbsDownState ? 1.0 : 0.2
+                                                transform: [
+                                                    Matrix4x4 {
+                                                        matrix: Qt.matrix4x4(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+                                                    },
+                                                    Translate {
+                                                        x: thumbsDown.width
+                                                    }
+                                                ]
+                                                source: "qrc:/gpt4all/icons/thumbs_down.svg"
+                                                Accessible.name: qsTr("Thumbs down")
+                                                Accessible.description: qsTr("Opens thumbs down dialog")
+                                                onClicked: {
+                                                    thumbsDownDialog.open()
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        property bool shouldAutoScroll: true
-                        property bool isAutoScrolling: false
+                            property bool shouldAutoScroll: true
+                            property bool isAutoScrolling: false
 
-                        Connections {
-                            target: currentChat
-                            function onResponseChanged() {
-                                if (listView.shouldAutoScroll) {
-                                    listView.isAutoScrolling = true
-                                    listView.positionViewAtEnd()
-                                    listView.isAutoScrolling = false
+                            Connections {
+                                target: currentChat
+                                function onResponseChanged() {
+                                    if (listView.shouldAutoScroll) {
+                                        listView.isAutoScrolling = true
+                                        listView.positionViewAtEnd()
+                                        listView.isAutoScrolling = false
+                                    }
                                 }
                             }
-                        }
 
-                        onContentYChanged: {
-                            if (!isAutoScrolling)
-                                shouldAutoScroll = atYEnd
-                        }
+                            onContentYChanged: {
+                                if (!isAutoScrolling)
+                                    shouldAutoScroll = atYEnd
+                            }
 
-                        Component.onCompleted: {
-                            shouldAutoScroll = true
-                            positionViewAtEnd()
-                        }
+                            Component.onCompleted: {
+                                shouldAutoScroll = true
+                                positionViewAtEnd()
+                            }
 
-                        footer: Item {
-                            id: bottomPadding
-                            width: parent.width
-                            height: 60
+                            footer: Item {
+                                id: bottomPadding
+                                width: parent.width
+                                height: 60
+                            }
                         }
                     }
 
