@@ -34,6 +34,7 @@ EmbeddingLLMWorker::EmbeddingLLMWorker()
     , m_stopGenerating(false)
 {
     moveToThread(&m_workerThread);
+    connect(this, &EmbeddingLLMWorker::requestAtlasQueryEmbedding, this, &EmbeddingLLMWorker::atlasQueryEmbeddingRequested);
     connect(this, &EmbeddingLLMWorker::finished, &m_workerThread, &QThread::quit, Qt::DirectConnection);
     m_workerThread.setObjectName("embedding");
     m_workerThread.start();
@@ -125,8 +126,7 @@ bool EmbeddingLLMWorker::isNomic() const
     return !m_nomicAPIKey.isEmpty();
 }
 
-// this function is always called for retrieval tasks
-std::vector<float> EmbeddingLLMWorker::generateSyncEmbedding(const QString &text)
+std::vector<float> EmbeddingLLMWorker::generateQueryEmbedding(const QString &text)
 {
     Q_ASSERT(!isNomic());
     std::vector<float> embedding(m_model->embeddingSize());
@@ -158,8 +158,7 @@ void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QStrin
     connect(reply, &QNetworkReply::finished, this, &EmbeddingLLMWorker::handleFinished);
 }
 
-// this function is always called for retrieval tasks
-void EmbeddingLLMWorker::requestSyncEmbedding(const QString &text)
+void EmbeddingLLMWorker::atlasQueryEmbeddingRequested(const QString &text)
 {
     if (!hasModel() && !loadModel()) {
         qWarning() << "WARNING: Could not load model for embeddings";
@@ -176,8 +175,7 @@ void EmbeddingLLMWorker::requestSyncEmbedding(const QString &text)
     sendAtlasRequest({text}, "search_query");
 }
 
-// this function is always called for storage into the database
-void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &chunks)
+void EmbeddingLLMWorker::docEmbeddingsRequested(const QVector<EmbeddingChunk> &chunks)
 {
     if (m_stopGenerating)
         return;
@@ -315,8 +313,8 @@ EmbeddingLLM::EmbeddingLLM()
     : QObject(nullptr)
     , m_embeddingWorker(new EmbeddingLLMWorker)
 {
-    connect(this, &EmbeddingLLM::requestAsyncEmbedding, m_embeddingWorker,
-        &EmbeddingLLMWorker::requestAsyncEmbedding, Qt::QueuedConnection);
+    connect(this, &EmbeddingLLM::requestDocEmbeddings, m_embeddingWorker,
+        &EmbeddingLLMWorker::docEmbeddingsRequested, Qt::QueuedConnection);
     connect(m_embeddingWorker, &EmbeddingLLMWorker::embeddingsGenerated, this,
         &EmbeddingLLM::embeddingsGenerated, Qt::QueuedConnection);
     connect(m_embeddingWorker, &EmbeddingLLMWorker::errorGenerated, this,
@@ -339,7 +337,7 @@ QString EmbeddingLLM::model()
     return defaultModel.name(); // empty name is an error
 }
 
-std::vector<float> EmbeddingLLM::generateEmbeddings(const QString &text)
+std::vector<float> EmbeddingLLM::generateQueryEmbedding(const QString &text)
 {
     if (!m_embeddingWorker->hasModel() && !m_embeddingWorker->loadModel()) {
         qWarning() << "WARNING: Could not load model for embeddings";
@@ -347,18 +345,16 @@ std::vector<float> EmbeddingLLM::generateEmbeddings(const QString &text)
     }
 
     if (!m_embeddingWorker->isNomic()) {
-        return m_embeddingWorker->generateSyncEmbedding(text);
+        return m_embeddingWorker->generateQueryEmbedding(text);
     }
 
     EmbeddingLLMWorker worker;
-    connect(this, &EmbeddingLLM::requestSyncEmbedding, &worker,
-        &EmbeddingLLMWorker::requestSyncEmbedding, Qt::QueuedConnection);
-    emit requestSyncEmbedding(text);
+    emit worker.requestAtlasQueryEmbedding(text);
     worker.wait();
     return worker.lastResponse();
 }
 
-void EmbeddingLLM::generateAsyncEmbeddings(const QVector<EmbeddingChunk> &chunks)
+void EmbeddingLLM::generateDocEmbeddingsAsync(const QVector<EmbeddingChunk> &chunks)
 {
-    emit requestAsyncEmbedding(chunks);
+    emit requestDocEmbeddings(chunks);
 }

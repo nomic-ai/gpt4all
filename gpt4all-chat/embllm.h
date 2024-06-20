@@ -43,13 +43,14 @@ public:
     bool hasModel() const;
     bool isNomic() const;
 
-    std::vector<float> generateSyncEmbedding(const QString &text);
+    std::vector<float> generateQueryEmbedding(const QString &text);
 
 public Q_SLOTS:
-    void requestSyncEmbedding(const QString &text);
-    void requestAsyncEmbedding(const QVector<EmbeddingChunk> &chunks);
+    void atlasQueryEmbeddingRequested(const QString &text);
+    void docEmbeddingsRequested(const QVector<EmbeddingChunk> &chunks);
 
 Q_SIGNALS:
+    void requestAtlasQueryEmbedding(const QString &text);
     void embeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
     void errorGenerated(int folder_id, const QString &error);
     void finished();
@@ -80,12 +81,11 @@ public:
     bool hasModel() const;
 
 public Q_SLOTS:
-    std::vector<float> generateEmbeddings(const QString &text); // synchronous
-    void generateAsyncEmbeddings(const QVector<EmbeddingChunk> &chunks);
+    std::vector<float> generateQueryEmbedding(const QString &text); // synchronous
+    void generateDocEmbeddingsAsync(const QVector<EmbeddingChunk> &chunks);
 
 Q_SIGNALS:
-    void requestSyncEmbedding(const QString &text);
-    void requestAsyncEmbedding(const QVector<EmbeddingChunk> &chunks);
+    void requestDocEmbeddings(const QVector<EmbeddingChunk> &chunks);
     void embeddingsGenerated(const QVector<EmbeddingResult> &embeddings);
     void errorGenerated(int folder_id, const QString &error);
 

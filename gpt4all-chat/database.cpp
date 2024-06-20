@@ -918,7 +918,7 @@ void Database::appendChunk(const EmbeddingChunk &chunk)
 }
 
 void Database::sendChunkList() {
-    m_embLLM->generateAsyncEmbeddings(m_chunkList);
+    m_embLLM->generateDocEmbeddingsAsync(m_chunkList);
     m_chunkList.clear();
 }
 
@@ -1364,7 +1364,7 @@ void Database::scheduleUncompletedEmbeddings(int folder_id)
 
     for (int i = 0; i < chunkList.size(); i += s_batchSize) {
         QList<EmbeddingChunk> batch = chunkList.mid(i, s_batchSize);
-        m_embLLM->generateAsyncEmbeddings(batch);
+        m_embLLM->generateDocEmbeddingsAsync(batch);
     }
 }
 
@@ -1632,7 +1632,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         return;
     }
 
-    std::vector<float> result = m_embLLM->generateEmbeddings(text);
+    std::vector<float> result = m_embLLM->generateQueryEmbedding(text);
     if (result.empty()) {
         qDebug() << "ERROR: generating embeddings returned a null result";
         return;
