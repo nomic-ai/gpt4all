@@ -2,6 +2,7 @@
 #define EMBLLM_H
 
 #include <QByteArray>
+#include <QMutex>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -67,6 +68,7 @@ private:
     LLModel *m_model = nullptr;
     std::atomic<bool> m_stopGenerating;
     QThread m_workerThread;
+    QMutex m_mutex; // guards m_model and m_nomicAPIKey
 };
 
 class EmbeddingLLM : public QObject
