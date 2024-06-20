@@ -133,6 +133,15 @@ Rectangle {
                         addDocsClicked()
                     }
                 }
+                Text {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignLeft
+                    text: qsTr("Chat privately with local files using on-device Large Language Models (LLMs). Keeps data private and secure. Best results with Llama 3 Instruct.")
+                    font.pixelSize: theme.fontSizeLarger
+                    wrapMode: Text.WordWrap
+                    elide: Text.ElideRight
+                    color: theme.gray500
+                }
             }
         }
     }
