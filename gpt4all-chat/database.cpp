@@ -1639,7 +1639,6 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     }
     std::vector<qint64> embeddings = m_embeddings->search(result, retrievalSize);
     QSqlQuery q(m_db);
-    // FIXME_BLOCKER This is regressed and is breaking for localdocs RAG
     if (!selectChunk(q, collections, embeddings, retrievalSize)) {
         qDebug() << "ERROR: selecting chunks:" << q.lastError();
         return;
