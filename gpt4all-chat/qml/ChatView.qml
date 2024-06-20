@@ -607,11 +607,7 @@ Rectangle {
                                 }
                             }
 
-                            // FIXME_BLOCKER Need answer for turning on/off datalake in settings which
-                            // used to be part of the main UI
-
-                            // FIXME_BLOCKER Need to decide if we it is acceptable to keep server chat
-                            // in the chat view or break it out into own view for this initial new ui release
+                            // FIXME_BLOCKER Need answer for displaying if datalake is on/off
                         }
                     }
 

@@ -13,6 +13,19 @@ MySettingsTab {
         MySettings.restoreApplicationDefaults();
     }
     title: qsTr("Application")
+
+    NetworkDialog {
+        id: networkDialog
+        anchors.centerIn: parent
+        width: Math.min(1024, window.width - (window.width * .2))
+        height: Math.min(600, window.height - (window.height * .2))
+        Item {
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTr("Network dialog")
+            Accessible.description: qsTr("opt-in to share feedback/conversations")
+        }
+    }
+
     contentItem: GridLayout {
         id: applicationSettingsTabInner
         columns: 3
@@ -205,8 +218,31 @@ MySettingsTab {
             }
         }
 
-        ColumnLayout {
+        MySettingsLabel {
+            id: dataLakeLabel
+            text: qsTr("Opensource Datalake")
+            helpText: qsTr("Send your data to the GPT4All Open Source Datalake.")
             Layout.row: 6
+            Layout.column: 0
+        }
+        MyCheckBox {
+            id: dataLakeBox
+            Layout.row: 6
+            Layout.column: 2
+            Layout.alignment: Qt.AlignRight
+            checked: MySettings.networkIsActive
+            onClicked: {
+                if (MySettings.networkIsActive) {
+                    MySettings.networkIsActive = false
+                } else
+                    networkDialog.open()
+            }
+            ToolTip.text: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
+            ToolTip.visible: hovered
+        }
+
+        ColumnLayout {
+            Layout.row: 7
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
@@ -229,7 +265,7 @@ MySettingsTab {
             id: nThreadsLabel
             text: qsTr("CPU Threads")
             helpText: qsTr("Number of CPU threads for inference")
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 0
         }
         MyTextField {
@@ -239,7 +275,7 @@ MySettingsTab {
             ToolTip.text: qsTr("Amount of processing threads to use bounded by 1 and number of logical processors")
             ToolTip.visible: hovered
             Layout.alignment: Qt.AlignRight
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 2
             Layout.minimumWidth: 200
             Layout.maximumWidth: 200
@@ -263,12 +299,12 @@ MySettingsTab {
             id: saveChatsContextLabel
             text: qsTr("Save chat context")
             helpText: qsTr("Save chat context to disk")
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 0
         }
         MyCheckBox {
             id: saveChatsContextBox
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.saveChatsContext
@@ -282,12 +318,12 @@ MySettingsTab {
             id: serverChatLabel
             text: qsTr("Enable API server")
             helpText: qsTr("A local http server running on local port")
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 0
         }
         MyCheckBox {
             id: serverChatBox
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.serverChat
@@ -301,7 +337,7 @@ MySettingsTab {
             id: serverPortLabel
             text: qsTr("API Server Port:")
             helpText: qsTr("A local port to run the server (Requires restart")
-            Layout.row: 10
+            Layout.row: 11
             Layout.column: 0
         }
         MyTextField {
@@ -311,7 +347,7 @@ MySettingsTab {
             font.pixelSize: theme.fontSizeLarge
             ToolTip.text: qsTr("Api server port. WARNING: You need to restart the application for it to take effect")
             ToolTip.visible: hovered
-            Layout.row: 10
+            Layout.row: 11
             Layout.column: 2
             Layout.minimumWidth: 200
             Layout.maximumWidth: 200
@@ -337,7 +373,7 @@ MySettingsTab {
             id: extsLabel
             text: qsTr("Allowed File Extensions")
             helpText: qsTr("Comma-separated list. LocalDocs will only attempt to process files with these extensions.")
-            Layout.row: 11
+            Layout.row: 12
             Layout.column: 0
         }
         MyTextField {
@@ -348,7 +384,7 @@ MySettingsTab {
             ToolTip.text: extsLabel.helpText
             ToolTip.visible: hovered
             Layout.alignment: Qt.AlignRight
-            Layout.row: 11
+            Layout.row: 12
             Layout.column: 2
             Layout.minimumWidth: 200
             validator: RegularExpressionValidator {
@@ -386,12 +422,12 @@ MySettingsTab {
         MySettingsLabel {
             id: gpuOverrideLabel
             text: qsTr("Force Metal (macOS+arm)")
-            Layout.row: 12
+            Layout.row: 13
             Layout.column: 0
         }
         MyCheckBox {
             id: gpuOverrideBox
-            Layout.row: 12
+            Layout.row: 13
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.forceMetal
@@ -403,7 +439,7 @@ MySettingsTab {
         }
 
         Rectangle {
-            Layout.row: 13
+            Layout.row: 14
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
