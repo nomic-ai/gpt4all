@@ -148,13 +148,13 @@ static const QString SELECT_CHUNKS_BY_DOCUMENT_SQL = uR"(
     )"_s;
 
 static const QString SELECT_CHUNKS_SQL = uR"(
-    select chunks.id, documents.document_time, chunks.chunk_text, chunks.file, chunks.title, chunks.author, chunks.page,
-        chunks.line_from, chunks.line_to
-    from chunks
-    join documents on chunks.document_id = documents.id
-    join folders on documents.folder_id = folders.id
-    join collections on folders.id = collections.folder_id
-    where chunks.id in (%1) and collections.name in (%2);
+    select c.id, d.document_time, c.chunk_text, c.file, c.title, c.author, c.page, c.line_from, c.line_to
+    from chunks c
+    join documents d on d.id = c.document_id
+    join folders f on f.id = d.folder_id
+    join collection_items ci on ci.folder_id = f.id
+    join collections co on co.id = ci.collection_id
+    where c.id in (%1) and co.name in (%2);
 )"_s;
 
 static const QString SELECT_FILE_FOR_CHUNK_SQL = uR"(
