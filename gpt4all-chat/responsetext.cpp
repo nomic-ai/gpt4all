@@ -947,11 +947,16 @@ void ResponseText::handleTextChanged()
         return;
 
     m_isProcessingText = true;
+
+    // Force full layout of the text document to work around a bug in Qt
+    // TODO(jared): report the Qt bug and link to the report here
+    QTextDocument* doc = m_textDocument->textDocument();
+    (void)doc->documentLayout()->documentSize();
+
     handleCodeBlocks();
     handleContextLinks();
     // We insert an invisible char at the end to make sure the document goes back to the default
     // text format
-    QTextDocument* doc = m_textDocument->textDocument();
     QTextCursor cursor(doc);
     QString invisibleCharacter = QString(QChar(0xFEFF));
     cursor.insertText(invisibleCharacter, QTextCharFormat());
