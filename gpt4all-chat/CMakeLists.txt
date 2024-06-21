@@ -165,6 +165,10 @@ qt_add_qml_module(chat
       icons/settings.svg
       icons/eject.svg
       icons/edit.svg
+      icons/file.svg
+      icons/file-md.svg
+      icons/file-pdf.svg
+      icons/file-txt.svg
       icons/github.svg
       icons/globe.svg
       icons/home.svg

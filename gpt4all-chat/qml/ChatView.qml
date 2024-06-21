@@ -644,8 +644,10 @@ Rectangle {
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     RowLayout {
-                                        spacing: 5
+                                        spacing: 10
+                                        Layout.fillWidth: true
                                         TextArea {
+                                            // FIXME_BLOCKER Need icons for this
                                             text: name === qsTr("Response: ") ? qsTr("GPT4All") : qsTr("You")
                                             padding: 0
                                             font.pixelSize: theme.fontSizeLargest
@@ -653,34 +655,162 @@ Rectangle {
                                             color: theme.titleTextColor
                                             readOnly: true
                                         }
-                                        MyBusyIndicator {
-                                            visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
-                                            size: 24
-                                            running: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
-                                            Accessible.role: Accessible.Animation
-                                            Accessible.name: qsTr("Busy indicator")
-                                            Accessible.description: qsTr("The model is thinking")
-                                        }
                                         Text {
+                                            visible: name === qsTr("Response: ")
+                                            font.pixelSize: theme.fontSizeLarger
+                                            text: currentModelName()
+                                            color: theme.gray500
+                                        }
+                                        RowLayout {
                                             visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
-                                            color: theme.mutedTextColor
-                                            font.pixelSize: theme.fontSizeSmall
-                                            text: {
-                                                switch (currentChat.responseState) {
-                                                case Chat.ResponseStopped: return qsTr("response stopped ...");
-                                                case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: ") + currentChat.collectionList.join(", ") + " ...";
-                                                case Chat.LocalDocsProcessing: return qsTr("searching localdocs: ") + currentChat.collectionList.join(", ") + " ...";
-                                                case Chat.PromptProcessing: return qsTr("processing ...")
-                                                case Chat.ResponseGeneration: return qsTr("generating response ...");
-                                                default: return ""; // handle unexpected values
+                                            MyBusyIndicator {
+                                                size: 24
+                                                color: theme.green400
+                                                Accessible.role: Accessible.Animation
+                                                Accessible.name: qsTr("Busy indicator")
+                                                Accessible.description: qsTr("The model is thinking")
+                                            }
+                                            Text {
+                                                color: theme.gray500
+                                                font.pixelSize: theme.fontSizeLarger
+                                                text: {
+                                                    switch (currentChat.responseState) {
+                                                    case Chat.ResponseStopped: return qsTr("response stopped ...");
+                                                    case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: ") + currentChat.collectionList.join(", ") + " ...";
+                                                    case Chat.LocalDocsProcessing: return qsTr("searching localdocs: ") + currentChat.collectionList.join(", ") + " ...";
+                                                    case Chat.PromptProcessing: return qsTr("processing ...")
+                                                    case Chat.ResponseGeneration: return qsTr("generating response ...");
+                                                    default: return ""; // handle unexpected values
+                                                    }
                                                 }
+                                            }
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        visible: sources.length !== 0 && MySettings.localDocsShowReferences
+                                        RowLayout {
+                                            Layout.topMargin: 15
+                                            Image {
+                                                sourceSize.width: 24
+                                                sourceSize.height: 24
+                                                mipmap: true
+                                                source: "qrc:/gpt4all/icons/db.svg"
+                                            }
+
+                                            Text {
+                                                text: qsTr("\u00B7 Sources")
+                                                font.pixelSize: theme.fontSizeLarger
+                                            }
+                                        }
+                                        Flow {
+                                            Layout.fillWidth: true
+                                            Layout.topMargin: 5
+                                            spacing: 10
+                                            visible: sources.length !== 0
+                                            Repeater {
+                                                model: sources
+
+                                                delegate: Rectangle {
+                                                    radius: 10
+                                                    color: ma.containsMouse ? theme.gray200 : theme.gray100
+                                                    width: 200
+                                                    height: 75
+
+                                                    MouseArea {
+                                                        id: ma
+                                                        enabled: modelData.path !== ""
+                                                        anchors.fill: parent
+                                                        hoverEnabled: true
+                                                        onClicked: function() {
+                                                            Qt.openUrlExternally("file://" + modelData.path)
+                                                        }
+                                                    }
+
+                                                    Rectangle {
+                                                        id: debugTooltip
+                                                        anchors.right: parent.right
+                                                        anchors.bottom: parent.bottom
+                                                        width: 24
+                                                        height: 24
+                                                        color: "transparent"
+                                                        ToolTip {
+                                                            parent: debugTooltip
+                                                            visible: debugMouseArea.containsMouse
+                                                            text: modelData.text
+                                                            contentWidth: 900
+                                                            delay: 500
+                                                        }
+                                                        MouseArea {
+                                                            id: debugMouseArea
+                                                            anchors.fill: parent
+                                                            hoverEnabled: true
+                                                        }
+                                                    }
+
+                                                    RowLayout {
+                                                        anchors.fill: parent
+                                                        ColumnLayout {
+                                                            spacing: 10
+                                                            Layout.alignment: Qt.AlignTop
+                                                            Layout.margins: 10
+                                                            RowLayout {
+                                                                Image {
+                                                                    sourceSize.width: 24
+                                                                    sourceSize.height: 24
+                                                                    mipmap: true
+                                                                    source: {
+                                                                        if (modelData.file.endsWith(".txt"))
+                                                                            return "qrc:/gpt4all/icons/file-txt.svg"
+                                                                        else if (modelData.file.endsWith(".pdf"))
+                                                                            return "qrc:/gpt4all/icons/file-pdf.svg"
+                                                                        else if (modelData.file.endsWith(".md"))
+                                                                            return "qrc:/gpt4all/icons/file-md.svg"
+                                                                        else
+                                                                            return "qrc:/gpt4all/icons/file.svg"
+                                                                    }
+                                                                }
+                                                                Text {
+                                                                    Layout.maximumWidth: 180
+                                                                    text: modelData.collection !== "" ? modelData.collection : qsTr("LocalDocs")
+                                                                    font.pixelSize: theme.fontSizeLarge
+                                                                    font.bold: true
+                                                                    color: theme.grayRed900
+                                                                    elide: Qt.ElideRight
+                                                                }
+                                                            }
+                                                            Text {
+                                                                Layout.fillHeight: true
+                                                                Layout.maximumWidth: 180
+                                                                height: 75
+                                                                text: modelData.file
+                                                                font.pixelSize: theme.fontSizeSmall
+                                                                elide: Qt.ElideRight
+                                                                wrapMode: Text.WrapAnywhere
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        RowLayout {
+                                            Layout.topMargin: 15
+                                            Image {
+                                                sourceSize.width: 24
+                                                sourceSize.height: 24
+                                                mipmap: true
+                                                source: "qrc:/gpt4all/icons/info.svg"
+                                            }
+                                            Text {
+                                                text: qsTr("\u00B7 Answer")
+                                                font.pixelSize: theme.fontSizeLarger
                                             }
                                         }
                                     }
 
                                     TextArea {
                                         id: myTextArea
-                                        text: value + (MySettings.localDocsShowReferences ? references : "")
+                                        text: value
                                         Layout.fillWidth: true
                                         padding: 0
                                         color: {

@@ -1,6 +1,8 @@
 #ifndef CHATMODEL_H
 #define CHATMODEL_H
 
+#include "database.h"
+
 #include <QAbstractListModel>
 #include <QByteArray>
 #include <QDataStream>
@@ -26,8 +28,7 @@ struct ChatItem
     Q_PROPERTY(bool stopped MEMBER stopped)
     Q_PROPERTY(bool thumbsUpState MEMBER thumbsUpState)
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
-    Q_PROPERTY(QString references MEMBER references)
-    Q_PROPERTY(QList<QString> referencesContext MEMBER referencesContext)
+    Q_PROPERTY(QList<ResultInfo> sources MEMBER sources)
 
 public:
     int id = 0;
@@ -35,8 +36,7 @@ public:
     QString value;
     QString prompt;
     QString newResponse;
-    QString references;
-    QList<QString> referencesContext;
+    QList<ResultInfo> sources;
     bool currentResponse = false;
     bool stopped = false;
     bool thumbsUpState = false;
@@ -62,8 +62,7 @@ public:
         StoppedRole,
         ThumbsUpStateRole,
         ThumbsDownStateRole,
-        ReferencesRole,
-        ReferencesContextRole
+        SourcesRole
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
@@ -97,10 +96,8 @@ public:
                 return item.thumbsUpState;
             case ThumbsDownStateRole:
                 return item.thumbsDownState;
-            case ReferencesRole:
-                return item.references;
-            case ReferencesContextRole:
-                return item.referencesContext;
+            case SourcesRole:
+                return QVariant::fromValue(item.sources);
         }
 
         return QVariant();
@@ -118,8 +115,7 @@ public:
         roles[StoppedRole] = "stopped";
         roles[ThumbsUpStateRole] = "thumbsUpState";
         roles[ThumbsDownStateRole] = "thumbsDownState";
-        roles[ReferencesRole] = "references";
-        roles[ReferencesContextRole] = "referencesContext";
+        roles[SourcesRole] = "sources";
         return roles;
     }
 
@@ -196,19 +192,13 @@ public:
         }
     }
 
-    Q_INVOKABLE void updateReferences(int index, const QString &references, const QList<QString> &referencesContext)
+    Q_INVOKABLE void updateSources(int index, const QList<ResultInfo> &sources)
     {
         if (index < 0 || index >= m_chatItems.size()) return;
 
         ChatItem &item = m_chatItems[index];
-        if (item.references != references) {
-            item.references = references;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ReferencesRole});
-        }
-        if (item.referencesContext != referencesContext) {
-            item.referencesContext = referencesContext;
-            emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ReferencesContextRole});
-        }
+        item.sources = sources;
+        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {SourcesRole});
     }
 
     Q_INVOKABLE void updateThumbsUpState(int index, bool b)
@@ -259,9 +249,56 @@ public:
             stream << c.stopped;
             stream << c.thumbsUpState;
             stream << c.thumbsDownState;
-            if (version > 2) {
-                stream << c.references;
-                stream << c.referencesContext;
+            if (version > 7) {
+                stream << c.sources.size();
+                for (const ResultInfo &info : c.sources) {
+                    Q_ASSERT(!info.file.isEmpty());
+                    stream << info.collection;
+                    stream << info.path;
+                    stream << info.file;
+                    stream << info.title;
+                    stream << info.author;
+                    stream << info.date;
+                    stream << info.text;
+                    stream << info.page;
+                    stream << info.from;
+                    stream << info.to;
+                }
+            } else if (version > 2) {
+                QList<QString> references;
+                QList<QString> referencesContext;
+                int validReferenceNumber = 1;
+                for (const ResultInfo &info : c.sources) {
+                    if (info.file.isEmpty())
+                        continue;
+
+                    QString reference;
+                    {
+                        QTextStream stream(&reference);
+                        stream << (validReferenceNumber++) << ". ";
+                        if (!info.title.isEmpty())
+                            stream << "\"" << info.title << "\". ";
+                        if (!info.author.isEmpty())
+                            stream << "By " << info.author << ". ";
+                        if (!info.date.isEmpty())
+                            stream << "Date: " << info.date << ". ";
+                        stream << "In " << info.file << ". ";
+                        if (info.page != -1)
+                            stream << "Page " << info.page << ". ";
+                        if (info.from != -1) {
+                            stream << "Lines " << info.from;
+                            if (info.to != -1)
+                                stream << "-" << info.to;
+                            stream << ". ";
+                        }
+                        stream << "[Context](context://" << validReferenceNumber - 1 << ")";
+                    }
+                    references.append(reference);
+                    referencesContext.append(info.text);
+                }
+
+                stream << references.join("\n");
+                stream << referencesContext;
             }
         }
         return stream.status() == QDataStream::Ok;
@@ -282,9 +319,107 @@ public:
             stream >> c.stopped;
             stream >> c.thumbsUpState;
             stream >> c.thumbsDownState;
-            if (version > 2) {
-                stream >> c.references;
-                stream >> c.referencesContext;
+            if (version > 7) {
+                qsizetype count;
+                stream >> count;
+                QList<ResultInfo> sources;
+                for (int i = 0; i < count; ++i) {
+                    ResultInfo info;
+                    stream >> info.collection;
+                    stream >> info.path;
+                    stream >> info.file;
+                    stream >> info.title;
+                    stream >> info.author;
+                    stream >> info.date;
+                    stream >> info.text;
+                    stream >> info.page;
+                    stream >> info.from;
+                    stream >> info.to;
+                    sources.append(info);
+                }
+                c.sources = sources;
+            }else if (version > 2) {
+                QString references;
+                QList<QString> referencesContext;
+                stream >> references;
+                stream >> referencesContext;
+
+                if (!references.isEmpty()) {
+                    QList<ResultInfo> sources;
+                    QList<QString> referenceList = references.split("\n");
+
+                    // Ignore empty lines and those that begin with "---" which is no longer used
+                    for (auto it = referenceList.begin(); it != referenceList.end();) {
+                        if (it->trimmed().isEmpty() || it->trimmed().startsWith("---"))
+                            it = referenceList.erase(it);
+                        else
+                            ++it;
+                    }
+
+                    Q_ASSERT(referenceList.size() == referencesContext.size());
+                    for (int j = 0; j < referenceList.size(); ++j) {
+                        QString reference = referenceList[j];
+                        QString context = referencesContext[j];
+                        ResultInfo info;
+                        QTextStream refStream(&reference);
+                        QString dummy;
+                        int validReferenceNumber;
+                        refStream >> validReferenceNumber >> dummy;
+                        // Extract title (between quotes)
+                        if (reference.contains("\"")) {
+                            int startIndex = reference.indexOf('"') + 1;
+                            int endIndex = reference.indexOf('"', startIndex);
+                            info.title = reference.mid(startIndex, endIndex - startIndex);
+                        }
+
+                        // Extract author (after "By " and before the next period)
+                        if (reference.contains("By ")) {
+                            int startIndex = reference.indexOf("By ") + 3;
+                            int endIndex = reference.indexOf('.', startIndex);
+                            info.author = reference.mid(startIndex, endIndex - startIndex).trimmed();
+                        }
+
+                        // Extract date (after "Date: " and before the next period)
+                        if (reference.contains("Date: ")) {
+                            int startIndex = reference.indexOf("Date: ") + 6;
+                            int endIndex = reference.indexOf('.', startIndex);
+                            info.date = reference.mid(startIndex, endIndex - startIndex).trimmed();
+                        }
+
+                        // Extract file name (after "In " and before the "[Context]")
+                        if (reference.contains("In ") && reference.contains(". [Context]")) {
+                            int startIndex = reference.indexOf("In ") + 3;
+                            int endIndex = reference.indexOf(". [Context]", startIndex);
+                            info.file = reference.mid(startIndex, endIndex - startIndex).trimmed();
+                        }
+
+                        // Extract page number (after "Page " and before the next space)
+                        if (reference.contains("Page ")) {
+                            int startIndex = reference.indexOf("Page ") + 5;
+                            int endIndex = reference.indexOf(' ', startIndex);
+                            if (endIndex == -1) endIndex = reference.length();
+                            info.page = reference.mid(startIndex, endIndex - startIndex).toInt();
+                        }
+
+                        // Extract lines (after "Lines " and before the next space or hyphen)
+                        if (reference.contains("Lines ")) {
+                            int startIndex = reference.indexOf("Lines ") + 6;
+                            int endIndex = reference.indexOf(' ', startIndex);
+                            if (endIndex == -1) endIndex = reference.length();
+                            int hyphenIndex = reference.indexOf('-', startIndex);
+                            if (hyphenIndex != -1 && hyphenIndex < endIndex) {
+                                info.from = reference.mid(startIndex, hyphenIndex - startIndex).toInt();
+                                info.to = reference.mid(hyphenIndex + 1, endIndex - hyphenIndex - 1).toInt();
+                            } else {
+                                info.from = reference.mid(startIndex, endIndex - startIndex).toInt();
+                            }
+                        }
+                        info.text = context;
+                        sources.append(info);
+                    }
+
+                    c.sources = sources;
+                }
             }
             beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
             m_chatItems.append(c);

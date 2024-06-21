@@ -50,15 +50,45 @@ struct DocumentInfo
 };
 
 struct ResultInfo {
-    QString file;   // [Required] The name of the file, but not the full path
-    QString title;  // [Optional] The title of the document
-    QString author; // [Optional] The author of the document
-    QString date;   // [Required] The creation or the last modification date whichever is latest
-    QString text;   // [Required] The text actually used in the augmented context
-    int page = -1;  // [Optional] The page where the text was found
-    int from = -1;  // [Optional] The line number where the text begins
-    int to = -1;    // [Optional] The line number where the text ends
+    QString collection; // [Required] The name of the collection
+    QString path;       // [Required] The full path
+    QString file;       // [Required] The name of the file, but not the full path
+    QString title;      // [Optional] The title of the document
+    QString author;     // [Optional] The author of the document
+    QString date;       // [Required] The creation or the last modification date whichever is latest
+    QString text;       // [Required] The text actually used in the augmented context
+    int page = -1;      // [Optional] The page where the text was found
+    int from = -1;      // [Optional] The line number where the text begins
+    int to = -1;        // [Optional] The line number where the text ends
+
+    bool operator==(const ResultInfo &other) const {
+        return file == other.file &&
+               title == other.title &&
+               author == other.author &&
+               date == other.date &&
+               text == other.text &&
+               page == other.page &&
+               from == other.from &&
+               to == other.to;
+    }
+    bool operator!=(const ResultInfo &other) const {
+        return !(*this == other);
+    }
+
+    Q_GADGET
+    Q_PROPERTY(QString collection MEMBER collection)
+    Q_PROPERTY(QString path MEMBER path)
+    Q_PROPERTY(QString file MEMBER file)
+    Q_PROPERTY(QString title MEMBER title)
+    Q_PROPERTY(QString author MEMBER author)
+    Q_PROPERTY(QString date MEMBER date)
+    Q_PROPERTY(QString text MEMBER text)
+    Q_PROPERTY(int page MEMBER page)
+    Q_PROPERTY(int from MEMBER from)
+    Q_PROPERTY(int to MEMBER to)
 };
+
+Q_DECLARE_METATYPE(ResultInfo)
 
 struct CollectionItem {
     // -- Fields persisted to database --

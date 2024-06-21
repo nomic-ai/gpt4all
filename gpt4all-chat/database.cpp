@@ -148,7 +148,7 @@ static const QString SELECT_CHUNKS_BY_DOCUMENT_SQL = uR"(
     )"_s;
 
 static const QString SELECT_CHUNKS_SQL = uR"(
-    select c.id, d.document_time, c.chunk_text, c.file, c.title, c.author, c.page, c.line_from, c.line_to
+    select c.id, d.document_time, d.document_path, c.chunk_text, c.file, c.title, c.author, c.page, c.line_from, c.line_to, co.name
     from chunks c
     join documents d on d.id = c.document_id
     join folders f on f.id = d.folder_id
@@ -1648,15 +1648,19 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
 #if defined(DEBUG)
         const int rowid = q.value(0).toInt();
 #endif
-        const QString chunk_text = q.value(2).toString();
+        const QString document_path = q.value(2).toString();
+        const QString chunk_text = q.value(3).toString();
         const QString date = QDateTime::fromMSecsSinceEpoch(q.value(1).toLongLong()).toString("yyyy, MMMM dd");
-        const QString file = q.value(3).toString();
-        const QString title = q.value(4).toString();
-        const QString author = q.value(5).toString();
-        const int page = q.value(6).toInt();
-        const int from =q.value(7).toInt();
-        const int to =q.value(8).toInt();
+        const QString file = q.value(4).toString();
+        const QString title = q.value(5).toString();
+        const QString author = q.value(6).toString();
+        const int page = q.value(7).toInt();
+        const int from = q.value(8).toInt();
+        const int to = q.value(9).toInt();
+        const QString collectionName = q.value(10).toString();
         ResultInfo info;
+        info.collection = collectionName;
+        info.path = document_path;
         info.file = file;
         info.title = title;
         info.author = author;
