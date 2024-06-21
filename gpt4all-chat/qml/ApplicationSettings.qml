@@ -61,6 +61,27 @@ MySettingsTab {
         columns: 3
         rowSpacing: 30
         columnSpacing: 10
+
+        ColumnLayout {
+            Layout.row: 0
+            Layout.column: 0
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            spacing: 10
+            Label {
+                color: theme.styledTextColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: "General"
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 2
+                color: theme.settingsDivider
+            }
+        }
+
         MySettingsLabel {
             id: themeLabel
             text: qsTr("Theme")

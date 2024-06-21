@@ -136,21 +136,18 @@ Rectangle {
                 currentIndex: listView.currentIndex
 
                 MySettingsStack {
-                    title: qsTr("General")
                     tabs: [
                         Component { ApplicationSettings { } }
                     ]
                 }
 
                 MySettingsStack {
-                    title: qsTr("General")
                     tabs: [
                         Component { ModelSettings { } }
                     ]
                 }
 
                 MySettingsStack {
-                    title: qsTr("General")
                     tabs: [
                         Component { LocalDocsSettings { } }
                     ]

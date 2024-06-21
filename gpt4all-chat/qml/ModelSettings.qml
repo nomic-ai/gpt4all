@@ -23,9 +23,29 @@ MySettingsTab {
         property var currentModelId: comboBox.currentValue
         property var currentModelInfo: ModelList.modelInfo(root.currentModelId)
 
+        ColumnLayout {
+            Layout.row: 0
+            Layout.column: 0
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            spacing: 10
+            Label {
+                color: theme.styledTextColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: "General"
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 2
+                color: theme.settingsDivider
+            }
+        }
+
         MySettingsLabel {
             id: label
-            Layout.row: 0
+            Layout.row: 1
             Layout.column: 0
             text: qsTr("Model/Character")
             helpText: qsTr("Select or clone a model and change its settings")
@@ -33,7 +53,7 @@ MySettingsTab {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.row: 1
+            Layout.row: 2
             Layout.column: 0
             Layout.columnSpan: 2
             height: label.height + 20
@@ -97,7 +117,7 @@ MySettingsTab {
         }
 
         RowLayout {
-            Layout.row: 2
+            Layout.row: 3
             Layout.column: 0
             Layout.topMargin: 15
             spacing: 10
@@ -113,7 +133,7 @@ MySettingsTab {
             text: root.currentModelName
             font.pixelSize: theme.fontSizeLarge
             enabled: root.currentModelInfo.isClone || root.currentModelInfo.description === ""
-            Layout.row: 3
+            Layout.row: 4
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -139,7 +159,7 @@ MySettingsTab {
         MySettingsLabel {
             text: qsTr("Model File")
             helpText: qsTr("The filename of the selected model")
-            Layout.row: 4
+            Layout.row: 5
             Layout.column: 0
             Layout.topMargin: 15
         }
@@ -148,7 +168,7 @@ MySettingsTab {
             text: root.currentModelInfo.filename
             font.pixelSize: theme.fontSizeLarge
             enabled: false
-            Layout.row: 5
+            Layout.row: 6
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -158,7 +178,7 @@ MySettingsTab {
             visible: !root.currentModelInfo.isOnline
             text: qsTr("System Prompt")
             helpText: qsTr("Prefixed at the beginning of every conversation")
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 0
             Layout.topMargin: 15
         }
@@ -166,7 +186,7 @@ MySettingsTab {
         Rectangle {
             id: systemPrompt
             visible: !root.currentModelInfo.isOnline
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -199,7 +219,7 @@ MySettingsTab {
         }
 
         RowLayout {
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
@@ -220,7 +240,7 @@ MySettingsTab {
 
         Rectangle {
             id: promptTemplate
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true

@@ -21,6 +21,19 @@ MySettingsTab {
         id: root
         spacing: 10
 
+        Label {
+            color: theme.styledTextColor
+            font.pixelSize: theme.fontSizeLarge
+            font.bold: true
+            text: "General"
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            height: 2
+            color: theme.settingsDivider
+        }
+
         RowLayout {
             MySettingsLabel {
                 id: showReferencesLabel
