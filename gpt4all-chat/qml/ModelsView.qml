@@ -13,7 +13,7 @@ import mysettings
 
 Rectangle {
     id: modelsView
-    color: theme.containerBackground
+    color: theme.viewBackground
 
     signal addModelViewRequested()
 
@@ -25,7 +25,48 @@ Rectangle {
         anchors.margins: 20
         spacing: 30
 
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: ModelList.installedModels.count === 0
+            ColumnLayout {
+                id: noInstalledLabel
+                anchors.centerIn: parent
+                spacing: 0
+
+                Text {
+                    Layout.alignment: Qt.AlignCenter
+                    text: qsTr("No Models Installed")
+                    color: theme.gray400
+                    font.pixelSize: theme.fontSizeBannerSmall
+                }
+
+                Text {
+                    Layout.topMargin: 15
+                    horizontalAlignment: Qt.AlignHCenter
+                    color: theme.gray300
+                    text: qsTr("Install a model to get started using GPT4All")
+                    font.pixelSize: theme.fontSizeLarge
+                }
+            }
+
+            MyButton {
+                anchors.top: noInstalledLabel.bottom
+                anchors.topMargin: 50
+                anchors.horizontalCenter: noInstalledLabel.horizontalCenter
+                rightPadding: 60
+                leftPadding: 60
+                text: qsTr("\uFF0B Add Model")
+                onClicked: {
+                    addModelViewRequested()
+                }
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("Shows the add model view")
+            }
+        }
+
         RowLayout {
+            visible: ModelList.installedModels.count !== 0
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
             spacing: 50
@@ -66,6 +107,7 @@ Rectangle {
 
         ScrollView {
             id: scrollView
+            visible: ModelList.installedModels.count !== 0
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
             Layout.fillWidth: true
             Layout.fillHeight: true

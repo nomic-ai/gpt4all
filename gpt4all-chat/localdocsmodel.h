@@ -46,6 +46,7 @@ private:
 class LocalDocsModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     enum Roles {
@@ -74,6 +75,7 @@ public:
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
+    int count() const { return rowCount(); }
 
 public Q_SLOTS:
     void updateCollectionItem(const CollectionItem&);
@@ -83,6 +85,7 @@ public Q_SLOTS:
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
 Q_SIGNALS:
+    void countChanged();
     void updatingChanged(const QString &collection);
 
 private:

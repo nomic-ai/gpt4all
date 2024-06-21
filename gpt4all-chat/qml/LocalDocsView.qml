@@ -38,6 +38,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
+            visible: LocalDocs.databaseValid && LocalDocs.localDocsModel.count !== 0
             spacing: 50
 
             ColumnLayout {
@@ -68,7 +69,6 @@ Rectangle {
             MyButton {
                 Layout.alignment: Qt.AlignTop | Qt.AlignRight
                 text: qsTr("\uFF0B Add Doc Collection")
-                enabled: LocalDocs.databaseValid
                 onClicked: {
                     addCollectionViewRequested()
                 }
@@ -90,13 +90,53 @@ Rectangle {
             }
         }
 
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: LocalDocs.databaseValid && LocalDocs.localDocsModel.count === 0
+            ColumnLayout {
+                id: noInstalledLabel
+                anchors.centerIn: parent
+                spacing: 0
+
+                Text {
+                    Layout.alignment: Qt.AlignCenter
+                    text: qsTr("No Collections Installed")
+                    color: theme.gray400
+                    font.pixelSize: theme.fontSizeBannerSmall
+                }
+
+                Text {
+                    Layout.topMargin: 15
+                    horizontalAlignment: Qt.AlignHCenter
+                    color: theme.gray300
+                    text: qsTr("Install a collection of local documents to get started using this feature")
+                    font.pixelSize: theme.fontSizeLarge
+                }
+            }
+
+            MyButton {
+                anchors.top: noInstalledLabel.bottom
+                anchors.topMargin: 50
+                anchors.horizontalCenter: noInstalledLabel.horizontalCenter
+                rightPadding: 60
+                leftPadding: 60
+                text: qsTr("\uFF0B Add Doc Collection")
+                onClicked: {
+                    addCollectionViewRequested()
+                }
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("Shows the add model view")
+            }
+        }
+
         ScrollView {
             id: scrollView
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            visible: LocalDocs.databaseValid
+            visible: LocalDocs.databaseValid && LocalDocs.localDocsModel.count !== 0
 
             ListView {
                 id: collectionListView
