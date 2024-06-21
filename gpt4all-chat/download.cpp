@@ -54,11 +54,13 @@ Download::Download()
     m_startTime = QDateTime::currentDateTime();
 }
 
-static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs) {
+static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs)
+{
     return lhs.version == rhs.version;
 }
 
-static bool compareVersions(const QString &a, const QString &b) {
+static bool compareVersions(const QString &a, const QString &b)
+{
     QStringList aParts = a.split('.');
     QStringList bParts = b.split('.');
 

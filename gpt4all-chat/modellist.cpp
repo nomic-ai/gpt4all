@@ -342,7 +342,8 @@ bool ModelInfo::shouldSaveMetadata() const
     return installed && (isClone() || isDiscovered() || description() == "" /*indicates sideloaded*/);
 }
 
-QVariantMap ModelInfo::getFields() const {
+QVariantMap ModelInfo::getFields() const
+{
     return {
         { "filename",            m_filename },
         { "description",         m_description },
@@ -1429,7 +1430,8 @@ void ModelList::updateDataForSettings()
     emit dataChanged(index(0, 0), index(m_models.size() - 1, 0));
 }
 
-static std::strong_ordering compareVersions(const QString &a, const QString &b) {
+static std::strong_ordering compareVersions(const QString &a, const QString &b)
+{
     QStringList aParts = a.split('.');
     QStringList bParts = b.split('.');
 

@@ -45,7 +45,8 @@ static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
 #if defined(Q_OS_MAC)
 
 #include <sys/sysctl.h>
-static QString getCPUModel() {
+static QString getCPUModel()
+{
     char buffer[256];
     size_t bufferlen = sizeof(buffer);
     sysctlbyname("machdep.cpu.brand_string", &buffer, &bufferlen, NULL, 0);
@@ -55,14 +56,16 @@ static QString getCPUModel() {
 #elif defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
 
 #ifndef _MSC_VER
-static void get_cpuid(int level, int *regs) {
+static void get_cpuid(int level, int *regs)
+{
     asm volatile("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3]) : "0" (level) : "memory");
 }
 #else
 #define get_cpuid(level, regs) __cpuid(regs, level)
 #endif
 
-static QString getCPUModel() {
+static QString getCPUModel()
+{
     int regs[12];
 
     // EAX=800000000h: Get Highest Extended Function Implemented

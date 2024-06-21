@@ -92,17 +92,20 @@ LLModel::Implementation::Implementation(Implementation &&o)
     o.m_dlhandle = nullptr;
 }
 
-LLModel::Implementation::~Implementation() {
+LLModel::Implementation::~Implementation()
+{
     delete m_dlhandle;
 }
 
-static bool isImplementation(const Dlhandle &dl) {
+static bool isImplementation(const Dlhandle &dl)
+{
     return dl.get<bool(uint32_t)>("is_g4a_backend_model_implementation");
 }
 
 // Add the CUDA Toolkit to the DLL search path on Windows.
 // This is necessary for chat.exe to find CUDA when started from Qt Creator.
-static void addCudaSearchPath() {
+static void addCudaSearchPath()
+{
 #ifdef _WIN32
     if (const auto *cudaPath = _wgetenv(L"CUDA_PATH")) {
         auto libDir = std::wstring(cudaPath) + L"\\bin";
@@ -114,7 +117,8 @@ static void addCudaSearchPath() {
 #endif
 }
 
-const std::vector<LLModel::Implementation> &LLModel::Implementation::implementationList() {
+const std::vector<LLModel::Implementation> &LLModel::Implementation::implementationList()
+{
     if (cpu_supports_avx() == 0) {
         throw std::runtime_error("CPU does not support AVX");
     }
@@ -169,14 +173,16 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
     return *libs;
 }
 
-static std::string applyCPUVariant(const std::string &buildVariant) {
+static std::string applyCPUVariant(const std::string &buildVariant)
+{
     if (buildVariant != "metal" && cpu_supports_avx2() == 0) {
         return buildVariant + "-avxonly";
     }
     return buildVariant;
 }
 
-const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant) {
+const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant)
+{
     bool buildVariantMatched = false;
     std::optional<std::string> archName;
     for (const auto& i : implementationList()) {
@@ -200,7 +206,8 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
     throw BadArchError(std::move(*archName));
 }
 
-LLModel *LLModel::Implementation::construct(const std::string &modelPath, const std::string &backend, int n_ctx) {
+LLModel *LLModel::Implementation::construct(const std::string &modelPath, const std::string &backend, int n_ctx)
+{
     std::vector<std::string> desiredBackends;
     if (backend != "auto") {
         desiredBackends.push_back(backend);
@@ -240,7 +247,8 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, const 
     throw MissingImplementationError("Could not find any implementations for backend: " + backend);
 }
 
-LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::string> &backend) {
+LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::string> &backend)
+{
     static std::unordered_map<std::string, std::unique_ptr<LLModel>> implCache;
 
     const std::vector<Implementation> *impls;
@@ -284,7 +292,8 @@ LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::
     return nullptr;
 }
 
-std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices(size_t memoryRequired) {
+std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices(size_t memoryRequired)
+{
     std::vector<LLModel::GPUDevice> devices;
 #ifndef __APPLE__
     static const std::string backends[] = {"kompute", "cuda"};
@@ -299,33 +308,40 @@ std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices(siz
     return devices;
 }
 
-int32_t LLModel::Implementation::maxContextLength(const std::string &modelPath) {
+int32_t LLModel::Implementation::maxContextLength(const std::string &modelPath)
+{
     auto *llama = constructGlobalLlama();
     return llama ? llama->maxContextLength(modelPath) : -1;
 }
 
-int32_t LLModel::Implementation::layerCount(const std::string &modelPath) {
+int32_t LLModel::Implementation::layerCount(const std::string &modelPath)
+{
     auto *llama = constructGlobalLlama();
     return llama ? llama->layerCount(modelPath) : -1;
 }
 
-bool LLModel::Implementation::isEmbeddingModel(const std::string &modelPath) {
+bool LLModel::Implementation::isEmbeddingModel(const std::string &modelPath)
+{
     auto *llama = constructGlobalLlama();
     return llama && llama->isEmbeddingModel(modelPath);
 }
 
-void LLModel::Implementation::setImplementationsSearchPath(const std::string& path) {
+void LLModel::Implementation::setImplementationsSearchPath(const std::string& path)
+{
     s_implementations_search_path = path;
 }
 
-const std::string& LLModel::Implementation::implementationsSearchPath() {
+const std::string& LLModel::Implementation::implementationsSearchPath()
+{
     return s_implementations_search_path;
 }
 
-bool LLModel::Implementation::hasSupportedCPU() {
+bool LLModel::Implementation::hasSupportedCPU()
+{
     return cpu_supports_avx() != 0;
 }
 
-int LLModel::Implementation::cpuSupportsAVX2() {
+int LLModel::Implementation::cpuSupportsAVX2()
+{
     return cpu_supports_avx2();
 }

@@ -355,7 +355,8 @@ void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
     emit modelInfoChanged();
 }
 
-void Chat::handleTrySwitchContextOfLoadedModelCompleted(int value) {
+void Chat::handleTrySwitchContextOfLoadedModelCompleted(int value)
+{
     m_trySwitchContextInProgress = value;
     emit trySwitchContextInProgressChanged();
 }

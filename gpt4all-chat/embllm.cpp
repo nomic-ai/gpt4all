@@ -157,7 +157,8 @@ std::vector<float> EmbeddingLLMWorker::generateQueryEmbedding(const QString &tex
     return worker.lastResponse();
 }
 
-void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QString &taskType, const QVariant &userData) {
+void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QString &taskType, const QVariant &userData)
+{
     QJsonObject root;
     root.insert("model", "nomic-embed-text-v1");
     root.insert("texts", QJsonArray::fromStringList(texts));
@@ -245,7 +246,8 @@ void EmbeddingLLMWorker::docEmbeddingsRequested(const QVector<EmbeddingChunk> &c
     sendAtlasRequest(texts, "search_document", QVariant::fromValue(chunks));
 }
 
-std::vector<float> jsonArrayToVector(const QJsonArray &jsonArray) {
+std::vector<float> jsonArrayToVector(const QJsonArray &jsonArray)
+{
     std::vector<float> result;
 
     for (const auto &innerValue: jsonArray) {
@@ -261,7 +263,8 @@ std::vector<float> jsonArrayToVector(const QJsonArray &jsonArray) {
     return result;
 }
 
-QVector<EmbeddingResult> jsonArrayToEmbeddingResults(const QVector<EmbeddingChunk>& chunks, const QJsonArray& embeddings) {
+QVector<EmbeddingResult> jsonArrayToEmbeddingResults(const QVector<EmbeddingChunk>& chunks, const QJsonArray& embeddings)
+{
     QVector<EmbeddingResult> results;
 
     if (chunks.size() != embeddings.size()) {

@@ -217,7 +217,8 @@ void LocalDocsModel::addCollectionItem(const CollectionItem &item)
     endInsertRows();
 }
 
-void LocalDocsModel::removeCollectionIf(std::function<bool(CollectionItem)> const &predicate) {
+void LocalDocsModel::removeCollectionIf(std::function<bool(CollectionItem)> const &predicate)
+{
     for (int i = 0; i < m_collectionList.size();) {
         if (predicate(m_collectionList.at(i))) {
             beginRemoveRows(QModelIndex(), i, i);

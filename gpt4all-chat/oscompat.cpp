@@ -16,7 +16,8 @@
 #   include <unistd.h>
 #endif
 
-bool gpt4all_fsync(int fd) {
+bool gpt4all_fsync(int fd)
+{
 #if defined(Q_OS_WIN32)
     HANDLE handle = HANDLE(_get_osfhandle(fd));
     if (handle == INVALID_HANDLE_VALUE) {
@@ -45,7 +46,8 @@ bool gpt4all_fsync(int fd) {
 #endif
 }
 
-bool gpt4all_fdatasync(int fd) {
+bool gpt4all_fdatasync(int fd)
+{
 #if defined(Q_OS_WIN32) || defined(Q_OS_DARWIN)
     return gpt4all_fsync(fd);
 #else
@@ -53,7 +55,8 @@ bool gpt4all_fdatasync(int fd) {
 #endif
 }
 
-bool gpt4all_syncdir(const QString &path) {
+bool gpt4all_syncdir(const QString &path)
+{
 #if defined(Q_OS_WIN32)
     (void)path; // cannot sync a directory on Windows
     return true;

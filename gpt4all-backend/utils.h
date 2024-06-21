@@ -14,7 +14,8 @@
 //
 // General purpose inline functions
 //
-constexpr inline unsigned long long operator ""_MiB(unsigned long long bytes) {
+constexpr inline unsigned long long operator ""_MiB(unsigned long long bytes)
+{
     return bytes*1024*1024;
 }
 

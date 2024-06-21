@@ -8,7 +8,8 @@
 #include <regex>
 #include <utility>
 
-void replace(std::string & str, const std::string & needle, const std::string & replacement) {
+void replace(std::string & str, const std::string & needle, const std::string & replacement)
+{
     size_t pos = 0;
     while ((pos = str.find(needle, pos)) != std::string::npos) {
         str.replace(pos, needle.length(), replacement);
@@ -16,7 +17,8 @@ void replace(std::string & str, const std::string & needle, const std::string & 
     }
 }
 
-std::map<std::string, int32_t> json_parse(const std::string & fname) {
+std::map<std::string, int32_t> json_parse(const std::string & fname)
+{
     std::map<std::string, int32_t> result;
 
     // read file into string
@@ -107,7 +109,8 @@ std::map<std::string, int32_t> json_parse(const std::string & fname) {
     return result;
 }
 
-std::vector<gpt_vocab::id> gpt_tokenize_inner(const gpt_vocab & vocab, const std::string & text) {
+std::vector<gpt_vocab::id> gpt_tokenize_inner(const gpt_vocab & vocab, const std::string & text)
+{
     std::vector<std::string> words;
 
     // first split the text into words
@@ -162,12 +165,14 @@ std::vector<gpt_vocab::id> gpt_tokenize_inner(const gpt_vocab & vocab, const std
     return tokens;
 }
 
-std::string regex_escape(const std::string &s) {
+std::string regex_escape(const std::string &s)
+{
   static const std::regex metacharacters(R"([\.\^\$\-\+\(\)\[\]\{\}\|\?\*])");
   return std::regex_replace(s, metacharacters, "\\$&");
 }
 
-std::vector<gpt_vocab::id> gpt_tokenize(const gpt_vocab & vocab, const std::string & text) {
+std::vector<gpt_vocab::id> gpt_tokenize(const gpt_vocab & vocab, const std::string & text)
+{
     // Generate the subpattern from the special_tokens vector if it's not empty
     if (!vocab.special_tokens.empty()) {
         std::vector<gpt_vocab::id> out;
@@ -203,7 +208,8 @@ std::vector<gpt_vocab::id> gpt_tokenize(const gpt_vocab & vocab, const std::stri
 }
 
 
-bool gpt_vocab_init(const std::string & fname, gpt_vocab & vocab) {
+bool gpt_vocab_init(const std::string & fname, gpt_vocab & vocab)
+{
     printf("%s: loading vocab from '%s'\n", __func__, fname.c_str());
 
     vocab.token_to_id = ::json_parse(fname);

@@ -254,7 +254,8 @@ namespace {
     struct IncompleteChunk: EmbeddingKey { int folder_id; QString text; };
 } // namespace
 
-static bool selectAllUncompletedChunks(QSqlQuery &q, QHash<IncompleteChunk, QStringList> &chunks) {
+static bool selectAllUncompletedChunks(QSqlQuery &q, QHash<IncompleteChunk, QStringList> &chunks)
+{
     if (!q.exec(SELECT_UNCOMPLETED_CHUNKS_SQL))
         return false;
     while (q.next()) {
@@ -270,7 +271,8 @@ static bool selectAllUncompletedChunks(QSqlQuery &q, QHash<IncompleteChunk, QStr
     return true;
 }
 
-static bool selectCountChunks(QSqlQuery &q, int folder_id, int &count) {
+static bool selectCountChunks(QSqlQuery &q, int folder_id, int &count)
+{
     if (!q.prepare(SELECT_COUNT_CHUNKS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -295,7 +297,8 @@ static bool selectChunk(QSqlQuery &q, const QList<int> &chunk_ids, int retrieval
     return q.exec();
 }
 
-bool sqlGetChunkFolders(QSqlQuery &q, const QList<int> &chunk_ids, QList<int> &folder_ids) {
+bool sqlGetChunkFolders(QSqlQuery &q, const QList<int> &chunk_ids, QList<int> &folder_ids)
+{
     if (!q.prepare(SELECT_CHUNK_FOLDER_SQL))
         return false;
 
@@ -378,7 +381,8 @@ static bool removeCollection(QSqlQuery &q, const QString &collection_name, int f
     return q.exec();
 }
 
-static bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<QPair<int, QString>> *folders) {
+static bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_name, QList<QPair<int, QString>> *folders)
+{
     if (!q.prepare(SELECT_FOLDERS_FROM_COLLECTIONS_SQL))
         return false;
     q.addBindValue(collection_name);
@@ -389,7 +393,8 @@ static bool selectFoldersFromCollection(QSqlQuery &q, const QString &collection_
     return true;
 }
 
-static QList<CollectionItem> sqlExtractCollections(QSqlQuery &q, bool with_folder = false, int version = LOCALDOCS_VERSION) {
+static QList<CollectionItem> sqlExtractCollections(QSqlQuery &q, bool with_folder = false, int version = LOCALDOCS_VERSION)
+{
     QList<CollectionItem> collections;
     while (q.next()) {
         CollectionItem i;
@@ -418,7 +423,8 @@ static QList<CollectionItem> sqlExtractCollections(QSqlQuery &q, bool with_folde
     return collections;
 }
 
-static bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collections, int version = LOCALDOCS_VERSION) {
+static bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collections, int version = LOCALDOCS_VERSION)
+{
 
     switch (version) {
     case 1:
@@ -440,7 +446,8 @@ static bool selectAllFromCollections(QSqlQuery &q, QList<CollectionItem> *collec
     return true;
 }
 
-static bool selectCollectionByName(QSqlQuery &q, const QString &name, std::optional<CollectionItem> &collection) {
+static bool selectCollectionByName(QSqlQuery &q, const QString &name, std::optional<CollectionItem> &collection)
+{
     if (!q.prepare(SELECT_COLLECTION_BY_NAME_SQL))
         return false;
     q.addBindValue(name);
@@ -454,7 +461,8 @@ static bool selectCollectionByName(QSqlQuery &q, const QString &name, std::optio
     return true;
 }
 
-static bool setCollectionEmbeddingModel(QSqlQuery &q, const QString &collection_name, const QString &embedding_model) {
+static bool setCollectionEmbeddingModel(QSqlQuery &q, const QString &collection_name, const QString &embedding_model)
+{
     if (!q.prepare(SET_COLLECTION_EMBEDDING_MODEL_SQL))
         return false;
     q.addBindValue(embedding_model);
@@ -496,14 +504,16 @@ static bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_
     return true;
 }
 
-static bool removeFolderFromDB(QSqlQuery &q, int folder_id) {
+static bool removeFolderFromDB(QSqlQuery &q, int folder_id)
+{
     if (!q.prepare(DELETE_FOLDERS_SQL))
         return false;
     q.addBindValue(folder_id);
     return q.exec();
 }
 
-static bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
+static bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id)
+{
     if (!q.prepare(SELECT_FOLDERS_FROM_PATH_SQL))
         return false;
     q.addBindValue(folder_path);
@@ -515,7 +525,8 @@ static bool selectFolder(QSqlQuery &q, const QString &folder_path, int *id) {
     return true;
 }
 
-static bool sqlGetFolderEmbeddingModel(QSqlQuery &q, int id, QString &embedding_model) {
+static bool sqlGetFolderEmbeddingModel(QSqlQuery &q, int id, QString &embedding_model)
+{
     if (!q.prepare(GET_FOLDER_EMBEDDING_MODEL_SQL))
         return false;
     q.addBindValue(id);
@@ -527,7 +538,8 @@ static bool sqlGetFolderEmbeddingModel(QSqlQuery &q, int id, QString &embedding_
     return true;
 }
 
-static bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths) {
+static bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths)
+{
     if (!q.prepare(SELECT_ALL_FOLDERPATHS_SQL))
         return false;
     if (!q.exec())
@@ -627,7 +639,8 @@ static bool addDocument(QSqlQuery &q, int folder_id, qint64 document_time, const
     return true;
 }
 
-static bool removeDocument(QSqlQuery &q, int document_id) {
+static bool removeDocument(QSqlQuery &q, int document_id)
+{
     if (!q.prepare(DELETE_DOCUMENTS_SQL))
         return false;
     q.addBindValue(document_id);
@@ -643,7 +656,8 @@ static bool updateDocument(QSqlQuery &q, int id, qint64 document_time)
     return q.exec();
 }
 
-static bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 *document_time) {
+static bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, qint64 *document_time)
+{
     if (!q.prepare(SELECT_DOCUMENT_SQL))
         return false;
     q.addBindValue(document_path);
@@ -657,7 +671,8 @@ static bool selectDocument(QSqlQuery &q, const QString &document_path, int *id, 
     return true;
 }
 
-static bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds) {
+static bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds)
+{
     if (!q.prepare(SELECT_DOCUMENTS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -668,7 +683,8 @@ static bool selectDocuments(QSqlQuery &q, int folder_id, QList<int> *documentIds
     return true;
 }
 
-static bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *total_words, int *total_tokens) {
+static bool selectCountStatistics(QSqlQuery &q, int folder_id, int *total_docs, int *total_words, int *total_tokens)
+{
     if (!q.prepare(SELECT_COUNT_STATISTICS_SQL))
         return false;
     q.addBindValue(folder_id);
@@ -715,7 +731,8 @@ namespace {
 
 NAMED_PAIR(EmbeddingFolder, QString, embedding_model, int, folder_id)
 
-static bool sqlAddEmbeddings(QSqlQuery &q, const QList<Embedding> &embeddings, QHash<EmbeddingFolder, EmbeddingStat> &embeddingStats) {
+static bool sqlAddEmbeddings(QSqlQuery &q, const QList<Embedding> &embeddings, QHash<EmbeddingFolder, EmbeddingStat> &embeddingStats)
+{
     if (!q.prepare(INSERT_EMBEDDING_SQL))
         return false;
 
@@ -1023,7 +1040,8 @@ void Database::appendChunk(const EmbeddingChunk &chunk)
         sendChunkList();
 }
 
-void Database::sendChunkList() {
+void Database::sendChunkList()
+{
     m_embLLM->generateDocEmbeddingsAsync(m_chunkList);
     m_chunkList.clear();
 }
@@ -1149,7 +1167,8 @@ void Database::enqueueDocuments(int folder_id, const QVector<DocumentInfo> &info
     m_scanTimer->start();
 }
 
-void Database::scanQueueBatch() {
+void Database::scanQueueBatch()
+{
     QElapsedTimer timer;
     timer.start();
 
@@ -1721,7 +1740,8 @@ void Database::removeFolderFromWatch(const QString &path)
     m_watchedPaths -= QSet(children.begin(), children.end());
 }
 
-QList<int> Database::searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections, int nNeighbors) {
+QList<int> Database::searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections, int nNeighbors)
+{
     constexpr int BATCH_SIZE = 2048;
 
     const int n_embd = query.size();
