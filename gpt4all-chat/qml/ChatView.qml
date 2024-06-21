@@ -643,7 +643,7 @@ Rectangle {
                                             color: theme.gray500
                                         }
                                         RowLayout {
-                                            visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress || currentChat.isRecalc
+                                            visible: (currentResponse ? true : false) && ((value === "" && currentChat.responseInProgress) || currentChat.isRecalc)
                                             MyBusyIndicator {
                                                 size: 24
                                                 color: theme.green400
