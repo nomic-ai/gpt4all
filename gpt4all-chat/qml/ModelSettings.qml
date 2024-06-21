@@ -17,6 +17,7 @@ MySettingsTab {
         columns: 3
         rowSpacing: 10
         columnSpacing: 10
+        enabled: ModelList.installedModels.count !== 0
 
         property var currentModelName: comboBox.currentText
         property var currentModelId: comboBox.currentValue
