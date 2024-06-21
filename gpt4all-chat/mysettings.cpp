@@ -204,7 +204,7 @@ void MySettings::setModelSetting(const QString &name, const ModelInfo &info, con
     if (info.getFields().value(name) == value && !info.shouldSaveMetadata())
         m_settings.remove(settingName);
     else
-        m_settings.setValue(settingName, name);
+        m_settings.setValue(settingName, value);
     if (signal && !force)
         QMetaObject::invokeMethod(this, u"%1Changed"_s.arg(name).toLatin1().constData(), Q_ARG(ModelInfo, info));
 }
