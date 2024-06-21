@@ -154,9 +154,9 @@ void MySettings::restoreApplicationDefaults()
 
 void MySettings::restoreLocalDocsDefaults()
 {
-    setLocalDocsChunkSize(basicDefaults.value("localDocs/chunkSize").toInt());
-    setLocalDocsRetrievalSize(basicDefaults.value("localDocs/retrievalSize").toInt());
-    setLocalDocsShowReferences(basicDefaults.value("localDocs/showReferences").toBool());
+    setLocalDocsChunkSize(basicDefaults.value("localdocs/chunkSize").toInt());
+    setLocalDocsRetrievalSize(basicDefaults.value("localdocs/retrievalSize").toInt());
+    setLocalDocsShowReferences(basicDefaults.value("localdocs/showReferences").toBool());
 }
 
 void MySettings::eraseModel(const ModelInfo &info)
