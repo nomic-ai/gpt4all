@@ -594,8 +594,6 @@ Rectangle {
                                     color: theme.containerBackground
                                 }
                             }
-
-                            // FIXME_BLOCKER Need answer for displaying if datalake is on/off
                         }
                     }
 
@@ -673,7 +671,7 @@ Rectangle {
                                     }
 
                                     ColumnLayout {
-                                        visible: sources.length !== 0 && MySettings.localDocsShowReferences
+                                        visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
                                         RowLayout {
                                             Layout.topMargin: 15
                                             Image {
@@ -692,9 +690,9 @@ Rectangle {
                                             Layout.fillWidth: true
                                             Layout.topMargin: 5
                                             spacing: 10
-                                            visible: sources.length !== 0
+                                            visible: consolidatedSources.length !== 0
                                             Repeater {
-                                                model: sources
+                                                model: consolidatedSources
 
                                                 delegate: Rectangle {
                                                     radius: 10

@@ -29,6 +29,7 @@ struct ChatItem
     Q_PROPERTY(bool thumbsUpState MEMBER thumbsUpState)
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
     Q_PROPERTY(QList<ResultInfo> sources MEMBER sources)
+    Q_PROPERTY(QList<ResultInfo> consolidatedSources MEMBER consolidatedSources)
 
 public:
     // TODO: Maybe we should include the model name here as well as timestamp?
@@ -38,6 +39,7 @@ public:
     QString prompt;
     QString newResponse;
     QList<ResultInfo> sources;
+    QList<ResultInfo> consolidatedSources;
     bool currentResponse = false;
     bool stopped = false;
     bool thumbsUpState = false;
@@ -63,7 +65,8 @@ public:
         StoppedRole,
         ThumbsUpStateRole,
         ThumbsDownStateRole,
-        SourcesRole
+        SourcesRole,
+        ConsolidatedSourcesRole
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
@@ -99,6 +102,8 @@ public:
                 return item.thumbsDownState;
             case SourcesRole:
                 return QVariant::fromValue(item.sources);
+            case ConsolidatedSourcesRole:
+                return QVariant::fromValue(item.consolidatedSources);
         }
 
         return QVariant();
@@ -117,6 +122,7 @@ public:
         roles[ThumbsUpStateRole] = "thumbsUpState";
         roles[ThumbsDownStateRole] = "thumbsDownState";
         roles[SourcesRole] = "sources";
+        roles[ConsolidatedSourcesRole] = "consolidatedSources";
         return roles;
     }
 
@@ -193,13 +199,28 @@ public:
         }
     }
 
+    QList<ResultInfo> consolidateSources(const QList<ResultInfo> &sources) {
+        QMap<QString, ResultInfo> groupedData;
+        for (const ResultInfo &info : sources) {
+            if (groupedData.contains(info.file)) {
+                groupedData[info.file].text += "\n---\n" + info.text;
+            } else {
+                groupedData[info.file] = info;
+            }
+        }
+        QList<ResultInfo> consolidatedSources = groupedData.values();
+        return consolidatedSources;
+    }
+
     Q_INVOKABLE void updateSources(int index, const QList<ResultInfo> &sources)
     {
         if (index < 0 || index >= m_chatItems.size()) return;
 
         ChatItem &item = m_chatItems[index];
         item.sources = sources;
+        item.consolidatedSources = consolidateSources(sources);
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {SourcesRole});
+        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ConsolidatedSourcesRole});
     }
 
     Q_INVOKABLE void updateThumbsUpState(int index, bool b)
@@ -339,6 +360,7 @@ public:
                     sources.append(info);
                 }
                 c.sources = sources;
+                c.consolidatedSources = consolidateSources(sources);
             }else if (version > 2) {
                 QString references;
                 QList<QString> referencesContext;
@@ -420,6 +442,7 @@ public:
                     }
 
                     c.sources = sources;
+                    c.consolidatedSources = consolidateSources(sources);
                 }
             }
             beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
