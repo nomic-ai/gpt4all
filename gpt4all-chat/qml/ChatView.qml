@@ -608,6 +608,8 @@ Rectangle {
                             Layout.fillHeight: true
                             Layout.fillWidth: true
                             Layout.margins: 20
+                            Layout.leftMargin: 50
+                            Layout.rightMargin: 50
                             Layout.alignment: Qt.AlignHCenter
                             spacing: 50
                             model: chatModel
@@ -1114,6 +1116,8 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.margins: 30
+                anchors.leftMargin: Math.max((parent.width - 1310) / 2, 30)
+                anchors.rightMargin: Math.max((parent.width - 1310) / 2, 30)
                 height: Math.min(contentHeight, 200)
                 visible: !currentChat.isServer
                 MyTextArea {
