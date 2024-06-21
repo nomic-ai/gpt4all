@@ -710,20 +710,14 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     }
 
     // Augment the prompt template with the results if any
-    QList<QString> docsContext;
+    QString docsContext;
     if (!databaseResults.isEmpty()) {
-        QJsonArray results;
-        for (const ResultInfo &info : databaseResults) {
-            QJsonObject result;
-            result.insert("collection", info.collection);
-            result.insert("path", info.path);
-            result.insert("text", info.text);
-            results.append(result);
-        }
-        QJsonObject root;
-        root.insert("context", results);
-        QJsonDocument doc(root);
-        docsContext.append(doc.toJson());
+        QStringList results;
+        for (const ResultInfo &info : databaseResults)
+            results << u"Collection: %1\nPath: %2\nSnippet: %3"_s.arg(info.collection, info.path, info.text);
+
+        // FIXME(jared): use a Jinja prompt template instead of hardcoded Alpaca-style localdocs template
+        docsContext = u"### Context:\n%1\n\n"_s.arg(results.join("\n\n"));
     }
 
     int n_threads = MySettings::globalInstance()->threadCount();
@@ -752,7 +746,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     m_timer->start();
     if (!docsContext.isEmpty()) {
         auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode localdocs context without a response
-        m_llModelInfo.model->prompt(docsContext.join("\n").toStdString(), "%1", promptFunc, responseFunc, recalcFunc, m_ctx);
+        m_llModelInfo.model->prompt(docsContext.toStdString(), "%1", promptFunc, responseFunc, recalcFunc, m_ctx);
         m_ctx.n_predict = old_n_predict; // now we are ready for a response
     }
     m_llModelInfo.model->prompt(prompt.toStdString(), promptTemplate.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
