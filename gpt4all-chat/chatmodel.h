@@ -31,6 +31,7 @@ struct ChatItem
     Q_PROPERTY(QList<ResultInfo> sources MEMBER sources)
 
 public:
+    // TODO: Maybe we should include the model name here as well as timestamp?
     int id = 0;
     QString name;
     QString value;

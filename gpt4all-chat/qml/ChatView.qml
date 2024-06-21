@@ -97,25 +97,6 @@ Rectangle {
         font.pixelSize: theme.fontSizeLarge
     }
 
-    PopupDialog {
-        id: recalcPopup
-        anchors.centerIn: parent
-        shouldTimeOut: false
-        shouldShowBusy: true
-        text: qsTr("Recalculating context.")
-        font.pixelSize: theme.fontSizeLarge
-
-        Connections {
-            target: currentChat
-            function onRecalcChanged() {
-                if (currentChat.isRecalc)
-                    recalcPopup.open()
-                else
-                    recalcPopup.close()
-            }
-        }
-    }
-
     function getConversation() {
         var conversation = "";
         for (var i = 0; i < chatModel.count; i++) {
@@ -662,7 +643,7 @@ Rectangle {
                                             color: theme.gray500
                                         }
                                         RowLayout {
-                                            visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress
+                                            visible: (currentResponse ? true : false) && value === "" && currentChat.responseInProgress || currentChat.isRecalc
                                             MyBusyIndicator {
                                                 size: 24
                                                 color: theme.green400
@@ -674,6 +655,8 @@ Rectangle {
                                                 color: theme.gray500
                                                 font.pixelSize: theme.fontSizeLarger
                                                 text: {
+                                                    if (currentChat.isRecalc)
+                                                        return qsTr("recalculating context ...");
                                                     switch (currentChat.responseState) {
                                                     case Chat.ResponseStopped: return qsTr("response stopped ...");
                                                     case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: ") + currentChat.collectionList.join(", ") + " ...";
