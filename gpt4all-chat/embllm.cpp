@@ -28,10 +28,12 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+static const QString EMBEDDING_MODEL_NAME = u"nomic-embed-text-v1.5"_s;
+static const QString LOCAL_EMBEDDING_MODEL = u"nomic-embed-text-v1.5.f16.gguf"_s;
+
 EmbeddingLLMWorker::EmbeddingLLMWorker()
     : QObject(nullptr)
     , m_networkManager(new QNetworkAccessManager(this))
-    , m_model(nullptr)
     , m_stopGenerating(false)
 {
     moveToThread(&m_workerThread);
@@ -60,41 +62,24 @@ void EmbeddingLLMWorker::wait()
 
 bool EmbeddingLLMWorker::loadModel()
 {
-    const EmbeddingModels *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
-    if (!embeddingModels->count())
-        return false;
+    m_nomicAPIKey.clear();
+    m_model = nullptr;
 
-    const ModelInfo defaultModel = embeddingModels->defaultModelInfo();
-
-    QString filePath = defaultModel.dirpath + defaultModel.filename();
-    QFileInfo fileInfo(filePath);
-    if (!fileInfo.exists()) {
-        qWarning() << "WARNING: Could not load sbert because file does not exist";
-        m_model = nullptr;
-        return false;
+    if (false /* MySettings::globalInstance()->useNomic() */) { // TODO
+        m_nomicAPIKey = "" /* MySettings::globalInstance()->nomicAPIKey() */; // TODO
+        return true;
     }
 
-    auto filename = fileInfo.fileName();
-    bool isNomic = filename.startsWith("gpt4all-nomic-") && filename.endsWith(".rmodel");
-    if (isNomic) {
-        QFile file(filePath);
-        if (!file.open(QIODeviceBase::ReadOnly)) {
-            qWarning() << "failed to open" << filePath << ":" << file.errorString();
-            m_model = nullptr;
-            return false;
-        }
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        QJsonObject obj = doc.object();
-        m_nomicAPIKey = obj["apiKey"].toString();
-        file.close();
-        return true;
+    QString filePath = u"%1/../resources/%2"_s.arg(QCoreApplication::applicationDirPath(), LOCAL_EMBEDDING_MODEL);
+    if (!QFileInfo::exists(filePath)) {
+        qWarning() << "WARNING: Local embedding model not found";
+        return false;
     }
 
     try {
         m_model = LLModel::Implementation::construct(filePath.toStdString());
     } catch (const std::exception &e) {
         qWarning() << "WARNING: Could not load embedding model:" << e.what();
-        m_model = nullptr;
         return false;
     }
 
@@ -117,16 +102,6 @@ bool EmbeddingLLMWorker::loadModel()
     return true;
 }
 
-bool EmbeddingLLMWorker::hasModel() const
-{
-    return m_model || !m_nomicAPIKey.isEmpty();
-}
-
-bool EmbeddingLLMWorker::isNomic() const
-{
-    return !m_nomicAPIKey.isEmpty();
-}
-
 std::vector<float> EmbeddingLLMWorker::generateQueryEmbedding(const QString &text)
 {
     {
@@ -143,7 +118,7 @@ std::vector<float> EmbeddingLLMWorker::generateQueryEmbedding(const QString &tex
             try {
                 m_model->embed({text.toStdString()}, embedding.data(), true);
             } catch (const std::exception &e) {
-                qWarning() << "WARNING: LLModel::embed failed: " << e.what();
+                qWarning() << "WARNING: LLModel::embed failed:" << e.what();
                 return {};
             }
 
@@ -325,7 +300,7 @@ void EmbeddingLLMWorker::handleFinished()
     QJsonParseError err;
     QJsonDocument document = QJsonDocument::fromJson(jsonData, &err);
     if (err.error != QJsonParseError::NoError) {
-        qWarning() << "ERROR: Couldn't parse Nomic Atlas response: " << jsonData << err.errorString();
+        qWarning() << "ERROR: Couldn't parse Nomic Atlas response:" << jsonData << err.errorString();
         return;
     }
 
@@ -362,12 +337,7 @@ EmbeddingLLM::~EmbeddingLLM()
 
 QString EmbeddingLLM::model()
 {
-    const EmbeddingModels *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
-    if (!embeddingModels->count())
-        return QString();
-
-    const ModelInfo defaultModel = embeddingModels->defaultModelInfo();
-    return defaultModel.name(); // empty name is an error
+    return EMBEDDING_MODEL_NAME;
 }
 
 // TODO(jared): embed using all necessary embedding models given collection

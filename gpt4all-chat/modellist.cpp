@@ -43,10 +43,7 @@ using namespace Qt::Literals::StringLiterals;
 
 //#define USE_LOCAL_MODELSJSON
 
-const char * const KNOWN_EMBEDDING_MODELS[] {
-    "all-MiniLM-L6-v2.gguf2.f16.gguf",
-    "gpt4all-nomic-embed-text-v1.rmodel",
-};
+static const QStringList FILENAME_BLACKLIST { u"gpt4all-nomic-embed-text-v1.rmodel"_s };
 
 QString ModelInfo::id() const
 {
@@ -370,58 +367,6 @@ QVariantMap ModelInfo::getFields() const
     };
 }
 
-EmbeddingModels::EmbeddingModels(QObject *parent, bool requireInstalled)
-    : QSortFilterProxyModel(parent)
-{
-    m_requireInstalled = requireInstalled;
-
-    connect(this, &EmbeddingModels::rowsInserted, this, &EmbeddingModels::countChanged);
-    connect(this, &EmbeddingModels::rowsRemoved, this, &EmbeddingModels::countChanged);
-    connect(this, &EmbeddingModels::modelReset, this, &EmbeddingModels::countChanged);
-    connect(this, &EmbeddingModels::layoutChanged, this, &EmbeddingModels::countChanged);
-}
-
-bool EmbeddingModels::filterAcceptsRow(int sourceRow,
-                                       const QModelIndex &sourceParent) const
-{
-    QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
-    bool isEmbeddingModel = sourceModel()->data(index, ModelList::IsEmbeddingModelRole).toBool();
-    bool installed = sourceModel()->data(index, ModelList::InstalledRole).toBool();
-    QString filename = sourceModel()->data(index, ModelList::FilenameRole).toString();
-    auto &known = KNOWN_EMBEDDING_MODELS;
-    if (std::find(known, std::end(known), filename.toStdString()) == std::end(known))
-        return false; // we are currently not prepared to support other embedding models
-
-    return isEmbeddingModel && (!m_requireInstalled || installed);
-}
-
-int EmbeddingModels::defaultModelIndex() const
-{
-    auto *sourceListModel = qobject_cast<const ModelList*>(sourceModel());
-    if (!sourceListModel) return -1;
-
-    int rows = sourceListModel->rowCount();
-    for (int i = 0; i < rows; ++i) {
-        if (filterAcceptsRow(i, sourceListModel->index(i, 0).parent()))
-            return i;
-    }
-
-    return -1;
-}
-
-ModelInfo EmbeddingModels::defaultModelInfo() const
-{
-    auto *sourceListModel = qobject_cast<const ModelList*>(sourceModel());
-    if (!sourceListModel) return ModelInfo();
-
-    int i = defaultModelIndex();
-    if (i < 0) return ModelInfo();
-
-    QModelIndex sourceIndex = sourceListModel->index(i, 0);
-    auto id = sourceListModel->data(sourceIndex, ModelList::IdRole).toString();
-    return sourceListModel->modelInfo(id);
-}
-
 InstalledModels::InstalledModels(QObject *parent)
     : QSortFilterProxyModel(parent)
 {
@@ -500,9 +445,7 @@ ModelList *ModelList::globalInstance()
 
 ModelList::ModelList()
     : QAbstractListModel(nullptr)
-    , m_embeddingModels(new EmbeddingModels(this, false /* all models */))
     , m_installedModels(new InstalledModels(this))
-    , m_installedEmbeddingModels(new EmbeddingModels(this, true /* installed models */))
     , m_downloadableModels(new DownloadableModels(this))
     , m_asyncModelRequestOngoing(false)
     , m_discoverLimit(20)
@@ -512,9 +455,7 @@ ModelList::ModelList()
     , m_discoverResultsCompleted(0)
     , m_discoverInProgress(false)
 {
-    m_embeddingModels->setSourceModel(this);
     m_installedModels->setSourceModel(this);
-    m_installedEmbeddingModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
 
     connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromDirectory);
@@ -582,11 +523,6 @@ const QList<QString> ModelList::userDefaultModelList() const
     else
         models.prepend(defaultId);
     return models;
-}
-
-int ModelList::defaultEmbeddingModelIndex() const
-{
-    return embeddingModels()->defaultModelIndex();
 }
 
 ModelInfo ModelList::defaultModelInfo() const
@@ -1239,13 +1175,11 @@ void ModelList::updateModelsFromDirectory()
             it.next();
             if (!it.fileInfo().isDir()) {
                 QString filename = it.fileName();
-                if (filename.endsWith(".txt") && (filename.startsWith("chatgpt-") || filename.startsWith("nomic-"))) {
+                if (filename.startsWith("chatgpt-") && filename.endsWith(".txt")) {
                     QString apikey;
                     QString modelname(filename);
                     modelname.chop(4); // strip ".txt" extension
-                    if (filename.startsWith("chatgpt-")) {
-                        modelname.remove(0, 8); // strip "chatgpt-" prefix
-                    }
+                    modelname.remove(0, 8); // strip "chatgpt-" prefix
                     QFile file(path + filename);
                     if (file.open(QIODevice::ReadWrite)) {
                         QTextStream in(&file);
@@ -1272,46 +1206,41 @@ void ModelList::updateModelsFromDirectory()
     };
 
     auto processDirectory = [&](const QString& path) {
-        QDirIterator it(path, QDirIterator::Subdirectories);
+        QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
         while (it.hasNext()) {
             it.next();
 
-            if (!it.fileInfo().isDir()) {
-                QString filename = it.fileName();
+            QString filename = it.fileName();
+            if (filename.startsWith("incomplete") || FILENAME_BLACKLIST.contains(filename))
+                continue;
+            if (!filename.endsWith(".gguf") && !filename.endsWith(".rmodel"))
+                continue;
 
-                if ((filename.endsWith(".gguf") && !filename.startsWith("incomplete")) || filename.endsWith(".rmodel")) {
+            QVector<QString> modelsById;
+            {
+                QMutexLocker locker(&m_mutex);
+                for (ModelInfo *info : m_models)
+                    if (info->filename() == filename)
+                        modelsById.append(info->id());
+            }
 
-                    QString filePath = it.filePath();
-                    QFileInfo info(filePath);
+            if (modelsById.isEmpty()) {
+                if (!contains(filename))
+                    addModel(filename);
+                modelsById.append(filename);
+            }
 
-                    if (!info.exists())
-                        continue;
+            QFileInfo info = it.fileInfo();
 
-                    QVector<QString> modelsById;
-                    {
-                        QMutexLocker locker(&m_mutex);
-                        for (ModelInfo *info : m_models)
-                            if (info->filename() == filename)
-                                modelsById.append(info->id());
-                    }
-
-                    if (modelsById.isEmpty()) {
-                        if (!contains(filename))
-                            addModel(filename);
-                        modelsById.append(filename);
-                    }
-
-                    for (const QString &id : modelsById) {
-                        QVector<QPair<int, QVariant>> data {
-                            { InstalledRole, true },
-                            { FilenameRole, filename },
-                            { OnlineRole, filename.endsWith(".rmodel") },
-                            { DirpathRole, info.dir().absolutePath() + "/" },
-                            { FilesizeRole, toFileSize(info.size()) },
-                        };
-                        updateData(id, data);
-                    }
-                }
+            for (const QString &id : modelsById) {
+                QVector<QPair<int, QVariant>> data {
+                    { InstalledRole, true },
+                    { FilenameRole, filename },
+                    { OnlineRole, filename.endsWith(".rmodel") },
+                    { DirpathRole, info.dir().absolutePath() + "/" },
+                    { FilesizeRole, toFileSize(info.size()) },
+                };
+                updateData(id, data);
             }
         }
     };
@@ -1697,38 +1626,6 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "Mistral" },
             { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
-        };
-        updateData(id, data);
-    }
-
-
-    {
-        const QString nomicEmbedDesc = tr("<ul><li>For use with LocalDocs feature</li>"
-            "<li>Used for retrieval augmented generation (RAG)</li>"
-            "<li>Requires personal Nomic API key.</li>"
-            "<li>WARNING: Will send your localdocs to Nomic Atlas!</li>"
-            "<li>You can apply for an API key <a href=\"https://atlas.nomic.ai/\">with Nomic Atlas.</a></li>");
-        const QString modelName = "Nomic Embed";
-        const QString id = modelName;
-        const QString modelFilename = "gpt4all-nomic-embed-text-v1.rmodel";
-        if (contains(modelFilename))
-            changeId(modelFilename, id);
-        if (!contains(id))
-            addModel(id);
-        QVector<QPair<int, QVariant>> data {
-            { ModelList::NameRole, modelName },
-            { ModelList::FilenameRole, modelFilename },
-            { ModelList::FilesizeRole, "minimal" },
-            { ModelList::OnlineRole, true },
-            { ModelList::IsEmbeddingModelRole, true },
-            { ModelList::DescriptionRole,
-             tr("<strong>LocalDocs Nomic Atlas Embed</strong><br>") + nomicEmbedDesc },
-            { ModelList::RequiresVersionRole, "2.6.3" },
-            { ModelList::OrderRole, "na" },
-            { ModelList::RamrequiredRole, 0 },
-            { ModelList::ParametersRole, "?" },
-            { ModelList::QuantRole, "NA" },
-            { ModelList::TypeRole, "Bert" },
         };
         updateData(id, data);
     }

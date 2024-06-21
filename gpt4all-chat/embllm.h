@@ -43,8 +43,8 @@ public:
     std::vector<float> lastResponse() const { return m_lastResponse; }
 
     bool loadModel();
-    bool hasModel() const;
-    bool isNomic() const;
+    bool isNomic() const { return !m_nomicAPIKey.isEmpty(); }
+    bool hasModel() const { return isNomic() || m_model; }
 
     std::vector<float> generateQueryEmbedding(const QString &text);
 

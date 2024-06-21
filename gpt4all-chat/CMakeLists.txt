@@ -232,6 +232,20 @@ endif()
 target_link_libraries(chat
     PRIVATE llmodel)
 
+
+# -- extra resources --
+
+set(LOCAL_EMBEDDING_MODEL "nomic-embed-text-v1.5.f16.gguf")
+set(LOCAL_EMBEDDING_MODEL_MD5 "a5401e7f7e46ed9fcaed5b60a281d547")
+file(DOWNLOAD
+    "https://gpt4all.io/models/gguf/${LOCAL_EMBEDDING_MODEL}"
+    "${CMAKE_BINARY_DIR}/resources/${LOCAL_EMBEDDING_MODEL}"
+    EXPECTED_HASH "MD5=${LOCAL_EMBEDDING_MODEL_MD5}"
+)
+
+
+# -- install --
+
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -295,6 +309,10 @@ if (LLMODEL_CUDA)
         )
     endif()
 endif()
+
+install(FILES "${CMAKE_BINARY_DIR}/resources/${LOCAL_EMBEDDING_MODEL}"
+        DESTINATION resources
+        COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
 set(CPACK_VERBATIM_VARIABLES YES)
