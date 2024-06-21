@@ -152,6 +152,9 @@ qt_add_qml_module(chat
       qml/MyToolButton.qml
       qml/MyWelcomeButton.qml
     RESOURCES
+      icons/antenna_1.svg
+      icons/antenna_2.svg
+      icons/antenna_3.svg
       icons/send_message.svg
       icons/stop_generating.svg
       icons/regenerate.svg

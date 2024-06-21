@@ -1008,16 +1008,6 @@ Rectangle {
                             }
                         }
                     }
-
-                    Image {
-                        visible: currentChat.isServer || currentChat.modelInfo.isOnline
-                        anchors.fill: parent
-                        sourceSize.width: 1024
-                        sourceSize.height: 1024
-                        fillMode: Image.PreserveAspectFit
-                        opacity: 0.15
-                        source: "qrc:/gpt4all/icons/network.svg"
-                    }
                 }
             }
 
@@ -1223,7 +1213,80 @@ Rectangle {
                 }
             }
 
+            Image {
+                id: antennaImage
+                anchors.right: sendButton.left
+                anchors.verticalCenter: textInputView.verticalCenter
+                anchors.rightMargin: 15
+                sourceSize.width: 32
+                sourceSize.height: 32
+                visible: false
+                fillMode: Image.PreserveAspectFit
+                source: "qrc:/gpt4all/icons/antenna_3.svg"
+            }
+
+            ColorOverlay {
+                visible: currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive
+                anchors.fill: antennaImage
+                source: antennaImage
+                color: theme.grayRed900
+            }
+
+            SequentialAnimation {
+                running: true
+                loops: Animation.Infinite
+
+                PropertyAnimation {
+                    target: antennaImage
+                    property: "source"
+                    duration: 500
+                    from: "qrc:/gpt4all/icons/antenna_1.svg"
+                    to: "qrc:/gpt4all/icons/antenna_2.svg"
+                }
+
+                PauseAnimation {
+                    duration: 1500
+                }
+
+                PropertyAnimation {
+                    target: antennaImage
+                    property: "source"
+                    duration: 500
+                    from: "qrc:/gpt4all/icons/antenna_2.svg"
+                    to: "qrc:/gpt4all/icons/antenna_3.svg"
+                }
+
+                PauseAnimation {
+                    duration: 1500
+                }
+
+                PropertyAnimation {
+                    target: antennaImage
+                    property: "source"
+                    duration: 500
+                    from: "qrc:/gpt4all/icons/antenna_3.svg"
+                    to: "qrc:/gpt4all/icons/antenna_2.svg"
+                }
+
+                PauseAnimation {
+                    duration: 1500
+                }
+
+                PropertyAnimation {
+                    target: antennaImage
+                    property: "source"
+                    duration: 1500
+                    from: "qrc:/gpt4all/icons/antenna_2.svg"
+                    to: "qrc:/gpt4all/icons/antenna_1.svg"
+                }
+
+                PauseAnimation {
+                    duration: 500
+                }
+            }
+
             MyToolButton {
+                id: sendButton
                 backgroundColor: theme.sendButtonBackground
                 backgroundColorHovered: theme.sendButtonBackgroundHovered
                 anchors.right: textInputView.right
