@@ -711,10 +711,20 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
 
     // Augment the prompt template with the results if any
     QList<QString> docsContext;
-    if (!databaseResults.isEmpty())
-        docsContext.append("### Context:");
-    for (const ResultInfo &info : databaseResults)
-        docsContext.append(info.text);
+    if (!databaseResults.isEmpty()) {
+        QJsonArray results;
+        for (const ResultInfo &info : databaseResults) {
+            QJsonObject result;
+            result.insert("collection", info.collection);
+            result.insert("path", info.path);
+            result.insert("text", info.text);
+            results.append(result);
+        }
+        QJsonObject root;
+        root.insert("context", results);
+        QJsonDocument doc(root);
+        docsContext.append(doc.toJson());
+    }
 
     int n_threads = MySettings::globalInstance()->threadCount();
 
