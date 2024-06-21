@@ -13,7 +13,9 @@
 #include <QUrl>
 #include <QtLogging>
 
-#ifndef GPT4ALL_OFFLINE_INSTALLER
+#ifdef GPT4ALL_OFFLINE_INSTALLER
+#   include <QDesktopServices>
+#else
 #   include "network.h"
 #endif
 
