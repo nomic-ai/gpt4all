@@ -172,6 +172,9 @@ static const QString SELECT_CHUNKS_SQL = uR"(
     select c.id, d.document_time, d.document_path, c.chunk_text, c.file, c.title, c.author, c.page, c.line_from, c.line_to, co.name
     from chunks c
     join documents d on d.id = c.document_id
+    join folders f on f.id = d.folder_id
+    join collection_items ci on ci.folder_id = f.id
+    join collections co on co.id = ci.collection_id
     where c.id in (%1);
 )"_s;
 
