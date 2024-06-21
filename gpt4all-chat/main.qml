@@ -155,36 +155,6 @@ Window {
         font.pixelSize: theme.fontSizeLarge
     }
 
-    Dialog {
-        id: checkForUpdatesError
-        anchors.centerIn: parent
-        modal: false
-        padding: 20
-        Text {
-            horizontalAlignment: Text.AlignJustify
-            text: qsTr("ERROR: Update system could not find the MaintenanceTool used<br>
-                   to check for updates!<br><br>
-                   Did you install this application using the online installer? If so,<br>
-                   the MaintenanceTool executable should be located one directory<br>
-                   above where this application resides on your filesystem.<br><br>
-                   If you can't start it manually, then I'm afraid you'll have to<br>
-                   reinstall.")
-            color: theme.textErrorColor
-            font.pixelSize: theme.fontSizeLarge
-            Accessible.role: Accessible.Dialog
-            Accessible.name: text
-            Accessible.description: qsTr("Error dialog")
-        }
-        background: Rectangle {
-            anchors.fill: parent
-            color: theme.containerBackground
-            border.width: 1
-            border.color: theme.dialogBorder
-            radius: 10
-        }
-    }
-
-
     property bool hasSaved: false
 
     PopupDialog {

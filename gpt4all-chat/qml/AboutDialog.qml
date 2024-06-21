@@ -101,6 +101,7 @@ MyDialog {
         }
     }
 
+    // FIXME_BLOCKER We have no about button to launch this dialog
     MyButton {
         id: checkForUpdatesButton
         anchors.right: parent.right

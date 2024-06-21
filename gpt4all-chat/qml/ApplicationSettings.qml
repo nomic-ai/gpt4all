@@ -7,6 +7,7 @@ import QtQuick.Dialogs
 import modellist
 import mysettings
 import network
+import llm
 
 MySettingsTab {
     onRestoreDefaultsClicked: {
@@ -23,6 +24,35 @@ MySettingsTab {
             Accessible.role: Accessible.Dialog
             Accessible.name: qsTr("Network dialog")
             Accessible.description: qsTr("opt-in to share feedback/conversations")
+        }
+    }
+
+    Dialog {
+        id: checkForUpdatesError
+        anchors.centerIn: parent
+        modal: false
+        padding: 20
+        Text {
+            horizontalAlignment: Text.AlignJustify
+            text: qsTr("ERROR: Update system could not find the MaintenanceTool used<br>
+                   to check for updates!<br><br>
+                   Did you install this application using the online installer? If so,<br>
+                   the MaintenanceTool executable should be located one directory<br>
+                   above where this application resides on your filesystem.<br><br>
+                   If you can't start it manually, then I'm afraid you'll have to<br>
+                   reinstall.")
+            color: theme.textErrorColor
+            font.pixelSize: theme.fontSizeLarge
+            Accessible.role: Accessible.Dialog
+            Accessible.name: text
+            Accessible.description: qsTr("Error dialog")
+        }
+        background: Rectangle {
+            anchors.fill: parent
+            color: theme.containerBackground
+            border.width: 1
+            border.color: theme.dialogBorder
+            radius: 10
         }
     }
 
@@ -388,8 +418,27 @@ MySettingsTab {
             ToolTip.visible: hovered
         }
 
-        Rectangle {
+        MySettingsLabel {
+            id: updatesLabel
+            text: qsTr("Check for updates")
+            helpText: qsTr("Click to see if an update to the application is available");
             Layout.row: 14
+            Layout.column: 0
+        }
+
+        MySettingsButton {
+            Layout.row: 14
+            Layout.column: 2
+            Layout.alignment: Qt.AlignRight
+            text: qsTr("Updates");
+            onClicked: {
+                if (!LLM.checkForUpdates())
+                    checkForUpdatesError.open()
+            }
+        }
+
+        Rectangle {
+            Layout.row: 15
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
