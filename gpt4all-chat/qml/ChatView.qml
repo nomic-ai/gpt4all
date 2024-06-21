@@ -594,6 +594,22 @@ Rectangle {
                                     color: theme.containerBackground
                                 }
                             }
+
+                            MyButton {
+                                Layout.topMargin: 50
+                                text: "Load default model  \u2192";
+                                onClicked: {
+                                    var i = comboBox.find(MySettings.userDefaultModel)
+                                    if (i !== -1) {
+                                        comboBox.changeModel(i);
+                                    } else {
+                                        comboBox.changeModel(0);
+                                    }
+                                }
+                                Accessible.role: Accessible.Button
+                                Accessible.name: qsTr("Load the default model")
+                                Accessible.description: qsTr("Loads the default model which can be changed in settings")
+                            }
                         }
                     }
 
