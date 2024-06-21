@@ -156,6 +156,7 @@ void MySettings::restoreLocalDocsDefaults()
 {
     setLocalDocsChunkSize(basicDefaults.value("localdocs/chunkSize").toInt());
     setLocalDocsRetrievalSize(basicDefaults.value("localdocs/retrievalSize").toInt());
+    setLocalDocsFileExtensions(basicDefaults.value("localdocs/fileExtensions").toStringList());
     setLocalDocsShowReferences(basicDefaults.value("localdocs/showReferences").toBool());
 }
 

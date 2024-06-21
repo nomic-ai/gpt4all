@@ -36,6 +36,59 @@ MySettingsTab {
             }
         }
 
+        RowLayout {
+            Layout.topMargin: 15
+            MySettingsLabel {
+                id: extsLabel
+                text: qsTr("Allowed File Extensions")
+                helpText: qsTr("Comma-separated list. LocalDocs will only attempt to process files with these extensions.")
+                Layout.row: 12
+                Layout.column: 0
+            }
+            MyTextField {
+                id: extsField
+                text: MySettings.localDocsFileExtensions.join(',')
+                color: theme.textColor
+                font.pixelSize: theme.fontSizeLarge
+                ToolTip.text: extsLabel.helpText
+                ToolTip.visible: hovered
+                Layout.alignment: Qt.AlignRight
+                Layout.row: 12
+                Layout.column: 2
+                Layout.minimumWidth: 200
+                validator: RegularExpressionValidator {
+                    regularExpression: /([^ ,\/"']+,?)*/
+                }
+                onEditingFinished: {
+                    // split and remove empty elements
+                    var exts = text.split(',').filter(e => e);
+                    // normalize and deduplicate
+                    exts = exts.map(e => e.toLowerCase());
+                    exts = Array.from(new Set(exts));
+                    /* Blacklist common unsupported file extensions. We only support plain text and PDFs, and although we
+                     * reject binary data, we don't want to waste time trying to index files that we don't support. */
+                    exts = exts.filter(e => ![
+                        /* Microsoft documents  */ "rtf", "docx", "ppt", "pptx", "xls", "xlsx",
+                        /* OpenOffice           */ "odt", "ods", "odp", "odg",
+                        /* photos               */ "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "webp",
+                        /* audio                */ "mp3", "wma", "m4a", "wav", "flac",
+                        /* videos               */ "mp4", "mov", "webm", "mkv", "avi", "flv", "wmv",
+                        /* executables          */ "exe", "com", "dll", "so", "dylib", "msi",
+                        /* binary images        */ "iso", "img", "dmg",
+                        /* archives             */ "zip", "jar", "apk", "rar", "7z", "tar", "gz", "xz", "bz2", "tar.gz",
+                                                   "tgz", "tar.xz", "tar.bz2",
+                        /* misc                 */ "bin",
+                    ].includes(e));
+                    MySettings.localDocsFileExtensions = exts;
+                    extsField.text = exts.join(',');
+                    focus = false;
+                }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: extsLabel.text
+                Accessible.description: ToolTip.text
+            }
+        }
+
         Label {
             Layout.topMargin: 15
             color: theme.grayRed900
