@@ -64,6 +64,10 @@ void LocalDocsCollectionsModel::maybeTriggerUpdatingCountChanged()
 LocalDocsModel::LocalDocsModel(QObject *parent)
     : QAbstractListModel(parent)
 {
+    connect(this, &LocalDocsModel::rowsInserted, this, &LocalDocsModel::countChanged);
+    connect(this, &LocalDocsModel::rowsRemoved, this, &LocalDocsModel::countChanged);
+    connect(this, &LocalDocsModel::modelReset, this, &LocalDocsModel::countChanged);
+    connect(this, &LocalDocsModel::layoutChanged, this, &LocalDocsModel::countChanged);
 }
 
 int LocalDocsModel::rowCount(const QModelIndex &parent) const
