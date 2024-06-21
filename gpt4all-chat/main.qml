@@ -528,6 +528,9 @@ Window {
                 function onAddCollectionViewRequested() {
                     addCollectionView.show();
                 }
+                function onAddModelViewRequested() {
+                    addModelView.show();
+                }
             }
         }
 

@@ -24,6 +24,7 @@ Rectangle {
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
     signal addCollectionViewRequested()
+    signal addModelViewRequested()
 
     color: theme.viewBackground
 
@@ -241,6 +242,7 @@ Rectangle {
                     enabled: !currentChat.isServer
                         && !currentChat.trySwitchContextInProgress
                         && !currentChat.isCurrentlyLoading
+                        && ModelList.installedModels.count !== 0
                     model: ModelList.installedModels
                     valueRole: "id"
                     textRole: "name"
@@ -295,6 +297,8 @@ Rectangle {
                             return 25
                         }
                         text: {
+                            if (ModelList.installedModels.count === 0)
+                                return qsTr("No model installed...")
                             if (currentChat.modelLoadingError !== "")
                                 return qsTr("Model loading error...")
                             if (currentChat.trySwitchContextInProgress === 1)
@@ -568,6 +572,8 @@ Rectangle {
                         visible: !currentChat.isModelLoaded && (ModelList.installedModels.count === 0 || currentModelName() === "") && !currentChat.isServer
 
                         ColumnLayout {
+                            visible: ModelList.installedModels.count !== 0
+                            id: modelInstalledLabel
                             anchors.centerIn: parent
                             spacing: 0
 
@@ -594,22 +600,64 @@ Rectangle {
                                     color: theme.containerBackground
                                 }
                             }
+                        }
 
-                            MyButton {
-                                Layout.topMargin: 50
-                                text: "Load default model  \u2192";
-                                onClicked: {
-                                    var i = comboBox.find(MySettings.userDefaultModel)
-                                    if (i !== -1) {
-                                        comboBox.changeModel(i);
-                                    } else {
-                                        comboBox.changeModel(0);
-                                    }
+                        MyButton {
+                            visible: ModelList.installedModels.count !== 0
+                            anchors.top: modelInstalledLabel.bottom
+                            anchors.topMargin: 50
+                            anchors.horizontalCenter: modelInstalledLabel.horizontalCenter
+                            rightPadding: 60
+                            leftPadding: 60
+                            text: qsTr("Load default model  \u2192");
+                            onClicked: {
+                                var i = comboBox.find(MySettings.userDefaultModel)
+                                if (i !== -1) {
+                                    comboBox.changeModel(i);
+                                } else {
+                                    comboBox.changeModel(0);
                                 }
-                                Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Load the default model")
-                                Accessible.description: qsTr("Loads the default model which can be changed in settings")
                             }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Load the default model")
+                            Accessible.description: qsTr("Loads the default model which can be changed in settings")
+                        }
+
+                        ColumnLayout {
+                            id: noModelInstalledLabel
+                            visible: ModelList.installedModels.count === 0
+                            anchors.centerIn: parent
+                            spacing: 0
+
+                            Text {
+                                Layout.alignment: Qt.AlignCenter
+                                text: qsTr("No Model Installed")
+                                color: theme.gray400
+                                font.pixelSize: theme.fontSizeBannerSmall
+                            }
+
+                            Text {
+                                Layout.topMargin: 15
+                                horizontalAlignment: Qt.AlignHCenter
+                                color: theme.gray300
+                                text: qsTr("GPT4All requires that you install at least one\nmodel to get started")
+                                font.pixelSize: theme.fontSizeLarge
+                            }
+                        }
+
+                        MyButton {
+                            visible: ModelList.installedModels.count === 0
+                            anchors.top: noModelInstalledLabel.bottom
+                            anchors.topMargin: 50
+                            anchors.horizontalCenter: noModelInstalledLabel.horizontalCenter
+                            rightPadding: 60
+                            leftPadding: 60
+                            text: qsTr("Install a Model")
+                            onClicked: {
+                                addModelViewRequested();
+                            }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Shows the add model view")
                         }
                     }
 
@@ -1115,7 +1163,7 @@ Rectangle {
 
             RectangularGlow {
                 id: effect
-                visible: !currentChat.isServer
+                visible: !currentChat.isServer && ModelList.installedModels.count !== 0
                 anchors.fill: textInputView
                 glowRadius: 50
                 spread: 0
@@ -1133,7 +1181,7 @@ Rectangle {
                 anchors.leftMargin: Math.max((parent.width - 1310) / 2, 30)
                 anchors.rightMargin: Math.max((parent.width - 1310) / 2, 30)
                 height: Math.min(contentHeight, 200)
-                visible: !currentChat.isServer
+                visible: !currentChat.isServer && ModelList.installedModels.count !== 0
                 MyTextArea {
                     id: textInput
                     color: theme.textColor
@@ -1231,7 +1279,7 @@ Rectangle {
             }
 
             ColorOverlay {
-                visible: currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive
+                visible: ModelList.installedModels.count !== 0 && (currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive)
                 anchors.fill: antennaImage
                 source: antennaImage
                 color: theme.grayRed900
@@ -1299,7 +1347,7 @@ Rectangle {
                 anchors.rightMargin: 15
                 width: 30
                 height: 30
-                visible: !currentChat.isServer
+                visible: !currentChat.isServer && ModelList.installedModels.count !== 0
                 enabled: !currentChat.responseInProgress
                 source: "qrc:/gpt4all/icons/send_message.svg"
                 Accessible.name: qsTr("Send message")
