@@ -1126,6 +1126,10 @@ Rectangle {
                     leftPadding: 20
                     rightPadding: 40
                     enabled: currentChat.isModelLoaded && !currentChat.isServer
+                    onEnabledChanged: {
+                        if (textInput.enabled)
+                            textInput.forceActiveFocus();
+                    }
                     font.pixelSize: theme.fontSizeLarger
                     placeholderText: currentChat.isModelLoaded ? qsTr("Send a message...") : qsTr("Load a model to continue...")
                     Accessible.role: Accessible.EditableText
