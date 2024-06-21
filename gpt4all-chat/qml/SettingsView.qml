@@ -31,6 +31,9 @@ Rectangle {
         ListElement {
             title: qsTr("Model")
         }
+        ListElement {
+            title: qsTr("LocalDocs")
+        }
     }
 
     ColumnLayout {
@@ -143,6 +146,13 @@ Rectangle {
                     title: qsTr("General")
                     tabs: [
                         Component { ModelSettings { } }
+                    ]
+                }
+
+                MySettingsStack {
+                    title: qsTr("General")
+                    tabs: [
+                        Component { LocalDocsSettings { } }
                     ]
                 }
             }
