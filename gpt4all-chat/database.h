@@ -117,6 +117,7 @@ struct CollectionItem {
     size_t totalDocs = 0;
     size_t totalWords = 0;
     size_t totalTokens = 0;
+    QDateTime startUpdate;
     QDateTime lastUpdate;
     QString fileCurrentlyProcessing;
 };
@@ -187,6 +188,9 @@ private:
     void addFolderToWatch(const QString &path);
     void removeFolderFromWatch(const QString &path);
     QList<int> searchEmbeddings(const std::vector<float> &query, const QList<QString> &collections, int nNeighbors);
+
+    void setStartUpdateTime(CollectionItem &item);
+    void setLastUpdateTime(CollectionItem &item);
 
     CollectionItem guiCollectionItem(int folder_id) const;
     void updateGuiForCollectionItem(const CollectionItem &item);

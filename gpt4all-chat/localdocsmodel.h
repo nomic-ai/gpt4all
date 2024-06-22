@@ -65,6 +65,7 @@ public:
         TotalDocsRole,
         TotalWordsRole,
         TotalTokensRole,
+        StartUpdateRole,
         LastUpdateRole,
         FileCurrentlyProcessingRole,
         EmbeddingModelRole,

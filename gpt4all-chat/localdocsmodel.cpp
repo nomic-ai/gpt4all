@@ -113,6 +113,8 @@ QVariant LocalDocsModel::data(const QModelIndex &index, int role) const
             return quint64(item.totalWords);
         case TotalTokensRole:
             return quint64(item.totalTokens);
+        case StartUpdateRole:
+            return item.startUpdate;
         case LastUpdateRole:
             return item.lastUpdate;
         case FileCurrentlyProcessingRole:
@@ -144,6 +146,7 @@ QHash<int, QByteArray> LocalDocsModel::roleNames() const
     roles[TotalDocsRole] = "totalDocs";
     roles[TotalWordsRole] = "totalWords";
     roles[TotalTokensRole] = "totalTokens";
+    roles[StartUpdateRole] = "startUpdate";
     roles[LastUpdateRole] = "lastUpdate";
     roles[FileCurrentlyProcessingRole] = "fileCurrentlyProcessing";
     roles[EmbeddingModelRole] = "embeddingModel";
@@ -191,6 +194,8 @@ void LocalDocsModel::updateCollectionItem(const CollectionItem &item)
             changed.append(TotalWordsRole);
         if (stored.totalTokens != item.totalTokens)
             changed.append(TotalTokensRole);
+        if (stored.startUpdate != item.startUpdate)
+            changed.append(StartUpdateRole);
         if (stored.lastUpdate != item.lastUpdate)
             changed.append(LastUpdateRole);
         if (stored.fileCurrentlyProcessing != item.fileCurrentlyProcessing)

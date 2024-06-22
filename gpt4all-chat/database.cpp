@@ -106,10 +106,11 @@ static const QString INIT_DB_SQL[] = {
         );
     )"_s, uR"(
         create table collections(
-            id               integer primary key,
-            name             text unique not null,
-            last_update_time integer,
-            embedding_model  text
+            id                  integer primary key,
+            name                text unique not null,
+            start_update_time   integer,
+            last_update_time    integer,
+            embedding_model     text
         );
     )"_s, uR"(
         create table folders(
@@ -312,8 +313,8 @@ bool sqlGetChunkFolders(QSqlQuery &q, const QList<int> &chunk_ids, QList<int> &f
 }
 
 static const QString INSERT_COLLECTION_SQL = uR"(
-    insert into collections(name, last_update_time, embedding_model)
-        values(?, ?, ?)
+    insert into collections(name, start_update_time, last_update_time, embedding_model)
+        values(?, ?, ?, ?)
         returning id;
     )"_s;
 
@@ -337,7 +338,7 @@ static const QString SELECT_COLLECTIONS_SQL_V1 = uR"(
     )"_s;
 
 static const QString SELECT_COLLECTIONS_SQL_V2 = uR"(
-    select c.id, c.name, f.folder_path, f.id, c.last_update_time, c.embedding_model
+    select c.id, c.name, f.folder_path, f.id, c.start_update_time, c.last_update_time, c.embedding_model
     from collections c
     join collection_items ci on ci.collection_id = c.id
     join folders f on ci.folder_id = f.id
@@ -345,7 +346,7 @@ static const QString SELECT_COLLECTIONS_SQL_V2 = uR"(
     )"_s;
 
 static const QString SELECT_COLLECTION_BY_NAME_SQL = uR"(
-    select id, name, last_update_time, embedding_model
+    select id, name, start_update_time, last_update_time, embedding_model
     from collections c
     where name = ?;
     )"_s;
@@ -356,12 +357,21 @@ static const QString SET_COLLECTION_EMBEDDING_MODEL_SQL = uR"(
     where name = ?;
     )"_s;
 
-static bool addCollection(QSqlQuery &q, const QString &collection_name, const QDateTime &last_update,
-                          const QString &embedding_model, CollectionItem &item)
+static const QString UPDATE_START_UPDATE_TIME_SQL = uR"(
+    update collections set start_update_time = ? where id = ?;
+)"_s;
+
+static const QString UPDATE_LAST_UPDATE_TIME_SQL = uR"(
+    update collections set last_update_time = ? where id = ?;
+)"_s;
+
+static bool addCollection(QSqlQuery &q, const QString &collection_name, const QDateTime &start_update,
+                          const QDateTime &last_update, const QString &embedding_model, CollectionItem &item)
 {
     if (!q.prepare(INSERT_COLLECTION_SQL))
         return false;
     q.addBindValue(collection_name);
+    q.addBindValue(start_update);
     q.addBindValue(last_update);
     q.addBindValue(embedding_model);
     if (!q.exec() || !q.next())
@@ -410,7 +420,12 @@ static QList<CollectionItem> sqlExtractCollections(QSqlQuery &q, bool with_folde
         i.installed = true;
 
         if (version >= 2) {
-            i.lastUpdate = q.value(idx++).toDateTime();
+            bool ok;
+            const qint64 start_update = q.value(idx++).toLongLong(&ok);
+            if (ok) i.startUpdate = QDateTime::fromMSecsSinceEpoch(start_update);
+            const qint64 last_update = q.value(idx++).toLongLong(&ok);
+            if (ok) i.lastUpdate = QDateTime::fromMSecsSinceEpoch(last_update);
+
             i.embeddingModel = q.value(idx++).toString();
         }
         if (i.embeddingModel.isNull()) {
@@ -467,6 +482,24 @@ static bool setCollectionEmbeddingModel(QSqlQuery &q, const QString &collection_
         return false;
     q.addBindValue(embedding_model);
     q.addBindValue(collection_name);
+    return q.exec();
+}
+
+static bool updateStartUpdateTime(QSqlQuery &q, int id, qint64 update_time)
+{
+    if (!q.prepare(UPDATE_START_UPDATE_TIME_SQL))
+        return false;
+    q.addBindValue(update_time);
+    q.addBindValue(id);
+    return q.exec();
+}
+
+static bool updateLastUpdateTime(QSqlQuery &q, int id, qint64 update_time)
+{
+    if (!q.prepare(UPDATE_LAST_UPDATE_TIME_SQL))
+        return false;
+    q.addBindValue(update_time);
+    q.addBindValue(id);
     return q.exec();
 }
 
@@ -911,6 +944,26 @@ Database::~Database()
     delete m_embLLM;
 }
 
+void Database::setStartUpdateTime(CollectionItem &item)
+{
+    QSqlQuery q(m_db);
+    const qint64 update_time = QDateTime::currentMSecsSinceEpoch();
+    if (!updateStartUpdateTime(q, item.collection_id, update_time))
+        qWarning() << "Database ERROR: failed to set start update time:" << q.lastError();
+    else
+        item.startUpdate = QDateTime::fromMSecsSinceEpoch(update_time);
+}
+
+void Database::setLastUpdateTime(CollectionItem &item)
+{
+    QSqlQuery q(m_db);
+    const qint64 update_time = QDateTime::currentMSecsSinceEpoch();
+    if (!updateLastUpdateTime(q, item.collection_id, update_time))
+        qWarning() << "Database ERROR: failed to set last update time:" << q.lastError();
+    else
+        item.lastUpdate = QDateTime::fromMSecsSinceEpoch(update_time);
+}
+
 CollectionItem Database::guiCollectionItem(int folder_id) const
 {
     Q_ASSERT(m_collectionMap.contains(folder_id));
@@ -950,6 +1003,10 @@ void Database::scheduleNext(int folder_id, size_t countForFolder)
             sendChunkList(); // send any remaining embedding chunks to llm
         item.indexing = false;
         item.installed = true;
+
+        // Set the last update if we are done
+        if (item.startUpdate > item.lastUpdate && item.currentEmbeddingsToIndex == 0)
+            setLastUpdateTime(item);
     }
     updateGuiForCollectionItem(item);
 }
@@ -1023,6 +1080,11 @@ size_t Database::chunkStream(QTextStream &stream, int folder_id, int document_id
 
     if (chunks) {
         CollectionItem item = guiCollectionItem(folder_id);
+
+        // Set the start update if we haven't done so already
+        if (item.startUpdate <= item.lastUpdate && item.currentEmbeddingsToIndex == 0)
+            setStartUpdateTime(item);
+
         item.currentEmbeddingsToIndex += chunks;
         item.totalEmbeddingsToIndex += chunks;
         item.totalWords += addedWords;
@@ -1075,6 +1137,12 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
         CollectionItem item = guiCollectionItem(key.folder_id);
         item.currentEmbeddingsToIndex -= stat.nAdded;
         item.fileCurrentlyProcessing = stat.lastFile;
+
+        // Set the last update if we are done
+        Q_ASSERT(item.startUpdate > item.lastUpdate);
+        if (!item.indexing && item.currentEmbeddingsToIndex == 0)
+            setLastUpdateTime(item);
+
         updateGuiForCollectionItem(item);
     }
 }
@@ -1595,7 +1663,8 @@ bool Database::addFolder(const QString &collection, const QString &path, const Q
     if (!item) {
         item.emplace();
         // FIXME_BROKEN The last update time is not getting added when the embedding completes...
-        if (!addCollection(q, collection, QDateTime() /*last_update*/, embedding_model /*embedding_model*/, *item)) {
+        if (!addCollection(q, collection, QDateTime() /*start_update*/, QDateTime() /*last_update*/,
+            embedding_model /*embedding_model*/, *item)) {
             qWarning().nospace() << "ERROR: Cannot add collection " << collection << ": " << q.lastError();
             return false;
         }
