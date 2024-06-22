@@ -170,8 +170,6 @@ Rectangle {
                     localDocsViewRequested()
                 }
             }
-
-            // FIXME_BLOCKER: Must include advanced settings
         }
     }
 }
