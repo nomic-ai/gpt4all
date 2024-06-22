@@ -327,7 +327,7 @@ Rectangle {
                         }
 
                         RowLayout {
-                            spacing: 5
+                            spacing: 7
                             Text {
                                 text: "%1 – %2".arg(qsTr("%n file(s)", "", model.totalDocs)).arg(qsTr("%n word(s)", "", model.totalWords))
                                 elide: Text.ElideRight
@@ -335,16 +335,17 @@ Rectangle {
                                 font.pixelSize: theme.fontSizeSmaller
                             }
                             Text {
-                                text: Qt.formatDateTime(model.lastUpdate)
-                                elide: Text.ElideRight
-                                color: theme.gray500
-                                font.pixelSize: theme.fontSizeSmaller
-                            }
-                            Text {
                                 text: model.embeddingModel
                                 elide: Text.ElideRight
                                 color: theme.logoColor
                                 font.bold: true
+                                font.pixelSize: theme.fontSizeSmaller
+                            }
+                            Text {
+                                visible: Qt.formatDateTime(model.lastUpdate) !== ""
+                                text: Qt.formatDateTime(model.lastUpdate)
+                                elide: Text.ElideRight
+                                color: theme.gray500
                                 font.pixelSize: theme.fontSizeSmaller
                             }
                             Text {
