@@ -17,9 +17,6 @@ Rectangle {
 
     signal addModelViewRequested()
 
-    // FIXME_BLOCKER If we don't have any installed models we should present a button in the middle
-    // to add a new model as per design
-
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 20
