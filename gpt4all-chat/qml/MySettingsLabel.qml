@@ -5,6 +5,7 @@ import QtQuick.Controls.Basic
 import QtQuick.Layouts
 
 ColumnLayout {
+    id: root
     property alias text: mainTextLabel.text
     property alias helpText: helpTextLabel.text
 
@@ -12,7 +13,7 @@ ColumnLayout {
     property alias wrapMode: mainTextLabel.wrapMode
     property alias font: mainTextLabel.font
     property alias horizontalAlignment: mainTextLabel.horizontalAlignment
-//    property alias linkActivated: mainTextLabel.linkActivated
+    signal linkActivated(link : url);
     property alias color: mainTextLabel.color
     property alias linkColor: mainTextLabel.linkColor
 
@@ -21,6 +22,9 @@ ColumnLayout {
         color: theme.settingsTitleTextColor
         font.pixelSize: theme.fontSizeSmall
         font.bold: true
+        onLinkActivated: function(link) {
+            root.linkActivated(link);
+        }
     }
     Label {
         id: helpTextLabel
@@ -30,5 +34,8 @@ ColumnLayout {
         text: mainTextLabel.text
         font.pixelSize: theme.fontSizeSmaller
         font.bold: false
+        onLinkActivated: function(link) {
+            root.linkActivated(link);
+        }
     }
 }

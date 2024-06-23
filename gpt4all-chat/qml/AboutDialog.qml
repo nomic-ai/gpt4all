@@ -74,8 +74,7 @@ MyDialog {
             wrapMode: Text.WordWrap
             text: qsTr("Check out our discord channel <a href=\"https://discord.gg/4M2QFmTt2k\">https://discord.gg/4M2QFmTt2k</a>")
             font.pixelSize: theme.fontSizeLarge
-            // FIXME_BLOCKER The settings label class needs to handle links
-//            onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
+            onLinkActivated: { Qt.openUrlExternally("https://discord.gg/4M2QFmTt2k") }
             color: theme.textColor
             linkColor: theme.linkColor
 
@@ -90,8 +89,7 @@ MyDialog {
             wrapMode: Text.WordWrap
             text: qsTr("Thank you to <a href=\"https://home.nomic.ai\">Nomic AI</a> and the community for contributing so much great data, code, ideas, and energy to the growing open source AI ecosystem!")
             font.pixelSize: theme.fontSizeLarge
-            // FIXME_BLOCKER The settings label class needs to handle links
-//            onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
+            onLinkActivated: { Qt.openUrlExternally("https://home.nomic.ai") }
             color: theme.textColor
             linkColor: theme.linkColor
 
