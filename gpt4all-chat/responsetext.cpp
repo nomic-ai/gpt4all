@@ -883,6 +883,12 @@ QSizeF ContextLinkInterface::intrinsicSize(QTextDocument *doc, int posInDocument
     return textSize;
 }
 
+// TODO (Adam) This class replaces characters in the text in order to provide markup and syntax highlighting
+// which destroys the original text in favor of the replaced text. This is a problem when we select
+// text and then the user tries to 'copy' the text: the original text should be placed in the clipboard
+// not the replaced text. A possible solution is to have this class keep a mapping of the original
+// indices and the replacement indices and then use the original text that is stored in memory in the
+// chat class to populate the clipboard.
 ResponseText::ResponseText(QObject *parent)
     : QObject{parent}
     , m_textDocument(nullptr)
