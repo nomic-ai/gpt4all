@@ -37,6 +37,8 @@ enum Language {
     Php
 };
 
+// TODO (Adam) These should be themeable and not hardcoded since they are quite harsh on the eyes in
+// light mode.
 
 static QColor defaultColor      = "#d1d5db"; // white
 static QColor keywordColor      = "#2e95d3"; // blue
