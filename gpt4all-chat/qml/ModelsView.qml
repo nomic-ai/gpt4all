@@ -208,7 +208,7 @@ Rectangle {
                                         color: theme.logoColor
                                     }
                                     Text {
-                                        text: ramrequired + " GB" // FIXME_BLOCKER This can be done in C++ to add the "GB" I think?
+                                        text: ramrequired + qsTr(" GB")
                                         font.pixelSize: theme.fontSizeSmaller
                                         font.bold: true
                                     }
