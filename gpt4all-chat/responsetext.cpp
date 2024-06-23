@@ -1145,6 +1145,8 @@ void ResponseText::handleCodeBlocks()
         QTextTableCell code = codeTable->cellAt(0, 0);
 
         QTextCharFormat codeBlockCharFormat;
+        codeBlockCharFormat.setForeground(defaultColor);
+
         QFont monospaceFont("Courier");
         monospaceFont.setPointSize(QGuiApplication::font().pointSize() + 2);
         if (monospaceFont.family() != "Courier") {
