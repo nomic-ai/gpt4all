@@ -1157,15 +1157,13 @@ void ResponseText::handleCodeBlocks()
         codeBlockCharFormat.setFont(monospaceFont); // Update the font for the codeblock
         codeCursor.setCharFormat(codeBlockCharFormat);
 
-        if (!codeLanguage.isEmpty()) {
-            codeCursor.block().setUserState(stringToLanguage(codeLanguage));
-            for (const QString &line : lines) {
-                codeCursor.insertText(line);
+        codeCursor.block().setUserState(stringToLanguage(codeLanguage));
+        for (int i = 0; i < lines.size(); ++i) {
+            codeCursor.insertText(lines[i]);
+            if (i < lines.size() - 1) {
                 codeCursor.insertBlock();
                 codeCursor.block().setUserState(stringToLanguage(codeLanguage));
             }
-        } else {
-            codeCursor.insertText(lines.join("\n"));
         }
 
         cursor = mainFrame->lastCursorPosition();
