@@ -673,7 +673,7 @@ Rectangle {
                             Layout.leftMargin: 50
                             Layout.rightMargin: 50
                             Layout.alignment: Qt.AlignHCenter
-                            spacing: 50
+                            spacing: 25
                             model: chatModel
 
                             ScrollBar.vertical: ScrollBar {
@@ -684,20 +684,56 @@ Rectangle {
                             Accessible.name: qsTr("Conversation with the model")
                             Accessible.description: qsTr("prompt / response pairs from the conversation")
 
-                            delegate: RowLayout {
+                            delegate: GridLayout {
                                 width: listView.contentItem.width
-                                ColumnLayout {
+                                rows: 4
+                                columns: 2
+
+                                Image {
+                                    Layout.row: 0
+                                    Layout.column: 0
+                                    Layout.alignment: Qt.AlignTop
+                                    Layout.preferredWidth: 38
+                                    Layout.preferredHeight: 38
+                                    visible: name !== qsTr("Response: ")
+                                    sourceSize.width: 64
+                                    sourceSize.height: 64
+                                    fillMode: Image.PreserveAspectFit
+                                    mipmap: true
+                                    source: "qrc:/gpt4all/icons/you.svg"
+                                }
+
+                                Image {
+                                    Layout.row: 0
+                                    Layout.column: 0
+                                    Layout.alignment: Qt.AlignTop
+                                    Layout.preferredWidth: 38
+                                    Layout.preferredHeight: 38
+                                    visible: name === qsTr("Response: ")
+                                    sourceSize.width: 64
+                                    sourceSize.height: 64
+                                    fillMode: Image.PreserveAspectFit
+                                    mipmap: true
+                                    source: "qrc:/gpt4all/icons/alt_logo.svg"
+                                }
+
+                                Item {
+                                    Layout.row: 0
+                                    Layout.column: 1
                                     Layout.fillWidth: true
+                                    Layout.preferredHeight: 38
                                     RowLayout {
-                                        spacing: 10
-                                        Layout.fillWidth: true
+                                        spacing: 5
+                                        anchors.left: parent.left
+                                        anchors.top: parent.top
+                                        anchors.bottom: parent.bottom
+
                                         TextArea {
-                                            // FIXME_BLOCKER Need icons for this
                                             text: name === qsTr("Response: ") ? qsTr("GPT4All") : qsTr("You")
                                             padding: 0
-                                            font.pixelSize: theme.fontSizeLargest
+                                            font.pixelSize: theme.fontSizeLarger
                                             font.bold: true
-                                            color: theme.titleTextColor
+                                            color: theme.green500
                                             readOnly: true
                                         }
                                         Text {
@@ -733,128 +769,170 @@ Rectangle {
                                             }
                                         }
                                     }
+                                }
 
-                                    ColumnLayout {
-                                        visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
-                                        RowLayout {
-                                            Layout.topMargin: 15
-                                            Image {
-                                                sourceSize.width: 24
-                                                sourceSize.height: 24
-                                                mipmap: true
-                                                source: "qrc:/gpt4all/icons/db.svg"
-                                            }
+                                Image {
+                                    Layout.row: 1
+                                    Layout.column: 0
+                                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                                    Layout.topMargin: 5
+                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
+                                    sourceSize.width: 24
+                                    sourceSize.height: 24
+                                    mipmap: true
+                                    source: "qrc:/gpt4all/icons/db.svg"
+                                }
 
-                                            Text {
-                                                text: qsTr("\u00B7 Sources")
-                                                font.pixelSize: theme.fontSizeLarger
-                                            }
-                                        }
-                                        Flow {
-                                            Layout.fillWidth: true
-                                            Layout.topMargin: 5
-                                            spacing: 10
-                                            visible: consolidatedSources.length !== 0
-                                            Repeater {
-                                                model: consolidatedSources
+                                RowLayout {
+                                    Layout.row: 1
+                                    Layout.column: 1
+                                    Layout.topMargin: 5
+                                    Layout.alignment: Qt.AlignVCenter
+                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
+                                    TextArea {
+                                        text: qsTr("Sources")
+                                        padding: 0
+                                        readOnly: true
+                                        font.pixelSize: theme.fontSizeLarge
+                                        font.bold: true
+                                        color: theme.textColor
+                                    }
+                                }
 
-                                                delegate: Rectangle {
-                                                    radius: 10
-                                                    color: ma.containsMouse ? theme.gray200 : theme.gray100
-                                                    width: 200
-                                                    height: 75
+                                ColumnLayout {
+                                    Layout.row: 2
+                                    Layout.column: 1
+                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
+                                    Flow {
+                                        Layout.fillWidth: true
+                                        Layout.topMargin: 5
+                                        spacing: 10
+                                        visible: consolidatedSources.length !== 0
+                                        Repeater {
+                                            model: consolidatedSources
 
+                                            delegate: Rectangle {
+                                                radius: 10
+                                                color: ma.containsMouse ? theme.gray200 : theme.gray100
+                                                width: 200
+                                                height: 75
+
+                                                MouseArea {
+                                                    id: ma
+                                                    enabled: modelData.path !== ""
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    onClicked: function() {
+                                                        Qt.openUrlExternally("file://" + modelData.path)
+                                                    }
+                                                }
+
+                                                Rectangle {
+                                                    id: debugTooltip
+                                                    anchors.right: parent.right
+                                                    anchors.bottom: parent.bottom
+                                                    width: 24
+                                                    height: 24
+                                                    color: "transparent"
+                                                    ToolTip {
+                                                        parent: debugTooltip
+                                                        visible: debugMouseArea.containsMouse
+                                                        text: modelData.text
+                                                        contentWidth: 900
+                                                        delay: 500
+                                                    }
                                                     MouseArea {
-                                                        id: ma
-                                                        enabled: modelData.path !== ""
+                                                        id: debugMouseArea
                                                         anchors.fill: parent
                                                         hoverEnabled: true
-                                                        onClicked: function() {
-                                                            Qt.openUrlExternally("file://" + modelData.path)
-                                                        }
                                                     }
+                                                }
 
-                                                    Rectangle {
-                                                        id: debugTooltip
-                                                        anchors.right: parent.right
-                                                        anchors.bottom: parent.bottom
-                                                        width: 24
-                                                        height: 24
-                                                        color: "transparent"
-                                                        ToolTip {
-                                                            parent: debugTooltip
-                                                            visible: debugMouseArea.containsMouse
-                                                            text: modelData.text
-                                                            contentWidth: 900
-                                                            delay: 500
-                                                        }
-                                                        MouseArea {
-                                                            id: debugMouseArea
-                                                            anchors.fill: parent
-                                                            hoverEnabled: true
-                                                        }
-                                                    }
-
+                                                ColumnLayout {
+                                                    anchors.left: parent.left
+                                                    anchors.top: parent.top
+                                                    anchors.margins: 10
+                                                    spacing: 0
                                                     RowLayout {
-                                                        anchors.fill: parent
-                                                        ColumnLayout {
-                                                            spacing: 10
-                                                            Layout.alignment: Qt.AlignTop
-                                                            Layout.margins: 10
-                                                            RowLayout {
-                                                                Image {
-                                                                    sourceSize.width: 24
-                                                                    sourceSize.height: 24
-                                                                    mipmap: true
-                                                                    source: {
-                                                                        if (modelData.file.endsWith(".txt"))
-                                                                            return "qrc:/gpt4all/icons/file-txt.svg"
-                                                                        else if (modelData.file.endsWith(".pdf"))
-                                                                            return "qrc:/gpt4all/icons/file-pdf.svg"
-                                                                        else if (modelData.file.endsWith(".md"))
-                                                                            return "qrc:/gpt4all/icons/file-md.svg"
-                                                                        else
-                                                                            return "qrc:/gpt4all/icons/file.svg"
-                                                                    }
-                                                                }
-                                                                Text {
-                                                                    Layout.maximumWidth: 180
-                                                                    text: modelData.collection !== "" ? modelData.collection : qsTr("LocalDocs")
-                                                                    font.pixelSize: theme.fontSizeLarge
-                                                                    font.bold: true
-                                                                    color: theme.grayRed900
-                                                                    elide: Qt.ElideRight
-                                                                }
-                                                            }
-                                                            Text {
-                                                                Layout.fillHeight: true
-                                                                Layout.maximumWidth: 180
-                                                                height: 75
-                                                                text: modelData.file
-                                                                font.pixelSize: theme.fontSizeSmall
-                                                                elide: Qt.ElideRight
-                                                                wrapMode: Text.WrapAnywhere
+                                                        id: title
+                                                        spacing: 5
+                                                        Layout.maximumWidth: 180
+                                                        Image {
+                                                            sourceSize.width: 24
+                                                            sourceSize.height: 24
+                                                            mipmap: true
+                                                            source: {
+                                                                if (modelData.file.endsWith(".txt"))
+                                                                    return "qrc:/gpt4all/icons/file-txt.svg"
+                                                                else if (modelData.file.endsWith(".pdf"))
+                                                                    return "qrc:/gpt4all/icons/file-pdf.svg"
+                                                                else if (modelData.file.endsWith(".md"))
+                                                                    return "qrc:/gpt4all/icons/file-md.svg"
+                                                                else
+                                                                    return "qrc:/gpt4all/icons/file.svg"
                                                             }
                                                         }
+                                                        Text {
+                                                            Layout.maximumWidth: 156
+                                                            text: modelData.collection !== "" ? modelData.collection : qsTr("LocalDocs")
+                                                            font.pixelSize: theme.fontSizeLarge
+                                                            font.bold: true
+                                                            color: theme.grayRed900
+                                                            elide: Qt.ElideRight
+                                                        }
+                                                        Rectangle {
+                                                            Layout.fillWidth: true
+                                                            color: "transparent"
+                                                            height: 1
+                                                        }
+                                                    }
+                                                    Text {
+                                                        Layout.fillHeight: true
+                                                        Layout.maximumWidth: 180
+                                                        Layout.maximumHeight: 55 - title.height
+                                                        text: modelData.file
+                                                        font.pixelSize: theme.fontSizeSmall
+                                                        elide: Qt.ElideRight
+                                                        wrapMode: Text.WrapAnywhere
                                                     }
                                                 }
                                             }
                                         }
-                                        RowLayout {
-                                            Layout.topMargin: 15
-                                            Image {
-                                                sourceSize.width: 24
-                                                sourceSize.height: 24
-                                                mipmap: true
-                                                source: "qrc:/gpt4all/icons/info.svg"
-                                            }
-                                            Text {
-                                                text: qsTr("\u00B7 Answer")
-                                                font.pixelSize: theme.fontSizeLarger
-                                            }
-                                        }
                                     }
+                                }
 
+                                Image {
+                                    Layout.row: 3
+                                    Layout.column: 0
+                                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                                    Layout.topMargin: 5
+                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
+                                    sourceSize.width: 24
+                                    sourceSize.height: 24
+                                    mipmap: true
+                                    source: "qrc:/gpt4all/icons/info.svg"
+                                }
+
+                                RowLayout {
+                                    Layout.row: 3
+                                    Layout.column: 1
+                                    Layout.topMargin: 5
+                                    Layout.alignment: Qt.AlignVCenter
+                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
+                                    TextArea {
+                                        text: qsTr("Answer")
+                                        padding: 0
+                                        font.pixelSize: theme.fontSizeLarge
+                                        font.bold: true
+                                        readOnly: true
+                                        color: theme.textColor
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.row: 4
+                                    Layout.column: 1
+                                    Layout.fillWidth: true
                                     TextArea {
                                         id: myTextArea
                                         text: value

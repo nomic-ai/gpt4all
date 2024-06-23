@@ -190,6 +190,8 @@ qt_add_qml_module(chat
       icons/logo.svg
       icons/logo-32.png
       icons/logo-48.png
+      icons/you.svg
+      icons/alt_logo.svg
 )
 
 set_target_properties(chat PROPERTIES

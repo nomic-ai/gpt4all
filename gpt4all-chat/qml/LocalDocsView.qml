@@ -432,25 +432,6 @@ Rectangle {
                             }
                         }
                     }
-
-//                    Item {
-//                        id: buttons
-//                        anchors.right: parent.right
-//                        anchors.verticalCenter: parent.verticalCenter
-//                        anchors.margins: 20
-//                        width: removeButton.width
-//                        height:removeButton.height
-//                        MySettingsButton {
-//                            id: removeButton
-//                            anchors.centerIn: parent
-//                            text: qsTr("Remove")
-//                            visible: !item.removing
-//                            onClicked: {
-//                                item.removing = true
-//                                LocalDocs.removeFolder(collection, folder_path)
-//                            }
-//                        }
-//                    }
                 }
             }
         }
