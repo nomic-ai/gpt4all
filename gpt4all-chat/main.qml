@@ -422,7 +422,7 @@ Window {
                 ColorOverlay {
                     anchors.fill: image
                     source: image
-                    color: image.hovered ? theme.logoColorHovered : theme.logoColor
+                    color: image.hovered ? theme.mutedDarkTextColorHovered : theme.mutedDarkTextColor
                     TapHandler {
                         onTapped: function(eventPoint, button) {
                             Qt.openUrlExternally("https://nomic.ai")

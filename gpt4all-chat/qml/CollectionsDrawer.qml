@@ -88,7 +88,7 @@ Rectangle {
                             Layout.alignment: Qt.AlignLeft
                             text: "%1 – %2".arg(qsTr("%n file(s)", "", model.totalDocs)).arg(qsTr("%n word(s)", "", model.totalWords))
                             elide: Text.ElideRight
-                            color: theme.gray500
+                            color: theme.mutedTextColor
                             font.pixelSize: theme.fontSizeSmaller
                         }
                         RowLayout {
@@ -140,7 +140,7 @@ Rectangle {
                     font.pixelSize: theme.fontSizeLarger
                     wrapMode: Text.WordWrap
                     elide: Text.ElideRight
-                    color: theme.gray500
+                    color: theme.mutedTextColor
                 }
             }
         }

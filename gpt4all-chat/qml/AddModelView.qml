@@ -610,7 +610,7 @@ Rectangle {
                                     Text {
                                         text: qsTr("File size")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: filesize
@@ -631,7 +631,7 @@ Rectangle {
                                     Text {
                                         text: qsTr("RAM required")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: ramrequired + qsTr(" GB")
@@ -650,9 +650,9 @@ Rectangle {
                                     Layout.leftMargin: 20
                                     Layout.rightMargin: 20
                                     Text {
-                                        text: qsTr("Paremeters")
+                                        text: qsTr("Parameters")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: parameters
@@ -673,7 +673,7 @@ Rectangle {
                                     Text {
                                         text: qsTr("Quant")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: quant
@@ -694,7 +694,7 @@ Rectangle {
                                     Text {
                                         text: qsTr("Type")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: type

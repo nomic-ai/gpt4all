@@ -359,7 +359,7 @@ Rectangle {
                         anchors.rightMargin: 50
                         anchors.verticalCenter: parent.verticalCenter
                         source: "qrc:/gpt4all/icons/eject.svg"
-                        backgroundColor: theme.gray300
+                        backgroundColor: theme.mutedLightTextColor
                         backgroundColorHovered: theme.iconBackgroundLight
                         onClicked: {
                             currentChat.forceUnloadModel();
@@ -379,7 +379,7 @@ Rectangle {
                         anchors.rightMargin: ejectButton.visible ? 10 : 50
                         anchors.verticalCenter: parent.verticalCenter
                         source: "qrc:/gpt4all/icons/regenerate.svg"
-                        backgroundColor: theme.gray300
+                        backgroundColor: theme.mutedLightTextColor
                         backgroundColorHovered: theme.iconBackgroundLight
                         onClicked: {
                             if (currentChat.isModelLoaded)
@@ -632,14 +632,14 @@ Rectangle {
                             Text {
                                 Layout.alignment: Qt.AlignCenter
                                 text: qsTr("No Model Installed")
-                                color: theme.gray400
+                                color: theme.mutedLightTextColor
                                 font.pixelSize: theme.fontSizeBannerSmall
                             }
 
                             Text {
                                 Layout.topMargin: 15
                                 horizontalAlignment: Qt.AlignHCenter
-                                color: theme.gray300
+                                color: theme.mutedLighterTextColor
                                 text: qsTr("GPT4All requires that you install at least one\nmodel to get started")
                                 font.pixelSize: theme.fontSizeLarge
                             }
@@ -740,7 +740,7 @@ Rectangle {
                                             visible: name === qsTr("Response: ")
                                             font.pixelSize: theme.fontSizeLarger
                                             text: currentModelName()
-                                            color: theme.gray500
+                                            color: theme.mutedTextColor
                                         }
                                         RowLayout {
                                             visible: (currentResponse ? true : false) && ((value === "" && currentChat.responseInProgress) || currentChat.isRecalc)
@@ -752,7 +752,7 @@ Rectangle {
                                                 Accessible.description: qsTr("The model is thinking")
                                             }
                                             Text {
-                                                color: theme.gray500
+                                                color: theme.mutedTextColor
                                                 font.pixelSize: theme.fontSizeLarger
                                                 text: {
                                                     if (currentChat.isRecalc)
@@ -813,7 +813,7 @@ Rectangle {
 
                                             delegate: Rectangle {
                                                 radius: 10
-                                                color: ma.containsMouse ? theme.gray200 : theme.gray100
+                                                color: ma.containsMouse ? theme.sourcesBackgroundHovered : theme.sourcesBackground
                                                 width: 200
                                                 height: 75
 
@@ -877,7 +877,7 @@ Rectangle {
                                                             text: modelData.collection !== "" ? modelData.collection : qsTr("LocalDocs")
                                                             font.pixelSize: theme.fontSizeLarge
                                                             font.bold: true
-                                                            color: theme.grayRed900
+                                                            color: theme.styledTextColor
                                                             elide: Qt.ElideRight
                                                         }
                                                         Rectangle {
@@ -1353,7 +1353,7 @@ Rectangle {
                 visible: ModelList.installedModels.count !== 0 && (currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive)
                 anchors.fill: antennaImage
                 source: antennaImage
-                color: theme.grayRed900
+                color: theme.styledTextColor
             }
 
             SequentialAnimation {

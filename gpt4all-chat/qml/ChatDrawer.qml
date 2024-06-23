@@ -109,7 +109,7 @@ Rectangle {
                             topPadding: 15
                             bottomPadding: 5
                             text: parent.section
-                            color: theme.grayRed900
+                            color: theme.styledTextColor
                             font.pixelSize: theme.fontSizeLarge
                         }
                     }
@@ -128,7 +128,7 @@ Rectangle {
                     property bool trashQuestionDisplayed: false
                     visible: !isServer || MySettings.serverChat
                     z: isCurrent ? 199 : 1
-                    color: isCurrent ? theme.white : "transparent"
+                    color: isCurrent ? theme.selectedBackground : "transparent"
                     border.width: isCurrent
                     border.color: theme.dividerColor
                     radius: 10
@@ -137,7 +137,7 @@ Rectangle {
                         id: chatName
                         anchors.left: parent.left
                         anchors.right: buttons.left
-                        color: theme.grayRed900
+                        color: theme.styledTextColor
                         topPadding: 15
                         bottomPadding: 15
                         focus: false

@@ -34,14 +34,14 @@ Rectangle {
                 Text {
                     Layout.alignment: Qt.AlignCenter
                     text: qsTr("No Models Installed")
-                    color: theme.gray400
+                    color: theme.mutedLightTextColor
                     font.pixelSize: theme.fontSizeBannerSmall
                 }
 
                 Text {
                     Layout.topMargin: 15
                     horizontalAlignment: Qt.AlignHCenter
-                    color: theme.gray300
+                    color: theme.mutedLighterTextColor
                     text: qsTr("Install a model to get started using GPT4All")
                     font.pixelSize: theme.fontSizeLarge
                 }
@@ -84,7 +84,7 @@ Rectangle {
                 Text {
                     text: qsTr("Locally installed large language models")
                     font.pixelSize: theme.fontSizeLarge
-                    color: theme.mutedTextColor
+                    color: theme.titleInfoTextColor
                 }
             }
 
@@ -181,7 +181,7 @@ Rectangle {
                                     Text {
                                         text: qsTr("File size")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: filesize
@@ -202,7 +202,7 @@ Rectangle {
                                     Text {
                                         text: qsTr("RAM required")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: ramrequired + qsTr(" GB")
@@ -221,9 +221,9 @@ Rectangle {
                                     Layout.leftMargin: 20
                                     Layout.rightMargin: 20
                                     Text {
-                                        text: qsTr("Paremeters")
+                                        text: qsTr("Parameters")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: parameters
@@ -244,7 +244,7 @@ Rectangle {
                                     Text {
                                         text: qsTr("Quant")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: quant
@@ -263,9 +263,9 @@ Rectangle {
                                     Layout.leftMargin: 20
                                     Layout.rightMargin: 20
                                     Text {
-                                        text: qsTr("Tyoe")
+                                        text: qsTr("Type")
                                         font.pixelSize: theme.fontSizeSmaller
-                                        color: theme.logoColor
+                                        color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: type

@@ -278,7 +278,7 @@ MySettingsTab {
             Layout.fillWidth: true
             spacing: 10
             Label {
-                color: theme.grayRed900
+                color: theme.styledTextColor
                 font.pixelSize: theme.fontSizeLarge
                 font.bold: true
                 text: "Advanced"
@@ -287,7 +287,7 @@ MySettingsTab {
             Rectangle {
                 Layout.fillWidth: true
                 height: 2
-                color: theme.grayRed500 // FIXME_BLOCKER This needs to be abstracted into Theme when the light mode is complete
+                color: theme.settingsDivider
             }
         }
 
@@ -443,7 +443,7 @@ MySettingsTab {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             height: 2
-            color: theme.grayRed500
+            color: theme.settingsDivider
         }
     }
 }

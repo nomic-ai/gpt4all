@@ -198,10 +198,20 @@ QtObject {
         }
     }
 
+    property color settingsDivider: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return grayRed500;
+        }
+    }
+
     property color conversationBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue500;
+//            case "Dark":
             default:
                 return white;
         }
@@ -211,6 +221,7 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue600;
+//            case "Dark":
             default:
                 return gray50;
         }
@@ -267,7 +278,7 @@ QtObject {
             case "Dark":
                 return green600;
             default:
-                return green600;
+                return "#fff9d2";
         }
     }
 
@@ -326,6 +337,24 @@ QtObject {
         }
     }
 
+    property color sourcesBackground: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return gray100;
+        }
+    }
+
+    property color sourcesBackgroundHovered: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return gray200;
+        }
+    }
+
     property color buttonBorder: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
@@ -370,6 +399,15 @@ QtObject {
         }
     }
 
+    property color selectedBackground: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return gray0;
+        }
+    }
+
     property color conversationButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
@@ -394,6 +432,8 @@ QtObject {
 
     property color collectionButtonBackground: {
         switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
             default:
                 return green50;
         }
@@ -401,6 +441,8 @@ QtObject {
 
     property color collectionButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
             default:
                 return green100;
         }
@@ -408,6 +450,8 @@ QtObject {
 
     property color welcomeButtonBackground: {
         switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
             default:
                 return theme.green100;
         }
@@ -415,6 +459,8 @@ QtObject {
 
     property color welcomeButtonBorder: {
         switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
             default:
                 return green300;
         }
@@ -422,6 +468,8 @@ QtObject {
 
     property color welcomeButtonBorderHovered: {
         switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
             default:
                 return green400;
         }
@@ -429,6 +477,8 @@ QtObject {
 
     property color welcomeButtonText: {
         switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
             default:
                 return green700;
         }
@@ -436,6 +486,8 @@ QtObject {
 
     property color welcomeButtonTextHovered: {
         switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
             default:
                 return green800;
         }
@@ -443,6 +495,8 @@ QtObject {
 
     property color fancyLinkText: {
         switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
             default:
                 return grayRed900;
         }
@@ -450,29 +504,10 @@ QtObject {
 
     property color fancyLinkTextHovered: {
         switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
             default:
                 return textColor;
-        }
-    }
-
-    property color changeLogColor: {
-        switch (MySettings.chatTheme) {
-            default:
-                return grayRed900;
-        }
-    }
-
-    property color logoColor: {
-        switch (MySettings.chatTheme) {
-            default:
-                return grayRed500;
-        }
-    }
-
-    property color logoColorHovered: {
-        switch (MySettings.chatTheme) {
-            default:
-                return grayRed900;
         }
     }
 
@@ -564,6 +599,27 @@ QtObject {
         }
     }
 
+    // lighter contrast
+    property color mutedLighterTextColor: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return gray300;
+        }
+    }
+
+    // light contrast
+    property color mutedLightTextColor: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return gray400;
+        }
+    }
+
+    // normal contrast
     property color mutedTextColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
@@ -571,7 +627,25 @@ QtObject {
             case "Dark":
                 return gray400;
             default:
-                return gray600;
+                return gray500;
+        }
+    }
+
+    // dark contrast
+    property color mutedDarkTextColor: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return grayRed500;
+        }
+    }
+
+    // dark contrast hovered
+    property color mutedDarkTextColorHovered: {
+        switch (MySettings.chatTheme) {
+            default:
+                return grayRed900;
         }
     }
 
@@ -638,6 +712,26 @@ QtObject {
                 return green400;
             default:
                 return green700;
+        }
+    }
+
+    property color titleInfoTextColor: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return blue200;
+            case "Dark":
+                return gray400;
+            default:
+                return gray600;
+        }
+    }
+
+    property color styledTextColor: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return grayRed900;
         }
     }
 

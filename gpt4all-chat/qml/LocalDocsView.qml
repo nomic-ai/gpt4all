@@ -57,7 +57,7 @@ Rectangle {
                 Text {
                     text: qsTr("Chat with your local files")
                     font.pixelSize: theme.fontSizeLarge
-                    color: theme.mutedTextColor
+                    color: theme.titleInfoTextColor
                 }
             }
 
@@ -102,14 +102,14 @@ Rectangle {
                 Text {
                     Layout.alignment: Qt.AlignCenter
                     text: qsTr("No Collections Installed")
-                    color: theme.gray400
+                    color: theme.mutedLightTextColor
                     font.pixelSize: theme.fontSizeBannerSmall
                 }
 
                 Text {
                     Layout.topMargin: 15
                     horizontalAlignment: Qt.AlignHCenter
-                    color: theme.gray300
+                    color: theme.mutedLighterTextColor
                     text: qsTr("Install a collection of local documents to get started using this feature")
                     font.pixelSize: theme.fontSizeLarge
                 }
@@ -200,10 +200,10 @@ Rectangle {
                                                 return "transparent"
 
                                             if (model.indexing)
-                                                 return "#fff9d2"//theme.progressBackground
+                                                 return theme.progressBackground
 
                                             if (model.currentEmbeddingsToIndex !== 0)
-                                                 return "#fff9d2"//theme.progressBackground
+                                                 return theme.progressBackground
 
                                             if (model.forceIndexing)
                                                 return theme.red200
@@ -306,7 +306,7 @@ Rectangle {
                                     return qsTr("Installation in progress")
                                 }
                                 elide: Text.ElideRight
-                                color: theme.logoColor
+                                color: theme.mutedDarkTextColor
                                 font.pixelSize: theme.fontSizeSmaller
                             }
                             Text {
@@ -320,7 +320,7 @@ Rectangle {
                                     return formattedPercent + qsTr("%")
                                 }
                                 elide: Text.ElideRight
-                                color: theme.logoColor
+                                color: theme.mutedDarkTextColor
                                 font.family: "monospace"
                                 font.pixelSize: theme.fontSizeSmaller
                             }
@@ -337,7 +337,7 @@ Rectangle {
                             Text {
                                 text: model.embeddingModel
                                 elide: Text.ElideRight
-                                color: theme.logoColor
+                                color: theme.mutedDarkTextColor
                                 font.bold: true
                                 font.pixelSize: theme.fontSizeSmaller
                             }
@@ -345,7 +345,7 @@ Rectangle {
                                 visible: Qt.formatDateTime(model.lastUpdate) !== ""
                                 text: Qt.formatDateTime(model.lastUpdate)
                                 elide: Text.ElideRight
-                                color: theme.gray500
+                                color: theme.mutedTextColor
                                 font.pixelSize: theme.fontSizeSmaller
                             }
                             Text {
@@ -353,7 +353,7 @@ Rectangle {
                                 text: (model.totalEmbeddingsToIndex - model.currentEmbeddingsToIndex) + " of "
                                       + model.totalEmbeddingsToIndex + " embeddings"
                                 elide: Text.ElideRight
-                                color: theme.gray500
+                                color: theme.mutedTextColor
                                 font.pixelSize: theme.fontSizeSmaller
                             }
                         }

@@ -13,7 +13,7 @@ import mysettings
 
 Rectangle {
     id: settingsDialog
-    color: theme.containerBackground
+    color: theme.viewBackground
 
     property alias pageToDisplay: listView.currentIndex
 
@@ -80,7 +80,7 @@ Rectangle {
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 width: 220
-                color: theme.controlBackground
+                color: theme.viewBackground
                 radius: 10
 
                 ScrollView {
@@ -105,8 +105,8 @@ Rectangle {
 
                             MyButton {
                                 id: titleLabel
-                                backgroundColor: index === listView.currentIndex ? theme.gray50 : theme.controlBackground
-                                backgroundColorHovered: index === listView.currentIndex ? backgroundColor : theme.containerBackground
+                                backgroundColor: index === listView.currentIndex ? theme.selectedBackground : theme.viewBackground
+                                backgroundColorHovered: backgroundColor
                                 borderColor: "transparent"
                                 borderWidth: 0
                                 textColor: theme.titleTextColor

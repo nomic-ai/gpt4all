@@ -54,7 +54,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     text: qsTr("the privacy-first LLM chat application")
                     font.pixelSize: theme.fontSizeLarge
-                    color: theme.mutedTextColor
+                    color: theme.titleInfoTextColor
                 }
             }
 
@@ -159,7 +159,7 @@ Rectangle {
                             ColorOverlay {
                                 anchors.fill: changelogImg
                                 source: changelogImg
-                                color: theme.changeLogColor
+                                color: theme.styledTextColor
                             }
                         }
 
@@ -173,7 +173,7 @@ Rectangle {
                             TextArea {
                                 id: textArea
                                 padding: 10
-                                color: theme.changeLogColor
+                                color: theme.styledTextColor
                                 font.pixelSize: theme.fontSizeLarge
                                 textFormat: TextEdit.MarkdownText
                                 text: "### "
@@ -260,40 +260,4 @@ Rectangle {
     }
 }
 
-
-//            MyToolButton {
-//                id: networkButton
-//                backgroundColor: theme.iconBackgroundViewBar
-//                backgroundColorHovered: toggled ? backgroundColor : theme.iconBackgroundViewBarHovered
-//                toggledColor: theme.iconBackgroundViewBar
-//                Layout.preferredWidth: 40
-//                Layout.preferredHeight: 40
-//                scale: 1.2
-//                toggled: MySettings.networkIsActive
-//                source: "qrc:/gpt4all/icons/network.svg"
-//                Accessible.name: qsTr("Network")
-//                Accessible.description: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
-
-//                onClicked: {
-//                    if (MySettings.networkIsActive) {
-//                        MySettings.networkIsActive = false
-//                        Network.sendNetworkToggled(false);
-//                    } else
-//                        networkDialog.open()
-//                }
-//            }
-
-//            MyToolButton {
-//                id: infoButton
-//                backgroundColor: theme.iconBackgroundViewBar
-//                backgroundColorHovered: theme.iconBackgroundViewBarHovered
-//                Layout.preferredWidth: 40
-//                Layout.preferredHeight: 40
-//                scale: 1.2
-//                source: "qrc:/gpt4all/icons/info.svg"
-//                Accessible.name: qsTr("About")
-//                Accessible.description: qsTr("Reveals an about dialog")
-//                onClicked: {
-//                    aboutDialog.open()
-//                }
-//            }
+// FIXME_BLOCKER We have no 'about' button

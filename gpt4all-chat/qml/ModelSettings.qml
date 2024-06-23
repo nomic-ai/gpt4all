@@ -784,7 +784,7 @@ MySettingsTab {
             Layout.topMargin: 15
             Layout.fillWidth: true
             height: 2
-            color: theme.grayRed500
+            color: theme.settingsDivider
         }
     }
 }

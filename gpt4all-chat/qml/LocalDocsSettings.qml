@@ -91,7 +91,7 @@ MySettingsTab {
 
         Label {
             Layout.topMargin: 15
-            color: theme.grayRed900
+            color: theme.styledTextColor
             font.pixelSize: theme.fontSizeLarge
             font.bold: true
             text: "Advanced"
@@ -100,7 +100,7 @@ MySettingsTab {
         Rectangle {
             Layout.fillWidth: true
             height: 2
-            color: theme.grayRed500
+            color: theme.settingsDivider
         }
 
         MySettingsLabel {
@@ -171,7 +171,7 @@ MySettingsTab {
             Layout.topMargin: 15
             Layout.fillWidth: true
             height: 2
-            color: theme.grayRed500
+            color: theme.settingsDivider
         }
      }
 }

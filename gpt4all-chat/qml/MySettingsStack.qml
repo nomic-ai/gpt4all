@@ -30,7 +30,7 @@ Item {
         Label {
             id: titleLabelText
             anchors.left: parent.left
-            color: theme.grayRed900
+            color: theme.styledTextColor
             topPadding: 10
             bottomPadding: 10
             font.pixelSize: theme.fontSizeLarge
@@ -45,7 +45,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 2
-        color: theme.grayRed500
+        color: theme.settingsDivider
     }
 
     TabBar {
@@ -90,7 +90,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 2
-        color: theme.grayRed500
+        color: theme.settingsDivider
     }
 
     FolderDialog {
