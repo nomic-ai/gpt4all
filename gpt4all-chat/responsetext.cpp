@@ -859,30 +859,6 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
     }
 }
 
-const int ContextLinkFormat = QTextFormat::UserObject + 1;
-const int ContextLinkHref = QTextFormat::UserProperty + 1;
-const int ContextLinkText = QTextFormat::UserProperty + 2;
-
-void ContextLinkInterface::drawObject(QPainter *painter, const QRectF &rect, QTextDocument *doc,
-    int posInDocument, const QTextFormat &format)
-{
-    const QString &href = format.property(ContextLinkHref).toString();
-    const QString &text = format.property(ContextLinkText).toString();
-    painter->setFont(doc->defaultFont());
-    painter->setPen(format.foreground().color());
-    painter->drawText(rect.bottomLeft(), text);
-}
-
-QSizeF ContextLinkInterface::intrinsicSize(QTextDocument *doc, int posInDocument,
-    const QTextFormat &format)
-{
-    const QString &href = format.property(ContextLinkHref).toString();
-    const QString &text = format.property(ContextLinkText).toString();
-    const QFontMetricsF metrics(doc->defaultFont());
-    const QSizeF textSize = metrics.size(Qt::TextSingleLine, text);
-    return textSize;
-}
-
 // TODO (Adam) This class replaces characters in the text in order to provide markup and syntax highlighting
 // which destroys the original text in favor of the replaced text. This is a problem when we select
 // text and then the user tries to 'copy' the text: the original text should be placed in the clipboard
@@ -894,7 +870,6 @@ ResponseText::ResponseText(QObject *parent)
     , m_textDocument(nullptr)
     , m_syntaxHighlighter(new SyntaxHighlighter(this))
     , m_isProcessingText(false)
-    , m_contextLink(new ContextLinkInterface(this))
 {
 }
 
@@ -909,30 +884,9 @@ void ResponseText::setTextDocument(QQuickTextDocument* textDocument)
         disconnect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ResponseText::handleTextChanged);
 
     m_textDocument = textDocument;
-    m_textDocument->textDocument()->documentLayout()->registerHandler(ContextLinkFormat, m_contextLink);
     m_syntaxHighlighter->setDocument(m_textDocument->textDocument());
     connect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ResponseText::handleTextChanged);
     handleTextChanged();
-}
-
-QString ResponseText::getLinkAtPosition(int position) const
-{
-    QTextCursor cursor(m_textDocument->textDocument());
-    cursor.setPosition(position);
-    QTextCharFormat format = cursor.charFormat();
-    if (format.objectType() == ContextLinkFormat) {
-        QString href = format.property(ContextLinkHref).toString();
-        if (!href.isEmpty())
-            return href;
-    }
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor);
-    format = cursor.charFormat();
-    if (format.objectType() == ContextLinkFormat) {
-        QString href = format.property(ContextLinkHref).toString();
-        if (!href.isEmpty())
-            return href;
-    }
-    return QString();
 }
 
 bool ResponseText::tryCopyAtPosition(int position) const
@@ -960,58 +914,13 @@ void ResponseText::handleTextChanged()
     (void)doc->documentLayout()->documentSize();
 
     handleCodeBlocks();
-    handleContextLinks();
+
     // We insert an invisible char at the end to make sure the document goes back to the default
     // text format
     QTextCursor cursor(doc);
     QString invisibleCharacter = QString(QChar(0xFEFF));
     cursor.insertText(invisibleCharacter, QTextCharFormat());
     m_isProcessingText = false;
-}
-
-void ResponseText::handleContextLinks()
-{
-    QTextDocument* doc = m_textDocument->textDocument();
-    QTextCursor cursor(doc);
-
-    // Regex for context links
-    static const QRegularExpression reLink("\\[Context\\]\\((context://\\d+)\\)");
-    QRegularExpressionMatchIterator iLink = reLink.globalMatch(doc->toPlainText());
-
-    QList<QRegularExpressionMatch> matchesLink;
-    while (iLink.hasNext())
-        matchesLink.append(iLink.next());
-
-    QVector<ContextLink> newLinks;
-
-    // Calculate new positions and store them in newLinks
-    int positionOffset = 0;
-    for(const auto &match : matchesLink) {
-        ContextLink newLink;
-        newLink.href = match.captured(1);
-        newLink.text = "Context";
-        newLink.startPos = match.capturedStart() - positionOffset;
-        newLink.endPos = newLink.startPos + newLink.text.length();
-        newLinks.append(newLink);
-        positionOffset += match.capturedLength() - newLink.text.length();
-    }
-
-    // Replace the context links with the word "Context" in reverse order
-    for(int index = matchesLink.count() - 1; index >= 0; --index) {
-        cursor.setPosition(matchesLink.at(index).capturedStart());
-        cursor.setPosition(matchesLink.at(index).capturedEnd(), QTextCursor::KeepAnchor);
-        cursor.removeSelectedText();
-        QTextCharFormat objectFormat;
-        objectFormat.setForeground(m_linkColor);
-        objectFormat.setFontUnderline(true);
-        objectFormat.setProperty(ContextLinkHref, newLinks.at(index).href);
-        objectFormat.setProperty(ContextLinkText, newLinks.at(index).text);
-        objectFormat.setObjectType(ContextLinkFormat);
-        cursor.insertText(QString(QChar::ObjectReplacementCharacter), objectFormat);
-        cursor.setCharFormat(QTextCharFormat());
-    }
-
-    m_links = newLinks;
 }
 
 void ResponseText::handleCodeBlocks()

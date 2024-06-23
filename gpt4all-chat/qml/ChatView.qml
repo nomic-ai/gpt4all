@@ -956,16 +956,9 @@ Rectangle {
                                             id: tapHandler
                                             onTapped: function(eventPoint, button) {
                                                 var clickedPos = myTextArea.positionAt(eventPoint.position.x, eventPoint.position.y);
-                                                var link = responseText.getLinkAtPosition(clickedPos);
-                                                if (link.startsWith("context://")) {
-                                                    var integer = parseInt(link.split("://")[1]);
-                                                    referenceContextDialog.text = referencesContext[integer - 1];
-                                                    referenceContextDialog.open();
-                                                } else {
-                                                    var success = responseText.tryCopyAtPosition(clickedPos);
-                                                    if (success)
-                                                        copyCodeMessage.open();
-                                                }
+                                                var success = responseText.tryCopyAtPosition(clickedPos);
+                                                if (success)
+                                                    copyCodeMessage.open();
                                             }
                                         }
 
