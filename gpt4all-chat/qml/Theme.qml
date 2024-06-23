@@ -201,7 +201,8 @@ QtObject {
     property color settingsDivider: {
         switch (MySettings.chatTheme) {
 //            case "LegacyDark":
-//            case "Dark":
+            case "Dark":
+                return darkgray400;
             default:
                 return grayRed500;
         }
@@ -211,7 +212,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue500;
-//            case "Dark":
+            case "Dark":
+                return darkgray50;
             default:
                 return white;
         }
@@ -221,7 +223,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue600;
-//            case "Dark":
+            case "Dark":
+                return darkgray100;
             default:
                 return gray50;
         }
