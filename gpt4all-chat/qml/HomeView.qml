@@ -195,97 +195,6 @@ Rectangle {
                     }
                 }
             }
-
-            Item {
-                visible: !startChat.visible
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.minimumHeight: 150
-                Layout.maximumHeight: textAreaReleaseNotes.height
-
-                Rectangle {
-                    id: roundedFrameReleaseNotes
-                    anchors.fill: parent
-                    z: 299
-                    radius: 10
-                    border.width: 1
-                    border.color: theme.controlBorder
-                    color: "transparent"
-                    clip: true
-                }
-
-                Item {
-                    anchors.fill: parent
-                    layer.enabled: true
-                    layer.effect: OpacityMask {
-                        maskSource: Rectangle {
-                            width: roundedFrameReleaseNotes.width
-                            height: roundedFrameReleaseNotes.height
-                            radius: 10
-                        }
-                    }
-
-                    RowLayout {
-                        spacing: 0
-                        anchors.fill: parent
-
-                        Rectangle {
-                            color: "transparent"
-                            width: 82
-                            height: 100
-                            Image {
-                                id: notesImg
-                                anchors.centerIn: parent
-                                sourceSize: Qt.size(40, 40)
-                                mipmap: true
-                                visible: false
-                                source: "qrc:/gpt4all/icons/notes.svg"
-                            }
-
-                            ColorOverlay {
-                                anchors.fill: notesImg
-                                source: notesImg
-                                color: theme.styledTextColor
-                            }
-                        }
-
-                        Item {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            Rectangle {
-                                anchors.fill: releaseScroll
-                                color: theme.conversationBackground
-                            }
-
-                            ScrollView {
-                                id: releaseScroll
-                                anchors.fill: parent
-                                clip: true
-                                ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                                ScrollBar.horizontal.policy: ScrollBar.AsNeeded
-
-                                Text {
-                                    id: textAreaReleaseNotes
-                                    padding: 10
-                                    color: theme.styledTextColor
-                                    font.pixelSize: theme.fontSizeLarge
-                                    textFormat: TextEdit.MarkdownText
-                                    text: "### "
-                                          + qsTr("Release notes for version ")
-                                          + Download.releaseInfo.version
-                                          + Download.releaseInfo.notes
-                                          + "<br />\n### "
-                                          + qsTr("Contributors")
-                                          + Download.releaseInfo.contributors
-                                    Accessible.role: Accessible.Paragraph
-                                    Accessible.name: qsTr("Release notes")
-                                    Accessible.description: qsTr("Release notes for this version")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         Rectangle {
@@ -307,8 +216,8 @@ Rectangle {
                     spacing: 4
 
                     MyFancyLink {
-                        text: qsTr("Changelog")
-                        imageSource: "qrc:/gpt4all/icons/changelog.svg"
+                        text: qsTr("Release Notes")
+                        imageSource: "qrc:/gpt4all/icons/notes.svg"
                         onClicked: { Qt.openUrlExternally("https://github.com/nomic-ai/gpt4all/releases") }
                     }
 
