@@ -125,7 +125,6 @@ qt_add_qml_module(chat
       qml/SettingsView.qml
       qml/StartupDialog.qml
       qml/PopupDialog.qml
-      qml/AboutDialog.qml
       qml/Theme.qml
       qml/ModelSettings.qml
       qml/ApplicationSettings.qml

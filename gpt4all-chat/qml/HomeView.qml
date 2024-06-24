@@ -260,5 +260,3 @@ Rectangle {
         }
     }
 }
-
-// FIXME_BLOCKER We have no 'about' button
