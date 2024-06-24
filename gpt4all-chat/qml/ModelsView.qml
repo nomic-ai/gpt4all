@@ -185,6 +185,7 @@ Rectangle {
                                     }
                                     Text {
                                         text: filesize
+                                        color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmaller
                                         font.bold: true
                                     }
@@ -206,6 +207,7 @@ Rectangle {
                                     }
                                     Text {
                                         text: ramrequired + qsTr(" GB")
+                                        color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmaller
                                         font.bold: true
                                     }
@@ -227,6 +229,7 @@ Rectangle {
                                     }
                                     Text {
                                         text: parameters
+                                        color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmaller
                                         font.bold: true
                                     }
@@ -248,6 +251,7 @@ Rectangle {
                                     }
                                     Text {
                                         text: quant
+                                        color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmaller
                                         font.bold: true
                                     }
@@ -269,6 +273,7 @@ Rectangle {
                                     }
                                     Text {
                                         text: type
+                                        color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmaller
                                         font.bold: true
                                     }
