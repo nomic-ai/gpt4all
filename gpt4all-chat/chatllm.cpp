@@ -386,6 +386,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
                 m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
                     progress = std::max(progress, std::numeric_limits<float>::min()); // keep progress above zero
+                    progress = std::min(progress, std::nextafter(1.0f, 0.0f)); // keep progress below 100% until we are actually done
                     emit modelLoadingPercentageChanged(progress);
                     return m_shouldBeLoaded;
                 });

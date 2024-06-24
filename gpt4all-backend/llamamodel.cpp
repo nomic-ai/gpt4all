@@ -401,6 +401,10 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
             std::cerr << "warning: model was trained on only " << n_ctx_train << " context tokens ("
                       << n_ctx << " specified)\n";
         }
+
+        // GPT4All defaults to 128 tokens which is also the hardcoded maximum
+        d_ptr->ctx_params.n_batch  = LLMODEL_MAX_PROMPT_BATCH;
+        d_ptr->ctx_params.n_ubatch = LLMODEL_MAX_PROMPT_BATCH;
     }
 
     d_ptr->ctx_params.n_ctx   = n_ctx;
@@ -430,6 +434,23 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
         return false;
     }
 
+#ifdef GGML_USE_CUDA
+    if (d_ptr->model_params.n_gpu_layers > 0) {
+        try {
+            testModel(); // eagerly allocate memory
+        } catch (const std::runtime_error &e) {
+            std::cerr << "LLAMA ERROR: model test failed: " << e.what() << "\n";
+            llama_free(d_ptr->ctx);
+            d_ptr->ctx = nullptr;
+            llama_free_model(d_ptr->model);
+            d_ptr->model = nullptr;
+            d_ptr->device = -1;
+            d_ptr->deviceName.clear();
+            return false;
+        }
+    }
+#endif
+
     d_ptr->end_tokens = {llama_token_eos(d_ptr->model)};
 
     if (usingGPUDevice()) {
@@ -451,6 +472,26 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     fflush(stdout);
     d_ptr->modelLoaded = true;
     return true;
+}
+
+void LLamaModel::testModel() {
+    int n_ctx = llama_n_ctx(d_ptr->ctx);
+    int n_batch = LLMODEL_MAX_PROMPT_BATCH;
+    n_batch = std::min(n_batch, n_ctx);
+
+    // test with maximum batch size
+    PromptContext ctx;
+    ctx.n_batch = n_batch;
+    std::vector<int32_t> tokens(n_batch);
+
+    llama_set_skip_cpu(d_ptr->ctx, true);
+    if (!evalTokens(ctx, tokens))
+        throw std::runtime_error("llama_decode failed");
+    llama_set_skip_cpu(d_ptr->ctx, false);
+    llama_synchronize(d_ptr->ctx); // wait for GPU to finish
+
+    // clean up
+    llama_kv_cache_clear(d_ptr->ctx);
 }
 
 void LLamaModel::setThreadCount(int32_t n_threads) {
