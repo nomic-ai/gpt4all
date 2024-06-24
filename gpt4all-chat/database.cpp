@@ -1662,7 +1662,6 @@ bool Database::addFolder(const QString &collection, const QString &path, const Q
     // add the collection, if needed
     if (!item) {
         item.emplace();
-        // FIXME_BROKEN The last update time is not getting added when the embedding completes...
         if (!addCollection(q, collection, QDateTime() /*start_update*/, QDateTime() /*last_update*/,
             embedding_model /*embedding_model*/, *item)) {
             qWarning().nospace() << "ERROR: Cannot add collection " << collection << ": " << q.lastError();
@@ -1944,7 +1943,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     }
 }
 
-// FIXME_BLOCKER This is very slow and non-interruptable and when we close the application and we're
+// FIXME This is very slow and non-interruptable and when we close the application and we're
 // cleaning a large table this can cause the app to take forever to shut down. This would ideally be
 // interruptable and we'd continue 'cleaning' when we restart
 bool Database::cleanDB()
