@@ -210,7 +210,7 @@ Window {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
-        width: 86
+        width: MySettings.fontSize === "Small" ? 86 : 100
         color: theme.viewBarBackground
 
         ColumnLayout {
@@ -346,7 +346,7 @@ Window {
 
             Text {
                 Layout.topMargin: -20
-                text: MySettings.fontSize === "Small" ? qsTr("LocalDocs") : qsTr("Docs")
+                text: qsTr("LocalDocs")
                 font.pixelSize: theme.fontSizeLargeCapped
                 font.bold: true
                 color: localdocsButton.hovered ? localdocsButton.backgroundColorHovered : localdocsButton.backgroundColor
