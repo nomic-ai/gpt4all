@@ -1,6 +1,7 @@
 #include "embllm.h"
 
 #include "modellist.h"
+#include "mysettings.h"
 
 #include "../gpt4all-backend/llmodel.h"
 
@@ -13,8 +14,8 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonValue>
 #include <QList>
+#include <QMutexLocker>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -24,16 +25,20 @@
 #include <QtLogging>
 
 #include <exception>
-#include <string>
 #include <utility>
+
+using namespace Qt::Literals::StringLiterals;
+
+static const QString EMBEDDING_MODEL_NAME = u"nomic-embed-text-v1.5"_s;
+static const QString LOCAL_EMBEDDING_MODEL = u"nomic-embed-text-v1.5.f16.gguf"_s;
 
 EmbeddingLLMWorker::EmbeddingLLMWorker()
     : QObject(nullptr)
     , m_networkManager(new QNetworkAccessManager(this))
-    , m_model(nullptr)
     , m_stopGenerating(false)
 {
     moveToThread(&m_workerThread);
+    connect(this, &EmbeddingLLMWorker::requestAtlasQueryEmbedding, this, &EmbeddingLLMWorker::atlasQueryEmbeddingRequested);
     connect(this, &EmbeddingLLMWorker::finished, &m_workerThread, &QThread::quit, Qt::DirectConnection);
     m_workerThread.setObjectName("embedding");
     m_workerThread.start();
@@ -58,43 +63,30 @@ void EmbeddingLLMWorker::wait()
 
 bool EmbeddingLLMWorker::loadModel()
 {
-    const EmbeddingModels *embeddingModels = ModelList::globalInstance()->installedEmbeddingModels();
-    if (!embeddingModels->count())
-        return false;
+    m_nomicAPIKey.clear();
+    m_model = nullptr;
 
-    const ModelInfo defaultModel = embeddingModels->defaultModelInfo();
-
-    QString filePath = defaultModel.dirpath + defaultModel.filename();
-    QFileInfo fileInfo(filePath);
-    if (!fileInfo.exists()) {
-        qWarning() << "WARNING: Could not load sbert because file does not exist";
-        m_model = nullptr;
-        return false;
+    if (MySettings::globalInstance()->localDocsUseRemoteEmbed()) {
+        m_nomicAPIKey = MySettings::globalInstance()->localDocsNomicAPIKey();
+        return true;
     }
 
-    auto filename = fileInfo.fileName();
-    bool isNomic = filename.startsWith("gpt4all-nomic-") && filename.endsWith(".rmodel");
-    if (isNomic) {
-        QFile file(filePath);
-        if (!file.open(QIODeviceBase::ReadOnly)) {
-            qWarning() << "failed to open" << filePath << ":" << file.errorString();
-            m_model = nullptr;
-            return false;
-        }
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        QJsonObject obj = doc.object();
-        m_nomicAPIKey = obj["apiKey"].toString();
-        file.close();
-        return true;
+    QString filePath = u"%1/../resources/%2"_s.arg(QCoreApplication::applicationDirPath(), LOCAL_EMBEDDING_MODEL);
+    if (!QFileInfo::exists(filePath)) {
+        qWarning() << "WARNING: Local embedding model not found";
+        return false;
     }
 
     try {
         m_model = LLModel::Implementation::construct(filePath.toStdString());
     } catch (const std::exception &e) {
         qWarning() << "WARNING: Could not load embedding model:" << e.what();
-        m_model = nullptr;
         return false;
     }
+
+    // FIXME(jared): the user may want this to take effect without having to restart
+    int n_threads = MySettings::globalInstance()->threadCount();
+    m_model->setThreadCount(n_threads);
 
     // NOTE: explicitly loads model on CPU to avoid GPU OOM
     // TODO(cebtenzzre): support GPU-accelerated embeddings
@@ -115,31 +107,38 @@ bool EmbeddingLLMWorker::loadModel()
     return true;
 }
 
-bool EmbeddingLLMWorker::hasModel() const
+std::vector<float> EmbeddingLLMWorker::generateQueryEmbedding(const QString &text)
 {
-    return m_model || !m_nomicAPIKey.isEmpty();
-}
+    {
+        QMutexLocker locker(&m_mutex);
 
-bool EmbeddingLLMWorker::isNomic() const
-{
-    return !m_nomicAPIKey.isEmpty();
-}
+        if (!hasModel() && !loadModel()) {
+            qWarning() << "WARNING: Could not load model for embeddings";
+            return {};
+        }
 
-// this function is always called for retrieval tasks
-std::vector<float> EmbeddingLLMWorker::generateSyncEmbedding(const QString &text)
-{
-    Q_ASSERT(!isNomic());
-    std::vector<float> embedding(m_model->embeddingSize());
-    try {
-        m_model->embed({text.toStdString()}, embedding.data(), true);
-    } catch (const std::exception &e) {
-        qWarning() << "WARNING: LLModel::embed failed: " << e.what();
-        return {};
+        if (!isNomic()) {
+            std::vector<float> embedding(m_model->embeddingSize());
+
+            try {
+                m_model->embed({text.toStdString()}, embedding.data(), true);
+            } catch (const std::exception &e) {
+                qWarning() << "WARNING: LLModel::embed failed:" << e.what();
+                return {};
+            }
+
+            return embedding;
+        }
     }
-    return embedding;
+
+    EmbeddingLLMWorker worker;
+    emit worker.requestAtlasQueryEmbedding(text);
+    worker.wait();
+    return worker.lastResponse();
 }
 
-void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QString &taskType, QVariant userData) {
+void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QString &taskType, const QVariant &userData)
+{
     QJsonObject root;
     root.insert("model", "nomic-embed-text-v1");
     root.insert("texts", QJsonArray::fromStringList(texts));
@@ -148,7 +147,7 @@ void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QStrin
     QJsonDocument doc(root);
 
     QUrl nomicUrl("https://api-atlas.nomic.ai/v1/embedding/text");
-    const QString authorization = QString("Bearer %1").arg(m_nomicAPIKey).trimmed();
+    const QString authorization = u"Bearer %1"_s.arg(m_nomicAPIKey).trimmed();
     QNetworkRequest request(nomicUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", authorization.toUtf8());
@@ -158,50 +157,63 @@ void EmbeddingLLMWorker::sendAtlasRequest(const QStringList &texts, const QStrin
     connect(reply, &QNetworkReply::finished, this, &EmbeddingLLMWorker::handleFinished);
 }
 
-// this function is always called for retrieval tasks
-void EmbeddingLLMWorker::requestSyncEmbedding(const QString &text)
+void EmbeddingLLMWorker::atlasQueryEmbeddingRequested(const QString &text)
 {
-    if (!hasModel() && !loadModel()) {
-        qWarning() << "WARNING: Could not load model for embeddings";
-        return;
-    }
+    {
+        QMutexLocker locker(&m_mutex);
+        if (!hasModel() && !loadModel()) {
+            qWarning() << "WARNING: Could not load model for embeddings";
+            return;
+        }
 
-    if (!isNomic()) {
-        qWarning() << "WARNING: Request to generate sync embeddings for local model invalid";
-        return;
-    }
+        if (!isNomic()) {
+            qWarning() << "WARNING: Request to generate sync embeddings for local model invalid";
+            return;
+        }
 
-    Q_ASSERT(hasModel());
+        Q_ASSERT(hasModel());
+    }
 
     sendAtlasRequest({text}, "search_query");
 }
 
-// this function is always called for storage into the database
-void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &chunks)
+void EmbeddingLLMWorker::docEmbeddingsRequested(const QVector<EmbeddingChunk> &chunks)
 {
     if (m_stopGenerating)
         return;
 
-    if (!hasModel() && !loadModel()) {
-        qWarning() << "WARNING: Could not load model for embeddings";
-        return;
+    bool isNomic;
+    {
+        QMutexLocker locker(&m_mutex);
+        if (!hasModel() && !loadModel()) {
+            qWarning() << "WARNING: Could not load model for embeddings";
+            return;
+        }
+
+        isNomic = this->isNomic();
     }
 
-    if (m_nomicAPIKey.isEmpty()) {
+    if (!isNomic) {
         QVector<EmbeddingResult> results;
         results.reserve(chunks.size());
-        for (auto c : chunks) {
+        for (const auto &c: chunks) {
             EmbeddingResult result;
+            result.model = c.model;
             result.folder_id = c.folder_id;
             result.chunk_id = c.chunk_id;
             // TODO(cebtenzzre): take advantage of batched embeddings
             result.embedding.resize(m_model->embeddingSize());
-            try {
-                m_model->embed({c.chunk.toStdString()}, result.embedding.data(), false);
-            } catch (const std::exception &e) {
-                qWarning() << "WARNING: LLModel::embed failed:" << e.what();
-                return;
+
+            {
+                QMutexLocker locker(&m_mutex);
+                try {
+                    m_model->embed({c.chunk.toStdString()}, result.embedding.data(), false);
+                } catch (const std::exception &e) {
+                    qWarning() << "WARNING: LLModel::embed failed:" << e.what();
+                    return;
+                }
             }
+
             results << result;
         }
         emit embeddingsGenerated(results);
@@ -214,14 +226,15 @@ void EmbeddingLLMWorker::requestAsyncEmbedding(const QVector<EmbeddingChunk> &ch
     sendAtlasRequest(texts, "search_document", QVariant::fromValue(chunks));
 }
 
-std::vector<float> jsonArrayToVector(const QJsonArray &jsonArray) {
+std::vector<float> jsonArrayToVector(const QJsonArray &jsonArray)
+{
     std::vector<float> result;
 
-    for (const QJsonValue &innerValue : jsonArray) {
+    for (const auto &innerValue: jsonArray) {
         if (innerValue.isArray()) {
             QJsonArray innerArray = innerValue.toArray();
             result.reserve(result.size() + innerArray.size());
-            for (const QJsonValue &value : innerArray) {
+            for (const auto &value: innerArray) {
                 result.push_back(static_cast<float>(value.toDouble()));
             }
         }
@@ -230,7 +243,8 @@ std::vector<float> jsonArrayToVector(const QJsonArray &jsonArray) {
     return result;
 }
 
-QVector<EmbeddingResult> jsonArrayToEmbeddingResults(const QVector<EmbeddingChunk>& chunks, const QJsonArray& embeddings) {
+QVector<EmbeddingResult> jsonArrayToEmbeddingResults(const QVector<EmbeddingChunk>& chunks, const QJsonArray& embeddings)
+{
     QVector<EmbeddingResult> results;
 
     if (chunks.size() != embeddings.size()) {
@@ -243,10 +257,11 @@ QVector<EmbeddingResult> jsonArrayToEmbeddingResults(const QVector<EmbeddingChun
         const QJsonArray embeddingArray = embeddings.at(i).toArray();
 
         std::vector<float> embeddingVector;
-        for (const QJsonValue& value : embeddingArray)
+        for (const auto &value: embeddingArray)
             embeddingVector.push_back(static_cast<float>(value.toDouble()));
 
         EmbeddingResult result;
+        result.model = chunk.model;
         result.folder_id = chunk.folder_id;
         result.chunk_id = chunk.chunk_id;
         result.embedding = std::move(embeddingVector);
@@ -267,10 +282,6 @@ void EmbeddingLLMWorker::handleFinished()
     if (retrievedData.isValid() && retrievedData.canConvert<QVector<EmbeddingChunk>>())
         chunks = retrievedData.value<QVector<EmbeddingChunk>>();
 
-    int folder_id = 0;
-    if (!chunks.isEmpty())
-        folder_id = chunks.first().folder_id;
-
     QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     Q_ASSERT(response.isValid());
     bool ok;
@@ -279,13 +290,13 @@ void EmbeddingLLMWorker::handleFinished()
         QString errorDetails;
         QString replyErrorString = reply->errorString().trimmed();
         QByteArray replyContent = reply->readAll().trimmed();
-        errorDetails = QString("ERROR: Nomic Atlas responded with error code \"%1\"").arg(code);
+        errorDetails = u"ERROR: Nomic Atlas responded with error code \"%1\""_s.arg(code);
         if (!replyErrorString.isEmpty())
-            errorDetails += QString(". Error Details: \"%1\"").arg(replyErrorString);
+            errorDetails += u". Error Details: \"%1\""_s.arg(replyErrorString);
         if (!replyContent.isEmpty())
-            errorDetails += QString(". Response Content: \"%1\"").arg(QString::fromUtf8(replyContent));
+            errorDetails += u". Response Content: \"%1\""_s.arg(QString::fromUtf8(replyContent));
         qWarning() << errorDetails;
-        emit errorGenerated(folder_id, errorDetails);
+        emit errorGenerated(chunks, errorDetails);
         return;
     }
 
@@ -294,7 +305,7 @@ void EmbeddingLLMWorker::handleFinished()
     QJsonParseError err;
     QJsonDocument document = QJsonDocument::fromJson(jsonData, &err);
     if (err.error != QJsonParseError::NoError) {
-        qWarning() << "ERROR: Couldn't parse Nomic Atlas response: " << jsonData << err.errorString();
+        qWarning() << "ERROR: Couldn't parse Nomic Atlas response:" << jsonData << err.errorString();
         return;
     }
 
@@ -315,8 +326,8 @@ EmbeddingLLM::EmbeddingLLM()
     : QObject(nullptr)
     , m_embeddingWorker(new EmbeddingLLMWorker)
 {
-    connect(this, &EmbeddingLLM::requestAsyncEmbedding, m_embeddingWorker,
-        &EmbeddingLLMWorker::requestAsyncEmbedding, Qt::QueuedConnection);
+    connect(this, &EmbeddingLLM::requestDocEmbeddings, m_embeddingWorker,
+        &EmbeddingLLMWorker::docEmbeddingsRequested, Qt::QueuedConnection);
     connect(m_embeddingWorker, &EmbeddingLLMWorker::embeddingsGenerated, this,
         &EmbeddingLLM::embeddingsGenerated, Qt::QueuedConnection);
     connect(m_embeddingWorker, &EmbeddingLLMWorker::errorGenerated, this,
@@ -329,26 +340,18 @@ EmbeddingLLM::~EmbeddingLLM()
     m_embeddingWorker = nullptr;
 }
 
-std::vector<float> EmbeddingLLM::generateEmbeddings(const QString &text)
+QString EmbeddingLLM::model()
 {
-    if (!m_embeddingWorker->hasModel() && !m_embeddingWorker->loadModel()) {
-        qWarning() << "WARNING: Could not load model for embeddings";
-        return {};
-    }
-
-    if (!m_embeddingWorker->isNomic()) {
-        return m_embeddingWorker->generateSyncEmbedding(text);
-    }
-
-    EmbeddingLLMWorker worker;
-    connect(this, &EmbeddingLLM::requestSyncEmbedding, &worker,
-        &EmbeddingLLMWorker::requestSyncEmbedding, Qt::QueuedConnection);
-    emit requestSyncEmbedding(text);
-    worker.wait();
-    return worker.lastResponse();
+    return EMBEDDING_MODEL_NAME;
 }
 
-void EmbeddingLLM::generateAsyncEmbeddings(const QVector<EmbeddingChunk> &chunks)
+// TODO(jared): embed using all necessary embedding models given collection
+std::vector<float> EmbeddingLLM::generateQueryEmbedding(const QString &text)
 {
-    emit requestAsyncEmbedding(chunks);
+    return m_embeddingWorker->generateQueryEmbedding(text);
+}
+
+void EmbeddingLLM::generateDocEmbeddingsAsync(const QVector<EmbeddingChunk> &chunks)
+{
+    emit requestDocEmbeddings(chunks);
 }

@@ -1,6 +1,7 @@
 #include "localdocs.h"
 
 #include "database.h"
+#include "embllm.h"
 #include "mysettings.h"
 
 #include <QCoreApplication>
@@ -22,45 +23,37 @@ LocalDocs::LocalDocs()
     , m_database(nullptr)
 {
     connect(MySettings::globalInstance(), &MySettings::localDocsChunkSizeChanged, this, &LocalDocs::handleChunkSizeChanged);
+    connect(MySettings::globalInstance(), &MySettings::localDocsFileExtensionsChanged, this, &LocalDocs::handleFileExtensionsChanged);
 
     // Create the DB with the chunk size from settings
-    m_database = new Database(MySettings::globalInstance()->localDocsChunkSize());
+    m_database = new Database(MySettings::globalInstance()->localDocsChunkSize(),
+                              MySettings::globalInstance()->localDocsFileExtensions());
 
     connect(this, &LocalDocs::requestStart, m_database,
         &Database::start, Qt::QueuedConnection);
+    connect(this, &LocalDocs::requestForceIndexing, m_database,
+        &Database::forceIndexing, Qt::QueuedConnection);
+    connect(this, &LocalDocs::forceRebuildFolder, m_database,
+        &Database::forceRebuildFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestAddFolder, m_database,
         &Database::addFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestRemoveFolder, m_database,
         &Database::removeFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestChunkSizeChange, m_database,
         &Database::changeChunkSize, Qt::QueuedConnection);
+    connect(this, &LocalDocs::requestFileExtensionsChange, m_database,
+        &Database::changeFileExtensions, Qt::QueuedConnection);
+    connect(m_database, &Database::databaseValidChanged,
+        this, &LocalDocs::databaseValidChanged, Qt::QueuedConnection);
 
     // Connections for modifying the model and keeping it updated with the database
-    connect(m_database, &Database::updateInstalled,
-        m_localDocsModel, &LocalDocsModel::updateInstalled, Qt::QueuedConnection);
-    connect(m_database, &Database::updateIndexing,
-        m_localDocsModel, &LocalDocsModel::updateIndexing, Qt::QueuedConnection);
-    connect(m_database, &Database::updateError,
-        m_localDocsModel, &LocalDocsModel::updateError, Qt::QueuedConnection);
-    connect(m_database, &Database::updateCurrentDocsToIndex,
-        m_localDocsModel, &LocalDocsModel::updateCurrentDocsToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateTotalDocsToIndex,
-        m_localDocsModel, &LocalDocsModel::updateTotalDocsToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::subtractCurrentBytesToIndex,
-        m_localDocsModel, &LocalDocsModel::subtractCurrentBytesToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateCurrentBytesToIndex,
-        m_localDocsModel, &LocalDocsModel::updateCurrentBytesToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateTotalBytesToIndex,
-        m_localDocsModel, &LocalDocsModel::updateTotalBytesToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateCurrentEmbeddingsToIndex,
-            m_localDocsModel, &LocalDocsModel::updateCurrentEmbeddingsToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::updateTotalEmbeddingsToIndex,
-            m_localDocsModel, &LocalDocsModel::updateTotalEmbeddingsToIndex, Qt::QueuedConnection);
-    connect(m_database, &Database::addCollectionItem,
+    connect(m_database, &Database::requestUpdateGuiForCollectionItem,
+        m_localDocsModel, &LocalDocsModel::updateCollectionItem, Qt::QueuedConnection);
+    connect(m_database, &Database::requestAddGuiCollectionItem,
         m_localDocsModel, &LocalDocsModel::addCollectionItem, Qt::QueuedConnection);
-    connect(m_database, &Database::removeFolderById,
+    connect(m_database, &Database::requestRemoveGuiFolderById,
         m_localDocsModel, &LocalDocsModel::removeFolderById, Qt::QueuedConnection);
-    connect(m_database, &Database::collectionListUpdated,
+    connect(m_database, &Database::requestGuiCollectionListUpdated,
         m_localDocsModel, &LocalDocsModel::collectionListUpdated, Qt::QueuedConnection);
 
     connect(qGuiApp, &QCoreApplication::aboutToQuit, this, &LocalDocs::aboutToQuit);
@@ -76,16 +69,38 @@ void LocalDocs::addFolder(const QString &collection, const QString &path)
 {
     const QUrl url(path);
     const QString localPath = url.isLocalFile() ? url.toLocalFile() : path;
-    emit requestAddFolder(collection, localPath, false);
+
+    const QString embedding_model = EmbeddingLLM::model();
+    if (embedding_model.isEmpty()) {
+        qWarning() << "ERROR: We have no embedding model";
+        return;
+    }
+
+    emit requestAddFolder(collection, localPath, embedding_model);
 }
 
 void LocalDocs::removeFolder(const QString &collection, const QString &path)
 {
-    m_localDocsModel->removeCollectionPath(collection, path);
     emit requestRemoveFolder(collection, path);
+}
+
+void LocalDocs::forceIndexing(const QString &collection)
+{
+    const QString embedding_model = EmbeddingLLM::model();
+    if (embedding_model.isEmpty()) {
+        qWarning() << "ERROR: We have no embedding model";
+        return;
+    }
+
+    emit requestForceIndexing(collection, embedding_model);
 }
 
 void LocalDocs::handleChunkSizeChanged()
 {
     emit requestChunkSizeChange(MySettings::globalInstance()->localDocsChunkSize());
+}
+
+void LocalDocs::handleFileExtensionsChanged()
+{
+    emit requestFileExtensionsChange(MySettings::globalInstance()->localDocsFileExtensions());
 }

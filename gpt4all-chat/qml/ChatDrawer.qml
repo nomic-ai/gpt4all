@@ -16,23 +16,33 @@ Rectangle {
         id: theme
     }
 
-    signal downloadClicked
-    signal aboutClicked
+    color: theme.viewBackground
 
-    color: theme.containerBackground
+    Rectangle {
+        id: borderRight
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        width: 2
+        color: theme.dividerColor
+    }
 
     Item {
-        anchors.fill: parent
-        anchors.margins: 10
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: borderRight.left
 
         Accessible.role: Accessible.Pane
         Accessible.name: qsTr("Drawer")
         Accessible.description: qsTr("Main navigation drawer")
 
-        MyButton {
+        MySettingsButton {
             id: newChat
+            anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
+            anchors.margins: 20
             font.pixelSize: theme.fontSizeLarger
             topPadding: 20
             bottomPadding: 20
@@ -45,20 +55,31 @@ Rectangle {
             }
         }
 
+        Rectangle {
+            id: divider
+            anchors.top: newChat.bottom
+            anchors.margins: 20
+            anchors.topMargin: 15
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 1
+            color: theme.dividerColor
+        }
+
         ScrollView {
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.rightMargin: -10
-            anchors.topMargin: 10
-            anchors.top: newChat.bottom
-            anchors.bottom: checkForUpdatesButton.top
-            anchors.bottomMargin: 10
+            anchors.topMargin: 15
+            anchors.top: divider.bottom
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 15
             ScrollBar.vertical.policy: ScrollBar.AlwaysOff
             clip: true
 
             ListView {
                 id: conversationList
                 anchors.fill: parent
+                anchors.leftMargin: 10
                 anchors.rightMargin: 10
                 model: ChatListModel
 
@@ -71,6 +92,33 @@ Rectangle {
                     anchors.bottom: conversationList.bottom
                 }
 
+                Component {
+                    id: sectionHeading
+                    Rectangle {
+                        width: ListView.view.width
+                        height: childrenRect.height
+                        color: "transparent"
+                        property bool isServer: ChatListModel.get(parent.index) && ChatListModel.get(parent.index).isServer
+                        visible: !isServer || MySettings.serverChat
+
+                        required property string section
+
+                        Text {
+                            leftPadding: 10
+                            rightPadding: 10
+                            topPadding: 15
+                            bottomPadding: 5
+                            text: parent.section
+                            color: theme.styledTextColor
+                            font.pixelSize: theme.fontSizeLarge
+                        }
+                    }
+                }
+
+                section.property: "section"
+                section.criteria: ViewSection.FullString
+                section.delegate: sectionHeading
+
                 delegate: Rectangle {
                     id: chatRectangle
                     width: conversationList.width
@@ -80,21 +128,25 @@ Rectangle {
                     property bool trashQuestionDisplayed: false
                     visible: !isServer || MySettings.serverChat
                     z: isCurrent ? 199 : 1
-                    color: index % 2 === 0 ? theme.darkContrast : theme.lightContrast
+                    color: isCurrent ? theme.selectedBackground : "transparent"
                     border.width: isCurrent
-                    border.color: chatName.readOnly ? theme.assistantColor : theme.userColor
+                    border.color: theme.dividerColor
+                    radius: 10
+
                     TextField {
                         id: chatName
                         anchors.left: parent.left
                         anchors.right: buttons.left
-                        color: theme.textColor
-                        padding: 15
+                        color: theme.styledTextColor
+                        topPadding: 15
+                        bottomPadding: 15
                         focus: false
                         readOnly: true
                         wrapMode: Text.NoWrap
                         hoverEnabled: false // Disable hover events on the TextArea
                         selectByMouse: false // Disable text selection in the TextArea
                         font.pixelSize: theme.fontSizeLarge
+                        font.bold: true
                         text: readOnly ? metrics.elidedText : name
                         horizontalAlignment: TextInput.AlignLeft
                         opacity: trashQuestionDisplayed ? 0.5 : 1.0
@@ -103,7 +155,7 @@ Rectangle {
                             font: chatName.font
                             text: name
                             elide: Text.ElideRight
-                            elideWidth: chatName.width - 40
+                            elideWidth: chatName.width - 15
                         }
                         background: Rectangle {
                             color: "transparent"
@@ -238,46 +290,6 @@ Rectangle {
                 Accessible.role: Accessible.List
                 Accessible.name: qsTr("List of chats")
                 Accessible.description: qsTr("List of chats in the drawer dialog")
-            }
-        }
-
-        MyButton {
-            id: checkForUpdatesButton
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: downloadButton.top
-            anchors.bottomMargin: 10
-            text: qsTr("Updates")
-            font.pixelSize: theme.fontSizeLarge
-            Accessible.description: qsTr("Launch an external application that will check for updates to the installer")
-            onClicked: {
-                if (!LLM.checkForUpdates())
-                    checkForUpdatesError.open()
-            }
-        }
-
-        MyButton {
-            id: downloadButton
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: aboutButton.top
-            anchors.bottomMargin: 10
-            text: qsTr("Downloads")
-            Accessible.description: qsTr("Launch a dialog to download new models")
-            onClicked: {
-                downloadClicked()
-            }
-        }
-
-        MyButton {
-            id: aboutButton
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            text: qsTr("About")
-            Accessible.description: qsTr("Launch a dialog to show the about page")
-            onClicked: {
-                aboutClicked()
             }
         }
     }

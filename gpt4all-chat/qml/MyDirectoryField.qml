@@ -12,6 +12,8 @@ TextField {
     background: Rectangle {
         implicitWidth: 150
         color: theme.controlBackground
+        border.width: 1
+        border.color: theme.controlBorder
         radius: 10
     }
     ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval

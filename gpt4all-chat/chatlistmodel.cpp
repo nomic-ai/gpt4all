@@ -13,12 +13,13 @@
 #include <QIODevice>
 #include <QSettings>
 #include <QString>
+#include <QStringList>
 #include <Qt>
 
 #include <algorithm>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
-#define CHAT_FORMAT_VERSION 7
+#define CHAT_FORMAT_VERSION 8
 
 class MyChatListModel: public ChatListModel { };
 Q_GLOBAL_STATIC(MyChatListModel, chatListModelInstance)
@@ -64,7 +65,6 @@ ChatSaver::ChatSaver()
 
 void ChatListModel::saveChats()
 {
-    const QString savePath = MySettings::globalInstance()->modelPath();
     QVector<Chat*> toSave;
     for (Chat *chat : m_chats) {
         if (chat == m_serverChat)

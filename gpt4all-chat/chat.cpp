@@ -15,6 +15,7 @@
 #include <QTextStream>
 #include <Qt>
 #include <QtGlobal>
+#include <QtLogging>
 
 #include <utility>
 
@@ -130,7 +131,7 @@ void Chat::prompt(const QString &prompt)
 void Chat::regenerateResponse()
 {
     const int index = m_chatModel->count() - 1;
-    m_chatModel->updateReferences(index, QString(), QList<QString>());
+    m_chatModel->updateSources(index, QList<ResultInfo>());
     emit regenerateResponseRequested();
 }
 
@@ -193,43 +194,6 @@ void Chat::responseStopped(qint64 promptResponseMs)
 {
     m_tokenSpeed = QString();
     emit tokenSpeedChanged();
-
-    const QString chatResponse = response();
-    QList<QString> references;
-    QList<QString> referencesContext;
-    int validReferenceNumber = 1;
-    for (const ResultInfo &info : databaseResults()) {
-        if (info.file.isEmpty())
-            continue;
-        if (validReferenceNumber == 1)
-            references.append((!chatResponse.endsWith("\n") ? "\n" : QString()) + QStringLiteral("\n---"));
-        QString reference;
-        {
-            QTextStream stream(&reference);
-            stream << (validReferenceNumber++) << ". ";
-            if (!info.title.isEmpty())
-                stream << "\"" << info.title << "\". ";
-            if (!info.author.isEmpty())
-                stream << "By " << info.author << ". ";
-            if (!info.date.isEmpty())
-                stream << "Date: " << info.date << ". ";
-            stream << "In " << info.file << ". ";
-            if (info.page != -1)
-                stream << "Page " << info.page << ". ";
-            if (info.from != -1) {
-                stream << "Lines " << info.from;
-                if (info.to != -1)
-                    stream << "-" << info.to;
-                stream << ". ";
-            }
-            stream << "[Context](context://" << validReferenceNumber - 1 << ")";
-        }
-        references.append(reference);
-        referencesContext.append(info.text);
-    }
-
-    const int index = m_chatModel->count() - 1;
-    m_chatModel->updateReferences(index, references.join("\n"), referencesContext);
     emit responseChanged();
 
     m_responseInProgress = false;
@@ -336,7 +300,7 @@ void Chat::generatedNameChanged(const QString &name)
     // Only use the first three words maximum and remove newlines and extra spaces
     m_generatedName = name.simplified();
     QStringList words = m_generatedName.split(' ', Qt::SkipEmptyParts);
-    int wordCount = qMin(3, words.size());
+    int wordCount = qMin(7, words.size());
     m_name = words.mid(0, wordCount).join(' ');
     emit nameChanged();
 }
@@ -378,6 +342,8 @@ void Chat::handleFallbackReasonChanged(const QString &fallbackReason)
 void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
 {
     m_databaseResults = results;
+    const int index = m_chatModel->count() - 1;
+    m_chatModel->updateSources(index, m_databaseResults);
 }
 
 void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
@@ -389,7 +355,8 @@ void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
     emit modelInfoChanged();
 }
 
-void Chat::handleTrySwitchContextOfLoadedModelCompleted(int value) {
+void Chat::handleTrySwitchContextOfLoadedModelCompleted(int value)
+{
     m_trySwitchContextInProgress = value;
     emit trySwitchContextInProgressChanged();
 }

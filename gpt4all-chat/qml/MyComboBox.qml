@@ -73,7 +73,7 @@ ComboBox {
             context.moveTo(0, height / 2 + 2);
             context.lineTo(width / 2, height);
             context.lineTo(width, height / 2 + 2);
-            context.strokeStyle = comboBox.pressed ? theme.gray400 : theme.gray300;
+            context.strokeStyle = comboBox.pressed ? theme.mutedLightTextColor : theme.mutedLighterTextColor;
             context.stroke();
 
         }

@@ -20,6 +20,8 @@
 #include <QtGlobal>
 #include <QtQml>
 
+using namespace Qt::Literals::StringLiterals;
+
 struct ModelInfo {
     Q_GADGET
     Q_PROPERTY(QString id READ id WRITE setId)
@@ -169,6 +171,8 @@ public:
     bool shouldSaveMetadata() const;
 
 private:
+    QVariantMap getFields() const;
+
     QString m_id;
     QString m_name;
     QString m_filename;
@@ -198,28 +202,6 @@ private:
     friend class MySettings;
 };
 Q_DECLARE_METATYPE(ModelInfo)
-
-class EmbeddingModels : public QSortFilterProxyModel
-{
-    Q_OBJECT
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
-public:
-    EmbeddingModels(QObject *parent, bool requireInstalled);
-    int count() const { return rowCount(); }
-
-    int defaultModelIndex() const;
-    ModelInfo defaultModelInfo() const;
-
-Q_SIGNALS:
-    void countChanged();
-    void defaultModelIndexChanged();
-
-protected:
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
-
-private:
-    bool m_requireInstalled;
-};
 
 class InstalledModels : public QSortFilterProxyModel
 {
@@ -269,8 +251,6 @@ class ModelList : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
-    Q_PROPERTY(int defaultEmbeddingModelIndex READ defaultEmbeddingModelIndex)
-    Q_PROPERTY(EmbeddingModels* installedEmbeddingModels READ installedEmbeddingModels NOTIFY installedEmbeddingModelsChanged)
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
@@ -408,7 +388,6 @@ public:
     Q_INVOKABLE void removeClone(const ModelInfo &model);
     Q_INVOKABLE void removeInstalled(const ModelInfo &model);
     ModelInfo defaultModelInfo() const;
-    int defaultEmbeddingModelIndex() const;
 
     void addModel(const QString &id);
     void changeId(const QString &oldId, const QString &newId);
@@ -416,20 +395,18 @@ public:
     const QList<ModelInfo> exportModelList() const;
     const QList<QString> userDefaultModelList() const;
 
-    EmbeddingModels *embeddingModels() const { return m_embeddingModels; }
-    EmbeddingModels *installedEmbeddingModels() const { return m_installedEmbeddingModels; }
     InstalledModels *installedModels() const { return m_installedModels; }
     DownloadableModels *downloadableModels() const { return m_downloadableModels; }
 
     static inline QString toFileSize(quint64 sz) {
         if (sz < 1024) {
-            return QString("%1 bytes").arg(sz);
+            return u"%1 bytes"_s.arg(sz);
         } else if (sz < 1024 * 1024) {
-            return QString("%1 KB").arg(qreal(sz) / 1024, 0, 'g', 3);
+            return u"%1 KB"_s.arg(qreal(sz) / 1024, 0, 'g', 3);
         } else if (sz < 1024 * 1024 * 1024) {
-            return  QString("%1 MB").arg(qreal(sz) / (1024 * 1024), 0, 'g', 3);
+            return u"%1 MB"_s.arg(qreal(sz) / (1024 * 1024), 0, 'g', 3);
         } else {
-            return QString("%1 GB").arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
+            return u"%1 GB"_s.arg(qreal(sz) / (1024 * 1024 * 1024), 0, 'g', 3);
         }
     }
 
@@ -455,7 +432,6 @@ public:
 
 Q_SIGNALS:
     void countChanged();
-    void installedEmbeddingModelsChanged();
     void installedModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
@@ -494,8 +470,6 @@ private:
 private:
     mutable QMutex m_mutex;
     QNetworkAccessManager m_networkManager;
-    EmbeddingModels *m_embeddingModels;
-    EmbeddingModels *m_installedEmbeddingModels;
     InstalledModels *m_installedModels;
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;

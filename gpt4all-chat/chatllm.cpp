@@ -16,6 +16,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QSet>
+#include <QStringList>
 #include <QVariantMap>
 #include <QWaitCondition>
 #include <Qt>
@@ -28,8 +29,11 @@
 #include <functional>
 #include <limits>
 #include <optional>
+#include <string_view>
 #include <utility>
 #include <vector>
+
+using namespace Qt::Literals::StringLiterals;
 
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
@@ -180,7 +184,7 @@ bool ChatLLM::loadDefaultModel()
 {
     ModelInfo defaultModel = ModelList::globalInstance()->defaultModelInfo();
     if (defaultModel.filename().isEmpty()) {
-        emit modelLoadingError(QString("Could not find any model to load"));
+        emit modelLoadingError(u"Could not find any model to load"_qs);
         return false;
     }
     return loadModel(defaultModel);
@@ -292,7 +296,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             setModelInfo(modelInfo);
             Q_ASSERT(!m_modelInfo.filename().isEmpty());
             if (m_modelInfo.filename().isEmpty())
-                emit modelLoadingError(QString("Modelinfo is left null for %1").arg(modelInfo.filename()));
+                emit modelLoadingError(u"Modelinfo is left null for %1"_s.arg(modelInfo.filename()));
             else
                 processSystemPrompt();
             return true;
@@ -377,9 +381,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     static QSet<QString> warned;
                     auto fname = modelInfo.filename();
                     if (!warned.contains(fname)) {
-                        emit modelLoadingWarning(QString(
-                            "%1 is known to be broken. Please get a replacement via the download dialog."
-                        ).arg(fname));
+                        emit modelLoadingWarning(
+                            u"%1 is known to be broken. Please get a replacement via the download dialog."_s.arg(fname)
+                        );
                         warned.insert(fname); // don't warn again until restart
                     }
                 }
@@ -485,7 +489,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                     if (!m_isServer)
                         LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                     m_llModelInfo = LLModelInfo();
-                    emit modelLoadingError(QString("Could not load model due to invalid model file for %1").arg(modelInfo.filename()));
+                    emit modelLoadingError(u"Could not load model due to invalid model file for %1"_s.arg(modelInfo.filename()));
                     modelLoadProps.insert("error", "loadmodel_failed");
                 } else {
                     switch (m_llModelInfo.model->implementation().modelType()[0]) {
@@ -497,7 +501,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                             if (!m_isServer)
                                 LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                             m_llModelInfo = LLModelInfo();
-                            emit modelLoadingError(QString("Could not determine model type for %1").arg(modelInfo.filename()));
+                            emit modelLoadingError(u"Could not determine model type for %1"_s.arg(modelInfo.filename()));
                         }
                     }
 
@@ -507,7 +511,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 if (!m_isServer)
                     LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
                 m_llModelInfo = LLModelInfo();
-                emit modelLoadingError(QString("Error loading %1: %2").arg(modelInfo.filename()).arg(constructError));
+                emit modelLoadingError(u"Error loading %1: %2"_s.arg(modelInfo.filename(), constructError));
             }
         }
 #if defined(DEBUG_MODEL_LOADING)
@@ -527,7 +531,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         if (!m_isServer)
             LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo)); // release back into the store
         m_llModelInfo = LLModelInfo();
-        emit modelLoadingError(QString("Could not find file for model %1").arg(modelInfo.filename()));
+        emit modelLoadingError(u"Could not find file for model %1"_s.arg(modelInfo.filename()));
     }
 
     if (m_llModelInfo.model) {
@@ -542,7 +546,8 @@ bool ChatLLM::isModelLoaded() const
     return m_llModelInfo.model && m_llModelInfo.model->isModelLoaded();
 }
 
-std::string remove_leading_whitespace(const std::string& input) {
+std::string remove_leading_whitespace(const std::string& input)
+{
     auto first_non_whitespace = std::find_if(input.begin(), input.end(), [](unsigned char c) {
         return !std::isspace(c);
     });
@@ -553,7 +558,8 @@ std::string remove_leading_whitespace(const std::string& input) {
     return std::string(first_non_whitespace, input.end());
 }
 
-std::string trim_whitespace(const std::string& input) {
+std::string trim_whitespace(const std::string& input)
+{
     auto first_non_whitespace = std::find_if(input.begin(), input.end(), [](unsigned char c) {
         return !std::isspace(c);
     });
@@ -706,11 +712,15 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     }
 
     // Augment the prompt template with the results if any
-    QList<QString> docsContext;
-    if (!databaseResults.isEmpty())
-        docsContext.append("### Context:");
-    for (const ResultInfo &info : databaseResults)
-        docsContext.append(info.text);
+    QString docsContext;
+    if (!databaseResults.isEmpty()) {
+        QStringList results;
+        for (const ResultInfo &info : databaseResults)
+            results << u"Collection: %1\nPath: %2\nSnippet: %3"_s.arg(info.collection, info.path, info.text);
+
+        // FIXME(jared): use a Jinja prompt template instead of hardcoded Alpaca-style localdocs template
+        docsContext = u"### Context:\n%1\n\n"_s.arg(results.join("\n\n"));
+    }
 
     int n_threads = MySettings::globalInstance()->threadCount();
 
@@ -738,7 +748,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     m_timer->start();
     if (!docsContext.isEmpty()) {
         auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode localdocs context without a response
-        m_llModelInfo.model->prompt(docsContext.join("\n").toStdString(), "%1", promptFunc, responseFunc, recalcFunc, m_ctx);
+        m_llModelInfo.model->prompt(docsContext.toStdString(), "%1", promptFunc, responseFunc, recalcFunc, m_ctx);
         m_ctx.n_predict = old_n_predict; // now we are ready for a response
     }
     m_llModelInfo.model->prompt(prompt.toStdString(), promptTemplate.toStdString(), promptFunc, responseFunc, recalcFunc, m_ctx);
@@ -836,7 +846,7 @@ void ChatLLM::generateName()
     auto responseFunc = std::bind(&ChatLLM::handleNameResponse, this, std::placeholders::_1, std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleNameRecalculate, this, std::placeholders::_1);
     LLModel::PromptContext ctx = m_ctx;
-    m_llModelInfo.model->prompt("Describe the above conversation in three words or less.",
+    m_llModelInfo.model->prompt("Describe the above conversation in seven words or less.",
                                 promptTemplate.toStdString(), promptFunc, responseFunc, recalcFunc, ctx);
     std::string trimmed = trim_whitespace(m_nameResponse);
     if (trimmed != m_nameResponse) {

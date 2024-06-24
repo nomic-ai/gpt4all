@@ -36,6 +36,8 @@
 #include <cstring>
 #include <utility>
 
+using namespace Qt::Literals::StringLiterals;
+
 //#define DEBUG
 
 static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
@@ -43,7 +45,8 @@ static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
 #if defined(Q_OS_MAC)
 
 #include <sys/sysctl.h>
-static QString getCPUModel() {
+static QString getCPUModel()
+{
     char buffer[256];
     size_t bufferlen = sizeof(buffer);
     sysctlbyname("machdep.cpu.brand_string", &buffer, &bufferlen, NULL, 0);
@@ -53,14 +56,16 @@ static QString getCPUModel() {
 #elif defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
 
 #ifndef _MSC_VER
-static void get_cpuid(int level, int *regs) {
+static void get_cpuid(int level, int *regs)
+{
     asm volatile("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3]) : "0" (level) : "memory");
 }
 #else
 #define get_cpuid(level, regs) __cpuid(regs, level)
 #endif
 
-static QString getCPUModel() {
+static QString getCPUModel()
+{
     int regs[12];
 
     // EAX=800000000h: Get Highest Extended Function Implemented
@@ -98,10 +103,8 @@ Network::Network()
     : QObject{nullptr}
 {
     QSettings settings;
-    settings.sync();
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
-    settings.sync();
     m_sessionId = generateUniqueId();
 
     // allow sendMixpanel to be called from any thread
@@ -275,7 +278,7 @@ void Network::sendStartup()
     const auto *display = QGuiApplication::primaryScreen();
     trackEvent("startup", {
         {"$screen_dpi", std::round(display->physicalDotsPerInch())},
-        {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
+        {"display", u"%1x%2"_s.arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
         {"cpu", getCPUModel()},
         {"cpu_supports_avx2", LLModel::Implementation::cpuSupportsAVX2()},

@@ -16,15 +16,16 @@ if(APPLE)
   endif()
 endif()
 
-set(APP_VERSION_MAJOR 2)
-set(APP_VERSION_MINOR 8)
-set(APP_VERSION_PATCH 1)
-set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
+set(APP_VERSION_MAJOR 3)
+set(APP_VERSION_MINOR 0)
+set(APP_VERSION_PATCH 0)
+set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
+set(APP_VERSION "${APP_VERSION_BASE}-rc1")
 
 # Include the binary directory for the generated header file
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-project(gpt4all VERSION ${APP_VERSION} LANGUAGES CXX C)
+project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -91,7 +92,6 @@ qt_add_executable(chat
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
     chatapi.h chatapi.cpp
     database.h database.cpp
-    embeddings.h embeddings.cpp
     download.h download.cpp
     embllm.cpp embllm.h
     localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
@@ -102,6 +102,7 @@ qt_add_executable(chat
     server.h server.cpp
     logger.h logger.cpp
     responsetext.h responsetext.cpp
+    oscompat.h oscompat.cpp
     ${METAL_SHADER_FILE}
     ${APP_ICON_RESOURCE}
 )
@@ -112,21 +113,24 @@ qt_add_qml_module(chat
     NO_CACHEGEN
     QML_FILES
       main.qml
+      qml/AddCollectionView.qml
+      qml/AddModelView.qml
       qml/ChatDrawer.qml
       qml/ChatView.qml
-      qml/CollectionsDialog.qml
-      qml/ModelDownloaderDialog.qml
+      qml/CollectionsDrawer.qml
+      qml/HomeView.qml
+      qml/ModelsView.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
       qml/ThumbsDownDialog.qml
-      qml/SettingsDialog.qml
+      qml/SettingsView.qml
       qml/StartupDialog.qml
       qml/PopupDialog.qml
-      qml/AboutDialog.qml
       qml/Theme.qml
       qml/ModelSettings.qml
       qml/ApplicationSettings.qml
       qml/LocalDocsSettings.qml
+      qml/LocalDocsView.qml
       qml/SwitchModelDialog.qml
       qml/MySettingsTab.qml
       qml/MySettingsStack.qml
@@ -138,33 +142,58 @@ qt_add_qml_module(chat
       qml/MyComboBox.qml
       qml/MyDialog.qml
       qml/MyDirectoryField.qml
+      qml/MyFancyLink.qml
       qml/MyTextArea.qml
       qml/MyTextField.qml
       qml/MyCheckBox.qml
       qml/MyBusyIndicator.qml
       qml/MyMiniButton.qml
       qml/MyToolButton.qml
+      qml/MyWelcomeButton.qml
     RESOURCES
+      icons/antenna_1.svg
+      icons/antenna_2.svg
+      icons/antenna_3.svg
       icons/send_message.svg
       icons/stop_generating.svg
       icons/regenerate.svg
+      icons/chat.svg
+      icons/changelog.svg
       icons/close.svg
       icons/copy.svg
       icons/db.svg
+      icons/discord.svg
       icons/download.svg
       icons/settings.svg
       icons/eject.svg
       icons/edit.svg
+      icons/email.svg
+      icons/file.svg
+      icons/file-md.svg
+      icons/file-pdf.svg
+      icons/file-txt.svg
+      icons/github.svg
+      icons/globe.svg
+      icons/home.svg
       icons/image.svg
+      icons/info.svg
+      icons/local-docs.svg
+      icons/models.svg
+      icons/nomic_logo.svg
+      icons/notes.svg
+      icons/search.svg
       icons/trash.svg
       icons/network.svg
       icons/thumbs_up.svg
       icons/thumbs_down.svg
+      icons/twitter.svg
       icons/left_panel_closed.svg
       icons/left_panel_open.svg
       icons/logo.svg
       icons/logo-32.png
       icons/logo-48.png
+      icons/you.svg
+      icons/alt_logo.svg
 )
 
 set_target_properties(chat PROPERTIES
@@ -190,6 +219,13 @@ endif()
 
 target_compile_definitions(chat
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
+
+# usearch uses the identifier 'slots' which conflicts with Qt's 'slots' keyword
+target_compile_definitions(chat PRIVATE QT_NO_SIGNALS_SLOTS_KEYWORDS)
+
+target_include_directories(chat PRIVATE usearch/include
+                                        usearch/fp16/include)
+
 if(LINUX)
   target_link_libraries(chat
       PRIVATE Qt6::Quick Qt6::Svg Qt6::HttpServer Qt6::Sql Qt6::Pdf Qt6::WaylandCompositor)
@@ -199,6 +235,20 @@ else()
 endif()
 target_link_libraries(chat
     PRIVATE llmodel)
+
+
+# -- extra resources --
+
+set(LOCAL_EMBEDDING_MODEL "nomic-embed-text-v1.5.f16.gguf")
+set(LOCAL_EMBEDDING_MODEL_MD5 "a5401e7f7e46ed9fcaed5b60a281d547")
+file(DOWNLOAD
+    "https://gpt4all.io/models/gguf/${LOCAL_EMBEDDING_MODEL}"
+    "${CMAKE_BINARY_DIR}/resources/${LOCAL_EMBEDDING_MODEL}"
+    EXPECTED_HASH "MD5=${LOCAL_EMBEDDING_MODEL_MD5}"
+)
+
+
+# -- install --
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 
@@ -263,6 +313,10 @@ if (LLMODEL_CUDA)
         )
     endif()
 endif()
+
+install(FILES "${CMAKE_BINARY_DIR}/resources/${LOCAL_EMBEDDING_MODEL}"
+        DESTINATION resources
+        COMPONENT ${COMPONENT_NAME_MAIN})
 
 set(CPACK_GENERATOR "IFW")
 set(CPACK_VERBATIM_VARIABLES YES)

@@ -7,36 +7,46 @@
 #include <QByteArray>
 #include <QHash>
 #include <QList>
-#include <QModelIndex>
 #include <QObject>
 #include <QSortFilterProxyModel>
 #include <QString>
 #include <QVariant>
-#include <QVector>
 #include <Qt>
 
-#include <cstddef>
 #include <functional>
 
 class LocalDocsCollectionsModel : public QSortFilterProxyModel
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(int updatingCount READ updatingCount NOTIFY updatingCountChanged)
 public:
     explicit LocalDocsCollectionsModel(QObject *parent);
 
 public Q_SLOTS:
+    int count() const { return rowCount(); }
     void setCollections(const QList<QString> &collections);
+    int updatingCount() const;
+
+Q_SIGNALS:
+    void countChanged();
+    void updatingCountChanged();
+
+private Q_SLOT:
+    void maybeTriggerUpdatingCountChanged();
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
 private:
     QList<QString> m_collections;
+    int m_updatingCount = 0;
 };
 
 class LocalDocsModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     enum Roles {
@@ -45,43 +55,42 @@ public:
         InstalledRole,
         IndexingRole,
         ErrorRole,
+        ForceIndexingRole,
         CurrentDocsToIndexRole,
         TotalDocsToIndexRole,
         CurrentBytesToIndexRole,
         TotalBytesToIndexRole,
         CurrentEmbeddingsToIndexRole,
-        TotalEmbeddingsToIndexRole
+        TotalEmbeddingsToIndexRole,
+        TotalDocsRole,
+        TotalWordsRole,
+        TotalTokensRole,
+        StartUpdateRole,
+        LastUpdateRole,
+        FileCurrentlyProcessingRole,
+        EmbeddingModelRole,
+        UpdatingRole
     };
 
     explicit LocalDocsModel(QObject *parent = nullptr);
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
+    int count() const { return rowCount(); }
 
 public Q_SLOTS:
-    void updateInstalled(int folder_id, bool b);
-    void updateIndexing(int folder_id, bool b);
-    void updateError(int folder_id, const QString &error);
-    void updateCurrentDocsToIndex(int folder_id, size_t currentDocsToIndex);
-    void updateTotalDocsToIndex(int folder_id, size_t totalDocsToIndex);
-    void subtractCurrentBytesToIndex(int folder_id, size_t subtractedBytes);
-    void updateCurrentBytesToIndex(int folder_id, size_t currentBytesToIndex);
-    void updateTotalBytesToIndex(int folder_id, size_t totalBytesToIndex);
-    void updateCurrentEmbeddingsToIndex(int folder_id, size_t currentBytesToIndex);
-    void updateTotalEmbeddingsToIndex(int folder_id, size_t totalBytesToIndex);
-    void addCollectionItem(const CollectionItem &item, bool fromDb);
-    void removeFolderById(int folder_id);
+    void updateCollectionItem(const CollectionItem&);
+    void addCollectionItem(const CollectionItem &item);
+    void removeFolderById(const QString &collection, int folder_id);
     void removeCollectionPath(const QString &name, const QString &path);
     void collectionListUpdated(const QList<CollectionItem> &collectionList);
 
-private:
-    template<typename T>
-    void updateField(int folder_id, T value,
-        const std::function<void(CollectionItem&, T)>& updater,
-        const QVector<int>& roles);
-    void removeCollectionIf(std::function<bool(CollectionItem)> const &predicate);
+Q_SIGNALS:
+    void countChanged();
+    void updatingChanged(const QString &collection);
 
 private:
+    void removeCollectionIf(std::function<bool(CollectionItem)> const &predicate);
     QList<CollectionItem> m_collectionList;
 };
 

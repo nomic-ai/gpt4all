@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QThread>
@@ -18,6 +19,8 @@
 #include <QtLogging>
 
 #include <iostream>
+
+using namespace Qt::Literals::StringLiterals;
 
 //#define DEBUG
 
@@ -194,7 +197,7 @@ void ChatAPIWorker::request(const QString &apiKey,
     m_ctx = promptCtx;
 
     QUrl apiUrl(m_chat->url());
-    const QString authorization = QString("Bearer %1").arg(apiKey).trimmed();
+    const QString authorization = u"Bearer %1"_s.arg(apiKey).trimmed();
     QNetworkRequest request(apiUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", authorization.toUtf8());
@@ -241,8 +244,8 @@ void ChatAPIWorker::handleReadyRead()
     if (!ok || code != 200) {
         m_chat->callResponse(
             -1,
-            QString("ERROR: ChatAPIWorker::handleReadyRead got HTTP Error %1 %2: %3")
-                .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString()
+            u"ERROR: ChatAPIWorker::handleReadyRead got HTTP Error %1 %2: %3"_s
+                .arg(code).arg(reply->errorString(), reply->readAll()).toStdString()
         );
         emit finished();
         return;
@@ -263,7 +266,7 @@ void ChatAPIWorker::handleReadyRead()
         QJsonParseError err;
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
         if (err.error != QJsonParseError::NoError) {
-            m_chat->callResponse(-1, QString("ERROR: ChatAPI responded with invalid json \"%1\"")
+            m_chat->callResponse(-1, u"ERROR: ChatAPI responded with invalid json \"%1\""_s
                                          .arg(err.errorString()).toStdString());
             continue;
         }
