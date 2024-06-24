@@ -51,7 +51,7 @@ Rectangle {
             delegate: Rectangle {
                 width: listView.width
                 height: childrenRect.height + 15
-                color: checkBox.checked ? theme.collectionButtonBackground : "transparent"
+                color: checkBox.checked ? theme.collectionsButtonBackground : "transparent"
 
                 RowLayout {
                     anchors.top: parent.top
