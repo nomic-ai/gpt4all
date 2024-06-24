@@ -1547,8 +1547,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         };
         updateData(id, data);
     }
-    
-	const QString mistralDesc = tr("<ul><li>Requires personal Mistral API key.</li><li>WARNING: Will send"
+
+    const QString mistralDesc = tr("<ul><li>Requires personal Mistral API key.</li><li>WARNING: Will send"
                                    " your chats to Mistral!</li><li>Your API key will be stored on disk</li><li>Will only be used"
                                    " to communicate with Mistral</li><li>You can apply for an API key"
                                    " <a href=\"https://console.mistral.ai/user/api-keys\">here</a>.</li>");
@@ -1603,7 +1603,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         };
         updateData(id, data);
     }
-    
+
     {
         const QString modelName = "Mistral Medium API";
         const QString id = modelName;
