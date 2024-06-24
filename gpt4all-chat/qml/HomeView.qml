@@ -118,7 +118,7 @@ Rectangle {
                 Layout.maximumHeight: textArea.height
 
                 Rectangle {
-                    id: roundedFrame
+                    id: roundedFrameReleaseNotes
                     anchors.fill: parent
                     z: 299
                     radius: 10
@@ -133,8 +133,8 @@ Rectangle {
                     layer.enabled: true
                     layer.effect: OpacityMask {
                         maskSource: Rectangle {
-                            width: roundedFrame.width
-                            height: roundedFrame.height
+                            width: roundedFrameReleaseNotes.width
+                            height: roundedFrameReleaseNotes.height
                             radius: 10
                         }
                     }
@@ -148,17 +148,17 @@ Rectangle {
                             width: 82
                             height: 100
                             Image {
-                                id: changelogImg
+                                id: notesImg
                                 anchors.centerIn: parent
                                 sourceSize: Qt.size(40, 40)
                                 mipmap: true
                                 visible: false
-                                source: "qrc:/gpt4all/icons/changelog.svg"
+                                source: "qrc:/gpt4all/icons/notes.svg"
                             }
 
                             ColorOverlay {
-                                anchors.fill: changelogImg
-                                source: changelogImg
+                                anchors.fill: notesImg
+                                source: notesImg
                                 color: theme.styledTextColor
                             }
                         }
@@ -171,7 +171,7 @@ Rectangle {
                             ScrollBar.horizontal.policy: ScrollBar.AsNeeded
 
                             TextArea {
-                                id: textArea
+                                id: textAreaReleaseNotes
                                 padding: 10
                                 color: theme.styledTextColor
                                 font.pixelSize: theme.fontSizeLarge
@@ -222,7 +222,7 @@ Rectangle {
                     MyFancyLink {
                         text: qsTr("Changelog")
                         imageSource: "qrc:/gpt4all/icons/changelog.svg"
-                        onClicked: { Qt.openUrlExternally("!fixme!") }
+                        onClicked: { Qt.openUrlExternally("https://github.com/nomic-ai/gpt4all/releases") }
                     }
 
                     MyFancyLink {

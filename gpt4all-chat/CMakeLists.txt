@@ -179,6 +179,7 @@ qt_add_qml_module(chat
       icons/local-docs.svg
       icons/models.svg
       icons/nomic_logo.svg
+      icons/notes.svg
       icons/search.svg
       icons/trash.svg
       icons/network.svg
