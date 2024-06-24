@@ -166,7 +166,7 @@ Rectangle {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             Rectangle {
-                                anchors.fill: releaseScroll
+                                anchors.fill: newsScroll
                                 color: theme.conversationBackground
                             }
 
