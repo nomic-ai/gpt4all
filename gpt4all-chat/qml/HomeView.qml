@@ -140,7 +140,6 @@ Rectangle {
                     RowLayout {
                         spacing: 0
                         anchors.fill: parent
-
                         Rectangle {
                             color: "transparent"
                             width: 82
@@ -160,11 +159,13 @@ Rectangle {
                                 color: theme.styledTextColor
                             }
                         }
+
                         Item {
+                            id: myItem
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             Rectangle {
-                                anchors.fill: newsScroll
+                                anchors.fill: parent
                                 color: theme.conversationBackground
                             }
 
@@ -173,11 +174,11 @@ Rectangle {
                                 anchors.fill: parent
                                 clip: true
                                 ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                                ScrollBar.horizontal.policy: ScrollBar.AsNeeded
-
+                                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                                 Text {
                                     id: textAreaNews
-                                    padding: 10
+                                    width: myItem.width
+                                    padding: 20
                                     color: theme.styledTextColor
                                     font.pixelSize: theme.fontSizeLarger
                                     textFormat: TextEdit.MarkdownText
