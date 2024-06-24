@@ -541,8 +541,8 @@ Window {
 
             function show() {
                 stackLayout.currentIndex = 2;
-                // FIXME_BLOCKER This should be removed and we should be changing the names of the
-                // classes here in ModelList for the proxy/filter models
+                // FIXME This expanded code should be removed and we should be changing the names of
+                // the classes here in ModelList for the proxy/filter models
                 ModelList.downloadableModels.expanded = true
             }
 

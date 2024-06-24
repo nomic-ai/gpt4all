@@ -369,7 +369,7 @@ Rectangle {
                                 onLinkActivated: Qt.openUrlExternally(link)
                             }
 
-                            // FIXME_BLOCKER Need to overhaul design here which must take into account
+                            // FIXME Need to overhaul design here which must take into account
                             // features not present in current figma including:
                             // * Ability to cancel a current download
                             // * Ability to resume a download
