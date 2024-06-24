@@ -10,13 +10,13 @@ Button {
     rightPadding: 18
     leftPadding: 18
     font.pixelSize: theme.fontSizeLarge
-    property color textColor: MySettings.chatTheme === "Dark" ? theme.red800 : theme.red600
-    property color mutedTextColor: MySettings.chatTheme === "Dark" ? theme.red400 : theme.red300
-    property color backgroundColor: enabled ? (MySettings.chatTheme === "Dark" ? theme.red400 : theme.red200) :
-        (MySettings.chatTheme === "Dark" ? theme.red200 : theme.red100)
-    property color backgroundColorHovered: enabled ? (MySettings.chatTheme === "Dark" ? theme.red500 : theme.red300) : backgroundColor
+    property color textColor: theme.darkButtonText
+    property color mutedTextColor: theme.darkButtonMutedText
+    property color backgroundColor: theme.darkButtonBackground
+    property color backgroundColorHovered: enabled ? theme.darkButtonBackgroundHovered : backgroundColor
     property real  borderWidth: 0
     property color borderColor: "transparent"
+
     contentItem: Text {
         text: myButton.text
         horizontalAlignment: Text.AlignHCenter

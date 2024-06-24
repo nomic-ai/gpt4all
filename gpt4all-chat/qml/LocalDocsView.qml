@@ -245,7 +245,7 @@ Rectangle {
                                         if (model.forceIndexing)
                                             return theme.textErrorColor
 
-                                        return theme.buttonBackground
+                                        return theme.lighterButtonForeground
                                     }
                                     text: {
                                         if (model.error !== "")
@@ -281,7 +281,7 @@ Rectangle {
                                 Layout.alignment: Qt.AlignLeft
                                 text: folder_path
                                 elide: Text.ElideRight
-                                color: theme.titleTextColor
+                                color: theme.titleTextColor2
                                 font.pixelSize: theme.fontSizeSmall
                             }
 
