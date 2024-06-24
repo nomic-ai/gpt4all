@@ -768,16 +768,31 @@ Rectangle {
                                     }
                                 }
 
-                                Image {
+
+                                Item {
                                     Layout.row: 1
                                     Layout.column: 0
                                     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                                     Layout.topMargin: 5
+                                    Layout.preferredWidth: 24
+                                    Layout.preferredHeight: 24
                                     visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
-                                    sourceSize.width: 24
-                                    sourceSize.height: 24
-                                    mipmap: true
-                                    source: "qrc:/gpt4all/icons/db.svg"
+
+                                    Image {
+                                        id: sourcesIcon
+                                        visible: false
+                                        anchors.fill: parent
+                                        sourceSize.width: 24
+                                        sourceSize.height: 24
+                                        mipmap: true
+                                        source: "qrc:/gpt4all/icons/db.svg"
+                                    }
+
+                                    ColorOverlay {
+                                        anchors.fill: sourcesIcon
+                                        source: sourcesIcon
+                                        color: theme.textColor
+                                    }
                                 }
 
                                 RowLayout {
@@ -854,19 +869,31 @@ Rectangle {
                                                         id: title
                                                         spacing: 5
                                                         Layout.maximumWidth: 180
-                                                        Image {
-                                                            sourceSize.width: 24
-                                                            sourceSize.height: 24
-                                                            mipmap: true
-                                                            source: {
-                                                                if (modelData.file.endsWith(".txt"))
-                                                                    return "qrc:/gpt4all/icons/file-txt.svg"
-                                                                else if (modelData.file.endsWith(".pdf"))
-                                                                    return "qrc:/gpt4all/icons/file-pdf.svg"
-                                                                else if (modelData.file.endsWith(".md"))
-                                                                    return "qrc:/gpt4all/icons/file-md.svg"
-                                                                else
-                                                                    return "qrc:/gpt4all/icons/file.svg"
+                                                        Item {
+                                                            Layout.preferredWidth: 24
+                                                            Layout.preferredHeight: 24
+                                                            Image {
+                                                                id: fileIcon
+                                                                anchors.fill: parent
+                                                                visible: false
+                                                                sourceSize.width: 24
+                                                                sourceSize.height: 24
+                                                                mipmap: true
+                                                                source: {
+                                                                    if (modelData.file.endsWith(".txt"))
+                                                                        return "qrc:/gpt4all/icons/file-txt.svg"
+                                                                    else if (modelData.file.endsWith(".pdf"))
+                                                                        return "qrc:/gpt4all/icons/file-pdf.svg"
+                                                                    else if (modelData.file.endsWith(".md"))
+                                                                        return "qrc:/gpt4all/icons/file-md.svg"
+                                                                    else
+                                                                        return "qrc:/gpt4all/icons/file.svg"
+                                                                }
+                                                            }
+                                                            ColorOverlay {
+                                                                anchors.fill: fileIcon
+                                                                source: fileIcon
+                                                                color: theme.textColor
                                                             }
                                                         }
                                                         Text {
@@ -888,6 +915,7 @@ Rectangle {
                                                         Layout.maximumWidth: 180
                                                         Layout.maximumHeight: 55 - title.height
                                                         text: modelData.file
+                                                        color: theme.textColor
                                                         font.pixelSize: theme.fontSizeSmall
                                                         elide: Qt.ElideRight
                                                         wrapMode: Text.WrapAnywhere
@@ -898,16 +926,29 @@ Rectangle {
                                     }
                                 }
 
-                                Image {
+                                Item {
                                     Layout.row: 3
                                     Layout.column: 0
                                     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                                     Layout.topMargin: 5
+                                    Layout.preferredWidth: 24
+                                    Layout.preferredHeight: 24
                                     visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
-                                    sourceSize.width: 24
-                                    sourceSize.height: 24
-                                    mipmap: true
-                                    source: "qrc:/gpt4all/icons/info.svg"
+                                    Image {
+                                        id: answersIcon
+                                        visible: false
+                                        anchors.fill: parent
+                                        sourceSize.width: 24
+                                        sourceSize.height: 24
+                                        mipmap: true
+                                        source: "qrc:/gpt4all/icons/info.svg"
+                                    }
+
+                                    ColorOverlay {
+                                        anchors.fill: answersIcon
+                                        source: answersIcon
+                                        color: theme.textColor
+                                    }
                                 }
 
                                 RowLayout {
