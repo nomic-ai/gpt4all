@@ -1989,7 +1989,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
     }
 }
 
-// FIXME This is very slow and non-interruptable and when we close the application and we're
+// FIXME This is very slow and non-interruptible and when we close the application and we're
 // cleaning a large table this can cause the app to take forever to shut down. This would ideally be
 // interruptable and we'd continue 'cleaning' when we restart
 bool Database::cleanDB()
