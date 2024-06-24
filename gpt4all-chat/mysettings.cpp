@@ -45,6 +45,8 @@ static const QVariantMap basicDefaults {
     { "localdocs/retrievalSize",  3 },
     { "localdocs/showReferences", true },
     { "localdocs/fileExtensions", QStringList { "txt", "pdf", "md", "rst" } },
+    { "localdocs/useRemoteEmbed", false },
+    { "localdocs/nomicAPIKey",    "" },
     { "network/attribution",      "" },
 };
 
@@ -156,8 +158,10 @@ void MySettings::restoreLocalDocsDefaults()
 {
     setLocalDocsChunkSize(basicDefaults.value("localdocs/chunkSize").toInt());
     setLocalDocsRetrievalSize(basicDefaults.value("localdocs/retrievalSize").toInt());
-    setLocalDocsFileExtensions(basicDefaults.value("localdocs/fileExtensions").toStringList());
     setLocalDocsShowReferences(basicDefaults.value("localdocs/showReferences").toBool());
+    setLocalDocsFileExtensions(basicDefaults.value("localdocs/fileExtensions").toStringList());
+    setLocalDocsUseRemoteEmbed(basicDefaults.value("localdocs/useRemoteEmbed").toBool());
+    setLocalDocsNomicAPIKey(basicDefaults.value("localdocs/nomicAPIKey").toString());
 }
 
 void MySettings::eraseModel(const ModelInfo &info)
@@ -376,6 +380,8 @@ int         MySettings::localDocsChunkSize() const      { return getBasicSetting
 int         MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
 bool        MySettings::localDocsShowReferences() const { return getBasicSetting("localdocs/showReferences").toBool(); }
 QStringList MySettings::localDocsFileExtensions() const { return getBasicSetting("localdocs/fileExtensions").toStringList(); }
+bool        MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting("localdocs/useRemoteEmbed").toBool(); }
+QString     MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
 QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
 
 void MySettings::setSaveChatsContext(bool value)                      { setBasicSetting("saveChatsContext",         value); }
@@ -389,6 +395,8 @@ void MySettings::setLocalDocsChunkSize(int value)                     { setBasic
 void MySettings::setLocalDocsRetrievalSize(int value)                 { setBasicSetting("localdocs/retrievalSize",  value, "localDocsRetrievalSize"); }
 void MySettings::setLocalDocsShowReferences(bool value)               { setBasicSetting("localdocs/showReferences", value, "localDocsShowReferences"); }
 void MySettings::setLocalDocsFileExtensions(const QStringList &value) { setBasicSetting("localdocs/fileExtensions", value, "localDocsFileExtensions"); }
+void MySettings::setLocalDocsUseRemoteEmbed(bool value)               { setBasicSetting("localdocs/useRemoteEmbed", value, "localDocsUseRemoteEmbed"); }
+void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasicSetting("localdocs/nomicAPIKey",    value, "localDocsNomicAPIKey"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
 
 QString MySettings::modelPath()

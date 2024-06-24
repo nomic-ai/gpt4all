@@ -29,6 +29,8 @@ class MySettings : public QObject
     Q_PROPERTY(int localDocsRetrievalSize READ localDocsRetrievalSize WRITE setLocalDocsRetrievalSize NOTIFY localDocsRetrievalSizeChanged)
     Q_PROPERTY(bool localDocsShowReferences READ localDocsShowReferences WRITE setLocalDocsShowReferences NOTIFY localDocsShowReferencesChanged)
     Q_PROPERTY(QStringList localDocsFileExtensions READ localDocsFileExtensions WRITE setLocalDocsFileExtensions NOTIFY localDocsFileExtensionsChanged)
+    Q_PROPERTY(bool localDocsUseRemoteEmbed READ localDocsUseRemoteEmbed WRITE setLocalDocsUseRemoteEmbed NOTIFY localDocsUseRemoteEmbedChanged)
+    Q_PROPERTY(QString localDocsNomicAPIKey READ localDocsNomicAPIKey WRITE setLocalDocsNomicAPIKey NOTIFY localDocsNomicAPIKeyChanged)
     Q_PROPERTY(QString networkAttribution READ networkAttribution WRITE setNetworkAttribution NOTIFY networkAttributionChanged)
     Q_PROPERTY(bool networkIsActive READ networkIsActive WRITE setNetworkIsActive NOTIFY networkIsActiveChanged)
     Q_PROPERTY(bool networkUsageStatsActive READ networkUsageStatsActive WRITE setNetworkUsageStatsActive NOTIFY networkUsageStatsActiveChanged)
@@ -132,6 +134,10 @@ public:
     void setLocalDocsShowReferences(bool value);
     QStringList localDocsFileExtensions() const;
     void setLocalDocsFileExtensions(const QStringList &value);
+    bool localDocsUseRemoteEmbed() const;
+    void setLocalDocsUseRemoteEmbed(bool value);
+    QString localDocsNomicAPIKey() const;
+    void setLocalDocsNomicAPIKey(const QString &value);
 
     // Network settings
     QString networkAttribution() const;
@@ -177,6 +183,8 @@ Q_SIGNALS:
     void localDocsRetrievalSizeChanged();
     void localDocsShowReferencesChanged();
     void localDocsFileExtensionsChanged();
+    void localDocsUseRemoteEmbedChanged();
+    void localDocsNomicAPIKeyChanged();
     void networkAttributionChanged();
     void networkIsActiveChanged();
     void networkPortChanged();

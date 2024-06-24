@@ -1,6 +1,7 @@
 #include "embllm.h"
 
 #include "modellist.h"
+#include "mysettings.h"
 
 #include "../gpt4all-backend/llmodel.h"
 
@@ -65,8 +66,8 @@ bool EmbeddingLLMWorker::loadModel()
     m_nomicAPIKey.clear();
     m_model = nullptr;
 
-    if (false /* MySettings::globalInstance()->useNomic() */) { // TODO
-        m_nomicAPIKey = "" /* MySettings::globalInstance()->nomicAPIKey() */; // TODO
+    if (MySettings::globalInstance()->localDocsUseRemoteEmbed()) {
+        m_nomicAPIKey = MySettings::globalInstance()->localDocsNomicAPIKey();
         return true;
     }
 
