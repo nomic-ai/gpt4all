@@ -298,14 +298,14 @@ static bool selectChunk(QSqlQuery &q, const QList<int> &chunk_ids, int retrieval
     return q.exec();
 }
 
-bool sqlGetChunkFolders(QSqlQuery &q, const QList<int> &chunk_ids, QList<int> &folder_ids)
+bool sqlGetChunkFolders(QSqlQuery &q, const QList<int> &chunk_ids, QSet<int> &folder_ids)
 {
     if (!q.prepare(SELECT_CHUNK_FOLDER_SQL))
         return false;
 
     for (int id: chunk_ids) {
         q.addBindValue(id);
-        if (!q.exec())
+        if (!q.exec() || !q.next())
             return false;
         folder_ids << q.value(0).toInt();
     }
@@ -1158,7 +1158,7 @@ void Database::handleErrorGenerated(const QVector<EmbeddingChunk> &chunks, const
     for (const auto &c: chunks) { chunk_ids << c.chunk_id; }
 
     QSqlQuery q(m_db);
-    QList<int> folder_ids;
+    QSet<int> folder_ids;
     if (!sqlGetChunkFolders(q, chunk_ids, folder_ids)) {
         qWarning() << "Database ERROR: failed to get folder IDs:" << q.lastError();
         return;
