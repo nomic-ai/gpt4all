@@ -547,7 +547,8 @@ QtObject {
 
     property color conversationProgress: {
         switch (MySettings.chatTheme) {
-//            case "LegacyDark":
+            case "LegacyDark":
+                return purple400;
 //            case "Dark":
             default:
                 return green400;
