@@ -111,6 +111,92 @@ Rectangle {
             }
 
             Item {
+                visible: !startChat.visible && Download.latestNews !== ""
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.minimumHeight: 120
+                Layout.maximumHeight: textAreaNews.height
+
+                Rectangle {
+                    id: roundedFrameNews // latest news
+                    anchors.fill: parent
+                    z: 299
+                    radius: 10
+                    border.width: 1
+                    border.color: theme.controlBorder
+                    color: "transparent"
+                    clip: true
+                }
+
+                Item {
+                    anchors.fill: parent
+                    layer.enabled: true
+                    layer.effect: OpacityMask {
+                        maskSource: Rectangle {
+                            width: roundedFrameNews.width
+                            height: roundedFrameNews.height
+                            radius: 10
+                        }
+                    }
+
+                    RowLayout {
+                        spacing: 0
+                        anchors.fill: parent
+
+                        Rectangle {
+                            color: "transparent"
+                            width: 82
+                            height: 100
+                            Image {
+                                id: newsImg
+                                anchors.centerIn: parent
+                                sourceSize: Qt.size(40, 40)
+                                mipmap: true
+                                visible: false
+                                source: "qrc:/gpt4all/icons/alt_logo.svg"
+                            }
+
+                            ColorOverlay {
+                                anchors.fill: newsImg
+                                source: newsImg
+                                color: theme.styledTextColor
+                            }
+                        }
+                        Item {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            Rectangle {
+                                anchors.fill: releaseScroll
+                                color: theme.conversationBackground
+                            }
+
+                            ScrollView {
+                                id: newsScroll
+                                anchors.fill: parent
+                                clip: true
+                                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                                ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+
+                                Text {
+                                    id: textAreaNews
+                                    padding: 10
+                                    color: theme.styledTextColor
+                                    font.pixelSize: theme.fontSizeLarger
+                                    textFormat: TextEdit.MarkdownText
+                                    wrapMode: Text.WordWrap
+                                    text: Download.latestNews
+                                    focus: false
+                                    Accessible.role: Accessible.Paragraph
+                                    Accessible.name: qsTr("Latest news")
+                                    Accessible.description: qsTr("Latest news from GPT4All")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Item {
                 visible: !startChat.visible
                 Layout.fillWidth: true
                 Layout.fillHeight: true

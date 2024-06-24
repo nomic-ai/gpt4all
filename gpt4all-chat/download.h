@@ -52,12 +52,14 @@ class Download : public QObject
     Q_OBJECT
     Q_PROPERTY(bool hasNewerRelease READ hasNewerRelease NOTIFY hasNewerReleaseChanged)
     Q_PROPERTY(ReleaseInfo releaseInfo READ releaseInfo NOTIFY releaseInfoChanged)
+    Q_PROPERTY(QString latestNews READ latestNews NOTIFY latestNewsChanged)
 
 public:
     static Download *globalInstance();
 
     ReleaseInfo releaseInfo() const;
     bool hasNewerRelease() const;
+    QString latestNews() const { return m_latestNews; }
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
     Q_INVOKABLE void installModel(const QString &modelFile, const QString &apiKey);
@@ -65,11 +67,13 @@ public:
     Q_INVOKABLE bool isFirstStart(bool writeVersion = false) const;
 
 public Q_SLOTS:
+    void updateLatestNews();
     void updateReleaseNotes();
 
 private Q_SLOTS:
     void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void handleReleaseJsonDownloadFinished();
+    void handleLatestNewsDownloadFinished();
     void handleErrorOccurred(QNetworkReply::NetworkError code);
     void handleDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void handleModelDownloadFinished();
@@ -82,6 +86,7 @@ Q_SIGNALS:
     void hasNewerReleaseChanged();
     void requestHashAndSave(const QString &hash, QCryptographicHash::Algorithm a, const QString &saveFilePath,
         QFile *tempFile, QNetworkReply *modelReply);
+    void latestNewsChanged();
 
 private:
     void parseReleaseJsonFile(const QByteArray &jsonData);
@@ -92,6 +97,7 @@ private:
 
     HashAndSaveFile *m_hashAndSave;
     QMap<QString, ReleaseInfo> m_releaseMap;
+    QString m_latestNews;
     QNetworkAccessManager m_networkManager;
     QMap<QNetworkReply*, QFile*> m_activeDownloads;
     QHash<QString, int> m_activeRetries;

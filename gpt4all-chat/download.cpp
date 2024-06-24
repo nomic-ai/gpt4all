@@ -50,6 +50,7 @@ Download::Download()
         &Download::handleHashAndSaveFinished, Qt::QueuedConnection);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this,
         &Download::handleSslErrors);
+    updateLatestNews();
     updateReleaseNotes();
     m_startTime = QDateTime::currentDateTime();
 }
@@ -127,6 +128,18 @@ void Download::updateReleaseNotes()
     QNetworkReply *jsonReply = m_networkManager.get(request);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &Download::handleReleaseJsonDownloadFinished);
+}
+
+void Download::updateLatestNews()
+{
+    QUrl url("http://gpt4all.io/meta/latestnews.md");
+    QNetworkRequest request(url);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+    QNetworkReply *reply = m_networkManager.get(request);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+    connect(reply, &QNetworkReply::finished, this, &Download::handleLatestNewsDownloadFinished);
 }
 
 void Download::downloadModel(const QString &modelFile)
@@ -307,6 +320,24 @@ void Download::parseReleaseJsonFile(const QByteArray &jsonData)
 
     emit hasNewerReleaseChanged();
     emit releaseInfoChanged();
+}
+
+void Download::handleLatestNewsDownloadFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply)
+        return;
+
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "ERROR: network error occurred attempting to download latest news:" << reply->errorString();
+        reply->deleteLater();
+        return;
+    }
+
+    QByteArray responseData = reply->readAll();
+    m_latestNews = QString::fromUtf8(responseData);
+    reply->deleteLater();
+    emit latestNewsChanged();
 }
 
 bool Download::hasRetry(const QString &filename) const
