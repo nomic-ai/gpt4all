@@ -4,10 +4,6 @@ import QtQuick.Controls.Basic
 import mysettings
 
 QtObject {
-
-    // FIXME_BLOCKER Need full support dark mode
-    // FIXME_BLCOKER Need full support for legacy dark mode
-
     // black and white
     property color black: Qt.hsla(231/360, 0.15, 0.19)
     property color white: Qt.hsla(0, 0, 1)
@@ -29,9 +25,17 @@ QtObject {
     property color gray900: Qt.hsla(25/360, 0.05, 0.31)
     property color gray950: Qt.hsla(25/360, 0.05, 0.15)
 
-    property color grayRed0: "#e7dfdf"
-    property color grayRed500: "#a48e8e"
-    property color grayRed900: "#766060"
+    property color grayRed0: Qt.hsla(0/360, 0.108, 0.89)
+    property color grayRed50: Qt.hsla(0/360, 0.108, 0.85)
+    property color grayRed100: Qt.hsla(0/360, 0.108, 0.80)
+    property color grayRed200: Qt.hsla(0/360, 0.108, 0.76)
+    property color grayRed300: Qt.hsla(0/360, 0.108, 0.72)
+    property color grayRed400: Qt.hsla(0/360, 0.108, 0.68)
+    property color grayRed500: Qt.hsla(0/360, 0.108, 0.60)
+    property color grayRed600: Qt.hsla(0/360, 0.108, 0.56)
+    property color grayRed700: Qt.hsla(0/360, 0.108, 0.52)
+    property color grayRed800: Qt.hsla(0/360, 0.108, 0.48)
+    property color grayRed900: Qt.hsla(0/360, 0.108, 0.42)
 
     // darkmode
     property color darkgray0: Qt.hsla(25/360, 0.05, 0.23)
@@ -61,6 +65,7 @@ QtObject {
     property color green950: Qt.hsla(125/360, 0.22, 0.10)
 
     // yellow
+    property color yellow25: Qt.hsla(47/360, 0.90, 0.98)
     property color yellow50: Qt.hsla(47/360, 0.90, 0.96)
     property color yellow100: Qt.hsla(46/360, 0.89, 0.89)
     property color yellow200: Qt.hsla(45/360, 0.90, 0.77)
@@ -160,7 +165,7 @@ QtObject {
             case "LegacyDark":
                 return blue950;
             case "Dark":
-                return darkgray100;
+                return darkgray300;
             default:
                 return gray100;
         }
@@ -248,7 +253,7 @@ QtObject {
             case "LegacyDark":
                 return blue950;
             case "Dark":
-                return darkgray300;
+                return darkgray400;
             default:
                 return gray100;
         }
@@ -319,7 +324,7 @@ QtObject {
             case "LegacyDark":
                 return accentColor;
             case "Dark":
-                return green600;
+                return green300;
             default:
                 return green600;
         }
@@ -330,9 +335,20 @@ QtObject {
             case "LegacyDark":
                 return blue950;
             case "Dark":
-                return green700;
+                return darkgray300;
             default:
                 return green600;
+        }
+    }
+
+    property color buttonBackgroundHovered: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return blue900;
+            case "Dark":
+                return darkgray400;
+            default:
+                return green500;
         }
     }
 
@@ -341,7 +357,7 @@ QtObject {
             case "LegacyDark":
                 return textColor;
             case "Dark":
-                return green800;
+                return textColor;
             default:
                 return green600;
         }
@@ -352,7 +368,7 @@ QtObject {
             case "LegacyDark":
                 return mutedTextColor;
             case "Dark":
-                return green400;
+                return mutedTextColor;
             default:
                 return green300;
         }
@@ -363,7 +379,7 @@ QtObject {
             case "LegacyDark":
                 return buttonBackground;
             case "Dark":
-                return green400;
+                return buttonBackground;
             default:
                 return green100;
         }
@@ -372,6 +388,8 @@ QtObject {
     property color lightButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
+                return buttonBackgroundHovered;
+            case "Dark":
                 return buttonBackgroundHovered;
             default:
                 return green200;
@@ -383,7 +401,7 @@ QtObject {
             case "LegacyDark":
                 return textColor;
             case "Dark":
-                return red800;
+                return textColor;
             default:
                 return red600;
         }
@@ -394,7 +412,7 @@ QtObject {
             case "LegacyDark":
                 return mutedTextColor;
             case "Dark":
-                return red400;
+                return mutedTextColor;
             default:
                 return red300;
         }
@@ -405,7 +423,7 @@ QtObject {
             case "LegacyDark":
                 return buttonBackground;
             case "Dark":
-                return red400;
+                return buttonBackground;
             default:
                 return red200;
         }
@@ -416,7 +434,7 @@ QtObject {
             case "LegacyDark":
                 return buttonBackgroundHovered;
             case "Dark":
-                return red500;
+                return buttonBackgroundHovered;
             default:
                 return red300;
         }
@@ -426,7 +444,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return textColor;
-//            case "Dark":
+            case "Dark":
+                return textColor;
             default:
                 return green600;
         }
@@ -435,6 +454,8 @@ QtObject {
     property color lighterButtonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
+                return buttonBackground;
+            case "Dark":
                 return buttonBackground;
             default:
                 return green100;
@@ -445,19 +466,10 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return buttonBackgroundHovered;
+            case "Dark":
+                return buttonBackgroundHovered;
             default:
                 return green50;
-        }
-    }
-
-    property color buttonBackgroundHovered: {
-        switch (MySettings.chatTheme) {
-            case "LegacyDark":
-                return blue900;
-            case "Dark":
-                return green500;
-            default:
-                return green500;
         }
     }
 
@@ -465,7 +477,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return lighterButtonBackground;
-//            case "Dark":
+            case "Dark":
+                return lighterButtonBackground;
             default:
                 return gray100;
         }
@@ -475,7 +488,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return lighterButtonBackgroundHovered;
-//            case "Dark":
+            case "Dark":
+                return lighterButtonBackgroundHovered;
             default:
                 return gray200;
         }
@@ -486,7 +500,7 @@ QtObject {
             case "LegacyDark":
                 return accentColor;
             case "Dark":
-                return yellow200;
+                return controlBorder;
             default:
                 return yellow200;
         }
@@ -518,7 +532,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue700;
-//            case "Dark":
+            case "Dark":
+                return darkgray200;
             default:
                 return gray0;
         }
@@ -549,7 +564,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return purple400;
-//            case "Dark":
+            case "Dark":
+                return green400;
             default:
                 return green400;
         }
@@ -580,8 +596,9 @@ QtObject {
     property color conversationHeader: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple400
-//            case "Dark":
+                return purple400;
+            case "Dark":
+                return green400;
             default:
                 return green500;
         }
@@ -591,7 +608,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return black;
-//            case "Dark":
+            case "Dark":
+                return black;
             default:
                 return white;
         }
@@ -601,7 +619,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return purple400;
-//            case "Dark":
+            case "Dark":
+                return darkGray400
             default:
                 return green400;
         }
@@ -611,7 +630,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return purple400;
-//            case "Dark":
+            case "Dark":
+                return green300;
             default:
                 return green600;
         }
@@ -635,7 +655,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return buttonBackground;
-//            case "Dark":
+            case "Dark":
+                return buttonBackground;
             default:
                 return lighterButtonBackground;
         }
@@ -645,7 +666,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return buttonBorder;
-//            case "Dark":
+            case "Dark":
+                return buttonBorder;
             default:
                 return green300;
         }
@@ -655,7 +677,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return purple200;
-//            case "Dark":
+            case "Dark":
+                return darkgray100;
             default:
                 return green400;
         }
@@ -665,7 +688,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return textColor
-//            case "Dark":
+            case "Dark":
+                return textColor
             default:
                 return green700;
         }
@@ -675,7 +699,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return purple200
-//            case "Dark":
+            case "Dark":
+                return gray400
             default:
                 return green800;
         }
@@ -685,7 +710,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return textColor
-//            case "Dark":
+            case "Dark":
+                return textColor
             default:
                 return grayRed900;
         }
@@ -693,8 +719,10 @@ QtObject {
 
     property color fancyLinkTextHovered: {
         switch (MySettings.chatTheme) {
-//            case "LegacyDark":
-//            case "Dark":
+            case "LegacyDark":
+                return mutedTextColor
+            case "Dark":
+                return mutedTextColor
             default:
                 return textColor;
         }
@@ -727,7 +755,7 @@ QtObject {
             case "LegacyDark":
                 return blue0;
             case "Dark":
-                return accentColor;
+                return gray400;
             default:
                 return accentColor;
         }
@@ -749,7 +777,7 @@ QtObject {
             case "LegacyDark":
                 return iconBackgroundLight;
             case "Dark":
-                return iconBackgroundLight;
+                return darkgray50;
             default:
                 return green200;
         }
@@ -825,7 +853,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return mutedTextColor;
-//            case "Dark":
+            case "Dark":
+                return mutedTextColor;
             default:
                 return grayRed500;
         }
@@ -890,7 +919,7 @@ QtObject {
             case "LegacyDark":
                 return blue100;
             case "Dark":
-                return green400;
+                return green200;
             default:
                 return black;
         }
@@ -901,7 +930,7 @@ QtObject {
             case "LegacyDark":
                 return purple400;
             case "Dark":
-                return green400;
+                return green300;
             default:
                 return green700;
         }
@@ -912,7 +941,7 @@ QtObject {
             case "LegacyDark":
                 return darkwhite;
             case "Dark":
-                return green400;
+                return green200;
             default:
                 return green700;
         }
@@ -933,7 +962,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return purple100
-//            case "Dark":
+            case "Dark":
+                return yellow25
             default:
                 return grayRed900;
         }
@@ -943,7 +973,8 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue0;
-//            case "Dark":
+            case "Dark":
+                return yellow50
             default:
                 return green500;
         }
