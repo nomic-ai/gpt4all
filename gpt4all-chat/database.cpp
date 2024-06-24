@@ -26,7 +26,6 @@
 #include <algorithm>
 #include <cmath>
 #include <optional>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -114,7 +113,7 @@ static const QString INIT_DB_SQL[] = {
         );
     )"_s, uR"(
         create table folders(
-            id   integer primary key,
+            id   integer primary key autoincrement,
             path text unique not null
         );
     )"_s, uR"(
@@ -198,14 +197,6 @@ static const QString SELECT_COUNT_CHUNKS_SQL = uR"(
     from chunks c
     join documents d on d.id = c.document_id
     where d.folder_id = ?;
-    )"_s;
-
-static const QString SELECT_CHUNK_FOLDER_SQL = uR"(
-    select d.folder_id
-    from chunks c
-    join documents d on d.id = c.document_id
-    join folders f on f.id = d.folder_id
-    where c.id = ?
     )"_s;
 
 static bool addChunk(QSqlQuery &q, int document_id, const QString &chunk_text, const QString &file,
@@ -296,20 +287,6 @@ static bool selectChunk(QSqlQuery &q, const QList<int> &chunk_ids, int retrieval
     if (!q.prepare(formatted_query))
         return false;
     return q.exec();
-}
-
-bool sqlGetChunkFolders(QSqlQuery &q, const QList<int> &chunk_ids, QSet<int> &folder_ids)
-{
-    if (!q.prepare(SELECT_CHUNK_FOLDER_SQL))
-        return false;
-
-    for (int id: chunk_ids) {
-        q.addBindValue(id);
-        if (!q.exec() || !q.next())
-            return false;
-        folder_ids << q.value(0).toInt();
-    }
-    return true;
 }
 
 static const QString INSERT_COLLECTION_SQL = uR"(
@@ -782,8 +759,7 @@ static const QString INSERT_EMBEDDING_SQL = uR"(
     join collection_items ci on ci.folder_id = f.id
     join collections co on co.id = ci.collection_id
     where co.embedding_model = :model and c.id = :chunk_id
-    limit 1
-    returning folder_id;
+    limit 1;
 )"_s;
 
 static const QString GET_COLLECTION_EMBEDDINGS_SQL = uR"(
@@ -799,8 +775,8 @@ static const QString GET_CHUNK_FILE_SQL = uR"(
 )"_s;
 
 namespace {
-    struct Embedding { QString model; int chunk_id; QByteArray data; };
-    struct EmbeddingStat { QString lastFile; int nAdded; };
+    struct Embedding { QString model; int folder_id; int chunk_id; QByteArray data; };
+    struct EmbeddingStat { QString lastFile; int nAdded; int nSkipped; };
 } // namespace
 
 NAMED_PAIR(EmbeddingFolder, QString, embedding_model, int, folder_id)
@@ -811,7 +787,6 @@ static bool sqlAddEmbeddings(QSqlQuery &q, const QList<Embedding> &embeddings, Q
         return false;
 
     // insert embedding if needed
-    QList<std::tuple<int, int, QString>> addedEmbeddings;
     for (const auto &e: embeddings) {
         q.bindValue(":model", e.model);
         q.bindValue(":chunk_id", e.chunk_id);
@@ -819,9 +794,11 @@ static bool sqlAddEmbeddings(QSqlQuery &q, const QList<Embedding> &embeddings, Q
         if (!q.exec())
             return false;
 
-        if (q.next()) {
-            int folder_id = q.value(0).toInt();
-            addedEmbeddings.append({folder_id, e.chunk_id, e.model});
+        auto &stat = embeddingStats[{ e.model, e.folder_id }];
+        if (q.numRowsAffected()) {
+            stat.nAdded++; // embedding added
+        } else {
+            stat.nSkipped++; // embedding no longer needed
         }
     }
 
@@ -829,11 +806,10 @@ static bool sqlAddEmbeddings(QSqlQuery &q, const QList<Embedding> &embeddings, Q
         return false;
 
     // populate statistics for each collection item
-    for (const auto &[folder_id, chunk_id, model]: std::as_const(addedEmbeddings)) {
-        auto &stat = embeddingStats[{ model, folder_id }];
-        stat.nAdded++;
-        if (stat.lastFile.isNull()) {
-            q.addBindValue(chunk_id);
+    for (const auto &e: embeddings) {
+        auto &stat = embeddingStats[{ e.model, e.folder_id }];
+        if (stat.nAdded && stat.lastFile.isNull()) {
+            q.addBindValue(e.chunk_id);
             if (!q.exec() || !q.next())
                 return false;
             stat.lastFile = q.value(0).toString();
@@ -1159,7 +1135,7 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
             reinterpret_cast<const char *>(e.embedding.data()),
             e.embedding.size() * sizeof(e.embedding.front())
         );
-        sqlEmbeddings.append({e.model, e.chunk_id, std::move(data)});
+        sqlEmbeddings.append({e.model, e.folder_id, e.chunk_id, std::move(data)});
     }
 
     transaction();
@@ -1175,9 +1151,12 @@ void Database::handleEmbeddingsGenerated(const QVector<EmbeddingResult> &embeddi
 
     // FIXME(jared): embedding counts are per-collectionitem, not per-folder
     for (const auto &[key, stat]: std::as_const(stats).asKeyValueRange()) {
+        if (!m_collectionMap.contains(key.folder_id)) continue;
         CollectionItem item = guiCollectionItem(key.folder_id);
-        item.currentEmbeddingsToIndex -= stat.nAdded;
-        item.fileCurrentlyProcessing = stat.lastFile;
+        item.currentEmbeddingsToIndex -= stat.nAdded + stat.nSkipped;
+        item.totalEmbeddingsToIndex -= stat.nSkipped;
+        if (!stat.lastFile.isNull())
+            item.fileCurrentlyProcessing = stat.lastFile;
 
         // Set the last update if we are done
         Q_ASSERT(item.startUpdate > item.lastUpdate);
@@ -1194,18 +1173,11 @@ void Database::handleErrorGenerated(const QVector<EmbeddingChunk> &chunks, const
      * on the embedding model, but this sets the error on all collections for a given
      * folder */
 
-    QList<int> chunk_ids;
-    chunk_ids.reserve(chunks.count());
-    for (const auto &c: chunks) { chunk_ids << c.chunk_id; }
-
-    QSqlQuery q(m_db);
     QSet<int> folder_ids;
-    if (!sqlGetChunkFolders(q, chunk_ids, folder_ids)) {
-        qWarning() << "Database ERROR: failed to get folder IDs:" << q.lastError();
-        return;
-    }
+    for (const auto &c: chunks) { folder_ids << c.folder_id; }
 
     for (int fid: folder_ids) {
+        if (!m_collectionMap.contains(fid)) continue;
         CollectionItem item = guiCollectionItem(fid);
         item.error = error;
         updateGuiForCollectionItem(item);
