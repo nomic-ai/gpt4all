@@ -115,7 +115,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.minimumHeight: 150
-                Layout.maximumHeight: textArea.height
+                Layout.maximumHeight: textAreaReleaseNotes.height
 
                 Rectangle {
                     id: roundedFrameReleaseNotes
@@ -163,37 +163,38 @@ Rectangle {
                             }
                         }
 
-                        ScrollView {
+                        Item {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            clip: true
-                            ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                            ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+                            Rectangle {
+                                anchors.fill: releaseScroll
+                                color: theme.conversationBackground
+                            }
 
-                            TextArea {
-                                id: textAreaReleaseNotes
-                                padding: 10
-                                color: theme.styledTextColor
-                                font.pixelSize: theme.fontSizeLarge
-                                textFormat: TextEdit.MarkdownText
-                                text: "### "
-                                      + qsTr("Release notes for version ")
-                                      + Download.releaseInfo.version
-                                      + Download.releaseInfo.notes
-                                      + "<br />\n### "
-                                      + qsTr("Contributors")
-                                      + Download.releaseInfo.contributors
-                                background: Rectangle {
-                                    implicitWidth: 150
-                                    color: theme.conversationBackground
+                            ScrollView {
+                                id: releaseScroll
+                                anchors.fill: parent
+                                clip: true
+                                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                                ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+
+                                Text {
+                                    id: textAreaReleaseNotes
+                                    padding: 10
+                                    color: theme.styledTextColor
+                                    font.pixelSize: theme.fontSizeLarge
+                                    textFormat: TextEdit.MarkdownText
+                                    text: "### "
+                                          + qsTr("Release notes for version ")
+                                          + Download.releaseInfo.version
+                                          + Download.releaseInfo.notes
+                                          + "<br />\n### "
+                                          + qsTr("Contributors")
+                                          + Download.releaseInfo.contributors
+                                    Accessible.role: Accessible.Paragraph
+                                    Accessible.name: qsTr("Release notes")
+                                    Accessible.description: qsTr("Release notes for this version")
                                 }
-                                focus: false
-                                readOnly: true
-                                selectByKeyboard: false
-                                selectByMouse: false
-                                Accessible.role: Accessible.Paragraph
-                                Accessible.name: qsTr("Release notes")
-                                Accessible.description: qsTr("Release notes for this version")
                             }
                         }
                     }
