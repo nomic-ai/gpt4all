@@ -107,8 +107,8 @@ Rectangle {
                         indeterminate: ModelList.discoverInProgress && ModelList.discoverProgress === 0.0
                         value: ModelList.discoverProgress
                         background: Rectangle {
-                            color: theme.white // FIXME_BLOCKER dark and legacy
-                            border.color: theme.dividerColor
+                            color: theme.controlBackground
+                            border.color: theme.controlBorder
                             radius: 10
                         }
                         contentItem: Item {
