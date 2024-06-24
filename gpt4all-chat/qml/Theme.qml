@@ -620,7 +620,7 @@ QtObject {
             case "LegacyDark":
                 return purple400;
             case "Dark":
-                return darkGray400
+                return darkgray400
             default:
                 return green400;
         }
