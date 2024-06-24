@@ -84,6 +84,10 @@ bool EmbeddingLLMWorker::loadModel()
         return false;
     }
 
+    // FIXME(jared): the user may want this to take effect without having to restart
+    int n_threads = MySettings::globalInstance()->threadCount();
+    m_model->setThreadCount(n_threads);
+
     // NOTE: explicitly loads model on CPU to avoid GPU OOM
     // TODO(cebtenzzre): support GPU-accelerated embeddings
     bool success = m_model->loadModel(filePath.toStdString(), 2048, 0);

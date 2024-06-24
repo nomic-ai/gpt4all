@@ -315,7 +315,7 @@ MySettingsTab {
         MySettingsLabel {
             id: nThreadsLabel
             text: qsTr("CPU Threads")
-            helpText: qsTr("Number of CPU threads for inference")
+            helpText: qsTr("Number of CPU threads for inference and embedding")
             Layout.row: 8
             Layout.column: 0
         }
