@@ -200,15 +200,15 @@ Rectangle {
                                                 return "transparent"
 
                                             if (model.indexing)
-                                                 return theme.progressBackground
+                                                 return theme.altProgressBackground
 
                                             if (model.currentEmbeddingsToIndex !== 0)
-                                                 return theme.progressBackground
+                                                 return theme.altProgressBackground
 
                                             if (model.forceIndexing)
                                                 return theme.red200
 
-                                            return theme.green200
+                                            return theme.lightButtonBackground
                                         }
                                         radius: 6
                                     }
@@ -219,7 +219,7 @@ Rectangle {
                                             width: itemProgressBar.visualPosition * parent.width
                                             height: parent.height
                                             radius: 2
-                                            color: "#fcf0c9" //theme.progressForeground
+                                            color: theme.altProgressForeground
                                         }
                                     }
                                     Accessible.role: Accessible.ProgressBar
@@ -237,15 +237,15 @@ Rectangle {
                                             return theme.textErrorColor
 
                                         if (model.indexing)
-                                            return "#d16f0e"//theme.progressText
+                                            return theme.altProgressText
 
                                         if (model.currentEmbeddingsToIndex !== 0)
-                                            return "#d16f0e"//theme.progressText
+                                            return theme.altProgressText
 
                                         if (model.forceIndexing)
                                             return theme.textErrorColor
 
-                                        return theme.green600
+                                        return theme.buttonBackground
                                     }
                                     text: {
                                         if (model.error !== "")
@@ -331,7 +331,7 @@ Rectangle {
                             Text {
                                 text: "%1 – %2".arg(qsTr("%n file(s)", "", model.totalDocs)).arg(qsTr("%n word(s)", "", model.totalWords))
                                 elide: Text.ElideRight
-                                color: theme.green500
+                                color: theme.styledTextColor2
                                 font.pixelSize: theme.fontSizeSmaller
                             }
                             Text {

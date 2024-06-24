@@ -272,7 +272,7 @@ Rectangle {
                             height: 10
                             value: currentChat.modelLoadingPercentage
                             background: Rectangle {
-                                color: theme.green100
+                                color: theme.progressBackground
                                 radius: 10
                             }
                             contentItem: Item {
@@ -281,7 +281,7 @@ Rectangle {
                                     width: modelProgress.visualPosition * parent.width
                                     height: 10
                                     radius: 2
-                                    color: theme.green600
+                                    color: theme.progressForeground
                                 }
                             }
                         }
@@ -406,8 +406,8 @@ Rectangle {
                         MyButton {
                             id: collectionsButton
                             borderWidth: 0
-                            backgroundColor: theme.collectionButtonBackground
-                            backgroundColorHovered: theme.collectionButtonBackgroundHovered
+                            backgroundColor: theme.collectionsButtonBackground
+                            backgroundColorHovered: theme.collectionsButtonBackgroundHovered
                             backgroundRadius: 5
                             padding: 15
                             topPadding: 8
@@ -432,20 +432,20 @@ Rectangle {
                                     ColorOverlay {
                                         anchors.fill: collectionsImage
                                         source: collectionsImage
-                                        color: theme.green600
+                                        color: theme.collectionsButtonForeground
                                     }
                                 }
 
                                 MyBusyIndicator {
                                     visible: currentChat.collectionModel.updatingCount !== 0
-                                    color: theme.green400
+                                    color: theme.collectionsButtonProgress
                                     size: 24
                                     Layout.minimumWidth: 24
                                     Layout.minimumHeight: 24
                                     Text {
                                         anchors.centerIn: parent
                                         text: currentChat.collectionModel.updatingCount
-                                        color: theme.green600
+                                        color: theme.collectionsButtonForeground
                                         font.pixelSize: 14 // fixed regardless of theme
                                     }
                                 }
@@ -453,20 +453,20 @@ Rectangle {
                                 Rectangle {
                                     visible: currentChat.collectionModel.count !== 0
                                     radius: 6
-                                    color: theme.green600
+                                    color: theme.collectionsButtonForeground
                                     Layout.minimumWidth: collectionsImage.width
                                     Layout.minimumHeight: collectionsImage.height
                                     Text {
                                         anchors.centerIn: parent
                                         text: currentChat.collectionModel.count
-                                        color: theme.white
+                                        color: theme.collectionsButtonText
                                         font.pixelSize: 14 // fixed regardless of theme
                                     }
                                 }
 
                                 Text {
                                     text: qsTr("LocalDocs")
-                                    color: theme.green600
+                                    color: theme.collectionsButtonForeground
                                     font.pixelSize: theme.fontSizeLarge
                                 }
                             }
@@ -689,32 +689,29 @@ Rectangle {
                                 rows: 4
                                 columns: 2
 
-                                Image {
+                                Item {
                                     Layout.row: 0
                                     Layout.column: 0
                                     Layout.alignment: Qt.AlignTop
                                     Layout.preferredWidth: 38
                                     Layout.preferredHeight: 38
-                                    visible: name !== qsTr("Response: ")
-                                    sourceSize.width: 64
-                                    sourceSize.height: 64
-                                    fillMode: Image.PreserveAspectFit
-                                    mipmap: true
-                                    source: "qrc:/gpt4all/icons/you.svg"
-                                }
+                                    Image {
+                                        id: logo
+                                        width: 38
+                                        height: 38
+                                        sourceSize.width: 64
+                                        sourceSize.height: 64
+                                        fillMode: Image.PreserveAspectFit
+                                        mipmap: true
+                                        visible: false
+                                        source: name !== qsTr("Response: ") ? "qrc:/gpt4all/icons/you.svg" : "qrc:/gpt4all/icons/alt_logo.svg"
+                                    }
 
-                                Image {
-                                    Layout.row: 0
-                                    Layout.column: 0
-                                    Layout.alignment: Qt.AlignTop
-                                    Layout.preferredWidth: 38
-                                    Layout.preferredHeight: 38
-                                    visible: name === qsTr("Response: ")
-                                    sourceSize.width: 64
-                                    sourceSize.height: 64
-                                    fillMode: Image.PreserveAspectFit
-                                    mipmap: true
-                                    source: "qrc:/gpt4all/icons/alt_logo.svg"
+                                    ColorOverlay {
+                                        anchors.fill: logo
+                                        source: logo
+                                        color: theme.conversationHeader
+                                    }
                                 }
 
                                 Item {
@@ -733,7 +730,7 @@ Rectangle {
                                             padding: 0
                                             font.pixelSize: theme.fontSizeLarger
                                             font.bold: true
-                                            color: theme.green500
+                                            color: theme.conversationHeader
                                             readOnly: true
                                         }
                                         Text {
@@ -746,7 +743,7 @@ Rectangle {
                                             visible: (currentResponse ? true : false) && ((value === "" && currentChat.responseInProgress) || currentChat.isRecalc)
                                             MyBusyIndicator {
                                                 size: 24
-                                                color: theme.green400
+                                                color: theme.conversationProgress
                                                 Accessible.role: Accessible.Animation
                                                 Accessible.name: qsTr("Busy indicator")
                                                 Accessible.description: qsTr("The model is thinking")

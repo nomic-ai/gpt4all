@@ -208,17 +208,6 @@ QtObject {
         }
     }
 
-    property color conversationBackground: {
-        switch (MySettings.chatTheme) {
-            case "LegacyDark":
-                return blue500;
-            case "Dark":
-                return darkgray50;
-            default:
-                return white;
-        }
-    }
-
     property color viewBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
@@ -270,7 +259,7 @@ QtObject {
             case "Dark":
                 return accentColor;
             default:
-                return accentColor;
+                return green600;
         }
     }
 
@@ -281,18 +270,28 @@ QtObject {
             case "Dark":
                 return green600;
             default:
+                return green100;
+        }
+    }
+
+    property color altProgressForeground: {
+        switch (MySettings.chatTheme) {
+            default:
+                return "#fcf0c9";
+        }
+    }
+
+    property color alpProgressBackground: {
+        switch (MySettings.chatTheme) {
+            default:
                 return "#fff9d2";
         }
     }
 
-    property color progressText: {
+    property color altProgressText: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-                return "#ffffff";
-            case "Dark":
-                return "#000000";
             default:
-                return white;
+                return "#d16f0e";
         }
     }
 
@@ -325,7 +324,35 @@ QtObject {
             case "Dark":
                 return green700;
             default:
-                return green700;
+                return green600;
+        }
+    }
+
+    property color lightButtonBackground: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green200;
+        }
+    }
+
+    property color lighterButtonForeground: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green600;
+        }
+    }
+
+    property color lighterButtonBackground: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green100;
+        }
+    }
+
+    property color lighterButtonBackgroundHovered: {
+        switch (MySettings.chatTheme) {
+            default:
+                return green50;
         }
     }
 
@@ -391,6 +418,15 @@ QtObject {
         }
     }
 
+    property color selectedBackground: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return gray0;
+        }
+    }
+
     property color conversationButtonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
@@ -401,13 +437,23 @@ QtObject {
                 return gray0;
         }
     }
+   property color conversationBackground: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return blue500;
+            case "Dark":
+                return darkgray50;
+            default:
+                return white;
+        }
+    }
 
-    property color selectedBackground: {
+    property color conversationProgress: {
         switch (MySettings.chatTheme) {
 //            case "LegacyDark":
 //            case "Dark":
             default:
-                return gray0;
+                return green400;
         }
     }
 
@@ -433,21 +479,57 @@ QtObject {
         }
     }
 
-    property color collectionButtonBackground: {
+    property color conversationHeader: {
         switch (MySettings.chatTheme) {
 //            case "LegacyDark":
 //            case "Dark":
             default:
-                return green50;
+                return green500;
         }
     }
 
-    property color collectionButtonBackgroundHovered: {
+    property color collectionsButtonText: {
         switch (MySettings.chatTheme) {
 //            case "LegacyDark":
 //            case "Dark":
             default:
-                return green100;
+                return white;
+        }
+    }
+
+    property color collectionsButtonProgress: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return green400;
+        }
+    }
+
+    property color collectionsButtonForeground: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return green600;
+        }
+    }
+
+    property color collectionsButtonBackground: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return lighterButtonBackground;
+        }
+    }
+
+    property color collectionsButtonBackgroundHovered: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return lighterButtonBackgroundHovered;
         }
     }
 
@@ -456,7 +538,7 @@ QtObject {
 //            case "LegacyDark":
 //            case "Dark":
             default:
-                return theme.green100;
+                return theme.lighterButtonBackground;
         }
     }
 
@@ -735,6 +817,15 @@ QtObject {
 //            case "Dark":
             default:
                 return grayRed900;
+        }
+    }
+
+    property color styledTextColor2: {
+        switch (MySettings.chatTheme) {
+//            case "LegacyDark":
+//            case "Dark":
+            default:
+                return green500;
         }
     }
 

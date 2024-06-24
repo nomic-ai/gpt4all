@@ -45,20 +45,15 @@ Rectangle {
                 text: qsTr("\u2190 Existing Collections")
 
                 borderWidth: 0
-                backgroundColor: theme.collectionButtonBackground
-                backgroundColorHovered: theme.collectionButtonBackgroundHovered
+                backgroundColor: theme.lighterButtonBackground
+                backgroundColorHovered: theme.lighterButtonBackgroundHovered
                 backgroundRadius: 5
                 padding: 15
                 topPadding: 8
                 bottomPadding: 8
-                textColor: theme.green600
+                textColor: theme.lighterButtonForeground
                 fontPixelSize: theme.fontSizeLarge
                 fontPixelBold: true
-
-                background: Rectangle {
-                    radius: backButton.backgroundRadius
-                    color: backButton.toggled ? backButton.backgroundColorHovered : collectionsButton.backgroundColor
-                }
 
                 onClicked: {
                     localDocsViewRequested()
