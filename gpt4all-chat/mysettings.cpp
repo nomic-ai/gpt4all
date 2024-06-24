@@ -34,7 +34,7 @@ static const QString device                  = "Auto";
 } // namespace defaults
 
 static const QVariantMap basicDefaults {
-    { "chatTheme",                "Dark" },
+    { "chatTheme",                "Light" },
     { "fontSize",                 "Small" },
     { "lastVersionStarted",       "" },
     { "networkPort",              4891, },
