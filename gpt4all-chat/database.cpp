@@ -1011,12 +1011,12 @@ void Database::guiCollectionListUpdated(const QList<CollectionItem> &collectionL
     emit requestGuiCollectionListUpdated(collectionList);
 }
 
-void Database::scheduleNext(int folder_id, size_t countForFolder)
+void Database::updateFolderToIndex(int folder_id, size_t countForFolder, bool sendChunks)
 {
     CollectionItem item = guiCollectionItem(folder_id);
     item.currentDocsToIndex = countForFolder;
     if (!countForFolder) {
-        if (!m_chunkList.isEmpty())
+        if (sendChunks && !m_chunkList.isEmpty())
             sendChunkList(); // send any remaining embedding chunks to llm
         item.indexing = false;
         item.installed = true;
@@ -1277,7 +1277,7 @@ void Database::scanQueue()
     // If the doc has since been deleted or no longer readable, then we schedule more work and return
     // leaving the cleanup for the cleanup handler
     if (!info.doc.exists() || !info.doc.isReadable())
-        return scheduleNext(folder_id, countForFolder);
+        return updateFolderToIndex(folder_id, countForFolder);
 
     const qint64 document_time = info.doc.fileTime(QFile::FileModificationTime).toMSecsSinceEpoch();
     const QString document_path = info.doc.canonicalFilePath();
@@ -1290,7 +1290,7 @@ void Database::scanQueue()
     if (!selectDocument(q, document_path, &existing_id, &existing_time)) {
         handleDocumentError("ERROR: Cannot select document",
             existing_id, document_path, q.lastError());
-        return scheduleNext(folder_id, countForFolder);
+        return updateFolderToIndex(folder_id, countForFolder);
     }
 
     // If we have the document, we need to compare the last modification time and if it is newer
@@ -1299,12 +1299,12 @@ void Database::scanQueue()
         Q_ASSERT(existing_time != -1);
         if (document_time == existing_time) {
             // No need to rescan, but we do have to schedule next
-            return scheduleNext(folder_id, countForFolder);
+            return updateFolderToIndex(folder_id, countForFolder);
         }
         if (!removeChunksByDocumentId(q, existing_id)) {
             handleDocumentError("ERROR: Cannot remove chunks of document",
                 existing_id, document_path, q.lastError());
-            return scheduleNext(folder_id, countForFolder);
+            return updateFolderToIndex(folder_id, countForFolder);
         }
         updateCollectionStatistics();
     }
@@ -1316,13 +1316,13 @@ void Database::scanQueue()
             if (!updateDocument(q, document_id, document_time)) {
                 handleDocumentError("ERROR: Could not update document_time",
                     document_id, document_path, q.lastError());
-                return scheduleNext(folder_id, countForFolder);
+                return updateFolderToIndex(folder_id, countForFolder);
             }
         } else {
             if (!addDocument(q, folder_id, document_time, document_path, &document_id)) {
                 handleDocumentError("ERROR: Could not add document",
                     document_id, document_path, q.lastError());
-                return scheduleNext(folder_id, countForFolder);
+                return updateFolderToIndex(folder_id, countForFolder);
             }
 
             CollectionItem item = guiCollectionItem(folder_id);
@@ -1337,7 +1337,7 @@ void Database::scanQueue()
     if (!sqlGetFolderEmbeddingModel(q, folder_id, embedding_model)) {
         handleDocumentError("ERROR: Could not get embedding model",
             document_id, document_path, q.lastError());
-        return scheduleNext(folder_id, countForFolder);
+        return updateFolderToIndex(folder_id, countForFolder);
     }
 
     Q_ASSERT(document_id != -1);
@@ -1346,7 +1346,7 @@ void Database::scanQueue()
         if (QPdfDocument::Error::None != doc.load(info.doc.canonicalFilePath())) {
             handleDocumentError("ERROR: Could not load pdf",
                 document_id, document_path, q.lastError());
-            return scheduleNext(folder_id, countForFolder);
+            return updateFolderToIndex(folder_id, countForFolder);
         }
         const size_t bytes = info.doc.size();
         const size_t bytesPerPage = std::floor(bytes / doc.pageCount());
@@ -1371,7 +1371,7 @@ void Database::scanQueue()
             info.currentPage += 1;
             info.currentlyProcessing = true;
             enqueueDocumentInternal(info, true /*prepend*/);
-            return scheduleNext(folder_id, countForFolder + 1);
+            return updateFolderToIndex(folder_id, countForFolder + 1);
         }
 
         item.currentBytesToIndex -= bytes - (bytesPerPage * doc.pageCount());
@@ -1381,7 +1381,7 @@ void Database::scanQueue()
         if (!file.open(QIODevice::ReadOnly)) {
             handleDocumentError("ERROR: Cannot open file for scanning",
                                 existing_id, document_path, q.lastError());
-            return scheduleNext(folder_id, countForFolder);
+            return updateFolderToIndex(folder_id, countForFolder);
         }
         Q_ASSERT(!file.isSequential()); // we need to seek
 
@@ -1396,7 +1396,7 @@ void Database::scanQueue()
             if (!stream.seek(byteIndex)) {
                 handleDocumentError("ERROR: Cannot seek to pos for scanning",
                                     existing_id, document_path, q.lastError());
-                return scheduleNext(folder_id, countForFolder);
+                return updateFolderToIndex(folder_id, countForFolder);
             }
         }
 #if defined(DEBUG)
@@ -1409,7 +1409,7 @@ void Database::scanQueue()
             if (!file.binarySeen()) {
                 handleDocumentError(u"ERROR: Failed to read file (status %1)"_s.arg(stream.status()),
                                     existing_id, document_path, q.lastError());
-                return scheduleNext(folder_id, countForFolder);
+                return updateFolderToIndex(folder_id, countForFolder);
             }
 
             /* When we see a binary file, we treat it like an empty file so we know not to
@@ -1424,7 +1424,7 @@ void Database::scanQueue()
                     existing_id, document_path, q.lastError());
             }
             updateCollectionStatistics();
-            return scheduleNext(folder_id, countForFolder);
+            return updateFolderToIndex(folder_id, countForFolder);
         }
         file.close();
         const size_t bytesChunked = pos - byteIndex;
@@ -1435,11 +1435,11 @@ void Database::scanQueue()
             info.currentPosition = pos;
             info.currentlyProcessing = true;
             enqueueDocumentInternal(info, true /*prepend*/);
-            return scheduleNext(folder_id, countForFolder + 1);
+            return updateFolderToIndex(folder_id, countForFolder + 1);
         }
     }
 
-    return scheduleNext(folder_id, countForFolder);
+    return updateFolderToIndex(folder_id, countForFolder);
 }
 
 void Database::scanDocuments(int folder_id, const QString &folder_path)
@@ -1473,6 +1473,8 @@ void Database::scanDocuments(int folder_id, const QString &folder_path)
         item.indexing = true;
         updateGuiForCollectionItem(item);
         enqueueDocuments(folder_id, infos);
+    } else {
+        updateFolderToIndex(folder_id, 0, false);
     }
 }
 

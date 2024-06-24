@@ -175,7 +175,7 @@ private:
         const QString &keywords, int page, int maxChunks = -1);
     void appendChunk(const EmbeddingChunk &chunk);
     void sendChunkList();
-    void scheduleNext(int folder_id, size_t countForFolder);
+    void updateFolderToIndex(int folder_id, size_t countForFolder, bool sendChunks = true);
     void handleDocumentError(const QString &errorMessage,
         int document_id, const QString &document_path, const QSqlError &error);
     size_t countOfDocuments(int folder_id) const;
