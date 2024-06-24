@@ -526,6 +526,35 @@ static const QString SELECT_ALL_FOLDERPATHS_SQL = uR"(
     select folder_path from folders;
     )"_s;
 
+static const QString FOLDER_REMOVE_ALL_DOCS_SQL[] = {
+    uR"(
+        delete from embeddings
+        where chunk_id in (
+            select c.id
+            from chunks c
+            join documents d on d.id = c.document_id
+            join folders f on f.id = d.folder_id
+            where f.folder_path = ?
+        );
+    )"_s, uR"(
+        delete from chunks
+        where document_id in (
+            select d.id
+            from documents d
+            join folders f on f.id = d.folder_id
+            where f.folder_path = ?
+        );
+    )"_s, uR"(
+        delete from documents
+        where id in (
+            select d.id
+            from documents d
+            join folders f on f.id = d.folder_id
+            where f.folder_path = ?
+        );
+    )"_s,
+};
+
 static bool addFolderToDB(QSqlQuery &q, const QString &folder_path, int *folder_id)
 {
     if (!q.prepare(INSERT_FOLDERS_SQL))
@@ -579,6 +608,18 @@ static bool selectAllFolderPaths(QSqlQuery &q, QList<QString> *folder_paths)
         return false;
     while (q.next())
         folder_paths->append(q.value(0).toString());
+    return true;
+}
+
+static bool sqlRemoveDocsByFolderPath(QSqlQuery &q, const QString &path)
+{
+    for (const auto &cmd: FOLDER_REMOVE_ALL_DOCS_SQL) {
+        if (!q.prepare(cmd))
+            return false;
+        q.addBindValue(path);
+        if (!q.exec())
+            return false;
+    }
     return true;
 }
 
@@ -1643,6 +1684,37 @@ void Database::forceIndexing(const QString &collection, const QString &embedding
         addFolderToWatch(folder.second);
         scanDocuments(folder.first, folder.second);
     }
+}
+
+void Database::forceRebuildFolder(const QString &path)
+{
+    QSqlQuery q(m_db);
+    int folder_id;
+    if (!selectFolder(q, path, &folder_id)) {
+        qWarning().nospace() << "Database ERROR: Cannot select folder from path " << path << ": " << q.lastError();
+        return;
+    }
+
+    Q_ASSERT(!m_docsToScan.contains(folder_id));
+
+    transaction();
+
+    if (!sqlRemoveDocsByFolderPath(q, path)) {
+        qWarning().nospace() << "Database ERROR: Cannot remove chunks for folder " << path << ": " << q.lastError();
+        return rollback();
+    }
+
+    commit();
+
+    updateCollectionStatistics();
+
+    // We now have zero embeddings. Document progress will be updated by scanDocuments.
+    // FIXME(jared): this updates the folder, but these values should also depend on the collection
+    CollectionItem item = guiCollectionItem(folder_id);
+    item.currentEmbeddingsToIndex = item.totalEmbeddingsToIndex = 0;
+    updateGuiForCollectionItem(item);
+
+    scanDocuments(folder_id, path);
 }
 
 bool Database::addFolder(const QString &collection, const QString &path, const QString &embedding_model)

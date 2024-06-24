@@ -413,6 +413,22 @@ Rectangle {
                                     }
                                 }
                             }
+                            Text {
+                                Layout.alignment: Qt.AlignRight
+                                visible: !model.forceIndexing && !model.indexing && model.currentEmbeddingsToIndex === 0
+                                text: qsTr("Rebuild")
+                                elide: Text.ElideRight
+                                color: theme.red500
+                                font.bold: true
+                                font.pixelSize: theme.fontSizeSmall
+                                TapHandler {
+                                    onTapped: { LocalDocs.forceRebuildFolder(folder_path); }
+                                }
+                                HoverHandler { id: hoverHandler1 }
+                                ToolTip.text: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
+                                ToolTip.visible: hoverHandler1.hovered
+                                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+                            }
                             Item {
                                 Layout.fillWidth: true
                             }
@@ -425,10 +441,12 @@ Rectangle {
                                 font.bold: true
                                 font.pixelSize: theme.fontSizeSmall
                                 TapHandler {
-                                    onTapped: {
-                                        LocalDocs.forceIndexing(collection)
-                                    }
+                                    onTapped: { LocalDocs.forceIndexing(collection); }
                                 }
+                                HoverHandler { id: hoverHandler2 }
+                                ToolTip.text: qsTr("Update the collection to the new version. This is a slow operation.")
+                                ToolTip.visible: hoverHandler2.hovered
+                                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
                             }
                         }
                     }

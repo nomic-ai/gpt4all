@@ -137,6 +137,7 @@ public Q_SLOTS:
     void scanQueueBatch();
     void scanDocuments(int folder_id, const QString &folder_path);
     void forceIndexing(const QString &collection, const QString &embedding_model);
+    void forceRebuildFolder(const QString &path);
     bool addFolder(const QString &collection, const QString &path, const QString &embedding_model);
     void removeFolder(const QString &collection, const QString &path);
     void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);

@@ -33,6 +33,8 @@ LocalDocs::LocalDocs()
         &Database::start, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestForceIndexing, m_database,
         &Database::forceIndexing, Qt::QueuedConnection);
+    connect(this, &LocalDocs::forceRebuildFolder, m_database,
+        &Database::forceRebuildFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestAddFolder, m_database,
         &Database::addFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestRemoveFolder, m_database,
@@ -63,17 +65,6 @@ void LocalDocs::aboutToQuit()
     m_database = nullptr;
 }
 
-void LocalDocs::forceIndexing(const QString &collection)
-{
-    const QString embedding_model = EmbeddingLLM::model();
-    if (embedding_model.isEmpty()) {
-        qWarning() << "ERROR: We have no embedding model";
-        return;
-    }
-
-    emit requestForceIndexing(collection, embedding_model);
-}
-
 void LocalDocs::addFolder(const QString &collection, const QString &path)
 {
     const QUrl url(path);
@@ -91,6 +82,17 @@ void LocalDocs::addFolder(const QString &collection, const QString &path)
 void LocalDocs::removeFolder(const QString &collection, const QString &path)
 {
     emit requestRemoveFolder(collection, path);
+}
+
+void LocalDocs::forceIndexing(const QString &collection)
+{
+    const QString embedding_model = EmbeddingLLM::model();
+    if (embedding_model.isEmpty()) {
+        qWarning() << "ERROR: We have no embedding model";
+        return;
+    }
+
+    emit requestForceIndexing(collection, embedding_model);
 }
 
 void LocalDocs::handleChunkSizeChanged()
