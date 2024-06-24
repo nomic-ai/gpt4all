@@ -114,8 +114,8 @@ static const QString INIT_DB_SQL[] = {
         );
     )"_s, uR"(
         create table folders(
-            id          integer primary key,
-            folder_path text unique not null
+            id   integer primary key,
+            path text unique not null
         );
     )"_s, uR"(
         create table collection_items(
@@ -323,7 +323,7 @@ static const QString DELETE_COLLECTION_SQL = uR"(
     )"_s;
 
 static const QString SELECT_FOLDERS_FROM_COLLECTIONS_SQL = uR"(
-    select f.id, f.folder_path
+    select f.id, f.path
     from collections c
     join collection_items ci on ci.collection_id = c.id
     join folders f on ci.folder_id = f.id
@@ -338,11 +338,11 @@ static const QString SELECT_COLLECTIONS_SQL_V1 = uR"(
     )"_s;
 
 static const QString SELECT_COLLECTIONS_SQL_V2 = uR"(
-    select c.id, c.name, f.folder_path, f.id, c.start_update_time, c.last_update_time, c.embedding_model
+    select c.id, c.name, f.path, f.id, c.start_update_time, c.last_update_time, c.embedding_model
     from collections c
     join collection_items ci on ci.collection_id = c.id
     join folders f on ci.folder_id = f.id
-    order by c.name asc, f.folder_path asc;
+    order by c.name asc, f.path asc;
     )"_s;
 
 static const QString SELECT_COLLECTION_BY_NAME_SQL = uR"(
@@ -504,7 +504,7 @@ static bool updateLastUpdateTime(QSqlQuery &q, int id, qint64 update_time)
 }
 
 static const QString INSERT_FOLDERS_SQL = uR"(
-    insert into folders(folder_path) values(?);
+    insert into folders(path) values(?);
     )"_s;
 
 static const QString DELETE_FOLDERS_SQL = uR"(
@@ -512,7 +512,7 @@ static const QString DELETE_FOLDERS_SQL = uR"(
     )"_s;
 
 static const QString SELECT_FOLDERS_FROM_PATH_SQL = uR"(
-    select id from folders where folder_path = ?;
+    select id from folders where path = ?;
     )"_s;
 
 static const QString GET_FOLDER_EMBEDDING_MODEL_SQL = uR"(
@@ -523,7 +523,7 @@ static const QString GET_FOLDER_EMBEDDING_MODEL_SQL = uR"(
     )"_s;
 
 static const QString SELECT_ALL_FOLDERPATHS_SQL = uR"(
-    select folder_path from folders;
+    select path from folders;
     )"_s;
 
 static const QString FOLDER_REMOVE_ALL_DOCS_SQL[] = {
@@ -534,7 +534,7 @@ static const QString FOLDER_REMOVE_ALL_DOCS_SQL[] = {
             from chunks c
             join documents d on d.id = c.document_id
             join folders f on f.id = d.folder_id
-            where f.folder_path = ?
+            where f.path = ?
         );
     )"_s, uR"(
         delete from chunks
@@ -542,7 +542,7 @@ static const QString FOLDER_REMOVE_ALL_DOCS_SQL[] = {
             select d.id
             from documents d
             join folders f on f.id = d.folder_id
-            where f.folder_path = ?
+            where f.path = ?
         );
     )"_s, uR"(
         delete from documents
@@ -550,7 +550,7 @@ static const QString FOLDER_REMOVE_ALL_DOCS_SQL[] = {
             select d.id
             from documents d
             join folders f on f.id = d.folder_id
-            where f.folder_path = ?
+            where f.path = ?
         );
     )"_s,
 };
