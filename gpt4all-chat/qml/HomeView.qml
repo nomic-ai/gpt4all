@@ -68,8 +68,6 @@ Rectangle {
                 }
             }
 
-            // FIXME! We need a spot for dynamic content to be loaded here
-
             RowLayout {
                 spacing: 15
                 visible: !startChat.visible
@@ -251,6 +249,28 @@ Rectangle {
                         rightPadding: 15
                     }
                 }
+            }
+        }
+    }
+
+    Rectangle {
+        anchors.top: mainArea.top
+        anchors.right: mainArea.right
+        border.width: 1
+        border.color: theme.dividerColor
+        radius: 6
+        z: 200
+        height: 30
+        color: theme.conversationBackground
+        width: subscribeLink.width
+        RowLayout {
+            anchors.fill: parent
+            MyFancyLink {
+                id: subscribeLink
+                Layout.alignment: Qt.AlignCenter
+                text: qsTr("Subscribe to Newsletter")
+                imageSource: "qrc:/gpt4all/icons/email.svg"
+                onClicked: { Qt.openUrlExternally("https://forms.nomic.ai/gpt4all-release-notes-signup") }
             }
         }
     }
