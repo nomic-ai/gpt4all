@@ -1003,14 +1003,14 @@ void LLamaModel::embedInternal(
     size_t totalTokens = 0;
     for (unsigned i = 0; i < inputs.size(); i++) {
         auto &input = inputs[i];
-        for (auto it = input.begin(); it < input.end(); it += max_len) {
-            if (it > input.begin()) { it -= chunkOverlap; }
-            auto end = std::min(it + max_len, input.end());
+        for (unsigned j = 0; j < input.size(); j += max_len) {
+            if (j) { j -= chunkOverlap; }
+            unsigned end = std::min(j + max_len, unsigned(input.size()));
             batches.push_back({ i, {} });
             auto &batch = batches.back().batch;
             batch = prefixTokens;
-            batch.insert(batch.end(), it, end);
-            totalTokens += end - it;
+            batch.insert(batch.end(), input.begin() + j, input.begin() + end);
+            totalTokens += end - j;
             batch.push_back(eos_token);
             if (!doMean) { break; /* limit text to one chunk */ }
         }
