@@ -1,16 +1,16 @@
 ## QA Checklist
 
-1. Ensure you have a fresh install by backing up and then deleting the following:
+1. Ensure you have a fresh install by **backing up** and then deleting the following directories:
 
     ### Windows
-      * Settings directory: TBD
-      * Models directory: TBD
+      * Settings directory: ```C:\Users\{username}\AppData\Roaming\nomic.ai```
+      * Models directory: ```C:\Users\{username}\AppData\Local\nomic.ai\GPT4All```
     ### Mac
-      * Settings directory: TBD
-      * Models directory: TBD
+      * Settings directory: ```/Users/{username}/.config/gpt4all.io```
+      * Models directory: ```/Users/{username}/Library/Application Support/nomic.ai/GPT4All```
     ### Linux
-      * Settings directory: TBD
-      * Models directory: TBD
+      * Settings directory: ```/home/{username}/.config/nomic.ai```
+      * Models directory: ```/home/{username}/.local/share/nomic.ai/GPT4All```
   
     ^ Note: If you've changed your models directory manually via the settings you need to backup and delete that one
 
@@ -36,7 +36,7 @@
 
 12. Try to break the app
 
-EXTRA CREDIT:
+### EXTRA CREDIT
 
 1. If you have a openai api key install GPT-4 model and chat with it
 
