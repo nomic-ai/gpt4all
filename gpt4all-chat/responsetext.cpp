@@ -15,6 +15,7 @@
 #include <QTextCharFormat>
 #include <QTextCursor>
 #include <QTextDocument>
+#include <QTextDocumentFragment>
 #include <QTextFrame>
 #include <QTextFrameFormat>
 #include <QTextTableCell>
@@ -925,6 +926,17 @@ void ResponseText::handleTextChanged()
     m_isProcessingText = false;
 }
 
+void replaceAndInsertMarkdown(int startIndex, int endIndex, QTextDocument *doc)
+{
+    QTextCursor cursor(doc);
+    cursor.setPosition(startIndex);
+    cursor.setPosition(endIndex, QTextCursor::KeepAnchor);
+    QTextDocumentFragment fragment(cursor);
+    const QString plainText = fragment.toPlainText();
+    cursor.removeSelectedText();
+    cursor.insertMarkdown(plainText);
+}
+
 void ResponseText::handleCodeBlocks()
 {
     QTextDocument* doc = m_textDocument->textDocument();
@@ -986,7 +998,16 @@ void ResponseText::handleCodeBlocks()
 
     QVector<CodeCopy> newCopies;
 
+    // Track the position in the document to handle non-code blocks
+    int lastIndex = 0;
+
     for(int index = matchesCode.count() - 1; index >= 0; --index) {
+
+        int nonCodeStart = lastIndex;
+        int nonCodeEnd = matchesCode[index].capturedStart();
+        if (nonCodeEnd > nonCodeStart)
+            replaceAndInsertMarkdown(nonCodeStart, nonCodeEnd, doc);
+
         cursor.setPosition(matchesCode[index].capturedStart());
         cursor.setPosition(matchesCode[index].capturedEnd(), QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
@@ -1079,7 +1100,12 @@ void ResponseText::handleCodeBlocks()
 
         cursor = mainFrame->lastCursorPosition();
         cursor.setCharFormat(QTextCharFormat());
+
+        lastIndex = matchesCode[index].capturedEnd();
     }
+
+    if (lastIndex < doc->characterCount())
+        replaceAndInsertMarkdown(lastIndex, doc->characterCount() - 1, doc);
 
     m_copies = newCopies;
 }
