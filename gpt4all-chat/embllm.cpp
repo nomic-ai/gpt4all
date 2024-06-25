@@ -71,7 +71,13 @@ bool EmbeddingLLMWorker::loadModel()
         return true;
     }
 
-    QString filePath = u"%1/../resources/%2"_s.arg(QCoreApplication::applicationDirPath(), LOCAL_EMBEDDING_MODEL);
+#ifdef Q_OS_DARWIN
+    static const QString embPathFmt = u"%1/../Resources/%2"_s;
+#else
+    static const QString embPathFmt = u"%1/../resources/%2"_s;
+#endif
+
+    QString filePath = embPathFmt.arg(QCoreApplication::applicationDirPath(), LOCAL_EMBEDDING_MODEL);
     if (!QFileInfo::exists(filePath)) {
         qWarning() << "WARNING: Local embedding model not found";
         return false;

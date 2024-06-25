@@ -41,6 +41,9 @@ jobs:
           keys:
             - macos-qt-cache-v3
       - run:
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
+      - run:
           name: Installing Qt
           command: |
             if [ ! -d ~/Qt ]; then
@@ -325,6 +328,9 @@ jobs:
       - restore_cache:  # this is the new step to restore cache
           keys:
             - macos-qt-cache-v3
+      - run:
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
       - run:
           name: Installing Qt
           command: |
