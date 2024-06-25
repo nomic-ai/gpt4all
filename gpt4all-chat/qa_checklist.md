@@ -30,9 +30,11 @@
 
 9. Go to the settings view and explore each setting
 
-10. Remove collections in localdocs and re-add them. Rebuild collections.
+10. Remove collections in localdocs and re-add them. Rebuild collections
 
-11. Try to break the app
+11. Now shut down the app, go back and restore any previous settings directory or model directory you had from a previous install and re-test #1 through #11 :)
+
+12. Try to break the app
 
 EXTRA CREDIT:
 
