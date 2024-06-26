@@ -65,6 +65,7 @@ QtObject {
     property color green950: Qt.hsla(125/360, 0.22, 0.10)
 
     // yellow
+    property color yellow0: Qt.hsla(47/360, 0.90, 0.99)
     property color yellow25: Qt.hsla(47/360, 0.90, 0.98)
     property color yellow50: Qt.hsla(47/360, 0.90, 0.96)
     property color yellow100: Qt.hsla(46/360, 0.89, 0.89)
@@ -977,6 +978,17 @@ QtObject {
                 return yellow50
             default:
                 return green500;
+        }
+    }
+
+    property color chatDrawerSectionHeader: {
+            switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return purple50
+            case "Dark":
+                return yellow0
+            default:
+                return grayRed800;
         }
     }
 

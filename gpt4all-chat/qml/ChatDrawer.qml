@@ -109,8 +109,8 @@ Rectangle {
                             topPadding: 15
                             bottomPadding: 5
                             text: parent.section
-                            color: theme.styledTextColor
-                            font.pixelSize: theme.fontSizeLarge
+                            color: theme.chatDrawerSectionHeader
+                            font.pixelSize: theme.fontSizeSmaller
                         }
                     }
                 }
