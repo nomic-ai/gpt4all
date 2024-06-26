@@ -864,7 +864,7 @@ Rectangle {
                                                     anchors.fill: parent
                                                     hoverEnabled: true
                                                     onClicked: function() {
-                                                        Qt.openUrlExternally("file://" + modelData.path)
+                                                        Qt.openUrlExternally(modelData.fileUri)
                                                     }
                                                 }
 
