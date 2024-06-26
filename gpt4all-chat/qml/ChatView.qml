@@ -321,7 +321,7 @@ Rectangle {
                     }
                     delegate: ItemDelegate {
                         id: comboItemDelegate
-                        width: comboBox.width
+                        width: comboItemPopup.width
                         contentItem: Text {
                             text: name
                             color: theme.textColor
@@ -336,6 +336,35 @@ Rectangle {
                         }
                         highlighted: comboBox.highlightedIndex === index
                     }
+                    popup: Popup {
+                        id: comboItemPopup
+                        y: comboBox.height - 1
+                        width: comboBox.width
+                        implicitHeight: Math.min(window.height - y, contentItem.implicitHeight)
+                        padding: 0
+                        contentItem: Rectangle {
+                            implicitWidth: comboBox.width
+                            implicitHeight: comboItemPopupListView.implicitHeight
+                            ScrollView {
+                                anchors.fill: parent
+                                clip: true
+                                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                                ListView {
+                                    id: comboItemPopupListView
+                                    implicitHeight: contentHeight
+                                    model: comboBox.popup.visible ? comboBox.delegateModel : null
+                                    currentIndex: comboBox.highlightedIndex
+                                    ScrollIndicator.vertical: ScrollIndicator { }
+                                }
+                            }
+                        }
+
+                        background: Rectangle {
+                            color: theme.black
+                        }
+                    }
+
                     Accessible.role: Accessible.ComboBox
                     Accessible.name: currentModelName()
                     Accessible.description: qsTr("The top item is the current model")
