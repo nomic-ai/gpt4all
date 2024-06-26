@@ -177,9 +177,6 @@ llmodel.llmodel_gpu_init_gpu_device_by_struct.restype = ctypes.c_bool
 llmodel.llmodel_gpu_init_gpu_device_by_int.argtypes = [ctypes.c_void_p, ctypes.c_int32]
 llmodel.llmodel_gpu_init_gpu_device_by_int.restype = ctypes.c_bool
 
-llmodel.llmodel_has_gpu_device.argtypes = [ctypes.c_void_p]
-llmodel.llmodel_has_gpu_device.restype = ctypes.c_bool
-
 llmodel.llmodel_model_backend_name.argtypes = [ctypes.c_void_p]
 llmodel.llmodel_model_backend_name.restype = ctypes.c_char_p
 

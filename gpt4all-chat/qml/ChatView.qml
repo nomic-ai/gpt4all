@@ -1294,7 +1294,21 @@ Rectangle {
                 visible: currentChat.tokenSpeed !== ""
                 elide: Text.ElideRight
                 wrapMode: Text.WordWrap
-                text: currentChat.tokenSpeed + " \u00B7 " + currentChat.device + currentChat.fallbackReason
+                text: {
+                    const segments = [currentChat.tokenSpeed];
+                    const device = currentChat.device;
+                    const backend = currentChat.deviceBackend;
+                    if (device !== null) { // device is null if we have no model loaded
+                        var deviceSegment = device;
+                        if (backend === "CUDA" || backend === "Vulkan")
+                            deviceSegment += ` (${backend})`;
+                        segments.push(deviceSegment);
+                    }
+                    const fallbackReason = currentChat.fallbackReason;
+                    if (fallbackReason !== null && fallbackReason !== "")
+                        segments.push(fallbackReason);
+                    return segments.join(" \u00B7 ");
+                }
                 font.pixelSize: theme.fontSizeSmaller
                 font.bold: true
             }
