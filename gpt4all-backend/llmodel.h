@@ -58,7 +58,8 @@ public:
             backend(backend), index(index), type(type), heapSize(heapSize), name(std::move(name)),
             vendor(std::move(vendor)) {}
 
-        std::string selectionName() const {
+        std::string selectionName() const
+        {
             assert(backend == "cuda"s || backend == "kompute"s);
             return backendName() + ": " + name;
         }

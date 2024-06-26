@@ -123,20 +123,23 @@ public:
     void acquireModel();
     void resetModel();
 
-    std::optional<QString> deviceBackend() const {
+    std::optional<QString> deviceBackend() const
+    {
         if (!isModelLoaded()) return std::nullopt;
         std::string name = LLModel::GPUDevice::backendIdToName(m_llModelInfo.model->backendName());
         return QString::fromStdString(name);
     }
 
-    std::optional<QString> device() const {
+    std::optional<QString> device() const
+    {
         if (!isModelLoaded()) return std::nullopt;
         const char *name = m_llModelInfo.model->gpuDeviceName();
         return name ? name : "CPU";
     }
 
     // not loaded -> null, no fallback -> empty string
-    std::optional<QString> fallbackReason() const {
+    std::optional<QString> fallbackReason() const
+    {
         if (!isModelLoaded()) return std::nullopt;
         return m_llModelInfo.fallbackReason;
     }
