@@ -37,5 +37,11 @@ ColumnLayout {
         onLinkActivated: function(link) {
             root.linkActivated(link);
         }
+
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.NoButton // pass clicks to parent
+            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+        }
     }
 }
