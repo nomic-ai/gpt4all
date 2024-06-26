@@ -123,19 +123,22 @@ MySettingsTab {
 
             MyTextField {
                 id: apiKeyField
+
+                property bool isValid: validate()
+                onTextChanged: { isValid = validate(); }
+                function validate() { return /^(nk-[a-zA-Z0-9_-]{43})?$/.test(apiKeyField.text); }
+
                 text: MySettings.localDocsNomicAPIKey
-                color: apiKeyField.acceptableInput ? theme.textColor : theme.textErrorColor
+                color: apiKeyField.isValid ? theme.textColor : theme.textErrorColor
                 font.pixelSize: theme.fontSizeLarge
                 Layout.alignment: Qt.AlignRight
                 Layout.minimumWidth: 200
                 enabled: useNomicAPIBox.checked
-                validator: RegularExpressionValidator {
-                    // may be empty
-                    regularExpression: /|nk-[a-zA-Z0-9_-]{43}/
-                }
                 onEditingFinished: {
-                    MySettings.localDocsNomicAPIKey = apiKeyField.text;
-                    MySettings.localDocsUseRemoteEmbed = useNomicAPIBox.checked && MySettings.localDocsNomicAPIKey !== "";
+                    if (apiKeyField.isValid) {
+                        MySettings.localDocsNomicAPIKey = apiKeyField.text;
+                        MySettings.localDocsUseRemoteEmbed = useNomicAPIBox.checked && MySettings.localDocsNomicAPIKey !== "";
+                    }
                     focus = false;
                 }
                 Accessible.role: Accessible.EditableText
