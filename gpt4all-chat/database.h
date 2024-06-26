@@ -16,6 +16,7 @@
 #include <QString>
 #include <QStringList>
 #include <QThread>
+#include <QUrl>
 #include <QVector>
 
 #include <cstddef>
@@ -49,6 +50,20 @@ struct DocumentInfo
 };
 
 struct ResultInfo {
+    Q_GADGET
+    Q_PROPERTY(QString collection MEMBER collection)
+    Q_PROPERTY(QString path MEMBER path)
+    Q_PROPERTY(QString file MEMBER file)
+    Q_PROPERTY(QString title MEMBER title)
+    Q_PROPERTY(QString author MEMBER author)
+    Q_PROPERTY(QString date MEMBER date)
+    Q_PROPERTY(QString text MEMBER text)
+    Q_PROPERTY(int page MEMBER page)
+    Q_PROPERTY(int from MEMBER from)
+    Q_PROPERTY(int to MEMBER to)
+    Q_PROPERTY(QString fileUri READ fileUri STORED false)
+
+public:
     QString collection; // [Required] The name of the collection
     QString path;       // [Required] The full path
     QString file;       // [Required] The name of the file, but not the full path
@@ -59,6 +74,21 @@ struct ResultInfo {
     int page = -1;      // [Optional] The page where the text was found
     int from = -1;      // [Optional] The line number where the text begins
     int to = -1;        // [Optional] The line number where the text ends
+
+    QString fileUri() const {
+        // QUrl reserved chars that are not UNSAFE_PATH according to glib/gconvert.c
+        static const QByteArray s_exclude = "!$&'()*+,/:=@~"_ba;
+
+        Q_ASSERT(!QFileInfo(path).isRelative());
+#ifdef Q_OS_WINDOWS
+        Q_ASSERT(!path.contains('\\')); // Qt normally uses forward slash as path separator
+#endif
+
+        auto escaped = QString::fromUtf8(QUrl::toPercentEncoding(path, s_exclude));
+        if (escaped.front() != '/')
+            escaped = '/' + escaped;
+        return u"file://"_s + escaped;
+    }
 
     bool operator==(const ResultInfo &other) const {
         return file == other.file &&
@@ -73,18 +103,6 @@ struct ResultInfo {
     bool operator!=(const ResultInfo &other) const {
         return !(*this == other);
     }
-
-    Q_GADGET
-    Q_PROPERTY(QString collection MEMBER collection)
-    Q_PROPERTY(QString path MEMBER path)
-    Q_PROPERTY(QString file MEMBER file)
-    Q_PROPERTY(QString title MEMBER title)
-    Q_PROPERTY(QString author MEMBER author)
-    Q_PROPERTY(QString date MEMBER date)
-    Q_PROPERTY(QString text MEMBER text)
-    Q_PROPERTY(int page MEMBER page)
-    Q_PROPERTY(int from MEMBER from)
-    Q_PROPERTY(int to MEMBER to)
 };
 
 Q_DECLARE_METATYPE(ResultInfo)

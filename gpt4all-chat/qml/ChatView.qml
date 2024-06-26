@@ -835,15 +835,7 @@ Rectangle {
                                                     anchors.fill: parent
                                                     hoverEnabled: true
                                                     onClicked: function() {
-                                                        Qt.openUrlExternally(getAdjustedFileUrl(modelData.path))
-                                                    }
-
-                                                    function getAdjustedFileUrl(filePath) {
-                                                        var url = "file://"
-                                                        if (Qt.platform.os === "windows") {
-                                                            url += "/"
-                                                        }
-                                                        return url + filePath.replace(/\\/g, '/')
+                                                        Qt.openUrlExternally(modelData.fileUri)
                                                     }
                                                 }
 
