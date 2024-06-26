@@ -191,11 +191,11 @@ Rectangle {
                         anchors.verticalCenter: chatName.verticalCenter
                         anchors.right: chatRectangle.right
                         anchors.rightMargin: 10
-                        spacing: 10
+                        spacing: 5
                         MyToolButton {
                             id: editButton
-                            width: 30
-                            height: 30
+                            imageWidth: 24
+                            imageHeight: 24
                             visible: isCurrent && !isServer
                             opacity: trashQuestionDisplayed ? 0.5 : 1.0
                             source: "qrc:/gpt4all/icons/edit.svg"
@@ -208,8 +208,8 @@ Rectangle {
                         }
                         MyToolButton {
                             id: trashButton
-                            width: 30
-                            height: 30
+                            imageWidth: 24
+                            imageHeight: 24
                             visible: isCurrent && !isServer
                             source: "qrc:/gpt4all/icons/trash.svg"
                             onClicked: {
