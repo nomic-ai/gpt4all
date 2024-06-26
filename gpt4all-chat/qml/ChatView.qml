@@ -1085,6 +1085,8 @@ Rectangle {
                                                                                 window.height / 2 - height / 2)
                                         x: globalPoint.x
                                         y: globalPoint.y
+                                        width: 640
+                                        height: 300
                                         property string text: value
                                         response: newResponse === undefined || newResponse === "" ? text : newResponse
                                         onAccepted: {
