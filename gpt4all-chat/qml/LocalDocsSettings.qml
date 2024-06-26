@@ -117,7 +117,8 @@ MySettingsTab {
             MySettingsLabel {
                 id: apiKeyLabel
                 text: qsTr("Nomic API Key")
-                helpText: qsTr("API key to use for Nomic Embed. Get one at https://atlas.nomic.ai/")
+                helpText: qsTr('API key to use for Nomic Embed. Get one from the Atlas <a href="https://atlas.nomic.ai/cli-login">API keys page</a>.')
+                onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             }
 
             MyTextField {
