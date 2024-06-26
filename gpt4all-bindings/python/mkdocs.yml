@@ -1,4 +1,4 @@
-site_name: GPT4All Documentation
+site_name: GPT4All
 repo_url: https://github.com/nomic-ai/gpt4all
 repo_name: nomic-ai/gpt4all
 site_url: https://docs.gpt4all.io
@@ -8,17 +8,33 @@ copyright: Copyright &copy; 2023 Nomic, Inc
 use_directory_urls: false
 
 nav:
-    - 'index.md'
-    - 'GPT4All Chat Client': 'gpt4all_chat.md'
-    - 'Bindings':
-      - 'GPT4All in Python':
-        - 'Generation': 'gpt4all_python.md'
-        - 'Embedding': 'gpt4all_python_embedding.md'
-        - 'Monitoring with OpenLIT': 'gpt4all_monitoring.md'
-      - 'GPT4ALL in NodeJs': 'gpt4all_nodejs.md'
-      - 'gpt4all_cli.md'
-    - 'Wiki':
-      - 'gpt4all_faq.md'
+    - 'Home': 'index.md'
+    - 'Desktop': 
+      - 'desktop/desktop_home.md'
+      - 'Install' : 'desktop/desktop_install.md'
+      - 'Explore' : 'desktop/desktop_tour.md'
+      - 'RAG' : 'desktop/desktop_localdocs.md'
+    - 'Python': 
+      - 'python/python_home.md'
+      - 'RAG': 'python/python_rag.md'
+      - 'Monitoring': 'python/python_monitoring.md'
+      - 'API Reference': 'python/python_ref.md'
+    - 'Help':
+      - 'FAQ': 'help/help_faq.md'
+      - 'Troubleshooting': 'help/help_troubleshooting.md'
+    - 'Old':
+      - 'old/index.md'
+      - 'GPT4All Chat Client': 'old/gpt4all_chat.md'
+      - 'Bindings':
+        - 'GPT4All in Python':
+          - 'Generation': 'old/gpt4all_python.md'
+          - 'Embedding': 'old/gpt4all_python_embedding.md'
+          - 'Monitoring with OpenLIT': 'old/gpt4all_monitoring.md'
+        - 'GPT4All in NodeJs': 'old/gpt4all_nodejs.md'
+        - 'old/gpt4all_cli.md'
+      - 'Wiki':
+        - 'old/gpt4all_faq.md'
+
 
 theme:
   name: material
