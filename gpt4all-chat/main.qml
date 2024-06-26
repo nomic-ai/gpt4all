@@ -63,6 +63,7 @@ Window {
 
     property bool hasCheckedFirstStart: false
     property bool hasShownSettingsAccess: false
+    property var currentChat: ChatListModel.currentChat
 
     function startupDialogs() {
         if (!LLM.compatHardware()) {
@@ -395,6 +396,98 @@ Window {
             anchors.horizontalCenter: parent.horizontalCenter
             Layout.margins: 0
             spacing: 22
+
+            Item {
+                id: antennaItem
+                Layout.alignment: Qt.AlignCenter
+                Layout.preferredWidth: antennaImage.width
+                Layout.preferredHeight: antennaImage.height
+                Image {
+                    id: antennaImage
+                    sourceSize.width: 32
+                    sourceSize.height: 32
+                    visible: false
+                    fillMode: Image.PreserveAspectFit
+                    source: "qrc:/gpt4all/icons/antenna_3.svg"
+                }
+
+                ColorOverlay {
+                    id: antennaColored
+                    visible: ModelList.installedModels.count !== 0 && (currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive)
+                    anchors.fill: antennaImage
+                    source: antennaImage
+                    color: theme.styledTextColor
+                    ToolTip.text: {
+                        if (MySettings.networkIsActive)
+                            return qsTr("The datalake is enabled")
+                        else if (currentChat.modelInfo.isOnline)
+                            return qsTr("Using a network model")
+                        else if (currentChat.modelInfo.isOnline)
+                            return qsTr("Server mode is enabled")
+                        return ""
+                    }
+                    ToolTip.visible: maAntenna.containsMouse
+                    ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+                    MouseArea {
+                        id: maAntenna
+                        anchors.fill: antennaColored
+                        hoverEnabled: true
+                    }
+                }
+
+                SequentialAnimation {
+                    running: true
+                    loops: Animation.Infinite
+
+                    PropertyAnimation {
+                        target: antennaImage
+                        property: "source"
+                        duration: 500
+                        from: "qrc:/gpt4all/icons/antenna_1.svg"
+                        to: "qrc:/gpt4all/icons/antenna_2.svg"
+                    }
+
+                    PauseAnimation {
+                        duration: 1500
+                    }
+
+                    PropertyAnimation {
+                        target: antennaImage
+                        property: "source"
+                        duration: 500
+                        from: "qrc:/gpt4all/icons/antenna_2.svg"
+                        to: "qrc:/gpt4all/icons/antenna_3.svg"
+                    }
+
+                    PauseAnimation {
+                        duration: 1500
+                    }
+
+                    PropertyAnimation {
+                        target: antennaImage
+                        property: "source"
+                        duration: 500
+                        from: "qrc:/gpt4all/icons/antenna_3.svg"
+                        to: "qrc:/gpt4all/icons/antenna_2.svg"
+                    }
+
+                    PauseAnimation {
+                        duration: 1500
+                    }
+
+                    PropertyAnimation {
+                        target: antennaImage
+                        property: "source"
+                        duration: 1500
+                        from: "qrc:/gpt4all/icons/antenna_2.svg"
+                        to: "qrc:/gpt4all/icons/antenna_1.svg"
+                    }
+
+                    PauseAnimation {
+                        duration: 500
+                    }
+                }
+            }
 
             Rectangle {
                 Layout.alignment: Qt.AlignCenter
