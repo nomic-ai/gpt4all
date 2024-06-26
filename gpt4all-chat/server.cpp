@@ -1,13 +1,29 @@
 #include "server.h"
-#include "chat.h"
-#include "mysettings.h"
-#include "modellist.h"
 
-#include <QJsonDocument>
+#include "chat.h"
+#include "modellist.h"
+#include "mysettings.h"
+
+#include <QByteArray>
+#include <QDateTime>
+#include <QDebug>
+#include <QHostAddress>
+#include <QHttpServer>
+#include <QHttpServerResponder>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QPair>
+#include <Qt>
+#include <QtLogging>
+
 #include <iostream>
+#include <string>
+#include <type_traits>
+#include <utility>
+
+using namespace Qt::Literals::StringLiterals;
 
 //#define DEBUG
 
@@ -328,7 +344,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
         QString echoedPrompt = actualPrompt;
         if (!echoedPrompt.endsWith("\n"))
             echoedPrompt += "\n";
-        responses.append(qMakePair((echo ? QString("%1\n").arg(actualPrompt) : QString()) + response(), m_databaseResults));
+        responses.append(qMakePair((echo ? u"%1\n"_s.arg(actualPrompt) : QString()) + response(), m_databaseResults));
         if (!promptTokens)
             promptTokens += m_promptTokens;
         responseTokens += m_promptResponseTokens - m_promptTokens;

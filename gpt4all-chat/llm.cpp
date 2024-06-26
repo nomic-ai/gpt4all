@@ -1,21 +1,25 @@
 #include "llm.h"
+
 #include "../gpt4all-backend/llmodel.h"
 #include "../gpt4all-backend/sysinfo.h"
 
 #include <QCoreApplication>
-#include <QDesktopServices>
-#include <QDir>
-#include <QFile>
+#include <QDebug>
+#include <QFileInfo>
+#include <QGlobalStatic>
+#include <QNetworkInformation>
 #include <QProcess>
-#include <QResource>
 #include <QSettings>
 #include <QUrl>
-#include <QNetworkInformation>
-#include <fstream>
+#include <QtLogging>
 
-#ifndef GPT4ALL_OFFLINE_INSTALLER
-#include "network.h"
+#ifdef GPT4ALL_OFFLINE_INSTALLER
+#   include <QDesktopServices>
+#else
+#   include "network.h"
 #endif
+
+using namespace Qt::Literals::StringLiterals;
 
 class MyLLM: public LLM { };
 Q_GLOBAL_STATIC(MyLLM, llmInstance)
@@ -45,18 +49,18 @@ bool LLM::hasSettingsAccess() const
 
 bool LLM::checkForUpdates() const
 {
-    #ifdef GPT4ALL_OFFLINE_INSTALLER
-    #pragma message "offline installer build will not check for updates!"
+#ifdef GPT4ALL_OFFLINE_INSTALLER
+#   pragma message(__FILE__ ": WARNING: offline installer build will not check for updates!")
     return QDesktopServices::openUrl(QUrl("https://gpt4all.io/"));
-    #else
+#else
     Network::globalInstance()->trackEvent("check_for_updates");
 
 #if defined(Q_OS_LINUX)
-    QString tool("maintenancetool");
+    QString tool = u"maintenancetool"_s;
 #elif defined(Q_OS_WINDOWS)
-    QString tool("maintenancetool.exe");
+    QString tool = u"maintenancetool.exe"_s;
 #elif defined(Q_OS_DARWIN)
-    QString tool("../../../maintenancetool.app/Contents/MacOS/maintenancetool");
+    QString tool = u"../../../maintenancetool.app/Contents/MacOS/maintenancetool"_s;
 #endif
 
     QString fileName = QCoreApplication::applicationDirPath()
@@ -67,7 +71,7 @@ bool LLM::checkForUpdates() const
     }
 
     return QProcess::startDetached(fileName);
-    #endif
+#endif
 }
 
 bool LLM::directoryExists(const QString &path)

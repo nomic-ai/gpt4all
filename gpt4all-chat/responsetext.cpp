@@ -1,13 +1,26 @@
 #include "responsetext.h"
 
-#include <QTextCharFormat>
-#include <QTextDocument>
-#include <QTextDocumentFragment>
-#include <QFontMetricsF>
-#include <QTextTableCell>
-#include <QGuiApplication>
+#include <QBrush>
+#include <QChar>
 #include <QClipboard>
+#include <QFont>
+#include <QFontMetricsF>
+#include <QGuiApplication>
+#include <QList>
 #include <QPainter>
+#include <QQuickTextDocument>
+#include <QRegularExpression>
+#include <QStringList>
+#include <QTextBlock>
+#include <QTextCharFormat>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QTextFrame>
+#include <QTextFrameFormat>
+#include <QTextTableCell>
+#include <QVariant>
+#include <Qt>
+#include <QtGlobal>
 
 enum Language {
     None,
@@ -24,6 +37,8 @@ enum Language {
     Php
 };
 
+// TODO (Adam) These should be themeable and not hardcoded since they are quite harsh on the eyes in
+// light mode.
 
 static QColor defaultColor      = "#d1d5db"; // white
 static QColor keywordColor      = "#2e95d3"; // blue
@@ -835,7 +850,7 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
     else if (block.userState() == Php)
         rules = phpHighlightingRules();
 
-    for (const HighlightingRule &rule : qAsConst(rules)) {
+    for (const HighlightingRule &rule : std::as_const(rules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
@@ -846,36 +861,17 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
     }
 }
 
-const int ContextLinkFormat = QTextFormat::UserObject + 1;
-const int ContextLinkHref = QTextFormat::UserProperty + 1;
-const int ContextLinkText = QTextFormat::UserProperty + 2;
-
-void ContextLinkInterface::drawObject(QPainter *painter, const QRectF &rect, QTextDocument *doc,
-    int posInDocument, const QTextFormat &format)
-{
-    const QString &href = format.property(ContextLinkHref).toString();
-    const QString &text = format.property(ContextLinkText).toString();
-    painter->setFont(doc->defaultFont());
-    painter->setPen(format.foreground().color());
-    painter->drawText(rect.bottomLeft(), text);
-}
-
-QSizeF ContextLinkInterface::intrinsicSize(QTextDocument *doc, int posInDocument,
-    const QTextFormat &format)
-{
-    const QString &href = format.property(ContextLinkHref).toString();
-    const QString &text = format.property(ContextLinkText).toString();
-    const QFontMetricsF metrics(doc->defaultFont());
-    const QSizeF textSize = metrics.size(Qt::TextSingleLine, text);
-    return textSize;
-}
-
+// TODO (Adam) This class replaces characters in the text in order to provide markup and syntax highlighting
+// which destroys the original text in favor of the replaced text. This is a problem when we select
+// text and then the user tries to 'copy' the text: the original text should be placed in the clipboard
+// not the replaced text. A possible solution is to have this class keep a mapping of the original
+// indices and the replacement indices and then use the original text that is stored in memory in the
+// chat class to populate the clipboard.
 ResponseText::ResponseText(QObject *parent)
     : QObject{parent}
     , m_textDocument(nullptr)
     , m_syntaxHighlighter(new SyntaxHighlighter(this))
     , m_isProcessingText(false)
-    , m_contextLink(new ContextLinkInterface(this))
 {
 }
 
@@ -890,30 +886,9 @@ void ResponseText::setTextDocument(QQuickTextDocument* textDocument)
         disconnect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ResponseText::handleTextChanged);
 
     m_textDocument = textDocument;
-    m_textDocument->textDocument()->documentLayout()->registerHandler(ContextLinkFormat, m_contextLink);
     m_syntaxHighlighter->setDocument(m_textDocument->textDocument());
     connect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ResponseText::handleTextChanged);
     handleTextChanged();
-}
-
-QString ResponseText::getLinkAtPosition(int position) const
-{
-    QTextCursor cursor(m_textDocument->textDocument());
-    cursor.setPosition(position);
-    QTextCharFormat format = cursor.charFormat();
-    if (format.objectType() == ContextLinkFormat) {
-        QString href = format.property(ContextLinkHref).toString();
-        if (!href.isEmpty())
-            return href;
-    }
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor);
-    format = cursor.charFormat();
-    if (format.objectType() == ContextLinkFormat) {
-        QString href = format.property(ContextLinkHref).toString();
-        if (!href.isEmpty())
-            return href;
-    }
-    return QString();
 }
 
 bool ResponseText::tryCopyAtPosition(int position) const
@@ -934,60 +909,20 @@ void ResponseText::handleTextChanged()
         return;
 
     m_isProcessingText = true;
+
+    // Force full layout of the text document to work around a bug in Qt
+    // TODO(jared): report the Qt bug and link to the report here
+    QTextDocument* doc = m_textDocument->textDocument();
+    (void)doc->documentLayout()->documentSize();
+
     handleCodeBlocks();
-    handleContextLinks();
+
     // We insert an invisible char at the end to make sure the document goes back to the default
     // text format
-    QTextDocument* doc = m_textDocument->textDocument();
     QTextCursor cursor(doc);
     QString invisibleCharacter = QString(QChar(0xFEFF));
     cursor.insertText(invisibleCharacter, QTextCharFormat());
     m_isProcessingText = false;
-}
-
-void ResponseText::handleContextLinks()
-{
-    QTextDocument* doc = m_textDocument->textDocument();
-    QTextCursor cursor(doc);
-
-    // Regex for context links
-    static const QRegularExpression reLink("\\[Context\\]\\((context://\\d+)\\)");
-    QRegularExpressionMatchIterator iLink = reLink.globalMatch(doc->toPlainText());
-
-    QList<QRegularExpressionMatch> matchesLink;
-    while (iLink.hasNext())
-        matchesLink.append(iLink.next());
-
-    QVector<ContextLink> newLinks;
-
-    // Calculate new positions and store them in newLinks
-    int positionOffset = 0;
-    for(const auto &match : matchesLink) {
-        ContextLink newLink;
-        newLink.href = match.captured(1);
-        newLink.text = "Context";
-        newLink.startPos = match.capturedStart() - positionOffset;
-        newLink.endPos = newLink.startPos + newLink.text.length();
-        newLinks.append(newLink);
-        positionOffset += match.capturedLength() - newLink.text.length();
-    }
-
-    // Replace the context links with the word "Context" in reverse order
-    for(int index = matchesLink.count() - 1; index >= 0; --index) {
-        cursor.setPosition(matchesLink.at(index).capturedStart());
-        cursor.setPosition(matchesLink.at(index).capturedEnd(), QTextCursor::KeepAnchor);
-        cursor.removeSelectedText();
-        QTextCharFormat objectFormat;
-        objectFormat.setForeground(m_linkColor);
-        objectFormat.setFontUnderline(true);
-        objectFormat.setProperty(ContextLinkHref, newLinks.at(index).href);
-        objectFormat.setProperty(ContextLinkText, newLinks.at(index).text);
-        objectFormat.setObjectType(ContextLinkFormat);
-        cursor.insertText(QString(QChar::ObjectReplacementCharacter), objectFormat);
-        cursor.setCharFormat(QTextCharFormat());
-    }
-
-    m_links = newLinks;
 }
 
 void ResponseText::handleCodeBlocks()
@@ -1121,6 +1056,8 @@ void ResponseText::handleCodeBlocks()
         QTextTableCell code = codeTable->cellAt(0, 0);
 
         QTextCharFormat codeBlockCharFormat;
+        codeBlockCharFormat.setForeground(defaultColor);
+
         QFont monospaceFont("Courier");
         monospaceFont.setPointSize(QGuiApplication::font().pointSize() + 2);
         if (monospaceFont.family() != "Courier") {
@@ -1131,15 +1068,13 @@ void ResponseText::handleCodeBlocks()
         codeBlockCharFormat.setFont(monospaceFont); // Update the font for the codeblock
         codeCursor.setCharFormat(codeBlockCharFormat);
 
-        if (!codeLanguage.isEmpty()) {
-            codeCursor.block().setUserState(stringToLanguage(codeLanguage));
-            for (const QString &line : lines) {
-                codeCursor.insertText(line);
+        codeCursor.block().setUserState(stringToLanguage(codeLanguage));
+        for (int i = 0; i < lines.size(); ++i) {
+            codeCursor.insertText(lines[i]);
+            if (i < lines.size() - 1) {
                 codeCursor.insertBlock();
                 codeCursor.block().setUserState(stringToLanguage(codeLanguage));
             }
-        } else {
-            codeCursor.insertText(lines.join("\n"));
         }
 
         cursor = mainFrame->lastCursorPosition();

@@ -1,8 +1,22 @@
 #ifndef CHATLISTMODEL_H
 #define CHATLISTMODEL_H
 
-#include <QAbstractListModel>
 #include "chat.h"
+#include "chatllm.h"
+#include "chatmodel.h"
+
+#include <QAbstractListModel>
+#include <QByteArray>
+#include <QDebug>
+#include <QHash>
+#include <QList>
+#include <QObject>
+#include <QThread>
+#include <QVariant>
+#include <QVector>
+#include <Qt>
+#include <QtGlobal>
+#include <QtLogging>
 
 class ChatsRestoreThread : public QThread
 {
@@ -42,7 +56,8 @@ public:
 
     enum Roles {
         IdRole = Qt::UserRole + 1,
-        NameRole
+        NameRole,
+        SectionRole
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
@@ -62,6 +77,26 @@ public:
                 return item->id();
             case NameRole:
                 return item->name();
+            case SectionRole: {
+                if (item == m_serverChat)
+                    return QString();
+                const QDate date = QDate::currentDate();
+                const QDate itemDate = item->creationDate().date();
+                if (date == itemDate)
+                    return tr("TODAY");
+                else if (itemDate >= date.addDays(-7))
+                    return tr("THIS WEEK");
+                else if (itemDate >= date.addMonths(-1))
+                    return tr("THIS MONTH");
+                else if (itemDate >= date.addMonths(-6))
+                    return tr("LAST SIX MONTHS");
+                else if (itemDate.year() == date.year())
+                    return tr("THIS YEAR");
+                else if (itemDate.year() == date.year() - 1)
+                    return tr("LAST YEAR");
+                else
+                    return QString::number(itemDate.year());
+            }
         }
 
         return QVariant();
@@ -72,6 +107,7 @@ public:
         QHash<int, QByteArray> roles;
         roles[IdRole] = "id";
         roles[NameRole] = "name";
+        roles[SectionRole] = "section";
         return roles;
     }
 

@@ -17,21 +17,43 @@ MySettingsTab {
         columns: 3
         rowSpacing: 10
         columnSpacing: 10
+        enabled: ModelList.installedModels.count !== 0
 
         property var currentModelName: comboBox.currentText
         property var currentModelId: comboBox.currentValue
         property var currentModelInfo: ModelList.modelInfo(root.currentModelId)
 
-        MySettingsLabel {
-            id: label
+        ColumnLayout {
             Layout.row: 0
             Layout.column: 0
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            spacing: 10
+            Label {
+                color: theme.styledTextColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: "General"
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 2
+                color: theme.settingsDivider
+            }
+        }
+
+        MySettingsLabel {
+            id: label
+            Layout.row: 1
+            Layout.column: 0
             text: qsTr("Model/Character")
+            helpText: qsTr("Select or clone a model and change its settings")
         }
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.row: 1
+            Layout.row: 2
             Layout.column: 0
             Layout.columnSpan: 2
             height: label.height + 20
@@ -95,20 +117,14 @@ MySettingsTab {
         }
 
         RowLayout {
-            Layout.row: 2
+            Layout.row: 3
             Layout.column: 0
             Layout.topMargin: 15
             spacing: 10
             MySettingsLabel {
                 id: uniqueNameLabel
                 text: qsTr("Unique Name")
-            }
-            MySettingsLabel {
-                id: uniqueNameLabelHelp
-                visible: false
-                text: qsTr("Must contain a non-empty unique name that does not match any existing model/character.")
-                color: theme.textErrorColor
-                wrapMode: TextArea.Wrap
+                helpText: qsTr("Must contain a non-empty unique name")
             }
         }
 
@@ -117,7 +133,7 @@ MySettingsTab {
             text: root.currentModelName
             font.pixelSize: theme.fontSizeLarge
             enabled: root.currentModelInfo.isClone || root.currentModelInfo.description === ""
-            Layout.row: 3
+            Layout.row: 4
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -137,14 +153,13 @@ MySettingsTab {
                 if (text !== "" && ModelList.isUniqueName(text)) {
                     MySettings.setModelName(root.currentModelInfo, text);
                 }
-                uniqueNameLabelHelp.visible = root.currentModelInfo.name !== "" &&
-                    (text === "" || (text !== root.currentModelInfo.name && !ModelList.isUniqueName(text)));
             }
         }
 
         MySettingsLabel {
             text: qsTr("Model File")
-            Layout.row: 4
+            helpText: qsTr("The filename of the selected model")
+            Layout.row: 5
             Layout.column: 0
             Layout.topMargin: 15
         }
@@ -153,7 +168,7 @@ MySettingsTab {
             text: root.currentModelInfo.filename
             font.pixelSize: theme.fontSizeLarge
             enabled: false
-            Layout.row: 5
+            Layout.row: 6
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -162,7 +177,8 @@ MySettingsTab {
         MySettingsLabel {
             visible: !root.currentModelInfo.isOnline
             text: qsTr("System Prompt")
-            Layout.row: 6
+            helpText: qsTr("Prefixed at the beginning of every conversation")
+            Layout.row: 7
             Layout.column: 0
             Layout.topMargin: 15
         }
@@ -170,7 +186,7 @@ MySettingsTab {
         Rectangle {
             id: systemPrompt
             visible: !root.currentModelInfo.isOnline
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -203,7 +219,7 @@ MySettingsTab {
         }
 
         RowLayout {
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
@@ -211,6 +227,7 @@ MySettingsTab {
             MySettingsLabel {
                 id: promptTemplateLabel
                 text: qsTr("Prompt Template")
+                helpText: qsTr("The template that wraps every prompt")
             }
             MySettingsLabel {
                 id: promptTemplateLabelHelp
@@ -223,7 +240,7 @@ MySettingsTab {
 
         Rectangle {
             id: promptTemplate
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -297,34 +314,21 @@ MySettingsTab {
             }
         }
 
-        MySettingsLabel {
-            text: qsTr("Generation Settings")
-            Layout.row: 10
-            Layout.column: 0
-            Layout.columnSpan: 2
-            Layout.topMargin: 15
-            Layout.alignment: Qt.AlignHCenter
-            Layout.minimumWidth: promptTemplate.width
-            horizontalAlignment: Qt.AlignHCenter
-            font.pixelSize: theme.fontSizeLarge
-            font.bold: true
-        }
-
         GridLayout {
             Layout.row: 11
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
             Layout.fillWidth: true
-            Layout.minimumWidth: promptTemplate.width
             columns: 4
-            rowSpacing: 10
+            rowSpacing: 30
             columnSpacing: 10
 
             MySettingsLabel {
                 id: contextLengthLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Context Length")
+                helpText: qsTr("Conversation context window")
                 Layout.row: 0
                 Layout.column: 0
             }
@@ -374,6 +378,7 @@ MySettingsTab {
             MySettingsLabel {
                 id: tempLabel
                 text: qsTr("Temperature")
+                helpText: qsTr("The temperature for model token generation")
                 Layout.row: 1
                 Layout.column: 2
             }
@@ -418,6 +423,7 @@ MySettingsTab {
             MySettingsLabel {
                 id: topPLabel
                 text: qsTr("Top P")
+                helpText: qsTr("Prevents choosing highly unlikely tokens")
                 Layout.row: 2
                 Layout.column: 0
             }
@@ -461,6 +467,7 @@ MySettingsTab {
             MySettingsLabel {
                 id: minPLabel
                 text: qsTr("Min P")
+                helpText: qsTr("Minimum relative probability")
                 Layout.row: 3
                 Layout.column: 0
             }
@@ -506,6 +513,7 @@ MySettingsTab {
                 id: topKLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Top K")
+                helpText: qsTr("Size of selection pool for tokens")
                 Layout.row: 2
                 Layout.column: 2
             }
@@ -551,6 +559,7 @@ MySettingsTab {
                 id: maxLengthLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Max Length")
+                helpText: qsTr("Maximum length of response in tokens")
                 Layout.row: 0
                 Layout.column: 2
             }
@@ -597,6 +606,7 @@ MySettingsTab {
                 id: batchSizeLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Prompt Batch Size")
+                helpText: qsTr("Amount of prompt tokens to process at once")
                 Layout.row: 1
                 Layout.column: 0
             }
@@ -642,6 +652,7 @@ MySettingsTab {
                 id: repeatPenaltyLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Repeat Penalty")
+                helpText: qsTr("Penalize repetitiveness")
                 Layout.row: 4
                 Layout.column: 2
             }
@@ -687,6 +698,7 @@ MySettingsTab {
                 id: repeatPenaltyTokensLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Repeat Penalty Tokens")
+                helpText: qsTr("Length to apply penalty")
                 Layout.row: 3
                 Layout.column: 2
             }
@@ -733,6 +745,7 @@ MySettingsTab {
                 id: gpuLayersLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("GPU Layers")
+                helpText: qsTr("How many GPU layers to load into VRAM")
                 Layout.row: 4
                 Layout.column: 0
             }
@@ -790,9 +803,8 @@ MySettingsTab {
             Layout.columnSpan: 2
             Layout.topMargin: 15
             Layout.fillWidth: true
-            Layout.minimumWidth: promptTemplate.width
-            height: 3
-            color: theme.accentColor
+            height: 2
+            color: theme.settingsDivider
         }
     }
 }

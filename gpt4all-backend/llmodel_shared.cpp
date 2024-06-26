@@ -14,7 +14,8 @@
 #include <vector>
 
 // TODO(cebtenzzre): replace this with llama_kv_cache_seq_shift for llamamodel (GPT-J needs this as-is)
-void LLModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) {
+void LLModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
+{
     int n_keep = shouldAddBOS();
     const int32_t n_discard = (promptCtx.n_ctx - n_keep) * promptCtx.contextErase;
 
@@ -43,7 +44,8 @@ stop_generating:
     recalculate(false);
 }
 
-static bool parsePromptTemplate(const std::string &tmpl, std::vector<std::smatch> &placeholders, std::string &err) {
+static bool parsePromptTemplate(const std::string &tmpl, std::vector<std::smatch> &placeholders, std::string &err)
+{
     static const std::regex placeholderRegex(R"(%[1-2](?![0-9]))");
 
     auto it = std::sregex_iterator(tmpl.begin(), tmpl.end(), placeholderRegex);

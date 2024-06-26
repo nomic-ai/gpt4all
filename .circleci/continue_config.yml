@@ -20,9 +20,6 @@ parameters:
   run-ts-workflow:
     type: boolean
     default: false
-  run-csharp-workflow:
-    type: boolean
-    default: false
 
 jobs:
   default-job:
@@ -43,6 +40,9 @@ jobs:
       - restore_cache:  # this is the new step to restore cache
           keys:
             - macos-qt-cache-v3
+      - run:
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
       - run:
           name: Installing Qt
           command: |
@@ -77,8 +77,90 @@ jobs:
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
             mkdir upload
             cp gpt4all-installer-* upload
+      # persist the unsigned installer
       - store_artifacts:
           path: build/upload
+      # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+
+  sign-offline-chat-installer-macos:
+    macos:
+      xcode: 14.0.0
+    steps:
+      - checkout
+      # attach to a workspace containing unsigned dmg
+      - attach_workspace:
+          at: build
+      - run:
+          name: "Setup Keychain"
+          command: |
+            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
+            # cat \<<< "$MAC_SIGNING_CERT" > certs1.pem
+            # file certs1.pem
+            # iconv -c -f UTF8 -t ASCII certs1.pem > certs.pem
+            # openssl pkcs12 -legacy -export -out cert.p12 -in certs.pem -inkey certs.pem -passin pass:"$MAC_SIGNING_CERT_PWD" -passout pass:"$MAC_SIGNING_CERT_PWD"
+            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security default-keychain -s sign.keychain
+            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
+            rm cert.p12
+      - run:
+          name: "Sign App Bundle"
+          command: |
+            python3 -m pip install click
+            python3 gpt4all-chat/cmake/sign_dmg.py --input-dmg build/upload/gpt4all-installer-darwin.dmg --output-dmg build/upload/gpt4all-installer-darwin-signed.dmg --signing-identity "$MAC_SIGNING_CERT_NAME"
+      - run:
+          name: "Sign DMG"
+          command: |
+            codesign --options runtime --timestamp -s "$MAC_SIGNING_CERT_NAME" build/upload/gpt4all-installer-darwin-signed.dmg
+      # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+
+  notarize-offline-chat-installer-macos:
+    macos:
+      xcode: 14.0.0
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      # - run:
+      #     name: "Setup Notarize Keychain"
+      #     command: |
+      #       security create-keychain
+      #       sudo xcrun notarytool store-credentials "notarytool-profile" --apple-id "$MAC_NOTARIZATION_ID" --team-id "$MAC_NOTARIZATION_TID" --password "$MAC_NOTARIZATION_KEY" --keychain /Library/Keychains/System.keychain
+      - run:
+          name: "Notarize"
+          command: |
+            xcrun notarytool submit build/upload/gpt4all-installer-darwin-signed.dmg --apple-id "$MAC_NOTARIZATION_ID" --team-id "$MAC_NOTARIZATION_TID" --password "$MAC_NOTARIZATION_KEY" --wait  | tee notarize_log.txt
+      - run:
+          name: "Report Notarization Failure"
+          command: |
+            NID=`python3 .circleci/grab_notary_id.py notarize_log.txt` && export NID
+            xcrun notarytool log $NID --keychain-profile "notary-profile"
+            exit 1
+          when: on_fail
+      # - run:
+      #     name: "Rename and move"
+      #     command: |
+      #       mv build/upload/gpt4all-installer-darwin-signed.dmg build/upload-signed/gpt4all-installer-darwin-signed.dmg
+      - run:
+          name: "Staple"
+          command: |
+            xcrun stapler staple build/upload/gpt4all-installer-darwin-signed.dmg
+      - store_artifacts:
+          path: build/upload
+
   build-offline-chat-installer-linux:
     machine:
       image: ubuntu-2204:2023.04.2
@@ -328,6 +410,9 @@ jobs:
       - restore_cache:  # this is the new step to restore cache
           keys:
             - macos-qt-cache-v3
+      - run:
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
       - run:
           name: Installing Qt
           command: |
@@ -620,57 +705,6 @@ jobs:
             - runtimes/osx-x64/*.metal
 
   build-bindings-backend-windows:
-    executor:
-      name: win/default
-      size: large
-      shell: powershell.exe -ExecutionPolicy Bypass
-    steps:
-      - checkout
-      - run:
-          name: Update Submodules
-          command: |
-            git submodule sync
-            git submodule update --init --recursive
-      - run:
-          name: Install MinGW64
-          command: choco install -y mingw --force --no-progress
-      - run:
-          name: Install VulkanSDK
-          command: |
-            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
-            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
-      - run:
-          name: Install CUDA Toolkit
-          command: |
-            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe -OutFile cuda_12.4.1_windows_network.exe
-            .\cuda_12.4.1_windows_network.exe -s cudart_12.4 nvcc_12.4 cublas_12.4 cublas_dev_12.4
-      - run:
-          name: Install dependencies
-          command: |
-            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-      - run:
-          name: Build Libraries
-          command: |
-            $MinGWBin = "C:\ProgramData\mingw64\mingw64\bin"
-            $Env:Path += ";$MinGwBin"
-            $Env:Path += ";C:\Program Files\CMake\bin"
-            $Env:Path += ";C:\VulkanSDK\1.3.261.1\bin"
-            $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
-            cd gpt4all-backend
-            mkdir runtimes/win-x64
-            cd runtimes/win-x64
-            cmake -G "MinGW Makefiles" -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON ../..
-            cmake --build . --parallel --config Release
-            cp "$MinGWBin\libgcc*.dll" .
-            cp "$MinGWBin\libstdc++*.dll" .
-            cp "$MinGWBin\libwinpthread*.dll" .
-            cp bin/*.dll .
-      - persist_to_workspace:
-          root: gpt4all-backend
-          paths:
-            - runtimes/win-x64/*.dll
-
-  build-bindings-backend-windows-msvc:
     machine:
       image: 'windows-server-2022-gui:2023.03.1'
       resource_class: windows.large
@@ -712,182 +746,6 @@ jobs:
           root: gpt4all-backend
           paths:
             - runtimes/win-x64_msvc/*.dll
-
-  build-csharp-linux:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: "Prepare Native Libs"
-          command: |
-            cd gpt4all-bindings/csharp
-            mkdir -p runtimes/linux-x64/native
-            cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
-            ls -R runtimes
-      - restore_cache:
-          keys:
-            - gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: "Install project dependencies"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet restore Gpt4All
-      - save_cache:
-          paths:
-            - ~/.nuget/packages
-          key: gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: Build C# Project
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet build Gpt4All --configuration Release --nologo
-      - run:
-          name: "Run C# Tests"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
-      - run:
-          name: Test results
-          command: |
-              cd gpt4all-bindings/csharp/Gpt4All.Tests
-              dotnet tool install -g trx2junit
-              export PATH="$PATH:$HOME/.dotnet/tools"
-              trx2junit TestResults/*.trx
-      - store_test_results:
-          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-
-  build-csharp-windows:
-    executor:
-      name: win/default
-      size: large
-      shell: powershell.exe -ExecutionPolicy Bypass
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - gpt4all-csharp-nuget-packages-win
-      - attach_workspace:
-          at: C:\Users\circleci\workspace
-      - run:
-          name: "Install .NET"
-          command: |
-            choco install -y dotnet-8.0-sdk
-      - run:
-          name: "Prepare Native Libs"
-          command: |
-            cd gpt4all-bindings/csharp
-            mkdir -p runtimes\win-x64\native
-            cp C:\Users\circleci\workspace\runtimes\win-x64\*.dll runtimes\win-x64\native\
-            ls -R runtimes
-      - run:
-          name: "Install project dependencies"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet.exe restore Gpt4All
-      - save_cache:
-          paths:
-            - C:\Users\circleci\.nuget\packages
-          key: gpt4all-csharp-nuget-packages-win
-      - run:
-          name: Build C# Project
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet.exe build Gpt4All --configuration Release --nologo
-      - run:
-          name: "Run C# Tests"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet.exe test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
-      - run:
-          name: Test results
-          command: |
-              cd gpt4all-bindings/csharp/Gpt4All.Tests
-              dotnet tool install -g trx2junit
-              $Env:Path += ";$Env:USERPROFILE\.dotnet\tools"
-              trx2junit TestResults/*.trx
-      - store_test_results:
-          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-
-  build-csharp-macos:
-    macos:
-      xcode: "14.0.0"
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: Install dependencies
-          command: |
-            brew tap isen-ng/dotnet-sdk-versions
-            brew install --cask dotnet-sdk8-0-100
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: "Prepare Native Libs"
-          command: |
-            cd gpt4all-bindings/csharp
-            mkdir -p runtimes/osx/native
-            cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
-            cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
-            ls -R runtimes
-      - run:
-          name: "Install project dependencies"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet restore Gpt4All
-      - save_cache:
-          paths:
-            - ~/.nuget/packages
-          key: gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: Build C# Project
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet build Gpt4All --configuration Release --nologo
-      - run:
-          name: "Run C# Tests"
-          command: |
-            cd gpt4all-bindings/csharp
-            dotnet test Gpt4All.Tests -v n -c Release --filter "SKIP_ON_CI!=True" --logger "trx"
-      - run:
-          name: Test results
-          command: |
-              cd gpt4all-bindings/csharp/Gpt4All.Tests
-              dotnet tool install -g trx2junit
-              export PATH="$PATH:$HOME/.dotnet/tools"
-              trx2junit TestResults/*.trx
-      - store_test_results:
-          path: gpt4all-bindings/csharp/Gpt4All.Tests/TestResults
-
-  store-and-upload-nupkgs:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - checkout
-      - restore_cache:
-           keys:
-             - gpt4all-csharp-nuget-packages-nix
-      - run:
-          name: NuGet Pack
-          command: |
-            cd gpt4all-bindings/csharp
-            mkdir -p runtimes/linux-x64/native
-            cp /tmp/workspace/runtimes/linux-x64/*.so runtimes/linux-x64/native/
-            mkdir -p runtimes/win-x64/native
-            cp /tmp/workspace/runtimes/win-x64/*.dll runtimes/win-x64/native/
-            #mkdir -p runtimes/osx/native
-            #cp /tmp/workspace/runtimes/osx-x64/*.dylib runtimes/osx/native/
-            #cp /tmp/workspace/runtimes/osx-x64/*.metal runtimes/osx/native/
-            dotnet pack ./Gpt4All/Gpt4All.csproj -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -c Release
-            dotnet nuget push ./Gpt4All/bin/Release/Gpt4All.*.nupkg -s $NUGET_URL -k $NUGET_TOKEN --skip-duplicate
-      - store_artifacts:
-          path: gpt4all-bindings/csharp/Gpt4All/bin/Release
 
   build-nodejs-linux: 
     docker: 
@@ -1072,6 +930,12 @@ workflows:
       - build-offline-chat-installer-macos:
           requires:
             - hold
+      - sign-offline-chat-installer-macos:
+          requires:
+            - build-offline-chat-installer-macos
+      - notarize-offline-chat-installer-macos:
+          requires:
+            - sign-offline-chat-installer-macos
       - build-offline-chat-installer-windows:
           requires:
             - hold
@@ -1153,12 +1017,9 @@ workflows:
       or:
        - << pipeline.parameters.run-all-workflows >>
        - << pipeline.parameters.run-python-workflow >>
-       - << pipeline.parameters.run-csharp-workflow >>
        - << pipeline.parameters.run-ts-workflow >>
     jobs:
       - hold:
-          type: approval
-      - csharp-hold:
           type: approval
       - nuget-hold:
           type: approval
@@ -1179,12 +1040,6 @@ workflows:
           requires:
             - hold
       - build-bindings-backend-windows:
-          filters:
-            branches:
-              only:
-          requires:
-            - hold
-      - build-bindings-backend-windows-msvc:
           filters:
             branches:
               only:
@@ -1214,7 +1069,7 @@ workflows:
               only:
           requires:
             - nodejs-hold
-            - build-bindings-backend-windows-msvc
+            - build-bindings-backend-windows
       - build-nodejs-macos:
           filters:
             branches:
@@ -1222,36 +1077,3 @@ workflows:
           requires:
             - nodejs-hold
             - build-bindings-backend-macos
-
-
-      # CSharp Jobs
-      - build-csharp-linux:
-          filters:
-            branches:
-              only:
-          requires:
-            - csharp-hold
-            - build-bindings-backend-linux
-      - build-csharp-windows:
-          filters:
-            branches:
-              only:
-          requires:
-            - csharp-hold
-            - build-bindings-backend-windows
-      - build-csharp-macos:
-          filters:
-            branches:
-              only:
-          requires:
-            - csharp-hold
-            - build-bindings-backend-macos
-      - store-and-upload-nupkgs:
-          filters:
-            branches:
-              only:
-          requires:
-            - nuget-hold
-            - build-csharp-windows
-            - build-csharp-linux
-            #- build-csharp-macos

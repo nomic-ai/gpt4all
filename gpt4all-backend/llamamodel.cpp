@@ -84,16 +84,19 @@ static const std::vector<const char *> EMBEDDING_ARCHES {
     "bert", "nomic-bert",
 };
 
-static bool is_embedding_arch(const std::string &arch) {
+static bool is_embedding_arch(const std::string &arch)
+{
     return std::find(EMBEDDING_ARCHES.begin(), EMBEDDING_ARCHES.end(), arch) < EMBEDDING_ARCHES.end();
 }
 
-static bool llama_verbose() {
+static bool llama_verbose()
+{
     const char* var = getenv("GPT4ALL_VERBOSE_LLAMACPP");
     return var && *var;
 }
 
-static void llama_log_callback(enum ggml_log_level level, const char *text, void *userdata) {
+static void llama_log_callback(enum ggml_log_level level, const char *text, void *userdata)
+{
     (void)userdata;
     if (llama_verbose() || level <= GGML_LOG_LEVEL_ERROR) {
         fputs(text, stderr);
@@ -147,7 +150,8 @@ static int llama_sample_top_p_top_k(
     return llama_sample_token(ctx, &candidates_p);
 }
 
-const char *get_arch_name(gguf_context *ctx_gguf) {
+const char *get_arch_name(gguf_context *ctx_gguf)
+{
     const int kid = gguf_find_key(ctx_gguf, "general.architecture");
     if (kid == -1)
         throw std::runtime_error("key not found in model: general.architecture");
@@ -159,7 +163,8 @@ const char *get_arch_name(gguf_context *ctx_gguf) {
     return gguf_get_val_str(ctx_gguf, kid);
 }
 
-static gguf_context *load_gguf(const char *fname) {
+static gguf_context *load_gguf(const char *fname)
+{
     struct gguf_init_params params = {
         /*.no_alloc = */ true,
         /*.ctx      = */ nullptr,
@@ -180,7 +185,8 @@ static gguf_context *load_gguf(const char *fname) {
     return ctx;
 }
 
-static int32_t get_arch_key_u32(std::string const &modelPath, std::string const &archKey) {
+static int32_t get_arch_key_u32(std::string const &modelPath, std::string const &archKey)
+{
     int32_t value = -1;
     std::string arch;
 
@@ -237,7 +243,8 @@ struct llama_file_hparams {
     enum llama_ftype ftype = LLAMA_FTYPE_MOSTLY_F16;
 };
 
-size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl) {
+size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
+{
     // TODO(cebtenzzre): update to GGUF
     (void)ngl; // FIXME(cetenzzre): use this value
     auto fin = std::ifstream(modelPath, std::ios::binary);
@@ -261,7 +268,8 @@ size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
     return filesize + est_kvcache_size;
 }
 
-bool LLamaModel::isModelBlacklisted(const std::string &modelPath) const {
+bool LLamaModel::isModelBlacklisted(const std::string &modelPath) const
+{
     auto * ctx = load_gguf(modelPath.c_str());
     if (!ctx) {
         std::cerr << __func__ << ": failed to load " << modelPath << "\n";
@@ -297,7 +305,8 @@ bool LLamaModel::isModelBlacklisted(const std::string &modelPath) const {
     return res;
 }
 
-bool LLamaModel::isEmbeddingModel(const std::string &modelPath) const {
+bool LLamaModel::isEmbeddingModel(const std::string &modelPath) const
+{
     bool result = false;
     std::string arch;
 
@@ -453,12 +462,14 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     return true;
 }
 
-void LLamaModel::setThreadCount(int32_t n_threads) {
+void LLamaModel::setThreadCount(int32_t n_threads)
+{
     d_ptr->n_threads = n_threads;
     llama_set_n_threads(d_ptr->ctx, n_threads, n_threads);
 }
 
-int32_t LLamaModel::threadCount() const {
+int32_t LLamaModel::threadCount() const
+{
     return d_ptr->n_threads;
 }
 
@@ -581,7 +592,8 @@ int32_t LLamaModel::layerCount(std::string const &modelPath) const
 }
 
 #ifdef GGML_USE_VULKAN
-static const char *getVulkanVendorName(uint32_t vendorID) {
+static const char *getVulkanVendorName(uint32_t vendorID)
+{
     switch (vendorID) {
         case 0x10DE: return "nvidia";
         case 0x1002: return "amd";
@@ -723,11 +735,13 @@ bool LLamaModel::usingGPUDevice() const
     return usingGPU;
 }
 
-const char *LLamaModel::backendName() const {
+const char *LLamaModel::backendName() const
+{
     return d_ptr->backend_name;
 }
 
-const char *LLamaModel::gpuDeviceName() const {
+const char *LLamaModel::gpuDeviceName() const
+{
     if (usingGPUDevice()) {
 #if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
         return d_ptr->deviceName.c_str();
@@ -755,13 +769,15 @@ void llama_batch_add(
     batch.n_tokens++;
 }
 
-static void batch_add_seq(llama_batch &batch, const std::vector<LLModel::Token> &tokens, int seq_id) {
+static void batch_add_seq(llama_batch &batch, const std::vector<LLModel::Token> &tokens, int seq_id)
+{
     for (unsigned i = 0; i < tokens.size(); i++) {
         llama_batch_add(batch, tokens[i], i, { seq_id }, i == tokens.size() - 1);
     }
 }
 
-size_t LLamaModel::embeddingSize() const {
+size_t LLamaModel::embeddingSize() const
+{
     return llama_n_embd(d_ptr->model);
 }
 
@@ -881,12 +897,14 @@ void LLamaModel::embed(
 // MD5 hash of "nomic empty"
 static const char EMPTY_PLACEHOLDER[] = "24df574ea1c998de59d5be15e769658e";
 
-auto product(double a) -> std::function<double(double)> {
+auto product(double a) -> std::function<double(double)>
+{
     return [a](double b) { return a * b; };
 }
 
 template <typename T>
-double getL2NormScale(T *start, T *end) {
+double getL2NormScale(T *start, T *end)
+{
     double magnitude = std::sqrt(std::inner_product(start, end, start, 0.0));
     return 1.0 / std::max(magnitude, 1e-12);
 }
@@ -972,14 +990,14 @@ void LLamaModel::embedInternal(
     size_t totalTokens = 0;
     for (unsigned i = 0; i < inputs.size(); i++) {
         auto &input = inputs[i];
-        for (auto it = input.begin(); it < input.end(); it += max_len) {
-            if (it > input.begin()) { it -= chunkOverlap; }
-            auto end = std::min(it + max_len, input.end());
+        for (unsigned j = 0; j < input.size(); j += max_len) {
+            if (j) { j -= chunkOverlap; }
+            unsigned end = std::min(j + max_len, unsigned(input.size()));
             batches.push_back({ i, {} });
             auto &batch = batches.back().batch;
             batch = prefixTokens;
-            batch.insert(batch.end(), it, end);
-            totalTokens += end - it;
+            batch.insert(batch.end(), input.begin() + j, input.begin() + end);
+            totalTokens += end - j;
             batch.push_back(eos_token);
             if (!doMean) { break; /* limit text to one chunk */ }
         }
@@ -1094,19 +1112,23 @@ void LLamaModel::embedInternal(
 #endif
 
 extern "C" {
-DLL_EXPORT bool is_g4a_backend_model_implementation() {
+DLL_EXPORT bool is_g4a_backend_model_implementation()
+{
     return true;
 }
 
-DLL_EXPORT const char *get_model_type() {
+DLL_EXPORT const char *get_model_type()
+{
     return modelType_;
 }
 
-DLL_EXPORT const char *get_build_variant() {
+DLL_EXPORT const char *get_build_variant()
+{
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT char *get_file_arch(const char *fname) {
+DLL_EXPORT char *get_file_arch(const char *fname)
+{
     char *arch = nullptr;
     std::string archStr;
 
@@ -1131,11 +1153,13 @@ cleanup:
     return arch;
 }
 
-DLL_EXPORT bool is_arch_supported(const char *arch) {
+DLL_EXPORT bool is_arch_supported(const char *arch)
+{
     return std::find(KNOWN_ARCHES.begin(), KNOWN_ARCHES.end(), std::string(arch)) < KNOWN_ARCHES.end();
 }
 
-DLL_EXPORT LLModel *construct() {
+DLL_EXPORT LLModel *construct()
+{
     llama_log_set(llama_log_callback, nullptr);
     return new LLamaModel;
 }

@@ -20,35 +20,37 @@ namespace fs = std::filesystem;
 
 #ifndef _WIN32
 
-Dlhandle::Dlhandle(const fs::path &fpath) {
+Dlhandle::Dlhandle(const fs::path &fpath)
+{
     chandle = dlopen(fpath.c_str(), RTLD_LAZY | RTLD_LOCAL);
     if (!chandle) {
         throw Exception("dlopen: "s + dlerror());
     }
 }
 
-Dlhandle::~Dlhandle() {
+Dlhandle::~Dlhandle()
+{
     if (chandle) dlclose(chandle);
 }
 
-void *Dlhandle::get_internal(const char *symbol) const {
+void *Dlhandle::get_internal(const char *symbol) const
+{
     return dlsym(chandle, symbol);
 }
 
 #else // defined(_WIN32)
 
-Dlhandle::Dlhandle(const fs::path &fpath) {
+Dlhandle::Dlhandle(const fs::path &fpath)
+{
     fs::path afpath = fs::absolute(fpath);
 
     // Suppress the "Entry Point Not Found" dialog, caused by outdated nvcuda.dll from the GPU driver
     UINT lastErrorMode = GetErrorMode();
-    UINT success = SetErrorMode(lastErrorMode | SEM_FAILCRITICALERRORS);
-    assert(success);
+    SetErrorMode(lastErrorMode | SEM_FAILCRITICALERRORS);
 
     chandle = LoadLibraryExW(afpath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
 
-    success = SetErrorMode(lastErrorMode);
-    assert(success);
+    SetErrorMode(lastErrorMode);
 
     if (!chandle) {
         DWORD err = GetLastError();
@@ -58,11 +60,13 @@ Dlhandle::Dlhandle(const fs::path &fpath) {
     }
 }
 
-Dlhandle::~Dlhandle() {
+Dlhandle::~Dlhandle()
+{
     if (chandle) FreeLibrary(HMODULE(chandle));
 }
 
-void *Dlhandle::get_internal(const char *symbol) const {
+void *Dlhandle::get_internal(const char *symbol) const
+{
     return GetProcAddress(HMODULE(chandle), symbol);
 }
 

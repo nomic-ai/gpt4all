@@ -1,21 +1,42 @@
 #include "network.h"
 
+#include "chat.h"
 #include "chatlistmodel.h"
 #include "download.h"
 #include "llm.h"
 #include "localdocs.h"
+#include "localdocsmodel.h"
+#include "modellist.h"
 #include "mysettings.h"
 
-#include <cmath>
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
+#include <QDebug>
+#include <QGlobalStatic>
 #include <QGuiApplication>
-#include <QUuid>
-#include <QJsonDocument>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkRequest>
 #include <QScreen>
+#include <QSettings>
+#include <QSize>
+#include <QSslConfiguration>
+#include <QSslSocket>
+#include <QSysInfo>
+#include <Qt>
+#include <QtGlobal>
+#include <QtLogging>
+#include <QUrl>
+#include <QUuid>
+
+#include <cmath>
+#include <cstring>
+#include <utility>
+
+using namespace Qt::Literals::StringLiterals;
 
 //#define DEBUG
 
@@ -24,7 +45,8 @@ static const char MIXPANEL_TOKEN[] = "ce362e568ddaee16ed243eaffb5860a2";
 #if defined(Q_OS_MAC)
 
 #include <sys/sysctl.h>
-static QString getCPUModel() {
+static QString getCPUModel()
+{
     char buffer[256];
     size_t bufferlen = sizeof(buffer);
     sysctlbyname("machdep.cpu.brand_string", &buffer, &bufferlen, NULL, 0);
@@ -34,14 +56,16 @@ static QString getCPUModel() {
 #elif defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
 
 #ifndef _MSC_VER
-static void get_cpuid(int level, int *regs) {
+static void get_cpuid(int level, int *regs)
+{
     asm volatile("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3]) : "0" (level) : "memory");
 }
 #else
 #define get_cpuid(level, regs) __cpuid(regs, level)
 #endif
 
-static QString getCPUModel() {
+static QString getCPUModel()
+{
     int regs[12];
 
     // EAX=800000000h: Get Highest Extended Function Implemented
@@ -79,10 +103,8 @@ Network::Network()
     : QObject{nullptr}
 {
     QSettings settings;
-    settings.sync();
     m_uniqueId = settings.value("uniqueId", generateUniqueId()).toString();
     settings.setValue("uniqueId", m_uniqueId);
-    settings.sync();
     m_sessionId = generateUniqueId();
 
     // allow sendMixpanel to be called from any thread
@@ -162,7 +184,7 @@ bool Network::packageAndSendJson(const QString &ingestId, const QString &json)
     QByteArray body(newDoc.toJson(QJsonDocument::Compact));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *jsonReply = m_networkManager.post(request, body);
-    connect(qApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, jsonReply, &QNetworkReply::abort);
     connect(jsonReply, &QNetworkReply::finished, this, &Network::handleJsonUploadFinished);
     m_activeUploads.append(jsonReply);
     return true;
@@ -256,7 +278,7 @@ void Network::sendStartup()
     const auto *display = QGuiApplication::primaryScreen();
     trackEvent("startup", {
         {"$screen_dpi", std::round(display->physicalDotsPerInch())},
-        {"display", QString("%1x%2").arg(display->size().width()).arg(display->size().height())},
+        {"display", u"%1x%2"_s.arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
         {"cpu", getCPUModel()},
         {"cpu_supports_avx2", LLModel::Implementation::cpuSupportsAVX2()},
@@ -337,7 +359,7 @@ void Network::sendIpify()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *reply = m_networkManager.get(request);
-    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &Network::handleIpifyFinished);
 }
 
@@ -350,7 +372,7 @@ void Network::sendMixpanel(const QByteArray &json)
     request.setSslConfiguration(conf);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *trackReply = m_networkManager.post(request, json);
-    connect(qApp, &QCoreApplication::aboutToQuit, trackReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, trackReply, &QNetworkReply::abort);
     connect(trackReply, &QNetworkReply::finished, this, &Network::handleMixpanelFinished);
 }
 
@@ -412,7 +434,7 @@ void Network::sendHealth()
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
     QNetworkReply *healthReply = m_networkManager.get(request);
-    connect(qApp, &QCoreApplication::aboutToQuit, healthReply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, healthReply, &QNetworkReply::abort);
     connect(healthReply, &QNetworkReply::finished, this, &Network::handleHealthFinished);
 }
 

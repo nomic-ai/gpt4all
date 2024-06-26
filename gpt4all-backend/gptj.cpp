@@ -123,7 +123,8 @@ static bool kv_cache_init(
 }
 
 // load the model's weights from a file path
-bool gptj_model_load(const std::string &fname, gptj_model & model, gpt_vocab & vocab, size_t * mem_req = nullptr) {
+bool gptj_model_load(const std::string &fname, gptj_model & model, gpt_vocab & vocab, size_t * mem_req = nullptr)
+{
     printf("%s: loading model from '%s' - please wait ...\n", __func__, fname.c_str());
     if(mem_req != nullptr) {
         *mem_req = 0;
@@ -667,7 +668,8 @@ GPTJ::GPTJ()
     d_ptr->modelLoaded = false;
 }
 
-size_t GPTJ::requiredMem(const std::string &modelPath, int n_ctx, int ngl) {
+size_t GPTJ::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
+{
     (void)n_ctx;
     (void)ngl;
     gptj_model dummy_model;
@@ -677,7 +679,8 @@ size_t GPTJ::requiredMem(const std::string &modelPath, int n_ctx, int ngl) {
     return mem_req;
 }
 
-bool GPTJ::loadModel(const std::string &modelPath, int n_ctx, int ngl) {
+bool GPTJ::loadModel(const std::string &modelPath, int n_ctx, int ngl)
+{
     (void)n_ctx;
     (void)ngl;
     d_ptr->modelLoaded = false;
@@ -698,7 +701,8 @@ bool GPTJ::loadModel(const std::string &modelPath, int n_ctx, int ngl) {
     return true;
 }
 
-void GPTJ::setThreadCount(int32_t n_threads) {
+void GPTJ::setThreadCount(int32_t n_threads)
+{
     d_ptr->n_threads = n_threads;
 }
 
@@ -780,7 +784,8 @@ const std::vector<LLModel::Token> &GPTJ::endTokens() const
     return fres;
 }
 
-const char *get_arch_name(gguf_context *ctx_gguf) {
+const char *get_arch_name(gguf_context *ctx_gguf)
+{
     const int kid = gguf_find_key(ctx_gguf, "general.architecture");
     if (kid == -1)
         throw std::runtime_error("key not found in model: general.architecture");
@@ -799,19 +804,23 @@ const char *get_arch_name(gguf_context *ctx_gguf) {
 #endif
 
 extern "C" {
-DLL_EXPORT bool is_g4a_backend_model_implementation() {
+DLL_EXPORT bool is_g4a_backend_model_implementation()
+{
     return true;
 }
 
-DLL_EXPORT const char *get_model_type() {
+DLL_EXPORT const char *get_model_type()
+{
     return modelType_;
 }
 
-DLL_EXPORT const char *get_build_variant() {
+DLL_EXPORT const char *get_build_variant()
+{
     return GGML_BUILD_VARIANT;
 }
 
-DLL_EXPORT char *get_file_arch(const char *fname) {
+DLL_EXPORT char *get_file_arch(const char *fname)
+{
     struct ggml_context * ctx_meta = NULL;
     struct gguf_init_params params = {
         /*.no_alloc = */ true,
@@ -832,11 +841,13 @@ DLL_EXPORT char *get_file_arch(const char *fname) {
     return arch;
 }
 
-DLL_EXPORT bool is_arch_supported(const char *arch) {
+DLL_EXPORT bool is_arch_supported(const char *arch)
+{
     return !strcmp(arch, "gptj");
 }
 
-DLL_EXPORT LLModel *construct() {
+DLL_EXPORT LLModel *construct()
+{
     return new GPTJ;
 }
 }

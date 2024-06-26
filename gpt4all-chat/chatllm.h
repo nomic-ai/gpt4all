@@ -1,17 +1,31 @@
 #ifndef CHATLLM_H
 #define CHATLLM_H
 
+#include "database.h" // IWYU pragma: keep
+#include "modellist.h"
+
+#include "../gpt4all-backend/llmodel.h"
+
+#include <QByteArray>
+#include <QElapsedTimer>
 #include <QFileInfo>
+#include <QList>
 #include <QObject>
+#include <QPair>
 #include <QString>
 #include <QThread>
+#include <QVector>
+#include <QtGlobal>
 
-#include <optional>
+#include <atomic>
+#include <cstdint>
 #include <memory>
+#include <optional>
+#include <string>
 
-#include "database.h"
-#include "modellist.h"
-#include "../gpt4all-backend/llmodel.h"
+using namespace Qt::Literals::StringLiterals;
+
+class QDataStream;
 
 enum LLModelType {
     GPTJ_,
@@ -63,7 +77,7 @@ private Q_SLOTS:
     void handleTimeout()
     {
         m_elapsed += m_time.restart();
-        emit report(QString("%1 tokens/sec").arg(m_tokens / float(m_elapsed / 1000.0f), 0, 'g', 2));
+        emit report(u"%1 tokens/sec"_s.arg(m_tokens / float(m_elapsed / 1000.0f), 0, 'g', 2));
     }
 
 private:

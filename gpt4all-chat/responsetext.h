@@ -1,12 +1,20 @@
 #ifndef RESPONSETEXT_H
 #define RESPONSETEXT_H
 
+#include <QColor>
 #include <QObject>
 #include <QQmlEngine>
-#include <QQuickTextDocument>
+#include <QQuickTextDocument> // IWYU pragma: keep
+#include <QRectF>
+#include <QSizeF>
+#include <QString>
 #include <QSyntaxHighlighter>
-#include <QRegularExpression>
 #include <QTextObjectInterface>
+#include <QVector>
+
+class QPainter;
+class QTextDocument;
+class QTextFormat;
 
 class SyntaxHighlighter : public QSyntaxHighlighter {
     Q_OBJECT
@@ -29,20 +37,6 @@ struct CodeCopy {
     QString text;
 };
 
-class ContextLinkInterface : public QObject, public QTextObjectInterface
-{
-    Q_OBJECT
-    Q_INTERFACES(QTextObjectInterface)
-
-public:
-    explicit ContextLinkInterface(QObject *parent) : QObject(parent) {}
-    void drawObject(QPainter *painter, const QRectF &rect, QTextDocument *doc, int posInDocument,
-                    const QTextFormat &format) override;
-
-    QSizeF intrinsicSize(QTextDocument *doc, int posInDocument, const QTextFormat &format) override;
-};
-
-
 class ResponseText : public QObject
 {
     Q_OBJECT
@@ -57,7 +51,6 @@ public:
     Q_INVOKABLE void setLinkColor(const QColor &c) { m_linkColor = c; }
     Q_INVOKABLE void setHeaderColor(const QColor &c) { m_headerColor = c; }
 
-    Q_INVOKABLE QString getLinkAtPosition(int position) const;
     Q_INVOKABLE bool tryCopyAtPosition(int position) const;
 
 Q_SIGNALS:
@@ -65,7 +58,6 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void handleTextChanged();
-    void handleContextLinks();
     void handleCodeBlocks();
 
 private:
@@ -76,7 +68,6 @@ private:
     QColor m_linkColor;
     QColor m_headerColor;
     bool m_isProcessingText = false;
-    ContextLinkInterface *m_contextLink;
 };
 
 #endif // RESPONSETEXT_H

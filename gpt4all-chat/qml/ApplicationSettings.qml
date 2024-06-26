@@ -7,31 +7,97 @@ import QtQuick.Dialogs
 import modellist
 import mysettings
 import network
+import llm
 
 MySettingsTab {
     onRestoreDefaultsClicked: {
         MySettings.restoreApplicationDefaults();
     }
     title: qsTr("Application")
+
+    NetworkDialog {
+        id: networkDialog
+        anchors.centerIn: parent
+        width: Math.min(1024, window.width - (window.width * .2))
+        height: Math.min(600, window.height - (window.height * .2))
+        Item {
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTr("Network dialog")
+            Accessible.description: qsTr("opt-in to share feedback/conversations")
+        }
+    }
+
+    Dialog {
+        id: checkForUpdatesError
+        anchors.centerIn: parent
+        modal: false
+        padding: 20
+        Text {
+            horizontalAlignment: Text.AlignJustify
+            text: qsTr("ERROR: Update system could not find the MaintenanceTool used<br>
+                   to check for updates!<br><br>
+                   Did you install this application using the online installer? If so,<br>
+                   the MaintenanceTool executable should be located one directory<br>
+                   above where this application resides on your filesystem.<br><br>
+                   If you can't start it manually, then I'm afraid you'll have to<br>
+                   reinstall.")
+            color: theme.textErrorColor
+            font.pixelSize: theme.fontSizeLarge
+            Accessible.role: Accessible.Dialog
+            Accessible.name: text
+            Accessible.description: qsTr("Error dialog")
+        }
+        background: Rectangle {
+            anchors.fill: parent
+            color: theme.containerBackground
+            border.width: 1
+            border.color: theme.dialogBorder
+            radius: 10
+        }
+    }
+
     contentItem: GridLayout {
         id: applicationSettingsTabInner
         columns: 3
-        rowSpacing: 10
+        rowSpacing: 30
         columnSpacing: 10
+
+        ColumnLayout {
+            Layout.row: 0
+            Layout.column: 0
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            spacing: 10
+            Label {
+                color: theme.styledTextColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: "General"
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 2
+                color: theme.settingsDivider
+            }
+        }
+
         MySettingsLabel {
             id: themeLabel
             text: qsTr("Theme")
+            helpText: qsTr("Customize the colors of GPT4All")
             Layout.row: 1
             Layout.column: 0
         }
         MyComboBox {
             id: themeBox
             Layout.row: 1
-            Layout.column: 1
-            Layout.columnSpan: 1
+            Layout.column: 2
             Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
             Layout.fillWidth: false
-            model: ["Dark", "Light", "LegacyDark"]
+            Layout.alignment: Qt.AlignRight
+            model: [qsTr("Dark"), qsTr("Light"), qsTr("LegacyDark")]
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("Color theme")
             Accessible.description: qsTr("Color theme for the chat client to use")
@@ -54,16 +120,18 @@ MySettingsTab {
         MySettingsLabel {
             id: fontLabel
             text: qsTr("Font Size")
+            helpText: qsTr("How big your font is displayed")
             Layout.row: 2
             Layout.column: 0
         }
         MyComboBox {
             id: fontBox
             Layout.row: 2
-            Layout.column: 1
-            Layout.columnSpan: 1
-            Layout.minimumWidth: 100
+            Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
             Layout.fillWidth: false
+            Layout.alignment: Qt.AlignRight
             model: ["Small", "Medium", "Large"]
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("Font size")
@@ -87,16 +155,18 @@ MySettingsTab {
         MySettingsLabel {
             id: deviceLabel
             text: qsTr("Device")
+            helpText: qsTr("The hardware device used to load the model")
             Layout.row: 3
             Layout.column: 0
         }
         MyComboBox {
             id: deviceBox
             Layout.row: 3
-            Layout.column: 1
-            Layout.columnSpan: 1
-            Layout.minimumWidth: 350
+            Layout.column: 2
+            Layout.minimumWidth: 400
+            Layout.maximumWidth: 400
             Layout.fillWidth: false
+            Layout.alignment: Qt.AlignRight
             model: MySettings.deviceList
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("Device")
@@ -123,16 +193,17 @@ MySettingsTab {
         MySettingsLabel {
             id: defaultModelLabel
             text: qsTr("Default model")
+            helpText: qsTr("The preferred default model")
             Layout.row: 4
             Layout.column: 0
         }
         MyComboBox {
             id: comboBox
             Layout.row: 4
-            Layout.column: 1
-            Layout.columnSpan: 2
-            Layout.minimumWidth: 350
-            Layout.fillWidth: true
+            Layout.column: 2
+            Layout.minimumWidth: 400
+            Layout.maximumWidth: 400
+            Layout.alignment: Qt.AlignRight
             model: ModelList.userDefaultModelList
             Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("Default model")
@@ -156,45 +227,96 @@ MySettingsTab {
         MySettingsLabel {
             id: modelPathLabel
             text: qsTr("Download path")
+            helpText: qsTr("The download folder for models")
             Layout.row: 5
             Layout.column: 0
         }
-        MyDirectoryField {
-            id: modelPathDisplayField
-            text: MySettings.modelPath
-            font.pixelSize: theme.fontSizeLarge
-            implicitWidth: 300
+
+        RowLayout {
             Layout.row: 5
-            Layout.column: 1
-            Layout.fillWidth: true
-            ToolTip.text: qsTr("Path where model files will be downloaded to")
-            ToolTip.visible: hovered
-            Accessible.role: Accessible.ToolTip
-            Accessible.name: modelPathDisplayField.text
-            Accessible.description: ToolTip.text
-            onEditingFinished: {
-                if (isValid) {
-                    MySettings.modelPath = modelPathDisplayField.text
-                } else {
-                    text = MySettings.modelPath
+            Layout.column: 2
+            Layout.alignment: Qt.AlignRight
+            Layout.minimumWidth: 400
+            Layout.maximumWidth: 400
+            spacing: 10
+            MyDirectoryField {
+                id: modelPathDisplayField
+                text: MySettings.modelPath
+                font.pixelSize: theme.fontSizeLarge
+                implicitWidth: 300
+                Layout.fillWidth: true
+                ToolTip.text: qsTr("Path where model files will be downloaded to")
+                ToolTip.visible: hovered
+                Accessible.role: Accessible.ToolTip
+                Accessible.name: modelPathDisplayField.text
+                Accessible.description: ToolTip.text
+                onEditingFinished: {
+                    if (isValid) {
+                        MySettings.modelPath = modelPathDisplayField.text
+                    } else {
+                        text = MySettings.modelPath
+                    }
+                }
+            }
+            MySettingsButton {
+                text: qsTr("Browse")
+                Accessible.description: qsTr("Choose where to save model files")
+                onClicked: {
+                    openFolderDialog("file://" + MySettings.modelPath, function(selectedFolder) {
+                        MySettings.modelPath = selectedFolder
+                    })
                 }
             }
         }
-        MySettingsButton {
-            Layout.row: 5
+
+        MySettingsLabel {
+            id: dataLakeLabel
+            text: qsTr("Opensource Datalake")
+            helpText: qsTr("Send your data to the GPT4All Open Source Datalake.")
+            Layout.row: 6
+            Layout.column: 0
+        }
+        MyCheckBox {
+            id: dataLakeBox
+            Layout.row: 6
             Layout.column: 2
-            text: qsTr("Browse")
-            Accessible.description: qsTr("Choose where to save model files")
+            Layout.alignment: Qt.AlignRight
+            checked: MySettings.networkIsActive
             onClicked: {
-                openFolderDialog("file://" + MySettings.modelPath, function(selectedFolder) {
-                    MySettings.modelPath = selectedFolder
-                })
+                if (MySettings.networkIsActive) {
+                    MySettings.networkIsActive = false
+                } else
+                    networkDialog.open()
+            }
+            ToolTip.text: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
+            ToolTip.visible: hovered
+        }
+
+        ColumnLayout {
+            Layout.row: 7
+            Layout.column: 0
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            spacing: 10
+            Label {
+                color: theme.styledTextColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: "Advanced"
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 2
+                color: theme.settingsDivider
             }
         }
+
         MySettingsLabel {
             id: nThreadsLabel
             text: qsTr("CPU Threads")
-            Layout.row: 6
+            helpText: qsTr("Number of CPU threads for inference and embedding")
+            Layout.row: 8
             Layout.column: 0
         }
         MyTextField {
@@ -203,8 +325,11 @@ MySettingsTab {
             font.pixelSize: theme.fontSizeLarge
             ToolTip.text: qsTr("Amount of processing threads to use bounded by 1 and number of logical processors")
             ToolTip.visible: hovered
-            Layout.row: 6
-            Layout.column: 1
+            Layout.alignment: Qt.AlignRight
+            Layout.row: 8
+            Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
             validator: IntValidator {
                 bottom: 1
             }
@@ -223,14 +348,16 @@ MySettingsTab {
         }
         MySettingsLabel {
             id: saveChatsContextLabel
-            text: qsTr("Save chats context to disk")
-            Layout.row: 7
+            text: qsTr("Save chat context")
+            helpText: qsTr("Save chat context to disk")
+            Layout.row: 9
             Layout.column: 0
         }
         MyCheckBox {
             id: saveChatsContextBox
-            Layout.row: 7
-            Layout.column: 1
+            Layout.row: 9
+            Layout.column: 2
+            Layout.alignment: Qt.AlignRight
             checked: MySettings.saveChatsContext
             onClicked: {
                 MySettings.saveChatsContext = !MySettings.saveChatsContext
@@ -241,13 +368,15 @@ MySettingsTab {
         MySettingsLabel {
             id: serverChatLabel
             text: qsTr("Enable API server")
-            Layout.row: 8
+            helpText: qsTr("A local http server running on local port")
+            Layout.row: 10
             Layout.column: 0
         }
         MyCheckBox {
             id: serverChatBox
-            Layout.row: 8
-            Layout.column: 1
+            Layout.row: 10
+            Layout.column: 2
+            Layout.alignment: Qt.AlignRight
             checked: MySettings.serverChat
             onClicked: {
                 MySettings.serverChat = !MySettings.serverChat
@@ -257,8 +386,9 @@ MySettingsTab {
         }
         MySettingsLabel {
             id: serverPortLabel
-            text: qsTr("API Server Port (Requires restart):")
-            Layout.row: 9
+            text: qsTr("API Server Port:")
+            helpText: qsTr("A local port to run the server (Requires restart")
+            Layout.row: 11
             Layout.column: 0
         }
         MyTextField {
@@ -268,8 +398,11 @@ MySettingsTab {
             font.pixelSize: theme.fontSizeLarge
             ToolTip.text: qsTr("Api server port. WARNING: You need to restart the application for it to take effect")
             ToolTip.visible: hovered
-            Layout.row: 9
-            Layout.column: 1
+            Layout.row: 11
+            Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
+            Layout.alignment: Qt.AlignRight
             validator: IntValidator {
                 bottom: 1
             }
@@ -286,57 +419,52 @@ MySettingsTab {
             Accessible.name: serverPortField.text
             Accessible.description: ToolTip.text
         }
-        Rectangle {
-            Layout.row: 10
-            Layout.column: 0
-            Layout.columnSpan: 3
-            Layout.fillWidth: true
-            height: 3
-            color: theme.accentColor
-        }
-    }
-    advancedSettings: GridLayout {
-        columns: 3
-        rowSpacing: 10
-        columnSpacing: 10
-        Rectangle {
-            Layout.row: 2
-            Layout.column: 0
-            Layout.fillWidth: true
-            Layout.columnSpan: 3
-            height: 3
-            color: theme.accentColor
-        }
+
         MySettingsLabel {
             id: gpuOverrideLabel
             text: qsTr("Force Metal (macOS+arm)")
-            Layout.row: 1
+            Layout.row: 13
             Layout.column: 0
         }
-        RowLayout {
-            Layout.row: 1
-            Layout.column: 1
-            Layout.columnSpan: 2
-            MyCheckBox {
-                id: gpuOverrideBox
-                checked: MySettings.forceMetal
-                onClicked: {
-                    MySettings.forceMetal = !MySettings.forceMetal
-                }
+        MyCheckBox {
+            id: gpuOverrideBox
+            Layout.row: 13
+            Layout.column: 2
+            Layout.alignment: Qt.AlignRight
+            checked: MySettings.forceMetal
+            onClicked: {
+                MySettings.forceMetal = !MySettings.forceMetal
             }
+            ToolTip.text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibility the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
+            ToolTip.visible: hovered
+        }
 
-            Item {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignTop
-                Layout.minimumHeight: warningLabel.height
-                MySettingsLabel {
-                    id: warningLabel
-                    width: parent.width
-                    color: theme.textErrorColor
-                    wrapMode: Text.WordWrap
-                    text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibility the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
-                }
+        MySettingsLabel {
+            id: updatesLabel
+            text: qsTr("Check for updates")
+            helpText: qsTr("Click to see if an update to the application is available");
+            Layout.row: 14
+            Layout.column: 0
+        }
+
+        MySettingsButton {
+            Layout.row: 14
+            Layout.column: 2
+            Layout.alignment: Qt.AlignRight
+            text: qsTr("Updates");
+            onClicked: {
+                if (!LLM.checkForUpdates())
+                    checkForUpdatesError.open()
             }
+        }
+
+        Rectangle {
+            Layout.row: 15
+            Layout.column: 0
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            height: 2
+            color: theme.settingsDivider
         }
     }
 }

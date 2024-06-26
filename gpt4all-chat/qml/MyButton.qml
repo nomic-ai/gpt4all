@@ -17,11 +17,16 @@ Button {
     property real  borderWidth: MySettings.chatTheme === "LegacyDark" ? 1 : 0
     property color borderColor: theme.buttonBorder
     property real  fontPixelSize: theme.fontSizeLarge
+    property bool  fontPixelBold: false
+    property alias textAlignment: textContent.horizontalAlignment
+
     contentItem: Text {
+        id: textContent
         text: myButton.text
-        horizontalAlignment: Text.AlignHCenter
+        horizontalAlignment: myButton.textAlignment
         color: myButton.enabled ? textColor : mutedTextColor
         font.pixelSize: fontPixelSize
+        font.bold: fontPixelBold
         Accessible.role: Accessible.Button
         Accessible.name: text
     }
@@ -29,7 +34,7 @@ Button {
         radius: myButton.backgroundRadius
         border.width: myButton.borderWidth
         border.color: myButton.borderColor
-        color: myButton.hovered ? backgroundColorHovered : backgroundColor
+        color: !myButton.enabled ? theme.mutedTextColor : myButton.hovered ? backgroundColorHovered : backgroundColor
     }
     Accessible.role: Accessible.Button
     Accessible.name: text

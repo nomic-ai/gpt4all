@@ -1,14 +1,19 @@
 #ifndef CHAT_H
 #define CHAT_H
 
-#include <QObject>
-#include <QtQml>
-#include <QDataStream>
-
 #include "chatllm.h"
 #include "chatmodel.h"
-#include "database.h"
-#include "localdocsmodel.h"
+#include "database.h" // IWYU pragma: keep
+#include "localdocsmodel.h" // IWYU pragma: keep
+#include "modellist.h"
+
+#include <QList>
+#include <QObject>
+#include <QQmlEngine>
+#include <QString>
+#include <QtGlobal>
+
+class QDataStream;
 
 class Chat : public QObject
 {
@@ -91,7 +96,7 @@ public:
     void unloadAndDeleteLater();
     void markForDeletion();
 
-    qint64 creationDate() const { return m_creationDate; }
+    QDateTime creationDate() const { return QDateTime::fromSecsSinceEpoch(m_creationDate); }
     bool serialize(QDataStream &stream, int version) const;
     bool deserialize(QDataStream &stream, int version);
     bool isServer() const { return m_isServer; }

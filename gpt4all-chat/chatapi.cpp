@@ -1,15 +1,26 @@
 #include "chatapi.h"
 
-#include <string>
-#include <vector>
-#include <iostream>
+#include "../gpt4all-backend/llmodel.h"
 
 #include <QCoreApplication>
-#include <QThread>
-#include <QEventLoop>
+#include <QGuiApplication>
+#include <QDebug>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
+#include <QJsonValue>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QThread>
+#include <QUrl>
+#include <QVariant>
+#include <Qt>
+#include <QtGlobal>
+#include <QtLogging>
+
+#include <iostream>
+
+using namespace Qt::Literals::StringLiterals;
 
 //#define DEBUG
 
@@ -186,13 +197,13 @@ void ChatAPIWorker::request(const QString &apiKey,
     m_ctx = promptCtx;
 
     QUrl apiUrl(m_chat->url());
-    const QString authorization = QString("Bearer %1").arg(apiKey).trimmed();
+    const QString authorization = u"Bearer %1"_s.arg(apiKey).trimmed();
     QNetworkRequest request(apiUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", authorization.toUtf8());
     m_networkManager = new QNetworkAccessManager(this);
     QNetworkReply *reply = m_networkManager->post(request, array);
-    connect(qApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
+    connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
     connect(reply, &QNetworkReply::finished, this, &ChatAPIWorker::handleFinished);
     connect(reply, &QNetworkReply::readyRead, this, &ChatAPIWorker::handleReadyRead);
     connect(reply, &QNetworkReply::errorOccurred, this, &ChatAPIWorker::handleErrorOccurred);
@@ -233,8 +244,8 @@ void ChatAPIWorker::handleReadyRead()
     if (!ok || code != 200) {
         m_chat->callResponse(
             -1,
-            QString("ERROR: ChatAPIWorker::handleReadyRead got HTTP Error %1 %2: %3")
-                .arg(code).arg(reply->errorString()).arg(reply->readAll()).toStdString()
+            u"ERROR: ChatAPIWorker::handleReadyRead got HTTP Error %1 %2: %3"_s
+                .arg(code).arg(reply->errorString(), reply->readAll()).toStdString()
         );
         emit finished();
         return;
@@ -255,7 +266,7 @@ void ChatAPIWorker::handleReadyRead()
         QJsonParseError err;
         const QJsonDocument document = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
         if (err.error != QJsonParseError::NoError) {
-            m_chat->callResponse(-1, QString("ERROR: ChatAPI responded with invalid json \"%1\"")
+            m_chat->callResponse(-1, u"ERROR: ChatAPI responded with invalid json \"%1\""_s
                                          .arg(err.errorString()).toStdString());
             continue;
         }
