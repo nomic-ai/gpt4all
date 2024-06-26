@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import shutil
 import click
+import re
 from typing import Optional
 
 # Requires click
@@ -20,7 +21,8 @@ from typing import Optional
 @click.option('--output-dmg', required=True, help='Path to the output signed DMG file.')
 @click.option('--sha1-hash', help='SHA-1 hash of the Developer ID Application certificate')
 @click.option('--signing-identity', default=None, help='Common name of the Developer ID Application certificate')
-def sign_dmg(input_dmg: str, output_dmg: str, signing_identity: Optional[str] = None, sha1_hash: Optional[str] = None) -> None:
+@click.option('--verify', is_flag=True, show_default=True, required=False, default=False, help='Perform verification of signed app bundle' )
+def sign_dmg(input_dmg: str, output_dmg: str, signing_identity: Optional[str] = None, sha1_hash: Optional[str] = None, verify: Optional[bool] = False) -> None:
     if not signing_identity and not sha1_hash:
         print("Error: Either --signing-identity or --sha1-hash must be provided.")
         exit(1)
@@ -63,6 +65,43 @@ def sign_dmg(input_dmg: str, output_dmg: str, signing_identity: Optional[str] = 
         shutil.rmtree(temp_dir)
         shutil.rmtree(mount_point)
         exit(1)
+
+    # Validate signature and entitlements of signed app bundle
+    if verify:
+        try:
+            code_ver_proc = subprocess.run([
+                'codesign',
+                '--deep',
+                '--verify',
+                '--verbose=2',
+                '--strict',
+                app_bundle
+            ], check=True, capture_output=True)
+            if not re.search(fr"{app_bundle}: valid", code_ver_proc.stdout.decode()):
+                raise RuntimeError(f"codesign validation failed: {code_ver_proc.stdout.decode()}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error during codesign validation: {e}")
+            # Clean up temporary directories
+            shutil.rmtree(temp_dir)
+            shutil.rmtree(mount_point)
+            exit(1)
+        try:
+            spctl_proc = subprocess.run([
+                'spctl',
+                '-a',
+                '-t',
+                'exec',
+                '-vv',
+                app_bundle
+            ], check=True, capture_output=True)
+            if not re.search(fr"{app_bundle}: accepted", spctl_proc.stdout.decode()):
+                raise RuntimeError(f"spctl validation failed: {spctl_proc.stdout.decode()}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error during spctl validation: {e}")
+            # Clean up temporary directories
+            shutil.rmtree(temp_dir)
+            shutil.rmtree(mount_point)
+            exit(1)
 
     # Create a new DMG containing the signed .app bundle
     subprocess.run([
