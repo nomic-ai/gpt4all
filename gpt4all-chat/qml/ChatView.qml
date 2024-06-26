@@ -1417,10 +1417,26 @@ Rectangle {
             }
 
             ColorOverlay {
+                id: antennaColored
                 visible: ModelList.installedModels.count !== 0 && (currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive)
                 anchors.fill: antennaImage
                 source: antennaImage
                 color: theme.styledTextColor
+                ToolTip.text: {
+                    if (MySettings.networkIsActive)
+                        return qsTr("The datalake is enabled")
+                    else if (currentChat.modelInfo.isOnline)
+                        return qsTr("Using a network model")
+                    else if (currentChat.modelInfo.isOnline)
+                        return qsTr("Server mode is enabled")
+                }
+                ToolTip.visible: maAntenna.containsMouse
+                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+                MouseArea {
+                    id: maAntenna
+                    anchors.fill: antennaColored
+                    hoverEnabled: true
+                }
             }
 
             SequentialAnimation {
