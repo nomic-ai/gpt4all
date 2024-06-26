@@ -326,19 +326,19 @@ void Chat::handleTokenSpeedChanged(const QString &tokenSpeed)
     emit tokenSpeedChanged();
 }
 
-QVariant Chat::deviceBackend() const {
-    auto backend = m_llmodel->deviceBackend();
-    return backend ? QVariant(backend.value()) : QVariant();
+QString Chat::deviceBackend() const
+{
+    return m_llmodel->deviceBackend();
 }
 
-QVariant Chat::device() const {
-    auto device = m_llmodel->device();
-    return device ? QVariant(device.value()) : QVariant();
+QString Chat::device() const
+{
+    return m_llmodel->device();
 }
 
-QVariant Chat::fallbackReason() const {
-    auto fallbackReason = m_llmodel->fallbackReason();
-    return fallbackReason ? QVariant(fallbackReason.value()) : QVariant();
+QString Chat::fallbackReason() const
+{
+    return m_llmodel->fallbackReason();
 }
 
 void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)

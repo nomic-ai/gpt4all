@@ -33,9 +33,9 @@ class Chat : public QObject
     Q_PROPERTY(QList<QString> collectionList READ collectionList NOTIFY collectionListChanged)
     Q_PROPERTY(QString modelLoadingError READ modelLoadingError NOTIFY modelLoadingErrorChanged)
     Q_PROPERTY(QString tokenSpeed READ tokenSpeed NOTIFY tokenSpeedChanged);
-    Q_PROPERTY(QVariant deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
-    Q_PROPERTY(QVariant device READ device NOTIFY loadedModelInfoChanged)
-    Q_PROPERTY(QVariant fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
+    Q_PROPERTY(QString deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
+    Q_PROPERTY(QString device READ device NOTIFY loadedModelInfoChanged)
+    Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(LocalDocsCollectionsModel *collectionModel READ collectionModel NOTIFY collectionModelChanged)
     // 0=no, 1=waiting, 2=working
     Q_PROPERTY(int trySwitchContextInProgress READ trySwitchContextInProgress NOTIFY trySwitchContextInProgressChanged)
@@ -112,10 +112,10 @@ public:
     QString modelLoadingError() const { return m_modelLoadingError; }
 
     QString tokenSpeed() const { return m_tokenSpeed; }
-    QVariant deviceBackend() const;
-    QVariant device() const;
-    // not loaded -> null, no fallback -> empty string
-    QVariant fallbackReason() const;
+    QString deviceBackend() const;
+    QString device() const;
+    // not loaded -> QString(), no fallback -> QString("")
+    QString fallbackReason() const;
 
     int trySwitchContextInProgress() const { return m_trySwitchContextInProgress; }
 

@@ -91,9 +91,9 @@ class ChatLLM : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
-    Q_PROPERTY(std::optional<QString> deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
-    Q_PROPERTY(std::optional<QString> device READ device NOTIFY loadedModelInfoChanged)
-    Q_PROPERTY(std::optional<QString> fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
+    Q_PROPERTY(QString deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
+    Q_PROPERTY(QString device READ device NOTIFY loadedModelInfoChanged)
+    Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
 public:
     ChatLLM(Chat *parent, bool isServer = false);
     virtual ~ChatLLM();
@@ -123,25 +123,25 @@ public:
     void acquireModel();
     void resetModel();
 
-    std::optional<QString> deviceBackend() const
+    QString deviceBackend() const
     {
-        if (!isModelLoaded()) return std::nullopt;
+        if (!isModelLoaded()) return QString();
         std::string name = LLModel::GPUDevice::backendIdToName(m_llModelInfo.model->backendName());
         return QString::fromStdString(name);
     }
 
-    std::optional<QString> device() const
+    QString device() const
     {
-        if (!isModelLoaded()) return std::nullopt;
+        if (!isModelLoaded()) return QString();
         const char *name = m_llModelInfo.model->gpuDeviceName();
-        return name ? name : "CPU";
+        return name ? QString(name) : u"CPU"_s;
     }
 
-    // not loaded -> null, no fallback -> empty string
-    std::optional<QString> fallbackReason() const
+    // not loaded -> QString(), no fallback -> QString("")
+    QString fallbackReason() const
     {
-        if (!isModelLoaded()) return std::nullopt;
-        return m_llModelInfo.fallbackReason;
+        if (!isModelLoaded()) return QString();
+        return m_llModelInfo.fallbackReason.value_or(u""_s);
     }
 
     QString generatedName() const { return QString::fromStdString(m_nameResponse); }
