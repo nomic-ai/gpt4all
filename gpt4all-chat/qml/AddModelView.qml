@@ -38,12 +38,12 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.margins: 30
-        spacing: 50
+        spacing: 30
 
         ColumnLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
-            spacing: 50
+            spacing: 30
 
             MyButton {
                 id: backButton
@@ -84,7 +84,6 @@ Rectangle {
                     readOnly: ModelList.discoverInProgress
                     Layout.alignment: Qt.AlignCenter
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 90
                     font.pixelSize: theme.fontSizeLarger
                     placeholderText: qsTr("Discover and download models by keyword search...")
                     Accessible.role: Accessible.EditableText
