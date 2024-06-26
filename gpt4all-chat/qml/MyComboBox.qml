@@ -33,6 +33,9 @@ ComboBox {
         highlighted: comboBox.highlightedIndex === index
     }
     popup: Popup {
+        // FIXME This should be made much nicer to take into account lists that are very long so
+        // that it is scrollable and also sized optimally taking into account the x,y and the content
+        // width and height as well as the window width and height
         y: comboBox.height - 1
         width: comboBox.width
         implicitHeight: contentItem.implicitHeight
