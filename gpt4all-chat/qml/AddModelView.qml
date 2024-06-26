@@ -630,7 +630,7 @@ Rectangle {
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
-                                        text: ramrequired + qsTr(" GB")
+                                        text: ramrequired >= 0 ? ramrequired + qsTr(" GB") : "?"
                                         color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmaller
                                         font.bold: true
@@ -652,7 +652,7 @@ Rectangle {
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
-                                        text: parameters
+                                        text: parameters !== "" ? parameters : "?"
                                         color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmaller
                                         font.bold: true
