@@ -1065,19 +1065,19 @@ QtObject {
         }
     }
 
-    property real fontSizeLargeCapped: MySettings.fontSize === "Small"  ? 12 : 17
+    property real fontSizeLargeCapped: MySettings.fontSize === "Small"  ? 14 : 16
 
-    property real fontSizeLarge:       MySettings.fontSize === "Small"  ? 12 :
-                                       MySettings.fontSize === "Medium" ? 17 :
-                                                                          22
+    property real fontSizeLarge:       MySettings.fontSize === "Small"  ? 14 :
+                                       MySettings.fontSize === "Medium" ? 16 :
+                                                                          20
 
-    property real fontSizeLargest:     MySettings.fontSize === "Small"  ? 19 :
-                                       MySettings.fontSize === "Medium" ? 24 :
-                                                                          26
+    property real fontSizeLargest:     MySettings.fontSize === "Small"  ? 18 :
+                                       MySettings.fontSize === "Medium" ? 22 :
+                                                                          24
 
     property real fontSizeSmaller:     fontSizeLarge   -  4
     property real fontSizeSmall:       fontSizeLarge   -  2
     property real fontSizeLarger:      fontSizeLarge   +  2
-    property real fontSizeBannerSmall: fontSizeLargest + 10
-    property real fontSizeBanner:      fontSizeLargest + 40
+    property real fontSizeBannerSmall: fontSizeLargest +  8
+    property real fontSizeBanner:      fontSizeLargest + 35
 }
