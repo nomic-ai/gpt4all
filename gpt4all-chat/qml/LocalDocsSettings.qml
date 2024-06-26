@@ -128,6 +128,7 @@ MySettingsTab {
                 onTextChanged: { isValid = validate(); }
                 function validate() { return /^(nk-[a-zA-Z0-9_-]{43})?$/.test(apiKeyField.text); }
 
+                placeholderText: "nk-" + "X".repeat(43)
                 text: MySettings.localDocsNomicAPIKey
                 color: apiKeyField.isValid ? theme.textColor : theme.textErrorColor
                 font.pixelSize: theme.fontSizeLarge
