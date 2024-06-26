@@ -132,39 +132,40 @@ qt_add_qml_module(chat
       main.qml
       qml/AddCollectionView.qml
       qml/AddModelView.qml
+      qml/ApplicationSettings.qml
       qml/ChatDrawer.qml
       qml/ChatView.qml
       qml/CollectionsDrawer.qml
       qml/HomeView.qml
+      qml/LocalDocsSettings.qml
+      qml/LocalDocsView.qml
+      qml/ModelSettings.qml
       qml/ModelsView.qml
       qml/NetworkDialog.qml
       qml/NewVersionDialog.qml
-      qml/ThumbsDownDialog.qml
+      qml/PopupDialog.qml
       qml/SettingsView.qml
       qml/StartupDialog.qml
-      qml/PopupDialog.qml
-      qml/Theme.qml
-      qml/ModelSettings.qml
-      qml/ApplicationSettings.qml
-      qml/LocalDocsSettings.qml
-      qml/LocalDocsView.qml
       qml/SwitchModelDialog.qml
-      qml/MySettingsTab.qml
-      qml/MySettingsStack.qml
-      qml/MySettingsDestructiveButton.qml
-      qml/MySettingsButton.qml
-      qml/MySettingsLabel.qml
-      qml/MySlug.qml
+      qml/Theme.qml
+      qml/ThumbsDownDialog.qml
+      qml/MyBusyIndicator.qml
       qml/MyButton.qml
+      qml/MyCheckBox.qml
       qml/MyComboBox.qml
       qml/MyDialog.qml
       qml/MyDirectoryField.qml
       qml/MyFancyLink.qml
-      qml/MyTextArea.qml
-      qml/MyTextField.qml
-      qml/MyCheckBox.qml
-      qml/MyBusyIndicator.qml
       qml/MyMiniButton.qml
+      qml/MySettingsButton.qml
+      qml/MySettingsDestructiveButton.qml
+      qml/MySettingsLabel.qml
+      qml/MySettingsStack.qml
+      qml/MySettingsTab.qml
+      qml/MySlug.qml
+      qml/MyTextArea.qml
+      qml/MyTextButton.qml
+      qml/MyTextField.qml
       qml/MyToolButton.qml
       qml/MyWelcomeButton.qml
     RESOURCES

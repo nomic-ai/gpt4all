@@ -401,52 +401,27 @@ Rectangle {
                             spacing: 30
                             Layout.leftMargin: 15
                             Layout.topMargin: 15
-                            Text {
+                            MyTextButton {
                                 text: qsTr("Remove")
-                                elide: Text.ElideRight
                                 color: theme.red500
-                                font.bold: true
-                                font.pixelSize: theme.fontSizeSmall
-                                TapHandler {
-                                    onTapped: {
-                                        LocalDocs.removeFolder(collection, folder_path)
-                                    }
-                                }
+                                onClick: LocalDocs.removeFolder(collection, folder_path)
                             }
-                            Text {
-                                Layout.alignment: Qt.AlignRight
+                            MyTextButton {
                                 visible: !model.forceIndexing && !model.indexing && model.currentEmbeddingsToIndex === 0
                                 text: qsTr("Rebuild")
-                                elide: Text.ElideRight
                                 color: theme.red500
-                                font.bold: true
-                                font.pixelSize: theme.fontSizeSmall
-                                TapHandler {
-                                    onTapped: { LocalDocs.forceRebuildFolder(folder_path); }
-                                }
-                                HoverHandler { id: hoverHandler1 }
-                                ToolTip.text: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
-                                ToolTip.visible: hoverHandler1.hovered
-                                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+                                onClick: { LocalDocs.forceRebuildFolder(folder_path); }
+                                tooltip: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
                             }
                             Item {
                                 Layout.fillWidth: true
                             }
-                            Text {
-                                Layout.alignment: Qt.AlignRight
+                            MyTextButton {
                                 visible: model.forceIndexing
                                 text: qsTr("Update")
-                                elide: Text.ElideRight
                                 color: theme.red500
-                                font.bold: true
-                                font.pixelSize: theme.fontSizeSmall
-                                TapHandler {
-                                    onTapped: { LocalDocs.forceIndexing(collection); }
-                                }
-                                HoverHandler { id: hoverHandler2 }
-                                ToolTip.text: qsTr("Update the collection to the new version. This is a slow operation.")
-                                ToolTip.visible: hoverHandler2.hovered
-                                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+                                onClick: { LocalDocs.forceIndexing(collection); }
+                                tooltip: qsTr("Update the collection to the new version. This is a slow operation.")
                             }
                         }
                     }
