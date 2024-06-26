@@ -420,7 +420,7 @@ MySettingsTab {
             Accessible.description: ToolTip.text
         }
 
-        MySettingsLabel {
+        /*MySettingsLabel {
             id: gpuOverrideLabel
             text: qsTr("Force Metal (macOS+arm)")
             Layout.row: 13
@@ -437,7 +437,7 @@ MySettingsTab {
             }
             ToolTip.text: qsTr("WARNING: On macOS with arm (M1+) this setting forces usage of the GPU. Can cause crashes if the model requires more RAM than the system supports. Because of crash possibility the setting will not persist across restarts of the application. This has no effect on non-macs or intel.")
             ToolTip.visible: hovered
-        }
+        }*/
 
         MySettingsLabel {
             id: updatesLabel
