@@ -398,30 +398,42 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
 
     QString filePath = modelInfo.dirpath + modelInfo.filename();
 
-    QString constructError;
-    m_llModelInfo.resetModel(this);
-    try {
-        auto *model = LLModel::Implementation::construct(filePath.toStdString(), backend, n_ctx);
-        m_llModelInfo.resetModel(this, model);
-    } catch (const LLModel::MissingImplementationError &e) {
-        modelLoadProps.insert("error", "missing_model_impl");
-        constructError = e.what();
-    } catch (const LLModel::UnsupportedModelError &e) {
-        modelLoadProps.insert("error", "unsupported_model_file");
-        constructError = e.what();
-    } catch (const LLModel::BadArchError &e) {
-        constructError = e.what();
-        modelLoadProps.insert("error", "unsupported_model_arch");
-        modelLoadProps.insert("model_arch", QString::fromStdString(e.arch()));
-    }
+    auto construct = [this, &filePath, &modelInfo, &modelLoadProps, n_ctx](std::string const &backend) {
+        QString constructError;
+        m_llModelInfo.resetModel(this);
+        try {
+            auto *model = LLModel::Implementation::construct(filePath.toStdString(), backend, n_ctx);
+            m_llModelInfo.resetModel(this, model);
+        } catch (const LLModel::MissingImplementationError &e) {
+            modelLoadProps.insert("error", "missing_model_impl");
+            constructError = e.what();
+        } catch (const LLModel::UnsupportedModelError &e) {
+            modelLoadProps.insert("error", "unsupported_model_file");
+            constructError = e.what();
+        } catch (const LLModel::BadArchError &e) {
+            constructError = e.what();
+            modelLoadProps.insert("error", "unsupported_model_arch");
+            modelLoadProps.insert("model_arch", QString::fromStdString(e.arch()));
+        }
 
-    if (!m_llModelInfo.model) {
-        if (!m_isServer)
-            LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
-        resetModel();
-        emit modelLoadingError(u"Error loading %1: %2"_s.arg(modelInfo.filename(), constructError));
+        if (!m_llModelInfo.model) {
+            if (!m_isServer)
+                LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
+            resetModel();
+            emit modelLoadingError(u"Error loading %1: %2"_s.arg(modelInfo.filename(), constructError));
+            return false;
+        }
+
+        m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
+            progress = std::max(progress, std::numeric_limits<float>::min()); // keep progress above zero
+            emit modelLoadingPercentageChanged(progress);
+            return m_shouldBeLoaded;
+        });
         return true;
-    }
+    };
+
+    if (!construct(backend))
+        return true;
 
     if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
         static QSet<QString> warned;
@@ -433,12 +445,6 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
             warned.insert(fname); // don't warn again until restart
         }
     }
-
-    m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
-        progress = std::max(progress, std::numeric_limits<float>::min()); // keep progress above zero
-        emit modelLoadingPercentageChanged(progress);
-        return m_shouldBeLoaded;
-    });
 
     auto approxDeviceMemGB = [](const LLModel::GPUDevice *dev) {
         float memGB = dev->heapSize / float(1024 * 1024 * 1024);
@@ -492,7 +498,6 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
     }
 #endif
 
-    // Report which device we're actually using
     bool success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, ngl);
 
     if (!m_shouldBeLoaded) {
@@ -510,6 +515,11 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
         // llama_init_from_file returned nullptr
         m_llModelInfo.fallbackReason = "GPU loading failed (out of VRAM?)";
         modelLoadProps.insert("cpu_fallback_reason", "gpu_load_failed");
+
+        // For CUDA, make sure we don't use the GPU at all - ngl=0 still offloads matmuls
+        if (backend == "cuda" && !construct("auto"))
+            return true;
+
         success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, 0);
 
         if (!m_shouldBeLoaded) {
