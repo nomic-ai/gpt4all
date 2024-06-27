@@ -117,7 +117,7 @@ MySettingsTab {
             MySettingsLabel {
                 id: deviceLabel
                 text: qsTr("Embeddings Device")
-                helpText: qsTr("The compute device used for embeddings.")
+                helpText: qsTr('The compute device used for embeddings. "Auto" uses the CPU.')
             }
             MyComboBox {
                 id: deviceBox

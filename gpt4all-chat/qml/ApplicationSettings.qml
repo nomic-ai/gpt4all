@@ -153,7 +153,7 @@ MySettingsTab {
         MySettingsLabel {
             id: deviceLabel
             text: qsTr("Device")
-            helpText: qsTr("The compute device used for text generation.")
+            helpText: qsTr('The compute device used for text generation. "Auto" uses Vulkan or Metal.')
             Layout.row: 3
             Layout.column: 0
         }
