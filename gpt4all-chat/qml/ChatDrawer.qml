@@ -23,7 +23,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-        width: 2
+        width: 1
         color: theme.dividerColor
     }
 
@@ -44,8 +44,8 @@ Rectangle {
             anchors.right: parent.right
             anchors.margins: 20
             font.pixelSize: theme.fontSizeLarger
-            topPadding: 20
-            bottomPadding: 20
+            topPadding: 24
+            bottomPadding: 24
             text: qsTr("\uFF0B New chat")
             Accessible.description: qsTr("Create a new chat")
             onClicked: {
@@ -59,7 +59,7 @@ Rectangle {
             id: divider
             anchors.top: newChat.bottom
             anchors.margins: 20
-            anchors.topMargin: 15
+            anchors.topMargin: 14
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1

@@ -21,7 +21,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
-        width: 2
+        width: 1
         color: theme.dividerColor
     }
 

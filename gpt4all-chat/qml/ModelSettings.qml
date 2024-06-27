@@ -38,7 +38,7 @@ MySettingsTab {
 
             Rectangle {
                 Layout.fillWidth: true
-                height: 2
+                height: 1
                 color: theme.settingsDivider
             }
         }
@@ -803,7 +803,7 @@ MySettingsTab {
             Layout.columnSpan: 2
             Layout.topMargin: 15
             Layout.fillWidth: true
-            height: 2
+            height: 1
             color: theme.settingsDivider
         }
     }

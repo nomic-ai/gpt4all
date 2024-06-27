@@ -195,14 +195,7 @@ QtObject {
     }
 
     property color conversationDivider: {
-        switch (MySettings.chatTheme) {
-            case "LegacyDark":
-                return blue900;
-            case "Dark":
-                return darkgray100;
-            default:
-                return gray100;
-        }
+        return dividerColor;
     }
 
     property color settingsDivider: {
