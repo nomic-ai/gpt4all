@@ -14,6 +14,7 @@
 #include <QPair>
 #include <QString>
 #include <QThread>
+#include <QVariantMap>
 #include <QVector>
 #include <QtGlobal>
 
@@ -214,6 +215,8 @@ protected:
     quint32 m_promptResponseTokens;
 
 private:
+    bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
+
     std::string m_response;
     std::string m_nameResponse;
     LLModelInfo m_llModelInfo;
