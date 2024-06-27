@@ -274,12 +274,17 @@ MySettingsTab {
             Layout.row: 6
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
-            checked: MySettings.networkIsActive
+            Component.onCompleted: { dataLakeBox.checked = MySettings.networkIsActive; }
+            Connections {
+                target: MySettings
+                function onNetworkIsActiveChanged() { dataLakeBox.checked = MySettings.networkIsActive; }
+            }
             onClicked: {
-                if (MySettings.networkIsActive) {
-                    MySettings.networkIsActive = false
-                } else
-                    networkDialog.open()
+                if (MySettings.networkIsActive)
+                    MySettings.networkIsActive = false;
+                else
+                    networkDialog.open();
+                dataLakeBox.checked = MySettings.networkIsActive;
             }
             ToolTip.text: qsTr("Reveals a dialogue where you can opt-in for sharing data over network")
             ToolTip.visible: hovered
