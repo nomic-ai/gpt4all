@@ -153,7 +153,7 @@ MySettingsTab {
         MySettingsLabel {
             id: deviceLabel
             text: qsTr("Device")
-            helpText: qsTr("The hardware device used to load the model")
+            helpText: qsTr("The compute device used for text generation.")
             Layout.row: 3
             Layout.column: 0
         }
@@ -172,19 +172,16 @@ MySettingsTab {
                 deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
             }
             Component.onCompleted: {
-                deviceBox.updateModel()
+                deviceBox.updateModel();
             }
             Connections {
                 target: MySettings
                 function onDeviceChanged() {
-                    deviceBox.updateModel()
-                }
-                function onDeviceListChanged() {
-                    deviceBox.updateModel()
+                    deviceBox.updateModel();
                 }
             }
             onActivated: {
-                MySettings.device = deviceBox.currentText
+                MySettings.device = deviceBox.currentText;
             }
         }
         MySettingsLabel {
@@ -377,13 +374,13 @@ MySettingsTab {
             onClicked: {
                 MySettings.serverChat = !MySettings.serverChat
             }
-            ToolTip.text: qsTr("WARNING: This enables the gui to act as a local REST web server(OpenAI API compliant) for API requests and will increase your RAM usage as well")
+            ToolTip.text: qsTr("WARNING: This enables the gui to act as a local REST web server (OpenAI API compliant) for API requests and will increase your RAM usage as well")
             ToolTip.visible: hovered
         }
         MySettingsLabel {
             id: serverPortLabel
             text: qsTr("API Server Port:")
-            helpText: qsTr("A local port to run the server (Requires restart")
+            helpText: qsTr("A local port to run the server (Requires restart)")
             Layout.row: 11
             Layout.column: 0
         }

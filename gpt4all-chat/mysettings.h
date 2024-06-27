@@ -35,7 +35,8 @@ class MySettings : public QObject
     Q_PROPERTY(bool networkIsActive READ networkIsActive WRITE setNetworkIsActive NOTIFY networkIsActiveChanged)
     Q_PROPERTY(bool networkUsageStatsActive READ networkUsageStatsActive WRITE setNetworkUsageStatsActive NOTIFY networkUsageStatsActiveChanged)
     Q_PROPERTY(QString device READ device WRITE setDevice NOTIFY deviceChanged)
-    Q_PROPERTY(QVector<QString> deviceList READ deviceList NOTIFY deviceListChanged)
+    Q_PROPERTY(QStringList deviceList MEMBER m_deviceList CONSTANT)
+    Q_PROPERTY(QStringList embeddingsDeviceList MEMBER m_embeddingsDeviceList CONSTANT)
     Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
 
 public:
@@ -138,6 +139,8 @@ public:
     void setLocalDocsUseRemoteEmbed(bool value);
     QString localDocsNomicAPIKey() const;
     void setLocalDocsNomicAPIKey(const QString &value);
+    QString localDocsEmbedDevice() const;
+    void setLocalDocsEmbedDevice(const QString &value);
 
     // Network settings
     QString networkAttribution() const;
@@ -150,9 +153,6 @@ public:
     void setNetworkUsageStatsActive(bool value);
     int networkPort() const;
     void setNetworkPort(int value);
-
-    QVector<QString> deviceList() const;
-    void setDeviceList(const QVector<QString> &value);
 
 Q_SIGNALS:
     void nameChanged(const ModelInfo &info);
@@ -191,12 +191,12 @@ Q_SIGNALS:
     void networkUsageStatsActiveChanged();
     void attemptModelLoadChanged();
     void deviceChanged();
-    void deviceListChanged();
 
 private:
     QSettings m_settings;
     bool m_forceMetal;
-    QVector<QString> m_deviceList;
+    const QStringList m_deviceList;
+    const QStringList m_embeddingsDeviceList;
 
 private:
     explicit MySettings();
