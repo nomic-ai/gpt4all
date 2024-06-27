@@ -400,26 +400,27 @@ Rectangle {
                             Layout.fillWidth: true
                             spacing: 30
                             Layout.leftMargin: 15
+                            Layout.rightMargin: 15
                             Layout.topMargin: 15
                             MyTextButton {
                                 text: qsTr("Remove")
                                 color: theme.red500
                                 onClick: LocalDocs.removeFolder(collection, folder_path)
                             }
-                            MyTextButton {
-                                visible: !model.forceIndexing && !model.indexing && model.currentEmbeddingsToIndex === 0
-                                text: qsTr("Rebuild")
-                                color: theme.red500
-                                onClick: { LocalDocs.forceRebuildFolder(folder_path); }
-                                tooltip: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
-                            }
                             Item {
                                 Layout.fillWidth: true
                             }
                             MyTextButton {
+                                visible: !model.forceIndexing && !model.indexing && model.currentEmbeddingsToIndex === 0
+                                text: qsTr("Rebuild")
+                                color: theme.green500
+                                onClick: { LocalDocs.forceRebuildFolder(folder_path); }
+                                tooltip: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
+                            }
+                            MyTextButton {
                                 visible: model.forceIndexing
                                 text: qsTr("Update")
-                                color: theme.red500
+                                color: theme.green500
                                 onClick: { LocalDocs.forceIndexing(collection); }
                                 tooltip: qsTr("Update the collection to the new version. This is a slow operation.")
                             }
