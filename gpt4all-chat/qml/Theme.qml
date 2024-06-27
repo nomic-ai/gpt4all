@@ -1062,11 +1062,11 @@ QtObject {
                              MySettings.fontSize === "Medium" ? 1.5 :
                                                   /* "Large" */ 1.8
 
-    property real fontSizeSmaller:      8 * fontScale
+    property real fontSizeSmaller:      9 * fontScale
     property real fontSizeSmall:       10 * fontScale
     property real fontSizeLarge:       12 * fontScale
     property real fontSizeLarger:      14 * fontScale
-    property real fontSizeLargest:     19 * fontScale
-    property real fontSizeBannerSmall: 29 * fontScale
-    property real fontSizeBanner:      59 * fontScale
+    property real fontSizeLargest:     18 * fontScale
+    property real fontSizeBannerSmall: 24 * fontScale
+    property real fontSizeBanner:      48 * fontScale
 }
