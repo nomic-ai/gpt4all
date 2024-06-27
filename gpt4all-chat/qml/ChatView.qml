@@ -1001,7 +1001,7 @@ Rectangle {
                                             }
 
                                             TextArea {
-                                                text: consolidatedSources.length + " " + qsTr("Local Sources")
+                                                text: consolidatedSources.length + " " + qsTr("Sources")
                                                 padding: 0
                                                 readOnly: true
                                                 font.pixelSize: theme.fontSizeLarge
