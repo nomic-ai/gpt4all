@@ -715,7 +715,7 @@ Rectangle {
 
                             delegate: GridLayout {
                                 width: listView.contentItem.width
-                                rows: 4
+                                rows: 3
                                 columns: 2
 
                                 Item {
@@ -797,207 +797,8 @@ Rectangle {
                                     }
                                 }
 
-
-                                Item {
-                                    Layout.row: 1
-                                    Layout.column: 0
-                                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                                    Layout.topMargin: 5
-                                    Layout.preferredWidth: 24
-                                    Layout.preferredHeight: 24
-                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
-
-                                    Image {
-                                        id: sourcesIcon
-                                        visible: false
-                                        anchors.fill: parent
-                                        sourceSize.width: 24
-                                        sourceSize.height: 24
-                                        mipmap: true
-                                        source: "qrc:/gpt4all/icons/db.svg"
-                                    }
-
-                                    ColorOverlay {
-                                        anchors.fill: sourcesIcon
-                                        source: sourcesIcon
-                                        color: theme.textColor
-                                    }
-                                }
-
-                                RowLayout {
-                                    Layout.row: 1
-                                    Layout.column: 1
-                                    Layout.topMargin: 5
-                                    Layout.alignment: Qt.AlignVCenter
-                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
-                                    TextArea {
-                                        text: qsTr("Sources")
-                                        padding: 0
-                                        readOnly: true
-                                        font.pixelSize: theme.fontSizeLarge
-                                        font.bold: true
-                                        color: theme.textColor
-                                    }
-                                }
-
                                 ColumnLayout {
-                                    Layout.row: 2
-                                    Layout.column: 1
-                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
-                                    Flow {
-                                        Layout.fillWidth: true
-                                        Layout.topMargin: 5
-                                        spacing: 10
-                                        visible: consolidatedSources.length !== 0
-                                        Repeater {
-                                            model: consolidatedSources
-
-                                            delegate: Rectangle {
-                                                radius: 10
-                                                color: ma.containsMouse ? theme.sourcesBackgroundHovered : theme.sourcesBackground
-                                                width: 200
-                                                height: 75
-
-                                                MouseArea {
-                                                    id: ma
-                                                    enabled: modelData.path !== ""
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    onClicked: function() {
-                                                        Qt.openUrlExternally(modelData.fileUri)
-                                                    }
-                                                }
-
-                                                Rectangle {
-                                                    id: debugTooltip
-                                                    anchors.right: parent.right
-                                                    anchors.bottom: parent.bottom
-                                                    width: 24
-                                                    height: 24
-                                                    color: "transparent"
-                                                    ToolTip {
-                                                        parent: debugTooltip
-                                                        visible: debugMouseArea.containsMouse
-                                                        text: modelData.text
-                                                        contentWidth: 900
-                                                        delay: 500
-                                                    }
-                                                    MouseArea {
-                                                        id: debugMouseArea
-                                                        anchors.fill: parent
-                                                        hoverEnabled: true
-                                                    }
-                                                }
-
-                                                ColumnLayout {
-                                                    anchors.left: parent.left
-                                                    anchors.top: parent.top
-                                                    anchors.margins: 10
-                                                    spacing: 0
-                                                    RowLayout {
-                                                        id: title
-                                                        spacing: 5
-                                                        Layout.maximumWidth: 180
-                                                        Item {
-                                                            Layout.preferredWidth: 24
-                                                            Layout.preferredHeight: 24
-                                                            Image {
-                                                                id: fileIcon
-                                                                anchors.fill: parent
-                                                                visible: false
-                                                                sourceSize.width: 24
-                                                                sourceSize.height: 24
-                                                                mipmap: true
-                                                                source: {
-                                                                    if (modelData.file.endsWith(".txt"))
-                                                                        return "qrc:/gpt4all/icons/file-txt.svg"
-                                                                    else if (modelData.file.endsWith(".pdf"))
-                                                                        return "qrc:/gpt4all/icons/file-pdf.svg"
-                                                                    else if (modelData.file.endsWith(".md"))
-                                                                        return "qrc:/gpt4all/icons/file-md.svg"
-                                                                    else
-                                                                        return "qrc:/gpt4all/icons/file.svg"
-                                                                }
-                                                            }
-                                                            ColorOverlay {
-                                                                anchors.fill: fileIcon
-                                                                source: fileIcon
-                                                                color: theme.textColor
-                                                            }
-                                                        }
-                                                        Text {
-                                                            Layout.maximumWidth: 156
-                                                            text: modelData.collection !== "" ? modelData.collection : qsTr("LocalDocs")
-                                                            font.pixelSize: theme.fontSizeLarge
-                                                            font.bold: true
-                                                            color: theme.styledTextColor
-                                                            elide: Qt.ElideRight
-                                                        }
-                                                        Rectangle {
-                                                            Layout.fillWidth: true
-                                                            color: "transparent"
-                                                            height: 1
-                                                        }
-                                                    }
-                                                    Text {
-                                                        Layout.fillHeight: true
-                                                        Layout.maximumWidth: 180
-                                                        Layout.maximumHeight: 55 - title.height
-                                                        text: modelData.file
-                                                        color: theme.textColor
-                                                        font.pixelSize: theme.fontSizeSmall
-                                                        elide: Qt.ElideRight
-                                                        wrapMode: Text.WrapAnywhere
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Item {
-                                    Layout.row: 3
-                                    Layout.column: 0
-                                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                                    Layout.topMargin: 5
-                                    Layout.preferredWidth: 24
-                                    Layout.preferredHeight: 24
-                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
-                                    Image {
-                                        id: answersIcon
-                                        visible: false
-                                        anchors.fill: parent
-                                        sourceSize.width: 24
-                                        sourceSize.height: 24
-                                        mipmap: true
-                                        source: "qrc:/gpt4all/icons/info.svg"
-                                    }
-
-                                    ColorOverlay {
-                                        anchors.fill: answersIcon
-                                        source: answersIcon
-                                        color: theme.textColor
-                                    }
-                                }
-
-                                RowLayout {
-                                    Layout.row: 3
-                                    Layout.column: 1
-                                    Layout.topMargin: 5
-                                    Layout.alignment: Qt.AlignVCenter
-                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences
-                                    TextArea {
-                                        text: qsTr("Answer")
-                                        padding: 0
-                                        font.pixelSize: theme.fontSizeLarge
-                                        font.bold: true
-                                        readOnly: true
-                                        color: theme.textColor
-                                    }
-                                }
-
-                                ColumnLayout {
-                                    Layout.row: 4
+                                    Layout.row: 1
                                     Layout.column: 1
                                     Layout.fillWidth: true
                                     TextArea {
@@ -1162,6 +963,230 @@ Rectangle {
                                         }
                                     }
                                 }
+
+                                Item {
+                                    Layout.row: 2
+                                    Layout.column: 1
+                                    Layout.topMargin: 5
+                                    Layout.alignment: Qt.AlignVCenter
+                                    Layout.preferredWidth: childrenRect.width
+                                    Layout.preferredHeight: childrenRect.height
+                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences && (!currentResponse || !currentChat.responseInProgress)
+
+                                    MyButton {
+                                        backgroundColor: theme.sourcesBackground
+                                        backgroundColorHovered: theme.sourcesBackgroundHovered
+                                        contentItem: RowLayout {
+                                            anchors.centerIn: parent
+
+                                            Item {
+                                                Layout.preferredWidth: 24
+                                                Layout.preferredHeight: 24
+
+                                                Image {
+                                                    id: sourcesIcon
+                                                    visible: false
+                                                    anchors.fill: parent
+                                                    sourceSize.width: 24
+                                                    sourceSize.height: 24
+                                                    mipmap: true
+                                                    source: "qrc:/gpt4all/icons/db.svg"
+                                                }
+
+                                                ColorOverlay {
+                                                    anchors.fill: sourcesIcon
+                                                    source: sourcesIcon
+                                                    color: theme.textColor
+                                                }
+                                            }
+
+                                            TextArea {
+                                                text: consolidatedSources.length + " " + qsTr("Local Sources")
+                                                padding: 0
+                                                readOnly: true
+                                                font.pixelSize: theme.fontSizeLarge
+                                                font.bold: true
+                                                color: theme.styledTextColor
+                                            }
+
+                                            Item {
+                                                Layout.preferredWidth: caret.width
+                                                Layout.preferredHeight: caret.height
+                                                Image {
+                                                    id: caret
+                                                    anchors.centerIn: parent
+                                                    visible: false
+                                                    sourceSize.width: theme.fontSizeLarge
+                                                    sourceSize.height: theme.fontSizeLarge
+                                                    mipmap: true
+                                                    source: {
+                                                        if (sourcesLayout.state === "collapsed")
+                                                            return "qrc:/gpt4all/icons/caret_right.svg";
+                                                        else
+                                                            return "qrc:/gpt4all/icons/caret_down.svg";
+                                                    }
+                                                }
+
+                                                ColorOverlay {
+                                                    anchors.fill: caret
+                                                    source: caret
+                                                    color: theme.textColor
+                                                }
+                                            }
+                                        }
+
+                                        onClicked: {
+                                            if (sourcesLayout.state === "collapsed")
+                                                sourcesLayout.state = "expanded";
+                                            else
+                                                sourcesLayout.state = "collapsed";
+                                        }
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    id: sourcesLayout
+                                    Layout.row: 3
+                                    Layout.column: 1
+                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences && (!currentResponse || !currentChat.responseInProgress)
+                                    clip: true
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 0
+                                    state: "collapsed"
+                                    states: [
+                                        State {
+                                            name: "expanded"
+                                            PropertyChanges { target: sourcesLayout; Layout.preferredHeight: childrenRect.height }
+                                        },
+                                        State {
+                                            name: "collapsed"
+                                            PropertyChanges { target: sourcesLayout; Layout.preferredHeight: 0 }
+                                        }
+                                    ]
+
+                                    transitions: [
+                                        Transition {
+                                            SequentialAnimation {
+                                                PropertyAnimation {
+                                                    target: sourcesLayout
+                                                    property: "Layout.preferredHeight"
+                                                    duration: 300
+                                                    easing.type: Easing.InOutQuad
+                                                }
+                                            }
+                                        }
+                                    ]
+
+                                    Flow {
+                                        Layout.fillWidth: true
+                                        Layout.topMargin: 5
+                                        spacing: 10
+                                        visible: consolidatedSources.length !== 0
+                                        Repeater {
+                                            model: consolidatedSources
+
+                                            delegate: Rectangle {
+                                                radius: 10
+                                                color: ma.containsMouse ? theme.sourcesBackgroundHovered : theme.sourcesBackground
+                                                width: 200
+                                                height: 75
+
+                                                MouseArea {
+                                                    id: ma
+                                                    enabled: modelData.path !== ""
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    onClicked: function() {
+                                                        Qt.openUrlExternally(modelData.fileUri)
+                                                    }
+                                                }
+
+                                                Rectangle {
+                                                    id: debugTooltip
+                                                    anchors.right: parent.right
+                                                    anchors.bottom: parent.bottom
+                                                    width: 24
+                                                    height: 24
+                                                    color: "transparent"
+                                                    ToolTip {
+                                                        parent: debugTooltip
+                                                        visible: debugMouseArea.containsMouse
+                                                        text: modelData.text
+                                                        contentWidth: 900
+                                                        delay: 500
+                                                    }
+                                                    MouseArea {
+                                                        id: debugMouseArea
+                                                        anchors.fill: parent
+                                                        hoverEnabled: true
+                                                    }
+                                                }
+
+                                                ColumnLayout {
+                                                    anchors.left: parent.left
+                                                    anchors.top: parent.top
+                                                    anchors.margins: 10
+                                                    spacing: 0
+                                                    RowLayout {
+                                                        id: title
+                                                        spacing: 5
+                                                        Layout.maximumWidth: 180
+                                                        Item {
+                                                            Layout.preferredWidth: 24
+                                                            Layout.preferredHeight: 24
+                                                            Image {
+                                                                id: fileIcon
+                                                                anchors.fill: parent
+                                                                visible: false
+                                                                sourceSize.width: 24
+                                                                sourceSize.height: 24
+                                                                mipmap: true
+                                                                source: {
+                                                                    if (modelData.file.endsWith(".txt"))
+                                                                        return "qrc:/gpt4all/icons/file-txt.svg"
+                                                                    else if (modelData.file.endsWith(".pdf"))
+                                                                        return "qrc:/gpt4all/icons/file-pdf.svg"
+                                                                    else if (modelData.file.endsWith(".md"))
+                                                                        return "qrc:/gpt4all/icons/file-md.svg"
+                                                                    else
+                                                                        return "qrc:/gpt4all/icons/file.svg"
+                                                                }
+                                                            }
+                                                            ColorOverlay {
+                                                                anchors.fill: fileIcon
+                                                                source: fileIcon
+                                                                color: theme.textColor
+                                                            }
+                                                        }
+                                                        Text {
+                                                            Layout.maximumWidth: 156
+                                                            text: modelData.collection !== "" ? modelData.collection : qsTr("LocalDocs")
+                                                            font.pixelSize: theme.fontSizeLarge
+                                                            font.bold: true
+                                                            color: theme.styledTextColor
+                                                            elide: Qt.ElideRight
+                                                        }
+                                                        Rectangle {
+                                                            Layout.fillWidth: true
+                                                            color: "transparent"
+                                                            height: 1
+                                                        }
+                                                    }
+                                                    Text {
+                                                        Layout.fillHeight: true
+                                                        Layout.maximumWidth: 180
+                                                        Layout.maximumHeight: 55 - title.height
+                                                        text: modelData.file
+                                                        color: theme.textColor
+                                                        font.pixelSize: theme.fontSizeSmall
+                                                        elide: Qt.ElideRight
+                                                        wrapMode: Text.WrapAnywhere
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
 
                             property bool shouldAutoScroll: true
@@ -1170,11 +1195,15 @@ Rectangle {
                             Connections {
                                 target: currentChat
                                 function onResponseChanged() {
-                                    if (listView.shouldAutoScroll) {
-                                        listView.isAutoScrolling = true
-                                        listView.positionViewAtEnd()
-                                        listView.isAutoScrolling = false
-                                    }
+                                    listView.scrollToEnd()
+                                }
+                            }
+
+                            function scrollToEnd() {
+                                if (listView.shouldAutoScroll) {
+                                    listView.isAutoScrolling = true
+                                    listView.positionViewAtEnd()
+                                    listView.isAutoScrolling = false
                                 }
                             }
 
