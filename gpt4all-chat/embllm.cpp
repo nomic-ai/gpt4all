@@ -91,10 +91,10 @@ bool EmbeddingLLMWorker::loadModel()
     QString requestedDevice = MySettings::globalInstance()->localDocsEmbedDevice();
     std::string backend = "auto";
 #ifdef Q_OS_MAC
-    if (requestedDevice == "CPU")
+    if (requestedDevice == "Auto" || requestedDevice == "CPU")
         backend = "cpu";
 #else
-    if (requestedDevice == "Auto" || requestedDevice.startsWith("CUDA: "))
+    if (requestedDevice.startsWith("CUDA: "))
         backend = "cuda";
 #endif
 
@@ -105,13 +105,6 @@ bool EmbeddingLLMWorker::loadModel()
         return false;
     }
 
-    // Default to the best non-Kompute device
-    std::vector<LLModel::GPUDevice> availableDevices = m_model->availableGPUDevices(0);
-    std::erase_if(availableDevices, [](auto &d) { return !strcmp(d.backend, "kompute"); });
-    const LLModel::GPUDevice *defaultDevice = nullptr;
-    if (!availableDevices.empty())
-        defaultDevice = &availableDevices.front();
-
     bool actualDeviceIsCPU = true;
 
 #if defined(Q_OS_MAC) && defined(__aarch64__)
@@ -119,10 +112,10 @@ bool EmbeddingLLMWorker::loadModel()
         actualDeviceIsCPU = false;
 #else
     if (requestedDevice != "CPU") {
-        const LLModel::GPUDevice *device = defaultDevice;
+        const LLModel::GPUDevice *device = nullptr;
         if (requestedDevice != "Auto") {
             // Use the selected device
-            for (const LLModel::GPUDevice &d : availableDevices) {
+            for (const LLModel::GPUDevice &d : m_model->availableGPUDevices(0)) {
                 if (QString::fromStdString(d.selectionName()) == requestedDevice) {
                     device = &d;
                     break;
