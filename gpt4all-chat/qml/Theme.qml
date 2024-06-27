@@ -1069,6 +1069,6 @@ QtObject {
     property real fontSizeLarge:       12 * fontScale
     property real fontSizeLarger:      14 * fontScale
     property real fontSizeLargest:     18 * fontScale
-    property real fontSizeBannerSmall: Math.min(38, 24 * fontScale)
-    property real fontSizeBanner:      Math.min(76, 48 * fontScale)
+    property real fontSizeBannerSmall: 24 * fontScale**.8
+    property real fontSizeBanner:      48 * fontScale**.8
 }
