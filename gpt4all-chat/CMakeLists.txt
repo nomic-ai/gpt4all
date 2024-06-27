@@ -174,6 +174,8 @@ qt_add_qml_module(chat
       icons/send_message.svg
       icons/stop_generating.svg
       icons/regenerate.svg
+      icons/caret_down.svg
+      icons/caret_right.svg
       icons/chat.svg
       icons/changelog.svg
       icons/close.svg
