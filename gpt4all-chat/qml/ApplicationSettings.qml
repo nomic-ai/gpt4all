@@ -98,7 +98,6 @@ MySettingsTab {
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
             model: [qsTr("Dark"), qsTr("Light"), qsTr("LegacyDark")]
-            Accessible.role: Accessible.ComboBox
             Accessible.name: qsTr("Color theme")
             Accessible.description: qsTr("Color theme for the chat client to use")
             function updateModel() {
@@ -133,8 +132,7 @@ MySettingsTab {
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
             model: ["Small", "Medium", "Large"]
-            Accessible.role: Accessible.ComboBox
-            Accessible.name: qsTr("Font size")
+            Accessible.name: fontLabel.text
             Accessible.description: qsTr("Font size of the chat client")
             function updateModel() {
                 fontBox.currentIndex = fontBox.indexOfValue(MySettings.fontSize);
@@ -168,9 +166,8 @@ MySettingsTab {
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
             model: MySettings.deviceList
-            Accessible.role: Accessible.ComboBox
-            Accessible.name: qsTr("Device")
-            Accessible.description: qsTr("Device of the chat client")
+            Accessible.name: deviceLabel.text
+            Accessible.description: deviceLabel.helpText
             function updateModel() {
                 deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
             }
@@ -205,8 +202,7 @@ MySettingsTab {
             Layout.maximumWidth: 400
             Layout.alignment: Qt.AlignRight
             model: ModelList.userDefaultModelList
-            Accessible.role: Accessible.ComboBox
-            Accessible.name: qsTr("Default model")
+            Accessible.name: defaultModelLabel.text
             Accessible.description: qsTr("Default model to use; the first item is the current default model")
             function updateModel() {
                 comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
