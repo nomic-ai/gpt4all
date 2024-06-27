@@ -714,7 +714,7 @@ Rectangle {
                             Accessible.description: qsTr("prompt / response pairs from the conversation")
 
                             delegate: GridLayout {
-                                width: listView.contentItem.width
+                                width: listView.contentItem.width - 15
                                 rows: 3
                                 columns: 2
 
