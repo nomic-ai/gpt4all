@@ -20,7 +20,7 @@ ColumnLayout {
     Label {
         id: mainTextLabel
         color: theme.settingsTitleTextColor
-        font.pixelSize: theme.fontSizeSmall
+        font.pixelSize: theme.fontSizeLarger
         font.bold: true
         onLinkActivated: function(link) {
             root.linkActivated(link);
@@ -32,7 +32,7 @@ ColumnLayout {
         wrapMode: Text.Wrap
         color: theme.settingsTitleTextColor
         text: mainTextLabel.text
-        font.pixelSize: theme.fontSizeSmaller
+        font.pixelSize: theme.fontSizeLarge
         font.bold: false
         onLinkActivated: function(link) {
             root.linkActivated(link);

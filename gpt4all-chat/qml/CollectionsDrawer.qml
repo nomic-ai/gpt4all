@@ -89,7 +89,7 @@ Rectangle {
                             text: "%1 – %2".arg(qsTr("%n file(s)", "", model.totalDocs)).arg(qsTr("%n word(s)", "", model.totalWords))
                             elide: Text.ElideRight
                             color: theme.mutedTextColor
-                            font.pixelSize: theme.fontSizeSmaller
+                            font.pixelSize: theme.fontSizeSmall
                         }
                         RowLayout {
                             visible: model.updating
@@ -105,7 +105,7 @@ Rectangle {
                                 text: qsTr("Updating")
                                 elide: Text.ElideRight
                                 color: theme.accentColor
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                                 font.bold: true
                             }
                         }

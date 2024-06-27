@@ -110,7 +110,7 @@ Rectangle {
                             bottomPadding: 5
                             text: parent.section
                             color: theme.chatDrawerSectionHeader
-                            font.pixelSize: theme.fontSizeSmaller
+                            font.pixelSize: theme.fontSizeSmallest
                         }
                     }
                 }

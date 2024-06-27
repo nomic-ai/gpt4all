@@ -307,7 +307,7 @@ Rectangle {
                                 }
                                 elide: Text.ElideRight
                                 color: theme.mutedDarkTextColor
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                             Text {
                                 visible: {
@@ -322,7 +322,7 @@ Rectangle {
                                 elide: Text.ElideRight
                                 color: theme.mutedDarkTextColor
                                 font.family: "monospace"
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                         }
 
@@ -332,21 +332,21 @@ Rectangle {
                                 text: "%1 – %2".arg(qsTr("%n file(s)", "", model.totalDocs)).arg(qsTr("%n word(s)", "", model.totalWords))
                                 elide: Text.ElideRight
                                 color: theme.styledTextColor2
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                             Text {
                                 text: model.embeddingModel
                                 elide: Text.ElideRight
                                 color: theme.mutedDarkTextColor
                                 font.bold: true
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                             Text {
                                 visible: Qt.formatDateTime(model.lastUpdate) !== ""
                                 text: Qt.formatDateTime(model.lastUpdate)
                                 elide: Text.ElideRight
                                 color: theme.mutedTextColor
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                             Text {
                                 visible: model.currentEmbeddingsToIndex !== 0
@@ -354,7 +354,7 @@ Rectangle {
                                       + model.totalEmbeddingsToIndex + " embeddings"
                                 elide: Text.ElideRight
                                 color: theme.mutedTextColor
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                         }
 
