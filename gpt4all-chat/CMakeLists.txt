@@ -20,7 +20,7 @@ set(APP_VERSION_MAJOR 3)
 set(APP_VERSION_MINOR 0)
 set(APP_VERSION_PATCH 0)
 set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
-set(APP_VERSION "${APP_VERSION_BASE}-rc1")
+set(APP_VERSION "${APP_VERSION_BASE}-rc2")
 
 # Include the binary directory for the generated header file
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
