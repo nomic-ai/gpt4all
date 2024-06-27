@@ -525,7 +525,7 @@ Rectangle {
             anchors.left: parent.left
             anchors.right: parent.right
             color: theme.conversationDivider
-            height: 2
+            height: 1
         }
 
         CollectionsDrawer {

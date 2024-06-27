@@ -31,7 +31,7 @@ MySettingsTab {
         Rectangle {
             Layout.bottomMargin: 15
             Layout.fillWidth: true
-            height: 2
+            height: 1
             color: theme.settingsDivider
         }
 
@@ -92,7 +92,7 @@ MySettingsTab {
         Rectangle {
             Layout.bottomMargin: 15
             Layout.fillWidth: true
-            height: 2
+            height: 1
             color: theme.grayRed500
         }
 
@@ -154,7 +154,7 @@ MySettingsTab {
         Rectangle {
             Layout.bottomMargin: 15
             Layout.fillWidth: true
-            height: 2
+            height: 1
             color: theme.grayRed500
         }
 
@@ -184,7 +184,7 @@ MySettingsTab {
         Rectangle {
             Layout.bottomMargin: 15
             Layout.fillWidth: true
-            height: 2
+            height: 1
             color: theme.settingsDivider
         }
 
@@ -254,7 +254,7 @@ MySettingsTab {
         Rectangle {
             Layout.topMargin: 15
             Layout.fillWidth: true
-            height: 2
+            height: 1
             color: theme.settingsDivider
         }
      }
