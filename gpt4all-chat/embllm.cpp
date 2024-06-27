@@ -113,9 +113,10 @@ bool EmbeddingLLMWorker::loadModel()
 #else
     if (requestedDevice != "CPU") {
         const LLModel::GPUDevice *device = nullptr;
+        std::vector<LLModel::GPUDevice> availableDevices = m_model->availableGPUDevices(0);
         if (requestedDevice != "Auto") {
             // Use the selected device
-            for (const LLModel::GPUDevice &d : m_model->availableGPUDevices(0)) {
+            for (const LLModel::GPUDevice &d : availableDevices) {
                 if (QString::fromStdString(d.selectionName()) == requestedDevice) {
                     device = &d;
                     break;
