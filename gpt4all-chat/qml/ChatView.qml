@@ -964,7 +964,7 @@ Rectangle {
                                     }
                                 }
 
-                                Rectangle {
+                                Item {
                                     Layout.row: 2
                                     Layout.column: 1
                                     Layout.topMargin: 5
