@@ -503,7 +503,7 @@ Rectangle {
 
                             background: Rectangle {
                                 radius: collectionsButton.backgroundRadius
-                                // TODO(jared): either use collectionsButton-specific themeing, or don't - this is inconsistent
+                                // TODO(jared): either use collectionsButton-specific theming, or don't - this is inconsistent
                                 color: conversation.state == "expanded" ? (
                                     collectionsButton.hovered ? theme.lightButtonBackgroundHovered : theme.lightButtonBackground
                                 ) : (
