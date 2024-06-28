@@ -68,7 +68,7 @@ Rectangle {
 
             MyButton {
                 Layout.alignment: Qt.AlignTop | Qt.AlignRight
-                text: qsTr("\uFF0B Add Doc Collection")
+                text: qsTr("\uFF0B Add Collection")
                 onClicked: {
                     addCollectionViewRequested()
                 }
