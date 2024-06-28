@@ -109,6 +109,7 @@ qt_add_executable(chat
     chatllm.h chatllm.cpp
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
     chatapi.h chatapi.cpp
+    chatviewtextprocessor.h chatviewtextprocessor.cpp
     database.h database.cpp
     download.h download.cpp
     embllm.cpp embllm.h
@@ -119,7 +120,6 @@ qt_add_executable(chat
     network.h network.cpp
     server.h server.cpp
     logger.h logger.cpp
-    responsetext.h responsetext.cpp
     ${APP_ICON_RESOURCE}
     ${CHAT_EXE_RESOURCES}
 )
