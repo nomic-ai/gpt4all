@@ -210,9 +210,9 @@ qt_add_qml_module(chat
       icons/twitter.svg
       icons/left_panel_closed.svg
       icons/left_panel_open.svg
-      icons/logo.svg
-      icons/logo-32.png
-      icons/logo-48.png
+      icons/gpt4all.svg
+      icons/gpt4all-32.png
+      icons/gpt4all-48.png
       icons/you.svg
       icons/alt_logo.svg
 )
@@ -405,7 +405,7 @@ set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://gpt4all.io")
-set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-48.png")
+set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-48.png")
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 set(CPACK_PACKAGE_EXECUTABLES "GPT4All")
@@ -415,8 +415,8 @@ set(CPACK_IFW_PACKAGE_TITLE "GPT4All Installer")
 set(CPACK_IFW_PACKAGE_PUBLISHER "Nomic, Inc.")
 set(CPACK_IFW_PRODUCT_URL "https://gpt4all.io")
 set(CPACK_IFW_PACKAGE_WIZARD_STYLE "Aero")
-set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-48.png")
-set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-32.png")
+set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-48.png")
+set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-32.png")
 set(CPACK_IFW_PACKAGE_WIZARD_SHOW_PAGE_LIST OFF)
 
 include(InstallRequiredSystemLibraries)

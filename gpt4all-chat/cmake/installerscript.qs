@@ -44,7 +44,7 @@ Component.prototype.createOperations = function()
                     homeDir + "/Desktop/GPT4All.desktop",
                     "Type=Application\nTerminal=false\nExec=\"" + targetDirectory +
                     "/bin/chat\"\nName=GPT4All\nIcon=" + targetDirectory +
-                    "/logo-48.png\nName[en_US]=GPT4All");
+                    "/gpt4all-48.png\nName[en_US]=GPT4All");
             }
         }
     } catch (e) {

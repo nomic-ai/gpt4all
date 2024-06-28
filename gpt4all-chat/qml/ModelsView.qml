@@ -295,23 +295,12 @@ Rectangle {
                             color: theme.dividerColor
                         }
 
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 30
-                            Layout.leftMargin: 15
-                            Layout.topMargin: 15
-                            Text {
-                                text: qsTr("Remove")
-                                elide: Text.ElideRight
-                                color: theme.red500
-                                font.bold: true
-                                font.pixelSize: theme.fontSizeSmall
-                                TapHandler {
-                                    onTapped: {
-                                        Download.removeModel(filename);
-                                    }
-                                }
-                            }
+                        MySettingsButton {
+                            text: qsTr("Remove")
+                            textColor: theme.red500
+                            onClicked: Download.removeModel(filename)
+                            backgroundColor: "transparent"
+                            backgroundColorHovered: theme.lighterButtonBackgroundHoveredRed
                         }
                     }
                 }

@@ -503,7 +503,12 @@ Rectangle {
 
                             background: Rectangle {
                                 radius: collectionsButton.backgroundRadius
-                                color: collectionsButton.toggled ? collectionsButton.backgroundColorHovered : collectionsButton.backgroundColor
+                                // TODO(jared): either use collectionsButton-specific theming, or don't - this is inconsistent
+                                color: conversation.state == "expanded" ? (
+                                    collectionsButton.hovered ? theme.lightButtonBackgroundHovered : theme.lightButtonBackground
+                                ) : (
+                                    collectionsButton.hovered ? theme.lighterButtonBackground : theme.lighterButtonBackgroundHovered
+                                )
                             }
 
                             Accessible.name: qsTr("Add documents")

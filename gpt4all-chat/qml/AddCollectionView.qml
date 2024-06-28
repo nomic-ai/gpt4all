@@ -32,7 +32,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.margins: 30
-        spacing: 50
+        spacing: 20
 
         RowLayout {
             Layout.fillWidth: true
@@ -61,10 +61,30 @@ Rectangle {
             }
         }
 
-        ColumnLayout {
+        Text {
+            id: addDocBanner
+            Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
+            horizontalAlignment: Qt.AlignHCenter
+            text: qsTr("Add Document Collection")
+            font.pixelSize: theme.fontSizeBanner
+            color: theme.titleTextColor
+        }
+
+        Text {
+            Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+            Layout.maximumWidth: addDocBanner.width
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignJustify
+            text: qsTr("Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.")
+            font.pixelSize: theme.fontSizeLarger
+            color: theme.titleInfoTextColor
+        }
+
+        GridLayout {
             id: root
-            Layout.alignment: Qt.AlignTop | Qt.AlignCenter
-            spacing: 50
+            Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+            rowSpacing: 50
+            columnSpacing: 20
 
             property alias collection: collection.text
             property alias folder_path: folderEdit.text
@@ -80,17 +100,20 @@ Rectangle {
                 folderDialog.open();
             }
 
-            Text {
-                horizontalAlignment: Qt.AlignHCenter
-                text: qsTr("New Local Doc\nCollection")
-                font.pixelSize: theme.fontSizeBanner
-                color: theme.titleTextColor
+            Label {
+                Layout.row: 2
+                Layout.column: 0
+                text: qsTr("Name")
+                font.bold: true
+                font.pixelSize: theme.fontSizeLarger
             }
 
             MyTextField {
                 id: collection
-                Layout.alignment: Qt.AlignCenter
+                Layout.row: 2
+                Layout.column: 1
                 Layout.minimumWidth: 400
+                Layout.alignment: Qt.AlignRight
                 horizontalAlignment: Text.AlignJustify
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
@@ -109,10 +132,20 @@ Rectangle {
                 }
             }
 
+            Label {
+                Layout.row: 3
+                Layout.column: 0
+                text: qsTr("Folder")
+                font.bold: true
+                font.pixelSize: theme.fontSizeLarger
+            }
+
             RowLayout {
-                Layout.alignment: Qt.AlignCenter
+                Layout.row: 3
+                Layout.column: 1
                 Layout.minimumWidth: 400
                 Layout.maximumWidth: 400
+                Layout.alignment: Qt.AlignRight
                 spacing: 10
                 MyDirectoryField {
                     id: folderEdit
@@ -143,8 +176,9 @@ Rectangle {
             }
 
             MyButton {
-                Layout.alignment: Qt.AlignCenter
-                Layout.minimumWidth: 400
+                Layout.row: 4
+                Layout.column: 1
+                Layout.alignment: Qt.AlignRight
                 text: qsTr("Create Collection")
                 onClicked: {
                     var isError = false;
