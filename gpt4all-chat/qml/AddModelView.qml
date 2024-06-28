@@ -366,6 +366,11 @@ Rectangle {
                                 Accessible.name: qsTr("Description")
                                 Accessible.description: qsTr("File description")
                                 onLinkActivated: function(link) { Qt.openUrlExternally(link); }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    acceptedButtons: Qt.NoButton // pass clicks to parent
+                                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                }
                             }
 
                             // FIXME Need to overhaul design here which must take into account
