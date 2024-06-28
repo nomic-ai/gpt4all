@@ -126,40 +126,6 @@ MySettingsTab {
 
         RowLayout {
             MySettingsLabel {
-                id: deviceLabel
-                text: qsTr("Embeddings Device")
-                helpText: qsTr('The compute device used for embeddings. "Auto" uses the CPU. Requires restart.')
-            }
-            MyComboBox {
-                id: deviceBox
-                enabled: !useNomicAPIBox.checked
-                Layout.minimumWidth: 400
-                Layout.maximumWidth: 400
-                Layout.fillWidth: false
-                Layout.alignment: Qt.AlignRight
-                model: MySettings.embeddingsDeviceList
-                Accessible.name: deviceLabel.text
-                Accessible.description: deviceLabel.helpText
-                function updateModel() {
-                    deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.localDocsEmbedDevice);
-                }
-                Component.onCompleted: {
-                    deviceBox.updateModel();
-                }
-                Connections {
-                    target: MySettings
-                    function onDeviceChanged() {
-                        deviceBox.updateModel();
-                    }
-                }
-                onActivated: {
-                    MySettings.localDocsEmbedDevice = deviceBox.currentText;
-                }
-            }
-        }
-
-        RowLayout {
-            MySettingsLabel {
                 id: apiKeyLabel
                 text: qsTr("Nomic API Key")
                 helpText: qsTr('API key to use for Nomic Embed. Get one from the Atlas <a href="https://atlas.nomic.ai/cli-login">API keys page</a>. Requires restart.')
@@ -190,6 +156,40 @@ MySettingsTab {
                 Accessible.role: Accessible.EditableText
                 Accessible.name: apiKeyLabel.text
                 Accessible.description: apiKeyLabel.helpText
+            }
+        }
+
+        RowLayout {
+            MySettingsLabel {
+                id: deviceLabel
+                text: qsTr("Embeddings Device")
+                helpText: qsTr('The compute device used for embeddings. "Auto" uses the CPU. Requires restart.')
+            }
+            MyComboBox {
+                id: deviceBox
+                enabled: !useNomicAPIBox.checked
+                Layout.minimumWidth: 400
+                Layout.maximumWidth: 400
+                Layout.fillWidth: false
+                Layout.alignment: Qt.AlignRight
+                model: MySettings.embeddingsDeviceList
+                Accessible.name: deviceLabel.text
+                Accessible.description: deviceLabel.helpText
+                function updateModel() {
+                    deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.localDocsEmbedDevice);
+                }
+                Component.onCompleted: {
+                    deviceBox.updateModel();
+                }
+                Connections {
+                    target: MySettings
+                    function onDeviceChanged() {
+                        deviceBox.updateModel();
+                    }
+                }
+                onActivated: {
+                    MySettings.localDocsEmbedDevice = deviceBox.currentText;
+                }
             }
         }
 
