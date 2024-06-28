@@ -28,12 +28,13 @@ ColumnLayout {
     }
     Label {
         id: helpTextLabel
+        visible: text !== ""
         Layout.fillWidth: true
         wrapMode: Text.Wrap
         color: theme.settingsTitleTextColor
-        text: mainTextLabel.text
         font.pixelSize: theme.fontSizeLarge
         font.bold: false
+
         onLinkActivated: function(link) {
             root.linkActivated(link);
         }

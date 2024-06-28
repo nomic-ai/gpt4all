@@ -11,7 +11,7 @@ MySettingsTab {
     onRestoreDefaultsClicked: {
         MySettings.restoreModelDefaults(root.currentModelInfo);
     }
-    title: qsTr("Model/Character Settings")
+    title: qsTr("Model")
     contentItem: GridLayout {
         id: root
         columns: 3
@@ -23,32 +23,14 @@ MySettingsTab {
         property var currentModelId: comboBox.currentValue
         property var currentModelInfo: ModelList.modelInfo(root.currentModelId)
 
-        ColumnLayout {
-            Layout.row: 0
-            Layout.column: 0
-            Layout.columnSpan: 3
-            Layout.fillWidth: true
-            spacing: 10
-            Label {
-                color: theme.styledTextColor
-                font.pixelSize: theme.fontSizeLarge
-                font.bold: true
-                text: "General"
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 1
-                color: theme.settingsDivider
-            }
-        }
-
-        MySettingsLabel {
-            id: label
+        Label {
             Layout.row: 1
             Layout.column: 0
-            text: qsTr("Model/Character")
-            helpText: qsTr("Select or clone a model and change its settings")
+            Layout.bottomMargin: 10
+            color: theme.settingsTitleTextColor
+            font.pixelSize: theme.fontSizeBannerSmall
+            font.bold: true
+            text: qsTr("Model Settings")
         }
 
         RowLayout {
@@ -56,7 +38,6 @@ MySettingsTab {
             Layout.row: 2
             Layout.column: 0
             Layout.columnSpan: 2
-            height: label.height + 20
             spacing: 10
 
             MyComboBox {
@@ -122,9 +103,7 @@ MySettingsTab {
             Layout.topMargin: 15
             spacing: 10
             MySettingsLabel {
-                id: uniqueNameLabel
-                text: qsTr("Unique Name")
-                helpText: qsTr("Must contain a non-empty unique name")
+                text: qsTr("Name")
             }
         }
 
@@ -158,7 +137,6 @@ MySettingsTab {
 
         MySettingsLabel {
             text: qsTr("Model File")
-            helpText: qsTr("The filename of the selected model")
             Layout.row: 5
             Layout.column: 0
             Layout.topMargin: 15
@@ -177,7 +155,7 @@ MySettingsTab {
         MySettingsLabel {
             visible: !root.currentModelInfo.isOnline
             text: qsTr("System Prompt")
-            helpText: qsTr("Prefixed at the beginning of every conversation")
+            helpText: qsTr("Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.")
             Layout.row: 7
             Layout.column: 0
             Layout.topMargin: 15
@@ -212,9 +190,6 @@ MySettingsTab {
                     MySettings.setModelSystemPrompt(root.currentModelInfo, text)
                 }
                 Accessible.role: Accessible.EditableText
-                ToolTip.text: qsTr("The systemPrompt allows instructions to the model at the beginning of a chat.\nNOTE: A longer, detailed system prompt can lead to higher quality answers, but can also slow down generation.")
-                ToolTip.visible: hovered
-                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
             }
         }
 
@@ -227,7 +202,7 @@ MySettingsTab {
             MySettingsLabel {
                 id: promptTemplateLabel
                 text: qsTr("Prompt Template")
-                helpText: qsTr("The template that wraps every prompt")
+                helpText: qsTr("The template that wraps every prompt.")
             }
             MySettingsLabel {
                 id: promptTemplateLabelHelp
@@ -271,9 +246,6 @@ MySettingsTab {
                 Accessible.role: Accessible.EditableText
                 Accessible.name: promptTemplateLabel.text
                 Accessible.description: promptTemplateLabelHelp.text
-                ToolTip.text: qsTr("The prompt template partially determines how models will respond to prompts.\nNOTE: A longer, detailed template can lead to higher quality answers, but can also slow down generation.")
-                ToolTip.visible: hovered
-                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
             }
         }
 
@@ -328,7 +300,7 @@ MySettingsTab {
                 id: contextLengthLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Context Length")
-                helpText: qsTr("Conversation context window")
+                helpText: qsTr("Number of input and output tokens the model sees.")
                 Layout.row: 0
                 Layout.column: 0
             }
@@ -378,7 +350,7 @@ MySettingsTab {
             MySettingsLabel {
                 id: tempLabel
                 text: qsTr("Temperature")
-                helpText: qsTr("The temperature for model token generation")
+                helpText: qsTr("Randomness of model output. Higher -> more variation.")
                 Layout.row: 1
                 Layout.column: 2
             }
@@ -422,8 +394,8 @@ MySettingsTab {
             }
             MySettingsLabel {
                 id: topPLabel
-                text: qsTr("Top P")
-                helpText: qsTr("Prevents choosing highly unlikely tokens")
+                text: qsTr("Top-P")
+                helpText: qsTr("Nucleus Sampling factor. Lower -> more predicatable.")
                 Layout.row: 2
                 Layout.column: 0
             }
@@ -432,7 +404,7 @@ MySettingsTab {
                 text: root.currentModelInfo.topP
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen.\nNOTE: Prevents choosing highly unlikely tokens, aka Nucleus Sampling")
+                ToolTip.text: qsTr("Only the most likely tokens up to a total probability of top_p can be chosen.\nNOTE: Prevents choosing highly unlikely tokens.")
                 ToolTip.visible: hovered
                 Layout.row: 2
                 Layout.column: 1
@@ -466,8 +438,8 @@ MySettingsTab {
             }
             MySettingsLabel {
                 id: minPLabel
-                text: qsTr("Min P")
-                helpText: qsTr("Minimum relative probability")
+                text: qsTr("Min-P")
+                helpText: qsTr("Minimum token probability. Higher -> more predictable.")
                 Layout.row: 3
                 Layout.column: 0
             }
@@ -512,8 +484,8 @@ MySettingsTab {
             MySettingsLabel {
                 id: topKLabel
                 visible: !root.currentModelInfo.isOnline
-                text: qsTr("Top K")
-                helpText: qsTr("Size of selection pool for tokens")
+                text: qsTr("Top-K")
+                helpText: qsTr("Size of selection pool for tokens.")
                 Layout.row: 2
                 Layout.column: 2
             }
@@ -523,7 +495,7 @@ MySettingsTab {
                 text: root.currentModelInfo.topK
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                ToolTip.text: qsTr("Only the top K most likely tokens will be chosen from")
+                ToolTip.text: qsTr("Only the top K most likely tokens will be chosen from.")
                 ToolTip.visible: hovered
                 Layout.row: 2
                 Layout.column: 3
@@ -559,7 +531,7 @@ MySettingsTab {
                 id: maxLengthLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Max Length")
-                helpText: qsTr("Maximum length of response in tokens")
+                helpText: qsTr("Maximum response length, in tokens.")
                 Layout.row: 0
                 Layout.column: 2
             }
@@ -569,8 +541,6 @@ MySettingsTab {
                 text: root.currentModelInfo.maxLength
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                ToolTip.text: qsTr("Maximum length of response in tokens")
-                ToolTip.visible: hovered
                 Layout.row: 0
                 Layout.column: 3
                 validator: IntValidator {
@@ -606,7 +576,7 @@ MySettingsTab {
                 id: batchSizeLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Prompt Batch Size")
-                helpText: qsTr("Amount of prompt tokens to process at once")
+                helpText: qsTr("The batch size used for prompt processing.")
                 Layout.row: 1
                 Layout.column: 0
             }
@@ -616,7 +586,7 @@ MySettingsTab {
                 text: root.currentModelInfo.promptBatchSize
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                ToolTip.text: qsTr("Amount of prompt tokens to process at once.\nNOTE: Higher values can speed up reading prompts but will use more RAM")
+                ToolTip.text: qsTr("Amount of prompt tokens to process at once.\nNOTE: Higher values can speed up reading prompts but will use more RAM.")
                 ToolTip.visible: hovered
                 Layout.row: 1
                 Layout.column: 1
@@ -652,7 +622,7 @@ MySettingsTab {
                 id: repeatPenaltyLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Repeat Penalty")
-                helpText: qsTr("Penalize repetitiveness")
+                helpText: qsTr("Repetition penalty factor. Set to 1 to disable.")
                 Layout.row: 4
                 Layout.column: 2
             }
@@ -662,8 +632,6 @@ MySettingsTab {
                 text: root.currentModelInfo.repeatPenalty
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                ToolTip.text: qsTr("Amount to penalize repetitiveness of the output")
-                ToolTip.visible: hovered
                 Layout.row: 4
                 Layout.column: 3
                 validator: DoubleValidator {
@@ -698,7 +666,7 @@ MySettingsTab {
                 id: repeatPenaltyTokensLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("Repeat Penalty Tokens")
-                helpText: qsTr("Length to apply penalty")
+                helpText: qsTr("Number of previous tokens used for penalty.")
                 Layout.row: 3
                 Layout.column: 2
             }
@@ -708,8 +676,6 @@ MySettingsTab {
                 text: root.currentModelInfo.repeatPenaltyTokens
                 color: theme.textColor
                 font.pixelSize: theme.fontSizeLarge
-                ToolTip.text: qsTr("How far back in output to apply repeat penalty")
-                ToolTip.visible: hovered
                 Layout.row: 3
                 Layout.column: 3
                 validator: IntValidator {
@@ -745,7 +711,7 @@ MySettingsTab {
                 id: gpuLayersLabel
                 visible: !root.currentModelInfo.isOnline
                 text: qsTr("GPU Layers")
-                helpText: qsTr("How many GPU layers to load into VRAM")
+                helpText: qsTr("Number of model layers to load into VRAM.")
                 Layout.row: 4
                 Layout.column: 0
             }
@@ -755,7 +721,7 @@ MySettingsTab {
                 text: root.currentModelInfo.gpuLayers
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
-                ToolTip.text: qsTr("How many GPU layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.\nLower values increase CPU load and RAM usage, and make inference slower.\nNOTE: Does not take effect until you reload the model.")
+                ToolTip.text: qsTr("How many model layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.\nLower values increase CPU load and RAM usage, and make inference slower.\nNOTE: Does not take effect until you reload the model.")
                 ToolTip.visible: hovered
                 Layout.row: 4
                 Layout.column: 1
