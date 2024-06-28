@@ -423,7 +423,7 @@ Rectangle {
                                         Layout.minimumWidth: 200
                                         Layout.fillWidth: true
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
-                                        visible: installed || downloadError !== ""
+                                        visible: !isDownloading && (installed || isIncomplete)
                                         Accessible.description: qsTr("Remove model from filesystem")
                                         onClicked: {
                                             Download.removeModel(filename);
