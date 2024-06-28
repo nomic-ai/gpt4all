@@ -1,4 +1,4 @@
-#include "responsetext.h"
+#include "chatviewtextprocessor.h"
 
 #include <QBrush>
 #include <QChar>
@@ -35,7 +35,8 @@ enum Language {
     Csharp,
     Latex,
     Html,
-    Php
+    Php,
+    Markdown
 };
 
 // TODO (Adam) These should be themeable and not hardcoded since they are quite harsh on the eyes in
@@ -868,31 +869,32 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
 // not the replaced text. A possible solution is to have this class keep a mapping of the original
 // indices and the replacement indices and then use the original text that is stored in memory in the
 // chat class to populate the clipboard.
-ResponseText::ResponseText(QObject *parent)
+ChatViewTextProcessor::ChatViewTextProcessor(QObject *parent)
     : QObject{parent}
     , m_textDocument(nullptr)
     , m_syntaxHighlighter(new SyntaxHighlighter(this))
     , m_isProcessingText(false)
+    , m_shouldProcessText(true)
 {
 }
 
-QQuickTextDocument* ResponseText::textDocument() const
+QQuickTextDocument* ChatViewTextProcessor::textDocument() const
 {
     return m_textDocument;
 }
 
-void ResponseText::setTextDocument(QQuickTextDocument* textDocument)
+void ChatViewTextProcessor::setTextDocument(QQuickTextDocument* textDocument)
 {
     if (m_textDocument)
-        disconnect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ResponseText::handleTextChanged);
+        disconnect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ChatViewTextProcessor::handleTextChanged);
 
     m_textDocument = textDocument;
     m_syntaxHighlighter->setDocument(m_textDocument->textDocument());
-    connect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ResponseText::handleTextChanged);
+    connect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ChatViewTextProcessor::handleTextChanged);
     handleTextChanged();
 }
 
-bool ResponseText::tryCopyAtPosition(int position) const
+bool ChatViewTextProcessor::tryCopyAtPosition(int position) const
 {
     for (const auto &copy : m_copies) {
         if (position >= copy.startPos && position <= copy.endPos) {
@@ -904,9 +906,67 @@ bool ResponseText::tryCopyAtPosition(int position) const
     return false;
 }
 
-void ResponseText::handleTextChanged()
+bool ChatViewTextProcessor::shouldProcessText() const
 {
-    if (!m_textDocument || m_isProcessingText)
+    return m_shouldProcessText;
+}
+
+void ChatViewTextProcessor::setShouldProcessText(bool b)
+{
+    if (m_shouldProcessText == b)
+        return;
+    m_shouldProcessText = b;
+    emit shouldProcessTextChanged();
+    handleTextChanged();
+}
+
+void traverseDocument(QTextDocument *doc)
+{
+    QTextFrame *rootFrame = doc->rootFrame();
+    QTextFrame::iterator rootIt;
+
+    for (rootIt = rootFrame->begin(); !rootIt.atEnd(); ++rootIt) {
+        QTextFrame *childFrame = rootIt.currentFrame();
+        QTextBlock childBlock = rootIt.currentBlock();
+
+        if (childFrame) {
+            qDebug() << "Frame from" << childFrame->firstPosition() << "to" << childFrame->lastPosition();
+
+            // Iterate over blocks within the frame
+            QTextFrame::iterator frameIt;
+            for (frameIt = childFrame->begin(); !frameIt.atEnd(); ++frameIt) {
+                QTextBlock block = frameIt.currentBlock();
+                if (block.isValid()) {
+                    qDebug() << "    Block position:" << block.position();
+                    qDebug() << "    Block text:" << block.text();
+
+                    // Iterate over lines within the block
+                    for (QTextBlock::iterator blockIt = block.begin(); !(blockIt.atEnd()); ++blockIt) {
+                        QTextFragment fragment = blockIt.fragment();
+                        if (fragment.isValid()) {
+                            qDebug() << "        Fragment text:" << fragment.text();
+                        }
+                    }
+                }
+            }
+        } else if (childBlock.isValid()) {
+            qDebug() << "Block position:" << childBlock.position();
+            qDebug() << "Block text:" << childBlock.text();
+
+            // Iterate over lines within the block
+            for (QTextBlock::iterator blockIt = childBlock.begin(); !(blockIt.atEnd()); ++blockIt) {
+                QTextFragment fragment = blockIt.fragment();
+                if (fragment.isValid()) {
+                    qDebug() << "    Fragment text:" << fragment.text();
+                }
+            }
+        }
+    }
+}
+
+void ChatViewTextProcessor::handleTextChanged()
+{
+    if (!m_textDocument || m_isProcessingText || !m_shouldProcessText)
         return;
 
     m_isProcessingText = true;
@@ -917,6 +977,7 @@ void ResponseText::handleTextChanged()
     (void)doc->documentLayout()->documentSize();
 
     handleCodeBlocks();
+    handleMarkdown();
 
     // We insert an invisible char at the end to make sure the document goes back to the default
     // text format
@@ -926,18 +987,7 @@ void ResponseText::handleTextChanged()
     m_isProcessingText = false;
 }
 
-void replaceAndInsertMarkdown(int startIndex, int endIndex, QTextDocument *doc)
-{
-    QTextCursor cursor(doc);
-    cursor.setPosition(startIndex);
-    cursor.setPosition(endIndex, QTextCursor::KeepAnchor);
-    QTextDocumentFragment fragment(cursor);
-    const QString plainText = fragment.toPlainText();
-    cursor.removeSelectedText();
-    cursor.insertMarkdown(plainText);
-}
-
-void ResponseText::handleCodeBlocks()
+void ChatViewTextProcessor::handleCodeBlocks()
 {
     QTextDocument* doc = m_textDocument->textDocument();
     QTextCursor cursor(doc);
@@ -997,20 +1047,14 @@ void ResponseText::handleCodeBlocks()
         matchesCode.append(iCode.next());
 
     QVector<CodeCopy> newCopies;
-
-    // Track the position in the document to handle non-code blocks
-    int lastIndex = 0;
+    QVector<QTextFrame*> frames;
 
     for(int index = matchesCode.count() - 1; index >= 0; --index) {
-
-        int nonCodeStart = lastIndex;
-        int nonCodeEnd = matchesCode[index].capturedStart();
-        if (nonCodeEnd > nonCodeStart)
-            replaceAndInsertMarkdown(nonCodeStart, nonCodeEnd, doc);
-
         cursor.setPosition(matchesCode[index].capturedStart());
         cursor.setPosition(matchesCode[index].capturedEnd(), QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
+
+        int startPos = cursor.position();
 
         QTextFrameFormat frameFormat = frameFormatBase;
         QString capturedText = matchesCode[index].captured(1);
@@ -1100,12 +1144,66 @@ void ResponseText::handleCodeBlocks()
 
         cursor = mainFrame->lastCursorPosition();
         cursor.setCharFormat(QTextCharFormat());
-
-        lastIndex = matchesCode[index].capturedEnd();
     }
 
-    if (lastIndex < doc->characterCount())
-        replaceAndInsertMarkdown(lastIndex, doc->characterCount() - 1, doc);
-
     m_copies = newCopies;
+}
+
+void replaceAndInsertMarkdown(int startIndex, int endIndex, QTextDocument *doc)
+{
+    QTextCursor cursor(doc);
+    cursor.setPosition(startIndex);
+    cursor.setPosition(endIndex, QTextCursor::KeepAnchor);
+    QTextDocumentFragment fragment(cursor);
+    const QString plainText = fragment.toPlainText();
+    cursor.removeSelectedText();
+    cursor.insertMarkdown(plainText, QTextDocument::MarkdownNoHTML);
+    cursor.block().setUserState(Markdown);
+}
+
+void ChatViewTextProcessor::handleMarkdown()
+{
+    QTextDocument* doc = m_textDocument->textDocument();
+    QTextCursor cursor(doc);
+
+    QVector<QPair<int, int>> codeBlockPositions;
+
+    QTextFrame *rootFrame = doc->rootFrame();
+    QTextFrame::iterator rootIt;
+
+    bool hasAlreadyProcessedMarkdown = false;
+    for (rootIt = rootFrame->begin(); !rootIt.atEnd(); ++rootIt) {
+        QTextFrame *childFrame = rootIt.currentFrame();
+        QTextBlock childBlock = rootIt.currentBlock();
+        if (childFrame) {
+            codeBlockPositions.append(qMakePair(childFrame->firstPosition()-1, childFrame->lastPosition()+1));
+
+            for (QTextFrame::iterator frameIt = childFrame->begin(); !frameIt.atEnd(); ++frameIt) {
+                QTextBlock block = frameIt.currentBlock();
+                if (block.isValid() && block.userState() == Markdown)
+                    hasAlreadyProcessedMarkdown = true;
+            }
+        } else if (childBlock.isValid() && childBlock.userState() == Markdown)
+            hasAlreadyProcessedMarkdown = true;
+    }
+
+
+    if (!hasAlreadyProcessedMarkdown) {
+        std::sort(codeBlockPositions.begin(), codeBlockPositions.end(), [](const QPair<int, int> &a, const QPair<int, int> &b) {
+            return a.first > b.first;
+        });
+
+        int lastIndex = doc->characterCount() - 1;
+        for (const auto &pos : codeBlockPositions) {
+            int nonCodeStart = pos.second;
+            int nonCodeEnd = lastIndex;
+            if (nonCodeEnd > nonCodeStart) {
+                replaceAndInsertMarkdown(nonCodeStart, nonCodeEnd, doc);
+            }
+            lastIndex = pos.first;
+        }
+
+        if (lastIndex > 0)
+            replaceAndInsertMarkdown(0, lastIndex, doc);
+    }
 }

@@ -824,7 +824,7 @@ Rectangle {
                                             id: tapHandler
                                             onTapped: function(eventPoint, button) {
                                                 var clickedPos = myTextArea.positionAt(eventPoint.position.x, eventPoint.position.y);
-                                                var success = responseText.tryCopyAtPosition(clickedPos);
+                                                var success = textProcessor.tryCopyAtPosition(clickedPos);
                                                 if (success)
                                                     copyCodeMessage.open();
                                             }
@@ -862,16 +862,24 @@ Rectangle {
                                                     myTextArea.deselect()
                                                 }
                                             }
+                                            MenuItem {
+                                                text: textProcessor.shouldProcessText ? qsTr("Disable markdown") : qsTr("Enable markdown")
+                                                height: enabled ? implicitHeight : 0
+                                                onTriggered: {
+                                                    textProcessor.shouldProcessText = !textProcessor.shouldProcessText;
+                                                    myTextArea.text = value
+                                                }
+                                            }
                                         }
 
-                                        ResponseText {
-                                            id: responseText
+                                        ChatViewTextProcessor {
+                                            id: textProcessor
                                         }
 
                                         Component.onCompleted: {
-                                            responseText.setLinkColor(theme.linkColor);
-                                            responseText.setHeaderColor(name === qsTr("Response: ") ? theme.darkContrast : theme.lightContrast);
-                                            responseText.textDocument = textDocument
+                                            textProcessor.setLinkColor(theme.linkColor);
+                                            textProcessor.setHeaderColor(name === qsTr("Response: ") ? theme.darkContrast : theme.lightContrast);
+                                            textProcessor.textDocument = textDocument
                                         }
 
                                         Accessible.role: Accessible.Paragraph

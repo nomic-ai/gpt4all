@@ -1,5 +1,5 @@
-#ifndef RESPONSETEXT_H
-#define RESPONSETEXT_H
+#ifndef CHATVIEWTEXTPROCESSOR_H
+#define CHATVIEWTEXTPROCESSOR_H
 
 #include <QColor>
 #include <QObject>
@@ -37,13 +37,14 @@ struct CodeCopy {
     QString text;
 };
 
-class ResponseText : public QObject
+class ChatViewTextProcessor : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QQuickTextDocument* textDocument READ textDocument WRITE setTextDocument NOTIFY textDocumentChanged())
+    Q_PROPERTY(bool shouldProcessText READ shouldProcessText WRITE setShouldProcessText NOTIFY shouldProcessTextChanged())
     QML_ELEMENT
 public:
-    explicit ResponseText(QObject *parent = nullptr);
+    explicit ChatViewTextProcessor(QObject *parent = nullptr);
 
     QQuickTextDocument* textDocument() const;
     void setTextDocument(QQuickTextDocument* textDocument);
@@ -53,12 +54,17 @@ public:
 
     Q_INVOKABLE bool tryCopyAtPosition(int position) const;
 
+    bool shouldProcessText() const;
+    void setShouldProcessText(bool b);
+
 Q_SIGNALS:
     void textDocumentChanged();
+    void shouldProcessTextChanged();
 
 private Q_SLOTS:
     void handleTextChanged();
     void handleCodeBlocks();
+    void handleMarkdown();
 
 private:
     QQuickTextDocument *m_textDocument;
@@ -67,7 +73,8 @@ private:
     QVector<CodeCopy> m_copies;
     QColor m_linkColor;
     QColor m_headerColor;
+    bool m_shouldProcessText = false;
     bool m_isProcessingText = false;
 };
 
-#endif // RESPONSETEXT_H
+#endif // CHATVIEWTEXTPROCESSOR_H
