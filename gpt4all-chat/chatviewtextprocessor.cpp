@@ -24,7 +24,6 @@
 #include <QtGlobal>
 
 #include <algorithm>
-#include <functional>
 
 enum Language {
     None,
@@ -1194,7 +1193,9 @@ void ChatViewTextProcessor::handleMarkdown()
 
 
     if (!hasAlreadyProcessedMarkdown) {
-        std::sort(codeBlockPositions.begin(), codeBlockPositions.end(), std::greater<>());
+        std::sort(codeBlockPositions.begin(), codeBlockPositions.end(), [](const QPair<int, int> &a, const QPair<int, int> &b) {
+            return a.first > b.first;
+        });
 
         int lastIndex = doc->characterCount() - 1;
         for (const auto &pos : codeBlockPositions) {
