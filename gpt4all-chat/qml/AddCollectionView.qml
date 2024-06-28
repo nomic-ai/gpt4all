@@ -106,6 +106,7 @@ Rectangle {
                 text: qsTr("Name")
                 font.bold: true
                 font.pixelSize: theme.fontSizeLarger
+                color: theme.settingsTitleTextColor
             }
 
             MyTextField {
@@ -138,6 +139,7 @@ Rectangle {
                 text: qsTr("Folder")
                 font.bold: true
                 font.pixelSize: theme.fontSizeLarger
+                color: theme.settingsTitleTextColor
             }
 
             RowLayout {
