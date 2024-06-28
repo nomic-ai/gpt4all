@@ -1047,10 +1047,9 @@ Rectangle {
                                                 }
                                             }
 
-                                            TextArea {
-                                                text: consolidatedSources.length + " " + qsTr("Sources")
+                                            Text {
+                                                text: qsTr("%1 Sources").arg(consolidatedSources.length)
                                                 padding: 0
-                                                readOnly: true
                                                 font.pixelSize: theme.fontSizeLarge
                                                 font.bold: true
                                                 color: theme.styledTextColor
@@ -1095,6 +1094,7 @@ Rectangle {
                                     id: sourcesLayout
                                     Layout.row: 3
                                     Layout.column: 1
+                                    Layout.topMargin: 5
                                     visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences && (!currentResponse || !currentChat.responseInProgress)
                                     clip: true
                                     Layout.fillWidth: true
@@ -1126,7 +1126,6 @@ Rectangle {
 
                                     Flow {
                                         Layout.fillWidth: true
-                                        Layout.topMargin: 5
                                         spacing: 10
                                         visible: consolidatedSources.length !== 0
                                         Repeater {
