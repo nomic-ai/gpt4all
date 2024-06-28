@@ -404,7 +404,7 @@ Rectangle {
                                 textColor: theme.red500
                                 onClicked: LocalDocs.removeFolder(collection, folder_path)
                                 backgroundColor: "transparent"
-                                backgroundColorHovered: theme.lightButtonBackgroundRed
+                                backgroundColorHovered: theme.lighterButtonBackgroundHoveredRed
                             }
                             Item {
                                 Layout.fillWidth: true
@@ -417,7 +417,7 @@ Rectangle {
                                 onClicked: LocalDocs.forceRebuildFolder(folder_path)
                                 toolTip: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
                                 backgroundColor: "transparent"
-                                backgroundColorHovered: theme.lightButtonBackground
+                                backgroundColorHovered: theme.lighterButtonBackgroundHovered
                             }
                             MySettingsButton {
                                 id: updateButton
@@ -427,7 +427,7 @@ Rectangle {
                                 onClicked: LocalDocs.forceIndexing(collection)
                                 toolTip: qsTr("Update the collection to the new version. This is a slow operation.")
                                 backgroundColor: "transparent"
-                                backgroundColorHovered: theme.lightButtonBackground
+                                backgroundColorHovered: theme.lighterButtonBackgroundHovered
                             }
                         }
                     }
