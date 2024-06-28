@@ -845,7 +845,12 @@ Rectangle {
                                         }
 
                                         onLinkActivated: function(link) {
-                                            Qt.openUrlExternally(link)
+                                            if (!currentResponse || !currentChat.responseInProgress)
+                                                Qt.openUrlExternally(link)
+                                        }
+
+                                        onLinkHovered: function (link) {
+                                            statusBar.hoveredLink = link
                                         }
 
                                         Menu {
@@ -1324,7 +1329,8 @@ Rectangle {
             }
 
             Text {
-                id: device
+                id: statusBar
+                property string hoveredLink: ""
                 anchors.top: textInputView.bottom
                 anchors.bottom: parent.bottom
                 anchors.right: parent.right
@@ -1334,10 +1340,13 @@ Rectangle {
                 horizontalAlignment: Qt.AlignRight
                 verticalAlignment: Qt.AlignVCenter
                 color: theme.mutedTextColor
-                visible: currentChat.tokenSpeed !== ""
+                visible: currentChat.tokenSpeed !== "" || hoveredLink !== ""
                 elide: Text.ElideRight
                 wrapMode: Text.WordWrap
                 text: {
+                    if (hoveredLink !== "")
+                        return hoveredLink
+
                     const segments = [currentChat.tokenSpeed];
                     const device = currentChat.device;
                     const backend = currentChat.deviceBackend;
