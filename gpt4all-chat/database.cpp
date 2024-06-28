@@ -1493,7 +1493,7 @@ void Database::start()
     } else if (!initDb(modelPath, oldCollections)) {
         m_databaseValid = false;
     } else {
-        //cleanDB();
+        cleanDB();
         addCurrentFolders();
     }
 
