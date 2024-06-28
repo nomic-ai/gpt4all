@@ -636,13 +636,24 @@ Rectangle {
                         }
 
                         MyButton {
+                            id: loadDefaultModelButton
                             visible: ModelList.installedModels.count !== 0
                             anchors.top: modelInstalledLabel.bottom
                             anchors.topMargin: 50
                             anchors.horizontalCenter: modelInstalledLabel.horizontalCenter
                             rightPadding: 60
                             leftPadding: 60
-                            text: qsTr("Load default model  \u2192");
+                            property string defaultModel: ""
+                            function updateDefaultModel() {
+                                var i = comboBox.find(MySettings.userDefaultModel)
+                                if (i !== -1) {
+                                    defaultModel = comboBox.valueAt(i);
+                                } else {
+                                    defaultModel = comboBox.valueAt(0);
+                                }
+                            }
+
+                            text: qsTr("Load \u00B7 ") + defaultModel + qsTr(" (default) \u2192");
                             onClicked: {
                                 var i = comboBox.find(MySettings.userDefaultModel)
                                 if (i !== -1) {
@@ -650,6 +661,20 @@ Rectangle {
                                 } else {
                                     comboBox.changeModel(0);
                                 }
+                            }
+
+                            // This requires a bit of work because apparently the combobox valueAt
+                            // function only works after the combobox component is loaded so we have
+                            // to use our own component loaded to make this work along with a signal
+                            // from MySettings for when the setting for user default model changes
+                            Connections {
+                                target: MySettings
+                                function onUserDefaultModelChanged() {
+                                    loadDefaultModelButton.updateDefaultModel()
+                                }
+                            }
+                            Component.onCompleted: {
+                                loadDefaultModelButton.updateDefaultModel()
                             }
                             Accessible.role: Accessible.Button
                             Accessible.name: qsTr("Load the default model")
@@ -855,7 +880,7 @@ Rectangle {
 
                                         onLinkHovered: function (link) {
                                             if (!currentResponse || !currentChat.responseInProgress)
-                                                statusBar.hoveredLink = link
+                                                statusBar.externalHoveredLink = link
                                         }
 
                                         Menu {
@@ -1335,7 +1360,7 @@ Rectangle {
 
             Text {
                 id: statusBar
-                property string hoveredLink: ""
+                property string externalHoveredLink: ""
                 anchors.top: textInputView.bottom
                 anchors.bottom: parent.bottom
                 anchors.right: parent.right
@@ -1345,12 +1370,12 @@ Rectangle {
                 horizontalAlignment: Qt.AlignRight
                 verticalAlignment: Qt.AlignVCenter
                 color: theme.mutedTextColor
-                visible: currentChat.tokenSpeed !== "" || hoveredLink !== ""
+                visible: currentChat.tokenSpeed !== "" || externalHoveredLink !== ""
                 elide: Text.ElideRight
                 wrapMode: Text.WordWrap
                 text: {
-                    if (hoveredLink !== "")
-                        return hoveredLink
+                    if (externalHoveredLink !== "")
+                        return externalHoveredLink
 
                     const segments = [currentChat.tokenSpeed];
                     const device = currentChat.device;

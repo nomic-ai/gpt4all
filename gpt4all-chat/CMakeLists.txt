@@ -33,6 +33,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(GPT4ALL_LOCALHOST OFF "Build installer for localhost repo")
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
+option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
 
 # Generate a header file with the version number
 configure_file(
@@ -220,6 +221,13 @@ set_target_properties(chat PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
+macro(REPORT_MISSING_SIGNING_CONTEXT)
+    message(FATAL_ERROR [=[
+        Signing requested but no identity configured.
+        Please set the correct env variable or provide the MAC_SIGNING_IDENTITY argument on the command line
+        ]=])
+endmacro()
+
 if (APPLE)
     set_target_properties(chat PROPERTIES
         MACOSX_BUNDLE TRUE
@@ -230,6 +238,28 @@ if (APPLE)
         OUTPUT_NAME gpt4all
     )
     add_dependencies(chat ggml-metal)
+
+    if(NOT MAC_SIGNING_IDENTITY)
+        if(NOT DEFINED ENV{MAC_SIGNING_CERT_NAME} AND GPT4ALL_SIGN_INSTALL)
+            REPORT_MISSING_SIGNING_CONTEXT()
+        endif()
+        set(MAC_SIGNING_IDENTITY $ENV{MAC_SIGNING_CERT_NAME})
+    endif()
+    if(NOT MAC_SIGNING_TID)
+        if(NOT DEFINED ENV{MAC_NOTARIZATION_TID} AND GPT4ALL_SIGN_INSTALL)
+            REPORT_MISSING_SIGNING_CONTEXT()
+        endif()
+        set(MAC_SIGNING_TID $ENV{MAC_NOTARIZATION_TID})
+    endif()
+
+    # Setup MacOS signing for individual binaries
+    set_target_properties(chat PROPERTIES
+        XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
+        XCODE_ATTRIBUTE_DEVELOPMENT_TEAM ${MAC_SIGNING_TID}
+        XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ${MAC_SIGNING_IDENTITY}
+        XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED True
+        XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS "--timestamp=http://timestamp.apple.com/ts01  --options=runtime,library"
+    )
 endif()
 
 target_compile_definitions(chat
@@ -253,6 +283,10 @@ target_link_libraries(chat
 
 
 # -- install --
+
+function(install_sign_osx tgt)
+    install(CODE "execute_process(COMMAND codesign --options runtime --timestamp -s \"${MAC_SIGNING_IDENTITY}\" $<TARGET_FILE:${tgt}>)")
+endfunction()
 
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 
@@ -295,6 +329,14 @@ install(
     LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
     RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll
 )
+
+if(APPLE AND GPT4ALL_SIGN_INSTALL)
+    install_sign_osx(chat)
+    install_sign_osx(llmodel)
+    foreach(tgt ${MODEL_IMPL_TARGETS})
+        install_sign_osx(${tgt})
+    endforeach()
+endif()
 
 if (LLMODEL_CUDA)
     set_property(TARGET llamamodel-mainline-cuda llamamodel-mainline-cuda-avxonly
