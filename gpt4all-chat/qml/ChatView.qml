@@ -638,7 +638,7 @@ Rectangle {
                             anchors.horizontalCenter: modelInstalledLabel.horizontalCenter
                             rightPadding: 60
                             leftPadding: 60
-                            property string defaultModel
+                            property string defaultModel: ""
                             function updateDefaultModel() {
                                 var i = comboBox.find(MySettings.userDefaultModel)
                                 if (i !== -1) {
