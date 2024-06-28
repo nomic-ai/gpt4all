@@ -850,7 +850,7 @@ Rectangle {
 
                                         onLinkHovered: function (link) {
                                             if (!currentResponse || !currentChat.responseInProgress)
-                                                statusBar.hoveredLink = link
+                                                statusBar.externalHoveredLink = link
                                         }
 
                                         Menu {
@@ -1330,7 +1330,7 @@ Rectangle {
 
             Text {
                 id: statusBar
-                property string hoveredLink: ""
+                property string externalHoveredLink: ""
                 anchors.top: textInputView.bottom
                 anchors.bottom: parent.bottom
                 anchors.right: parent.right
@@ -1340,12 +1340,12 @@ Rectangle {
                 horizontalAlignment: Qt.AlignRight
                 verticalAlignment: Qt.AlignVCenter
                 color: theme.mutedTextColor
-                visible: currentChat.tokenSpeed !== "" || hoveredLink !== ""
+                visible: currentChat.tokenSpeed !== "" || externalHoveredLink !== ""
                 elide: Text.ElideRight
                 wrapMode: Text.WordWrap
                 text: {
-                    if (hoveredLink !== "")
-                        return hoveredLink
+                    if (externalHoveredLink !== "")
+                        return externalHoveredLink
 
                     const segments = [currentChat.tokenSpeed];
                     const device = currentChat.device;
