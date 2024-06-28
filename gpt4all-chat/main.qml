@@ -498,7 +498,7 @@ Window {
                 Image {
                     id: image
                     anchors.centerIn: parent
-                    sourceSize: Qt.size(60, 40)
+                    sourceSize: Qt.size(48 * theme.fontScale, 32 * theme.fontScale)
                     fillMode: Image.PreserveAspectFit
                     mipmap: true
                     visible: false
