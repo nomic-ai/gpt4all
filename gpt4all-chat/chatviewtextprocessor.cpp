@@ -1157,7 +1157,9 @@ void replaceAndInsertMarkdown(int startIndex, int endIndex, QTextDocument *doc)
     QTextDocumentFragment fragment(cursor);
     const QString plainText = fragment.toPlainText();
     cursor.removeSelectedText();
-    cursor.insertMarkdown(plainText, QTextDocument::MarkdownNoHTML);
+    QTextDocument::MarkdownFeatures features = static_cast<QTextDocument::MarkdownFeatures>(
+        QTextDocument::MarkdownNoHTML | QTextDocument::MarkdownDialectGitHub);
+    cursor.insertMarkdown(plainText, features);
     cursor.block().setUserState(Markdown);
 }
 
