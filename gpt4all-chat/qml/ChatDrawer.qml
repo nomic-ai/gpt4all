@@ -46,7 +46,7 @@ Rectangle {
             font.pixelSize: theme.fontSizeLarger
             topPadding: 24
             bottomPadding: 24
-            text: qsTr("\uFF0B New chat")
+            text: qsTr("\uFF0B New Chat")
             Accessible.description: qsTr("Create a new chat")
             onClicked: {
                 ChatListModel.addChat()
