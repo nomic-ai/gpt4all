@@ -844,6 +844,10 @@ Rectangle {
                                             }
                                         }
 
+                                        onLinkActivated: function(link) {
+                                            Qt.openUrlExternally(link)
+                                        }
+
                                         Menu {
                                             id: conversationContextMenu
                                             MenuItem {
