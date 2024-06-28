@@ -9,13 +9,14 @@ Button {
     padding: 10
     rightPadding: 18
     leftPadding: 18
-    property color textColor: theme.lightButtonText
-    property color mutedTextColor: theme.lightButtonMutedText
-    property color backgroundColor: theme.lightButtonBackground
-    property color backgroundColorHovered: enabled ? theme.lightButtonBackgroundHovered : backgroundColor
-    property real  borderWidth: 0
-    property color borderColor: "transparent"
-    property real fontPixelSize: theme.fontSizeLarge
+    property color  textColor: theme.lightButtonText
+    property color  mutedTextColor: theme.lightButtonMutedText
+    property color  backgroundColor: theme.lightButtonBackground
+    property color  backgroundColorHovered: enabled ? theme.lightButtonBackgroundHovered : backgroundColor
+    property real   borderWidth: 0
+    property color  borderColor: "transparent"
+    property real   fontPixelSize: theme.fontSizeLarge
+    property string toolTip
 
     contentItem: Text {
         text: myButton.text
@@ -34,5 +35,7 @@ Button {
     }
     Accessible.role: Accessible.Button
     Accessible.name: text
+    ToolTip.text: toolTip
+    ToolTip.visible: toolTip !== "" && myButton.hovered
     ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
 }

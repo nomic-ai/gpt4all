@@ -399,30 +399,35 @@ Rectangle {
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 30
-                            Layout.leftMargin: 15
-                            Layout.rightMargin: 15
-                            Layout.topMargin: 15
-                            MyTextButton {
+                            MySettingsButton {
                                 text: qsTr("Remove")
-                                color: theme.red500
-                                onClick: LocalDocs.removeFolder(collection, folder_path)
+                                textColor: theme.red500
+                                onClicked: LocalDocs.removeFolder(collection, folder_path)
+                                backgroundColor: "transparent"
+                                backgroundColorHovered: theme.lightButtonBackgroundRed
                             }
                             Item {
                                 Layout.fillWidth: true
                             }
-                            MyTextButton {
+                            MySettingsButton {
+                                id: rebuildButton
                                 visible: !model.forceIndexing && !model.indexing && model.currentEmbeddingsToIndex === 0
                                 text: qsTr("Rebuild")
-                                color: theme.green500
-                                onClick: { LocalDocs.forceRebuildFolder(folder_path); }
-                                tooltip: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
+                                textColor: theme.green500
+                                onClicked: LocalDocs.forceRebuildFolder(folder_path)
+                                toolTip: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
+                                backgroundColor: "transparent"
+                                backgroundColorHovered: theme.lightButtonBackground
                             }
-                            MyTextButton {
+                            MySettingsButton {
+                                id: updateButton
                                 visible: model.forceIndexing
                                 text: qsTr("Update")
-                                color: theme.green500
-                                onClick: { LocalDocs.forceIndexing(collection); }
-                                tooltip: qsTr("Update the collection to the new version. This is a slow operation.")
+                                textColor: theme.green500
+                                onClicked: LocalDocs.forceIndexing(collection)
+                                toolTip: qsTr("Update the collection to the new version. This is a slow operation.")
+                                backgroundColor: "transparent"
+                                backgroundColorHovered: theme.lightButtonBackground
                             }
                         }
                     }

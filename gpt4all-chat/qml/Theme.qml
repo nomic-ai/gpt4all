@@ -379,6 +379,17 @@ QtObject {
         }
     }
 
+    property color lightButtonBackgroundRed: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return buttonBackground;
+            case "Dark":
+                return buttonBackground;
+            default:
+                return red100;
+        }
+    }
+
     property color lightButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
