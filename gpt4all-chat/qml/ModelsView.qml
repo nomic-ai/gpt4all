@@ -163,7 +163,12 @@ Rectangle {
                             Accessible.role: Accessible.Paragraph
                             Accessible.name: qsTr("Description")
                             Accessible.description: qsTr("File description")
-                            onLinkActivated: Qt.openUrlExternally(link)
+                            onLinkActivated: function(link) { Qt.openUrlExternally(link); }
+                            MouseArea {
+                                anchors.fill: parent
+                                acceptedButtons: Qt.NoButton // pass clicks to parent
+                                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            }
                         }
 
                         Item  {
