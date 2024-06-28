@@ -365,7 +365,7 @@ Rectangle {
                                 Accessible.role: Accessible.Paragraph
                                 Accessible.name: qsTr("Description")
                                 Accessible.description: qsTr("File description")
-                                onLinkActivated: Qt.openUrlExternally(link)
+                                onLinkActivated: function(link) { Qt.openUrlExternally(link); }
                             }
 
                             // FIXME Need to overhaul design here which must take into account
