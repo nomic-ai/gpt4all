@@ -36,6 +36,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.maximumWidth: 1530
             Layout.alignment: Qt.AlignCenter
+            Layout.topMargin: 20
             spacing: 30
 
             ColumnLayout {

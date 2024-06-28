@@ -603,13 +603,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("File size")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: filesize
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }
@@ -625,13 +625,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("RAM required")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: ramrequired >= 0 ? ramrequired + qsTr(" GB") : "?"
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }
@@ -647,13 +647,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("Parameters")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: parameters !== "" ? parameters : "?"
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }
@@ -669,13 +669,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("Quant")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: quant
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }
@@ -691,13 +691,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("Type")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: type
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }

@@ -365,7 +365,6 @@ Rectangle {
                         }
                     }
 
-                    Accessible.role: Accessible.ComboBox
                     Accessible.name: currentModelName()
                     Accessible.description: qsTr("The top item is the current model")
                     onActivated: function (index) {

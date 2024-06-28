@@ -307,7 +307,7 @@ Rectangle {
                                 }
                                 elide: Text.ElideRight
                                 color: theme.mutedDarkTextColor
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                             Text {
                                 visible: {
@@ -322,7 +322,7 @@ Rectangle {
                                 elide: Text.ElideRight
                                 color: theme.mutedDarkTextColor
                                 font.family: "monospace"
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                         }
 
@@ -332,21 +332,21 @@ Rectangle {
                                 text: "%1 – %2".arg(qsTr("%n file(s)", "", model.totalDocs)).arg(qsTr("%n word(s)", "", model.totalWords))
                                 elide: Text.ElideRight
                                 color: theme.styledTextColor2
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                             Text {
                                 text: model.embeddingModel
                                 elide: Text.ElideRight
                                 color: theme.mutedDarkTextColor
                                 font.bold: true
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                             Text {
                                 visible: Qt.formatDateTime(model.lastUpdate) !== ""
                                 text: Qt.formatDateTime(model.lastUpdate)
                                 elide: Text.ElideRight
                                 color: theme.mutedTextColor
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                             Text {
                                 visible: model.currentEmbeddingsToIndex !== 0
@@ -354,7 +354,7 @@ Rectangle {
                                       + model.totalEmbeddingsToIndex + " embeddings"
                                 elide: Text.ElideRight
                                 color: theme.mutedTextColor
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                             }
                         }
 
@@ -400,53 +400,29 @@ Rectangle {
                             Layout.fillWidth: true
                             spacing: 30
                             Layout.leftMargin: 15
+                            Layout.rightMargin: 15
                             Layout.topMargin: 15
-                            Text {
+                            MyTextButton {
                                 text: qsTr("Remove")
-                                elide: Text.ElideRight
                                 color: theme.red500
-                                font.bold: true
-                                font.pixelSize: theme.fontSizeSmall
-                                TapHandler {
-                                    onTapped: {
-                                        LocalDocs.removeFolder(collection, folder_path)
-                                    }
-                                }
-                            }
-                            Text {
-                                Layout.alignment: Qt.AlignRight
-                                visible: !model.forceIndexing && !model.indexing && model.currentEmbeddingsToIndex === 0
-                                text: qsTr("Rebuild")
-                                elide: Text.ElideRight
-                                color: theme.red500
-                                font.bold: true
-                                font.pixelSize: theme.fontSizeSmall
-                                TapHandler {
-                                    onTapped: { LocalDocs.forceRebuildFolder(folder_path); }
-                                }
-                                HoverHandler { id: hoverHandler1 }
-                                ToolTip.text: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
-                                ToolTip.visible: hoverHandler1.hovered
-                                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+                                onClick: LocalDocs.removeFolder(collection, folder_path)
                             }
                             Item {
                                 Layout.fillWidth: true
                             }
-                            Text {
-                                Layout.alignment: Qt.AlignRight
+                            MyTextButton {
+                                visible: !model.forceIndexing && !model.indexing && model.currentEmbeddingsToIndex === 0
+                                text: qsTr("Rebuild")
+                                color: theme.green500
+                                onClick: { LocalDocs.forceRebuildFolder(folder_path); }
+                                tooltip: qsTr("Reindex this folder from scratch. This is slow and usually not needed.")
+                            }
+                            MyTextButton {
                                 visible: model.forceIndexing
                                 text: qsTr("Update")
-                                elide: Text.ElideRight
-                                color: theme.red500
-                                font.bold: true
-                                font.pixelSize: theme.fontSizeSmall
-                                TapHandler {
-                                    onTapped: { LocalDocs.forceIndexing(collection); }
-                                }
-                                HoverHandler { id: hoverHandler2 }
-                                ToolTip.text: qsTr("Update the collection to the new version. This is a slow operation.")
-                                ToolTip.visible: hoverHandler2.hovered
-                                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+                                color: theme.green500
+                                onClick: { LocalDocs.forceIndexing(collection); }
+                                tooltip: qsTr("Update the collection to the new version. This is a slow operation.")
                             }
                         }
                     }

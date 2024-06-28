@@ -47,6 +47,7 @@ static const QVariantMap basicDefaults {
     { "localdocs/fileExtensions", QStringList { "txt", "pdf", "md", "rst" } },
     { "localdocs/useRemoteEmbed", false },
     { "localdocs/nomicAPIKey",    "" },
+    { "localdocs/embedDevice",    "Auto" },
     { "network/attribution",      "" },
 };
 
@@ -77,6 +78,22 @@ static QString defaultLocalModelsPath()
     return canonicalLocalPath;
 }
 
+static QStringList getDevices(bool skipKompute = false)
+{
+    QStringList deviceList { "Auto" };
+#if defined(Q_OS_MAC) && defined(__aarch64__)
+    deviceList << "Metal";
+#else
+    std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
+    for (LLModel::GPUDevice &d : devices) {
+        if (!skipKompute || strcmp(d.backend, "kompute"))
+            deviceList << QString::fromStdString(d.selectionName());
+    }
+#endif
+    deviceList << "CPU";
+    return deviceList;
+}
+
 class MyPrivateSettings: public MySettings { };
 Q_GLOBAL_STATIC(MyPrivateSettings, settingsInstance)
 MySettings *MySettings::globalInstance()
@@ -85,18 +102,10 @@ MySettings *MySettings::globalInstance()
 }
 
 MySettings::MySettings()
-    : QObject{nullptr}
+    : QObject(nullptr)
+    , m_deviceList(getDevices())
+    , m_embeddingsDeviceList(getDevices(/*skipKompute*/ true))
 {
-    QVector<QString> deviceList{ "Auto" };
-#if defined(Q_OS_MAC) && defined(__aarch64__)
-    deviceList << "Metal";
-#else
-    std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
-    for (LLModel::GPUDevice &d : devices)
-        deviceList << QString::fromStdString(d.selectionName());
-#endif
-    deviceList << "CPU";
-    setDeviceList(deviceList);
 }
 
 QVariant MySettings::getBasicSetting(const QString &name) const
@@ -111,17 +120,6 @@ void MySettings::setBasicSetting(const QString &name, const QVariant &value, std
 
     m_settings.setValue(name, value);
     QMetaObject::invokeMethod(this, u"%1Changed"_s.arg(signal.value_or(name)).toLatin1().constData());
-}
-
-Q_INVOKABLE QVector<QString> MySettings::deviceList() const
-{
-    return m_deviceList;
-}
-
-void MySettings::setDeviceList(const QVector<QString> &value)
-{
-    m_deviceList = value;
-    emit deviceListChanged();
 }
 
 void MySettings::restoreModelDefaults(const ModelInfo &info)
@@ -162,6 +160,7 @@ void MySettings::restoreLocalDocsDefaults()
     setLocalDocsFileExtensions(basicDefaults.value("localdocs/fileExtensions").toStringList());
     setLocalDocsUseRemoteEmbed(basicDefaults.value("localdocs/useRemoteEmbed").toBool());
     setLocalDocsNomicAPIKey(basicDefaults.value("localdocs/nomicAPIKey").toString());
+    setLocalDocsEmbedDevice(basicDefaults.value("localdocs/embedDevice").toString());
 }
 
 void MySettings::eraseModel(const ModelInfo &info)
@@ -382,6 +381,7 @@ bool        MySettings::localDocsShowReferences() const { return getBasicSetting
 QStringList MySettings::localDocsFileExtensions() const { return getBasicSetting("localdocs/fileExtensions").toStringList(); }
 bool        MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting("localdocs/useRemoteEmbed").toBool(); }
 QString     MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
+QString     MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
 QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
 
 void MySettings::setSaveChatsContext(bool value)                      { setBasicSetting("saveChatsContext",         value); }
@@ -397,6 +397,7 @@ void MySettings::setLocalDocsShowReferences(bool value)               { setBasic
 void MySettings::setLocalDocsFileExtensions(const QStringList &value) { setBasicSetting("localdocs/fileExtensions", value, "localDocsFileExtensions"); }
 void MySettings::setLocalDocsUseRemoteEmbed(bool value)               { setBasicSetting("localdocs/useRemoteEmbed", value, "localDocsUseRemoteEmbed"); }
 void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasicSetting("localdocs/nomicAPIKey",    value, "localDocsNomicAPIKey"); }
+void MySettings::setLocalDocsEmbedDevice(const QString &value)        { setBasicSetting("localdocs/embedDevice",    value, "localDocsEmbedDevice"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
 
 QString MySettings::modelPath()
@@ -446,11 +447,10 @@ QString MySettings::device()
 
 void MySettings::setDevice(const QString &value)
 {
-    if (device() == value)
-        return;
-
-    m_settings.setValue("device", value);
-    emit deviceChanged();
+    if (device() != value) {
+        m_settings.setValue("device", value);
+        emit deviceChanged();
+    }
 }
 
 bool MySettings::forceMetal() const
@@ -460,10 +460,10 @@ bool MySettings::forceMetal() const
 
 void MySettings::setForceMetal(bool value)
 {
-    if (m_forceMetal == value)
-        return;
-    m_forceMetal = value;
-    emit forceMetalChanged(value);
+    if (m_forceMetal != value) {
+        m_forceMetal = value;
+        emit forceMetalChanged(value);
+    }
 }
 
 bool MySettings::networkIsActive() const
