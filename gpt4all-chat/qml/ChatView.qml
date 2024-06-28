@@ -850,7 +850,8 @@ Rectangle {
                                         }
 
                                         onLinkHovered: function (link) {
-                                            statusBar.hoveredLink = link
+                                            if (!currentResponse || !currentChat.responseInProgress)
+                                                statusBar.hoveredLink = link
                                         }
 
                                         Menu {
