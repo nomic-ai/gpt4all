@@ -6,7 +6,7 @@ set(BIN_DIR ${DATA_DIR}/bin)
 set(Qt6_ROOT_DIR "@Qt6_ROOT_DIR@")
 set(ENV{LD_LIBRARY_PATH} "${BIN_DIR}:${Qt6_ROOT_DIR}/../lib/")
 execute_process(COMMAND ${LINUXDEPLOYQT} ${BIN_DIR}/chat -qmldir=${CMAKE_CURRENT_SOURCE_DIR} -bundle-non-qt-libs -qmake=${Qt6_ROOT_DIR}/bin/qmake -verbose=2 -exclude-libs=libcuda.so.1)
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-32.png"
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-32.png"
      DESTINATION ${DATA_DIR})
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/icons/logo-48.png"
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/icons/gpt4all-48.png"
      DESTINATION ${DATA_DIR})
