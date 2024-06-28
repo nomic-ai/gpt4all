@@ -82,7 +82,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: qsTr("Locally installed large language models")
+                    text: qsTr("Locally installed chat models")
                     font.pixelSize: theme.fontSizeLarge
                     color: theme.titleInfoTextColor
                 }
