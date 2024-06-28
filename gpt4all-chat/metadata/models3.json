@@ -312,6 +312,7 @@
     "filename": "all-MiniLM-L6-v2.gguf2.f16.gguf",
     "filesize": "45949216",
     "requires": "2.7.4",
+    "removedIn": "3.0.0",
     "ramrequired": "1",
     "parameters": "40 million",
     "quant": "f16",
