@@ -208,7 +208,7 @@ class InstalledModels : public QSortFilterProxyModel
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
-    explicit InstalledModels(QObject *parent);
+    explicit InstalledModels(QObject *parent, bool selectable = false);
     int count() const { return rowCount(); }
 
 Q_SIGNALS:
@@ -216,6 +216,9 @@ Q_SIGNALS:
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+
+private:
+    bool m_selectable;
 };
 
 class DownloadableModels : public QSortFilterProxyModel
@@ -252,6 +255,7 @@ class ModelList : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
+    Q_PROPERTY(InstalledModels* selectableModels READ selectableModels NOTIFY selectableModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
     Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
     Q_PROPERTY(bool asyncModelRequestOngoing READ asyncModelRequestOngoing NOTIFY asyncModelRequestOngoingChanged)
@@ -396,6 +400,7 @@ public:
     const QList<QString> userDefaultModelList() const;
 
     InstalledModels *installedModels() const { return m_installedModels; }
+    InstalledModels *selectableModels() const { return m_selectableModels; }
     DownloadableModels *downloadableModels() const { return m_downloadableModels; }
 
     static inline QString toFileSize(quint64 sz) {
@@ -433,6 +438,7 @@ public:
 Q_SIGNALS:
     void countChanged();
     void installedModelsChanged();
+    void selectableModelsChanged();
     void downloadableModelsChanged();
     void userDefaultModelListChanged();
     void asyncModelRequestOngoingChanged();
@@ -471,6 +477,7 @@ private:
     mutable QMutex m_mutex;
     QNetworkAccessManager m_networkManager;
     InstalledModels *m_installedModels;
+    InstalledModels *m_selectableModels;
     DownloadableModels *m_downloadableModels;
     QList<ModelInfo*> m_models;
     QHash<QString, ModelInfo*> m_modelMap;

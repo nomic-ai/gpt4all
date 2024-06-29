@@ -413,7 +413,7 @@ Window {
 
                 ColorOverlay {
                     id: antennaColored
-                    visible: ModelList.installedModels.count !== 0 && (currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive)
+                    visible: ModelList.selectableModels.count !== 0 && (currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive)
                     anchors.fill: antennaImage
                     source: antennaImage
                     color: theme.styledTextColor

@@ -365,7 +365,12 @@ Rectangle {
                                 Accessible.role: Accessible.Paragraph
                                 Accessible.name: qsTr("Description")
                                 Accessible.description: qsTr("File description")
-                                onLinkActivated: Qt.openUrlExternally(link)
+                                onLinkActivated: function(link) { Qt.openUrlExternally(link); }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    acceptedButtons: Qt.NoButton // pass clicks to parent
+                                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                }
                             }
 
                             // FIXME Need to overhaul design here which must take into account
@@ -418,7 +423,7 @@ Rectangle {
                                         Layout.minimumWidth: 200
                                         Layout.fillWidth: true
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
-                                        visible: installed || downloadError !== ""
+                                        visible: !isDownloading && (installed || isIncomplete)
                                         Accessible.description: qsTr("Remove model from filesystem")
                                         onClicked: {
                                             Download.removeModel(filename);

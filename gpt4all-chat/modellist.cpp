@@ -367,8 +367,9 @@ QVariantMap ModelInfo::getFields() const
     };
 }
 
-InstalledModels::InstalledModels(QObject *parent)
+InstalledModels::InstalledModels(QObject *parent, bool selectable)
     : QSortFilterProxyModel(parent)
+    , m_selectable(selectable)
 {
     connect(this, &InstalledModels::rowsInserted, this, &InstalledModels::countChanged);
     connect(this, &InstalledModels::rowsRemoved, this, &InstalledModels::countChanged);
@@ -379,11 +380,15 @@ InstalledModels::InstalledModels(QObject *parent)
 bool InstalledModels::filterAcceptsRow(int sourceRow,
                                        const QModelIndex &sourceParent) const
 {
+    /* TODO(jared): We should list incomplete models alongside installed models on the
+     * Models page. Simply replacing isDownloading with isIncomplete here doesn't work for
+     * some reason - the models show up as something else. */
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
+    bool isDownloading = sourceModel()->data(index, ModelList::DownloadingRole).toBool();
     bool isEmbeddingModel = sourceModel()->data(index, ModelList::IsEmbeddingModelRole).toBool();
     // list installed chat models
-    return isInstalled && !isEmbeddingModel;
+    return (isInstalled || (!m_selectable && isDownloading)) && !isEmbeddingModel;
 }
 
 DownloadableModels::DownloadableModels(QObject *parent)
@@ -403,11 +408,9 @@ bool DownloadableModels::filterAcceptsRow(int sourceRow,
     // FIXME We can eliminate the 'expanded' code as the UI no longer uses this
     bool withinLimit = sourceRow < (m_expanded ? sourceModel()->rowCount() : m_limit);
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
-    bool isDownloadable = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
-    bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
-    bool isIncomplete = sourceModel()->data(index, ModelList::IncompleteRole).toBool();
+    bool hasDescription = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
     bool isClone = sourceModel()->data(index, ModelList::IsCloneRole).toBool();
-    return withinLimit && !isClone && !isInstalled && (isDownloadable || isIncomplete);
+    return withinLimit && hasDescription && !isClone;
 }
 
 int DownloadableModels::count() const
@@ -446,6 +449,7 @@ ModelList *ModelList::globalInstance()
 ModelList::ModelList()
     : QAbstractListModel(nullptr)
     , m_installedModels(new InstalledModels(this))
+    , m_selectableModels(new InstalledModels(this, /*selectable*/ true))
     , m_downloadableModels(new DownloadableModels(this))
     , m_asyncModelRequestOngoing(false)
     , m_discoverLimit(20)
@@ -456,6 +460,7 @@ ModelList::ModelList()
     , m_discoverInProgress(false)
 {
     m_installedModels->setSourceModel(this);
+    m_selectableModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
 
     connect(MySettings::globalInstance(), &MySettings::modelPathChanged, this, &ModelList::updateModelsFromDirectory);

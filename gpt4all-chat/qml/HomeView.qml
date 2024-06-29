@@ -53,7 +53,7 @@ Rectangle {
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: qsTr("the privacy-first LLM chat application")
+                    text: qsTr("The privacy-first LLM chat application")
                     font.pixelSize: theme.fontSizeLarge
                     color: theme.titleInfoTextColor
                 }

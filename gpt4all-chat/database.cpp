@@ -1493,7 +1493,7 @@ void Database::start()
     } else if (!initDb(modelPath, oldCollections)) {
         m_databaseValid = false;
     } else {
-        //cleanDB();
+        cleanDB();
         addCurrentFolders();
     }
 
@@ -2118,7 +2118,8 @@ void Database::changeFileExtensions(const QStringList &extensions)
 
     m_scannedFileExtensions = extensions;
 
-    cleanDB();
+    if (cleanDB())
+        updateCollectionStatistics();
 
     QSqlQuery q(m_db);
     QList<CollectionItem> collections;
