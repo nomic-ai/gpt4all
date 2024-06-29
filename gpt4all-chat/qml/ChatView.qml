@@ -242,8 +242,8 @@ Rectangle {
                     enabled: !currentChat.isServer
                         && !currentChat.trySwitchContextInProgress
                         && !currentChat.isCurrentlyLoading
-                        && ModelList.installedModels.count !== 0
-                    model: ModelList.installedModels
+                        && ModelList.selectableModels.count !== 0
+                    model: ModelList.selectableModels
                     valueRole: "id"
                     textRole: "name"
 
@@ -297,7 +297,7 @@ Rectangle {
                             return 25
                         }
                         text: {
-                            if (ModelList.installedModels.count === 0)
+                            if (ModelList.selectableModels.count === 0)
                                 return qsTr("No model installed...")
                             if (currentChat.modelLoadingError !== "")
                                 return qsTr("Model loading error...")
@@ -602,10 +602,10 @@ Rectangle {
                         id: homePage
                         color: "transparent"
                         anchors.fill: parent
-                        visible: !currentChat.isModelLoaded && (ModelList.installedModels.count === 0 || currentModelName() === "") && !currentChat.isServer
+                        visible: !currentChat.isModelLoaded && (ModelList.selectableModels.count === 0 || currentModelName() === "") && !currentChat.isServer
 
                         ColumnLayout {
-                            visible: ModelList.installedModels.count !== 0
+                            visible: ModelList.selectableModels.count !== 0
                             id: modelInstalledLabel
                             anchors.centerIn: parent
                             spacing: 0
@@ -637,7 +637,7 @@ Rectangle {
 
                         MyButton {
                             id: loadDefaultModelButton
-                            visible: ModelList.installedModels.count !== 0
+                            visible: ModelList.selectableModels.count !== 0
                             anchors.top: modelInstalledLabel.bottom
                             anchors.topMargin: 50
                             anchors.horizontalCenter: modelInstalledLabel.horizontalCenter
@@ -683,7 +683,7 @@ Rectangle {
 
                         ColumnLayout {
                             id: noModelInstalledLabel
-                            visible: ModelList.installedModels.count === 0
+                            visible: ModelList.selectableModels.count === 0
                             anchors.centerIn: parent
                             spacing: 0
 
@@ -704,7 +704,7 @@ Rectangle {
                         }
 
                         MyButton {
-                            visible: ModelList.installedModels.count === 0
+                            visible: ModelList.selectableModels.count === 0
                             anchors.top: noModelInstalledLabel.bottom
                             anchors.topMargin: 50
                             anchors.horizontalCenter: noModelInstalledLabel.horizontalCenter
@@ -721,7 +721,7 @@ Rectangle {
 
                     ColumnLayout {
                         anchors.fill: parent
-                        visible: ModelList.installedModels.count !== 0 && chatModel.count !== 0
+                        visible: ModelList.selectableModels.count !== 0 && chatModel.count !== 0
                         ListView {
                             id: listView
                             Layout.maximumWidth: 1280
@@ -1396,7 +1396,7 @@ Rectangle {
 
             RectangularGlow {
                 id: effect
-                visible: !currentChat.isServer && ModelList.installedModels.count !== 0
+                visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
                 anchors.fill: textInputView
                 glowRadius: 50
                 spread: 0
@@ -1414,7 +1414,7 @@ Rectangle {
                 anchors.leftMargin: Math.max((parent.width - 1310) / 2, 30)
                 anchors.rightMargin: Math.max((parent.width - 1310) / 2, 30)
                 height: Math.min(contentHeight, 200)
-                visible: !currentChat.isServer && ModelList.installedModels.count !== 0
+                visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
                 MyTextArea {
                     id: textInput
                     color: theme.textColor
@@ -1508,7 +1508,7 @@ Rectangle {
                 anchors.rightMargin: 15
                 width: 30
                 height: 30
-                visible: !currentChat.isServer && ModelList.installedModels.count !== 0
+                visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
                 enabled: !currentChat.responseInProgress
                 source: "qrc:/gpt4all/icons/send_message.svg"
                 Accessible.name: qsTr("Send message")
