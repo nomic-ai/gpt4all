@@ -379,6 +379,9 @@ InstalledModels::InstalledModels(QObject *parent)
 bool InstalledModels::filterAcceptsRow(int sourceRow,
                                        const QModelIndex &sourceParent) const
 {
+    /* TODO(jared): We should list incomplete models alongside installed models on the
+     * Models page. Simply ORing isIncomplete here doesn't work for some reason - the
+     * models show up as something else. */
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
     bool isEmbeddingModel = sourceModel()->data(index, ModelList::IsEmbeddingModelRole).toBool();
@@ -403,11 +406,9 @@ bool DownloadableModels::filterAcceptsRow(int sourceRow,
     // FIXME We can eliminate the 'expanded' code as the UI no longer uses this
     bool withinLimit = sourceRow < (m_expanded ? sourceModel()->rowCount() : m_limit);
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
-    bool isDownloadable = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
-    bool isInstalled = sourceModel()->data(index, ModelList::InstalledRole).toBool();
-    bool isIncomplete = sourceModel()->data(index, ModelList::IncompleteRole).toBool();
+    bool hasDescription = !sourceModel()->data(index, ModelList::DescriptionRole).toString().isEmpty();
     bool isClone = sourceModel()->data(index, ModelList::IsCloneRole).toBool();
-    return withinLimit && !isClone && !isInstalled && (isDownloadable || isIncomplete);
+    return withinLimit && hasDescription && !isClone;
 }
 
 int DownloadableModels::count() const
