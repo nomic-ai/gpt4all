@@ -830,29 +830,40 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
 {
     QTextBlock block = this->currentBlock();
 
+    // Search the first block of the frame we're in for the code to use for highlighting
+    int userState = block.userState();
+    if (QTextFrame *frame = block.document()->frameAt(block.position())) {
+        QTextBlock firstBlock = frame->begin().currentBlock();
+        if (firstBlock.isValid())
+            userState = firstBlock.userState();
+    }
+
     QVector<HighlightingRule> rules;
-    if (block.userState() == Python)
-        rules = pythonHighlightingRules();
-    else if (block.userState() == Cpp)
-        rules = cppHighlightingRules();
-    else if (block.userState() == Csharp)
-        rules = csharpHighlightingRules();
-    else if (block.userState() == Bash)
-        rules = bashHighlightingRules();
-    else if (block.userState() == TypeScript)
-        rules = typescriptHighlightingRules();
-    else if (block.userState() == Java)
-        rules = javaHighlightingRules();
-    else if (block.userState() == Go)
-        rules = javaHighlightingRules();
-    else if (block.userState() == Json)
-        rules = jsonHighlightingRules();
-    else if (block.userState() == Latex)
-        rules = latexHighlightingRules();
-    else if (block.userState() == Html)
-        rules = htmlHighlightingRules();
-    else if (block.userState() == Php)
-        rules = phpHighlightingRules();
+    switch (userState) {
+    case Python:
+        rules = pythonHighlightingRules(); break;
+    case Cpp:
+        rules = cppHighlightingRules(); break;
+    case Csharp:
+        rules = csharpHighlightingRules(); break;
+    case Bash:
+        rules = bashHighlightingRules(); break;
+    case TypeScript:
+        rules = typescriptHighlightingRules(); break;
+    case Java:
+        rules = javaHighlightingRules(); break;
+    case Go:
+        rules = javaHighlightingRules(); break;
+    case Json:
+        rules = jsonHighlightingRules(); break;
+    case Latex:
+        rules = latexHighlightingRules(); break;
+    case Html:
+        rules = htmlHighlightingRules(); break;
+    case Php:
+        rules = phpHighlightingRules(); break;
+    default: break;
+    }
 
     for (const HighlightingRule &rule : std::as_const(rules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
@@ -922,10 +933,13 @@ void ChatViewTextProcessor::setShouldProcessText(bool b)
     handleTextChanged();
 }
 
-void traverseDocument(QTextDocument *doc)
+void traverseDocument(QTextDocument *doc, QTextFrame *frame)
 {
-    QTextFrame *rootFrame = doc->rootFrame();
+    QTextFrame *rootFrame = frame ? frame : doc->rootFrame();
     QTextFrame::iterator rootIt;
+
+    if (!frame)
+        qDebug() << "Begin traverse";
 
     for (rootIt = rootFrame->begin(); !rootIt.atEnd(); ++rootIt) {
         QTextFrame *childFrame = rootIt.currentFrame();
@@ -933,27 +947,10 @@ void traverseDocument(QTextDocument *doc)
 
         if (childFrame) {
             qDebug() << "Frame from" << childFrame->firstPosition() << "to" << childFrame->lastPosition();
-
-            // Iterate over blocks within the frame
-            QTextFrame::iterator frameIt;
-            for (frameIt = childFrame->begin(); !frameIt.atEnd(); ++frameIt) {
-                QTextBlock block = frameIt.currentBlock();
-                if (block.isValid()) {
-                    qDebug() << "    Block position:" << block.position();
-                    qDebug() << "    Block text:" << block.text();
-
-                    // Iterate over lines within the block
-                    for (QTextBlock::iterator blockIt = block.begin(); !(blockIt.atEnd()); ++blockIt) {
-                        QTextFragment fragment = blockIt.fragment();
-                        if (fragment.isValid()) {
-                            qDebug() << "        Fragment text:" << fragment.text();
-                        }
-                    }
-                }
-            }
+            traverseDocument(doc, childFrame);
         } else if (childBlock.isValid()) {
-            qDebug() << "Block position:" << childBlock.position();
-            qDebug() << "Block text:" << childBlock.text();
+            qDebug() << QString("    Block %1 position:").arg(childBlock.userState()) << childBlock.position();
+            qDebug() << QString("    Block %1 text:").arg(childBlock.userState()) << childBlock.text();
 
             // Iterate over lines within the block
             for (QTextBlock::iterator blockIt = childBlock.begin(); !(blockIt.atEnd()); ++blockIt) {
@@ -964,6 +961,9 @@ void traverseDocument(QTextDocument *doc)
             }
         }
     }
+
+    if (!frame)
+        qDebug() << "End traverse";
 }
 
 void ChatViewTextProcessor::handleTextChanged()
@@ -1136,13 +1136,7 @@ void ChatViewTextProcessor::handleCodeBlocks()
         codeCursor.setCharFormat(codeBlockCharFormat);
 
         codeCursor.block().setUserState(stringToLanguage(codeLanguage));
-        for (int i = 0; i < lines.size(); ++i) {
-            codeCursor.insertText(lines[i]);
-            if (i < lines.size() - 1) {
-                codeCursor.insertBlock();
-                codeCursor.block().setUserState(stringToLanguage(codeLanguage));
-            }
-        }
+        codeCursor.insertText(lines.join('\n'));
 
         cursor = mainFrame->lastCursorPosition();
         cursor.setCharFormat(QTextCharFormat());
