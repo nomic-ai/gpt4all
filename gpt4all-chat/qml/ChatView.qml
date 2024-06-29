@@ -1020,9 +1020,9 @@ Rectangle {
                                             MyToolButton {
                                                 id: thumbsDown
                                                 anchors.top: thumbsUp.top
-                                                anchors.topMargin: 10
+                                                anchors.topMargin: 3
                                                 anchors.left: thumbsUp.right
-                                                anchors.leftMargin: 2
+                                                anchors.leftMargin: 3
                                                 width: 24
                                                 height: 24
                                                 imageWidth: width
@@ -1308,33 +1308,122 @@ Rectangle {
                         }
                     }
                 }
+
             }
 
-            RowLayout {
-                id: conversationButtons
-                anchors.bottom: textInputView.top
-                anchors.horizontalCenter: textInputView.horizontalCenter
-                anchors.bottomMargin: 20
-                spacing: 10
-                MyButton {
-                    textColor: theme.textColor
-                    visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded
-                    Image {
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                        anchors.leftMargin: 15
-                        source: currentChat.responseInProgress ? "qrc:/gpt4all/icons/stop_generating.svg" : "qrc:/gpt4all/icons/regenerate.svg"
+            Rectangle {
+                id: conversationTrayContent
+                anchors.bottom: conversationTrayButton.top
+                anchors.horizontalCenter: conversationTrayButton.horizontalCenter
+                width: conversationTrayContentLayout.width
+                height: conversationTrayContentLayout.height
+                color: theme.containerBackground
+                radius: 5
+                opacity: 0
+                visible: false
+                clip: true
+                z: 400
+
+                property bool isHovered: {
+                    return conversationTrayButton.isHovered ||
+                        resetContextButton.hovered || copyChatButton.hovered ||
+                        regenerateButton.hovered || stopButton.hovered
+                }
+
+                state: conversationTrayContent.isHovered ? "expanded" : "collapsed"
+                states: [
+                    State {
+                        name: "expanded"
+                        PropertyChanges { target: conversationTrayContent; opacity: 1 }
+                    },
+                    State {
+                        name: "collapsed"
+                        PropertyChanges { target: conversationTrayContent; opacity: 0 }
                     }
+                ]
+                transitions: [
+                    Transition {
+                        from: "collapsed"
+                        to: "expanded"
+                        SequentialAnimation {
+                            ScriptAction {
+                                script: conversationTrayContent.visible = true
+                            }
+                            PropertyAnimation {
+                                target: conversationTrayContent
+                                property: "opacity"
+                                duration: 300
+                                easing.type: Easing.InOutQuad
+                            }
+                        }
+                    },
+                    Transition {
+                        from: "expanded"
+                        to: "collapsed"
+                        SequentialAnimation {
+                            PropertyAnimation {
+                                target: conversationTrayContent
+                                property: "opacity"
+                                duration: 300
+                                easing.type: Easing.InOutQuad
+                            }
+                            ScriptAction {
+                                script: conversationTrayContent.visible = false
+                            }
+                        }
+                    }
+                ]
 
-                    leftPadding: 50
-                    onClicked: {
-                        var index = Math.max(0, chatModel.count - 1);
-                        var listElement = chatModel.get(index);
-
-                        if (currentChat.responseInProgress) {
-                            listElement.stopped = true
-                            currentChat.stopGenerating()
-                        } else {
+                RowLayout {
+                    id: conversationTrayContentLayout
+                    spacing: 0
+                    MyToolButton {
+                        id: resetContextButton
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
+                        source: "qrc:/gpt4all/icons/recycle.svg"
+                        imageWidth: 20
+                        imageHeight: 20
+                        onClicked: {
+                            Network.trackChatEvent("reset_context", { "length": chatModel.count })
+                            currentChat.reset();
+                            currentChat.processSystemPrompt();
+                        }
+                        ToolTip.visible: resetContextButton.hovered
+                        ToolTip.text: qsTr("Erase and reset chat session")
+                    }
+                    MyToolButton {
+                        id: copyChatButton
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
+                        source: "qrc:/gpt4all/icons/copy.svg"
+                        imageWidth: 20
+                        imageHeight: 20
+                        TextEdit{
+                            id: copyEdit
+                            visible: false
+                        }
+                        onClicked: {
+                            var conversation = getConversation()
+                            copyEdit.text = conversation
+                            copyEdit.selectAll()
+                            copyEdit.copy()
+                            copyMessage.open()
+                        }
+                        ToolTip.visible: copyChatButton.hovered
+                        ToolTip.text: qsTr("Copy chat session to clipboard")
+                    }
+                    MyToolButton {
+                        id: regenerateButton
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
+                        source: "qrc:/gpt4all/icons/regenerate.svg"
+                        imageWidth: 20
+                        imageHeight: 20
+                        visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded && !currentChat.responseInProgress
+                        onClicked: {
+                            var index = Math.max(0, chatModel.count - 1);
+                            var listElement = chatModel.get(index);
                             currentChat.regenerateResponse()
                             if (chatModel.count) {
                                 if (listElement.name === qsTr("Response: ")) {
@@ -1347,51 +1436,89 @@ Rectangle {
                                 }
                             }
                         }
+                        ToolTip.visible: regenerateButton.hovered
+                        ToolTip.text: qsTr("Redo last chat response")
                     }
+                    MyToolButton {
+                        id: stopButton
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
+                        source: "qrc:/gpt4all/icons/stop_generating.svg"
+                        imageWidth: 20
+                        imageHeight: 20
+                        visible: currentChat.responseInProgress
+                        onClicked: {
+                            var index = Math.max(0, chatModel.count - 1);
+                            var listElement = chatModel.get(index);
+                            listElement.stopped = true
+                            currentChat.stopGenerating()
+                        }
+                        ToolTip.visible: stopButton.hovered
+                        ToolTip.text: qsTr("Stop the current response generation")
+                    }
+                }
+            }
 
-                    borderWidth: 1
-                    backgroundColor: theme.conversationButtonBackground
-                    backgroundColorHovered: theme.conversationButtonBackgroundHovered
-                    backgroundRadius: 5
-                    padding: 15
-                    topPadding: 8
-                    bottomPadding: 8
-                    text: currentChat.responseInProgress ? qsTr("Stop generating") : qsTr("Regenerate response")
-                    fontPixelSize: theme.fontSizeSmall
-                    Accessible.description: qsTr("Controls generation of the response")
+            Item {
+                id: conversationTrayButton
+                anchors.bottom: textInputView.top
+                anchors.horizontalCenter: textInputView.horizontalCenter
+                width: 30
+                height: 30
+                visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded
+                property bool isHovered: conversationTrayMouseAreaButton.containsMouse
+                MouseArea {
+                    id: conversationTrayMouseAreaButton
+                    anchors.fill: parent
+                    hoverEnabled: true
+                }
+                Text {
+                    id: conversationTrayTextButton
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    horizontalAlignment: Qt.AlignHCenter
+                    leftPadding: 5
+                    rightPadding: 5
+                    text: "\u00B7\u00B7\u00B7"
+                    color: theme.textColor
+                    font.pixelSize: 20 // fixed size
+                }
+            }
+
+            MyButton {
+                anchors.bottom: textInputView.top
+                anchors.horizontalCenter: textInputView.horizontalCenter
+                anchors.bottomMargin: 20
+                textColor: theme.textColor
+                visible: !currentChat.isServer
+                    && !currentChat.isModelLoaded
+                    && currentChat.modelLoadingError === ""
+                    && !currentChat.trySwitchContextInProgress
+                    && !currentChat.isCurrentlyLoading
+                    && currentModelName() !== ""
+
+                Image {
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: 15
+                    sourceSize.width: 15
+                    sourceSize.height: 15
+                    source: "qrc:/gpt4all/icons/regenerate.svg"
+                }
+                leftPadding: 40
+                onClicked: {
+                    currentChat.reloadModel();
                 }
 
-                MyButton {
-                    textColor: theme.textColor
-                    visible: !currentChat.isServer
-                        && !currentChat.isModelLoaded
-                        && currentChat.modelLoadingError === ""
-                        && !currentChat.trySwitchContextInProgress
-                        && !currentChat.isCurrentlyLoading
-                        && currentModelName() !== ""
-
-                    Image {
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                        anchors.leftMargin: 15
-                        source: "qrc:/gpt4all/icons/regenerate.svg"
-                    }
-                    leftPadding: 50
-                    onClicked: {
-                        currentChat.reloadModel();
-                    }
-
-                    borderWidth: 1
-                    backgroundColor: theme.conversationButtonBackground
-                    backgroundColorHovered: theme.conversationButtonBackgroundHovered
-                    backgroundRadius: 5
-                    padding: 15
-                    topPadding: 8
-                    bottomPadding: 8
-                    text: qsTr("Reload \u00B7 ") + currentChat.modelInfo.name
-                    fontPixelSize: theme.fontSizeSmall
-                    Accessible.description: qsTr("Reloads the model")
-                }
+                borderWidth: 1
+                backgroundColor: theme.conversationButtonBackground
+                backgroundColorHovered: theme.conversationButtonBackgroundHovered
+                backgroundRadius: 5
+                padding: 15
+                topPadding: 8
+                bottomPadding: 8
+                text: qsTr("Reload \u00B7 ") + currentChat.modelInfo.name
+                fontPixelSize: theme.fontSizeSmall
+                Accessible.description: qsTr("Reloads the model")
             }
 
             Text {

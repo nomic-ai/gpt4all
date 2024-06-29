@@ -518,7 +518,7 @@ QtObject {
             case "Dark":
                 return accentColor;
             default:
-                return accentColor;
+                return black;
         }
     }
 
@@ -529,7 +529,7 @@ QtObject {
             case "Dark":
                 return darkwhite;
             default:
-                return black;
+                return accentColor;
         }
     }
 
@@ -740,7 +740,7 @@ QtObject {
             case "Dark":
                 return green400;
             default:
-                return green400;
+                return black;
         }
     }
 
