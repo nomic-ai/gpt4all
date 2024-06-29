@@ -1418,8 +1418,8 @@ Rectangle {
                 MyTextArea {
                     id: textInput
                     color: theme.textColor
-                    topPadding: 30
-                    bottomPadding: 30
+                    topPadding: 15
+                    bottomPadding: 15
                     leftPadding: 20
                     rightPadding: 40
                     enabled: currentChat.isModelLoaded && !currentChat.isServer
@@ -1506,8 +1506,8 @@ Rectangle {
                 anchors.right: textInputView.right
                 anchors.verticalCenter: textInputView.verticalCenter
                 anchors.rightMargin: 15
-                width: 30
-                height: 30
+                imageWidth: theme.fontSizeLarger
+                imageHeight: theme.fontSizeLarger
                 visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
                 enabled: !currentChat.responseInProgress
                 source: "qrc:/gpt4all/icons/send_message.svg"
