@@ -208,6 +208,7 @@ qt_add_qml_module(chat
       icons/thumbs_up.svg
       icons/thumbs_down.svg
       icons/twitter.svg
+      icons/up_down.svg
       icons/left_panel_closed.svg
       icons/left_panel_open.svg
       icons/gpt4all.svg

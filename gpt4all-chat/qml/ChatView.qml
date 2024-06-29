@@ -205,13 +205,12 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 20
+                spacing: 0
 
                 Rectangle {
                     Layout.alignment: Qt.AlignLeft
                     Layout.leftMargin: 30
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 100
                     color: "transparent"
                     Layout.preferredHeight: childrenRect.height
                     MyToolButton {
@@ -237,8 +236,15 @@ Rectangle {
                     id: comboBox
                     Layout.alignment: Qt.AlignHCenter
                     Layout.fillHeight: true
-                    Layout.preferredWidth: 350
-                    Layout.maximumWidth: 675
+                    Layout.preferredWidth: 550
+                    Layout.leftMargin: {
+                        // This function works in tandem with the preferredWidth and the layout to
+                        // provide the maximum size combobox we can have at the smallest window width
+                        // we allow with the largest font size we allow. It is unfortunately based
+                        // upon a magic number that was produced through trial and error for something
+                        // I don't fully understand.
+                        return -Math.max(0, comboBox.width / 2 + collectionsButton.width + 110 /*magic*/ - comboLayout.width / 2);
+                    }
                     enabled: !currentChat.isServer
                         && !currentChat.trySwitchContextInProgress
                         && !currentChat.isCurrentlyLoading
@@ -266,8 +272,8 @@ Rectangle {
                         ProgressBar {
                             id: modelProgress
                             anchors.bottom: parent.bottom
-                            anchors.left: parent.left
-                            anchors.right: parent.right
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: contentRow.width + 20
                             visible: currentChat.isCurrentlyLoading
                             height: 10
                             value: currentChat.modelLoadingPercentage
@@ -286,38 +292,110 @@ Rectangle {
                             }
                         }
                     }
-                    contentItem: Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        leftPadding: 10
-                        rightPadding: {
-                            if (ejectButton.visible && reloadButton)
-                                return 105;
-                            if (reloadButton.visible)
-                                return 65
-                            return 25
+
+                    contentItem: Item {
+                        RowLayout {
+                            id: contentRow
+                            anchors.centerIn: parent
+                            spacing: 0
+                            RowLayout {
+                                id: miniButtonsRow
+                                clip: true
+                                Behavior on Layout.preferredWidth {
+                                    NumberAnimation {
+                                        duration: 300
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                }
+
+                                Layout.preferredWidth: {
+                                    if (!comboBox.hovered)
+                                        return 0
+                                    return (reloadButton.visible ? reloadButton.width : 0) + (ejectButton.visible ? ejectButton.width : 0)
+                                }
+
+                                MyMiniButton {
+                                    id: reloadButton
+                                    Layout.alignment: Qt.AlignCenter
+                                    visible: currentChat.modelLoadingError === ""
+                                        && !currentChat.trySwitchContextInProgress
+                                        && !currentChat.isCurrentlyLoading
+                                        && (currentChat.isModelLoaded || currentModelName() !== "")
+                                    source: "qrc:/gpt4all/icons/regenerate.svg"
+                                    backgroundColor: theme.textColor
+                                    backgroundColorHovered: theme.styledTextColor
+                                    onClicked: {
+                                        if (currentChat.isModelLoaded)
+                                            currentChat.forceReloadModel();
+                                        else
+                                            currentChat.reloadModel();
+                                    }
+                                    ToolTip.text: qsTr("Reload the currently loaded model")
+                                    ToolTip.visible: hovered
+                                }
+
+                                MyMiniButton {
+                                    id: ejectButton
+                                    Layout.alignment: Qt.AlignCenter
+                                    visible: currentChat.isModelLoaded && !currentChat.isCurrentlyLoading
+                                    source: "qrc:/gpt4all/icons/eject.svg"
+                                    backgroundColor: theme.textColor
+                                    backgroundColorHovered: theme.styledTextColor
+                                    onClicked: {
+                                        currentChat.forceUnloadModel();
+                                    }
+                                    ToolTip.text: qsTr("Eject the currently loaded model")
+                                    ToolTip.visible: hovered
+                                }
+                            }
+
+                            Text {
+                                id: comboBoxText
+                                leftPadding: 10
+                                rightPadding: 10
+                                text: {
+                                    if (ModelList.selectableModels.count === 0)
+                                        return qsTr("No model installed...")
+                                    if (currentChat.modelLoadingError !== "")
+                                        return qsTr("Model loading error...")
+                                    if (currentChat.trySwitchContextInProgress === 1)
+                                        return qsTr("Waiting for model...")
+                                    if (currentChat.trySwitchContextInProgress === 2)
+                                        return qsTr("Switching context...")
+                                    if (currentModelName() === "")
+                                        return qsTr("Choose a model...")
+                                    if (currentChat.modelLoadingPercentage === 0.0)
+                                        return qsTr("Reload \u00B7 ") + currentModelName()
+                                    if (currentChat.isCurrentlyLoading)
+                                        return qsTr("Loading \u00B7 ") + currentModelName()
+                                    return currentModelName()
+                                }
+                                font.pixelSize: theme.fontSizeLarger
+                                color: theme.iconBackgroundLight
+                                verticalAlignment: Text.AlignVCenter
+                                horizontalAlignment: Text.AlignHCenter
+                                elide: Text.ElideRight
+                            }
+                            Item {
+                                Layout.minimumWidth: updown.width
+                                Layout.minimumHeight: updown.height
+                                Image {
+                                    id: updown
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    sourceSize.width: comboBoxText.font.pixelSize
+                                    sourceSize.height: comboBoxText.font.pixelSize
+                                    mipmap: true
+                                    visible: false
+                                    source: "qrc:/gpt4all/icons/up_down.svg"
+                                }
+
+                                ColorOverlay {
+                                    anchors.fill: updown
+                                    source: updown
+                                    color: comboBoxText.color
+                                }
+                            }
                         }
-                        text: {
-                            if (ModelList.selectableModels.count === 0)
-                                return qsTr("No model installed...")
-                            if (currentChat.modelLoadingError !== "")
-                                return qsTr("Model loading error...")
-                            if (currentChat.trySwitchContextInProgress === 1)
-                                return qsTr("Waiting for model...")
-                            if (currentChat.trySwitchContextInProgress === 2)
-                                return qsTr("Switching context...")
-                            if (currentModelName() === "")
-                                return qsTr("Choose a model...")
-                            if (currentChat.modelLoadingPercentage === 0.0)
-                                return qsTr("Reload \u00B7 ") + currentModelName()
-                            if (currentChat.isCurrentlyLoading)
-                                return qsTr("Loading \u00B7 ") + currentModelName()
-                            return currentModelName()
-                        }
-                        font.pixelSize: theme.fontSizeLarger
-                        color: theme.iconBackgroundLight
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        elide: Text.ElideRight
                     }
                     delegate: ItemDelegate {
                         id: comboItemDelegate
@@ -330,11 +408,11 @@ Rectangle {
                             verticalAlignment: Text.AlignVCenter
                         }
                         background: Rectangle {
-                            color: (index % 2 === 0 ? theme.darkContrast : theme.lightContrast)
-                            border.width: highlighted
-                            border.color: theme.accentColor
+                            color: highlighted ? theme.lightContrast : theme.darkContrast
                         }
                         highlighted: comboBox.highlightedIndex === index
+                    }
+                    indicator: Item {
                     }
                     popup: Popup {
                         id: comboItemPopup
@@ -378,46 +456,6 @@ Rectangle {
                             comboBox.changeModel(index);
                         }
                     }
-
-                    MyMiniButton {
-                        id: ejectButton
-                        visible: currentChat.isModelLoaded && !currentChat.isCurrentlyLoading
-                        z: 500
-                        anchors.right: parent.right
-                        anchors.rightMargin: 50
-                        anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/gpt4all/icons/eject.svg"
-                        backgroundColor: theme.mutedLightTextColor
-                        backgroundColorHovered: theme.iconBackgroundLight
-                        onClicked: {
-                            currentChat.forceUnloadModel();
-                        }
-                        ToolTip.text: qsTr("Eject the currently loaded model")
-                        ToolTip.visible: hovered
-                    }
-
-                    MyMiniButton {
-                        id: reloadButton
-                        visible: currentChat.modelLoadingError === ""
-                            && !currentChat.trySwitchContextInProgress
-                            && !currentChat.isCurrentlyLoading
-                            && (currentChat.isModelLoaded || currentModelName() !== "")
-                        z: 500
-                        anchors.right: ejectButton.visible ? ejectButton.left : parent.right
-                        anchors.rightMargin: ejectButton.visible ? 10 : 50
-                        anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/gpt4all/icons/regenerate.svg"
-                        backgroundColor: theme.mutedLightTextColor
-                        backgroundColorHovered: theme.iconBackgroundLight
-                        onClicked: {
-                            if (currentChat.isModelLoaded)
-                                currentChat.forceReloadModel();
-                            else
-                                currentChat.reloadModel();
-                        }
-                        ToolTip.text: qsTr("Reload the currently loaded model")
-                        ToolTip.visible: hovered
-                    }
                 }
 
                 Rectangle {
@@ -425,98 +463,96 @@ Rectangle {
                     Layout.alignment: Qt.AlignRight
                     Layout.rightMargin: 30
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 100
                     Layout.preferredHeight: childrenRect.height
+                    clip: true
 
-                    RowLayout {
-                        spacing: 20
+                    MyButton {
+                        id: collectionsButton
+                        clip: true
                         anchors.right: parent.right
-                        MyButton {
-                            id: collectionsButton
-                            borderWidth: 0
-                            backgroundColor: theme.collectionsButtonBackground
-                            backgroundColorHovered: theme.collectionsButtonBackgroundHovered
-                            backgroundRadius: 5
-                            padding: 15
-                            topPadding: 8
-                            bottomPadding: 8
+                        borderWidth: 0
+                        backgroundColor: theme.collectionsButtonBackground
+                        backgroundColorHovered: theme.collectionsButtonBackgroundHovered
+                        backgroundRadius: 5
+                        padding: 15
+                        topPadding: 8
+                        bottomPadding: 8
 
-                            contentItem: RowLayout {
-                                spacing: 10
-                                Item {
-                                    visible: currentChat.collectionModel.count === 0
-                                    Layout.minimumWidth: collectionsImage.width
-                                    Layout.minimumHeight: collectionsImage.height
-                                    Image {
-                                        id: collectionsImage
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        sourceSize.width: 24
-                                        sourceSize.height: 24
-                                        mipmap: true
-                                        visible: false
-                                        source: "qrc:/gpt4all/icons/db.svg"
-                                    }
-
-                                    ColorOverlay {
-                                        anchors.fill: collectionsImage
-                                        source: collectionsImage
-                                        color: theme.collectionsButtonForeground
-                                    }
+                        contentItem: RowLayout {
+                            spacing: 10
+                            Item {
+                                visible: currentChat.collectionModel.count === 0
+                                Layout.minimumWidth: collectionsImage.width
+                                Layout.minimumHeight: collectionsImage.height
+                                Image {
+                                    id: collectionsImage
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    sourceSize.width: 24
+                                    sourceSize.height: 24
+                                    mipmap: true
+                                    visible: false
+                                    source: "qrc:/gpt4all/icons/db.svg"
                                 }
 
-                                MyBusyIndicator {
-                                    visible: currentChat.collectionModel.updatingCount !== 0
-                                    color: theme.collectionsButtonProgress
-                                    size: 24
-                                    Layout.minimumWidth: 24
-                                    Layout.minimumHeight: 24
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: currentChat.collectionModel.updatingCount
-                                        color: theme.collectionsButtonForeground
-                                        font.pixelSize: 14 // fixed regardless of theme
-                                    }
-                                }
-
-                                Rectangle {
-                                    visible: currentChat.collectionModel.count !== 0
-                                    radius: 6
+                                ColorOverlay {
+                                    anchors.fill: collectionsImage
+                                    source: collectionsImage
                                     color: theme.collectionsButtonForeground
-                                    Layout.minimumWidth: collectionsImage.width
-                                    Layout.minimumHeight: collectionsImage.height
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: currentChat.collectionModel.count
-                                        color: theme.collectionsButtonText
-                                        font.pixelSize: 14 // fixed regardless of theme
-                                    }
                                 }
+                            }
 
+                            MyBusyIndicator {
+                                visible: currentChat.collectionModel.updatingCount !== 0
+                                color: theme.collectionsButtonProgress
+                                size: 24
+                                Layout.minimumWidth: 24
+                                Layout.minimumHeight: 24
                                 Text {
-                                    text: qsTr("LocalDocs")
+                                    anchors.centerIn: parent
+                                    text: currentChat.collectionModel.updatingCount
                                     color: theme.collectionsButtonForeground
-                                    font.pixelSize: theme.fontSizeLarge
+                                    font.pixelSize: 14 // fixed regardless of theme
                                 }
                             }
 
-                            fontPixelSize: theme.fontSizeLarge
-
-                            background: Rectangle {
-                                radius: collectionsButton.backgroundRadius
-                                // TODO(jared): either use collectionsButton-specific theming, or don't - this is inconsistent
-                                color: conversation.state == "expanded" ? (
-                                    collectionsButton.hovered ? theme.lightButtonBackgroundHovered : theme.lightButtonBackground
-                                ) : (
-                                    collectionsButton.hovered ? theme.lighterButtonBackground : theme.lighterButtonBackgroundHovered
-                                )
+                            Rectangle {
+                                visible: currentChat.collectionModel.count !== 0
+                                radius: 6
+                                color: theme.collectionsButtonForeground
+                                Layout.minimumWidth: collectionsImage.width
+                                Layout.minimumHeight: collectionsImage.height
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: currentChat.collectionModel.count
+                                    color: theme.collectionsButtonText
+                                    font.pixelSize: 14 // fixed regardless of theme
+                                }
                             }
 
-                            Accessible.name: qsTr("Add documents")
-                            Accessible.description: qsTr("add collections of documents to the chat")
-
-                            onClicked: {
-                                conversation.toggleRightPanel()
+                            Text {
+                                text: qsTr("LocalDocs")
+                                color: theme.collectionsButtonForeground
+                                font.pixelSize: theme.fontSizeLarge
                             }
+                        }
+
+                        fontPixelSize: theme.fontSizeLarge
+
+                        background: Rectangle {
+                            radius: collectionsButton.backgroundRadius
+                            // TODO(jared): either use collectionsButton-specific theming, or don't - this is inconsistent
+                            color: conversation.state === "expanded" ? (
+                                collectionsButton.hovered ? theme.lightButtonBackgroundHovered : theme.lightButtonBackground
+                            ) : (
+                                collectionsButton.hovered ? theme.lighterButtonBackground : theme.lighterButtonBackgroundHovered
+                            )
+                        }
+
+                        Accessible.name: qsTr("Add documents")
+                        Accessible.description: qsTr("add collections of documents to the chat")
+
+                        onClicked: {
+                            conversation.toggleRightPanel()
                         }
                     }
                 }
