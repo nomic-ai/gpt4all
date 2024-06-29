@@ -136,7 +136,7 @@ Rectangle {
                 Text {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignLeft
-                    text: qsTr("Select a colection to make it available to the chat model.")
+                    text: qsTr("Select a collection to make it available to the chat model.")
                     font.pixelSize: theme.fontSizeLarger
                     wrapMode: Text.WordWrap
                     elide: Text.ElideRight
