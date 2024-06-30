@@ -888,6 +888,7 @@ ChatViewTextProcessor::ChatViewTextProcessor(QObject *parent)
     , m_syntaxHighlighter(new SyntaxHighlighter(this))
     , m_isProcessingText(false)
     , m_shouldProcessText(true)
+    , m_fontPixelSize(QGuiApplication::font().pointSizeF())
 {
 }
 
@@ -930,6 +931,20 @@ void ChatViewTextProcessor::setShouldProcessText(bool b)
         return;
     m_shouldProcessText = b;
     emit shouldProcessTextChanged();
+    handleTextChanged();
+}
+
+qreal ChatViewTextProcessor::fontPixelSize() const
+{
+    return m_fontPixelSize;
+}
+
+void ChatViewTextProcessor::setFontPixelSize(qreal sz)
+{
+    if (m_fontPixelSize == sz)
+        return;
+    m_fontPixelSize = sz;
+    emit fontPixelSizeChanged();
     handleTextChanged();
 }
 
@@ -1126,7 +1141,7 @@ void ChatViewTextProcessor::handleCodeBlocks()
         codeBlockCharFormat.setForeground(defaultColor);
 
         QFont monospaceFont("Courier");
-        monospaceFont.setPointSize(QGuiApplication::font().pointSize() + 2);
+        monospaceFont.setPointSize(m_fontPixelSize);
         if (monospaceFont.family() != "Courier") {
             monospaceFont.setFamily("Monospace"); // Fallback if Courier isn't available
         }

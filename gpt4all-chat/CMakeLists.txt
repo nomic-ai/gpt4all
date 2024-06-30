@@ -175,6 +175,7 @@ qt_add_qml_module(chat
       icons/antenna_3.svg
       icons/send_message.svg
       icons/stop_generating.svg
+      icons/recycle.svg
       icons/regenerate.svg
       icons/caret_down.svg
       icons/caret_right.svg

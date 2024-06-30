@@ -42,6 +42,7 @@ class ChatViewTextProcessor : public QObject
     Q_OBJECT
     Q_PROPERTY(QQuickTextDocument* textDocument READ textDocument WRITE setTextDocument NOTIFY textDocumentChanged())
     Q_PROPERTY(bool shouldProcessText READ shouldProcessText WRITE setShouldProcessText NOTIFY shouldProcessTextChanged())
+    Q_PROPERTY(qreal fontPixelSize READ fontPixelSize WRITE setFontPixelSize NOTIFY fontPixelSizeChanged())
     QML_ELEMENT
 public:
     explicit ChatViewTextProcessor(QObject *parent = nullptr);
@@ -57,9 +58,13 @@ public:
     bool shouldProcessText() const;
     void setShouldProcessText(bool b);
 
+    qreal fontPixelSize() const;
+    void setFontPixelSize(qreal b);
+
 Q_SIGNALS:
     void textDocumentChanged();
     void shouldProcessTextChanged();
+    void fontPixelSizeChanged();
 
 private Q_SLOTS:
     void handleTextChanged();
@@ -75,6 +80,7 @@ private:
     QColor m_headerColor;
     bool m_shouldProcessText = false;
     bool m_isProcessingText = false;
+    qreal m_fontPixelSize;
 };
 
 #endif // CHATVIEWTEXTPROCESSOR_H
