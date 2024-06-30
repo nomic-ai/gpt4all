@@ -1463,7 +1463,7 @@ Rectangle {
                 id: conversationTrayButton
                 anchors.bottom: textInputView.top
                 anchors.horizontalCenter: textInputView.horizontalCenter
-                width: 30
+                width: 40
                 height: 30
                 visible: chatModel.count && !currentChat.isServer && currentChat.isModelLoaded
                 property bool isHovered: conversationTrayMouseAreaButton.containsMouse
@@ -1474,13 +1474,14 @@ Rectangle {
                 }
                 Text {
                     id: conversationTrayTextButton
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.centerIn: parent
                     horizontalAlignment: Qt.AlignHCenter
                     leftPadding: 5
                     rightPadding: 5
                     text: "\u00B7\u00B7\u00B7"
                     color: theme.textColor
-                    font.pixelSize: 20 // fixed size
+                    font.pixelSize: 30 // fixed size
+                    font.bold: true
                 }
             }
 
@@ -1670,8 +1671,8 @@ Rectangle {
                 anchors.right: textInputView.right
                 anchors.verticalCenter: textInputView.verticalCenter
                 anchors.rightMargin: 15
-                imageWidth: theme.fontSizeLarger
-                imageHeight: theme.fontSizeLarger
+                imageWidth: theme.fontSizeLargest
+                imageHeight: theme.fontSizeLargest
                 visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
                 enabled: !currentChat.responseInProgress
                 source: "qrc:/gpt4all/icons/send_message.svg"
