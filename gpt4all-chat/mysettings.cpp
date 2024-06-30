@@ -41,7 +41,7 @@ static const QVariantMap basicDefaults {
     { "saveChatsContext",         false },
     { "serverChat",               false },
     { "userDefaultModel",         "Application default" },
-    { "localdocs/chunkSize",      256 },
+    { "localdocs/chunkSize",      512 },
     { "localdocs/retrievalSize",  3 },
     { "localdocs/showReferences", true },
     { "localdocs/fileExtensions", QStringList { "txt", "pdf", "md", "rst" } },
