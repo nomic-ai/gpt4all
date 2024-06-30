@@ -949,13 +949,35 @@ Rectangle {
 
                                         ChatViewTextProcessor {
                                             id: textProcessor
-                                            fontPixelSize: myTextArea.font.pixelSize
+                                        }
+
+                                        function resetChatViewTextProcessor() {
+                                            textProcessor.fontPixelSize                = myTextArea.font.pixelSize
+                                            textProcessor.codeColors.defaultColor      = theme.codeDefaultColor
+                                            textProcessor.codeColors.keywordColor      = theme.codeKeywordColor
+                                            textProcessor.codeColors.functionColor     = theme.codeFunctionColor
+                                            textProcessor.codeColors.functionCallColor = theme.codeFunctionCallColor
+                                            textProcessor.codeColors.commentColor      = theme.codeCommentColor
+                                            textProcessor.codeColors.stringColor       = theme.codeStringColor
+                                            textProcessor.codeColors.numberColor       = theme.codeNumberColor
+                                            textProcessor.codeColors.headerColor       = theme.codeHeaderColor
+                                            textProcessor.codeColors.backgroundColor   = theme.codeBackgroundColor
+                                            textProcessor.textDocument                 = textDocument
+                                            myTextArea.text = value
                                         }
 
                                         Component.onCompleted: {
-                                            textProcessor.setLinkColor(theme.linkColor);
-                                            textProcessor.setHeaderColor(name === qsTr("Response: ") ? theme.darkContrast : theme.lightContrast);
-                                            textProcessor.textDocument = textDocument
+                                            resetChatViewTextProcessor();
+                                        }
+
+                                        Connections {
+                                            target: MySettings
+                                            function onFontSizeChanged() {
+                                                myTextArea.resetChatViewTextProcessor();
+                                            }
+                                            function onChatThemeChanged() {
+                                                myTextArea.resetChatViewTextProcessor();
+                                            }
                                         }
 
                                         Accessible.role: Accessible.Paragraph

@@ -16,12 +16,57 @@ class QPainter;
 class QTextDocument;
 class QTextFormat;
 
+struct CodeColors {
+    Q_GADGET
+    Q_PROPERTY(QColor defaultColor MEMBER defaultColor)
+    Q_PROPERTY(QColor keywordColor MEMBER keywordColor)
+    Q_PROPERTY(QColor functionColor MEMBER functionColor)
+    Q_PROPERTY(QColor functionCallColor MEMBER functionCallColor)
+    Q_PROPERTY(QColor commentColor MEMBER commentColor)
+    Q_PROPERTY(QColor stringColor MEMBER stringColor)
+    Q_PROPERTY(QColor numberColor MEMBER numberColor)
+    Q_PROPERTY(QColor headerColor MEMBER headerColor)
+    Q_PROPERTY(QColor backgroundColor MEMBER backgroundColor)
+
+public:
+    QColor defaultColor;
+    QColor keywordColor;
+    QColor functionColor;
+    QColor functionCallColor;
+    QColor commentColor;
+    QColor stringColor;
+    QColor numberColor;
+    QColor headerColor;
+    QColor backgroundColor;
+
+    QColor preprocessorColor = keywordColor;
+    QColor typeColor = numberColor;
+    QColor arrowColor = functionColor;
+    QColor commandColor = functionCallColor;
+    QColor variableColor = numberColor;
+    QColor keyColor = functionColor;
+    QColor valueColor = stringColor;
+    QColor parameterColor = stringColor;
+    QColor attributeNameColor = numberColor;
+    QColor attributeValueColor = stringColor;
+    QColor specialCharacterColor = functionColor;
+    QColor doctypeColor = commentColor;
+};
+
+Q_DECLARE_METATYPE(CodeColors)
+
 class SyntaxHighlighter : public QSyntaxHighlighter {
     Q_OBJECT
 public:
     SyntaxHighlighter(QObject *parent);
     ~SyntaxHighlighter();
     void highlightBlock(const QString &text) override;
+
+    CodeColors codeColors() const { return m_codeColors; }
+    void setCodeColors(const CodeColors &colors) { m_codeColors = colors; }
+
+private:
+    CodeColors m_codeColors;
 };
 
 struct ContextLink {
@@ -43,15 +88,13 @@ class ChatViewTextProcessor : public QObject
     Q_PROPERTY(QQuickTextDocument* textDocument READ textDocument WRITE setTextDocument NOTIFY textDocumentChanged())
     Q_PROPERTY(bool shouldProcessText READ shouldProcessText WRITE setShouldProcessText NOTIFY shouldProcessTextChanged())
     Q_PROPERTY(qreal fontPixelSize READ fontPixelSize WRITE setFontPixelSize NOTIFY fontPixelSizeChanged())
+    Q_PROPERTY(CodeColors codeColors READ codeColors WRITE setCodeColors NOTIFY codeColorsChanged())
     QML_ELEMENT
 public:
     explicit ChatViewTextProcessor(QObject *parent = nullptr);
 
     QQuickTextDocument* textDocument() const;
     void setTextDocument(QQuickTextDocument* textDocument);
-
-    Q_INVOKABLE void setLinkColor(const QColor &c) { m_linkColor = c; }
-    Q_INVOKABLE void setHeaderColor(const QColor &c) { m_headerColor = c; }
 
     Q_INVOKABLE bool tryCopyAtPosition(int position) const;
 
@@ -61,10 +104,14 @@ public:
     qreal fontPixelSize() const;
     void setFontPixelSize(qreal b);
 
+    CodeColors codeColors() const;
+    void setCodeColors(const CodeColors &colors);
+
 Q_SIGNALS:
     void textDocumentChanged();
     void shouldProcessTextChanged();
     void fontPixelSizeChanged();
+    void codeColorsChanged();
 
 private Q_SLOTS:
     void handleTextChanged();
@@ -76,8 +123,6 @@ private:
     SyntaxHighlighter *m_syntaxHighlighter;
     QVector<ContextLink> m_links;
     QVector<CodeCopy> m_copies;
-    QColor m_linkColor;
-    QColor m_headerColor;
     bool m_shouldProcessText = false;
     bool m_isProcessingText = false;
     qreal m_fontPixelSize;
