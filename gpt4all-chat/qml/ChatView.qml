@@ -949,6 +949,7 @@ Rectangle {
 
                                         ChatViewTextProcessor {
                                             id: textProcessor
+                                            fontPixelSize: myTextArea.font.pixelSize
                                         }
 
                                         Component.onCompleted: {
