@@ -298,9 +298,11 @@ Rectangle {
                             id: contentRow
                             anchors.centerIn: parent
                             spacing: 0
+                            Layout.maximumWidth: 550
                             RowLayout {
                                 id: miniButtonsRow
                                 clip: true
+                                Layout.maximumWidth: 550
                                 Behavior on Layout.preferredWidth {
                                     NumberAnimation {
                                         duration: 300
@@ -309,7 +311,7 @@ Rectangle {
                                 }
 
                                 Layout.preferredWidth: {
-                                    if (!comboBox.hovered)
+                                    if (!(comboBox.hovered || reloadButton.hovered || ejectButton.hovered))
                                         return 0
                                     return (reloadButton.visible ? reloadButton.width : 0) + (ejectButton.visible ? ejectButton.width : 0)
                                 }
@@ -350,6 +352,7 @@ Rectangle {
                             }
 
                             Text {
+                                Layout.maximumWidth: 520
                                 id: comboBoxText
                                 leftPadding: 10
                                 rightPadding: 10
