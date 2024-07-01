@@ -22,6 +22,8 @@ set(APP_VERSION_PATCH 0)
 set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 set(APP_VERSION "${APP_VERSION_BASE}")
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules")
+
 # Include the binary directory for the generated header file
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -286,10 +288,6 @@ target_link_libraries(chat
 
 # -- install --
 
-function(install_sign_osx tgt)
-    install(CODE "execute_process(COMMAND codesign --options runtime --timestamp -s \"${MAC_SIGNING_IDENTITY}\" $<TARGET_FILE:${tgt}>)")
-endfunction()
-
 set(COMPONENT_NAME_MAIN ${PROJECT_NAME})
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -333,10 +331,20 @@ install(
 )
 
 if(APPLE AND GPT4ALL_SIGN_INSTALL)
+    include(SignMacOSBinaries)
     install_sign_osx(chat)
     install_sign_osx(llmodel)
     foreach(tgt ${MODEL_IMPL_TARGETS})
         install_sign_osx(${tgt})
+    endforeach()
+endif()
+
+if(WIN32 AND GPT4ALL_SIGN_INSTALL)
+    include(SignWindowsBinaries)
+    sign_target_windows(chat)
+    sign_target_windows(llmodel)
+    foreach(tgt ${MODEL_IMPL_TARGETS})
+        sign_target_windows(${tgt})
     endforeach()
 endif()
 
