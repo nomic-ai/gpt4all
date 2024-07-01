@@ -122,7 +122,7 @@ Rectangle {
                 delegate: Rectangle {
                     id: chatRectangle
                     width: conversationList.width
-                    height: chatName.height
+                    height: chatNameBox.height + 20
                     property bool isCurrent: ChatListModel.currentChat === ChatListModel.get(index)
                     property bool isServer: ChatListModel.get(index) && ChatListModel.get(index).isServer
                     property bool trashQuestionDisplayed: false
@@ -133,79 +133,108 @@ Rectangle {
                     border.color: theme.dividerColor
                     radius: 10
 
-                    TextField {
-                        id: chatName
+                    Rectangle {
+                        id: chatNameBox
+                        height: chatName.height
                         anchors.left: parent.left
-                        anchors.right: editButton.left
-                        color: theme.styledTextColor
-                        topPadding: 15
-                        bottomPadding: 15
-                        focus: false
-                        readOnly: true
-                        wrapMode: Text.NoWrap
-                        hoverEnabled: false // Disable hover events on the TextArea
-                        selectByMouse: false // Disable text selection in the TextArea
-                        font.pixelSize: theme.fontSizeLarge
-                        font.bold: true
-                        text: readOnly ? metrics.elidedText : name
-                        horizontalAlignment: TextInput.AlignLeft
-                        opacity: trashQuestionDisplayed ? 0.5 : 1.0
-                        TextMetrics {
-                            id: metrics
-                            font: chatName.font
-                            text: name
-                            elide: Text.ElideRight
-                            elideWidth: chatName.width - 15
-                        }
-                        background: Rectangle {
-                            color: "transparent"
-                        }
-                        onEditingFinished: {
-                            // Work around a bug in qml where we're losing focus when the whole window
-                            // goes out of focus even though this textfield should be marked as not
-                            // having focus
-                            if (chatName.readOnly)
-                                return;
-                            Network.trackChatEvent("rename_chat")
-                            changeName();
-                        }
-                        function changeName() {
-                            ChatListModel.get(index).name = chatName.text
-                            chatName.focus = false
-                            chatName.readOnly = true
-                            chatName.selectByMouse = false
-                        }
-                        TapHandler {
-                            onTapped: {
-                                if (isCurrent)
-                                    return;
-                                ChatListModel.currentChat = ChatListModel.get(index);
-                            }
-                        }
-                        Accessible.role: Accessible.Button
-                        Accessible.name: text
-                        Accessible.description: qsTr("Select the current chat or edit the chat when in edit mode")
-                    }
-                    MyToolButton {
-                        id: editButton
-                        anchors.verticalCenter: chatName.verticalCenter
                         anchors.right: trashButton.left
+                        anchors.verticalCenter: chatRectangle.verticalCenter
+                        anchors.leftMargin: 5
                         anchors.rightMargin: 5
-                        imageWidth: 24
-                        imageHeight: 24
-                        visible: isCurrent && !isServer
-                        opacity: trashQuestionDisplayed ? 0.5 : 1.0
-                        source: "qrc:/gpt4all/icons/edit.svg"
-                        onClicked: {
-                            chatName.focus = true
-                            chatName.readOnly = false
-                            chatName.selectByMouse = true
+                        radius: 5
+                        color: chatName.readOnly ? "transparent" : theme.chatNameEditBgColor
+
+                        TextField {
+                            id: chatName
+                            anchors.left: parent.left
+                            anchors.right: editButton.left
+                            anchors.verticalCenter: chatNameBox.verticalCenter
+                            topPadding: 5
+                            bottomPadding: 5
+                            color: theme.styledTextColor
+                            focus: false
+                            readOnly: true
+                            wrapMode: Text.NoWrap
+                            hoverEnabled: false // Disable hover events on the TextArea
+                            selectByMouse: false // Disable text selection in the TextArea
+                            font.pixelSize: theme.fontSizeLarge
+                            font.bold: true
+                            text: readOnly ? metrics.elidedText : name
+                            horizontalAlignment: TextInput.AlignLeft
+                            opacity: trashQuestionDisplayed ? 0.5 : 1.0
+                            TextMetrics {
+                                id: metrics
+                                font: chatName.font
+                                text: name
+                                elide: Text.ElideRight
+                                elideWidth: chatName.width - 15
+                            }
+                            background: Rectangle {
+                                color: "transparent"
+                            }
+                            onEditingFinished: {
+                                // Work around a bug in qml where we're losing focus when the whole window
+                                // goes out of focus even though this textfield should be marked as not
+                                // having focus
+                                console.log("onEditingFinished in");
+                                if (chatName.readOnly)
+                                    return;
+                                console.log("onEditingFinished changeName");
+                                changeName();
+                            }
+                            function changeName() {
+                                Network.trackChatEvent("rename_chat");
+                                ChatListModel.get(index).name = chatName.text;
+                                chatName.focus = false;
+                                chatName.readOnly = true;
+                                chatName.selectByMouse = false;
+                            }
+                            TapHandler {
+                                onTapped: {
+                                    if (isCurrent)
+                                        return;
+                                    ChatListModel.currentChat = ChatListModel.get(index);
+                                }
+                            }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: text
+                            Accessible.description: qsTr("Select the current chat or edit the chat when in edit mode")
                         }
-                        Accessible.name: qsTr("Edit chat name")
+                        MyToolButton {
+                            id: editButton
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: parent.right
+                            anchors.rightMargin: 5
+                            imageWidth: 24
+                            imageHeight: 24
+                            visible: isCurrent && !isServer && chatName.readOnly
+                            opacity: trashQuestionDisplayed ? 0.5 : 1.0
+                            source: "qrc:/gpt4all/icons/edit.svg"
+                            onClicked: {
+                                chatName.focus = true;
+                                chatName.readOnly = false;
+                                chatName.selectByMouse = true;
+                            }
+                            Accessible.name: qsTr("Edit chat name")
+                        }
+                        MyToolButton {
+                            id: okButton
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: parent.right
+                            anchors.rightMargin: 5
+                            imageWidth: 24
+                            imageHeight: 24
+                            visible: isCurrent && !isServer && !chatName.readOnly
+                            opacity: trashQuestionDisplayed ? 0.5 : 1.0
+                            source: "qrc:/gpt4all/icons/check.svg"
+                            onClicked: changeName()
+                            Accessible.name: qsTr("Save chat name")
+                        }
                     }
+
                     MyToolButton {
                         id: trashButton
-                        anchors.verticalCenter: chatName.verticalCenter
+                        anchors.verticalCenter: chatNameBox.verticalCenter
                         anchors.right: chatRectangle.right
                         anchors.rightMargin: 10
                         imageWidth: 24

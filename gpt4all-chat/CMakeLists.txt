@@ -175,49 +175,50 @@ qt_add_qml_module(chat
       icons/antenna_1.svg
       icons/antenna_2.svg
       icons/antenna_3.svg
-      icons/send_message.svg
-      icons/stop_generating.svg
-      icons/recycle.svg
-      icons/regenerate.svg
       icons/caret_down.svg
       icons/caret_right.svg
-      icons/chat.svg
       icons/changelog.svg
+      icons/chat.svg
+      icons/check.svg
       icons/close.svg
       icons/copy.svg
       icons/db.svg
       icons/discord.svg
       icons/download.svg
-      icons/settings.svg
-      icons/eject.svg
       icons/edit.svg
+      icons/eject.svg
       icons/email.svg
-      icons/file.svg
       icons/file-md.svg
       icons/file-pdf.svg
       icons/file-txt.svg
+      icons/file.svg
       icons/github.svg
       icons/globe.svg
+      icons/gpt4all-32.png
+      icons/gpt4all-48.png
+      icons/gpt4all.svg
+      icons/gpt4all_transparent.svg
       icons/home.svg
       icons/image.svg
       icons/info.svg
-      icons/local-docs.svg
-      icons/models.svg
-      icons/nomic_logo.svg
-      icons/notes.svg
-      icons/search.svg
-      icons/trash.svg
-      icons/network.svg
-      icons/thumbs_up.svg
-      icons/thumbs_down.svg
-      icons/twitter.svg
-      icons/up_down.svg
       icons/left_panel_closed.svg
       icons/left_panel_open.svg
-      icons/gpt4all.svg
-      icons/gpt4all_transparent.svg
-      icons/gpt4all-32.png
-      icons/gpt4all-48.png
+      icons/local-docs.svg
+      icons/models.svg
+      icons/network.svg
+      icons/nomic_logo.svg
+      icons/notes.svg
+      icons/recycle.svg
+      icons/regenerate.svg
+      icons/search.svg
+      icons/send_message.svg
+      icons/settings.svg
+      icons/stop_generating.svg
+      icons/thumbs_down.svg
+      icons/thumbs_up.svg
+      icons/trash.svg
+      icons/twitter.svg
+      icons/up_down.svg
       icons/you.svg
 )
 
