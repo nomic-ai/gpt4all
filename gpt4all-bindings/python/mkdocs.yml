@@ -3,8 +3,8 @@ repo_url: https://github.com/nomic-ai/gpt4all
 repo_name: nomic-ai/gpt4all
 site_url: https://docs.gpt4all.io
 edit_uri: edit/main/docs/
-site_description: Documentation for running GPT4All anywhere.
-copyright: Copyright &copy; 2023 Nomic, Inc
+site_description: GPT4All Docs - run LLMs efficiently on your hardware
+copyright: Copyright &copy; 2024 Nomic, Inc
 use_directory_urls: false
 
 nav:
