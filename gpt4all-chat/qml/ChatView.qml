@@ -1328,7 +1328,7 @@ Rectangle {
                             footer: Item {
                                 id: bottomPadding
                                 width: parent.width
-                                height: 60
+                                height: 0
                             }
                         }
                     }
