@@ -148,7 +148,7 @@ Rectangle {
                             Image {
                                 id: newsImg
                                 anchors.centerIn: parent
-                                sourceSize: Qt.size(40, 40)
+                                sourceSize: Qt.size(48, 48)
                                 mipmap: true
                                 visible: false
                                 source: "qrc:/gpt4all/icons/gpt4all_transparent.svg"

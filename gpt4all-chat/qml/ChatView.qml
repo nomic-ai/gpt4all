@@ -790,14 +790,11 @@ Rectangle {
                                     Layout.row: 0
                                     Layout.column: 0
                                     Layout.alignment: Qt.AlignTop
-                                    Layout.preferredWidth: 38
-                                    Layout.preferredHeight: 38
+                                    Layout.preferredWidth: 32
+                                    Layout.preferredHeight: 32
                                     Image {
                                         id: logo
-                                        width: 38
-                                        height: 38
-                                        sourceSize.width: 64
-                                        sourceSize.height: 64
+                                        sourceSize: Qt.size(32, 32)
                                         fillMode: Image.PreserveAspectFit
                                         mipmap: true
                                         visible: false
