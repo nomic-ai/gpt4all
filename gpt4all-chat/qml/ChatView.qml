@@ -789,7 +789,7 @@ Rectangle {
                                 Item {
                                     Layout.row: 0
                                     Layout.column: 0
-                                    Layout.alignment: Qt.AlignCenter
+                                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                                     Layout.preferredWidth: 32
                                     Layout.preferredHeight: 32
                                     Image {
