@@ -294,6 +294,8 @@ jobs:
             $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\VS\include"
             $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include"
             $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\include"
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
             mkdir build
             cd build
             & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
@@ -303,6 +305,7 @@ jobs:
               "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
               "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON" `
               "-DGPT4ALL_OFFLINE_INSTALLER=ON" `
+              "-DGPT4ALL_SIGN_INSTALLER=ON" `
               "-S ..\gpt4all-chat" `
               "-B ."
             & "C:\Qt\Tools\Ninja\ninja.exe"
@@ -343,6 +346,8 @@ jobs:
       - run:
           name: "Sign Windows Installer With AST"
           command: |
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
             AzureSignTool.exe sign -du "https://gpt4all.io/index.html" -kvu https://gpt4all.vault.azure.net -kvi "$Env:AZSignGUID" -kvs "$Env:AZSignPWD" -kvc "$Env:AZSignCertName" -kvt "$Env:AZSignTID" -tr http://timestamp.digicert.com -v "$($(Get-Location).Path)\build\upload\gpt4all-installer-win64.exe"
       - store_artifacts:
           path: build/upload
