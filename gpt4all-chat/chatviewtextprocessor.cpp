@@ -899,8 +899,6 @@ void ChatViewTextProcessor::handleTextChanged()
     QTextCursor cursor(doc);
     QString invisibleCharacter = QString(QChar(0xFEFF));
     cursor.insertText(invisibleCharacter, QTextCharFormat());
-
-    m_syntaxHighlighter->rehighlight();
     m_isProcessingText = false;
 }
 
