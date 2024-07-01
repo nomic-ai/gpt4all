@@ -136,7 +136,7 @@ Rectangle {
                     TextField {
                         id: chatName
                         anchors.left: parent.left
-                        anchors.right: buttons.left
+                        anchors.right: editButton.left
                         color: theme.styledTextColor
                         topPadding: 15
                         bottomPadding: 15
@@ -186,44 +186,43 @@ Rectangle {
                         Accessible.name: text
                         Accessible.description: qsTr("Select the current chat or edit the chat when in edit mode")
                     }
-                    Row {
-                        id: buttons
+                    MyToolButton {
+                        id: editButton
+                        anchors.verticalCenter: chatName.verticalCenter
+                        anchors.right: trashButton.left
+                        anchors.rightMargin: 5
+                        imageWidth: 24
+                        imageHeight: 24
+                        visible: isCurrent && !isServer
+                        opacity: trashQuestionDisplayed ? 0.5 : 1.0
+                        source: "qrc:/gpt4all/icons/edit.svg"
+                        onClicked: {
+                            chatName.focus = true
+                            chatName.readOnly = false
+                            chatName.selectByMouse = true
+                        }
+                        Accessible.name: qsTr("Edit chat name")
+                    }
+                    MyToolButton {
+                        id: trashButton
                         anchors.verticalCenter: chatName.verticalCenter
                         anchors.right: chatRectangle.right
                         anchors.rightMargin: 10
-                        spacing: 5
-                        MyToolButton {
-                            id: editButton
-                            imageWidth: 24
-                            imageHeight: 24
-                            visible: isCurrent && !isServer
-                            opacity: trashQuestionDisplayed ? 0.5 : 1.0
-                            source: "qrc:/gpt4all/icons/edit.svg"
-                            onClicked: {
-                                chatName.focus = true
-                                chatName.readOnly = false
-                                chatName.selectByMouse = true
-                            }
-                            Accessible.name: qsTr("Edit chat name")
+                        imageWidth: 24
+                        imageHeight: 24
+                        visible: isCurrent && !isServer
+                        source: "qrc:/gpt4all/icons/trash.svg"
+                        onClicked: {
+                            trashQuestionDisplayed = true
+                            timer.start()
                         }
-                        MyToolButton {
-                            id: trashButton
-                            imageWidth: 24
-                            imageHeight: 24
-                            visible: isCurrent && !isServer
-                            source: "qrc:/gpt4all/icons/trash.svg"
-                            onClicked: {
-                                trashQuestionDisplayed = true
-                                timer.start()
-                            }
-                            Accessible.name: qsTr("Delete chat")
-                        }
+                        Accessible.name: qsTr("Delete chat")
                     }
                     Rectangle {
                         id: trashSureQuestion
-                        anchors.top: buttons.bottom
+                        anchors.top: trashButton.bottom
                         anchors.topMargin: 10
-                        anchors.right: buttons.right
+                        anchors.right: trashButton.right
                         width: childrenRect.width
                         height: childrenRect.height
                         color: chatRectangle.color
