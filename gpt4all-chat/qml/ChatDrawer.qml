@@ -227,6 +227,7 @@ Rectangle {
                             visible: isCurrent && !isServer && !chatName.readOnly
                             opacity: trashQuestionDisplayed ? 0.5 : 1.0
                             source: "qrc:/gpt4all/icons/check.svg"
+                            onClicked: chatName.changeName()
                             Accessible.name: qsTr("Save chat name")
                         }
                     }
