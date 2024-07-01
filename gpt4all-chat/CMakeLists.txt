@@ -217,7 +217,6 @@ qt_add_qml_module(chat
       icons/gpt4all-32.png
       icons/gpt4all-48.png
       icons/you.svg
-      icons/alt_logo.svg
 )
 
 set_target_properties(chat PROPERTIES
