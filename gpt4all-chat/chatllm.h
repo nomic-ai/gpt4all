@@ -14,12 +14,14 @@
 #include <QPair>
 #include <QString>
 #include <QThread>
+#include <QVariantMap>
 #include <QVector>
 #include <QtGlobal>
 
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 
 using namespace Qt::Literals::StringLiterals;
@@ -32,11 +34,17 @@ enum LLModelType {
     API_,
 };
 
+class ChatLLM;
+
 struct LLModelInfo {
     std::unique_ptr<LLModel> model;
     QFileInfo fileInfo;
+    std::optional<QString> fallbackReason;
+
     // NOTE: This does not store the model type or name on purpose as this is left for ChatLLM which
     // must be able to serialize the information even if it is in the unloaded state
+
+    void resetModel(ChatLLM *cllm, LLModel *model = nullptr);
 };
 
 class TokenTimer : public QObject {
@@ -84,6 +92,9 @@ class ChatLLM : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
+    Q_PROPERTY(QString deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
+    Q_PROPERTY(QString device READ device NOTIFY loadedModelInfoChanged)
+    Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
 public:
     ChatLLM(Chat *parent, bool isServer = false);
     virtual ~ChatLLM();
@@ -110,6 +121,30 @@ public:
 
     bool isRecalc() const { return m_isRecalc; }
 
+    void acquireModel();
+    void resetModel();
+
+    QString deviceBackend() const
+    {
+        if (!isModelLoaded()) return QString();
+        std::string name = LLModel::GPUDevice::backendIdToName(m_llModelInfo.model->backendName());
+        return QString::fromStdString(name);
+    }
+
+    QString device() const
+    {
+        if (!isModelLoaded()) return QString();
+        const char *name = m_llModelInfo.model->gpuDeviceName();
+        return name ? QString(name) : u"CPU"_s;
+    }
+
+    // not loaded -> QString(), no fallback -> QString("")
+    QString fallbackReason() const
+    {
+        if (!isModelLoaded()) return QString();
+        return m_llModelInfo.fallbackReason.value_or(u""_s);
+    }
+
     QString generatedName() const { return QString::fromStdString(m_nameResponse); }
 
     bool serialize(QDataStream &stream, int version, bool serializeKV);
@@ -135,6 +170,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void recalcChanged();
+    void loadedModelInfoChanged();
     void modelLoadingPercentageChanged(float);
     void modelLoadingError(const QString &error);
     void modelLoadingWarning(const QString &warning);
@@ -179,6 +215,8 @@ protected:
     quint32 m_promptResponseTokens;
 
 private:
+    bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
+
     std::string m_response;
     std::string m_nameResponse;
     LLModelInfo m_llModelInfo;

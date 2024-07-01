@@ -30,7 +30,7 @@ MyDialog {
                 anchors.left: parent.left
                 width: 60
                 height: 60
-                source: "qrc:/gpt4all/icons/logo.svg"
+                source: "qrc:/gpt4all/icons/gpt4all.svg"
             }
             Text {
                 anchors.left: img.right

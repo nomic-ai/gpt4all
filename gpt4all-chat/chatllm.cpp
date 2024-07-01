@@ -17,7 +17,6 @@
 #include <QMutexLocker>
 #include <QSet>
 #include <QStringList>
-#include <QVariantMap>
 #include <QWaitCondition>
 #include <Qt>
 #include <QtLogging>
@@ -93,6 +92,12 @@ void LLModelStore::destroy()
     m_availableModel.reset();
 }
 
+void LLModelInfo::resetModel(ChatLLM *cllm, LLModel *model) {
+    this->model.reset(model);
+    fallbackReason.reset();
+    emit cllm->loadedModelInfoChanged();
+}
+
 ChatLLM::ChatLLM(Chat *parent, bool isServer)
     : QObject{nullptr}
     , m_promptResponseTokens(0)
@@ -141,7 +146,7 @@ void ChatLLM::destroy()
     // The only time we should have a model loaded here is on shutdown
     // as we explicitly unload the model in all other circumstances
     if (isModelLoaded()) {
-        m_llModelInfo.model.reset();
+        m_llModelInfo.resetModel(this);
     }
 }
 
@@ -208,7 +213,7 @@ void ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
     QString filePath = modelInfo.dirpath + modelInfo.filename();
     QFileInfo fileInfo(filePath);
 
-    m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
+    acquireModel();
 #if defined(DEBUG_MODEL_LOADING)
         qDebug() << "acquired model from store" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
@@ -251,8 +256,6 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     // reset status
     emit modelLoadingPercentageChanged(std::numeric_limits<float>::min()); // small non-zero positive value
     emit modelLoadingError("");
-    emit reportFallbackReason("");
-    emit reportDevice("");
     m_pristineLoadedState = false;
 
     QString filePath = modelInfo.dirpath + modelInfo.filename();
@@ -265,12 +268,12 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #if defined(DEBUG_MODEL_LOADING)
         qDebug() << "already acquired model deleted" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
-        m_llModelInfo.model.reset();
+        m_llModelInfo.resetModel(this);
     } else if (!m_isServer) {
         // This is a blocking call that tries to retrieve the model we need from the model store.
         // If it succeeds, then we just have to restore state. If the store has never had a model
         // returned to it, then the modelInfo.model pointer should be null which will happen on startup
-        m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
+        acquireModel();
 #if defined(DEBUG_MODEL_LOADING)
         qDebug() << "acquired model from store" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
@@ -305,7 +308,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 #if defined(DEBUG_MODEL_LOADING)
             qDebug() << "deleting model" << m_llmThread.objectName() << m_llModelInfo.model.get();
 #endif
-            m_llModelInfo.model.reset();
+            m_llModelInfo.resetModel(this);
         }
     }
 
@@ -335,184 +338,9 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
             model->setModelName(modelName);
             model->setRequestURL(modelInfo.url());
             model->setAPIKey(apiKey);
-            m_llModelInfo.model.reset(model);
-        } else {
-            QElapsedTimer modelLoadTimer;
-            modelLoadTimer.start();
-
-            auto requestedDevice = MySettings::globalInstance()->device();
-            auto n_ctx = MySettings::globalInstance()->modelContextLength(modelInfo);
-            m_ctx.n_ctx = n_ctx;
-            auto ngl = MySettings::globalInstance()->modelGpuLayers(modelInfo);
-
-            std::string backend = "auto";
-#ifdef Q_OS_MAC
-            if (requestedDevice == "CPU") {
-                backend = "cpu";
-            } else if (m_forceMetal) {
-#ifdef __aarch64__
-                backend = "metal";
-#endif
-            }
-#else // !defined(Q_OS_MAC)
-            if (requestedDevice.startsWith("CUDA: "))
-                backend = "cuda";
-#endif
-
-            QString constructError;
-            m_llModelInfo.model.reset();
-            try {
-                auto *model = LLModel::Implementation::construct(filePath.toStdString(), backend, n_ctx);
-                m_llModelInfo.model.reset(model);
-            } catch (const LLModel::MissingImplementationError &e) {
-                modelLoadProps.insert("error", "missing_model_impl");
-                constructError = e.what();
-            } catch (const LLModel::UnsupportedModelError &e) {
-                modelLoadProps.insert("error", "unsupported_model_file");
-                constructError = e.what();
-            } catch (const LLModel::BadArchError &e) {
-                constructError = e.what();
-                modelLoadProps.insert("error", "unsupported_model_arch");
-                modelLoadProps.insert("model_arch", QString::fromStdString(e.arch()));
-            }
-
-            if (m_llModelInfo.model) {
-                if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
-                    static QSet<QString> warned;
-                    auto fname = modelInfo.filename();
-                    if (!warned.contains(fname)) {
-                        emit modelLoadingWarning(
-                            u"%1 is known to be broken. Please get a replacement via the download dialog."_s.arg(fname)
-                        );
-                        warned.insert(fname); // don't warn again until restart
-                    }
-                }
-
-                m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
-                    progress = std::max(progress, std::numeric_limits<float>::min()); // keep progress above zero
-                    emit modelLoadingPercentageChanged(progress);
-                    return m_shouldBeLoaded;
-                });
-
-                auto approxDeviceMemGB = [](const LLModel::GPUDevice *dev) {
-                    float memGB = dev->heapSize / float(1024 * 1024 * 1024);
-                    return std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
-                };
-
-                std::vector<LLModel::GPUDevice> availableDevices;
-                const LLModel::GPUDevice *defaultDevice = nullptr;
-                {
-                    const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString(), n_ctx, ngl);
-                    availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
-                    // Pick the best device
-                    // NB: relies on the fact that Kompute devices are listed first
-                    if (!availableDevices.empty() && availableDevices.front().type == 2 /*a discrete gpu*/) {
-                        defaultDevice = &availableDevices.front();
-                        float memGB = defaultDevice->heapSize / float(1024 * 1024 * 1024);
-                        memGB = std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
-                        modelLoadProps.insert("default_device", QString::fromStdString(defaultDevice->name));
-                        modelLoadProps.insert("default_device_mem", approxDeviceMemGB(defaultDevice));
-                    }
-                }
-
-                QString actualDevice("CPU");
-
-#if defined(Q_OS_MAC) && defined(__aarch64__)
-                if (m_llModelInfo.model->implementation().buildVariant() == "metal")
-                    actualDevice = "Metal";
-#else
-                if (requestedDevice != "CPU") {
-                    const auto *device = defaultDevice;
-                    if (requestedDevice != "Auto") {
-                        // Use the selected device
-                        for (const LLModel::GPUDevice &d : availableDevices) {
-                            if (QString::fromStdString(d.selectionName()) == requestedDevice) {
-                                device = &d;
-                                break;
-                            }
-                        }
-                    }
-
-                    std::string unavail_reason;
-                    if (!device) {
-                        // GPU not available
-                    } else if (!m_llModelInfo.model->initializeGPUDevice(device->index, &unavail_reason)) {
-                        emit reportFallbackReason(QString::fromStdString("<br>" + unavail_reason));
-                    } else {
-                        actualDevice = QString::fromStdString(device->reportedName());
-                        modelLoadProps.insert("requested_device_mem", approxDeviceMemGB(device));
-                    }
-                }
-#endif
-
-                // Report which device we're actually using
-                emit reportDevice(actualDevice);
-                bool success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, ngl);
-
-                if (!m_shouldBeLoaded) {
-                    m_llModelInfo.model.reset();
-                    if (!m_isServer)
-                        LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
-                    m_llModelInfo = LLModelInfo();
-                    emit modelLoadingPercentageChanged(0.0f);
-                    return false;
-                }
-
-                if (actualDevice == "CPU") {
-                    // we asked llama.cpp to use the CPU
-                } else if (!success) {
-                    // llama_init_from_file returned nullptr
-                    emit reportDevice("CPU");
-                    emit reportFallbackReason("<br>GPU loading failed (out of VRAM?)");
-                    modelLoadProps.insert("cpu_fallback_reason", "gpu_load_failed");
-                    success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, 0);
-
-                    if (!m_shouldBeLoaded) {
-                        m_llModelInfo.model.reset();
-                        if (!m_isServer)
-                            LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
-                        m_llModelInfo = LLModelInfo();
-                        emit modelLoadingPercentageChanged(0.0f);
-                        return false;
-                    }
-                } else if (!m_llModelInfo.model->usingGPUDevice()) {
-                    // ggml_vk_init was not called in llama.cpp
-                    // We might have had to fallback to CPU after load if the model is not possible to accelerate
-                    // for instance if the quantization method is not supported on Vulkan yet
-                    emit reportDevice("CPU");
-                    emit reportFallbackReason("<br>model or quant has no GPU support");
-                    modelLoadProps.insert("cpu_fallback_reason", "gpu_unsupported_model");
-                }
-
-                if (!success) {
-                    m_llModelInfo.model.reset();
-                    if (!m_isServer)
-                        LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
-                    m_llModelInfo = LLModelInfo();
-                    emit modelLoadingError(u"Could not load model due to invalid model file for %1"_s.arg(modelInfo.filename()));
-                    modelLoadProps.insert("error", "loadmodel_failed");
-                } else {
-                    switch (m_llModelInfo.model->implementation().modelType()[0]) {
-                    case 'L': m_llModelType = LLModelType::LLAMA_; break;
-                    case 'G': m_llModelType = LLModelType::GPTJ_; break;
-                    default:
-                        {
-                            m_llModelInfo.model.reset();
-                            if (!m_isServer)
-                                LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
-                            m_llModelInfo = LLModelInfo();
-                            emit modelLoadingError(u"Could not determine model type for %1"_s.arg(modelInfo.filename()));
-                        }
-                    }
-
-                    modelLoadProps.insert("$duration", modelLoadTimer.elapsed() / 1000.);
-                }
-            } else {
-                if (!m_isServer)
-                    LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
-                m_llModelInfo = LLModelInfo();
-                emit modelLoadingError(u"Error loading %1: %2"_s.arg(modelInfo.filename(), constructError));
-            }
+            m_llModelInfo.resetModel(this, model);
+        } else if (!loadNewModel(modelInfo, modelLoadProps)) {
+            return false; // m_shouldBeLoaded became false
         }
 #if defined(DEBUG_MODEL_LOADING)
         qDebug() << "new model" << m_llmThread.objectName() << m_llModelInfo.model.get();
@@ -523,6 +351,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         fflush(stdout);
 #endif
         emit modelLoadingPercentageChanged(isModelLoaded() ? 1.0f : 0.0f);
+        emit loadedModelInfoChanged();
 
         modelLoadProps.insert("requestedDevice", MySettings::globalInstance()->device());
         modelLoadProps.insert("model", modelInfo.filename());
@@ -530,7 +359,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     } else {
         if (!m_isServer)
             LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo)); // release back into the store
-        m_llModelInfo = LLModelInfo();
+        resetModel();
         emit modelLoadingError(u"Could not find file for model %1"_s.arg(modelInfo.filename()));
     }
 
@@ -540,6 +369,201 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
     }
     return bool(m_llModelInfo.model);
 }
+
+/* Returns false if the model should no longer be loaded (!m_shouldBeLoaded).
+ * Otherwise returns true, even on error. */
+bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps)
+{
+    QElapsedTimer modelLoadTimer;
+    modelLoadTimer.start();
+
+    QString requestedDevice = MySettings::globalInstance()->device();
+    int n_ctx = MySettings::globalInstance()->modelContextLength(modelInfo);
+    m_ctx.n_ctx = n_ctx;
+    int ngl = MySettings::globalInstance()->modelGpuLayers(modelInfo);
+
+    std::string backend = "auto";
+#ifdef Q_OS_MAC
+    if (requestedDevice == "CPU") {
+        backend = "cpu";
+    } else if (m_forceMetal) {
+#ifdef __aarch64__
+        backend = "metal";
+#endif
+    }
+#else // !defined(Q_OS_MAC)
+    if (requestedDevice.startsWith("CUDA: "))
+        backend = "cuda";
+#endif
+
+    QString filePath = modelInfo.dirpath + modelInfo.filename();
+
+    auto construct = [this, &filePath, &modelInfo, &modelLoadProps, n_ctx](std::string const &backend) {
+        QString constructError;
+        m_llModelInfo.resetModel(this);
+        try {
+            auto *model = LLModel::Implementation::construct(filePath.toStdString(), backend, n_ctx);
+            m_llModelInfo.resetModel(this, model);
+        } catch (const LLModel::MissingImplementationError &e) {
+            modelLoadProps.insert("error", "missing_model_impl");
+            constructError = e.what();
+        } catch (const LLModel::UnsupportedModelError &e) {
+            modelLoadProps.insert("error", "unsupported_model_file");
+            constructError = e.what();
+        } catch (const LLModel::BadArchError &e) {
+            constructError = e.what();
+            modelLoadProps.insert("error", "unsupported_model_arch");
+            modelLoadProps.insert("model_arch", QString::fromStdString(e.arch()));
+        }
+
+        if (!m_llModelInfo.model) {
+            if (!m_isServer)
+                LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
+            resetModel();
+            emit modelLoadingError(u"Error loading %1: %2"_s.arg(modelInfo.filename(), constructError));
+            return false;
+        }
+
+        m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
+            progress = std::max(progress, std::numeric_limits<float>::min()); // keep progress above zero
+            emit modelLoadingPercentageChanged(progress);
+            return m_shouldBeLoaded;
+        });
+        return true;
+    };
+
+    if (!construct(backend))
+        return true;
+
+    if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
+        static QSet<QString> warned;
+        auto fname = modelInfo.filename();
+        if (!warned.contains(fname)) {
+            emit modelLoadingWarning(
+                u"%1 is known to be broken. Please get a replacement via the download dialog."_s.arg(fname)
+            );
+            warned.insert(fname); // don't warn again until restart
+        }
+    }
+
+    auto approxDeviceMemGB = [](const LLModel::GPUDevice *dev) {
+        float memGB = dev->heapSize / float(1024 * 1024 * 1024);
+        return std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
+    };
+
+    std::vector<LLModel::GPUDevice> availableDevices;
+    const LLModel::GPUDevice *defaultDevice = nullptr;
+    {
+        const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString(), n_ctx, ngl);
+        availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
+        // Pick the best device
+        // NB: relies on the fact that Kompute devices are listed first
+        if (!availableDevices.empty() && availableDevices.front().type == 2 /*a discrete gpu*/) {
+            defaultDevice = &availableDevices.front();
+            float memGB = defaultDevice->heapSize / float(1024 * 1024 * 1024);
+            memGB = std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
+            modelLoadProps.insert("default_device", QString::fromStdString(defaultDevice->name));
+            modelLoadProps.insert("default_device_mem", approxDeviceMemGB(defaultDevice));
+            modelLoadProps.insert("default_device_backend", QString::fromStdString(defaultDevice->backendName()));
+        }
+    }
+
+    bool actualDeviceIsCPU = true;
+
+#if defined(Q_OS_MAC) && defined(__aarch64__)
+    if (m_llModelInfo.model->implementation().buildVariant() == "metal")
+        actualDeviceIsCPU = false;
+#else
+    if (requestedDevice != "CPU") {
+        const auto *device = defaultDevice;
+        if (requestedDevice != "Auto") {
+            // Use the selected device
+            for (const LLModel::GPUDevice &d : availableDevices) {
+                if (QString::fromStdString(d.selectionName()) == requestedDevice) {
+                    device = &d;
+                    break;
+                }
+            }
+        }
+
+        std::string unavail_reason;
+        if (!device) {
+            // GPU not available
+        } else if (!m_llModelInfo.model->initializeGPUDevice(device->index, &unavail_reason)) {
+            m_llModelInfo.fallbackReason = QString::fromStdString(unavail_reason);
+        } else {
+            actualDeviceIsCPU = false;
+            modelLoadProps.insert("requested_device_mem", approxDeviceMemGB(device));
+        }
+    }
+#endif
+
+    bool success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, ngl);
+
+    if (!m_shouldBeLoaded) {
+        m_llModelInfo.resetModel(this);
+        if (!m_isServer)
+            LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
+        resetModel();
+        emit modelLoadingPercentageChanged(0.0f);
+        return false;
+    }
+
+    if (actualDeviceIsCPU) {
+        // we asked llama.cpp to use the CPU
+    } else if (!success) {
+        // llama_init_from_file returned nullptr
+        m_llModelInfo.fallbackReason = "GPU loading failed (out of VRAM?)";
+        modelLoadProps.insert("cpu_fallback_reason", "gpu_load_failed");
+
+        // For CUDA, make sure we don't use the GPU at all - ngl=0 still offloads matmuls
+        if (backend == "cuda" && !construct("auto"))
+            return true;
+
+        success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, 0);
+
+        if (!m_shouldBeLoaded) {
+            m_llModelInfo.resetModel(this);
+            if (!m_isServer)
+                LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
+            resetModel();
+            emit modelLoadingPercentageChanged(0.0f);
+            return false;
+        }
+    } else if (!m_llModelInfo.model->usingGPUDevice()) {
+        // ggml_vk_init was not called in llama.cpp
+        // We might have had to fallback to CPU after load if the model is not possible to accelerate
+        // for instance if the quantization method is not supported on Vulkan yet
+        m_llModelInfo.fallbackReason = "model or quant has no GPU support";
+        modelLoadProps.insert("cpu_fallback_reason", "gpu_unsupported_model");
+    }
+
+    if (!success) {
+        m_llModelInfo.resetModel(this);
+        if (!m_isServer)
+            LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
+        resetModel();
+        emit modelLoadingError(u"Could not load model due to invalid model file for %1"_s.arg(modelInfo.filename()));
+        modelLoadProps.insert("error", "loadmodel_failed");
+        return true;
+    }
+
+    switch (m_llModelInfo.model->implementation().modelType()[0]) {
+    case 'L': m_llModelType = LLModelType::LLAMA_; break;
+    case 'G': m_llModelType = LLModelType::GPTJ_; break;
+    default:
+        {
+            m_llModelInfo.resetModel(this);
+            if (!m_isServer)
+                LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
+            resetModel();
+            emit modelLoadingError(u"Could not determine model type for %1"_s.arg(modelInfo.filename()));
+        }
+    }
+
+    modelLoadProps.insert("$duration", modelLoadTimer.elapsed() / 1000.);
+    return true;
+};
 
 bool ChatLLM::isModelLoaded() const
 {
@@ -619,6 +643,16 @@ void ChatLLM::setModelInfo(const ModelInfo &modelInfo)
 {
     m_modelInfo = modelInfo;
     emit modelInfoChanged(modelInfo);
+}
+
+void ChatLLM::acquireModel() {
+    m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
+    emit loadedModelInfoChanged();
+}
+
+void ChatLLM::resetModel() {
+    m_llModelInfo = {};
+    emit loadedModelInfoChanged();
 }
 
 void ChatLLM::modelChangeRequested(const ModelInfo &modelInfo)
@@ -809,7 +843,7 @@ void ChatLLM::unloadModel()
 #endif
 
     if (m_forceUnloadModel) {
-        m_llModelInfo.model.reset();
+        m_llModelInfo.resetModel(this);
         m_forceUnloadModel = false;
     }
 

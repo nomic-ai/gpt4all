@@ -49,10 +49,10 @@ bool LLM::hasSettingsAccess() const
 
 bool LLM::checkForUpdates() const
 {
-    #ifdef GPT4ALL_OFFLINE_INSTALLER
-    #pragma message "offline installer build will not check for updates!"
+#ifdef GPT4ALL_OFFLINE_INSTALLER
+#   pragma message(__FILE__ ": WARNING: offline installer build will not check for updates!")
     return QDesktopServices::openUrl(QUrl("https://gpt4all.io/"));
-    #else
+#else
     Network::globalInstance()->trackEvent("check_for_updates");
 
 #if defined(Q_OS_LINUX)
@@ -71,7 +71,7 @@ bool LLM::checkForUpdates() const
     }
 
     return QProcess::startDetached(fileName);
-    #endif
+#endif
 }
 
 bool LLM::directoryExists(const QString &path)

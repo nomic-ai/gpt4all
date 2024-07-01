@@ -44,9 +44,9 @@ MyDialog {
 
         ScrollView {
             clip: true
-            height: 300
+            height: 120
             width: parent.width
-            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
             MyTextArea {

@@ -38,12 +38,12 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.margins: 30
-        spacing: 50
+        spacing: 30
 
         ColumnLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
-            spacing: 50
+            spacing: 30
 
             MyButton {
                 id: backButton
@@ -84,7 +84,6 @@ Rectangle {
                     readOnly: ModelList.discoverInProgress
                     Layout.alignment: Qt.AlignCenter
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 90
                     font.pixelSize: theme.fontSizeLarger
                     placeholderText: qsTr("Discover and download models by keyword search...")
                     Accessible.role: Accessible.EditableText
@@ -366,7 +365,12 @@ Rectangle {
                                 Accessible.role: Accessible.Paragraph
                                 Accessible.name: qsTr("Description")
                                 Accessible.description: qsTr("File description")
-                                onLinkActivated: Qt.openUrlExternally(link)
+                                onLinkActivated: function(link) { Qt.openUrlExternally(link); }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    acceptedButtons: Qt.NoButton // pass clicks to parent
+                                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                }
                             }
 
                             // FIXME Need to overhaul design here which must take into account
@@ -419,7 +423,7 @@ Rectangle {
                                         Layout.minimumWidth: 200
                                         Layout.fillWidth: true
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
-                                        visible: installed || downloadError !== ""
+                                        visible: !isDownloading && (installed || isIncomplete)
                                         Accessible.description: qsTr("Remove model from filesystem")
                                         onClicked: {
                                             Download.removeModel(filename);
@@ -604,13 +608,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("File size")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: filesize
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }
@@ -626,13 +630,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("RAM required")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
-                                        text: ramrequired + qsTr(" GB")
+                                        text: ramrequired >= 0 ? ramrequired + qsTr(" GB") : "?"
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }
@@ -648,13 +652,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("Parameters")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
-                                        text: parameters
+                                        text: parameters !== "" ? parameters : "?"
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }
@@ -670,13 +674,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("Quant")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: quant
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }
@@ -692,13 +696,13 @@ Rectangle {
                                     Layout.rightMargin: 20
                                     Text {
                                         text: qsTr("Type")
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
                                         text: type
                                         color: theme.textColor
-                                        font.pixelSize: theme.fontSizeSmaller
+                                        font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
                                     }
                                 }

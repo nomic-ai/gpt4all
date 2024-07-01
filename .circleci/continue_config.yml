@@ -41,6 +41,9 @@ jobs:
           keys:
             - macos-qt-cache-v3
       - run:
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
+      - run:
           name: Installing Qt
           command: |
             if [ ! -d ~/Qt ]; then
@@ -54,6 +57,15 @@ jobs:
           paths:
             - ~/Qt
       - run:
+          name: Setup Keychain
+          command: |
+            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
+            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security default-keychain -s sign.keychain
+            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
+      - run:
           name: Build
           command: |
             mkdir build
@@ -64,6 +76,7 @@ jobs:
               -DBUILD_UNIVERSAL=ON \
               -DMACDEPLOYQT=~/Qt/6.5.1/macos/bin/macdeployqt \
               -DGPT4ALL_OFFLINE_INSTALLER=ON \
+              -DGPT4ALL_SIGN_INSTALL=ON \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
               -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
@@ -74,8 +87,90 @@ jobs:
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
             mkdir upload
             cp gpt4all-installer-* upload
+      # persist the unsigned installer
       - store_artifacts:
           path: build/upload
+      # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+
+  sign-offline-chat-installer-macos:
+    macos:
+      xcode: 14.0.0
+    steps:
+      - checkout
+      # attach to a workspace containing unsigned dmg
+      - attach_workspace:
+          at: build
+      - run:
+          name: "Setup Keychain"
+          command: |
+            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
+            # cat \<<< "$MAC_SIGNING_CERT" > certs1.pem
+            # file certs1.pem
+            # iconv -c -f UTF8 -t ASCII certs1.pem > certs.pem
+            # openssl pkcs12 -legacy -export -out cert.p12 -in certs.pem -inkey certs.pem -passin pass:"$MAC_SIGNING_CERT_PWD" -passout pass:"$MAC_SIGNING_CERT_PWD"
+            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security default-keychain -s sign.keychain
+            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
+            rm cert.p12
+      - run:
+          name: "Sign App Bundle"
+          command: |
+            python3 -m pip install click
+            python3 gpt4all-chat/cmake/sign_dmg.py --input-dmg build/upload/gpt4all-installer-darwin.dmg --output-dmg build/upload/gpt4all-installer-darwin-signed.dmg --signing-identity "$MAC_SIGNING_CERT_NAME"
+      - run:
+          name: "Sign DMG"
+          command: |
+            codesign --options runtime --timestamp -s "$MAC_SIGNING_CERT_NAME" build/upload/gpt4all-installer-darwin-signed.dmg
+      # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+
+  notarize-offline-chat-installer-macos:
+    macos:
+      xcode: 14.0.0
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      # - run:
+      #     name: "Setup Notarize Keychain"
+      #     command: |
+      #       security create-keychain
+      #       sudo xcrun notarytool store-credentials "notarytool-profile" --apple-id "$MAC_NOTARIZATION_ID" --team-id "$MAC_NOTARIZATION_TID" --password "$MAC_NOTARIZATION_KEY" --keychain /Library/Keychains/System.keychain
+      - run:
+          name: "Notarize"
+          command: |
+            xcrun notarytool submit build/upload/gpt4all-installer-darwin-signed.dmg --apple-id "$MAC_NOTARIZATION_ID" --team-id "$MAC_NOTARIZATION_TID" --password "$MAC_NOTARIZATION_KEY" --wait  | tee notarize_log.txt
+      - run:
+          name: "Report Notarization Failure"
+          command: |
+            NID=`python3 .circleci/grab_notary_id.py notarize_log.txt` && export NID
+            xcrun notarytool log $NID --keychain-profile "notary-profile"
+            exit 1
+          when: on_fail
+      # - run:
+      #     name: "Rename and move"
+      #     command: |
+      #       mv build/upload/gpt4all-installer-darwin-signed.dmg build/upload-signed/gpt4all-installer-darwin-signed.dmg
+      - run:
+          name: "Staple"
+          command: |
+            xcrun stapler staple build/upload/gpt4all-installer-darwin-signed.dmg
+      - store_artifacts:
+          path: build/upload
+
   build-offline-chat-installer-linux:
     machine:
       image: ubuntu-2204:2023.04.2
@@ -325,6 +420,9 @@ jobs:
       - restore_cache:  # this is the new step to restore cache
           keys:
             - macos-qt-cache-v3
+      - run:
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
       - run:
           name: Installing Qt
           command: |
@@ -842,6 +940,12 @@ workflows:
       - build-offline-chat-installer-macos:
           requires:
             - hold
+      - sign-offline-chat-installer-macos:
+          requires:
+            - build-offline-chat-installer-macos
+      - notarize-offline-chat-installer-macos:
+          requires:
+            - sign-offline-chat-installer-macos
       - build-offline-chat-installer-windows:
           requires:
             - hold

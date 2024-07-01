@@ -21,7 +21,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
-        width: 2
+        width: 1
         color: theme.dividerColor
     }
 
@@ -89,7 +89,7 @@ Rectangle {
                             text: "%1 – %2".arg(qsTr("%n file(s)", "", model.totalDocs)).arg(qsTr("%n word(s)", "", model.totalWords))
                             elide: Text.ElideRight
                             color: theme.mutedTextColor
-                            font.pixelSize: theme.fontSizeSmaller
+                            font.pixelSize: theme.fontSizeSmall
                         }
                         RowLayout {
                             visible: model.updating
@@ -105,7 +105,7 @@ Rectangle {
                                 text: qsTr("Updating")
                                 elide: Text.ElideRight
                                 color: theme.accentColor
-                                font.pixelSize: theme.fontSizeSmaller
+                                font.pixelSize: theme.fontSizeSmall
                                 font.bold: true
                             }
                         }
@@ -136,7 +136,7 @@ Rectangle {
                 Text {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignLeft
-                    text: qsTr("Chat privately with local files using on-device Large Language Models (LLMs). Keeps data private and secure. Best results with Llama 3 Instruct.")
+                    text: qsTr("Select a collection to make it available to the chat model.")
                     font.pixelSize: theme.fontSizeLarger
                     wrapMode: Text.WordWrap
                     elide: Text.ElideRight

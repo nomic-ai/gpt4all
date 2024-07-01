@@ -1,4 +1,4 @@
-site_name: GPT4All Documentation
+site_name: GPT4All
 repo_url: https://github.com/nomic-ai/gpt4all
 repo_name: nomic-ai/gpt4all
 site_url: https://docs.gpt4all.io
@@ -8,17 +8,20 @@ copyright: Copyright &copy; 2023 Nomic, Inc
 use_directory_urls: false
 
 nav:
-    - 'index.md'
-    - 'GPT4All Chat Client': 'gpt4all_chat.md'
-    - 'Bindings':
-      - 'GPT4All in Python':
-        - 'Generation': 'gpt4all_python.md'
-        - 'Embedding': 'gpt4all_python_embedding.md'
-        - 'Monitoring with OpenLIT': 'gpt4all_monitoring.md'
-      - 'GPT4ALL in NodeJs': 'gpt4all_nodejs.md'
-      - 'gpt4all_cli.md'
-    - 'Wiki':
-      - 'gpt4all_faq.md'
+    - 'index.md' 
+    - 'Quickstart' : 'gpt4all_desktop/quickstart.md'
+    - 'Chats' : 'gpt4all_desktop/chats.md'
+    - 'Models' : 'gpt4all_desktop/models.md'
+    - 'LocalDocs' : 'gpt4all_desktop/localdocs.md'
+    - 'Settings' : 'gpt4all_desktop/settings.md'
+    - 'Python SDK':
+      - 'gpt4all_python/home.md'
+      - 'Monitoring': 'gpt4all_python/monitoring.md'
+      - 'SDK Reference': 'gpt4all_python/ref.md'
+    - 'Help':
+      - 'FAQ': 'gpt4all_help/faq.md'
+      - 'Troubleshooting': 'gpt4all_help/troubleshooting.md'
+
 
 theme:
   name: material
@@ -27,6 +30,7 @@ theme:
   logo: assets/nomic.png
   favicon: assets/favicon.ico
   features:
+    - content.code.copy
     - navigation.instant
     - navigation.tracking
     - navigation.sections
@@ -52,11 +56,13 @@ markdown_extensions:
   - admonition
   - codehilite:
       css_class: highlight
+  - markdown_captions
 
 extra_css:
     - css/custom.css
 
 plugins:
+  - search
   - mkdocstrings:
       handlers:
         python:
@@ -65,8 +71,11 @@ plugins:
             heading_level: 4
             show_root_full_path: false
             docstring_section_style: list
-  #- material/social:
-  #    cards_font: Roboto
+  - material/social:
+      cards_layout_options:
+          font_family: Roboto
+          description: GPT4All runs LLMs efficiently on your hardware
+
 
   #- mkdocs-jupyter:
   #    ignore_h1_titles: True

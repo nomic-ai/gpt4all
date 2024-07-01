@@ -23,7 +23,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-        width: 2
+        width: 1
         color: theme.dividerColor
     }
 
@@ -44,9 +44,9 @@ Rectangle {
             anchors.right: parent.right
             anchors.margins: 20
             font.pixelSize: theme.fontSizeLarger
-            topPadding: 20
-            bottomPadding: 20
-            text: qsTr("\uFF0B New chat")
+            topPadding: 24
+            bottomPadding: 24
+            text: qsTr("\uFF0B New Chat")
             Accessible.description: qsTr("Create a new chat")
             onClicked: {
                 ChatListModel.addChat()
@@ -59,7 +59,7 @@ Rectangle {
             id: divider
             anchors.top: newChat.bottom
             anchors.margins: 20
-            anchors.topMargin: 15
+            anchors.topMargin: 14
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
@@ -109,8 +109,8 @@ Rectangle {
                             topPadding: 15
                             bottomPadding: 5
                             text: parent.section
-                            color: theme.styledTextColor
-                            font.pixelSize: theme.fontSizeLarge
+                            color: theme.chatDrawerSectionHeader
+                            font.pixelSize: theme.fontSizeSmallest
                         }
                     }
                 }
@@ -191,11 +191,11 @@ Rectangle {
                         anchors.verticalCenter: chatName.verticalCenter
                         anchors.right: chatRectangle.right
                         anchors.rightMargin: 10
-                        spacing: 10
+                        spacing: 5
                         MyToolButton {
                             id: editButton
-                            width: 30
-                            height: 30
+                            imageWidth: 24
+                            imageHeight: 24
                             visible: isCurrent && !isServer
                             opacity: trashQuestionDisplayed ? 0.5 : 1.0
                             source: "qrc:/gpt4all/icons/edit.svg"
@@ -208,8 +208,8 @@ Rectangle {
                         }
                         MyToolButton {
                             id: trashButton
-                            width: 30
-                            height: 30
+                            imageWidth: 24
+                            imageHeight: 24
                             visible: isCurrent && !isServer
                             source: "qrc:/gpt4all/icons/trash.svg"
                             onClicked: {

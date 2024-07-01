@@ -46,13 +46,11 @@ Dlhandle::Dlhandle(const fs::path &fpath)
 
     // Suppress the "Entry Point Not Found" dialog, caused by outdated nvcuda.dll from the GPU driver
     UINT lastErrorMode = GetErrorMode();
-    UINT success = SetErrorMode(lastErrorMode | SEM_FAILCRITICALERRORS);
-    assert(success);
+    SetErrorMode(lastErrorMode | SEM_FAILCRITICALERRORS);
 
     chandle = LoadLibraryExW(afpath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
 
-    success = SetErrorMode(lastErrorMode);
-    assert(success);
+    SetErrorMode(lastErrorMode);
 
     if (!chandle) {
         DWORD err = GetLastError();

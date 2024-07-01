@@ -26,6 +26,7 @@
 
 #include <exception>
 #include <utility>
+#include <vector>
 
 using namespace Qt::Literals::StringLiterals;
 
@@ -63,24 +64,108 @@ void EmbeddingLLMWorker::wait()
 
 bool EmbeddingLLMWorker::loadModel()
 {
+    constexpr int n_ctx = 2048;
+
     m_nomicAPIKey.clear();
     m_model = nullptr;
+
+    // TODO(jared): react to setting changes without restarting
 
     if (MySettings::globalInstance()->localDocsUseRemoteEmbed()) {
         m_nomicAPIKey = MySettings::globalInstance()->localDocsNomicAPIKey();
         return true;
     }
 
-    QString filePath = u"%1/../resources/%2"_s.arg(QCoreApplication::applicationDirPath(), LOCAL_EMBEDDING_MODEL);
+#ifdef Q_OS_DARWIN
+    static const QString embPathFmt = u"%1/../Resources/%2"_s;
+#else
+    static const QString embPathFmt = u"%1/../resources/%2"_s;
+#endif
+
+    QString filePath = embPathFmt.arg(QCoreApplication::applicationDirPath(), LOCAL_EMBEDDING_MODEL);
     if (!QFileInfo::exists(filePath)) {
-        qWarning() << "WARNING: Local embedding model not found";
+        qWarning() << "embllm WARNING: Local embedding model not found";
         return false;
     }
 
+    QString requestedDevice = MySettings::globalInstance()->localDocsEmbedDevice();
+    std::string backend = "auto";
+#ifdef Q_OS_MAC
+    if (requestedDevice == "Auto" || requestedDevice == "CPU")
+        backend = "cpu";
+#else
+    if (requestedDevice.startsWith("CUDA: "))
+        backend = "cuda";
+#endif
+
     try {
-        m_model = LLModel::Implementation::construct(filePath.toStdString());
+        m_model = LLModel::Implementation::construct(filePath.toStdString(), backend, n_ctx);
     } catch (const std::exception &e) {
-        qWarning() << "WARNING: Could not load embedding model:" << e.what();
+        qWarning() << "embllm WARNING: Could not load embedding model:" << e.what();
+        return false;
+    }
+
+    bool actualDeviceIsCPU = true;
+
+#if defined(Q_OS_MAC) && defined(__aarch64__)
+    if (m_model->implementation().buildVariant() == "metal")
+        actualDeviceIsCPU = false;
+#else
+    if (requestedDevice != "CPU") {
+        const LLModel::GPUDevice *device = nullptr;
+        std::vector<LLModel::GPUDevice> availableDevices = m_model->availableGPUDevices(0);
+        if (requestedDevice != "Auto") {
+            // Use the selected device
+            for (const LLModel::GPUDevice &d : availableDevices) {
+                if (QString::fromStdString(d.selectionName()) == requestedDevice) {
+                    device = &d;
+                    break;
+                }
+            }
+        }
+
+        std::string unavail_reason;
+        if (!device) {
+            // GPU not available
+        } else if (!m_model->initializeGPUDevice(device->index, &unavail_reason)) {
+            qWarning().noquote() << "embllm WARNING: Did not use GPU:" << QString::fromStdString(unavail_reason);
+        } else {
+            actualDeviceIsCPU = false;
+        }
+    }
+#endif
+
+    bool success = m_model->loadModel(filePath.toStdString(), n_ctx, 100);
+
+    // CPU fallback
+    if (!actualDeviceIsCPU && !success) {
+        // llama_init_from_file returned nullptr
+        qWarning() << "embllm WARNING: Did not use GPU: GPU loading failed (out of VRAM?)";
+
+        if (backend == "cuda") {
+            // For CUDA, make sure we don't use the GPU at all - ngl=0 still offloads matmuls
+            try {
+                m_model = LLModel::Implementation::construct(filePath.toStdString(), "auto", n_ctx);
+            } catch (const std::exception &e) {
+                qWarning() << "embllm WARNING: Could not load embedding model:" << e.what();
+                return false;
+            }
+        }
+
+        success = m_model->loadModel(filePath.toStdString(), n_ctx, 0);
+    }
+
+    if (!success) {
+        qWarning() << "embllm WARNING: Could not load embedding model";
+        delete m_model;
+        m_model = nullptr;
+        return false;
+    }
+
+    if (!m_model->supportsEmbedding()) {
+        qWarning() << "embllm WARNING: Model type does not support embeddings";
+        delete m_model;
+        m_model = nullptr;
         return false;
     }
 
@@ -88,22 +173,6 @@ bool EmbeddingLLMWorker::loadModel()
     int n_threads = MySettings::globalInstance()->threadCount();
     m_model->setThreadCount(n_threads);
 
-    // NOTE: explicitly loads model on CPU to avoid GPU OOM
-    // TODO(cebtenzzre): support GPU-accelerated embeddings
-    bool success = m_model->loadModel(filePath.toStdString(), 2048, 0);
-    if (!success) {
-        qWarning() << "WARNING: Could not load embedding model";
-        delete m_model;
-        m_model = nullptr;
-        return false;
-    }
-
-    if (!m_model->supportsEmbedding()) {
-        qWarning() << "WARNING: Model type does not support embeddings";
-        delete m_model;
-        m_model = nullptr;
-        return false;
-    }
     return true;
 }
 
@@ -121,7 +190,7 @@ std::vector<float> EmbeddingLLMWorker::generateQueryEmbedding(const QString &tex
             std::vector<float> embedding(m_model->embeddingSize());
 
             try {
-                m_model->embed({text.toStdString()}, embedding.data(), true);
+                m_model->embed({text.toStdString()}, embedding.data(), /*isRetrieval*/ true);
             } catch (const std::exception &e) {
                 qWarning() << "WARNING: LLModel::embed failed:" << e.what();
                 return {};
@@ -196,26 +265,34 @@ void EmbeddingLLMWorker::docEmbeddingsRequested(const QVector<EmbeddingChunk> &c
     if (!isNomic) {
         QVector<EmbeddingResult> results;
         results.reserve(chunks.size());
+        std::vector<std::string> texts;
+        texts.reserve(chunks.size());
         for (const auto &c: chunks) {
             EmbeddingResult result;
             result.model = c.model;
             result.folder_id = c.folder_id;
             result.chunk_id = c.chunk_id;
-            // TODO(cebtenzzre): take advantage of batched embeddings
             result.embedding.resize(m_model->embeddingSize());
-
-            {
-                QMutexLocker locker(&m_mutex);
-                try {
-                    m_model->embed({c.chunk.toStdString()}, result.embedding.data(), false);
-                } catch (const std::exception &e) {
-                    qWarning() << "WARNING: LLModel::embed failed:" << e.what();
-                    return;
-                }
-            }
-
             results << result;
+            texts.push_back(c.chunk.toStdString());
         }
+
+        constexpr int BATCH_SIZE = 4;
+        std::vector<float> result;
+        result.resize(chunks.size() * m_model->embeddingSize());
+        for (int j = 0; j < chunks.size(); j += BATCH_SIZE) {
+            QMutexLocker locker(&m_mutex);
+            std::vector batchTexts(texts.begin() + j, texts.begin() + std::min(j + BATCH_SIZE, int(texts.size())));
+            try {
+                m_model->embed(batchTexts, result.data() + j * m_model->embeddingSize(), /*isRetrieval*/ false);
+            } catch (const std::exception &e) {
+                qWarning() << "WARNING: LLModel::embed failed:" << e.what();
+                return;
+            }
+        }
+        for (int i = 0; i < chunks.size(); i++)
+            memcpy(results[i].embedding.data(), &result[i * m_model->embeddingSize()], m_model->embeddingSize() * sizeof(float));
+
         emit embeddingsGenerated(results);
         return;
     };

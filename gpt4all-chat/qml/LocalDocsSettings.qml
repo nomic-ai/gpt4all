@@ -19,20 +19,30 @@ MySettingsTab {
     title: qsTr("LocalDocs")
     contentItem: ColumnLayout {
         id: root
-        spacing: 10
+        spacing: 30
 
         Label {
-            color: theme.styledTextColor
-            font.pixelSize: theme.fontSizeLarge
+            Layout.bottomMargin: 10
+            color: theme.settingsTitleTextColor
+            font.pixelSize: theme.fontSizeBannerSmall
             font.bold: true
-            text: "Indexing"
+            text: qsTr("LocalDocs Settings")
         }
 
-        Rectangle {
-            Layout.bottomMargin: 15
-            Layout.fillWidth: true
-            height: 2
-            color: theme.settingsDivider
+        ColumnLayout {
+            spacing: 10
+            Label {
+                color: theme.styledTextColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: qsTr("Indexing")
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: theme.settingsDivider
+            }
         }
 
         RowLayout {
@@ -81,25 +91,26 @@ MySettingsTab {
             }
         }
 
-        Label {
-            Layout.topMargin: 15
-            color: theme.grayRed900
-            font.pixelSize: theme.fontSizeLarge
-            font.bold: true
-            text: "Embedding"
-        }
+        ColumnLayout {
+            spacing: 10
+            Label {
+                color: theme.grayRed900
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: qsTr("Embedding")
+            }
 
-        Rectangle {
-            Layout.bottomMargin: 15
-            Layout.fillWidth: true
-            height: 2
-            color: theme.grayRed500
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: theme.grayRed500
+            }
         }
 
         RowLayout {
             MySettingsLabel {
                 text: qsTr("Use Nomic Embed API")
-                helpText: qsTr("Embed documents using the fast Nomic API instead of a private local model.")
+                helpText: qsTr("Embed documents using the fast Nomic API instead of a private local model. Requires restart.")
             }
 
             MyCheckBox {
@@ -117,24 +128,29 @@ MySettingsTab {
             MySettingsLabel {
                 id: apiKeyLabel
                 text: qsTr("Nomic API Key")
-                helpText: qsTr("API key to use for Nomic Embed. Get one at https://atlas.nomic.ai/")
+                helpText: qsTr('API key to use for Nomic Embed. Get one from the Atlas <a href="https://atlas.nomic.ai/cli-login">API keys page</a>. Requires restart.')
+                onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             }
 
             MyTextField {
                 id: apiKeyField
+
+                property bool isValid: validate()
+                onTextChanged: { isValid = validate(); }
+                function validate() { return /^(nk-[a-zA-Z0-9_-]{43})?$/.test(apiKeyField.text); }
+
+                placeholderText: "nk-" + "X".repeat(43)
                 text: MySettings.localDocsNomicAPIKey
-                color: apiKeyField.acceptableInput ? theme.textColor : theme.textErrorColor
+                color: apiKeyField.isValid ? theme.textColor : theme.textErrorColor
                 font.pixelSize: theme.fontSizeLarge
                 Layout.alignment: Qt.AlignRight
                 Layout.minimumWidth: 200
                 enabled: useNomicAPIBox.checked
-                validator: RegularExpressionValidator {
-                    // may be empty
-                    regularExpression: /|nk-[a-zA-Z0-9_-]{43}/
-                }
                 onEditingFinished: {
-                    MySettings.localDocsNomicAPIKey = apiKeyField.text;
-                    MySettings.localDocsUseRemoteEmbed = useNomicAPIBox.checked && MySettings.localDocsNomicAPIKey !== "";
+                    if (apiKeyField.isValid) {
+                        MySettings.localDocsNomicAPIKey = apiKeyField.text;
+                        MySettings.localDocsUseRemoteEmbed = useNomicAPIBox.checked && MySettings.localDocsNomicAPIKey !== "";
+                    }
                     focus = false;
                 }
                 Accessible.role: Accessible.EditableText
@@ -143,26 +159,61 @@ MySettingsTab {
             }
         }
 
-        Label {
-            Layout.topMargin: 15
-            color: theme.grayRed900
-            font.pixelSize: theme.fontSizeLarge
-            font.bold: true
-            text: "Display"
+        RowLayout {
+            MySettingsLabel {
+                id: deviceLabel
+                text: qsTr("Embeddings Device")
+                helpText: qsTr('The compute device used for embeddings. "Auto" uses the CPU. Requires restart.')
+            }
+            MyComboBox {
+                id: deviceBox
+                enabled: !useNomicAPIBox.checked
+                Layout.minimumWidth: 400
+                Layout.maximumWidth: 400
+                Layout.fillWidth: false
+                Layout.alignment: Qt.AlignRight
+                model: MySettings.embeddingsDeviceList
+                Accessible.name: deviceLabel.text
+                Accessible.description: deviceLabel.helpText
+                function updateModel() {
+                    deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.localDocsEmbedDevice);
+                }
+                Component.onCompleted: {
+                    deviceBox.updateModel();
+                }
+                Connections {
+                    target: MySettings
+                    function onDeviceChanged() {
+                        deviceBox.updateModel();
+                    }
+                }
+                onActivated: {
+                    MySettings.localDocsEmbedDevice = deviceBox.currentText;
+                }
+            }
         }
 
-        Rectangle {
-            Layout.bottomMargin: 15
-            Layout.fillWidth: true
-            height: 2
-            color: theme.grayRed500
+        ColumnLayout {
+            spacing: 10
+            Label {
+                color: theme.grayRed900
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: qsTr("Display")
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: theme.grayRed500
+            }
         }
 
         RowLayout {
             MySettingsLabel {
                 id: showReferencesLabel
-                text: qsTr("Show sources")
-                helpText: qsTr("Shows sources in GUI generated by localdocs")
+                text: qsTr("Show Sources")
+                helpText: qsTr("Display the sources used for each response.")
             }
             MyCheckBox {
                 id: showReferencesBox
@@ -173,19 +224,20 @@ MySettingsTab {
             }
         }
 
-        Label {
-            Layout.topMargin: 15
-            color: theme.styledTextColor
-            font.pixelSize: theme.fontSizeLarge
-            font.bold: true
-            text: "Advanced"
-        }
+        ColumnLayout {
+            spacing: 10
+            Label {
+                color: theme.styledTextColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
+                text: qsTr("Advanced")
+            }
 
-        Rectangle {
-            Layout.bottomMargin: 15
-            Layout.fillWidth: true
-            height: 2
-            color: theme.settingsDivider
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: theme.settingsDivider
+            }
         }
 
         MySettingsLabel {
@@ -254,7 +306,7 @@ MySettingsTab {
         Rectangle {
             Layout.topMargin: 15
             Layout.fillWidth: true
-            height: 2
+            height: 1
             color: theme.settingsDivider
         }
      }

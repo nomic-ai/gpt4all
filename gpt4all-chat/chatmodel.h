@@ -188,6 +188,11 @@ public:
         }
     }
 
+    Q_INVOKABLE void forceUpdate(int index)
+    {
+        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ValueRole});
+    }
+
     Q_INVOKABLE void updateValue(int index, const QString &value)
     {
         if (index < 0 || index >= m_chatItems.size()) return;

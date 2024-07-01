@@ -57,7 +57,7 @@ Item {
         anchors.rightMargin: 15
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 2
+        height: 1
         color: theme.settingsDivider
     }
 

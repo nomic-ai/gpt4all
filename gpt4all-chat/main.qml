@@ -63,6 +63,7 @@ Window {
 
     property bool hasCheckedFirstStart: false
     property bool hasShownSettingsAccess: false
+    property var currentChat: ChatListModel.currentChat
 
     function startupDialogs() {
         if (!LLM.compatHardware()) {
@@ -203,7 +204,7 @@ Window {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
-        width: MySettings.fontSize === "Small" ? 86 : 100
+        width: 16 + 52 * theme.fontScale
         color: theme.viewBarBackground
 
         ColumnLayout {
@@ -212,20 +213,20 @@ Window {
             anchors.topMargin: 30
             anchors.horizontalCenter: parent.horizontalCenter
             Layout.margins: 0
-            spacing: 18
+            spacing: 16
 
             MyToolButton {
                 id: homeButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 38 * theme.fontScale
+                Layout.preferredHeight: 38 * theme.fontScale
                 Layout.alignment: Qt.AlignCenter
                 toggledWidth: 0
                 toggled: homeView.isShown()
                 toggledColor: theme.iconBackgroundViewBarToggled
-                imageWidth: 34
-                imageHeight: 34
+                imageWidth: 25 * theme.fontScale
+                imageHeight: 25 * theme.fontScale
                 source: "qrc:/gpt4all/icons/home.svg"
                 Accessible.name: qsTr("Home view")
                 Accessible.description: qsTr("Home view of application")
@@ -237,10 +238,10 @@ Window {
             Text {
                 Layout.topMargin: -20
                 text: qsTr("Home")
-                font.pixelSize: theme.fontSizeLargeCapped
+                font.pixelSize: theme.fontSizeMedium
                 font.bold: true
                 color: homeButton.hovered ? homeButton.backgroundColorHovered : homeButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 38 * theme.fontScale
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
@@ -253,14 +254,14 @@ Window {
                 id: chatButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 38 * theme.fontScale
+                Layout.preferredHeight: 38 * theme.fontScale
                 Layout.alignment: Qt.AlignCenter
                 toggledWidth: 0
                 toggled: chatView.isShown()
                 toggledColor: theme.iconBackgroundViewBarToggled
-                imageWidth: 34
-                imageHeight: 34
+                imageWidth: 25 * theme.fontScale
+                imageHeight: 25 * theme.fontScale
                 source: "qrc:/gpt4all/icons/chat.svg"
                 Accessible.name: qsTr("Chat view")
                 Accessible.description: qsTr("Chat view to interact with models")
@@ -272,10 +273,10 @@ Window {
             Text {
                 Layout.topMargin: -20
                 text: qsTr("Chats")
-                font.pixelSize: theme.fontSizeLargeCapped
+                font.pixelSize: theme.fontSizeMedium
                 font.bold: true
                 color: chatButton.hovered ? chatButton.backgroundColorHovered : chatButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 38 * theme.fontScale
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
@@ -288,13 +289,13 @@ Window {
                 id: modelsButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 38 * theme.fontScale
+                Layout.preferredHeight: 38 * theme.fontScale
                 toggledWidth: 0
                 toggled: modelsView.isShown()
                 toggledColor: theme.iconBackgroundViewBarToggled
-                imageWidth: 34
-                imageHeight: 34
+                imageWidth: 25 * theme.fontScale
+                imageHeight: 25 * theme.fontScale
                 source: "qrc:/gpt4all/icons/models.svg"
                 Accessible.name: qsTr("Models")
                 Accessible.description: qsTr("Models view for installed models")
@@ -306,10 +307,10 @@ Window {
             Text {
                 Layout.topMargin: -20
                 text: qsTr("Models")
-                font.pixelSize: theme.fontSizeLargeCapped
+                font.pixelSize: theme.fontSizeMedium
                 font.bold: true
                 color: modelsButton.hovered ? modelsButton.backgroundColorHovered : modelsButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 38 * theme.fontScale
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
@@ -322,13 +323,13 @@ Window {
                 id: localdocsButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 38 * theme.fontScale
+                Layout.preferredHeight: 38 * theme.fontScale
                 toggledWidth: 0
                 toggledColor: theme.iconBackgroundViewBarToggled
                 toggled: localDocsView.isShown()
-                imageWidth: 34
-                imageHeight: 34
+                imageWidth: 25 * theme.fontScale
+                imageHeight: 25 * theme.fontScale
                 source: "qrc:/gpt4all/icons/db.svg"
                 Accessible.name: qsTr("LocalDocs")
                 Accessible.description: qsTr("LocalDocs view to configure and use local docs")
@@ -340,10 +341,10 @@ Window {
             Text {
                 Layout.topMargin: -20
                 text: qsTr("LocalDocs")
-                font.pixelSize: theme.fontSizeLargeCapped
+                font.pixelSize: theme.fontSizeMedium
                 font.bold: true
                 color: localdocsButton.hovered ? localdocsButton.backgroundColorHovered : localdocsButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 38 * theme.fontScale
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
@@ -356,13 +357,13 @@ Window {
                 id: settingsButton
                 backgroundColor: toggled ? theme.iconBackgroundViewBarHovered : theme.iconBackgroundViewBar
                 backgroundColorHovered: theme.iconBackgroundViewBarHovered
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 38 * theme.fontScale
+                Layout.preferredHeight: 38 * theme.fontScale
                 toggledWidth: 0
                 toggledColor: theme.iconBackgroundViewBarToggled
                 toggled: settingsView.isShown()
-                imageWidth: 34
-                imageHeight: 34
+                imageWidth: 25 * theme.fontScale
+                imageHeight: 25 * theme.fontScale
                 source: "qrc:/gpt4all/icons/settings.svg"
                 Accessible.name: qsTr("Settings")
                 Accessible.description: qsTr("Settings view for application configuration")
@@ -374,10 +375,10 @@ Window {
             Text {
                 Layout.topMargin: -20
                 text: qsTr("Settings")
-                font.pixelSize: theme.fontSizeLargeCapped
+                font.pixelSize: theme.fontSizeMedium
                 font.bold: true
                 color: settingsButton.hovered ? settingsButton.backgroundColorHovered : settingsButton.backgroundColor
-                Layout.preferredWidth: 48
+                Layout.preferredWidth: 38 * theme.fontScale
                 horizontalAlignment: Text.AlignHCenter
                 TapHandler {
                     onTapped: function(eventPoint, button) {
@@ -396,6 +397,98 @@ Window {
             Layout.margins: 0
             spacing: 22
 
+            Item {
+                id: antennaItem
+                Layout.alignment: Qt.AlignCenter
+                Layout.preferredWidth: antennaImage.width
+                Layout.preferredHeight: antennaImage.height
+                Image {
+                    id: antennaImage
+                    sourceSize.width: 32
+                    sourceSize.height: 32
+                    visible: false
+                    fillMode: Image.PreserveAspectFit
+                    source: "qrc:/gpt4all/icons/antenna_3.svg"
+                }
+
+                ColorOverlay {
+                    id: antennaColored
+                    visible: ModelList.selectableModels.count !== 0 && (currentChat.isServer || currentChat.modelInfo.isOnline || MySettings.networkIsActive)
+                    anchors.fill: antennaImage
+                    source: antennaImage
+                    color: theme.styledTextColor
+                    ToolTip.text: {
+                        if (MySettings.networkIsActive)
+                            return qsTr("The datalake is enabled")
+                        else if (currentChat.modelInfo.isOnline)
+                            return qsTr("Using a network model")
+                        else if (currentChat.modelInfo.isOnline)
+                            return qsTr("Server mode is enabled")
+                        return ""
+                    }
+                    ToolTip.visible: maAntenna.containsMouse
+                    ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+                    MouseArea {
+                        id: maAntenna
+                        anchors.fill: antennaColored
+                        hoverEnabled: true
+                    }
+                }
+
+                SequentialAnimation {
+                    running: true
+                    loops: Animation.Infinite
+
+                    PropertyAnimation {
+                        target: antennaImage
+                        property: "source"
+                        duration: 500
+                        from: "qrc:/gpt4all/icons/antenna_1.svg"
+                        to: "qrc:/gpt4all/icons/antenna_2.svg"
+                    }
+
+                    PauseAnimation {
+                        duration: 1500
+                    }
+
+                    PropertyAnimation {
+                        target: antennaImage
+                        property: "source"
+                        duration: 500
+                        from: "qrc:/gpt4all/icons/antenna_2.svg"
+                        to: "qrc:/gpt4all/icons/antenna_3.svg"
+                    }
+
+                    PauseAnimation {
+                        duration: 1500
+                    }
+
+                    PropertyAnimation {
+                        target: antennaImage
+                        property: "source"
+                        duration: 500
+                        from: "qrc:/gpt4all/icons/antenna_3.svg"
+                        to: "qrc:/gpt4all/icons/antenna_2.svg"
+                    }
+
+                    PauseAnimation {
+                        duration: 1500
+                    }
+
+                    PropertyAnimation {
+                        target: antennaImage
+                        property: "source"
+                        duration: 1500
+                        from: "qrc:/gpt4all/icons/antenna_2.svg"
+                        to: "qrc:/gpt4all/icons/antenna_1.svg"
+                    }
+
+                    PauseAnimation {
+                        duration: 500
+                    }
+                }
+            }
+
             Rectangle {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: image.width
@@ -405,7 +498,7 @@ Window {
                 Image {
                     id: image
                     anchors.centerIn: parent
-                    sourceSize: Qt.size(60, 40)
+                    sourceSize: Qt.size(48 * theme.fontScale, 32 * theme.fontScale)
                     fillMode: Image.PreserveAspectFit
                     mipmap: true
                     visible: false

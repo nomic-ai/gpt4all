@@ -1,13 +1,34 @@
 <h1 align="center">GPT4All</h1>
-<p align="center">Privacy-oriented software for chatting with large language models that run on your own computer.</p>
+
+<p align="center">GPT4All runs large language models (LLMs) privately on everyday desktops & laptops. <br> <br> No API calls or GPUs required - you can just download the application and <a href="https://docs.gpt4all.io/gpt4all_desktop/quickstart.html#quickstart">get started</a>
+
+
 <p align="center">
-  <a href="https://gpt4all.io">Official Website</a> &bull; <a href="https://docs.gpt4all.io">Documentation</a> &bull; <a href="https://discord.gg/mGZE39AS3e">Discord</a>
+  <a href="https://gpt4all.io/installers/gpt4all-installer-win64.exe">
+    <img src="gpt4all-bindings/python/docs/assets/windows.png" width="80" height="80"><br>
+    Download for Windows
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://gpt4all.io/installers/gpt4all-installer-darwin.dmg">
+    <img src="gpt4all-bindings/python/docs/assets/mac.png" width="80" height="90"><br>
+    Download for MacOS
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://gpt4all.io/installers/gpt4all-installer-linux.run">
+    <img src="gpt4all-bindings/python/docs/assets/linux.png" width="80" height="80"><br>
+    Download for Linux
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://gpt4all.io">Website</a> &bull; <a href="https://docs.gpt4all.io">Documentation</a> &bull; <a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
 <p align="center">
-  Official Download Links: <a href="https://gpt4all.io/installers/gpt4all-installer-win64.exe">Windows</a> &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-darwin.dmg">macOS</a> &mdash; <a href="https://gpt4all.io/installers/gpt4all-installer-linux.run">Ubuntu</a>
-</p>
-<p align="center">
-  <b>NEW:</b> <a href="https://forms.nomic.ai/gpt4all-release-notes-signup">Subscribe to our mailing list</a> for updates and news!
+  <a href="https://forms.nomic.ai/gpt4all-release-notes-signup">Subscribe to the newsletter</a>
 </p>
 <p align="center">
 GPT4All is made possible by our compute partner <a href="https://www.paperspace.com/">Paperspace</a>.
@@ -16,31 +37,30 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
  <a href="https://www.phorm.ai/query?projectId=755eecd3-24ad-49cc-abf4-0ab84caacf63"><img src="https://img.shields.io/badge/Phorm-Ask_AI-%23F2777A.svg" alt="phorm.ai"></a>
 </p>
 
-<p align="center">
-  <img width="auto" height="400" src="https://github.com/nomic-ai/gpt4all/assets/14168726/495fce3e-769b-4e5a-a394-99f072ac4d29">
-</p>
-<p align="center">
-Run on an M2 MacBook Pro (not sped up!)
-</p>
 
 
-## About GPT4All
+## Install GPT4All Python
 
-GPT4All is an ecosystem to run **powerful** and **customized** large language models that work locally on consumer grade CPUs and NVIDIA and AMD GPUs. Note that your CPU needs to support [AVX instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions).
+`gpt4all` gives you access to LLMs with our Python client around [`llama.cpp`](https://github.com/ggerganov/llama.cpp) implementations. 
 
-Learn more in the [documentation](https://docs.gpt4all.io).
+Nomic contributes to open source software like [`llama.cpp`](https://github.com/ggerganov/llama.cpp) to make LLMs accessible and efficient **for all**.
 
-A GPT4All model is a 3GB - 8GB file that you can download and plug into the GPT4All software. **Nomic AI** supports and maintains this software ecosystem to enforce quality and security alongside spearheading the effort to allow any person or enterprise to easily deploy their own on-edge large language models.
+```bash
+pip install gpt4all
+```
+
+```python
+from gpt4all import GPT4All
+model = GPT4All("Meta-Llama-3-8B-Instruct.Q4_0.gguf") # downloads / loads a 4.66GB LLM
+with model.chat_session():
+    print(model.generate("How can I run LLMs efficiently on my laptop?", max_tokens=1024))
+```
 
 
-### Installation
-
-The recommended way to install GPT4All is to use one of the online installers linked above in this README, which are also available at the [GPT4All website](https://gpt4all.io/). These require an internet connection at install time, are slightly easier to use on macOS due to code signing, and provide a version of GPT4All that can check for updates.
-
-An alternative way to install GPT4All is to use one of the offline installers available on the [Releases page](https://github.com/nomic-ai/gpt4all/releases). These do not require an internet connection at install time, and can be used to install an older version of GPT4All if so desired. But using these requires acknowledging a security warning on macOS, and they provide a version of GPT4All that is unable to notify you of updates, so you should enable notifications for Releases on this repository (Watch > Custom > Releases) or sign up for announcements in our [Discord server](https://discord.gg/mGZE39AS3e).
-
-
-### What's New
+### Release History
+- **July 2nd, 2024**: V3.0.0 Release
+    - New UI/UX: fresh redesign of the chat application GUI and user experience
+    - LocalDocs: bring information from files on-device into chats
 - **October 19th, 2023**: GGUF Support Launches with Support for:
     - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
     - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4\_0 and Q4\_1 quantizations in GGUF.
@@ -51,21 +71,9 @@ An alternative way to install GPT4All is to use one of the offline installers av
 
 [Docker-based API server]: https://github.com/nomic-ai/gpt4all/tree/cef74c2be20f5b697055d5b8b506861c7b997fab/gpt4all-api
 
-
-### Building From Source
-
-* Follow the instructions [here](gpt4all-chat/build_and_run.md) to build the GPT4All Chat UI from source.
-
-
-### Bindings
-
-* :snake: <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python">Official Python Bindings</a> [![Downloads](https://static.pepy.tech/badge/gpt4all/week)](https://pepy.tech/project/gpt4all)
-* :computer: <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/typescript">Typescript Bindings</a>
-
-
 ### Integrations
 
-* :parrot::link: [Langchain](https://python.langchain.com/en/latest/modules/models/llms/integrations/gpt4all.html)
+* :parrot::link: [Langchain](https://python.langchain.com/v0.2/docs/integrations/providers/gpt4all/)
 * :card_file_box: [Weaviate Vector Database](https://github.com/weaviate/weaviate) - [module docs](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-gpt4all)
 * :telescope: [OpenLIT (OTel-native Monitoring)](https://github.com/openlit/openlit) - [Docs](https://docs.openlit.io/latest/integrations/gpt4all)
 
@@ -77,58 +85,6 @@ Please see CONTRIBUTING.md and follow the issues, bug reports, and PR markdown t
 Check project discord, with project owners, or through existing issues/PRs to avoid duplicate work.
 Please make sure to tag all of the above with relevant project identifiers or your contribution could potentially get lost.
 Example tags: `backend`, `bindings`, `python-bindings`, `documentation`, etc.
-
-
-## GPT4All 2024 Roadmap
-To contribute to the development of any of the below roadmap items, make or find the corresponding issue and cross-reference the [in-progress task](https://github.com/orgs/nomic-ai/projects/2/views/1).
-
-Each item should have an issue link below.
-
-- Chat UI Language Localization (localize UI into the native languages of users)
-    - [ ] Chinese
-    - [ ] German
-    - [ ] French
-    - [ ] Portuguese
-    - [ ] Your native language here. 
-- UI Redesign: an internal effort at Nomic to improve the UI/UX of gpt4all for all users.
-    - [ ] Design new user interface and gather community feedback
-    - [ ] Implement the new user interface and experience.
-- Installer and Update Improvements
-    - [ ] Seamless native installation and update process on OSX
-    - [ ] Seamless native installation and update process on Windows
-    - [ ] Seamless native installation and update process on Linux
-- Model discoverability improvements:
-    - [x] Support huggingface model discoverability
-    - [ ] Support Nomic hosted model discoverability
-- LocalDocs (towards a local perplexity)
-    - Multilingual LocalDocs Support
-        - [ ] Create a multilingual experience
-        - [ ] Incorporate a multilingual embedding model
-        - [ ] Specify a preferred multilingual LLM for localdocs
-    - Improved RAG techniques
-        - [ ] Query augmentation and re-writing
-        - [ ] Improved chunking and text extraction from arbitrary modalities
-            - [ ] Custom PDF extractor past the QT default (charts, tables, text)
-        - [ ] Faster indexing and local exact search with v1.5 hamming embeddings and reranking (skip ANN index construction!)
-    - Support queries like 'summarize X document'
-    - Multimodal LocalDocs support with Nomic Embed
-    - Nomic Dataset Integration with real-time LocalDocs
-        - [ ] Include an option to allow the export of private LocalDocs collections to Nomic Atlas for debugging data/chat quality
-        - [ ] Allow optional sharing of LocalDocs collections between users.
-        - [ ] Allow the import of a LocalDocs collection from an Atlas Datasets
-            - Chat with live version of Wikipedia, Chat with Pubmed, chat with the latest snapshot of world news.
-- First class Multilingual LLM Support
-    - [ ] Recommend and set a default LLM for German
-    - [ ] Recommend and set a default LLM for English
-    - [ ] Recommend and set a default LLM for Chinese
-    - [ ] Recommend and set a default LLM for Spanish
-
-- Server Mode improvements
-    - Improved UI and new requested features:
-        - [ ] Fix outstanding bugs and feature requests around networking configurations.
-        - [ ] Support Nomic Embed inferencing
-        - [ ] First class documentation
-        - [ ] Improving developer use and quality of server mode (e.g. support larger batches)
 
 
 ## Technical Reports

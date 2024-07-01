@@ -36,6 +36,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.maximumWidth: 1530
             Layout.alignment: Qt.AlignCenter
+            Layout.topMargin: 20
             spacing: 30
 
             ColumnLayout {
@@ -52,7 +53,7 @@ Rectangle {
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: qsTr("the privacy-first LLM chat application")
+                    text: qsTr("The privacy-first LLM chat application")
                     font.pixelSize: theme.fontSizeLarge
                     color: theme.titleInfoTextColor
                 }
@@ -150,7 +151,7 @@ Rectangle {
                                 sourceSize: Qt.size(40, 40)
                                 mipmap: true
                                 visible: false
-                                source: "qrc:/gpt4all/icons/alt_logo.svg"
+                                source: "qrc:/gpt4all/icons/gpt4all_transparent.svg"
                             }
 
                             ColorOverlay {
@@ -218,6 +219,12 @@ Rectangle {
                         text: qsTr("Release Notes")
                         imageSource: "qrc:/gpt4all/icons/notes.svg"
                         onClicked: { Qt.openUrlExternally("https://github.com/nomic-ai/gpt4all/releases") }
+                    }
+
+                    MyFancyLink {
+                        text: qsTr("Documentation")
+                        imageSource: "qrc:/gpt4all/icons/info.svg"
+                        onClicked: { Qt.openUrlExternally("https://docs.gpt4all.io/gpt4all_chat.html") }
                     }
 
                     MyFancyLink {
