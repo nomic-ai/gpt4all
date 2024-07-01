@@ -1154,6 +1154,16 @@ QtObject {
         }
     }
 
+    property color chatNameEditBgColor: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+            case "Dark":
+                return controlBackground;
+            default:
+                return gray100;
+        }
+    }
+
     property real fontScale: MySettings.fontSize === "Small"  ? 1 :
                              MySettings.fontSize === "Medium" ? 1.3 :
                                                   /* "Large" */ 1.8
