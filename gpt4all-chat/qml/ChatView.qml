@@ -801,7 +801,7 @@ Rectangle {
                                         fillMode: Image.PreserveAspectFit
                                         mipmap: true
                                         visible: false
-                                        source: name !== qsTr("Response: ") ? "qrc:/gpt4all/icons/you.svg" : "qrc:/gpt4all/icons/alt_logo.svg"
+                                        source: name !== qsTr("Response: ") ? "qrc:/gpt4all/icons/you.svg" : "qrc:/gpt4all/icons/gpt4all_transparent.svg"
                                     }
 
                                     ColorOverlay {
