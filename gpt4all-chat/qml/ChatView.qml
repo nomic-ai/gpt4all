@@ -966,7 +966,7 @@ Rectangle {
                                             textProcessor.codeColors.headerColor       = theme.codeHeaderColor
                                             textProcessor.codeColors.backgroundColor   = theme.codeBackgroundColor
                                             textProcessor.textDocument                 = textDocument
-                                            myTextArea.text = value
+                                            chatModel.forceUpdate(index); // called to trigger a reprocessing of the text
                                         }
 
                                         Component.onCompleted: {
