@@ -68,7 +68,7 @@ def get_long_description():
 
 setup(
     name=package_name,
-    version="2.7.0",
+    version="3.0.0",
     description="Python bindings for GPT4All",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
@@ -107,6 +107,7 @@ setup(
             'wheel',
             'setuptools',
             'mkdocs-material',
+            'mkdocs-material[imaging]',
             'mkautodoc',
             'mkdocstrings[python]',
             'mkdocs-jupyter',
