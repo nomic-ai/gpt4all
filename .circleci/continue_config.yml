@@ -110,10 +110,6 @@ jobs:
           name: "Setup Keychain"
           command: |
             echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
-            # cat \<<< "$MAC_SIGNING_CERT" > certs1.pem
-            # file certs1.pem
-            # iconv -c -f UTF8 -t ASCII certs1.pem > certs.pem
-            # openssl pkcs12 -legacy -export -out cert.p12 -in certs.pem -inkey certs.pem -passin pass:"$MAC_SIGNING_CERT_PWD" -passout pass:"$MAC_SIGNING_CERT_PWD"
             security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
             security default-keychain -s sign.keychain
             security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
@@ -144,11 +140,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: build
-      # - run:
-      #     name: "Setup Notarize Keychain"
-      #     command: |
-      #       security create-keychain
-      #       sudo xcrun notarytool store-credentials "notarytool-profile" --apple-id "$MAC_NOTARIZATION_ID" --team-id "$MAC_NOTARIZATION_TID" --password "$MAC_NOTARIZATION_KEY" --keychain /Library/Keychains/System.keychain
       - run:
           name: "Notarize"
           command: |
@@ -160,10 +151,140 @@ jobs:
             xcrun notarytool log $NID --keychain-profile "notary-profile"
             exit 1
           when: on_fail
-      # - run:
-      #     name: "Rename and move"
-      #     command: |
-      #       mv build/upload/gpt4all-installer-darwin-signed.dmg build/upload-signed/gpt4all-installer-darwin-signed.dmg
+      - run:
+          name: "Staple"
+          command: |
+            xcrun stapler staple build/upload/gpt4all-installer-darwin-signed.dmg
+      - store_artifacts:
+          path: build/upload
+
+  build-online-chat-installer-macos:
+    macos:
+      xcode: 14.0.0
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - restore_cache:  # this is the new step to restore cache
+          keys:
+            - macos-qt-cache-v3
+      - run:
+          name: Install Rosetta
+          command: softwareupdate --install-rosetta --agree-to-license  # needed for QtIFW
+      - run:
+          name: Installing Qt
+          command: |
+            if [ ! -d ~/Qt ]; then
+              curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
+              hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
+              /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
+            fi
+      - save_cache:  # this is the new step to save cache
+          key: macos-qt-cache-v3
+          paths:
+            - ~/Qt
+      - run:
+          name: Setup Keychain
+          command: |
+            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
+            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security default-keychain -s sign.keychain
+            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
+      - run:
+          name: Build
+          command: |
+            mkdir build
+            cd build
+            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake \
+              -DCMAKE_GENERATOR:STRING=Ninja \
+              -DBUILD_UNIVERSAL=ON \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
+              -DMACDEPLOYQT=~/Qt/6.5.1/macos/bin/macdeployqt \
+              -DGPT4ALL_OFFLINE_INSTALLER=ON \
+              -DGPT4ALL_SIGN_INSTALL=ON \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
+              -DCMAKE_MAKE_PROGRAM:FILEPATH=~/Qt/Tools/Ninja/ninja \
+              -S ../gpt4all-chat \
+              -B .
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target all
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target install
+            ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
+            mkdir upload
+            cp gpt4all-installer-* upload
+      # persist the unsigned installer
+      - store_artifacts:
+          path: build/upload
+      - store_artifacts:
+          path: build/_CPack_Packages/Darwin/IFW/gpt4all-installer-darwin/repository
+      # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+
+  sign-online-chat-installer-macos:
+    macos:
+      xcode: 14.0.0
+    steps:
+      - checkout
+      # attach to a workspace containing unsigned dmg
+      - attach_workspace:
+          at: build
+      - run:
+          name: "Setup Keychain"
+          command: |
+            echo $MAC_SIGNING_CERT | base64 --decode > cert.p12
+            security create-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security default-keychain -s sign.keychain
+            security unlock-keychain -p "$MAC_KEYCHAIN_KEY" sign.keychain
+            security import cert.p12 -k sign.keychain -P "$MAC_SIGNING_CERT_PWD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
+            rm cert.p12
+      - run:
+          name: "Sign App Bundle"
+          command: |
+            python3 -m pip install click
+            python3 gpt4all-chat/cmake/sign_dmg.py --input-dmg build/upload/gpt4all-installer-darwin.dmg --output-dmg build/upload/gpt4all-installer-darwin-signed.dmg --signing-identity "$MAC_SIGNING_CERT_NAME"
+      - run:
+          name: "Sign DMG"
+          command: |
+            codesign --options runtime --timestamp -s "$MAC_SIGNING_CERT_NAME" build/upload/gpt4all-installer-darwin-signed.dmg
+      # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+
+  notarize-online-chat-installer-macos:
+    macos:
+      xcode: 14.0.0
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      - run:
+          name: "Notarize"
+          command: |
+            xcrun notarytool submit build/upload/gpt4all-installer-darwin-signed.dmg --apple-id "$MAC_NOTARIZATION_ID" --team-id "$MAC_NOTARIZATION_TID" --password "$MAC_NOTARIZATION_KEY" --wait  | tee notarize_log.txt
+      - run:
+          name: "Report Notarization Failure"
+          command: |
+            NID=`python3 .circleci/grab_notary_id.py notarize_log.txt` && export NID
+            xcrun notarytool log $NID --keychain-profile "notary-profile"
+            exit 1
+          when: on_fail
       - run:
           name: "Staple"
           command: |
@@ -226,6 +347,65 @@ jobs:
             cp gpt4all-installer-* upload
       - store_artifacts:
           path: build/upload
+
+  build-online-chat-installer-linux:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - restore_cache:  # this is the new step to restore cache
+          keys:
+            - linux-qt-cache-v2
+      - run:
+          name: Setup Linux and Dependencies
+          command: |
+            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            sudo dpkg -i cuda-keyring_1.1-1_all.deb
+            sudo apt update && sudo apt install -y libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxext6 libxfixes3 libxi6 libxrender1 libxcb1 libxcb-cursor0 libxcb-glx0 libxcb-keysyms1 libxcb-image0 libxcb-shm0 libxcb-icccm4 libxcb-sync1 libxcb-xfixes0 libxcb-shape0 libxcb-randr0 libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 bison build-essential flex gperf python3 gcc g++ libgl1-mesa-dev libwayland-dev vulkan-sdk patchelf cuda-compiler-12-4 libcublas-dev-12-4 libnvidia-compute-550-server libmysqlclient21 libodbc2 libpq5
+      - run:
+          name: Installing Qt
+          command: |
+            if [ ! -d ~/Qt ]; then
+              wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
+              chmod +x qt-unified-linux-x64-4.6.0-online.run
+              ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
+            fi
+      - save_cache:  # this is the new step to save cache
+          key: linux-qt-cache-v2
+          paths:
+            - ~/Qt
+      - run:
+          name: Build linuxdeployqt
+          command: |
+            git clone https://github.com/nomic-ai/linuxdeployqt
+            cd linuxdeployqt && qmake && sudo make install
+      - run:
+          name: Build
+          command: |
+            set -eo pipefail
+            export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
+            export PATH=$PATH:$HOME/Qt/Tools/QtInstallerFramework/4.7/bin
+            export PATH=$PATH:/usr/local/cuda/bin
+            mkdir build
+            cd build
+            mkdir upload
+            ~/Qt/Tools/CMake/bin/cmake -DGPT4ALL_OFFLINE_INSTALLER=OFF -DCMAKE_BUILD_TYPE=Release -S ../gpt4all-chat -B .
+            ~/Qt/Tools/CMake/bin/cmake --build . --target all
+            ~/Qt/Tools/CMake/bin/cmake --build . --target install
+            ~/Qt/Tools/CMake/bin/cmake --build . --target package
+            cp gpt4all-installer-* upload
+      - store_artifacts:
+          path: build/upload
+      - store_artifacts:
+          path: build/_CPack_Packages/Linux/IFW/gpt4all-installer-linux/repository
+
   build-offline-chat-installer-windows:
     machine:
       image: 'windows-server-2019-vs2019:2022.08.1'
@@ -349,6 +529,143 @@ jobs:
             $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
             $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
             AzureSignTool.exe sign -du "https://gpt4all.io/index.html" -kvu https://gpt4all.vault.azure.net -kvi "$Env:AZSignGUID" -kvs "$Env:AZSignPWD" -kvc "$Env:AZSignCertName" -kvt "$Env:AZSignTID" -tr http://timestamp.digicert.com -v "$($(Get-Location).Path)\build\upload\gpt4all-installer-win64.exe"
+      - store_artifacts:
+          path: build/upload
+  build-online-chat-installer-windows:
+    machine:
+      image: 'windows-server-2019-vs2019:2022.08.1'
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - run:
+          name: Update Submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive
+      - restore_cache:  # this is the new step to restore cache
+          keys:
+            - windows-qt-cache-v2
+      - run:
+          name: Installing Qt
+          command: |
+            if (-not (Test-Path C:\Qt)) {
+              Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
+              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+            }
+      - save_cache:  # this is the new step to save cache
+          key: windows-qt-cache-v2
+          paths:
+            - C:\Qt
+      - run:
+          name: Install VulkanSDK
+          command: |
+            Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
+            .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+      - run:
+          name: Install CUDA Toolkit
+          command: |
+            Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/12.4.1/network_installers/cuda_12.4.1_windows_network.exe -OutFile cuda_12.4.1_windows_network.exe
+            .\cuda_12.4.1_windows_network.exe -s cudart_12.4 nvcc_12.4 cublas_12.4 cublas_dev_12.4
+      - run:
+          name: "Install Dotnet 8"
+          command: |
+            mkdir dotnet
+            cd dotnet
+            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
+            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
+            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+      - run:
+          name: "Setup Azure SignTool"
+          command: |
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
+            dotnet tool install --global AzureSignTool
+      - run:
+          name: Build
+          command: |
+            $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\x64"
+            $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
+            $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64"
+            $Env:PATH = "${Env:PATH};C:\VulkanSDK\1.3.261.1\bin"
+            $Env:PATH = "${Env:PATH};C:\Qt\Tools\QtInstallerFramework\4.7\bin"
+            $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\ucrt\x64"
+            $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x64"
+            $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64"
+            $Env:LIB = "${Env:LIB};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\lib\x64"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\ucrt"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\um"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\shared"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\winrt"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\cppwinrt"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\VS\include"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include"
+            $Env:INCLUDE = "${Env:INCLUDE};C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\include"
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            mkdir build
+            cd build
+            & "C:\Qt\Tools\CMake_64\bin\cmake.exe" `
+              "-DCMAKE_GENERATOR:STRING=Ninja" `
+              "-DCMAKE_BUILD_TYPE=Release" `
+              "-DCMAKE_PREFIX_PATH:PATH=C:\Qt\6.5.1\msvc2019_64" `
+              "-DCMAKE_MAKE_PROGRAM:FILEPATH=C:\Qt\Tools\Ninja\ninja.exe" `
+              "-DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON" `
+              "-DGPT4ALL_OFFLINE_INSTALLER=OFF" `
+              "-DGPT4ALL_SIGN_INSTALLER=ON" `
+              "-S ..\gpt4all-chat" `
+              "-B ."
+            & "C:\Qt\Tools\Ninja\ninja.exe"
+            & "C:\Qt\Tools\Ninja\ninja.exe" install
+            & "C:\Qt\Tools\Ninja\ninja.exe" package
+            mkdir upload
+            copy gpt4all-installer-win64.exe upload
+      - store_artifacts:
+          path: build/upload
+      - store_artifacts:
+          path: build/_CPack_Packages/win64/IFW/gpt4all-installer-win64/repository
+            # add workspace so signing jobs can connect & obtain dmg
+      - persist_to_workspace:
+          root: build
+          # specify path to only include components we want to persist
+          # accross builds
+          paths:
+            - upload
+  sign-online-chat-installer-windows:
+    machine:
+      image: 'windows-server-2019-vs2019:2022.08.1'
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
+    steps:
+      - checkout
+      - attach_workspace:
+          at: build
+      - run:
+          name: "Install Dotnet 8"
+          command: |
+            mkdir dotnet
+            cd dotnet
+            $dotnet_url="https://download.visualstudio.microsoft.com/download/pr/5af098e1-e433-4fda-84af-3f54fd27c108/6bd1c6e48e64e64871957289023ca590/dotnet-sdk-8.0.302-win-x64.zip"
+            Invoke-WebRequest -Uri $dotnet_url -Outfile dotnet-sdk-8.0.302-win-x64.zip
+            Expand-Archive -LiteralPath .\dotnet-sdk-8.0.302-win-x64.zip
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+      - run:
+          name: "Setup Azure SignTool"
+          command: |
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            $Env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=$true
+            dotnet tool install --global AzureSignTool
+      - run:
+          name: "Sign Windows Installer With AST"
+          command: |
+            $Env:DOTNET_ROOT="$($(Get-Location).Path)\dotnet\dotnet-sdk-8.0.302-win-x64"
+            $Env:PATH="$Env:DOTNET_ROOT;$Env:PATH"
+            AzureSignTool.exe sign -du "https://gpt4all.io/index.html" -kvu https://gpt4all.vault.azure.net -kvi "$Env:AZSignGUID" -kvs "$Env:AZSignPWD" -kvc "$Env:AZSignCertName" -kvt "$Env:AZSignTID" -tr http://timestamp.digicert.com -v "$($(Get-Location).Path)/build/upload/gpt4all-installer-win64.exe"
       - store_artifacts:
           path: build/upload
 
@@ -1005,6 +1322,32 @@ workflows:
           requires:
             - build-offline-chat-installer-windows
       - build-offline-chat-installer-linux:
+          requires:
+            - hold
+  build-chat-online-installers:
+    when:
+      or:
+        - << pipeline.parameters.run-all-workflows >>
+        - << pipeline.parameters.run-chat-workflow >>
+    jobs:
+      - hold:
+          type: approval
+      - build-online-chat-installer-macos:
+          requires:
+            - hold
+      - sign-online-chat-installer-macos:
+          requires:
+            - build-online-chat-installer-macos
+      - notarize-online-chat-installer-macos:
+          requires:
+            - sign-online-chat-installer-macos
+      - build-online-chat-installer-windows:
+          requires:
+            - hold
+      - sign-online-chat-installer-windows:
+          requires:
+            - build-online-chat-installer-windows
+      - build-online-chat-installer-linux:
           requires:
             - hold
   build-and-test-gpt4all-chat:
