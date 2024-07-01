@@ -144,11 +144,7 @@ Rectangle {
                             backgroundColor: theme.textColor
                             backgroundColorHovered: theme.iconBackgroundDark
                             visible: discoverField.text !== ""
-                            contentItem: Text {
-                                color: clearDiscoverButton.hovered ? theme.iconBackgroundDark : theme.textColor
-                                text: "\u2715"
-                                font.pixelSize: theme.fontSizeLarge
-                            }
+                            source: "qrc:/gpt4all/icons/close.svg"
                             onClicked: {
                                 discoverField.text = ""
                                 discoverField.sendDiscovery() // should clear results
