@@ -176,10 +176,8 @@ Rectangle {
                                 // Work around a bug in qml where we're losing focus when the whole window
                                 // goes out of focus even though this textfield should be marked as not
                                 // having focus
-                                console.log("onEditingFinished in");
                                 if (chatName.readOnly)
                                     return;
-                                console.log("onEditingFinished changeName");
                                 changeName();
                             }
                             function changeName() {
