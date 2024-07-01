@@ -247,7 +247,7 @@ MySettingsTab {
             color: theme.textErrorColor
             wrapMode: Text.WordWrap
             text: qsTr("Warning: Advanced usage only.")
-            helpText: qsTr("Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model's context window. More info <a href=\"https://docs.gpt4all.io/gpt4all_chat.html#localdocs-beta-plugin-chat-with-your-data\">here.</a>")
+            helpText: qsTr("Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model's context window. More info <a href=\"https://docs.gpt4all.io/gpt4all_desktop/localdocs.html\">here</a>.")
             onLinkActivated: function(link) { Qt.openUrlExternally(link) }
         }
 

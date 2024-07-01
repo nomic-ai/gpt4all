@@ -224,7 +224,7 @@ Rectangle {
                     MyFancyLink {
                         text: qsTr("Documentation")
                         imageSource: "qrc:/gpt4all/icons/info.svg"
-                        onClicked: { Qt.openUrlExternally("https://docs.gpt4all.io/gpt4all_chat.html") }
+                        onClicked: { Qt.openUrlExternally("https://docs.gpt4all.io/") }
                     }
 
                     MyFancyLink {
