@@ -213,6 +213,7 @@ qt_add_qml_module(chat
       icons/left_panel_closed.svg
       icons/left_panel_open.svg
       icons/gpt4all.svg
+      icons/gpt4all_transparent.svg
       icons/gpt4all-32.png
       icons/gpt4all-48.png
       icons/you.svg

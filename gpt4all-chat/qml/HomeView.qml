@@ -151,7 +151,7 @@ Rectangle {
                                 sourceSize: Qt.size(40, 40)
                                 mipmap: true
                                 visible: false
-                                source: "qrc:/gpt4all/icons/alt_logo.svg"
+                                source: "qrc:/gpt4all/icons/gpt4all_transparent.svg"
                             }
 
                             ColorOverlay {
