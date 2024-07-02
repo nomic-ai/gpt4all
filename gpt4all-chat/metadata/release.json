@@ -859,7 +859,7 @@
   * Use nomic-embed-text-v1.5 as local model instead of SBert
   * Ship local model with application instead of downloading afterwards
   * Store embeddings flat in SQLite DB instead of in hnswlib index
-  * Do exact KNN search with usearch instead of aproximate KNN search with hnswlib
+  * Do exact KNN search with usearch instead of approximate KNN search with hnswlib
 * Markdown support (PR #2476)
 * Support CUDA/Metal device option for embeddings (PR #2477)
 
