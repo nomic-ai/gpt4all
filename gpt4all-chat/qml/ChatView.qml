@@ -372,7 +372,7 @@ Rectangle {
                                     if (currentModelName() === "")
                                         return qsTr("Choose a model...")
                                     if (!currentModelInstalled())
-                                        return qsTr("Model not found.")
+                                        return qsTr("Not found: %1").arg(currentModelName())
                                     if (currentChat.modelLoadingPercentage === 0.0)
                                         return qsTr("Reload \u00B7 ") + currentModelName()
                                     if (currentChat.isCurrentlyLoading)
