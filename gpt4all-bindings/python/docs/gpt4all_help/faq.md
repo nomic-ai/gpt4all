@@ -4,17 +4,11 @@
 
 ### Which language models are supported?
 
-Our backend supports models with a `llama.cpp` implementation which have been uploaded to [HuggingFace](https://huggingface.co/).
+We support models with a `llama.cpp` implementation which have been uploaded to [HuggingFace](https://huggingface.co/).
 
 ### Which embedding models are supported?
 
-The following embedding models can be used within the application and with the `Embed4All` class from the `gpt4all` Python library. The default context length as GGUF files is 2048 but can be [extended](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF#description).
-
-| Name               | Initializing with `Embed4All`                            | Context Length | Embedding Length | File Size |
-|--------------------|------------------------------------------------------|---------------:|-----------------:|----------:|
-| [SBert](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)| ```pythonemb = Embed4All("all-MiniLM-L6-v2.gguf2.f16.gguf")```|            512 |              384 |    44 MiB |
-| [Nomic Embed v1](https://huggingface.co/nomic-ai/nomic-embed-text-v1-GGUF)   | nomic&#x2011;embed&#x2011;text&#x2011;v1.f16.gguf|           2048 |              768 |   262 MiB |
-| [Nomic Embed v1.5](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF) | nomic&#x2011;embed&#x2011;text&#x2011;v1.5.f16.gguf|           2048 |           64-768 |   262 MiB |
+We support SBert and Nomic Embed Text v1 & v1.5.
 
 ## Software
 

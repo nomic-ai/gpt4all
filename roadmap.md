@@ -11,15 +11,15 @@ Each item should have an issue link below.
     - [ ] Portuguese
     - [ ] Your native language here. 
 - UI Redesign: an internal effort at Nomic to improve the UI/UX of gpt4all for all users.
-    - [ ] Design new user interface and gather community feedback
-    - [ ] Implement the new user interface and experience.
+    - [x] Design new user interface and gather community feedback
+    - [x] Implement the new user interface and experience.
 - Installer and Update Improvements
     - [ ] Seamless native installation and update process on OSX
     - [ ] Seamless native installation and update process on Windows
     - [ ] Seamless native installation and update process on Linux
 - Model discoverability improvements:
     - [x] Support huggingface model discoverability
-    - [ ] Support Nomic hosted model discoverability
+    - [x] Support Nomic hosted model discoverability
 - LocalDocs (towards a local perplexity)
     - Multilingual LocalDocs Support
         - [ ] Create a multilingual experience
