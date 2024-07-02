@@ -23,6 +23,15 @@ Models are loaded by name via the `GPT4All` class. If it's your first time loadi
         print(model.generate("How can I run LLMs efficiently on my laptop?", max_tokens=1024))
     ```
 
+| `GPT4All` model name| Filesize| RAM Required| Parameters| Quantization| Developer| License| MD5 Sum (Unique Hash)|
+|------|---------|-------|-------|-----------|----------|--------|----------------------|
+|  `Meta-Llama-3-8B-Instruct.Q4_0.gguf`| 4.66 GB| 8 GB| 8 Billion| 4 bit| Meta| [Llama 3 License](https://llama.meta.com/llama3/license/)| c87ad09e1e4c8f9c35a5fcef52b6f1c9|
+| `Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf`| 4.11 GB| 8 GB| 7 Billion| 4 bit| Mistral & Nous Research | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)| Coa5f6b4eabd3992da4d7fb7f020f921eb|
+| `Phi-3-mini-4k-instruct.Q4_0.gguf` | 2.18 GB| 4 GB| 3.8 billion| 4 bit| Microsoft| [MIT](https://opensource.org/license/mit)| f8347badde9bfc2efbe89124d78ddaf5|
+| `orca-mini-3b-gguf2-q4_0.gguf`| 1.98 GB| 4 GB| 3 billion| 4 bit| Microsoft | [CC-BY-NC-SA-4.0](https://spdx.org/licenses/CC-BY-NC-SA-4.0)| 0e769317b90ac30d6e09486d61fefa26|
+| `gpt4all-13b-snoozy-q4_0.gguf`| 7.37 GB| 16 GB| 13 billion| 4 bit| Nomic AI| [GPL](https://www.gnu.org/licenses/gpl-3.0.en.html)| 40388eb2f8d16bb5d08c96fdfaac6b2c|
+
+
 ## Chat Session Generation
 
 Most of the language models you will be able to access from HuggingFace have been trained as assistants. This guides language models to not just answer with relevant text, but *helpful* text.
@@ -74,16 +83,6 @@ If you want your LLM's responses to be helpful in the typical sense, we recommen
         a = 1
         b = 5
         ```
-
-## Example Models
-
-| Model| Filesize| RAM Required| Parameters| Developer| License| MD5 Sum (Unique Hash)|
-|------|---------|-------------|-----------|----------|--------|----------------------|
-| `Meta-Llama-3-8B-Instruct.Q4_0.gguf`  | 4.66 GB| 8 GB| 8 Billion| Meta| [Llama 3 License](https://llama.meta.com/llama3/license/)| c87ad09e1e4c8f9c35a5fcef52b6f1c9|
-| Nous Hermes 2 Mistral DPO| 4.21 GB| 8 GB| 7 Billion| Mistral & Nous Research | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)| Coa5f6b4eabd3992da4d7fb7f020f921eb|
-| Phi-3 Mini Instruct | 2.03 GB| 4 GB| 4 billion| Microsoft| [MIT](https://opensource.org/license/mit)| f8347badde9bfc2efbe89124d78ddaf5|
-| Mini Orca (Small)| 1.84 GB| 4 GB| 3 billion| Microsoft | [CC-BY-NC-SA-4.0](https://spdx.org/licenses/CC-BY-NC-SA-4.0)| 0e769317b90ac30d6e09486d61fefa26|
-| GPT4All Snoozy| 7.36 GB| 16 GB| 13 billion| Nomic AI| [GPL](https://www.gnu.org/licenses/gpl-3.0.en.html)| 40388eb2f8d16bb5d08c96fdfaac6b2c|
 
 ## Direct Generation
 
@@ -150,3 +149,11 @@ The easiest way to run the text embedding model locally uses the [`nomic`](https
 ![Nomic embed text local inference](../assets/local_embed.gif)
 
 To learn more about making embeddings locally with `nomic`, visit our [embeddings guide](https://docs.nomic.ai/atlas/guides/embeddings#local-inference).
+
+The following embedding models can be used within the application and with the `Embed4All` class from the `gpt4all` Python library. The default context length as GGUF files is 2048 but can be [extended](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF#description).
+
+| Name| Using with `nomic`| `Embed4All` model name| Context Length| # Embedding Dimensions| File Size|
+|--------------------|-|------------------------------------------------------|---------------:|-----------------:|----------:|
+| [Nomic Embed v1](https://huggingface.co/nomic-ai/nomic-embed-text-v1-GGUF)   | ```embed.text(strings, model="nomic-embed-text-v1", inference_mode="local")```| ```Embed4All("nomic-embed-text-v1.f16.gguf")```|           2048 |              768 |   262 MiB |
+| [Nomic Embed v1.5](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5-GGUF) | ```embed.text(strings, model="nomic-embed-text-v1.5", inference_mode="local")```| ```Embed4All("nomic-embed-text-v1.5.f16.gguf")``` |           2048| 64-768 |   262 MiB |
+| [SBert](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)| n/a| ```Embed4All("all-MiniLM-L6-v2.gguf2.f16.gguf")```|            512 |              384 |    44 MiB |

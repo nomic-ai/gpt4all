@@ -2,6 +2,7 @@
 
 <p align="center">GPT4All runs large language models (LLMs) privately on everyday desktops & laptops. <br> <br> No API calls or GPUs required - you can just download the application and <a href="https://docs.gpt4all.io/gpt4all_desktop/quickstart.html#quickstart">get started</a>
 
+![Using GPT4All](gpt4all-bindings/python/docs/assets/example-10189_256.gif)
 
 <p align="center">
   <a href="https://gpt4all.io/installers/gpt4all-installer-win64.exe">
@@ -12,15 +13,15 @@
 
 <p align="center">
   <a href="https://gpt4all.io/installers/gpt4all-installer-darwin.dmg">
-    <img src="gpt4all-bindings/python/docs/assets/mac.png" width="80" height="90"><br>
+    <img src="gpt4all-bindings/python/docs/assets/mac.png" width="85" height="100"><br>
     Download for MacOS
   </a>
 </p>
 
 <p align="center">
   <a href="https://gpt4all.io/installers/gpt4all-installer-linux.run">
-    <img src="gpt4all-bindings/python/docs/assets/linux.png" width="80" height="80"><br>
-    Download for Linux
+    <img src="gpt4all-bindings/python/docs/assets/ubuntu.svg" width="120" height="120"><br>
+    Download for Ubuntu
   </a>
 </p>
 
@@ -36,8 +37,6 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 <p align="center">
  <a href="https://www.phorm.ai/query?projectId=755eecd3-24ad-49cc-abf4-0ab84caacf63"><img src="https://img.shields.io/badge/Phorm-Ask_AI-%23F2777A.svg" alt="phorm.ai"></a>
 </p>
-
-
 
 ## Install GPT4All Python
 
@@ -57,10 +56,17 @@ with model.chat_session():
 ```
 
 
-### Release History
+## Integrations
+
+:parrot::link: [Langchain](https://python.langchain.com/v0.2/docs/integrations/providers/gpt4all/)
+:card_file_box: [Weaviate Vector Database](https://github.com/weaviate/weaviate) - [module docs](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-gpt4all)
+:telescope: [OpenLIT (OTel-native Monitoring)](https://github.com/openlit/openlit) - [Docs](https://docs.openlit.io/latest/integrations/gpt4all)
+
+## Release History
 - **July 2nd, 2024**: V3.0.0 Release
-    - New UI/UX: fresh redesign of the chat application GUI and user experience
-    - LocalDocs: bring information from files on-device into chats
+    - Fresh redesign of the chat application UI
+    - Improved user workflow for LocalDocs
+    - Expanded access to more model architectures
 - **October 19th, 2023**: GGUF Support Launches with Support for:
     - Mistral 7b base model, an updated model gallery on [gpt4all.io](https://gpt4all.io), several new local code models including Rift Coder v1.5
     - [Nomic Vulkan](https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan) support for Q4\_0 and Q4\_1 quantizations in GGUF.
@@ -71,13 +77,6 @@ with model.chat_session():
 
 [Docker-based API server]: https://github.com/nomic-ai/gpt4all/tree/cef74c2be20f5b697055d5b8b506861c7b997fab/gpt4all-api
 
-### Integrations
-
-* :parrot::link: [Langchain](https://python.langchain.com/v0.2/docs/integrations/providers/gpt4all/)
-* :card_file_box: [Weaviate Vector Database](https://github.com/weaviate/weaviate) - [module docs](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-gpt4all)
-* :telescope: [OpenLIT (OTel-native Monitoring)](https://github.com/openlit/openlit) - [Docs](https://docs.openlit.io/latest/integrations/gpt4all)
-
-
 ## Contributing
 GPT4All welcomes contributions, involvement, and discussion from the open source community!
 Please see CONTRIBUTING.md and follow the issues, bug reports, and PR markdown templates.
@@ -85,22 +84,6 @@ Please see CONTRIBUTING.md and follow the issues, bug reports, and PR markdown t
 Check project discord, with project owners, or through existing issues/PRs to avoid duplicate work.
 Please make sure to tag all of the above with relevant project identifiers or your contribution could potentially get lost.
 Example tags: `backend`, `bindings`, `python-bindings`, `documentation`, etc.
-
-
-## Technical Reports
-
-<p align="center">
-<a href="https://gpt4all.io/reports/GPT4All_Technical_Report_3.pdf">:green_book: Technical Report 3: GPT4All Snoozy and Groovy </a>
-</p>
-
-<p align="center">
-<a href="https://static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf">:green_book: Technical Report 2: GPT4All-J </a>
-</p>
-
-<p align="center">
-<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 1: GPT4All</a>
-</p>
-
 
 ## Citation
 

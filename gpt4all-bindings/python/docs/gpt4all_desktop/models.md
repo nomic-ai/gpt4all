@@ -56,13 +56,13 @@ Many LLMs are available at various sizes, quantizations, and licenses.
 
 Here are a few examples:
 
-| Model| Filesize| RAM Required| Parameters| Developer| License| MD5 Sum (Unique Hash)|
-|------|---------|-------------|-----------|----------|--------|----------------------|
-| Llama 3 Instruct  | 4.66 GB| 8 GB| 8 Billion| Meta| [Llama 3 License](https://llama.meta.com/llama3/license/)| c87ad09e1e4c8f9c35a5fcef52b6f1c9|
-| Nous Hermes 2 Mistral DPO| 4.21 GB| 8 GB| 7 Billion| Mistral & Nous Research | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)| Coa5f6b4eabd3992da4d7fb7f020f921eb|
-| Phi-3 Mini Instruct | 2.03 GB| 4 GB| 4 billion| Microsoft| [MIT](https://opensource.org/license/mit)| f8347badde9bfc2efbe89124d78ddaf5|
-| Mini Orca (Small)| 1.84 GB| 4 GB| 3 billion| Microsoft | [CC-BY-NC-SA-4.0](https://spdx.org/licenses/CC-BY-NC-SA-4.0)| 0e769317b90ac30d6e09486d61fefa26|
-| GPT4All Snoozy| 7.36 GB| 16 GB| 13 billion| Nomic AI| [GPL](https://www.gnu.org/licenses/gpl-3.0.en.html)| 40388eb2f8d16bb5d08c96fdfaac6b2c|
+| Model| Filesize| RAM Required| Parameters| Quantization| Developer| License| MD5 Sum (Unique Hash)|
+|------|---------|-------------|-----------|-------------|----------|--------|----------------------|
+| Llama 3 Instruct  | 4.66 GB| 8 GB| 8 Billion| 4 bit| Meta| [Llama 3 License](https://llama.meta.com/llama3/license/)| c87ad09e1e4c8f9c35a5fcef52b6f1c9|
+| Nous Hermes 2 Mistral DPO| 4.11 GB| 8 GB| 7 Billion| 4 bit| Mistral & Nous Research | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)| Coa5f6b4eabd3992da4d7fb7f020f921eb|
+| Phi-3 Mini Instruct | 2.18 GB| 4 GB| 4 billion| 4 bit| Microsoft| [MIT](https://opensource.org/license/mit)| f8347badde9bfc2efbe89124d78ddaf5|
+| Mini Orca (Small)| 1.98 GB| 4 GB| 3 billion| 4 bit| Microsoft | [CC-BY-NC-SA-4.0](https://spdx.org/licenses/CC-BY-NC-SA-4.0)| 0e769317b90ac30d6e09486d61fefa26|
+| GPT4All Snoozy| 7.37 GB| 16 GB| 13 billion| 4 bit| Nomic AI| [GPL](https://www.gnu.org/licenses/gpl-3.0.en.html)| 40388eb2f8d16bb5d08c96fdfaac6b2c|
 
 ### Search Results
 
