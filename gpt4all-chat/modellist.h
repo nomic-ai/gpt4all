@@ -68,6 +68,8 @@ struct ModelInfo {
     Q_PROPERTY(int repeatPenaltyTokens READ repeatPenaltyTokens WRITE setRepeatPenaltyTokens)
     Q_PROPERTY(QString promptTemplate READ promptTemplate WRITE setPromptTemplate)
     Q_PROPERTY(QString systemPrompt READ systemPrompt WRITE setSystemPrompt)
+    Q_PROPERTY(QString chatNamePrompt READ chatNamePrompt WRITE setChatNamePrompt)
+    Q_PROPERTY(QString suggestedFollowUpPrompt READ suggestedFollowUpPrompt WRITE setSuggestedFollowUpPrompt)
     Q_PROPERTY(int likes READ likes WRITE setLikes)
     Q_PROPERTY(int downloads READ downloads WRITE setDownloads)
     Q_PROPERTY(QDateTime recency READ recency WRITE setRecency)
@@ -167,6 +169,10 @@ public:
     void setPromptTemplate(const QString &t);
     QString systemPrompt() const;
     void setSystemPrompt(const QString &p);
+    QString chatNamePrompt() const;
+    void setChatNamePrompt(const QString &p);
+    QString suggestedFollowUpPrompt() const;
+    void setSuggestedFollowUpPrompt(const QString &p);
 
     bool shouldSaveMetadata() const;
 
@@ -180,25 +186,27 @@ private:
     QString m_url;
     QString m_quant;
     QString m_type;
-    bool    m_isClone              = false;
-    bool    m_isDiscovered         = false;
-    int     m_likes                = -1;
-    int     m_downloads            = -1;
+    bool    m_isClone                 = false;
+    bool    m_isDiscovered            = false;
+    int     m_likes                   = -1;
+    int     m_downloads               = -1;
     QDateTime m_recency;
-    double  m_temperature          = 0.7;
-    double  m_topP                 = 0.4;
-    double  m_minP                 = 0.0;
-    int     m_topK                 = 40;
-    int     m_maxLength            = 4096;
-    int     m_promptBatchSize      = 128;
-    int     m_contextLength        = 2048;
-    mutable int m_maxContextLength = -1;
-    int     m_gpuLayers            = 100;
-    mutable int m_maxGpuLayers     = -1;
-    double  m_repeatPenalty        = 1.18;
-    int     m_repeatPenaltyTokens  = 64;
-    QString m_promptTemplate       = "### Human:\n%1\n\n### Assistant:\n";
-    QString m_systemPrompt         = "### System:\nYou are an AI assistant who gives a quality response to whatever humans ask of you.\n\n";
+    double  m_temperature             = 0.7;
+    double  m_topP                    = 0.4;
+    double  m_minP                    = 0.0;
+    int     m_topK                    = 40;
+    int     m_maxLength               = 4096;
+    int     m_promptBatchSize         = 128;
+    int     m_contextLength           = 2048;
+    mutable int m_maxContextLength    = -1;
+    int     m_gpuLayers               = 100;
+    mutable int m_maxGpuLayers        = -1;
+    double  m_repeatPenalty           = 1.18;
+    int     m_repeatPenaltyTokens     = 64;
+    QString m_promptTemplate          = QObject::tr("### Human:\n%1\n\n### Assistant:\n");
+    QString m_systemPrompt            = QObject::tr("### System:\nYou are an AI assistant who gives a quality response to whatever humans ask of you.\n\n");
+    QString m_chatNamePrompt          = QObject::tr("Describe the above conversation in seven words or less.");
+    QString m_suggestedFollowUpPrompt = QObject::tr("Suggest three very short factual follow-up questions that have not been answered yet or cannot be found inspired by the previous conversation and excerpts.");
     friend class MySettings;
 };
 Q_DECLARE_METATYPE(ModelInfo)
@@ -317,6 +325,8 @@ public:
         RepeatPenaltyTokensRole,
         PromptTemplateRole,
         SystemPromptRole,
+        ChatNamePromptRole,
+        SuggestedFollowUpPromptRole,
         MinPRole,
         LikesRole,
         DownloadsRole,
@@ -368,6 +378,8 @@ public:
         roles[RepeatPenaltyTokensRole] = "repeatPenaltyTokens";
         roles[PromptTemplateRole] = "promptTemplate";
         roles[SystemPromptRole] = "systemPrompt";
+        roles[ChatNamePromptRole] = "chatNamePrompt";
+        roles[SuggestedFollowUpPromptRole] = "suggestedFollowUpPrompt";
         roles[LikesRole] = "likes";
         roles[DownloadsRole] = "downloads";
         roles[RecencyRole] = "recency";

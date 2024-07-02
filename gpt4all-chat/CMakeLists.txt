@@ -210,11 +210,13 @@ qt_add_qml_module(chat
       icons/network.svg
       icons/nomic_logo.svg
       icons/notes.svg
+      icons/plus.svg
       icons/recycle.svg
       icons/regenerate.svg
       icons/search.svg
       icons/send_message.svg
       icons/settings.svg
+      icons/stack.svg
       icons/stop_generating.svg
       icons/thumbs_down.svg
       icons/thumbs_up.svg

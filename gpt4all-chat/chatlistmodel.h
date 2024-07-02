@@ -194,6 +194,7 @@ public:
 
     Chat *currentChat() const
     {
+        Q_ASSERT(m_currentChat);
         return m_currentChat;
     }
 

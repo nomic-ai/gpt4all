@@ -334,6 +334,28 @@ void ModelInfo::setSystemPrompt(const QString &p)
     m_systemPrompt = p;
 }
 
+QString ModelInfo::chatNamePrompt() const
+{
+    return MySettings::globalInstance()->modelChatNamePrompt(*this);
+}
+
+void ModelInfo::setChatNamePrompt(const QString &p)
+{
+    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelChatNamePrompt(*this, p, true /*force*/);
+    m_chatNamePrompt = p;
+}
+
+QString ModelInfo::suggestedFollowUpPrompt() const
+{
+    return MySettings::globalInstance()->modelSuggestedFollowUpPrompt(*this);
+}
+
+void ModelInfo::setSuggestedFollowUpPrompt(const QString &p)
+{
+    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelSuggestedFollowUpPrompt(*this, p, true /*force*/);
+    m_suggestedFollowUpPrompt = p;
+}
+
 bool ModelInfo::shouldSaveMetadata() const
 {
     return installed && (isClone() || isDiscovered() || description() == "" /*indicates sideloaded*/);
@@ -364,6 +386,8 @@ QVariantMap ModelInfo::getFields() const
         { "repeatPenaltyTokens", m_repeatPenaltyTokens },
         { "promptTemplate",      m_promptTemplate },
         { "systemPrompt",        m_systemPrompt },
+        { "chatNamePrompt",      m_chatNamePrompt },
+        { "suggestedFollowUpPrompt", m_suggestedFollowUpPrompt },
     };
 }
 
@@ -758,6 +782,10 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->promptTemplate();
         case SystemPromptRole:
             return info->systemPrompt();
+        case ChatNamePromptRole:
+            return info->chatNamePrompt();
+        case SuggestedFollowUpPromptRole:
+            return info->suggestedFollowUpPrompt();
         case LikesRole:
             return info->likes();
         case DownloadsRole:
@@ -928,6 +956,10 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->setPromptTemplate(value.toString()); break;
             case SystemPromptRole:
                 info->setSystemPrompt(value.toString()); break;
+            case ChatNamePromptRole:
+                info->setChatNamePrompt(value.toString()); break;
+            case SuggestedFollowUpPromptRole:
+                info->setSuggestedFollowUpPrompt(value.toString()); break;
             case LikesRole:
                 {
                     if (info->likes() != value.toInt()) {
@@ -1077,6 +1109,8 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() },
         { ModelList::PromptTemplateRole, model.promptTemplate() },
         { ModelList::SystemPromptRole, model.systemPrompt() },
+        { ModelList::ChatNamePromptRole, model.chatNamePrompt() },
+        { ModelList::SuggestedFollowUpPromptRole, model.suggestedFollowUpPrompt() },
     };
     updateData(id, data);
     return id;
@@ -1771,6 +1805,14 @@ void ModelList::updateModelsFromSettings()
         if (settings.contains(g + "/systemPrompt")) {
             const QString systemPrompt = settings.value(g + "/systemPrompt").toString();
             data.append({ ModelList::SystemPromptRole, systemPrompt });
+        }
+        if (settings.contains(g + "/chatNamePrompt")) {
+            const QString chatNamePrompt = settings.value(g + "/chatNamePrompt").toString();
+            data.append({ ModelList::ChatNamePromptRole, chatNamePrompt });
+        }
+        if (settings.contains(g + "/suggestedFollowUpPrompt")) {
+            const QString suggestedFollowUpPrompt = settings.value(g + "/suggestedFollowUpPrompt").toString();
+            data.append({ ModelList::SuggestedFollowUpPromptRole, suggestedFollowUpPrompt });
         }
         updateData(id, data);
     }

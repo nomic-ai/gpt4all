@@ -160,6 +160,7 @@ public Q_SLOTS:
     void unloadModel();
     void reloadModel();
     void generateName();
+    void generateQuestions(qint64 elapsed);
     void handleChatIdChanged(const QString &id);
     void handleShouldBeLoadedChanged();
     void handleThreadStarted();
@@ -176,8 +177,10 @@ Q_SIGNALS:
     void modelLoadingWarning(const QString &warning);
     void responseChanged(const QString &response);
     void promptProcessing();
+    void generatingQuestions();
     void responseStopped(qint64 promptResponseMs);
     void generatedNameChanged(const QString &name);
+    void generatedQuestionFinished(const QString &generatedQuestion);
     void stateChanged();
     void threadStarted();
     void shouldBeLoadedChanged();
@@ -206,6 +209,9 @@ protected:
     bool handleRestoreStateFromTextPrompt(int32_t token);
     bool handleRestoreStateFromTextResponse(int32_t token, const std::string &response);
     bool handleRestoreStateFromTextRecalculate(bool isRecalc);
+    bool handleQuestionPrompt(int32_t token);
+    bool handleQuestionResponse(int32_t token, const std::string &response);
+    bool handleQuestionRecalculate(bool isRecalc);
     void saveState();
     void restoreState();
 
@@ -219,6 +225,7 @@ private:
 
     std::string m_response;
     std::string m_nameResponse;
+    std::string m_questionResponse;
     LLModelInfo m_llModelInfo;
     LLModelType m_llModelType;
     ModelInfo m_modelInfo;
