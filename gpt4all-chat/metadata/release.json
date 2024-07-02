@@ -854,8 +854,28 @@
     "notes":
 "
 <b>&mdash; What's New &mdash;</b>
-* LocalDocs Experience: Completely redesigned LocalDocs UI and backend
-* New User Interface: Modern design making it easier to focus on what matters most - getting things done
+* Complete UI overhaul (PR #2396)
+* LocalDocs improvements (PR #2396)
+  * Use nomic-embed-text-v1.5 as local model instead of SBert
+  * Ship local model with application instead of downloading afterwards
+  * Store embeddings flat in SQLite DB instead of in hnswlib index
+  * Do exact KNN search with usearch instead of approximate KNN search with hnswlib
+* Markdown support (PR #2476)
+* Support CUDA/Metal device option for embeddings (PR #2477)
+
+<b>&mdash; Fixes &mdash;</b>
+* Fix embedding tokenization after PR #2310 (PR #2381)
+* Fix a crash when loading certain models with \"code\" in their name (PR #2382)
+* Fix an embedding crash with large chunk sizes after PR #2310 (PR #2383)
+* Fix inability to load models with non-ASCII path on Windows (PR #2388)
+* CUDA: Do not show non-fatal DLL errors on Windows (PR #2389)
+* LocalDocs fixes (PR #2396)
+  * Always use requested number of snippets even if there are better matches in unselected collections
+  * Check for deleted files on startup
+* CUDA: Fix PTX errors with some GPT4All builds (PR #2421)
+* Fix blank device in UI after model switch and improve usage stats (PR #2409)
+* Use CPU instead of CUDA backend when GPU loading fails the first time (ngl=0 is not enough) (PR #2477)
+* Fix crash when sending a message greater than n\_ctx tokens after PR #1970 (PR #2498)
 ",
     "contributors":
 "
