@@ -14,12 +14,12 @@ Each item should have an issue link below.
     - [x] Design new user interface and gather community feedback
     - [x] Implement the new user interface and experience.
 - Installer and Update Improvements
-    - [x] Seamless native installation and update process on OSX
-    - [x] Seamless native installation and update process on Windows
-    - [x] Seamless native installation and update process on Linux
+    - [ ] Seamless native installation and update process on OSX
+    - [ ] Seamless native installation and update process on Windows
+    - [ ] Seamless native installation and update process on Linux
 - Model discoverability improvements:
     - [x] Support huggingface model discoverability
-    - [ ] Support Nomic hosted model discoverability
+    - [x] Support Nomic hosted model discoverability
 - LocalDocs (towards a local perplexity)
     - Multilingual LocalDocs Support
         - [ ] Create a multilingual experience

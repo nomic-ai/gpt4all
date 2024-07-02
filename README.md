@@ -2,8 +2,6 @@
 
 <p align="center">GPT4All runs large language models (LLMs) privately on everyday desktops & laptops. <br> <br> No API calls or GPUs required - you can just download the application and <a href="https://docs.gpt4all.io/gpt4all_desktop/quickstart.html#quickstart">get started</a>
 
-![Using GPT4All](gpt4all-bindings/python/docs/assets/example-10189_256.gif)
-
 <p align="center">
   <a href="https://gpt4all.io/installers/gpt4all-installer-win64.exe">
     <img src="gpt4all-bindings/python/docs/assets/windows.png" width="80" height="80"><br>
