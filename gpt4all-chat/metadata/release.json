@@ -848,5 +848,26 @@
 * Tim453 (`@Tim453`)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "3.0.0",
+    "notes":
+"
+<b>&mdash; What's New &mdash;</b>
+* LocalDocs Experience: Completely redesigned LocalDocs UI and backend
+* New User Interface: Modern design making it easier to focus on what matters most - getting things done
+",
+    "contributors":
+"
+* Vincent Giardina (Nomic AI)
+* Jared Van Bortel (Nomic AI)
+* John W. Parent (Kitware)
+* Paige Lee (Nomic AI)
+* Max Cembalest (Nomic AI)
+* Andriy Mulyar (Nomic AI)
+* Adam Treat (Nomic AI)
+* cosmic-snow (`@cosmic-snow`)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]
