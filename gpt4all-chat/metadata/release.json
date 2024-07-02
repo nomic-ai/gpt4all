@@ -865,7 +865,7 @@
 
 <b>&mdash; Fixes &mdash;</b>
 * Fix embedding tokenization after PR #2310 (PR #2381)
-* Fix a crash when loading certain models with "code" in their name (PR #2382)
+* Fix a crash when loading certain models with \"code\" in their name (PR #2382)
 * Fix an embedding crash with large chunk sizes after PR #2310 (PR #2383)
 * Fix inability to load models with non-ASCII path on Windows (PR #2388)
 * CUDA: Do not show non-fatal DLL errors on Windows (PR #2389)
