@@ -207,7 +207,7 @@ jobs:
               -DBUILD_UNIVERSAL=ON \
               -DCMAKE_OSX_DEPLOYMENT_TARGET=12.6 \
               -DMACDEPLOYQT=~/Qt/6.5.1/macos/bin/macdeployqt \
-              -DGPT4ALL_OFFLINE_INSTALLER=ON \
+              -DGPT4ALL_OFFLINE_INSTALLER=OFF \
               -DGPT4ALL_SIGN_INSTALL=ON \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH:PATH=~/Qt/6.5.1/macos/lib/cmake/Qt6 \
