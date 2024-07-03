@@ -232,7 +232,7 @@ Rectangle {
                     }
                 }
 
-                MyComboBox {
+                ComboBox {
                     id: comboBox
                     Layout.alignment: Qt.AlignHCenter
                     Layout.fillHeight: true
@@ -421,13 +421,16 @@ Rectangle {
                         id: comboItemPopup
                         y: comboBox.height - 1
                         width: comboBox.width
-                        implicitHeight: Math.min(window.height - y, contentItem.implicitHeight)
+                        implicitHeight: Math.min(window.height - y, contentItem.implicitHeight + 20)
                         padding: 0
                         contentItem: Rectangle {
                             implicitWidth: comboBox.width
                             implicitHeight: comboItemPopupListView.implicitHeight
+                            color: "transparent"
+                            radius: 10
                             ScrollView {
                                 anchors.fill: parent
+                                anchors.margins: 10
                                 clip: true
                                 ScrollBar.vertical.policy: ScrollBar.AsNeeded
                                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -442,7 +445,8 @@ Rectangle {
                         }
 
                         background: Rectangle {
-                            color: theme.black
+                            color: theme.controlBackground
+                            radius: 10
                         }
                     }
 
@@ -919,15 +923,15 @@ Rectangle {
                                                 statusBar.externalHoveredLink = link
                                         }
 
-                                        Menu {
+                                        MyMenu {
                                             id: conversationContextMenu
-                                            MenuItem {
+                                            MyMenuItem {
                                                 text: qsTr("Copy")
                                                 enabled: myTextArea.selectedText !== ""
                                                 height: enabled ? implicitHeight : 0
                                                 onTriggered: myTextArea.copy()
                                             }
-                                            MenuItem {
+                                            MyMenuItem {
                                                 text: qsTr("Copy Message")
                                                 enabled: myTextArea.selectedText === ""
                                                 height: enabled ? implicitHeight : 0
@@ -937,7 +941,7 @@ Rectangle {
                                                     myTextArea.deselect()
                                                 }
                                             }
-                                            MenuItem {
+                                            MyMenuItem {
                                                 text: textProcessor.shouldProcessText ? qsTr("Disable markdown") : qsTr("Enable markdown")
                                                 height: enabled ? implicitHeight : 0
                                                 onTriggered: {
