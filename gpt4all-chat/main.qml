@@ -204,7 +204,7 @@ Window {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
-        width: 16 + 52 * theme.fontScale
+        width: 68 * theme.fontScale
         color: theme.viewBarBackground
 
         ColumnLayout {
