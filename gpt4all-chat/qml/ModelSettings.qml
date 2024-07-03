@@ -303,7 +303,7 @@ MySettingsTab {
                 helpText: qsTr("Number of input and output tokens the model sees.")
                 Layout.row: 0
                 Layout.column: 0
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
             Item {
                 Layout.row: 0
@@ -316,8 +316,7 @@ MySettingsTab {
                 MyTextField {
                     id: contextLengthField
                     anchors.left: parent.left
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
+                    anchors.verticalCenter: parent.verticalCenter
                     visible: !root.currentModelInfo.isOnline
                     text: root.currentModelInfo.contextLength
                     font.pixelSize: theme.fontSizeLarge
@@ -364,7 +363,7 @@ MySettingsTab {
                 helpText: qsTr("Randomness of model output. Higher -> more variation.")
                 Layout.row: 1
                 Layout.column: 2
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
 
             MyTextField {
@@ -410,7 +409,7 @@ MySettingsTab {
                 helpText: qsTr("Nucleus Sampling factor. Lower -> more predicatable.")
                 Layout.row: 2
                 Layout.column: 0
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
             MyTextField {
                 id: topPField
@@ -455,7 +454,7 @@ MySettingsTab {
                 helpText: qsTr("Minimum token probability. Higher -> more predictable.")
                 Layout.row: 3
                 Layout.column: 0
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
             MyTextField {
                 id: minPField
@@ -502,7 +501,7 @@ MySettingsTab {
                 helpText: qsTr("Size of selection pool for tokens.")
                 Layout.row: 2
                 Layout.column: 2
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
             MyTextField {
                 id: topKField
@@ -549,7 +548,7 @@ MySettingsTab {
                 helpText: qsTr("Maximum response length, in tokens.")
                 Layout.row: 0
                 Layout.column: 2
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
             MyTextField {
                 id: maxLengthField
@@ -595,7 +594,7 @@ MySettingsTab {
                 helpText: qsTr("The batch size used for prompt processing.")
                 Layout.row: 1
                 Layout.column: 0
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
             MyTextField {
                 id: batchSizeField
@@ -642,7 +641,7 @@ MySettingsTab {
                 helpText: qsTr("Repetition penalty factor. Set to 1 to disable.")
                 Layout.row: 4
                 Layout.column: 2
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
             MyTextField {
                 id: repeatPenaltyField
@@ -687,7 +686,7 @@ MySettingsTab {
                 helpText: qsTr("Number of previous tokens used for penalty.")
                 Layout.row: 3
                 Layout.column: 2
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
             MyTextField {
                 id: repeatPenaltyTokenField
@@ -733,7 +732,7 @@ MySettingsTab {
                 helpText: qsTr("Number of model layers to load into VRAM.")
                 Layout.row: 4
                 Layout.column: 0
-                Layout.maximumWidth: 300
+                Layout.maximumWidth: 300 * theme.fontScale
             }
             MyTextField {
                 id: gpuLayersField
