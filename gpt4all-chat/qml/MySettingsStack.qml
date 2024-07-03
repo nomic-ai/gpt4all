@@ -68,7 +68,7 @@ Item {
 
     function openFolderDialog(currentFolder, onAccepted) {
         folderDialog.currentFolder = currentFolder;
-        folderDialog.accepted.connect(function() { onAccepted(folderDialog.currentFolder); });
+        folderDialog.accepted.connect(function() { onAccepted(folderDialog.selectedFolder); });
         folderDialog.open();
     }
 
