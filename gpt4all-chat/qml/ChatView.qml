@@ -987,11 +987,8 @@ Rectangle {
 
                                     ThumbsDownDialog {
                                         id: thumbsDownDialog
-                                        property point globalPoint: mapFromItem(window,
-                                                                                window.width / 2 - width / 2,
-                                                                                window.height / 2 - height / 2)
-                                        x: globalPoint.x
-                                        y: globalPoint.y
+                                        x: Math.round((parent.width - width) / 2)
+                                        y: Math.round((parent.height - height) / 2)
                                         width: 640
                                         height: 300
                                         property string text: value
