@@ -7,6 +7,7 @@ import QtQuick.Layouts
 
 Dialog {
     id: myDialog
+    parent: Overlay.overlay
     property alias closeButtonVisible: myCloseButton.visible
     background: Rectangle {
         width: parent.width
