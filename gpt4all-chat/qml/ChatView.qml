@@ -1664,25 +1664,25 @@ Rectangle {
                         }
                     }
 
-                    Menu {
+                    MyMenu {
                         id: textInputContextMenu
-                        MenuItem {
+                        MyMenuItem {
                             text: qsTr("Cut")
                             enabled: textInput.selectedText !== ""
                             height: enabled ? implicitHeight : 0
                             onTriggered: textInput.cut()
                         }
-                        MenuItem {
+                        MyMenuItem {
                             text: qsTr("Copy")
                             enabled: textInput.selectedText !== ""
                             height: enabled ? implicitHeight : 0
                             onTriggered: textInput.copy()
                         }
-                        MenuItem {
+                        MyMenuItem {
                             text: qsTr("Paste")
                             onTriggered: textInput.paste()
                         }
-                        MenuItem {
+                        MyMenuItem {
                             text: qsTr("Select All")
                             onTriggered: textInput.selectAll()
                         }
