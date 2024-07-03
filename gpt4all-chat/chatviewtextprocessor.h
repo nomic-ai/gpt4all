@@ -96,6 +96,7 @@ public:
     QQuickTextDocument* textDocument() const;
     void setTextDocument(QQuickTextDocument* textDocument);
 
+    Q_INVOKABLE void setValue(const QString &value);
     Q_INVOKABLE bool tryCopyAtPosition(int position) const;
 
     bool shouldProcessText() const;
@@ -119,12 +120,11 @@ private Q_SLOTS:
     void handleMarkdown();
 
 private:
-    QQuickTextDocument *m_textDocument;
+    QQuickTextDocument *m_quickTextDocument;
     SyntaxHighlighter *m_syntaxHighlighter;
     QVector<ContextLink> m_links;
     QVector<CodeCopy> m_copies;
     bool m_shouldProcessText = false;
-    bool m_isProcessingText = false;
     qreal m_fontPixelSize;
 };
 

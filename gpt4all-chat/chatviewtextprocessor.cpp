@@ -771,9 +771,8 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
 // chat class to populate the clipboard.
 ChatViewTextProcessor::ChatViewTextProcessor(QObject *parent)
     : QObject{parent}
-    , m_textDocument(nullptr)
+    , m_quickTextDocument(nullptr)
     , m_syntaxHighlighter(new SyntaxHighlighter(this))
-    , m_isProcessingText(false)
     , m_shouldProcessText(true)
     , m_fontPixelSize(QGuiApplication::font().pointSizeF())
 {
@@ -781,17 +780,19 @@ ChatViewTextProcessor::ChatViewTextProcessor(QObject *parent)
 
 QQuickTextDocument* ChatViewTextProcessor::textDocument() const
 {
-    return m_textDocument;
+    return m_quickTextDocument;
 }
 
-void ChatViewTextProcessor::setTextDocument(QQuickTextDocument* textDocument)
+void ChatViewTextProcessor::setTextDocument(QQuickTextDocument* quickTextDocument)
 {
-    if (m_textDocument)
-        disconnect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ChatViewTextProcessor::handleTextChanged);
+    m_quickTextDocument = quickTextDocument;
+    m_syntaxHighlighter->setDocument(m_quickTextDocument->textDocument());
+    handleTextChanged();
+}
 
-    m_textDocument = textDocument;
-    m_syntaxHighlighter->setDocument(m_textDocument->textDocument());
-    connect(m_textDocument->textDocument(), &QTextDocument::contentsChanged, this, &ChatViewTextProcessor::handleTextChanged);
+void ChatViewTextProcessor::setValue(const QString &value)
+{
+    m_quickTextDocument->textDocument()->setPlainText(value);
     handleTextChanged();
 }
 
@@ -881,30 +882,22 @@ void traverseDocument(QTextDocument *doc, QTextFrame *frame)
 
 void ChatViewTextProcessor::handleTextChanged()
 {
-    if (!m_textDocument || m_isProcessingText || !m_shouldProcessText)
+    if (!m_quickTextDocument || !m_shouldProcessText)
         return;
-
-    m_isProcessingText = true;
-
-    // Force full layout of the text document to work around a bug in Qt
-    // TODO(jared): report the Qt bug and link to the report here
-    QTextDocument* doc = m_textDocument->textDocument();
-    (void)doc->documentLayout()->documentSize();
 
     handleCodeBlocks();
     handleMarkdown();
 
     // We insert an invisible char at the end to make sure the document goes back to the default
     // text format
-    QTextCursor cursor(doc);
+    QTextCursor cursor(m_quickTextDocument->textDocument());
     QString invisibleCharacter = QString(QChar(0xFEFF));
     cursor.insertText(invisibleCharacter, QTextCharFormat());
-    m_isProcessingText = false;
 }
 
 void ChatViewTextProcessor::handleCodeBlocks()
 {
-    QTextDocument* doc = m_textDocument->textDocument();
+    QTextDocument* doc = m_quickTextDocument->textDocument();
     QTextCursor cursor(doc);
 
     QTextCharFormat textFormat;
@@ -1081,7 +1074,7 @@ void replaceAndInsertMarkdown(int startIndex, int endIndex, QTextDocument *doc)
 
 void ChatViewTextProcessor::handleMarkdown()
 {
-    QTextDocument* doc = m_textDocument->textDocument();
+    QTextDocument* doc = m_quickTextDocument->textDocument();
     QTextCursor cursor(doc);
 
     QVector<QPair<int, int>> codeBlockPositions;
