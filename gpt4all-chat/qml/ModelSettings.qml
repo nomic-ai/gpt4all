@@ -303,48 +303,59 @@ MySettingsTab {
                 helpText: qsTr("Number of input and output tokens the model sees.")
                 Layout.row: 0
                 Layout.column: 0
+                Layout.maximumWidth: 300
             }
-            MyTextField {
-                id: contextLengthField
-                visible: !root.currentModelInfo.isOnline
-                text: root.currentModelInfo.contextLength
-                font.pixelSize: theme.fontSizeLarge
-                color: theme.textColor
-                ToolTip.text: qsTr("Maximum combined prompt/response tokens before information is lost.\nUsing more context than the model was trained on will yield poor results.\nNOTE: Does not take effect until you reload the model.")
-                ToolTip.visible: hovered
+            Item {
                 Layout.row: 0
                 Layout.column: 1
-                Connections {
-                    target: MySettings
-                    function onContextLengthChanged() {
-                        contextLengthField.text = root.currentModelInfo.contextLength;
-                    }
-                }
-                Connections {
-                    target: root
-                    function onCurrentModelInfoChanged() {
-                        contextLengthField.text = root.currentModelInfo.contextLength;
-                    }
-                }
-                onEditingFinished: {
-                    var val = parseInt(text)
-                    if (isNaN(val)) {
-                        text = root.currentModelInfo.contextLength
-                    } else {
-                        if (val < 8) {
-                            val = 8
-                            contextLengthField.text = val
-                        } else if (val > root.currentModelInfo.maxContextLength) {
-                            val = root.currentModelInfo.maxContextLength
-                            contextLengthField.text = val
+                Layout.fillWidth: true
+                Layout.maximumWidth: 200
+                Layout.margins: 0
+                height: contextLengthField.height
+
+                MyTextField {
+                    id: contextLengthField
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    visible: !root.currentModelInfo.isOnline
+                    text: root.currentModelInfo.contextLength
+                    font.pixelSize: theme.fontSizeLarge
+                    color: theme.textColor
+                    ToolTip.text: qsTr("Maximum combined prompt/response tokens before information is lost.\nUsing more context than the model was trained on will yield poor results.\nNOTE: Does not take effect until you reload the model.")
+                    ToolTip.visible: hovered
+                    Connections {
+                        target: MySettings
+                        function onContextLengthChanged() {
+                            contextLengthField.text = root.currentModelInfo.contextLength;
                         }
-                        MySettings.setModelContextLength(root.currentModelInfo, val)
-                        focus = false
                     }
+                    Connections {
+                        target: root
+                        function onCurrentModelInfoChanged() {
+                            contextLengthField.text = root.currentModelInfo.contextLength;
+                        }
+                    }
+                    onEditingFinished: {
+                        var val = parseInt(text)
+                        if (isNaN(val)) {
+                            text = root.currentModelInfo.contextLength
+                        } else {
+                            if (val < 8) {
+                                val = 8
+                                contextLengthField.text = val
+                            } else if (val > root.currentModelInfo.maxContextLength) {
+                                val = root.currentModelInfo.maxContextLength
+                                contextLengthField.text = val
+                            }
+                            MySettings.setModelContextLength(root.currentModelInfo, val)
+                            focus = false
+                        }
+                    }
+                    Accessible.role: Accessible.EditableText
+                    Accessible.name: contextLengthLabel.text
+                    Accessible.description: ToolTip.text
                 }
-                Accessible.role: Accessible.EditableText
-                Accessible.name: contextLengthLabel.text
-                Accessible.description: ToolTip.text
             }
 
             MySettingsLabel {
@@ -353,6 +364,7 @@ MySettingsTab {
                 helpText: qsTr("Randomness of model output. Higher -> more variation.")
                 Layout.row: 1
                 Layout.column: 2
+                Layout.maximumWidth: 300
             }
 
             MyTextField {
@@ -398,6 +410,7 @@ MySettingsTab {
                 helpText: qsTr("Nucleus Sampling factor. Lower -> more predicatable.")
                 Layout.row: 2
                 Layout.column: 0
+                Layout.maximumWidth: 300
             }
             MyTextField {
                 id: topPField
@@ -442,6 +455,7 @@ MySettingsTab {
                 helpText: qsTr("Minimum token probability. Higher -> more predictable.")
                 Layout.row: 3
                 Layout.column: 0
+                Layout.maximumWidth: 300
             }
             MyTextField {
                 id: minPField
@@ -488,6 +502,7 @@ MySettingsTab {
                 helpText: qsTr("Size of selection pool for tokens.")
                 Layout.row: 2
                 Layout.column: 2
+                Layout.maximumWidth: 300
             }
             MyTextField {
                 id: topKField
@@ -534,6 +549,7 @@ MySettingsTab {
                 helpText: qsTr("Maximum response length, in tokens.")
                 Layout.row: 0
                 Layout.column: 2
+                Layout.maximumWidth: 300
             }
             MyTextField {
                 id: maxLengthField
@@ -579,6 +595,7 @@ MySettingsTab {
                 helpText: qsTr("The batch size used for prompt processing.")
                 Layout.row: 1
                 Layout.column: 0
+                Layout.maximumWidth: 300
             }
             MyTextField {
                 id: batchSizeField
@@ -625,6 +642,7 @@ MySettingsTab {
                 helpText: qsTr("Repetition penalty factor. Set to 1 to disable.")
                 Layout.row: 4
                 Layout.column: 2
+                Layout.maximumWidth: 300
             }
             MyTextField {
                 id: repeatPenaltyField
@@ -669,6 +687,7 @@ MySettingsTab {
                 helpText: qsTr("Number of previous tokens used for penalty.")
                 Layout.row: 3
                 Layout.column: 2
+                Layout.maximumWidth: 300
             }
             MyTextField {
                 id: repeatPenaltyTokenField
@@ -714,6 +733,7 @@ MySettingsTab {
                 helpText: qsTr("Number of model layers to load into VRAM.")
                 Layout.row: 4
                 Layout.column: 0
+                Layout.maximumWidth: 300
             }
             MyTextField {
                 id: gpuLayersField
