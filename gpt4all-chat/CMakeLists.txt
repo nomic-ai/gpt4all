@@ -159,6 +159,8 @@ qt_add_qml_module(chat
       qml/MyDialog.qml
       qml/MyDirectoryField.qml
       qml/MyFancyLink.qml
+      qml/MyMenu.qml
+      qml/MyMenuItem.qml
       qml/MyMiniButton.qml
       qml/MySettingsButton.qml
       qml/MySettingsDestructiveButton.qml

@@ -64,19 +64,28 @@ ComboBox {
         // width and height as well as the window width and height
         y: comboBox.height - 1
         width: comboBox.width
-        implicitHeight: contentItem.implicitHeight
+        implicitHeight: contentItem.implicitHeight + 20
         padding: 0
 
-        contentItem: ListView {
-            clip: true
-            implicitHeight: contentHeight
-            model: comboBox.popup.visible ? comboBox.delegateModel : null
-            currentIndex: comboBox.highlightedIndex
-            ScrollIndicator.vertical: ScrollIndicator { }
+        contentItem: Rectangle {
+            implicitWidth: myListView.contentWidth
+            implicitHeight: myListView.contentHeight
+            color: "transparent"
+            ListView {
+                id: myListView
+                anchors.fill: parent
+                anchors.margins: 10
+                clip: true
+                implicitHeight: contentHeight
+                model: comboBox.popup.visible ? comboBox.delegateModel : null
+                currentIndex: comboBox.highlightedIndex
+                ScrollIndicator.vertical: ScrollIndicator { }
+            }
         }
 
         background: Rectangle {
-            color: theme.black
+            color: theme.controlBackground
+            radius: 10
         }
     }
     indicator: Item {

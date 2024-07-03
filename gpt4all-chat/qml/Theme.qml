@@ -131,9 +131,9 @@ QtObject {
     property color darkContrast: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue500;
+                return blue950;
             case "Dark":
-                return darkgray100;
+                return darkgray300;
             default:
                 return gray100;
         }
