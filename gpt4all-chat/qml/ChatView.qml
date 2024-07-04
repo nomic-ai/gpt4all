@@ -806,9 +806,20 @@ Rectangle {
                                     }
 
                                     ColorOverlay {
+                                        id: colorOver
                                         anchors.fill: logo
                                         source: logo
                                         color: theme.conversationHeader
+                                        RotationAnimation {
+                                            id: rotationAnimation
+                                            target: colorOver
+                                            property: "rotation"
+                                            from: 0
+                                            to: 360
+                                            duration: 1000
+                                            loops: Animation.Infinite
+                                            running: (currentResponse ? true : false) && (currentChat.responseInProgress || currentChat.isRecalc)
+                                        }
                                     }
                                 }
 
@@ -839,13 +850,6 @@ Rectangle {
                                         }
                                         RowLayout {
                                             visible: (currentResponse ? true : false) && ((value === "" && currentChat.responseInProgress) || currentChat.isRecalc)
-                                            MyBusyIndicator {
-                                                size: 24
-                                                color: theme.conversationProgress
-                                                Accessible.role: Accessible.Animation
-                                                Accessible.name: qsTr("Busy indicator")
-                                                Accessible.description: qsTr("The model is thinking")
-                                            }
                                             Text {
                                                 color: theme.mutedTextColor
                                                 font.pixelSize: theme.fontSizeLarger
