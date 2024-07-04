@@ -120,82 +120,82 @@ QtObject {
     property color accentColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue200;
+                return blue200
             case "Dark":
-                return yellow300;
+                return yellow300
             default:
-                return yellow300;
+                return yellow300
         }
     }
 
     property color darkContrast: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue950;
+                return blue950
             case "Dark":
-                return darkgray300;
+                return darkgray300
             default:
-                return gray100;
+                return gray100
         }
     }
 
     property color lightContrast: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue400;
+                return blue400
             case "Dark":
-                return darkgray0;
+                return darkgray0
             default:
-                return gray0;
+                return gray0
         }
     }
 
     property color controlBorder: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue800;
+                return blue800
             case "Dark":
-                return darkgray0;
+                return darkgray0
             default:
-                return gray300;
+                return gray300
         }
     }
 
     property color controlBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue950;
+                return blue950
             case "Dark":
-                return darkgray300;
+                return darkgray300
             default:
-                return gray100;
+                return gray100
         }
     }
 
     property color disabledControlBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue950;
+                return blue950
             case "Dark":
-                return darkgray200;
+                return darkgray200
             default:
-                return gray200;
+                return gray200
         }
     }
 
     property color dividerColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue950;
+                return blue950
             case "Dark":
-                return darkgray200;
+                return darkgray200
             default:
-                return grayRed0;
+                return grayRed0
         }
     }
 
     property color conversationDivider: {
-        return dividerColor;
+        return dividerColor
     }
 
     property color settingsDivider: {
@@ -203,489 +203,489 @@ QtObject {
             case "LegacyDark":
                 return dividerColor
             case "Dark":
-                return darkgray400;
+                return darkgray400
             default:
-                return grayRed500;
+                return grayRed500
         }
     }
 
     property color viewBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue600;
+                return blue600
             case "Dark":
-                return darkgray100;
+                return darkgray100
             default:
-                return gray50;
+                return gray50
         }
     }
 
     property color containerForeground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue950;
+                return blue950
             case "Dark":
-                return darkgray300;
+                return darkgray300
             default:
-                return gray300;
+                return gray300
         }
     }
 
     property color containerBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue900;
+                return blue900
             case "Dark":
-                return darkgray200;
+                return darkgray200
             default:
-                return gray100;
+                return gray100
         }
     }
 
     property color viewBarBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue950;
+                return blue950
             case "Dark":
-                return darkgray400;
+                return darkgray400
             default:
-                return gray100;
+                return gray100
         }
     }
 
     property color progressForeground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple400;
+                return purple400
             case "Dark":
-                return accentColor;
+                return accentColor
             default:
-                return green600;
+                return green600
         }
     }
 
     property color progressBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue900;
+                return blue900
             case "Dark":
-                return green600;
+                return green600
             default:
-                return green100;
+                return green100
         }
     }
 
     property color altProgressForeground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return progressForeground;
+                return progressForeground
             default:
-                return "#fcf0c9";
+                return "#fcf0c9"
         }
     }
 
     property color altProgressBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return progressBackground;
+                return progressBackground
             default:
-                return "#fff9d2";
+                return "#fff9d2"
         }
     }
 
     property color altProgressText: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return textColor;
+                return textColor
             default:
-                return "#d16f0e";
+                return "#d16f0e"
         }
     }
 
     property color checkboxBorder: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return accentColor;
+                return accentColor
             case "Dark":
-                return gray200;
+                return gray200
             default:
-                return gray600;
+                return gray600
         }
     }
 
     property color checkboxForeground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return accentColor;
+                return accentColor
             case "Dark":
-                return green300;
+                return green300
             default:
-                return green600;
+                return green600
         }
     }
 
     property color buttonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue950;
+                return blue950
             case "Dark":
-                return darkgray300;
+                return darkgray300
             default:
-                return green600;
+                return green600
         }
     }
 
     property color buttonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue900;
+                return blue900
             case "Dark":
-                return darkgray400;
+                return darkgray400
             default:
-                return green500;
+                return green500
         }
     }
 
     property color lightButtonText: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return textColor;
+                return textColor
             case "Dark":
-                return textColor;
+                return textColor
             default:
-                return green600;
+                return green600
         }
     }
 
     property color lightButtonMutedText: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return mutedTextColor;
+                return mutedTextColor
             case "Dark":
-                return mutedTextColor;
+                return mutedTextColor
             default:
-                return green300;
+                return green300
         }
     }
 
     property color lightButtonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return buttonBackground;
+                return buttonBackground
             case "Dark":
-                return buttonBackground;
+                return buttonBackground
             default:
-                return green100;
+                return green100
         }
     }
 
     property color lightButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return buttonBackgroundHovered;
+                return buttonBackgroundHovered
             case "Dark":
-                return buttonBackgroundHovered;
+                return buttonBackgroundHovered
             default:
-                return green200;
+                return green200
         }
     }
 
     property color darkButtonText: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return textColor;
+                return textColor
             case "Dark":
-                return textColor;
+                return textColor
             default:
-                return red600;
+                return red600
         }
     }
 
     property color darkButtonMutedText: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return mutedTextColor;
+                return mutedTextColor
             case "Dark":
-                return mutedTextColor;
+                return mutedTextColor
             default:
-                return red300;
+                return red300
         }
     }
 
     property color darkButtonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return buttonBackground;
+                return buttonBackground
             case "Dark":
-                return buttonBackground;
+                return buttonBackground
             default:
-                return red200;
+                return red200
         }
     }
 
     property color darkButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return buttonBackgroundHovered;
+                return buttonBackgroundHovered
             case "Dark":
-                return buttonBackgroundHovered;
+                return buttonBackgroundHovered
             default:
-                return red300;
+                return red300
         }
     }
 
     property color lighterButtonForeground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return textColor;
+                return textColor
             case "Dark":
-                return textColor;
+                return textColor
             default:
-                return green600;
+                return green600
         }
     }
 
     property color lighterButtonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return buttonBackground;
+                return buttonBackground
             case "Dark":
-                return buttonBackground;
+                return buttonBackground
             default:
-                return green100;
+                return green100
         }
     }
 
     property color lighterButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return buttonBackgroundHovered;
+                return buttonBackgroundHovered
             case "Dark":
-                return buttonBackgroundHovered;
+                return buttonBackgroundHovered
             default:
-                return green50;
+                return green50
         }
     }
 
     property color lighterButtonBackgroundHoveredRed: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return buttonBackgroundHovered;
+                return buttonBackgroundHovered
             case "Dark":
-                return buttonBackgroundHovered;
+                return buttonBackgroundHovered
             default:
-                return red50;
+                return red50
         }
     }
 
     property color sourcesBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return lighterButtonBackground;
+                return lighterButtonBackground
             case "Dark":
-                return lighterButtonBackground;
+                return lighterButtonBackground
             default:
-                return gray100;
+                return gray100
         }
     }
 
     property color sourcesBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return lighterButtonBackgroundHovered;
+                return lighterButtonBackgroundHovered
             case "Dark":
-                return lighterButtonBackgroundHovered;
+                return lighterButtonBackgroundHovered
             default:
-                return gray200;
+                return gray200
         }
     }
 
     property color buttonBorder: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return accentColor;
+                return accentColor
             case "Dark":
-                return controlBorder;
+                return controlBorder
             default:
-                return yellow200;
+                return yellow200
         }
     }
 
     property color sendButtonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return accentColor;
+                return accentColor
             case "Dark":
-                return accentColor;
+                return accentColor
             default:
-                return black;
+                return black
         }
     }
 
     property color sendButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue0;
+                return blue0
             case "Dark":
-                return darkwhite;
+                return darkwhite
             default:
-                return accentColor;
+                return accentColor
         }
     }
 
     property color selectedBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue700;
+                return blue700
             case "Dark":
-                return darkgray200;
+                return darkgray200
             default:
-                return gray0;
+                return gray0
         }
     }
 
     property color conversationButtonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue500;
+                return blue500
             case "Dark":
-                return darkgray100;
+                return darkgray100
             default:
-                return gray0;
+                return gray0
         }
     }
    property color conversationBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue500;
+                return blue500
             case "Dark":
-                return darkgray50;
+                return darkgray50
             default:
-                return white;
+                return white
         }
     }
 
     property color conversationProgress: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple400;
+                return purple400
             case "Dark":
-                return green400;
+                return green400
             default:
-                return green400;
+                return green400
         }
     }
 
     property color conversationButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue400;
+                return blue400
             case "Dark":
-                return darkgray0;
+                return darkgray0
             default:
-                return gray100;
+                return gray100
         }
     }
 
     property color conversationButtonBorder: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return accentColor;
+                return accentColor
             case "Dark":
-                return yellow200;
+                return yellow200
             default:
-                return yellow200;
+                return yellow200
         }
     }
 
     property color conversationHeader: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple400;
+                return purple400
             case "Dark":
-                return green400;
+                return green400
             default:
-                return green500;
+                return green500
         }
     }
 
     property color collectionsButtonText: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return black;
+                return black
             case "Dark":
-                return black;
+                return black
             default:
-                return white;
+                return white
         }
     }
 
     property color collectionsButtonProgress: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple400;
+                return purple400
             case "Dark":
                 return darkgray400
             default:
-                return green400;
+                return green400
         }
     }
 
     property color collectionsButtonForeground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple400;
+                return purple400
             case "Dark":
-                return green300;
+                return green300
             default:
-                return green600;
+                return green600
         }
     }
 
     property color collectionsButtonBackground: {
         switch (MySettings.chatTheme) {
             default:
-                return lighterButtonBackground;
+                return lighterButtonBackground
         }
     }
 
     property color collectionsButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             default:
-                return lighterButtonBackgroundHovered;
+                return lighterButtonBackgroundHovered
         }
     }
 
     property color welcomeButtonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return buttonBackground;
+                return buttonBackground
             case "Dark":
-                return buttonBackground;
+                return buttonBackground
             default:
-                return lighterButtonBackground;
+                return lighterButtonBackground
         }
     }
 
     property color welcomeButtonBorder: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return buttonBorder;
+                return buttonBorder
             case "Dark":
-                return buttonBorder;
+                return buttonBorder
             default:
-                return green300;
+                return green300
         }
     }
 
     property color welcomeButtonBorderHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple200;
+                return purple200
             case "Dark":
-                return darkgray100;
+                return darkgray100
             default:
-                return green400;
+                return green400
         }
     }
 
@@ -696,7 +696,7 @@ QtObject {
             case "Dark":
                 return textColor
             default:
-                return green700;
+                return green700
         }
     }
 
@@ -707,7 +707,7 @@ QtObject {
             case "Dark":
                 return gray400
             default:
-                return green800;
+                return green800
         }
     }
 
@@ -718,7 +718,7 @@ QtObject {
             case "Dark":
                 return textColor
             default:
-                return grayRed900;
+                return grayRed900
         }
     }
 
@@ -729,95 +729,95 @@ QtObject {
             case "Dark":
                 return mutedTextColor
             default:
-                return textColor;
+                return textColor
         }
     }
 
     property color iconBackgroundDark: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue200;
+                return blue200
             case "Dark":
-                return green400;
+                return green400
             default:
-                return black;
+                return black
         }
     }
 
     property color iconBackgroundLight: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue200;
+                return blue200
             case "Dark":
-                return darkwhite;
+                return darkwhite
             default:
-                return gray500;
+                return gray500
         }
     }
 
     property color iconBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue0;
+                return blue0
             case "Dark":
-                return gray400;
+                return gray400
             default:
-                return accentColor;
+                return accentColor
         }
     }
 
     property color iconBackgroundViewBar: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return iconBackgroundLight;
+                return iconBackgroundLight
             case "Dark":
-                return iconBackgroundLight;
+                return iconBackgroundLight
             default:
-                return green500;
+                return green500
         }
     }
 
     property color iconBackgroundViewBarToggled: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return iconBackgroundLight;
+                return iconBackgroundLight
             case "Dark":
-                return darkgray50;
+                return darkgray50
             default:
-                return green200;
+                return green200
         }
     }
 
     property color iconBackgroundViewBarHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return iconBackgroundHovered;
+                return iconBackgroundHovered
             case "Dark":
-                return iconBackgroundHovered;
+                return iconBackgroundHovered
             default:
-                return green600;
+                return green600
         }
     }
 
     property color slugBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue600;
+                return blue600
             case "Dark":
-                return darkgray300;
+                return darkgray300
             default:
-                return gray100;
+                return gray100
         }
     }
 
     property color textColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue0;
+                return blue0
             case "Dark":
-                return darkwhite;
+                return darkwhite
             default:
-                return black;
+                return black
         }
     }
 
@@ -825,7 +825,7 @@ QtObject {
     property color mutedLighterTextColor: {
         switch (MySettings.chatTheme) {
             default:
-                return gray300;
+                return gray300
         }
     }
 
@@ -833,7 +833,7 @@ QtObject {
     property color mutedLightTextColor: {
         switch (MySettings.chatTheme) {
             default:
-                return gray400;
+                return gray400
         }
     }
 
@@ -841,11 +841,11 @@ QtObject {
     property color mutedTextColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue200;
+                return blue200
             case "Dark":
-                return gray400;
+                return gray400
             default:
-                return gray500;
+                return gray500
         }
     }
 
@@ -853,11 +853,11 @@ QtObject {
     property color mutedDarkTextColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return mutedTextColor;
+                return mutedTextColor
             case "Dark":
-                return mutedTextColor;
+                return mutedTextColor
             default:
-                return grayRed500;
+                return grayRed500
         }
     }
 
@@ -865,97 +865,97 @@ QtObject {
     property color mutedDarkTextColorHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue400;
+                return blue400
             default:
-                return grayRed900;
+                return grayRed900
         }
     }
 
     property color oppositeTextColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return white;
+                return white
             case "Dark":
-                return darkwhite;
+                return darkwhite
             default:
-                return white;
+                return white
         }
     }
 
     property color oppositeMutedTextColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return white;
+                return white
             case "Dark":
-                return darkwhite;
+                return darkwhite
             default:
-                return white;
+                return white
         }
     }
 
     property color textAccent: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return accentColor;
+                return accentColor
             case "Dark":
-                return accentColor;
+                return accentColor
             default:
-                return accentColor;
+                return accentColor
         }
     }
 
     property color textErrorColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return red400;
+                return red400
             case "Dark":
-                return red400;
+                return red400
             default:
-                return red400;
+                return red400
         }
     }
 
     property color settingsTitleTextColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue100;
+                return blue100
             case "Dark":
-                return green200;
+                return green200
             default:
-                return black;
+                return black
         }
     }
 
     property color titleTextColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple400;
+                return purple400
             case "Dark":
-                return green300;
+                return green300
             default:
-                return green700;
+                return green700
         }
     }
 
     property color titleTextColor2: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return darkwhite;
+                return darkwhite
             case "Dark":
-                return green200;
+                return green200
             default:
-                return green700;
+                return green700
         }
     }
 
     property color titleInfoTextColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue200;
+                return blue200
             case "Dark":
-                return gray400;
+                return gray400
             default:
-                return gray600;
+                return gray600
         }
     }
 
@@ -966,102 +966,102 @@ QtObject {
             case "Dark":
                 return yellow25
             default:
-                return grayRed900;
+                return grayRed900
         }
     }
 
     property color styledTextColor2: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue0;
+                return blue0
             case "Dark":
                 return yellow50
             default:
-                return green500;
+                return green500
         }
     }
 
     property color chatDrawerSectionHeader: {
-            switch (MySettings.chatTheme) {
+        switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return purple50
             case "Dark":
                 return yellow0
             default:
-                return grayRed800;
+                return grayRed800
         }
     }
 
     property color dialogBorder: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return accentColor;
+                return accentColor
             case "Dark":
-                return darkgray0;
+                return darkgray0
             default:
-                return darkgray0;
+                return darkgray0
         }
     }
 
     property color linkColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return yellow600;
+                return yellow600
             case "Dark":
-                return yellow600;
+                return yellow600
             default:
-                return yellow600;
+                return yellow600
         }
     }
 
     property color mainHeader: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue900;
+                return blue900
             case "Dark":
-                return green600;
+                return green600
             default:
-                return green600;
+                return green600
         }
     }
 
     property color mainComboBackground: {
         switch (MySettings.chatTheme) {
             default:
-                return "transparent";
+                return "transparent"
         }
     }
 
     property color sendGlow: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue1000;
+                return blue1000
             case "Dark":
-                return green950;
+                return green950
             default:
-                return green300;
+                return green300
         }
     }
 
     property color userColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return blue800;
+                return blue800
             case "Dark":
-                return green700;
+                return green700
             default:
-                return green700;
+                return green700
         }
     }
 
     property color assistantColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
-                return purple400;
+                return purple400
             case "Dark":
-                return accentColor;
+                return accentColor
             default:
-                return accentColor;
+                return accentColor
         }
     }
 
@@ -1070,7 +1070,7 @@ QtObject {
             case "LegacyDark":
             case "Dark":
             default:
-                return textColor;
+                return textColor
         }
     }
 
@@ -1078,9 +1078,9 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
             case "Dark":
-                return "#2e95d3"; // blue
+                return "#2e95d3" // blue
             default:
-                return "#195273"; // dark blue
+                return "#195273" // dark blue
         }
     }
 
@@ -1088,9 +1088,9 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
             case "Dark":
-                return"#f22c3d"; // red
+                return"#f22c3d" // red
             default:
-                return"#7d1721"; // dark red
+                return"#7d1721" // dark red
         }
     }
 
@@ -1098,9 +1098,9 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
             case "Dark":
-                return "#e9950c"; // orange
+                return "#e9950c" // orange
             default:
-                return "#815207"; // dark orange
+                return "#815207" // dark orange
         }
     }
 
@@ -1108,9 +1108,9 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
             case "Dark":
-                return "#808080"; // gray
+                return "#808080" // gray
             default:
-                return "#474747"; // dark gray
+                return "#474747" // dark gray
         }
     }
 
@@ -1118,9 +1118,9 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
             case "Dark":
-                return "#00a37d"; // green
+                return "#00a37d" // green
             default:
-                return "#004a39"; // dark green
+                return "#004a39" // dark green
         }
     }
 
@@ -1128,9 +1128,9 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
             case "Dark":
-                return "#df3079"; // fuchsia
+                return "#df3079" // fuchsia
             default:
-                return "#761942"; // dark fuchsia
+                return "#761942" // dark fuchsia
         }
     }
 
@@ -1138,9 +1138,9 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
             case "Dark":
-                return containerBackground;
+                return containerBackground
             default:
-                return green50;
+                return green50
         }
     }
 
@@ -1148,9 +1148,9 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
             case "Dark":
-                return controlBackground;
+                return controlBackground
             default:
-                return gray100;
+                return gray100
         }
     }
 
@@ -1158,9 +1158,9 @@ QtObject {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
             case "Dark":
-                return controlBackground;
+                return controlBackground
             default:
-                return gray100;
+                return gray100
         }
     }
 
