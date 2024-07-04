@@ -776,6 +776,7 @@ Rectangle {
                             Layout.alignment: Qt.AlignHCenter
                             spacing: 25
                             model: chatModel
+                            cacheBuffer: listView.contentHeight
 
                             ScrollBar.vertical: ScrollBar {
                                 policy: ScrollBar.AsNeeded
