@@ -511,7 +511,7 @@ QtObject {
         }
     }
 
-    property color sendButtonBackground: {
+    property color conversationInputButtonBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return accentColor;
@@ -522,7 +522,7 @@ QtObject {
         }
     }
 
-    property color sendButtonBackgroundHovered: {
+    property color conversationInputButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue0;

@@ -1350,7 +1350,7 @@ Rectangle {
                 property bool isHovered: {
                     return conversationTrayButton.isHovered ||
                         resetContextButton.hovered || copyChatButton.hovered ||
-                        regenerateButton.hovered || stopButton.hovered
+                        regenerateButton.hovered
                 }
 
                 state: conversationTrayContent.isHovered ? "expanded" : "collapsed"
@@ -1461,23 +1461,6 @@ Rectangle {
                         }
                         ToolTip.visible: regenerateButton.hovered
                         ToolTip.text: qsTr("Redo last chat response")
-                    }
-                    MyToolButton {
-                        id: stopButton
-                        Layout.preferredWidth: 40
-                        Layout.preferredHeight: 40
-                        source: "qrc:/gpt4all/icons/stop_generating.svg"
-                        imageWidth: 20
-                        imageHeight: 20
-                        visible: currentChat.responseInProgress
-                        onClicked: {
-                            var index = Math.max(0, chatModel.count - 1);
-                            var listElement = chatModel.get(index);
-                            listElement.stopped = true
-                            currentChat.stopGenerating()
-                        }
-                        ToolTip.visible: stopButton.hovered
-                        ToolTip.text: qsTr("Stop the current response generation")
                     }
                 }
             }
@@ -1687,20 +1670,46 @@ Rectangle {
                 }
             }
 
+
             MyToolButton {
-                id: sendButton
-                backgroundColor: theme.sendButtonBackground
-                backgroundColorHovered: theme.sendButtonBackgroundHovered
+                id: stopButton
+                backgroundColor: theme.conversationInputButtonBackground
+                backgroundColorHovered: theme.conversationInputButtonBackgroundHovered
                 anchors.right: textInputView.right
                 anchors.verticalCenter: textInputView.verticalCenter
                 anchors.rightMargin: 15
                 imageWidth: theme.fontSizeLargest
                 imageHeight: theme.fontSizeLargest
-                visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
-                enabled: !currentChat.responseInProgress
+                visible: currentChat.responseInProgress && !currentChat.isServer
+                source: "qrc:/gpt4all/icons/stop_generating.svg"
+                Accessible.name: qsTr("Stop generating")
+                Accessible.description: qsTr("Stop the current response generation")
+                ToolTip.visible: stopButton.hovered
+                ToolTip.text: Accessible.description
+
+                onClicked: {
+                    var index = Math.max(0, chatModel.count - 1);
+                    var listElement = chatModel.get(index);
+                    listElement.stopped = true
+                    currentChat.stopGenerating()
+                }
+            }
+
+            MyToolButton {
+                id: sendButton
+                backgroundColor: theme.conversationInputButtonBackground
+                backgroundColorHovered: theme.conversationInputButtonBackgroundHovered
+                anchors.right: textInputView.right
+                anchors.verticalCenter: textInputView.verticalCenter
+                anchors.rightMargin: 15
+                imageWidth: theme.fontSizeLargest
+                imageHeight: theme.fontSizeLargest
+                visible: !currentChat.responseInProgress && !currentChat.isServer && ModelList.selectableModels.count !== 0
                 source: "qrc:/gpt4all/icons/send_message.svg"
                 Accessible.name: qsTr("Send message")
                 Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
+                ToolTip.visible: sendButton.hovered
+                ToolTip.text: Accessible.description
 
                 onClicked: {
                     textInput.sendMessage()
