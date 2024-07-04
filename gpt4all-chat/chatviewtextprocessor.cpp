@@ -885,12 +885,17 @@ void ChatViewTextProcessor::handleTextChanged()
     if (!m_quickTextDocument || !m_shouldProcessText)
         return;
 
+    // Force full layout of the text document to work around a bug in Qt
+    // TODO(jared): report the Qt bug and link to the report here
+    QTextDocument* doc = m_quickTextDocument->textDocument();
+    (void)doc->documentLayout()->documentSize();
+
     handleCodeBlocks();
     handleMarkdown();
 
     // We insert an invisible char at the end to make sure the document goes back to the default
     // text format
-    QTextCursor cursor(m_quickTextDocument->textDocument());
+    QTextCursor cursor(doc);
     QString invisibleCharacter = QString(QChar(0xFEFF));
     cursor.insertText(invisibleCharacter, QTextCharFormat());
 }
