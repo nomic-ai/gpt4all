@@ -25,7 +25,6 @@ Rectangle {
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
     property var fileContents: ""
-    property var attachFile
     signal addCollectionViewRequested()
     signal addModelViewRequested()
 
@@ -1709,20 +1708,16 @@ Rectangle {
                 nameFilters: ["Text files (*.txt *.md *.rst)"]
 
                 onAccepted: {
-                        attachFile = fileDialog.selectedFile;
+                        var attachFile = fileDialog.selectedFile;
                         if (attachFile !== "") {
                             var request = new XMLHttpRequest();
                             request.onreadystatechange = function() {
-                               console.log("Ready state changed: %1".arg(request.readyState));
-                               console.log(attachFile);
                                if (request.readyState == XMLHttpRequest.DONE) {
                                    fileContents = request.responseText;
                                }
                             }
                             request.open("GET", attachFile, true);
                             request.send();
-                            console.log(fileContents);
-                            console.log("^^contents^^");
                         }
                 }
             }
