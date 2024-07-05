@@ -6,7 +6,7 @@ import QtQuick.Controls.Basic
 MenuItem {
     id: item
     background: Rectangle {
-        color: item.highlighted ? theme.lightContrast : theme.darkContrast
+        color: item.highlighted ? theme.contextMenuHighlightColor : theme.contextMenuBgColor
     }
 
     contentItem: Text {

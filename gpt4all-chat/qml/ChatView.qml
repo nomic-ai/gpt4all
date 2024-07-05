@@ -411,7 +411,7 @@ Rectangle {
                             verticalAlignment: Text.AlignVCenter
                         }
                         background: Rectangle {
-                            color: highlighted ? theme.lightContrast : theme.darkContrast
+                            color: highlighted ? theme.chatViewModelListHighlightColor : theme.chatViewModelListBgColor
                         }
                         highlighted: comboBox.highlightedIndex === index
                     }
@@ -445,7 +445,7 @@ Rectangle {
                         }
 
                         background: Rectangle {
-                            color: theme.controlBackground
+                            color: theme.chatViewModelListFrameColor
                             radius: 10
                         }
                     }
