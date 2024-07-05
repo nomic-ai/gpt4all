@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 import chatlistmodel
 import download
@@ -23,6 +24,8 @@ Rectangle {
 
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
+    property var fileContents: ""
+    property var attachFile
     signal addCollectionViewRequested()
     signal addModelViewRequested()
 
@@ -1634,17 +1637,9 @@ Rectangle {
 
                         currentChat.stopGenerating()
                         currentChat.newPromptResponsePair(textInput.text);
-                        currentChat.prompt(textInput.text,
-                                           MySettings.promptTemplate,
-                                           MySettings.maxLength,
-                                           MySettings.topK,
-                                           MySettings.topP,
-                                           MySettings.minP,
-                                           MySettings.temperature,
-                                           MySettings.promptBatchSize,
-                                           MySettings.repeatPenalty,
-                                           MySettings.repeatPenaltyTokens)
+                        currentChat.prompt(fileContents + textInput.text);
                         textInput.text = ""
+                        fileContents = ""
                     }
 
                     MouseArea {
@@ -1693,7 +1688,7 @@ Rectangle {
                 backgroundColorHovered: theme.sendButtonBackgroundHovered
                 anchors.right: textInputView.right
                 anchors.verticalCenter: textInputView.verticalCenter
-                anchors.rightMargin: 15
+                anchors.rightMargin: 30
                 imageWidth: theme.fontSizeLargest
                 imageHeight: theme.fontSizeLargest
                 visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
@@ -1706,6 +1701,51 @@ Rectangle {
                     textInput.sendMessage()
                 }
             }
+
+            FileDialog {
+                id: fileDialog
+                visible: false
+                acceptLabel: "Attach"
+                nameFilters: ["Text files (*.txt *.md *.rst)"]
+
+                onAccepted: {
+                        attachFile = fileDialog.selectedFile;
+                        if (attachFile !== "") {
+                            var request = new XMLHttpRequest();
+                            request.onreadystatechange = function() {
+                               console.log("Ready state changed: %1".arg(request.readyState));
+                               console.log(attachFile);
+                               if (request.readyState == XMLHttpRequest.DONE) {
+                                   fileContents = request.responseText;
+                               }
+                            }
+                            request.open("GET", attachFile, true);
+                            request.send();
+                            console.log(fileContents);
+                            console.log("^^contents^^");
+                        }
+                }
+            }
+
+            MyToolButton {
+                id: attachButton
+                backgroundColor: theme.sendButtonBackground
+                backgroundColorHovered: theme.sendButtonBackgroundHovered
+                anchors.right: textInputView.right
+                anchors.verticalCenter: textInputView.verticalCenter
+                anchors.leftMargin: 15
+                imageWidth: theme.fontSizeLargest
+                imageHeight: theme.fontSizeLargest
+                visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
+                enabled: !currentChat.responseInProgress
+                source: "qrc:/gpt4all/icons/paperclip.svg"
+                Accessible.name: qsTr("Attach file")
+                Accessible.description: qsTr("Attaches/sends a file to the model")
+                onClicked: {
+                    fileDialog.open()
+                }
+            }
+
         }
     }
 }

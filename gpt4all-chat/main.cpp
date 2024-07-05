@@ -22,6 +22,7 @@
 
 int main(int argc, char *argv[])
 {
+    qputenv("QML_XHR_ALLOW_FILE_READ", QString("1").toUtf8());
     QCoreApplication::setOrganizationName("nomic.ai");
     QCoreApplication::setOrganizationDomain("gpt4all.io");
     QCoreApplication::setApplicationName("GPT4All");
