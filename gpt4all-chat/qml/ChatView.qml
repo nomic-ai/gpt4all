@@ -1636,7 +1636,7 @@ Rectangle {
 
                         currentChat.stopGenerating()
                         currentChat.newPromptResponsePair(textInput.text);
-                        currentChat.prompt(fileContents + textInput.text);
+                        currentChat.prompt(fileContents + "\n" + textInput.text);
                         textInput.text = ""
                         fileContents = ""
                     }
@@ -1705,7 +1705,7 @@ Rectangle {
                 id: fileDialog
                 visible: false
                 acceptLabel: "Attach"
-                nameFilters: ["Text files (*.txt *.md *.rst)"]
+                nameFilters: ["Text files (*.txt *.md *.rst)", "Code files (*.cpp *.c *.h *.qml *.py)"]
 
                 onAccepted: {
                         var attachFile = fileDialog.selectedFile;
