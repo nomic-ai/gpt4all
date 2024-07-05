@@ -24,7 +24,9 @@ Rectangle {
 
     property var currentChat: ChatListModel.currentChat
     property var chatModel: currentChat.chatModel
+    property var attachFile: ""
     property var fileContents: ""
+    property var saveFileContents: ""
     signal addCollectionViewRequested()
     signal addModelViewRequested()
 
@@ -839,6 +841,12 @@ Rectangle {
                                             text: currentModelName()
                                             color: theme.mutedTextColor
                                         }
+                                        Text {
+                                            visible: name !== qsTr("Response: ")
+                                            font.pixelSize: theme.fontSizeLarger
+                                            text: attachFile
+                                            color: theme.mutedTextColor
+                                        }
                                         RowLayout {
                                             visible: (currentResponse ? true : false) && ((value === "" && currentChat.responseInProgress) || currentChat.isRecalc)
                                             MyBusyIndicator {
@@ -1413,6 +1421,7 @@ Rectangle {
                             Network.trackChatEvent("reset_context", { "length": chatModel.count })
                             currentChat.reset();
                             currentChat.processSystemPrompt();
+                            attachFile = ""
                         }
                         ToolTip.visible: resetContextButton.hovered
                         ToolTip.text: qsTr("Erase and reset chat session")
@@ -1457,7 +1466,7 @@ Rectangle {
                                     chatModel.updateThumbsUpState(index, false);
                                     chatModel.updateThumbsDownState(index, false);
                                     chatModel.updateNewResponse(index, "");
-                                    currentChat.prompt(listElement.prompt)
+                                    currentChat.prompt(saveFileContents + "\n" + listElement.prompt)
                                 }
                             }
                         }
@@ -1638,6 +1647,7 @@ Rectangle {
                         currentChat.newPromptResponsePair(textInput.text);
                         currentChat.prompt(fileContents + "\n" + textInput.text);
                         textInput.text = ""
+                        saveFileContents = fileContents
                         fileContents = ""
                     }
 
@@ -1708,7 +1718,7 @@ Rectangle {
                 nameFilters: ["Text files (*.txt *.md *.rst)", "Code files (*.cpp *.c *.h *.qml *.py)"]
 
                 onAccepted: {
-                        var attachFile = fileDialog.selectedFile;
+                        attachFile = fileDialog.selectedFile;
                         if (attachFile !== "") {
                             var request = new XMLHttpRequest();
                             request.onreadystatechange = function() {
