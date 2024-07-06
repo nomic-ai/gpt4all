@@ -502,7 +502,7 @@ class GPT4All:
         Generate outputs from any GPT4All model.
 
         Args:
-            prompt: The prompt for the model the complete.
+            prompt: The prompt for the model to complete.
             max_tokens: The maximum number of tokens to generate.
             temp: The model temperature. Larger values increase creativity but decrease factuality.
             top_k: Randomly sample from the top_k most likely tokens at each generation step. Set this to 1 for greedy decoding.
