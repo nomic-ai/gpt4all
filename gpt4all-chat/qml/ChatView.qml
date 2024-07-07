@@ -27,6 +27,7 @@ Rectangle {
     property var attachFile: ""
     property var fileContents: ""
     property var saveFileContents: ""
+    property var listindex: []
     signal addCollectionViewRequested()
     signal addModelViewRequested()
 
@@ -261,6 +262,7 @@ Rectangle {
                         currentChat.stopGenerating()
                         currentChat.reset();
                         currentChat.modelInfo = ModelList.modelInfo(comboBox.valueAt(index))
+                        attachFile = ""
                     }
 
                     Connections {
@@ -793,6 +795,7 @@ Rectangle {
                                 width: listView.contentItem.width - 15
                                 rows: 3
                                 columns: 2
+                                property int indexOfThisDelegate: index
 
                                 Item {
                                     Layout.row: 0
@@ -836,15 +839,8 @@ Rectangle {
                                             readOnly: true
                                         }
                                         Text {
-                                            visible: name === qsTr("Response: ")
+                                            text: name === qsTr("Response: ") ? currentModelName() : listindex[index]
                                             font.pixelSize: theme.fontSizeLarger
-                                            text: currentModelName()
-                                            color: theme.mutedTextColor
-                                        }
-                                        Text {
-                                            visible: name !== qsTr("Response: ")
-                                            font.pixelSize: theme.fontSizeLarger
-                                            text: attachFile
                                             color: theme.mutedTextColor
                                         }
                                         RowLayout {
@@ -1643,12 +1639,14 @@ Rectangle {
                         if (textInput.text === "")
                             return
 
+                        listindex[listView.count] = attachFile
                         currentChat.stopGenerating()
                         currentChat.newPromptResponsePair(textInput.text);
                         currentChat.prompt(fileContents + "\n" + textInput.text);
                         textInput.text = ""
                         saveFileContents = fileContents
                         fileContents = ""
+                        attachFile = ""
                     }
 
                     MouseArea {
