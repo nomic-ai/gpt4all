@@ -1170,7 +1170,7 @@ Rectangle {
                                     states: [
                                         State {
                                             name: "expanded"
-                                            PropertyChanges { target: sourcesLayout; Layout.preferredHeight: childrenRect.height }
+                                            PropertyChanges { target: sourcesLayout; Layout.preferredHeight: flow.height }
                                         },
                                         State {
                                             name: "collapsed"
@@ -1192,6 +1192,7 @@ Rectangle {
                                     ]
 
                                     Flow {
+                                        id: flow
                                         Layout.fillWidth: true
                                         spacing: 10
                                         visible: consolidatedSources.length !== 0
