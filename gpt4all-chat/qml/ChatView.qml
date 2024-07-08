@@ -47,6 +47,10 @@ Rectangle {
         return ModelList.modelInfo(currentChat.modelInfo.id).name;
     }
 
+    function currentModelInstalled() {
+        return currentModelName() !== "" && ModelList.modelInfo(currentChat.modelInfo.id).installed;
+    }
+
     PopupDialog {
         id: modelLoadingErrorPopup
         anchors.centerIn: parent
@@ -322,7 +326,7 @@ Rectangle {
                                     visible: currentChat.modelLoadingError === ""
                                         && !currentChat.trySwitchContextInProgress
                                         && !currentChat.isCurrentlyLoading
-                                        && (currentChat.isModelLoaded || currentModelName() !== "")
+                                        && (currentChat.isModelLoaded || currentModelInstalled())
                                     source: "qrc:/gpt4all/icons/regenerate.svg"
                                     backgroundColor: theme.textColor
                                     backgroundColorHovered: theme.styledTextColor
@@ -358,15 +362,17 @@ Rectangle {
                                 rightPadding: 10
                                 text: {
                                     if (ModelList.selectableModels.count === 0)
-                                        return qsTr("No model installed...")
+                                        return qsTr("No model installed.")
                                     if (currentChat.modelLoadingError !== "")
-                                        return qsTr("Model loading error...")
+                                        return qsTr("Model loading error.")
                                     if (currentChat.trySwitchContextInProgress === 1)
                                         return qsTr("Waiting for model...")
                                     if (currentChat.trySwitchContextInProgress === 2)
                                         return qsTr("Switching context...")
                                     if (currentModelName() === "")
                                         return qsTr("Choose a model...")
+                                    if (!currentModelInstalled())
+                                        return qsTr("Not found: %1").arg(currentModelName())
                                     if (currentChat.modelLoadingPercentage === 0.0)
                                         return qsTr("Reload \u00B7 ") + currentModelName()
                                     if (currentChat.isCurrentlyLoading)
@@ -1519,7 +1525,7 @@ Rectangle {
                     && currentChat.modelLoadingError === ""
                     && !currentChat.trySwitchContextInProgress
                     && !currentChat.isCurrentlyLoading
-                    && currentModelName() !== ""
+                    && currentModelInstalled()
 
                 Image {
                     anchors.verticalCenter: parent.verticalCenter
