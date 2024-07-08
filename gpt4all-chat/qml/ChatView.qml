@@ -879,7 +879,6 @@ Rectangle {
                                     Layout.fillWidth: true
                                     TextArea {
                                         id: myTextArea
-                                        text: value
                                         Layout.fillWidth: true
                                         padding: 0
                                         color: {
@@ -953,7 +952,7 @@ Rectangle {
                                                 height: enabled ? implicitHeight : 0
                                                 onTriggered: {
                                                     textProcessor.shouldProcessText = !textProcessor.shouldProcessText;
-                                                    myTextArea.text = value
+                                                    textProcessor.setValue(value);
                                                 }
                                             }
                                         }
@@ -974,11 +973,16 @@ Rectangle {
                                             textProcessor.codeColors.headerColor       = theme.codeHeaderColor
                                             textProcessor.codeColors.backgroundColor   = theme.codeBackgroundColor
                                             textProcessor.textDocument                 = textDocument
-                                            chatModel.forceUpdate(index); // called to trigger a reprocessing of the text
+                                            textProcessor.setValue(value);
                                         }
 
                                         Component.onCompleted: {
                                             resetChatViewTextProcessor();
+                                            chatModel.valueChanged.connect(function(i, value) {
+                                                if (index === i)
+                                                    textProcessor.setValue(value);
+                                                }
+                                            );
                                         }
 
                                         Connections {

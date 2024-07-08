@@ -272,7 +272,7 @@ Rectangle {
         color: theme.conversationBackground
         width: subscribeLink.width
         RowLayout {
-            anchors.fill: parent
+            anchors.centerIn: parent
             MyFancyLink {
                 id: subscribeLink
                 Layout.alignment: Qt.AlignCenter
