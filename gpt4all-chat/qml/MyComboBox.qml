@@ -54,7 +54,7 @@ ComboBox {
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
-            color: highlighted ? theme.lightContrast : theme.darkContrast
+            color: highlighted ? theme.menuHighlightColor : theme.menuBackgroundColor
         }
         highlighted: comboBox.highlightedIndex === index
     }
@@ -84,7 +84,7 @@ ComboBox {
         }
 
         background: Rectangle {
-            color: theme.controlBackground
+            color: theme.menuFrameColor
             radius: 10
         }
     }

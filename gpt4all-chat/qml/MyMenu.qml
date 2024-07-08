@@ -14,7 +14,7 @@ Menu {
     background: Rectangle {
         implicitWidth: 220
         implicitHeight: 40
-        color: theme.contextMenuFrameColor
+        color: theme.menuFrameColor
         radius: 10
     }
 

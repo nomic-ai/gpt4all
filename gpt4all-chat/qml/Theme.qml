@@ -1164,7 +1164,7 @@ QtObject {
         }
     }
 
-    property color chatViewModelListFrameColor: {
+    property color menuFrameColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue700
@@ -1175,7 +1175,7 @@ QtObject {
         }
     }
 
-    property color chatViewModelListBgColor: {
+    property color menuBackgroundColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue600
@@ -1186,7 +1186,7 @@ QtObject {
         }
     }
 
-    property color chatViewModelListHighlightColor: {
+    property color menuHighlightColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue400
@@ -1195,17 +1195,6 @@ QtObject {
             default:
                 return green100
         }
-    }
-    property color contextMenuFrameColor: {
-        return chatViewModelListFrameColor
-    }
-
-    property color contextMenuBgColor: {
-        return chatViewModelListBgColor
-    }
-
-    property color contextMenuHighlightColor: {
-        return chatViewModelListHighlightColor
     }
 
     property real fontScale: MySettings.fontSize === "Small"  ? 1 :

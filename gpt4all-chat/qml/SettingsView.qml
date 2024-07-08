@@ -13,7 +13,7 @@ import mysettings
 
 Rectangle {
     id: settingsDialog
-    color: theme.viewBackground
+    color: theme.viewBackground//theme.yellow400//theme.blue500//
 
     property alias pageToDisplay: listView.currentIndex
 
@@ -80,7 +80,7 @@ Rectangle {
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 width: 220
-                color: theme.viewBackground
+                color: theme.viewBackground//theme.yellow400// left settings selection area
                 radius: 10
 
                 ScrollView {
@@ -137,19 +137,58 @@ Rectangle {
 
                 MySettingsStack {
                     tabs: [
-                        Component { ApplicationSettings { } }
+                        Component {
+                            Rectangle {
+                                id: stackAppSettings
+                                color: theme.conversationBackground
+                                border.color: theme.controlBorder
+                                border.width: 1
+                                radius: 10
+
+                                ApplicationSettings {
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+                                }
+                            }
+                        }
                     ]
                 }
 
                 MySettingsStack {
                     tabs: [
-                        Component { ModelSettings { } }
+                        Component {
+                            Rectangle {
+                                id: stackModelSettings
+                                color: theme.conversationBackground
+                                border.color: theme.controlBorder
+                                border.width: 1
+                                radius: 10
+
+                                ModelSettings {
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+                                }
+                            }
+                        }
                     ]
                 }
 
                 MySettingsStack {
                     tabs: [
-                        Component { LocalDocsSettings { } }
+                        Component {
+                            Rectangle {
+                                id: stackLocalDocSettings
+                                color: theme.conversationBackground
+                                border.color: theme.controlBorder
+                                border.width: 1
+                                radius: 10
+
+                                LocalDocsSettings {
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+                                }
+                            }
+                        }
                     ]
                 }
             }
