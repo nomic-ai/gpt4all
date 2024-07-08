@@ -13,7 +13,7 @@ import mysettings
 
 Rectangle {
     id: settingsDialog
-    color: theme.viewBackground//theme.yellow400//theme.blue500//
+    color: theme.viewBackground
 
     property alias pageToDisplay: listView.currentIndex
 
@@ -80,7 +80,7 @@ Rectangle {
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 width: 220
-                color: theme.viewBackground//theme.yellow400// left settings selection area
+                color: theme.viewBackground
                 radius: 10
 
                 ScrollView {
