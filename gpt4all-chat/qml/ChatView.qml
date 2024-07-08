@@ -945,7 +945,7 @@ Rectangle {
                                                 height: enabled ? implicitHeight : 0
                                                 onTriggered: {
                                                     textProcessor.shouldProcessText = !textProcessor.shouldProcessText;
-                                                    textProcessor.setValue(value)
+                                                    textProcessor.setValue(value);
                                                 }
                                             }
                                         }
