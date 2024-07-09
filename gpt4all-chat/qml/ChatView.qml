@@ -1612,7 +1612,7 @@ Rectangle {
                                               }
                                           }
                     function sendMessage() {
-                        if (textInput.text === "")
+                        if (textInput.text === "" || currentChat.responseInProgress || currentChat.isRecalc)
                             return
 
                         currentChat.stopGenerating()
