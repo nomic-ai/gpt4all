@@ -1164,25 +1164,14 @@ QtObject {
         }
     }
 
-    property color menuFrameColor: {
+    property color menuBackgroundColor: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
                 return blue700
             case "Dark":
                 return darkgray200
             default:
-                return gray200
-        }
-    }
-
-    property color menuBackgroundColor: {
-        switch (MySettings.chatTheme) {
-            case "LegacyDark":
-                return blue600
-            case "Dark":
-                return darkgray100
-            default:
-                return gray100
+                return gray50
         }
     }
 
@@ -1194,6 +1183,17 @@ QtObject {
                 return darkgray0
             default:
                 return green100
+        }
+    }
+
+    property color menuBorderColor: {
+        switch (MySettings.chatTheme) {
+            case "LegacyDark":
+                return blue400
+            case "Dark":
+                return gray800
+            default:
+                return gray300
         }
     }
 

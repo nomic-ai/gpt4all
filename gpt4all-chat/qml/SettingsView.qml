@@ -137,58 +137,19 @@ Rectangle {
 
                 MySettingsStack {
                     tabs: [
-                        Component {
-                            Rectangle {
-                                id: stackAppSettings
-                                color: theme.conversationBackground
-                                border.color: theme.controlBorder
-                                border.width: 1
-                                radius: 10
-
-                                ApplicationSettings {
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                }
-                            }
-                        }
+                        Component { ApplicationSettings { } }
                     ]
                 }
 
                 MySettingsStack {
                     tabs: [
-                        Component {
-                            Rectangle {
-                                id: stackModelSettings
-                                color: theme.conversationBackground
-                                border.color: theme.controlBorder
-                                border.width: 1
-                                radius: 10
-
-                                ModelSettings {
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                }
-                            }
-                        }
+                        Component { ModelSettings { } }
                     ]
                 }
 
                 MySettingsStack {
                     tabs: [
-                        Component {
-                            Rectangle {
-                                id: stackLocalDocSettings
-                                color: theme.conversationBackground
-                                border.color: theme.controlBorder
-                                border.width: 1
-                                radius: 10
-
-                                LocalDocsSettings {
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                }
-                            }
-                        }
+                        Component { LocalDocsSettings { } }
                     ]
                 }
             }
