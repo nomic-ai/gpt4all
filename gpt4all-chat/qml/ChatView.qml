@@ -411,9 +411,6 @@ Rectangle {
                             verticalAlignment: Text.AlignVCenter
                         }
                         background: Rectangle {
-                            //color: theme.menuBackgroundColor//theme.controlBorder
-                            //border.color: theme.controlBorder
-                            //border.width: 1
                             radius: 10
                             color: highlighted ? theme.menuHighlightColor : theme.menuBackgroundColor
                         }
@@ -449,7 +446,6 @@ Rectangle {
                         }
 
                         background: Rectangle {
-                            //color: theme.menuBackgroundColor//theme.controlBorder
                             border.color: theme.menuBorderColor
                             border.width: 1
                             color: theme.menuBackgroundColor
