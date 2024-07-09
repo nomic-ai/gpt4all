@@ -40,4 +40,4 @@ GPT4All can run on CPU, Metal (Apple Silicon M1+), and GPU.
 
 ### What are the system requirements?
 
-Your CPU needs to support [AVX or AVX2 instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) and you need enough RAM to load a model into memory. If the 
+Your CPU needs to support [AVX or AVX2 instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) and you need enough RAM to load a model into memory.
