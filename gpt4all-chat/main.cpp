@@ -17,6 +17,7 @@
 #include <QQmlEngine>
 #include <QSettings>
 #include <QString>
+#include <QTranslator>
 #include <QUrl>
 #include <Qt>
 
@@ -31,6 +32,12 @@ int main(int argc, char *argv[])
     Logger::globalInstance();
 
     QGuiApplication app(argc, argv);
+
+    QTranslator translator;
+    bool success = translator.load(":/i18n/gpt4all_en.qm");
+    Q_ASSERT(success);
+    app.installTranslator(&translator);
+
     QQmlApplicationEngine engine;
 
     QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
