@@ -128,6 +128,10 @@ QtObject {
         }
     }
 
+ /*
+  These nolonger apply to anything (remove this?)
+  Replaced by menuHighlightColor & menuBackgroundColor now using different colors.
+
     property color darkContrast: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
@@ -149,7 +153,7 @@ QtObject {
                 return gray0
         }
     }
-
+*/
     property color controlBorder: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
@@ -219,6 +223,8 @@ QtObject {
                 return gray50
         }
     }
+/*
+  These nolonger apply to anything (remove this?)
 
     property color containerForeground: {
         switch (MySettings.chatTheme) {
@@ -230,7 +236,7 @@ QtObject {
                 return gray300
         }
     }
-
+*/
     property color containerBackground: {
         switch (MySettings.chatTheme) {
             case "LegacyDark":
