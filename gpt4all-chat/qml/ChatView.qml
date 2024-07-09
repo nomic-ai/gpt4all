@@ -1678,10 +1678,37 @@ Rectangle {
                 anchors.right: textInputView.right
                 anchors.verticalCenter: textInputView.verticalCenter
                 anchors.rightMargin: 15
-                imageWidth: theme.fontSizeLargest
-                imageHeight: theme.fontSizeLargest
                 visible: currentChat.responseInProgress && !currentChat.isServer
-                source: "qrc:/gpt4all/icons/stop_generating.svg"
+
+                background: Item {
+                    anchors.fill: parent
+                    Image {
+                        id: stopImage
+                        anchors.centerIn: parent
+                        visible: false
+                        fillMode: Image.PreserveAspectFit
+                        mipmap: true
+                        sourceSize.width: theme.fontSizeLargest
+                        sourceSize.height: theme.fontSizeLargest
+                        source: "qrc:/gpt4all/icons/stop_generating.svg"
+                    }
+                    Rectangle {
+                        anchors.centerIn: stopImage
+                        width: theme.fontSizeLargest + 8
+                        height: theme.fontSizeLargest + 8
+                        color: theme.viewBackground
+                        border.pixelAligned: false
+                        border.color: theme.controlBorder
+                        border.width: 1
+                        radius: width / 2
+                    }
+                    ColorOverlay {
+                        anchors.fill: stopImage
+                        source: stopImage
+                        color: stopButton.hovered ? stopButton.backgroundColorHovered : stopButton.backgroundColor
+                    }
+                }
+
                 Accessible.name: qsTr("Stop generating")
                 Accessible.description: qsTr("Stop the current response generation")
                 ToolTip.visible: stopButton.hovered
