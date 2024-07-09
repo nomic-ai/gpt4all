@@ -818,7 +818,7 @@ Rectangle {
                                             to: 360
                                             duration: 1000
                                             loops: Animation.Infinite
-                                            running: (currentResponse ? true : false) && (currentChat.responseInProgress || currentChat.isRecalc)
+                                            running: currentResponse && (currentChat.responseInProgress || currentChat.isRecalc)
                                         }
                                     }
                                 }
@@ -849,7 +849,7 @@ Rectangle {
                                             color: theme.mutedTextColor
                                         }
                                         RowLayout {
-                                            visible: (currentResponse ? true : false) && ((value === "" && currentChat.responseInProgress) || currentChat.isRecalc)
+                                            visible: currentResponse && ((value === "" && currentChat.responseInProgress) || currentChat.isRecalc)
                                             Text {
                                                 color: theme.mutedTextColor
                                                 font.pixelSize: theme.fontSizeLarger
