@@ -1,6 +1,7 @@
-# Google Drive for Desktop and LocalDocs Integration
+# Using GPT4All to Privately Chat with your Google Drive Data
+Local and Private AI Chat with your Google Drive Data
 
-Google Drive for Desktop allows you to sync and access your Google Drive files directly on your computer. By connecting it to LocalDocs, you can integrate these files into your LLM chats for private access and enhanced context.
+Google Drive for Desktop allows you to sync and access your Google Drive files directly on your computer. By connecting your synced directory to LocalDocs, you can start using GPT4All to privately chat with data stored in your Google Drive.
 
 ## Download Google Drive for Desktop
 
@@ -11,20 +12,22 @@ Google Drive for Desktop allows you to sync and access your Google Drive files d
    - Navigate to the **Settings** (gear icon) and select **Settings** from the dropdown menu.
    - Scroll down to **Google Drive for desktop** and click **Download**.
 
-2. **Install Google Drive for Desktop**:
+2. **Install Google Drive for Desktop**
    - Run the installer file you downloaded.
    - Follow the prompts to complete the installation process.
 
-3. **Sign in and Sync**:
+3. **Sign in and Sync**
    - Once installed, sign in to Google Drive for Desktop with your Google account credentials.
    - Choose the folders you want to sync to your computer.
-     
+
+For advanced help, see [Setting up Google Drive for Desktop](https://support.google.com/drive/answer/10838124?hl=en)
 ## Connect Google Drive to LocalDocs
 
 !!! note "Connect Google Drive to LocalDocs"
 
-1. **Open LocalDocs**:
-   - Navigate to the LocalDocs feature within GPT4All.
+1. **Install GPT4All and Open LocalDocs**:
+   - Go to [nomic.ai/gpt4all](https://nomic.ai/gpt4all) to install GPT4All for your operating system.
+   - Navigate to the LocalDocs feature within GPT4All to configure it to use your synced directory.
 
    <table>
    <tr>
@@ -99,7 +102,4 @@ Google Drive for Desktop allows you to sync and access your Google Drive files d
 
 ## How It Works
 
-Google Drive for Desktop syncs your Google Drive files to your computer, while LocalDocs integrates these files into your LLM chats using embedding models. These models find semantically similar snippets from your files to enhance the context of your interactions.
-
-To learn more about embedding models and explore further, refer to the [Nomic Python SDK documentation](https://docs.nomic.ai/atlas/guides/embeddings).
-
+Google Drive for Desktop syncs your Google Drive files to your computer, while LocalDocs maintains a database of these synced for use by your local LLM. As your Google Drive updates, LocalDocs will automatically detect file changes and get up to date. LocalDocs is powered by [Nomic Embedding](https://docs.nomic.ai/atlas/capabilities/embeddings) models which find semantically similar snippets from your files to enhance the context of your interactions.
