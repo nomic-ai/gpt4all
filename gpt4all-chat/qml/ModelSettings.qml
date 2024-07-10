@@ -250,45 +250,64 @@ MySettingsTab {
             }
         }
 
+        MySettingsLabel {
+            id: chatNamePromptLabel
+            text: qsTr("Chat Name Prompt")
+            helpText: qsTr("Prompt used to automatically generate chat names.")
+            Layout.row: 11
+            Layout.column: 0
+            Layout.topMargin: 15
+        }
+
         Rectangle {
-            id: optionalImageRect
-            visible: false // FIXME: for later
-            Layout.row: 2
-            Layout.column: 1
-            Layout.rowSpan: 5
-            Layout.alignment: Qt.AlignHCenter
-            Layout.fillHeight: true
-            Layout.maximumWidth: height
-            Layout.topMargin: 35
-            Layout.bottomMargin: 35
-            Layout.leftMargin: 35
-            width: 3000
-            radius: 10
+            id: chatNamePrompt
+            Layout.row: 12
+            Layout.column: 0
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.minimumHeight: Math.max(100, chatNamePromptTextArea.contentHeight + 20)
             color: "transparent"
-            Item {
-                anchors.centerIn: parent
-                height: childrenRect.height
-                Image {
-                    id: img
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: 100
-                    height: 100
-                    source: "qrc:/gpt4all/icons/image.svg"
-                }
-                Text {
-                    text: qsTr("Add\noptional image")
-                    font.pixelSize: theme.fontSizeLarge
-                    anchors.top: img.bottom
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    wrapMode: TextArea.Wrap
-                    horizontalAlignment: Qt.AlignHCenter
-                    color: theme.mutedTextColor
-                }
+            clip: true
+            MyTextArea {
+                id: chatNamePromptTextArea
+                anchors.fill: parent
+                text: root.currentModelInfo.chatNamePrompt
+                Accessible.role: Accessible.EditableText
+                Accessible.name: chatNamePromptLabel.text
+                Accessible.description: chatNamePromptLabel.text
+            }
+        }
+
+        MySettingsLabel {
+            id: suggestedFollowUpPromptLabel
+            text: qsTr("Suggested FollowUp Prompt")
+            helpText: qsTr("Prompt used to generate suggested follow-up questions.")
+            Layout.row: 13
+            Layout.column: 0
+            Layout.topMargin: 15
+        }
+
+        Rectangle {
+            id: suggestedFollowUpPrompt
+            Layout.row: 14
+            Layout.column: 0
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.minimumHeight: Math.max(100, suggestedFollowUpPromptTextArea.contentHeight + 20)
+            color: "transparent"
+            clip: true
+            MyTextArea {
+                id: suggestedFollowUpPromptTextArea
+                anchors.fill: parent
+                text: root.currentModelInfo.suggestedFollowUpPrompt
+                Accessible.role: Accessible.EditableText
+                Accessible.name: suggestedFollowUpPromptLabel.text
+                Accessible.description: suggestedFollowUpPromptLabel.text
             }
         }
 
         GridLayout {
-            Layout.row: 11
+            Layout.row: 15
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
@@ -784,7 +803,7 @@ MySettingsTab {
         }
 
         Rectangle {
-            Layout.row: 12
+            Layout.row: 16
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15

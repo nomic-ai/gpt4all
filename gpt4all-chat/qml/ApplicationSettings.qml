@@ -228,15 +228,39 @@ MySettingsTab {
             }
         }
         MySettingsLabel {
+            id: suggestionModeLabel
+            text: qsTr("Suggestion Mode")
+            helpText: qsTr("Generate suggested follow-up questions at the end of responses.")
+            Layout.row: 6
+            Layout.column: 0
+        }
+        MyComboBox {
+            id: suggestionModeBox
+            Layout.row: 6
+            Layout.column: 2
+            Layout.minimumWidth: 400
+            Layout.maximumWidth: 400
+            Layout.alignment: Qt.AlignRight
+            model: [ qsTr("When chatting with LocalDocs"), qsTr("Whenever possible"), qsTr("Never") ]
+            Accessible.name: suggestionModeLabel.text
+            Accessible.description: suggestionModeLabel.helpText
+            onActivated: {
+                MySettings.suggestionMode = suggestionModeBox.currentIndex;
+            }
+            Component.onCompleted: {
+                suggestionModeBox.currentIndex = MySettings.suggestionMode;
+            }
+        }
+        MySettingsLabel {
             id: modelPathLabel
             text: qsTr("Download Path")
             helpText: qsTr("Where to store local models and the LocalDocs database.")
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 0
         }
 
         RowLayout {
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             Layout.minimumWidth: 400
@@ -273,12 +297,12 @@ MySettingsTab {
             id: dataLakeLabel
             text: qsTr("Enable Datalake")
             helpText: qsTr("Send chats and feedback to the GPT4All Open-Source Datalake.")
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 0
         }
         MyCheckBox {
             id: dataLakeBox
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             Component.onCompleted: { dataLakeBox.checked = MySettings.networkIsActive; }
@@ -296,7 +320,7 @@ MySettingsTab {
         }
 
         ColumnLayout {
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
@@ -319,7 +343,7 @@ MySettingsTab {
             id: nThreadsLabel
             text: qsTr("CPU Threads")
             helpText: qsTr("The number of CPU threads used for inference and embedding.")
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 0
         }
         MyTextField {
@@ -327,7 +351,7 @@ MySettingsTab {
             color: theme.textColor
             font.pixelSize: theme.fontSizeLarge
             Layout.alignment: Qt.AlignRight
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 2
             Layout.minimumWidth: 200
             Layout.maximumWidth: 200
@@ -351,12 +375,12 @@ MySettingsTab {
             id: saveChatsContextLabel
             text: qsTr("Save Chat Context")
             helpText: qsTr("Save the chat model's state to disk for faster loading. WARNING: Uses ~2GB per chat.")
-            Layout.row: 10
+            Layout.row: 11
             Layout.column: 0
         }
         MyCheckBox {
             id: saveChatsContextBox
-            Layout.row: 10
+            Layout.row: 11
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.saveChatsContext
@@ -368,12 +392,12 @@ MySettingsTab {
             id: serverChatLabel
             text: qsTr("Enable Local Server")
             helpText: qsTr("Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.")
-            Layout.row: 11
+            Layout.row: 12
             Layout.column: 0
         }
         MyCheckBox {
             id: serverChatBox
-            Layout.row: 11
+            Layout.row: 12
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.serverChat
@@ -385,7 +409,7 @@ MySettingsTab {
             id: serverPortLabel
             text: qsTr("API Server Port")
             helpText: qsTr("The port to use for the local server. Requires restart.")
-            Layout.row: 12
+            Layout.row: 13
             Layout.column: 0
         }
         MyTextField {
@@ -393,7 +417,7 @@ MySettingsTab {
             text: MySettings.networkPort
             color: theme.textColor
             font.pixelSize: theme.fontSizeLarge
-            Layout.row: 12
+            Layout.row: 13
             Layout.column: 2
             Layout.minimumWidth: 200
             Layout.maximumWidth: 200

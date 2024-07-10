@@ -58,11 +58,13 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::modelLoadingPercentageChanged, this, &Chat::handleModelLoadingPercentageChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::generatingQuestions, this, &Chat::generatingQuestions, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingWarning, this, &Chat::modelLoadingWarning, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::recalcChanged, this, &Chat::handleRecalculating, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::generatedQuestionFinished, this, &Chat::generatedQuestionFinished, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::loadedModelInfoChanged, this, &Chat::loadedModelInfoChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
@@ -113,6 +115,8 @@ void Chat::resetResponseState()
     if (m_responseInProgress && m_responseState == Chat::LocalDocsRetrieval)
         return;
 
+    m_generatedQuestions = QList<QString>();
+    emit generatedQuestionsChanged();
     m_tokenSpeed = QString();
     emit tokenSpeedChanged();
     m_responseInProgress = true;
@@ -186,6 +190,12 @@ void Chat::handleModelLoadingPercentageChanged(float loadingPercentage)
 void Chat::promptProcessing()
 {
     m_responseState = !databaseResults().isEmpty() ? Chat::LocalDocsProcessing : Chat::PromptProcessing;
+     emit responseStateChanged();
+}
+
+void Chat::generatingQuestions()
+{
+    m_responseState = Chat::GeneratingQuestions;
     emit responseStateChanged();
 }
 
@@ -302,6 +312,12 @@ void Chat::generatedNameChanged(const QString &name)
     int wordCount = qMin(7, words.size());
     m_name = words.mid(0, wordCount).join(' ');
     emit nameChanged();
+}
+
+void Chat::generatedQuestionFinished(const QString &question)
+{
+    m_generatedQuestions << question;
+    emit generatedQuestionsChanged();
 }
 
 void Chat::handleRecalculating()

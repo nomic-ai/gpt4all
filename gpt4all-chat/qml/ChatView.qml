@@ -797,7 +797,7 @@ Rectangle {
 
                             delegate: GridLayout {
                                 width: listView.contentItem.width - 15
-                                rows: 3
+                                rows: 5
                                 columns: 2
 
                                 Item {
@@ -850,6 +850,8 @@ Rectangle {
                                             font.pixelSize: theme.fontSizeLarger
                                             font.bold: true
                                             color: theme.conversationHeader
+                                            enabled: false
+                                            focus: false
                                             readOnly: true
                                         }
                                         Text {
@@ -872,6 +874,7 @@ Rectangle {
                                                     case Chat.LocalDocsProcessing: return qsTr("searching localdocs: ") + currentChat.collectionList.join(", ") + " ...";
                                                     case Chat.PromptProcessing: return qsTr("processing ...")
                                                     case Chat.ResponseGeneration: return qsTr("generating response ...");
+                                                    case Chat.GeneratingQuestions: return qsTr("generating questions ...");
                                                     default: return ""; // handle unexpected values
                                                     }
                                                 }
@@ -1094,7 +1097,16 @@ Rectangle {
                                     Layout.alignment: Qt.AlignVCenter
                                     Layout.preferredWidth: childrenRect.width
                                     Layout.preferredHeight: childrenRect.height
-                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences && (!currentResponse || !currentChat.responseInProgress)
+                                    visible: {
+                                        if (consolidatedSources.length === 0)
+                                            return false
+                                        if (!MySettings.localDocsShowReferences)
+                                            return false
+                                        if (currentResponse && currentChat.responseInProgress
+                                            && currentChat.responseState !== Chat.GeneratingQuestions )
+                                            return false
+                                        return true
+                                    }
 
                                     MyButton {
                                         backgroundColor: theme.sourcesBackground
@@ -1171,7 +1183,16 @@ Rectangle {
                                     Layout.row: 3
                                     Layout.column: 1
                                     Layout.topMargin: 5
-                                    visible: consolidatedSources.length !== 0 && MySettings.localDocsShowReferences && (!currentResponse || !currentChat.responseInProgress)
+                                    visible: {
+                                        if (consolidatedSources.length === 0)
+                                            return false
+                                        if (!MySettings.localDocsShowReferences)
+                                            return false
+                                        if (currentResponse && currentChat.responseInProgress
+                                            && currentChat.responseState !== Chat.GeneratingQuestions )
+                                            return false
+                                        return true
+                                    }
                                     clip: true
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 0
@@ -1310,45 +1331,250 @@ Rectangle {
                                         }
                                     }
                                 }
-                            }
 
-                            property bool shouldAutoScroll: true
-                            property bool isAutoScrolling: false
+                                function shouldShowSuggestions() {
+                                    if (!currentResponse)
+                                        return false;
+                                    if (MySettings.suggestionMode === 2) // Off
+                                        return false;
+                                    if (MySettings.suggestionMode === 0 && consolidatedSources.length === 0) // LocalDocs only
+                                        return false;
+                                    return currentChat.responseState === Chat.GeneratingQuestions || currentChat.generatedQuestions.length !== 0;
+                                }
 
-                            Connections {
-                                target: currentChat
-                                function onResponseChanged() {
-                                    listView.scrollToEnd()
+                                Item {
+                                    visible: shouldShowSuggestions()
+                                    Layout.row: 4
+                                    Layout.column: 0
+                                    Layout.topMargin: 20
+                                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                                    Layout.preferredWidth: 28
+                                    Layout.preferredHeight: 28
+                                    Image {
+                                        id: stack
+                                        sourceSize: Qt.size(28, 28)
+                                        fillMode: Image.PreserveAspectFit
+                                        mipmap: true
+                                        visible: false
+                                        source: "qrc:/gpt4all/icons/stack.svg"
+                                    }
+
+                                    ColorOverlay {
+                                        anchors.fill: stack
+                                        source: stack
+                                        color: theme.conversationHeader
+                                    }
+                                }
+
+                                Item {
+                                    visible: shouldShowSuggestions()
+                                    Layout.row: 4
+                                    Layout.column: 1
+                                    Layout.topMargin: 20
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 38
+                                    RowLayout {
+                                        spacing: 5
+                                        anchors.left: parent.left
+                                        anchors.top: parent.top
+                                        anchors.bottom: parent.bottom
+
+                                        TextArea {
+                                            text: qsTr("Suggested follow-ups")
+                                            padding: 0
+                                            font.pixelSize: theme.fontSizeLarger
+                                            font.bold: true
+                                            color: theme.conversationHeader
+                                            enabled: false
+                                            focus: false
+                                            readOnly: true
+                                        }
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    visible: shouldShowSuggestions()
+                                    Layout.row: 5
+                                    Layout.column: 1
+                                    Layout.fillWidth: true
+                                    Layout.minimumHeight: 1
+                                    spacing: 10
+                                    Repeater {
+                                        model: currentChat.generatedQuestions
+                                        TextArea {
+                                            id: followUpText
+                                            Layout.fillWidth: true
+                                            Layout.alignment: Qt.AlignLeft
+                                            rightPadding: 40
+                                            topPadding: 10
+                                            leftPadding: 20
+                                            bottomPadding: 10
+                                            text: modelData
+                                            focus: false
+                                            readOnly: true
+                                            wrapMode: Text.WordWrap
+                                            hoverEnabled: !currentChat.responseInProgress
+                                            color: theme.textColor
+                                            font.pixelSize: theme.fontSizeLarge
+                                            background: Rectangle {
+                                                color: hovered ? theme.sourcesBackgroundHovered : theme.sourcesBackground
+                                                radius: 10
+                                            }
+                                            MouseArea {
+                                                id: maFollowUp
+                                                anchors.fill: parent
+                                                enabled: !currentChat.responseInProgress
+                                                onClicked: function() {
+                                                    var chat = window.currentChat
+                                                    var followup = modelData
+                                                    chat.stopGenerating()
+                                                    chat.newPromptResponsePair(followup);
+                                                    chat.prompt(followup,
+                                                                MySettings.promptTemplate,
+                                                                MySettings.maxLength,
+                                                                MySettings.topK,
+                                                                MySettings.topP,
+                                                                MySettings.minP,
+                                                                MySettings.temperature,
+                                                                MySettings.promptBatchSize,
+                                                                MySettings.repeatPenalty,
+                                                                MySettings.repeatPenaltyTokens)
+                                                }
+                                            }
+                                            Item {
+                                                anchors.right: parent.right
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                width: 40
+                                                height: 40
+                                                visible: !currentChat.responseInProgress
+                                                Image {
+                                                    id: plusImage
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    sourceSize.width: 20
+                                                    sourceSize.height: 20
+                                                    mipmap: true
+                                                    visible: false
+                                                    source: "qrc:/gpt4all/icons/plus.svg"
+                                                }
+
+                                                ColorOverlay {
+                                                    anchors.fill: plusImage
+                                                    source: plusImage
+                                                    color: theme.styledTextColor
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        color: "transparent"
+                                        radius: 10
+                                        Layout.preferredHeight: currentChat.responseInProgress ? 40 : 0
+                                        clip: true
+                                        ColumnLayout {
+                                            id: followUpLayout
+                                            anchors.fill: parent
+                                            Rectangle {
+                                                id: myRect1
+                                                Layout.preferredWidth: 0
+                                                Layout.minimumWidth: 0
+                                                Layout.maximumWidth: parent.width
+                                                height: 12
+                                                color: theme.sourcesBackgroundHovered
+                                            }
+
+                                            Rectangle {
+                                                id: myRect2
+                                                Layout.preferredWidth: 0
+                                                Layout.minimumWidth: 0
+                                                Layout.maximumWidth: parent.width
+                                                height: 12
+                                                color: theme.sourcesBackgroundHovered
+                                            }
+
+                                            SequentialAnimation {
+                                                id: followUpProgressAnimation
+                                                ParallelAnimation {
+                                                    PropertyAnimation {
+                                                        target: myRect1
+                                                        property: "Layout.preferredWidth"
+                                                        from: 0
+                                                        to: followUpLayout.width
+                                                        duration: 1000
+                                                    }
+                                                    PropertyAnimation {
+                                                        target: myRect2
+                                                        property: "Layout.preferredWidth"
+                                                        from: 0
+                                                        to: followUpLayout.width / 2
+                                                        duration: 1000
+                                                    }
+                                                }
+                                                SequentialAnimation {
+                                                    loops: Animation.Infinite
+                                                    ParallelAnimation {
+                                                        PropertyAnimation {
+                                                            target: myRect1
+                                                            property: "opacity"
+                                                            from: 1
+                                                            to: 0.2
+                                                            duration: 1500
+                                                        }
+                                                        PropertyAnimation {
+                                                            target: myRect2
+                                                            property: "opacity"
+                                                            from: 1
+                                                            to: 0.2
+                                                            duration: 1500
+                                                        }
+                                                    }
+                                                    ParallelAnimation {
+                                                        PropertyAnimation {
+                                                            target: myRect1
+                                                            property: "opacity"
+                                                            from: 0.2
+                                                            to: 1
+                                                            duration: 1500
+                                                        }
+                                                        PropertyAnimation {
+                                                            target: myRect2
+                                                            property: "opacity"
+                                                            from: 0.2
+                                                            to: 1
+                                                            duration: 1500
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            onVisibleChanged: {
+                                                if (visible)
+                                                    followUpProgressAnimation.start();
+                                            }
+                                        }
+
+                                        Behavior on Layout.preferredHeight {
+                                            NumberAnimation {
+                                                duration: 300
+                                                easing.type: Easing.InOutQuad
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
                             function scrollToEnd() {
-                                if (listView.shouldAutoScroll) {
-                                    listView.isAutoScrolling = true
-                                    listView.positionViewAtEnd()
-                                    listView.isAutoScrolling = false
-                                }
+                                listView.positionViewAtEnd()
                             }
 
-                            onContentYChanged: {
-                                if (!isAutoScrolling)
-                                    shouldAutoScroll = atYEnd
-                            }
-
-                            Component.onCompleted: {
-                                shouldAutoScroll = true
-                                positionViewAtEnd()
-                            }
-
-                            footer: Item {
-                                id: bottomPadding
-                                width: parent.width
-                                height: 0
+                            onContentHeightChanged: {
+                                if (atYEnd)
+                                    scrollToEnd()
                             }
                         }
                     }
                 }
-
             }
 
             Rectangle {

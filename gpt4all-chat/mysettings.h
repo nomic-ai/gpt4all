@@ -13,6 +13,18 @@
 #include <cstdint>
 #include <optional>
 
+namespace MySettingsEnums {
+    Q_NAMESPACE
+
+    enum class SuggestionMode {
+        LocalDocsOnly = 0,
+        On = 1,
+        Off = 2,
+    };
+    Q_ENUM_NS(SuggestionMode)
+}
+using namespace MySettingsEnums;
+
 class MySettings : public QObject
 {
     Q_OBJECT
@@ -39,6 +51,7 @@ class MySettings : public QObject
     Q_PROPERTY(QStringList deviceList MEMBER m_deviceList CONSTANT)
     Q_PROPERTY(QStringList embeddingsDeviceList MEMBER m_embeddingsDeviceList CONSTANT)
     Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
+    Q_PROPERTY(SuggestionMode suggestionMode READ suggestionMode WRITE setSuggestionMode NOTIFY suggestionModeChanged)
 
 public:
     static MySettings *globalInstance();
@@ -98,6 +111,10 @@ public:
     Q_INVOKABLE void setModelContextLength(const ModelInfo &info, int value, bool force = false);
     int modelGpuLayers(const ModelInfo &info) const;
     Q_INVOKABLE void setModelGpuLayers(const ModelInfo &info, int value, bool force = false);
+    QString modelChatNamePrompt(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelChatNamePrompt(const ModelInfo &info, const QString &value, bool force = false);
+    QString modelSuggestedFollowUpPrompt(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelSuggestedFollowUpPrompt(const ModelInfo &info, const QString &value, bool force = false);
 
     // Application settings
     int threadCount() const;
@@ -122,6 +139,8 @@ public:
     void setContextLength(int32_t value);
     int32_t gpuLayers() const;
     void setGpuLayers(int32_t value);
+    SuggestionMode suggestionMode() const;
+    void setSuggestionMode(SuggestionMode mode);
 
     // Release/Download settings
     QString lastVersionStarted() const;
@@ -171,6 +190,8 @@ Q_SIGNALS:
     void repeatPenaltyTokensChanged(const ModelInfo &info);
     void promptTemplateChanged(const ModelInfo &info);
     void systemPromptChanged(const ModelInfo &info);
+    void chatNamePromptChanged(const ModelInfo &info);
+    void suggestedFollowUpPromptChanged(const ModelInfo &info);
     void threadCountChanged();
     void saveChatsContextChanged();
     void serverChatChanged();
@@ -193,6 +214,7 @@ Q_SIGNALS:
     void networkUsageStatsActiveChanged();
     void attemptModelLoadChanged();
     void deviceChanged();
+    void suggestionModeChanged();
 
 private:
     QSettings m_settings;
