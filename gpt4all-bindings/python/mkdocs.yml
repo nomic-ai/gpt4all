@@ -14,6 +14,8 @@ nav:
     - 'Models' : 'gpt4all_desktop/models.md'
     - 'LocalDocs' : 'gpt4all_desktop/localdocs.md'
     - 'Settings' : 'gpt4all_desktop/settings.md'
+    - 'Cookbook':
+      - 'Local AI Chat with your Google Drive': 'gpt4all_desktop/cookbook/use-local-ai-models-to-privately-chat-with-google-drive.md'
     - 'Python SDK':
       - 'gpt4all_python/home.md'
       - 'Monitoring': 'gpt4all_python/monitoring.md'
