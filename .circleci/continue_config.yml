@@ -401,10 +401,10 @@ jobs:
             ~/Qt/Tools/CMake/bin/cmake --build . --target install
             ~/Qt/Tools/CMake/bin/cmake --build . --target package
             cp gpt4all-installer-* upload
+            tar -cvzf repository.tar.gz --directory=_CPack_Packages/Linux/IFW/gpt4all-installer-linux repository
+            cp repository.tar.gz upload
       - store_artifacts:
           path: build/upload
-      - store_artifacts:
-          path: build/_CPack_Packages/Linux/IFW/gpt4all-installer-linux/repository
 
   build-offline-chat-installer-windows:
     machine:
