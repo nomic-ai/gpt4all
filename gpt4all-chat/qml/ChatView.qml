@@ -881,9 +881,7 @@ Rectangle {
                                         color: {
                                             if (!currentChat.isServer)
                                                 return theme.textColor
-                                            if (name === qsTr("Response: "))
-                                                return theme.white
-                                            return theme.black
+                                            return theme.white
                                         }
                                         wrapMode: Text.WordWrap
                                         textFormat: TextEdit.PlainText
