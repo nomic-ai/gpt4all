@@ -63,6 +63,8 @@ markdown_extensions:
 extra_css:
     - css/custom.css
 
+
+
 plugins:
   - search
   - mkdocstrings:
@@ -78,7 +80,8 @@ plugins:
           font_family: Roboto
           description: GPT4All runs LLMs efficiently on your hardware
 
-
-  #- mkdocs-jupyter:
-  #    ignore_h1_titles: True
-  #    show_input: True
+extra:
+  generator: false
+  analytics:
+    provider: google
+    property: G-NPXC8BYHJV
