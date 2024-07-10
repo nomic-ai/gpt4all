@@ -13,6 +13,18 @@
 #include <cstdint>
 #include <optional>
 
+namespace MySettingsEnums {
+    Q_NAMESPACE
+
+    enum class SuggestionMode {
+        LocalDocsOnly = 0,
+        On = 1,
+        Off = 2,
+    };
+    Q_ENUM_NS(SuggestionMode)
+}
+using namespace MySettingsEnums;
+
 class MySettings : public QObject
 {
     Q_OBJECT
@@ -43,13 +55,6 @@ class MySettings : public QObject
 
 public:
     static MySettings *globalInstance();
-
-    enum SuggestionMode {
-        LocalDocsOnly = 0,
-        On = 1,
-        Off = 2
-    };
-    Q_ENUM(SuggestionMode)
 
     // Restore methods
     Q_INVOKABLE void restoreModelDefaults(const ModelInfo &info);

@@ -798,7 +798,8 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
         emit responseChanged(QString::fromStdString(m_response));
     }
 
-    if (MySettings::globalInstance()->suggestionMode() == MySettings::On || (!databaseResults.isEmpty() && MySettings::globalInstance()->suggestionMode() == MySettings::LocalDocsOnly))
+    SuggestionMode mode = MySettings::globalInstance()->suggestionMode();
+    if (mode == SuggestionMode::On || (!databaseResults.isEmpty() && mode == SuggestionMode::LocalDocsOnly))
         generateQuestions(elapsed);
     else
         emit responseStopped(elapsed);
