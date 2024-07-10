@@ -881,17 +881,19 @@ void ChatLLM::generateName()
     if (!isModelLoaded())
         return;
 
-    const std::string chatNamePrompt = MySettings::globalInstance()->modelChatNamePrompt(m_modelInfo).toStdString();
-    if (QString::fromStdString(chatNamePrompt).trimmed().isEmpty())
+    const QString chatNamePrompt = MySettings::globalInstance()->modelChatNamePrompt(m_modelInfo);
+    if (chatNamePrompt.trimmed().isEmpty()) {
+        qWarning() << "ChatLLM: not generating chat name because prompt is empty";
         return;
+    }
 
     auto promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
     auto promptFunc = std::bind(&ChatLLM::handleNamePrompt, this, std::placeholders::_1);
     auto responseFunc = std::bind(&ChatLLM::handleNameResponse, this, std::placeholders::_1, std::placeholders::_2);
     auto recalcFunc = std::bind(&ChatLLM::handleNameRecalculate, this, std::placeholders::_1);
     LLModel::PromptContext ctx = m_ctx;
-    m_llModelInfo.model->prompt(chatNamePrompt,
-                                promptTemplate.toStdString(), promptFunc, responseFunc, recalcFunc, ctx);
+    m_llModelInfo.model->prompt(chatNamePrompt.toStdString(), promptTemplate.toStdString(),
+                                promptFunc, responseFunc, recalcFunc, ctx);
     std::string trimmed = trim_whitespace(m_nameResponse);
     if (trimmed != m_nameResponse) {
         m_nameResponse = trimmed;
@@ -911,7 +913,6 @@ bool ChatLLM::handleNamePrompt(int32_t token)
     qDebug() << "name prompt" << m_llmThread.objectName() << token;
 #endif
     Q_UNUSED(token);
-    qt_noop();
     return !m_stopGenerating;
 }
 
@@ -935,7 +936,6 @@ bool ChatLLM::handleNameRecalculate(bool isRecalc)
     qDebug() << "name recalc" << m_llmThread.objectName() << isRecalc;
 #endif
     Q_UNUSED(isRecalc);
-    qt_noop();
     return true;
 }
 
@@ -945,7 +945,6 @@ bool ChatLLM::handleQuestionPrompt(int32_t token)
     qDebug() << "question prompt" << m_llmThread.objectName() << token;
 #endif
     Q_UNUSED(token);
-    qt_noop();
     return !m_stopGenerating;
 }
 
@@ -983,7 +982,6 @@ bool ChatLLM::handleQuestionRecalculate(bool isRecalc)
     qDebug() << "name recalc" << m_llmThread.objectName() << isRecalc;
 #endif
     Q_UNUSED(isRecalc);
-    qt_noop();
     return true;
 }
 
