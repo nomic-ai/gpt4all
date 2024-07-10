@@ -219,11 +219,11 @@ jobs:
             ~/Qt/Tools/CMake/CMake.app/Contents/bin/cmake --build . --target package
             mkdir upload
             cp gpt4all-installer-* upload
+            tar -cvzf repository.tar.gz --directory=_CPack_Packages/Darwin/IFW/gpt4all-installer-darwin repository
+            cp repository.tar.gz upload
       # persist the unsigned installer
       - store_artifacts:
           path: build/upload
-      - store_artifacts:
-          path: build/_CPack_Packages/Darwin/IFW/gpt4all-installer-darwin/repository
       # add workspace so signing jobs can connect & obtain dmg
       - persist_to_workspace:
           root: build
@@ -623,11 +623,12 @@ jobs:
             & "C:\Qt\Tools\Ninja\ninja.exe" package
             mkdir upload
             copy gpt4all-installer-win64.exe upload
+            Set-Location -Path "_CPack_Packages/win64/IFW/gpt4all-installer-win64"
+            Compress-Archive -Path 'repository' -DestinationPath 'repository.zip'
+            Copy-Item -Path 'repository.zip' -DestinationPath 'upload\repository.zip'
       - store_artifacts:
           path: build/upload
-      - store_artifacts:
-          path: build/_CPack_Packages/win64/IFW/gpt4all-installer-win64/repository
-            # add workspace so signing jobs can connect & obtain dmg
+      # add workspace so signing jobs can connect & obtain dmg
       - persist_to_workspace:
           root: build
           # specify path to only include components we want to persist
