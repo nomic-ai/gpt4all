@@ -955,23 +955,22 @@ bool ChatLLM::handleQuestionResponse(int32_t token, const std::string &response)
 #endif
     Q_UNUSED(token);
 
+    // add token to buffer
     m_questionResponse.append(response);
 
+    // match whole question sentences
+    static const QRegularExpression reQuestion(R"(\b(What|Where|How|Why|When|Who|Which|Whose|Whom)\b[^?]*\?)");
+
+    // extract all questions from response
     int lastMatchEnd = -1;
-
-    static const QRegularExpression reQuestion("(\\b(What|Where|How|Why|When|Who|Which|Whose|Whom)\\b[^?]*\\?)");
-    QRegularExpressionMatchIterator i = reQuestion.globalMatch(QString::fromStdString(m_questionResponse));
-
-    while (i.hasNext()) {
-        QRegularExpressionMatch match = i.next();
-        if (match.hasMatch()) {
-            lastMatchEnd = match.capturedEnd();
-            emit generatedQuestionFinished(match.captured(0));
-        }
+    for (const auto &match : reQuestion.globalMatch(m_questionResponse)) {
+        lastMatchEnd = match.capturedEnd();
+        emit generatedQuestionFinished(match.captured());
     }
 
+    // remove processed input from buffer
     if (lastMatchEnd != -1)
-        m_questionResponse.erase(0, lastMatchEnd);
+        m_questionResponse.erase(m_questionResponse.cbegin(), m_questionResponse.cbegin() + lastMatchEnd);
 
     return true;
 }
@@ -1000,7 +999,7 @@ void ChatLLM::generateQuestions(qint64 elapsed)
     }
 
     emit generatingQuestions();
-    m_questionResponse = std::string();
+    m_questionResponse.clear();
     auto promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
     auto promptFunc = std::bind(&ChatLLM::handleQuestionPrompt, this, std::placeholders::_1);
     auto responseFunc = std::bind(&ChatLLM::handleQuestionResponse, this, std::placeholders::_1, std::placeholders::_2);

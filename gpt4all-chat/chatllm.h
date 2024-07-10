@@ -225,7 +225,7 @@ private:
 
     std::string m_response;
     std::string m_nameResponse;
-    std::string m_questionResponse;
+    QString m_questionResponse;
     LLModelInfo m_llModelInfo;
     LLModelType m_llModelType;
     ModelInfo m_modelInfo;
