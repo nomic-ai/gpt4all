@@ -1412,7 +1412,7 @@ Rectangle {
                                             focus: false
                                             readOnly: true
                                             wrapMode: Text.WordWrap
-                                            hoverEnabled: true
+                                            hoverEnabled: !currentChat.responseInProgress
                                             color: theme.textColor
                                             font.pixelSize: theme.fontSizeLarge
                                             background: Rectangle {
@@ -1422,6 +1422,7 @@ Rectangle {
                                             MouseArea {
                                                 id: maFollowUp
                                                 anchors.fill: parent
+                                                enabled: !currentChat.responseInProgress
                                                 onClicked: function() {
                                                     var chat = window.currentChat
                                                     var followup = modelData
@@ -1444,6 +1445,7 @@ Rectangle {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 width: 40
                                                 height: 40
+                                                visible: !currentChat.responseInProgress
                                                 Image {
                                                     id: plusImage
                                                     anchors.verticalCenter: parent.verticalCenter
