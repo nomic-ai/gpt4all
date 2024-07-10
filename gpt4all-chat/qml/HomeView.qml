@@ -189,6 +189,9 @@ Rectangle {
                                     Accessible.role: Accessible.Paragraph
                                     Accessible.name: qsTr("Latest news")
                                     Accessible.description: qsTr("Latest news from GPT4All")
+                                    onLinkActivated: function(link) {
+                                        Qt.openUrlExternally(link);
+                                    }
                                 }
                             }
                         }
