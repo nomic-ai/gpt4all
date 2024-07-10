@@ -408,7 +408,7 @@ Rectangle {
                     }
                     delegate: ItemDelegate {
                         id: comboItemDelegate
-                        width: comboItemPopup.width
+                        width: comboItemPopup.width -20
                         contentItem: Text {
                             text: name
                             color: theme.textColor
@@ -417,7 +417,8 @@ Rectangle {
                             verticalAlignment: Text.AlignVCenter
                         }
                         background: Rectangle {
-                            color: highlighted ? theme.lightContrast : theme.darkContrast
+                            radius: 10
+                            color: highlighted ? theme.menuHighlightColor : theme.menuBackgroundColor
                         }
                         highlighted: comboBox.highlightedIndex === index
                     }
@@ -451,7 +452,9 @@ Rectangle {
                         }
 
                         background: Rectangle {
-                            color: theme.controlBackground
+                            border.color: theme.menuBorderColor
+                            border.width: 1
+                            color: theme.menuBackgroundColor
                             radius: 10
                         }
                     }
@@ -888,9 +891,7 @@ Rectangle {
                                         color: {
                                             if (!currentChat.isServer)
                                                 return theme.textColor
-                                            if (name === qsTr("Response: "))
-                                                return theme.white
-                                            return theme.black
+                                            return theme.white
                                         }
                                         wrapMode: Text.WordWrap
                                         textFormat: TextEdit.PlainText

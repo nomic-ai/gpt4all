@@ -45,7 +45,7 @@ ComboBox {
         }
     }
     delegate: ItemDelegate {
-        width: comboBox.width
+        width: comboBox.width -20
         contentItem: Text {
             text: modelData
             color: theme.textColor
@@ -54,7 +54,8 @@ ComboBox {
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
-            color: highlighted ? theme.lightContrast : theme.darkContrast
+            radius: 10
+            color: highlighted ? theme.menuHighlightColor : theme.menuBackgroundColor
         }
         highlighted: comboBox.highlightedIndex === index
     }
@@ -84,7 +85,9 @@ ComboBox {
         }
 
         background: Rectangle {
-            color: theme.controlBackground
+            color: theme.menuBackgroundColor//theme.controlBorder
+            border.color: theme.menuBorderColor //theme.controlBorder
+            border.width: 1
             radius: 10
         }
     }
