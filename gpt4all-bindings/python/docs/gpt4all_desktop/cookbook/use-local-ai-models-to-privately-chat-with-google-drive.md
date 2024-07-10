@@ -102,4 +102,4 @@ For advanced help, see [Setting up Google Drive for Desktop](https://support.goo
 
 ## How It Works
 
-Google Drive for Desktop syncs your Google Drive files to your computer, while LocalDocs maintains a database of these synced for use by your local LLM. As your Google Drive updates, LocalDocs will automatically detect file changes and get up to date. LocalDocs is powered by [Nomic Embedding](https://docs.nomic.ai/atlas/capabilities/embeddings) models which find semantically similar snippets from your files to enhance the context of your interactions.
+Google Drive for Desktop syncs your Google Drive files to your computer, while LocalDocs maintains a database of these synced files for use by your local LLM. As your Google Drive updates, LocalDocs will automatically detect file changes and get up to date. LocalDocs is powered by [Nomic Embedding](https://docs.nomic.ai/atlas/capabilities/embeddings) models which find semantically similar snippets from your files to enhance the context of your interactions.
