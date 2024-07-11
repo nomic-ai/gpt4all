@@ -94,7 +94,7 @@ Rectangle {
                         function onDiscoverInProgressChanged() {
                             if (ModelList.discoverInProgress) {
                                 discoverField.textBeingSearched = discoverField.text;
-                                discoverField.text = qsTr("Searching \u00B7 ") + discoverField.textBeingSearched;
+                                discoverField.text = qsTr("Searching \u00B7 %1").arg(discoverField.textBeingSearched);
                             } else {
                                 discoverField.text = discoverField.textBeingSearched;
                                 discoverField.textBeingSearched = "";
@@ -190,7 +190,7 @@ Rectangle {
                         rightPadding: 30
                         color: theme.textColor
                         text: {
-                            return qsTr("Sort by: ") + comboSort.displayText
+                            return qsTr("Sort by: %1").arg(comboSort.displayText)
                         }
                         font.pixelSize: theme.fontSizeLarger
                         verticalAlignment: Text.AlignVCenter
@@ -215,7 +215,7 @@ Rectangle {
                         rightPadding: 30
                         color: theme.textColor
                         text: {
-                            return qsTr("Sort dir: ") + comboSortDirection.displayText
+                            return qsTr("Sort dir: %1").arg(comboSortDirection.displayText)
                         }
                         font.pixelSize: theme.fontSizeLarger
                         verticalAlignment: Text.AlignVCenter
@@ -251,7 +251,7 @@ Rectangle {
                         rightPadding: 30
                         color: theme.textColor
                         text: {
-                            return qsTr("Limit: ") + comboLimit.displayText
+                            return qsTr("Limit: %1").arg(comboLimit.displayText)
                         }
                         font.pixelSize: theme.fontSizeLarger
                         verticalAlignment: Text.AlignVCenter
@@ -284,7 +284,7 @@ Rectangle {
             Layout.fillHeight: true
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
-            text: qsTr("Network error: could not retrieve http://gpt4all.io/models/models3.json")
+            text: qsTr("Network error: could not retrieve %1").arg("http://gpt4all.io/models/models3.json")
             font.pixelSize: theme.fontSizeLarge
             color: theme.mutedTextColor
         }
@@ -454,9 +454,7 @@ Rectangle {
                                             Layout.leftMargin: 20
                                             visible: downloadError !== ""
                                             textFormat: Text.StyledText
-                                            text: "<strong><font size=\"1\">"
-                                                  + qsTr("<a href=\"#error\">Error</a>")
-                                                  + "</strong></font>"
+                                            text: qsTr("<strong><font size=\"1\"><a href=\"#error\">Error</a></strong></font>")
                                             color: theme.textColor
                                             font.pixelSize: theme.fontSizeLarge
                                             linkColor: theme.textErrorColor
@@ -475,10 +473,7 @@ Rectangle {
                                             Layout.leftMargin: 20
                                             Layout.maximumWidth: 300
                                             textFormat: Text.StyledText
-                                            text: qsTr("<strong><font size=\"2\">WARNING: Not recommended for your hardware.")
-                                                  + qsTr(" Model requires more memory (") + ramrequired
-                                                  + qsTr(" GB) than your system has available (")
-                                                  + LLM.systemTotalRAMInGBString() + ").</strong></font>"
+                                            text: qsTr("<strong><font size=\"2\">WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).</strong></font>").arg(ramrequired).arg(LLM.systemTotalRAMInGBString())
                                             color: theme.textErrorColor
                                             font.pixelSize: theme.fontSizeLarge
                                             wrapMode: Text.WordWrap
@@ -630,7 +625,7 @@ Rectangle {
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
-                                        text: ramrequired >= 0 ? ramrequired + qsTr(" GB") : "?"
+                                        text: ramrequired >= 0 ? qsTr("%1 GB").arg(ramrequired) : qsTr("?")
                                         color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmall
                                         font.bold: true
@@ -652,7 +647,7 @@ Rectangle {
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
-                                        text: parameters !== "" ? parameters : "?"
+                                        text: parameters !== "" ? parameters : qsTr("?")
                                         color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmall
                                         font.bold: true

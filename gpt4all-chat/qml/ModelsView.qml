@@ -250,9 +250,7 @@ Rectangle {
                                             Layout.leftMargin: 20
                                             visible: downloadError !== ""
                                             textFormat: Text.StyledText
-                                            text: "<strong><font size=\"1\">"
-                                                  + qsTr("<a href=\"#error\">Error</a>")
-                                                  + "</strong></font>"
+                                            text: qsTr("<strong><font size=\"1\"><a href=\"#error\">Error</a></strong></font>")
                                             color: theme.textColor
                                             font.pixelSize: theme.fontSizeLarge
                                             linkColor: theme.textErrorColor
@@ -271,10 +269,7 @@ Rectangle {
                                             Layout.leftMargin: 20
                                             Layout.maximumWidth: 300
                                             textFormat: Text.StyledText
-                                            text: qsTr("<strong><font size=\"2\">WARNING: Not recommended for your hardware.")
-                                                  + qsTr(" Model requires more memory (") + ramrequired
-                                                  + qsTr(" GB) than your system has available (")
-                                                  + LLM.systemTotalRAMInGBString() + ").</strong></font>"
+                                            text: qsTr("<strong><font size=\"2\">WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).</strong></font>").arg(ramrequired).arg(LLM.systemTotalRAMInGBString())
                                             color: theme.textErrorColor
                                             font.pixelSize: theme.fontSizeLarge
                                             wrapMode: Text.WordWrap
@@ -426,7 +421,7 @@ Rectangle {
                                         color: theme.mutedDarkTextColor
                                     }
                                     Text {
-                                        text: ramrequired >= 0 ? ramrequired + qsTr(" GB") : "?"
+                                        text: ramrequired >= 0 ? qsTr("%1 GB").arg(ramrequired) : qsTr("?")
                                         color: theme.textColor
                                         font.pixelSize: theme.fontSizeSmall
                                         font.bold: true

@@ -44,9 +44,9 @@ configure_file(
 )
 
 if(LINUX)
-  find_package(Qt6 6.4 COMPONENTS Core Quick WaylandCompositor QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+  find_package(Qt6 6.4 COMPONENTS Core Quick WaylandCompositor QuickDialogs2 Svg HttpServer Sql Pdf LinguistTools REQUIRED)
 else()
-  find_package(Qt6 6.4 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf REQUIRED)
+  find_package(Qt6 6.4 COMPONENTS Core Quick QuickDialogs2 Svg HttpServer Sql Pdf LinguistTools REQUIRED)
 endif()
 
 # Get the Qt6Core target properties
@@ -224,6 +224,10 @@ qt_add_qml_module(chat
       icons/twitter.svg
       icons/up_down.svg
       icons/you.svg
+)
+
+qt_add_translations(chat
+    TS_FILES ${CMAKE_SOURCE_DIR}/translations/gpt4all_en.ts
 )
 
 set_target_properties(chat PROPERTIES

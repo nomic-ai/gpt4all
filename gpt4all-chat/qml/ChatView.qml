@@ -55,18 +55,18 @@ Rectangle {
         id: modelLoadingErrorPopup
         anchors.centerIn: parent
         shouldTimeOut: false
-        text: qsTr("<h3>Encountered an error loading model:</h3><br>")
-              + "<i>\"" + currentChat.modelLoadingError + "\"</i>"
-              + qsTr("<br><br>Model loading failures can happen for a variety of reasons, but the most common "
-                     + "causes include a bad file format, an incomplete or corrupted download, the wrong file "
-                     + "type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:"
-                     + "<br><ul>"
-                     + "<li>Ensure the model file has a compatible format and type"
-                     + "<li>Check the model file is complete in the download folder"
-                     + "<li>You can find the download folder in the settings dialog"
-                     + "<li>If you've sideloaded the model ensure the file is not corrupt by checking md5sum"
-                     + "<li>Read more about what models are supported in our <a href=\"https://docs.gpt4all.io/\">documentation</a> for the gui"
-                     + "<li>Check out our <a href=\"https://discord.gg/4M2QFmTt2k\">discord channel</a> for help")
+        text: qsTr("<h3>Encountered an error loading model:</h3><br>"
+              + "<i>\"%1\"</i>"
+              + "<br><br>Model loading failures can happen for a variety of reasons, but the most common "
+              + "causes include a bad file format, an incomplete or corrupted download, the wrong file "
+              + "type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:"
+              + "<br><ul>"
+              + "<li>Ensure the model file has a compatible format and type"
+              + "<li>Check the model file is complete in the download folder"
+              + "<li>You can find the download folder in the settings dialog"
+              + "<li>If you've sideloaded the model ensure the file is not corrupt by checking md5sum"
+              + "<li>Read more about what models are supported in our <a href=\"https://docs.gpt4all.io/\">documentation</a> for the gui"
+              + "<li>Check out our <a href=\"https://discord.gg/4M2QFmTt2k\">discord channel</a> for help").arg(currentChat.modelLoadingError);
     }
 
     PopupDialog {
@@ -107,7 +107,7 @@ Rectangle {
         for (var i = 0; i < chatModel.count; i++) {
             var item = chatModel.get(i)
             var string = item.name;
-            var isResponse = item.name === qsTr("Response: ")
+            var isResponse = item.name === "Response: "
             string += chatModel.get(i).value
             if (isResponse && item.stopped)
                 string += " <stopped>"
@@ -121,7 +121,7 @@ Rectangle {
         var str = "{\"conversation\": [";
         for (var i = 0; i < chatModel.count; i++) {
             var item = chatModel.get(i)
-            var isResponse = item.name === qsTr("Response: ")
+            var isResponse = item.name === "Response: "
             str += "{\"content\": ";
             str += JSON.stringify(item.value)
             str += ", \"role\": \"" + (isResponse ? "assistant" : "user") + "\"";
@@ -374,9 +374,9 @@ Rectangle {
                                     if (!currentModelInstalled())
                                         return qsTr("Not found: %1").arg(currentModelName())
                                     if (currentChat.modelLoadingPercentage === 0.0)
-                                        return qsTr("Reload \u00B7 ") + currentModelName()
+                                        return qsTr("Reload \u00B7 %1").arg(currentModelName())
                                     if (currentChat.isCurrentlyLoading)
-                                        return qsTr("Loading \u00B7 ") + currentModelName()
+                                        return qsTr("Loading \u00B7 %1").arg(currentModelName())
                                     return currentModelName()
                                 }
                                 font.pixelSize: theme.fontSizeLarger
@@ -705,7 +705,7 @@ Rectangle {
                                 }
                             }
 
-                            text: qsTr("Load \u00B7 ") + defaultModel + qsTr(" (default) \u2192");
+                            text: qsTr("Load \u00B7 %1 (default) \u2192").arg(defaultModel);
                             onClicked: {
                                 var i = comboBox.find(MySettings.userDefaultModel)
                                 if (i !== -1) {
@@ -812,7 +812,7 @@ Rectangle {
                                         fillMode: Image.PreserveAspectFit
                                         mipmap: true
                                         visible: false
-                                        source: name !== qsTr("Response: ") ? "qrc:/gpt4all/icons/you.svg" : "qrc:/gpt4all/icons/gpt4all_transparent.svg"
+                                        source: name !== "Response: " ? "qrc:/gpt4all/icons/you.svg" : "qrc:/gpt4all/icons/gpt4all_transparent.svg"
                                     }
 
                                     ColorOverlay {
@@ -845,7 +845,7 @@ Rectangle {
                                         anchors.bottom: parent.bottom
 
                                         TextArea {
-                                            text: name === qsTr("Response: ") ? qsTr("GPT4All") : qsTr("You")
+                                            text: name === "Response: " ? qsTr("GPT4All") : qsTr("You")
                                             padding: 0
                                             font.pixelSize: theme.fontSizeLarger
                                             font.bold: true
@@ -855,7 +855,7 @@ Rectangle {
                                             readOnly: true
                                         }
                                         Text {
-                                            visible: name === qsTr("Response: ")
+                                            visible: name === "Response: "
                                             font.pixelSize: theme.fontSizeLarger
                                             text: currentModelName()
                                             color: theme.mutedTextColor
@@ -870,8 +870,8 @@ Rectangle {
                                                         return qsTr("recalculating context ...");
                                                     switch (currentChat.responseState) {
                                                     case Chat.ResponseStopped: return qsTr("response stopped ...");
-                                                    case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: ") + currentChat.collectionList.join(", ") + " ...";
-                                                    case Chat.LocalDocsProcessing: return qsTr("searching localdocs: ") + currentChat.collectionList.join(", ") + " ...";
+                                                    case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: %1 ...").arg(currentChat.collectionList.join(", "));
+                                                    case Chat.LocalDocsProcessing: return qsTr("searching localdocs: %1 ...").arg(currentChat.collectionList.join(", "));
                                                     case Chat.PromptProcessing: return qsTr("processing ...")
                                                     case Chat.ResponseGeneration: return qsTr("generating response ...");
                                                     case Chat.GeneratingQuestions: return qsTr("generating questions ...");
@@ -1005,7 +1005,7 @@ Rectangle {
 
                                         Accessible.role: Accessible.Paragraph
                                         Accessible.name: text
-                                        Accessible.description: name === qsTr("Response: ") ? "The response by the model" : "The prompt by the user"
+                                        Accessible.description: name === "Response: " ? "The response by the model" : "The prompt by the user"
                                     }
 
                                     ThumbsDownDialog {
@@ -1031,7 +1031,7 @@ Rectangle {
                                     Column {
                                         Layout.alignment: Qt.AlignRight
                                         Layout.rightMargin: 15
-                                        visible: name === qsTr("Response: ") &&
+                                        visible: name === "Response: " &&
                                                  (!currentResponse || !currentChat.responseInProgress) && MySettings.networkIsActive
                                         spacing: 10
 
@@ -1692,7 +1692,7 @@ Rectangle {
                             var listElement = chatModel.get(index);
                             currentChat.regenerateResponse()
                             if (chatModel.count) {
-                                if (listElement.name === qsTr("Response: ")) {
+                                if (listElement.name === "Response: ") {
                                     chatModel.updateCurrentResponse(index, true);
                                     chatModel.updateStopped(index, false);
                                     chatModel.updateThumbsUpState(index, false);
@@ -1766,7 +1766,7 @@ Rectangle {
                 padding: 15
                 topPadding: 8
                 bottomPadding: 8
-                text: qsTr("Reload \u00B7 ") + currentChat.modelInfo.name
+                text: qsTr("Reload \u00B7 %1").arg(currentChat.modelInfo.name)
                 fontPixelSize: theme.fontSizeSmall
                 Accessible.description: qsTr("Reloads the model")
             }

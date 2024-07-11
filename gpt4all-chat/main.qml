@@ -20,7 +20,7 @@ Window {
     minimumWidth: 1280
     minimumHeight: 720
     visible: true
-    title: qsTr("GPT4All v") + Qt.application.version
+    title: qsTr("GPT4All v%1").arg(Qt.application.version)
 
     Settings {
         property alias x: window.x
@@ -108,14 +108,14 @@ Window {
         shouldShowBusy: false
         closePolicy: Popup.NoAutoClose
         modal: true
-        text: qsTr("<h3>Encountered an error starting up:</h3><br>")
-              + qsTr("<i>\"Incompatible hardware detected.\"</i>")
-              + qsTr("<br><br>Unfortunately, your CPU does not meet the minimal requirements to run ")
-              + qsTr("this program. In particular, it does not support AVX intrinsics which this ")
-              + qsTr("program requires to successfully run a modern large language model. ")
-              + qsTr("The only solution at this time is to upgrade your hardware to a more modern CPU.")
-              + qsTr("<br><br>See here for more information: <a href=\"https://en.wikipedia.org/wiki/Advanced_Vector_Extensions\">")
-              + qsTr("https://en.wikipedia.org/wiki/Advanced_Vector_Extensions</a>")
+        text: qsTr("<h3>Encountered an error starting up:</h3><br>"
+              + "<i>\"Incompatible hardware detected.\"</i>"
+              + "<br><br>Unfortunately, your CPU does not meet the minimal requirements to run "
+              + "this program. In particular, it does not support AVX intrinsics which this "
+              + "program requires to successfully run a modern large language model. "
+              + "The only solution at this time is to upgrade your hardware to a more modern CPU."
+              + "<br><br>See here for more information: <a href=\"https://en.wikipedia.org/wiki/Advanced_Vector_Extensions\">"
+              + "https://en.wikipedia.org/wiki/Advanced_Vector_Extensions</a>");
     }
 
     PopupDialog {
@@ -124,12 +124,12 @@ Window {
         shouldTimeOut: false
         shouldShowBusy: false
         modal: true
-        text: qsTr("<h3>Encountered an error starting up:</h3><br>")
-              + qsTr("<i>\"Inability to access settings file.\"</i>")
-              + qsTr("<br><br>Unfortunately, something is preventing the program from accessing ")
-              + qsTr("the settings file. This could be caused by incorrect permissions in the local ")
-              + qsTr("app config directory where the settings file is located. ")
-              + qsTr("Check out our <a href=\"https://discord.gg/4M2QFmTt2k\">discord channel</a> for help.")
+        text: qsTr("<h3>Encountered an error starting up:</h3><br>"
+              + "<i>\"Inability to access settings file.\"</i>"
+              + "<br><br>Unfortunately, something is preventing the program from accessing "
+              + "the settings file. This could be caused by incorrect permissions in the local "
+              + "app config directory where the settings file is located. "
+              + "Check out our <a href=\"https://discord.gg/4M2QFmTt2k\">discord channel</a> for help.")
     }
 
     StartupDialog {
