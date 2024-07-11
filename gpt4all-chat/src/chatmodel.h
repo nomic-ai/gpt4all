@@ -16,6 +16,24 @@
 #include <Qt>
 #include <QtGlobal>
 
+struct PromptAttachment {
+    Q_GADGET
+    Q_PROPERTY(QUrl url MEMBER url)
+    Q_PROPERTY(QString file MEMBER file)
+
+public:
+    QUrl url;
+    QString file;
+    bool operator==(const PromptAttachment &other) const {
+        return url == other.url &&
+               file == other.file;
+    }
+    bool operator!=(const PromptAttachment &other) const {
+        return !(*this == other);
+    }
+};
+Q_DECLARE_METATYPE(PromptAttachment)
+
 struct ChatItem
 {
     Q_GADGET
@@ -30,6 +48,7 @@ struct ChatItem
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
     Q_PROPERTY(QList<ResultInfo> sources MEMBER sources)
     Q_PROPERTY(QList<ResultInfo> consolidatedSources MEMBER consolidatedSources)
+    Q_PROPERTY(QList<PromptAttachment> promptAttachments MEMBER promptAttachments);
 
 public:
     // TODO: Maybe we should include the model name here as well as timestamp?
@@ -40,6 +59,7 @@ public:
     QString newResponse;
     QList<ResultInfo> sources;
     QList<ResultInfo> consolidatedSources;
+    QList<PromptAttachment> promptAttachments;
     bool currentResponse = false;
     bool stopped = false;
     bool thumbsUpState = false;
@@ -66,7 +86,8 @@ public:
         ThumbsUpStateRole,
         ThumbsDownStateRole,
         SourcesRole,
-        ConsolidatedSourcesRole
+        ConsolidatedSourcesRole,
+        PromptAttachmentsRole
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
@@ -104,6 +125,8 @@ public:
                 return QVariant::fromValue(item.sources);
             case ConsolidatedSourcesRole:
                 return QVariant::fromValue(item.consolidatedSources);
+            case PromptAttachmentsRole:
+                return QVariant::fromValue(item.promptAttachments);
         }
 
         return QVariant();
@@ -123,14 +146,29 @@ public:
         roles[ThumbsDownStateRole] = "thumbsDownState";
         roles[SourcesRole] = "sources";
         roles[ConsolidatedSourcesRole] = "consolidatedSources";
+        roles[PromptAttachmentsRole] = "promptAttachments";
         return roles;
     }
 
-    void appendPrompt(const QString &name, const QString &value)
+    void appendPrompt(const QString &name, const QString &value, const QList<QUrl> &attachedUrls)
     {
         ChatItem item;
         item.name = name;
         item.value = value;
+
+        for (const QUrl &url : attachedUrls) {
+            Q_ASSERT(url.isLocalFile());
+            const QString localFilePath = url.toLocalFile();
+            const QFileInfo info(localFilePath);
+            Q_ASSERT(info.suffix() == "xlsx"); // We only support excel right now
+            Q_ASSERT(info.exists());
+            Q_ASSERT(info.isFile());
+            PromptAttachment attached;
+            attached.url = url;
+            attached.file = info.fileName();
+            item.promptAttachments << attached;
+        }
+
         beginInsertRows(QModelIndex(), m_chatItems.size(), m_chatItems.size());
         m_chatItems.append(item);
         endInsertRows();

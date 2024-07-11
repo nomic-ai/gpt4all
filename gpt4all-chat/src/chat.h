@@ -76,10 +76,9 @@ public:
     bool  isModelLoaded()          const { return m_modelLoadingPercentage == 1.0f; }
     bool  isCurrentlyLoading()     const { return m_modelLoadingPercentage > 0.0f && m_modelLoadingPercentage < 1.0f; }
     float modelLoadingPercentage() const { return m_modelLoadingPercentage; }
-    Q_INVOKABLE void prompt(const QString &prompt);
+    Q_INVOKABLE void prompt(const QString &prompt, const QList<QUrl> &attachedUrls = QList<QUrl>());
     Q_INVOKABLE void regenerateResponse();
     Q_INVOKABLE void stopGenerating();
-    Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
 
     QList<ResultInfo> databaseResults() const { return m_databaseResults; }
 
@@ -124,7 +123,7 @@ public:
     QList<QString> generatedQuestions() const { return m_generatedQuestions; }
 
 public Q_SLOTS:
-    void serverNewPromptResponsePair(const QString &prompt);
+    void serverNewPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls = QList<QUrl>());
 
 Q_SIGNALS:
     void idChanged(const QString &id);
@@ -172,6 +171,9 @@ private Q_SLOTS:
     void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
     void handleModelInfoChanged(const ModelInfo &modelInfo);
     void handleTrySwitchContextOfLoadedModelCompleted(int value);
+
+private:
+    void newPromptResponsePairInternal(const QString &prompt, const QList<QUrl> &attachedUrls);
 
 private:
     QString m_id;

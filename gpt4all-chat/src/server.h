@@ -32,7 +32,7 @@ public Q_SLOTS:
     void start();
 
 Q_SIGNALS:
-    void requestServerNewPromptResponsePair(const QString &prompt);
+    void requestServerNewPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls = QList<QUrl>());
 
 private:
     auto handleCompletionRequest(const CompletionRequest &request) -> std::pair<QHttpServerResponse, std::optional<QJsonObject>>;

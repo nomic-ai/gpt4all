@@ -4,6 +4,7 @@
 #include "mysettings.h"
 #include "network.h"
 #include "server.h"
+#include "xlsxtomd.h"
 
 #include <QDataStream>
 #include <QDateTime>
@@ -124,10 +125,28 @@ void Chat::resetResponseState()
     emit responseStateChanged();
 }
 
-void Chat::prompt(const QString &prompt)
+void Chat::prompt(const QString &prompt, const QList<QUrl> &attachedUrls)
 {
+    newPromptResponsePairInternal(prompt, attachedUrls);
+    emit resetResponseRequested();
+
     resetResponseState();
-    emit promptRequested(m_collections, prompt);
+
+    QStringList attachedContexts;
+    for (const QUrl &url : attachedUrls) {
+        Q_ASSERT(url.isLocalFile());
+        const QString localFilePath = url.toLocalFile();
+        const QFileInfo info(localFilePath);
+        Q_ASSERT(info.suffix() == "xlsx"); // We only support excel right now
+        Q_ASSERT(info.exists());
+        Q_ASSERT(info.isFile());
+        attachedContexts << XLSXToMD::toMarkdown(info.canonicalFilePath());
+    }
+
+    if (!attachedContexts.isEmpty())
+        emit promptRequested(m_collections, attachedContexts.join("\n\n") + "\n\n" + prompt);
+    else
+        emit promptRequested(m_collections, prompt);
 }
 
 void Chat::regenerateResponse()
@@ -234,21 +253,17 @@ void Chat::setModelInfo(const ModelInfo &modelInfo)
     emit modelChangeRequested(modelInfo);
 }
 
-void Chat::newPromptResponsePair(const QString &prompt)
+// the server needs to block until response is reset, so it calls resetResponse on its own m_llmThread
+void Chat::serverNewPromptResponsePair(const QString &prompt, const QList<QUrl> &attachedUrls)
 {
-    resetResponseState();
-    m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
-    m_chatModel->appendPrompt("Prompt: ", prompt);
-    m_chatModel->appendResponse("Response: ", QString());
-    emit resetResponseRequested();
+    newPromptResponsePairInternal(prompt, attachedUrls);
 }
 
-// the server needs to block until response is reset, so it calls resetResponse on its own m_llmThread
-void Chat::serverNewPromptResponsePair(const QString &prompt)
+void Chat::newPromptResponsePairInternal(const QString &prompt, const QList<QUrl> &attachedUrls)
 {
     resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
-    m_chatModel->appendPrompt("Prompt: ", prompt);
+    m_chatModel->appendPrompt("Prompt: ", prompt, attachedUrls);
     m_chatModel->appendResponse("Response: ", QString());
 }
 

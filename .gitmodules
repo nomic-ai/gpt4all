@@ -11,3 +11,6 @@
 [submodule "gpt4all-chat/deps/fmt"]
 	path = gpt4all-chat/deps/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "gpt4all-chat/deps/QXlsx"]
+	path = gpt4all-chat/deps/QXlsx
+	url = https://github.com/QtExcel/QXlsx.git

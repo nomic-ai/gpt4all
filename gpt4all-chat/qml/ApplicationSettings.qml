@@ -394,11 +394,14 @@ MySettingsTab {
                     }
                 }
             }
+            MyFolderDialog {
+                id: folderDialog
+            }
             MySettingsButton {
                 text: qsTr("Browse")
                 Accessible.description: qsTr("Choose where to save model files")
                 onClicked: {
-                    openFolderDialog("file://" + MySettings.modelPath, function(selectedFolder) {
+                    folderDialog.openFolderDialog("file://" + MySettings.modelPath, function(selectedFolder) {
                         MySettings.modelPath = selectedFolder
                     })
                 }

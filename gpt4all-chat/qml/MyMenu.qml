@@ -22,12 +22,30 @@ Menu {
 
     contentItem: Rectangle {
         implicitWidth: myListView.contentWidth
-        implicitHeight: myListView.contentHeight
+        implicitHeight: (myTitle.visible ? myTitle.contentHeight + 10: 0) + myListView.contentHeight
         color: "transparent"
+
+        Text {
+            id: myTitle
+            visible: menu.title !== ""
+            text: menu.title
+            anchors.margins: 10
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.left: parent.left
+            leftPadding: 15
+            rightPadding: 10
+            padding: 5
+            color: theme.styledTextColor
+            font.pixelSize: theme.fontSizeSmall
+        }
         ListView {
             id: myListView
             anchors.margins: 10
-            anchors.fill: parent
+            anchors.top: title.bottom
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.left: parent.left
             implicitHeight: contentHeight
             model: menu.contentModel
             interactive: Window.window

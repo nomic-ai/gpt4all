@@ -3,6 +3,7 @@ import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
+import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import chatlistmodel
@@ -893,6 +894,64 @@ Rectangle {
                                     Layout.row: 1
                                     Layout.column: 1
                                     Layout.fillWidth: true
+                                    Flow {
+                                        id: attachedUrlsFlow
+                                        Layout.fillWidth: true
+                                        spacing: 10
+                                        visible: promptAttachments.length !== 0
+                                        Repeater {
+                                            model: promptAttachments
+
+                                            delegate: Rectangle {
+                                                width: attachmentFileIcon.width + attachmentFileText.width + 20
+                                                height: 50
+                                                radius: 5
+                                                color: theme.attachmentBackground
+                                                border.color: theme.controlBorder
+
+                                                Row {
+                                                    spacing: 5
+                                                    anchors.fill: parent
+                                                    anchors.margins: 5
+
+                                                    Item {
+                                                        id: attachmentFileIcon
+                                                        width: 40
+                                                        height: 40
+                                                        Image {
+                                                            id: fileIcon
+                                                            anchors.fill: parent
+                                                            visible: false
+                                                            sourceSize.width: 40
+                                                            sourceSize.height: 40
+                                                            mipmap: true
+                                                            source: {
+                                                                return "qrc:/gpt4all/icons/file-xls.svg"
+                                                            }
+                                                        }
+                                                        ColorOverlay {
+                                                            anchors.fill: fileIcon
+                                                            source: fileIcon
+                                                            color: theme.textColor
+                                                        }
+                                                    }
+
+                                                    Text {
+                                                        id: attachmentFileText
+                                                        height: 40
+                                                        text: modelData.file
+                                                        color: theme.textColor
+                                                        horizontalAlignment: Text.AlignHLeft
+                                                        verticalAlignment: Text.AlignVCenter
+                                                        font.pixelSize: theme.fontSizeSmall
+                                                        font.bold: true
+                                                        wrapMode: Text.WrapAnywhere
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     TextArea {
                                         id: myTextArea
                                         Layout.fillWidth: true
@@ -1434,17 +1493,7 @@ Rectangle {
                                                     var chat = window.currentChat
                                                     var followup = modelData
                                                     chat.stopGenerating()
-                                                    chat.newPromptResponsePair(followup);
-                                                    chat.prompt(followup,
-                                                                MySettings.promptTemplate,
-                                                                MySettings.maxLength,
-                                                                MySettings.topK,
-                                                                MySettings.topP,
-                                                                MySettings.minP,
-                                                                MySettings.temperature,
-                                                                MySettings.promptBatchSize,
-                                                                MySettings.repeatPenalty,
-                                                                MySettings.repeatPenaltyTokens)
+                                                    chat.prompt(followup)
                                                 }
                                             }
                                             Item {
@@ -1825,170 +1874,338 @@ Rectangle {
                 opacity: 0.1
             }
 
-            ScrollView {
+            ListModel {
+                id: attachmentModel
+
+                function getAttachmentUrls() {
+                    var urls = [];
+                    for (var i = 0; i < attachmentModel.count; i++) {
+                        var item = attachmentModel.get(i);
+                        urls.push(item.url);
+                    }
+                    return urls;
+                }
+            }
+
+            Rectangle {
                 id: textInputView
+                color: theme.controlBackground
+                border.width: 1
+                border.color: theme.controlBorder
+                radius: 10
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.margins: 30
                 anchors.leftMargin: Math.max((parent.width - 1310) / 2, 30)
                 anchors.rightMargin: Math.max((parent.width - 1310) / 2, 30)
-                height: Math.min(contentHeight, 200)
+                height: textInputViewLayout.implicitHeight
                 visible: !currentChat.isServer && ModelList.selectableModels.count !== 0
-                MyTextArea {
-                    id: textInput
-                    color: theme.textColor
-                    topPadding: 15
-                    bottomPadding: 15
-                    leftPadding: 20
-                    rightPadding: 40
-                    enabled: currentChat.isModelLoaded && !currentChat.isServer
-                    onEnabledChanged: {
+
+                MouseArea {
+                    id: textInputViewMouseArea
+                    anchors.fill: parent
+                    onClicked: (mouse) => {
                         if (textInput.enabled)
                             textInput.forceActiveFocus();
                     }
-                    font.pixelSize: theme.fontSizeLarger
-                    placeholderText: currentChat.isModelLoaded ? qsTr("Send a message...") : qsTr("Load a model to continue...")
-                    Accessible.role: Accessible.EditableText
-                    Accessible.name: placeholderText
-                    Accessible.description: qsTr("Send messages/prompts to the model")
-                    Keys.onReturnPressed: (event)=> {
-                                              if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
-                                              event.accepted = false;
-                                              else {
-                                                  editingFinished();
-                                                  sendMessage()
-                                              }
-                                          }
-                    function sendMessage() {
-                        if (textInput.text === "" || currentChat.responseInProgress || currentChat.restoringFromText)
-                            return
+                }
 
-                        currentChat.stopGenerating()
-                        currentChat.newPromptResponsePair(textInput.text);
-                        currentChat.prompt(textInput.text,
-                                           MySettings.promptTemplate,
-                                           MySettings.maxLength,
-                                           MySettings.topK,
-                                           MySettings.topP,
-                                           MySettings.minP,
-                                           MySettings.temperature,
-                                           MySettings.promptBatchSize,
-                                           MySettings.repeatPenalty,
-                                           MySettings.repeatPenaltyTokens)
-                        textInput.text = ""
-                    }
+                GridLayout {
+                    id: textInputViewLayout
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    rows: 2
+                    columns: 3
+                    rowSpacing: 0
+                    columnSpacing: 0
+                    Flow {
+                        id: attachmentsFlow
+                        visible: attachmentModel.count
+                        Layout.row: 0
+                        Layout.column: 1
+                        Layout.topMargin: 15
+                        Layout.leftMargin: 15
+                        Layout.rightMargin: 15
+                        spacing: 10
 
-                    MouseArea {
-                        id: textInputMouseArea
-                        anchors.fill: parent
-                        acceptedButtons: Qt.RightButton
+                        Repeater {
+                            model: attachmentModel
 
-                        onClicked: (mouse) => {
-                            if (mouse.button === Qt.RightButton) {
-                                textInputContextMenu.x = textInputMouseArea.mouseX
-                                textInputContextMenu.y = textInputMouseArea.mouseY
-                                textInputContextMenu.open()
+                            Rectangle {
+                                width: attachmentFileIcon2.width + attachmentFileText2.width + 40
+                                height: 50
+                                radius: 5
+                                color: theme.attachmentBackground
+                                border.color: theme.controlBorder
+
+                                Row {
+                                    spacing: 5
+                                    anchors.fill: parent
+                                    anchors.margins: 5
+
+                                    Item {
+                                        id: attachmentFileIcon2
+                                        width: 40
+                                        height: 40
+                                        Image {
+                                            id: fileIcon2
+                                            anchors.fill: parent
+                                            visible: false
+                                            sourceSize.width: 40
+                                            sourceSize.height: 40
+                                            mipmap: true
+                                            source: {
+                                                return "qrc:/gpt4all/icons/file-xls.svg"
+                                            }
+                                        }
+                                        ColorOverlay {
+                                            anchors.fill: fileIcon2
+                                            source: fileIcon2
+                                            color: theme.textColor
+                                        }
+                                    }
+
+                                    Text {
+                                        id: attachmentFileText2
+                                        height: 40
+                                        text: model.file
+                                        color: theme.textColor
+                                        horizontalAlignment: Text.AlignHLeft
+                                        verticalAlignment: Text.AlignVCenter
+                                        font.pixelSize: theme.fontSizeSmall
+                                        font.bold: true
+                                        wrapMode: Text.WrapAnywhere
+                                    }
+                                }
+
+                                MyMiniButton {
+                                    id: removeAttachmentButton
+                                    anchors.top: parent.top
+                                    anchors.right: parent.right
+                                    backgroundColor: theme.textColor
+                                    backgroundColorHovered: theme.iconBackgroundDark
+                                    source: "qrc:/gpt4all/icons/close.svg"
+                                    onClicked: {
+                                        attachmentModel.remove(index)
+                                        if (textInput.enabled)
+                                            textInput.forceActiveFocus();
+                                    }
+                                }
                             }
                         }
                     }
 
-                    MyMenu {
-                        id: textInputContextMenu
-                        MyMenuItem {
-                            text: qsTr("Cut")
-                            enabled: textInput.selectedText !== ""
-                            height: enabled ? implicitHeight : 0
-                            onTriggered: textInput.cut()
+                    MyToolButton {
+                        id: plusButton
+                        Layout.row: 1
+                        Layout.column: 0
+                        Layout.leftMargin: 15
+                        Layout.alignment: Qt.AlignCenter
+                        backgroundColor: theme.conversationInputButtonBackground
+                        backgroundColorHovered: theme.conversationInputButtonBackgroundHovered
+                        imageWidth: theme.fontSizeLargest
+                        imageHeight: theme.fontSizeLargest
+                        visible: !currentChat.isServer && ModelList.selectableModels.count !== 0 && currentChat.isModelLoaded
+                        enabled: !currentChat.responseInProgress
+                        source: "qrc:/gpt4all/icons/paperclip.svg"
+                        Accessible.name: qsTr("Add media")
+                        Accessible.description: qsTr("Adds media to the prompt")
+
+                        onClicked: (mouse) => {
+                                       addMediaMenu.open()
+                                   }
+                    }
+
+                    ScrollView {
+                        id: textInputScrollView
+                        Layout.row: 1
+                        Layout.column: 1
+                        Layout.fillWidth: true
+                        Layout.leftMargin: plusButton.visible ? 5 : 15
+                        Layout.margins: 15
+                        height: Math.min(contentHeight, 200)
+
+                        MyTextArea {
+                            id: textInput
+                            color: theme.textColor
+                            padding: 0
+                            enabled: currentChat.isModelLoaded && !currentChat.isServer
+                            onEnabledChanged: {
+                                if (textInput.enabled)
+                                    textInput.forceActiveFocus();
+                            }
+                            font.pixelSize: theme.fontSizeLarger
+                            placeholderText: currentChat.isModelLoaded ? qsTr("Send a message...") : qsTr("Load a model to continue...")
+                            Accessible.role: Accessible.EditableText
+                            Accessible.name: placeholderText
+                            Accessible.description: qsTr("Send messages/prompts to the model")
+                            Keys.onReturnPressed: (event)=> {
+                                                      if (event.modifiers & Qt.ControlModifier || event.modifiers & Qt.ShiftModifier)
+                                                      event.accepted = false;
+                                                      else {
+                                                          editingFinished();
+                                                          sendMessage()
+                                                      }
+                                                  }
+                            function sendMessage() {
+                                if ((textInput.text === "" && attachmentModel.count === 0) || currentChat.responseInProgress || currentChat.restoringFromText)
+                                    return
+
+                                currentChat.stopGenerating()
+                                currentChat.prompt(textInput.text, attachmentModel.getAttachmentUrls())
+                                attachmentModel.clear();
+                                textInput.text = ""
+                            }
+
+                            MouseArea {
+                                id: textInputMouseArea
+                                anchors.fill: parent
+                                acceptedButtons: Qt.RightButton
+
+                                onClicked: (mouse) => {
+                                               if (mouse.button === Qt.RightButton) {
+                                                   textInputContextMenu.x = textInputMouseArea.mouseX
+                                                   textInputContextMenu.y = textInputMouseArea.mouseY
+                                                   textInputContextMenu.open()
+                                               }
+                                           }
+                            }
+
+                            background: Rectangle {
+                                implicitWidth: 150
+                                color: "transparent"
+                            }
+
+                            MyMenu {
+                                id: textInputContextMenu
+                                MyMenuItem {
+                                    text: qsTr("Cut")
+                                    enabled: textInput.selectedText !== ""
+                                    height: enabled ? implicitHeight : 0
+                                    onTriggered: textInput.cut()
+                                }
+                                MyMenuItem {
+                                    text: qsTr("Copy")
+                                    enabled: textInput.selectedText !== ""
+                                    height: enabled ? implicitHeight : 0
+                                    onTriggered: textInput.copy()
+                                }
+                                MyMenuItem {
+                                    text: qsTr("Paste")
+                                    onTriggered: textInput.paste()
+                                }
+                                MyMenuItem {
+                                    text: qsTr("Select All")
+                                    onTriggered: textInput.selectAll()
+                                }
+                            }
                         }
-                        MyMenuItem {
-                            text: qsTr("Copy")
-                            enabled: textInput.selectedText !== ""
-                            height: enabled ? implicitHeight : 0
-                            onTriggered: textInput.copy()
+                    }
+
+                    Row {
+                        Layout.row: 1
+                        Layout.column: 2
+                        Layout.rightMargin: 15
+                        Layout.alignment: Qt.AlignCenter
+
+                        MyToolButton {
+                            id: stopButton
+                            backgroundColor: theme.conversationInputButtonBackground
+                            backgroundColorHovered: theme.conversationInputButtonBackgroundHovered
+                            visible: currentChat.responseInProgress && !currentChat.isServer
+
+                            background: Item {
+                                anchors.fill: parent
+                                Image {
+                                    id: stopImage
+                                    anchors.centerIn: parent
+                                    visible: false
+                                    fillMode: Image.PreserveAspectFit
+                                    mipmap: true
+                                    sourceSize.width: theme.fontSizeLargest
+                                    sourceSize.height: theme.fontSizeLargest
+                                    source: "qrc:/gpt4all/icons/stop_generating.svg"
+                                }
+                                Rectangle {
+                                    anchors.centerIn: stopImage
+                                    width: theme.fontSizeLargest + 8
+                                    height: theme.fontSizeLargest + 8
+                                    color: theme.viewBackground
+                                    border.pixelAligned: false
+                                    border.color: theme.controlBorder
+                                    border.width: 1
+                                    radius: width / 2
+                                }
+                                ColorOverlay {
+                                    anchors.fill: stopImage
+                                    source: stopImage
+                                    color: stopButton.hovered ? stopButton.backgroundColorHovered : stopButton.backgroundColor
+                                }
+                            }
+
+                            Accessible.name: qsTr("Stop generating")
+                            Accessible.description: qsTr("Stop the current response generation")
+                            ToolTip.visible: stopButton.hovered
+                            ToolTip.text: Accessible.description
+
+                            onClicked: {
+                                var index = Math.max(0, chatModel.count - 1);
+                                var listElement = chatModel.get(index);
+                                listElement.stopped = true
+                                currentChat.stopGenerating()
+                            }
                         }
-                        MyMenuItem {
-                            text: qsTr("Paste")
-                            onTriggered: textInput.paste()
-                        }
-                        MyMenuItem {
-                            text: qsTr("Select All")
-                            onTriggered: textInput.selectAll()
+
+                        MyToolButton {
+                            id: sendButton
+                            backgroundColor: theme.conversationInputButtonBackground
+                            backgroundColorHovered: theme.conversationInputButtonBackgroundHovered
+                            imageWidth: theme.fontSizeLargest
+                            imageHeight: theme.fontSizeLargest
+                            visible: !currentChat.responseInProgress && !currentChat.isServer && ModelList.selectableModels.count !== 0
+                            source: "qrc:/gpt4all/icons/send_message.svg"
+                            Accessible.name: qsTr("Send message")
+                            Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
+                            ToolTip.visible: sendButton.hovered
+                            ToolTip.text: Accessible.description
+
+                            onClicked: {
+                                textInput.sendMessage()
+                            }
                         }
                     }
                 }
             }
 
-
-            MyToolButton {
-                id: stopButton
-                backgroundColor: theme.conversationInputButtonBackground
-                backgroundColorHovered: theme.conversationInputButtonBackgroundHovered
-                anchors.right: textInputView.right
-                anchors.verticalCenter: textInputView.verticalCenter
-                anchors.rightMargin: 15
-                visible: currentChat.responseInProgress && !currentChat.isServer
-
-                background: Item {
-                    anchors.fill: parent
-                    Image {
-                        id: stopImage
-                        anchors.centerIn: parent
-                        visible: false
-                        fillMode: Image.PreserveAspectFit
-                        mipmap: true
-                        sourceSize.width: theme.fontSizeLargest
-                        sourceSize.height: theme.fontSizeLargest
-                        source: "qrc:/gpt4all/icons/stop_generating.svg"
-                    }
-                    Rectangle {
-                        anchors.centerIn: stopImage
-                        width: theme.fontSizeLargest + 8
-                        height: theme.fontSizeLargest + 8
-                        color: theme.viewBackground
-                        border.pixelAligned: false
-                        border.color: theme.controlBorder
-                        border.width: 1
-                        radius: width / 2
-                    }
-                    ColorOverlay {
-                        anchors.fill: stopImage
-                        source: stopImage
-                        color: stopButton.hovered ? stopButton.backgroundColorHovered : stopButton.backgroundColor
-                    }
-                }
-
-                Accessible.name: qsTr("Stop generating")
-                Accessible.description: qsTr("Stop the current response generation")
-                ToolTip.visible: stopButton.hovered
-                ToolTip.text: Accessible.description
-
-                onClicked: {
-                    var index = Math.max(0, chatModel.count - 1);
-                    var listElement = chatModel.get(index);
-                    listElement.stopped = true
-                    currentChat.stopGenerating()
-                }
+            MyFileDialog {
+                id: fileDialog
+                nameFilters: ["Excel files (*.xlsx)"]
             }
 
-            MyToolButton {
-                id: sendButton
-                backgroundColor: theme.conversationInputButtonBackground
-                backgroundColorHovered: theme.conversationInputButtonBackgroundHovered
-                anchors.right: textInputView.right
-                anchors.verticalCenter: textInputView.verticalCenter
-                anchors.rightMargin: 15
-                imageWidth: theme.fontSizeLargest
-                imageHeight: theme.fontSizeLargest
-                visible: !currentChat.responseInProgress && !currentChat.isServer && ModelList.selectableModels.count !== 0
-                source: "qrc:/gpt4all/icons/send_message.svg"
-                Accessible.name: qsTr("Send message")
-                Accessible.description: qsTr("Sends the message/prompt contained in textfield to the model")
-                ToolTip.visible: sendButton.hovered
-                ToolTip.text: Accessible.description
-
-                onClicked: {
-                    textInput.sendMessage()
+            MyMenu {
+                id: addMediaMenu
+                x: textInputView.x
+                y: textInputView.y - addMediaMenu.height - 10;
+                title: qsTr("Attach")
+                MyMenuItem {
+                    text: qsTr("Single File")
+                    icon.source: "qrc:/gpt4all/icons/file.svg"
+                    icon.width: 24
+                    icon.height: 24
+                    onClicked: {
+                        fileDialog.openFileDialog(StandardPaths.writableLocation(StandardPaths.HomeLocation), function(selectedFile) {
+                            if (selectedFile) {
+                                var file = selectedFile.toString().split("/").pop()
+                                attachmentModel.append({
+                                    file: file,
+                                    url: selectedFile
+                                })
+                            }
+                            if (textInput.enabled)
+                                textInput.forceActiveFocus();
+                        })
+                    }
                 }
             }
         }

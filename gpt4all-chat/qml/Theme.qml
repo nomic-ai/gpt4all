@@ -177,6 +177,17 @@ QtObject {
         }
     }
 
+    property color attachmentBackground: {
+        switch (MySettings.chatTheme) {
+            case MySettingsEnums.ChatTheme.LegacyDark:
+                return blue1000
+            case MySettingsEnums.ChatTheme.Dark:
+                return darkgray200
+            default:
+                return gray200
+        }
+    }
+
     property color disabledControlBackground: {
         switch (MySettings.chatTheme) {
             case MySettingsEnums.ChatTheme.LegacyDark:
