@@ -90,9 +90,7 @@ OneDrive for Desktop allows you to sync and access your OneDrive files directly 
         <table>
         <tr>
             <td>
-                <!-- Placeholder for screenshot of viewing sources -->
-                <img width="662" alt="Screenshot 2024-07-10 at 11 06 52 AM" src="https://github.com/nomic-ai/gpt4all/assets/132290469/01527349-893f-43ef-9d1f-0ad167e9fb5a">
-
+                <img width="662" alt="Screenshot 2024-07-11 at 11 21 46 AM" src="https://github.com/nomic-ai/gpt4all/assets/132290469/ce8be292-b025-415a-bd54-f11868e0cd0a">
             </td>
         </tr>
         </table>
@@ -104,9 +102,7 @@ OneDrive for Desktop allows you to sync and access your OneDrive files directly 
         <table>
         <tr>
             <td>
-                <!-- Placeholder for screenshot of viewing sources -->
-                <img width="643" alt="Screenshot 2024-07-10 at 11 07 25 AM" src="https://github.com/nomic-ai/gpt4all/assets/132290469/3ac5c4de-363f-4423-9fc3-419cb127f4cb">
-
+              <img width="643" alt="Screenshot 2024-07-11 at 11 22 49 AM" src="https://github.com/nomic-ai/gpt4all/assets/132290469/6fe3f10d-2791-4153-88a7-2198ab3ac945">
             </td>
         </tr>
         </table>
