@@ -83,10 +83,14 @@ Rectangle {
             Text {
                 anchors.centerIn: parent
                 horizontalAlignment: Qt.AlignHCenter
-                text: qsTr("ERROR: The LocalDocs database is not valid.")
+                text: qsTr("<h3>ERROR: The LocalDocs database cannot be accessed or is not valid.</h3><br>"
+                      + "<i>This is unexpected. Note: You will need to restart each time after you try any of the following suggested fixes.</i>"
+                      + "<ul><li>First of all, make sure that the folder set as <b>Download Path</b> exists on the file system.</li>"
+                      + "<li>Check ownership as well as read and write permissions of the <b>Download Path</b>.</li>"
+                      + "<li>If there is a file named 'localdocs_v2.db', check ownership and read/write permissions of this file, too.</li>"
+                      + "<li>If the problem cannot be solved this way and there are any 'localdocs_v*.db' files present, you can try "
+                      + "backing them up and removing them as a last resort. You will have to recreate your collections, however.</li></ul>");
                 color: theme.textErrorColor
-                font.bold: true
-                font.pixelSize: theme.fontSizeLargest
             }
         }
 
