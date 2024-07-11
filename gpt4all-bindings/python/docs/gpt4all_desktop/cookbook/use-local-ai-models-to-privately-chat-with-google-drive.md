@@ -91,8 +91,7 @@ For advanced help, see [Setting up Google Drive for Desktop](https://support.goo
         <table>
         <tr>
             <td>
-                <!-- Screenshot of viewing sources -->
-                <img width="662" alt="Screenshot 2024-07-09 at 3 38 31 PM" src="https://github.com/nomic-ai/gpt4all/assets/132290469/0c565047-443b-4cd5-9d1c-f39da00f5b4b">
+              <img width="662" alt="Screenshot 2024-07-11 at 11 34 00 AM" src="https://github.com/nomic-ai/gpt4all/assets/132290469/1c0fd19a-5a22-4726-a841-d26c1bea81fc">
             </td>
         </tr>
         </table>
@@ -103,9 +102,8 @@ For advanced help, see [Setting up Google Drive for Desktop](https://support.goo
 
         <table>
         <tr>
-            <td>
-                <!-- Screenshot of viewing sources -->
-                <img width="643" alt="Screenshot 2024-07-09 at 3 39 43 PM" src="https://github.com/nomic-ai/gpt4all/assets/132290469/4bd4dc95-be41-4c01-b0ab-4a2cc44f847e">
+            <td>  
+           <img width="643" alt="Screenshot 2024-07-11 at 11 34 37 AM" src="https://github.com/nomic-ai/gpt4all/assets/132290469/78527d30-8d24-4b4c-8311-b611a2d66fcd">
             </td>
         </tr>
         </table>
