@@ -44,6 +44,8 @@ After installation you should be able to find the Qt Linguist application in the
   in the gpt4all `translations` directory found on your local filesystem after you've cloned the
   gpt4all github repository. It is this folder [gpt4all/gpt4all-chat/translations](https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-chat/translations)
   located on your local filesystem after cloning the repository.
+- If the file does not exist yet for the language you are interested in, then just copy the english one
+  to a new file with appropriate name and edit that.
   
 ## Information on how to use Qt Linguist
 
