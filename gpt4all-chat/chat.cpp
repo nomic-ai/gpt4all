@@ -239,8 +239,8 @@ void Chat::newPromptResponsePair(const QString &prompt)
 {
     resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
-    m_chatModel->appendPrompt(tr("Prompt: "), prompt);
-    m_chatModel->appendResponse(tr("Response: "), prompt);
+    m_chatModel->appendPrompt("Prompt: ", prompt);
+    m_chatModel->appendResponse("Response: ", prompt);
     emit resetResponseRequested();
 }
 
@@ -248,8 +248,8 @@ void Chat::serverNewPromptResponsePair(const QString &prompt)
 {
     resetResponseState();
     m_chatModel->updateCurrentResponse(m_chatModel->count() - 1, false);
-    m_chatModel->appendPrompt(tr("Prompt: "), prompt);
-    m_chatModel->appendResponse(tr("Response: "), prompt);
+    m_chatModel->appendPrompt("Prompt: ", prompt);
+    m_chatModel->appendResponse("Response: ", prompt);
 }
 
 bool Chat::isRecalc() const

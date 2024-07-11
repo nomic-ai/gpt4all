@@ -64,10 +64,7 @@ MyDialog {
                 id: welcome
                 width: 1024 - 40
                 textFormat: TextEdit.MarkdownText
-                text: qsTr("### Release notes\n")
-                    + Download.releaseInfo.notes
-                    + qsTr("### Contributors\n")
-                    + Download.releaseInfo.contributors
+                text: qsTr("### Release notes\n%1### Contributors\n%2").arg(Download.releaseInfo.notes).arg(Download.releaseInfo.contributors)
                 focus: false
                 readOnly: true
                 Accessible.role: Accessible.Paragraph
