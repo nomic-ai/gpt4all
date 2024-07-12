@@ -581,7 +581,9 @@ QString MySettings::filePathForLocale(const QLocale &locale)
 {
     // Check and see if we have a translation for the chosen locale and set it if possible otherwise
     // we return the filepath for the 'en' translation
-    const QStringList uiLanguages = locale.uiLanguages(QLocale::TagSeparator::Underscore);
+    QStringList uiLanguages = locale.uiLanguages();
+    for (int i = 0; i < uiLanguages.size(); ++i)
+        uiLanguages[i].replace('-', '_');
 
     // Scan this directory for files named like gpt4all_%1.qm that match and if so return them first
     // this is the model download directory and it can be used by translation developers who are
