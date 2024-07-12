@@ -161,15 +161,45 @@ MySettingsTab {
             }
         }
         MySettingsLabel {
-            id: deviceLabel
-            text: qsTr("Device")
-            helpText: qsTr('The compute device used for text generation. "Auto" uses Vulkan or Metal.')
+            id: languageLabel
+            visible: MySettings.uiLanguages.length > 1
+            text: qsTr("Language and Locale")
+            helpText: qsTr("The language and locale you wish to use.")
             Layout.row: 4
             Layout.column: 0
         }
         MyComboBox {
-            id: deviceBox
+            id: languageBox
+            visible: MySettings.uiLanguages.length > 1
             Layout.row: 4
+            Layout.column: 2
+            Layout.minimumWidth: 200
+            Layout.maximumWidth: 200
+            Layout.fillWidth: false
+            Layout.alignment: Qt.AlignRight
+            model: MySettings.uiLanguages
+            Accessible.name: fontLabel.text
+            Accessible.description: fontLabel.helpText
+            function updateModel() {
+                languageBox.currentIndex = languageBox.indexOfValue(MySettings.languageAndLocale);
+            }
+            Component.onCompleted: {
+                languageBox.updateModel()
+            }
+            onActivated: {
+                MySettings.languageAndLocale = languageBox.currentText
+            }
+        }
+        MySettingsLabel {
+            id: deviceLabel
+            text: qsTr("Device")
+            helpText: qsTr('The compute device used for text generation. "Auto" uses Vulkan or Metal.')
+            Layout.row: 5
+            Layout.column: 0
+        }
+        MyComboBox {
+            id: deviceBox
+            Layout.row: 5
             Layout.column: 2
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
@@ -198,12 +228,12 @@ MySettingsTab {
             id: defaultModelLabel
             text: qsTr("Default Model")
             helpText: qsTr("The preferred model for new chats. Also used as the local server fallback.")
-            Layout.row: 5
+            Layout.row: 6
             Layout.column: 0
         }
         MyComboBox {
             id: comboBox
-            Layout.row: 5
+            Layout.row: 6
             Layout.column: 2
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
@@ -231,12 +261,12 @@ MySettingsTab {
             id: suggestionModeLabel
             text: qsTr("Suggestion Mode")
             helpText: qsTr("Generate suggested follow-up questions at the end of responses.")
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 0
         }
         MyComboBox {
             id: suggestionModeBox
-            Layout.row: 6
+            Layout.row: 7
             Layout.column: 2
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
@@ -255,12 +285,12 @@ MySettingsTab {
             id: modelPathLabel
             text: qsTr("Download Path")
             helpText: qsTr("Where to store local models and the LocalDocs database.")
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 0
         }
 
         RowLayout {
-            Layout.row: 7
+            Layout.row: 8
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             Layout.minimumWidth: 400
@@ -297,12 +327,12 @@ MySettingsTab {
             id: dataLakeLabel
             text: qsTr("Enable Datalake")
             helpText: qsTr("Send chats and feedback to the GPT4All Open-Source Datalake.")
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 0
         }
         MyCheckBox {
             id: dataLakeBox
-            Layout.row: 8
+            Layout.row: 9
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             Component.onCompleted: { dataLakeBox.checked = MySettings.networkIsActive; }
@@ -320,7 +350,7 @@ MySettingsTab {
         }
 
         ColumnLayout {
-            Layout.row: 9
+            Layout.row: 10
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
@@ -343,7 +373,7 @@ MySettingsTab {
             id: nThreadsLabel
             text: qsTr("CPU Threads")
             helpText: qsTr("The number of CPU threads used for inference and embedding.")
-            Layout.row: 10
+            Layout.row: 11
             Layout.column: 0
         }
         MyTextField {
@@ -351,7 +381,7 @@ MySettingsTab {
             color: theme.textColor
             font.pixelSize: theme.fontSizeLarge
             Layout.alignment: Qt.AlignRight
-            Layout.row: 10
+            Layout.row: 11
             Layout.column: 2
             Layout.minimumWidth: 200
             Layout.maximumWidth: 200
@@ -375,12 +405,12 @@ MySettingsTab {
             id: saveChatsContextLabel
             text: qsTr("Save Chat Context")
             helpText: qsTr("Save the chat model's state to disk for faster loading. WARNING: Uses ~2GB per chat.")
-            Layout.row: 11
+            Layout.row: 12
             Layout.column: 0
         }
         MyCheckBox {
             id: saveChatsContextBox
-            Layout.row: 11
+            Layout.row: 12
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.saveChatsContext
@@ -392,12 +422,12 @@ MySettingsTab {
             id: serverChatLabel
             text: qsTr("Enable Local Server")
             helpText: qsTr("Expose an OpenAI-Compatible server to localhost. WARNING: Results in increased resource usage.")
-            Layout.row: 12
+            Layout.row: 13
             Layout.column: 0
         }
         MyCheckBox {
             id: serverChatBox
-            Layout.row: 12
+            Layout.row: 13
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             checked: MySettings.serverChat
@@ -409,7 +439,7 @@ MySettingsTab {
             id: serverPortLabel
             text: qsTr("API Server Port")
             helpText: qsTr("The port to use for the local server. Requires restart.")
-            Layout.row: 13
+            Layout.row: 14
             Layout.column: 0
         }
         MyTextField {
@@ -417,7 +447,7 @@ MySettingsTab {
             text: MySettings.networkPort
             color: theme.textColor
             font.pixelSize: theme.fontSizeLarge
-            Layout.row: 13
+            Layout.row: 14
             Layout.column: 2
             Layout.minimumWidth: 200
             Layout.maximumWidth: 200
@@ -462,12 +492,12 @@ MySettingsTab {
             id: updatesLabel
             text: qsTr("Check For Updates")
             helpText: qsTr("Manually check for an update to GPT4All.");
-            Layout.row: 14
+            Layout.row: 15
             Layout.column: 0
         }
 
         MySettingsButton {
-            Layout.row: 14
+            Layout.row: 15
             Layout.column: 2
             Layout.alignment: Qt.AlignRight
             text: qsTr("Updates");
@@ -478,7 +508,7 @@ MySettingsTab {
         }
 
         Rectangle {
-            Layout.row: 15
+            Layout.row: 16
             Layout.column: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
