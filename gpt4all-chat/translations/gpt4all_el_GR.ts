@@ -19,7 +19,7 @@
         <location filename="../qml/AddCollectionView.qml" line="78"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddCollectionView.qml" line="78"/>
         <source>Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.</source>
-        <translation>Εισαγωή φακέλου απλών εγγράφων, PDFs ή Markdown. Περισσότερες ρυθμίσεις στο πεδίο Ρυθμίσεις.</translation>
+        <translation>Εισαγωή φακέλου απλών εγγράφων, PDFs ή Markdown. Περισσότερες ρυθμίσεις άλλου τύπου αρχείων στο πεδίο Ρυθμίσεις.</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="94"/>
@@ -1664,47 +1664,47 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1503"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;ul&gt;&lt;li&gt;Απαιτεί προσωπικό κλειδί API του OpenAI.&lt;/li&gt;&lt;li&gt;ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Θα στείλει τις συνομιλίες σας στο OpenAI!&lt;/li&gt;&lt;li&gt;Το κλειδί σας API θα αποθηκευτεί στο δίσκο&lt;/li&gt;&lt;li&gt;Θα χρησιμοποιείται μόνο για την επικοινωνία με το OpenAI&lt;/li&gt;&lt;li&gt;Μπορείτε να υποβάλετε αίτηση για ένα κλειδί API &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;εδώ.&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1522"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1535"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Ακόμα και αν πληρώσετε το OpenAI για το ChatGPT-4, αυτό δεν εγγυάται πρόσβαση στο κλειδί API. Επικοινωνήστε με την OpenAI για περισσότερες πληροφορίες.</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1550"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1562"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;ul&gt;&lt;li&gt;Απαιτεί προσωπικό κλειδί API Mistral.&lt;/li&gt;&lt;li&gt;ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Θα στείλει τις συνομιλίες σας στο Mistral!&lt;/li&gt;&lt;li&gt;Το κλειδί σας API θα αποθηκευτεί στο δίσκο&lt;/li&gt;&lt;li&gt;Θα χρησιμοποιείται μόνο για την επικοινωνία με το Mistral&lt;/li&gt;&lt;li&gt;Μπορείτε να υποβάλετε αίτηση για ένα κλειδί API &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;εδώ&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1581"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1606"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1632"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="2039"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Δημιουργήθηκε από %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Δημοσιεύτηκε στο %2.&lt;li&gt;Αυτό το μοντέλο έχει %3 likes.&lt;li&gt;Αυτό το μοντέλο έχει %4 λήψεις.&lt;li&gt;Περισσότερες πληροφορίες &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;εδώ.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
 </context>
 <context>
@@ -1713,86 +1713,87 @@ model to get started</source>
         <location filename="../qml/ModelSettings.qml" line="14"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="14"/>
         <source>Model</source>
-        <translation type="unfinished">Μοντέλο</translation>
+        <translation>Μοντέλο</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="33"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="33"/>
         <source>Model Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ρυθμίσεις Μοντέλου</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="82"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="82"/>
         <source>Clone</source>
-        <translation type="unfinished"></translation>
+        <translation>Κλωνοποίηση</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="92"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="92"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Απομάκρυνση</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="106"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="106"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Όνομα</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="139"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="139"/>
         <source>Model File</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο Μοτέλου</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="157"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="157"/>
         <source>System Prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>Προτροπή</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="158"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="158"/>
         <source>Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Προτάσσεται στην αρχή κάθε συζήτησης. Πρέπει να περιέχει τα κατάλληλα tokens.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="204"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="204"/>
         <source>Prompt Template</source>
-        <translation type="unfinished"></translation>
+        <translation>Πρότυπο Προτροπής</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="205"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="205"/>
         <source>The template that wraps every prompt.</source>
-        <translation type="unfinished"></translation>
+        <translation>Το πρότυπο που περιβάλλει κάθε προτροπή.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="209"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="209"/>
         <source>Must contain the string &quot;%1&quot; to be replaced with the user&apos;s input.</source>
-        <translation type="unfinished"></translation>
+        <translation>Πρέπει να περιέχει τη συμβολοσειρά &quot;%1&quot; που πρέπει να αντικατασταθεί με την εισαγωγή του χρήστη.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="278"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="278"/>
         <source>Add
 optional image</source>
-        <translation type="unfinished"></translation>
+        <translation>Προσθήκη
+προαιρετικής εικόνας</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="302"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="302"/>
         <source>Context Length</source>
-        <translation type="unfinished"></translation>
+        <translation>Μήκος περιεχομένου</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="303"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="303"/>
         <source>Number of input and output tokens the model sees.</source>
-        <translation type="unfinished"></translation>
+        <translation>Αριθμός tokens εισόδου και εξόδου που βλέπει το μοντέλο.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="324"/>
@@ -1800,148 +1801,153 @@ optional image</source>
         <source>Maximum combined prompt/response tokens before information is lost.
 Using more context than the model was trained on will yield poor results.
 NOTE: Does not take effect until you reload the model.</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγιστα συνδυασμένα tokens προτροπής/απάντησης πριν χαθεί η πληροφορία.
+Η χρήση περισσότερου περιεχομένου από αυτό για το οποίο εκπαιδεύτηκε το μοντέλο θα αποφέρει φτωχά αποτελέσματα.
+ΣΗΜΕΙΩΣΗ: Δεν τίθεται σε ισχύ μέχρι να επαναφορτώσετε το μοντέλο.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="362"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="362"/>
         <source>Temperature</source>
-        <translation type="unfinished"></translation>
+        <translation>Θερμοκρασία</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="363"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="363"/>
         <source>Randomness of model output. Higher -&gt; more variation.</source>
-        <translation type="unfinished"></translation>
+        <translation>Τυχαιότητα της εξόδου του μοντέλου. Υψηλότερη -&gt; μεγαλύτερη διακύμανση.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="374"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="374"/>
         <source>Temperature increases the chances of choosing less likely tokens.
 NOTE: Higher temperature gives more creative but less predictable outputs.</source>
-        <translation type="unfinished"></translation>
+        <translation>Η θερμοκρασία αυξάνει τις πιθανότητες επιλογής λιγότερο πιθανών  tokens.
+ΣΗΜΕΙΩΣΗ: Η υψηλότερη θερμοκρασία δίνει πιο δημιουργικές αλλά λιγότερο προβλέψιμες εξόδους.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="408"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="408"/>
         <source>Top-P</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="409"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="409"/>
         <source>Nucleus Sampling factor. Lower -&gt; more predicatable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Πυρήνας Παράγοντας δειγματοληψίας. Χαμηλότερος -&gt; πιο προβλέψιμος.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="419"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="419"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Μπορούν να επιλεγούν μόνο τα πιο πιθανά tokens με συνολική πιθανότητα top_p.
+ΣΗΜΕΙΩΣΗ: Αποτρέπει την επιλογή πολύ απίθανων tokens.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="453"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="453"/>
         <source>Min-P</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="454"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="454"/>
         <source>Minimum token probability. Higher -&gt; more predictable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ελάχιστη πιθανότητα token. Υψηλότερη -&gt; πιο προβλέψιμη.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="464"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="464"/>
         <source>Sets the minimum relative probability for a token to be considered.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ορίζει την ελάχιστη σχετική πιθανότητα για να ληφθεί υπόψη ένα token.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="500"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="500"/>
         <source>Top-K</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="501"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="501"/>
         <source>Size of selection pool for tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγεθος της δεξαμενής επιλογής για tokens.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="512"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="512"/>
         <source>Only the top K most likely tokens will be chosen from.</source>
-        <translation type="unfinished"></translation>
+        <translation>Θα επιλεγούν μόνο τα top K tokens ως  πιθανά.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="547"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="547"/>
         <source>Max Length</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγιστο μήκος</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="548"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="548"/>
         <source>Maximum response length, in tokens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγιστο μήκος απάντησης, σε tokens.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="593"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="593"/>
         <source>Prompt Batch Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγεθος Προτροπής</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="594"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="594"/>
         <source>The batch size used for prompt processing.</source>
-        <translation type="unfinished"></translation>
+        <translation>Το μέγεθος της προτροπής που χρησιμοποιείται για την άμεση επεξεργασία.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="605"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="605"/>
         <source>Amount of prompt tokens to process at once.
 NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ποσότητα των prompt tokens για ταυτόχρονη επεξεργασία.
+ΣΗΜΕΙΩΣΗ: Υψηλότερες τιμές μπορούν να επιταχύνουν την ανάγνωση των προτροπών, αλλά θα χρησιμοποιούν περισσότερη μνήμη RAM.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="640"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="640"/>
         <source>Repeat Penalty</source>
-        <translation type="unfinished"></translation>
+        <translation>Επαναλαμβανόμενη ποινή</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="641"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="641"/>
         <source>Repetition penalty factor. Set to 1 to disable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Συντελεστής ποινής επανάληψης. Θέστε σε 1 για απενεργοποίηση.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="685"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="685"/>
         <source>Repeat Penalty Tokens</source>
-        <translation type="unfinished"></translation>
+        <translation>Επαναλαμβανόμενα Tokens Ποινής</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="686"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="686"/>
         <source>Number of previous tokens used for penalty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Αριθμός προηγούμενων tokens που χρησιμοποιήθηκαν για ποινή.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="731"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="731"/>
         <source>GPU Layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Επίπεδα GPU</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="732"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="732"/>
         <source>Number of model layers to load into VRAM.</source>
-        <translation type="unfinished"></translation>
+        <translation>Αριθμός επιπέδων μοντέλου για φόρτωση στην VRAM.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="743"/>
@@ -1949,7 +1955,9 @@ NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
         <source>How many model layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.
 Lower values increase CPU load and RAM usage, and make inference slower.
 NOTE: Does not take effect until you reload the model.</source>
-        <translation type="unfinished"></translation>
+        <translation>Πόσα επίπεδα μοντέλου θα φορτωθούν στη μνήμη VRAM. Μειώστε το εάν το GPT4All ξεμείνει από VRAM κατά τη φόρτωση αυτού του μοντέλου.
+Χαμηλότερες τιμές αυξάνουν το φορτίο της CPU και τη χρήση της RAM και κάνουν την εξαγωγή συμπερασμάτων πιο αργή.
+ΣΗΜΕΙΩΣΗ: Δεν τίθεται σε ισχύ μέχρι να φορτώσετε εκ νέου το μοντέλο.</translation>
     </message>
 </context>
 <context>
@@ -1958,13 +1966,13 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="36"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="36"/>
         <source>No Models Installed</source>
-        <translation type="unfinished"></translation>
+        <translation>Δεν υπάρχει εγκατεστημένο μοντέλο</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="45"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="45"/>
         <source>Install a model to get started using GPT4All</source>
-        <translation type="unfinished"></translation>
+        <translation>Εγκαταστήστε ένα μοντέλο για να αρχίσει το GPT4All</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="56"/>
@@ -1972,79 +1980,79 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="56"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="98"/>
         <source>＋ Add Model</source>
-        <translation type="unfinished"></translation>
+        <translation>＋ Προσθήκη Μοντέλου</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="61"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="61"/>
         <source>Shows the add model view</source>
-        <translation type="unfinished"></translation>
+        <translation>Εμφανίζει την προβολή προσθήκης μοντέλου</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="79"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="79"/>
         <source>Installed Models</source>
-        <translation type="unfinished"></translation>
+        <translation>Εγκατεστημένα Μοντέλα</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="85"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="85"/>
         <source>Locally installed chat models</source>
-        <translation type="unfinished"></translation>
+        <translation>Τοπικά εγκατεστημένα μοντέλα συνομιλίας</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="143"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="143"/>
         <source>Model file</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο μοντέλου</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="144"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="144"/>
         <source>Model file to be downloaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχείο μοντέλου προς λήψη</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="166"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>Περιγραφή</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="167"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="167"/>
         <source>File description</source>
-        <translation type="unfinished"></translation>
+        <translation>Περιγραφή αρχείου</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="192"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="192"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Ακύρωση</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="192"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="192"/>
         <source>Resume</source>
-        <translation type="unfinished"></translation>
+        <translation>Περίληψη</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="200"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="200"/>
         <source>Stop/restart/start the download</source>
-        <translation type="unfinished"></translation>
+        <translation>Διακοπή/επανεκκίνηση/έναρξη της λήψης</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="212"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="212"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Απομάκρυνση</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="219"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="219"/>
         <source>Remove model from filesystem</source>
-        <translation type="unfinished"></translation>
+        <translation>Απομάκρυνση Μοντέλου από το σύστημα</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="233"/>
@@ -2052,79 +2060,79 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="233"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="242"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>Εγκατάσταση</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="243"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="243"/>
         <source>Install online model</source>
-        <translation type="unfinished"></translation>
+        <translation>Εγκατάσταση μοντέλου online</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="254"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="254"/>
         <source>&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;#error&quot;&gt;Σφάλμα&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="261"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="261"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation type="unfinished"></translation>
+        <translation>Περιγράφει ένα σφάλμα που συνέβη κατά τη λήψη</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="274"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Δεν συνιστάται για το συστημα σας.</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="275"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="275"/>
         <source> Model requires more memory (</source>
-        <translation type="unfinished"></translation>
+        <translation> Το μοντέλο απαιτεί περισσότερη μνήμη (</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="276"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="276"/>
         <source> GB) than your system has available (</source>
-        <translation type="unfinished"></translation>
+        <translation> GB) από όση έχετε διαθέσιμη (</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="283"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="283"/>
         <source>Error for incompatible hardware</source>
-        <translation type="unfinished"></translation>
+        <translation>Σφάλμα μη συμβατού (hardware) υλικού</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="321"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="321"/>
         <source>Download progressBar</source>
-        <translation type="unfinished"></translation>
+        <translation>Γραμμή προόδου λήψης</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="322"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="322"/>
         <source>Shows the progress made in the download</source>
-        <translation type="unfinished"></translation>
+        <translation>Εμφανίζει την πρόοδο που σημειώθηκε στη λήψη</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="332"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="332"/>
         <source>Download speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Ταχυτητα Λήψης</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="333"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="333"/>
         <source>Download speed in bytes/kilobytes/megabytes per second</source>
-        <translation type="unfinished"></translation>
+        <translation>Ταχύτητα λήψης bytes/kilobytes/megabytes ανά δεπτερόλεπτο</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="350"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="350"/>
         <source>Calculating...</source>
-        <translation type="unfinished"></translation>
+        <translation>Υπολογισμός...</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="354"/>
@@ -2132,61 +2140,61 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="354"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="383"/>
         <source>Whether the file hash is being calculated</source>
-        <translation type="unfinished"></translation>
+        <translation>Εάν το hash του αρχείου υπολογίζεται</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="361"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="361"/>
         <source>Busy indicator</source>
-        <translation type="unfinished"></translation>
+        <translation>Ένδειξη απασχολημένου</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="362"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="362"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation type="unfinished"></translation>
+        <translation>Εμφανίζεται όταν υπολογίζεται το hash του αρχείου</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="380"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="380"/>
         <source>enter $API_KEY</source>
-        <translation type="unfinished"></translation>
+        <translation>εισαγωγή $API_KEY</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="402"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="402"/>
         <source>File size</source>
-        <translation type="unfinished"></translation>
+        <translation>Μέγεθος αρχείου</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="424"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="424"/>
         <source>RAM required</source>
-        <translation type="unfinished"></translation>
+        <translation>Απαιτούμενη μνήμη RAM</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="429"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="429"/>
         <source> GB</source>
-        <translation type="unfinished"></translation>
+        <translation> GB</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="446"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="446"/>
         <source>Parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>Παράμετροι</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="468"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="468"/>
         <source>Quant</source>
-        <translation type="unfinished"></translation>
+        <translation>Quant</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="490"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="490"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Τύπος</translation>
     </message>
 </context>
 <context>
@@ -2195,13 +2203,13 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/MyFancyLink.qml" line="42"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/MyFancyLink.qml" line="42"/>
         <source>Fancy link</source>
-        <translation type="unfinished"></translation>
+        <translation>Φανταχτερός σύνδεσμος</translation>
     </message>
     <message>
         <location filename="../qml/MyFancyLink.qml" line="43"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/MyFancyLink.qml" line="43"/>
         <source>A stylized link</source>
-        <translation type="unfinished"></translation>
+        <translation>Ένας στυλιζαρισμένος σύνδεσμος</translation>
     </message>
 </context>
 <context>
@@ -2210,7 +2218,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/MySettingsStack.qml" line="66"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/MySettingsStack.qml" line="66"/>
         <source>Please choose a directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιλέξτε φάκελο</translation>
     </message>
 </context>
 <context>
@@ -2219,13 +2227,13 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/MySettingsTab.qml" line="62"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/MySettingsTab.qml" line="62"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Επαναφορά προεπιλογών</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="66"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/MySettingsTab.qml" line="66"/>
         <source>Restores settings dialog to a default state</source>
-        <translation type="unfinished"></translation>
+        <translation>Επαναφέρει τον διάλογο ρυθμίσεων στην προεπιλεγμένη κατάσταση</translation>
     </message>
 </context>
 <context>
@@ -2234,7 +2242,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/NetworkDialog.qml" line="39"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="39"/>
         <source>Contribute data to the GPT4All Opensource Datalake.</source>
-        <translation type="unfinished"></translation>
+        <translation>Στείλτε συνομιλίες και σχόλια στο GPT4All Open-Source Datalake.</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="55"/>
@@ -2244,61 +2252,65 @@ NOTE: Does not take effect until you reload the model.</source>
 When a GPT4All model responds to you and you have opted-in, your conversation will be sent to the GPT4All Open Source Datalake. Additionally, you can like/dislike its response. If you dislike a response, you can suggest an alternative response. This data will be collected and aggregated in the GPT4All Datalake.
 
 NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποιώντας αυτή τη λειτουργία, θα μπορείτε να συμμετέχετε στη δημοκρατική διαδικασία εκπαίδευσης ενός μεγάλου γλωσσικού μοντέλου, συνεισφέροντας δεδομένα για μελλοντικές βελτιώσεις του μοντέλου.
+
+Όταν ένα μοντέλο του GPT4All σας απαντήσει και έχετε επιλέξει να συμμετάσχετε, η συνομιλία σας θα αποστέλλεται στο GPT4All Open Source Datalake. Επιπλέον, μπορείτε να κάνετε like/dislike στην απάντησή του. Εάν δεν σας αρέσει μια απάντηση, μπορείτε να προτείνετε μια εναλλακτική απάντηση. Τα δεδομένα αυτά θα συλλεχθούν και θα συγκεντρωθούν στο GPT4All Datalake.
+
+ΣΗΜΕΙΩΣΗ: Ενεργοποιώντας αυτή τη λειτουργία, θα στείλετε τα δεδομένα σας στο GPT4All Open Source Datalake. Δεν θα πρέπει να έχετε καμία προσδοκία απορρήτου συνομιλίας όταν είναι ενεργοποιημένη αυτή η λειτουργία. Θα πρέπει, ωστόσο, να έχετε την προσδοκία μιας προαιρετικής αναφοράς, εάν το επιθυμείτε. Τα δεδομένα συνομιλίας σας θα είναι ανοιχτά διαθέσιμα για να τα κατεβάσει ο καθένας και θα χρησιμοποιηθούν από τη Nomic AI για τη βελτίωση μελλοντικών μοντέλων GPT4All. Η Nomic AI θα διατηρήσει όλες τις πληροφορίες απόδοσης που συνδέονται με τα δεδομένα σας και θα αναφέρεστε ως συντελεστής σε κάθε έκδοση μοντέλου GPT4All που χρησιμοποιεί τα δεδομένα σας!</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="63"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="63"/>
         <source>Terms for opt-in</source>
-        <translation type="unfinished"></translation>
+        <translation>Όροι</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="64"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="64"/>
         <source>Describes what will happen when you opt-in</source>
-        <translation type="unfinished"></translation>
+        <translation>Περιγράφει τι θα συμβεί όταν το επιλέξετε</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="72"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="72"/>
         <source>Please provide a name for attribution (optional)</source>
-        <translation type="unfinished"></translation>
+        <translation>Παρακαλώ δώστε ένα όνομα αναφοράς (προαιρετικό)</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="74"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="74"/>
         <source>Attribution (optional)</source>
-        <translation type="unfinished"></translation>
+        <translation>Αναφορά (προαιρετικά)</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="75"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="75"/>
         <source>Provide attribution</source>
-        <translation type="unfinished"></translation>
+        <translation>Απόδοση στοιχείων</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="88"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="88"/>
         <source>Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="89"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="89"/>
         <source>Enable opt-in</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποίηση λειτουργίας</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="93"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="93"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Ακύρωση</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="94"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="94"/>
         <source>Cancel opt-in</source>
-        <translation type="unfinished"></translation>
+        <translation>Ακύρωση λειτουργίας</translation>
     </message>
 </context>
 <context>
@@ -2307,19 +2319,19 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <location filename="../qml/NewVersionDialog.qml" line="34"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NewVersionDialog.qml" line="34"/>
         <source>New version is available</source>
-        <translation type="unfinished"></translation>
+        <translation>Η νέα έκδοση είναι διαθέσιμη</translation>
     </message>
     <message>
         <location filename="../qml/NewVersionDialog.qml" line="46"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NewVersionDialog.qml" line="46"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενημέρωση</translation>
     </message>
     <message>
         <location filename="../qml/NewVersionDialog.qml" line="48"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NewVersionDialog.qml" line="48"/>
         <source>Update to new version</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενημέρωση σε νέα έκδοση</translation>
     </message>
 </context>
 <context>
@@ -2328,19 +2340,19 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <location filename="../qml/PopupDialog.qml" line="38"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/PopupDialog.qml" line="38"/>
         <source>Reveals a shortlived help balloon</source>
-        <translation type="unfinished"></translation>
+        <translation>Μπαλόνι βοήθειας</translation>
     </message>
     <message>
         <location filename="../qml/PopupDialog.qml" line="48"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/PopupDialog.qml" line="48"/>
         <source>Busy indicator</source>
-        <translation type="unfinished"></translation>
+        <translation>Ένδειξη απασχολημένου</translation>
     </message>
     <message>
         <location filename="../qml/PopupDialog.qml" line="49"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/PopupDialog.qml" line="49"/>
         <source>Displayed when the popup is showing busy</source>
-        <translation type="unfinished"></translation>
+        <translation>Εμφανίζεται όταν το αναδυόμενο παράθυρο εμφανίζεται απασχολημένο</translation>
     </message>
 </context>
 <context>
@@ -2351,31 +2363,31 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="22"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="61"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ρυθμίσεις</translation>
     </message>
     <message>
         <location filename="../qml/SettingsView.qml" line="23"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="23"/>
         <source>Contains various application settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Περιέχει διάφορες ρυθμίσεις εφαρμογής</translation>
     </message>
     <message>
         <location filename="../qml/SettingsView.qml" line="29"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="29"/>
         <source>Application</source>
-        <translation type="unfinished"></translation>
+        <translation>Εφαρμογή</translation>
     </message>
     <message>
         <location filename="../qml/SettingsView.qml" line="32"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="32"/>
         <source>Model</source>
-        <translation type="unfinished"></translation>
+        <translation>Μοντέλο</translation>
     </message>
     <message>
         <location filename="../qml/SettingsView.qml" line="35"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="35"/>
         <source>LocalDocs</source>
-        <translation type="unfinished"></translation>
+        <translation>Τοπικά Έγγραφα</translation>
     </message>
 </context>
 <context>
@@ -2384,33 +2396,35 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <location filename="../qml/StartupDialog.qml" line="50"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="50"/>
         <source>Welcome!</source>
-        <translation type="unfinished"></translation>
+        <translation>Καλώς ήρθατε!</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="67"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="67"/>
         <source>### Release notes
 </source>
-        <translation type="unfinished"></translation>
+        <translation>### Σημειώσεις έκδοσης
+</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="69"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="69"/>
         <source>### Contributors
 </source>
-        <translation type="unfinished"></translation>
+        <translation>### Συντελεστές
+</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="74"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="74"/>
         <source>Release notes</source>
-        <translation type="unfinished"></translation>
+        <translation>Σημειώσεις Έκδοσης</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="75"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="75"/>
         <source>Release notes for this version</source>
-        <translation type="unfinished"></translation>
+        <translation>Σημειώσεις Έκδοσης αυτής της έκδοσης</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="90"/>
@@ -2429,19 +2443,23 @@ an expectation of an optional attribution if you wish. Your chat data will be op
 to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all
 attribution information attached to your data and you will be credited as a contributor to any GPT4All
 model release that uses your data!</source>
-        <translation type="unfinished"></translation>
+        <translation>Ενεργοποιώντας αυτή τη λειτουργία, θα μπορείτε να συμμετέχετε στη δημοκρατική διαδικασία εκπαίδευσης ενός μεγάλου γλωσσικού μοντέλου, συνεισφέροντας δεδομένα για μελλοντικές βελτιώσεις του μοντέλου.
+
+Όταν ένα μοντέλο του GPT4All σας απαντήσει και έχετε επιλέξει να συμμετάσχετε, η συνομιλία σας θα αποστέλλεται στο GPT4All Open Source Datalake. Επιπλέον, μπορείτε να κάνετε like/dislike στην απάντησή του. Εάν δεν σας αρέσει μια απάντηση, μπορείτε να προτείνετε μια εναλλακτική απάντηση. Τα δεδομένα αυτά θα συλλεχθούν και θα συγκεντρωθούν στο GPT4All Datalake.
+
+ΣΗΜΕΙΩΣΗ: Ενεργοποιώντας αυτή τη λειτουργία, θα στείλετε τα δεδομένα σας στο GPT4All Open Source Datalake. Δεν θα πρέπει να έχετε καμία προσδοκία απορρήτου συνομιλίας όταν είναι ενεργοποιημένη αυτή η λειτουργία. Θα πρέπει, ωστόσο, να έχετε την προσδοκία μιας προαιρετικής αναφοράς, εάν το επιθυμείτε. Τα δεδομένα συνομιλίας σας θα είναι ανοιχτά διαθέσιμα για να τα κατεβάσει ο καθένας και θα χρησιμοποιηθούν από τη Nomic AI για τη βελτίωση μελλοντικών μοντέλων GPT4All. Η Nomic AI θα διατηρήσει όλες τις πληροφορίες απόδοσης που συνδέονται με τα δεδομένα σας και θα αναφέρεστε ως συντελεστής σε κάθε έκδοση μοντέλου GPT4All που χρησιμοποιεί τα δεδομένα σας!</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="109"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="109"/>
         <source>Terms for opt-in</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="110"/>
         <source>Describes what will happen when you opt-in</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="127"/>
@@ -2449,7 +2467,7 @@ model release that uses your data!</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="127"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="153"/>
         <source>Opt-in for anonymous usage statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>Για ανώνυμα στατιστικά στοιχεία χρήσης</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="150"/>
@@ -2457,13 +2475,13 @@ model release that uses your data!</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="150"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="265"/>
         <source>Yes</source>
-        <translation type="unfinished"></translation>
+        <translation>ΝΑΙ</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="154"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="154"/>
         <source>Allow opt-in for anonymous usage statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιτρέψτε για ανώνυμα στατιστικά στοιχεία χρήσης</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="192"/>
@@ -2471,19 +2489,19 @@ model release that uses your data!</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="192"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="307"/>
         <source>No</source>
-        <translation type="unfinished"></translation>
+        <translation>ΟΧΙ</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="195"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="195"/>
         <source>Opt-out for anonymous usage statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>Για ανώνυμα στατιστικά στοιχεία χρήσης</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="196"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="196"/>
         <source>Allow opt-out for anonymous usage statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιτρέψτε για ανώνυμα στατιστικά στοιχεία χρήσης</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="241"/>
@@ -2491,31 +2509,31 @@ model release that uses your data!</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="241"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="268"/>
         <source>Opt-in for network</source>
-        <translation type="unfinished"></translation>
+        <translation>Χρήση διαδικτύου</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="242"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="242"/>
         <source>Allow opt-in for network</source>
-        <translation type="unfinished"></translation>
+        <translation>Ετριψέψτε χρηση διαδικτύου</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="269"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="269"/>
         <source>Allow opt-in anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation type="unfinished"></translation>
+        <translation>Στείλτε ανώνυμα συνομιλίες και σχόλια στο GPT4All Open-Source Datalake</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="310"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="310"/>
         <source>Opt-out for network</source>
-        <translation type="unfinished"></translation>
+        <translation>Ανώνυμη Χρηση διαδικτύου</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="311"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="311"/>
         <source>Allow opt-out anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation type="unfinished"></translation>
+        <translation>Επιτρέψτε ανώνυμα  αποστολή σε συνομιλίες και σχόλια στο GPT4All Open-Source Datalake</translation>
     </message>
 </context>
 <context>
@@ -2524,19 +2542,19 @@ model release that uses your data!</source>
         <location filename="../qml/SwitchModelDialog.qml" line="22"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SwitchModelDialog.qml" line="22"/>
         <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current conversation. Do you wish to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Προσοχή:&lt;/b&gt; η αλλαγή του μοντέλου θα διαγράψει την τρέχουσα συνομιλία. Θέλετε να συνεχίσετε?</translation>
     </message>
     <message>
         <location filename="../qml/SwitchModelDialog.qml" line="33"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SwitchModelDialog.qml" line="33"/>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Συνεχίστε</translation>
     </message>
     <message>
         <location filename="../qml/SwitchModelDialog.qml" line="34"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SwitchModelDialog.qml" line="34"/>
         <source>Continue with model loading</source>
-        <translation type="unfinished"></translation>
+        <translation>Συνεχιστε με την φόρτωση του μοντέλου</translation>
     </message>
     <message>
         <location filename="../qml/SwitchModelDialog.qml" line="38"/>
@@ -2544,7 +2562,7 @@ model release that uses your data!</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SwitchModelDialog.qml" line="38"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SwitchModelDialog.qml" line="39"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Ακύρωση</translation>
     </message>
 </context>
 <context>
@@ -2553,37 +2571,37 @@ model release that uses your data!</source>
         <location filename="../qml/ThumbsDownDialog.qml" line="39"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ThumbsDownDialog.qml" line="39"/>
         <source>Please edit the text below to provide a better response. (optional)</source>
-        <translation type="unfinished"></translation>
+        <translation>Παρακαλείστε να επεξεργαστείτε το παρακάτω κείμενο για να δώσετε μια καλύτερη απάντηση. (προαιρετικό)</translation>
     </message>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="54"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ThumbsDownDialog.qml" line="54"/>
         <source>Please provide a better response...</source>
-        <translation type="unfinished"></translation>
+        <translation>Παρακαλώ δώστε μια καλύτερη απάντηση...</translation>
     </message>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="64"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ThumbsDownDialog.qml" line="64"/>
         <source>Submit</source>
-        <translation type="unfinished"></translation>
+        <translation>Υποβολή</translation>
     </message>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="65"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ThumbsDownDialog.qml" line="65"/>
         <source>Submits the user&apos;s response</source>
-        <translation type="unfinished"></translation>
+        <translation>Υποβάλλει την απάντηση του χρήστη</translation>
     </message>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="69"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ThumbsDownDialog.qml" line="69"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Ακύρωση</translation>
     </message>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="70"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ThumbsDownDialog.qml" line="70"/>
         <source>Closes the response dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>Κλείνει το παράθυρο διαλόγου απάντησης</translation>
     </message>
 </context>
 <context>
@@ -2592,7 +2610,7 @@ model release that uses your data!</source>
         <location filename="../main.qml" line="23"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="23"/>
         <source>GPT4All v</source>
-        <translation type="unfinished"></translation>
+        <translation>GPT4All v</translation>
     </message>
     <message>
         <location filename="../main.qml" line="111"/>
@@ -2600,139 +2618,139 @@ model release that uses your data!</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="111"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="127"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;Παρουσιάστηκε ένα σφάλμα κατά την εκκίνηση:&lt;/h3&gt;&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="112"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="112"/>
         <source>&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;i&gt;&quot;Εντοπίστηκε μη συμβατό υλικό.&quot;&lt;/i&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="113"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="113"/>
         <source>&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run </source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;br&gt;&lt;br&gt;Δυστυχώς, η CPU σας δεν πληροί τις ελάχιστες απαιτήσεις για την εκτέλεση </translation>
     </message>
     <message>
         <location filename="../main.qml" line="114"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="114"/>
         <source>this program. In particular, it does not support AVX intrinsics which this </source>
-        <translation type="unfinished"></translation>
+        <translation>αυτό το πρόγραμμα. Ειδικότερα, δεν υποστηρίζει τα intrinsics AVX που αυτό το πρόγραμμα </translation>
     </message>
     <message>
         <location filename="../main.qml" line="115"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="115"/>
         <source>program requires to successfully run a modern large language model. </source>
-        <translation type="unfinished"></translation>
+        <translation>πρόγραμμα που απαιτείται για την επιτυχή εκτέλεση ενός σύγχρονου μεγάλου γλωσσικού μοντέλου. </translation>
     </message>
     <message>
         <location filename="../main.qml" line="116"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="116"/>
         <source>The only solution at this time is to upgrade your hardware to a more modern CPU.</source>
-        <translation type="unfinished"></translation>
+        <translation>Η μόνη λύση αυτή τη στιγμή είναι να αναβαθμίσετε το υλικό σας σε μια πιο σύγχρονη CPU.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="117"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="117"/>
         <source>&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;br&gt;&lt;br&gt;Δείτε εδώ περισσότερες πληροφορίες: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="118"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="118"/>
         <source>https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="128"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="128"/>
         <source>&lt;i&gt;&quot;Inability to access settings file.&quot;&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;i&gt;&quot;Αδυναμία πρόσβασης στο αρχείο ρυθμίσεων&quot;.&lt;/i&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="129"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="129"/>
         <source>&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the program from accessing </source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;br&gt;&lt;br&gt;Δυστυχώς, κάτι εμποδίζει το πρόγραμμα να αποκτήσει πρόσβαση στο </translation>
     </message>
     <message>
         <location filename="../main.qml" line="130"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="130"/>
         <source>the settings file. This could be caused by incorrect permissions in the local </source>
-        <translation type="unfinished"></translation>
+        <translation>το αρχείο ρυθμίσεων. Αυτό θα μπορούσε να προκληθεί από λανθασμένα δικαιώματα τοπικά </translation>
     </message>
     <message>
         <location filename="../main.qml" line="131"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="131"/>
         <source>app config directory where the settings file is located. </source>
-        <translation type="unfinished"></translation>
+        <translation>κατάλογο ρυθμίσεων εφαρμογής όπου βρίσκεται το αρχείο ρυθμίσεων. </translation>
     </message>
     <message>
         <location filename="../main.qml" line="132"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="132"/>
         <source>Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help.</source>
-        <translation type="unfinished"></translation>
+        <translation>Κοιτάξτε στο &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord κανάλι&lt;/a&gt; για βοήθεια.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="155"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="155"/>
         <source>Connection to datalake failed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Η σύνδεση στο datalake απέτυχε.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="166"/>
         <source>Saving chats.</source>
-        <translation type="unfinished"></translation>
+        <translation>Αποθήκευση συνομοιλιών.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="177"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="177"/>
         <source>Network dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>Διάλογος μέσω δικτύου</translation>
     </message>
     <message>
         <location filename="../main.qml" line="178"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="178"/>
         <source>opt-in to share feedback/conversations</source>
-        <translation type="unfinished"></translation>
+        <translation>επιλογή για να ανταλλάσσετε σχόλια/συζητήσεις</translation>
     </message>
     <message>
         <location filename="../main.qml" line="231"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="231"/>
         <source>Home view</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχική προβολή</translation>
     </message>
     <message>
         <location filename="../main.qml" line="232"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="232"/>
         <source>Home view of application</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχική προβολή της εφαρμογής</translation>
     </message>
     <message>
         <location filename="../main.qml" line="240"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="240"/>
         <source>Home</source>
-        <translation type="unfinished"></translation>
+        <translation>Αρχική σελίδα</translation>
     </message>
     <message>
         <location filename="../main.qml" line="266"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="266"/>
         <source>Chat view</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή συνομιλίας</translation>
     </message>
     <message>
         <location filename="../main.qml" line="267"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="267"/>
         <source>Chat view to interact with models</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή συνομιλίας για αλληλεπίδραση με μοντέλα</translation>
     </message>
     <message>
         <location filename="../main.qml" line="275"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="275"/>
         <source>Chats</source>
-        <translation type="unfinished"></translation>
+        <translation>Συνομοιλίες</translation>
     </message>
     <message>
         <location filename="../main.qml" line="300"/>
@@ -2740,13 +2758,13 @@ model release that uses your data!</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="300"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="309"/>
         <source>Models</source>
-        <translation type="unfinished"></translation>
+        <translation>Μοντέλα</translation>
     </message>
     <message>
         <location filename="../main.qml" line="301"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="301"/>
         <source>Models view for installed models</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή μοντέλων για εγκατεστημένα μοντέλα</translation>
     </message>
     <message>
         <location filename="../main.qml" line="334"/>
@@ -2754,13 +2772,13 @@ model release that uses your data!</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="334"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="343"/>
         <source>LocalDocs</source>
-        <translation type="unfinished"></translation>
+        <translation>Τοπικά Έγγραφα</translation>
     </message>
     <message>
         <location filename="../main.qml" line="335"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="335"/>
         <source>LocalDocs view to configure and use local docs</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή Τοπικών Εγγράφων για τη ρύθμιση παραμέτρων και τη χρήση τοπικών εγγράφων</translation>
     </message>
     <message>
         <location filename="../main.qml" line="368"/>
@@ -2768,43 +2786,43 @@ model release that uses your data!</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="368"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="377"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ρυθμίσεις</translation>
     </message>
     <message>
         <location filename="../main.qml" line="369"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="369"/>
         <source>Settings view for application configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή ρυθμίσεων για τη διαμόρφωση της εφαρμογής</translation>
     </message>
     <message>
         <location filename="../main.qml" line="422"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="422"/>
         <source>The datalake is enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Το datalake είναι ενεργοποιημένο</translation>
     </message>
     <message>
         <location filename="../main.qml" line="424"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="424"/>
         <source>Using a network model</source>
-        <translation type="unfinished"></translation>
+        <translation>Χρήση ενός μοντέλου δικτύου</translation>
     </message>
     <message>
         <location filename="../main.qml" line="426"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="426"/>
         <source>Server mode is enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Η λειτουργία διακομιστή είναι ενεργοποιημένη</translation>
     </message>
     <message>
         <location filename="../main.qml" line="640"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="640"/>
         <source>Installed models</source>
-        <translation type="unfinished"></translation>
+        <translation>Εγκατεστημένα μοντέλα</translation>
     </message>
     <message>
         <location filename="../main.qml" line="641"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="641"/>
         <source>View of installed models</source>
-        <translation type="unfinished"></translation>
+        <translation>Προβολή των εγκατεστημένων μοντέλων</translation>
     </message>
 </context>
 </TS>
