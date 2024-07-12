@@ -460,6 +460,9 @@ Q_SIGNALS:
     void discoverProgressChanged();
     void discoverInProgressChanged();
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *ev) override;
+
 private Q_SLOTS:
     void resortModel();
     void updateModelsFromJson();

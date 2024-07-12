@@ -242,6 +242,9 @@ Q_SIGNALS:
     void requestSaveChats(const QVector<Chat*> &);
     void saveChatsFinished();
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *ev) override;
+
 private Q_SLOTS:
     void newChatCountChanged()
     {

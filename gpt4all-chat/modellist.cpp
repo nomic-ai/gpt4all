@@ -483,6 +483,8 @@ ModelList::ModelList()
     , m_discoverResultsCompleted(0)
     , m_discoverInProgress(false)
 {
+    QCoreApplication::instance()->installEventFilter(this);
+
     m_installedModels->setSourceModel(this);
     m_selectableModels->setSourceModel(this);
     m_downloadableModels->setSourceModel(this);
@@ -508,6 +510,15 @@ ModelList::ModelList()
     updateModelsFromJson();
     updateModelsFromSettings();
     updateModelsFromDirectory();
+
+    QCoreApplication::instance()->installEventFilter(this);
+}
+
+bool ModelList::eventFilter(QObject *obj, QEvent *ev)
+{
+    if (obj == QCoreApplication::instance() && ev->type() == QEvent::LanguageChange)
+        emit dataChanged(index(0, 0), index(m_models.size() - 1, 0));
+    return false;
 }
 
 QString ModelList::incompleteDownloadPath(const QString &modelFile)

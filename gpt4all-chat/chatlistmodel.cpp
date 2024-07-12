@@ -29,7 +29,17 @@ ChatListModel *ChatListModel::globalInstance()
 }
 
 ChatListModel::ChatListModel()
-    : QAbstractListModel(nullptr) {}
+    : QAbstractListModel(nullptr) {
+
+        QCoreApplication::instance()->installEventFilter(this);
+}
+
+bool ChatListModel::eventFilter(QObject *obj, QEvent *ev)
+{
+    if (obj == QCoreApplication::instance() && ev->type() == QEvent::LanguageChange)
+        emit dataChanged(index(0, 0), index(m_chats.size() - 1, 0));
+    return false;
+}
 
 void ChatListModel::loadChats()
 {
