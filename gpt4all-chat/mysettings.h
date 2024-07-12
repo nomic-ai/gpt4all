@@ -33,8 +33,11 @@ class MySettings : public QObject
     Q_PROPERTY(bool serverChat READ serverChat WRITE setServerChat NOTIFY serverChatChanged)
     Q_PROPERTY(QString modelPath READ modelPath WRITE setModelPath NOTIFY modelPathChanged)
     Q_PROPERTY(QString userDefaultModel READ userDefaultModel WRITE setUserDefaultModel NOTIFY userDefaultModelChanged)
+    // FIXME: This should be changed to an enum to allow translations to work
     Q_PROPERTY(QString chatTheme READ chatTheme WRITE setChatTheme NOTIFY chatThemeChanged)
+    // FIXME: This should be changed to an enum to allow translations to work
     Q_PROPERTY(QString fontSize READ fontSize WRITE setFontSize NOTIFY fontSizeChanged)
+    Q_PROPERTY(QString languageAndLocale READ languageAndLocale WRITE setLanguageAndLocale NOTIFY languageAndLocaleChanged)
     Q_PROPERTY(bool forceMetal READ forceMetal WRITE setForceMetal NOTIFY forceMetalChanged)
     Q_PROPERTY(QString lastVersionStarted READ lastVersionStarted WRITE setLastVersionStarted NOTIFY lastVersionStartedChanged)
     Q_PROPERTY(int localDocsChunkSize READ localDocsChunkSize WRITE setLocalDocsChunkSize NOTIFY localDocsChunkSizeChanged)
@@ -52,6 +55,7 @@ class MySettings : public QObject
     Q_PROPERTY(QStringList embeddingsDeviceList MEMBER m_embeddingsDeviceList CONSTANT)
     Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
     Q_PROPERTY(SuggestionMode suggestionMode READ suggestionMode WRITE setSuggestionMode NOTIFY suggestionModeChanged)
+    Q_PROPERTY(QStringList uiLanguages MEMBER m_uiLanguages CONSTANT)
 
 public:
     static MySettings *globalInstance();
@@ -142,6 +146,9 @@ public:
     SuggestionMode suggestionMode() const;
     void setSuggestionMode(SuggestionMode mode);
 
+    QString languageAndLocale() const;
+    void setLanguageAndLocale(const QString &bcp47Name = QString()); // called on startup with QString()
+
     // Release/Download settings
     QString lastVersionStarted() const;
     void setLastVersionStarted(const QString &value);
@@ -215,12 +222,15 @@ Q_SIGNALS:
     void attemptModelLoadChanged();
     void deviceChanged();
     void suggestionModeChanged();
+    void languageAndLocaleChanged();
 
 private:
     QSettings m_settings;
     bool m_forceMetal;
     const QStringList m_deviceList;
     const QStringList m_embeddingsDeviceList;
+    const QStringList m_uiLanguages;
+    QTranslator *m_translator = nullptr;
 
 private:
     explicit MySettings();
@@ -232,6 +242,7 @@ private:
     QVariant getModelSetting(const QString &name, const ModelInfo &info) const;
     void setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
                          bool signal = false);
+    QString filePathForLocale(const QLocale &locale);
 };
 
 #endif // MYSETTINGS_H

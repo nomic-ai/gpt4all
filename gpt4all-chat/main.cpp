@@ -33,12 +33,17 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    QTranslator translator;
-    bool success = translator.load(":/i18n/gpt4all_en.qm");
-    Q_ASSERT(success);
-    app.installTranslator(&translator);
+    // Set the local and language translation before the qml engine has even been started. This will
+    // use the default system locale unless the user has explicitly set it to use a different one.
+    MySettings::globalInstance()->setLanguageAndLocale();
 
     QQmlApplicationEngine engine;
+
+    // Add a connection here from MySettings::languageAndLocaleChanged signal to a lambda slot where I can call
+    // engine.uiLanguage property
+    QObject::connect(MySettings::globalInstance(), &MySettings::languageAndLocaleChanged, [&engine]() {
+        engine.setUiLanguage(MySettings::globalInstance()->languageAndLocale());
+    });
 
     QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
     const QString libDir = QCoreApplication::applicationDirPath() + "/../lib/";

@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QGlobalStatic>
+#include <QGuiApplication>
 #include <QIODevice>
 #include <QMap>
 #include <QMetaObject>
@@ -23,6 +24,9 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+// FIXME: All of these default strings that are shown in the UI for settings need to be marked as
+// translatable
+
 namespace defaults {
 
 static const int     threadCount             = std::min(4, (int32_t) std::thread::hardware_concurrency());
@@ -30,6 +34,7 @@ static const bool    forceMetal              = false;
 static const bool    networkIsActive         = false;
 static const bool    networkUsageStatsActive = false;
 static const QString device                  = "Auto";
+static const QString languageAndLocale       = "Default";
 
 } // namespace defaults
 
@@ -95,6 +100,46 @@ static QStringList getDevices(bool skipKompute = false)
     return deviceList;
 }
 
+static QString getUiLanguage(const QString directory, const QString fileName)
+{
+    QTranslator translator;
+    const QString filePath = directory + QDir::separator() + fileName;
+    if (translator.load(filePath)) {
+        const QString lang = fileName.mid(fileName.indexOf('_') + 1,
+            fileName.lastIndexOf('.') - fileName.indexOf('_') - 1);
+        return lang;
+    }
+
+    qDebug() << "ERROR: Failed to load translation file:" << filePath;
+    return QString();
+}
+
+static QStringList getUiLanguages(const QString &modelPath)
+{
+    QStringList languageList( { QObject::tr("Default") } );
+
+    // Add the language translations from model path files first which is used by translation developers
+    // to load translations in progress without having to rebuild all of GPT4All from source
+    {
+        const QDir dir(modelPath);
+        const QStringList qmFiles = dir.entryList({"*.qm"}, QDir::Files);
+        for (const QString &fileName : qmFiles)
+            languageList << getUiLanguage(modelPath, fileName);
+    }
+
+    // Now add the internal language translations
+    {
+        const QDir dir(":/i18n");
+        const QStringList qmFiles = dir.entryList({"*.qm"}, QDir::Files);
+        for (const QString &fileName : qmFiles) {
+            const QString lang = getUiLanguage(":/i18n", fileName);
+            if (!languageList.contains(lang))
+                languageList.append(lang);
+        }
+    }
+    return languageList;
+}
+
 class MyPrivateSettings: public MySettings { };
 Q_GLOBAL_STATIC(MyPrivateSettings, settingsInstance)
 MySettings *MySettings::globalInstance()
@@ -106,6 +151,7 @@ MySettings::MySettings()
     : QObject(nullptr)
     , m_deviceList(getDevices())
     , m_embeddingsDeviceList(getDevices(/*skipKompute*/ true))
+    , m_uiLanguages(getUiLanguages(modelPath()))
 {
 }
 
@@ -154,6 +200,7 @@ void MySettings::restoreApplicationDefaults()
     setUserDefaultModel(basicDefaults.value("userDefaultModel").toString());
     setForceMetal(defaults::forceMetal);
     setSuggestionMode(basicDefaults.value("suggestionMode").value<SuggestionMode>());
+    setLanguageAndLocale(defaults::languageAndLocale);
 }
 
 void MySettings::restoreLocalDocsDefaults()
@@ -520,4 +567,92 @@ void MySettings::setNetworkUsageStatsActive(bool value)
         m_settings.setValue("network/usageStatsActive", value);
         emit networkUsageStatsActiveChanged();
     }
+}
+
+QString MySettings::languageAndLocale() const
+{
+    auto value = m_settings.value("languageAndLocale");
+    if (!value.isValid())
+        return defaults::languageAndLocale;
+    return value.toString();
+}
+
+QString MySettings::filePathForLocale(const QLocale &locale)
+{
+    // Check and see if we have a translation for the chosen locale and set it if possible otherwise
+    // we return the filepath for the 'en' translation
+    const QStringList uiLanguages = locale.uiLanguages(QLocale::TagSeparator::Underscore);
+
+    // Scan this directory for files named like gpt4all_%1.qm that match and if so return them first
+    // this is the model download directory and it can be used by translation developers who are
+    // trying to test their translations by just compiling the translation with the lrelease tool
+    // rather than having to recompile all of GPT4All
+    QString directory = modelPath();
+    for (const QString &bcp47Name : uiLanguages) {
+        QString filePath = QString("%1/gpt4all_%2.qm").arg(directory).arg(bcp47Name);
+        QFileInfo filePathInfo(filePath);
+        if (filePathInfo.exists()) return filePath;
+    }
+
+    // Now scan the internal built-in translations
+    for (QString bcp47Name : uiLanguages) {
+        QString filePath = QString(":/i18n/gpt4all_%1.qm").arg(bcp47Name);
+        QFileInfo filePathInfo(filePath);
+        if (filePathInfo.exists()) return filePath;
+    }
+    return QString(":/i18n/gpt4all_en.qm");
+}
+
+void MySettings::setLanguageAndLocale(const QString &bcp47Name)
+{
+    if (!bcp47Name.isEmpty() && languageAndLocale() != bcp47Name)
+        m_settings.setValue("languageAndLocale", bcp47Name);
+
+    // When the app is started this method is called with no bcp47Name given which sets the translation
+    // to either the default which is the system locale or the one explicitly set by the user previously.
+    QLocale locale;
+    const QString l = languageAndLocale();
+    if (l == "Default")
+        locale = QLocale::system();
+    else
+        locale = QLocale(l);
+
+    // If we previously installed a translator, then remove it
+    if (m_translator) {
+        if (!qGuiApp->removeTranslator(m_translator)) {
+            qDebug() << "ERROR: Failed to remove the previous translator";
+        } else {
+            delete m_translator;
+            m_translator = nullptr;
+        }
+    }
+
+    // We expect that the translator was removed and is now a nullptr
+    Q_ASSERT(!m_translator);
+
+    const QString filePath = filePathForLocale(locale);
+    // Installing the default gpt4all_en.qm fails presumably because it has no strings that are
+    // different from the ones stored in the binary
+    if (!m_translator && !filePath.endsWith("en.qm")) {
+        // Create a new translator object on the heap
+        m_translator = new QTranslator(this);
+        bool success = m_translator->load(filePath);
+        Q_ASSERT(success);
+        if (!success) {
+            qDebug() << "ERROR: Failed to load translation file:" << filePath;
+            delete m_translator;
+            m_translator = nullptr;
+        }
+
+        // If we've successfully loaded it, then try and install it
+        if (!qGuiApp->installTranslator(m_translator)) {
+            qDebug() << "ERROR: Failed to install the translator:" << filePath;
+            delete m_translator;
+            m_translator = nullptr;
+        }
+    }
+
+    // Finally, set the locale whether we have a translation or not
+    QLocale::setDefault(locale);
+    emit languageAndLocaleChanged();
 }
