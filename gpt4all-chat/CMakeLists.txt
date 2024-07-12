@@ -33,7 +33,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(GPT4ALL_TRANSLATIONS OFF "Build with translations")
 option(GPT4ALL_LOCALHOST OFF "Build installer for localhost repo")
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
@@ -227,14 +226,12 @@ qt_add_qml_module(chat
       icons/you.svg
 )
 
-if (GPT4ALL_TRANSLATIONS)
-    qt_add_translations(chat
-        TS_FILES
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_en.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
-    )
-endif()
+qt_add_translations(chat
+    TS_FILES
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_en.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
+)
 
 set_target_properties(chat PROPERTIES
     WIN32_EXECUTABLE TRUE
