@@ -46,6 +46,14 @@ After installation you should be able to find the Qt Linguist application in the
   located on your local filesystem after cloning the repository.
 - If the file does not exist yet for the language you are interested in, then just copy the english one
   to a new file with appropriate name and edit that.
+
+## How to see your translations in the app as you develop them
+![Peek 2024-07-12 14-22](https://github.com/user-attachments/assets/6ff00338-5b49-4f97-a0d4-de96f3991469)
+- In the same folder that where your models are stored you can add translation files (.ts) and compile them
+  using the command `/path/to/Qt/6.7.2/gcc_64/bin/lrelease gpt4all_{lang}.ts`
+- This should produce a file named `gpt4all_{lang}.qm` in the same folder. Restart GPT4All and you should
+  now be able to see your language in the settings combobox.
+
   
 ## Information on how to use Qt Linguist
 
