@@ -231,6 +231,7 @@ qt_add_translations(chat
     ${CMAKE_SOURCE_DIR}/translations/gpt4all_en.ts
     ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
     ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
+    ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_TW.ts
 )
 
 set_target_properties(chat PROPERTIES
