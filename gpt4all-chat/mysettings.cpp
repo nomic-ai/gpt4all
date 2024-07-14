@@ -39,8 +39,8 @@ static const QString languageAndLocale       = "Default";
 } // namespace defaults
 
 static const QVariantMap basicDefaults {
-    { "chatTheme",                "Light" },
-    { "fontSize",                 "Small" },
+    { "chatTheme",                QVariant::fromValue(ChatTheme::Light) },
+    { "fontSize",                 QVariant::fromValue(FontSize::Small) },
     { "lastVersionStarted",       "" },
     { "networkPort",              4891, },
     { "saveChatsContext",         false },
@@ -189,8 +189,8 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
 
 void MySettings::restoreApplicationDefaults()
 {
-    setChatTheme(basicDefaults.value("chatTheme").toString());
-    setFontSize(basicDefaults.value("fontSize").toString());
+    setChatTheme(basicDefaults.value("chatTheme").value<ChatTheme>());
+    setFontSize(basicDefaults.value("fontSize").value<FontSize>());
     setDevice(defaults::device);
     setThreadCount(defaults::threadCount);
     setSaveChatsContext(basicDefaults.value("saveChatsContext").toBool());
@@ -435,8 +435,6 @@ bool           MySettings::saveChatsContext() const        { return getBasicSett
 bool           MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
 int            MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
 QString        MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
-QString        MySettings::chatTheme() const               { return getBasicSetting("chatTheme"               ).toString(); }
-QString        MySettings::fontSize() const                { return getBasicSetting("fontSize"                ).toString(); }
 QString        MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted"      ).toString(); }
 int            MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize"     ).toInt(); }
 int            MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
@@ -452,8 +450,6 @@ void MySettings::setSaveChatsContext(bool value)                      { setBasic
 void MySettings::setServerChat(bool value)                            { setBasicSetting("serverChat",               value); }
 void MySettings::setNetworkPort(int value)                            { setBasicSetting("networkPort",              value); }
 void MySettings::setUserDefaultModel(const QString &value)            { setBasicSetting("userDefaultModel",         value); }
-void MySettings::setChatTheme(const QString &value)                   { setBasicSetting("chatTheme",                value); }
-void MySettings::setFontSize(const QString &value)                    { setBasicSetting("fontSize",                 value); }
 void MySettings::setLastVersionStarted(const QString &value)          { setBasicSetting("lastVersionStarted",       value); }
 void MySettings::setLocalDocsChunkSize(int value)                     { setBasicSetting("localdocs/chunkSize",      value, "localDocsChunkSize"); }
 void MySettings::setLocalDocsRetrievalSize(int value)                 { setBasicSetting("localdocs/retrievalSize",  value, "localDocsRetrievalSize"); }
@@ -464,6 +460,52 @@ void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasic
 void MySettings::setLocalDocsEmbedDevice(const QString &value)        { setBasicSetting("localdocs/embedDevice",    value, "localDocsEmbedDevice"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
 void MySettings::setSuggestionMode(SuggestionMode value)              { setBasicSetting("suggestionMode",           int(value)); }
+
+static QString chatThemeToString(ChatTheme value)
+{
+    // These strings should not be translated as they are used by versions of GPT4All settings before
+    // the advent of translations
+    switch(value) {
+    case ChatTheme::Light: return "Light";
+    case ChatTheme::Dark: return "Dark";
+    case ChatTheme::LegacyDark: return "LegacyDark";
+    default: Q_UNREACHABLE();
+    }
+    return QString();
+}
+static ChatTheme stringToChatTheme(const QString &value)
+{
+    if (value == "Light")       return ChatTheme::Light;
+    if (value == "Dark")        return ChatTheme::Dark;
+    if (value == "LegacyDark")  return ChatTheme::LegacyDark;
+    Q_UNREACHABLE();
+    return ChatTheme::Light;
+}
+ChatTheme MySettings::chatTheme() const { return stringToChatTheme(getBasicSetting("chatTheme").toString()); }
+void MySettings::setChatTheme(ChatTheme value) { setBasicSetting("chatTheme", chatThemeToString(value)); }
+
+static QString fontSizeToString(FontSize value)
+{
+    // These strings should not be translated as they are used by versions of GPT4All settings before
+    // the advent of translations
+    switch(value) {
+    case FontSize::Small: return "Small";
+    case FontSize::Medium: return "Medium";
+    case FontSize::Large: return "Large";
+    default: Q_UNREACHABLE();
+    }
+    return QString();
+}
+static FontSize stringToFontSize(const QString &value)
+{
+    if (value == "Small")  return FontSize::Small;
+    if (value == "Medium") return FontSize::Medium;
+    if (value == "Large")  return FontSize::Large;
+    Q_UNREACHABLE();
+    return FontSize::Small;
+}
+FontSize MySettings::fontSize() const { return stringToFontSize(getBasicSetting("fontSize").toString()); }
+void MySettings::setFontSize(FontSize value) { setBasicSetting("fontSize", fontSizeToString(value)); }
 
 QString MySettings::modelPath()
 {

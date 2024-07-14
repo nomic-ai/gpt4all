@@ -2,6 +2,7 @@ import QtCore
 import QtQuick
 import QtQuick.Controls.Basic
 import mysettings
+import mysettingsenums
 
 QtObject {
     // black and white
@@ -119,9 +120,9 @@ QtObject {
 
     property color accentColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue200
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return yellow300
             default:
                 return yellow300
@@ -134,9 +135,9 @@ QtObject {
 
     property color darkContrast: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue950
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray300
             default:
                 return gray100
@@ -145,9 +146,9 @@ QtObject {
 
     property color lightContrast: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray0
             default:
                 return gray0
@@ -156,9 +157,9 @@ QtObject {
 */
     property color controlBorder: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue800
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray0
             default:
                 return gray300
@@ -167,9 +168,9 @@ QtObject {
 
     property color controlBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue950
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray300
             default:
                 return gray100
@@ -178,9 +179,9 @@ QtObject {
 
     property color disabledControlBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue950
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray200
             default:
                 return gray200
@@ -189,9 +190,9 @@ QtObject {
 
     property color dividerColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue950
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray200
             default:
                 return grayRed0
@@ -204,9 +205,9 @@ QtObject {
 
     property color settingsDivider: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return dividerColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray400
             default:
                 return grayRed500
@@ -215,9 +216,9 @@ QtObject {
 
     property color viewBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue600
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray100
             default:
                 return gray50
@@ -228,9 +229,9 @@ QtObject {
 
     property color containerForeground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue950
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray300
             default:
                 return gray300
@@ -239,9 +240,9 @@ QtObject {
 */
     property color containerBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue900
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray200
             default:
                 return gray100
@@ -250,9 +251,9 @@ QtObject {
 
     property color viewBarBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue950
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray400
             default:
                 return gray100
@@ -261,9 +262,9 @@ QtObject {
 
     property color progressForeground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return accentColor
             default:
                 return green600
@@ -272,9 +273,9 @@ QtObject {
 
     property color progressBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue900
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green600
             default:
                 return green100
@@ -283,7 +284,7 @@ QtObject {
 
     property color altProgressForeground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return progressForeground
             default:
                 return "#fcf0c9"
@@ -292,7 +293,7 @@ QtObject {
 
     property color altProgressBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return progressBackground
             default:
                 return "#fff9d2"
@@ -301,7 +302,7 @@ QtObject {
 
     property color altProgressText: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return textColor
             default:
                 return "#d16f0e"
@@ -310,9 +311,9 @@ QtObject {
 
     property color checkboxBorder: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return accentColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return gray200
             default:
                 return gray600
@@ -321,9 +322,9 @@ QtObject {
 
     property color checkboxForeground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return accentColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green300
             default:
                 return green600
@@ -332,9 +333,9 @@ QtObject {
 
     property color buttonBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue950
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray300
             default:
                 return green600
@@ -343,9 +344,9 @@ QtObject {
 
     property color buttonBackgroundHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue900
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray400
             default:
                 return green500
@@ -354,9 +355,9 @@ QtObject {
 
     property color lightButtonText: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return textColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return textColor
             default:
                 return green600
@@ -365,9 +366,9 @@ QtObject {
 
     property color lightButtonMutedText: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return mutedTextColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return mutedTextColor
             default:
                 return green300
@@ -376,9 +377,9 @@ QtObject {
 
     property color lightButtonBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return buttonBackground
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return buttonBackground
             default:
                 return green100
@@ -387,9 +388,9 @@ QtObject {
 
     property color lightButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return buttonBackgroundHovered
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return buttonBackgroundHovered
             default:
                 return green200
@@ -398,9 +399,9 @@ QtObject {
 
     property color darkButtonText: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return textColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return textColor
             default:
                 return red600
@@ -409,9 +410,9 @@ QtObject {
 
     property color darkButtonMutedText: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return mutedTextColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return mutedTextColor
             default:
                 return red300
@@ -420,9 +421,9 @@ QtObject {
 
     property color darkButtonBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return buttonBackground
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return buttonBackground
             default:
                 return red200
@@ -431,9 +432,9 @@ QtObject {
 
     property color darkButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return buttonBackgroundHovered
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return buttonBackgroundHovered
             default:
                 return red300
@@ -442,9 +443,9 @@ QtObject {
 
     property color lighterButtonForeground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return textColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return textColor
             default:
                 return green600
@@ -453,9 +454,9 @@ QtObject {
 
     property color lighterButtonBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return buttonBackground
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return buttonBackground
             default:
                 return green100
@@ -464,9 +465,9 @@ QtObject {
 
     property color lighterButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return buttonBackgroundHovered
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return buttonBackgroundHovered
             default:
                 return green50
@@ -475,9 +476,9 @@ QtObject {
 
     property color lighterButtonBackgroundHoveredRed: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return buttonBackgroundHovered
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return buttonBackgroundHovered
             default:
                 return red50
@@ -486,9 +487,9 @@ QtObject {
 
     property color sourcesBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return lighterButtonBackground
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return lighterButtonBackground
             default:
                 return gray100
@@ -497,9 +498,9 @@ QtObject {
 
     property color sourcesBackgroundHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return lighterButtonBackgroundHovered
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return lighterButtonBackgroundHovered
             default:
                 return gray200
@@ -508,9 +509,9 @@ QtObject {
 
     property color buttonBorder: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return accentColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return controlBorder
             default:
                 return yellow200
@@ -519,9 +520,9 @@ QtObject {
 
     property color conversationInputButtonBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return accentColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return accentColor
             default:
                 return black
@@ -530,9 +531,9 @@ QtObject {
 
     property color conversationInputButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue0
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkwhite
             default:
                 return accentColor
@@ -541,9 +542,9 @@ QtObject {
 
     property color selectedBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue700
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray200
             default:
                 return gray0
@@ -552,9 +553,9 @@ QtObject {
 
     property color conversationButtonBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue500
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray100
             default:
                 return gray0
@@ -562,9 +563,9 @@ QtObject {
     }
    property color conversationBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue500
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray50
             default:
                 return white
@@ -573,9 +574,9 @@ QtObject {
 
     property color conversationProgress: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green400
             default:
                 return green400
@@ -584,9 +585,9 @@ QtObject {
 
     property color conversationButtonBackgroundHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray0
             default:
                 return gray100
@@ -595,9 +596,9 @@ QtObject {
 
     property color conversationButtonBorder: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return accentColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return yellow200
             default:
                 return yellow200
@@ -606,9 +607,9 @@ QtObject {
 
     property color conversationHeader: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green400
             default:
                 return green500
@@ -617,9 +618,9 @@ QtObject {
 
     property color collectionsButtonText: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return black
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return black
             default:
                 return white
@@ -628,9 +629,9 @@ QtObject {
 
     property color collectionsButtonProgress: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray400
             default:
                 return green400
@@ -639,9 +640,9 @@ QtObject {
 
     property color collectionsButtonForeground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green300
             default:
                 return green600
@@ -664,9 +665,9 @@ QtObject {
 
     property color welcomeButtonBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return buttonBackground
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return buttonBackground
             default:
                 return lighterButtonBackground
@@ -675,9 +676,9 @@ QtObject {
 
     property color welcomeButtonBorder: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return buttonBorder
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return buttonBorder
             default:
                 return green300
@@ -686,9 +687,9 @@ QtObject {
 
     property color welcomeButtonBorderHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple200
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray100
             default:
                 return green400
@@ -697,9 +698,9 @@ QtObject {
 
     property color welcomeButtonText: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return textColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return textColor
             default:
                 return green700
@@ -708,9 +709,9 @@ QtObject {
 
     property color welcomeButtonTextHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple200
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return gray400
             default:
                 return green800
@@ -719,9 +720,9 @@ QtObject {
 
     property color fancyLinkText: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return textColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return textColor
             default:
                 return grayRed900
@@ -730,9 +731,9 @@ QtObject {
 
     property color fancyLinkTextHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return mutedTextColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return mutedTextColor
             default:
                 return textColor
@@ -741,9 +742,9 @@ QtObject {
 
     property color iconBackgroundDark: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue200
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green400
             default:
                 return black
@@ -752,9 +753,9 @@ QtObject {
 
     property color iconBackgroundLight: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue200
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkwhite
             default:
                 return gray500
@@ -763,9 +764,9 @@ QtObject {
 
     property color iconBackgroundHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue0
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return gray400
             default:
                 return accentColor
@@ -774,9 +775,9 @@ QtObject {
 
     property color iconBackgroundViewBar: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return iconBackgroundLight
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return iconBackgroundLight
             default:
                 return green500
@@ -785,9 +786,9 @@ QtObject {
 
     property color iconBackgroundViewBarToggled: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return iconBackgroundLight
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray50
             default:
                 return green200
@@ -796,9 +797,9 @@ QtObject {
 
     property color iconBackgroundViewBarHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return iconBackgroundHovered
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return iconBackgroundHovered
             default:
                 return green600
@@ -807,9 +808,9 @@ QtObject {
 
     property color slugBackground: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue600
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray300
             default:
                 return gray100
@@ -818,9 +819,9 @@ QtObject {
 
     property color textColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue0
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkwhite
             default:
                 return black
@@ -846,9 +847,9 @@ QtObject {
     // normal contrast
     property color mutedTextColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue200
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return gray400
             default:
                 return gray500
@@ -858,9 +859,9 @@ QtObject {
     // dark contrast
     property color mutedDarkTextColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return mutedTextColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return mutedTextColor
             default:
                 return grayRed500
@@ -870,7 +871,7 @@ QtObject {
     // dark contrast hovered
     property color mutedDarkTextColorHovered: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue400
             default:
                 return grayRed900
@@ -879,9 +880,9 @@ QtObject {
 
     property color oppositeTextColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return white
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkwhite
             default:
                 return white
@@ -890,9 +891,9 @@ QtObject {
 
     property color oppositeMutedTextColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return white
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkwhite
             default:
                 return white
@@ -901,9 +902,9 @@ QtObject {
 
     property color textAccent: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return accentColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return accentColor
             default:
                 return accentColor
@@ -912,9 +913,9 @@ QtObject {
 
     property color textErrorColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return red400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return red400
             default:
                 return red400
@@ -923,9 +924,9 @@ QtObject {
 
     property color settingsTitleTextColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue100
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green200
             default:
                 return black
@@ -934,9 +935,9 @@ QtObject {
 
     property color titleTextColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green300
             default:
                 return green700
@@ -945,9 +946,9 @@ QtObject {
 
     property color titleTextColor2: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return darkwhite
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green200
             default:
                 return green700
@@ -956,9 +957,9 @@ QtObject {
 
     property color titleInfoTextColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue200
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return gray400
             default:
                 return gray600
@@ -967,9 +968,9 @@ QtObject {
 
     property color styledTextColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple100
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return yellow25
             default:
                 return grayRed900
@@ -978,9 +979,9 @@ QtObject {
 
     property color styledTextColor2: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue0
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return yellow50
             default:
                 return green500
@@ -989,9 +990,9 @@ QtObject {
 
     property color chatDrawerSectionHeader: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple50
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return yellow0
             default:
                 return grayRed800
@@ -1000,9 +1001,9 @@ QtObject {
 
     property color dialogBorder: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return accentColor
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray0
             default:
                 return darkgray0
@@ -1011,9 +1012,9 @@ QtObject {
 
     property color linkColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return yellow600
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return yellow600
             default:
                 return yellow600
@@ -1022,9 +1023,9 @@ QtObject {
 
     property color mainHeader: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue900
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green600
             default:
                 return green600
@@ -1040,9 +1041,9 @@ QtObject {
 
     property color sendGlow: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue1000
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green950
             default:
                 return green300
@@ -1051,9 +1052,9 @@ QtObject {
 
     property color userColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue800
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return green700
             default:
                 return green700
@@ -1062,9 +1063,9 @@ QtObject {
 
     property color assistantColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return purple400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return accentColor
             default:
                 return accentColor
@@ -1073,8 +1074,8 @@ QtObject {
 
     property color codeDefaultColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
             default:
                 return textColor
         }
@@ -1082,8 +1083,8 @@ QtObject {
 
     property color codeKeywordColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
                 return "#2e95d3" // blue
             default:
                 return "#195273" // dark blue
@@ -1092,8 +1093,8 @@ QtObject {
 
     property color codeFunctionColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
                 return"#f22c3d" // red
             default:
                 return"#7d1721" // dark red
@@ -1102,8 +1103,8 @@ QtObject {
 
     property color codeFunctionCallColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
                 return "#e9950c" // orange
             default:
                 return "#815207" // dark orange
@@ -1112,8 +1113,8 @@ QtObject {
 
     property color codeCommentColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
                 return "#808080" // gray
             default:
                 return "#474747" // dark gray
@@ -1122,8 +1123,8 @@ QtObject {
 
     property color codeStringColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
                 return "#00a37d" // green
             default:
                 return "#004a39" // dark green
@@ -1132,8 +1133,8 @@ QtObject {
 
     property color codeNumberColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
                 return "#df3079" // fuchsia
             default:
                 return "#761942" // dark fuchsia
@@ -1142,8 +1143,8 @@ QtObject {
 
     property color codeHeaderColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
                 return containerBackground
             default:
                 return green50
@@ -1152,8 +1153,8 @@ QtObject {
 
     property color codeBackgroundColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
                 return controlBackground
             default:
                 return gray100
@@ -1162,8 +1163,8 @@ QtObject {
 
     property color chatNameEditBgColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
-            case "Dark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
+            case MySettingsEnums.ChatTheme.Dark:
                 return controlBackground
             default:
                 return gray100
@@ -1172,9 +1173,9 @@ QtObject {
 
     property color menuBackgroundColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue700
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray200
             default:
                 return gray50
@@ -1183,9 +1184,9 @@ QtObject {
 
     property color menuHighlightColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return darkgray0
             default:
                 return green100
@@ -1194,17 +1195,17 @@ QtObject {
 
     property color menuBorderColor: {
         switch (MySettings.chatTheme) {
-            case "LegacyDark":
+            case MySettingsEnums.ChatTheme.LegacyDark:
                 return blue400
-            case "Dark":
+            case MySettingsEnums.ChatTheme.Dark:
                 return gray800
             default:
                 return gray300
         }
     }
 
-    property real fontScale: MySettings.fontSize === "Small"  ? 1 :
-                             MySettings.fontSize === "Medium" ? 1.3 :
+    property real fontScale: MySettings.fontSize === MySettingsEnums.FontSize.Small  ? 1 :
+                             MySettings.fontSize === MySettingsEnums.FontSize.Medium ? 1.3 :
                                                   /* "Large" */ 1.8
 
     property real fontSizeSmallest:     8 * fontScale
