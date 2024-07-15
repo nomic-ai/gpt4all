@@ -240,11 +240,21 @@ MySettingsTab {
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
             Layout.alignment: Qt.AlignRight
-            model: ModelList.userDefaultModelList
+            model: ListModel {
+                Component.onCompleted: {
+                    for (var i = 0; i < ModelList.userDefaultModelList.length; ++i)
+                        append({"text": ModelList.userDefaultModelList[i]});
+                    comboBox.updateModel();
+                }
+                ListElement { text: qsTr("Application default") }
+            }
             Accessible.name: defaultModelLabel.text
             Accessible.description: defaultModelLabel.helpText
             function updateModel() {
-                comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
+                if (MySettings.userDefaultModel === "")
+                    comboBox.currentIndex = 0
+                else
+                    comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
             }
             Component.onCompleted: {
                 comboBox.updateModel()
@@ -256,7 +266,10 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                MySettings.userDefaultModel = comboBox.currentText
+                if (comboBox.currentIndex === 0)
+                    MySettings.userDefaultModel = "" // an empty string signifies application default
+                else
+                    MySettings.userDefaultModel = comboBox.currentText
             }
         }
         MySettingsLabel {

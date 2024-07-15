@@ -45,7 +45,7 @@ static const QVariantMap basicDefaults {
     { "networkPort",              4891, },
     { "saveChatsContext",         false },
     { "serverChat",               false },
-    { "userDefaultModel",         "Application default" },
+    { "userDefaultModel",         "" }, // signifies application default
     { "suggestionMode",           QVariant::fromValue(SuggestionMode::LocalDocsOnly) },
     { "localdocs/chunkSize",      512 },
     { "localdocs/retrievalSize",  3 },
@@ -434,7 +434,6 @@ void MySettings::setThreadCount(int value)
 bool           MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
 bool           MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
 int            MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
-QString        MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
 QString        MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted"      ).toString(); }
 int            MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize"     ).toInt(); }
 int            MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
@@ -445,6 +444,16 @@ QString        MySettings::localDocsNomicAPIKey() const    { return getBasicSett
 QString        MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
 QString        MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
 SuggestionMode MySettings::suggestionMode() const          { return getBasicSetting("suggestionMode").value<SuggestionMode>(); };
+
+// In older versions the application default was stored as the string "application default" but in
+// newer versions it is just an empty string to allow translations
+QString MySettings::userDefaultModel() const
+{
+    QString userDefault = getBasicSetting("userDefaultModel").toString();
+    if (userDefault == "Application default")
+        userDefault = QString();
+    return userDefault;
+}
 
 void MySettings::setSaveChatsContext(bool value)                      { setBasicSetting("saveChatsContext",         value); }
 void MySettings::setServerChat(bool value)                            { setBasicSetting("serverChat",               value); }
