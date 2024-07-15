@@ -1892,8 +1892,8 @@ optional image</source>
         <source>Maximum combined prompt/response tokens before information is lost.
 Using more context than the model was trained on will yield poor results.
 NOTE: Does not take effect until you reload the model.</source>
-        <translation>資訊遺失之前的最大組合提示/回應符元。
-使用比模型訓練時更多的語境會生成較差的結果。
+        <translation>資訊遺失前最大的提示/回應符元組合。
+若語境比模型訓練時所使用的語境還要長，將會生成較差的結果。
 注意：重新載入模型後才會生效。</translation>
     </message>
     <message>
@@ -1933,8 +1933,8 @@ NOTE: Higher temperature gives more creative but less predictable outputs.</sour
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="419"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation>只能選擇總機率為 top_p 的最有可能的符元。
-注意：防止選擇極不可能的符元。</translation>
+        <translation>只選擇總機率約為核心採樣，最有可能性的符元。
+注意：用於避免選擇不容易出現的符元。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="453"/>
@@ -1970,7 +1970,7 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
         <location filename="../qml/ModelSettings.qml" line="512"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="512"/>
         <source>Only the top K most likely tokens will be chosen from.</source>
-        <translation>只會選擇最有可能的前 K 個符元。</translation>
+        <translation>只選擇前 K 個最有可能性的符元。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="547"/>
@@ -2884,7 +2884,7 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="335"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="335"/>
         <source>LocalDocs view to configure and use local docs</source>
-        <translation>用以設定與使用我的文件的「我的文件」視圖</translation>
+        <translation>用於設定與使用我的文件的「我的文件」視圖</translation>
     </message>
     <message>
         <location filename="../main.qml" line="368"/>
