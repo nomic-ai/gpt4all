@@ -37,8 +37,14 @@ discord: Cebtenzzre
 YOUR NAME HERE
 - typescript
 
-YOUR NAME HERE
+Dominik  
+email: cosmic-snow@mailfence.com  
+github: cosmic-snow  
+discord: cosmic-snow  
 - wiki documentation
 
-YOUR NAME HERE
+Max Cembalest  
+email: max@nomic.ai  
+github: mcembalest  
+discord: Max  
 - documentation at https://docs.gpt4all.io/
