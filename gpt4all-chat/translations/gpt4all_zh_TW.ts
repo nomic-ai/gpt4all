@@ -100,7 +100,7 @@
         <location filename="../qml/AddModelView.qml" line="91"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="91"/>
         <source>Text field for discovering and filtering downloadable models</source>
-        <translation>用於探索和過濾可下載模型的文字字段</translation>
+        <translation>用於探索與過濾可下載模型的文字字段</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="97"/>
@@ -130,7 +130,7 @@
         <location filename="../qml/AddModelView.qml" line="186"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="186"/>
         <source>Likes</source>
-        <translation>喜歡</translation>
+        <translation>讚</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="186"/>
@@ -285,7 +285,7 @@
         <location filename="../qml/AddModelView.qml" line="465"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="465"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation>描述下載時發生的錯誤</translation>
+        <translation>解釋下載時發生的錯誤</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="478"/>
@@ -347,13 +347,13 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="558"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="587"/>
         <source>Whether the file hash is being calculated</source>
-        <translation>是否正在計算文件雜湊</translation>
+        <translation>是否正在計算檔案雜湊</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="566"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="566"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation>計算文件雜湊值時顯示</translation>
+        <translation>計算檔案雜湊值時顯示</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="584"/>
@@ -416,7 +416,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="26"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="26"/>
         <source>opt-in to share feedback/conversations</source>
-        <translation>選擇分享回饋/對話</translation>
+        <translation>分享回饋/對話計畫</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="37"/>
@@ -470,19 +470,22 @@
         <location filename="../qml/ApplicationSettings.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="110"/>
         <source>Dark</source>
-        <translation>暗色</translation>
+        <translatorcomment>暗色</translatorcomment>
+        <translation>Dark</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="110"/>
         <source>Light</source>
-        <translation>亮色</translation>
+        <translatorcomment>亮色</translatorcomment>
+        <translation>Light</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="110"/>
         <source>LegacyDark</source>
-        <translation>傳統暗色</translation>
+        <translatorcomment>傳統暗色</translatorcomment>
+        <translation>LegacyDark</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="131"/>
@@ -494,19 +497,19 @@
         <location filename="../qml/ApplicationSettings.qml" line="132"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="132"/>
         <source>The size of text in the application.</source>
-        <translation>應用程式中的文字大小。</translation>
+        <translation>應用程式中的字體大小。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="166"/>
         <source>Language and Locale</source>
-        <translation>語言和區域設定</translation>
+        <translation>語言與區域設定</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="167"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="167"/>
         <source>The language and locale you wish to use.</source>
-        <translation>您希望使用的語言和區域設定。</translation>
+        <translation>您希望使用的語言與區域設定。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="165"/>
@@ -518,7 +521,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="166"/>
         <source>The compute device used for text generation. &quot;Auto&quot; uses Vulkan or Metal.</source>
-        <translation>用於文字產生的計算設備。 「Auto」將自動使用 Vulkan 或 Metal。</translation>
+        <translation>用於生成文字的計算設備。 「Auto」將自動使用 Vulkan 或 Metal。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="199"/>
@@ -542,25 +545,28 @@
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>When chatting with LocalDocs</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>當使用「我的文件」交談時</translatorcomment>
+        <translation>When chatting with LocalDocs</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>Whenever possible</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>視情況允許</translatorcomment>
+        <translation>Whenever possible</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>永不</translatorcomment>
+        <translation>Never</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="263"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="263"/>
         <source>Generate suggested follow-up questions at the end of responses.</source>
-        <translation>在回覆末尾產生後續建議的問題。</translation>
+        <translation>在回覆末尾生成後續建議的問題。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="232"/>
@@ -572,7 +578,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="233"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="233"/>
         <source>Where to store local models and the LocalDocs database.</source>
-        <translation>儲存本機模型和「我的文件」資料庫的位置。</translation>
+        <translation>儲存本機模型與「我的文件」資料庫的位置。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="262"/>
@@ -596,7 +602,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="275"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="275"/>
         <source>Send chats and feedback to the GPT4All Open-Source Datalake.</source>
-        <translation>將聊天和回饋發送到 GPT4All 開放原始碼資料湖泊。</translation>
+        <translation>將交談與回饋發送到 GPT4All 開放原始碼資料湖泊。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="308"/>
@@ -614,7 +620,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="321"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="321"/>
         <source>The number of CPU threads used for inference and embedding.</source>
-        <translation>用於推理和嵌入的中央處理器（CPU）線程數。</translation>
+        <translation>用於推理與嵌入的中央處理器線程數。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="352"/>
@@ -626,7 +632,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="353"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="353"/>
         <source>Save the chat model&apos;s state to disk for faster loading. WARNING: Uses ~2GB per chat.</source>
-        <translation>將聊天模型的狀態儲存到磁碟以加快載入速度。警告：每次聊天使用約 2GB。</translation>
+        <translation>將交談模型的狀態儲存到磁碟以加快載入速度。警告：每次交談使用約 2GB。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="369"/>
@@ -727,7 +733,7 @@
         <location filename="../qml/ChatDrawer.qml" line="199"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatDrawer.qml" line="199"/>
         <source>Select the current chat or edit the chat when in edit mode</source>
-        <translation></translation>
+        <translation>選擇目前交談或在編輯模式下編輯交談</translation>
     </message>
     <message>
         <location filename="../qml/ChatDrawer.qml" line="216"/>
@@ -817,7 +823,7 @@
         <location filename="../qml/ChatView.qml" line="60"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="60"/>
         <source>&lt;br&gt;&lt;br&gt;Model loading failures can happen for a variety of reasons, but the most common causes include a bad file format, an incomplete or corrupted download, the wrong file type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Ensure the model file has a compatible format and type&lt;li&gt;Check the model file is complete in the download folder&lt;li&gt;You can find the download folder in the settings dialog&lt;li&gt;If you&apos;ve sideloaded the model ensure the file is not corrupt by checking md5sum&lt;li&gt;Read more about what models are supported in our &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;documentation&lt;/a&gt; for the gui&lt;li&gt;Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help</source>
-        <translation>&lt;br&gt;&lt;br&gt;模型載入失敗的原因有很多，但最常見的原因包括檔案格式錯誤、下載不完整或損壞、檔案類型錯誤、系統 RAM 不足或模型類型不相容。以下是解決問題的一些建議：&lt;br&gt;&lt;ul&gt;&lt;li&gt;確保模型檔案具有相容的格式和類型&lt;li&gt;檢查下載資料夾中的模型檔案是否完整&lt;li&gt;您可以找到下載資料夾在設置對話方塊中&lt;li&gt;如果您已旁載入模型，請透過檢查md5sum 確保檔案未損壞&lt;li&gt;在我們的&lt;a href=&quot;https://docs.gpt4all.io/ 中了解有關支援哪些模型的更多資訊&quot;&gt;GUI 文件&lt;/a&gt;&lt;li&gt;查看我們的&lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord 伺服器&lt;/a&gt;尋求協助</translation>
+        <translation>&lt;br&gt;&lt;br&gt;模型載入失敗的原因有很多，但最常見的原因包括檔案格式錯誤、下載不完整或損壞、檔案類型錯誤、系統主記憶體不足或模型類型不相容。以下是解決問題的一些建議：&lt;br&gt;&lt;ul&gt;&lt;li&gt;確保模型檔案具有相容的格式與類型&lt;li&gt;檢查下載資料夾中的模型檔案是否完整&lt;li&gt;您可以找到下載資料夾在設置對話方塊中&lt;li&gt;如果您已旁載入模型，請透過檢查md5sum 確保檔案未損壞&lt;li&gt;在我們的&lt;a href=&quot;https://docs.gpt4all.io/ 中了解有關支援哪些模型的更多資訊&quot;&gt;GUI 檔案&lt;/a&gt;&lt;li&gt;查看我們的&lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;Discord 伺服器&lt;/a&gt;尋求協助</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="77"/>
@@ -835,7 +841,7 @@
         <location filename="../qml/ChatView.qml" line="87"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="87"/>
         <source>Warn the user if they switch models, then context will be erased</source>
-        <translation>警告使用者如果切換模型，則上下文將被刪除</translation>
+        <translation>警告使用者如果切換模型，則語境將被刪除</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="94"/>
@@ -911,13 +917,13 @@
         <location filename="../qml/ChatView.qml" line="369"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="369"/>
         <source>Waiting for model...</source>
-        <translation>等待模型......</translation>
+        <translation>等待模型中......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="371"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="371"/>
         <source>Switching context...</source>
-        <translation>切換語境......</translation>
+        <translation>切換語境中......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="373"/>
@@ -936,20 +942,26 @@
         <location filename="../qml/ChatView.qml" line="1555"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="377"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1555"/>
-        <source>Reload · </source>
-        <translation>重新載入 · </translation>
+        <source>Reload · %1</source>
+        <translation>重新載入 · %1</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="379"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="379"/>
-        <source>Loading · </source>
-        <translation>載入中 · </translation>
+        <source>Loading · %1</source>
+        <translation>載入中 · %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/ChatView.qml" line="708"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="708"/>
+        <source>Load · %1 (default) →</source>
+        <translation>載入 · %1 (預設) →</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="460"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="460"/>
         <source>The top item is the current model</source>
-        <translation>最上面的項目是目前型號</translation>
+        <translation>最上面的那項是目前使用的模型</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="546"/>
@@ -969,7 +981,7 @@
         <location filename="../qml/ChatView.qml" line="565"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="565"/>
         <source>add collections of documents to the chat</source>
-        <translation>將文件集合新增至聊天中</translation>
+        <translation>將文件集合新增至交談中</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="705"/>
@@ -1056,13 +1068,13 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="854"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="854"/>
         <source>The model is thinking</source>
-        <translation>模型正在思考</translation>
+        <translation>模型正在思考中</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="861"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="861"/>
         <source>recalculating context ...</source>
-        <translation>重新計算上下文...</translation>
+        <translation>重新計算語境中...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="863"/>
@@ -1071,16 +1083,16 @@ model to get started</source>
         <translation>回應停止...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="864"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="864"/>
-        <source>retrieving localdocs: </source>
-        <translation>檢索本機文件： </translation>
+        <location filename="../qml/ChatView.qml" line="873"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="873"/>
+        <source>retrieving localdocs: %1 ...</source>
+        <translation>檢索本機文件中：%1 ...</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="865"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="865"/>
-        <source>searching localdocs: </source>
-        <translation>搜尋本機文件： </translation>
+        <location filename="../qml/ChatView.qml" line="874"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="874"/>
+        <source>searching localdocs: %1 ...</source>
+        <translation>搜尋本機文件中：%1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="866"/>
@@ -1092,7 +1104,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="867"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="867"/>
         <source>generating response ...</source>
-        <translation>產生回應...</translation>
+        <translation>生成回應...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="935"/>
@@ -1151,10 +1163,16 @@ model to get started</source>
         <translation>%1 來源</translation>
     </message>
     <message>
+        <location filename="../qml/ChatView.qml" line="1383"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1383"/>
+        <source>Suggested follow-ups</source>
+        <translation>後續建議</translation>
+    </message>
+    <message>
         <location filename="../qml/ChatView.qml" line="1428"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1428"/>
         <source>Erase and reset chat session</source>
-        <translation>刪除並重置聊天會話</translation>
+        <translation>刪除並重置交談會話</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1449"/>
@@ -1269,7 +1287,7 @@ model to get started</source>
         <location filename="../qml/CollectionsDrawer.qml" line="139"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/CollectionsDrawer.qml" line="139"/>
         <source>Select a collection to make it available to the chat model.</source>
-        <translation>選擇一個收藏以使其可供聊天模型使用。</translation>
+        <translation>選擇一個收藏以使其可供交談模型使用。</translation>
     </message>
 </context>
 <context>
@@ -1413,7 +1431,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsSettings.qml" line="52"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="52"/>
         <source>Comma-separated list. LocalDocs will only attempt to process files with these extensions.</source>
-        <translation>以逗號分隔的清單。 「我的文件」將僅嘗試處理具有這些副檔名的檔案。</translation>
+        <translation>以逗號分隔的列表。「我的文件」將僅嘗試處理具有這些副檔名的檔案。</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="100"/>
@@ -1455,7 +1473,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="166"/>
         <source>The compute device used for embeddings. &quot;Auto&quot; uses the CPU. Requires restart.</source>
-        <translation>用於嵌入的計算設備。 「自動」使用CPU。需要重新啟動。</translation>
+        <translation>用於嵌入的計算裝置。「Auto」將自動使用中央處理器。需要重新啟動。</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="202"/>
@@ -1491,19 +1509,19 @@ model to get started</source>
         <location filename="../qml/LocalDocsSettings.qml" line="250"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="250"/>
         <source>Values too large may cause localdocs failure, extremely slow responses or failure to respond at all. Roughly speaking, the {N chars x N snippets} are added to the model&apos;s context window. More info &lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;here&lt;/a&gt;.</source>
-        <translation>設定太大的數值可能會導致「我的文件」處理失敗、反應速度極慢或根本無法回應。簡單地說，這會將 {N 個字元 x N 個片段} 被添加到模型的上下文視窗中。更多資訊&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;此處&lt;/a&gt;。</translation>
+        <translation>設定太大的數值可能會導致「我的文件」處理失敗、反應速度極慢或根本無法回應。簡單地說，這會將 {N 個字元 x N 個片段} 被添加到模型的語境視窗中。更多資訊&lt;a href=&quot;https://docs.gpt4all.io/gpt4all_desktop/localdocs.html&quot;&gt;此處&lt;/a&gt;。</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="258"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="258"/>
         <source>Document snippet size (characters)</source>
-        <translation>文檔片段大小（字元）</translation>
+        <translation>文件片段大小（字元）</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="259"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="259"/>
         <source>Number of characters per document snippet. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
-        <translation>每個文檔片段的字元數。較大的數字會增加實際反應的可能性，但也會導致生成速度變慢。</translation>
+        <translation>每個文件片段的字元數。較大的數字會增加實際反應的可能性，但也會導致生成速度變慢。</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="284"/>
@@ -1515,7 +1533,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsSettings.qml" line="285"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="285"/>
         <source>Max best N matches of retrieved document snippets to add to the context for prompt. Larger numbers increase likelihood of factual responses, but also result in slower generation.</source>
-        <translation>要新增至提示上下文中的檢索到的文檔片段的最大 N 個匹配項。較大的數字會增加實際反應的可能性，但也會導致生成速度變慢。</translation>
+        <translation>要新增至提示語境中的檢索到的文件片段的最大 N 個匹配項。較大的數字會增加實際反應的可能性，但也會導致生成速度變慢。</translation>
     </message>
 </context>
 <context>
@@ -1638,7 +1656,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsView.qml" line="304"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="304"/>
         <source>Automatically reindexes upon changes to the folder</source>
-        <translation>資料夾變更後自動重新索引</translation>
+        <translation>若資料夾有變動，會自動重新索引</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="306"/>
@@ -1795,7 +1813,7 @@ model to get started</source>
         <location filename="../qml/ModelSettings.qml" line="158"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="158"/>
         <source>Prefixed at the beginning of every conversation. Must contain the appropriate framing tokens.</source>
-        <translation>在每個對話的開頭加上前綴。必須包含適當的框架標記。</translation>
+        <translation>在每個對話的開頭加上前綴。必須包含適當的構建符元（framing tokens）。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="204"/>
@@ -1807,7 +1825,7 @@ model to get started</source>
         <location filename="../qml/ModelSettings.qml" line="205"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="205"/>
         <source>The template that wraps every prompt.</source>
-        <translation>包裝每個提示的範本。</translation>
+        <translation>包裝每個提示詞的範本。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="209"/>
@@ -1827,25 +1845,25 @@ optional image</source>
         <location filename="../qml/ModelSettings.qml" line="255"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="255"/>
         <source>Chat Name Prompt</source>
-        <translation>聊天名稱提示</translation>
+        <translation>交談名稱提示詞</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="256"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="256"/>
         <source>Prompt used to automatically generate chat names.</source>
-        <translation>提示用於自動產生聊天名稱。</translation>
+        <translation>用於自動生成交談名稱的提示詞。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="283"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="283"/>
         <source>Suggested FollowUp Prompt</source>
-        <translation>建議的後續提示</translation>
+        <translation>後續建議提示詞</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="284"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="284"/>
         <source>Prompt used to generate suggested follow-up questions.</source>
-        <translation>提示用於產生建議的後續問題。</translation>
+        <translation>用於生成後續建議問題的提示詞。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="302"/>
@@ -1857,7 +1875,7 @@ optional image</source>
         <location filename="../qml/ModelSettings.qml" line="303"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="303"/>
         <source>Number of input and output tokens the model sees.</source>
-        <translation>模型看到的輸入和輸出標記的數量。</translation>
+        <translation>模型看見的輸入與輸出的符元數量。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="324"/>
@@ -1866,14 +1884,14 @@ optional image</source>
 Using more context than the model was trained on will yield poor results.
 NOTE: Does not take effect until you reload the model.</source>
         <translation>資訊遺失之前的最大組合提示/回應符元。
-使用比模型訓練時更多的上下文會產生較差的結果。
+使用比模型訓練時更多的語境會生成較差的結果。
 注意：重新載入模型後才會生效。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="362"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="362"/>
         <source>Temperature</source>
-        <translation>嚴謹程度（Temperature）</translation>
+        <translation>語境溫度（Temperature）</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="363"/>
@@ -1886,8 +1904,8 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="374"/>
         <source>Temperature increases the chances of choosing less likely tokens.
 NOTE: Higher temperature gives more creative but less predictable outputs.</source>
-        <translation>溫度增加了選擇不太可能的符元的機會。
-注意：較高的溫度會產生更多的創意，但輸出的可預測性較差。</translation>
+        <translation>語境溫度會提高選擇不容易出現的符元機率。
+注意：較高的語境溫度會生成更多創意，但輸出的可預測性會相對較差。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="408"/>
@@ -1906,8 +1924,8 @@ NOTE: Higher temperature gives more creative but less predictable outputs.</sour
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="419"/>
         <source>Only the most likely tokens up to a total probability of top_p can be chosen.
 NOTE: Prevents choosing highly unlikely tokens.</source>
-        <translation>只能選擇總機率為 top_p 的最有可能的標記。
-注意：防止選擇極不可能的標記。</translation>
+        <translation>只能選擇總機率為 top_p 的最有可能的符元。
+注意：防止選擇極不可能的符元。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="453"/>
@@ -1943,7 +1961,7 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
         <location filename="../qml/ModelSettings.qml" line="512"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="512"/>
         <source>Only the top K most likely tokens will be chosen from.</source>
-        <translation>只會選擇最有可能的前 K 個標記。</translation>
+        <translation>只會選擇最有可能的前 K 個符元。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="547"/>
@@ -1955,7 +1973,7 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
         <location filename="../qml/ModelSettings.qml" line="548"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="548"/>
         <source>Maximum response length, in tokens.</source>
-        <translation>最大響應長度（以標記為單位）。</translation>
+        <translation>最大響應長度（以符元為單位）。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="593"/>
@@ -1975,7 +1993,7 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
         <source>Amount of prompt tokens to process at once.
 NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
         <translation>一次處理的提示符元數量。
-注意：較高的值可以加快讀取提示的速度，但會使用更多的 RAM。</translation>
+注意：較高的值可以加快讀取提示的速度，但會使用更多的記憶體。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="640"/>
@@ -1993,7 +2011,7 @@ NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
         <location filename="../qml/ModelSettings.qml" line="685"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="685"/>
         <source>Repeat Penalty Tokens</source>
-        <translation>重複懲罰標記（Repeat Penalty Tokens）</translation>
+        <translation>重複懲罰符元（Repeat Penalty Tokens）</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="686"/>
@@ -2011,7 +2029,7 @@ NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
         <location filename="../qml/ModelSettings.qml" line="732"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="732"/>
         <source>Number of model layers to load into VRAM.</source>
-        <translation>要載入到 VRAM 中的模型層數。</translation>
+        <translation>要載入到顯示記憶體中的模型層數。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="743"/>
@@ -2019,8 +2037,8 @@ NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
         <source>How many model layers to load into VRAM. Decrease this if GPT4All runs out of VRAM while loading this model.
 Lower values increase CPU load and RAM usage, and make inference slower.
 NOTE: Does not take effect until you reload the model.</source>
-        <translation>要載入到 VRAM 中的模型層數。如果 GPT4All 在載入此模型時耗盡 VRAM，請減少此值。
-較低的值會增加 CPU 負載和 RAM 使用量，並使推理速度變慢。
+        <translation>要載入到顯示記憶體中的模型層數。如果 GPT4All 在載入此模型時耗盡顯示記憶體，請減少此值。
+較低的值會增加中央處理器負載與主顯示記憶體使用量，並使推理速度變慢。
 注意：重新載入模型後才會生效。</translation>
     </message>
 </context>
@@ -2142,7 +2160,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="261"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="261"/>
         <source>Describes an error that occurred when downloading</source>
-        <translation>描述下載時發生的錯誤</translation>
+        <translation>解釋下載時發生的錯誤</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="274"/>
@@ -2204,7 +2222,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="354"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="383"/>
         <source>Whether the file hash is being calculated</source>
-        <translation>是否正在計算文件雜湊</translation>
+        <translation>是否正在計算檔案雜湊</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="361"/>
@@ -2217,7 +2235,7 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="362"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="362"/>
         <source>Displayed when the file hash is being calculated</source>
-        <translation>計算文件雜湊值時顯示</translation>
+        <translation>計算檔案雜湊值時顯示</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="380"/>
@@ -2317,11 +2335,15 @@ NOTE: Does not take effect until you reload the model.</source>
 When a GPT4All model responds to you and you have opted-in, your conversation will be sent to the GPT4All Open Source Datalake. Additionally, you can like/dislike its response. If you dislike a response, you can suggest an alternative response. This data will be collected and aggregated in the GPT4All Datalake.
 
 NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!</source>
-        <translation>啟用此功能後，您將能夠參與培訓大型語言模型的民主過程，通過貢獻數據來改進未來的模型。
+        <translation>啟用這項功能後，您將能夠參與訓練大型語言模型的民主化進程，通過貢獻資料來改進未來的模型。
 
-當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被發送到 GPT4All 開放原始碼資料湖泊。此外，您可以對其回應表示喜歡或不喜歡。如果您不喜歡某個回應，您可以提出替代回應。這些數據將被收集並彙總到 GPT4All 資料湖泊中。
+當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被發送到 GPT4All 開放原始碼資料湖泊。
+此外，您可以對其回應表示讚或倒讚。如果您倒讚了某個回應，您可以提出替代回應。
+這些資料將被收集並彙總到 GPT4All 資料湖泊中。
 
-注意：啟用此功能後，您的數據將被發送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您不應期望對話的隱私；然而，您可以選擇是否附上署名。您的對話數據將對任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將被認可為任何使用您的數據的 GPT4All 模型版本的貢獻者！</translation>
+注意：啟用此功能後，您的資料將被發送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您將會失去對話的隱私權；
+然而，您可以選擇是否附上署名。您的對話資料將對任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。
+Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將被認可為任何使用您的資料的 GPT4All 模型版本的貢獻者！</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="63"/>
@@ -2339,19 +2361,19 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <location filename="../qml/NetworkDialog.qml" line="72"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="72"/>
         <source>Please provide a name for attribution (optional)</source>
-        <translation>請提供資料所有人的名稱（非必填）</translation>
+        <translation>請提供署名（非必填）</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="74"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="74"/>
         <source>Attribution (optional)</source>
-        <translation>資料所有人（非必填）</translation>
+        <translation>署名（非必填）</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="75"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="75"/>
         <source>Provide attribution</source>
-        <translation>提供資料所有人</translation>
+        <translation>提供署名</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="88"/>
@@ -2509,22 +2531,22 @@ an expectation of an optional attribution if you wish. Your chat data will be op
 to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all
 attribution information attached to your data and you will be credited as a contributor to any GPT4All
 model release that uses your data!</source>
-        <translation>### 選擇匿名使用分析和資料湖泊
-啟用這些功能後，您將能夠參與培訓大型語言模型的民主過程，通過貢獻數據來改進未來的模型。
+        <translation>### 匿名使用分析與資料湖泊計畫
+啟用這些功能後，您將能夠參與訓練大型語言模型的民主化進程，通過貢獻資料來改進未來的模型。
 
 當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被發送到 GPT4All 開放原始碼資料湖泊。
-此外，您可以對其回應表示喜歡或不喜歡。如果您不喜歡某個回應，您可以提出替代回應。
-這些數據將被收集並彙總到 GPT4All 資料湖泊中。
+此外，您可以對其回應表示讚或倒讚。如果您倒讚了某個回應，您可以提出替代回應。
+這些資料將被收集並彙總到 GPT4All 資料湖泊中。
 
-注意：啟用此功能後，您的數據將被發送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您不應期望對話的隱私；
-然而，您可以選擇是否附上署名。您的對話數據將對任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。
-Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將被認可為任何使用您的數據的 GPT4All 模型版本的貢獻者！</translation>
+注意：啟用此功能後，您的資料將被發送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您將會失去對話的隱私權；
+然而，您可以選擇是否附上署名。您的對話資料將對任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。
+Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將被認可為任何使用您的資料的 GPT4All 模型版本的貢獻者！</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="109"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="109"/>
         <source>Terms for opt-in</source>
-        <translation></translation>
+        <translation>計畫規範</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="110"/>
@@ -2538,7 +2560,7 @@ Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將�
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="127"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="153"/>
         <source>Opt-in for anonymous usage statistics</source>
-        <translation>選擇匿名使用統計訊息</translation>
+        <translation>匿名使用統計訊息計畫</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="150"/>
@@ -2552,7 +2574,7 @@ Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將�
         <location filename="../qml/StartupDialog.qml" line="154"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="154"/>
         <source>Allow opt-in for anonymous usage statistics</source>
-        <translation>允許選擇匿名使用統計訊息</translation>
+        <translation>允許匿名使用統計訊息</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="192"/>
@@ -2566,13 +2588,13 @@ Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將�
         <location filename="../qml/StartupDialog.qml" line="195"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="195"/>
         <source>Opt-out for anonymous usage statistics</source>
-        <translation>選擇退出匿名使用統計數據</translation>
+        <translation>退出匿名使用統計資料</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="196"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="196"/>
         <source>Allow opt-out for anonymous usage statistics</source>
-        <translation>允許選擇退出匿名使用統計訊息</translation>
+        <translation>退出匿名使用統計訊息</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="241"/>
@@ -2580,31 +2602,31 @@ Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將�
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="241"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="268"/>
         <source>Opt-in for network</source>
-        <translation>選擇加入網絡</translation>
+        <translation>加入計畫網絡</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="242"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="242"/>
         <source>Allow opt-in for network</source>
-        <translation>允許選擇加入網絡</translation>
+        <translation>允許加入計畫網絡</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="269"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="269"/>
         <source>Allow opt-in anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation>允許選擇將聊天匿名分享到 GPT4All Datalake</translation>
+        <translation>開始將交談內容匿名分享到 GPT4All 資料湖泊</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="310"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="310"/>
         <source>Opt-out for network</source>
-        <translation>選擇退出網絡</translation>
+        <translation>退出計畫網絡</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="311"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="311"/>
         <source>Allow opt-out anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation>允許選擇退出將聊天匿名共享到 GPT4All Datalake</translation>
+        <translation>停止將交談內容匿名共享到 GPT4All 資料湖泊</translation>
     </message>
 </context>
 <context>
@@ -2701,7 +2723,7 @@ Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="113"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="113"/>
         <source>&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run </source>
-        <translation>&lt;br&gt;&lt;br&gt;糟糕，您的 CPU 不符合運行的最低要求 </translation>
+        <translation>&lt;br&gt;&lt;br&gt;糟糕，您的中央處理器不符合運行的最低要求 </translation>
     </message>
     <message>
         <location filename="../main.qml" line="114"/>
@@ -2719,18 +2741,20 @@ Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="116"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="116"/>
         <source>The only solution at this time is to upgrade your hardware to a more modern CPU.</source>
-        <translation>此時唯一的解決方案是將硬體升級到更現代的中央處理器（CPU）。</translation>
+        <translation>此時唯一的解決方案是將硬體升級到更現代的中央處理器。</translation>
     </message>
     <message>
         <location filename="../main.qml" line="117"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="117"/>
         <source>&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;</source>
+        <translatorcomment>中文網址造成 Linguist 會發出警告，請無視。</translatorcomment>
         <translation>&lt;br&gt;&lt;br&gt;更多資訊請查閱： &lt;a href=&quot;https://zh.wikipedia.org/wiki/AVX%E6%8C%87%E4%BB%A4%E9%9B%86&quot;&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="118"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="118"/>
         <source>https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
+        <translatorcomment>中文網址造成 Linguist 會發出警告，請無視。</translatorcomment>
         <translation>https://zh.wikipedia.org/wiki/AVX%E6%8C%87%E4%BB%A4%E9%9B%86&lt;/a&gt;</translation>
     </message>
     <message>
@@ -2785,7 +2809,7 @@ Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="178"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="178"/>
         <source>opt-in to share feedback/conversations</source>
-        <translation>選擇分享回饋/對話</translation>
+        <translation>分享回饋/對話計畫</translation>
     </message>
     <message>
         <location filename="../main.qml" line="231"/>
@@ -2815,7 +2839,7 @@ Nomic AI 將保留附加在您的數據上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="267"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="267"/>
         <source>Chat view to interact with models</source>
-        <translation>與模型互動的聊天視圖</translation>
+        <translation>模型互動交談視圖</translation>
     </message>
     <message>
         <location filename="../main.qml" line="275"/>
