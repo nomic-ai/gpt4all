@@ -105,8 +105,8 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="97"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="97"/>
-        <source>Searching · </source>
-        <translation>搜尋 · </translation>
+        <source>Searching · %1</source>
+        <translation>搜尋 · %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="167"/>
@@ -136,19 +136,19 @@
         <location filename="../qml/AddModelView.qml" line="186"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="186"/>
         <source>Downloads</source>
-        <translation>下載</translation>
+        <translation>下載次數</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="186"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="186"/>
         <source>Recent</source>
-        <translation>最近</translation>
+        <translation>最新</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="193"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="193"/>
-        <source>Sort by: </source>
-        <translation>依排序： </translation>
+        <source>Sort by: %1</source>
+        <translation>排序依據：%1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="206"/>
@@ -165,8 +165,8 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="218"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="218"/>
-        <source>Sort dir: </source>
-        <translation>排序資料夾： </translation>
+        <source>Sort dir: %1</source>
+        <translation>排序順序：%1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="234"/>
@@ -177,8 +177,8 @@
     <message>
         <location filename="../qml/AddModelView.qml" line="254"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="254"/>
-        <source>Limit: </source>
-        <translation>侷限於： </translation>
+        <source>Limit: %1</source>
+        <translation>上限：%1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="287"/>
@@ -428,13 +428,10 @@
                    above where this application resides on your filesystem.&lt;br&gt;&lt;br&gt;
                    If you can&apos;t start it manually, then I&apos;m afraid you&apos;ll have to&lt;br&gt;
                    reinstall.</source>
-        <translation>錯誤：更新系統找不到使用的維護工具&lt;br&gt;
- 檢查更新！
- 您是否使用線上安裝程式安裝此應用程式？如果是這樣，&lt;br&gt;
- MaintenanceTool 執行檔應位於一個目錄&lt;br&gt;
- 位於此應用程式在檔案系統上的位置上方。
- 如果您無法手動啟動它，那麼恐怕您必須&lt;br&gt;
- 重新安裝。</translation>
+        <translation>錯誤：更新系統找不到可使用的維護工具來檢查更新！&lt;br&gt;
+                        您是否使用了線上安裝程式安裝了本應用程式？&lt;br&gt;
+                        若是如此，維護工具的執行檔應位於安裝資料夾中。請試著手動開啟它。&lt;br&gt;
+                        如果您無法順利啟動，您可能得重新安裝本應用程式。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="48"/>
@@ -470,21 +467,21 @@
         <location filename="../qml/ApplicationSettings.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="110"/>
         <source>Dark</source>
-        <translatorcomment>暗色</translatorcomment>
+        <translatorcomment>暗色（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
         <translation>Dark</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="110"/>
         <source>Light</source>
-        <translatorcomment>亮色</translatorcomment>
+        <translatorcomment>亮色（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
         <translation>Light</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="110"/>
         <source>LegacyDark</source>
-        <translatorcomment>傳統暗色</translatorcomment>
+        <translatorcomment>傳統暗色（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
         <translation>LegacyDark</translation>
     </message>
     <message>
@@ -545,21 +542,21 @@
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>When chatting with LocalDocs</source>
-        <translatorcomment>當使用「我的文件」交談時</translatorcomment>
+        <translatorcomment>當使用「我的文件」交談時（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
         <translation>When chatting with LocalDocs</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>Whenever possible</source>
-        <translatorcomment>視情況允許</translatorcomment>
+        <translatorcomment>視情況允許（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
         <translation>Whenever possible</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>Never</source>
-        <translatorcomment>永不</translatorcomment>
+        <translatorcomment>永不（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
         <translation>Never</translation>
     </message>
     <message>
@@ -602,7 +599,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="275"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="275"/>
         <source>Send chats and feedback to the GPT4All Open-Source Datalake.</source>
-        <translation>將交談與回饋發送到 GPT4All 開放原始碼資料湖泊。</translation>
+        <translation>將交談與回饋傳送到 GPT4All 開放原始碼資料湖泊。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="308"/>
@@ -775,7 +772,7 @@
         <location filename="../qml/ChatDrawer.qml" line="318"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatDrawer.qml" line="318"/>
         <source>List of chats in the drawer dialog</source>
-        <translation>側邊欄對話框的交談列表</translation>
+        <translation>側邊欄對話視窗的交談列表</translation>
     </message>
 </context>
 <context>
@@ -1074,25 +1071,25 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="861"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="861"/>
         <source>recalculating context ...</source>
-        <translation>重新計算語境中...</translation>
+        <translation>重新計算語境中......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="863"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="863"/>
         <source>response stopped ...</source>
-        <translation>回應停止...</translation>
+        <translation>回應停止......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="873"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="873"/>
         <source>retrieving localdocs: %1 ...</source>
-        <translation>檢索本機文件中：%1 ...</translation>
+        <translation>檢索本機文件中：%1 ......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="874"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="874"/>
         <source>searching localdocs: %1 ...</source>
-        <translation>搜尋本機文件中：%1 ...</translation>
+        <translation>搜尋本機文件中：%1 ......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="866"/>
@@ -1104,7 +1101,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="867"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="867"/>
         <source>generating response ...</source>
-        <translation>生成回應...</translation>
+        <translation>生成回應......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="935"/>
@@ -1208,13 +1205,13 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="1631"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1631"/>
         <source>Load a model to continue...</source>
-        <translation>載入模型以繼續...</translation>
+        <translation>載入模型以繼續......</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1634"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1634"/>
         <source>Send messages/prompts to the model</source>
-        <translation>向模型發送訊息/提示</translation>
+        <translation>向模型傳送訊息/提示</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1679"/>
@@ -1762,7 +1759,7 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="2039"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
-        <translation>&lt;strong&gt;建立者： %1。&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發行於： %2。&lt;li&gt;這個模型有 %3 個讚。&lt;li&gt;這個模型有 %4 次下載次數。&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
+        <translation>&lt;strong&gt;建立者：%1。&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;發行於：%2。&lt;li&gt;這個模型有 %3 個讚。&lt;li&gt;這個模型有 %4 次下載次數。&lt;li&gt;更多資訊請查閱&lt;a href=&quot;https://huggingface.co/%5&quot;&gt;此處&lt;/a&gt;。&lt;/ul&gt;</translation>
     </message>
 </context>
 <context>
@@ -2337,11 +2334,11 @@ When a GPT4All model responds to you and you have opted-in, your conversation wi
 NOTE: By turning on this feature, you will be sending your data to the GPT4All Open Source Datalake. You should have no expectation of chat privacy when this feature is enabled. You should; however, have an expectation of an optional attribution if you wish. Your chat data will be openly available for anyone to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all attribution information attached to your data and you will be credited as a contributor to any GPT4All model release that uses your data!</source>
         <translation>啟用這項功能後，您將能夠參與訓練大型語言模型的民主化進程，通過貢獻資料來改進未來的模型。
 
-當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被發送到 GPT4All 開放原始碼資料湖泊。
+當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被傳送到 GPT4All 開放原始碼資料湖泊。
 此外，您可以對其回應表示讚或倒讚。如果您倒讚了某個回應，您可以提出替代回應。
 這些資料將被收集並彙總到 GPT4All 資料湖泊中。
 
-注意：啟用此功能後，您的資料將被發送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您將會失去對話的隱私權；
+注意：啟用此功能後，您的資料將被傳送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您將會失去對話的隱私權；
 然而，您可以選擇是否附上署名。您的對話資料將對任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。
 Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將被認可為任何使用您的資料的 GPT4All 模型版本的貢獻者！</translation>
     </message>
@@ -2534,11 +2531,11 @@ model release that uses your data!</source>
         <translation>### 匿名使用分析與資料湖泊計畫
 啟用這些功能後，您將能夠參與訓練大型語言模型的民主化進程，通過貢獻資料來改進未來的模型。
 
-當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被發送到 GPT4All 開放原始碼資料湖泊。
+當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被傳送到 GPT4All 開放原始碼資料湖泊。
 此外，您可以對其回應表示讚或倒讚。如果您倒讚了某個回應，您可以提出替代回應。
 這些資料將被收集並彙總到 GPT4All 資料湖泊中。
 
-注意：啟用此功能後，您的資料將被發送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您將會失去對話的隱私權；
+注意：啟用此功能後，您的資料將被傳送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您將會失去對話的隱私權；
 然而，您可以選擇是否附上署名。您的對話資料將對任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。
 Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將被認可為任何使用您的資料的 GPT4All 模型版本的貢獻者！</translation>
     </message>
@@ -2748,7 +2745,7 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="117"/>
         <source>&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;</source>
         <translatorcomment>中文網址造成 Linguist 會發出警告，請無視。</translatorcomment>
-        <translation>&lt;br&gt;&lt;br&gt;更多資訊請查閱： &lt;a href=&quot;https://zh.wikipedia.org/wiki/AVX%E6%8C%87%E4%BB%A4%E9%9B%86&quot;&gt;</translation>
+        <translation>&lt;br&gt;&lt;br&gt;更多資訊請查閱：&lt;a href=&quot;https://zh.wikipedia.org/wiki/AVX%E6%8C%87%E4%BB%A4%E9%9B%86&quot;&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="118"/>
