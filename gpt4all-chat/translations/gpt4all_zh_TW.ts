@@ -430,7 +430,8 @@
                    reinstall.</source>
         <translation>錯誤：更新系統找不到可使用的維護工具來檢查更新！&lt;br&gt;
                         您是否使用了線上安裝程式安裝了本應用程式？&lt;br&gt;
-                        若是如此，維護工具的執行檔應位於安裝資料夾中。請試著手動開啟它。&lt;br&gt;
+                        若是如此，維護工具的執行檔（MaintenanceTool）應位於安裝資料夾中。&lt;br&gt;
+                        請試著手動開啟它。&lt;br&gt;
                         如果您無法順利啟動，您可能得重新安裝本應用程式。</translation>
     </message>
     <message>
