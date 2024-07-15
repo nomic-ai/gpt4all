@@ -19,7 +19,7 @@
         <location filename="../qml/AddCollectionView.qml" line="78"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddCollectionView.qml" line="78"/>
         <source>Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.</source>
-        <translation>新增一個含有純文字檔案、PDF、與 Markdown 文件。在設定上調整額外的附加元件。</translation>
+        <translation>新增一個含有純文字檔案、PDF 與 Markdown 文件。在設定上調整額外的附加元件。</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="94"/>
@@ -297,13 +297,13 @@
         <location filename="../qml/AddModelView.qml" line="479"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="479"/>
         <source> Model requires more memory (</source>
-        <translation> 模型需要更多記憶體（</translation>
+        <translation> 模型需要比較多的記憶體（</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="480"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="480"/>
         <source> GB) than your system has available (</source>
-        <translation> GB）比您的系統可用（</translation>
+        <translation> GB），但您的系統記憶體空間不足（</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="487"/>
@@ -410,7 +410,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="25"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="25"/>
         <source>Network dialog</source>
-        <translation>網路對話視窗</translation>
+        <translation>資料湖泊計畫對話視窗</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="26"/>
@@ -1446,7 +1446,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsSettings.qml" line="113"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="113"/>
         <source>Embed documents using the fast Nomic API instead of a private local model. Requires restart.</source>
-        <translation>使用快速 Nomic API 而不是私有本機模型嵌入文件。需要重新啟動。</translation>
+        <translation>使用快速的 Nomic API 而不是本機私有模型嵌入文件。需要重新啟動。</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="130"/>
@@ -1990,7 +1990,7 @@ NOTE: Prevents choosing highly unlikely tokens.</source>
         <source>Amount of prompt tokens to process at once.
 NOTE: Higher values can speed up reading prompts but will use more RAM.</source>
         <translation>一次處理的提示符元數量。
-注意：較高的值可以加快讀取提示的速度，但會使用更多的記憶體。</translation>
+注意：較高的值可以加快讀取提示的速度，但會使用比較多的記憶體。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="640"/>
@@ -2169,13 +2169,13 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="275"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="275"/>
         <source> Model requires more memory (</source>
-        <translation> 模型需要更多記憶體（</translation>
+        <translation> 模型需要比較多的記憶體（</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="276"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="276"/>
         <source> GB) than your system has available (</source>
-        <translation> GB）比您的系統可用（</translation>
+        <translation> GB），但您的系統記憶體空間不足（</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="283"/>
@@ -2424,7 +2424,7 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../qml/PopupDialog.qml" line="38"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/PopupDialog.qml" line="38"/>
         <source>Reveals a shortlived help balloon</source>
-        <translation>揭示了一個短暫的幫助氣球</translation>
+        <translation>呼叫提示小幫手</translation>
     </message>
     <message>
         <location filename="../qml/PopupDialog.qml" line="48"/>
@@ -2528,7 +2528,7 @@ an expectation of an optional attribution if you wish. Your chat data will be op
 to download and will be used by Nomic AI to improve future GPT4All models. Nomic AI will retain all
 attribution information attached to your data and you will be credited as a contributor to any GPT4All
 model release that uses your data!</source>
-        <translation>### 匿名使用分析與資料湖泊計畫
+        <translation>### 匿名使用統計暨資料湖泊計畫
 啟用這些功能後，您將能夠參與訓練大型語言模型的民主化進程，通過貢獻資料來改進未來的模型。
 
 當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被傳送到 GPT4All 開放原始碼資料湖泊。
@@ -2552,26 +2552,12 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <translation>解釋當您加入計畫後，會發生什麼事情</translation>
     </message>
     <message>
-        <location filename="../qml/StartupDialog.qml" line="127"/>
-        <location filename="../qml/StartupDialog.qml" line="153"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="127"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="153"/>
-        <source>Opt-in for anonymous usage statistics</source>
-        <translation>匿名使用統計訊息計畫</translation>
-    </message>
-    <message>
         <location filename="../qml/StartupDialog.qml" line="150"/>
         <location filename="../qml/StartupDialog.qml" line="265"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="150"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="265"/>
         <source>Yes</source>
         <translation>是</translation>
-    </message>
-    <message>
-        <location filename="../qml/StartupDialog.qml" line="154"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="154"/>
-        <source>Allow opt-in for anonymous usage statistics</source>
-        <translation>允許匿名使用統計訊息</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="192"/>
@@ -2582,16 +2568,30 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <translation>否</translation>
     </message>
     <message>
+        <location filename="../qml/StartupDialog.qml" line="127"/>
+        <location filename="../qml/StartupDialog.qml" line="153"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="127"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="153"/>
+        <source>Opt-in for anonymous usage statistics</source>
+        <translation>匿名使用統計計畫</translation>
+    </message>
+    <message>
+        <location filename="../qml/StartupDialog.qml" line="154"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="154"/>
+        <source>Allow opt-in for anonymous usage statistics</source>
+        <translation>加入匿名使用統計計畫</translation>
+    </message>
+    <message>
         <location filename="../qml/StartupDialog.qml" line="195"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="195"/>
         <source>Opt-out for anonymous usage statistics</source>
-        <translation>退出匿名使用統計資料</translation>
+        <translation>退出匿名使用統計計畫</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="196"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="196"/>
         <source>Allow opt-out for anonymous usage statistics</source>
-        <translation>退出匿名使用統計訊息</translation>
+        <translation>終止並退出匿名使用統計計畫</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="241"/>
@@ -2599,13 +2599,19 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="241"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="268"/>
         <source>Opt-in for network</source>
-        <translation>加入計畫網絡</translation>
+        <translation>資料湖泊計畫</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="242"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="242"/>
         <source>Allow opt-in for network</source>
-        <translation>允許加入計畫網絡</translation>
+        <translation>加入資料湖泊計畫</translation>
+    </message>
+    <message>
+        <location filename="../qml/StartupDialog.qml" line="310"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="310"/>
+        <source>Opt-out for network</source>
+        <translation>退出資料湖泊計畫</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="269"/>
@@ -2614,16 +2620,10 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <translation>開始將交談內容匿名分享到 GPT4All 資料湖泊</translation>
     </message>
     <message>
-        <location filename="../qml/StartupDialog.qml" line="310"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="310"/>
-        <source>Opt-out for network</source>
-        <translation>退出計畫網絡</translation>
-    </message>
-    <message>
         <location filename="../qml/StartupDialog.qml" line="311"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/StartupDialog.qml" line="311"/>
         <source>Allow opt-out anonymous sharing of chats to the GPT4All Datalake</source>
-        <translation>停止將交談內容匿名共享到 GPT4All 資料湖泊</translation>
+        <translation>終止將交談內容匿名分享到 GPT4All 資料湖泊</translation>
     </message>
 </context>
 <context>
@@ -2661,7 +2661,7 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../qml/ThumbsDownDialog.qml" line="39"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ThumbsDownDialog.qml" line="39"/>
         <source>Please edit the text below to provide a better response. (optional)</source>
-        <translation>請編輯以下文本，以提供更好的回應。（非必填）</translation>
+        <translation>請編輯以下文字，以提供更好的回應。（非必填）</translation>
     </message>
     <message>
         <location filename="../qml/ThumbsDownDialog.qml" line="54"/>
@@ -2800,7 +2800,7 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="177"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="177"/>
         <source>Network dialog</source>
-        <translation>網路對話視窗</translation>
+        <translation>資料湖泊計畫對話視窗</translation>
     </message>
     <message>
         <location filename="../main.qml" line="178"/>
@@ -2884,7 +2884,7 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="369"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="369"/>
         <source>Settings view for application configuration</source>
-        <translation>應用程式配置的設定視圖</translation>
+        <translation>應用程式設定視圖</translation>
     </message>
     <message>
         <location filename="../main.qml" line="422"/>
