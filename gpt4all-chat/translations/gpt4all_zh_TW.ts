@@ -1834,13 +1834,13 @@ model to get started</source>
         <location filename="../qml/ModelSettings.qml" line="205"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="205"/>
         <source>The template that wraps every prompt.</source>
-        <translation>包裝每個提示詞的範本。</translation>
+        <translation>包裝每個提示詞的模板。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="209"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="209"/>
         <source>Must contain the string &quot;%1&quot; to be replaced with the user&apos;s input.</source>
-        <translation>必須包含要替換為使用者輸入的字串“%1”。</translation>
+        <translation>必須包含要替換為使用者輸入的字串「%1」。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="278"/>
@@ -2728,7 +2728,7 @@ Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將�
         <location filename="../main.qml" line="112"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="112"/>
         <source>&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;</source>
-        <translation>&lt;i&gt;&quot;偵測到不相容的硬體&quot;&lt;/i&gt;</translation>
+        <translation>&lt;i&gt;「偵測到不相容的硬體」&lt;/i&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="113"/>
