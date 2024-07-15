@@ -54,7 +54,6 @@ set(LLAMA_CUDA_PEER_MAX_BATCH_SIZE "128" CACHE STRING
 option(LLAMA_CUDA_NO_PEER_COPY               "llama: do not use peer to peer copies"            OFF)
 #option(LLAMA_HIPBLAS                         "llama: use hipBLAS"                               OFF)
 option(LLAMA_HIP_UMA                         "llama: use HIP unified memory architecture"       OFF)
-#option(LLAMA_CLBLAST                         "llama: use CLBlast"                               OFF)
 #option(LLAMA_VULKAN                          "llama: use Vulkan"                                OFF)
 option(LLAMA_VULKAN_CHECK_RESULTS            "llama: run Vulkan op checks"                      OFF)
 option(LLAMA_VULKAN_DEBUG                    "llama: enable Vulkan debug output"                OFF)
@@ -186,8 +185,8 @@ endif()
 if (LLAMA_LLAMAFILE)
     list(APPEND GGML_COMPILE_DEFS GGML_USE_LLAMAFILE)
 
-    set(GGML_HEADERS_LLAMAFILE ${DIRECTORY}/sgemm.h)
-    set(GGML_SOURCES_LLAMAFILE ${DIRECTORY}/sgemm.cpp)
+    set(GGML_HEADERS_LLAMAFILE ${DIRECTORY}/ggml/src/llamafile/sgemm.h)
+    set(GGML_SOURCES_LLAMAFILE ${DIRECTORY}/ggml/src/llamafile/sgemm.cpp)
 endif()
 
 if (LLAMA_QKK_64)
@@ -385,10 +384,10 @@ function(include_ggml SUFFIX)
         endif()
         message(STATUS "Using CUDA architectures: ${GGML_CUDA_ARCHITECTURES}")
 
-        set(GGML_HEADERS_CUDA ${DIRECTORY}/ggml-cuda.h)
+        set(GGML_HEADERS_CUDA ${DIRECTORY}/ggml/include/ggml-cuda.h)
 
-        file(GLOB GGML_SOURCES_CUDA "${DIRECTORY}/ggml-cuda/*.cu")
-        list(APPEND GGML_SOURCES_CUDA "${DIRECTORY}/ggml-cuda.cu")
+        file(GLOB GGML_SOURCES_CUDA "${DIRECTORY}/ggml/src/ggml-cuda/*.cu")
+        list(APPEND GGML_SOURCES_CUDA "${DIRECTORY}/ggml/src/ggml-cuda.cu")
 
         list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_CUDA)
         if (LLAMA_CUDA_FORCE_DMMV)
@@ -422,22 +421,11 @@ function(include_ggml SUFFIX)
         set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} CUDA::cuda_driver)
     endif()
 
-    if (LLAMA_CLBLAST)
-        find_package(CLBlast REQUIRED)
-
-        set(GGML_HEADERS_OPENCL ${DIRECTORY}/ggml-opencl.h)
-        set(GGML_SOURCES_OPENCL ${DIRECTORY}/ggml-opencl.cpp)
-
-        list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_CLBLAST)
-
-        set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} clblast)
-    endif()
-
     if (LLAMA_VULKAN)
         find_package(Vulkan REQUIRED)
 
-        set(GGML_HEADERS_VULKAN ${DIRECTORY}/ggml-vulkan.h)
-        set(GGML_SOURCES_VULKAN ${DIRECTORY}/ggml-vulkan.cpp)
+        set(GGML_HEADERS_VULKAN ${DIRECTORY}/ggml/include/ggml-vulkan.h)
+        set(GGML_SOURCES_VULKAN ${DIRECTORY}/ggml/src/ggml-vulkan.cpp)
 
         list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_VULKAN)
 
@@ -490,10 +478,10 @@ function(include_ggml SUFFIX)
 
         message(STATUS "HIP and hipBLAS found")
 
-        set(GGML_HEADERS_ROCM ${DIRECTORY}/ggml-cuda.h)
+        set(GGML_HEADERS_ROCM ${DIRECTORY}/ggml/include/ggml-cuda.h)
 
-        file(GLOB GGML_SOURCES_ROCM "${DIRECTORY}/ggml-rocm/*.cu")
-        list(APPEND GGML_SOURCES_ROCM "${DIRECTORY}/ggml-rocm.cu")
+        file(GLOB GGML_SOURCES_ROCM "${DIRECTORY}/ggml/src/ggml-rocm/*.cu")
+        list(APPEND GGML_SOURCES_ROCM "${DIRECTORY}/ggml/src/ggml-rocm.cu")
 
         list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_HIPBLAS GGML_USE_CUDA)
 
@@ -535,7 +523,7 @@ function(include_ggml SUFFIX)
 
     if (LLAMA_KOMPUTE AND NOT GGML_KOMPUTE_ONCE)
         set(GGML_KOMPUTE_ONCE ON PARENT_SCOPE)
-        if (NOT EXISTS "${LLAMA_DIR}/kompute/CMakeLists.txt")
+        if (NOT EXISTS "${LLAMA_DIR}/ggml/src/kompute/CMakeLists.txt")
             message(FATAL_ERROR "Kompute not found")
         endif()
         message(STATUS "Kompute found")
@@ -559,12 +547,12 @@ function(include_ggml SUFFIX)
                 set(spv_file ${CMAKE_CURRENT_BINARY_DIR}/${OP_FILE}.spv)
                 add_custom_command(
                     OUTPUT ${spv_file}
-                    DEPENDS ${LLAMA_DIR}/${source}
-                        ${LLAMA_DIR}/kompute-shaders/common.comp
-                        ${LLAMA_DIR}/kompute-shaders/op_getrows.comp
-                        ${LLAMA_DIR}/kompute-shaders/op_mul_mv_q_n_pre.comp
-                        ${LLAMA_DIR}/kompute-shaders/op_mul_mv_q_n.comp
-                    COMMAND ${glslc_executable} --target-env=vulkan1.2 -o ${spv_file} ${LLAMA_DIR}/${source}
+                    DEPENDS ${LLAMA_DIR}/ggml/src/kompute-shaders/${source}
+                        ${LLAMA_DIR}/ggml/src/kompute-shaders/common.comp
+                        ${LLAMA_DIR}/ggml/src/kompute-shaders/op_getrows.comp
+                        ${LLAMA_DIR}/ggml/src/kompute-shaders/op_mul_mv_q_n_pre.comp
+                        ${LLAMA_DIR}/ggml/src/kompute-shaders/op_mul_mv_q_n.comp
+                    COMMAND ${glslc_executable} --target-env=vulkan1.2 -o ${spv_file} ${LLAMA_DIR}/ggml/src/kompute-shaders/${source}
                     COMMENT "Compiling ${source} to ${source}.spv"
                     )
 
@@ -610,39 +598,39 @@ function(include_ggml SUFFIX)
         set(KOMPUTE_OPT_BUILT_IN_VULKAN_HEADER_TAG "v1.3.239" CACHE STRING "Kompute Vulkan headers tag")
         set(KOMPUTE_OPT_LOG_LEVEL Critical CACHE STRING "Kompute log level")
         set(FMT_INSTALL OFF)
-        add_subdirectory(${LLAMA_DIR}/kompute)
+        add_subdirectory(${LLAMA_DIR}/ggml/src/kompute)
 
         # Compile our shaders
         compile_shader(SOURCES
-            kompute-shaders/op_scale.comp
-            kompute-shaders/op_scale_8.comp
-            kompute-shaders/op_add.comp
-            kompute-shaders/op_addrow.comp
-            kompute-shaders/op_mul.comp
-            kompute-shaders/op_silu.comp
-            kompute-shaders/op_relu.comp
-            kompute-shaders/op_gelu.comp
-            kompute-shaders/op_softmax.comp
-            kompute-shaders/op_norm.comp
-            kompute-shaders/op_rmsnorm.comp
-            kompute-shaders/op_diagmask.comp
-            kompute-shaders/op_mul_mat_mat_f32.comp
-            kompute-shaders/op_mul_mat_f16.comp
-            kompute-shaders/op_mul_mat_q8_0.comp
-            kompute-shaders/op_mul_mat_q4_0.comp
-            kompute-shaders/op_mul_mat_q4_1.comp
-            kompute-shaders/op_mul_mat_q6_k.comp
-            kompute-shaders/op_getrows_f32.comp
-            kompute-shaders/op_getrows_f16.comp
-            kompute-shaders/op_getrows_q4_0.comp
-            kompute-shaders/op_getrows_q4_1.comp
-            kompute-shaders/op_getrows_q6_k.comp
-            kompute-shaders/op_rope_f16.comp
-            kompute-shaders/op_rope_f32.comp
-            kompute-shaders/op_cpy_f16_f16.comp
-            kompute-shaders/op_cpy_f16_f32.comp
-            kompute-shaders/op_cpy_f32_f16.comp
-            kompute-shaders/op_cpy_f32_f32.comp
+            op_scale.comp
+            op_scale_8.comp
+            op_add.comp
+            op_addrow.comp
+            op_mul.comp
+            op_silu.comp
+            op_relu.comp
+            op_gelu.comp
+            op_softmax.comp
+            op_norm.comp
+            op_rmsnorm.comp
+            op_diagmask.comp
+            op_mul_mat_mat_f32.comp
+            op_mul_mat_f16.comp
+            op_mul_mat_q8_0.comp
+            op_mul_mat_q4_0.comp
+            op_mul_mat_q4_1.comp
+            op_mul_mat_q6_k.comp
+            op_getrows_f32.comp
+            op_getrows_f16.comp
+            op_getrows_q4_0.comp
+            op_getrows_q4_1.comp
+            op_getrows_q6_k.comp
+            op_rope_f16.comp
+            op_rope_f32.comp
+            op_cpy_f16_f16.comp
+            op_cpy_f16_f32.comp
+            op_cpy_f32_f16.comp
+            op_cpy_f32_f32.comp
         )
 
         # Create a custom target for our generated shaders
@@ -691,8 +679,8 @@ function(include_ggml SUFFIX)
         list(APPEND GGML_COMPILE_DEFS VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 
         # Add the stamp to the main sources to ensure dependency tracking
-        set(GGML_SOURCES_KOMPUTE ${LLAMA_DIR}/ggml-kompute.cpp ${CMAKE_CURRENT_BINARY_DIR}/ggml-kompute.stamp)
-        set(GGML_HEADERS_KOMPUTE ${LLAMA_DIR}/ggml-kompute.h)
+        set(GGML_SOURCES_KOMPUTE ${LLAMA_DIR}/ggml/src/ggml-kompute.cpp ${CMAKE_CURRENT_BINARY_DIR}/ggml-kompute.stamp)
+        set(GGML_HEADERS_KOMPUTE ${LLAMA_DIR}/ggml/include/ggml-kompute.h)
 
         list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_KOMPUTE)
 
@@ -754,8 +742,8 @@ function(include_ggml SUFFIX)
         find_library(METALKIT_FRAMEWORK MetalKit   REQUIRED)
 
         message(STATUS "Metal framework found")
-        set(GGML_HEADERS_METAL ${DIRECTORY}/ggml-metal.h)
-        set(GGML_SOURCES_METAL ${DIRECTORY}/ggml-metal.m)
+        set(GGML_HEADERS_METAL ${DIRECTORY}/ggml/include/ggml-metal.h)
+        set(GGML_SOURCES_METAL ${DIRECTORY}/ggml/src/ggml-metal.m)
 
         list(APPEND GGML_COMPILE_DEFS_PUBLIC GGML_USE_METAL)
         if (LLAMA_METAL_NDEBUG)
@@ -763,8 +751,8 @@ function(include_ggml SUFFIX)
         endif()
 
         # copy ggml-common.h and ggml-metal.metal to bin directory
-        configure_file(${DIRECTORY}/ggml-common.h    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-common.h    COPYONLY)
-        configure_file(${DIRECTORY}/ggml-metal.metal ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal COPYONLY)
+        configure_file(${DIRECTORY}/ggml/include/ggml-common.h ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-common.h    COPYONLY)
+        configure_file(${DIRECTORY}/ggml/src/ggml-metal.metal  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal COPYONLY)
 
         if (LLAMA_METAL_SHADER_DEBUG)
             # custom command to do the following:
@@ -799,7 +787,7 @@ function(include_ggml SUFFIX)
             COMMAND rm -f ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.air
             COMMAND rm -f ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-common.h
             COMMAND rm -f ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal
-            DEPENDS ${DIRECTORY}/ggml-metal.metal ${DIRECTORY}/ggml-common.h
+            DEPENDS ${DIRECTORY}/ggml/src/ggml-metal.metal ${DIRECTORY}/ggml/include/ggml-common.h
             COMMENT "Compiling Metal kernels"
             )
         set_source_files_properties(${GGML_METALLIB} DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTIES GENERATED ON)
@@ -926,24 +914,26 @@ function(include_ggml SUFFIX)
     # ggml
 
     add_library(ggml${SUFFIX} OBJECT
-                ${DIRECTORY}/ggml.c
-                ${DIRECTORY}/ggml.h
-                ${DIRECTORY}/ggml-alloc.c
-                ${DIRECTORY}/ggml-alloc.h
-                ${DIRECTORY}/ggml-backend.c
-                ${DIRECTORY}/ggml-backend.h
-                ${DIRECTORY}/ggml-quants.c
-                ${DIRECTORY}/ggml-quants.h
+                ${DIRECTORY}/ggml/include/ggml.h
+                ${DIRECTORY}/ggml/include/ggml-alloc.h
+                ${DIRECTORY}/ggml/include/ggml-backend.h
+                ${DIRECTORY}/ggml/src/ggml.c
+                ${DIRECTORY}/ggml/src/ggml-alloc.c
+                ${DIRECTORY}/ggml/src/ggml-backend.c
+                ${DIRECTORY}/ggml/src/ggml-quants.c
+                ${DIRECTORY}/ggml/src/ggml-quants.h
                 ${GGML_SOURCES_CUDA}      ${GGML_HEADERS_CUDA}
-                ${GGML_SOURCES_OPENCL}    ${GGML_HEADERS_OPENCL}
                 ${GGML_SOURCES_METAL}     ${GGML_HEADERS_METAL}
                 ${GGML_SOURCES_KOMPUTE}   ${GGML_HEADERS_KOMPUTE}
                 ${GGML_SOURCES_VULKAN}    ${GGML_HEADERS_VULKAN}
                 ${GGML_SOURCES_ROCM}      ${GGML_HEADERS_ROCM}
                 ${GGML_SOURCES_LLAMAFILE} ${GGML_HEADERS_LLAMAFILE}
+                ${DIRECTORY}/ggml/src/ggml-aarch64.c
+                ${DIRECTORY}/ggml/src/ggml-aarch64.h
                 )
 
-    target_include_directories(ggml${SUFFIX} PUBLIC ${DIRECTORY} ${LLAMA_EXTRA_INCLUDES})
+    target_include_directories(ggml${SUFFIX} PUBLIC ${DIRECTORY}/ggml/include ${LLAMA_EXTRA_INCLUDES})
+    target_include_directories(ggml${SUFFIX} PRIVATE ${DIRECTORY}/ggml/src)
     target_compile_features(ggml${SUFFIX} PUBLIC c_std_11) # don't bump
 
     target_link_libraries(ggml${SUFFIX} PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
@@ -955,14 +945,15 @@ function(include_ggml SUFFIX)
     # llama
 
     add_library(llama${SUFFIX} STATIC
-                ${DIRECTORY}/llama.cpp
-                ${DIRECTORY}/llama.h
-                ${DIRECTORY}/unicode.h
-                ${DIRECTORY}/unicode.cpp
-                ${DIRECTORY}/unicode-data.cpp
+                ${DIRECTORY}/include/llama.h
+                ${DIRECTORY}/src/llama.cpp
+                ${DIRECTORY}/src/unicode.h
+                ${DIRECTORY}/src/unicode.cpp
+                ${DIRECTORY}/src/unicode-data.cpp
                 )
 
-    target_include_directories(llama${SUFFIX} PUBLIC ${DIRECTORY})
+    target_include_directories(llama${SUFFIX} PUBLIC  ${DIRECTORY}/include ${DIRECTORY}/ggml/include)
+    target_include_directories(llama${SUFFIX} PRIVATE ${DIRECTORY}/src)
     target_compile_features   (llama${SUFFIX} PUBLIC cxx_std_11) # don't bump
 
     target_link_libraries(llama${SUFFIX} PRIVATE
