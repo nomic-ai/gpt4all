@@ -19,7 +19,7 @@
         <location filename="../qml/AddCollectionView.qml" line="78"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddCollectionView.qml" line="78"/>
         <source>Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.</source>
-        <translation>新增一個含有純文字檔案、PDF 與 Markdown 文件。在設定上調整額外的附加元件。</translation>
+        <translation>新增一個含有純文字檔案、PDF 與 Markdown 文件的資料夾。可在設定上增加文件副檔名。</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="94"/>
@@ -1500,7 +1500,7 @@ model to get started</source>
         <location filename="../qml/LocalDocsSettings.qml" line="216"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="216"/>
         <source>Display the sources used for each response.</source>
-        <translation>顯示每個回應所使用的來源。</translation>
+        <translation>顯示每則回應所使用的來源。</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="233"/>
@@ -2347,11 +2347,12 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <translation>啟用這項功能後，您將能夠參與訓練大型語言模型的民主化進程，通過貢獻資料來改進未來的模型。
 
 當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被傳送到 GPT4All 開放原始碼資料湖泊。
-此外，您可以對其回應表示讚或倒讚。如果您倒讚了某個回應，您可以提出替代回應。
+此外，您可以對其回應表示讚或倒讚。如果您倒讚了某則回應，您可以提出更好的回應。
 這些資料將被收集並彙總到 GPT4All 資料湖泊中。
 
-注意：啟用此功能後，您的資料將被傳送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您將會失去對話的隱私權；
-然而，您可以選擇是否附上署名。您的對話資料將對任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。
+注意：啟用此功能後，您的資料將被傳送到 GPT4All 開放原始碼資料湖泊。
+啟用此功能時，您將會失去對話的隱私權；然而，您可以選擇是否附上署名。
+您的對話資料將可被任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。
 Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將被認可為任何使用您的資料的 GPT4All 模型版本的貢獻者！</translation>
     </message>
     <message>
@@ -2544,11 +2545,12 @@ model release that uses your data!</source>
 啟用這些功能後，您將能夠參與訓練大型語言模型的民主化進程，通過貢獻資料來改進未來的模型。
 
 當 GPT4All 模型回應您並且您已選擇加入時，您的對話將被傳送到 GPT4All 開放原始碼資料湖泊。
-此外，您可以對其回應表示讚或倒讚。如果您倒讚了某個回應，您可以提出替代回應。
+此外，您可以對其回應表示讚或倒讚。如果您倒讚了某則回應，您可以提出更好的回應。
 這些資料將被收集並彙總到 GPT4All 資料湖泊中。
 
-注意：啟用此功能後，您的資料將被傳送到 GPT4All 開放原始碼資料湖泊。啟用此功能時，您將會失去對話的隱私權；
-然而，您可以選擇是否附上署名。您的對話資料將對任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。
+注意：啟用此功能後，您的資料將被傳送到 GPT4All 開放原始碼資料湖泊。
+啟用此功能時，您將會失去對話的隱私權；然而，您可以選擇是否附上署名。
+您的對話資料將可被任何人開放下載，並將由 Nomic AI 用於改進未來的 GPT4All 模型。
 Nomic AI 將保留附加在您的資料上的所有署名訊息，並且您將被認可為任何使用您的資料的 GPT4All 模型版本的貢獻者！</translation>
     </message>
     <message>
