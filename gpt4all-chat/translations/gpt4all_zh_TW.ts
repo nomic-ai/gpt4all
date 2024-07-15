@@ -467,22 +467,19 @@
         <location filename="../qml/ApplicationSettings.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="110"/>
         <source>Dark</source>
-        <translatorcomment>暗色（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
-        <translation>Dark</translation>
+        <translation>暗色</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="110"/>
         <source>Light</source>
-        <translatorcomment>亮色（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
-        <translation>Light</translation>
+        <translation>亮色</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="110"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="110"/>
         <source>LegacyDark</source>
-        <translatorcomment>傳統暗色（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
-        <translation>LegacyDark</translation>
+        <translation>傳統暗色</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="131"/>
@@ -495,6 +492,24 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="132"/>
         <source>The size of text in the application.</source>
         <translation>應用程式中的字體大小。</translation>
+    </message>
+    <message>
+        <location filename="../qml/ApplicationSettings.qml" line="144"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
+        <source>Small</source>
+        <translation>小</translation>
+    </message>
+    <message>
+        <location filename="../qml/ApplicationSettings.qml" line="144"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
+        <source>Medium</source>
+        <translation>中</translation>
+    </message>
+    <message>
+        <location filename="../qml/ApplicationSettings.qml" line="144"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
+        <source>Large</source>
+        <translation>大</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="166"/>
@@ -542,22 +557,19 @@
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>When chatting with LocalDocs</source>
-        <translatorcomment>當使用「我的文件」交談時（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
-        <translation>When chatting with LocalDocs</translation>
+        <translation>當使用「我的文件」交談時</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>Whenever possible</source>
-        <translatorcomment>視情況允許（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
-        <translation>Whenever possible</translation>
+        <translation>視情況允許</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>Never</source>
-        <translatorcomment>永不（選項被作為了值，會造成功能故障，故暫無法翻譯）</translatorcomment>
-        <translation>Never</translation>
+        <translation>永不</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="263"/>
