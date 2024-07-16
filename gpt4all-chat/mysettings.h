@@ -16,24 +16,27 @@
 namespace MySettingsEnums {
     Q_NAMESPACE
 
+    /* NOTE: values of these enums are used as indices for the corresponding combo boxes in
+     *       ApplicationSettings.qml, as well as the corresponding name lists in mysettings.cpp */
+
     enum class SuggestionMode {
         LocalDocsOnly = 0,
-        On = 1,
-        Off = 2,
+        On            = 1,
+        Off           = 2,
     };
     Q_ENUM_NS(SuggestionMode)
 
     enum class ChatTheme {
-        Light = 0,
-        Dark = 1,
+        Light      = 0,
+        Dark       = 1,
         LegacyDark = 2,
     };
     Q_ENUM_NS(ChatTheme)
 
     enum class FontSize {
-        Small = 0,
+        Small  = 0,
         Medium = 1,
-        Large = 2,
+        Large  = 2,
     };
     Q_ENUM_NS(FontSize)
 }
@@ -251,6 +254,7 @@ private:
 
     QVariant getBasicSetting(const QString &name) const;
     void setBasicSetting(const QString &name, const QVariant &value, std::optional<QString> signal = std::nullopt);
+    int getEnumSetting(const QString &setting, const QStringList &valueNames) const;
     QVariant getModelSetting(const QString &name, const ModelInfo &info) const;
     void setModelSetting(const QString &name, const ModelInfo &info, const QVariant &value, bool force,
                          bool signal = false);

@@ -107,7 +107,7 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            // This order is important and must match the indices of the enum values in mysettings.h
+            // NOTE: indices match values of ChatTheme enum, keep them in sync
             model: [qsTr("Light"), qsTr("Dark"), qsTr("LegacyDark")]
             Accessible.name: themeLabel.text
             Accessible.description: themeLabel.helpText
@@ -142,7 +142,7 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            // This order is important and must match the indices of the enum values in mysettings.h
+            // NOTE: indices match values of FontSize enum, keep them in sync
             model: [qsTr("Small"), qsTr("Medium"), qsTr("Large")]
             Accessible.name: fontLabel.text
             Accessible.description: fontLabel.helpText
@@ -273,7 +273,7 @@ MySettingsTab {
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
             Layout.alignment: Qt.AlignRight
-            // This order is important and must match the indices of the enum values in mysettings.h
+            // NOTE: indices match values of SuggestionMode enum, keep them in sync
             model: [ qsTr("When chatting with LocalDocs"), qsTr("Whenever possible"), qsTr("Never") ]
             Accessible.name: suggestionModeLabel.text
             Accessible.description: suggestionModeLabel.helpText

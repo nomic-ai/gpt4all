@@ -24,6 +24,11 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+// used only for settings serialization, do not translate
+static const QStringList suggestionModeNames { "LocalDocsOnly", "On", "Off" };
+static const QStringList chatThemeNames      { "Light", "Dark", "LegacyDark" };
+static const QStringList fontSizeNames       { "Small", "Medium", "Large" };
+
 // FIXME: All of these default strings that are shown in the UI for settings need to be marked as
 // translatable
 
@@ -167,6 +172,12 @@ void MySettings::setBasicSetting(const QString &name, const QVariant &value, std
 
     m_settings.setValue(name, value);
     QMetaObject::invokeMethod(this, u"%1Changed"_s.arg(signal.value_or(name)).toLatin1().constData());
+}
+
+int MySettings::getEnumSetting(const QString &setting, const QStringList &valueNames) const
+{
+    int idx = valueNames.indexOf(getBasicSetting(setting).toString());
+    return idx != -1 ? idx : *reinterpret_cast<const int *>(basicDefaults.value(setting).constData());
 }
 
 void MySettings::restoreModelDefaults(const ModelInfo &info)
@@ -431,20 +442,23 @@ void MySettings::setThreadCount(int value)
     emit threadCountChanged();
 }
 
-bool           MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
-bool           MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
-int            MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
-QString        MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
-QString        MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted"      ).toString(); }
-int            MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize"     ).toInt(); }
-int            MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
-bool           MySettings::localDocsShowReferences() const { return getBasicSetting("localdocs/showReferences").toBool(); }
-QStringList    MySettings::localDocsFileExtensions() const { return getBasicSetting("localdocs/fileExtensions").toStringList(); }
-bool           MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting("localdocs/useRemoteEmbed").toBool(); }
-QString        MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
-QString        MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
-QString        MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
-SuggestionMode MySettings::suggestionMode() const          { return getBasicSetting("suggestionMode").value<SuggestionMode>(); };
+bool        MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
+bool        MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
+int         MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
+QString     MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
+QString     MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted"      ).toString(); }
+int         MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize"     ).toInt(); }
+int         MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
+bool        MySettings::localDocsShowReferences() const { return getBasicSetting("localdocs/showReferences").toBool(); }
+QStringList MySettings::localDocsFileExtensions() const { return getBasicSetting("localdocs/fileExtensions").toStringList(); }
+bool        MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting("localdocs/useRemoteEmbed").toBool(); }
+QString     MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
+QString     MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
+QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
+
+ChatTheme      MySettings::chatTheme() const      { return ChatTheme     (getEnumSetting("chatTheme", chatThemeNames)); }
+FontSize       MySettings::fontSize() const       { return FontSize      (getEnumSetting("fontSize",  fontSizeNames)); }
+SuggestionMode MySettings::suggestionMode() const { return SuggestionMode(getEnumSetting("suggestionMode", suggestionModeNames)); }
 
 void MySettings::setSaveChatsContext(bool value)                      { setBasicSetting("saveChatsContext",         value); }
 void MySettings::setServerChat(bool value)                            { setBasicSetting("serverChat",               value); }
@@ -459,53 +473,10 @@ void MySettings::setLocalDocsUseRemoteEmbed(bool value)               { setBasic
 void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasicSetting("localdocs/nomicAPIKey",    value, "localDocsNomicAPIKey"); }
 void MySettings::setLocalDocsEmbedDevice(const QString &value)        { setBasicSetting("localdocs/embedDevice",    value, "localDocsEmbedDevice"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
-void MySettings::setSuggestionMode(SuggestionMode value)              { setBasicSetting("suggestionMode",           int(value)); }
 
-static QString chatThemeToString(ChatTheme value)
-{
-    // These strings should not be translated as they are used by versions of GPT4All settings before
-    // the advent of translations
-    switch(value) {
-    case ChatTheme::Light: return "Light";
-    case ChatTheme::Dark: return "Dark";
-    case ChatTheme::LegacyDark: return "LegacyDark";
-    default: Q_UNREACHABLE();
-    }
-    return QString();
-}
-static ChatTheme stringToChatTheme(const QString &value)
-{
-    if (value == "Light")       return ChatTheme::Light;
-    if (value == "Dark")        return ChatTheme::Dark;
-    if (value == "LegacyDark")  return ChatTheme::LegacyDark;
-    Q_UNREACHABLE();
-    return ChatTheme::Light;
-}
-ChatTheme MySettings::chatTheme() const { return stringToChatTheme(getBasicSetting("chatTheme").toString()); }
-void MySettings::setChatTheme(ChatTheme value) { setBasicSetting("chatTheme", chatThemeToString(value)); }
-
-static QString fontSizeToString(FontSize value)
-{
-    // These strings should not be translated as they are used by versions of GPT4All settings before
-    // the advent of translations
-    switch(value) {
-    case FontSize::Small: return "Small";
-    case FontSize::Medium: return "Medium";
-    case FontSize::Large: return "Large";
-    default: Q_UNREACHABLE();
-    }
-    return QString();
-}
-static FontSize stringToFontSize(const QString &value)
-{
-    if (value == "Small")  return FontSize::Small;
-    if (value == "Medium") return FontSize::Medium;
-    if (value == "Large")  return FontSize::Large;
-    Q_UNREACHABLE();
-    return FontSize::Small;
-}
-FontSize MySettings::fontSize() const { return stringToFontSize(getBasicSetting("fontSize").toString()); }
-void MySettings::setFontSize(FontSize value) { setBasicSetting("fontSize", fontSizeToString(value)); }
+void MySettings::setChatTheme(ChatTheme value)           { setBasicSetting("chatTheme",      chatThemeNames     .value(int(value))); }
+void MySettings::setFontSize(FontSize value)             { setBasicSetting("fontSize",       fontSizeNames      .value(int(value))); }
+void MySettings::setSuggestionMode(SuggestionMode value) { setBasicSetting("suggestionMode", suggestionModeNames.value(int(value))); }
 
 QString MySettings::modelPath()
 {
