@@ -179,17 +179,30 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: MySettings.uiLanguages
-            Accessible.name: fontLabel.text
-            Accessible.description: fontLabel.helpText
+            model: ListModel {
+                Component.onCompleted: {
+                    for (var i = 0; i < MySettings.uiLanguages.length; ++i)
+                        append({"text": MySettings.uiLanguages[i]});
+                    languageBox.updateModel();
+                }
+                ListElement { text: qsTr("Application default") }
+            }
+            Accessible.name: languageLabel.text
+            Accessible.description: languageLabel.helpText
             function updateModel() {
-                languageBox.currentIndex = languageBox.indexOfValue(MySettings.languageAndLocale);
+                if (MySettings.languageAndLocale === "")
+                    languageBox.currentIndex = 0
+                else
+                    languageBox.currentIndex = languageBox.indexOfValue(MySettings.languageAndLocale);
             }
             Component.onCompleted: {
                 languageBox.updateModel()
             }
             onActivated: {
-                MySettings.languageAndLocale = languageBox.currentText
+                if (languageBox.currentIndex === 0)
+                    MySettings.languageAndLocale = "" // an empty string signifies application default
+                else
+                    MySettings.languageAndLocale = languageBox.currentText
             }
         }
         MySettingsLabel {
@@ -207,11 +220,21 @@ MySettingsTab {
             Layout.maximumWidth: 400
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: MySettings.deviceList
+            model: ListModel {
+                Component.onCompleted: {
+                    for (var i = 0; i < MySettings.deviceList.length; ++i)
+                        append({"text": MySettings.deviceList[i]});
+                    deviceBox.updateModel();
+                }
+                ListElement { text: qsTr("Application default") }
+            }
             Accessible.name: deviceLabel.text
             Accessible.description: deviceLabel.helpText
             function updateModel() {
-                deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
+                if (MySettings.device === "")
+                    deviceBox.currentIndex = 0
+                else
+                    deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
             }
             Component.onCompleted: {
                 deviceBox.updateModel();
@@ -223,7 +246,10 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                MySettings.device = deviceBox.currentText;
+                if (deviceBox.currentIndex === 0)
+                    MySettings.device = "" // an empty string signifies application default
+                else
+                    MySettings.device = deviceBox.currentText
             }
         }
         MySettingsLabel {

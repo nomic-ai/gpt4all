@@ -33,8 +33,8 @@ static const int     threadCount             = std::min(4, (int32_t) std::thread
 static const bool    forceMetal              = false;
 static const bool    networkIsActive         = false;
 static const bool    networkUsageStatsActive = false;
-static const QString device                  = "Auto";
-static const QString languageAndLocale       = "Default";
+static const QString device                  = QString(); // signifies application default
+static const QString languageAndLocale       = QString(); // signifies application default
 
 } // namespace defaults
 
@@ -53,7 +53,7 @@ static const QVariantMap basicDefaults {
     { "localdocs/fileExtensions", QStringList { "txt", "pdf", "md", "rst" } },
     { "localdocs/useRemoteEmbed", false },
     { "localdocs/nomicAPIKey",    "" },
-    { "localdocs/embedDevice",    "Auto" },
+    { "localdocs/embedDevice",    "" }, // signifies application default
     { "network/attribution",      "" },
 };
 
@@ -86,7 +86,7 @@ static QString defaultLocalModelsPath()
 
 static QStringList getDevices(bool skipKompute = false)
 {
-    QStringList deviceList { "Auto" };
+    QStringList deviceList { };
 #if defined(Q_OS_MAC) && defined(__aarch64__)
     deviceList << "Metal";
 #else
@@ -116,7 +116,7 @@ static QString getUiLanguage(const QString directory, const QString fileName)
 
 static QStringList getUiLanguages(const QString &modelPath)
 {
-    QStringList languageList( { QObject::tr("Default") } );
+    QStringList languageList;
 
     // Add the language translations from model path files first which is used by translation developers
     // to load translations in progress without having to rebuild all of GPT4All from source
@@ -441,18 +441,27 @@ bool           MySettings::localDocsShowReferences() const { return getBasicSett
 QStringList    MySettings::localDocsFileExtensions() const { return getBasicSetting("localdocs/fileExtensions").toStringList(); }
 bool           MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting("localdocs/useRemoteEmbed").toBool(); }
 QString        MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
-QString        MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
 QString        MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
 SuggestionMode MySettings::suggestionMode() const          { return getBasicSetting("suggestionMode").value<SuggestionMode>(); };
 
-// In older versions the application default was stored as the string "application default" but in
-// newer versions it is just an empty string to allow translations
+// In older versions the application default model was stored as the string "Application default" but
+// in newer versions it is just an empty string to allow translations
 QString MySettings::userDefaultModel() const
 {
     QString userDefault = getBasicSetting("userDefaultModel").toString();
     if (userDefault == "Application default")
         userDefault = QString();
     return userDefault;
+}
+
+// In older versions the local embed device was stored as the string "Auto" but in newer versions it
+// is just an empty string to allow translations
+QString MySettings::localDocsEmbedDevice() const
+{
+    QString embedDevice = getBasicSetting("localdocs/embedDevice").toString();
+    if (embedDevice == "Auto")
+        embedDevice = QString();
+    return embedDevice;
 }
 
 void MySettings::setSaveChatsContext(bool value)                      { setBasicSetting("saveChatsContext",         value); }
@@ -543,8 +552,10 @@ void MySettings::setModelPath(const QString &value)
 
 QString MySettings::device()
 {
+    // In older versions the device was possibly stored as the string "Auto" but in
+    // newer versions it is just an empty string to allow translations
     auto value = m_settings.value("device");
-    if (!value.isValid())
+    if (!value.isValid() || value == "Auto")
         return defaults::device;
 
     auto device = value.toString();
@@ -665,7 +676,7 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
     // to either the default which is the system locale or the one explicitly set by the user previously.
     QLocale locale;
     const QString l = languageAndLocale();
-    if (l == "Default")
+    if (l.isEmpty())
         locale = QLocale::system();
     else
         locale = QLocale(l);
