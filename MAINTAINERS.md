@@ -15,51 +15,44 @@ Maintainers will be...
 1. Responsible for overseeing content under their stewardship
 2. Responsible for triaging new issues, reviewing PRs, assigning priority
    to tasks
-3. Responsible for keeping content in sufficient quality in  atimely fashion
+3. Responsible for keeping content in sufficient quality in a timely fashion
 
 ## List
 
-Adam Treat  
-email: adam@nomic.ai  
-github: manyoso  
-discord: gonzochess75
-  - overall project maintainer
-  - chat client
+Adam Treat ([@manyoso](https://github.com/manyoso))<br/>
+E-mail: adam@nomic.ai<br/>
+Discord: `@gonzochess75`
+- Overall project maintainer
+- Chat UI
 
-Jared Van Bortel  
-email: jared@nomic.ai  
-github: cebtenzzre  
-discord: Cebtenzzre
-- backend
-- python bindings
-- CLI example
+Jared Van Bortel ([@cebtenzzre](https://github.com/cebtenzzre))<br/>
+E-mail: jared@nomic.ai<br/>
+Discord: `@cebtenzzre`
+- gpt4all-backend
+- Python binding
+- Python CLI app
 
-Dominik  
-email: cosmic-snow@mailfence.com  
-github: cosmic-snow  
-discord: cosmic-snow  
-- wiki documentation
+Jacob Nguyen ([@jacoobes](https://github.com/jacoobes))<br/>
+Discord: `@jacoobes`<br/>
+E-mail: `jacoobes@sern.dev`
+- TypeScript binding
 
-Max Cembalest  
-email: max@nomic.ai  
-github: mcembalest  
-discord: Max  
-- documentation at https://docs.gpt4all.io/
+Dominik ([@cosmic-snow](https://github.com/cosmic-snow))<br/>
+E-mail: cosmic-snow@mailfence.com<br/>
+Discord: `@cosmic__snow`
+- Community documentation (GitHub Wiki)
 
-Victor Emanuel  
-email: contact@sinapsaro.ro  
-github: SINAPSA-IC  
-discord: SINAPSA_IC  
-- ro_RO translation
+Max Cembalest ([@mcembalest](https://github.com/mcembalest))<br/>
+E-mail: max@nomic.ai<br/>
+Discord: `@maxcembalest.`
+- Official documentation (gpt4all-bindings/python/docs -> https://docs.gpt4all.io/)
 
-不知火 Shiranui  
-email: supersonic@livemail.tw  
-github: supersonictw  
-discord: 不知火  
-- zh_TW translation
+Victor Emanuel ([@SINAPSA-IC](https://github.com/SINAPSA-IC))<br/>
+E-mail: contact@sinapsaro.ro<br/>
+Discord: `@sinapsa_ic_56124_99632`
+- ro\_RO translation
 
-YOUR NAME HERE
-- flatpak
-
-YOUR NAME HERE
-- typescript
+不知火 Shiranui ([@supersonictw](https://github.com/supersonictw))<br/>
+E-mail: supersonic@livemail.tw<br/>
+Discord: `@supersonictw`
+- zh\_TW translation
