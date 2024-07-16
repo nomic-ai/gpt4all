@@ -33,18 +33,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    // Set the local and language translation before the qml engine has even been started. This will
-    // use the default system locale unless the user has explicitly set it to use a different one.
-    MySettings::globalInstance()->setLanguageAndLocale();
-
-    QQmlApplicationEngine engine;
-
-    // Add a connection here from MySettings::languageAndLocaleChanged signal to a lambda slot where I can call
-    // engine.uiLanguage property
-    QObject::connect(MySettings::globalInstance(), &MySettings::languageAndLocaleChanged, [&engine]() {
-        engine.setUiLanguage(MySettings::globalInstance()->languageAndLocale());
-    });
-
+    // set search path before constructing the MySettings instance, which relies on this
     QString llmodelSearchPaths = QCoreApplication::applicationDirPath();
     const QString libDir = QCoreApplication::applicationDirPath() + "/../lib/";
     if (LLM::directoryExists(libDir))
@@ -58,6 +47,18 @@ int main(int argc, char *argv[])
         llmodelSearchPaths += ";" + frameworksDir;
 #endif
     LLModel::Implementation::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
+
+    // Set the local and language translation before the qml engine has even been started. This will
+    // use the default system locale unless the user has explicitly set it to use a different one.
+    MySettings::globalInstance()->setLanguageAndLocale();
+
+    QQmlApplicationEngine engine;
+
+    // Add a connection here from MySettings::languageAndLocaleChanged signal to a lambda slot where I can call
+    // engine.uiLanguage property
+    QObject::connect(MySettings::globalInstance(), &MySettings::languageAndLocaleChanged, [&engine]() {
+        engine.setUiLanguage(MySettings::globalInstance()->languageAndLocale());
+    });
 
     qmlRegisterSingletonInstance("mysettings", 1, 0, "MySettings", MySettings::globalInstance());
     qmlRegisterSingletonInstance("modellist", 1, 0, "ModelList", ModelList::globalInstance());
