@@ -34,9 +34,6 @@ discord: Cebtenzzre
 - python bindings
 - CLI example
 
-YOUR NAME HERE
-- typescript
-
 Dominik  
 email: cosmic-snow@mailfence.com  
 github: cosmic-snow  
@@ -48,3 +45,21 @@ email: max@nomic.ai
 github: mcembalest  
 discord: Max  
 - documentation at https://docs.gpt4all.io/
+
+Victor Emanuel  
+email: contact@sinapsaro.ro  
+github: SINAPSA-IC  
+discord: SINAPSA_IC  
+- ro_RO translation
+
+不知火 Shiranui  
+email: supersonic@livemail.tw  
+github: supersonictw  
+discord: 不知火  
+- zh_TW translation
+
+YOUR NAME HERE
+- flatpak
+
+YOUR NAME HERE
+- typescript
