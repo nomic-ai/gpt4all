@@ -476,7 +476,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
 #else
     if (requestedDevice != "CPU") {
         const auto *device = defaultDevice;
-        if (!requestedDevice.isEmpty()) {
+        if (requestedDevice != "Auto") {
             // Use the selected device
             for (const LLModel::GPUDevice &d : availableDevices) {
                 if (QString::fromStdString(d.selectionName()) == requestedDevice) {

@@ -91,7 +91,7 @@ bool EmbeddingLLMWorker::loadModel()
     QString requestedDevice = MySettings::globalInstance()->localDocsEmbedDevice();
     std::string backend = "auto";
 #ifdef Q_OS_MAC
-    if (requestedDevice.isEmpty() || requestedDevice == "CPU")
+    if (requestedDevice == "Auto" || requestedDevice == "CPU")
         backend = "cpu";
 #else
     if (requestedDevice.startsWith("CUDA: "))
@@ -114,7 +114,7 @@ bool EmbeddingLLMWorker::loadModel()
     if (requestedDevice != "CPU") {
         const LLModel::GPUDevice *device = nullptr;
         std::vector<LLModel::GPUDevice> availableDevices = m_model->availableGPUDevices(0);
-        if (!requestedDevice.isEmpty()) {
+        if (requestedDevice != "Auto") {
             // Use the selected device
             for (const LLModel::GPUDevice &d : availableDevices) {
                 if (QString::fromStdString(d.selectionName()) == requestedDevice) {

@@ -179,30 +179,17 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: ListModel {
-                Component.onCompleted: {
-                    for (var i = 0; i < MySettings.uiLanguages.length; ++i)
-                        append({"text": MySettings.uiLanguages[i]});
-                    languageBox.updateModel();
-                }
-                ListElement { text: qsTr("Application default") }
-            }
-            Accessible.name: languageLabel.text
-            Accessible.description: languageLabel.helpText
+            model: MySettings.uiLanguages
+            Accessible.name: fontLabel.text
+            Accessible.description: fontLabel.helpText
             function updateModel() {
-                if (MySettings.languageAndLocale === "")
-                    languageBox.currentIndex = 0
-                else
-                    languageBox.currentIndex = languageBox.indexOfValue(MySettings.languageAndLocale);
+                languageBox.currentIndex = languageBox.indexOfValue(MySettings.languageAndLocale);
             }
             Component.onCompleted: {
                 languageBox.updateModel()
             }
             onActivated: {
-                if (languageBox.currentIndex === 0)
-                    MySettings.languageAndLocale = "" // an empty string signifies application default
-                else
-                    MySettings.languageAndLocale = languageBox.currentText
+                MySettings.languageAndLocale = languageBox.currentText
             }
         }
         MySettingsLabel {
@@ -220,21 +207,11 @@ MySettingsTab {
             Layout.maximumWidth: 400
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: ListModel {
-                Component.onCompleted: {
-                    for (var i = 0; i < MySettings.deviceList.length; ++i)
-                        append({"text": MySettings.deviceList[i]});
-                    deviceBox.updateModel();
-                }
-                ListElement { text: qsTr("Application default") }
-            }
+            model: MySettings.deviceList
             Accessible.name: deviceLabel.text
             Accessible.description: deviceLabel.helpText
             function updateModel() {
-                if (MySettings.device === "")
-                    deviceBox.currentIndex = 0
-                else
-                    deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
+                deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
             }
             Component.onCompleted: {
                 deviceBox.updateModel();
@@ -246,10 +223,7 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                if (deviceBox.currentIndex === 0)
-                    MySettings.device = "" // an empty string signifies application default
-                else
-                    MySettings.device = deviceBox.currentText
+                MySettings.device = deviceBox.currentText;
             }
         }
         MySettingsLabel {
@@ -266,21 +240,11 @@ MySettingsTab {
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
             Layout.alignment: Qt.AlignRight
-            model: ListModel {
-                Component.onCompleted: {
-                    for (var i = 0; i < ModelList.userDefaultModelList.length; ++i)
-                        append({"text": ModelList.userDefaultModelList[i]});
-                    comboBox.updateModel();
-                }
-                ListElement { text: qsTr("Application default") }
-            }
+            model: ModelList.userDefaultModelList
             Accessible.name: defaultModelLabel.text
             Accessible.description: defaultModelLabel.helpText
             function updateModel() {
-                if (MySettings.userDefaultModel === "")
-                    comboBox.currentIndex = 0
-                else
-                    comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
+                comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
             }
             Component.onCompleted: {
                 comboBox.updateModel()
@@ -292,10 +256,7 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                if (comboBox.currentIndex === 0)
-                    MySettings.userDefaultModel = "" // an empty string signifies application default
-                else
-                    MySettings.userDefaultModel = comboBox.currentText
+                MySettings.userDefaultModel = comboBox.currentText
             }
         }
         MySettingsLabel {

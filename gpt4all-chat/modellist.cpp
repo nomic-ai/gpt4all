@@ -557,6 +557,11 @@ const QList<QString> ModelList::userDefaultModelList() const
         }
     }
 
+    const QString defaultId = "Application default";
+    if (foundUserDefault)
+        models.append(defaultId);
+    else
+        models.prepend(defaultId);
     return models;
 }
 
@@ -569,7 +574,7 @@ ModelInfo ModelList::defaultModelInfo() const
     // The user default model can be set by the user in the settings dialog. The "default" user
     // default model is "Application default" which signals we should use the logic here.
     const QString userDefaultModelName = MySettings::globalInstance()->userDefaultModel();
-    const bool hasUserDefaultName = !userDefaultModelName.isEmpty();
+    const bool hasUserDefaultName = !userDefaultModelName.isEmpty() && userDefaultModelName != "Application default";
 
     ModelInfo *defaultModel = nullptr;
     for (ModelInfo *info : m_models) {
