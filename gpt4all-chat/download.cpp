@@ -213,10 +213,14 @@ void Download::cancelDownload(const QString &modelFile)
     }
 }
 
-void Download::installModel(const QString &modelFile, const QString &apiKey, const QString &baseUrl)
+void Download::installModel(const QString &modelFile, const QString &apiKey, const bool isCompatibleApi, const QString &baseUrl)
 {
     Q_ASSERT(!apiKey.isEmpty());
     if (apiKey.isEmpty())
+        return;
+
+    QUrl apiBaseUrl(QUrl::fromUserInput(baseUrl));
+    if (isCompatibleApi && !Network::isHttpUrlValid(baseUrl))
         return;
 
     Network::globalInstance()->trackEvent("install_model", { {"model", modelFile} });
@@ -229,11 +233,10 @@ void Download::installModel(const QString &modelFile, const QString &apiKey, con
         QString modelName(modelFile);
         modelName.remove(0, 8); // strip "gpt4all-" prefix
         modelName.chop(7); // strip ".rmodel" extension
-        if (!baseUrl.isEmpty()) {
-            obj.insert("baseUrl", baseUrl);
-        }
         obj.insert("apiKey", apiKey);
         obj.insert("modelName", modelName);
+        if (apiBaseUrl.isValid())
+            obj.insert("baseUrl", apiBaseUrl.toString());
         QJsonDocument doc(obj);
 
         QTextStream stream(&file);

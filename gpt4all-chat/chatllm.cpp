@@ -333,9 +333,16 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 QJsonObject obj = doc.object();
                 apiKey = obj["apiKey"].toString();
                 modelName = obj["modelName"].toString();
-                if (modelName == "openai-compatible") {
-                    QString baseUrl = obj["baseUrl"].toString();
-                    requestUrl = QString("%1/chat/completions").arg(baseUrl);
+                if (modelInfo.isCompatibleApi) {
+                    QString baseUrl(obj["baseUrl"].toString());
+                    QUrl apiUrl(QUrl::fromUserInput(baseUrl));
+                    if (!Network::isHttpUrlValid(apiUrl)) {
+                        return false;
+                    }
+                    QString currentPath(apiUrl.path());
+                    QString suffixPath("%1/chat/completions");
+                    apiUrl.setPath(suffixPath.arg(currentPath));
+                    requestUrl = apiUrl.toString();
                 } else {
                     requestUrl = modelInfo.url();
                 }

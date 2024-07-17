@@ -437,10 +437,19 @@ Rectangle {
                                         text: qsTr("Install")
                                         font.pixelSize: theme.fontSizeLarge
                                         onClicked: {
-                                            if (apiKey.text === "")
+                                            var noError = true;
+                                            if (apiKey.text === "") {
                                                 apiKey.showError();
-                                            else
-                                                Download.installModel(filename, apiKey.text, baseUrl.text);
+                                                if (noError)
+                                                    noError = false;
+                                            }
+                                            if (isCompatibleApi && baseUrl.text === "") {
+                                                baseUrl.showError();
+                                                if (noError)
+                                                    noError = false;
+                                            }
+                                            if (noError)
+                                                Download.installModel(filename, apiKey.text, isCompatibleApi, baseUrl.text);
                                         }
                                         Accessible.role: Accessible.Button
                                         Accessible.name: qsTr("Install")
@@ -584,17 +593,17 @@ Rectangle {
 
                                     MyTextField {
                                         id: baseUrl
-                                        visible: !installed && isOnline && name == "OpenAI-compatible"
+                                        visible: !installed && isOnline && isCompatibleApi
                                         Layout.topMargin: 20
                                         Layout.leftMargin: 20
                                         Layout.minimumWidth: 200
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            apiKey.placeholderTextColor = theme.textErrorColor
+                                            baseUrl.placeholderTextColor = theme.textErrorColor
                                         }
                                         onTextChanged: {
-                                            apiKey.placeholderTextColor = theme.mutedTextColor
+                                            baseUrl.placeholderTextColor = theme.mutedTextColor
                                         }
                                         placeholderText: qsTr("enter $BASE_URL")
                                         Accessible.role: Accessible.EditableText

@@ -99,6 +99,15 @@ Network *Network::globalInstance()
     return networkInstance();
 }
 
+bool Network::isHttpUrlValid(QUrl url) {
+    if (!url.isValid())
+        return false;
+    QString scheme(url.scheme());
+    if (scheme != "http" && scheme != "https")
+        return false;
+    return true;
+}
+
 Network::Network()
     : QObject{nullptr}
 {

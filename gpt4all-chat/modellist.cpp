@@ -731,6 +731,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->isDefault;
         case OnlineRole:
             return info->isOnline;
+        case CompatibleApiRole:
+            return info->isCompatibleApi;
         case DescriptionRole:
             return info->description();
         case RequiresVersionRole:
@@ -887,6 +889,8 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->isDefault = value.toBool(); break;
             case OnlineRole:
                 info->isOnline = value.toBool(); break;
+            case CompatibleApiRole:
+                info->isCompatibleApi = value.toBool(); break;
             case DescriptionRole:
                 info->setDescription(value.toString()); break;
             case RequiresVersionRole:
@@ -1107,6 +1111,7 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::FilenameRole, model.filename() },
         { ModelList::DirpathRole, model.dirpath },
         { ModelList::OnlineRole, model.isOnline },
+        { ModelList::CompatibleApiRole, model.isCompatibleApi },
         { ModelList::IsEmbeddingModelRole, model.isEmbeddingModel },
         { ModelList::TemperatureRole, model.temperature() },
         { ModelList::TopPRole, model.topP() },
@@ -1705,6 +1710,7 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, "minimal" },
             { ModelList::OnlineRole, true },
+            { ModelList::CompatibleApiRole, true },
             { ModelList::DescriptionRole,
              tr("<strong>Connect to OpenAI-compatible API server</strong><br> %1").arg(compatibleDesc) },
             { ModelList::RequiresVersionRole, "2.7.4" },

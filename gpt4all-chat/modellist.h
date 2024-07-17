@@ -35,6 +35,7 @@ struct ModelInfo {
     Q_PROPERTY(bool installed MEMBER installed)
     Q_PROPERTY(bool isDefault MEMBER isDefault)
     Q_PROPERTY(bool isOnline MEMBER isOnline)
+    Q_PROPERTY(bool isCompatibleApi MEMBER isCompatibleApi)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
     Q_PROPERTY(QString versionRemoved MEMBER versionRemoved)
@@ -124,6 +125,7 @@ public:
     bool installed = false;
     bool isDefault = false;
     bool isOnline = false;
+    bool isCompatibleApi = false;
     QString requiresVersion;
     QString versionRemoved;
     qint64 bytesReceived = 0;
@@ -295,6 +297,7 @@ public:
         InstalledRole,
         DefaultRole,
         OnlineRole,
+        CompatibleApiRole,
         DescriptionRole,
         RequiresVersionRole,
         VersionRemovedRole,
@@ -347,6 +350,7 @@ public:
         roles[InstalledRole] = "installed";
         roles[DefaultRole] = "isDefault";
         roles[OnlineRole] = "isOnline";
+        roles[CompatibleApiRole] = "isCompatibleApi";
         roles[DescriptionRole] = "description";
         roles[RequiresVersionRole] = "requiresVersion";
         roles[VersionRemovedRole] = "versionRemoved";
