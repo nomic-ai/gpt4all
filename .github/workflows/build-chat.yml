@@ -1,0 +1,110 @@
+on:
+  workflow_call:
+
+jobs:
+  build-chat-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: powershell -noe -c "&{Import-Module """C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"""; Enter-VsDevShell eb4dc59a}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch_depth: 0
+          submodules: true
+      - name: Install QT
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '4.6.0'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2013_64'
+          dir: '${{ github.workspace }}/Qt'
+          cache: true
+          tools: 'qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver'
+          set-env: 'true'
+          tools-only: 'false'
+      - name: Install Vulkan
+        uses: humbletim/setup-vulkan-sdk@v1.2.0
+        with:
+          vulkan-query-version: 1.3.261.1
+          vulkan-components: Vulkan-Headers, Vulkan-Loader
+          vulkan-use-cache: true
+      - name: Install CUDA ToolKit
+        uses: Jimver/cuda-toolkit@v0.2.16
+        id: cuda-toolkit
+        with:
+          method: network
+          sub-packages: '["nvcc_11.8", "visual_studio_integration"]'
+          non-cuda-sub-packages: '["cudart_11.8", "cublas_11.8", "cublas_dev_11.8"]'
+          cuda: 11.8.0
+      - name: Build Chat
+        run: |
+           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -S gpt4all-chat -B build
+           ninja -C build
+  build-chat-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch_depth: 0
+          submodules: true
+      - name: Setup XCode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '14.0.0'
+      - name: Install QT
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '4.6.0'
+          host: 'mac'
+          target: 'desktop'
+          arch: 'clang_64'
+          dir: '${{ github.workspace }}/Qt'
+          cache: true
+          tools: 'qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver'
+          set-env: 'true'
+          tools-only: 'false'
+      - name: Install Rosetta
+        run: softwareupdate --install-rosetta --agree-to-license
+      - name: Build Chat
+        run: |
+            cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -S gpt4all-chat -B build
+            cmake --build build --target all
+  build-chat-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch_depth: 0
+          submodules: true
+      - name: Install QT
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '4.6.0'
+          host: 'linux'
+          target: 'desktop'
+          arch: 'gcc_64'
+          dir: '${{ github.workspace }}/Qt'
+          cache: true
+          tools: 'qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor'
+          set-env: 'true'
+          tools-only: 'false'
+      - name: Install Vulkan + Cuda
+        run: |
+            wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+            sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            sudo dpkg -i cuda-keyring_1.1-1_all.deb
+            sudo apt update && sudo apt install -y libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxext6 libxfixes3 libxi6 libxrender1 libxcb1 libxcb-cursor0 libxcb-glx0 libxcb-keysyms1 libxcb-image0 libxcb-shm0 libxcb-icccm4 libxcb-sync1 libxcb-xfixes0 libxcb-shape0 libxcb-randr0 libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libxkbcommon0 libxkbcommon-x11-0 bison build-essential flex gperf python3 gcc g++ libgl1-mesa-dev libwayland-dev vulkan-sdk cuda-compiler-11-8 libcublas-dev-11-8 libnvidia-compute-550-server libmysqlclient21 libodbc2 libpq5
+            echo "/usr/local/cuda/bin" >> $GITHUB_PATH
+      - name: Build Chat
+        run: |
+          cmake -GNinja -DCMAKE_BUILD_TYPE=Release -S gpt4all-chat -B build
+          cmake --build build --target all
+
+
+
