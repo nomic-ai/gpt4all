@@ -45,4 +45,4 @@ LocalDocs brings the information you have from files on-device into your LLM cha
 
 A LocalDocs collection uses Nomic AI's free and fast on-device embedding models to index your folder into text snippets that each get an **embedding vector**. These vectors allow us to find snippets from your files that are semantically similar to the questions and prompts you enter in your chats. We then include those semantically similar snippets in the prompt to the LLM.
 
-To try the embedding models yourself, we recommend using the [Nomic Python SDK](https://docs.nomic.ai/atlas/guides/embeddings)
+To try the embedding models yourself, we recommend using the [Nomic Python SDK](https://docs.nomic.ai/atlas/capabilities/embeddings)
