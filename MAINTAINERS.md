@@ -56,3 +56,8 @@ Discord: `@sinapsa_ic_56124_99632`
 E-mail: supersonic@livemail.tw<br/>
 Discord: `@supersonictw`
 - zh\_TW translation
+
+Jeremy Tayco ([@jstayco](https://github.com/jstayco))<br/>
+E-mail: jstayco@protonmail.ch<br/>
+Discord: `@vertana`
+- es\_MX translation
