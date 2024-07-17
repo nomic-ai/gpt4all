@@ -426,11 +426,6 @@ bool Chat::deserialize(QDataStream &stream, int version)
 
     bool discardKV = m_modelInfo.id().isEmpty();
 
-    // Prior to version 2 gptj models had a bug that fixed the kv_cache to F32 instead of F16 so
-    // unfortunately, we cannot deserialize these
-    if (version < 2 && m_modelInfo.filename().contains("gpt4all-j"))
-        discardKV = true;
-
     if (version > 2) {
         stream >> m_collections;
         emit collectionListChanged(m_collections);

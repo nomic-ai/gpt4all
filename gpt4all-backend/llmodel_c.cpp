@@ -143,8 +143,6 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
 
     // Update the C context by giving access to the wrappers raw pointers to std::vector data
     // which involves no copies
-    ctx->logits = wrapper->promptContext.logits.data();
-    ctx->logits_size = wrapper->promptContext.logits.size();
     ctx->tokens = wrapper->promptContext.tokens.data();
     ctx->tokens_size = wrapper->promptContext.tokens.size();
 

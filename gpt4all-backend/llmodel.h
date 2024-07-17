@@ -122,7 +122,6 @@ public:
     };
 
     struct PromptContext {
-        std::vector<float> logits;      // logits of current context
         std::vector<int32_t> tokens;    // current tokens in the context window
         int32_t n_past = 0;             // number of tokens in past conversation
         int32_t n_ctx = 0;              // number of tokens possible in context window

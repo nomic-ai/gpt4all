@@ -19,7 +19,7 @@
 #include <algorithm>
 
 #define CHAT_FORMAT_MAGIC 0xF5D553CC
-#define CHAT_FORMAT_VERSION 8
+#define CHAT_FORMAT_VERSION 9
 
 class MyChatListModel: public ChatListModel { };
 Q_GLOBAL_STATIC(MyChatListModel, chatListModelInstance)
