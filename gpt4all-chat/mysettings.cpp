@@ -91,7 +91,7 @@ static QString defaultLocalModelsPath()
 
 static QStringList getDevices(bool skipKompute = false)
 {
-    QStringList deviceList { "Auto" };
+    QStringList deviceList;
 #if defined(Q_OS_MAC) && defined(__aarch64__)
     deviceList << "Metal";
 #else

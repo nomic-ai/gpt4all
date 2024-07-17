@@ -195,7 +195,7 @@ MySettingsTab {
         MySettingsLabel {
             id: deviceLabel
             text: qsTr("Device")
-            helpText: qsTr('The compute device used for text generation. "Auto" uses Vulkan or Metal.')
+            helpText: qsTr('The compute device used for text generation.')
             Layout.row: 5
             Layout.column: 0
         }
@@ -207,11 +207,24 @@ MySettingsTab {
             Layout.maximumWidth: 400
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: MySettings.deviceList
+            model: ListModel {
+                Component.onCompleted: {
+                    for (var i = 0; i < MySettings.deviceList.length; ++i)
+                        append({"text": MySettings.deviceList[i]});
+                    deviceBox.updateModel();
+                }
+                ListElement { text: qsTr("Application default") }
+            }
+
             Accessible.name: deviceLabel.text
             Accessible.description: deviceLabel.helpText
             function updateModel() {
-                deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
+                // This usage of 'Auto' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (MySettings.device === "Auto")
+                    deviceBox.currentIndex = 0
+                else
+                    deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
             }
             Component.onCompleted: {
                 deviceBox.updateModel();
@@ -223,7 +236,12 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                MySettings.device = deviceBox.currentText;
+                // This usage of 'Auto' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (deviceBox.currentIndex === 0)
+                    MySettings.device = "Auto";
+                else
+                    MySettings.device = deviceBox.currentText;
             }
         }
         MySettingsLabel {
