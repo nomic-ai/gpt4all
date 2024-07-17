@@ -1083,7 +1083,7 @@ jobs:
 
   build-bindings-backend-windows:
     machine:
-      image: 'windows-server-2022-gui:2023.03.1'
+      image: 'windows-server-2022-gui:current'
       resource_class: windows.large
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
