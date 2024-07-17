@@ -1427,8 +1427,6 @@ workflows:
     jobs:
       - hold:
           type: approval
-      - nuget-hold:
-          type: approval
       - nodejs-hold:
           type: approval
       - npm-hold:
