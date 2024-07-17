@@ -240,11 +240,23 @@ MySettingsTab {
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
             Layout.alignment: Qt.AlignRight
-            model: ModelList.userDefaultModelList
+            model: ListModel {
+                Component.onCompleted: {
+                    for (var i = 0; i < ModelList.userDefaultModelList.length; ++i)
+                        append({"text": ModelList.userDefaultModelList[i]});
+                    comboBox.updateModel();
+                }
+                ListElement { text: qsTr("Application default") }
+            }
             Accessible.name: defaultModelLabel.text
             Accessible.description: defaultModelLabel.helpText
             function updateModel() {
-                comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
+                // This usage of 'Application default' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (MySettings.userDefaultModel === "Application default")
+                    comboBox.currentIndex = 0
+                else
+                    comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
             }
             Component.onCompleted: {
                 comboBox.updateModel()
@@ -256,7 +268,12 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                MySettings.userDefaultModel = comboBox.currentText
+                // This usage of 'Application default' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (comboBox.currentIndex === 0)
+                    MySettings.userDefaultModel = "Application default";
+                else
+                    MySettings.userDefaultModel = comboBox.currentText;
             }
         }
         MySettingsLabel {

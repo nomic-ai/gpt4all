@@ -557,11 +557,6 @@ const QList<QString> ModelList::userDefaultModelList() const
         }
     }
 
-    const QString defaultId = "Application default";
-    if (foundUserDefault)
-        models.append(defaultId);
-    else
-        models.prepend(defaultId);
     return models;
 }
 
