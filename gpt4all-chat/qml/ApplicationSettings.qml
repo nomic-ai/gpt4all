@@ -107,11 +107,12 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: [qsTr("Dark"), qsTr("Light"), qsTr("LegacyDark")]
+            // NOTE: indices match values of ChatTheme enum, keep them in sync
+            model: [qsTr("Light"), qsTr("Dark"), qsTr("LegacyDark")]
             Accessible.name: themeLabel.text
             Accessible.description: themeLabel.helpText
             function updateModel() {
-                themeBox.currentIndex = themeBox.indexOfValue(MySettings.chatTheme);
+                themeBox.currentIndex = MySettings.chatTheme;
             }
             Component.onCompleted: {
                 themeBox.updateModel()
@@ -123,7 +124,7 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                MySettings.chatTheme = themeBox.currentText
+                MySettings.chatTheme = themeBox.currentIndex
             }
         }
         MySettingsLabel {
@@ -141,11 +142,12 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: ["Small", "Medium", "Large"]
+            // NOTE: indices match values of FontSize enum, keep them in sync
+            model: [qsTr("Small"), qsTr("Medium"), qsTr("Large")]
             Accessible.name: fontLabel.text
             Accessible.description: fontLabel.helpText
             function updateModel() {
-                fontBox.currentIndex = fontBox.indexOfValue(MySettings.fontSize);
+                fontBox.currentIndex = MySettings.fontSize;
             }
             Component.onCompleted: {
                 fontBox.updateModel()
@@ -157,7 +159,7 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                MySettings.fontSize = fontBox.currentText
+                MySettings.fontSize = fontBox.currentIndex
             }
         }
         MySettingsLabel {
@@ -271,6 +273,7 @@ MySettingsTab {
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
             Layout.alignment: Qt.AlignRight
+            // NOTE: indices match values of SuggestionMode enum, keep them in sync
             model: [ qsTr("When chatting with LocalDocs"), qsTr("Whenever possible"), qsTr("Never") ]
             Accessible.name: suggestionModeLabel.text
             Accessible.description: suggestionModeLabel.helpText

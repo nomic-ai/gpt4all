@@ -24,6 +24,11 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+// used only for settings serialization, do not translate
+static const QStringList suggestionModeNames { "LocalDocsOnly", "On", "Off" };
+static const QStringList chatThemeNames      { "Light", "Dark", "LegacyDark" };
+static const QStringList fontSizeNames       { "Small", "Medium", "Large" };
+
 // FIXME: All of these default strings that are shown in the UI for settings need to be marked as
 // translatable
 
@@ -39,8 +44,8 @@ static const QString languageAndLocale       = "Default";
 } // namespace defaults
 
 static const QVariantMap basicDefaults {
-    { "chatTheme",                "Light" },
-    { "fontSize",                 "Small" },
+    { "chatTheme",                QVariant::fromValue(ChatTheme::Light) },
+    { "fontSize",                 QVariant::fromValue(FontSize::Small) },
     { "lastVersionStarted",       "" },
     { "networkPort",              4891, },
     { "saveChatsContext",         false },
@@ -169,6 +174,12 @@ void MySettings::setBasicSetting(const QString &name, const QVariant &value, std
     QMetaObject::invokeMethod(this, u"%1Changed"_s.arg(signal.value_or(name)).toLatin1().constData());
 }
 
+int MySettings::getEnumSetting(const QString &setting, const QStringList &valueNames) const
+{
+    int idx = valueNames.indexOf(getBasicSetting(setting).toString());
+    return idx != -1 ? idx : *reinterpret_cast<const int *>(basicDefaults.value(setting).constData());
+}
+
 void MySettings::restoreModelDefaults(const ModelInfo &info)
 {
     setModelTemperature(info, info.m_temperature);
@@ -189,8 +200,8 @@ void MySettings::restoreModelDefaults(const ModelInfo &info)
 
 void MySettings::restoreApplicationDefaults()
 {
-    setChatTheme(basicDefaults.value("chatTheme").toString());
-    setFontSize(basicDefaults.value("fontSize").toString());
+    setChatTheme(basicDefaults.value("chatTheme").value<ChatTheme>());
+    setFontSize(basicDefaults.value("fontSize").value<FontSize>());
     setDevice(defaults::device);
     setThreadCount(defaults::threadCount);
     setSaveChatsContext(basicDefaults.value("saveChatsContext").toBool());
@@ -431,29 +442,28 @@ void MySettings::setThreadCount(int value)
     emit threadCountChanged();
 }
 
-bool           MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
-bool           MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
-int            MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
-QString        MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
-QString        MySettings::chatTheme() const               { return getBasicSetting("chatTheme"               ).toString(); }
-QString        MySettings::fontSize() const                { return getBasicSetting("fontSize"                ).toString(); }
-QString        MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted"      ).toString(); }
-int            MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize"     ).toInt(); }
-int            MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
-bool           MySettings::localDocsShowReferences() const { return getBasicSetting("localdocs/showReferences").toBool(); }
-QStringList    MySettings::localDocsFileExtensions() const { return getBasicSetting("localdocs/fileExtensions").toStringList(); }
-bool           MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting("localdocs/useRemoteEmbed").toBool(); }
-QString        MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
-QString        MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
-QString        MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
-SuggestionMode MySettings::suggestionMode() const          { return getBasicSetting("suggestionMode").value<SuggestionMode>(); };
+bool        MySettings::saveChatsContext() const        { return getBasicSetting("saveChatsContext"        ).toBool(); }
+bool        MySettings::serverChat() const              { return getBasicSetting("serverChat"              ).toBool(); }
+int         MySettings::networkPort() const             { return getBasicSetting("networkPort"             ).toInt(); }
+QString     MySettings::userDefaultModel() const        { return getBasicSetting("userDefaultModel"        ).toString(); }
+QString     MySettings::lastVersionStarted() const      { return getBasicSetting("lastVersionStarted"      ).toString(); }
+int         MySettings::localDocsChunkSize() const      { return getBasicSetting("localdocs/chunkSize"     ).toInt(); }
+int         MySettings::localDocsRetrievalSize() const  { return getBasicSetting("localdocs/retrievalSize" ).toInt(); }
+bool        MySettings::localDocsShowReferences() const { return getBasicSetting("localdocs/showReferences").toBool(); }
+QStringList MySettings::localDocsFileExtensions() const { return getBasicSetting("localdocs/fileExtensions").toStringList(); }
+bool        MySettings::localDocsUseRemoteEmbed() const { return getBasicSetting("localdocs/useRemoteEmbed").toBool(); }
+QString     MySettings::localDocsNomicAPIKey() const    { return getBasicSetting("localdocs/nomicAPIKey"   ).toString(); }
+QString     MySettings::localDocsEmbedDevice() const    { return getBasicSetting("localdocs/embedDevice"   ).toString(); }
+QString     MySettings::networkAttribution() const      { return getBasicSetting("network/attribution"     ).toString(); }
+
+ChatTheme      MySettings::chatTheme() const      { return ChatTheme     (getEnumSetting("chatTheme", chatThemeNames)); }
+FontSize       MySettings::fontSize() const       { return FontSize      (getEnumSetting("fontSize",  fontSizeNames)); }
+SuggestionMode MySettings::suggestionMode() const { return SuggestionMode(getEnumSetting("suggestionMode", suggestionModeNames)); }
 
 void MySettings::setSaveChatsContext(bool value)                      { setBasicSetting("saveChatsContext",         value); }
 void MySettings::setServerChat(bool value)                            { setBasicSetting("serverChat",               value); }
 void MySettings::setNetworkPort(int value)                            { setBasicSetting("networkPort",              value); }
 void MySettings::setUserDefaultModel(const QString &value)            { setBasicSetting("userDefaultModel",         value); }
-void MySettings::setChatTheme(const QString &value)                   { setBasicSetting("chatTheme",                value); }
-void MySettings::setFontSize(const QString &value)                    { setBasicSetting("fontSize",                 value); }
 void MySettings::setLastVersionStarted(const QString &value)          { setBasicSetting("lastVersionStarted",       value); }
 void MySettings::setLocalDocsChunkSize(int value)                     { setBasicSetting("localdocs/chunkSize",      value, "localDocsChunkSize"); }
 void MySettings::setLocalDocsRetrievalSize(int value)                 { setBasicSetting("localdocs/retrievalSize",  value, "localDocsRetrievalSize"); }
@@ -463,7 +473,10 @@ void MySettings::setLocalDocsUseRemoteEmbed(bool value)               { setBasic
 void MySettings::setLocalDocsNomicAPIKey(const QString &value)        { setBasicSetting("localdocs/nomicAPIKey",    value, "localDocsNomicAPIKey"); }
 void MySettings::setLocalDocsEmbedDevice(const QString &value)        { setBasicSetting("localdocs/embedDevice",    value, "localDocsEmbedDevice"); }
 void MySettings::setNetworkAttribution(const QString &value)          { setBasicSetting("network/attribution",      value, "networkAttribution"); }
-void MySettings::setSuggestionMode(SuggestionMode value)              { setBasicSetting("suggestionMode",           int(value)); }
+
+void MySettings::setChatTheme(ChatTheme value)           { setBasicSetting("chatTheme",      chatThemeNames     .value(int(value))); }
+void MySettings::setFontSize(FontSize value)             { setBasicSetting("fontSize",       fontSizeNames      .value(int(value))); }
+void MySettings::setSuggestionMode(SuggestionMode value) { setBasicSetting("suggestionMode", suggestionModeNames.value(int(value))); }
 
 QString MySettings::modelPath()
 {
