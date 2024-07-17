@@ -1298,6 +1298,7 @@ void ModelList::updateModelsFromDirectory()
                     { InstalledRole, true },
                     { FilenameRole, filename },
                     { OnlineRole, filename.endsWith(".rmodel") },
+                    { CompatibleApiRole, filename.endsWith("-compatible_api.rmodel") },
                     { DirpathRole, info.dir().absolutePath() + "/" },
                     { FilesizeRole, toFileSize(info.size()) },
                 };
@@ -1700,14 +1701,10 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
     {
         const QString modelName = "OpenAI-compatible";
         const QString id = modelName;
-        const QString modelFilename = "gpt4all-openai-compatible.rmodel";
-        if (contains(modelFilename))
-            changeId(modelFilename, id);
         if (!contains(id))
             addModel(id);
         QVector<QPair<int, QVariant>> data {
             { ModelList::NameRole, modelName },
-            { ModelList::FilenameRole, modelFilename },
             { ModelList::FilesizeRole, "minimal" },
             { ModelList::OnlineRole, true },
             { ModelList::CompatibleApiRole, true },

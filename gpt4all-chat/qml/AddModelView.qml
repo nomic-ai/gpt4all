@@ -443,13 +443,23 @@ Rectangle {
                                                 if (noError)
                                                     noError = false;
                                             }
-                                            if (isCompatibleApi && baseUrl.text === "") {
-                                                baseUrl.showError();
+                                            if (!isCompatibleApi) {
                                                 if (noError)
-                                                    noError = false;
+                                                    Download.installModel(filename, apiKey.text);
+                                            } else {
+                                                if (baseUrl.text === "") {
+                                                    baseUrl.showError();
+                                                    if (noError)
+                                                        noError = false;
+                                                }
+                                                if (modelName.text === "") {
+                                                    modelName.showError();
+                                                    if (noError)
+                                                        noError = false;
+                                                }
+                                                if (noError)
+                                                    Download.installCompatibleModel(modelName.text, apiKey.text, baseUrl.text);
                                             }
-                                            if (noError)
-                                                Download.installModel(filename, apiKey.text, isCompatibleApi, baseUrl.text);
                                         }
                                         Accessible.role: Accessible.Button
                                         Accessible.name: qsTr("Install")
@@ -606,6 +616,26 @@ Rectangle {
                                             baseUrl.placeholderTextColor = theme.mutedTextColor
                                         }
                                         placeholderText: qsTr("enter $BASE_URL")
+                                        Accessible.role: Accessible.EditableText
+                                        Accessible.name: placeholderText
+                                        Accessible.description: qsTr("Whether the file hash is being calculated")
+                                    }
+
+                                    MyTextField {
+                                        id: modelName
+                                        visible: !installed && isOnline && isCompatibleApi
+                                        Layout.topMargin: 20
+                                        Layout.leftMargin: 20
+                                        Layout.minimumWidth: 200
+                                        Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+                                        wrapMode: Text.WrapAnywhere
+                                        function showError() {
+                                            modelName.placeholderTextColor = theme.textErrorColor
+                                        }
+                                        onTextChanged: {
+                                            modelName.placeholderTextColor = theme.mutedTextColor
+                                        }
+                                        placeholderText: qsTr("enter $MODEL_NAME")
                                         Accessible.role: Accessible.EditableText
                                         Accessible.name: placeholderText
                                         Accessible.description: qsTr("Whether the file hash is being calculated")

@@ -40,6 +40,16 @@ Download *Download::globalInstance()
     return downloadInstance();
 }
 
+QString Download::compatibleModelId(QUrl baseUrl, QString modelName) {
+    QString prefix(baseUrl.toString().toUtf8().toHex());
+    return QString(u"%1_%2"_s).arg(prefix).arg(modelName);
+};
+
+QString Download::compatibleModelFileName(QUrl baseUrl, QString modelName) {
+    QString id(compatibleModelId(baseUrl, modelName));
+    return QString(u"gpt4all-%1-compatible_api.rmodel"_s).arg(id);
+};
+
 Download::Download()
     : QObject(nullptr)
     , m_hashAndSave(new HashAndSaveFile)
@@ -213,14 +223,10 @@ void Download::cancelDownload(const QString &modelFile)
     }
 }
 
-void Download::installModel(const QString &modelFile, const QString &apiKey, const bool isCompatibleApi, const QString &baseUrl)
+void Download::installModel(const QString &modelFile, const QString &apiKey)
 {
     Q_ASSERT(!apiKey.isEmpty());
     if (apiKey.isEmpty())
-        return;
-
-    QUrl apiBaseUrl(QUrl::fromUserInput(baseUrl));
-    if (isCompatibleApi && !Network::isHttpUrlValid(baseUrl))
         return;
 
     Network::globalInstance()->trackEvent("install_model", { {"model", modelFile} });
@@ -235,8 +241,41 @@ void Download::installModel(const QString &modelFile, const QString &apiKey, con
         modelName.chop(7); // strip ".rmodel" extension
         obj.insert("apiKey", apiKey);
         obj.insert("modelName", modelName);
-        if (apiBaseUrl.isValid())
-            obj.insert("baseUrl", apiBaseUrl.toString());
+        QJsonDocument doc(obj);
+
+        QTextStream stream(&file);
+        stream << doc.toJson();
+        file.close();
+        ModelList::globalInstance()->updateModelsFromDirectory();
+    }
+
+    ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::InstalledRole, true }});
+}
+
+void Download::installCompatibleModel(const QString &modelName, const QString &apiKey, const QString &baseUrl)
+{
+    Q_ASSERT(!apiKey.isEmpty());
+    if (apiKey.isEmpty())
+        return;
+
+    QUrl apiBaseUrl(QUrl::fromUserInput(baseUrl));
+    if (!Network::isHttpUrlValid(baseUrl))
+        return;
+
+    QString modelId(compatibleModelId(baseUrl, modelName));
+    if (!ModelList::globalInstance()->contains(modelId))
+        ModelList::globalInstance()->addModel(modelId);
+
+    QString modelFile(compatibleModelFileName(baseUrl, modelName));
+    Network::globalInstance()->trackEvent("install_model", { {"model", modelFile} });
+
+    QString filePath = MySettings::globalInstance()->modelPath() + modelFile;
+    QFile file(filePath);
+    if (file.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
+        QJsonObject obj;
+        obj.insert("apiKey", apiKey);
+        obj.insert("modelName", modelName);
+        obj.insert("baseUrl", apiBaseUrl.toString());
         QJsonDocument doc(obj);
 
         QTextStream stream(&file);

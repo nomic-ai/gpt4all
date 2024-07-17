@@ -56,13 +56,16 @@ class Download : public QObject
 
 public:
     static Download *globalInstance();
+    static QString compatibleModelId(QUrl baseUrl, QString modelName);
+    static QString compatibleModelFileName(QUrl baseUrl, QString modelName);
 
     ReleaseInfo releaseInfo() const;
     bool hasNewerRelease() const;
     QString latestNews() const { return m_latestNews; }
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
-    Q_INVOKABLE void installModel(const QString &modelFile, const QString &apiKey, const bool isCompatibleApi, const QString &baseUrl);
+    Q_INVOKABLE void installModel(const QString &modelFile, const QString &apiKey);
+    Q_INVOKABLE void installCompatibleModel(const QString &modelName, const QString &apiKey, const QString &baseUrl);
     Q_INVOKABLE void removeModel(const QString &modelFile);
     Q_INVOKABLE bool isFirstStart(bool writeVersion = false) const;
 
