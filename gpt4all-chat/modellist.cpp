@@ -1293,15 +1293,45 @@ void ModelList::updateModelsFromDirectory()
 
             QFileInfo info = it.fileInfo();
 
+            bool isOnline(filename.endsWith(".rmodel"));
+            bool isCompatibleApi(filename.endsWith("-compatible_api.rmodel"));
+
+            QString description;
+            if (isCompatibleApi) {
+                QJsonObject obj;
+                {
+                    QFile file(path + filename);
+                    bool success = file.open(QIODeviceBase::ReadOnly);
+                    (void)success;
+                    Q_ASSERT(success);
+                    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+                    obj = doc.object();
+                }
+                {
+                    QString apiKey(obj["apiKey"].toString());
+                    QString baseUrl(obj["baseUrl"].toString());
+                    QString modelName(obj["modelName"].toString());
+                    apiKey = apiKey.length() < 10 ? "*****" : apiKey.left(5) + "*****";
+                    description = tr("<ul><li>API Key: %1</li>"
+                                          "<li>Base URL: %2</li>"
+                                          "<li>Model Name: %3</li></ul>")
+                                          .arg(apiKey)
+                                          .arg(baseUrl)
+                                          .arg(modelName);
+                }
+            }
+
             for (const QString &id : modelsById) {
                 QVector<QPair<int, QVariant>> data {
                     { InstalledRole, true },
                     { FilenameRole, filename },
-                    { OnlineRole, filename.endsWith(".rmodel") },
-                    { CompatibleApiRole, filename.endsWith("-compatible_api.rmodel") },
+                    { OnlineRole, isOnline },
+                    { CompatibleApiRole, isCompatibleApi },
                     { DirpathRole, info.dir().absolutePath() + "/" },
                     { FilesizeRole, toFileSize(info.size()) },
                 };
+                if (isCompatibleApi)
+                    data.append({ DescriptionRole, description });
                 updateData(id, data);
             }
         }
