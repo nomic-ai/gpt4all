@@ -323,15 +323,11 @@ if (LLMODEL_KOMPUTE)
     set(MODEL_IMPL_TARGETS
         llamamodel-mainline-kompute
         llamamodel-mainline-kompute-avxonly
-        gptj-kompute
-        gptj-kompute-avxonly
     )
 else()
     set(MODEL_IMPL_TARGETS
         llamamodel-mainline-cpu
         llamamodel-mainline-cpu-avxonly
-        gptj-cpu
-        gptj-cpu-avxonly
     )
 endif()
 
