@@ -844,6 +844,10 @@ bool Database::hasContent()
 
 int Database::openDatabase(const QString &modelPath, bool create, int ver)
 {
+    if (!QFileInfo(modelPath).isDir()) {
+        qWarning() << "ERROR: invalid download path" << modelPath;
+        return -1;
+    }
     if (m_db.isOpen())
         m_db.close();
     auto dbPath = u"%1/localdocs_v%2.db"_s.arg(modelPath).arg(ver);
@@ -851,7 +855,7 @@ int Database::openDatabase(const QString &modelPath, bool create, int ver)
         return 0;
     m_db.setDatabaseName(dbPath);
     if (!m_db.open()) {
-        qWarning() << "ERROR: opening db" << m_db.lastError();
+        qWarning() << "ERROR: opening db" << dbPath << m_db.lastError();
         return -1;
     }
     return hasContent();
