@@ -1664,7 +1664,7 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1503"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
-        <translation>&lt;ul&gt;&lt;li&gt;Απαιτεί προσωπικό κλειδί API του OpenAI.&lt;/li&gt;&lt;li&gt;ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Θα στείλει τις διάλογοι σας στο OpenAI!&lt;/li&gt;&lt;li&gt;Το κλειδί σας API θα αποθηκευτεί στο δίσκο&lt;/li&gt;&lt;li&gt;Θα χρησιμοποιείται μόνο για την επικοινωνία με το OpenAI&lt;/li&gt;&lt;li&gt;Μπορείτε να υποβάλετε αίτηση για ένα κλειδί API &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;εδώ.&lt;/a&gt;&lt;/li&gt;</translation>
+        <translation>&lt;ul&gt;&lt;li&gt;Απαιτεί προσωπικό κλειδί API του OpenAI.&lt;/li&gt;&lt;li&gt;ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Θα στείλει τους διάλογους σας στο OpenAI!&lt;/li&gt;&lt;li&gt;Το κλειδί σας API θα αποθηκευτεί στο δίσκο&lt;/li&gt;&lt;li&gt;Θα χρησιμοποιείται μόνο για την επικοινωνία με το OpenAI&lt;/li&gt;&lt;li&gt;Μπορείτε να υποβάλετε αίτηση για ένα κλειδί API &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;εδώ.&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1522"/>
