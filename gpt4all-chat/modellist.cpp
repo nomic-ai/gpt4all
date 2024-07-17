@@ -1685,6 +1685,37 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
         };
         updateData(id, data);
     }
+
+    const QString compatibleDesc = tr("<ul><li>Requires personal API key and the API base URL.</li>"
+                                      "<li>WARNING: Will send your chats to "
+                                      "the OpenAI-compatible API Server you specified!</li>"
+                                      "<li>Your API key will be stored on disk</li><li>Will only be used"
+                                      " to communicate with the OpenAI-compatible API Server</li>");
+
+    {
+        const QString modelName = "OpenAI-compatible";
+        const QString id = modelName;
+        const QString modelFilename = "gpt4all-openai-compatible.rmodel";
+        if (contains(modelFilename))
+            changeId(modelFilename, id);
+        if (!contains(id))
+            addModel(id);
+        QVector<QPair<int, QVariant>> data {
+            { ModelList::NameRole, modelName },
+            { ModelList::FilenameRole, modelFilename },
+            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::OnlineRole, true },
+            { ModelList::DescriptionRole,
+             tr("<strong>Connect to OpenAI-compatible API server</strong><br> %1").arg(compatibleDesc) },
+            { ModelList::RequiresVersionRole, "2.7.4" },
+            { ModelList::OrderRole, "cf" },
+            { ModelList::RamrequiredRole, 0 },
+            { ModelList::ParametersRole, "?" },
+            { ModelList::QuantRole, "NA" },
+            { ModelList::TypeRole, "NA" },
+        };
+        updateData(id, data);
+    }
 }
 
 void ModelList::updateDiscoveredInstalled(const ModelInfo &info)

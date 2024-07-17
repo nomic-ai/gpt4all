@@ -213,7 +213,7 @@ void Download::cancelDownload(const QString &modelFile)
     }
 }
 
-void Download::installModel(const QString &modelFile, const QString &apiKey)
+void Download::installModel(const QString &modelFile, const QString &apiKey, const QString &baseUrl)
 {
     Q_ASSERT(!apiKey.isEmpty());
     if (apiKey.isEmpty())
@@ -229,6 +229,9 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
         QString modelName(modelFile);
         modelName.remove(0, 8); // strip "gpt4all-" prefix
         modelName.chop(7); // strip ".rmodel" extension
+        if (!baseUrl.isEmpty()) {
+            obj.insert("baseUrl", baseUrl);
+        }
         obj.insert("apiKey", apiKey);
         obj.insert("modelName", modelName);
         QJsonDocument doc(obj);

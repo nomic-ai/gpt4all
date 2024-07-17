@@ -322,6 +322,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         QVariantMap modelLoadProps;
         if (modelInfo.isOnline) {
             QString apiKey;
+            QString requestUrl;
             QString modelName;
             {
                 QFile file(filePath);
@@ -332,11 +333,17 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 QJsonObject obj = doc.object();
                 apiKey = obj["apiKey"].toString();
                 modelName = obj["modelName"].toString();
+                if (modelName == "openai-compatible") {
+                    QString baseUrl = obj["baseUrl"].toString();
+                    requestUrl = QString("%1/chat/completions").arg(baseUrl);
+                } else {
+                    requestUrl = modelInfo.url();
+                }
             }
             m_llModelType = LLModelType::API_;
             ChatAPI *model = new ChatAPI();
             model->setModelName(modelName);
-            model->setRequestURL(modelInfo.url());
+            model->setRequestURL(requestUrl);
             model->setAPIKey(apiKey);
             m_llModelInfo.resetModel(this, model);
         } else if (!loadNewModel(modelInfo, modelLoadProps)) {

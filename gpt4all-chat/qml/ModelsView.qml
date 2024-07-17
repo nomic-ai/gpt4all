@@ -236,7 +236,7 @@ Rectangle {
                                             if (apiKey.text === "")
                                                 apiKey.showError();
                                             else
-                                                Download.installModel(filename, apiKey.text);
+                                                Download.installModel(filename, apiKey.text, baseUrl.text);
                                         }
                                         Accessible.role: Accessible.Button
                                         Accessible.name: qsTr("Install")
@@ -373,6 +373,26 @@ Rectangle {
                                             apiKey.placeholderTextColor = theme.mutedTextColor
                                         }
                                         placeholderText: qsTr("enter $API_KEY")
+                                        Accessible.role: Accessible.EditableText
+                                        Accessible.name: placeholderText
+                                        Accessible.description: qsTr("Whether the file hash is being calculated")
+                                    }
+
+                                    MyTextField {
+                                        id: baseUrl
+                                        visible: !installed && isOnline && name == "OpenAI-compatible"
+                                        Layout.topMargin: 20
+                                        Layout.leftMargin: 20
+                                        Layout.minimumWidth: 200
+                                        Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+                                        wrapMode: Text.WrapAnywhere
+                                        function showError() {
+                                            apiKey.placeholderTextColor = theme.textErrorColor
+                                        }
+                                        onTextChanged: {
+                                            apiKey.placeholderTextColor = theme.mutedTextColor
+                                        }
+                                        placeholderText: qsTr("enter $BASE_URL")
                                         Accessible.role: Accessible.EditableText
                                         Accessible.name: placeholderText
                                         Accessible.description: qsTr("Whether the file hash is being calculated")

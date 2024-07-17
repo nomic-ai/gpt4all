@@ -62,7 +62,7 @@ public:
     QString latestNews() const { return m_latestNews; }
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
-    Q_INVOKABLE void installModel(const QString &modelFile, const QString &apiKey);
+    Q_INVOKABLE void installModel(const QString &modelFile, const QString &apiKey, const QString &baseUrl);
     Q_INVOKABLE void removeModel(const QString &modelFile);
     Q_INVOKABLE bool isFirstStart(bool writeVersion = false) const;
 
