@@ -29,7 +29,6 @@ using namespace Qt::Literals::StringLiterals;
 class QDataStream;
 
 enum LLModelType {
-    GPTJ_,
     LLAMA_,
     API_,
 };

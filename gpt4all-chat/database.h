@@ -45,7 +45,7 @@ struct DocumentInfo
     size_t currentPosition = 0;
     bool currentlyProcessing = false;
     bool isPdf() const {
-        return doc.suffix() == u"pdf"_s;
+        return doc.suffix().compare(u"pdf"_s, Qt::CaseInsensitive) == 0;
     }
 };
 

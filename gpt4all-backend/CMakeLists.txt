@@ -51,13 +51,11 @@ set(DIRECTORY llama.cpp-mainline)
 include(llama.cpp.cmake)
 
 set(BUILD_VARIANTS)
-set(GPTJ_BUILD_VARIANT cpu)
 if (APPLE)
     list(APPEND BUILD_VARIANTS metal)
 endif()
 if (LLMODEL_KOMPUTE)
     list(APPEND BUILD_VARIANTS kompute kompute-avxonly)
-    set(GPTJ_BUILD_VARIANT kompute)
 else()
     list(PREPEND BUILD_VARIANTS cpu cpu-avxonly)
 endif()
@@ -138,12 +136,6 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     prepare_target(llamamodel-mainline llama-mainline)
-
-    if (BUILD_VARIANT MATCHES ${GPTJ_BUILD_VARIANT})
-        add_library(gptj-${BUILD_VARIANT} SHARED
-            gptj.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
-        prepare_target(gptj llama-mainline)
-    endif()
 
     if (NOT PROJECT_IS_TOP_LEVEL AND BUILD_VARIANT STREQUAL cuda)
         set(CUDAToolkit_BIN_DIR ${CUDAToolkit_BIN_DIR} PARENT_SCOPE)

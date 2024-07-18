@@ -130,7 +130,7 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
 
         addCudaSearchPath();
 
-        std::string impl_name_re = "(gptj|llamamodel-mainline)-(cpu|metal|kompute|vulkan|cuda)";
+        std::string impl_name_re = "llamamodel-mainline-(cpu|metal|kompute|vulkan|cuda)";
         if (cpu_supports_avx2() == 0) {
             impl_name_re += "-avxonly";
         }

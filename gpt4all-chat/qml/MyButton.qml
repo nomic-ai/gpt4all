@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import mysettings
+import mysettingsenums
 
 Button {
     id: myButton
@@ -14,7 +15,7 @@ Button {
     property color backgroundColor: theme.buttonBackground
     property color backgroundColorHovered: theme.buttonBackgroundHovered
     property real  backgroundRadius: 10
-    property real  borderWidth: MySettings.chatTheme === "LegacyDark" ? 1 : 0
+    property real  borderWidth: MySettings.chatTheme === MySettingsEnums.ChatTheme.LegacyDark ? 1 : 0
     property color borderColor: theme.buttonBorder
     property real  fontPixelSize: theme.fontSizeLarge
     property bool  fontPixelBold: false
