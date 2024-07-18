@@ -61,3 +61,8 @@ Jeremy Tayco ([@jstayco](https://github.com/jstayco))<br/>
 E-mail: jstayco@protonmail.ch<br/>
 Discord: `@vertana`
 - es\_MX translation
+
+Riccardo Giovanetti ([@Harvester62](https://github.com/Harvester62))<br/>
+E-mail: riccardo.giovanetti@gmail.com<br/>
+Discord: `@harvester62`
+- it\_IT translation
