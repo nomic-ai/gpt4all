@@ -1296,6 +1296,7 @@ void ModelList::updateModelsFromDirectory()
             bool isOnline(filename.endsWith(".rmodel"));
             bool isCompatibleApi(filename.endsWith("-compatible_api.rmodel"));
 
+            QString name;
             QString description;
             if (isCompatibleApi) {
                 QJsonObject obj;
@@ -1312,6 +1313,7 @@ void ModelList::updateModelsFromDirectory()
                     QString baseUrl(obj["baseUrl"].toString());
                     QString modelName(obj["modelName"].toString());
                     apiKey = apiKey.length() < 10 ? "*****" : apiKey.left(5) + "*****";
+                    name = tr("OpenAI-Compatible Model - %1 (%2)").arg(modelName).arg(baseUrl);
                     description = tr("<ul><li>API Key: %1</li>"
                                           "<li>Base URL: %2</li>"
                                           "<li>Model Name: %3</li></ul>")
@@ -1330,8 +1332,10 @@ void ModelList::updateModelsFromDirectory()
                     { DirpathRole, info.dir().absolutePath() + "/" },
                     { FilesizeRole, toFileSize(info.size()) },
                 };
-                if (isCompatibleApi)
+                if (isCompatibleApi) {
+                    data.append({ NameRole, name });
                     data.append({ DescriptionRole, description });
+                }
                 updateData(id, data);
             }
         }
