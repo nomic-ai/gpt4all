@@ -40,12 +40,6 @@ Rectangle {
             id: listView
             model: LocalDocs.localDocsModel
             boundsBehavior: Flickable.StopAtBounds
-            ScrollBar.vertical: ScrollBar {
-                parent: listView.parent
-                anchors.top: listView.top
-                anchors.left: listView.right
-                anchors.bottom: listView.bottom
-            }
             spacing: 15
 
             delegate: Rectangle {
