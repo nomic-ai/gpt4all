@@ -22,7 +22,7 @@
 
 using namespace Qt::Literals::StringLiterals;
 
-#define DEBUG
+//#define DEBUG
 
 ChatAPI::ChatAPI()
     : QObject(nullptr)
