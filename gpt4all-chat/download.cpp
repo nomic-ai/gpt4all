@@ -41,13 +41,17 @@ Download *Download::globalInstance()
 }
 
 QString Download::compatibleModelId(QUrl baseUrl, QString modelName) {
-    QString prefix(baseUrl.toString().toUtf8().toHex());
-    return QString(u"%1_%2"_s).arg(prefix).arg(modelName);
+    QCryptographicHash sha256(QCryptographicHash::Sha256);
+    sha256.addData(baseUrl.toString().toUtf8());
+    QString prefix(sha256.result().toHex());
+    return QString(u"%1_%2"_s).arg(prefix, modelName);
 };
 
-QString Download::compatibleModelFileName(QUrl baseUrl, QString modelName) {
-    QString id(compatibleModelId(baseUrl, modelName));
-    return QString(u"gpt4all-%1-compatible_api.rmodel"_s).arg(id);
+QString Download::compatibleModelFilename(QUrl baseUrl, QString modelName) {
+    QCryptographicHash sha256(QCryptographicHash::Sha256);
+    sha256.addData((baseUrl.toString() + "_" + modelName).toUtf8());
+    QString name(sha256.result().toHex());
+    return QString(u"gpt4all-%1-capi.rmodel"_s).arg(name);
 };
 
 Download::Download()
@@ -266,7 +270,7 @@ void Download::installCompatibleModel(const QString &modelName, const QString &a
     if (!ModelList::globalInstance()->contains(modelId))
         ModelList::globalInstance()->addModel(modelId);
 
-    QString modelFile(compatibleModelFileName(baseUrl, modelName));
+    QString modelFile(compatibleModelFilename(baseUrl, modelName));
     Network::globalInstance()->trackEvent("install_model", { {"model", modelFile} });
 
     QString filePath = MySettings::globalInstance()->modelPath() + modelFile;

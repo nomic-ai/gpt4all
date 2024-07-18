@@ -57,7 +57,7 @@ class Download : public QObject
 public:
     static Download *globalInstance();
     static QString compatibleModelId(QUrl baseUrl, QString modelName);
-    static QString compatibleModelFileName(QUrl baseUrl, QString modelName);
+    static QString compatibleModelFilename(QUrl baseUrl, QString modelName);
 
     ReleaseInfo releaseInfo() const;
     bool hasNewerRelease() const;

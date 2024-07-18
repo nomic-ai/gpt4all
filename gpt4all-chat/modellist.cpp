@@ -1294,7 +1294,7 @@ void ModelList::updateModelsFromDirectory()
             QFileInfo info = it.fileInfo();
 
             bool isOnline(filename.endsWith(".rmodel"));
-            bool isCompatibleApi(filename.endsWith("-compatible_api.rmodel"));
+            bool isCompatibleApi(filename.endsWith("-capi.rmodel"));
 
             QString name;
             QString description;
@@ -1313,14 +1313,12 @@ void ModelList::updateModelsFromDirectory()
                     QString baseUrl(obj["baseUrl"].toString());
                     QString modelName(obj["modelName"].toString());
                     apiKey = apiKey.length() < 10 ? "*****" : apiKey.left(5) + "*****";
-                    name = tr("%1 (%2)").arg(modelName).arg(baseUrl);
+                    name = tr("%1 (%2)").arg(modelName, baseUrl);
                     description = tr("<strong>OpenAI-Compatible API Model</strong><br>"
                                      "<ul><li>API Key: %1</li>"
                                      "<li>Base URL: %2</li>"
                                      "<li>Model Name: %3</li></ul>")
-                                        .arg(apiKey)
-                                        .arg(baseUrl)
-                                        .arg(modelName);
+                                        .arg(apiKey, baseUrl, modelName);
                 }
             }
 
