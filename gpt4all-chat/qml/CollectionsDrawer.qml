@@ -31,7 +31,8 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.left: borderLeft.right
         anchors.right: parent.right
-        anchors.margins: 15
+        anchors.margins: 2
+        anchors.bottomMargin: 10
         clip: true
         contentHeight: 300
         ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -39,6 +40,9 @@ Rectangle {
         ListView {
             id: listView
             model: LocalDocs.localDocsModel
+            anchors.fill: parent
+            anchors.margins: 13
+            anchors.bottomMargin: 5
             boundsBehavior: Flickable.StopAtBounds
             spacing: 15
 
