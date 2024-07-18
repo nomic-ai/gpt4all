@@ -22,7 +22,7 @@
 
 using namespace Qt::Literals::StringLiterals;
 
-//#define DEBUG
+#define DEBUG
 
 ChatAPI::ChatAPI()
     : QObject(nullptr)
@@ -201,6 +201,11 @@ void ChatAPIWorker::request(const QString &apiKey,
     QNetworkRequest request(apiUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", authorization.toUtf8());
+#if defined(DEBUG)
+    qDebug() << "ChatAPI::request"
+             << "API URL: " << apiUrl.toString()
+             << "Authorization: " << authorization.toUtf8();
+#endif
     m_networkManager = new QNetworkAccessManager(this);
     QNetworkReply *reply = m_networkManager->post(request, array);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);

@@ -458,7 +458,11 @@ Rectangle {
                                                         noError = false;
                                                 }
                                                 if (noError)
-                                                    Download.installCompatibleModel(modelName.text, apiKey.text, baseUrl.text);
+                                                    Download.installCompatibleModel(
+                                                        modelName.text.trim(),
+                                                        apiKey.text.trim(),
+                                                        baseUrl.text.trim(),
+                                                    );
                                             }
                                         }
                                         Accessible.role: Accessible.Button

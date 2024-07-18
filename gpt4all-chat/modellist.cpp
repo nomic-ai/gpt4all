@@ -1313,13 +1313,14 @@ void ModelList::updateModelsFromDirectory()
                     QString baseUrl(obj["baseUrl"].toString());
                     QString modelName(obj["modelName"].toString());
                     apiKey = apiKey.length() < 10 ? "*****" : apiKey.left(5) + "*****";
-                    name = tr("OpenAI-Compatible Model - %1 (%2)").arg(modelName).arg(baseUrl);
-                    description = tr("<ul><li>API Key: %1</li>"
-                                          "<li>Base URL: %2</li>"
-                                          "<li>Model Name: %3</li></ul>")
-                                          .arg(apiKey)
-                                          .arg(baseUrl)
-                                          .arg(modelName);
+                    name = tr("%1 (%2)").arg(modelName).arg(baseUrl);
+                    description = tr("<strong>OpenAI-Compatible API Model</strong><br>"
+                                     "<ul><li>API Key: %1</li>"
+                                     "<li>Base URL: %2</li>"
+                                     "<li>Model Name: %3</li></ul>")
+                                        .arg(apiKey)
+                                        .arg(baseUrl)
+                                        .arg(modelName);
                 }
             }
 
@@ -1335,6 +1336,7 @@ void ModelList::updateModelsFromDirectory()
                 if (isCompatibleApi) {
                     data.append({ NameRole, name });
                     data.append({ DescriptionRole, description });
+                    data.append({ PromptTemplateRole, "%1" });
                 }
                 updateData(id, data);
             }
