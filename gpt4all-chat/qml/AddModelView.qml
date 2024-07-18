@@ -25,6 +25,10 @@ Rectangle {
     color: theme.viewBackground
     signal modelsViewRequested()
 
+    ToastManager {
+        id: installToast
+    }
+
     PopupDialog {
         id: downloadingErrorPopup
         anchors.centerIn: parent
@@ -438,14 +442,22 @@ Rectangle {
                                         font.pixelSize: theme.fontSizeLarge
                                         onClicked: {
                                             var noError = true;
-                                            if (apiKey.text === "") {
+                                            if (apiKey.text.trim() === "") {
                                                 apiKey.showError();
                                                 if (noError)
                                                     noError = false;
                                             }
                                             if (!isCompatibleApi) {
-                                                if (noError)
-                                                    Download.installModel(filename, apiKey.text);
+                                                if (noError) {
+                                                    installToast.show(
+                                                        qsTr("Model \"%1\" is installed successfully.").
+                                                            arg(name),
+                                                    );
+                                                    Download.installModel(
+                                                        filename,
+                                                        apiKey.text.trim(),
+                                                    );
+                                                }
                                             } else {
                                                 if (baseUrl.text === "") {
                                                     baseUrl.showError();
@@ -457,12 +469,18 @@ Rectangle {
                                                     if (noError)
                                                         noError = false;
                                                 }
-                                                if (noError)
+                                                if (noError) {
+                                                    installToast.show(
+                                                        qsTr("Model \"%1 (%2)\" is installed successfully.").
+                                                            arg(modelName).
+                                                            arg(baseUrl),
+                                                    );
                                                     Download.installCompatibleModel(
                                                         modelName.text.trim(),
                                                         apiKey.text.trim(),
                                                         baseUrl.text.trim(),
                                                     );
+                                                }
                                             }
                                         }
                                         Accessible.role: Accessible.Button
