@@ -56,8 +56,6 @@ class Download : public QObject
 
 public:
     static Download *globalInstance();
-    static QString compatibleModelId(QUrl baseUrl, QString modelName);
-    static QString compatibleModelFilename(QUrl baseUrl, QString modelName);
 
     ReleaseInfo releaseInfo() const;
     bool hasNewerRelease() const;
@@ -90,6 +88,7 @@ Q_SIGNALS:
     void requestHashAndSave(const QString &hash, QCryptographicHash::Algorithm a, const QString &saveFilePath,
         QFile *tempFile, QNetworkReply *modelReply);
     void latestNewsChanged();
+    void toastMessage(const QString &message);
 
 private:
     void parseReleaseJsonFile(const QByteArray &jsonData);

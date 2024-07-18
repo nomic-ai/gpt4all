@@ -19,7 +19,7 @@ Rectangle {
       * @param {string} text Text to show
       * @param {real} duration Duration to show in milliseconds, defaults to 3000
       */
-    function show(text, duration) {
+    function show(text, duration=3000) {
         message.text = text;
         if (typeof duration !== "undefined") { // checks if parameter was passed
             time = Math.max(duration, 2 * fadeTime);

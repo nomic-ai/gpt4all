@@ -26,7 +26,7 @@ Rectangle {
     signal modelsViewRequested()
 
     ToastManager {
-        id: installToast
+        id: messageToast
     }
 
     PopupDialog {
@@ -441,50 +441,35 @@ Rectangle {
                                         text: qsTr("Install")
                                         font.pixelSize: theme.fontSizeLarge
                                         onClicked: {
-                                            var noError = true,
-                                                apiKeyText = apiKey.text.trim(),
+                                            var apiKeyText = apiKey.text.trim(),
                                                 baseUrlText = baseUrl.text.trim(),
                                                 modelNameText = modelName.text.trim();
-                                            if (apiKeyText === "") {
+
+                                            var apiKeyOk = apiKeyText !== "",
+                                                baseUrlOk = !isCompatibleApi || baseUrlText !== "",
+                                                modelNameOk = !isCompatibleApi || modelNameText !== "";
+
+                                            if (!apiKeyOk)
                                                 apiKey.showError();
-                                                if (noError)
-                                                    noError = false;
-                                            }
-                                            if (!isCompatibleApi) {
-                                                if (noError) {
-                                                    installToast.show(
-                                                        qsTr("Model \"%1\" is installed successfully.").
-                                                            arg(name),
-                                                    );
-                                                    Download.installModel(
-                                                        filename,
-                                                        apiKeyText,
-                                                    );
-                                                }
-                                            } else {
-                                                if (baseUrlText === "") {
-                                                    baseUrl.showError();
-                                                    if (noError)
-                                                        noError = false;
-                                                }
-                                                if (modelNameText === "") {
-                                                    modelName.showError();
-                                                    if (noError)
-                                                        noError = false;
-                                                }
-                                                if (noError) {
-                                                    installToast.show(
-                                                        qsTr("Model \"%1 (%2)\" is installed successfully.").
-                                                            arg(modelNameText).
-                                                            arg(baseUrlText),
-                                                    );
-                                                    Download.installCompatibleModel(
-                                                        modelNameText,
-                                                        apiKeyText,
-                                                        baseUrlText,
-                                                    );
-                                                }
-                                            }
+                                            if (!baseUrlOk)
+                                                baseUrl.showError();
+                                            if (!modelNameOk)
+                                                modelName.showError();
+
+                                            if (!apiKeyOk || !baseUrlOk || !modelNameOk)
+                                                return;
+
+                                            if (!isCompatibleApi)
+                                                Download.installModel(
+                                                    filename,
+                                                    apiKeyText,
+                                                );
+                                            else
+                                                Download.installCompatibleModel(
+                                                    modelNameText,
+                                                    apiKeyText,
+                                                    baseUrlText,
+                                                );
                                         }
                                         Accessible.role: Accessible.Button
                                         Accessible.name: qsTr("Install")
@@ -615,7 +600,7 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            installToast.show(qsTr("$API_KEY is invalid."));
+                                            messageToast.show(qsTr("Error: $API_KEY is empty."));
                                             apiKey.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {
@@ -636,7 +621,7 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            installToast.show(qsTr("$BASE_URL is invalid."));
+                                            messageToast.show(qsTr("Error: $BASE_URL is empty."));
                                             baseUrl.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {
@@ -657,7 +642,7 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            installToast.show(qsTr("$MODEL_NAME is invalid."))
+                                            messageToast.show(qsTr("Error: $MODEL_NAME is empty."))
                                             modelName.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {
@@ -803,6 +788,13 @@ Rectangle {
                     }
                 }
             }
+        }
+    }
+
+    Connections {
+        target: Download
+        function onToastMessage(message) {
+            messageToast.show(message);
         }
     }
 }

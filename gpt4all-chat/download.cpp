@@ -40,20 +40,6 @@ Download *Download::globalInstance()
     return downloadInstance();
 }
 
-QString Download::compatibleModelId(QUrl baseUrl, QString modelName) {
-    QCryptographicHash sha256(QCryptographicHash::Sha256);
-    sha256.addData(baseUrl.toString().toUtf8());
-    QString prefix(sha256.result().toHex());
-    return QString(u"%1_%2"_s).arg(prefix, modelName);
-};
-
-QString Download::compatibleModelFilename(QUrl baseUrl, QString modelName) {
-    QCryptographicHash sha256(QCryptographicHash::Sha256);
-    sha256.addData((baseUrl.toString() + "_" + modelName).toUtf8());
-    QString name(sha256.result().toHex());
-    return QString(u"gpt4all-%1-capi.rmodel"_s).arg(name);
-};
-
 Download::Download()
     : QObject(nullptr)
     , m_hashAndSave(new HashAndSaveFile)
@@ -251,6 +237,7 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
         stream << doc.toJson();
         file.close();
         ModelList::globalInstance()->updateModelsFromDirectory();
+        emit toastMessage(tr("Model \"%1\" is installed successfully.").arg(modelName));
     }
 
     ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::InstalledRole, true }});
@@ -258,19 +245,32 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
 
 void Download::installCompatibleModel(const QString &modelName, const QString &apiKey, const QString &baseUrl)
 {
-    Q_ASSERT(!apiKey.isEmpty());
-    if (apiKey.isEmpty())
+    Q_ASSERT(!modelName.isEmpty());
+    if (modelName.isEmpty()) {
+        emit toastMessage(tr("Error: $MODEL_NAME is empty."));
         return;
+    }
+
+    Q_ASSERT(!apiKey.isEmpty());
+    if (apiKey.isEmpty()) {
+        emit toastMessage(tr("Error: $API_KEY is empty."));
+        return;
+    }
 
     QUrl apiBaseUrl(QUrl::fromUserInput(baseUrl));
-    if (!Network::isHttpUrlValid(baseUrl))
+    if (!Network::isHttpUrlValid(baseUrl)) {
+        emit toastMessage(tr("Error: $BASE_URL is invalid."));
         return;
+    }
 
-    QString modelId(compatibleModelId(baseUrl, modelName));
-    if (!ModelList::globalInstance()->contains(modelId))
-        ModelList::globalInstance()->addModel(modelId);
+    QString modelId(ModelList::compatibleModelId(baseUrl, modelName));
+    if (ModelList::globalInstance()->contains(modelId)) {
+        emit toastMessage(tr("Error: $MODEL_NAME is conflict."));
+        return;
+    }
+    ModelList::globalInstance()->addModel(modelId);
 
-    QString modelFile(compatibleModelFilename(baseUrl, modelName));
+    QString modelFile(ModelList::compatibleModelFilename(baseUrl, modelName));
     Network::globalInstance()->trackEvent("install_model", { {"model", modelFile} });
 
     QString filePath = MySettings::globalInstance()->modelPath() + modelFile;
@@ -286,6 +286,7 @@ void Download::installCompatibleModel(const QString &modelName, const QString &a
         stream << doc.toJson();
         file.close();
         ModelList::globalInstance()->updateModelsFromDirectory();
+        emit toastMessage(tr("Model \"%1 (%2)\" is installed successfully.").arg(modelName, baseUrl));
     }
 
     ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::InstalledRole, true }});
@@ -309,6 +310,7 @@ void Download::removeModel(const QString &modelFile)
             ModelList::globalInstance()->removeInstalled(info);
         Network::globalInstance()->trackEvent("remove_model", { {"model", modelFile} });
         file.remove();
+        emit toastMessage(tr("Model \"%1\" is removed.").arg(info.name()));
     }
 
     if (!shouldRemoveInstalled) {

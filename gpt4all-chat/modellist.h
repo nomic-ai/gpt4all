@@ -278,6 +278,9 @@ class ModelList : public QAbstractListModel
 public:
     static ModelList *globalInstance();
 
+    static QString compatibleModelId(QUrl baseUrl, QString modelName);
+    static QString compatibleModelFilename(QUrl baseUrl, QString modelName);
+
     enum DiscoverSort {
         Default,
         Likes,

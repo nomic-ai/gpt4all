@@ -19,7 +19,7 @@ ListView {
       * @param {string} text Text to show
       * @param {real} duration Duration to show in milliseconds, defaults to 3000
       */
-    function show(text, duration) {
+    function show(text, duration=3000) {
         model.insert(0, {text: text, duration: duration});
     }
 
