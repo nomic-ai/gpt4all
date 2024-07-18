@@ -263,14 +263,12 @@ void Download::installCompatibleModel(const QString &modelName, const QString &a
         return;
     }
 
-    QString modelId(ModelList::compatibleModelId(baseUrl, modelName));
-    if (ModelList::globalInstance()->contains(modelId)) {
-        emit toastMessage(tr("Error: $MODEL_NAME is conflict."));
+    QString modelFile(ModelList::compatibleModelFilename(baseUrl, modelName));
+    if (ModelList::globalInstance()->contains(modelFile)) {
+        emit toastMessage(tr("Error: Model \"%1 (%2)\" is conflict.").arg(modelName, baseUrl));
         return;
     }
-    ModelList::globalInstance()->addModel(modelId);
-
-    QString modelFile(ModelList::compatibleModelFilename(baseUrl, modelName));
+    ModelList::globalInstance()->addModel(modelFile);
     Network::globalInstance()->trackEvent("install_model", { {"model", modelFile} });
 
     QString filePath = MySettings::globalInstance()->modelPath() + modelFile;

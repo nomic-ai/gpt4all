@@ -514,15 +514,15 @@ ModelList::ModelList()
     QCoreApplication::instance()->installEventFilter(this);
 }
 
-QString ModelList::compatibleModelId(QUrl baseUrl, QString modelName) {
+QString ModelList::compatibleModelNameHash(QUrl baseUrl, QString modelName) {
     QCryptographicHash sha256(QCryptographicHash::Sha256);
     sha256.addData((baseUrl.toString() + "_" + modelName).toUtf8());
     return sha256.result().toHex();
 };
 
 QString ModelList::compatibleModelFilename(QUrl baseUrl, QString modelName) {
-    QString id(compatibleModelId(baseUrl, modelName));
-    return QString(u"gpt4all-%1-capi.rmodel"_s).arg(id);
+    QString hash(compatibleModelNameHash(baseUrl, modelName));
+    return QString(u"gpt4all-%1-capi.rmodel"_s).arg(hash);
 };
 
 bool ModelList::eventFilter(QObject *obj, QEvent *ev)
