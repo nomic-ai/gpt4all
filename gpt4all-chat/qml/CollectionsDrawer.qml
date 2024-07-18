@@ -34,7 +34,7 @@ Rectangle {
         anchors.margins: 15
         clip: true
         contentHeight: 300
-        ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+        ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
         ListView {
             id: listView
