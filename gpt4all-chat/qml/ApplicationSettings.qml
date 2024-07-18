@@ -179,17 +179,35 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: MySettings.uiLanguages
-            Accessible.name: fontLabel.text
-            Accessible.description: fontLabel.helpText
+            model: ListModel {
+                Component.onCompleted: {
+                    for (var i = 0; i < MySettings.uiLanguages.length; ++i)
+                        append({"text": MySettings.uiLanguages[i]});
+                    languageBox.updateModel();
+                }
+                ListElement { text: qsTr("System Locale") }
+            }
+
+            Accessible.name: languageLabel.text
+            Accessible.description: languageLabel.helpText
             function updateModel() {
-                languageBox.currentIndex = languageBox.indexOfValue(MySettings.languageAndLocale);
+                // This usage of 'System Locale' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (MySettings.languageAndLocale === "System Locale")
+                    languageBox.currentIndex = 0
+                else
+                    languageBox.currentIndex = languageBox.indexOfValue(MySettings.languageAndLocale);
             }
             Component.onCompleted: {
                 languageBox.updateModel()
             }
             onActivated: {
-                MySettings.languageAndLocale = languageBox.currentText
+                // This usage of 'System Locale' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (languageBox.currentIndex === 0)
+                    MySettings.languageAndLocale = "System Locale";
+                else
+                    MySettings.languageAndLocale = languageBox.currentText;
             }
         }
         MySettingsLabel {
