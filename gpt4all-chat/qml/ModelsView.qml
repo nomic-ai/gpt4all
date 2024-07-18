@@ -241,8 +241,11 @@ Rectangle {
                                         text: qsTr("Install")
                                         font.pixelSize: theme.fontSizeLarge
                                         onClicked: {
-                                            var noError = true;
-                                            if (apiKey.text.trim() === "") {
+                                            var noError = true,
+                                                apiKeyText = apiKey.text.trim(),
+                                                baseUrlText = baseUrl.text.trim(),
+                                                modelNameText = modelName.text.trim();
+                                            if (apiKeyText === "") {
                                                 apiKey.showError();
                                                 if (noError)
                                                     noError = false;
@@ -255,16 +258,16 @@ Rectangle {
                                                     );
                                                     Download.installModel(
                                                         filename,
-                                                        apiKey.text.trim(),
+                                                        apiKeyText,
                                                     );
                                                 }
                                             } else {
-                                                if (baseUrl.text === "") {
+                                                if (baseUrlText === "") {
                                                     baseUrl.showError();
                                                     if (noError)
                                                         noError = false;
                                                 }
-                                                if (modelName.text === "") {
+                                                if (modelNameText === "") {
                                                     modelName.showError();
                                                     if (noError)
                                                         noError = false;
@@ -272,13 +275,13 @@ Rectangle {
                                                 if (noError) {
                                                     installToast.show(
                                                         qsTr("Model \"%1 (%2)\" is installed successfully.").
-                                                            arg(modelName).
-                                                            arg(baseUrl),
+                                                            arg(modelNameText).
+                                                            arg(baseUrlText),
                                                     );
                                                     Download.installCompatibleModel(
-                                                        modelName.text.trim(),
-                                                        apiKey.text.trim(),
-                                                        baseUrl.text.trim(),
+                                                        modelNameText,
+                                                        apiKeyText,
+                                                        baseUrlText,
                                                     );
                                                 }
                                             }
@@ -412,10 +415,11 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            apiKey.placeholderTextColor = theme.textErrorColor
+                                            installToast.show(qsTr("$API_KEY is invalid."));
+                                            apiKey.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {
-                                            apiKey.placeholderTextColor = theme.mutedTextColor
+                                            apiKey.placeholderTextColor = theme.mutedTextColor;
                                         }
                                         placeholderText: qsTr("enter $API_KEY")
                                         Accessible.role: Accessible.EditableText
@@ -432,10 +436,11 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            baseUrl.placeholderTextColor = theme.textErrorColor
+                                            installToast.show(qsTr("$BASE_URL is invalid."));
+                                            baseUrl.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {
-                                            baseUrl.placeholderTextColor = theme.mutedTextColor
+                                            baseUrl.placeholderTextColor = theme.mutedTextColor;
                                         }
                                         placeholderText: qsTr("enter $BASE_URL")
                                         Accessible.role: Accessible.EditableText
@@ -452,10 +457,11 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            modelName.placeholderTextColor = theme.textErrorColor
+                                            installToast.show(qsTr("$MODEL_NAME is invalid."))
+                                            modelName.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {
-                                            modelName.placeholderTextColor = theme.mutedTextColor
+                                            modelName.placeholderTextColor = theme.mutedTextColor;
                                         }
                                         placeholderText: qsTr("enter $MODEL_NAME")
                                         Accessible.role: Accessible.EditableText
