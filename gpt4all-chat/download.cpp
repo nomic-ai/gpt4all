@@ -247,25 +247,25 @@ void Download::installCompatibleModel(const QString &modelName, const QString &a
 {
     Q_ASSERT(!modelName.isEmpty());
     if (modelName.isEmpty()) {
-        emit toastMessage(tr("Error: $MODEL_NAME is empty."));
+        emit toastMessage(tr("ERROR: $MODEL_NAME is empty."));
         return;
     }
 
     Q_ASSERT(!apiKey.isEmpty());
     if (apiKey.isEmpty()) {
-        emit toastMessage(tr("Error: $API_KEY is empty."));
+        emit toastMessage(tr("ERROR: $API_KEY is empty."));
         return;
     }
 
     QUrl apiBaseUrl(QUrl::fromUserInput(baseUrl));
     if (!Network::isHttpUrlValid(baseUrl)) {
-        emit toastMessage(tr("Error: $BASE_URL is invalid."));
+        emit toastMessage(tr("ERROR: $BASE_URL is invalid."));
         return;
     }
 
     QString modelFile(ModelList::compatibleModelFilename(baseUrl, modelName));
     if (ModelList::globalInstance()->contains(modelFile)) {
-        emit toastMessage(tr("Error: Model \"%1 (%2)\" is conflict.").arg(modelName, baseUrl));
+        emit toastMessage(tr("ERROR: Model \"%1 (%2)\" is conflict.").arg(modelName, baseUrl));
         return;
     }
     ModelList::globalInstance()->addModel(modelFile);

@@ -396,7 +396,7 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            messageToast.show(qsTr("Error: $API_KEY is empty."));
+                                            messageToast.show(qsTr("ERROR: $API_KEY is empty."));
                                             apiKey.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {
@@ -417,7 +417,7 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            messageToast.show(qsTr("Error: $BASE_URL is empty."));
+                                            messageToast.show(qsTr("ERROR: $BASE_URL is empty."));
                                             baseUrl.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {
@@ -438,7 +438,7 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            messageToast.show(qsTr("Error: $MODEL_NAME is empty."))
+                                            messageToast.show(qsTr("ERROR: $MODEL_NAME is empty."))
                                             modelName.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {

@@ -225,7 +225,10 @@ void ChatAPIWorker::handleFinished()
     QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
 
     if (!response.isValid()) {
-        m_chat->callResponse(-1, "Error: Network error");
+        m_chat->callResponse(
+            -1,
+            tr("ERROR: Network error occurred while connecting to the API server").toStdString()
+        );
         return;
     }
 
