@@ -130,9 +130,9 @@ public:
     // - Linked with the ModelList, fetching info from it.
     bool isOnline = false;
     // 'isCompatibleApi':
-    // - Indicates whether the model is compatible with the API of OpenAI.
+    // - Indicates whether the model is using the OpenAI-compatible API which user custom.
     // - When the property is true, 'isOnline' should also be true.
-    // - Does not link to the ModelList; instead, fetches info from the *-capi.rmodel file and works standalone.
+    // - Does not link to the ModelList directly; instead, fetches info from the *-capi.rmodel file and works standalone.
     // - Still needs to copy data from gpt4all.ini and *-capi.rmodel to the ModelList in memory while application getting started(as custom .gguf models do).
     bool isCompatibleApi = false;
     QString requiresVersion;
