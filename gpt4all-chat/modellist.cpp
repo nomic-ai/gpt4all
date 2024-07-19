@@ -1157,7 +1157,7 @@ void ModelList::removeInstalled(const ModelInfo &model)
 {
     Q_ASSERT(model.installed);
     Q_ASSERT(!model.isClone());
-    Q_ASSERT(model.isDiscovered() || model.description() == "" /*indicates sideloaded*/);
+    Q_ASSERT(model.isDiscovered() || model.isCompatibleApi || model.description() == "" /*indicates sideloaded*/);
     removeInternal(model);
     emit layoutChanged();
 }

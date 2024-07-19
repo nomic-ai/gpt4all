@@ -303,7 +303,7 @@ void Download::removeModel(const QString &modelFile)
     if (file.exists()) {
         const ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
         MySettings::globalInstance()->eraseModel(info);
-        shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.description() == "" /*indicates sideloaded*/);
+        shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.isCompatibleApi || info.description() == "" /*indicates sideloaded*/);
         if (shouldRemoveInstalled)
             ModelList::globalInstance()->removeInstalled(info);
         Network::globalInstance()->trackEvent("remove_model", { {"model", modelFile} });
