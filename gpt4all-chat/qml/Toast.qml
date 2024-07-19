@@ -1,11 +1,10 @@
-import QtQuick 2.0
+/*
+ * SPDX-License-Identifier: MIT
+ * Source: https://gist.github.com/jonmcclung/bae669101d17b103e94790341301c129
+ * Adapted from StackOverflow: http://stackoverflow.com/questions/26879266/make-toast-in-android-by-qml
+ */
 
-/**
-  * source from:
-  * https://gist.github.com/jonmcclung/bae669101d17b103e94790341301c129
-  * adapted from StackOverflow:
-  * http://stackoverflow.com/questions/26879266/make-toast-in-android-by-qml
-  */
+import QtQuick 2.0
 
 /**
   * @brief An Android-like timed message text in a box that self-destroys when finished if desired
