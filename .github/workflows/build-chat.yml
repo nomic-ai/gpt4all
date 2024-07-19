@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch_depth: 0
+          fetch-depth: 0
           submodules: true
       - name: Cache Vulkan
         id: cache_vulkan
@@ -59,7 +59,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch_depth: 0
+          fetch-depth: 0
           submodules: true
       - name: Setup XCode
         run: sudo xcode-select -s '/Applications/Xcode_14.1.app'
@@ -95,7 +95,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch_depth: 0
+          fetch-depth: 0
           submodules: true
       - name: Cache Qt
         id: cache_qt
