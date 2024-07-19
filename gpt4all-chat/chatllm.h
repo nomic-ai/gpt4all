@@ -28,9 +28,12 @@ using namespace Qt::Literals::StringLiterals;
 
 class QDataStream;
 
+// NOTE: values serialized to disk, do not change or reuse
 enum LLModelType {
-    LLAMA_,
-    API_,
+    GPTJ_  = 0, // no longer used
+    LLAMA_ = 1,
+    API_   = 2,
+    BERT_  = 3, // no longer used
 };
 
 class ChatLLM;

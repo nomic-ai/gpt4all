@@ -526,43 +526,15 @@ QString ModelList::incompleteDownloadPath(const QString &modelFile)
     return MySettings::globalInstance()->modelPath() + "incomplete-" + modelFile;
 }
 
-const QList<ModelInfo> ModelList::exportModelList() const
+const QList<ModelInfo> ModelList::selectableModelList() const
 {
+    // FIXME: This needs to be kept in sync with m_selectableModels so should probably be merged
     QMutexLocker locker(&m_mutex);
     QList<ModelInfo> infos;
     for (ModelInfo *info : m_models)
-        if (info->installed)
+        if (info->installed && !info->isEmbeddingModel)
             infos.append(*info);
     return infos;
-}
-
-const QList<QString> ModelList::userDefaultModelList() const
-{
-    QMutexLocker locker(&m_mutex);
-
-    const QString userDefaultModelName = MySettings::globalInstance()->userDefaultModel();
-    QList<QString> models;
-    bool foundUserDefault = false;
-    for (ModelInfo *info : m_models) {
-
-        // Only installed chat models are suitable as a default
-        if (!info->installed || info->isEmbeddingModel)
-            continue;
-
-        if (info->id() == userDefaultModelName) {
-            foundUserDefault = true;
-            models.prepend(info->name());
-        } else {
-            models.append(info->name());
-        }
-    }
-
-    const QString defaultId = "Application default";
-    if (foundUserDefault)
-        models.append(defaultId);
-    else
-        models.prepend(defaultId);
-    return models;
 }
 
 ModelInfo ModelList::defaultModelInfo() const
@@ -681,7 +653,7 @@ void ModelList::addModel(const QString &id)
     m_mutex.unlock();
     endInsertRows();
 
-    emit userDefaultModelListChanged();
+    emit selectableModelListChanged();
 }
 
 void ModelList::changeId(const QString &oldId, const QString &newId)
@@ -1029,7 +1001,7 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
     m_installedModels->invalidate();
     m_downloadableModels->invalidate();
 
-    emit userDefaultModelListChanged();
+    emit selectableModelListChanged();
 }
 
 void ModelList::resortModel()
@@ -1169,7 +1141,7 @@ void ModelList::removeInternal(const ModelInfo &model)
         delete info;
     }
     endRemoveRows();
-    emit userDefaultModelListChanged();
+    emit selectableModelListChanged();
     MySettings::globalInstance()->eraseModel(model);
 }
 

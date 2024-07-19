@@ -39,7 +39,7 @@ static const bool    forceMetal              = false;
 static const bool    networkIsActive         = false;
 static const bool    networkUsageStatsActive = false;
 static const QString device                  = "Auto";
-static const QString languageAndLocale       = "Default";
+static const QString languageAndLocale       = "System Locale";
 
 } // namespace defaults
 
@@ -91,7 +91,7 @@ static QString defaultLocalModelsPath()
 
 static QStringList getDevices(bool skipKompute = false)
 {
-    QStringList deviceList { "Auto" };
+    QStringList deviceList;
 #if defined(Q_OS_MAC) && defined(__aarch64__)
     deviceList << "Metal";
 #else
@@ -121,7 +121,7 @@ static QString getUiLanguage(const QString directory, const QString fileName)
 
 static QStringList getUiLanguages(const QString &modelPath)
 {
-    QStringList languageList( { QObject::tr("Default") } );
+    QStringList languageList;
 
     // Add the language translations from model path files first which is used by translation developers
     // to load translations in progress without having to rebuild all of GPT4All from source
@@ -627,7 +627,7 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
     // to either the default which is the system locale or the one explicitly set by the user previously.
     QLocale locale;
     const QString l = languageAndLocale();
-    if (l == "Default")
+    if (l == "System Locale")
         locale = QLocale::system();
     else
         locale = QLocale(l);
