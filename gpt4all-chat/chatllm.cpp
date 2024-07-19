@@ -37,6 +37,7 @@ using namespace Qt::Literals::StringLiterals;
 //#define DEBUG
 //#define DEBUG_MODEL_LOADING
 
+#define GPTJ_INTERNAL_STATE_VERSION  0 // GPT-J is gone but old chats still use this
 #define LLAMA_INTERNAL_STATE_VERSION 0
 
 class LLModelStore {
@@ -1055,6 +1056,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
     if (version > 1) {
         stream << m_llModelType;
         switch (m_llModelType) {
+        case GPTJ_: stream << GPTJ_INTERNAL_STATE_VERSION; break;
         case LLAMA_: stream << LLAMA_INTERNAL_STATE_VERSION; break;
         default: Q_UNREACHABLE();
         }
