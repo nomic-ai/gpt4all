@@ -30,9 +30,9 @@
 
 #ifdef GGML_USE_KOMPUTE
 #   include <ggml-kompute.h>
-#elif GGML_USE_VULKAN
+#elif defined(GGML_USE_VULKAN)
 #   include <ggml-vulkan.h>
-#elif GGML_USE_CUDA
+#elif defined(GGML_USE_CUDA)
 #   include <ggml-cuda.h>
 #endif
 
@@ -51,14 +51,14 @@ static const std::vector<const char *> KNOWN_ARCHES {
     // "grok", -- 314B parameters
     "gpt2",
     // "gptj", -- no inference code
-    // "gptneox", -- no inference code
+    "gptneox",
     "mpt",
     "baichuan",
     "starcoder",
-    // "persimmon", -- CUDA generates garbage
     "refact",
     "bert",
     "nomic-bert",
+    // "jina-bert-v2", -- Assertion `i01 >= 0 && i01 < ne01' failed.
     "bloom",
     "stablelm",
     "qwen",
@@ -72,12 +72,20 @@ static const std::vector<const char *> KNOWN_ARCHES {
     "internlm2",
     // "minicpm", -- CUDA generates garbage
     "gemma",
+    "gemma2",
     "starcoder2",
     // "mamba", -- CUDA missing SSM_CONV
     "xverse",
     "command-r",
     // "dbrx", -- 16x12B parameters
     "olmo",
+    "openelm",
+    // "arctic", -- 10B+128x3.66B parameters
+    // "deepseek2", -- excessive VRAM requirements
+    "chatglm",
+    // "bitnet", -- tensor not within file bounds?
+    // "t5", -- seq2seq model
+    "jais",
 };
 
 static const std::vector<const char *> EMBEDDING_ARCHES {
@@ -102,6 +110,16 @@ static void llama_log_callback(enum ggml_log_level level, const char *text, void
         fputs(text, stderr);
     }
 }
+
+#ifdef GGML_USE_CUDA
+static void cuda_log_callback(enum ggml_log_level level, const char *text, void *userdata)
+{
+    (void)userdata;
+    if (llama_verbose() || level <= GGML_LOG_LEVEL_WARN) {
+        fputs(text, stderr);
+    }
+}
+#endif
 
 struct gpt_params {
     int32_t seed          = -1;   // RNG seed
@@ -515,9 +533,8 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
 {
     const bool wantBOS = ctx.n_past == 0 && ctx.tokens.empty();
     const bool useBOS = wantBOS && shouldAddBOS();
-    auto strCat = wantBOS && !special ? " " + str : str; // insert leading space ourselves, llama.cpp fork doesn't anymore
-    std::vector<LLModel::Token> fres(strCat.size()+4);
-    auto fres_len = llama_tokenize(d_ptr->model, strCat.c_str(), strCat.length(), fres.data(), fres.size(), useBOS, special);
+    std::vector<LLModel::Token> fres(str.length() + 4);
+    auto fres_len = llama_tokenize(d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), useBOS, special);
     fres.resize(fres_len);
     return fres;
 }
@@ -525,10 +542,10 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
 std::string LLamaModel::tokenToString(Token id) const
 {
     std::vector<char> result(8, 0);
-    const int n_tokens = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), false);
+    const int n_tokens = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), 0, false);
     if (n_tokens < 0) {
         result.resize(-n_tokens);
-        int check = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), false);
+        int check = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), 0, false);
         GGML_ASSERT(check == -n_tokens);
     }
     else {
@@ -1170,6 +1187,9 @@ DLL_EXPORT bool is_arch_supported(const char *arch)
 DLL_EXPORT LLModel *construct()
 {
     llama_log_set(llama_log_callback, nullptr);
+#ifdef GGML_USE_CUDA
+    ggml_backend_cuda_log_set_callback(cuda_log_callback, nullptr);
+#endif
     return new LLamaModel;
 }
 }
