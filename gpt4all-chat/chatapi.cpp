@@ -223,7 +223,12 @@ void ChatAPIWorker::handleFinished()
     }
 
     QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-    Q_ASSERT(response.isValid());
+
+    if (!response.isValid()) {
+        m_chat->callResponse(-1, "Error: Network error");
+        return;
+    }
+
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
@@ -243,7 +248,10 @@ void ChatAPIWorker::handleReadyRead()
     }
 
     QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-    Q_ASSERT(response.isValid());
+
+    if (!response.isValid())
+        return;
+
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
