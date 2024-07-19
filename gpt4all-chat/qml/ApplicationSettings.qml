@@ -107,11 +107,11 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: [qsTr("Light"), qsTr("Dark"), qsTr("LegacyDark")]
+            model: [qsTr("Dark"), qsTr("Light"), qsTr("LegacyDark")]
             Accessible.name: themeLabel.text
             Accessible.description: themeLabel.helpText
             function updateModel() {
-                themeBox.currentIndex = MySettings.chatTheme;
+                themeBox.currentIndex = themeBox.indexOfValue(MySettings.chatTheme);
             }
             Component.onCompleted: {
                 themeBox.updateModel()
@@ -123,7 +123,7 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                MySettings.chatTheme = themeBox.currentIndex
+                MySettings.chatTheme = themeBox.currentText
             }
         }
         MySettingsLabel {
@@ -141,11 +141,11 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: [qsTr("Small"), qsTr("Medium"), qsTr("Large")]
+            model: ["Small", "Medium", "Large"]
             Accessible.name: fontLabel.text
             Accessible.description: fontLabel.helpText
             function updateModel() {
-                fontBox.currentIndex = MySettings.fontSize;
+                fontBox.currentIndex = fontBox.indexOfValue(MySettings.fontSize);
             }
             Component.onCompleted: {
                 fontBox.updateModel()
@@ -157,7 +157,7 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                MySettings.fontSize = fontBox.currentIndex
+                MySettings.fontSize = fontBox.currentText
             }
         }
         MySettingsLabel {

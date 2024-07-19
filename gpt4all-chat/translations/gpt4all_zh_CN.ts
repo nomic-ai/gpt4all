@@ -529,24 +529,6 @@
         <translation>应用中的文本大小。</translation>
     </message>
     <message>
-        <location filename="../qml/ApplicationSettings.qml" line="144"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
-        <source>Small</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/ApplicationSettings.qml" line="144"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
-        <source>Medium</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/ApplicationSettings.qml" line="144"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
-        <source>Large</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../qml/ApplicationSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="166"/>
         <source>Language and Locale</source>
@@ -1762,32 +1744,32 @@ model to get started</source>
 <context>
     <name>ModelList</name>
     <message>
-        <location filename="../modellist.cpp" line="1548"/>
+        <location filename="../modellist.cpp" line="1537"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要个人 OpenAI API 密钥。&lt;/li&gt;&lt;li&gt;警告：将把您的聊天内容发送给 OpenAI！&lt;/li&gt;&lt;li&gt;您的 API 密钥将存储在磁盘上&lt;/li&gt;&lt;li&gt;仅用于与 OpenAI 通信&lt;/li&gt;&lt;li&gt;您可以在此处&lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;申请 API 密钥。&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1567"/>
+        <location filename="../modellist.cpp" line="1556"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1595"/>
+        <location filename="../modellist.cpp" line="1584"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1626"/>
+        <location filename="../modellist.cpp" line="1615"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1651"/>
+        <location filename="../modellist.cpp" line="1640"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1677"/>
+        <location filename="../modellist.cpp" line="1666"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1796,7 +1778,7 @@ model to get started</source>
         <translation type="vanished">&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1580"/>
+        <location filename="../modellist.cpp" line="1569"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* 即使您为ChatGPT-4向OpenAI付款，这也不能保证API密钥访问。联系OpenAI获取更多信息。</translation>
     </message>
@@ -1805,7 +1787,7 @@ model to get started</source>
         <translation type="vanished">&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1607"/>
+        <location filename="../modellist.cpp" line="1596"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
@@ -1822,7 +1804,7 @@ model to get started</source>
         <translation type="vanished">&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="2092"/>
+        <location filename="../modellist.cpp" line="2081"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
@@ -2508,14 +2490,6 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/PopupDialog.qml" line="49"/>
         <source>Displayed when the popup is showing busy</source>
         <translation>在弹出窗口显示忙碌时显示</translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <location filename="../mysettings.cpp" line="119"/>
-        <source>Default</source>
-        <translation type="unfinished">默认</translation>
     </message>
 </context>
 <context>

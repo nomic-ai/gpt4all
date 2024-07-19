@@ -66,8 +66,6 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("download", 1, 0, "Download", Download::globalInstance());
     qmlRegisterSingletonInstance("network", 1, 0, "Network", Network::globalInstance());
     qmlRegisterSingletonInstance("localdocs", 1, 0, "LocalDocs", LocalDocs::globalInstance());
-    qmlRegisterUncreatableMetaObject(MySettingsEnums::staticMetaObject, "mysettingsenums", 1, 0, "MySettingsEnums", "Error: only enums");
-
     const QUrl url(u"qrc:/gpt4all/main.qml"_qs);
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
