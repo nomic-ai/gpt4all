@@ -31,21 +31,19 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.left: borderLeft.right
         anchors.right: parent.right
-        anchors.margins: 15
+        anchors.margins: 2
+        anchors.bottomMargin: 10
         clip: true
         contentHeight: 300
-        ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+        ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
         ListView {
             id: listView
             model: LocalDocs.localDocsModel
+            anchors.fill: parent
+            anchors.margins: 13
+            anchors.bottomMargin: 5
             boundsBehavior: Flickable.StopAtBounds
-            ScrollBar.vertical: ScrollBar {
-                parent: listView.parent
-                anchors.top: listView.top
-                anchors.left: listView.right
-                anchors.bottom: listView.bottom
-            }
             spacing: 15
 
             delegate: Rectangle {
