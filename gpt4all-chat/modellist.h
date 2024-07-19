@@ -265,7 +265,7 @@ class ModelList : public QAbstractListModel
     Q_PROPERTY(InstalledModels* installedModels READ installedModels NOTIFY installedModelsChanged)
     Q_PROPERTY(InstalledModels* selectableModels READ selectableModels NOTIFY selectableModelsChanged)
     Q_PROPERTY(DownloadableModels* downloadableModels READ downloadableModels NOTIFY downloadableModelsChanged)
-    Q_PROPERTY(QList<QString> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
+    Q_PROPERTY(QList<ModelInfo> userDefaultModelList READ userDefaultModelList NOTIFY userDefaultModelListChanged)
     Q_PROPERTY(bool asyncModelRequestOngoing READ asyncModelRequestOngoing NOTIFY asyncModelRequestOngoingChanged)
     Q_PROPERTY(int discoverLimit READ discoverLimit WRITE setDiscoverLimit NOTIFY discoverLimitChanged)
     Q_PROPERTY(int discoverSortDirection READ discoverSortDirection WRITE setDiscoverSortDirection NOTIFY discoverSortDirectionChanged)
@@ -408,8 +408,7 @@ public:
     void addModel(const QString &id);
     void changeId(const QString &oldId, const QString &newId);
 
-    const QList<ModelInfo> exportModelList() const;
-    const QList<QString> userDefaultModelList() const;
+    const QList<ModelInfo> userDefaultModelList() const;
 
     InstalledModels *installedModels() const { return m_installedModels; }
     InstalledModels *selectableModels() const { return m_selectableModels; }

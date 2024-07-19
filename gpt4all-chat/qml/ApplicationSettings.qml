@@ -270,46 +270,54 @@ MySettingsTab {
             Layout.column: 0
         }
         MyComboBox {
-            id: comboBox
+            id: defaultModelBox
             Layout.row: 6
             Layout.column: 2
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
             Layout.alignment: Qt.AlignRight
             model: ListModel {
+                id: defaultModelBoxModel
                 Component.onCompleted: {
-                    for (var i = 0; i < ModelList.userDefaultModelList.length; ++i)
-                        append({"text": ModelList.userDefaultModelList[i]});
-                    comboBox.updateModel();
+                    defaultModelBox.rebuildModel()
                 }
-                ListElement { text: qsTr("Application default") }
             }
             Accessible.name: defaultModelLabel.text
             Accessible.description: defaultModelLabel.helpText
+            function rebuildModel() {
+                defaultModelBoxModel.clear();
+                defaultModelBoxModel.append({"text": qsTr("Application default")});
+                for (var i = 0; i < ModelList.userDefaultModelList.length; ++i)
+                    defaultModelBoxModel.append({"text": ModelList.userDefaultModelList[i].name});
+                defaultModelBox.updateModel();
+            }
             function updateModel() {
                 // This usage of 'Application default' should not be translated
                 // FIXME: Make this refer to a string literal variable accessed by both QML and C++
                 if (MySettings.userDefaultModel === "Application default")
-                    comboBox.currentIndex = 0
+                    defaultModelBox.currentIndex = 0
                 else
-                    comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
-            }
-            Component.onCompleted: {
-                comboBox.updateModel()
-            }
-            Connections {
-                target: MySettings
-                function onUserDefaultModelChanged() {
-                    comboBox.updateModel()
-                }
+                    defaultModelBox.currentIndex = defaultModelBox.indexOfValue(MySettings.userDefaultModel);
             }
             onActivated: {
                 // This usage of 'Application default' should not be translated
                 // FIXME: Make this refer to a string literal variable accessed by both QML and C++
-                if (comboBox.currentIndex === 0)
+                if (defaultModelBox.currentIndex === 0)
                     MySettings.userDefaultModel = "Application default";
                 else
-                    MySettings.userDefaultModel = comboBox.currentText;
+                    MySettings.userDefaultModel = defaultModelBox.currentText;
+            }
+            Connections {
+                target: MySettings
+                function onUserDefaultModelChanged() {
+                    defaultModelBox.updateModel()
+                }
+            }
+            Connections {
+                target: ModelList
+                function onUserDefaultModelListChanged() {
+                    defaultModelBox.rebuildModel()
+                }
             }
         }
         MySettingsLabel {
