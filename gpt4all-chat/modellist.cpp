@@ -526,7 +526,7 @@ QString ModelList::incompleteDownloadPath(const QString &modelFile)
     return MySettings::globalInstance()->modelPath() + "incomplete-" + modelFile;
 }
 
-const QList<ModelInfo> ModelList::userDefaultModelList() const
+const QList<ModelInfo> ModelList::selectableModelList() const
 {
     // FIXME: This needs to be kept in sync with m_selectableModels so should probably be merged
     QMutexLocker locker(&m_mutex);
@@ -653,7 +653,7 @@ void ModelList::addModel(const QString &id)
     m_mutex.unlock();
     endInsertRows();
 
-    emit userDefaultModelListChanged();
+    emit selectableModelListChanged();
 }
 
 void ModelList::changeId(const QString &oldId, const QString &newId)
@@ -1001,7 +1001,7 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
     m_installedModels->invalidate();
     m_downloadableModels->invalidate();
 
-    emit userDefaultModelListChanged();
+    emit selectableModelListChanged();
 }
 
 void ModelList::resortModel()
@@ -1141,7 +1141,7 @@ void ModelList::removeInternal(const ModelInfo &model)
         delete info;
     }
     endRemoveRows();
-    emit userDefaultModelListChanged();
+    emit selectableModelListChanged();
     MySettings::globalInstance()->eraseModel(model);
 }
 

@@ -287,8 +287,8 @@ MySettingsTab {
             function rebuildModel() {
                 defaultModelBoxModel.clear();
                 defaultModelBoxModel.append({"text": qsTr("Application default")});
-                for (var i = 0; i < ModelList.userDefaultModelList.length; ++i)
-                    defaultModelBoxModel.append({"text": ModelList.userDefaultModelList[i].name});
+                for (var i = 0; i < ModelList.selectableModelList.length; ++i)
+                    defaultModelBoxModel.append({"text": ModelList.selectableModelList[i].name});
                 defaultModelBox.updateModel();
             }
             function updateModel() {
@@ -315,7 +315,7 @@ MySettingsTab {
             }
             Connections {
                 target: ModelList
-                function onUserDefaultModelListChanged() {
+                function onSelectableModelListChanged() {
                     defaultModelBox.rebuildModel()
                 }
             }

@@ -97,7 +97,7 @@ void Server::start()
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
-            const QList<ModelInfo> modelList = ModelList::globalInstance()->userDefaultModelList();
+            const QList<ModelInfo> modelList = ModelList::globalInstance()->selectableModelList();
             QJsonObject root;
             root.insert("object", "list");
             QJsonArray data;
@@ -117,7 +117,7 @@ void Server::start()
             if (!MySettings::globalInstance()->serverChat())
                 return QHttpServerResponse(QHttpServerResponder::StatusCode::Unauthorized);
 
-            const QList<ModelInfo> modelList = ModelList::globalInstance()->userDefaultModelList();
+            const QList<ModelInfo> modelList = ModelList::globalInstance()->selectableModelList();
             QJsonObject object;
             for (const ModelInfo &info : modelList) {
                 Q_ASSERT(info.installed);
@@ -234,7 +234,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
 
     const QString modelRequested = body["model"].toString();
     ModelInfo modelInfo = ModelList::globalInstance()->defaultModelInfo();
-    const QList<ModelInfo> modelList = ModelList::globalInstance()->userDefaultModelList();
+    const QList<ModelInfo> modelList = ModelList::globalInstance()->selectableModelList();
     for (const ModelInfo &info : modelList) {
         Q_ASSERT(info.installed);
         if (!info.installed)
