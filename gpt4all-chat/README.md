@@ -16,27 +16,17 @@ One click installers for macOS, Linux, and Windows at https://gpt4all.io
 ## Features
 
 * Cross-platform (Linux, Windows, MacOSX)
-* Fast CPU based inference using ggml for GPT-J based models
 * The UI is made to look and feel like you've come to expect from a chatty gpt
 * Check for updates so you can always stay fresh with latest models
 * Easy to install with precompiled binaries available for all three major desktop platforms
 * Multi-modal - Ability to load more than one model and switch between them
-* Supports both llama.cpp and gptj.cpp style models
-* Model downloader in GUI featuring many popular open source models
-* Settings dialog to change temp, top_p, top_k, threads, etc
-* Copy your conversation to clipboard
-* Check for updates to get the very latest GUI
-
-## Feature wishlist
-
 * Multi-chat - a list of current and past chats and the ability to save/delete/export and switch between
-* Text to speech - have the AI response with voice
-* Speech to text - give the prompt with your voice
-* Plugin support for langchain other developer tools
-* chat gui headless operation mode
-* Advanced settings for changing temperature, topk, etc. (DONE)
-* * Improve the accessibility of the installer for screen reader users
-* YOUR IDEA HERE
+* Supports models that are supported by llama.cpp
+* Model downloader in GUI featuring many popular open source models
+* Settings dialog to change temp, top_p, min_p, top_k, threads, etc
+* Copy your conversation to clipboard
+* RAG via LocalDocs feature
+* Check for updates to get the very latest GUI
 
 ## Building and running
 
@@ -44,14 +34,7 @@ One click installers for macOS, Linux, and Windows at https://gpt4all.io
 
 ## Getting the latest
 
-If you've already checked out the source code and/or built the program make sure when you do a git fetch to get the latest changes and that you also do ```git submodule update --init --recursive``` to update the submodules.
-
-## Manual download of models
-* You can find a 'Model Explorer' on the official website where you can manually download models that we support: https://gpt4all.io/index.html
-
-## Terminal Only Interface with no Qt dependency
-
-Check out https://github.com/kuvaus/LlamaGPTJ-chat which is using the llmodel backend so it is compliant with our ecosystem and all models downloaded above should work with it.
+If you've already checked out the source code and/or built the program make sure when you do a git fetch to get the latest changes and that you also do `git submodule update --init --recursive` to update the submodules. (If you ever run into trouble, deinitializing via `git submodule deinit -f .` and then initializing again via `git submodule update --init --recursive` fixes most issues)
 
 ## Contributing
 
@@ -59,6 +42,4 @@ Check out https://github.com/kuvaus/LlamaGPTJ-chat which is using the llmodel ba
 
 
 ## License
-The source code of this chat interface is currently under a MIT license. The underlying GPT4All-j model is released under non-restrictive open-source Apache 2 License.
-
-The GPT4All-J license allows for users to use generated outputs as they see fit. Users take responsibility for ensuring their content meets applicable requirements for publication in a given context or region.
+The source code of this chat interface is currently under a MIT license.
