@@ -51,14 +51,14 @@ static const std::vector<const char *> KNOWN_ARCHES {
     // "grok", -- 314B parameters
     "gpt2",
     // "gptj", -- no inference code
-    // "gptneox", -- no inference code
+    "gptneox",
     "mpt",
     "baichuan",
     "starcoder",
-    // "persimmon", -- CUDA generates garbage
     "refact",
     "bert",
     "nomic-bert",
+    // "jina-bert-v2", -- Assertion `i01 >= 0 && i01 < ne01' failed.
     "bloom",
     "stablelm",
     "qwen",
@@ -72,12 +72,20 @@ static const std::vector<const char *> KNOWN_ARCHES {
     "internlm2",
     // "minicpm", -- CUDA generates garbage
     "gemma",
+    "gemma2",
     "starcoder2",
     // "mamba", -- CUDA missing SSM_CONV
     "xverse",
     "command-r",
     // "dbrx", -- 16x12B parameters
     "olmo",
+    "openelm",
+    // "arctic", -- 10B+128x3.66B parameters
+    // "deepseek2", -- excessive VRAM requirements
+    "chatglm",
+    // "bitnet", -- tensor not within file bounds?
+    // "t5", -- seq2seq model
+    "jais",
 };
 
 static const std::vector<const char *> EMBEDDING_ARCHES {
