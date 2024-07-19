@@ -1,6 +1,8 @@
 import QtQuick 2.0
 
 /**
+  * source from:
+  * https://gist.github.com/jonmcclung/bae669101d17b103e94790341301c129
   * adapted from StackOverflow:
   * http://stackoverflow.com/questions/26879266/make-toast-in-android-by-qml
   */
