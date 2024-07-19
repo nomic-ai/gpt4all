@@ -13,18 +13,42 @@ jobs:
         with:
           fetch_depth: 0
           submodules: true
-      - name: Install QT
-        run: |
-            Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
-              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email ${Env:QT_EMAIL} --password ${Env:QT_PASSWORD} install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
-      - name: Install Vulkan
+      - name: Cache Vulkan
+        id: cache_vulkan
+        uses: actions/cache@v3
+        with:
+            path: C:\VulkanSDK
+            key: ${{ runner.os }}-build-vulkan-${{ hashFiles('C:\VulkanSDK\**') }}
+            restore_keys: |
+              ${{ runner.os }}-build-vulkan-
+      - if: ${{ steps.cache_vulkan.outputs.cache-hit != 'true' }}
+        name: Install Vulkan
         run: |
             Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe -OutFile VulkanSDK-1.3.261.1-Installer.exe
             .\VulkanSDK-1.3.261.1-Installer.exe --accept-licenses --default-answer --confirm-command install
+            echo "VULKAN_SDK=C:\VulkanSDK\1.3.261.1" >> $Env:GITHUB_ENV
+            echo "C:\VulkanSDK\1.3.261.1\bin" >> $Env:GITHUB_PATH
       - name: Install CUDA
         run: |
             Invoke-WebRequest -Uri  https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe -OutFile cuda_11.8.0_windows_network.exe
             .\cuda_11.8.0_windows_network.exe -s cudart_11.8 nvcc_11.8 cublas_11.8 cublas_dev_11.8
+      - name: Cache Qt
+        id: cache_qt
+        uses: actions/cache@v3
+        with:
+            path: C:\Qt
+            key: ${{ runner.os }}-build-qt-${{ hashFiles('C:\Qt\**') }}
+            restore_keys: |
+              ${{ runner.os }}-build-qt-
+      - if: ${{ steps.cache_qt.outputs.cache-hit != 'true' }}
+        name: Install QT
+        env:
+          QT_EMAIL: ${{ secrets.QT_EMAIL }}
+          QT_PASSWORD: ${{ secrets.QT_PASSWORD }}
+        run: |
+            Invoke-WebRequest -Uri https://gpt4all.io/ci/qt-unified-windows-x64-4.6.0-online.exe -OutFile qt-unified-windows-x64-4.6.0-online.exe
+              & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $Env:QT_EMAIL --password $Env:QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
+              echo "Qt6_DIR=C:/Qt/6.5.1/msvc2019_64" >> $Env:GITHUB_ENV
       - name: Build Chat
         run: |
            cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -S gpt4all-chat -B build
@@ -39,15 +63,28 @@ jobs:
           submodules: true
       - name: Setup XCode
         run: sudo xcode-select -s '/Applications/Xcode_14.1.app'
-      - name: Install QT
+      - name: Install Rosetta
+        run: |
+            softwareupdate --install-rosetta --agree-to-license
+      - name: Cache Qt
+        id: cache_qt
+        uses: actions/cache@v3
+        with:
+            path: "~/Qt"
+            key: ${{ runner.os }}-build-qt-${{ hashFiles('~/Qt/**') }}
+            restore_keys: |
+              ${{ runner.os }}-build-qt-
+      - if: ${{ steps.cache_qt.outputs.cache-hit != 'true' }}
+        name: Install QT
+        env:
+          QT_EMAIL: ${{ secrets.QT_EMAIL }}
+          QT_PASSWORD: ${{ secrets.QT_PASSWORD }}
         run: |
             curl -o qt-unified-macOS-x64-4.6.0-online.dmg https://gpt4all.io/ci/qt-unified-macOS-x64-4.6.0-online.dmg
             hdiutil attach qt-unified-macOS-x64-4.6.0-online.dmg
             /Volumes/qt-unified-macOS-x64-4.6.0-online/qt-unified-macOS-x64-4.6.0-online.app/Contents/MacOS/qt-unified-macOS-x64-4.6.0-online --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.clang_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
             hdiutil detach /Volumes/qt-unified-macOS-x64-4.6.0-online
-      - name: Install Rosetta
-        run: |
-            softwareupdate --install-rosetta --agree-to-license
+            echo "Qt6_DIR=$HOME/Qt/6.5.1/macos/lib/cmake/Qt6" >> $GITHUB_ENV
       - name: Build Chat
         run: |
             cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -S gpt4all-chat -B build
@@ -60,11 +97,24 @@ jobs:
         with:
           fetch_depth: 0
           submodules: true
-      - name: Install QT
+      - name: Cache Qt
+        id: cache_qt
+        uses: actions/cache@v3
+        with:
+            path: "/Qt"
+            key: ${{ runner.os }}-build-qt-${{ hashFiles('/Qt/**') }}
+            restore_keys: |
+              ${{ runner.os }}-build-qt-
+      - if: ${{ steps.cache_qt.outputs.cache-hit != 'true' }}
+        name: Install QT
+        env:
+          QT_EMAIL: ${{ secrets.QT_EMAIL }}
+          QT_PASSWORD: ${{ secrets.QT_PASSWORD }}
         run: |
             wget https://gpt4all.io/ci/qt-unified-linux-x64-4.6.0-online.run
             chmod +x qt-unified-linux-x64-4.6.0-online.run
             ./qt-unified-linux-x64-4.6.0-online.run --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $QT_EMAIL --password $QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.gcc_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver qt.qt6.651.qtwaylandcompositor
+            echo "Qt6_DIR=/Qt/6.5.1/gcc_64/lib/cmake" >> $GITHUB_ENV
       - name: Install Vulkan + Cuda
         run: |
             wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
