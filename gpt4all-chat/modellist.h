@@ -124,7 +124,16 @@ public:
     bool calcHash = false;
     bool installed = false;
     bool isDefault = false;
+    // Differences between 'isOnline' and 'isCompatibleApi' in ModelInfo:
+    // 'isOnline':
+    // - Indicates whether this is a online model.
+    // - Linked with the ModelList, fetching info from it.
     bool isOnline = false;
+    // 'isCompatibleApi':
+    // - Indicates whether the model is compatible with the API of OpenAI.
+    // - When the property is true, 'isOnline' should also be true.
+    // - Does not link to the ModelList; instead, fetches info from the *-capi.rmodel file and works standalone.
+    // - Still needs to copy data from gpt4all.ini and *-capi.rmodel to the ModelList in memory while application getting started(as custom .gguf models do).
     bool isCompatibleApi = false;
     QString requiresVersion;
     QString versionRemoved;
