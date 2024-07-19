@@ -795,8 +795,8 @@ function(include_ggml SUFFIX)
         endif()
 
         # copy ggml-common.h and ggml-metal.metal to bin directory
-        configure_file(${DIRECTORY}/ggml/include/ggml-common.h ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-common.h    COPYONLY)
-        configure_file(${DIRECTORY}/ggml/src/ggml-metal.metal  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal COPYONLY)
+        configure_file(${DIRECTORY}/ggml/src/ggml-common.h    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-common.h    COPYONLY)
+        configure_file(${DIRECTORY}/ggml/src/ggml-metal.metal ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal COPYONLY)
 
         if (GGML_METAL_SHADER_DEBUG)
             # custom command to do the following:
@@ -831,7 +831,7 @@ function(include_ggml SUFFIX)
             COMMAND rm -f ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.air
             COMMAND rm -f ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-common.h
             COMMAND rm -f ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal.metal
-            DEPENDS ${DIRECTORY}/ggml/src/ggml-metal.metal ${DIRECTORY}/ggml/include/ggml-common.h
+            DEPENDS ${DIRECTORY}/ggml/src/ggml-metal.metal ${DIRECTORY}/ggml/src/ggml-common.h
             COMMENT "Compiling Metal kernels"
             )
         set_source_files_properties(${GGML_METALLIB} DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTIES GENERATED ON)
