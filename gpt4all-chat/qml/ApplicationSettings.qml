@@ -179,23 +179,41 @@ MySettingsTab {
             Layout.maximumWidth: 200
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: MySettings.uiLanguages
-            Accessible.name: fontLabel.text
-            Accessible.description: fontLabel.helpText
+            model: ListModel {
+                Component.onCompleted: {
+                    for (var i = 0; i < MySettings.uiLanguages.length; ++i)
+                        append({"text": MySettings.uiLanguages[i]});
+                    languageBox.updateModel();
+                }
+                ListElement { text: qsTr("System Locale") }
+            }
+
+            Accessible.name: languageLabel.text
+            Accessible.description: languageLabel.helpText
             function updateModel() {
-                languageBox.currentIndex = languageBox.indexOfValue(MySettings.languageAndLocale);
+                // This usage of 'System Locale' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (MySettings.languageAndLocale === "System Locale")
+                    languageBox.currentIndex = 0
+                else
+                    languageBox.currentIndex = languageBox.indexOfValue(MySettings.languageAndLocale);
             }
             Component.onCompleted: {
                 languageBox.updateModel()
             }
             onActivated: {
-                MySettings.languageAndLocale = languageBox.currentText
+                // This usage of 'System Locale' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (languageBox.currentIndex === 0)
+                    MySettings.languageAndLocale = "System Locale";
+                else
+                    MySettings.languageAndLocale = languageBox.currentText;
             }
         }
         MySettingsLabel {
             id: deviceLabel
             text: qsTr("Device")
-            helpText: qsTr('The compute device used for text generation. "Auto" uses Vulkan or Metal.')
+            helpText: qsTr('The compute device used for text generation.')
             Layout.row: 5
             Layout.column: 0
         }
@@ -207,11 +225,24 @@ MySettingsTab {
             Layout.maximumWidth: 400
             Layout.fillWidth: false
             Layout.alignment: Qt.AlignRight
-            model: MySettings.deviceList
+            model: ListModel {
+                Component.onCompleted: {
+                    for (var i = 0; i < MySettings.deviceList.length; ++i)
+                        append({"text": MySettings.deviceList[i]});
+                    deviceBox.updateModel();
+                }
+                ListElement { text: qsTr("Application default") }
+            }
+
             Accessible.name: deviceLabel.text
             Accessible.description: deviceLabel.helpText
             function updateModel() {
-                deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
+                // This usage of 'Auto' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (MySettings.device === "Auto")
+                    deviceBox.currentIndex = 0
+                else
+                    deviceBox.currentIndex = deviceBox.indexOfValue(MySettings.device);
             }
             Component.onCompleted: {
                 deviceBox.updateModel();
@@ -223,7 +254,12 @@ MySettingsTab {
                 }
             }
             onActivated: {
-                MySettings.device = deviceBox.currentText;
+                // This usage of 'Auto' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (deviceBox.currentIndex === 0)
+                    MySettings.device = "Auto";
+                else
+                    MySettings.device = deviceBox.currentText;
             }
         }
         MySettingsLabel {
@@ -234,29 +270,54 @@ MySettingsTab {
             Layout.column: 0
         }
         MyComboBox {
-            id: comboBox
+            id: defaultModelBox
             Layout.row: 6
             Layout.column: 2
             Layout.minimumWidth: 400
             Layout.maximumWidth: 400
             Layout.alignment: Qt.AlignRight
-            model: ModelList.userDefaultModelList
+            model: ListModel {
+                id: defaultModelBoxModel
+                Component.onCompleted: {
+                    defaultModelBox.rebuildModel()
+                }
+            }
             Accessible.name: defaultModelLabel.text
             Accessible.description: defaultModelLabel.helpText
-            function updateModel() {
-                comboBox.currentIndex = comboBox.indexOfValue(MySettings.userDefaultModel);
+            function rebuildModel() {
+                defaultModelBoxModel.clear();
+                defaultModelBoxModel.append({"text": qsTr("Application default")});
+                for (var i = 0; i < ModelList.selectableModelList.length; ++i)
+                    defaultModelBoxModel.append({"text": ModelList.selectableModelList[i].name});
+                defaultModelBox.updateModel();
             }
-            Component.onCompleted: {
-                comboBox.updateModel()
+            function updateModel() {
+                // This usage of 'Application default' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (MySettings.userDefaultModel === "Application default")
+                    defaultModelBox.currentIndex = 0
+                else
+                    defaultModelBox.currentIndex = defaultModelBox.indexOfValue(MySettings.userDefaultModel);
+            }
+            onActivated: {
+                // This usage of 'Application default' should not be translated
+                // FIXME: Make this refer to a string literal variable accessed by both QML and C++
+                if (defaultModelBox.currentIndex === 0)
+                    MySettings.userDefaultModel = "Application default";
+                else
+                    MySettings.userDefaultModel = defaultModelBox.currentText;
             }
             Connections {
                 target: MySettings
                 function onUserDefaultModelChanged() {
-                    comboBox.updateModel()
+                    defaultModelBox.updateModel()
                 }
             }
-            onActivated: {
-                MySettings.userDefaultModel = comboBox.currentText
+            Connections {
+                target: ModelList
+                function onSelectableModelListChanged() {
+                    defaultModelBox.rebuildModel()
+                }
             }
         }
         MySettingsLabel {
