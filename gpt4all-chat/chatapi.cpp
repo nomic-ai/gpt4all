@@ -227,7 +227,8 @@ void ChatAPIWorker::handleFinished()
     if (!response.isValid()) {
         m_chat->callResponse(
             -1,
-            tr("ERROR: Network error occurred while connecting to the API server").toStdString()
+            tr("ERROR: Network error occurred while connecting to the API server")
+                .toStdString()
         );
         return;
     }
@@ -235,6 +236,15 @@ void ChatAPIWorker::handleFinished()
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
+        bool isReplyEmpty(reply->readAll().isEmpty());
+        if (isReplyEmpty)
+            m_chat->callResponse(
+                -1,
+                tr("ChatAPIWorker::handleFinished got HTTP Error %1 %2")
+                    .arg(code)
+                    .arg(reply->errorString())
+                    .toStdString()
+            );
         qWarning().noquote() << "ERROR: ChatAPIWorker::handleFinished got HTTP Error" << code << "response:"
                              << reply->errorString();
     }
