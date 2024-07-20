@@ -1,3 +1,9 @@
+<div align="center">
+
+**English** | [Portuguese (Brazil)](README_pt-BR.md)
+
+</div>
+
 <h1 align="center">GPT4All</h1>
 
 <p align="center">GPT4All runs large language models (LLMs) privately on everyday desktops & laptops. <br> <br> No API calls or GPUs required - you can just download the application and <a href="https://docs.gpt4all.io/gpt4all_desktop/quickstart.html#quickstart">get started</a>

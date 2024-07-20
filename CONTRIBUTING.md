@@ -1,3 +1,9 @@
+<div align="center">
+
+**English** | [Portuguese (Brazil)](CONTRIBUTING_pt-BR.md)
+
+</div>
+
 # Contributing
 
 When contributing to this repository, please first discuss the change you wish to make via issue,
