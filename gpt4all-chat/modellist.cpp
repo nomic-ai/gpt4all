@@ -1343,8 +1343,12 @@ void ModelList::updateModelsFromDirectory()
                     { FilesizeRole, toFileSize(info.size()) },
                 };
                 if (isCompatibleApi) {
+                    // The data will be saved to "GPT4All.ini".
                     data.append({ NameRole, name });
+                    // The description is hard-coded into "GPT4All.ini" due to performance issue.
+                    // If the description goes to be dynamic from its .rmodel file, it will get high I/O usage while using the ModelList.
                     data.append({ DescriptionRole, description });
+                    // Prompt template should be clear while using ChatML format which is using in most of OpenAI-Compatible API server.
                     data.append({ PromptTemplateRole, "%1" });
                 }
                 updateData(id, data);
