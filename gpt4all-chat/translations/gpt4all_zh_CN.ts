@@ -180,31 +180,31 @@
         <location filename="../qml/AddModelView.qml" line="97"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="97"/>
         <source>Searching · %1</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索中 · %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="193"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="193"/>
         <source>Sort by: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>排序: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="218"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="218"/>
         <source>Sort dir: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>排序目录: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="254"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="254"/>
         <source>Limit: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>数量: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="287"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="287"/>
         <source>Network error: could not retrieve %1</source>
-        <translation type="unfinished"></translation>
+        <translation>网络错误：无法检索 %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="297"/>
@@ -298,19 +298,19 @@
         <location filename="../qml/AddModelView.qml" line="457"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="457"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;错误&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="476"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="476"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;警告: 你的设备硬件不推荐 ，模型需要的内存 (%1 GB)比你的系统还要多  (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="628"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="628"/>
         <source>%1 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GB</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="628"/>
@@ -318,7 +318,7 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="628"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="650"/>
         <source>?</source>
-        <translation type="unfinished"></translation>
+        <translation>？</translation>
     </message>
     <message>
         <source>&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;</source>
@@ -532,31 +532,31 @@
         <location filename="../qml/ApplicationSettings.qml" line="144"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
         <source>Small</source>
-        <translation type="unfinished"></translation>
+        <translation>小</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="144"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
         <source>Medium</source>
-        <translation type="unfinished"></translation>
+        <translation>中</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="144"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
         <source>Large</source>
-        <translation type="unfinished"></translation>
+        <translation>大</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="166"/>
         <source>Language and Locale</source>
-        <translation type="unfinished"></translation>
+        <translation>语言和本地化</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="167"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="167"/>
         <source>The language and locale you wish to use.</source>
-        <translation type="unfinished"></translation>
+        <translation>你想使用的语言</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="195"/>
@@ -586,31 +586,31 @@
         <location filename="../qml/ApplicationSettings.qml" line="262"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="262"/>
         <source>Suggestion Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>建议模式</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="263"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="263"/>
         <source>Generate suggested follow-up questions at the end of responses.</source>
-        <translation type="unfinished"></translation>
+        <translation>在答复结束时生成建议的后续问题。</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>When chatting with LocalDocs</source>
-        <translation type="unfinished"></translation>
+        <translation>本地文档检索</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>Whenever possible</source>
-        <translation type="unfinished"></translation>
+        <translation>只要有可能</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="274"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="274"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>从不</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="286"/>
@@ -1102,7 +1102,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="877"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="877"/>
         <source>generating questions ...</source>
-        <translation type="unfinished"></translation>
+        <translation>生成响应</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="943"/>
@@ -1164,7 +1164,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="1383"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1383"/>
         <source>Suggested follow-ups</source>
-        <translation type="unfinished"></translation>
+        <translation>建议的后续行动</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1659"/>
@@ -1188,7 +1188,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="1955"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1955"/>
         <source>Stop generating</source>
-        <translation type="unfinished"></translation>
+        <translation>停止生成</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1956"/>
@@ -1206,7 +1206,7 @@ model to get started</source>
         <location filename="../qml/ChatView.qml" line="58"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="58"/>
         <source>&lt;h3&gt;Encountered an error loading model:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Model loading failures can happen for a variety of reasons, but the most common causes include a bad file format, an incomplete or corrupted download, the wrong file type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Ensure the model file has a compatible format and type&lt;li&gt;Check the model file is complete in the download folder&lt;li&gt;You can find the download folder in the settings dialog&lt;li&gt;If you&apos;ve sideloaded the model ensure the file is not corrupt by checking md5sum&lt;li&gt;Read more about what models are supported in our &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;documentation&lt;/a&gt; for the gui&lt;li&gt;Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;加载模型时遇到错误：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&lt;%1&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;模型加载失败可能由多种原因引起，但最常见的原因包括文件格式错误、下载不完整或损坏、文件类型错误、系统 RAM 不足或模型类型不兼容。以下是一些解决问题的建议：&lt;br&gt;&lt;ul&gt;&lt;li&gt;确保模型文件具有兼容的格式和类型&lt;li&gt;检查下载文件夹中的模型文件是否完整&lt;li&gt;您可以在设置对话框中找到下载文件夹&lt;li&gt;如果您已侧载模型，请通过检查 md5sum 确保文件未损坏&lt;li&gt;在我们的 &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;文档&lt;/a&gt; 中了解有关 gui 支持哪些模型的更多信息&lt;li&gt;查看我们的 &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord 频道&lt;/a&gt; 以获取帮助</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="377"/>
@@ -1214,31 +1214,31 @@ model to get started</source>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="377"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1769"/>
         <source>Reload · %1</source>
-        <translation type="unfinished"></translation>
+        <translation>重载 · %1</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="379"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="379"/>
         <source>Loading · %1</source>
-        <translation type="unfinished"></translation>
+        <translation>载入中 · %1</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="708"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="708"/>
         <source>Load · %1 (default) →</source>
-        <translation type="unfinished"></translation>
+        <translation>载入 · %1 (默认) →</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="873"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="873"/>
         <source>retrieving localdocs: %1 ...</source>
-        <translation type="unfinished"></translation>
+        <translation>检索本地文档: %1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="874"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="874"/>
         <source>searching localdocs: %1 ...</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索本地文档: %1 ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1845"/>
@@ -1769,27 +1769,27 @@ model to get started</source>
     <message>
         <location filename="../modellist.cpp" line="1567"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1595"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1626"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1651"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1677"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt;</source>
@@ -1904,25 +1904,25 @@ optional image</source>
         <location filename="../qml/ModelSettings.qml" line="255"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="255"/>
         <source>Chat Name Prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>聊天名称提示</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="256"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="256"/>
         <source>Prompt used to automatically generate chat names.</source>
-        <translation type="unfinished"></translation>
+        <translation>用于自动生成聊天名称的提示。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="283"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="283"/>
         <source>Suggested FollowUp Prompt</source>
-        <translation type="unfinished"></translation>
+        <translation>建议的后续提示</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="284"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="284"/>
         <source>Prompt used to generate suggested follow-up questions.</source>
-        <translation type="unfinished"></translation>
+        <translation>用于生成建议的后续问题的提示。</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="322"/>
@@ -2213,25 +2213,25 @@ NOTE: Does not take effect until you reload the model.</source>
         <location filename="../qml/ModelsView.qml" line="253"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="253"/>
         <source>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;1&quot;&gt;&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="272"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="272"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="424"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="424"/>
         <source>%1 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GB</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="424"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="424"/>
         <source>?</source>
-        <translation type="unfinished"></translation>
+        <translation>？</translation>
     </message>
     <message>
         <source>&lt;a href=&quot;#error&quot;&gt;Error&lt;/a&gt;</source>
@@ -2515,7 +2515,7 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
     <message>
         <location filename="../mysettings.cpp" line="119"/>
         <source>Default</source>
-        <translation type="unfinished">默认</translation>
+        <translation>默认</translation>
     </message>
 </context>
 <context>
@@ -2577,7 +2577,9 @@ NOTE: By turning on this feature, you will be sending your data to the GPT4All O
         <source>### Release notes
 %1### Contributors
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>### 发布日志
+%1### 贡献者
+%2</translation>
     </message>
     <message>
         <location filename="../qml/StartupDialog.qml" line="71"/>
@@ -2834,19 +2836,19 @@ model release that uses your data!</source>
         <location filename="../main.qml" line="23"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="23"/>
         <source>GPT4All v%1</source>
-        <translation type="unfinished"></translation>
+        <translation>GPT4All v%1</translation>
     </message>
     <message>
         <location filename="../main.qml" line="111"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="111"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Incompatible hardware detected.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, your CPU does not meet the minimal requirements to run this program. In particular, it does not support AVX intrinsics which this program requires to successfully run a modern large language model. The only solution at this time is to upgrade your hardware to a more modern CPU.&lt;br&gt;&lt;br&gt;See here for more information: &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&quot;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;启动时遇到错误：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;“检测到不兼容的硬件。”&lt;/i&gt;&lt;br&gt;&lt;br&gt;很遗憾，您的 CPU 不满足运行此程序的最低要求。特别是，它不支持此程序成功运行现代大型语言模型所需的 AVX 内在函数。目前唯一的解决方案是将您的硬件升级到更现代的 CPU。&lt;br&gt;&lt;br&gt;有关更多信息，请参阅此处：&lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&gt;&gt;https://en.wikipedia.org/wiki/Advanced_Vector_Extensions&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../main.qml" line="127"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="127"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inability to access settings file.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the program from accessing the settings file. This could be caused by incorrect permissions in the local app config directory where the settings file is located. Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;启动时遇到错误：&lt;/h3&gt;&lt;br&gt;&lt;i&gt;“无法访问设置文件。”&lt;/i&gt;&lt;br&gt;&lt;br&gt;不幸的是，某些东西阻止程序访问设置文件。这可能是由于设置文件所在的本地应用程序配置目录中的权限不正确造成的。请查看我们的&lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord 频道&lt;/a&gt; 以获取帮助。</translation>
     </message>
     <message>
         <location filename="../main.qml" line="155"/>
