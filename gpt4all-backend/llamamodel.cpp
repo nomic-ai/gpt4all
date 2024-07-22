@@ -542,10 +542,10 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
 std::string LLamaModel::tokenToString(Token id) const
 {
     std::vector<char> result(8, 0);
-    const int n_tokens = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), 0, false);
+    const int n_tokens = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), 0, true);
     if (n_tokens < 0) {
         result.resize(-n_tokens);
-        int check = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), 0, false);
+        int check = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), 0, true);
         GGML_ASSERT(check == -n_tokens);
     }
     else {
