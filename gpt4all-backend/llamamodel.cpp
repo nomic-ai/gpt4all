@@ -81,7 +81,7 @@ static const std::vector<const char *> KNOWN_ARCHES {
     "olmo",
     "openelm",
     // "arctic", -- 10B+128x3.66B parameters
-    // "deepseek2", -- excessive VRAM requirements
+    "deepseek2",
     "chatglm",
     // "bitnet", -- tensor not within file bounds?
     // "t5", -- seq2seq model
