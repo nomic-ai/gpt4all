@@ -47,7 +47,7 @@ jobs:
               & .\qt-unified-windows-x64-4.6.0-online.exe --no-force-installations --no-default-installations --no-size-checking --default-answer --accept-licenses --confirm-command --accept-obligations --email $Env:QT_EMAIL --password $Env:QT_PASSWORD install qt.tools.cmake qt.tools.ifw.47 qt.tools.ninja qt.qt6.651.win64_msvc2019_64 qt.qt6.651.qt5compat qt.qt6.651.debug_info qt.qt6.651.addons.qtpdf qt.qt6.651.addons.qthttpserver
               echo "Qt6_DIR=C:/Qt/6.5.1/msvc2019_64" >> $Env:GITHUB_ENV
       - name: Build Chat
-        shell: powershell -noe -c "&{Import-Module """C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"""; Enter-VsDevShell eb4dc59a}"; {0}
+        shell: powershell -ExecutionPolicy Bypass -c "&{Import-Module """C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"""; Enter-VsDevShell eb4dc59a}"; {0}
         run: |
            cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -S gpt4all-chat -B build
            ninja -C build
