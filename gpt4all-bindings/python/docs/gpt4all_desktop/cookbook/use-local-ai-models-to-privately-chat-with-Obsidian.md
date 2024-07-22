@@ -32,20 +32,22 @@ Obsidian for Desktop is a powerful management and note-taking software designed 
    <tr>
        <td>
            <!-- Screenshot of LocalDocs interface -->
-           <img width="1348" alt="Screenshot 2024-07-09 at 3 15 35 PM" src="https://github.com/nomic-ai/gpt4all/assets/132290469/d8fb2d79-2063-45d4-bcce-7299fb75b144">
+           <img width="1348" alt="LocalDocs interface" src="https://github.com/nomic-ai/gpt4all/assets/132290469/d8fb2d79-2063-45d4-bcce-7299fb75b144">
        </td>
    </tr>
    </table>
 
 2. **Add Collection**:
-   - Click on **+ Add Collection** to begin linking your Obsidian notes.
+   - Click on **+ Add Collection** to begin linking your Obsidian Vault.
 
    <table>
    <tr>
        <td>
            <!-- Screenshot of adding collection in LocalDocs -->
-           <img width="1348" alt="Screenshot 2024-07-09 at 3 17 24 PM" src="">
-       </td>
+           <img width="1348" alt="Screenshot of adding collection" src="https://raw.githubusercontent.com/nomic-ai/gpt4all/124ef867a9d9afd9e14d3858cd77bce858f79773/gpt4all-bindings/python/docs/assets/obsidian_adding_collection.png">
+
+
+   </td>
    </tr>
    </table>
 
@@ -63,7 +65,7 @@ Obsidian for Desktop is a powerful management and note-taking software designed 
    <tr>
        <td>
            <!-- Screenshot of accessing LocalDocs in chats -->
-         <img width="1447" alt="Screenshot 2024-07-09 at 3 20 53 PM" src="">
+         <img width="1447" alt="Accessing LocalDocs in chats" src="https://raw.githubusercontent.com/nomic-ai/gpt4all/124ef867a9d9afd9e14d3858cd77bce858f79773/gpt4all-bindings/python/docs/assets/obsidian_docs.png">
        </td>
    </tr>
    </table>
@@ -74,7 +76,7 @@ Obsidian for Desktop is a powerful management and note-taking software designed 
    <tr>
        <td>
            <!-- Screenshot of interacting sources -->
-         <img width="662" alt="Screenshot 2024-07-09 at 3 36 51 PM" src="">
+         <img width="662" alt="osbsidian user interaction" src="https://raw.githubusercontent.com/nomic-ai/gpt4all/124ef867a9d9afd9e14d3858cd77bce858f79773/gpt4all-bindings/python/docs/assets/osbsidian_user_interaction.png">
        </td>
    </tr>
    </table>
@@ -82,7 +84,7 @@ Obsidian for Desktop is a powerful management and note-taking software designed 
    <tr>
        <td>
            <!-- Screenshot of viewing sources -->
-         <img width="662" alt="Screenshot 2024-07-09 at 3 38 31 PM" src="">
+         <img width="662" alt="osbsidian GPT4ALL response" src="https://raw.githubusercontent.com/nomic-ai/gpt4all/124ef867a9d9afd9e14d3858cd77bce858f79773/gpt4all-bindings/python/docs/assets/obsidian_response.png">
        </td>
    </tr>
    </table>
@@ -93,8 +95,8 @@ Obsidian for Desktop is a powerful management and note-taking software designed 
    <table>
    <tr>
        <td>
-           <!-- Screenshot of viewing sources -->
-         <img width="643" alt="Screenshot 2024-07-09 at 3 39 43 PM" src="">
+           <!-- Referenced Files  -->
+         <img width="643" alt="Referenced Files" src="https://raw.githubusercontent.com/nomic-ai/gpt4all/124ef867a9d9afd9e14d3858cd77bce858f79773/gpt4all-bindings/python/docs/assets/obsidian_sources.png">
        </td>
    </tr>
    </table>
