@@ -52,7 +52,7 @@ jobs:
            cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -S gpt4all-chat -B build
            ninja -C build
   build-chat-macos:
-    runs-on: macos-13-arm64
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -60,7 +60,7 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: Setup XCode
-        run: sudo xcode-select -s '/Applications/Xcode_14.1.app'
+        run: sudo xcode-select -s '/Applications/Xcode_14.3.1.app'
       - name: Install Rosetta
         run: |
             softwareupdate --install-rosetta --agree-to-license
