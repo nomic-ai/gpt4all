@@ -180,31 +180,31 @@
         <location filename="../qml/AddModelView.qml" line="97"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="97"/>
         <source>Searching · %1</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索中 · %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="193"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="193"/>
         <source>Sort by: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>排序: %1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="218"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="218"/>
         <source>Sort dir: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>排序目录：%1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="254"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="254"/>
         <source>Limit: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>数量：%1</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="287"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="287"/>
         <source>Network error: could not retrieve %1</source>
-        <translation type="unfinished"></translation>
+        <translation>网络错误：无法检索</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="297"/>
@@ -532,31 +532,31 @@
         <location filename="../qml/ApplicationSettings.qml" line="144"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
         <source>Small</source>
-        <translation type="unfinished"></translation>
+        <translation>小</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="144"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
         <source>Medium</source>
-        <translation type="unfinished"></translation>
+        <translation>中</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="144"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="144"/>
         <source>Large</source>
-        <translation type="unfinished"></translation>
+        <translation>大</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="166"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="166"/>
         <source>Language and Locale</source>
-        <translation type="unfinished"></translation>
+        <translation>语言和本地化</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="167"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="167"/>
         <source>The language and locale you wish to use.</source>
-        <translation type="unfinished"></translation>
+        <translation>你想使用的语言</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="195"/>
