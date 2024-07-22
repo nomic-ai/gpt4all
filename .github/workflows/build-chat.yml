@@ -54,7 +54,7 @@ jobs:
            cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON -S gpt4all-chat -B build
            ninja -C build
   build-chat-macos:
-    runs-on: macos-latest
+    runs-on: macos-13-arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v3
