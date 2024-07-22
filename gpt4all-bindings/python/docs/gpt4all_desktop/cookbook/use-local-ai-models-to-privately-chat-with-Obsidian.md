@@ -58,7 +58,7 @@ Obsidian for Desktop is a powerful management and note-taking software designed 
    - Click **Create Collection** to initiate the embedding process. Progress will be displayed within the LocalDocs interface.
 
 4. **Access Files in Chats**:
-   - Load a model to chat with your files (Llama 3 Instruct performs best)
+   - Load a model to chat with your files (Llama 3 Instruct is the fastest)
    - In your chat, open 'LocalDocs' with the button in the top-right corner to provide context from your synced Obsidian notes.
 
    <table>
