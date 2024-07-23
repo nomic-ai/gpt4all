@@ -67,6 +67,7 @@ jobs:
             security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
       - run:
           name: Build
+          no_output_timeout: 30m
           command: |
             mkdir build
             cd build
@@ -198,6 +199,7 @@ jobs:
             security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MAC_KEYCHAIN_KEY" sign.keychain
       - run:
           name: Build
+          no_output_timeout: 30m
           command: |
             mkdir build
             cd build
@@ -331,6 +333,7 @@ jobs:
             cd linuxdeployqt && qmake && sudo make install
       - run:
           name: Build
+          no_output_timeout: 30m
           command: |
             set -eo pipefail
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
@@ -387,6 +390,7 @@ jobs:
             cd linuxdeployqt && qmake && sudo make install
       - run:
           name: Build
+          no_output_timeout: 30m
           command: |
             set -eo pipefail
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
@@ -454,6 +458,7 @@ jobs:
             dotnet tool install --global AzureSignTool
       - run:
           name: Build
+          no_output_timeout: 30m
           command: |
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\x64"
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
@@ -584,6 +589,7 @@ jobs:
             dotnet tool install --global AzureSignTool
       - run:
           name: Build
+          no_output_timeout: 30m
           command: |
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\x64"
             $Env:PATH = "${Env:PATH};C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64"
