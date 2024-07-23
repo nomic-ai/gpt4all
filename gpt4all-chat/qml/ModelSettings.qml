@@ -272,6 +272,21 @@ MySettingsTab {
                 id: chatNamePromptTextArea
                 anchors.fill: parent
                 text: root.currentModelInfo.chatNamePrompt
+                Connections {
+                    target: MySettings
+                    function onChatNamePromptChanged() {
+                        chatNamePromptTextArea.text = root.currentModelInfo.chatNamePrompt;
+                    }
+                }
+                Connections {
+                    target: root
+                    function onCurrentModelInfoChanged() {
+                        chatNamePromptTextArea.text = root.currentModelInfo.chatNamePrompt;
+                    }
+                }
+                onTextChanged: {
+                    MySettings.setModelChatNamePrompt(root.currentModelInfo, text)
+                }
                 Accessible.role: Accessible.EditableText
                 Accessible.name: chatNamePromptLabel.text
                 Accessible.description: chatNamePromptLabel.text
@@ -300,6 +315,21 @@ MySettingsTab {
                 id: suggestedFollowUpPromptTextArea
                 anchors.fill: parent
                 text: root.currentModelInfo.suggestedFollowUpPrompt
+                Connections {
+                    target: MySettings
+                    function onSuggestedFollowUpPromptChanged() {
+                        suggestedFollowUpPromptTextArea.text = root.currentModelInfo.suggestedFollowUpPrompt;
+                    }
+                }
+                Connections {
+                    target: root
+                    function onCurrentModelInfoChanged() {
+                        suggestedFollowUpPromptTextArea.text = root.currentModelInfo.suggestedFollowUpPrompt;
+                    }
+                }
+                onTextChanged: {
+                    MySettings.setModelSuggestedFollowUpPrompt(root.currentModelInfo, text)
+                }
                 Accessible.role: Accessible.EditableText
                 Accessible.name: suggestedFollowUpPromptLabel.text
                 Accessible.description: suggestedFollowUpPromptLabel.text
