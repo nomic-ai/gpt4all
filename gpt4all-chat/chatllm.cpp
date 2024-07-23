@@ -958,6 +958,8 @@ bool ChatLLM::handleQuestionResponse(int32_t token, const std::string &response)
     m_questionResponse.append(response);
 
     // match whole question sentences
+    // FIXME: This only works with response by the model in english which is not ideal for a multi-language
+    // model.
     static const QRegularExpression reQuestion(R"(\b(What|Where|How|Why|When|Who|Which|Whose|Whom)\b[^?]*\?)");
 
     // extract all questions from response
