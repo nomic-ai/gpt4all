@@ -1,7 +1,7 @@
 [
   {
     "order": "a",
-    "md5sum": "3A265FBB343693D283F8A4EC5E7F1529",
+    "md5sum": "3a265fbb343693d283f8a4ec5e7f1529",
     "name": "Llama 3.1 8B Instruct",
     "filename": "Meta-Llama-3.1-8B-Instruct.Q4_0.gguf",
     "filesize": "4661211808",
