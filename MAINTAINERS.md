@@ -66,3 +66,8 @@ Riccardo Giovanetti ([@Harvester62](https://github.com/Harvester62))<br/>
 E-mail: riccardo.giovanetti@gmail.com<br/>
 Discord: `@harvester62`
 - it\_IT translation
+
+Tim ([@Tim453](https://github.com/Tim453))<br/>
+E-mail: tim453@mailbox.org<br/>
+Discord: `@Tim453`
+- Flatpak
