@@ -235,6 +235,10 @@ if (GPT4ALL_TRANSLATIONS)
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_en.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_TW.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_ro_RO.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_it_IT.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_pt_BR.ts
     )
 endif()
 
