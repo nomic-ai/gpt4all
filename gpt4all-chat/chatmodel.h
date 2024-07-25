@@ -203,10 +203,11 @@ public:
     QList<SourceExcerpt> consolidateSources(const QList<SourceExcerpt> &sources) {
         QMap<QString, SourceExcerpt> groupedData;
         for (const SourceExcerpt &info : sources) {
-            if (groupedData.contains(info.file)) {
-                groupedData[info.file].text += "\n---\n" + info.text;
+            QString key = !info.file.isEmpty() ? info.file : info.url;
+            if (groupedData.contains(key)) {
+                groupedData[key].text += "\n---\n" + info.text;
             } else {
-                groupedData[info.file] = info;
+                groupedData[key] = info;
             }
         }
         QList<SourceExcerpt> consolidatedSources = groupedData.values();
