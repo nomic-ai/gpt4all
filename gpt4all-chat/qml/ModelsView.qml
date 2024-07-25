@@ -17,6 +17,10 @@ Rectangle {
 
     signal addModelViewRequested()
 
+    ToastManager {
+        id: messageToast
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 20
@@ -233,10 +237,35 @@ Rectangle {
                                         text: qsTr("Install")
                                         font.pixelSize: theme.fontSizeLarge
                                         onClicked: {
-                                            if (apiKey.text === "")
+                                            var apiKeyText = apiKey.text.trim(),
+                                                baseUrlText = baseUrl.text.trim(),
+                                                modelNameText = modelName.text.trim();
+
+                                            var apiKeyOk = apiKeyText !== "",
+                                                baseUrlOk = !isCompatibleApi || baseUrlText !== "",
+                                                modelNameOk = !isCompatibleApi || modelNameText !== "";
+
+                                            if (!apiKeyOk)
                                                 apiKey.showError();
+                                            if (!baseUrlOk)
+                                                baseUrl.showError();
+                                            if (!modelNameOk)
+                                                modelName.showError();
+
+                                            if (!apiKeyOk || !baseUrlOk || !modelNameOk)
+                                                return;
+
+                                            if (!isCompatibleApi)
+                                                Download.installModel(
+                                                    filename,
+                                                    apiKeyText,
+                                                );
                                             else
-                                                Download.installModel(filename, apiKey.text);
+                                                Download.installCompatibleModel(
+                                                    modelNameText,
+                                                    apiKeyText,
+                                                    baseUrlText,
+                                                );
                                         }
                                         Accessible.role: Accessible.Button
                                         Accessible.name: qsTr("Install")
@@ -367,12 +396,55 @@ Rectangle {
                                         Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                                         wrapMode: Text.WrapAnywhere
                                         function showError() {
-                                            apiKey.placeholderTextColor = theme.textErrorColor
+                                            messageToast.show(qsTr("ERROR: $API_KEY is empty."));
+                                            apiKey.placeholderTextColor = theme.textErrorColor;
                                         }
                                         onTextChanged: {
-                                            apiKey.placeholderTextColor = theme.mutedTextColor
+                                            apiKey.placeholderTextColor = theme.mutedTextColor;
                                         }
                                         placeholderText: qsTr("enter $API_KEY")
+                                        Accessible.role: Accessible.EditableText
+                                        Accessible.name: placeholderText
+                                        Accessible.description: qsTr("Whether the file hash is being calculated")
+                                    }
+
+                                    MyTextField {
+                                        id: baseUrl
+                                        visible: !installed && isOnline && isCompatibleApi
+                                        Layout.topMargin: 20
+                                        Layout.leftMargin: 20
+                                        Layout.minimumWidth: 200
+                                        Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+                                        wrapMode: Text.WrapAnywhere
+                                        function showError() {
+                                            messageToast.show(qsTr("ERROR: $BASE_URL is empty."));
+                                            baseUrl.placeholderTextColor = theme.textErrorColor;
+                                        }
+                                        onTextChanged: {
+                                            baseUrl.placeholderTextColor = theme.mutedTextColor;
+                                        }
+                                        placeholderText: qsTr("enter $BASE_URL")
+                                        Accessible.role: Accessible.EditableText
+                                        Accessible.name: placeholderText
+                                        Accessible.description: qsTr("Whether the file hash is being calculated")
+                                    }
+
+                                    MyTextField {
+                                        id: modelName
+                                        visible: !installed && isOnline && isCompatibleApi
+                                        Layout.topMargin: 20
+                                        Layout.leftMargin: 20
+                                        Layout.minimumWidth: 200
+                                        Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+                                        wrapMode: Text.WrapAnywhere
+                                        function showError() {
+                                            messageToast.show(qsTr("ERROR: $MODEL_NAME is empty."))
+                                            modelName.placeholderTextColor = theme.textErrorColor;
+                                        }
+                                        onTextChanged: {
+                                            modelName.placeholderTextColor = theme.mutedTextColor;
+                                        }
+                                        placeholderText: qsTr("enter $MODEL_NAME")
                                         Accessible.role: Accessible.EditableText
                                         Accessible.name: placeholderText
                                         Accessible.description: qsTr("Whether the file hash is being calculated")
@@ -512,6 +584,13 @@ Rectangle {
                     }
                 }
             }
+        }
+    }
+
+    Connections {
+        target: Download
+        function onToastMessage(message) {
+            messageToast.show(message);
         }
     }
 }

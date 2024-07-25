@@ -17,8 +17,8 @@ if(APPLE)
 endif()
 
 set(APP_VERSION_MAJOR 3)
-set(APP_VERSION_MINOR 0)
-set(APP_VERSION_PATCH 1)
+set(APP_VERSION_MINOR 1)
+set(APP_VERSION_PATCH 0)
 set(APP_VERSION_BASE "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
 set(APP_VERSION "${APP_VERSION_BASE}-dev0")
 
@@ -153,6 +153,8 @@ qt_add_qml_module(chat
       qml/SwitchModelDialog.qml
       qml/Theme.qml
       qml/ThumbsDownDialog.qml
+      qml/Toast.qml
+      qml/ToastManager.qml
       qml/MyBusyIndicator.qml
       qml/MyButton.qml
       qml/MyCheckBox.qml
@@ -233,6 +235,10 @@ if (GPT4ALL_TRANSLATIONS)
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_en.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_TW.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_ro_RO.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_it_IT.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_pt_BR.ts
     )
 endif()
 

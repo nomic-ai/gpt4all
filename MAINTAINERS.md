@@ -47,6 +47,10 @@ E-mail: max@nomic.ai<br/>
 Discord: `@maxcembalest.`
 - Official documentation (gpt4all-bindings/python/docs -> https://docs.gpt4all.io/)
 
+Thiago Ramos ([@thiagojramos](https://github.com/thiagojramos))<br/>
+E-mail: thiagojramos@outlook.com<br/>
+- pt\_BR translation
+
 Victor Emanuel ([@SINAPSA-IC](https://github.com/SINAPSA-IC))<br/>
 E-mail: contact@sinapsaro.ro<br/>
 Discord: `@sinapsa_ic_56124_99632`
@@ -71,3 +75,8 @@ Tim ([@Tim453](https://github.com/Tim453))<br/>
 E-mail: tim453@mailbox.org<br/>
 Discord: `@Tim453`
 - Flatpak
+
+Jack ([@wuodoo](https://github.com/wuodoo))<br/>
+E-mail: 2296103047@qq.com><br/>
+Discord: `@mikage`
+- zh\_CN translation

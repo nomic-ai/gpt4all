@@ -8,7 +8,7 @@ Each item should have an issue link below.
     - [ ] Chinese
     - [ ] German
     - [ ] French
-    - [ ] Portuguese
+    - [x] Portuguese
     - [ ] Your native language here. 
 - UI Redesign: an internal effort at Nomic to improve the UI/UX of gpt4all for all users.
     - [x] Design new user interface and gather community feedback

@@ -63,6 +63,7 @@ public:
     Q_INVOKABLE void downloadModel(const QString &modelFile);
     Q_INVOKABLE void cancelDownload(const QString &modelFile);
     Q_INVOKABLE void installModel(const QString &modelFile, const QString &apiKey);
+    Q_INVOKABLE void installCompatibleModel(const QString &modelName, const QString &apiKey, const QString &baseUrl);
     Q_INVOKABLE void removeModel(const QString &modelFile);
     Q_INVOKABLE bool isFirstStart(bool writeVersion = false) const;
 
@@ -87,6 +88,7 @@ Q_SIGNALS:
     void requestHashAndSave(const QString &hash, QCryptographicHash::Algorithm a, const QString &saveFilePath,
         QFile *tempFile, QNetworkReply *modelReply);
     void latestNewsChanged();
+    void toastMessage(const QString &message);
 
 private:
     void parseReleaseJsonFile(const QByteArray &jsonData);

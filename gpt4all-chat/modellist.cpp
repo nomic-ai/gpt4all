@@ -514,6 +514,17 @@ ModelList::ModelList()
     QCoreApplication::instance()->installEventFilter(this);
 }
 
+QString ModelList::compatibleModelNameHash(QUrl baseUrl, QString modelName) {
+    QCryptographicHash sha256(QCryptographicHash::Sha256);
+    sha256.addData((baseUrl.toString() + "_" + modelName).toUtf8());
+    return sha256.result().toHex();
+};
+
+QString ModelList::compatibleModelFilename(QUrl baseUrl, QString modelName) {
+    QString hash(compatibleModelNameHash(baseUrl, modelName));
+    return QString(u"gpt4all-%1-capi.rmodel"_s).arg(hash);
+};
+
 bool ModelList::eventFilter(QObject *obj, QEvent *ev)
 {
     if (obj == QCoreApplication::instance() && ev->type() == QEvent::LanguageChange)
@@ -703,6 +714,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->isDefault;
         case OnlineRole:
             return info->isOnline;
+        case CompatibleApiRole:
+            return info->isCompatibleApi;
         case DescriptionRole:
             return info->description();
         case RequiresVersionRole:
@@ -859,6 +872,8 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->isDefault = value.toBool(); break;
             case OnlineRole:
                 info->isOnline = value.toBool(); break;
+            case CompatibleApiRole:
+                info->isCompatibleApi = value.toBool(); break;
             case DescriptionRole:
                 info->setDescription(value.toString()); break;
             case RequiresVersionRole:
@@ -1079,6 +1094,7 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::FilenameRole, model.filename() },
         { ModelList::DirpathRole, model.dirpath },
         { ModelList::OnlineRole, model.isOnline },
+        { ModelList::CompatibleApiRole, model.isCompatibleApi },
         { ModelList::IsEmbeddingModelRole, model.isEmbeddingModel },
         { ModelList::TemperatureRole, model.temperature() },
         { ModelList::TopPRole, model.topP() },
@@ -1113,7 +1129,7 @@ void ModelList::removeInstalled(const ModelInfo &model)
 {
     Q_ASSERT(model.installed);
     Q_ASSERT(!model.isClone());
-    Q_ASSERT(model.isDiscovered() || model.description() == "" /*indicates sideloaded*/);
+    Q_ASSERT(model.isDiscovered() || model.isCompatibleApi || model.description() == "" /*indicates sideloaded*/);
     removeInternal(model);
     emit layoutChanged();
 }
@@ -1260,14 +1276,53 @@ void ModelList::updateModelsFromDirectory()
 
             QFileInfo info = it.fileInfo();
 
+            bool isOnline(filename.endsWith(".rmodel"));
+            bool isCompatibleApi(filename.endsWith("-capi.rmodel"));
+
+            QString name;
+            QString description;
+            if (isCompatibleApi) {
+                QJsonObject obj;
+                {
+                    QFile file(path + filename);
+                    bool success = file.open(QIODeviceBase::ReadOnly);
+                    (void)success;
+                    Q_ASSERT(success);
+                    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+                    obj = doc.object();
+                }
+                {
+                    QString apiKey(obj["apiKey"].toString());
+                    QString baseUrl(obj["baseUrl"].toString());
+                    QString modelName(obj["modelName"].toString());
+                    apiKey = apiKey.length() < 10 ? "*****" : apiKey.left(5) + "*****";
+                    name = tr("%1 (%2)").arg(modelName, baseUrl);
+                    description = tr("<strong>OpenAI-Compatible API Model</strong><br>"
+                                     "<ul><li>API Key: %1</li>"
+                                     "<li>Base URL: %2</li>"
+                                     "<li>Model Name: %3</li></ul>")
+                                        .arg(apiKey, baseUrl, modelName);
+                }
+            }
+
             for (const QString &id : modelsById) {
                 QVector<QPair<int, QVariant>> data {
                     { InstalledRole, true },
                     { FilenameRole, filename },
-                    { OnlineRole, filename.endsWith(".rmodel") },
+                    { OnlineRole, isOnline },
+                    { CompatibleApiRole, isCompatibleApi },
                     { DirpathRole, info.dir().absolutePath() + "/" },
                     { FilesizeRole, toFileSize(info.size()) },
                 };
+                if (isCompatibleApi) {
+                    // The data will be saved to "GPT4All.ini".
+                    data.append({ NameRole, name });
+                    // The description is hard-coded into "GPT4All.ini" due to performance issue.
+                    // If the description goes to be dynamic from its .rmodel file, it will get high I/O usage while using the ModelList.
+                    data.append({ DescriptionRole, description });
+                    // Prompt template should be clear while using ChatML format which is using in most of OpenAI-Compatible API server.
+                    data.append({ PromptTemplateRole, "%1" });
+                }
                 updateData(id, data);
             }
         }
@@ -1654,6 +1709,34 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             { ModelList::QuantRole, "NA" },
             { ModelList::TypeRole, "Mistral" },
             { ModelList::UrlRole, "https://api.mistral.ai/v1/chat/completions"},
+        };
+        updateData(id, data);
+    }
+
+    const QString compatibleDesc = tr("<ul><li>Requires personal API key and the API base URL.</li>"
+                                      "<li>WARNING: Will send your chats to "
+                                      "the OpenAI-compatible API Server you specified!</li>"
+                                      "<li>Your API key will be stored on disk</li><li>Will only be used"
+                                      " to communicate with the OpenAI-compatible API Server</li>");
+
+    {
+        const QString modelName = "OpenAI-compatible";
+        const QString id = modelName;
+        if (!contains(id))
+            addModel(id);
+        QVector<QPair<int, QVariant>> data {
+            { ModelList::NameRole, modelName },
+            { ModelList::FilesizeRole, "minimal" },
+            { ModelList::OnlineRole, true },
+            { ModelList::CompatibleApiRole, true },
+            { ModelList::DescriptionRole,
+             tr("<strong>Connect to OpenAI-compatible API server</strong><br> %1").arg(compatibleDesc) },
+            { ModelList::RequiresVersionRole, "2.7.4" },
+            { ModelList::OrderRole, "cf" },
+            { ModelList::RamrequiredRole, 0 },
+            { ModelList::ParametersRole, "?" },
+            { ModelList::QuantRole, "NA" },
+            { ModelList::TypeRole, "NA" },
         };
         updateData(id, data);
     }

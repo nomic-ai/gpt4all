@@ -35,6 +35,7 @@ struct ModelInfo {
     Q_PROPERTY(bool installed MEMBER installed)
     Q_PROPERTY(bool isDefault MEMBER isDefault)
     Q_PROPERTY(bool isOnline MEMBER isOnline)
+    Q_PROPERTY(bool isCompatibleApi MEMBER isCompatibleApi)
     Q_PROPERTY(QString description READ description WRITE setDescription)
     Q_PROPERTY(QString requiresVersion MEMBER requiresVersion)
     Q_PROPERTY(QString versionRemoved MEMBER versionRemoved)
@@ -123,7 +124,17 @@ public:
     bool calcHash = false;
     bool installed = false;
     bool isDefault = false;
+    // Differences between 'isOnline' and 'isCompatibleApi' in ModelInfo:
+    // 'isOnline':
+    // - Indicates whether this is a online model.
+    // - Linked with the ModelList, fetching info from it.
     bool isOnline = false;
+    // 'isCompatibleApi':
+    // - Indicates whether the model is using the OpenAI-compatible API which user custom.
+    // - When the property is true, 'isOnline' should also be true.
+    // - Does not link to the ModelList directly; instead, fetches info from the *-capi.rmodel file and works standalone.
+    // - Still needs to copy data from gpt4all.ini and *-capi.rmodel to the ModelList in memory while application getting started(as custom .gguf models do).
+    bool isCompatibleApi = false;
     QString requiresVersion;
     QString versionRemoved;
     qint64 bytesReceived = 0;
@@ -276,6 +287,9 @@ class ModelList : public QAbstractListModel
 public:
     static ModelList *globalInstance();
 
+    static QString compatibleModelNameHash(QUrl baseUrl, QString modelName);
+    static QString compatibleModelFilename(QUrl baseUrl, QString modelName);
+
     enum DiscoverSort {
         Default,
         Likes,
@@ -295,6 +309,7 @@ public:
         InstalledRole,
         DefaultRole,
         OnlineRole,
+        CompatibleApiRole,
         DescriptionRole,
         RequiresVersionRole,
         VersionRemovedRole,
@@ -347,6 +362,7 @@ public:
         roles[InstalledRole] = "installed";
         roles[DefaultRole] = "isDefault";
         roles[OnlineRole] = "isOnline";
+        roles[CompatibleApiRole] = "isCompatibleApi";
         roles[DescriptionRole] = "description";
         roles[RequiresVersionRole] = "requiresVersion";
         roles[VersionRemovedRole] = "versionRemoved";

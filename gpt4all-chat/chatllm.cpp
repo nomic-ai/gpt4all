@@ -322,6 +322,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
         QVariantMap modelLoadProps;
         if (modelInfo.isOnline) {
             QString apiKey;
+            QString requestUrl;
             QString modelName;
             {
                 QFile file(filePath);
@@ -332,11 +333,24 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
                 QJsonObject obj = doc.object();
                 apiKey = obj["apiKey"].toString();
                 modelName = obj["modelName"].toString();
+                if (modelInfo.isCompatibleApi) {
+                    QString baseUrl(obj["baseUrl"].toString());
+                    QUrl apiUrl(QUrl::fromUserInput(baseUrl));
+                    if (!Network::isHttpUrlValid(apiUrl)) {
+                        return false;
+                    }
+                    QString currentPath(apiUrl.path());
+                    QString suffixPath("%1/chat/completions");
+                    apiUrl.setPath(suffixPath.arg(currentPath));
+                    requestUrl = apiUrl.toString();
+                } else {
+                    requestUrl = modelInfo.url();
+                }
             }
             m_llModelType = LLModelType::API_;
             ChatAPI *model = new ChatAPI();
             model->setModelName(modelName);
-            model->setRequestURL(modelInfo.url());
+            model->setRequestURL(requestUrl);
             model->setAPIKey(apiKey);
             m_llModelInfo.resetModel(this, model);
         } else if (!loadNewModel(modelInfo, modelLoadProps)) {
@@ -958,6 +972,8 @@ bool ChatLLM::handleQuestionResponse(int32_t token, const std::string &response)
     m_questionResponse.append(response);
 
     // match whole question sentences
+    // FIXME: This only works with response by the model in english which is not ideal for a multi-language
+    // model.
     static const QRegularExpression reQuestion(R"(\b(What|Where|How|Why|When|Who|Which|Whose|Whom)\b[^?]*\?)");
 
     // extract all questions from response
