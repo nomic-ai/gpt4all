@@ -881,6 +881,8 @@ Rectangle {
                                                     case Chat.PromptProcessing: return qsTr("processing ...")
                                                     case Chat.ResponseGeneration: return qsTr("generating response ...");
                                                     case Chat.GeneratingQuestions: return qsTr("generating questions ...");
+                                                    case Chat.ToolCalled: return currentChat.toolDescription;
+                                                    case Chat.ToolProcessing: return qsTr("processing web results ..."); // FIXME should not be hardcoded!
                                                     default: return ""; // handle unexpected values
                                                     }
                                                 }
@@ -1131,7 +1133,7 @@ Rectangle {
                                                     sourceSize.width: 24
                                                     sourceSize.height: 24
                                                     mipmap: true
-                                                    source: "qrc:/gpt4all/icons/db.svg"
+                                                    source: consolidatedSources[0].url === "" ? "qrc:/gpt4all/icons/db.svg" : "qrc:/gpt4all/icons/globe.svg"
                                                 }
 
                                                 ColorOverlay {
@@ -1243,11 +1245,15 @@ Rectangle {
 
                                                 MouseArea {
                                                     id: ma
-                                                    enabled: modelData.path !== ""
+                                                    enabled: modelData.path !== "" || modelData.url !== ""
                                                     anchors.fill: parent
                                                     hoverEnabled: true
                                                     onClicked: function() {
-                                                        Qt.openUrlExternally(modelData.fileUri)
+                                                        if (modelData.url !== "") {
+                                                            console.log("opening url")
+                                                            Qt.openUrlExternally(modelData.url)
+                                                        } else
+                                                            Qt.openUrlExternally(modelData.fileUri)
                                                     }
                                                 }
 
@@ -1287,22 +1293,27 @@ Rectangle {
                                                             Image {
                                                                 id: fileIcon
                                                                 anchors.fill: parent
-                                                                visible: false
+                                                                visible: modelData.favicon !== ""
                                                                 sourceSize.width: 24
                                                                 sourceSize.height: 24
                                                                 mipmap: true
                                                                 source: {
-                                                                    if (modelData.file.toLowerCase().endsWith(".txt"))
+                                                                    if (modelData.favicon !== "")
+                                                                        return modelData.favicon;
+                                                                    else if (modelData.file.toLowerCase().endsWith(".txt"))
                                                                         return "qrc:/gpt4all/icons/file-txt.svg"
                                                                     else if (modelData.file.toLowerCase().endsWith(".pdf"))
                                                                         return "qrc:/gpt4all/icons/file-pdf.svg"
                                                                     else if (modelData.file.toLowerCase().endsWith(".md"))
                                                                         return "qrc:/gpt4all/icons/file-md.svg"
-                                                                    else
+                                                                    else if (modelData.file !== "")
                                                                         return "qrc:/gpt4all/icons/file.svg"
+                                                                    else
+                                                                        return "qrc:/gpt4all/icons/globe.svg"
                                                                 }
                                                             }
                                                             ColorOverlay {
+                                                                visible: !fileIcon.visible
                                                                 anchors.fill: fileIcon
                                                                 source: fileIcon
                                                                 color: theme.textColor
@@ -1310,7 +1321,7 @@ Rectangle {
                                                         }
                                                         Text {
                                                             Layout.maximumWidth: 156
-                                                            text: modelData.collection !== "" ? modelData.collection : qsTr("LocalDocs")
+                                                            text: modelData.collection !== "" ? modelData.collection : modelData.title
                                                             font.pixelSize: theme.fontSizeLarge
                                                             font.bold: true
                                                             color: theme.styledTextColor
@@ -1326,7 +1337,7 @@ Rectangle {
                                                         Layout.fillHeight: true
                                                         Layout.maximumWidth: 180
                                                         Layout.maximumHeight: 55 - title.height
-                                                        text: modelData.file
+                                                        text: modelData.file !== "" ? modelData.file : modelData.url
                                                         color: theme.textColor
                                                         font.pixelSize: theme.fontSizeSmall
                                                         elide: Qt.ElideRight

@@ -59,6 +59,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::generatingQuestions, this, &Chat::generatingQuestions, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::toolCalled, this, &Chat::toolCalled, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelLoadingWarning, this, &Chat::modelLoadingWarning, Qt::QueuedConnection);
@@ -67,7 +68,7 @@ void Chat::connectLLM()
     connect(m_llmodel, &ChatLLM::generatedQuestionFinished, this, &Chat::generatedQuestionFinished, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::loadedModelInfoChanged, this, &Chat::loadedModelInfoChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &ChatLLM::sourceExcerptsChanged, this, &Chat::handleSourceExcerptsChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
     connect(m_llmodel, &ChatLLM::trySwitchContextOfLoadedModelCompleted, this, &Chat::handleTrySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
 
@@ -121,6 +122,7 @@ void Chat::resetResponseState()
     emit tokenSpeedChanged();
     m_responseInProgress = true;
     m_responseState = m_collections.empty() ? Chat::PromptProcessing : Chat::LocalDocsRetrieval;
+    m_toolDescription = QString();
     emit responseInProgressChanged();
     emit responseStateChanged();
 }
@@ -134,7 +136,7 @@ void Chat::prompt(const QString &prompt)
 void Chat::regenerateResponse()
 {
     const int index = m_chatModel->count() - 1;
-    m_chatModel->updateSources(index, QList<ResultInfo>());
+    m_chatModel->updateSources(index, QList<SourceExcerpt>());
     emit regenerateResponseRequested();
 }
 
@@ -189,13 +191,26 @@ void Chat::handleModelLoadingPercentageChanged(float loadingPercentage)
 
 void Chat::promptProcessing()
 {
-    m_responseState = !databaseResults().isEmpty() ? Chat::LocalDocsProcessing : Chat::PromptProcessing;
-     emit responseStateChanged();
+    if (sourceExcerpts().isEmpty())
+        m_responseState = Chat::PromptProcessing;
+    else if (m_responseState == Chat::ToolCalled)
+        m_responseState = Chat::ToolProcessing;
+    else
+        m_responseState = Chat::LocalDocsProcessing;
+    emit responseStateChanged();
 }
 
 void Chat::generatingQuestions()
 {
     m_responseState = Chat::GeneratingQuestions;
+    emit responseStateChanged();
+}
+
+void Chat::toolCalled(const QString &description)
+{
+    m_responseState = Chat::ToolCalled;
+    m_toolDescription = description;
+    emit toolDescriptionChanged();
     emit responseStateChanged();
 }
 
@@ -357,11 +372,11 @@ QString Chat::fallbackReason() const
     return m_llmodel->fallbackReason();
 }
 
-void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)
+void Chat::handleSourceExcerptsChanged(const QList<SourceExcerpt> &sourceExcerpts)
 {
-    m_databaseResults = results;
+    m_sourceExcerpts = sourceExcerpts;
     const int index = m_chatModel->count() - 1;
-    m_chatModel->updateSources(index, m_databaseResults);
+    m_chatModel->updateSources(index, m_sourceExcerpts);
 }
 
 void Chat::handleModelInfoChanged(const ModelInfo &modelInfo)
