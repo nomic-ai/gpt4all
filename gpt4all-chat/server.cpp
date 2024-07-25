@@ -56,27 +56,13 @@ static inline QJsonObject modelToJson(const ModelInfo &info)
     return model;
 }
 
-static inline QJsonObject resultToJson(const ResultInfo &info)
-{
-    QJsonObject result;
-    result.insert("file", info.file);
-    result.insert("title", info.title);
-    result.insert("author", info.author);
-    result.insert("date", info.date);
-    result.insert("text", info.text);
-    result.insert("page", info.page);
-    result.insert("from", info.from);
-    result.insert("to", info.to);
-    return result;
-}
-
 Server::Server(Chat *chat)
     : ChatLLM(chat, true /*isServer*/)
     , m_chat(chat)
     , m_server(nullptr)
 {
     connect(this, &Server::threadStarted, this, &Server::start);
-    connect(this, &Server::databaseResultsChanged, this, &Server::handleDatabaseResultsChanged);
+    connect(this, &Server::sourceExcerptsChanged, this, &Server::handleSourceExcerptsChanged);
     connect(chat, &Chat::collectionListChanged, this, &Server::handleCollectionListChanged, Qt::QueuedConnection);
 }
 
@@ -373,7 +359,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
 
     int promptTokens = 0;
     int responseTokens = 0;
-    QList<QPair<QString, QList<ResultInfo>>> responses;
+    QList<QPair<QString, QList<SourceExcerpt>>> responses;
     for (int i = 0; i < n; ++i) {
         if (!promptInternal(
             m_collections,
@@ -394,7 +380,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
         QString echoedPrompt = actualPrompt;
         if (!echoedPrompt.endsWith("\n"))
             echoedPrompt += "\n";
-        responses.append(qMakePair((echo ? u"%1\n"_s.arg(actualPrompt) : QString()) + response(), m_databaseResults));
+        responses.append(qMakePair((echo ? u"%1\n"_s.arg(actualPrompt) : QString()) + response(), m_sourceExcerpts));
         if (!promptTokens)
             promptTokens += m_promptTokens;
         responseTokens += m_promptResponseTokens - m_promptTokens;
@@ -414,7 +400,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
         int index = 0;
         for (const auto &r : responses) {
             QString result = r.first;
-            QList<ResultInfo> infos = r.second;
+            QList<SourceExcerpt> infos = r.second;
             QJsonObject choice;
             choice.insert("index", index++);
             choice.insert("finish_reason", responseTokens == max_tokens ? "length" : "stop");
@@ -425,7 +411,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             if (MySettings::globalInstance()->localDocsShowReferences()) {
                 QJsonArray references;
                 for (const auto &ref : infos)
-                    references.append(resultToJson(ref));
+                    references.append(ref.toJson());
                 choice.insert("references", references);
             }
             choices.append(choice);
@@ -434,7 +420,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
         int index = 0;
         for (const auto &r : responses) {
             QString result = r.first;
-            QList<ResultInfo> infos = r.second;
+            QList<SourceExcerpt> infos = r.second;
             QJsonObject choice;
             choice.insert("text", result);
             choice.insert("index", index++);
@@ -443,7 +429,7 @@ QHttpServerResponse Server::handleCompletionRequest(const QHttpServerRequest &re
             if (MySettings::globalInstance()->localDocsShowReferences()) {
                 QJsonArray references;
                 for (const auto &ref : infos)
-                    references.append(resultToJson(ref));
+                    references.append(ref.toJson());
                 choice.insert("references", references);
             }
             choices.append(choice);

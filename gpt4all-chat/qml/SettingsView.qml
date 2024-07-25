@@ -34,6 +34,9 @@ Rectangle {
         ListElement {
             title: qsTr("LocalDocs")
         }
+        ListElement {
+            title: qsTr("Tools")
+        }
     }
 
     ColumnLayout {
@@ -150,6 +153,12 @@ Rectangle {
                 MySettingsStack {
                     tabs: [
                         Component { LocalDocsSettings { } }
+                    ]
+                }
+
+                MySettingsStack {
+                    tabs: [
+                        Component { ToolSettings { } }
                     ]
                 }
             }

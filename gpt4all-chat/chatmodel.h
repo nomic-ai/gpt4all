@@ -28,8 +28,8 @@ struct ChatItem
     Q_PROPERTY(bool stopped MEMBER stopped)
     Q_PROPERTY(bool thumbsUpState MEMBER thumbsUpState)
     Q_PROPERTY(bool thumbsDownState MEMBER thumbsDownState)
-    Q_PROPERTY(QList<ResultInfo> sources MEMBER sources)
-    Q_PROPERTY(QList<ResultInfo> consolidatedSources MEMBER consolidatedSources)
+    Q_PROPERTY(QList<SourceExcerpt> sources MEMBER sources)
+    Q_PROPERTY(QList<SourceExcerpt> consolidatedSources MEMBER consolidatedSources)
 
 public:
     // TODO: Maybe we should include the model name here as well as timestamp?
@@ -38,8 +38,8 @@ public:
     QString value;
     QString prompt;
     QString newResponse;
-    QList<ResultInfo> sources;
-    QList<ResultInfo> consolidatedSources;
+    QList<SourceExcerpt> sources;
+    QList<SourceExcerpt> consolidatedSources;
     bool currentResponse = false;
     bool stopped = false;
     bool thumbsUpState = false;
@@ -200,20 +200,20 @@ public:
         }
     }
 
-    QList<ResultInfo> consolidateSources(const QList<ResultInfo> &sources) {
-        QMap<QString, ResultInfo> groupedData;
-        for (const ResultInfo &info : sources) {
+    QList<SourceExcerpt> consolidateSources(const QList<SourceExcerpt> &sources) {
+        QMap<QString, SourceExcerpt> groupedData;
+        for (const SourceExcerpt &info : sources) {
             if (groupedData.contains(info.file)) {
                 groupedData[info.file].text += "\n---\n" + info.text;
             } else {
                 groupedData[info.file] = info;
             }
         }
-        QList<ResultInfo> consolidatedSources = groupedData.values();
+        QList<SourceExcerpt> consolidatedSources = groupedData.values();
         return consolidatedSources;
     }
 
-    Q_INVOKABLE void updateSources(int index, const QList<ResultInfo> &sources)
+    Q_INVOKABLE void updateSources(int index, const QList<SourceExcerpt> &sources)
     {
         if (index < 0 || index >= m_chatItems.size()) return;
 
@@ -274,7 +274,7 @@ public:
             stream << c.thumbsDownState;
             if (version > 7) {
                 stream << c.sources.size();
-                for (const ResultInfo &info : c.sources) {
+                for (const SourceExcerpt &info : c.sources) {
                     Q_ASSERT(!info.file.isEmpty());
                     stream << info.collection;
                     stream << info.path;
@@ -286,12 +286,16 @@ public:
                     stream << info.page;
                     stream << info.from;
                     stream << info.to;
+                    if (version > 9) {
+                        stream << info.url;
+                        stream << info.favicon;
+                    }
                 }
             } else if (version > 2) {
                 QList<QString> references;
                 QList<QString> referencesContext;
                 int validReferenceNumber = 1;
-                for (const ResultInfo &info : c.sources) {
+                for (const SourceExcerpt &info : c.sources) {
                     if (info.file.isEmpty())
                         continue;
 
@@ -345,9 +349,9 @@ public:
             if (version > 7) {
                 qsizetype count;
                 stream >> count;
-                QList<ResultInfo> sources;
+                QList<SourceExcerpt> sources;
                 for (int i = 0; i < count; ++i) {
-                    ResultInfo info;
+                    SourceExcerpt info;
                     stream >> info.collection;
                     stream >> info.path;
                     stream >> info.file;
@@ -358,6 +362,10 @@ public:
                     stream >> info.page;
                     stream >> info.from;
                     stream >> info.to;
+                    if (version > 9) {
+                        stream >> info.url;
+                        stream >> info.favicon;
+                    }
                     sources.append(info);
                 }
                 c.sources = sources;
@@ -369,7 +377,7 @@ public:
                 stream >> referencesContext;
 
                 if (!references.isEmpty()) {
-                    QList<ResultInfo> sources;
+                    QList<SourceExcerpt> sources;
                     QList<QString> referenceList = references.split("\n");
 
                     // Ignore empty lines and those that begin with "---" which is no longer used
@@ -384,7 +392,7 @@ public:
                     for (int j = 0; j < referenceList.size(); ++j) {
                         QString reference = referenceList[j];
                         QString context = referencesContext[j];
-                        ResultInfo info;
+                        SourceExcerpt info;
                         QTextStream refStream(&reference);
                         QString dummy;
                         int validReferenceNumber;

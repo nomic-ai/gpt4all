@@ -40,6 +40,7 @@ class Chat : public QObject
     // 0=no, 1=waiting, 2=working
     Q_PROPERTY(int trySwitchContextInProgress READ trySwitchContextInProgress NOTIFY trySwitchContextInProgressChanged)
     Q_PROPERTY(QList<QString> generatedQuestions READ generatedQuestions NOTIFY generatedQuestionsChanged)
+    Q_PROPERTY(QString toolDescription READ toolDescription NOTIFY toolDescriptionChanged)
     QML_ELEMENT
     QML_UNCREATABLE("Only creatable from c++!")
 
@@ -50,7 +51,9 @@ public:
         LocalDocsProcessing,
         PromptProcessing,
         GeneratingQuestions,
-        ResponseGeneration
+        ResponseGeneration,
+        ToolCalled,
+        ToolProcessing
     };
     Q_ENUM(ResponseState)
 
@@ -81,9 +84,10 @@ public:
     Q_INVOKABLE void stopGenerating();
     Q_INVOKABLE void newPromptResponsePair(const QString &prompt);
 
-    QList<ResultInfo> databaseResults() const { return m_databaseResults; }
+    QList<SourceExcerpt> sourceExcerpts() const { return m_sourceExcerpts; }
 
     QString response() const;
+    QString toolDescription() const { return m_toolDescription; }
     bool responseInProgress() const { return m_responseInProgress; }
     ResponseState responseState() const;
     ModelInfo modelInfo() const;
@@ -158,19 +162,21 @@ Q_SIGNALS:
     void trySwitchContextInProgressChanged();
     void loadedModelInfoChanged();
     void generatedQuestionsChanged();
+    void toolDescriptionChanged();
 
 private Q_SLOTS:
     void handleResponseChanged(const QString &response);
     void handleModelLoadingPercentageChanged(float);
     void promptProcessing();
     void generatingQuestions();
+    void toolCalled(const QString &description);
     void responseStopped(qint64 promptResponseMs);
     void generatedNameChanged(const QString &name);
     void generatedQuestionFinished(const QString &question);
     void handleRecalculating();
     void handleModelLoadingError(const QString &error);
     void handleTokenSpeedChanged(const QString &tokenSpeed);
-    void handleDatabaseResultsChanged(const QList<ResultInfo> &results);
+    void handleSourceExcerptsChanged(const QList<SourceExcerpt> &sourceExcerpts);
     void handleModelInfoChanged(const ModelInfo &modelInfo);
     void handleTrySwitchContextOfLoadedModelCompleted(int value);
 
@@ -185,6 +191,7 @@ private:
     QString m_device;
     QString m_fallbackReason;
     QString m_response;
+    QString m_toolDescription;
     QList<QString> m_collections;
     QList<QString> m_generatedQuestions;
     ChatModel *m_chatModel;
@@ -192,7 +199,7 @@ private:
     ResponseState m_responseState;
     qint64 m_creationDate;
     ChatLLM *m_llmodel;
-    QList<ResultInfo> m_databaseResults;
+    QList<SourceExcerpt> m_sourceExcerpts;
     bool m_isServer = false;
     bool m_shouldDeleteLater = false;
     float m_modelLoadingPercentage = 0.0f;
