@@ -1938,7 +1938,7 @@ QList<int> Database::searchEmbeddings(const std::vector<float> &query, const QLi
 }
 
 void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize,
-    QList<ResultInfo> *results)
+    QList<SourceExcerpt> *results)
 {
 #if defined(DEBUG)
     qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
@@ -1974,7 +1974,7 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         const int from = q.value(8).toInt();
         const int to = q.value(9).toInt();
         const QString collectionName = q.value(10).toString();
-        ResultInfo info;
+        SourceExcerpt info;
         info.collection = collectionName;
         info.path = document_path;
         info.file = file;
