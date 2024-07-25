@@ -70,3 +70,8 @@ Riccardo Giovanetti ([@Harvester62](https://github.com/Harvester62))<br/>
 E-mail: riccardo.giovanetti@gmail.com<br/>
 Discord: `@harvester62`
 - it\_IT translation
+
+Jack ([@wuodoo](https://github.com/wuodoo))<br/>
+E-mail: 2296103047@qq.com><br/>
+Discord: `@mikage`
+- zh\_CN translation
