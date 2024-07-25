@@ -14,7 +14,7 @@
             <li>Check for updates so you can always stay fresh with latest models</li>
             <li>Easy to install with precompiled binaries available for all three major desktop platforms</li>
             <li>Multi-model - Ability to load more than one model and switch between them</li>
-            <li>Supports both llama.cpp and gptj.cpp style models</li>
+            <li>Supports llama.cpp style models</li>
             <li>Model downloader in GUI featuring many popular open source models</li>
             <li>Settings dialog to change temp, top_p, top_k, threads, etc</li>
             <li>Copy your conversation to clipboard</li>
@@ -23,14 +23,22 @@
     <screenshots>
         <screenshot type="default">
             <caption>Main Window</caption>
-            <image>https://user-images.githubusercontent.com/50458173/231464085-da9edff6-a593-410e-8f38-7513f75c8aab.png</image>
+            <image>https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/flatpak-manifest/screenshots/welcome.png</image>
+        </screenshot>
+        <screenshot>
+            <image>https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/flatpak-manifest/screenshots/chat.png</image>
+        </screenshot>
+        <screenshot>
+            <image>https://raw.githubusercontent.com/nomic-ai/gpt4all/main/gpt4all-chat/flatpak-manifest/screenshots/model.png</image>
         </screenshot>
     </screenshots>
     <url type="homepage">https://gpt4all.io</url>
     <url type="bugtracker">https://github.com/nomic-ai/gpt4all/issues</url>
     <url type="vcs-browser">https://github.com/nomic-ai/gpt4all</url>
     <releases>
-      <release version="2.7.5" date="2024-05-03"></release>              
+      <release version="3.1.0" date="2024-07-24"/>
+      <release version="3.0.0" date="2024-07-02"/>
+      <release version="2.7.5" date="2024-05-03"/>
     </releases>
     <launchable type="desktop-id">io.gpt4all.gpt4all.desktop</launchable>
     <content_rating type="oars-1.1">

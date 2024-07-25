@@ -26,6 +26,13 @@ https://github.com/nomic-ai/gpt4all/assets/70534565/513a0f15-4964-4109-89e4-4f9a
 </p>
 
 <p align="center">
+  <a href='https://flathub.org/apps/io.gpt4all.gpt4all'>
+    <img width='240' alt='Get it on Flathub' src='https://flathub.org/api/badge?locale=en'><br>
+    Get it on Flathub (community maintained)
+  </a>
+</p>
+
+<p align="center">
   <a href="https://gpt4all.io">Website</a> &bull; <a href="https://docs.gpt4all.io">Documentation</a> &bull; <a href="https://discord.gg/mGZE39AS3e">Discord</a>
 </p>
 <p align="center">
