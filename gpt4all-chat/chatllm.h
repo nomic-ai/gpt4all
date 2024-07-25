@@ -180,6 +180,7 @@ Q_SIGNALS:
     void responseChanged(const QString &response);
     void promptProcessing();
     void generatingQuestions();
+    void toolCalled(const QString &description);
     void responseStopped(qint64 promptResponseMs);
     void generatedNameChanged(const QString &name);
     void generatedQuestionFinished(const QString &generatedQuestion);
@@ -188,16 +189,18 @@ Q_SIGNALS:
     void shouldBeLoadedChanged();
     void trySwitchContextRequested(const ModelInfo &modelInfo);
     void trySwitchContextOfLoadedModelCompleted(int value);
-    void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
+    void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<SourceExcerpt> *results);
     void reportSpeed(const QString &speed);
     void reportDevice(const QString &device);
     void reportFallbackReason(const QString &fallbackReason);
-    void databaseResultsChanged(const QList<ResultInfo>&);
+    void sourceExcerptsChanged(const QList<SourceExcerpt>&);
     void modelInfoChanged(const ModelInfo &modelInfo);
 
 protected:
     bool promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
         int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
+        int32_t repeat_penalty_tokens);
+    bool toolCallInternal(const QString &toolcall, int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
         int32_t repeat_penalty_tokens);
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
@@ -239,11 +242,13 @@ private:
     bool m_reloadingToChangeVariant;
     bool m_processedSystemPrompt;
     bool m_restoreStateFromText;
+    bool m_maybeToolCall;
     // m_pristineLoadedState is set if saveSate is unnecessary, either because:
     // - an unload was queued during LLModel::restoreState()
     // - the chat will be restored from text and hasn't been interacted with yet
     bool m_pristineLoadedState = false;
     QVector<QPair<QString, QString>> m_stateFromText;
+    QNetworkAccessManager m_networkManager; // FIXME REMOVE
 };
 
 #endif // CHATLLM_H

@@ -108,6 +108,7 @@ endif()
 
 qt_add_executable(chat
     main.cpp
+    bravesearch.h bravesearch.cpp
     chat.h chat.cpp
     chatllm.h chatllm.cpp
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
@@ -121,6 +122,7 @@ qt_add_executable(chat
     modellist.h modellist.cpp
     mysettings.h mysettings.cpp
     network.h network.cpp
+    sourceexcerpt.h
     server.h server.cpp
     logger.h logger.cpp
     ${APP_ICON_RESOURCE}
@@ -154,6 +156,7 @@ qt_add_qml_module(chat
       qml/ThumbsDownDialog.qml
       qml/Toast.qml
       qml/ToastManager.qml
+      qml/ToolSettings.qml
       qml/MyBusyIndicator.qml
       qml/MyButton.qml
       qml/MyCheckBox.qml
