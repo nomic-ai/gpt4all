@@ -696,6 +696,7 @@ Rectangle {
                             rightPadding: 60
                             leftPadding: 60
                             property string defaultModel: ""
+                            property string defaultModelName: ""
                             function updateDefaultModel() {
                                 var i = comboBox.find(MySettings.userDefaultModel)
                                 if (i !== -1) {
@@ -703,9 +704,14 @@ Rectangle {
                                 } else {
                                     defaultModel = comboBox.valueAt(0);
                                 }
+                                if (defaultModel !== "") {
+                                    defaultModelName = ModelList.modelInfo(defaultModel).name;
+                                } else {
+                                    defaultModelName = "";
+                                }
                             }
 
-                            text: qsTr("Load \u00B7 %1 (default) \u2192").arg(defaultModel);
+                            text: qsTr("Load \u00B7 %1 (default) \u2192").arg(defaultModelName);
                             onClicked: {
                                 var i = comboBox.find(MySettings.userDefaultModel)
                                 if (i !== -1) {

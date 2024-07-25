@@ -153,6 +153,8 @@ qt_add_qml_module(chat
       qml/SwitchModelDialog.qml
       qml/Theme.qml
       qml/ThumbsDownDialog.qml
+      qml/Toast.qml
+      qml/ToastManager.qml
       qml/MyBusyIndicator.qml
       qml/MyButton.qml
       qml/MyCheckBox.qml

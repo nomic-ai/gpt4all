@@ -201,6 +201,11 @@ void ChatAPIWorker::request(const QString &apiKey,
     QNetworkRequest request(apiUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", authorization.toUtf8());
+#if defined(DEBUG)
+    qDebug() << "ChatAPI::request"
+             << "API URL: " << apiUrl.toString()
+             << "Authorization: " << authorization.toUtf8();
+#endif
     m_networkManager = new QNetworkAccessManager(this);
     QNetworkReply *reply = m_networkManager->post(request, array);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
@@ -218,10 +223,28 @@ void ChatAPIWorker::handleFinished()
     }
 
     QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-    Q_ASSERT(response.isValid());
+
+    if (!response.isValid()) {
+        m_chat->callResponse(
+            -1,
+            tr("ERROR: Network error occurred while connecting to the API server")
+                .toStdString()
+        );
+        return;
+    }
+
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {
+        bool isReplyEmpty(reply->readAll().isEmpty());
+        if (isReplyEmpty)
+            m_chat->callResponse(
+                -1,
+                tr("ChatAPIWorker::handleFinished got HTTP Error %1 %2")
+                    .arg(code)
+                    .arg(reply->errorString())
+                    .toStdString()
+            );
         qWarning().noquote() << "ERROR: ChatAPIWorker::handleFinished got HTTP Error" << code << "response:"
                              << reply->errorString();
     }
@@ -238,7 +261,10 @@ void ChatAPIWorker::handleReadyRead()
     }
 
     QVariant response = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-    Q_ASSERT(response.isValid());
+
+    if (!response.isValid())
+        return;
+
     bool ok;
     int code = response.toInt(&ok);
     if (!ok || code != 200) {

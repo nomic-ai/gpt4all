@@ -237,6 +237,54 @@ void Download::installModel(const QString &modelFile, const QString &apiKey)
         stream << doc.toJson();
         file.close();
         ModelList::globalInstance()->updateModelsFromDirectory();
+        emit toastMessage(tr("Model \"%1\" is installed successfully.").arg(modelName));
+    }
+
+    ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::InstalledRole, true }});
+}
+
+void Download::installCompatibleModel(const QString &modelName, const QString &apiKey, const QString &baseUrl)
+{
+    Q_ASSERT(!modelName.isEmpty());
+    if (modelName.isEmpty()) {
+        emit toastMessage(tr("ERROR: $MODEL_NAME is empty."));
+        return;
+    }
+
+    Q_ASSERT(!apiKey.isEmpty());
+    if (apiKey.isEmpty()) {
+        emit toastMessage(tr("ERROR: $API_KEY is empty."));
+        return;
+    }
+
+    QUrl apiBaseUrl(QUrl::fromUserInput(baseUrl));
+    if (!Network::isHttpUrlValid(baseUrl)) {
+        emit toastMessage(tr("ERROR: $BASE_URL is invalid."));
+        return;
+    }
+
+    QString modelFile(ModelList::compatibleModelFilename(baseUrl, modelName));
+    if (ModelList::globalInstance()->contains(modelFile)) {
+        emit toastMessage(tr("ERROR: Model \"%1 (%2)\" is conflict.").arg(modelName, baseUrl));
+        return;
+    }
+    ModelList::globalInstance()->addModel(modelFile);
+    Network::globalInstance()->trackEvent("install_model", { {"model", modelFile} });
+
+    QString filePath = MySettings::globalInstance()->modelPath() + modelFile;
+    QFile file(filePath);
+    if (file.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
+        QJsonObject obj;
+        obj.insert("apiKey", apiKey);
+        obj.insert("modelName", modelName);
+        obj.insert("baseUrl", apiBaseUrl.toString());
+        QJsonDocument doc(obj);
+
+        QTextStream stream(&file);
+        stream << doc.toJson();
+        file.close();
+        ModelList::globalInstance()->updateModelsFromDirectory();
+        emit toastMessage(tr("Model \"%1 (%2)\" is installed successfully.").arg(modelName, baseUrl));
     }
 
     ModelList::globalInstance()->updateDataByFilename(modelFile, {{ ModelList::InstalledRole, true }});
@@ -255,11 +303,12 @@ void Download::removeModel(const QString &modelFile)
     if (file.exists()) {
         const ModelInfo info = ModelList::globalInstance()->modelInfoByFilename(modelFile);
         MySettings::globalInstance()->eraseModel(info);
-        shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.description() == "" /*indicates sideloaded*/);
+        shouldRemoveInstalled = info.installed && !info.isClone() && (info.isDiscovered() || info.isCompatibleApi || info.description() == "" /*indicates sideloaded*/);
         if (shouldRemoveInstalled)
             ModelList::globalInstance()->removeInstalled(info);
         Network::globalInstance()->trackEvent("remove_model", { {"model", modelFile} });
         file.remove();
+        emit toastMessage(tr("Model \"%1\" is removed.").arg(info.name()));
     }
 
     if (!shouldRemoveInstalled) {

@@ -23,6 +23,7 @@ class Network : public QObject
     Q_OBJECT
 public:
     static Network *globalInstance();
+    static bool isHttpUrlValid(const QUrl url);
 
     Q_INVOKABLE QString generateUniqueId() const;
     Q_INVOKABLE bool sendConversation(const QString &ingestId, const QString &conversation);
