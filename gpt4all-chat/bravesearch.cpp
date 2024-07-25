@@ -101,8 +101,17 @@ static QPair<QString, QList<SourceExcerpt>> cleanBraveResponse(const QByteArray&
                     }
                 }
 
+                QStringList textKeys = {"description", "extra_snippets"};
+                QJsonObject textObj;
+                for (const auto& key : textKeys) {
+                    if (resultObj.contains(key)) {
+                        textObj.insert(key, resultObj[key]);
+                    }
+                }
+
+                QJsonDocument textObjDoc(textObj);
                 info.date = resultObj["date"].toString();
-                info.text = resultObj["description"].toString(); // fixme
+                info.text = textObjDoc.toJson(QJsonDocument::Indented);
                 info.url = resultObj["url"].toString();
                 QJsonObject meta_url = resultObj["meta_url"].toObject();
                 info.favicon = meta_url["favicon"].toString();
