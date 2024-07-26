@@ -59,7 +59,7 @@
     "quant": "q4_0",
     "type": "Llama",
     "description": "<strong>Bilingual model (English & Chinese) with 16k context</strong><br><ul><li>Supports English and Chinese language</li><li>Supports context length of up to 16384</li><li>Fast responses</li><li>Model for chatting</li><li>Accepts system prompts in ChatML format</li><li>Trained by 01.AI</li><li>Finetuned by 01.AI</li><li>License: <a href=\"https://www.apache.org/licenses/LICENSE-2.0.html/\">Apache 2.0</a></li></ul>",
-    "url": "https://huggingface.co/GPT4All-Community/Yi-1.5-9B-Chat-16K-GGUF",
+    "url": " https://huggingface.co/GPT4All-Community/Yi-1.5-9B-Chat-16K-GGUF/resolve/main/Yi-1.5-9B-Chat-16K-Q4_0.gguf",
 	  "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>\n",
 	  "systemPrompt": "<|im_start|>system\n Below is an instruction that describes a task. Write a response that appropriately completes the request.<|im_end|>\n"
   },
