@@ -936,5 +936,23 @@
 * 3Simplex (`@3Simplex`)
 * Community (beta testers, bug reporters, bindings authors)
 "
+  },
+  {
+    "version": "3.1.1",
+    "notes":
+"
+<b>&mdash; What's New &mdash;</b>
+* Ability to add OpenAI compatible remote models (#2683)
+
+<b>&mdash; Fixes &mdash;</b>
+* Update llama.cpp to cherry-pick Llama 3.1 RoPE fix. (#2758)
+",
+    "contributors":
+"
+* Adam Treat (Nomic AI)
+* Jared Van Bortel (Nomic AI)
+* Shiranui (@supersonictw)
+* Community (beta testers, bug reporters, bindings authors)
+"
   }
 ]
