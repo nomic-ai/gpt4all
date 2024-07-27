@@ -219,8 +219,13 @@ public:
         if (index < 0 || index >= m_chatItems.size()) return;
 
         ChatItem &item = m_chatItems[index];
-        item.sources = sources;
-        item.consolidatedSources = consolidateSources(sources);
+        if (sources.isEmpty()) {
+            item.sources.clear();
+            item.consolidatedSources.clear();
+        } else {
+            item.sources << sources;
+            item.consolidatedSources << consolidateSources(sources);
+        }
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {SourcesRole});
         emit dataChanged(createIndex(index, 0), createIndex(index, 0), {ConsolidatedSourcesRole});
     }
