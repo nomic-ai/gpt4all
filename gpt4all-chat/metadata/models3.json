@@ -386,5 +386,21 @@
     "systemPrompt": "",
     "description": "nomic-embed-text-v1.5",
     "url": "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf"
+  },
+  {
+    "order": "z",
+    "md5sum": "a8c5a783105f87a481543d4ed7d7586d",
+    "name": "Qwen2-1.5B-Instruct",
+    "filename": "qwen2-1_5b-instruct-q4_0.gguf",
+    "filesize": "937532800",
+    "requires": "3.0",
+    "ramrequired": "4",
+    "parameters": "1.5 billion",
+    "quant": "q4_0",
+    "type": "qwen2",
+    "description": "<ul><li>Very fast responses</li><li>Instruction based model</li><li>Usage of LocalDocs (RAG): Highly recommended</li><li>Trained and finetuned by Qwen (Alibaba Cloud)</li><li>License: <a href=\"https://www.apache.org/licenses/LICENSE-2.0.html/\">Apache 2.0</a></li></ul>",
+    "url": "https://huggingface.co/Qwen/Qwen2-1.5B-Instruct-GGUF/resolve/main/qwen2-1_5b-instruct-q4_0.gguf",
+    "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>",
+    "systemPrompt": "<|im_start|>system\nBelow is an instruction that describes a task. Write a response that appropriately completes the request.<|im_end|>\n"
   }
 ]
