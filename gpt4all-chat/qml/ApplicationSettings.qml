@@ -350,7 +350,7 @@ MySettingsTab {
             Layout.alignment: Qt.AlignRight
             // NOTE: indices match values of SuggestionMode enum, keep them in sync
             model: ListModel {
-                ListElement { name: qsTr("When chatting with LocalDocs") }
+                ListElement { name: qsTr("When source excerpts are cited") }
                 ListElement { name: qsTr("Whenever possible") }
                 ListElement { name: qsTr("Never") }
             }
