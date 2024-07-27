@@ -335,7 +335,7 @@ MySettingsTab {
             Layout.maximumWidth: 400
             Layout.alignment: Qt.AlignRight
             // NOTE: indices match values of SuggestionMode enum, keep them in sync
-            model: [ qsTr("When chatting with LocalDocs"), qsTr("Whenever possible"), qsTr("Never") ]
+            model: [ qsTr("When source excerpts are cited"), qsTr("Whenever possible"), qsTr("Never") ]
             Accessible.name: suggestionModeLabel.text
             Accessible.description: suggestionModeLabel.helpText
             onActivated: {

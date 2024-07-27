@@ -780,14 +780,14 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
 
 bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
         int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
-        int32_t repeat_penalty_tokens)
+        int32_t repeat_penalty_tokens, bool isToolCallResponse)
 {
     if (!isModelLoaded())
         return false;
 
     QList<SourceExcerpt> databaseResults;
     const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
-    if (!collectionList.isEmpty()) {
+    if (!collectionList.isEmpty() && !isToolCallResponse) {
         emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
         emit sourceExcerptsChanged(databaseResults);
     }
@@ -856,7 +856,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
         }
 
         SuggestionMode mode = MySettings::globalInstance()->suggestionMode();
-        if (mode == SuggestionMode::On || (!databaseResults.isEmpty() && mode == SuggestionMode::LocalDocsOnly))
+        if (mode == SuggestionMode::On || (mode == SuggestionMode::SourceExcerptsOnly && (!databaseResults.isEmpty() || isToolCallResponse)))
             generateQuestions(elapsed);
         else
             emit responseStopped(elapsed);
@@ -885,7 +885,7 @@ bool ChatLLM::toolCallInternal(const QString &toolCall, int32_t n_predict, int32
     } else {
         qWarning() << "WARNING: Could not find the tool for " << toolCall;
         return promptInternal(QList<QString>()/*collectionList*/, QString() /*prompt*/, promptTemplate,
-            n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens);
+            n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, true /*isToolCallResponse*/);
     }
 
     const QString apiKey = MySettings::globalInstance()->braveSearchAPIKey();
@@ -897,7 +897,7 @@ bool ChatLLM::toolCallInternal(const QString &toolCall, int32_t n_predict, int32
     emit sourceExcerptsChanged(braveResponse.second);
 
     return promptInternal(QList<QString>()/*collectionList*/, braveResponse.first, promptTemplate,
-        n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens);
+        n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, true /*isToolCallResponse*/);
 }
 
 void ChatLLM::setShouldBeLoaded(bool b)
