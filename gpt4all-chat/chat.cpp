@@ -116,6 +116,7 @@ void Chat::resetResponseState()
     if (m_responseInProgress && m_responseState == Chat::LocalDocsRetrieval)
         return;
 
+    m_sourceExcerpts = QList<SourceExcerpt>();
     m_generatedQuestions = QList<QString>();
     emit generatedQuestionsChanged();
     m_tokenSpeed = QString();
@@ -136,6 +137,7 @@ void Chat::prompt(const QString &prompt)
 void Chat::regenerateResponse()
 {
     const int index = m_chatModel->count() - 1;
+    m_sourceExcerpts = QList<SourceExcerpt>();
     m_chatModel->updateSources(index, QList<SourceExcerpt>());
     emit regenerateResponseRequested();
 }

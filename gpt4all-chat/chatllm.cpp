@@ -878,13 +878,13 @@ bool ChatLLM::toolCallInternal(const QString &toolCall, int32_t n_predict, int32
     static QRegularExpression re(R"(brave_search\.call\(query=\"([^\"]+)\"\))");
     QRegularExpressionMatch match = re.match(toolCall);
 
-    QString prompt("<|start_header_id|>ipython<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2");
+    QString promptTemplate("<|start_header_id|>ipython<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2");
     QString query;
     if (match.hasMatch()) {
         query = match.captured(1);
     } else {
         qWarning() << "WARNING: Could not find the tool for " << toolCall;
-        return promptInternal(QList<QString>()/*collectionList*/, prompt.arg(QString()), QString("%1") /*promptTemplate*/,
+        return promptInternal(QList<QString>()/*collectionList*/, QString() /*prompt*/, promptTemplate,
             n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens);
     }
 
@@ -896,7 +896,7 @@ bool ChatLLM::toolCallInternal(const QString &toolCall, int32_t n_predict, int32
 
     emit sourceExcerptsChanged(braveResponse.second);
 
-    return promptInternal(QList<QString>()/*collectionList*/, prompt.arg(braveResponse.first), QString("%1") /*promptTemplate*/,
+    return promptInternal(QList<QString>()/*collectionList*/, braveResponse.first, promptTemplate,
         n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens);
 }
 
