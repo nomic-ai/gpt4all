@@ -199,7 +199,7 @@ Q_SIGNALS:
 protected:
     bool promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
         int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
-        int32_t repeat_penalty_tokens);
+        int32_t repeat_penalty_tokens, bool isToolCallResponse = false);
     bool toolCallInternal(const QString &toolcall, int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
         int32_t repeat_penalty_tokens);
     bool handlePrompt(int32_t token);

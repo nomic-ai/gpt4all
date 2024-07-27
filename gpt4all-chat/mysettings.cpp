@@ -51,7 +51,7 @@ static const QVariantMap basicDefaults {
     { "saveChatsContext",         false },
     { "serverChat",               false },
     { "userDefaultModel",         "Application default" },
-    { "suggestionMode",           QVariant::fromValue(SuggestionMode::LocalDocsOnly) },
+    { "suggestionMode",           QVariant::fromValue(SuggestionMode::SourceExcerptsOnly) },
     { "localdocs/chunkSize",      512 },
     { "localdocs/retrievalSize",  3 },
     { "localdocs/showReferences", true },

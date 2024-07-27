@@ -20,9 +20,9 @@ namespace MySettingsEnums {
      *       ApplicationSettings.qml, as well as the corresponding name lists in mysettings.cpp */
 
     enum class SuggestionMode {
-        LocalDocsOnly = 0,
-        On            = 1,
-        Off           = 2,
+        SourceExcerptsOnly = 0,
+        On                 = 1,
+        Off                = 2,
     };
     Q_ENUM_NS(SuggestionMode)
 
