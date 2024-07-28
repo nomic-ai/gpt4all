@@ -1292,11 +1292,11 @@ Rectangle {
                                                                 sourceSize.height: 24
                                                                 mipmap: true
                                                                 source: {
-                                                                    if (modelData.file.endsWith(".txt"))
+                                                                    if (modelData.file.toLowerCase().endsWith(".txt"))
                                                                         return "qrc:/gpt4all/icons/file-txt.svg"
-                                                                    else if (modelData.file.endsWith(".pdf"))
+                                                                    else if (modelData.file.toLowerCase().endsWith(".pdf"))
                                                                         return "qrc:/gpt4all/icons/file-pdf.svg"
-                                                                    else if (modelData.file.endsWith(".md"))
+                                                                    else if (modelData.file.toLowerCase().endsWith(".md"))
                                                                         return "qrc:/gpt4all/icons/file-md.svg"
                                                                     else
                                                                         return "qrc:/gpt4all/icons/file.svg"
