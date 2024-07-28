@@ -62,17 +62,24 @@ static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs)
 
 static bool compareVersions(const QString &a, const QString &b)
 {
+    QRegularExpression regex("(\\d+)");
     QStringList aParts = a.split('.');
     QStringList bParts = b.split('.');
+    Q_ASSERT(aParts.size() == 3);
+    Q_ASSERT(bParts.size() == 3);
 
     for (int i = 0; i < std::min(aParts.size(), bParts.size()); ++i) {
-        int aInt = aParts[i].toInt();
-        int bInt = bParts[i].toInt();
-
-        if (aInt > bInt) {
-            return true;
-        } else if (aInt < bInt) {
-            return false;
+        QRegularExpressionMatch aMatch = regex.match(aParts[i]);
+        QRegularExpressionMatch bMatch = regex.match(bParts[i]);
+        Q_ASSERT(aMatch.hasMatch() && bMatch.hasMatch());
+        if (aMatch.hasMatch() && bMatch.hasMatch()) {
+            int aInt = aMatch.captured(1).toInt();
+            int bInt = bMatch.captured(1).toInt();
+            if (aInt > bInt) {
+                return true;
+            } else if (aInt < bInt) {
+                return false;
+            }
         }
     }
 
