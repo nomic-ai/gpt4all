@@ -65,11 +65,11 @@ static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs)
 
 std::strong_ordering Download::compareAppVersions(const QString &a, const QString &b)
 {
-    static QRegularExpression versionRegex(R"(^(\d+)\.(\d+)\.(\d+)(-.*)?$)");
+    static QRegularExpression versionRegex(R"(^(\d+(?:\.\d+){0,2})(-.*)?$)");
 
-    // For fallback, make sure a2 < a10
-    QCollator compareFallback(QLocale(QLocale::English, QLocale::UnitedStates));
-    compareFallback.setNumericMode(true);
+    // When comparing versions, make sure a2 < a10.
+    QCollator versionCollator(QLocale(QLocale::English, QLocale::UnitedStates));
+    versionCollator.setNumericMode(true);
 
     QRegularExpressionMatch aMatch = versionRegex.match(a);
     QRegularExpressionMatch bMatch = versionRegex.match(b);
@@ -82,24 +82,33 @@ std::strong_ordering Download::compareAppVersions(const QString &a, const QStrin
 
     // Compare invalid versions. fooa < foob
     if (!aMatch.hasMatch() && !bMatch.hasMatch())
-        return compareFallback.compare(a, b) <=> 0; // lexiographic comparison
+        return versionCollator.compare(a, b) <=> 0; // lexicographic comparison
 
     // Compare first three components. 3.0.0 < 3.0.1
-    for (int i = 1; i < 4; i++) {
-        int aInt = aMatch.captured(i).toInt();
-        int bInt = bMatch.captured(i).toInt();
+    QStringList aParts = aMatch.captured(1).split('.');
+    QStringList bParts = bMatch.captured(1).split('.');
+    for (int i = 0; i < qMax(aParts.size(), bParts.size()); i++) {
+        bool ok = false;
+        int aInt = aParts.value(i, "0").toInt(&ok);
+        Q_ASSERT(ok);
+        int bInt = bParts.value(i, "0").toInt(&ok);
+        Q_ASSERT(ok);
         if (auto diff = aInt <=> bInt; diff != 0)
             return diff; // version with lower component compares as lower
     }
 
     // Check for a prerelease suffix. 3.0.0-rc1 < 3.0.0 -> hasCaptured < !hasCaptured
-    auto diff = bMatch.hasCaptured(4) <=> aMatch.hasCaptured(4);
-    Q_ASSERT(diff != 0); // expect at most one argument to be a prerelease
+    auto diff = bMatch.hasCaptured(2) <=> aMatch.hasCaptured(2);
     if (diff != 0)
         return diff; // version *with* suffix compares as lower
 
-    // Fall back to lexiographic comparison of suffix.
-    return compareFallback.compare(aMatch.captured(4), bMatch.captured(4)) <=> 0;
+    // Lexicographic comparison of suffix. 3.0.0-rc1 < 3.0.0-rc2
+    if (aMatch.hasCaptured(2) && bMatch.hasCaptured(2)) {
+        if (auto diff = versionCollator.compare(aMatch.captured(2), bMatch.captured(2)); diff != 0)
+            return diff <=> 0;
+    }
+
+    return std::strong_ordering::equal;
 }
 
 ReleaseInfo Download::releaseInfo() const
