@@ -5,6 +5,7 @@
 #include "network.h"
 
 #include <QByteArray>
+#include <QCollator>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QGlobalStatic>
@@ -14,6 +15,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QLocale>
 #include <QNetworkRequest>
 #include <QPair>
 #include <QSettings>
@@ -63,25 +65,41 @@ static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs)
 
 std::strong_ordering Download::compareAppVersions(const QString &a, const QString &b)
 {
-    QRegularExpression regex("(\\d+)");
-    QStringList aParts = a.split('.');
-    QStringList bParts = b.split('.');
-    Q_ASSERT(aParts.size() == 3);
-    Q_ASSERT(bParts.size() == 3);
+    static QRegularExpression versionRegex(R"(^(\d+)\.(\d+)\.(\d+)(-.*)?$)");
 
-    for (int i = 0; i < std::min(aParts.size(), bParts.size()); ++i) {
-        QRegularExpressionMatch aMatch = regex.match(aParts[i]);
-        QRegularExpressionMatch bMatch = regex.match(bParts[i]);
-        Q_ASSERT(aMatch.hasMatch() && bMatch.hasMatch());
-        if (aMatch.hasMatch() && bMatch.hasMatch()) {
-            int aInt = aMatch.captured(1).toInt();
-            int bInt = bMatch.captured(1).toInt();
-            if (auto diff = aInt <=> bInt; diff != 0)
-                return diff;
-        }
+    // For fallback, make sure a2 < a10
+    QCollator compareFallback(QLocale(QLocale::English, QLocale::UnitedStates));
+    compareFallback.setNumericMode(true);
+
+    QRegularExpressionMatch aMatch = versionRegex.match(a);
+    QRegularExpressionMatch bMatch = versionRegex.match(b);
+
+    Q_ASSERT(aMatch.hasMatch() && bMatch.hasMatch()); // expect valid versions
+
+    // Check for an invalid version. foo < 3.0.0 -> !hasMatch < hasMatch
+    if (auto diff = aMatch.hasMatch() <=> bMatch.hasMatch(); diff != 0)
+        return diff; // invalid version compares as lower
+
+    // Compare invalid versions. fooa < foob
+    if (!aMatch.hasMatch() && !bMatch.hasMatch())
+        return compareFallback.compare(a, b) <=> 0; // lexiographic comparison
+
+    // Compare first three components. 3.0.0 < 3.0.1
+    for (int i = 1; i < 4; i++) {
+        int aInt = aMatch.captured(i).toInt();
+        int bInt = bMatch.captured(i).toInt();
+        if (auto diff = aInt <=> bInt; diff != 0)
+            return diff; // version with lower component compares as lower
     }
 
-    return aParts.size() <=> bParts.size();
+    // Check for a prerelease suffix. 3.0.0-rc1 < 3.0.0 -> hasCaptured < !hasCaptured
+    auto diff = bMatch.hasCaptured(4) <=> aMatch.hasCaptured(4);
+    Q_ASSERT(diff != 0); // expect at most one argument to be a prerelease
+    if (diff != 0)
+        return diff; // version *with* suffix compares as lower
+
+    // Fall back to lexiographic comparison of suffix.
+    return compareFallback.compare(aMatch.captured(4), bMatch.captured(4)) <=> 0;
 }
 
 ReleaseInfo Download::releaseInfo() const
