@@ -28,6 +28,7 @@
 #include <QtLogging>
 
 #include <algorithm>
+#include <compare>
 #include <cstddef>
 #include <utility>
 
@@ -60,7 +61,7 @@ static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs)
     return lhs.version == rhs.version;
 }
 
-static bool compareVersions(const QString &a, const QString &b)
+std::strong_ordering Download::compareAppVersions(const QString &a, const QString &b)
 {
     QRegularExpression regex("(\\d+)");
     QStringList aParts = a.split('.');
@@ -75,15 +76,12 @@ static bool compareVersions(const QString &a, const QString &b)
         if (aMatch.hasMatch() && bMatch.hasMatch()) {
             int aInt = aMatch.captured(1).toInt();
             int bInt = bMatch.captured(1).toInt();
-            if (aInt > bInt) {
-                return true;
-            } else if (aInt < bInt) {
-                return false;
-            }
+            if (auto diff = aInt <=> bInt; diff != 0)
+                return diff;
         }
     }
 
-    return aParts.size() > bParts.size();
+    return aParts.size() <=> bParts.size();
 }
 
 ReleaseInfo Download::releaseInfo() const
@@ -99,11 +97,11 @@ ReleaseInfo Download::releaseInfo() const
 bool Download::hasNewerRelease() const
 {
     const QString currentVersion = QCoreApplication::applicationVersion();
-    QList<QString> versions = m_releaseMap.keys();
-    std::sort(versions.begin(), versions.end(), compareVersions);
-    if (versions.isEmpty())
-        return false;
-    return compareVersions(versions.first(), currentVersion);
+    for (const auto &version : m_releaseMap.keys()) {
+        if (compareAppVersions(version, currentVersion) > 0)
+            return true;
+    }
+    return false;
 }
 
 bool Download::isFirstStart(bool writeVersion) const

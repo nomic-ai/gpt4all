@@ -1,5 +1,6 @@
 #include "modellist.h"
 
+#include "download.h"
 #include "mysettings.h"
 #include "network.h"
 
@@ -33,7 +34,6 @@
 #include <QtLogging>
 
 #include <algorithm>
-#include <compare>
 #include <cstddef>
 #include <iterator>
 #include <string>
@@ -1442,29 +1442,6 @@ void ModelList::updateDataForSettings()
     emit dataChanged(index(0, 0), index(m_models.size() - 1, 0));
 }
 
-static std::strong_ordering compareVersions(const QString &a, const QString &b)
-{
-    QRegularExpression regex("(\\d+)");
-    QStringList aParts = a.split('.');
-    QStringList bParts = b.split('.');
-    Q_ASSERT(aParts.size() == 3);
-    Q_ASSERT(bParts.size() == 3);
-
-    for (int i = 0; i < std::min(aParts.size(), bParts.size()); ++i) {
-        QRegularExpressionMatch aMatch = regex.match(aParts[i]);
-        QRegularExpressionMatch bMatch = regex.match(bParts[i]);
-        Q_ASSERT(aMatch.hasMatch() && bMatch.hasMatch());
-        if (aMatch.hasMatch() && bMatch.hasMatch()) {
-            int aInt = aMatch.captured(1).toInt();
-            int bInt = bMatch.captured(1).toInt();
-            if (auto diff = aInt <=> bInt; diff != 0)
-                return diff;
-        }
-    }
-
-    return aParts.size() <=> bParts.size();
-}
-
 void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
 {
     QJsonParseError err;
@@ -1516,11 +1493,11 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             continue;
 
         // If the current version is strictly less than required version, then skip
-        if (!requiresVersion.isEmpty() && compareVersions(currentVersion, requiresVersion) < 0)
+        if (!requiresVersion.isEmpty() && Download::compareAppVersions(currentVersion, requiresVersion) < 0)
             continue;
 
         // If the version removed is less than or equal to the current version, then skip
-        if (!versionRemoved.isEmpty() && compareVersions(versionRemoved, currentVersion) <= 0)
+        if (!versionRemoved.isEmpty() && Download::compareAppVersions(versionRemoved, currentVersion) <= 0)
             continue;
 
         modelFilesize = ModelList::toFileSize(modelFilesize.toULongLong());
