@@ -115,7 +115,9 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_reloadingToChangeVariant(false)
     , m_processedSystemPrompt(false)
     , m_restoreStateFromText(false)
+    , m_checkToolCall(false)
     , m_maybeToolCall(false)
+    , m_foundToolCall(false)
 {
     moveToThread(&m_llmThread);
     connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
@@ -705,34 +707,6 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
         return false;
     }
 
-    // Only valid for llama 3.1 instruct
-    if (m_modelInfo.filename().startsWith("Meta-Llama-3.1-8B-Instruct")) {
-        // Based on https://llama.meta.com/docs/model-cards-and-prompt-formats/llama3_1/#built-in-python-based-tool-calling
-        // For brave_search and wolfram_alpha ipython is always used
-
-        // <|python_tag|>
-        // brave_search.call(query="...")
-        // <|eom_id|>
-        const int eom_id = 128008;
-        const int python_tag = 128010;
-
-        // If we have a built-in tool call, then it should be the first token
-        const bool isFirstResponseToken = m_promptResponseTokens == m_promptTokens;
-        Q_ASSERT(token != python_tag || isFirstResponseToken);
-        if (isFirstResponseToken && token == python_tag) {
-            m_maybeToolCall = true;
-            ++m_promptResponseTokens;
-            return !m_stopGenerating;
-        }
-
-        // Check for end of built-in tool call
-        Q_ASSERT(token != eom_id || !m_maybeToolCall);
-        if (token == eom_id) {
-            ++m_promptResponseTokens;
-            return false;
-        }
-    }
-
     // m_promptResponseTokens is related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
     ++m_promptResponseTokens;
@@ -740,7 +714,25 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
     Q_ASSERT(!response.empty());
     m_response.append(response);
 
-    if (!m_maybeToolCall)
+    // If we're checking for a tool called and the response is equal or exceeds 11 chars
+    // then we check
+    if (m_checkToolCall && m_response.size() >= 11) {
+        if (m_response.starts_with("<tool_call>")) {
+            m_maybeToolCall = true;
+            m_response.erase(0, 11);
+        }
+        m_checkToolCall = false;
+    }
+
+    // Check if we're at the end of tool call and erase the end tag
+    if (m_maybeToolCall && m_response.ends_with("</tool_call>")) {
+        m_foundToolCall = true;
+        m_response.erase(m_response.length() - 12);
+        return false;
+    }
+
+    // If we're not checking for tool call and haven't detected one, then send along the response
+    if (!m_checkToolCall && !m_maybeToolCall)
         emit responseChanged(QString::fromStdString(remove_leading_whitespace(m_response)));
 
     return !m_stopGenerating;
@@ -822,8 +814,12 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
                                     /*allowContextShift*/ true, m_ctx);
         m_ctx.n_predict = old_n_predict; // now we are ready for a response
     }
+
+    m_checkToolCall = !isToolCallResponse; // We can't handle recursive tool calls right now
     m_llModelInfo.model->prompt(prompt.toStdString(), promptTemplate.toStdString(), promptFunc, responseFunc,
                                 /*allowContextShift*/ true, m_ctx);
+    m_checkToolCall = false;
+    m_maybeToolCall = false;
 #if defined(DEBUG)
     printf("\n");
     fflush(stdout);
@@ -831,8 +827,8 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     m_timer->stop();
     qint64 elapsed = totalTime.elapsed();
     std::string trimmed = trim_whitespace(m_response);
-    if (m_maybeToolCall) {
-        m_maybeToolCall = false;
+    if (m_foundToolCall) {
+        m_foundToolCall = false;
         m_ctx.n_past = std::max(0, m_ctx.n_past);
         m_ctx.tokens.erase(m_ctx.tokens.end() - m_promptResponseTokens, m_ctx.tokens.end());
         m_promptResponseTokens = 0;
@@ -860,24 +856,45 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
 bool ChatLLM::toolCallInternal(const QString &toolCall, int32_t n_predict, int32_t top_k, float top_p,
     float min_p, float temp, int32_t n_batch, float repeat_penalty, int32_t repeat_penalty_tokens)
 {
-    Q_ASSERT(m_modelInfo.filename().startsWith("Meta-Llama-3.1-8B-Instruct"));
-    emit toolCalled(tr("searching web..."));
+    QString toolTemplate = MySettings::globalInstance()->modelToolTemplate(m_modelInfo);
+    if (toolTemplate.isEmpty()) {
+        // FIXME: Not sure what to do here. The model attempted a tool call, but there is no way for
+        // us to process it. We should probably not even attempt further generation and just show an
+        // error in the chat somehow?
+        qWarning() << "WARNING: The model attempted a toolcall, but there is no valid tool template for this model" << toolCall;
+        return promptInternal(QList<QString>()/*collectionList*/, QString() /*prompt*/,
+                              MySettings::globalInstance()->modelPromptTemplate(m_modelInfo),
+                              n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, true /*isToolCallResponse*/);
+    }
 
-    // Based on https://llama.meta.com/docs/model-cards-and-prompt-formats/llama3_1/#built-in-python-based-tool-calling
-    // For brave_search and wolfram_alpha ipython is always used
+    QJsonParseError err;
+    QJsonDocument toolCallDoc = QJsonDocument::fromJson(toolCall.toUtf8(), &err);
 
-    static QRegularExpression re(R"(brave_search\.call\(query=\"([^\"]+)\"\))");
-    QRegularExpressionMatch match = re.match(toolCall);
+    if (toolCallDoc.isNull() || err.error != QJsonParseError::NoError || !toolCallDoc.isObject()) {
+        qWarning() << "WARNING: The tool call had null or invalid json " << toolCall;
+        return promptInternal(QList<QString>()/*collectionList*/, QString() /*prompt*/, toolTemplate,
+                              n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, true /*isToolCallResponse*/);
+    }
 
-    QString promptTemplate("<|start_header_id|>ipython<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2");
-    QString query;
-    if (match.hasMatch()) {
-        query = match.captured(1);
-    } else {
-        qWarning() << "WARNING: Could not find the tool for " << toolCall;
-        return promptInternal(QList<QString>()/*collectionList*/, QString() /*prompt*/, promptTemplate,
+    QJsonObject rootObject = toolCallDoc.object();
+    if (!rootObject.contains("name") || !rootObject.contains("arguments")) {
+        qWarning() << "WARNING: The tool call did not have required name and argument objects " << toolCall;
+        return promptInternal(QList<QString>()/*collectionList*/, QString() /*prompt*/, toolTemplate,
             n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, true /*isToolCallResponse*/);
     }
+
+    const QString tool = toolCallDoc["name"].toString();
+    const QJsonObject args = toolCallDoc["arguments"].toObject();
+
+    if (tool != "brave_search" || !args.contains("query")) {
+        qWarning() << "WARNING: Could not find the tool and correct arguments for " << toolCall;
+        return promptInternal(QList<QString>()/*collectionList*/, QString() /*prompt*/, toolTemplate,
+            n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, true /*isToolCallResponse*/);
+    }
+
+    const QString query = args["query"].toString();
+
+    emit toolCalled(tr("searching web..."));
 
     const QString apiKey = MySettings::globalInstance()->braveSearchAPIKey();
     Q_ASSERT(apiKey != "");
@@ -887,7 +904,7 @@ bool ChatLLM::toolCallInternal(const QString &toolCall, int32_t n_predict, int32
 
     emit sourceExcerptsChanged(braveResponse.second);
 
-    return promptInternal(QList<QString>()/*collectionList*/, braveResponse.first, promptTemplate,
+    return promptInternal(QList<QString>()/*collectionList*/, braveResponse.first, toolTemplate,
         n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens, true /*isToolCallResponse*/);
 }
 

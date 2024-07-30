@@ -242,7 +242,9 @@ private:
     bool m_reloadingToChangeVariant;
     bool m_processedSystemPrompt;
     bool m_restoreStateFromText;
+    bool m_checkToolCall;
     bool m_maybeToolCall;
+    bool m_foundToolCall;
     // m_pristineLoadedState is set if saveSate is unnecessary, either because:
     // - an unload was queued during LLModel::restoreState()
     // - the chat will be restored from text and hasn't been interacted with yet

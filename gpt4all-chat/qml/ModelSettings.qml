@@ -209,7 +209,7 @@ MySettingsTab {
                 id: promptTemplateLabelHelp
                 text: qsTr("Must contain the string \"%1\" to be replaced with the user's input.")
                 color: theme.textErrorColor
-                visible: templateTextArea.text.indexOf("%1") === -1
+                visible: promptTemplateTextArea.text.indexOf("%1") === -1
                 wrapMode: TextArea.Wrap
             }
         }
@@ -220,27 +220,27 @@ MySettingsTab {
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
-            Layout.minimumHeight: Math.max(100, templateTextArea.contentHeight + 20)
+            Layout.minimumHeight: Math.max(100, promptTemplateTextArea.contentHeight + 20)
             color: "transparent"
             clip: true
             MyTextArea {
-                id: templateTextArea
+                id: promptTemplateTextArea
                 anchors.fill: parent
                 text: root.currentModelInfo.promptTemplate
                 Connections {
                     target: MySettings
                     function onPromptTemplateChanged() {
-                        templateTextArea.text = root.currentModelInfo.promptTemplate;
+                        promptTemplateTextArea.text = root.currentModelInfo.promptTemplate;
                     }
                 }
                 Connections {
                     target: root
                     function onCurrentModelInfoChanged() {
-                        templateTextArea.text = root.currentModelInfo.promptTemplate;
+                        promptTemplateTextArea.text = root.currentModelInfo.promptTemplate;
                     }
                 }
                 onTextChanged: {
-                    if (templateTextArea.text.indexOf("%1") !== -1) {
+                    if (promptTemplateTextArea.text.indexOf("%1") !== -1) {
                         MySettings.setModelPromptTemplate(root.currentModelInfo, text)
                     }
                 }
@@ -251,17 +251,63 @@ MySettingsTab {
         }
 
         MySettingsLabel {
+            Layout.row: 11
+            Layout.column: 0
+            Layout.columnSpan: 2
+            Layout.topMargin: 15
+            id: toolTemplateLabel
+            text: qsTr("Tool Template")
+            helpText: qsTr("The template that allows tool calls to inject information into the context.")
+        }
+
+        Rectangle {
+            id: toolTemplate
+            Layout.row: 12
+            Layout.column: 0
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.minimumHeight: Math.max(100, toolTemplateTextArea.contentHeight + 20)
+            color: "transparent"
+            clip: true
+            MyTextArea {
+                id: toolTemplateTextArea
+                anchors.fill: parent
+                text: root.currentModelInfo.toolTemplate
+                Connections {
+                    target: MySettings
+                    function onToolTemplateChanged() {
+                        toolTemplateTextArea.text = root.currentModelInfo.toolTemplate;
+                    }
+                }
+                Connections {
+                    target: root
+                    function onCurrentModelInfoChanged() {
+                        toolTemplateTextArea.text = root.currentModelInfo.toolTemplate;
+                    }
+                }
+                onTextChanged: {
+                    if (toolTemplateTextArea.text.indexOf("%1") !== -1) {
+                        MySettings.setModelToolTemplate(root.currentModelInfo, text)
+                    }
+                }
+                Accessible.role: Accessible.EditableText
+                Accessible.name: toolTemplateLabel.text
+                Accessible.description: toolTemplateLabel.text
+            }
+        }
+
+        MySettingsLabel {
             id: chatNamePromptLabel
             text: qsTr("Chat Name Prompt")
             helpText: qsTr("Prompt used to automatically generate chat names.")
-            Layout.row: 11
+            Layout.row: 13
             Layout.column: 0
             Layout.topMargin: 15
         }
 
         Rectangle {
             id: chatNamePrompt
-            Layout.row: 12
+            Layout.row: 14
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -297,14 +343,14 @@ MySettingsTab {
             id: suggestedFollowUpPromptLabel
             text: qsTr("Suggested FollowUp Prompt")
             helpText: qsTr("Prompt used to generate suggested follow-up questions.")
-            Layout.row: 13
+            Layout.row: 15
             Layout.column: 0
             Layout.topMargin: 15
         }
 
         Rectangle {
             id: suggestedFollowUpPrompt
-            Layout.row: 14
+            Layout.row: 16
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.fillWidth: true
@@ -337,7 +383,7 @@ MySettingsTab {
         }
 
         GridLayout {
-            Layout.row: 15
+            Layout.row: 17
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
@@ -833,7 +879,7 @@ MySettingsTab {
         }
 
         Rectangle {
-            Layout.row: 16
+            Layout.row: 18
             Layout.column: 0
             Layout.columnSpan: 2
             Layout.topMargin: 15
