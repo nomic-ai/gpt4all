@@ -5,6 +5,7 @@
 #include "network.h"
 
 #include <QByteArray>
+#include <QCollator>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QGlobalStatic>
@@ -14,6 +15,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QLocale>
 #include <QNetworkRequest>
 #include <QPair>
 #include <QSettings>
@@ -28,6 +30,7 @@
 #include <QtLogging>
 
 #include <algorithm>
+#include <compare>
 #include <cstddef>
 #include <utility>
 
@@ -60,30 +63,58 @@ static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs)
     return lhs.version == rhs.version;
 }
 
-static bool compareVersions(const QString &a, const QString &b)
+std::strong_ordering Download::compareAppVersions(const QString &a, const QString &b)
 {
-    QRegularExpression regex("(\\d+)");
-    QStringList aParts = a.split('.');
-    QStringList bParts = b.split('.');
-    Q_ASSERT(aParts.size() == 3);
-    Q_ASSERT(bParts.size() == 3);
+    static QRegularExpression versionRegex(R"(^(\d+(?:\.\d+){0,2})(-.+)?$)");
 
-    for (int i = 0; i < std::min(aParts.size(), bParts.size()); ++i) {
-        QRegularExpressionMatch aMatch = regex.match(aParts[i]);
-        QRegularExpressionMatch bMatch = regex.match(bParts[i]);
-        Q_ASSERT(aMatch.hasMatch() && bMatch.hasMatch());
-        if (aMatch.hasMatch() && bMatch.hasMatch()) {
-            int aInt = aMatch.captured(1).toInt();
-            int bInt = bMatch.captured(1).toInt();
-            if (aInt > bInt) {
-                return true;
-            } else if (aInt < bInt) {
-                return false;
-            }
-        }
+    // When comparing versions, make sure a2 < a10.
+    QCollator versionCollator(QLocale(QLocale::English, QLocale::UnitedStates));
+    versionCollator.setNumericMode(true);
+
+    QRegularExpressionMatch aMatch = versionRegex.match(a);
+    QRegularExpressionMatch bMatch = versionRegex.match(b);
+
+    Q_ASSERT(aMatch.hasMatch() && bMatch.hasMatch()); // expect valid versions
+
+    // Check for an invalid version. foo < 3.0.0 -> !hasMatch < hasMatch
+    if (auto diff = aMatch.hasMatch() <=> bMatch.hasMatch(); diff != 0)
+        return diff; // invalid version compares as lower
+
+    // Compare invalid versions. fooa < foob
+    if (!aMatch.hasMatch() && !bMatch.hasMatch())
+        return versionCollator.compare(a, b) <=> 0; // lexicographic comparison
+
+    // Compare first three components. 3.0.0 < 3.0.1
+    QStringList aParts = aMatch.captured(1).split('.');
+    QStringList bParts = bMatch.captured(1).split('.');
+    for (int i = 0; i < qMax(aParts.size(), bParts.size()); i++) {
+        bool ok = false;
+        int aInt = aParts.value(i, "0").toInt(&ok);
+        Q_ASSERT(ok);
+        int bInt = bParts.value(i, "0").toInt(&ok);
+        Q_ASSERT(ok);
+        if (auto diff = aInt <=> bInt; diff != 0)
+            return diff; // version with lower component compares as lower
     }
 
-    return aParts.size() > bParts.size();
+    // Check for a pre/post-release suffix. 3.0.0-dev0 < 3.0.0-rc1 < 3.0.0 < 3.0.0-post1
+    auto getSuffixOrder = [](const QRegularExpressionMatch &match) -> int {
+        QString suffix = match.captured(2);
+        return suffix.startsWith("-dev") ? 0 :
+               suffix.startsWith("-rc")  ? 1 :
+               suffix.isEmpty()          ? 2 :
+               /* some other suffix */     3;
+    };
+    if (auto diff = getSuffixOrder(aMatch) <=> getSuffixOrder(bMatch); diff != 0)
+        return diff; // different suffix types
+
+    // Lexicographic comparison of suffix. 3.0.0-rc1 < 3.0.0-rc2
+    if (aMatch.hasCaptured(2) && bMatch.hasCaptured(2)) {
+        if (auto diff = versionCollator.compare(aMatch.captured(2), bMatch.captured(2)); diff != 0)
+            return diff <=> 0;
+    }
+
+    return std::strong_ordering::equal;
 }
 
 ReleaseInfo Download::releaseInfo() const
@@ -99,11 +130,11 @@ ReleaseInfo Download::releaseInfo() const
 bool Download::hasNewerRelease() const
 {
     const QString currentVersion = QCoreApplication::applicationVersion();
-    QList<QString> versions = m_releaseMap.keys();
-    std::sort(versions.begin(), versions.end(), compareVersions);
-    if (versions.isEmpty())
-        return false;
-    return compareVersions(versions.first(), currentVersion);
+    for (const auto &version : m_releaseMap.keys()) {
+        if (compareAppVersions(version, currentVersion) > 0)
+            return true;
+    }
+    return false;
 }
 
 bool Download::isFirstStart(bool writeVersion) const
