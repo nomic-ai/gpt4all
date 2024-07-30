@@ -97,7 +97,7 @@ protected:
     // them as they are only called from the default implementation of 'prompt' which we override and
     // completely replace
 
-    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) const override {
+    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) override {
         (void)ctx;
         (void)str;
         (void)special;

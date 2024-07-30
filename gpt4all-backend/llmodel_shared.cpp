@@ -97,6 +97,7 @@ void LLModel::prompt(const std::string &prompt,
     }
     if (promptCtx.n_past < promptCtx.tokens.size())
         promptCtx.tokens.resize(promptCtx.n_past);
+    m_tokenize_last_token = promptCtx.tokens.empty() ? -1 : promptCtx.tokens.back(); // not serialized
 
     // parse the prompt template
     std::vector<std::smatch> placeholders;

@@ -529,13 +529,19 @@ size_t LLamaModel::restoreState(const uint8_t *src)
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
-std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str, bool special) const
+std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str, bool special)
 {
-    const bool atStart = ctx.n_past == 0;
+    bool atStart = m_tokenize_last_token == -1;
+    bool insertSpace = atStart || (
+        llama_token_get_attr(d_ptr->model, m_tokenize_last_token)
+        & (LLAMA_TOKEN_ATTR_CONTROL | LLAMA_TOKEN_ATTR_USER_DEFINED | LLAMA_TOKEN_ATTR_UNKNOWN)
+    );
     std::vector<LLModel::Token> fres(str.length() + 4);
     int32_t fres_len = llama_tokenize(d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(),
-                                      /*add_special*/ atStart, /*parse_special*/ special);
+                                      /*add_special*/ atStart, /*parse_special*/ special, /*insert_space*/ insertSpace);
     fres.resize(fres_len);
+    if (fres_len)
+        m_tokenize_last_token = fres.back();
     return fres;
 }
 
@@ -953,7 +959,7 @@ void LLamaModel::embedInternal(
         }
 
         tokens.resize(text.length()+4);
-        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), wantBOS, false);
+        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), wantBOS, false, false);
         if (n_tokens) {
             (void)eos_token;
             (void)useBOS;

@@ -53,7 +53,7 @@ private:
     bool m_supportsCompletion = false;
 
 protected:
-    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) const override;
+    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) override;
     std::string tokenToString(Token id) const override;
     Token sampleToken(PromptContext &ctx) const override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
