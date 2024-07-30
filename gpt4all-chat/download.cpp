@@ -65,7 +65,7 @@ static bool operator==(const ReleaseInfo& lhs, const ReleaseInfo& rhs)
 
 std::strong_ordering Download::compareAppVersions(const QString &a, const QString &b)
 {
-    static QRegularExpression versionRegex(R"(^(\d+(?:\.\d+){0,2})(-.*)?$)");
+    static QRegularExpression versionRegex(R"(^(\d+(?:\.\d+){0,2})(-.+)?$)");
 
     // When comparing versions, make sure a2 < a10.
     QCollator versionCollator(QLocale(QLocale::English, QLocale::UnitedStates));
@@ -97,10 +97,16 @@ std::strong_ordering Download::compareAppVersions(const QString &a, const QStrin
             return diff; // version with lower component compares as lower
     }
 
-    // Check for a prerelease suffix. 3.0.0-rc1 < 3.0.0 -> hasCaptured < !hasCaptured
-    auto diff = bMatch.hasCaptured(2) <=> aMatch.hasCaptured(2);
-    if (diff != 0)
-        return diff; // version *with* suffix compares as lower
+    // Check for a pre/post-release suffix. 3.0.0-dev0 < 3.0.0-rc1 < 3.0.0 < 3.0.0-post1
+    auto getSuffixOrder = [](const QRegularExpressionMatch &match) -> int {
+        QString suffix = match.captured(2);
+        return suffix.startsWith("-dev") ? 0 :
+               suffix.startsWith("-rc")  ? 1 :
+               suffix.isEmpty()          ? 2 :
+               /* some other suffix */     3;
+    };
+    if (auto diff = getSuffixOrder(aMatch) <=> getSuffixOrder(bMatch); diff != 0)
+        return diff; // different suffix types
 
     // Lexicographic comparison of suffix. 3.0.0-rc1 < 3.0.0-rc2
     if (aMatch.hasCaptured(2) && bMatch.hasCaptured(2)) {
