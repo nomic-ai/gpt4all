@@ -126,6 +126,8 @@ public:
     Q_INVOKABLE void setModelRepeatPenaltyTokens(const ModelInfo &info, int value, bool force = false);
     QString modelPromptTemplate(const ModelInfo &info) const;
     Q_INVOKABLE void setModelPromptTemplate(const ModelInfo &info, const QString &value, bool force = false);
+    QString modelToolTemplate(const ModelInfo &info) const;
+    Q_INVOKABLE void setModelToolTemplate(const ModelInfo &info, const QString &value, bool force = false);
     QString modelSystemPrompt(const ModelInfo &info) const;
     Q_INVOKABLE void setModelSystemPrompt(const ModelInfo &info, const QString &value, bool force = false);
     int modelContextLength(const ModelInfo &info) const;
@@ -217,6 +219,7 @@ Q_SIGNALS:
     void repeatPenaltyChanged(const ModelInfo &info);
     void repeatPenaltyTokensChanged(const ModelInfo &info);
     void promptTemplateChanged(const ModelInfo &info);
+    void toolTemplateChanged(const ModelInfo &info);
     void systemPromptChanged(const ModelInfo &info);
     void chatNamePromptChanged(const ModelInfo &info);
     void suggestedFollowUpPromptChanged(const ModelInfo &info);

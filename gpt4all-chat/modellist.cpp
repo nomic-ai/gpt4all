@@ -323,6 +323,17 @@ void ModelInfo::setPromptTemplate(const QString &t)
     m_promptTemplate = t;
 }
 
+QString ModelInfo::toolTemplate() const
+{
+    return MySettings::globalInstance()->modelToolTemplate(*this);
+}
+
+void ModelInfo::setToolTemplate(const QString &t)
+{
+    if (shouldSaveMetadata()) MySettings::globalInstance()->setModelToolTemplate(*this, t, true /*force*/);
+    m_toolTemplate = t;
+}
+
 QString ModelInfo::systemPrompt() const
 {
     return MySettings::globalInstance()->modelSystemPrompt(*this);
@@ -385,6 +396,7 @@ QVariantMap ModelInfo::getFields() const
         { "repeatPenalty",       m_repeatPenalty },
         { "repeatPenaltyTokens", m_repeatPenaltyTokens },
         { "promptTemplate",      m_promptTemplate },
+        { "toolTemplate",        m_toolTemplate },
         { "systemPrompt",        m_systemPrompt },
         { "chatNamePrompt",      m_chatNamePrompt },
         { "suggestedFollowUpPrompt", m_suggestedFollowUpPrompt },
@@ -504,6 +516,7 @@ ModelList::ModelList()
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::repeatPenaltyTokensChanged, this, &ModelList::updateDataForSettings);;
     connect(MySettings::globalInstance(), &MySettings::promptTemplateChanged, this, &ModelList::updateDataForSettings);
+    connect(MySettings::globalInstance(), &MySettings::toolTemplateChanged, this, &ModelList::updateDataForSettings);
     connect(MySettings::globalInstance(), &MySettings::systemPromptChanged, this, &ModelList::updateDataForSettings);
     connect(&m_networkManager, &QNetworkAccessManager::sslErrors, this, &ModelList::handleSslErrors);
 
@@ -776,6 +789,8 @@ QVariant ModelList::dataInternal(const ModelInfo *info, int role) const
             return info->repeatPenaltyTokens();
         case PromptTemplateRole:
             return info->promptTemplate();
+        case ToolTemplateRole:
+            return info->toolTemplate();
         case SystemPromptRole:
             return info->systemPrompt();
         case ChatNamePromptRole:
@@ -952,6 +967,8 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
                 info->setRepeatPenaltyTokens(value.toInt()); break;
             case PromptTemplateRole:
                 info->setPromptTemplate(value.toString()); break;
+            case ToolTemplateRole:
+                info->setToolTemplate(value.toString()); break;
             case SystemPromptRole:
                 info->setSystemPrompt(value.toString()); break;
             case ChatNamePromptRole:
@@ -1107,6 +1124,7 @@ QString ModelList::clone(const ModelInfo &model)
         { ModelList::RepeatPenaltyRole, model.repeatPenalty() },
         { ModelList::RepeatPenaltyTokensRole, model.repeatPenaltyTokens() },
         { ModelList::PromptTemplateRole, model.promptTemplate() },
+        { ModelList::ToolTemplateRole, model.toolTemplate() },
         { ModelList::SystemPromptRole, model.systemPrompt() },
         { ModelList::ChatNamePromptRole, model.chatNamePrompt() },
         { ModelList::SuggestedFollowUpPromptRole, model.suggestedFollowUpPrompt() },
@@ -1551,6 +1569,8 @@ void ModelList::parseModelsJsonFile(const QByteArray &jsonData, bool save)
             data.append({ ModelList::RepeatPenaltyTokensRole, obj["repeatPenaltyTokens"].toInt() });
         if (obj.contains("promptTemplate"))
             data.append({ ModelList::PromptTemplateRole, obj["promptTemplate"].toString() });
+        if (obj.contains("toolTemplate"))
+            data.append({ ModelList::ToolTemplateRole, obj["toolTemplate"].toString() });
         if (obj.contains("systemPrompt"))
             data.append({ ModelList::SystemPromptRole, obj["systemPrompt"].toString() });
         updateData(id, data);
@@ -1851,6 +1871,10 @@ void ModelList::updateModelsFromSettings()
         if (settings.contains(g + "/promptTemplate")) {
             const QString promptTemplate = settings.value(g + "/promptTemplate").toString();
             data.append({ ModelList::PromptTemplateRole, promptTemplate });
+        }
+        if (settings.contains(g + "/toolTemplate")) {
+            const QString toolTemplate = settings.value(g + "/toolTemplate").toString();
+            data.append({ ModelList::ToolTemplateRole, toolTemplate });
         }
         if (settings.contains(g + "/systemPrompt")) {
             const QString systemPrompt = settings.value(g + "/systemPrompt").toString();
