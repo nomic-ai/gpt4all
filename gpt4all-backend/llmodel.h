@@ -135,7 +135,6 @@ public:
         float   repeat_penalty = 1.10f;
         int32_t repeat_last_n = 64;     // last n tokens to penalize
         float   contextErase = 0.75f;   // percent of context to erase if we exceed the context window
-        int32_t n_last_batch_tokens = 0;
     };
 
     using ProgressCallback = std::function<bool(float progress)>;

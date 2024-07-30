@@ -145,9 +145,8 @@ static int llama_sample_top_p_top_k(
         float top_p,
         float min_p,
         float temp,
-        float repeat_penalty,
-        int32_t pos) {
-    auto logits = llama_get_logits_ith(ctx, pos);
+        float repeat_penalty) {
+    auto logits = llama_get_logits_ith(ctx, -1);
     auto n_vocab = llama_n_vocab(llama_get_model(ctx));
     // Populate initial list of all candidates
     std::vector<llama_token_data> candidates;
@@ -567,7 +566,7 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
     return llama_sample_top_p_top_k(d_ptr->ctx,
         promptCtx.tokens.data() + promptCtx.tokens.size() - n_prev_toks,
         n_prev_toks, promptCtx.top_k, promptCtx.top_p, promptCtx.min_p, promptCtx.temp,
-        promptCtx.repeat_penalty, promptCtx.n_last_batch_tokens - 1);
+        promptCtx.repeat_penalty);
 }
 
 bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
@@ -577,7 +576,6 @@ bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &toke
     llama_batch batch = llama_batch_init(tokens.size(), 0, 1);
 
     batch.n_tokens = tokens.size();
-    ctx.n_last_batch_tokens = tokens.size();
 
     for (int32_t i = 0; i < batch.n_tokens; i++) {
         batch.token   [i] = tokens[i];
