@@ -536,8 +536,10 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
         & (LLAMA_TOKEN_ATTR_CONTROL | LLAMA_TOKEN_ATTR_USER_DEFINED | LLAMA_TOKEN_ATTR_UNKNOWN)
     );
     std::vector<LLModel::Token> fres(str.length() + 4);
-    int32_t fres_len = llama_tokenize(d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(),
-                                      /*add_special*/ atStart, /*parse_special*/ special, /*insert_space*/ insertSpace);
+    int32_t fres_len = llama_tokenize_gpt4all(
+        d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), /*add_special*/ atStart,
+        /*parse_special*/ special, /*insert_space*/ insertSpace
+    );
     fres.resize(fres_len);
     if (fres_len)
         m_tokenize_last_token = fres.back();
@@ -957,7 +959,10 @@ void LLamaModel::embedInternal(
         }
 
         tokens.resize(text.length()+4);
-        int32_t n_tokens = llama_tokenize(d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), wantBOS, false, false);
+        int32_t n_tokens = llama_tokenize_gpt4all(
+            d_ptr->model, text.c_str(), text.length(), tokens.data(), tokens.size(), /*add_special*/ wantBOS,
+            /*parse_special*/ false, /*insert_space*/ false
+        );
         if (n_tokens) {
             (void)eos_token;
             (void)useBOS;
