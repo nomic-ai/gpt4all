@@ -8,6 +8,7 @@
 #include <iostream>
 #include <optional>
 #include <regex>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -87,6 +88,15 @@ void LLModel::prompt(const std::string &prompt,
         std::cerr << implementation().modelType() << " " << errorMessage << "\n";
         return;
     }
+
+    // make sure token cache matches decode offset
+    if (promptCtx.tokens.size() < promptCtx.n_past) {
+        std::ostringstream ss;
+        ss << "expected n_past to be at most " << promptCtx.tokens.size() << ", got " << promptCtx.n_past;
+        throw std::out_of_range(ss.str());
+    }
+    if (promptCtx.n_past < promptCtx.tokens.size())
+        promptCtx.tokens.resize(promptCtx.n_past);
 
     // parse the prompt template
     std::vector<std::smatch> placeholders;
@@ -201,8 +211,6 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
 
         size_t tokens = batch_end - i;
         for (size_t t = 0; t < tokens; ++t) {
-            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
-                promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(batch.at(t));
             promptCtx.n_past += 1;
             if (!promptCallback(batch.at(t)))
@@ -270,8 +278,6 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
 
         // Empty the cache
         for (auto t : cachedTokens) {
-            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
-                promptCtx.tokens.erase(promptCtx.tokens.begin());
             promptCtx.tokens.push_back(t);
             promptCtx.n_past += 1;
             //TODO: Conversion to std::string can be avoided here...
