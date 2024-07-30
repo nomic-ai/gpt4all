@@ -419,6 +419,7 @@ MySettingsTab {
             MyTextField {
                 id: temperatureField
                 text: root.currentModelInfo.temperature
+                inputMethodHints: Qt.ImhPreferNumbers
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
                 ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens.\nNOTE: Higher temperature gives more creative but less predictable outputs.")
@@ -443,6 +444,9 @@ MySettingsTab {
                 onEditingFinished: {
                     var val = parseFloat(text)
                     if (!isNaN(val)) {
+                        if (val < 0.000001) {
+                            val = 0.000001;
+                        }
                         MySettings.setModelTemperature(root.currentModelInfo, val)
                         focus = false
                     } else {
