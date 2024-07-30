@@ -432,13 +432,15 @@ MySettingsTab {
                 Connections {
                     target: MySettings
                     function onTemperatureChanged() {
-                        temperatureField.text = root.currentModelInfo.temperature;
+                        temperatureField.text = root.currentModelInfo.temperature.toLocaleString(
+                            Qt.locale().name, { maximumSignificantDigits: 6 });
                     }
                 }
                 Connections {
                     target: root
                     function onCurrentModelInfoChanged() {
-                        temperatureField.text = root.currentModelInfo.temperature;
+                        temperatureField.text = root.currentModelInfo.temperature.toLocaleString(
+                            Qt.locale().name, { maximumSignificantDigits: 6 });
                     }
                 }
                 onEditingFinished: {
@@ -446,6 +448,8 @@ MySettingsTab {
                     if (!isNaN(val)) {
                         if (val < 0.000001) {
                             val = 0.000001;
+                            temperatureField.text = val.toLocaleString(
+                                Qt.locale().name, { maximumSignificantDigits: 6 });
                         }
                         MySettings.setModelTemperature(root.currentModelInfo, val)
                         focus = false
