@@ -13,7 +13,8 @@
     "description": "<ul><li>Fast responses</li><li>Chat based model</li><li>Large context size of 128k</li><li>Accepts agentic system prompts in Llama 3.1 format</li><li>Trained by Meta</li><li>License: <a href=\"https://llama.meta.com/llama3_1/license/\">Meta Llama 3.1 Community License</a></li></ul>",
     "url": "https://huggingface.co/GPT4All-Community/Meta-Llama-3.1-8B-Instruct-128k/resolve/main/Meta-Llama-3.1-8B-Instruct-128k-Q4_0.gguf",
     "promptTemplate": "<|start_header_id|>user<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2",
-    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>"
+    "systemPrompt": "<|start_header_id|>system<|end_header_id|>\nCutting Knowledge Date: December 2023\n\nYou are a helpful assistant.<|eot_id|>",
+    "toolTemplate": "<|start_header_id|>ipython<|end_header_id|>\n\n%1<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n%2"
   },
   {
     "order": "b",
