@@ -15,6 +15,9 @@
 #include <vector>
 
 // TODO(cebtenzzre): replace this with llama_kv_cache_seq_shift for llamamodel (GPT-J needs this as-is)
+// FIXME(jared): if recalculate returns false, we leave n_past<tokens.size() and do not tell the caller to stop
+// FIXME(jared): if we get here during chat name or follow-up generation, bad things will happen when we try to restore
+// the old prompt context afterwards
 void LLModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
 {
     int n_keep = shouldAddBOS();
