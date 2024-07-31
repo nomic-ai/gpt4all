@@ -16,15 +16,19 @@
 
 using namespace Qt::Literals::StringLiterals;
 
-QPair<QString, QList<SourceExcerpt>> BraveSearch::search(const QString &apiKey, const QString &query, int topK, unsigned long timeout)
+QString BraveSearch::run(const QJsonObject &parameters, qint64 timeout)
 {
+    const QString apiKey = parameters["apiKey"].toString();
+    const QString query = parameters["query"].toString();
+    const int count = parameters["count"].toInt();
     QThread workerThread;
     BraveAPIWorker worker;
     worker.moveToThread(&workerThread);
     connect(&worker, &BraveAPIWorker::finished, &workerThread, &QThread::quit, Qt::DirectConnection);
-    connect(this, &BraveSearch::request, &worker, &BraveAPIWorker::request, Qt::QueuedConnection);
+    connect(&workerThread, &QThread::started, [&worker, apiKey, query, count]() {
+        worker.request(apiKey, query, count);
+    });
     workerThread.start();
-    emit request(apiKey, query, topK);
     workerThread.wait(timeout);
     workerThread.quit();
     workerThread.wait();
@@ -34,19 +38,25 @@ QPair<QString, QList<SourceExcerpt>> BraveSearch::search(const QString &apiKey, 
 void BraveAPIWorker::request(const QString &apiKey, const QString &query, int topK)
 {
     m_topK = topK;
+
+    // Documentation on the brave web search:
+    // https://api.search.brave.com/app/documentation/web-search/get-started
     QUrl jsonUrl("https://api.search.brave.com/res/v1/web/search");
+
+    // Documentation on the query options:
+    //https://api.search.brave.com/app/documentation/web-search/query
     QUrlQuery urlQuery;
     urlQuery.addQueryItem("q", query);
+    urlQuery.addQueryItem("count", QString::number(topK));
+    urlQuery.addQueryItem("result_filter", "web");
+    urlQuery.addQueryItem("extra_snippets", "true");
     jsonUrl.setQuery(urlQuery);
     QNetworkRequest request(jsonUrl);
     QSslConfiguration conf = request.sslConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(conf);
-
     request.setRawHeader("X-Subscription-Token", apiKey.toUtf8());
-//    request.setRawHeader("Accept-Encoding", "gzip");
     request.setRawHeader("Accept", "application/json");
-
     m_networkManager = new QNetworkAccessManager(this);
     QNetworkReply *reply = m_networkManager->get(request);
     connect(qGuiApp, &QCoreApplication::aboutToQuit, reply, &QNetworkReply::abort);
@@ -54,154 +64,71 @@ void BraveAPIWorker::request(const QString &apiKey, const QString &query, int to
     connect(reply, &QNetworkReply::errorOccurred, this, &BraveAPIWorker::handleErrorOccurred);
 }
 
-static QPair<QString, QList<SourceExcerpt>> cleanBraveResponse(const QByteArray& jsonResponse, qsizetype topK = 1)
+static QString cleanBraveResponse(const QByteArray& jsonResponse, qsizetype topK = 1)
 {
+    // This parses the response from brave and formats it in json that conforms to the de facto
+    // standard in SourceExcerpts::fromJson(...)
     QJsonParseError err;
     QJsonDocument document = QJsonDocument::fromJson(jsonResponse, &err);
     if (err.error != QJsonParseError::NoError) {
-        qWarning() << "ERROR: Couldn't parse: " << jsonResponse << err.errorString();
-        return QPair<QString, QList<SourceExcerpt>>();
+        qWarning() << "ERROR: Couldn't parse brave response: " << jsonResponse << err.errorString();
+        return QString();
     }
 
+    QString query;
     QJsonObject searchResponse = document.object();
     QJsonObject cleanResponse;
-    QString query;
     QJsonArray cleanArray;
-
-    QList<SourceExcerpt> infos;
 
     if (searchResponse.contains("query")) {
         QJsonObject queryObj = searchResponse["query"].toObject();
-        if (queryObj.contains("original")) {
+        if (queryObj.contains("original"))
             query = queryObj["original"].toString();
-        }
     }
 
     if (searchResponse.contains("mixed")) {
         QJsonObject mixedResults = searchResponse["mixed"].toObject();
         QJsonArray mainResults = mixedResults["main"].toArray();
+        QJsonObject resultsObject = searchResponse["web"].toObject();
+        QJsonArray resultsArray = resultsObject["results"].toArray();
 
-        for (int i = 0; i < std::min(mainResults.size(), topK); ++i) {
+        for (int i = 0; i < std::min(mainResults.size(), resultsArray.size()); ++i) {
             QJsonObject m = mainResults[i].toObject();
             QString r_type = m["type"].toString();
-            int idx = m["index"].toInt();
-            QJsonObject resultsObject = searchResponse[r_type].toObject();
-            QJsonArray resultsArray = resultsObject["results"].toArray();
+            Q_ASSERT(r_type == "web");
+            const int idx = m["index"].toInt();
 
-            QJsonValue cleaned;
-            SourceExcerpt info;
-            if (r_type == "web") {
-                // For web data - add a single output from the search
-                QJsonObject resultObj = resultsArray[idx].toObject();
-                QStringList selectedKeys = {"type", "title", "url", "description", "date", "extra_snippets"};
-                QJsonObject cleanedObj;
-                for (const auto& key : selectedKeys) {
-                    if (resultObj.contains(key)) {
-                        cleanedObj.insert(key, resultObj[key]);
-                    }
-                }
+            QJsonObject resultObj = resultsArray[idx].toObject();
+            QStringList selectedKeys = {"type", "title", "url", "description"};
+            QJsonObject result;
+            for (const auto& key : selectedKeys)
+                if (resultObj.contains(key))
+                    result.insert(key, resultObj[key]);
 
-                QStringList textKeys = {"description", "extra_snippets"};
-                QJsonObject textObj;
-                for (const auto& key : textKeys) {
-                    if (resultObj.contains(key)) {
-                        textObj.insert(key, resultObj[key]);
-                    }
-                }
+            if (resultObj.contains("page_age"))
+                result.insert("date", resultObj["page_age"]);
 
-                QJsonDocument textObjDoc(textObj);
-                info.date = resultObj["date"].toString();
-                info.text = textObjDoc.toJson(QJsonDocument::Indented);
-                info.url = resultObj["url"].toString();
-                QJsonObject meta_url = resultObj["meta_url"].toObject();
-                info.favicon = meta_url["favicon"].toString();
-                info.title = resultObj["title"].toString();
-
-                cleaned = cleanedObj;
-            } else if (r_type == "faq") {
-                // For faq data - take a list of all the questions & answers
-                QStringList selectedKeys = {"type", "question", "answer", "title", "url"};
-                QJsonArray cleanedArray;
-                for (const auto& q : resultsArray) {
-                    QJsonObject qObj = q.toObject();
-                    QJsonObject cleanedObj;
-                    for (const auto& key : selectedKeys) {
-                        if (qObj.contains(key)) {
-                            cleanedObj.insert(key, qObj[key]);
-                        }
-                    }
-                    cleanedArray.append(cleanedObj);
+            QJsonArray excerpts;
+            if (resultObj.contains("extra_snippets")) {
+                QJsonArray snippets = resultObj["extra_snippets"].toArray();
+                for (int i = 0; i < snippets.size(); ++i) {
+                    QString snippet = snippets[i].toString();
+                    QJsonObject excerpt;
+                    excerpt.insert("text", snippet);
+                    excerpts.append(excerpt);
                 }
-                cleaned = cleanedArray;
-            } else if (r_type == "infobox") {
-                QJsonObject resultObj = resultsArray[idx].toObject();
-                QStringList selectedKeys = {"type", "title", "url", "description", "long_desc"};
-                QJsonObject cleanedObj;
-                for (const auto& key : selectedKeys) {
-                    if (resultObj.contains(key)) {
-                        cleanedObj.insert(key, resultObj[key]);
-                    }
-                }
-                cleaned = cleanedObj;
-            } else if (r_type == "videos") {
-                QStringList selectedKeys = {"type", "url", "title", "description", "date"};
-                QJsonArray cleanedArray;
-                for (const auto& q : resultsArray) {
-                    QJsonObject qObj = q.toObject();
-                    QJsonObject cleanedObj;
-                    for (const auto& key : selectedKeys) {
-                        if (qObj.contains(key)) {
-                            cleanedObj.insert(key, qObj[key]);
-                        }
-                    }
-                    cleanedArray.append(cleanedObj);
-                }
-                cleaned = cleanedArray;
-            } else if (r_type == "locations") {
-                QStringList selectedKeys = {"type", "title", "url", "description", "coordinates", "postal_address", "contact", "rating", "distance", "zoom_level"};
-                QJsonArray cleanedArray;
-                for (const auto& q : resultsArray) {
-                    QJsonObject qObj = q.toObject();
-                    QJsonObject cleanedObj;
-                    for (const auto& key : selectedKeys) {
-                        if (qObj.contains(key)) {
-                            cleanedObj.insert(key, qObj[key]);
-                        }
-                    }
-                    cleanedArray.append(cleanedObj);
-                }
-                cleaned = cleanedArray;
-            } else if (r_type == "news") {
-                QStringList selectedKeys = {"type", "title", "url", "description"};
-                QJsonArray cleanedArray;
-                for (const auto& q : resultsArray) {
-                    QJsonObject qObj = q.toObject();
-                    QJsonObject cleanedObj;
-                    for (const auto& key : selectedKeys) {
-                        if (qObj.contains(key)) {
-                            cleanedObj.insert(key, qObj[key]);
-                        }
-                    }
-                    cleanedArray.append(cleanedObj);
-                }
-                cleaned = cleanedArray;
-            } else {
-                cleaned = QJsonValue();
             }
-
-            infos.append(info);
-            cleanArray.append(cleaned);
+            result.insert("excerpts", excerpts);
+            cleanArray.append(QJsonValue(result));
         }
     }
 
     cleanResponse.insert("query", query);
-    cleanResponse.insert("top_k", cleanArray);
+    cleanResponse.insert("results", cleanArray);
     QJsonDocument cleanedDoc(cleanResponse);
-
 //    qDebug().noquote() << document.toJson(QJsonDocument::Indented);
 //    qDebug().noquote() << cleanedDoc.toJson(QJsonDocument::Indented);
-
-    return qMakePair(cleanedDoc.toJson(QJsonDocument::Indented), infos);
+    return cleanedDoc.toJson(QJsonDocument::Compact);
 }
 
 void BraveAPIWorker::handleFinished()

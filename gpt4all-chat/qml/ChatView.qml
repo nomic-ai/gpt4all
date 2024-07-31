@@ -1133,7 +1133,14 @@ Rectangle {
                                                     sourceSize.width: 24
                                                     sourceSize.height: 24
                                                     mipmap: true
-                                                    source: consolidatedSources[0].url === "" ? "qrc:/gpt4all/icons/db.svg" : "qrc:/gpt4all/icons/globe.svg"
+                                                    source: {
+                                                        if (typeof consolidatedSources === 'undefined'
+                                                            || typeof consolidatedSources[0] === 'undefined'
+                                                            || consolidatedSources[0].url === "")
+                                                            return "qrc:/gpt4all/icons/db.svg";
+                                                        else
+                                                            return "qrc:/gpt4all/icons/globe.svg";
+                                                    }
                                                 }
 
                                                 ColorOverlay {
