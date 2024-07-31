@@ -121,9 +121,10 @@ qt_add_executable(chat
     modellist.h modellist.cpp
     mysettings.h mysettings.cpp
     network.h network.cpp
-    sourceexcerpt.h
+    sourceexcerpt.h sourceexcerpt.cpp
     server.h server.cpp
     logger.h logger.cpp
+    tool.h tool.cpp
     ${APP_ICON_RESOURCE}
     ${CHAT_EXE_RESOURCES}
 )

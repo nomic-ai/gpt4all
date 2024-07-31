@@ -2,6 +2,7 @@
 #define BRAVESEARCH_H
 
 #include "sourceexcerpt.h"
+#include "tool.h"
 
 #include <QObject>
 #include <QString>
@@ -17,7 +18,7 @@ public:
         , m_topK(1) {}
     virtual ~BraveAPIWorker() {}
 
-    QPair<QString, QList<SourceExcerpt>> response() const { return m_response; }
+    QString response() const { return m_response; }
 
 public Q_SLOTS:
     void request(const QString &apiKey, const QString &query, int topK);
@@ -31,21 +32,17 @@ private Q_SLOTS:
 
 private:
     QNetworkAccessManager *m_networkManager;
-    QPair<QString, QList<SourceExcerpt>> m_response;
+    QString m_response;
     int m_topK;
 };
 
-class BraveSearch : public QObject {
+class BraveSearch : public Tool {
     Q_OBJECT
 public:
-    BraveSearch()
-        : QObject(nullptr) {}
+    BraveSearch() : Tool() {}
     virtual ~BraveSearch() {}
 
-    QPair<QString, QList<SourceExcerpt>> search(const QString &apiKey, const QString &query, int topK, unsigned long timeout = 2000);
-
-Q_SIGNALS:
-    void request(const QString &apiKey, const QString &query, int topK);
+    QString run(const QJsonObject &parameters, qint64 timeout = 2000) override;
 };
 
 #endif // BRAVESEARCH_H

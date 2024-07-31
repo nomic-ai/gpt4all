@@ -19,7 +19,6 @@ struct SourceExcerpt {
     Q_PROPERTY(QString favicon MEMBER favicon)
     Q_PROPERTY(QString title MEMBER title)
     Q_PROPERTY(QString author MEMBER author)
-    Q_PROPERTY(QString description MEMBER description)
     Q_PROPERTY(int page MEMBER page)
     Q_PROPERTY(int from MEMBER from)
     Q_PROPERTY(int to MEMBER to)
@@ -35,7 +34,6 @@ public:
     QString favicon;    // [Optional] The favicon
     QString title;      // [Optional] The title of the document
     QString author;     // [Optional] The author of the document
-    QString description;// [Optional] The description of the source
     int page = -1;      // [Optional] The page where the text was found
     int from = -1;      // [Optional] The line number where the text begins
     int to = -1;        // [Optional] The line number where the text ends
@@ -67,14 +65,11 @@ public:
         result.insert("favicon", favicon);
         result.insert("title", title);
         result.insert("author", author);
-        result.insert("description", description);
         result.insert("page", page);
         result.insert("from", from);
         result.insert("to", to);
         return result;
     }
-
-    static QList<SourceExcerpt> fromJson(const QString &json, QString &errorString);
 
     bool operator==(const SourceExcerpt &other) const {
         return date == other.date &&
@@ -86,7 +81,6 @@ public:
                favicon == other.favicon &&
                title == other.title &&
                author == other.author &&
-               description == other.description &&
                page == other.page &&
                from == other.from &&
                to == other.to;

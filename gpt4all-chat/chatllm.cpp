@@ -871,14 +871,26 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
 
         const QString query = args["query"].toString();
 
-        // FIXME: This has to handle errors of the tool call
         emit toolCalled(tr("searching web..."));
         const QString apiKey = MySettings::globalInstance()->braveSearchAPIKey();
         Q_ASSERT(apiKey != "");
         BraveSearch brave;
-        const QPair<QString, QList<SourceExcerpt>> braveResponse = brave.search(apiKey, query, 2 /*topK*/,
-            2000 /*msecs to timeout*/);
-        emit sourceExcerptsChanged(braveResponse.second);
+
+        QJsonObject parameters;
+        parameters.insert("apiKey", apiKey);
+        parameters.insert("query", query);
+        parameters.insert("count", 2);
+
+        // FIXME: This has to handle errors of the tool call
+        const QString braveResponse = brave.run(parameters, 2000 /*msecs to timeout*/);
+
+        QString parseError;
+        QList<SourceExcerpt> sourceExcerpts = SourceExcerpt::fromJson(braveResponse, parseError);
+        if (!parseError.isEmpty()) {
+            qWarning() << "ERROR: Could not parse source excerpts for brave response" << parseError;
+        } else if (!sourceExcerpts.isEmpty()) {
+            emit sourceExcerptsChanged(sourceExcerpts);
+        }
 
         // Erase the context of the tool call
         m_ctx.n_past = std::max(0, m_ctx.n_past);
@@ -889,7 +901,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
 
         // This is a recursive call but isToolCallResponse is checked above to arrest infinite recursive
         // tool calls
-        return promptInternal(QList<QString>()/*collectionList*/, braveResponse.first, toolTemplate,
+        return promptInternal(QList<QString>()/*collectionList*/, braveResponse, toolTemplate,
             n_predict, top_k, top_p, min_p, temp, n_batch, repeat_penalty, repeat_penalty_tokens,
             true /*isToolCallResponse*/);
 
