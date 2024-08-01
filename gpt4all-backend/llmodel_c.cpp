@@ -117,9 +117,6 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
         return response_callback(token_id, response.c_str());
     };
 
-    if (size_t(ctx->n_past) < wrapper->promptContext.tokens.size())
-        wrapper->promptContext.tokens.resize(ctx->n_past);
-
     // Copy the C prompt context
     wrapper->promptContext.n_past = ctx->n_past;
     wrapper->promptContext.n_ctx = ctx->n_ctx;
