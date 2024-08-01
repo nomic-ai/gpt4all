@@ -164,8 +164,6 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
         return false;
     }
 
-    promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
-
     // process the prompt in batches
     size_t i = 0;
     while (i < embd_inp.size()) {
