@@ -14,40 +14,6 @@
 #include <unordered_set>
 #include <vector>
 
-// TODO(cebtenzzre): replace this with llama_kv_cache_seq_shift for llamamodel (GPT-J needs this as-is)
-// FIXME(jared): if recalculate returns false, we leave n_past<tokens.size() and do not tell the caller to stop
-// FIXME(jared): if we get here during chat name or follow-up generation, bad things will happen when we try to restore
-// the old prompt context afterwards
-void LLModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
-{
-    int n_keep = shouldAddBOS();
-    const int32_t n_discard = (promptCtx.n_ctx - n_keep) * promptCtx.contextErase;
-
-    // Erase the first percentage of context from the tokens
-    std::cerr << implementation().modelType() << ": reached the end of the context window so resizing\n";
-    promptCtx.tokens.erase(promptCtx.tokens.begin() + n_keep, promptCtx.tokens.begin() + n_keep + n_discard);
-
-    size_t i = n_keep;
-    promptCtx.n_past = n_keep;
-    while (i < promptCtx.tokens.size()) {
-        size_t batch_end = std::min(i + promptCtx.n_batch, promptCtx.tokens.size());
-        std::vector<int32_t> batch(promptCtx.tokens.begin() + i, promptCtx.tokens.begin() + batch_end);
-        assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
-        if (!evalTokens(promptCtx, batch)) {
-            std::cerr << "LLModel ERROR: Failed to process prompt\n";
-            goto stop_generating;
-        }
-        promptCtx.n_past += batch.size();
-        if (!recalculate(true))
-            goto stop_generating;
-        i = batch_end;
-    }
-    assert(promptCtx.n_past == int32_t(promptCtx.tokens.size()));
-
-stop_generating:
-    recalculate(false);
-}
-
 static bool parsePromptTemplate(const std::string &tmpl, std::vector<std::smatch> &placeholders, std::string &err)
 {
     static const std::regex placeholderRegex(R"(%[1-2](?![0-9]))");

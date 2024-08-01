@@ -97,38 +97,52 @@ protected:
     // them as they are only called from the default implementation of 'prompt' which we override and
     // completely replace
 
-    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) override {
+    std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) override
+    {
         (void)ctx;
         (void)str;
         (void)special;
         throw std::logic_error("not implemented");
     }
 
-    std::string tokenToString(Token id) const override {
+    std::string tokenToString(Token id) const override
+    {
         (void)id;
         throw std::logic_error("not implemented");
     }
 
-    Token sampleToken(PromptContext &ctx) const override {
+    Token sampleToken(PromptContext &ctx) const override
+    {
         (void)ctx;
         throw std::logic_error("not implemented");
     }
 
-    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override {
+    bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override
+    {
         (void)ctx;
         (void)tokens;
         throw std::logic_error("not implemented");
     }
 
-    int32_t contextLength() const override {
+    void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) override
+    {
+        (void)promptCtx;
+        (void)recalculate;
         throw std::logic_error("not implemented");
     }
 
-    const std::vector<Token> &endTokens() const override {
+    int32_t contextLength() const override
+    {
         throw std::logic_error("not implemented");
     }
 
-    bool shouldAddBOS() const override {
+    const std::vector<Token> &endTokens() const override
+    {
+        throw std::logic_error("not implemented");
+    }
+
+    bool shouldAddBOS() const override
+    {
         throw std::logic_error("not implemented");
     }
 

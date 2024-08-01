@@ -57,6 +57,7 @@ protected:
     std::string tokenToString(Token id) const override;
     Token sampleToken(PromptContext &ctx) const override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
+    void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) override;
     int32_t contextLength() const override;
     const std::vector<Token> &endTokens() const override;
     bool shouldAddBOS() const override;
