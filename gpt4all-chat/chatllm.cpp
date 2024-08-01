@@ -860,18 +860,18 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
         }
 
         QJsonObject rootObject = toolCallDoc.object();
-        if (!rootObject.contains("name") || !rootObject.contains("arguments")) {
+        if (!rootObject.contains("name") || !rootObject.contains("parameters")) {
             qWarning() << "ERROR: The tool call did not have required name and argument objects " << toolCall;
             return handleFailedToolCall(trimmed, elapsed);
         }
 
         const QString tool = toolCallDoc["name"].toString();
-        const QJsonObject args = toolCallDoc["arguments"].toObject();
+        const QJsonObject args = toolCallDoc["parameters"].toObject();
 
         // FIXME: In the future this will try to match the tool call to a list of tools that are supported
         // according to MySettings, but for now only brave search is supported
         if (tool != "brave_search" || !args.contains("query")) {
-            qWarning() << "ERROR: Could not find the tool and correct arguments for " << toolCall;
+            qWarning() << "ERROR: Could not find the tool and correct parameters for " << toolCall;
             return handleFailedToolCall(trimmed, elapsed);
         }
 
