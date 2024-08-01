@@ -1106,7 +1106,7 @@ Rectangle {
                                     Layout.preferredWidth: childrenRect.width
                                     Layout.preferredHeight: childrenRect.height
                                     visible: {
-                                        if (consolidatedSources.length === 0)
+                                        if (sources.length === 0)
                                             return false
                                         if (!MySettings.localDocsShowReferences)
                                             return false
@@ -1134,9 +1134,9 @@ Rectangle {
                                                     sourceSize.height: 24
                                                     mipmap: true
                                                     source: {
-                                                        if (typeof consolidatedSources === 'undefined'
-                                                            || typeof consolidatedSources[0] === 'undefined'
-                                                            || consolidatedSources[0].url === "")
+                                                        if (typeof sources === 'undefined'
+                                                            || typeof sources[0] === 'undefined'
+                                                            || sources[0].url === "")
                                                             return "qrc:/gpt4all/icons/db.svg";
                                                         else
                                                             return "qrc:/gpt4all/icons/globe.svg";
@@ -1151,7 +1151,7 @@ Rectangle {
                                             }
 
                                             Text {
-                                                text: qsTr("%1 Sources").arg(consolidatedSources.length)
+                                                text: qsTr("%1 Sources").arg(sources.length)
                                                 padding: 0
                                                 font.pixelSize: theme.fontSizeLarge
                                                 font.bold: true
@@ -1199,7 +1199,7 @@ Rectangle {
                                     Layout.column: 1
                                     Layout.topMargin: 5
                                     visible: {
-                                        if (consolidatedSources.length === 0)
+                                        if (sources.length === 0)
                                             return false
                                         if (!MySettings.localDocsShowReferences)
                                             return false
@@ -1240,9 +1240,9 @@ Rectangle {
                                         id: flow
                                         Layout.fillWidth: true
                                         spacing: 10
-                                        visible: consolidatedSources.length !== 0
+                                        visible: sources.length !== 0
                                         Repeater {
-                                            model: consolidatedSources
+                                            model: sources
 
                                             delegate: Rectangle {
                                                 radius: 10
@@ -1361,7 +1361,7 @@ Rectangle {
                                         return false;
                                     if (MySettings.suggestionMode === 2) // Off
                                         return false;
-                                    if (MySettings.suggestionMode === 0 && consolidatedSources.length === 0) // LocalDocs only
+                                    if (MySettings.suggestionMode === 0 && sources.length === 0) // LocalDocs only
                                         return false;
                                     return currentChat.responseState === Chat.GeneratingQuestions || currentChat.generatedQuestions.length !== 0;
                                 }

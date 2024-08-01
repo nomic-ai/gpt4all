@@ -787,10 +787,8 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     QString docsContext;
     if (!localDocsExcerpts.isEmpty()) {
         // FIXME(adam): we should be using the new tool template if available otherwise this I guess
-        QStringList results;
-        for (const SourceExcerpt &info : localDocsExcerpts)
-            results << u"Collection: %1\nPath: %2\nExcerpt: %3"_s.arg(info.collection, info.path, info.text);
-        docsContext = u"### Context:\n%1\n\n"_s.arg(results.join("\n\n"));
+        QString json = SourceExcerpt::toJson(localDocsExcerpts);
+        docsContext = u"### Context:\n%1\n\n"_s.arg(json);
     }
 
     int n_threads = MySettings::globalInstance()->threadCount();
@@ -900,9 +898,6 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
             emit sourceExcerptsChanged(sourceExcerpts);
         }
 
-        // Erase the context of the tool call
-        m_ctx.n_past = std::max(0, m_ctx.n_past);
-        m_ctx.tokens.erase(m_ctx.tokens.end() - m_promptResponseTokens, m_ctx.tokens.end());
         m_promptResponseTokens = 0;
         m_promptTokens = 0;
         m_response = std::string();
