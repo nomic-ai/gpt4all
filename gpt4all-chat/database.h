@@ -101,7 +101,7 @@ public Q_SLOTS:
     void forceRebuildFolder(const QString &path);
     bool addFolder(const QString &collection, const QString &path, const QString &embedding_model);
     void removeFolder(const QString &collection, const QString &path);
-    void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<SourceExcerpt> *results);
+    void retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QString &jsonResult);
     void changeChunkSize(int chunkSize);
     void changeFileExtensions(const QStringList &extensions);
 
@@ -168,7 +168,6 @@ private:
     QStringList m_scannedFileExtensions;
     QTimer *m_scanTimer;
     QMap<int, QQueue<DocumentInfo>> m_docsToScan;
-    QList<SourceExcerpt> m_retrieve;
     QThread m_dbThread;
     QFileSystemWatcher *m_watcher;
     QSet<QString> m_watchedPaths;

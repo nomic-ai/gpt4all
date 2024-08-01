@@ -1,8 +1,6 @@
 #ifndef TOOL_H
 #define TOOL_H
 
-#include "sourceexcerpt.h"
-
 #include <QObject>
 #include <QJsonObject>
 
@@ -69,19 +67,5 @@ public:
     // FIXME: How to handle errors?
     virtual QString run(const QJsonObject &parameters, qint64 timeout = 2000) = 0;
 };
-
-//class BuiltinTool : public Tool {
-//    Q_OBJECT
-//public:
-//    BuiltinTool() : Tool() {}
-//    virtual QString run(const QJsonObject &parameters, qint64 timeout = 2000);
-//};
-
-//class LocalTool : public Tool {
-//    Q_OBJECT
-//public:
-//    LocalTool() : Tool() {}
-//    virtual QString run(const QJsonObject &parameters, qint64 timeout = 2000);
-//};
 
 #endif // TOOL_H

@@ -1,7 +1,6 @@
 #ifndef BRAVESEARCH_H
 #define BRAVESEARCH_H
 
-#include "sourceexcerpt.h"
 #include "tool.h"
 
 #include <QObject>
@@ -14,14 +13,13 @@ class BraveAPIWorker : public QObject {
 public:
     BraveAPIWorker()
         : QObject(nullptr)
-        , m_networkManager(nullptr)
-        , m_topK(1) {}
+        , m_networkManager(nullptr) {}
     virtual ~BraveAPIWorker() {}
 
     QString response() const { return m_response; }
 
 public Q_SLOTS:
-    void request(const QString &apiKey, const QString &query, int topK);
+    void request(const QString &apiKey, const QString &query, int count);
 
 Q_SIGNALS:
     void finished();
@@ -33,7 +31,6 @@ private Q_SLOTS:
 private:
     QNetworkAccessManager *m_networkManager;
     QString m_response;
-    int m_topK;
 };
 
 class BraveSearch : public Tool {

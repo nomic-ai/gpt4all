@@ -189,7 +189,6 @@ Q_SIGNALS:
     void shouldBeLoadedChanged();
     void trySwitchContextRequested(const ModelInfo &modelInfo);
     void trySwitchContextOfLoadedModelCompleted(int value);
-    void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<SourceExcerpt> *results);
     void reportSpeed(const QString &speed);
     void reportDevice(const QString &device);
     void reportFallbackReason(const QString &fallbackReason);

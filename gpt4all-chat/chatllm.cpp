@@ -3,7 +3,7 @@
 #include "bravesearch.h"
 #include "chat.h"
 #include "chatapi.h"
-#include "localdocs.h"
+#include "localdocssearch.h"
 #include "mysettings.h"
 #include "network.h"
 
@@ -13,6 +13,7 @@
 #include <QGlobalStatic>
 #include <QGuiApplication>
 #include <QIODevice>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMutex>
@@ -128,11 +129,6 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     connect(&m_llmThread, &QThread::started, this, &ChatLLM::handleThreadStarted);
     connect(MySettings::globalInstance(), &MySettings::forceMetalChanged, this, &ChatLLM::handleForceMetalChanged);
     connect(MySettings::globalInstance(), &MySettings::deviceChanged, this, &ChatLLM::handleDeviceChanged);
-
-    // The following are blocking operations and will block the llm thread
-    connect(this, &ChatLLM::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
-        Qt::BlockingQueuedConnection);
-
     m_llmThread.setObjectName(parent->id());
     m_llmThread.start();
 }
@@ -767,21 +763,33 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     if (!isModelLoaded())
         return false;
 
-    QList<SourceExcerpt> databaseResults;
-    const int retrievalSize = MySettings::globalInstance()->localDocsRetrievalSize();
+    QList<SourceExcerpt> localDocsExcerpts;
     if (!collectionList.isEmpty() && !isToolCallResponse) {
-        emit requestRetrieveFromDB(collectionList, prompt, retrievalSize, &databaseResults); // blocks
-        emit sourceExcerptsChanged(databaseResults);
+        LocalDocsSearch localdocs;
+        QJsonObject parameters;
+        parameters.insert("text", prompt);
+        parameters.insert("count", MySettings::globalInstance()->localDocsRetrievalSize());
+        parameters.insert("collections", QJsonArray::fromStringList(collectionList));
+
+        // FIXME: This has to handle errors of the tool call
+        const QString localDocsResponse = localdocs.run(parameters, 2000 /*msecs to timeout*/);
+
+        QString parseError;
+        localDocsExcerpts = SourceExcerpt::fromJson(localDocsResponse, parseError);
+        if (!parseError.isEmpty()) {
+            qWarning() << "ERROR: Could not parse source excerpts for localdocs response:" << parseError;
+        } else if (!localDocsExcerpts.isEmpty()) {
+            emit sourceExcerptsChanged(localDocsExcerpts);
+        }
     }
 
     // Augment the prompt template with the results if any
     QString docsContext;
-    if (!databaseResults.isEmpty()) {
+    if (!localDocsExcerpts.isEmpty()) {
+        // FIXME(adam): we should be using the new tool template if available otherwise this I guess
         QStringList results;
-        for (const SourceExcerpt &info : databaseResults)
+        for (const SourceExcerpt &info : localDocsExcerpts)
             results << u"Collection: %1\nPath: %2\nExcerpt: %3"_s.arg(info.collection, info.path, info.text);
-
-        // FIXME(jared): use a Jinja prompt template instead of hardcoded Alpaca-style localdocs template
         docsContext = u"### Context:\n%1\n\n"_s.arg(results.join("\n\n"));
     }
 
@@ -887,7 +895,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
         QString parseError;
         QList<SourceExcerpt> sourceExcerpts = SourceExcerpt::fromJson(braveResponse, parseError);
         if (!parseError.isEmpty()) {
-            qWarning() << "ERROR: Could not parse source excerpts for brave response" << parseError;
+            qWarning() << "ERROR: Could not parse source excerpts for brave response:" << parseError;
         } else if (!sourceExcerpts.isEmpty()) {
             emit sourceExcerptsChanged(sourceExcerpts);
         }
@@ -912,7 +920,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
         }
 
         SuggestionMode mode = MySettings::globalInstance()->suggestionMode();
-        if (mode == SuggestionMode::On || (mode == SuggestionMode::SourceExcerptsOnly && (!databaseResults.isEmpty() || isToolCallResponse)))
+        if (mode == SuggestionMode::On || (mode == SuggestionMode::SourceExcerptsOnly && (!localDocsExcerpts.isEmpty() || isToolCallResponse)))
             generateQuestions(elapsed);
         else
             emit responseStopped(elapsed);
