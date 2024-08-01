@@ -230,23 +230,30 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
     // Predict next tokens
     for (bool stop = false; !stop;) {
         // Sample next token
-        Token new_tok = sampleToken(promptCtx);
-        std::string new_piece = tokenToString(new_tok);
-        cachedTokens.push_back(new_tok);
+        std::optional<Token> new_tok = sampleToken(promptCtx);
+        std::string new_piece = tokenToString(new_tok.value());
+        cachedTokens.push_back(new_tok.value());
         cachedResponse += new_piece;
 
-        // Check if the context has run out...
-        if (promptCtx.n_past >= promptCtx.n_ctx) {
-            recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past < promptCtx.n_ctx);
-        }
+        auto accept = [this, &promptCtx, &cachedTokens, &new_tok, &recalculateCallback]() -> bool {
+            // Shift context if out of space
+            if (promptCtx.n_past >= promptCtx.n_ctx) {
+                recalculateContext(promptCtx, recalculateCallback);
+                assert(promptCtx.n_past < promptCtx.n_ctx);
+            }
 
-        if (!evalTokens(promptCtx, { new_tok })) {
-            std::cerr << implementation().modelType() << " ERROR: Failed to predict next token\n";
-            return;
-        }
-        promptCtx.tokens.push_back(new_tok);
-        promptCtx.n_past += 1;
+            // Accept the token
+            Token tok = std::exchange(new_tok, std::nullopt).value();
+            if (!evalTokens(promptCtx, { tok })) {
+                // TODO(jared): raise an exception
+                std::cerr << implementation().modelType() << " ERROR: Failed to predict next token\n";
+                return false;
+            }
+
+            promptCtx.tokens.push_back(tok);
+            promptCtx.n_past += 1;
+            return true;
+        };
 
         // Check for EOS
         auto lengthLimit = std::string::npos;
@@ -291,6 +298,10 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
             cachedTokens.erase(cachedTokens.begin(), cachedTokens.begin() + 1);
             cachedResponse.erase(cachedResponse.begin(), cachedResponse.begin() + piece.size());
 
+            // Accept the token, if needed (not cached)
+            if (cachedTokens.empty() && new_tok && !accept())
+                return;
+
             // Send the token
             if (!responseCallback(tok, piece) || ++n_predicted >= promptCtx.n_predict) {
                 stop = true;
@@ -302,6 +313,16 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
             responseLength += piece.size();
         }
         assert(cachedTokens.empty() == cachedResponse.empty());
+
+        // Accept the token, if needed (in cache)
+        if (new_tok) {
+            assert(!cachedTokens.empty() && cachedTokens.back() == new_tok);
+            if (stop) {
+                cachedTokens.pop_back();
+            } else if (!accept()) {
+                return;
+            }
+        }
     }
 
     auto &tokens = promptCtx.tokens;
