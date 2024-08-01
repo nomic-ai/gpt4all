@@ -611,6 +611,7 @@ std::string trim_whitespace(const std::string& input)
     return std::string(first_non_whitespace, last_non_whitespace);
 }
 
+// FIXME(jared): we don't actually have to re-decode the prompt to generate a new response
 void ChatLLM::regenerateResponse()
 {
     // ChatGPT uses a different semantic meaning for n_past than local models. For ChatGPT, the meaning

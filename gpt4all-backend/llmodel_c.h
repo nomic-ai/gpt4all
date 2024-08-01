@@ -30,8 +30,6 @@ typedef void *llmodel_model;
  * behavior.
  */
 struct llmodel_prompt_context {
-    float *logits;          // logits of current context
-    size_t logits_size;     // the size of the raw logits vector
     int32_t *tokens;        // current tokens in the context window
     size_t tokens_size;     // the size of the raw tokens vector
     int32_t n_past;         // number of tokens in past conversation

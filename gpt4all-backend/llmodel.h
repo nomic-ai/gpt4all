@@ -14,11 +14,12 @@
 #include <utility>
 #include <vector>
 
+class Dlhandle;
+
 using namespace std::string_literals;
 
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
-class Dlhandle;
 class LLModel {
 public:
     using Token = int32_t;
@@ -134,7 +135,6 @@ public:
         float   repeat_penalty = 1.10f;
         int32_t repeat_last_n = 64;     // last n tokens to penalize
         float   contextErase = 0.75f;   // percent of context to erase if we exceed the context window
-        int32_t n_last_batch_tokens = 0;
     };
 
     using ProgressCallback = std::function<bool(float progress)>;
@@ -212,7 +212,7 @@ public:
 protected:
     // These are pure virtual because subclasses need to implement as the default implementation of
     // 'prompt' above calls these functions
-    virtual std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special = false) const = 0;
+    virtual std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special = false) = 0;
     virtual std::string tokenToString(Token id) const = 0;
     virtual Token sampleToken(PromptContext &ctx) const = 0;
     virtual bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const = 0;
@@ -256,7 +256,8 @@ protected:
                           std::function<bool(bool)> recalculateCallback,
                           PromptContext &promptCtx);
 
-private:
+    Token m_tokenize_last_token = -1; // not serialized
+
     friend class LLMImplementation;
 };
 
