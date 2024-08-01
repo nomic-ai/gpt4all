@@ -595,37 +595,31 @@ bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &toke
     return res == 0;
 }
 
-// FIXME(jared): if recalculate returns false, we leave n_past<tokens.size() and do not tell the caller to stop
 // FIXME(jared): if we get here during chat name or follow-up generation, bad things will happen when we try to restore
 // the old prompt context afterwards
 void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
 {
+    // infinite text generation via context shifting
+    (void)recalculate;
+
+    // erase up to n_ctx*contextErase tokens
     int n_keep = shouldAddBOS();
-    const int32_t n_discard = (promptCtx.n_ctx - n_keep) * promptCtx.contextErase;
+    int n_past = promptCtx.n_past;
+    int n_discard = std::min(n_past - n_keep, int(promptCtx.n_ctx * promptCtx.contextErase));
 
-    // Erase the first percentage of context from the tokens
-    std::cerr << implementation().modelType() << ": reached the end of the context window so resizing\n";
+    assert(n_discard > 0);
+    if (n_discard <= 0)
+        return;
+
+    std::cerr << "Llama: context full, swapping: n_past = " << n_past << ", n_keep = " << n_keep
+              << ", n_discard = " << n_discard << "\n";
+
+    // erase the first n_discard tokens from the context
+    llama_kv_cache_seq_rm (d_ptr->ctx, 0, n_keep,             n_keep + n_discard);
+    llama_kv_cache_seq_add(d_ptr->ctx, 0, n_keep + n_discard, n_past,             -n_discard);
+
     promptCtx.tokens.erase(promptCtx.tokens.begin() + n_keep, promptCtx.tokens.begin() + n_keep + n_discard);
-
-    size_t i = n_keep;
-    promptCtx.n_past = n_keep;
-    while (i < promptCtx.tokens.size()) {
-        size_t batch_end = std::min(i + promptCtx.n_batch, promptCtx.tokens.size());
-        std::vector<int32_t> batch(promptCtx.tokens.begin() + i, promptCtx.tokens.begin() + batch_end);
-        assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
-        if (!evalTokens(promptCtx, batch)) {
-            std::cerr << "LLModel ERROR: Failed to process prompt\n";
-            goto stop_generating;
-        }
-        promptCtx.n_past += batch.size();
-        if (!recalculate(true))
-            goto stop_generating;
-        i = batch_end;
-    }
-    assert(promptCtx.n_past == int32_t(promptCtx.tokens.size()));
-
-stop_generating:
-    recalculate(false);
+    promptCtx.n_past = promptCtx.tokens.size();
 }
 
 int32_t LLamaModel::contextLength() const
