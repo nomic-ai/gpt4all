@@ -117,7 +117,6 @@ llmodel.llmodel_isModelLoaded.restype = ctypes.c_bool
 
 PromptCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32)
 ResponseCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_int32, ctypes.c_char_p)
-RecalculateCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_bool)
 EmbCancelCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_char_p)
 
 llmodel.llmodel_prompt.argtypes = [
@@ -126,7 +125,7 @@ llmodel.llmodel_prompt.argtypes = [
     ctypes.c_char_p,
     PromptCallback,
     ResponseCallback,
-    RecalculateCallback,
+    ctypes.c_bool,
     ctypes.POINTER(LLModelPromptContext),
     ctypes.c_bool,
     ctypes.c_char_p,
@@ -502,7 +501,7 @@ class LLModel:
             ctypes.c_char_p(prompt_template.encode()),
             PromptCallback(self._prompt_callback),
             ResponseCallback(self._callback_decoder(callback)),
-            RecalculateCallback(self._recalculate_callback),
+            True,
             self.context,
             special,
             ctypes.c_char_p(),
@@ -595,8 +594,3 @@ class LLModel:
     @staticmethod
     def _prompt_callback(token_id: int) -> bool:
         return True
-
-    # Empty recalculate callback
-    @staticmethod
-    def _recalculate_callback(is_recalculating: bool) -> bool:
-        return is_recalculating

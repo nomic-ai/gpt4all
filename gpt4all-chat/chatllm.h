@@ -201,19 +201,14 @@ protected:
         int32_t repeat_penalty_tokens);
     bool handlePrompt(int32_t token);
     bool handleResponse(int32_t token, const std::string &response);
-    bool handleRecalculate(bool isRecalc);
     bool handleNamePrompt(int32_t token);
     bool handleNameResponse(int32_t token, const std::string &response);
-    bool handleNameRecalculate(bool isRecalc);
     bool handleSystemPrompt(int32_t token);
     bool handleSystemResponse(int32_t token, const std::string &response);
-    bool handleSystemRecalculate(bool isRecalc);
     bool handleRestoreStateFromTextPrompt(int32_t token);
     bool handleRestoreStateFromTextResponse(int32_t token, const std::string &response);
-    bool handleRestoreStateFromTextRecalculate(bool isRecalc);
     bool handleQuestionPrompt(int32_t token);
     bool handleQuestionResponse(int32_t token, const std::string &response);
-    bool handleQuestionRecalculate(bool isRecalc);
     void saveState();
     void restoreState();
 

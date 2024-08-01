@@ -40,7 +40,7 @@ void LLModel::prompt(const std::string &prompt,
                      const std::string &promptTemplate,
                      std::function<bool(int32_t)> promptCallback,
                      std::function<bool(int32_t, const std::string&)> responseCallback,
-                     std::function<bool(bool)> recalculateCallback,
+                     bool allowContextShift,
                      PromptContext &promptCtx,
                      bool special,
                      std::string *fakeReply)
@@ -123,15 +123,15 @@ void LLModel::prompt(const std::string &prompt,
     promptCtx.n_past = old_n_past; // restore n_past so decodePrompt can increment it
 
     // decode the user prompt
-    if (!decodePrompt(promptCallback, responseCallback, recalculateCallback, promptCtx, embd_inp))
+    if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp))
         return; // error
 
     // decode the assistant's reply, either generated or spoofed
     if (fakeReply == nullptr) {
-        generateResponse(responseCallback, recalculateCallback, promptCtx);
+        generateResponse(responseCallback, allowContextShift, promptCtx);
     } else {
         embd_inp = tokenize(promptCtx, *fakeReply, false);
-        if (!decodePrompt(promptCallback, responseCallback, recalculateCallback, promptCtx, embd_inp))
+        if (!decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp))
             return; // error
     }
 
@@ -146,20 +146,29 @@ void LLModel::prompt(const std::string &prompt,
     }
     if (!asstSuffix.empty()) {
         embd_inp = tokenize(promptCtx, asstSuffix, true);
-        decodePrompt(promptCallback, responseCallback, recalculateCallback, promptCtx, embd_inp);
+        decodePrompt(promptCallback, responseCallback, allowContextShift, promptCtx, embd_inp);
     }
 }
 
 // returns false on error
 bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
                            std::function<bool(int32_t, const std::string&)> responseCallback,
-                           std::function<bool(bool)> recalculateCallback,
+                           bool allowContextShift,
                            PromptContext &promptCtx,
                            std::vector<Token> embd_inp) {
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
         std::cerr << implementation().modelType() << " ERROR: The prompt is " << embd_inp.size() <<
             " tokens and the context window is " << promptCtx.n_ctx << "!\n";
+        return false;
+    }
+
+    // FIXME(jared): There are mitigations for this situation, such as making room before
+    // copying the prompt context, or restoring the KV cache when we restore the prompt
+    // context.
+    if (!allowContextShift && promptCtx.n_past + embd_inp.size() > promptCtx.n_ctx) {
+        std::cerr << "LLModel Warning: Not enough space, n_past=" << promptCtx.n_past << ", n_eval=" << embd_inp.size()
+                  << ", n_ctx=" << promptCtx.n_ctx << "\n";
         return false;
     }
 
@@ -171,7 +180,8 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
 
         // Check if the context has run out...
         if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
-            recalculateContext(promptCtx, recalculateCallback);
+            assert(allowContextShift);
+            recalculateContext(promptCtx);
             assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
         }
 
@@ -213,7 +223,7 @@ static std::string::size_type stringsOverlap(const std::string &s, const std::st
 }
 
 void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
-                               std::function<bool(bool)> recalculateCallback,
+                               bool allowContextShift,
                                PromptContext &promptCtx) {
     static const char *reversePrompts[] {
         "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context",
@@ -222,6 +232,11 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
     // Don't even start if there is no room
     if (!promptCtx.n_predict)
         return;
+    if (!allowContextShift && promptCtx.n_past >= promptCtx.n_ctx) {
+        std::cerr << "LLModel Warning: Not enough space, n_past=" << promptCtx.n_past << ", n_ctx=" << promptCtx.n_ctx
+                  << "\n";
+        return;
+    }
 
     std::string cachedResponse;
     std::vector<Token> cachedTokens;
@@ -235,10 +250,12 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
         cachedTokens.push_back(new_tok.value());
         cachedResponse += new_piece;
 
-        auto accept = [this, &promptCtx, &cachedTokens, &new_tok, &recalculateCallback]() -> bool {
+        auto accept = [this, &promptCtx, &cachedTokens, &new_tok, allowContextShift]() -> bool {
             // Shift context if out of space
             if (promptCtx.n_past >= promptCtx.n_ctx) {
-                recalculateContext(promptCtx, recalculateCallback);
+                (void)allowContextShift;
+                assert(allowContextShift);
+                recalculateContext(promptCtx);
                 assert(promptCtx.n_past < promptCtx.n_ctx);
             }
 
@@ -281,6 +298,13 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
                 lengthLimit = std::min(lengthLimit, match);
                 if (match == 0) break;
             }
+        }
+
+        // Optionally stop if the context will run out
+        if (!allowContextShift && promptCtx.n_past + cachedTokens.size() >= promptCtx.n_ctx) {
+            std::cerr << "LLModel Warning: Not enough space, n_past=" << promptCtx.n_past << ", n_ctx="
+                      << promptCtx.n_ctx << "\n";
+            stop = true;
         }
 
         // Empty the cache, up to the length limit

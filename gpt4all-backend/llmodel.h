@@ -159,7 +159,7 @@ public:
                         const std::string &promptTemplate,
                         std::function<bool(int32_t)> promptCallback,
                         std::function<bool(int32_t, const std::string&)> responseCallback,
-                        std::function<bool(bool)> recalculateCallback,
+                        bool allowContextShift,
                         PromptContext &ctx,
                         bool special = false,
                         std::string *fakeReply = nullptr);
@@ -216,7 +216,7 @@ protected:
     virtual std::string tokenToString(Token id) const = 0;
     virtual Token sampleToken(PromptContext &ctx) const = 0;
     virtual bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const = 0;
-    virtual void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) = 0;
+    virtual void recalculateContext(PromptContext &promptCtx) = 0;
     virtual int32_t contextLength() const = 0;
     virtual const std::vector<Token> &endTokens() const = 0;
     virtual bool shouldAddBOS() const = 0;
@@ -246,11 +246,11 @@ protected:
 
     bool decodePrompt(std::function<bool(int32_t)> promptCallback,
                       std::function<bool(int32_t, const std::string&)> responseCallback,
-                      std::function<bool(bool)> recalculateCallback,
+                      bool allowContextShift,
                       PromptContext &promptCtx,
                       std::vector<Token> embd_inp);
     void generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
-                          std::function<bool(bool)> recalculateCallback,
+                          bool allowContextShift,
                           PromptContext &promptCtx);
 
     Token m_tokenize_last_token = -1; // not serialized

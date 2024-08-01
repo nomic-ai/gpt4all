@@ -69,7 +69,7 @@ public:
                 const std::string &promptTemplate,
                 std::function<bool(int32_t)> promptCallback,
                 std::function<bool(int32_t, const std::string&)> responseCallback,
-                std::function<bool(bool)> recalculateCallback,
+                bool allowContextShift,
                 PromptContext &ctx,
                 bool special,
                 std::string *fakeReply) override;
@@ -124,10 +124,9 @@ protected:
         throw std::logic_error("not implemented");
     }
 
-    void recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate) override
+    void recalculateContext(PromptContext &promptCtx) override
     {
         (void)promptCtx;
-        (void)recalculate;
         throw std::logic_error("not implemented");
     }
 

@@ -595,12 +595,9 @@ bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &toke
     return res == 0;
 }
 
-// FIXME(jared): if we get here during chat name or follow-up generation, bad things will happen when we try to restore
-// the old prompt context afterwards
-void LLamaModel::recalculateContext(PromptContext &promptCtx, std::function<bool(bool)> recalculate)
+void LLamaModel::recalculateContext(PromptContext &promptCtx)
 {
     // infinite text generation via context shifting
-    (void)recalculate;
 
     // erase up to n_ctx*contextErase tokens
     int n_keep = shouldAddBOS();
