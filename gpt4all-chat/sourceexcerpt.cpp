@@ -5,8 +5,53 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
+QString SourceExcerpt::toJson(const QList<SourceExcerpt> &sources)
+{
+    if (sources.isEmpty())
+        return QString();
+
+    QJsonArray resultsArray;
+    for (const auto &source : sources) {
+        QJsonObject sourceObj;
+        sourceObj["date"] = source.date;
+        sourceObj["collection"] = source.collection;
+        sourceObj["path"] = source.path;
+        sourceObj["file"] = source.file;
+        sourceObj["url"] = source.url;
+        sourceObj["favicon"] = source.favicon;
+        sourceObj["title"] = source.title;
+        sourceObj["author"] = source.author;
+        sourceObj["description"] = source.description;
+
+        QJsonArray excerptsArray;
+        for (const auto &excerpt : source.excerpts) {
+            QJsonObject excerptObj;
+            excerptObj["text"] = excerpt.text;
+            if (excerpt.page != -1)
+                excerptObj["page"] = excerpt.page;
+            if (excerpt.from != -1)
+                excerptObj["from"] = excerpt.from;
+            if (excerpt.to != -1)
+                excerptObj["to"] = excerpt.to;
+            excerptsArray.append(excerptObj);
+        }
+        sourceObj["excerpts"] = excerptsArray;
+
+        resultsArray.append(sourceObj);
+    }
+
+    QJsonObject jsonObj;
+    jsonObj["results"] = resultsArray;
+
+    QJsonDocument doc(jsonObj);
+    return doc.toJson(QJsonDocument::Compact);
+}
+
 QList<SourceExcerpt> SourceExcerpt::fromJson(const QString &json, QString &errorString)
 {
+    if (json.isEmpty())
+        return QList<SourceExcerpt>();
+
     QJsonParseError err;
     QJsonDocument document = QJsonDocument::fromJson(json.toUtf8(), &err);
     if (err.error != QJsonParseError::NoError) {
@@ -44,7 +89,7 @@ QList<SourceExcerpt> SourceExcerpt::fromJson(const QString &json, QString &error
         SourceExcerpt source;
         source.date = result["date"].toString();
         if (result.contains("collection"))
-            source.collection = result["text"].toString();
+            source.collection = result["collection"].toString();
         if (result.contains("path"))
             source.path = result["path"].toString();
         if (result.contains("file"))
@@ -61,15 +106,6 @@ QList<SourceExcerpt> SourceExcerpt::fromJson(const QString &json, QString &error
             source.author = result["description"].toString();
 
         for (int i = 0; i < textExcerpts.size(); ++i) {
-            SourceExcerpt excerpt;
-            excerpt.date        = source.date;
-            excerpt.collection  = source.collection;
-            excerpt.path        = source.path;
-            excerpt.file        = source.file;
-            excerpt.url         = source.url;
-            excerpt.favicon     = source.favicon;
-            excerpt.title       = source.title;
-            excerpt.author      = source.author;
             if (!textExcerpts[i].isObject()) {
                 errorString = "result excerpt is not an object";
                 return QList<SourceExcerpt>();
@@ -79,6 +115,7 @@ QList<SourceExcerpt> SourceExcerpt::fromJson(const QString &json, QString &error
                 errorString = "result excerpt is does not have text field";
                 return QList<SourceExcerpt>();
             }
+            Excerpt excerpt;
             excerpt.text = excerptObj["text"].toString();
             if (excerptObj.contains("page"))
                 excerpt.page = excerptObj["page"].toInt();
@@ -86,8 +123,9 @@ QList<SourceExcerpt> SourceExcerpt::fromJson(const QString &json, QString &error
                 excerpt.from = excerptObj["from"].toInt();
             if (excerptObj.contains("to"))
                 excerpt.to = excerptObj["to"].toInt();
-            excerpts.append(excerpt);
+            source.excerpts.append(excerpt);
         }
+        excerpts.append(source);
     }
     return excerpts;
 }
