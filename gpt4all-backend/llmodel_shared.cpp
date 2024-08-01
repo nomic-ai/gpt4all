@@ -58,12 +58,21 @@ void LLModel::prompt(const std::string &prompt,
         return;
     }
 
-    // make sure token cache matches decode offset
-    if (promptCtx.tokens.size() < promptCtx.n_past) {
+    // sanity checks
+    if (promptCtx.n_past > contextLength()) {
         std::ostringstream ss;
-        ss << "expected n_past to be at most " << promptCtx.tokens.size() << ", got " << promptCtx.n_past;
+        ss << "n_past=" << promptCtx.n_past << " is past end of context length=" << contextLength();
         throw std::out_of_range(ss.str());
     }
+    if (promptCtx.n_past > promptCtx.tokens.size()) {
+        std::ostringstream ss;
+        ss << "n_past=" << promptCtx.n_past << " is past end of token cache length=" << promptCtx.tokens.size();
+        throw std::out_of_range(ss.str());
+    }
+
+    promptCtx.n_ctx = contextLength();
+    promptCtx.n_batch = std::min(promptCtx.n_batch, LLMODEL_MAX_PROMPT_BATCH);
+
     if (promptCtx.n_past < promptCtx.tokens.size())
         promptCtx.tokens.resize(promptCtx.n_past);
     m_tokenize_last_token = promptCtx.tokens.empty() ? -1 : promptCtx.tokens.back(); // not serialized
@@ -148,9 +157,6 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
                            std::function<bool(bool)> recalculateCallback,
                            PromptContext &promptCtx,
                            std::vector<Token> embd_inp) {
-    // save the context size
-    promptCtx.n_ctx = contextLength();
-
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
         std::cerr << implementation().modelType() << " ERROR: The prompt is " << embd_inp.size() <<
@@ -159,8 +165,6 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
     }
 
     promptCtx.n_predict = std::min(promptCtx.n_predict, promptCtx.n_ctx - (int) embd_inp.size());
-    promptCtx.n_past = std::min(promptCtx.n_past, promptCtx.n_ctx);
-    promptCtx.n_batch = std::min(promptCtx.n_batch, LLMODEL_MAX_PROMPT_BATCH);
 
     // process the prompt in batches
     size_t i = 0;
