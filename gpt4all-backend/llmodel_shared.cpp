@@ -214,6 +214,20 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
     return true;
 }
 
+int getCharSize(unsigned char current){
+    int charSize = 0;
+    if (current < 0x80) {
+        charSize = 1;
+    } else if ((current & 0xE0) == 0xC0) {
+        charSize = 2;
+    } else if ((current & 0xF0) == 0xE0) {
+        charSize = 3;
+    } else if ((current & 0xF8) == 0xF0) {
+        charSize = 4;
+    }
+    return charSize;
+}
+
 void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
                                std::function<bool(bool)> recalculateCallback,
                                PromptContext &promptCtx) {
@@ -222,6 +236,7 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
     std::unordered_set<std::string> reversePrompts
         = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context" };
 
+    std::string cache = "";
     // predict next tokens
     for (int i = 0; i < promptCtx.n_predict; i++) {
 
@@ -270,13 +285,30 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
 
         // Empty the cache
         for (auto t : cachedTokens) {
-            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx)
+            if (int32_t(promptCtx.tokens.size()) == promptCtx.n_ctx){
                 promptCtx.tokens.erase(promptCtx.tokens.begin());
+            }
             promptCtx.tokens.push_back(t);
             promptCtx.n_past += 1;
-            //TODO: Conversion to std::string can be avoided here...
-            if (!responseCallback(t, std::string(tokenToString(t))))
-                return;
+
+            //fix: Emoji Bug
+            std::string batch_str = "";
+            cache += tokenToString(t);
+            while (!cache.empty()) {
+                int cached_size = getCharSize(static_cast<unsigned char>(cache[0]));
+                if (cached_size == 0 || cached_size > cache.length()) {
+                    break; // If the size is invalid or larger than the remaining cache, break out
+                }
+                batch_str += cache.substr(0, cached_size);
+                cache = cache.substr(cached_size);
+            }
+
+            if (!batch_str.empty()) {
+                //TODO: Conversion to std::string can be avoided here...
+                if (!responseCallback(t, batch_str)) {
+                    return;
+                }
+            }
         }
         cachedTokens.clear();
     }
