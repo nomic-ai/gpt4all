@@ -443,8 +443,15 @@ MySettingsTab {
                             Qt.locale().name, { maximumSignificantDigits: 6 });
                     }
                 }
+                function parseLocaleNumber(text) {
+                    try {
+                        return Number.fromLocaleString(Qt.locale(), text);
+                    } catch (e) {
+                        return Number.NaN;
+                    }
+                }
                 onEditingFinished: {
-                    var val = parseFloat(text)
+                    var val = parseLocaleNumber(text);
                     if (!isNaN(val)) {
                         if (val < 0.000001) {
                             val = 0.000001;
