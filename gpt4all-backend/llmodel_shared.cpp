@@ -219,12 +219,16 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
         "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context",
     };
 
+    // Don't even start if there is no room
+    if (!promptCtx.n_predict)
+        return;
+
     std::string cachedResponse;
     std::vector<Token> cachedTokens;
-    bool stop = false;
+    int n_predicted = 0;
 
     // Predict next tokens
-    for (int i = 0; i < promptCtx.n_predict && !stop; i++) {
+    for (bool stop = false; !stop;) {
         // Sample next token
         Token new_tok = sampleToken(promptCtx);
         std::string new_piece = tokenToString(new_tok);
@@ -288,7 +292,7 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
             cachedResponse.erase(cachedResponse.begin(), cachedResponse.begin() + piece.size());
 
             // Send the token
-            if (!responseCallback(tok, piece)) {
+            if (!responseCallback(tok, piece) || ++n_predicted >= promptCtx.n_predict) {
                 stop = true;
                 break;
             }
