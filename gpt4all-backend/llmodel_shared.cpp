@@ -11,7 +11,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 static bool parsePromptTemplate(const std::string &tmpl, std::vector<std::smatch> &placeholders, std::string &err)
@@ -194,70 +193,125 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
     return true;
 }
 
+/*
+ * If string s overlaps with the string key such that some prefix of the key is at the end
+ * of the string, return the position in s where the first match starts. Otherwise, return
+ * std::string::npos. Examples:
+ * s = "bfo",  key = "foo" -> 1
+ * s = "fooa", key = "foo" -> npos
+ */
+static std::string::size_type stringsOverlap(const std::string &s, const std::string &key)
+{
+    if (s.empty() || key.empty())
+        throw std::invalid_argument("arguments to stringsOverlap must not be empty");
+
+    for (auto start = s.size() - key.size(); start < s.size(); start++) {
+        if (s.compare(start, s.size(), key, 0, s.size() - start) == 0)
+            return start;
+    }
+    return std::string::npos;
+}
+
 void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
                                std::function<bool(bool)> recalculateCallback,
                                PromptContext &promptCtx) {
+    static const char *reversePrompts[] {
+        "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context",
+    };
+
     std::string cachedResponse;
     std::vector<Token> cachedTokens;
-    std::unordered_set<std::string> reversePrompts
-        = { "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context" };
+    bool stop = false;
 
-    // predict next tokens
-    for (int i = 0; i < promptCtx.n_predict; i++) {
-
-        // sample next token
-        auto id = sampleToken(promptCtx);
+    // Predict next tokens
+    for (int i = 0; i < promptCtx.n_predict && !stop; i++) {
+        // Sample next token
+        Token new_tok = sampleToken(promptCtx);
+        std::string new_piece = tokenToString(new_tok);
+        cachedTokens.push_back(new_tok);
+        cachedResponse += new_piece;
 
         // Check if the context has run out...
-        if (promptCtx.n_past + 1 > promptCtx.n_ctx) {
+        if (promptCtx.n_past >= promptCtx.n_ctx) {
             recalculateContext(promptCtx, recalculateCallback);
-            assert(promptCtx.n_past + 1 <= promptCtx.n_ctx);
+            assert(promptCtx.n_past < promptCtx.n_ctx);
         }
 
-        if (!evalTokens(promptCtx, { id })) {
+        if (!evalTokens(promptCtx, { new_tok })) {
             std::cerr << implementation().modelType() << " ERROR: Failed to predict next token\n";
             return;
         }
+        promptCtx.tokens.push_back(new_tok);
+        promptCtx.n_past += 1;
 
-        // display text
+        // Check for EOS
+        auto lengthLimit = std::string::npos;
         for (const auto token : endTokens()) {
-            if (id == token) return;
-        }
-
-        const std::string str = tokenToString(id);
-
-        // Check if the provided str is part of our reverse prompts
-        bool foundPartialReversePrompt = false;
-        const std::string completed = cachedResponse + std::string(str);
-        if (reversePrompts.find(completed) != reversePrompts.end())
-            return;
-
-        // Check if it partially matches our reverse prompts and if so, cache
-        for (const auto& s : reversePrompts) {
-            if (s.compare(0, completed.size(), completed) == 0) {
-                foundPartialReversePrompt = true;
-                cachedResponse = completed;
-                break;
+            if (new_tok == token) {
+                stop = true;
+                lengthLimit = cachedResponse.size() - new_piece.size();
             }
         }
 
-        // Regardless the token gets added to our cache
-        cachedTokens.push_back(id);
-
-        // Continue if we have found a partial match
-        if (foundPartialReversePrompt)
-            continue;
-
-        // Empty the cache
-        for (auto t : cachedTokens) {
-            promptCtx.tokens.push_back(t);
-            promptCtx.n_past += 1;
-            //TODO: Conversion to std::string can be avoided here...
-            if (!responseCallback(t, std::string(tokenToString(t))))
-                return;
+        // Check if the response contains a reverse prompt
+        if (lengthLimit == std::string::npos) {
+            for (const auto &p : reversePrompts) {
+                auto match = cachedResponse.find(p);
+                if (match != std::string::npos) stop = true;
+                lengthLimit = std::min(lengthLimit, match);
+                if (match == 0) break;
+            }
         }
-        cachedTokens.clear();
+
+        // Check if the response matches the start of a reverse prompt
+        if (lengthLimit == std::string::npos) {
+            for (const auto &p : reversePrompts) {
+                auto match = stringsOverlap(cachedResponse, p);
+                lengthLimit = std::min(lengthLimit, match);
+                if (match == 0) break;
+            }
+        }
+
+        // Empty the cache, up to the length limit
+        std::string::size_type responseLength = 0;
+        while (!cachedTokens.empty()) {
+            Token tok = cachedTokens.front();
+            std::string piece = tokenToString(tok);
+
+            // Stop if the piece (or part of it) does not fit within the length limit
+            if (responseLength + (stop ? 1 : piece.size()) > lengthLimit)
+                break;
+
+            // Remove token from cache
+            assert(cachedResponse.starts_with(piece));
+            cachedTokens.erase(cachedTokens.begin(), cachedTokens.begin() + 1);
+            cachedResponse.erase(cachedResponse.begin(), cachedResponse.begin() + piece.size());
+
+            // Send the token
+            if (!responseCallback(tok, piece)) {
+                stop = true;
+                break;
+            }
+
+            // FIXME(jared): we could avoid printing partial stop sequences if we didn't have to
+            // output token IDs and could cache a partial token for the next prompt call
+            responseLength += piece.size();
+        }
+        assert(cachedTokens.empty() == cachedResponse.empty());
     }
+
+    auto &tokens = promptCtx.tokens;
+    if (tokens.size() < cachedTokens.size()) {
+        /* This is theoretically possible if the longest stop sequence is greater than
+         * n_ctx * contextErase tokens. */
+        throw std::runtime_error("shifted too much context, can't go back");
+    }
+
+    auto discard_start = tokens.end() - cachedTokens.size();
+    assert(std::equal(discard_start, tokens.end(), cachedTokens.begin()));
+    tokens.erase(discard_start, tokens.end());
+
+    promptCtx.n_past -= cachedTokens.size();
 }
 
 void LLModel::embed(
