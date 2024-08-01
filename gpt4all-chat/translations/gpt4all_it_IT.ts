@@ -346,7 +346,7 @@
         <location filename="../qml/AddModelView.qml" line="549"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="549"/>
         <source>Download progressBar</source>
-        <translation>barra di avanzamento dello scaricamento</translation>
+        <translation>Barra di avanzamento dello scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="550"/>
@@ -569,7 +569,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="216"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="216"/>
         <source>The compute device used for text generation.</source>
-        <translation>Dispositivo di elaborazione utilizzato per la generazione del testo.</translation>
+        <translation>Il dispositivo di calcolo utilizzato per la generazione del testo.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="234"/>
@@ -577,7 +577,7 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="234"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="289"/>
         <source>Application default</source>
-        <translation>Modello predefinito</translation>
+        <translation>Applicazione predefinita</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="267"/>
@@ -601,7 +601,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="326"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="326"/>
         <source>Generate suggested follow-up questions at the end of responses.</source>
-        <translation>Genera domande di approfondimento suggerite alla fine delle risposte.</translation>
+        <translation>Genera le domande di approfondimento suggerite alla fine delle risposte.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="338"/>
@@ -655,7 +655,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="393"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="393"/>
         <source>Send chats and feedback to the GPT4All Open-Source Datalake.</source>
-        <translation>Invia chat e commenti al Datalake open source GPT4All.</translation>
+        <translation>Invia chat e commenti al Datalake Open Source GPT4All.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="426"/>
@@ -722,7 +722,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="558"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="558"/>
         <source>Manually check for an update to GPT4All.</source>
-        <translation>Verifica manualmente la presenza di un aggiornamento a GPT4All.</translation>
+        <translation>Verifica manualmente l&apos;aggiornamento di GPT4All.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="567"/>
@@ -742,7 +742,7 @@
     <message>
         <location filename="../chat.cpp" line="38"/>
         <source>Server Chat</source>
-        <translation>Chatta del server</translation>
+        <translation>Chat del server</translation>
     </message>
 </context>
 <context>
@@ -1136,7 +1136,7 @@ modello per iniziare</translation>
         <location filename="../qml/ChatView.qml" line="1389"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="1389"/>
         <source>Suggested follow-ups</source>
-        <translation>Seguiti suggeriti</translation>
+        <translation>Approfondimenti suggeriti</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="1665"/>
@@ -1267,7 +1267,7 @@ modello per iniziare</translation>
         <location filename="../qml/CollectionsDrawer.qml" line="70"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/CollectionsDrawer.qml" line="70"/>
         <source>Warning: searching collections while indexing can return incomplete results</source>
-        <translation>Attenzione: la ricerca nelle raccolte durante l&apos;indicizzazione può restituire risultati incompleti</translation>
+        <translation>Avviso: la ricerca nelle raccolte durante l&apos;indicizzazione può restituire risultati incompleti</translation>
     </message>
     <message numerus="yes">
         <location filename="../qml/CollectionsDrawer.qml" line="87"/>
@@ -1283,8 +1283,8 @@ modello per iniziare</translation>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/CollectionsDrawer.qml" line="87"/>
         <source>%n word(s)</source>
         <translation>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+            <numerusform>%n parola</numerusform>
+            <numerusform>%n parole</numerusform>
         </translation>
     </message>
     <message>
@@ -1498,7 +1498,7 @@ modello per iniziare</translation>
         <location filename="../qml/LocalDocsSettings.qml" line="112"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="112"/>
         <source>Use Nomic Embed API</source>
-        <translation>Utilizza l&apos;API di incorporamento di Nomic Embed</translation>
+        <translation>Utilizza l&apos;API di incorporamento Nomic Embed</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="113"/>
@@ -1649,7 +1649,7 @@ modello per iniziare</translation>
         <location filename="../qml/LocalDocsView.qml" line="231"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="231"/>
         <source>Indexing progressBar</source>
-        <translation>Barra di avanzamento dell&apos;indicizzazione</translation>
+        <translation>Barra di avanzamento indicizzazione</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="232"/>
@@ -1930,13 +1930,13 @@ modello per iniziare</translation>
         <location filename="../qml/ModelSettings.qml" line="298"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="298"/>
         <source>Suggested FollowUp Prompt</source>
-        <translation>Prompt di proseguimento suggerito</translation>
+        <translation>Prompt di approfondimento suggerito</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="299"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="299"/>
         <source>Prompt used to generate suggested follow-up questions.</source>
-        <translation>Prompt utilizzato per generare domande di proseguimento suggerite.</translation>
+        <translation>Prompt utilizzato per generare domande di approfondimento suggerite.</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="352"/>
@@ -2233,7 +2233,7 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
         <location filename="../qml/ModelsView.qml" line="301"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="301"/>
         <source>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;WARNING: Not recommended for your hardware. Model requires more memory (%1 GB) than your system has available (%2).&lt;/strong&gt;&lt;/font&gt;</source>
-        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;AVVERTENZA: non consigliato per il tuo hardware. Il modello richiede più memoria (%1 GB) di quella disponibile nel sistema (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
+        <translation>&lt;strong&gt;&lt;font size=&quot;2&quot;&gt;AVVISO: non consigliato per il tuo hardware. Il modello richiede più memoria (%1 GB) di quella disponibile nel sistema (%2).&lt;/strong&gt;&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="399"/>
@@ -2293,7 +2293,7 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
         <location filename="../qml/ModelsView.qml" line="345"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="345"/>
         <source>Download progressBar</source>
-        <translation>barra di avanzamento dello scaricamento</translation>
+        <translation>Barra di avanzamento dello scaricamento</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="346"/>
@@ -2386,13 +2386,13 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
         <location filename="../qml/MyFancyLink.qml" line="42"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/MyFancyLink.qml" line="42"/>
         <source>Fancy link</source>
-        <translation></translation>
+        <translation>Mio link</translation>
     </message>
     <message>
         <location filename="../qml/MyFancyLink.qml" line="43"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/MyFancyLink.qml" line="43"/>
         <source>A stylized link</source>
-        <translation>Un link stilizzato</translation>
+        <translation>Un link d&apos;esempio</translation>
     </message>
 </context>
 <context>
@@ -2410,7 +2410,7 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
         <location filename="../qml/MySettingsTab.qml" line="62"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/MySettingsTab.qml" line="62"/>
         <source>Restore Defaults</source>
-        <translation>Riprista valori predefiniti</translation>
+        <translation>Riprista i valori predefiniti</translation>
     </message>
     <message>
         <location filename="../qml/MySettingsTab.qml" line="66"/>
@@ -2425,7 +2425,7 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
         <location filename="../qml/NetworkDialog.qml" line="39"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/NetworkDialog.qml" line="39"/>
         <source>Contribute data to the GPT4All Opensource Datalake.</source>
-        <translation>Contribuisci  coni tuoi dati al Data Lake Open Source di GPT4All.</translation>
+        <translation>Contribuisci  coni tuoi dati al Datalake Open Source di GPT4All.</translation>
     </message>
     <message>
         <location filename="../qml/NetworkDialog.qml" line="55"/>
@@ -2720,7 +2720,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
         <location filename="../qml/SwitchModelDialog.qml" line="22"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SwitchModelDialog.qml" line="22"/>
         <source>&lt;b&gt;Warning:&lt;/b&gt; changing the model will erase the current conversation. Do you wish to continue?</source>
-        <translation>&lt;b&gt;Attenzione:&lt;/b&gt; la modifica del modello cancellerà la conversazione corrente. Vuoi continuare?</translation>
+        <translation>&lt;b&gt;Avviso:&lt;/b&gt; la modifica del modello cancellerà la conversazione corrente. Vuoi continuare?</translation>
     </message>
     <message>
         <location filename="../qml/SwitchModelDialog.qml" line="33"/>
