@@ -595,7 +595,7 @@ bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &toke
     return res == 0;
 }
 
-void LLamaModel::recalculateContext(PromptContext &promptCtx)
+void LLamaModel::shiftContext(PromptContext &promptCtx)
 {
     // infinite text generation via context shifting
 

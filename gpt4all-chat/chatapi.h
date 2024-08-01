@@ -124,7 +124,7 @@ protected:
         throw std::logic_error("not implemented");
     }
 
-    void recalculateContext(PromptContext &promptCtx) override
+    void shiftContext(PromptContext &promptCtx) override
     {
         (void)promptCtx;
         throw std::logic_error("not implemented");

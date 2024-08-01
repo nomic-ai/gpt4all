@@ -216,7 +216,7 @@ protected:
     virtual std::string tokenToString(Token id) const = 0;
     virtual Token sampleToken(PromptContext &ctx) const = 0;
     virtual bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const = 0;
-    virtual void recalculateContext(PromptContext &promptCtx) = 0;
+    virtual void shiftContext(PromptContext &promptCtx) = 0;
     virtual int32_t contextLength() const = 0;
     virtual const std::vector<Token> &endTokens() const = 0;
     virtual bool shouldAddBOS() const = 0;

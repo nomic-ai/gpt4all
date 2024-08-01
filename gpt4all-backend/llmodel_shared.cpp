@@ -181,7 +181,7 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
         // Check if the context has run out...
         if (promptCtx.n_past + int32_t(batch.size()) > promptCtx.n_ctx) {
             assert(allowContextShift);
-            recalculateContext(promptCtx);
+            shiftContext(promptCtx);
             assert(promptCtx.n_past + int32_t(batch.size()) <= promptCtx.n_ctx);
         }
 
@@ -255,7 +255,7 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
             if (promptCtx.n_past >= promptCtx.n_ctx) {
                 (void)allowContextShift;
                 assert(allowContextShift);
-                recalculateContext(promptCtx);
+                shiftContext(promptCtx);
                 assert(promptCtx.n_past < promptCtx.n_ctx);
             }
 
