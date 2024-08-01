@@ -93,7 +93,7 @@ class Chat;
 class ChatLLM : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool isRecalc READ isRecalc NOTIFY recalcChanged)
+    Q_PROPERTY(bool restoringFromText READ restoringFromText NOTIFY restoringFromTextChanged)
     Q_PROPERTY(QString deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString device READ device NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
@@ -121,7 +121,7 @@ public:
     ModelInfo modelInfo() const;
     void setModelInfo(const ModelInfo &info);
 
-    bool isRecalc() const { return m_isRecalc; }
+    bool restoringFromText() const { return m_restoringFromText; }
 
     void acquireModel();
     void resetModel();
@@ -172,7 +172,7 @@ public Q_SLOTS:
     void processRestoreStateFromText();
 
 Q_SIGNALS:
-    void recalcChanged();
+    void restoringFromTextChanged();
     void loadedModelInfoChanged();
     void modelLoadingPercentageChanged(float);
     void modelLoadingError(const QString &error);
@@ -231,7 +231,7 @@ private:
     QThread m_llmThread;
     std::atomic<bool> m_stopGenerating;
     std::atomic<bool> m_shouldBeLoaded;
-    std::atomic<bool> m_isRecalc;
+    std::atomic<bool> m_restoringFromText; // status indication
     std::atomic<bool> m_forceUnloadModel;
     std::atomic<bool> m_markedForDeletion;
     bool m_isServer;

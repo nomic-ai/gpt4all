@@ -834,7 +834,7 @@ Rectangle {
                                             to: 360
                                             duration: 1000
                                             loops: Animation.Infinite
-                                            running: currentResponse && (currentChat.responseInProgress || currentChat.isRecalc)
+                                            running: currentResponse && (currentChat.responseInProgress || currentChat.restoringFromText)
                                         }
                                     }
                                 }
@@ -867,13 +867,13 @@ Rectangle {
                                             color: theme.mutedTextColor
                                         }
                                         RowLayout {
-                                            visible: currentResponse && ((value === "" && currentChat.responseInProgress) || currentChat.isRecalc)
+                                            visible: currentResponse && ((value === "" && currentChat.responseInProgress) || currentChat.restoringFromText)
                                             Text {
                                                 color: theme.mutedTextColor
                                                 font.pixelSize: theme.fontSizeLarger
                                                 text: {
-                                                    if (currentChat.isRecalc)
-                                                        return qsTr("recalculating context ...");
+                                                    if (currentChat.restoringFromText)
+                                                        return qsTr("restoring from text ...");
                                                     switch (currentChat.responseState) {
                                                     case Chat.ResponseStopped: return qsTr("response stopped ...");
                                                     case Chat.LocalDocsRetrieval: return qsTr("retrieving localdocs: %1 ...").arg(currentChat.collectionList.join(", "));
@@ -1861,7 +1861,7 @@ Rectangle {
                                               }
                                           }
                     function sendMessage() {
-                        if (textInput.text === "" || currentChat.responseInProgress || currentChat.isRecalc)
+                        if (textInput.text === "" || currentChat.responseInProgress || currentChat.restoringFromText)
                             return
 
                         currentChat.stopGenerating()

@@ -102,7 +102,7 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     : QObject{nullptr}
     , m_promptResponseTokens(0)
     , m_promptTokens(0)
-    , m_isRecalc(false)
+    , m_restoringFromText(false)
     , m_shouldBeLoaded(false)
     , m_forceUnloadModel(false)
     , m_markedForDeletion(false)
@@ -1262,8 +1262,8 @@ void ChatLLM::processRestoreStateFromText()
     if (!isModelLoaded() || !m_restoreStateFromText || m_isServer)
         return;
 
-    m_isRecalc = true;
-    emit recalcChanged();
+    m_restoringFromText = true;
+    emit restoringFromTextChanged();
 
     m_stopGenerating = false;
     m_ctx = LLModel::PromptContext();
@@ -1309,8 +1309,8 @@ void ChatLLM::processRestoreStateFromText()
         m_stateFromText.clear();
     }
 
-    m_isRecalc = false;
-    emit recalcChanged();
+    m_restoringFromText = false;
+    emit restoringFromTextChanged();
 
     m_pristineLoadedState = false;
 }
