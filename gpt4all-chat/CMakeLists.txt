@@ -116,7 +116,7 @@ qt_add_executable(chat
     database.h database.cpp
     download.h download.cpp
     embllm.cpp embllm.h
-    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp
+    localdocs.h localdocs.cpp localdocsmodel.h localdocsmodel.cpp localdocssearch.h localdocssearch.cpp
     llm.h llm.cpp
     modellist.h modellist.cpp
     mysettings.h mysettings.cpp

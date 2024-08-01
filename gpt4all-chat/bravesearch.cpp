@@ -35,10 +35,8 @@ QString BraveSearch::run(const QJsonObject &parameters, qint64 timeout)
     return worker.response();
 }
 
-void BraveAPIWorker::request(const QString &apiKey, const QString &query, int topK)
+void BraveAPIWorker::request(const QString &apiKey, const QString &query, int count)
 {
-    m_topK = topK;
-
     // Documentation on the brave web search:
     // https://api.search.brave.com/app/documentation/web-search/get-started
     QUrl jsonUrl("https://api.search.brave.com/res/v1/web/search");
@@ -47,7 +45,7 @@ void BraveAPIWorker::request(const QString &apiKey, const QString &query, int to
     //https://api.search.brave.com/app/documentation/web-search/query
     QUrlQuery urlQuery;
     urlQuery.addQueryItem("q", query);
-    urlQuery.addQueryItem("count", QString::number(topK));
+    urlQuery.addQueryItem("count", QString::number(count));
     urlQuery.addQueryItem("result_filter", "web");
     urlQuery.addQueryItem("extra_snippets", "true");
     jsonUrl.setQuery(urlQuery);
@@ -64,7 +62,7 @@ void BraveAPIWorker::request(const QString &apiKey, const QString &query, int to
     connect(reply, &QNetworkReply::errorOccurred, this, &BraveAPIWorker::handleErrorOccurred);
 }
 
-static QString cleanBraveResponse(const QByteArray& jsonResponse, qsizetype topK = 1)
+static QString cleanBraveResponse(const QByteArray& jsonResponse)
 {
     // This parses the response from brave and formats it in json that conforms to the de facto
     // standard in SourceExcerpts::fromJson(...)
@@ -77,7 +75,6 @@ static QString cleanBraveResponse(const QByteArray& jsonResponse, qsizetype topK
 
     QString query;
     QJsonObject searchResponse = document.object();
-    QJsonObject cleanResponse;
     QJsonArray cleanArray;
 
     if (searchResponse.contains("query")) {
@@ -99,7 +96,7 @@ static QString cleanBraveResponse(const QByteArray& jsonResponse, qsizetype topK
             const int idx = m["index"].toInt();
 
             QJsonObject resultObj = resultsArray[idx].toObject();
-            QStringList selectedKeys = {"type", "title", "url", "description"};
+            QStringList selectedKeys = {"type", "title", "url"};
             QJsonObject result;
             for (const auto& key : selectedKeys)
                 if (resultObj.contains(key))
@@ -107,6 +104,8 @@ static QString cleanBraveResponse(const QByteArray& jsonResponse, qsizetype topK
 
             if (resultObj.contains("page_age"))
                 result.insert("date", resultObj["page_age"]);
+            else
+                result.insert("date", QDate::currentDate().toString());
 
             QJsonArray excerpts;
             if (resultObj.contains("extra_snippets")) {
@@ -117,12 +116,18 @@ static QString cleanBraveResponse(const QByteArray& jsonResponse, qsizetype topK
                     excerpt.insert("text", snippet);
                     excerpts.append(excerpt);
                 }
+                if (resultObj.contains("description"))
+                    result.insert("description", resultObj["description"]);
+            } else {
+                QJsonObject excerpt;
+                excerpt.insert("text", resultObj["description"]);
             }
             result.insert("excerpts", excerpts);
             cleanArray.append(QJsonValue(result));
         }
     }
 
+    QJsonObject cleanResponse;
     cleanResponse.insert("query", query);
     cleanResponse.insert("results", cleanArray);
     QJsonDocument cleanedDoc(cleanResponse);
@@ -139,12 +144,13 @@ void BraveAPIWorker::handleFinished()
     if (jsonReply->error() == QNetworkReply::NoError && jsonReply->isFinished()) {
         QByteArray jsonData = jsonReply->readAll();
         jsonReply->deleteLater();
-        m_response = cleanBraveResponse(jsonData, m_topK);
+        m_response = cleanBraveResponse(jsonData);
     } else {
         QByteArray jsonData = jsonReply->readAll();
         qWarning() << "ERROR: Could not search brave" << jsonReply->error() << jsonReply->errorString() << jsonData;
         jsonReply->deleteLater();
     }
+    emit finished();
 }
 
 void BraveAPIWorker::handleErrorOccurred(QNetworkReply::NetworkError code)

@@ -1938,7 +1938,7 @@ QList<int> Database::searchEmbeddings(const std::vector<float> &query, const QLi
 }
 
 void Database::retrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize,
-    QList<SourceExcerpt> *results)
+    QString &jsonResult)
 {
 #if defined(DEBUG)
     qDebug() << "retrieveFromDB" << collections << text << retrievalSize;
@@ -1960,37 +1960,49 @@ void Database::retrieveFromDB(const QList<QString> &collections, const QString &
         return;
     }
 
+    QMap<QString, QJsonObject> results;
     while (q.next()) {
 #if defined(DEBUG)
         const int rowid = q.value(0).toInt();
 #endif
-        const QString document_path = q.value(2).toString();
-        const QString chunk_text = q.value(3).toString();
-        const QString date = QDateTime::fromMSecsSinceEpoch(q.value(1).toLongLong()).toString("yyyy, MMMM dd");
         const QString file = q.value(4).toString();
-        const QString title = q.value(5).toString();
-        const QString author = q.value(6).toString();
-        const int page = q.value(7).toInt();
-        const int from = q.value(8).toInt();
-        const int to = q.value(9).toInt();
-        const QString collectionName = q.value(10).toString();
-        SourceExcerpt info;
-        info.collection = collectionName;
-        info.path = document_path;
-        info.file = file;
-        info.title = title;
-        info.author = author;
-        info.date = date;
-        info.text = chunk_text;
-        info.page = page;
-        info.from = from;
-        info.to = to;
-        results->append(info);
+        QJsonObject resultObject = results.value(file);
+        resultObject.insert("file", file);
+        resultObject.insert("path", q.value(2).toString());
+        resultObject.insert("date", QDateTime::fromMSecsSinceEpoch(q.value(1).toLongLong()).toString("yyyy, MMMM dd"));
+        resultObject.insert("title", q.value(5).toString());
+        resultObject.insert("author", q.value(6).toString());
+        resultObject.insert("collection", q.value(10).toString());
+
+        QJsonArray excerpts;
+        if (resultObject.contains("excerpts"))
+            excerpts = resultObject["excerpts"].toArray();
+
+        QJsonObject excerptObject;
+        excerptObject.insert("text", q.value(3).toString());
+        excerptObject.insert("page", q.value(7).toInt());
+        excerptObject.insert("from", q.value(8).toInt());
+        excerptObject.insert("to", q.value(9).toInt());
+        excerpts.append(excerptObject);
+        resultObject.insert("excerpts", excerpts);
+        results.insert(file, resultObject);
+
 #if defined(DEBUG)
         qDebug() << "retrieve rowid:" << rowid
                  << "chunk_text:" << chunk_text;
 #endif
     }
+
+    QJsonArray resultsArray;
+    QList<QJsonObject> resultsList = results.values();
+    for (const QJsonObject &result : resultsList)
+        resultsArray.append(QJsonValue(result));
+
+    QJsonObject response;
+    response.insert("results", resultsArray);
+    QJsonDocument document(response);
+//    qDebug().noquote() << document.toJson(QJsonDocument::Indented);
+    jsonResult = document.toJson(QJsonDocument::Compact);
 }
 
 // FIXME This is very slow and non-interruptible and when we close the application and we're

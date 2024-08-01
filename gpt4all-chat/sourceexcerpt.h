@@ -77,19 +77,7 @@ public:
     static QList<SourceExcerpt> fromJson(const QString &json, QString &errorString);
 
     bool operator==(const SourceExcerpt &other) const {
-        return date == other.date &&
-               text == other.text &&
-               collection == other.collection &&
-               path == other.path &&
-               file == other.file &&
-               url == other.url &&
-               favicon == other.favicon &&
-               title == other.title &&
-               author == other.author &&
-               description == other.description &&
-               page == other.page &&
-               from == other.from &&
-               to == other.to;
+        return file == other.file || url == other.url;
     }
     bool operator!=(const SourceExcerpt &other) const {
         return !(*this == other);
