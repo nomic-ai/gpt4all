@@ -284,31 +284,31 @@
         <location filename="../qml/AddModelView.qml" line="603"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="603"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: $API_KEY è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="624"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="624"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: $BASE_URL non è valido.</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="630"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="630"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished"></translation>
+        <translation>inserisci $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="645"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="645"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: $MODEL_NAME è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="651"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddModelView.qml" line="651"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished"></translation>
+        <translation>inserisci $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/AddModelView.qml" line="700"/>
@@ -523,37 +523,37 @@
         <location filename="../qml/ApplicationSettings.qml" line="146"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="146"/>
         <source>Small</source>
-        <translation type="unfinished"></translation>
+        <translation>Piccolo</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="146"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="146"/>
         <source>Medium</source>
-        <translation type="unfinished"></translation>
+        <translation>Medio</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="146"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="146"/>
         <source>Large</source>
-        <translation type="unfinished"></translation>
+        <translation>Grande</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="168"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="168"/>
         <source>Language and Locale</source>
-        <translation type="unfinished"></translation>
+        <translation>Lingua e impostazioni locali</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="169"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="169"/>
         <source>The language and locale you wish to use.</source>
-        <translation type="unfinished"></translation>
+        <translation>La lingua e le impostazioni locali che desideri utilizzare.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="188"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="188"/>
         <source>System Locale</source>
-        <translation type="unfinished"></translation>
+        <translation>Impostazioni locali del sistema</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="215"/>
@@ -569,7 +569,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="216"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="216"/>
         <source>The compute device used for text generation.</source>
-        <translation type="unfinished"></translation>
+        <translation>Dispositivo di elaborazione utilizzato per la generazione del testo.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="234"/>
@@ -577,7 +577,7 @@
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="234"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="289"/>
         <source>Application default</source>
-        <translation type="unfinished"></translation>
+        <translation>Modello predefinito</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="267"/>
@@ -750,12 +750,12 @@
     <message>
         <location filename="../chatapi.cpp" line="230"/>
         <source>ERROR: Network error occurred while connecting to the API server</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: si è verificato un errore di rete durante la connessione al server API</translation>
     </message>
     <message>
         <location filename="../chatapi.cpp" line="243"/>
         <source>ChatAPIWorker::handleFinished got HTTP Error %1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>ChatAPIWorker::handleFinished ha ricevuto l&apos;errore HTTP %1 %2</translation>
     </message>
 </context>
 <context>
@@ -1311,37 +1311,37 @@ modello per iniziare</translation>
     <message>
         <location filename="../download.cpp" line="240"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>Il modello &quot;%1&quot; è stato installato correttamente.</translation>
     </message>
     <message>
         <location filename="../download.cpp" line="250"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: $MODEL_NAME è vuoto.</translation>
     </message>
     <message>
         <location filename="../download.cpp" line="256"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: $API_KEY è vuoto.</translation>
     </message>
     <message>
         <location filename="../download.cpp" line="262"/>
         <source>ERROR: $BASE_URL is invalid.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: $BASE_URL non è valido.</translation>
     </message>
     <message>
         <location filename="../download.cpp" line="268"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: il modello &quot;%1 (%2)&quot; è in conflitto.</translation>
     </message>
     <message>
         <location filename="../download.cpp" line="287"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>Il modello &quot;%1 (%2)&quot; è stato installato correttamente.</translation>
     </message>
     <message>
         <location filename="../download.cpp" line="311"/>
         <source>Model &quot;%1&quot; is removed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Il modello &quot;%1&quot; è stato rimosso.</translation>
     </message>
 </context>
 <context>
@@ -1619,7 +1619,7 @@ modello per iniziare</translation>
         <location filename="../qml/LocalDocsView.qml" line="85"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="85"/>
         <source>&lt;h3&gt;ERROR: The LocalDocs database cannot be accessed or is not valid.&lt;/h3&gt;&lt;br&gt;&lt;i&gt;Note: You will need to restart after trying any of the following suggested fixes.&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Make sure that the folder set as &lt;b&gt;Download Path&lt;/b&gt; exists on the file system.&lt;/li&gt;&lt;li&gt;Check ownership as well as read and write permissions of the &lt;b&gt;Download Path&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;If there is a &lt;b&gt;localdocs_v2.db&lt;/b&gt; file, check its ownership and read/write permissions, too.&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;If the problem persists and there are any &apos;localdocs_v*.db&apos; files present, as a last resort you can&lt;br&gt;try backing them up and removing them. You will have to recreate your collections, however.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;ERRORE: Impossibile accedere al database LocalDocs o non è valido.&lt;/h3&gt;&lt;br&gt;&lt;i&gt;Nota: sarà necessario riavviare dopo aver provato una delle seguenti soluzioni suggerite.&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Assicurati che la cartella impostata come &lt;b&gt;Percorso di download&lt;/b&gt; esista nel file system.&lt;/li&gt;&lt;li&gt;Controlla la proprietà e i permessi di lettura e scrittura del &lt;b&gt;Percorso di download&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Se è presente un file &lt;b&gt;localdocs_v2.db&lt;/b&gt;, controlla anche la sua proprietà e i permessi di lettura/scrittura.&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;Se il problema persiste e sono presenti file &apos;localdocs_v*.db&apos;, come ultima risorsa puoi&lt;br&gt;provare a eseguirne il backup e a rimuoverli. Tuttavia, dovrai ricreare le tue raccolte.</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="109"/>
@@ -1818,12 +1818,12 @@ modello per iniziare</translation>
     <message>
         <location filename="../modellist.cpp" line="1299"/>
         <source>%1 (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1300"/>
         <source>&lt;strong&gt;OpenAI-Compatible API Model&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API Key: %1&lt;/li&gt;&lt;li&gt;Base URL: %2&lt;/li&gt;&lt;li&gt;Model Name: %3&lt;/li&gt;&lt;/ul&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Modello API compatibile con OpenAI&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Chiave API: %1&lt;/li&gt;&lt;li&gt;URL di base: %2&lt;/li&gt;&lt;li&gt;Nome modello: %3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1634"/>
@@ -1833,12 +1833,12 @@ modello per iniziare</translation>
     <message>
         <location filename="../modellist.cpp" line="1716"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;ul&gt;&lt;li&gt;Richiede una chiave API personale e l&apos;URL di base dell&apos;API.&lt;/li&gt;&lt;li&gt;ATTENZIONE: invierà le tue chat al server API compatibile con OpenAI che hai specificato!&lt;/li&gt;&lt;li&gt;La tua chiave API verrà archiviata su disco&lt;/li&gt;&lt;li&gt;Verrà utilizzata solo per comunicare con il server API compatibile con OpenAI&lt;/li&gt;</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="1733"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Connetti al server API compatibile con OpenAI&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
         <location filename="../modellist.cpp" line="2147"/>
@@ -2239,31 +2239,31 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
         <location filename="../qml/ModelsView.qml" line="399"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="399"/>
         <source>ERROR: $API_KEY is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: $API_KEY è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="420"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="420"/>
         <source>ERROR: $BASE_URL is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: $BASE_URL non è valido.</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="426"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="426"/>
         <source>enter $BASE_URL</source>
-        <translation type="unfinished"></translation>
+        <translation>inserisci $BASE_URL</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="441"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="441"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>ERRORE: $MODEL_NAME è vuoto.</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="447"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelsView.qml" line="447"/>
         <source>enter $MODEL_NAME</source>
-        <translation type="unfinished"></translation>
+        <translation>inserisci $MODEL_NAME</translation>
     </message>
     <message>
         <location filename="../qml/ModelsView.qml" line="496"/>
