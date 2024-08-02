@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+namespace ranges = std::ranges;
+
 static bool parsePromptTemplate(const std::string &tmpl, std::vector<std::smatch> &placeholders, std::string &err)
 {
     static const std::regex placeholderRegex(R"(%[1-2](?![0-9]))");
@@ -281,23 +283,29 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
             }
         }
 
-        // Check if the response contains a stop sequence
-        if (lengthLimit == std::string::npos) {
+        if (lengthLimit != std::string::npos) {
+            // EOS matched
+        } else if (!isSpecialToken(new_tok.value())) {
+            // Check if the response contains a stop sequence
             for (const auto &p : stopSequences) {
                 auto match = cachedResponse.find(p);
                 if (match != std::string::npos) stop = true;
                 lengthLimit = std::min(lengthLimit, match);
                 if (match == 0) break;
             }
-        }
 
-        // Check if the response matches the start of a stop sequence
-        if (lengthLimit == std::string::npos) {
-            for (const auto &p : stopSequences) {
-                auto match = stringsOverlap(cachedResponse, p);
-                lengthLimit = std::min(lengthLimit, match);
-                if (match == 0) break;
+            // Check if the response matches the start of a stop sequence
+            if (lengthLimit == std::string::npos) {
+                for (const auto &p : stopSequences) {
+                    auto match = stringsOverlap(cachedResponse, p);
+                    lengthLimit = std::min(lengthLimit, match);
+                    if (match == 0) break;
+                }
             }
+        } else if (ranges::contains(stopSequences, new_piece)) {
+            // Special tokens must exactly match a stop sequence
+            stop = true;
+            lengthLimit = cachedResponse.size() - new_piece.size();
         }
 
         // Optionally stop if the context will run out

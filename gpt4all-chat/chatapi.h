@@ -105,6 +105,12 @@ protected:
         throw std::logic_error("not implemented");
     }
 
+    bool isSpecialToken(Token id) const override
+    {
+        (void)id;
+        throw std::logic_error("not implemented");
+    }
+
     std::string tokenToString(Token id) const override
     {
         (void)id;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(APPLE)
@@ -31,7 +31,6 @@ project(gpt4all VERSION ${APP_VERSION_BASE} LANGUAGES CXX C)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(GPT4ALL_TRANSLATIONS OFF "Build with translations")
 option(GPT4ALL_LOCALHOST OFF "Build installer for localhost repo")

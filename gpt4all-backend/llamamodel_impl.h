@@ -54,6 +54,7 @@ private:
 
 protected:
     std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) override;
+    bool isSpecialToken(Token id) const override;
     std::string tokenToString(Token id) const override;
     Token sampleToken(PromptContext &ctx) const override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
