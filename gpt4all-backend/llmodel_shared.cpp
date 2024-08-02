@@ -225,7 +225,7 @@ static std::string::size_type stringsOverlap(const std::string &s, const std::st
 void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
                                bool allowContextShift,
                                PromptContext &promptCtx) {
-    static const char *reversePrompts[] {
+    static const char *stopSequences[] {
         "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context",
     };
 
@@ -281,9 +281,9 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
             }
         }
 
-        // Check if the response contains a reverse prompt
+        // Check if the response contains a stop sequence
         if (lengthLimit == std::string::npos) {
-            for (const auto &p : reversePrompts) {
+            for (const auto &p : stopSequences) {
                 auto match = cachedResponse.find(p);
                 if (match != std::string::npos) stop = true;
                 lengthLimit = std::min(lengthLimit, match);
@@ -291,9 +291,9 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
             }
         }
 
-        // Check if the response matches the start of a reverse prompt
+        // Check if the response matches the start of a stop sequence
         if (lengthLimit == std::string::npos) {
-            for (const auto &p : reversePrompts) {
+            for (const auto &p : stopSequences) {
                 auto match = stringsOverlap(cachedResponse, p);
                 lengthLimit = std::min(lengthLimit, match);
                 if (match == 0) break;
