@@ -215,7 +215,7 @@ static std::string::size_type stringsOverlap(const std::string &s, const std::st
     if (s.empty() || key.empty())
         throw std::invalid_argument("arguments to stringsOverlap must not be empty");
 
-    for (auto start = s.size() - key.size(); start < s.size(); start++) {
+    for (int start = std::max(0, int(s.size()) - int(key.size())); start < s.size(); start++) {
         if (s.compare(start, s.size(), key, 0, s.size() - start) == 0)
             return start;
     }
