@@ -402,5 +402,21 @@
     "url": "https://huggingface.co/Qwen/Qwen2-1.5B-Instruct-GGUF/resolve/main/qwen2-1_5b-instruct-q4_0.gguf",
     "promptTemplate": "<|im_start|>user\n%1<|im_end|>\n<|im_start|>assistant\n%2<|im_end|>",
     "systemPrompt": "<|im_start|>system\nBelow is an instruction that describes a task. Write a response that appropriately completes the request.<|im_end|>\n"
+  },
+  {
+    "order": "za",
+    "md5sum": "fb84496bb990b6ab2b4f4d667c80fd13",
+    "name": "Phi-3-mini-128k-instruct",
+    "filename": "Phi-3-mini-128k-instruct-Q4_0.gguf",
+    "filesize": "2176177120",
+    "requires": "3.1",
+    "ramrequired": "8",
+    "parameters": "3.8 billion",
+    "quant": "q4_0",
+    "type": "phi3",
+    "description": "<ul><li>Very fast responses</li><li>Instruction based model</li><li>Usage of LocalDocs (RAG): Yes</li><li>Supports context length of up to 131072</li><li>Trained and finetuned by Microsoft</li><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li></ul>",
+    "url": "https://huggingface.co/GPT4All-Community/Phi-3-mini-128k-instruct/resolve/main/Phi-3-mini-128k-instruct-Q4_0.gguf",
+    "promptTemplate": "<|user|>\n%1<|end|>\n<|assistant|>\n%2<|end|>\n",
+    "systemPrompt": "<|system|>You are a helpful assistant.<|end|>\n"
   }
 ]
