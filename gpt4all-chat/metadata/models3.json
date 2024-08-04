@@ -415,7 +415,7 @@
     "quant": "q4_0",
     "type": "phi3",
     "description": "<ul><li>Very fast responses</li><li>Instruction based model</li><li>Usage of LocalDocs (RAG): Recommended</li><li>Supports context length of up to 131072</li><li>Trained and finetuned by Microsoft</li><li>License: <a href=\"https://opensource.org/license/mit\">MIT</a></li></ul>",
-    "url": "https://huggingface.co/GPT4All-Community/Phi-3.1-mini-128k-instruct/resolve/main/Phi-3.1-mini-128k-instruct-Q4_0.gguf",
+    "url": "https://huggingface.co/GPT4All-Community/Phi-3.1-mini-128k-instruct-GGUF/resolve/main/Phi-3.1-mini-128k-instruct-Q4_0.gguf",
     "promptTemplate": "<|user|>\n%1<|end|>\n<|assistant|>\n%2<|end|>\n",
     "systemPrompt": "<|system|>You are a helpful assistant.<|end|>\n"
   }
