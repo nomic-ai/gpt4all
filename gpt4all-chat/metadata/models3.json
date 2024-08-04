@@ -406,7 +406,7 @@
   {
     "order": "za",
     "md5sum": "fb84496bb990b6ab2b4f4d667c80fd13",
-    "name": "Phi-3.1-mini-128k-instruct",
+    "name": "Phi-3.1 Mini Instruct 128k",
     "filename": "Phi-3.1-mini-128k-instruct-Q4_0.gguf",
     "filesize": "2176177120",
     "requires": "3.1",
