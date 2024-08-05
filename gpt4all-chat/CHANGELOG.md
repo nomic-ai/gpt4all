@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - Add Llama 3.1 8B Instruct to models3.json (by [@3Simplex](https://github.com/3Simplex) in [#2731](https://github.com/nomic-ai/gpt4all/pull/2731) and [#2732](https://github.com/nomic-ai/gpt4all/pull/2732))
 - Portuguese (BR) translation (by [thiagojramos](https://github.com/thiagojramos) in [#2733](https://github.com/nomic-ai/gpt4all/pull/2733))
-- Support adding aribitrary OpenAI-compatible models by URL (by [@supersonictw](https://github.com/supersonictw) in [#2683](https://github.com/nomic-ai/gpt4all/pull/2683))
+- Support adding arbitrary OpenAI-compatible models by URL (by [@supersonictw](https://github.com/supersonictw) in [#2683](https://github.com/nomic-ai/gpt4all/pull/2683))
 - Support Llama 3.1 RoPE scaling ([#2758](https://github.com/nomic-ai/gpt4all/pull/2758))
 
 ### Changed
