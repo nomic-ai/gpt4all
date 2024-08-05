@@ -645,9 +645,7 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
     Q_ASSERT(!m_translator);
 
     const QString filePath = filePathForLocale(locale);
-    // Installing the default gpt4all_en_US.qm fails presumably because it has no strings that are
-    // different from the ones stored in the binary
-    if (!m_translator && !filePath.endsWith("en_US.qm")) {
+    if (!m_translator) {
         // Create a new translator object on the heap
         m_translator = std::make_unique<QTranslator>(this);
         bool success = m_translator->load(filePath);
