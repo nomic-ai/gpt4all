@@ -343,9 +343,9 @@ jobs:
             cd build
             mkdir upload
             ~/Qt/Tools/CMake/bin/cmake -DGPT4ALL_OFFLINE_INSTALLER=ON -DCMAKE_BUILD_TYPE=Release -S ../gpt4all-chat -B .
-            ~/Qt/Tools/CMake/bin/cmake --build . -j4 --target all
-            ~/Qt/Tools/CMake/bin/cmake --build . -j4 --target install
-            ~/Qt/Tools/CMake/bin/cmake --build . -j4 --target package
+            ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target all
+            ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target install
+            ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target package
             cp gpt4all-installer-* upload
       - store_artifacts:
           path: build/upload
@@ -400,9 +400,9 @@ jobs:
             cd build
             mkdir upload
             ~/Qt/Tools/CMake/bin/cmake -DGPT4ALL_OFFLINE_INSTALLER=OFF -DCMAKE_BUILD_TYPE=Release -S ../gpt4all-chat -B .
-            ~/Qt/Tools/CMake/bin/cmake --build . -j4 --target all
-            ~/Qt/Tools/CMake/bin/cmake --build . -j4 --target install
-            ~/Qt/Tools/CMake/bin/cmake --build . -j4 --target package
+            ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target all
+            ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target install
+            ~/Qt/Tools/CMake/bin/cmake --build . -j$(nproc) --target package
             cp gpt4all-installer-* upload
             tar -cvzf upload/repository.tar.gz -C _CPack_Packages/Linux/IFW/gpt4all-installer-linux repository
       - store_artifacts:
@@ -712,7 +712,7 @@ jobs:
             export CMAKE_PREFIX_PATH=~/Qt/6.5.1/gcc_64/lib/cmake
             export PATH=$PATH:/usr/local/cuda/bin
             ~/Qt/Tools/CMake/bin/cmake -DCMAKE_BUILD_TYPE=Release -S gpt4all-chat -B build
-            ~/Qt/Tools/CMake/bin/cmake --build build -j4 --target all
+            ~/Qt/Tools/CMake/bin/cmake --build build -j$(nproc) --target all
 
   build-gpt4all-chat-windows:
     machine:
@@ -890,7 +890,7 @@ jobs:
             git submodule update --init --recursive
             cd gpt4all-backend
             cmake -B build -DCMAKE_BUILD_TYPE=Release
-            cmake --build build -j4
+            cmake --build build -j$(nproc)
       - run:
           name: Build wheel
           command: |
@@ -1047,7 +1047,7 @@ jobs:
             mkdir -p runtimes/build
             cd runtimes/build
             cmake ../..
-            cmake --build . -j4 --config Release
+            cmake --build . -j$(nproc) --config Release
             mkdir ../linux-x64
             cp -L *.so ../linux-x64 # otherwise persist_to_workspace seems to mess symlinks
       - persist_to_workspace:
