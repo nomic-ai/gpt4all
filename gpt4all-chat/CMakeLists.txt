@@ -232,7 +232,7 @@ qt_add_qml_module(chat
 if (GPT4ALL_TRANSLATIONS)
     qt_add_translations(chat
         TS_FILES
-        ${CMAKE_SOURCE_DIR}/translations/gpt4all_en.ts
+        ${CMAKE_SOURCE_DIR}/translations/gpt4all_en_US.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_es_MX.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_CN.ts
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_zh_TW.ts

@@ -593,7 +593,7 @@ QString MySettings::languageAndLocale() const
 QString MySettings::filePathForLocale(const QLocale &locale)
 {
     // Check and see if we have a translation for the chosen locale and set it if possible otherwise
-    // we return the filepath for the 'en' translation
+    // we return the filepath for the 'en_US' translation
     QStringList uiLanguages = locale.uiLanguages();
     for (int i = 0; i < uiLanguages.size(); ++i)
         uiLanguages[i].replace('-', '_');
@@ -615,7 +615,7 @@ QString MySettings::filePathForLocale(const QLocale &locale)
         QFileInfo filePathInfo(filePath);
         if (filePathInfo.exists()) return filePath;
     }
-    return QString(":/i18n/gpt4all_en.qm");
+    return QString(":/i18n/gpt4all_en_US.qm");
 }
 
 void MySettings::setLanguageAndLocale(const QString &bcp47Name)
@@ -646,9 +646,9 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
     Q_ASSERT(!m_translator);
 
     const QString filePath = filePathForLocale(locale);
-    // Installing the default gpt4all_en.qm fails presumably because it has no strings that are
+    // Installing the default gpt4all_en_US.qm fails presumably because it has no strings that are
     // different from the ones stored in the binary
-    if (!m_translator && !filePath.endsWith("en.qm")) {
+    if (!m_translator && !filePath.endsWith("en_US.qm")) {
         // Create a new translator object on the heap
         m_translator = new QTranslator(this);
         bool success = m_translator->load(filePath);
