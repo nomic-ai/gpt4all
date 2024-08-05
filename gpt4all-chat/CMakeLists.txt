@@ -33,8 +33,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(GPT4ALL_TRANSLATIONS OFF "Build with translations")
-option(GPT4ALL_LOCALHOST OFF "Build installer for localhost repo")
+option(GPT4ALL_TRANSLATIONS "Build with translations" ON)
+option(GPT4ALL_LOCALHOST "Build installer for localhost repo" OFF)
 option(GPT4ALL_OFFLINE_INSTALLER "Build an offline installer" OFF)
 option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires signing identities)" OFF)
 
