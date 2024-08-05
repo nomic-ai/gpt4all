@@ -6,6 +6,7 @@ import platform
 import re
 import subprocess
 import sys
+import textwrap
 import threading
 from enum import Enum
 from queue import Queue
@@ -27,6 +28,16 @@ if TYPE_CHECKING:
 
 EmbeddingsType = TypeVar('EmbeddingsType', bound='list[Any]')
 
+
+# Detect Rosetta 2
+if platform.system() == "Darwin" and platform.processor() == "i386":
+    if subprocess.run(
+        "sysctl -n sysctl.proc_translated".split(), check=True, capture_output=True, text=True,
+    ).stdout.strip() == "1":
+        raise RuntimeError(textwrap.dedent("""\
+            Running GPT4All under Rosetta is not supported due to CPU feature requirements.
+            Please install GPT4All in an environment that uses a native ARM64 Python interpreter.
+        """))
 
 # Find CUDA libraries from the official packages
 cuda_found = False
