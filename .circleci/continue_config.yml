@@ -889,7 +889,7 @@ jobs:
             export PATH=$PATH:/usr/local/cuda/bin
             git submodule update --init --recursive
             cd gpt4all-backend
-            cmake -B build -DCMAKE_BUILD_TYPE=Release
+            cmake -B build -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON
             cmake --build build -j$(nproc)
       - run:
           name: Build wheel
