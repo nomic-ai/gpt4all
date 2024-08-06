@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Detect use of a Python interpreter under Rosetta for a clearer error message ([#2793](https://github.com/nomic-ai/gpt4all/pull/2793))
 
 ### Changed
-- Build against CUDA 11.8 instead of CUDA 12 for better compatbility with older drivers ([#2639](https://github.com/nomic-ai/gpt4all/pull/2639))
+- Build against CUDA 11.8 instead of CUDA 12 for better compatibility with older drivers ([#2639](https://github.com/nomic-ai/gpt4all/pull/2639))
 - Update llama.cpp to commit 87e397d00 from July 19th ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 - Search for pip-installed CUDA 11 as well as CUDA 12 ([#2802](https://github.com/nomic-ai/gpt4all/pull/2802))
 - Stop shipping CUBINs to reduce wheel size ([#2802](https://github.com/nomic-ai/gpt4all/pull/2802))
