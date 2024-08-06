@@ -41,12 +41,12 @@ if platform.system() == "Darwin" and platform.processor() == "i386":
 
 
 def _load_cuda(rtver: str, blasver: str) -> None:
-    if platform.system() == 'Linux':
-        cudalib   = f'lib/libcudart.so.{rtver}'
-        cublaslib = f'lib/libcublas.so.{blasver}'
+    if platform.system() == "Linux":
+        cudalib   = f"lib/libcudart.so.{rtver}"
+        cublaslib = f"lib/libcublas.so.{blasver}"
     else:  # Windows
-        cudalib   = fr'bin\cudart64_{rtver.replace(".", "")}.dll'
-        cublaslib = fr'bin\cublas64_{blasver}.dll'
+        cudalib   = fr"bin\cudart64_{rtver.replace(".", "")}.dll"
+        cublaslib = fr"bin\cublas64_{blasver}.dll"
 
     # preload the CUDA libs so the backend can find them
     ctypes.CDLL(os.path.join(cuda_runtime.__path__[0], cudalib), mode=ctypes.RTLD_GLOBAL)
@@ -55,17 +55,16 @@ def _load_cuda(rtver: str, blasver: str) -> None:
 
 # Find CUDA libraries from the official packages
 cuda_found = False
-if platform.system() in ('Linux', 'Windows'):
+if platform.system() in ("Linux", "Windows"):
     try:
         from nvidia import cuda_runtime, cublas
     except ImportError:
         pass  # CUDA is optional
     else:
-        for rtver, blasver in [('12', '12'), ('11.0', '11')]:
+        for rtver, blasver in [("12", "12"), ("11.0", "11")]:
             try:
                 _load_cuda(rtver, blasver)
                 cuda_found = True
-                break
             except OSError:  # dlopen() does not give specific error codes
                 pass  # try the next one
 
