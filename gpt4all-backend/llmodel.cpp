@@ -130,7 +130,7 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
 
         addCudaSearchPath();
 
-        std::string impl_name_re = "llamamodel-mainline-(cpu|metal|kompute|vulkan|cuda)";
+        std::string impl_name_re = "llamacpp-(cpu|metal|kompute|vulkan|cuda)";
         if (cpu_supports_avx2() == 0) {
             impl_name_re += "-avxonly";
         }
@@ -146,7 +146,10 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
                     const fs::path &p = f.path();
 
                     if (p.extension() != LIB_FILE_EXT) continue;
-                    if (!std::regex_search(p.stem().string(), re)) continue;
+                    if (!std::regex_search(p.stem().string(), re)) {
+                        std::cerr << "did not match regex: " << p.stem().string() << "\n";
+                        continue;
+                    }
 
                     // Add to list if model implementation
                     Dlhandle dl;

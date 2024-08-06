@@ -1,5 +1,5 @@
 [submodule "llama.cpp-mainline"]
-	path = gpt4all-backend/llama.cpp-mainline
+	path = gpt4all-backend/llama.cpp
 	url = https://github.com/nomic-ai/llama.cpp.git
 	branch = master
 [submodule "gpt4all-chat/usearch"]

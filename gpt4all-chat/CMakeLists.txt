@@ -326,18 +326,18 @@ install(
 # to the this component's dir for the finicky qt installer to work
 if (LLMODEL_KOMPUTE)
     set(MODEL_IMPL_TARGETS
-        llamamodel-mainline-kompute
-        llamamodel-mainline-kompute-avxonly
+        llamacpp-kompute
+        llamacpp-kompute-avxonly
     )
 else()
     set(MODEL_IMPL_TARGETS
-        llamamodel-mainline-cpu
-        llamamodel-mainline-cpu-avxonly
+        llamacpp-cpu
+        llamacpp-cpu-avxonly
     )
 endif()
 
 if (APPLE)
-    list(APPEND MODEL_IMPL_TARGETS llamamodel-mainline-metal)
+    list(APPEND MODEL_IMPL_TARGETS llamacpp-metal)
 endif()
 
 install(
@@ -365,12 +365,12 @@ if(WIN32 AND GPT4ALL_SIGN_INSTALL)
 endif()
 
 if (LLMODEL_CUDA)
-    set_property(TARGET llamamodel-mainline-cuda llamamodel-mainline-cuda-avxonly
+    set_property(TARGET llamacpp-cuda llamacpp-cuda-avxonly
                  APPEND PROPERTY INSTALL_RPATH "$ORIGIN")
 
     install(
-        TARGETS llamamodel-mainline-cuda
-                llamamodel-mainline-cuda-avxonly
+        TARGETS llamacpp-cuda
+                llamacpp-cuda-avxonly
         RUNTIME_DEPENDENCY_SET llama-cuda-deps
         LIBRARY DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .so/.dylib
         RUNTIME DESTINATION lib COMPONENT ${COMPONENT_NAME_MAIN}  # .dll

@@ -47,7 +47,7 @@ else()
     message(STATUS "Interprocedural optimization support detected")
 endif()
 
-set(DIRECTORY llama.cpp-mainline)
+set(DIRECTORY llama.cpp)
 include(llama.cpp.cmake)
 
 set(BUILD_VARIANTS)
@@ -108,7 +108,7 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     endif()
 
     # Include GGML
-    include_ggml(-mainline-${BUILD_VARIANT})
+    include_ggml(-${BUILD_VARIANT})
 
     # Function for preparing individual implementations
     function(prepare_target TARGET_NAME BASE_LIB)
@@ -127,11 +127,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     endfunction()
 
     # Add each individual implementations
-    add_library(llamamodel-mainline-${BUILD_VARIANT} SHARED
-        llamamodel.cpp llmodel_shared.cpp)
-    target_compile_definitions(llamamodel-mainline-${BUILD_VARIANT} PRIVATE
+    add_library(llamacpp-${BUILD_VARIANT} SHARED llamacpp_backend_impl.cpp)
+    target_compile_definitions(llamacpp-${BUILD_VARIANT} PRIVATE
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
-    prepare_target(llamamodel-mainline llama-mainline)
+    prepare_target(llamacpp llama)
 
     if (NOT PROJECT_IS_TOP_LEVEL AND BUILD_VARIANT STREQUAL cuda)
         set(CUDAToolkit_BIN_DIR ${CUDAToolkit_BIN_DIR} PARENT_SCOPE)
