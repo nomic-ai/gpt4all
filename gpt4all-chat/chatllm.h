@@ -4,6 +4,7 @@
 #include "database.h" // IWYU pragma: keep
 #include "modellist.h"
 
+#include "../gpt4all-backend/llamacpp_backend.h"
 #include "../gpt4all-backend/llmodel.h"
 
 #include <QByteArray>
@@ -128,15 +129,17 @@ public:
 
     QString deviceBackend() const
     {
-        if (!isModelLoaded()) return QString();
-        std::string name = LLModel::GPUDevice::backendIdToName(m_llModelInfo.model->backendName());
+        auto *lcppmodel = dynamic_cast<LlamaCppBackend *>(m_llModelInfo.model.get());
+        if (!isModelLoaded() && !lcppmodel) return QString();
+        std::string name = LlamaCppBackend::GPUDevice::backendIdToName(lcppmodel->backendName());
         return QString::fromStdString(name);
     }
 
     QString device() const
     {
-        if (!isModelLoaded()) return QString();
-        const char *name = m_llModelInfo.model->gpuDeviceName();
+        auto *lcppmodel = dynamic_cast<LlamaCppBackend *>(m_llModelInfo.model.get());
+        if (!isModelLoaded() || !lcppmodel) return QString();
+        const char *name = lcppmodel->gpuDeviceName();
         return name ? QString(name) : u"CPU"_s;
     }
 

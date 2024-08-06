@@ -412,19 +412,20 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
 
     QString filePath = modelInfo.dirpath + modelInfo.filename();
 
-    auto construct = [this, &filePath, &modelInfo, &modelLoadProps, n_ctx](std::string const &backend) {
+    auto construct = [this, &filePath, &modelInfo, &modelLoadProps, n_ctx](std::string const &backend) -> LlamaCppBackend * {
+        LlamaCppBackend *lcppmodel;
         QString constructError;
         m_llModelInfo.resetModel(this);
         try {
-            auto *model = LLModel::Implementation::construct(filePath.toStdString(), backend, n_ctx);
-            m_llModelInfo.resetModel(this, model);
-        } catch (const LLModel::MissingImplementationError &e) {
+            lcppmodel = LlamaCppBackend::Implementation::construct(filePath.toStdString(), backend, n_ctx);
+            m_llModelInfo.resetModel(this, lcppmodel);
+        } catch (const LlamaCppBackend::MissingImplementationError &e) {
             modelLoadProps.insert("error", "missing_model_impl");
             constructError = e.what();
-        } catch (const LLModel::UnsupportedModelError &e) {
+        } catch (const LlamaCppBackend::UnsupportedModelError &e) {
             modelLoadProps.insert("error", "unsupported_model_file");
             constructError = e.what();
-        } catch (const LLModel::BadArchError &e) {
+        } catch (const LlamaCppBackend::BadArchError &e) {
             constructError = e.what();
             modelLoadProps.insert("error", "unsupported_model_arch");
             modelLoadProps.insert("model_arch", QString::fromStdString(e.arch()));
@@ -435,21 +436,22 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
                 LLModelStore::globalInstance()->releaseModel(std::move(m_llModelInfo));
             resetModel();
             emit modelLoadingError(u"Error loading %1: %2"_s.arg(modelInfo.filename(), constructError));
-            return false;
+            return nullptr;
         }
 
-        m_llModelInfo.model->setProgressCallback([this](float progress) -> bool {
+        lcppmodel->setProgressCallback([this](float progress) -> bool {
             progress = std::max(progress, std::numeric_limits<float>::min()); // keep progress above zero
             emit modelLoadingPercentageChanged(progress);
             return m_shouldBeLoaded;
         });
-        return true;
+        return lcppmodel;
     };
 
-    if (!construct(backend))
+    auto *lcppmodel = construct(backend);
+    if (!lcppmodel)
         return true;
 
-    if (m_llModelInfo.model->isModelBlacklisted(filePath.toStdString())) {
+    if (lcppmodel->isModelBlacklisted(filePath.toStdString())) {
         static QSet<QString> warned;
         auto fname = modelInfo.filename();
         if (!warned.contains(fname)) {
@@ -460,16 +462,16 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
         }
     }
 
-    auto approxDeviceMemGB = [](const LLModel::GPUDevice *dev) {
+    auto approxDeviceMemGB = [](const LlamaCppBackend::GPUDevice *dev) {
         float memGB = dev->heapSize / float(1024 * 1024 * 1024);
         return std::floor(memGB * 10.f) / 10.f; // truncate to 1 decimal place
     };
 
-    std::vector<LLModel::GPUDevice> availableDevices;
-    const LLModel::GPUDevice *defaultDevice = nullptr;
+    std::vector<LlamaCppBackend::GPUDevice> availableDevices;
+    const LlamaCppBackend::GPUDevice *defaultDevice = nullptr;
     {
-        const size_t requiredMemory = m_llModelInfo.model->requiredMem(filePath.toStdString(), n_ctx, ngl);
-        availableDevices = m_llModelInfo.model->availableGPUDevices(requiredMemory);
+        const size_t requiredMemory = lcppmodel->requiredMem(filePath.toStdString(), n_ctx, ngl);
+        availableDevices = lcppmodel->availableGPUDevices(requiredMemory);
         // Pick the best device
         // NB: relies on the fact that Kompute devices are listed first
         if (!availableDevices.empty() && availableDevices.front().type == 2 /*a discrete gpu*/) {
@@ -485,14 +487,14 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
     bool actualDeviceIsCPU = true;
 
 #if defined(Q_OS_MAC) && defined(__aarch64__)
-    if (m_llModelInfo.model->implementation().buildVariant() == "metal")
+    if (lcppmodel->implementation().buildVariant() == "metal")
         actualDeviceIsCPU = false;
 #else
     if (requestedDevice != "CPU") {
         const auto *device = defaultDevice;
         if (requestedDevice != "Auto") {
             // Use the selected device
-            for (const LLModel::GPUDevice &d : availableDevices) {
+            for (const auto &d : availableDevices) {
                 if (QString::fromStdString(d.selectionName()) == requestedDevice) {
                     device = &d;
                     break;
@@ -503,7 +505,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
         std::string unavail_reason;
         if (!device) {
             // GPU not available
-        } else if (!m_llModelInfo.model->initializeGPUDevice(device->index, &unavail_reason)) {
+        } else if (!lcppmodel->initializeGPUDevice(device->index, &unavail_reason)) {
             m_llModelInfo.fallbackReason = QString::fromStdString(unavail_reason);
         } else {
             actualDeviceIsCPU = false;
@@ -512,7 +514,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
     }
 #endif
 
-    bool success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, ngl);
+    bool success = lcppmodel->loadModel(filePath.toStdString(), n_ctx, ngl);
 
     if (!m_shouldBeLoaded) {
         m_llModelInfo.resetModel(this);
@@ -531,10 +533,13 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
         modelLoadProps.insert("cpu_fallback_reason", "gpu_load_failed");
 
         // For CUDA, make sure we don't use the GPU at all - ngl=0 still offloads matmuls
-        if (backend == "cuda" && !construct("auto"))
-            return true;
+        if (backend == "cuda") {
+            lcppmodel = construct("auto");
+            if (!lcppmodel)
+                return true;
+        }
 
-        success = m_llModelInfo.model->loadModel(filePath.toStdString(), n_ctx, 0);
+        success = lcppmodel->loadModel(filePath.toStdString(), n_ctx, 0);
 
         if (!m_shouldBeLoaded) {
             m_llModelInfo.resetModel(this);
@@ -544,7 +549,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
             emit modelLoadingPercentageChanged(0.0f);
             return false;
         }
-    } else if (!m_llModelInfo.model->usingGPUDevice()) {
+    } else if (!lcppmodel->usingGPUDevice()) {
         // ggml_vk_init was not called in llama.cpp
         // We might have had to fallback to CPU after load if the model is not possible to accelerate
         // for instance if the quantization method is not supported on Vulkan yet
@@ -562,7 +567,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
         return true;
     }
 
-    switch (m_llModelInfo.model->implementation().modelType()[0]) {
+    switch (lcppmodel->implementation().modelType()[0]) {
     case 'L': m_llModelType = LLModelType::LLAMA_; break;
     default:
         {
@@ -774,11 +779,15 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     m_ctx.n_batch = n_batch;
     m_ctx.repeat_penalty = repeat_penalty;
     m_ctx.repeat_last_n = repeat_penalty_tokens;
-    m_llModelInfo.model->setThreadCount(n_threads);
+
+    if (auto *lcppmodel = dynamic_cast<LlamaCppBackend *>(m_llModelInfo.model.get()))
+        lcppmodel->setThreadCount(n_threads);
+
 #if defined(DEBUG)
     printf("%s", qPrintable(prompt));
     fflush(stdout);
 #endif
+
     QElapsedTimer totalTime;
     totalTime.start();
     m_timer->start();
@@ -1238,11 +1247,15 @@ void ChatLLM::processSystemPrompt()
     m_ctx.n_batch = n_batch;
     m_ctx.repeat_penalty = repeat_penalty;
     m_ctx.repeat_last_n = repeat_penalty_tokens;
-    m_llModelInfo.model->setThreadCount(n_threads);
+
+    if (auto *lcppmodel = dynamic_cast<LlamaCppBackend *>(m_llModelInfo.model.get()))
+        lcppmodel->setThreadCount(n_threads);
+
 #if defined(DEBUG)
     printf("%s", qPrintable(QString::fromStdString(systemPrompt)));
     fflush(stdout);
 #endif
+
     auto old_n_predict = std::exchange(m_ctx.n_predict, 0); // decode system prompt without a response
     // use "%1%2" and not "%1" to avoid implicit whitespace
     m_llModelInfo.model->prompt(systemPrompt, "%1%2", promptFunc, nullptr, /*allowContextShift*/ true, m_ctx, true);
@@ -1288,7 +1301,9 @@ void ChatLLM::processRestoreStateFromText()
     m_ctx.n_batch = n_batch;
     m_ctx.repeat_penalty = repeat_penalty;
     m_ctx.repeat_last_n = repeat_penalty_tokens;
-    m_llModelInfo.model->setThreadCount(n_threads);
+
+    if (auto *lcppmodel = dynamic_cast<LlamaCppBackend *>(m_llModelInfo.model.get()))
+        lcppmodel->setThreadCount(n_threads);
 
     auto it = m_stateFromText.begin();
     while (it < m_stateFromText.end()) {

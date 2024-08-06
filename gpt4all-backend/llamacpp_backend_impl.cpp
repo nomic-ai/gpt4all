@@ -378,7 +378,7 @@ bool LlamaCppBackendImpl::loadModel(const std::string &modelPath, int n_ctx, int
     d_ptr->model_params.use_mlock = params.use_mlock;
 #endif
 
-    d_ptr->model_params.progress_callback = &LLModel::staticProgressCallback;
+    d_ptr->model_params.progress_callback = &LlamaCppBackend::staticProgressCallback;
     d_ptr->model_params.progress_callback_user_data = this;
 
     d_ptr->backend_name = "cpu"; // default
@@ -659,7 +659,7 @@ static const char *getVulkanVendorName(uint32_t vendorID)
 }
 #endif
 
-std::vector<LLModel::GPUDevice> LlamaCppBackendImpl::availableGPUDevices(size_t memoryRequired) const
+std::vector<LlamaCppBackendImpl::GPUDevice> LlamaCppBackendImpl::availableGPUDevices(size_t memoryRequired) const
 {
 #if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     size_t count = 0;
@@ -675,7 +675,7 @@ std::vector<LLModel::GPUDevice> LlamaCppBackendImpl::availableGPUDevices(size_t 
 #endif
 
     if (lcppDevices) {
-        std::vector<LLModel::GPUDevice> devices;
+        std::vector<GPUDevice> devices;
         devices.reserve(count);
 
         for (size_t i = 0; i < count; ++i) {
@@ -909,7 +909,7 @@ void LlamaCppBackendImpl::embed(
 
 void LlamaCppBackendImpl::embed(
     const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
-    size_t *tokenCount, bool doMean, bool atlas, LLModel::EmbedCancelCallback *cancelCb
+    size_t *tokenCount, bool doMean, bool atlas, EmbLLModel::EmbedCancelCallback *cancelCb
 ) {
     if (!d_ptr->model)
         throw std::logic_error("no model is loaded");
@@ -967,7 +967,7 @@ double getL2NormScale(T *start, T *end)
 
 void LlamaCppBackendImpl::embedInternal(
     const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
-    size_t *tokenCount, bool doMean, bool atlas, LLModel::EmbedCancelCallback *cancelCb, const EmbModelSpec *spec
+    size_t *tokenCount, bool doMean, bool atlas, EmbLLModel::EmbedCancelCallback *cancelCb, const EmbModelSpec *spec
 ) {
     typedef std::vector<LLModel::Token> TokenString;
     static constexpr int32_t atlasMaxLength = 8192;

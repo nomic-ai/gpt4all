@@ -1,6 +1,6 @@
 #include "mysettings.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include "../gpt4all-backend/llamacpp_backend.h"
 
 #include <QDebug>
 #include <QDir>
@@ -95,8 +95,8 @@ static QStringList getDevices(bool skipKompute = false)
 #if defined(Q_OS_MAC) && defined(__aarch64__)
     deviceList << "Metal";
 #else
-    std::vector<LLModel::GPUDevice> devices = LLModel::Implementation::availableGPUDevices();
-    for (LLModel::GPUDevice &d : devices) {
+    auto devices = LlamaCppBackend::Implementation::availableGPUDevices();
+    for (auto &d : devices) {
         if (!skipKompute || strcmp(d.backend, "kompute"))
             deviceList << QString::fromStdString(d.selectionName());
     }
@@ -512,7 +512,7 @@ QString MySettings::device()
     auto device = value.toString();
     if (!device.isEmpty()) {
         auto deviceStr = device.toStdString();
-        auto newNameStr = LLModel::GPUDevice::updateSelectionName(deviceStr);
+        auto newNameStr = LlamaCppBackend::GPUDevice::updateSelectionName(deviceStr);
         if (newNameStr != deviceStr) {
             auto newName = QString::fromStdString(newNameStr);
             qWarning() << "updating device name:" << device << "->" << newName;

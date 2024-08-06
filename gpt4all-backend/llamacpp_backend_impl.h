@@ -1,10 +1,10 @@
+#pragma once
+
 #ifndef LLAMACPP_BACKEND_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #error This file is NOT meant to be included outside of llamacpp_backend_impl.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define LLAMACPP_BACKEND_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #endif
-#ifndef LLAMACPP_BACKEND_IMPL_H
-#define LLAMACPP_BACKEND_IMPL_H
 
-#include "llmodel.h"
+#include "llamacpp_backend.h"
 
 #include <memory>
 #include <string>
@@ -13,7 +13,7 @@
 struct LlamaPrivate;
 struct EmbModelSpec;
 
-class LlamaCppBackendImpl : public LLModel {
+class LlamaCppBackendImpl : public LlamaCppBackend {
 public:
     LlamaCppBackendImpl();
     ~LlamaCppBackendImpl();
@@ -68,5 +68,3 @@ protected:
                        size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb,
                        const EmbModelSpec *spec);
 };
-
-#endif // LLAMACPP_BACKEND_IMPL_H

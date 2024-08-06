@@ -32,14 +32,6 @@ ChatAPI::ChatAPI()
 {
 }
 
-size_t ChatAPI::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
-{
-    Q_UNUSED(modelPath);
-    Q_UNUSED(n_ctx);
-    Q_UNUSED(ngl);
-    return 0;
-}
-
 bool ChatAPI::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
     Q_UNUSED(modelPath);
@@ -48,20 +40,7 @@ bool ChatAPI::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     return true;
 }
 
-void ChatAPI::setThreadCount(int32_t n_threads)
-{
-    Q_UNUSED(n_threads);
-    qt_noop();
-}
-
-int32_t ChatAPI::threadCount() const
-{
-    return 1;
-}
-
-ChatAPI::~ChatAPI()
-{
-}
+ChatAPI::~ChatAPI() {}
 
 bool ChatAPI::isModelLoaded() const
 {
