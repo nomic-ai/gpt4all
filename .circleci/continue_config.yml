@@ -881,7 +881,7 @@ jobs:
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             sudo apt-get update
-            sudo apt-get install -y cmake build-essential vulkan-sdk cuda-compiler-11-8 libcublas-dev-11-8 libnvidia-compute-550-server libmysqlclient21 libodbc2 libpq5
+            sudo apt-get install -y cmake build-essential vulkan-sdk cuda-compiler-11-8 libcublas-dev-11-8 libnvidia-compute-550-server
             pip install setuptools wheel cmake
       - run:
           name: Build C library
