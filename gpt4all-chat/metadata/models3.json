@@ -32,6 +32,22 @@
     "systemPrompt": ""
   },
   {
+    "order": "bb",
+    "md5sum": "9659a4470dc7d5d75be39daa913ecd0d",
+    "name": "Gemma 2 9b it",
+    "filename": "gemma-2-9b-it-Q4_0.gguf",
+    "filesize": "5443142592",
+    "requires": "3.1",
+    "ramrequired": "16",
+    "parameters": "9 billion",
+    "quant": "q4_0",
+    "type": "gemma2",
+    "description": "<ul><li>Fast responses</li><li>Chat based model</li><li>Does not accept system prompts</li><li>Trained by Google</li><li>License: <a href=\"https://ai.google.dev/gemma/terms/\">Gemma License</a></li></ul>",
+    "url": "https://huggingface.co/GPT4All-Community/gemma-2-9b-it-GGUF/resolve/main/gemma-2-9b-it-Q4_0.gguf",
+    "promptTemplate": "<start_of_turn>user\n%1<end_of_turn>\n<start_of_turn>model\n%2<end_of_turn>\n",
+    "systemPrompt": ""
+  },
+  {
     "order": "c",
     "md5sum": "a5f6b4eabd3992da4d7fb7f020f921eb",
     "name": "Nous Hermes 2 Mistral DPO",
