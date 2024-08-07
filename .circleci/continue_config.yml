@@ -881,7 +881,7 @@ jobs:
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             sudo apt-get update
-            sudo apt-get install -y cmake build-essential vulkan-sdk cuda-compiler-11-8 libcublas-dev-11-8 libnvidia-compute-550-server libmysqlclient21 libodbc2 libpq5
+            sudo apt-get install -y cmake build-essential vulkan-sdk cuda-compiler-11-8 libcublas-dev-11-8 libnvidia-compute-550-server
             pip install setuptools wheel cmake
       - run:
           name: Build C library
@@ -889,7 +889,9 @@ jobs:
             export PATH=$PATH:/usr/local/cuda/bin
             git submodule update --init --recursive
             cd gpt4all-backend
-            cmake -B build -DCMAKE_BUILD_TYPE=Release
+            cmake -B build -DCMAKE_BUILD_TYPE=Release \
+              -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON \
+              -DCMAKE_CUDA_ARCHITECTURES='52-virtual;61-virtual;70-virtual;75-virtual'
             cmake --build build -j$(nproc)
       - run:
           name: Build wheel
@@ -986,7 +988,9 @@ jobs:
             $Env:PATH += ";C:\VulkanSDK\1.3.261.1\bin"
             $Env:VULKAN_SDK = "C:\VulkanSDK\1.3.261.1"
             cd gpt4all-backend
-            cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON
+            cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release `
+              -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON `
+              -DCMAKE_CUDA_ARCHITECTURES='52-virtual;61-virtual;70-virtual;75-virtual'
             cmake --build build --parallel
       - run:
           name: Build wheel

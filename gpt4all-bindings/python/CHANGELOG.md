@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+- Search for pip-installed CUDA 11 as well as CUDA 12 ([#2802](https://github.com/nomic-ai/gpt4all/pull/2802))
+- Stop shipping CUBINs to reduce wheel size ([#2802](https://github.com/nomic-ai/gpt4all/pull/2802))
+
 ## [2.8.0] - 2024-08-05
 
 ### Added
@@ -16,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Detect use of a Python interpreter under Rosetta for a clearer error message ([#2793](https://github.com/nomic-ai/gpt4all/pull/2793))
 
 ### Changed
+- Build against CUDA 11.8 instead of CUDA 12 for better compatibility with older drivers ([#2639](https://github.com/nomic-ai/gpt4all/pull/2639))
 - Update llama.cpp to commit 87e397d00 from July 19th ([#2694](https://github.com/nomic-ai/gpt4all/pull/2694))
 
 ### Removed
@@ -33,4 +40,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Restore leading space removal logic that was incorrectly removed in [#2694](https://github.com/nomic-ai/gpt4all/pull/2694)
   - CUDA: Cherry-pick llama.cpp DMMV cols requirement fix that caused a crash with long conversations since [#2694](https://github.com/nomic-ai/gpt4all/pull/2694)
 
+[Unreleased]: https://github.com/nomic-ai/gpt4all/compare/python-v2.8.0...HEAD
 [2.8.0]: https://github.com/nomic-ai/gpt4all/compare/python-v2.7.0...python-v2.8.0

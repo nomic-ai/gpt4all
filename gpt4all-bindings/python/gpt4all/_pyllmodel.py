@@ -39,25 +39,34 @@ if platform.system() == "Darwin" and platform.processor() == "i386":
             Please install GPT4All in an environment that uses a native ARM64 Python interpreter.
         """))
 
+
+def _load_cuda(rtver: str, blasver: str) -> None:
+    if platform.system() == "Linux":
+        cudalib   = f"lib/libcudart.so.{rtver}"
+        cublaslib = f"lib/libcublas.so.{blasver}"
+    else:  # Windows
+        cudalib   = fr"bin\cudart64_{rtver.replace(".", "")}.dll"
+        cublaslib = fr"bin\cublas64_{blasver}.dll"
+
+    # preload the CUDA libs so the backend can find them
+    ctypes.CDLL(os.path.join(cuda_runtime.__path__[0], cudalib), mode=ctypes.RTLD_GLOBAL)
+    ctypes.CDLL(os.path.join(cublas.__path__[0], cublaslib), mode=ctypes.RTLD_GLOBAL)
+
+
 # Find CUDA libraries from the official packages
 cuda_found = False
-if platform.system() in ('Linux', 'Windows'):
+if platform.system() in ("Linux", "Windows"):
     try:
         from nvidia import cuda_runtime, cublas
     except ImportError:
         pass  # CUDA is optional
     else:
-        if platform.system() == 'Linux':
-            cudalib   = 'lib/libcudart.so.12'
-            cublaslib = 'lib/libcublas.so.12'
-        else:  # Windows
-            cudalib   = r'bin\cudart64_12.dll'
-            cublaslib = r'bin\cublas64_12.dll'
-
-        # preload the CUDA libs so the backend can find them
-        ctypes.CDLL(os.path.join(cuda_runtime.__path__[0], cudalib), mode=ctypes.RTLD_GLOBAL)
-        ctypes.CDLL(os.path.join(cublas.__path__[0], cublaslib), mode=ctypes.RTLD_GLOBAL)
-        cuda_found = True
+        for rtver, blasver in [("12", "12"), ("11.0", "11")]:
+            try:
+                _load_cuda(rtver, blasver)
+                cuda_found = True
+            except OSError:  # dlopen() does not give specific error codes
+                pass  # try the next one
 
 
 # TODO: provide a config file to make this more robust
