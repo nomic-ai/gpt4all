@@ -161,7 +161,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void handleResponseChanged(const QString &response);
-    void handleModelLoadingPercentageChanged(float);
+    void handleModelLoadingPercentageChanged(float loadingPercentage);
     void promptProcessing();
     void generatingQuestions();
     void responseStopped(qint64 promptResponseMs);

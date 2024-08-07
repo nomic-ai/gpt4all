@@ -653,23 +653,20 @@ QString ChatLLM::response() const
     return QString::fromStdString(remove_leading_whitespace(m_response));
 }
 
-ModelInfo ChatLLM::modelInfo() const
-{
-    return m_modelInfo;
-}
-
 void ChatLLM::setModelInfo(const ModelInfo &modelInfo)
 {
     m_modelInfo = modelInfo;
     emit modelInfoChanged(modelInfo);
 }
 
-void ChatLLM::acquireModel() {
+void ChatLLM::acquireModel()
+{
     m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
     emit loadedModelInfoChanged();
 }
 
-void ChatLLM::resetModel() {
+void ChatLLM::resetModel()
+{
     m_llModelInfo = {};
     emit loadedModelInfoChanged();
 }
