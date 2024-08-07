@@ -1,10 +1,10 @@
-#ifndef CHATLLM_H
-#define CHATLLM_H
+#pragma once
 
 #include "database.h" // IWYU pragma: keep
 #include "modellist.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include "../gpt4all-backend/llamacpp_backend.h"
+#include "../gpt4all-backend/model_backend.h"
 
 #include <QByteArray>
 #include <QElapsedTimer>
@@ -26,6 +26,8 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+class Chat;
+class ChatLLM;
 class QDataStream;
 
 // NOTE: values serialized to disk, do not change or reuse
@@ -36,17 +38,15 @@ enum LLModelType {
     BERT_  = 3, // no longer used
 };
 
-class ChatLLM;
-
 struct LLModelInfo {
-    std::unique_ptr<LLModel> model;
+    std::unique_ptr<ModelBackend> model;
     QFileInfo fileInfo;
     std::optional<QString> fallbackReason;
 
     // NOTE: This does not store the model type or name on purpose as this is left for ChatLLM which
     // must be able to serialize the information even if it is in the unloaded state
 
-    void resetModel(ChatLLM *cllm, LLModel *model = nullptr);
+    void resetModel(ChatLLM *cllm, ModelBackend *model = nullptr);
 };
 
 class TokenTimer : public QObject {
@@ -89,7 +89,6 @@ private:
     quint32 m_tokens;
 };
 
-class Chat;
 class ChatLLM : public QObject
 {
     Q_OBJECT
@@ -97,46 +96,41 @@ class ChatLLM : public QObject
     Q_PROPERTY(QString deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString device READ device NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
+
 public:
     ChatLLM(Chat *parent, bool isServer = false);
     virtual ~ChatLLM();
 
     void destroy();
     static void destroyStore();
-    bool isModelLoaded() const;
     void regenerateResponse();
     void resetResponse();
     void resetContext();
 
     void stopGenerating() { m_stopGenerating = true; }
 
-    bool shouldBeLoaded() const { return m_shouldBeLoaded; }
     void setShouldBeLoaded(bool b);
     void requestTrySwitchContext();
     void setForceUnloadModel(bool b) { m_forceUnloadModel = b; }
     void setMarkedForDeletion(bool b) { m_markedForDeletion = b; }
 
-    QString response() const;
-
-    ModelInfo modelInfo() const;
     void setModelInfo(const ModelInfo &info);
 
     bool restoringFromText() const { return m_restoringFromText; }
 
-    void acquireModel();
-    void resetModel();
-
     QString deviceBackend() const
     {
-        if (!isModelLoaded()) return QString();
-        std::string name = LLModel::GPUDevice::backendIdToName(m_llModelInfo.model->backendName());
+        auto *lcppmodel = dynamic_cast<LlamaCppBackend *>(m_llModelInfo.model.get());
+        if (!isModelLoaded() && !lcppmodel) return QString();
+        std::string name = LlamaCppBackend::GPUDevice::backendIdToName(lcppmodel->backendName());
         return QString::fromStdString(name);
     }
 
     QString device() const
     {
-        if (!isModelLoaded()) return QString();
-        const char *name = m_llModelInfo.model->gpuDeviceName();
+        auto *lcppmodel = dynamic_cast<LlamaCppBackend *>(m_llModelInfo.model.get());
+        if (!isModelLoaded() || !lcppmodel) return QString();
+        const char *name = lcppmodel->gpuDeviceName();
         return name ? QString(name) : u"CPU"_s;
     }
 
@@ -147,8 +141,6 @@ public:
         return m_llModelInfo.fallbackReason.value_or(u""_s);
     }
 
-    QString generatedName() const { return QString::fromStdString(m_nameResponse); }
-
     bool serialize(QDataStream &stream, int version, bool serializeKV);
     bool deserialize(QDataStream &stream, int version, bool deserializeKV, bool discardKV);
     void setStateFromText(const QVector<QPair<QString, QString>> &stateFromText) { m_stateFromText = stateFromText; }
@@ -156,20 +148,10 @@ public:
 public Q_SLOTS:
     bool prompt(const QList<QString> &collectionList, const QString &prompt);
     bool loadDefaultModel();
-    void trySwitchContextOfLoadedModel(const ModelInfo &modelInfo);
     bool loadModel(const ModelInfo &modelInfo);
     void modelChangeRequested(const ModelInfo &modelInfo);
-    void unloadModel();
-    void reloadModel();
     void generateName();
-    void generateQuestions(qint64 elapsed);
-    void handleChatIdChanged(const QString &id);
-    void handleShouldBeLoadedChanged();
-    void handleThreadStarted();
-    void handleForceMetalChanged(bool forceMetal);
-    void handleDeviceChanged();
     void processSystemPrompt();
-    void processRestoreStateFromText();
 
 Q_SIGNALS:
     void restoringFromTextChanged();
@@ -192,10 +174,13 @@ Q_SIGNALS:
     void reportSpeed(const QString &speed);
     void reportDevice(const QString &device);
     void reportFallbackReason(const QString &fallbackReason);
-    void databaseResultsChanged(const QList<ResultInfo>&);
+    void databaseResultsChanged(const QList<ResultInfo> &results);
     void modelInfoChanged(const ModelInfo &modelInfo);
 
 protected:
+    bool isModelLoaded() const;
+    void acquireModel();
+    void resetModel();
     bool promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
         int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
         int32_t repeat_penalty_tokens);
@@ -212,14 +197,32 @@ protected:
     void saveState();
     void restoreState();
 
-protected:
-    LLModel::PromptContext m_ctx;
-    quint32 m_promptTokens;
-    quint32 m_promptResponseTokens;
+    // used by Server class
+    ModelInfo modelInfo() const { return m_modelInfo; }
+    QString response() const;
+    QString generatedName() const { return QString::fromStdString(m_nameResponse); }
+
+protected Q_SLOTS:
+    void trySwitchContextOfLoadedModel(const ModelInfo &modelInfo);
+    void unloadModel();
+    void reloadModel();
+    void generateQuestions(qint64 elapsed);
+    void handleChatIdChanged(const QString &id);
+    void handleShouldBeLoadedChanged();
+    void handleThreadStarted();
+    void handleForceMetalChanged(bool forceMetal);
+    void handleDeviceChanged();
+    void processRestoreStateFromText();
 
 private:
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
+protected:
+    ModelBackend::PromptContext m_ctx;
+    quint32 m_promptTokens;
+    quint32 m_promptResponseTokens;
+
+private:
     std::string m_response;
     std::string m_nameResponse;
     QString m_questionResponse;
@@ -240,10 +243,8 @@ private:
     bool m_processedSystemPrompt;
     bool m_restoreStateFromText;
     // m_pristineLoadedState is set if saveSate is unnecessary, either because:
-    // - an unload was queued during LLModel::restoreState()
+    // - an unload was queued during ModelBackend::restoreState()
     // - the chat will be restored from text and hasn't been interacted with yet
     bool m_pristineLoadedState = false;
     QVector<QPair<QString, QString>> m_stateFromText;
 };
-
-#endif // CHATLLM_H

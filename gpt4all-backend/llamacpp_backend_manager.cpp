@@ -1,19 +1,21 @@
-#include "llmodel.h"
+#include "llamacpp_backend_manager.h"
 
 #include "dlhandle.h"
 
 #include <cassert>
+#include <cstdint>
 #include <cstdlib>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <memory>
 #include <optional>
 #include <regex>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #ifdef _WIN32
@@ -33,6 +35,7 @@
 #endif
 
 namespace fs = std::filesystem;
+
 
 #ifndef __APPLE__
 static const std::string DEFAULT_BACKENDS[] = {"kompute", "cpu"};
@@ -66,7 +69,7 @@ std::string s_implementations_search_path = ".";
     #define cpu_supports_avx2() !!__builtin_cpu_supports("avx2")
 #endif
 
-LLModel::Implementation::Implementation(Dlhandle &&dlhandle_)
+LlamaCppBackendManager::LlamaCppBackendManager(Dlhandle &&dlhandle_)
     : m_dlhandle(new Dlhandle(std::move(dlhandle_))) {
     auto get_model_type = m_dlhandle->get<const char *()>("get_model_type");
     assert(get_model_type);
@@ -78,11 +81,11 @@ LLModel::Implementation::Implementation(Dlhandle &&dlhandle_)
     assert(m_getFileArch);
     m_isArchSupported = m_dlhandle->get<bool(const char *)>("is_arch_supported");
     assert(m_isArchSupported);
-    m_construct = m_dlhandle->get<LLModel *()>("construct");
+    m_construct = m_dlhandle->get<LlamaCppBackend *()>("construct");
     assert(m_construct);
 }
 
-LLModel::Implementation::Implementation(Implementation &&o)
+LlamaCppBackendManager::LlamaCppBackendManager(LlamaCppBackendManager &&o)
     : m_getFileArch(o.m_getFileArch)
     , m_isArchSupported(o.m_isArchSupported)
     , m_construct(o.m_construct)
@@ -92,7 +95,7 @@ LLModel::Implementation::Implementation(Implementation &&o)
     o.m_dlhandle = nullptr;
 }
 
-LLModel::Implementation::~Implementation()
+LlamaCppBackendManager::~LlamaCppBackendManager()
 {
     delete m_dlhandle;
 }
@@ -117,7 +120,7 @@ static void addCudaSearchPath()
 #endif
 }
 
-const std::vector<LLModel::Implementation> &LLModel::Implementation::implementationList()
+const std::vector<LlamaCppBackendManager> &LlamaCppBackendManager::implementationList()
 {
     if (cpu_supports_avx() == 0) {
         throw std::runtime_error("CPU does not support AVX");
@@ -125,12 +128,12 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
 
     // NOTE: allocated on heap so we leak intentionally on exit so we have a chance to clean up the
     // individual models without the cleanup of the static list interfering
-    static auto* libs = new std::vector<Implementation>([] () {
-        std::vector<Implementation> fres;
+    static auto* libs = new std::vector<LlamaCppBackendManager>([] () {
+        std::vector<LlamaCppBackendManager> fres;
 
         addCudaSearchPath();
 
-        std::string impl_name_re = "llamamodel-mainline-(cpu|metal|kompute|vulkan|cuda)";
+        std::string impl_name_re = "llamacpp-(cpu|metal|kompute|vulkan|cuda)";
         if (cpu_supports_avx2() == 0) {
             impl_name_re += "-avxonly";
         }
@@ -146,7 +149,10 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
                     const fs::path &p = f.path();
 
                     if (p.extension() != LIB_FILE_EXT) continue;
-                    if (!std::regex_search(p.stem().string(), re)) continue;
+                    if (!std::regex_search(p.stem().string(), re)) {
+                        std::cerr << "did not match regex: " << p.stem().string() << "\n";
+                        continue;
+                    }
 
                     // Add to list if model implementation
                     Dlhandle dl;
@@ -160,7 +166,7 @@ const std::vector<LLModel::Implementation> &LLModel::Implementation::implementat
                         std::cerr << "Not an implementation: " << p.filename().string() << "\n";
                         continue;
                     }
-                    fres.emplace_back(Implementation(std::move(dl)));
+                    fres.emplace_back(LlamaCppBackendManager(std::move(dl)));
                 }
             }
         };
@@ -181,8 +187,10 @@ static std::string applyCPUVariant(const std::string &buildVariant)
     return buildVariant;
 }
 
-const LLModel::Implementation* LLModel::Implementation::implementation(const char *fname, const std::string& buildVariant)
-{
+const LlamaCppBackendManager* LlamaCppBackendManager::implementation(
+    const char *fname,
+    const std::string& buildVariant
+) {
     bool buildVariantMatched = false;
     std::optional<std::string> archName;
     for (const auto& i : implementationList()) {
@@ -206,8 +214,11 @@ const LLModel::Implementation* LLModel::Implementation::implementation(const cha
     throw BadArchError(std::move(*archName));
 }
 
-LLModel *LLModel::Implementation::construct(const std::string &modelPath, const std::string &backend, int n_ctx)
-{
+LlamaCppBackend *LlamaCppBackendManager::construct(
+    const std::string &modelPath,
+    const std::string &backend,
+    int n_ctx
+) {
     std::vector<std::string> desiredBackends;
     if (backend != "auto") {
         desiredBackends.push_back(backend);
@@ -221,7 +232,7 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, const 
         if (impl) {
             // Construct llmodel implementation
             auto *fres = impl->m_construct();
-            fres->m_implementation = impl;
+            fres->m_manager = impl;
 
 #if defined(__APPLE__) && defined(__aarch64__) // FIXME: See if metal works for intel macs
             /* TODO(cebtenzzre): after we fix requiredMem, we should change this to happen at
@@ -247,11 +258,11 @@ LLModel *LLModel::Implementation::construct(const std::string &modelPath, const 
     throw MissingImplementationError("Could not find any implementations for backend: " + backend);
 }
 
-LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::string> &backend)
+LlamaCppBackend *LlamaCppBackendManager::constructGlobalLlama(const std::optional<std::string> &backend)
 {
-    static std::unordered_map<std::string, std::unique_ptr<LLModel>> implCache;
+    static std::unordered_map<std::string, std::unique_ptr<LlamaCppBackend>> implCache;
 
-    const std::vector<Implementation> *impls;
+    const std::vector<LlamaCppBackendManager> *impls;
     try {
         impls = &implementationList();
     } catch (const std::runtime_error &e) {
@@ -266,7 +277,7 @@ LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::
         desiredBackends.insert(desiredBackends.end(), DEFAULT_BACKENDS, std::end(DEFAULT_BACKENDS));
     }
 
-    const Implementation *impl = nullptr;
+    const LlamaCppBackendManager *impl = nullptr;
 
     for (const auto &desiredBackend: desiredBackends) {
         auto cacheIt = implCache.find(desiredBackend);
@@ -282,19 +293,20 @@ LLModel *LLModel::Implementation::constructGlobalLlama(const std::optional<std::
 
         if (impl) {
             auto *fres = impl->m_construct();
-            fres->m_implementation = impl;
-            implCache[desiredBackend] = std::unique_ptr<LLModel>(fres);
+            fres->m_manager = impl;
+            implCache[desiredBackend] = std::unique_ptr<LlamaCppBackend>(fres);
             return fres;
         }
     }
 
-    std::cerr << __func__ << ": could not find Llama implementation for backend: " << backend.value_or("default") << "\n";
+    std::cerr << __func__ << ": could not find Llama implementation for backend: " << backend.value_or("default")
+              << "\n";
     return nullptr;
 }
 
-std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices(size_t memoryRequired)
+std::vector<LlamaCppBackend::GPUDevice> LlamaCppBackendManager::availableGPUDevices(size_t memoryRequired)
 {
-    std::vector<LLModel::GPUDevice> devices;
+    std::vector<LlamaCppBackend::GPUDevice> devices;
 #ifndef __APPLE__
     static const std::string backends[] = {"kompute", "cuda"};
     for (const auto &backend: backends) {
@@ -308,40 +320,40 @@ std::vector<LLModel::GPUDevice> LLModel::Implementation::availableGPUDevices(siz
     return devices;
 }
 
-int32_t LLModel::Implementation::maxContextLength(const std::string &modelPath)
+int32_t LlamaCppBackendManager::maxContextLength(const std::string &modelPath)
 {
     auto *llama = constructGlobalLlama();
     return llama ? llama->maxContextLength(modelPath) : -1;
 }
 
-int32_t LLModel::Implementation::layerCount(const std::string &modelPath)
+int32_t LlamaCppBackendManager::layerCount(const std::string &modelPath)
 {
     auto *llama = constructGlobalLlama();
     return llama ? llama->layerCount(modelPath) : -1;
 }
 
-bool LLModel::Implementation::isEmbeddingModel(const std::string &modelPath)
+bool LlamaCppBackendManager::isEmbeddingModel(const std::string &modelPath)
 {
     auto *llama = constructGlobalLlama();
     return llama && llama->isEmbeddingModel(modelPath);
 }
 
-void LLModel::Implementation::setImplementationsSearchPath(const std::string& path)
+void LlamaCppBackendManager::setImplementationsSearchPath(const std::string& path)
 {
     s_implementations_search_path = path;
 }
 
-const std::string& LLModel::Implementation::implementationsSearchPath()
+const std::string& LlamaCppBackendManager::implementationsSearchPath()
 {
     return s_implementations_search_path;
 }
 
-bool LLModel::Implementation::hasSupportedCPU()
+bool LlamaCppBackendManager::hasSupportedCPU()
 {
     return cpu_supports_avx() != 0;
 }
 
-int LLModel::Implementation::cpuSupportsAVX2()
+int LlamaCppBackendManager::cpuSupportsAVX2()
 {
     return cpu_supports_avx2();
 }

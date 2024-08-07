@@ -1,4 +1,4 @@
-#include "llmodel.h"
+#include "model_backend.h"
 #include "llmodel_c.h"
 #include "prompt.h"
 #include <atomic>

@@ -1,6 +1,8 @@
 #include "llmodel_c.h"
 
-#include "llmodel.h"
+#include "llamacpp_backend.h"
+#include "llamacpp_backend_manager.h"
+#include "model_backend.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -15,8 +17,8 @@
 #include <vector>
 
 struct LLModelWrapper {
-    LLModel *llModel = nullptr;
-    LLModel::PromptContext promptContext;
+    LlamaCppBackend *llModel = nullptr;
+    ModelBackend::PromptContext promptContext;
     ~LLModelWrapper() { delete llModel; }
 };
 
@@ -41,9 +43,9 @@ static void llmodel_set_error(const char **errptr, const char *message)
 
 llmodel_model llmodel_model_create2(const char *model_path, const char *backend, const char **error)
 {
-    LLModel *llModel;
+    LlamaCppBackend *llModel;
     try {
-        llModel = LLModel::Implementation::construct(model_path, backend);
+        llModel = LlamaCppBackendManager::construct(model_path, backend);
     } catch (const std::exception& e) {
         llmodel_set_error(error, e.what());
         return nullptr;
@@ -214,12 +216,12 @@ int32_t llmodel_threadCount(llmodel_model model)
 
 void llmodel_set_implementation_search_path(const char *path)
 {
-    LLModel::Implementation::setImplementationsSearchPath(path);
+    LlamaCppBackendManager::setImplementationsSearchPath(path);
 }
 
 const char *llmodel_get_implementation_search_path()
 {
-    return LLModel::Implementation::implementationsSearchPath().c_str();
+    return LlamaCppBackendManager::implementationsSearchPath().c_str();
 }
 
 // RAII wrapper around a C-style struct
@@ -244,7 +246,7 @@ struct llmodel_gpu_device *llmodel_available_gpu_devices(size_t memoryRequired, 
 {
     static thread_local std::unique_ptr<llmodel_gpu_device_cpp[]> c_devices;
 
-    auto devices = LLModel::Implementation::availableGPUDevices(memoryRequired);
+    auto devices = LlamaCppBackendManager::availableGPUDevices(memoryRequired);
     *num_devices = devices.size();
 
     if (devices.empty()) { return nullptr; /* no devices */ }

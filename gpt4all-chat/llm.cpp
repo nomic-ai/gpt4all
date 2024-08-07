@@ -1,6 +1,6 @@
 #include "llm.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include "../gpt4all-backend/llamacpp_backend_manager.h"
 #include "../gpt4all-backend/sysinfo.h"
 
 #include <QCoreApplication>
@@ -30,7 +30,7 @@ LLM *LLM::globalInstance()
 
 LLM::LLM()
     : QObject{nullptr}
-    , m_compatHardware(LLModel::Implementation::hasSupportedCPU())
+    , m_compatHardware(LlamaCppBackendManager::hasSupportedCPU())
 {
     QNetworkInformation::loadDefaultBackend();
     auto * netinfo = QNetworkInformation::instance();

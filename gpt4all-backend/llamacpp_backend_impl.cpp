@@ -1,7 +1,7 @@
-#define LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
-#include "llamamodel_impl.h"
+#define LLAMACPP_BACKEND_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#include "llamacpp_backend_impl.h"
 
-#include "llmodel.h"
+#include "model_backend.h"
 
 #include <ggml.h>
 #include <llama.h>
@@ -232,7 +232,7 @@ cleanup:
     return value;
 }
 
-struct LLamaPrivate {
+struct LlamaPrivate {
     const std::string modelPath;
     bool modelLoaded = false;
     int device = -1;
@@ -242,12 +242,12 @@ struct LLamaPrivate {
     llama_model_params model_params;
     llama_context_params ctx_params;
     int64_t n_threads = 0;
-    std::vector<LLModel::Token> end_tokens;
+    std::vector<ModelBackend::Token> end_tokens;
     const char *backend_name = nullptr;
 };
 
-LLamaModel::LLamaModel()
-    : d_ptr(new LLamaPrivate) {}
+LlamaCppBackendImpl::LlamaCppBackendImpl()
+    : d_ptr(new LlamaPrivate) {}
 
 // default hparams (LLaMA 7B)
 struct llama_file_hparams {
@@ -260,7 +260,7 @@ struct llama_file_hparams {
     enum llama_ftype ftype = LLAMA_FTYPE_MOSTLY_F16;
 };
 
-size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
+size_t LlamaCppBackendImpl::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
 {
     // TODO(cebtenzzre): update to GGUF
     (void)ngl; // FIXME(cetenzzre): use this value
@@ -285,7 +285,7 @@ size_t LLamaModel::requiredMem(const std::string &modelPath, int n_ctx, int ngl)
     return filesize + est_kvcache_size;
 }
 
-bool LLamaModel::isModelBlacklisted(const std::string &modelPath) const
+bool LlamaCppBackendImpl::isModelBlacklisted(const std::string &modelPath) const
 {
     auto * ctx = load_gguf(modelPath.c_str());
     if (!ctx) {
@@ -322,7 +322,7 @@ bool LLamaModel::isModelBlacklisted(const std::string &modelPath) const
     return res;
 }
 
-bool LLamaModel::isEmbeddingModel(const std::string &modelPath) const
+bool LlamaCppBackendImpl::isEmbeddingModel(const std::string &modelPath) const
 {
     bool result = false;
     std::string arch;
@@ -346,7 +346,7 @@ cleanup:
     return result;
 }
 
-bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
+bool LlamaCppBackendImpl::loadModel(const std::string &modelPath, int n_ctx, int ngl)
 {
     d_ptr->modelLoaded = false;
 
@@ -378,7 +378,7 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     d_ptr->model_params.use_mlock = params.use_mlock;
 #endif
 
-    d_ptr->model_params.progress_callback = &LLModel::staticProgressCallback;
+    d_ptr->model_params.progress_callback = &LlamaCppBackend::staticProgressCallback;
     d_ptr->model_params.progress_callback_user_data = this;
 
     d_ptr->backend_name = "cpu"; // default
@@ -488,18 +488,18 @@ bool LLamaModel::loadModel(const std::string &modelPath, int n_ctx, int ngl)
     return true;
 }
 
-void LLamaModel::setThreadCount(int32_t n_threads)
+void LlamaCppBackendImpl::setThreadCount(int32_t n_threads)
 {
     d_ptr->n_threads = n_threads;
     llama_set_n_threads(d_ptr->ctx, n_threads, n_threads);
 }
 
-int32_t LLamaModel::threadCount() const
+int32_t LlamaCppBackendImpl::threadCount() const
 {
     return d_ptr->n_threads;
 }
 
-LLamaModel::~LLamaModel()
+LlamaCppBackendImpl::~LlamaCppBackendImpl()
 {
     if (d_ptr->ctx) {
         llama_free(d_ptr->ctx);
@@ -507,32 +507,32 @@ LLamaModel::~LLamaModel()
     llama_free_model(d_ptr->model);
 }
 
-bool LLamaModel::isModelLoaded() const
+bool LlamaCppBackendImpl::isModelLoaded() const
 {
     return d_ptr->modelLoaded;
 }
 
-size_t LLamaModel::stateSize() const
+size_t LlamaCppBackendImpl::stateSize() const
 {
     return llama_get_state_size(d_ptr->ctx);
 }
 
-size_t LLamaModel::saveState(uint8_t *dest) const
+size_t LlamaCppBackendImpl::saveState(uint8_t *dest) const
 {
     return llama_copy_state_data(d_ptr->ctx, dest);
 }
 
-size_t LLamaModel::restoreState(const uint8_t *src)
+size_t LlamaCppBackendImpl::restoreState(const uint8_t *src)
 {
     // const_cast is required, see: https://github.com/ggerganov/llama.cpp/pull/1540
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
-std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::string &str, bool special)
+std::vector<ModelBackend::Token> LlamaCppBackendImpl::tokenize(PromptContext &ctx, const std::string &str, bool special)
 {
     bool atStart = m_tokenize_last_token == -1;
     bool insertSpace = atStart || isSpecialToken(m_tokenize_last_token);
-    std::vector<LLModel::Token> fres(str.length() + 4);
+    std::vector<ModelBackend::Token> fres(str.length() + 4);
     int32_t fres_len = llama_tokenize_gpt4all(
         d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), /*add_special*/ atStart,
         /*parse_special*/ special, /*insert_space*/ insertSpace
@@ -543,13 +543,13 @@ std::vector<LLModel::Token> LLamaModel::tokenize(PromptContext &ctx, const std::
     return fres;
 }
 
-bool LLamaModel::isSpecialToken(Token id) const
+bool LlamaCppBackendImpl::isSpecialToken(Token id) const
 {
     return llama_token_get_attr(d_ptr->model, id)
         & (LLAMA_TOKEN_ATTR_CONTROL | LLAMA_TOKEN_ATTR_USER_DEFINED | LLAMA_TOKEN_ATTR_UNKNOWN);
 }
 
-std::string LLamaModel::tokenToString(Token id) const
+std::string LlamaCppBackendImpl::tokenToString(Token id) const
 {
     std::vector<char> result(8, 0);
     const int n_tokens = llama_token_to_piece(d_ptr->model, id, result.data(), result.size(), 0, true);
@@ -565,7 +565,7 @@ std::string LLamaModel::tokenToString(Token id) const
     return std::string(result.data(), result.size());
 }
 
-LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
+ModelBackend::Token LlamaCppBackendImpl::sampleToken(PromptContext &promptCtx) const
 {
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return llama_sample_top_p_top_k(d_ptr->ctx,
@@ -574,7 +574,7 @@ LLModel::Token LLamaModel::sampleToken(PromptContext &promptCtx) const
         promptCtx.repeat_penalty);
 }
 
-bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
+bool LlamaCppBackendImpl::evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const
 {
     llama_kv_cache_seq_rm(d_ptr->ctx, 0, ctx.n_past, -1);
 
@@ -598,7 +598,7 @@ bool LLamaModel::evalTokens(PromptContext &ctx, const std::vector<int32_t> &toke
     return res == 0;
 }
 
-void LLamaModel::shiftContext(PromptContext &promptCtx)
+void LlamaCppBackendImpl::shiftContext(PromptContext &promptCtx)
 {
     // infinite text generation via context shifting
 
@@ -622,27 +622,27 @@ void LLamaModel::shiftContext(PromptContext &promptCtx)
     promptCtx.n_past = promptCtx.tokens.size();
 }
 
-int32_t LLamaModel::contextLength() const
+int32_t LlamaCppBackendImpl::contextLength() const
 {
     return llama_n_ctx(d_ptr->ctx);
 }
 
-const std::vector<LLModel::Token> &LLamaModel::endTokens() const
+const std::vector<ModelBackend::Token> &LlamaCppBackendImpl::endTokens() const
 {
     return d_ptr->end_tokens;
 }
 
-bool LLamaModel::shouldAddBOS() const
+bool LlamaCppBackendImpl::shouldAddBOS() const
 {
     return llama_add_bos_token(d_ptr->model);
 }
 
-int32_t LLamaModel::maxContextLength(std::string const &modelPath) const
+int32_t LlamaCppBackendImpl::maxContextLength(std::string const &modelPath) const
 {
     return get_arch_key_u32(modelPath, "context_length");
 }
 
-int32_t LLamaModel::layerCount(std::string const &modelPath) const
+int32_t LlamaCppBackendImpl::layerCount(std::string const &modelPath) const
 {
     return get_arch_key_u32(modelPath, "block_count");
 }
@@ -659,7 +659,7 @@ static const char *getVulkanVendorName(uint32_t vendorID)
 }
 #endif
 
-std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryRequired) const
+std::vector<LlamaCppBackendImpl::GPUDevice> LlamaCppBackendImpl::availableGPUDevices(size_t memoryRequired) const
 {
 #if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     size_t count = 0;
@@ -675,7 +675,7 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
 #endif
 
     if (lcppDevices) {
-        std::vector<LLModel::GPUDevice> devices;
+        std::vector<GPUDevice> devices;
         devices.reserve(count);
 
         for (size_t i = 0; i < count; ++i) {
@@ -724,7 +724,7 @@ std::vector<LLModel::GPUDevice> LLamaModel::availableGPUDevices(size_t memoryReq
     return {};
 }
 
-bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &name) const
+bool LlamaCppBackendImpl::initializeGPUDevice(size_t memoryRequired, const std::string &name) const
 {
 #if defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     auto devices = availableGPUDevices(memoryRequired);
@@ -761,7 +761,7 @@ bool LLamaModel::initializeGPUDevice(size_t memoryRequired, const std::string &n
     return false;
 }
 
-bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) const
+bool LlamaCppBackendImpl::initializeGPUDevice(int device, std::string *unavail_reason) const
 {
 #if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
     (void)unavail_reason;
@@ -779,7 +779,7 @@ bool LLamaModel::initializeGPUDevice(int device, std::string *unavail_reason) co
 #endif
 }
 
-bool LLamaModel::usingGPUDevice() const
+bool LlamaCppBackendImpl::usingGPUDevice() const
 {
     if (!d_ptr->model)
         return false;
@@ -791,12 +791,12 @@ bool LLamaModel::usingGPUDevice() const
     return usingGPU;
 }
 
-const char *LLamaModel::backendName() const
+const char *LlamaCppBackendImpl::backendName() const
 {
     return d_ptr->backend_name;
 }
 
-const char *LLamaModel::gpuDeviceName() const
+const char *LlamaCppBackendImpl::gpuDeviceName() const
 {
     if (usingGPUDevice()) {
 #if defined(GGML_USE_KOMPUTE) || defined(GGML_USE_VULKAN) || defined(GGML_USE_CUDA)
@@ -825,14 +825,14 @@ void llama_batch_add(
     batch.n_tokens++;
 }
 
-static void batch_add_seq(llama_batch &batch, const std::vector<LLModel::Token> &tokens, int seq_id)
+static void batch_add_seq(llama_batch &batch, const std::vector<ModelBackend::Token> &tokens, int seq_id)
 {
     for (unsigned i = 0; i < tokens.size(); i++) {
         llama_batch_add(batch, tokens[i], i, { seq_id }, i == tokens.size() - 1);
     }
 }
 
-size_t LLamaModel::embeddingSize() const
+size_t LlamaCppBackendImpl::embeddingSize() const
 {
     return llama_n_embd(d_ptr->model);
 }
@@ -895,7 +895,7 @@ static const EmbModelSpec *getEmbedSpec(const std::string &modelName) {
     return it < std::end(specs) ? &it->spec : nullptr;
 }
 
-void LLamaModel::embed(
+void LlamaCppBackendImpl::embed(
     const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, size_t *tokenCount,
     bool doMean, bool atlas
 ) {
@@ -907,9 +907,9 @@ void LLamaModel::embed(
     embed(texts, embeddings, prefix, dimensionality, tokenCount, doMean, atlas);
 }
 
-void LLamaModel::embed(
+void LlamaCppBackendImpl::embed(
     const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
-    size_t *tokenCount, bool doMean, bool atlas, LLModel::EmbedCancelCallback *cancelCb
+    size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb
 ) {
     if (!d_ptr->model)
         throw std::logic_error("no model is loaded");
@@ -965,11 +965,11 @@ double getL2NormScale(T *start, T *end)
     return 1.0 / std::max(magnitude, 1e-12);
 }
 
-void LLamaModel::embedInternal(
+void LlamaCppBackendImpl::embedInternal(
     const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
-    size_t *tokenCount, bool doMean, bool atlas, LLModel::EmbedCancelCallback *cancelCb, const EmbModelSpec *spec
+    size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb, const EmbModelSpec *spec
 ) {
-    typedef std::vector<LLModel::Token> TokenString;
+    typedef std::vector<ModelBackend::Token> TokenString;
     static constexpr int32_t atlasMaxLength = 8192;
     static constexpr int chunkOverlap = 8; // Atlas overlaps chunks of input by 8 tokens
 
@@ -1217,12 +1217,12 @@ DLL_EXPORT bool is_arch_supported(const char *arch)
     return std::find(KNOWN_ARCHES.begin(), KNOWN_ARCHES.end(), std::string(arch)) < KNOWN_ARCHES.end();
 }
 
-DLL_EXPORT LLModel *construct()
+DLL_EXPORT LlamaCppBackend *construct()
 {
     llama_log_set(llama_log_callback, nullptr);
 #ifdef GGML_USE_CUDA
     ggml_backend_cuda_log_set_callback(cuda_log_callback, nullptr);
 #endif
-    return new LLamaModel;
+    return new LlamaCppBackendImpl;
 }
 }

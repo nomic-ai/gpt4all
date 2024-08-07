@@ -1,4 +1,6 @@
-#include "llmodel.h"
+#include "llamacpp_backend.h"
+
+#include "llamacpp_backend_manager.h"
 
 #include <algorithm>
 #include <cassert>
@@ -14,6 +16,7 @@
 #include <vector>
 
 namespace ranges = std::ranges;
+
 
 static bool parsePromptTemplate(const std::string &tmpl, std::vector<std::smatch> &placeholders, std::string &err)
 {
@@ -38,24 +41,25 @@ static bool parsePromptTemplate(const std::string &tmpl, std::vector<std::smatch
     return true;
 }
 
-void LLModel::prompt(const std::string &prompt,
-                     const std::string &promptTemplate,
-                     std::function<bool(int32_t)> promptCallback,
-                     std::function<bool(int32_t, const std::string&)> responseCallback,
-                     bool allowContextShift,
-                     PromptContext &promptCtx,
-                     bool special,
-                     std::string *fakeReply)
-{
+void LlamaCppBackend::prompt(
+    const std::string &prompt,
+    const std::string &promptTemplate,
+    std::function<bool(int32_t)> promptCallback,
+    std::function<bool(int32_t, const std::string&)> responseCallback,
+    bool allowContextShift,
+    PromptContext &promptCtx,
+    bool special,
+    std::string *fakeReply
+) {
     if (!isModelLoaded()) {
-        std::cerr << implementation().modelType() << " ERROR: prompt won't work with an unloaded model!\n";
+        std::cerr << manager().modelType() << " ERROR: prompt won't work with an unloaded model!\n";
         return;
     }
 
     if (!supportsCompletion()) {
         std::string errorMessage = "ERROR: this model does not support text completion or chat!";
         responseCallback(-1, errorMessage);
-        std::cerr << implementation().modelType() << " " << errorMessage << "\n";
+        std::cerr << manager().modelType() << " " << errorMessage << "\n";
         return;
     }
 
@@ -152,15 +156,22 @@ void LLModel::prompt(const std::string &prompt,
     }
 }
 
+const LlamaCppBackendManager &LlamaCppBackend::manager() const
+{
+    return *m_manager;
+}
+
 // returns false on error
-bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
-                           std::function<bool(int32_t, const std::string&)> responseCallback,
-                           bool allowContextShift,
-                           PromptContext &promptCtx,
-                           std::vector<Token> embd_inp) {
+bool LlamaCppBackend::decodePrompt(
+    std::function<bool(int32_t)> promptCallback,
+    std::function<bool(int32_t, const std::string&)> responseCallback,
+    bool allowContextShift,
+    PromptContext &promptCtx,
+    std::vector<Token> embd_inp
+) {
     if ((int) embd_inp.size() > promptCtx.n_ctx - 4) {
         responseCallback(-1, "ERROR: The prompt size exceeds the context window size and cannot be processed.");
-        std::cerr << implementation().modelType() << " ERROR: The prompt is " << embd_inp.size() <<
+        std::cerr << manager().modelType() << " ERROR: The prompt is " << embd_inp.size() <<
             " tokens and the context window is " << promptCtx.n_ctx << "!\n";
         return false;
     }
@@ -188,7 +199,7 @@ bool LLModel::decodePrompt(std::function<bool(int32_t)> promptCallback,
         }
 
         if (!evalTokens(promptCtx, batch)) {
-            std::cerr << implementation().modelType() << " ERROR: Failed to process prompt\n";
+            std::cerr << manager().modelType() << " ERROR: Failed to process prompt\n";
             return false;
         }
 
@@ -224,9 +235,11 @@ static std::string::size_type stringsOverlap(const std::string &s, const std::st
     return std::string::npos;
 }
 
-void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> responseCallback,
-                               bool allowContextShift,
-                               PromptContext &promptCtx) {
+void LlamaCppBackend::generateResponse(
+    std::function<bool(int32_t, const std::string&)> responseCallback,
+    bool allowContextShift,
+    PromptContext &promptCtx
+) {
     static const char *stopSequences[] {
         "### Instruction", "### Prompt", "### Response", "### Human", "### Assistant", "### Context",
     };
@@ -265,7 +278,7 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
             Token tok = std::exchange(new_tok, std::nullopt).value();
             if (!evalTokens(promptCtx, { tok })) {
                 // TODO(jared): raise an exception
-                std::cerr << implementation().modelType() << " ERROR: Failed to predict next token\n";
+                std::cerr << manager().modelType() << " ERROR: Failed to predict next token\n";
                 return false;
             }
 
@@ -369,33 +382,4 @@ void LLModel::generateResponse(std::function<bool(int32_t, const std::string&)> 
     tokens.erase(discard_start, tokens.end());
 
     promptCtx.n_past -= cachedTokens.size();
-}
-
-void LLModel::embed(
-    const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
-    size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb
-) {
-    (void)texts;
-    (void)embeddings;
-    (void)prefix;
-    (void)dimensionality;
-    (void)tokenCount;
-    (void)doMean;
-    (void)atlas;
-    (void)cancelCb;
-    throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
-}
-
-void LLModel::embed(
-    const std::vector<std::string> &texts, float *embeddings, bool isRetrieval, int dimensionality, size_t *tokenCount,
-    bool doMean, bool atlas
-) {
-    (void)texts;
-    (void)embeddings;
-    (void)isRetrieval;
-    (void)dimensionality;
-    (void)tokenCount;
-    (void)doMean;
-    (void)atlas;
-    throw std::logic_error(std::string(implementation().modelType()) + " does not support embeddings");
 }

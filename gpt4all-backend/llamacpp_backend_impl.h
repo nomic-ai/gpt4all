@@ -1,22 +1,22 @@
-#ifndef LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
-#error This file is NOT meant to be included outside of llamamodel.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define LLAMAMODEL_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
-#endif
-#ifndef LLAMAMODEL_H
-#define LLAMAMODEL_H
+#pragma once
 
-#include "llmodel.h"
+#ifndef LLAMACPP_BACKEND_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#error This file is NOT meant to be included outside of llamacpp_backend_impl.cpp. Doing so is DANGEROUS. Be sure to know what you are doing before proceeding to #define LLAMACPP_BACKEND_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
+#endif
+
+#include "llamacpp_backend.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-struct LLamaPrivate;
+struct LlamaPrivate;
 struct EmbModelSpec;
 
-class LLamaModel : public LLModel {
+class LlamaCppBackendImpl : public LlamaCppBackend {
 public:
-    LLamaModel();
-    ~LLamaModel();
+    LlamaCppBackendImpl();
+    ~LlamaCppBackendImpl();
 
     bool supportsEmbedding() const override { return m_supportsEmbedding; }
     bool supportsCompletion() const override { return m_supportsCompletion; }
@@ -47,7 +47,7 @@ public:
                size_t *tokenCount = nullptr, bool doMean = true, bool atlas = false) override;
 
 private:
-    std::unique_ptr<LLamaPrivate> d_ptr;
+    std::unique_ptr<LlamaPrivate> d_ptr;
     bool m_supportsEmbedding = false;
     bool m_supportsCompletion = false;
 
@@ -68,5 +68,3 @@ protected:
                        size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb,
                        const EmbModelSpec *spec);
 };
-
-#endif // LLAMAMODEL_H

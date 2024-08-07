@@ -8,7 +8,7 @@
 #include "mysettings.h"
 #include "network.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include "../gpt4all-backend/llamacpp_backend_manager.h"
 
 #include <QCoreApplication>
 #include <QGuiApplication>
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     if (LLM::directoryExists(frameworksDir))
         llmodelSearchPaths += ";" + frameworksDir;
 #endif
-    LLModel::Implementation::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
+    LlamaCppBackendManager::setImplementationsSearchPath(llmodelSearchPaths.toStdString());
 
     // Set the local and language translation before the qml engine has even been started. This will
     // use the default system locale unless the user has explicitly set it to use a different one.

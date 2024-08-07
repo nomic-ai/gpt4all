@@ -13,7 +13,7 @@
 #include <atomic>
 #include <vector>
 
-class LLModel;
+class LlamaCppBackend;
 class QNetworkAccessManager;
 
 struct EmbeddingChunk {
@@ -67,7 +67,7 @@ private:
     QString m_nomicAPIKey;
     QNetworkAccessManager *m_networkManager;
     std::vector<float> m_lastResponse;
-    LLModel *m_model = nullptr;
+    LlamaCppBackend *m_model = nullptr;
     std::atomic<bool> m_stopGenerating;
     QThread m_workerThread;
     QMutex m_mutex; // guards m_model and m_nomicAPIKey

@@ -4,7 +4,7 @@
 #include "mysettings.h"
 #include "network.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include "../gpt4all-backend/llamacpp_backend_manager.h"
 
 #include <QChar>
 #include <QCoreApplication>
@@ -258,7 +258,7 @@ int ModelInfo::maxContextLength() const
     if (!installed || isOnline) return -1;
     if (m_maxContextLength != -1) return m_maxContextLength;
     auto path = (dirpath + filename()).toStdString();
-    int n_ctx = LLModel::Implementation::maxContextLength(path);
+    int n_ctx = LlamaCppBackendManager::maxContextLength(path);
     if (n_ctx < 0) {
         n_ctx = 4096; // fallback value
     }
@@ -282,7 +282,7 @@ int ModelInfo::maxGpuLayers() const
     if (!installed || isOnline) return -1;
     if (m_maxGpuLayers != -1) return m_maxGpuLayers;
     auto path = (dirpath + filename()).toStdString();
-    int layers = LLModel::Implementation::layerCount(path);
+    int layers = LlamaCppBackendManager::layerCount(path);
     if (layers < 0) {
         layers = 100; // fallback value
     }
@@ -997,7 +997,7 @@ void ModelList::updateData(const QString &id, const QVector<QPair<int, QVariant>
             && (info->isDiscovered() || info->description().isEmpty()))
         {
             // read GGUF and decide based on model architecture
-            info->isEmbeddingModel = LLModel::Implementation::isEmbeddingModel(modelPath.toStdString());
+            info->isEmbeddingModel = LlamaCppBackendManager::isEmbeddingModel(modelPath.toStdString());
             info->checkedEmbeddingModel = true;
         }
 

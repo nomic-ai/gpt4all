@@ -3,7 +3,8 @@
 #include "modellist.h"
 #include "mysettings.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include "../gpt4all-backend/llamacpp_backend.h"
+#include "../gpt4all-backend/llamacpp_backend_manager.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -99,7 +100,7 @@ bool EmbeddingLLMWorker::loadModel()
 #endif
 
     try {
-        m_model = LLModel::Implementation::construct(filePath.toStdString(), backend, n_ctx);
+        m_model = LlamaCppBackendManager::construct(filePath.toStdString(), backend, n_ctx);
     } catch (const std::exception &e) {
         qWarning() << "embllm WARNING: Could not load embedding model:" << e.what();
         return false;
@@ -108,15 +109,15 @@ bool EmbeddingLLMWorker::loadModel()
     bool actualDeviceIsCPU = true;
 
 #if defined(Q_OS_MAC) && defined(__aarch64__)
-    if (m_model->implementation().buildVariant() == "metal")
+    if (m_model->manager().buildVariant() == "metal")
         actualDeviceIsCPU = false;
 #else
     if (requestedDevice != "CPU") {
-        const LLModel::GPUDevice *device = nullptr;
-        std::vector<LLModel::GPUDevice> availableDevices = m_model->availableGPUDevices(0);
+        const LlamaCppBackend::GPUDevice *device = nullptr;
+        auto availableDevices = m_model->availableGPUDevices(0);
         if (requestedDevice != "Auto") {
             // Use the selected device
-            for (const LLModel::GPUDevice &d : availableDevices) {
+            for (const auto &d : availableDevices) {
                 if (QString::fromStdString(d.selectionName()) == requestedDevice) {
                     device = &d;
                     break;
@@ -145,7 +146,7 @@ bool EmbeddingLLMWorker::loadModel()
         if (backend == "cuda") {
             // For CUDA, make sure we don't use the GPU at all - ngl=0 still offloads matmuls
             try {
-                m_model = LLModel::Implementation::construct(filePath.toStdString(), "auto", n_ctx);
+                m_model = LlamaCppBackendManager::construct(filePath.toStdString(), "auto", n_ctx);
             } catch (const std::exception &e) {
                 qWarning() << "embllm WARNING: Could not load embedding model:" << e.what();
                 return false;
@@ -192,7 +193,7 @@ std::vector<float> EmbeddingLLMWorker::generateQueryEmbedding(const QString &tex
             try {
                 m_model->embed({text.toStdString()}, embedding.data(), /*isRetrieval*/ true);
             } catch (const std::exception &e) {
-                qWarning() << "WARNING: LLModel::embed failed:" << e.what();
+                qWarning() << "WARNING: LlamaCppBackend::embed failed:" << e.what();
                 return {};
             }
 
@@ -286,7 +287,7 @@ void EmbeddingLLMWorker::docEmbeddingsRequested(const QVector<EmbeddingChunk> &c
             try {
                 m_model->embed(batchTexts, result.data() + j * m_model->embeddingSize(), /*isRetrieval*/ false);
             } catch (const std::exception &e) {
-                qWarning() << "WARNING: LLModel::embed failed:" << e.what();
+                qWarning() << "WARNING: LlamaCppBackend::embed failed:" << e.what();
                 return;
             }
         }

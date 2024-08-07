@@ -55,7 +55,7 @@ def copy_prebuilt_C_lib(src_dir, dest_dir, dest_build_dir):
 
 
 # NOTE: You must provide correct path to the prebuilt llmodel C library. 
-# Specifically, the llmodel.h and C shared library are needed.
+# Specifically, the model_backend.h and C shared library are needed.
 copy_prebuilt_C_lib(SRC_CLIB_DIRECTORY,
                     DEST_CLIB_DIRECTORY,
                     DEST_CLIB_BUILD_DIRECTORY)
