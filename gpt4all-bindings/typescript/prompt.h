@@ -1,7 +1,7 @@
 #ifndef PREDICT_WORKER_H
 #define PREDICT_WORKER_H
 
-#include "llmodel.h"
+#include "model_backend.h"
 #include "llmodel_c.h"
 #include "napi.h"
 #include <atomic>

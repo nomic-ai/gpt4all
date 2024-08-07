@@ -2,7 +2,7 @@
 
 #include "llamacpp_backend.h"
 #include "llamacpp_backend_manager.h"
-#include "llmodel.h"
+#include "model_backend.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -18,7 +18,7 @@
 
 struct LLModelWrapper {
     LlamaCppBackend *llModel = nullptr;
-    LLModel::PromptContext promptContext;
+    ModelBackend::PromptContext promptContext;
     ~LLModelWrapper() { delete llModel; }
 };
 

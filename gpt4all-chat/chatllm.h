@@ -4,7 +4,7 @@
 #include "modellist.h"
 
 #include "../gpt4all-backend/llamacpp_backend.h"
-#include "../gpt4all-backend/llmodel.h"
+#include "../gpt4all-backend/model_backend.h"
 
 #include <QByteArray>
 #include <QElapsedTimer>
@@ -39,14 +39,14 @@ enum LLModelType {
 };
 
 struct LLModelInfo {
-    std::unique_ptr<LLModel> model;
+    std::unique_ptr<ModelBackend> model;
     QFileInfo fileInfo;
     std::optional<QString> fallbackReason;
 
     // NOTE: This does not store the model type or name on purpose as this is left for ChatLLM which
     // must be able to serialize the information even if it is in the unloaded state
 
-    void resetModel(ChatLLM *cllm, LLModel *model = nullptr);
+    void resetModel(ChatLLM *cllm, ModelBackend *model = nullptr);
 };
 
 class TokenTimer : public QObject {
@@ -218,7 +218,7 @@ private:
     bool loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps);
 
 protected:
-    LLModel::PromptContext m_ctx;
+    ModelBackend::PromptContext m_ctx;
     quint32 m_promptTokens;
     quint32 m_promptResponseTokens;
 
@@ -243,7 +243,7 @@ private:
     bool m_processedSystemPrompt;
     bool m_restoreStateFromText;
     // m_pristineLoadedState is set if saveSate is unnecessary, either because:
-    // - an unload was queued during LLModel::restoreState()
+    // - an unload was queued during ModelBackend::restoreState()
     // - the chat will be restored from text and hasn't been interacted with yet
     bool m_pristineLoadedState = false;
     QVector<QPair<QString, QString>> m_stateFromText;

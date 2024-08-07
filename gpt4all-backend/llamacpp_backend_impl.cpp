@@ -1,7 +1,7 @@
 #define LLAMACPP_BACKEND_H_I_KNOW_WHAT_I_AM_DOING_WHEN_INCLUDING_THIS_FILE
 #include "llamacpp_backend_impl.h"
 
-#include "llmodel.h"
+#include "model_backend.h"
 
 #include <ggml.h>
 #include <llama.h>
@@ -242,7 +242,7 @@ struct LlamaPrivate {
     llama_model_params model_params;
     llama_context_params ctx_params;
     int64_t n_threads = 0;
-    std::vector<LLModel::Token> end_tokens;
+    std::vector<ModelBackend::Token> end_tokens;
     const char *backend_name = nullptr;
 };
 
@@ -528,11 +528,11 @@ size_t LlamaCppBackendImpl::restoreState(const uint8_t *src)
     return llama_set_state_data(d_ptr->ctx, const_cast<uint8_t*>(src));
 }
 
-std::vector<LLModel::Token> LlamaCppBackendImpl::tokenize(PromptContext &ctx, const std::string &str, bool special)
+std::vector<ModelBackend::Token> LlamaCppBackendImpl::tokenize(PromptContext &ctx, const std::string &str, bool special)
 {
     bool atStart = m_tokenize_last_token == -1;
     bool insertSpace = atStart || isSpecialToken(m_tokenize_last_token);
-    std::vector<LLModel::Token> fres(str.length() + 4);
+    std::vector<ModelBackend::Token> fres(str.length() + 4);
     int32_t fres_len = llama_tokenize_gpt4all(
         d_ptr->model, str.c_str(), str.length(), fres.data(), fres.size(), /*add_special*/ atStart,
         /*parse_special*/ special, /*insert_space*/ insertSpace
@@ -565,7 +565,7 @@ std::string LlamaCppBackendImpl::tokenToString(Token id) const
     return std::string(result.data(), result.size());
 }
 
-LLModel::Token LlamaCppBackendImpl::sampleToken(PromptContext &promptCtx) const
+ModelBackend::Token LlamaCppBackendImpl::sampleToken(PromptContext &promptCtx) const
 {
     const size_t n_prev_toks = std::min((size_t) promptCtx.repeat_last_n, promptCtx.tokens.size());
     return llama_sample_top_p_top_k(d_ptr->ctx,
@@ -627,7 +627,7 @@ int32_t LlamaCppBackendImpl::contextLength() const
     return llama_n_ctx(d_ptr->ctx);
 }
 
-const std::vector<LLModel::Token> &LlamaCppBackendImpl::endTokens() const
+const std::vector<ModelBackend::Token> &LlamaCppBackendImpl::endTokens() const
 {
     return d_ptr->end_tokens;
 }
@@ -825,7 +825,7 @@ void llama_batch_add(
     batch.n_tokens++;
 }
 
-static void batch_add_seq(llama_batch &batch, const std::vector<LLModel::Token> &tokens, int seq_id)
+static void batch_add_seq(llama_batch &batch, const std::vector<ModelBackend::Token> &tokens, int seq_id)
 {
     for (unsigned i = 0; i < tokens.size(); i++) {
         llama_batch_add(batch, tokens[i], i, { seq_id }, i == tokens.size() - 1);
@@ -909,7 +909,7 @@ void LlamaCppBackendImpl::embed(
 
 void LlamaCppBackendImpl::embed(
     const std::vector<std::string> &texts, float *embeddings, std::optional<std::string> prefix, int dimensionality,
-    size_t *tokenCount, bool doMean, bool atlas, EmbLLModel::EmbedCancelCallback *cancelCb
+    size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb
 ) {
     if (!d_ptr->model)
         throw std::logic_error("no model is loaded");
@@ -967,9 +967,9 @@ double getL2NormScale(T *start, T *end)
 
 void LlamaCppBackendImpl::embedInternal(
     const std::vector<std::string> &texts, float *embeddings, std::string prefix, int dimensionality,
-    size_t *tokenCount, bool doMean, bool atlas, EmbLLModel::EmbedCancelCallback *cancelCb, const EmbModelSpec *spec
+    size_t *tokenCount, bool doMean, bool atlas, EmbedCancelCallback *cancelCb, const EmbModelSpec *spec
 ) {
-    typedef std::vector<LLModel::Token> TokenString;
+    typedef std::vector<ModelBackend::Token> TokenString;
     static constexpr int32_t atlasMaxLength = 8192;
     static constexpr int chunkOverlap = 8; // Atlas overlaps chunks of input by 8 tokens
 
@@ -1217,7 +1217,7 @@ DLL_EXPORT bool is_arch_supported(const char *arch)
     return std::find(KNOWN_ARCHES.begin(), KNOWN_ARCHES.end(), std::string(arch)) < KNOWN_ARCHES.end();
 }
 
-DLL_EXPORT LLModel *construct()
+DLL_EXPORT LlamaCppBackend *construct()
 {
     llama_log_set(llama_log_callback, nullptr);
 #ifdef GGML_USE_CUDA

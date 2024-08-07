@@ -193,7 +193,7 @@ std::vector<float> EmbeddingLLMWorker::generateQueryEmbedding(const QString &tex
             try {
                 m_model->embed({text.toStdString()}, embedding.data(), /*isRetrieval*/ true);
             } catch (const std::exception &e) {
-                qWarning() << "WARNING: LLModel::embed failed:" << e.what();
+                qWarning() << "WARNING: LlamaCppBackend::embed failed:" << e.what();
                 return {};
             }
 
@@ -287,7 +287,7 @@ void EmbeddingLLMWorker::docEmbeddingsRequested(const QVector<EmbeddingChunk> &c
             try {
                 m_model->embed(batchTexts, result.data() + j * m_model->embeddingSize(), /*isRetrieval*/ false);
             } catch (const std::exception &e) {
-                qWarning() << "WARNING: LLModel::embed failed:" << e.what();
+                qWarning() << "WARNING: LlamaCppBackend::embed failed:" << e.what();
                 return;
             }
         }

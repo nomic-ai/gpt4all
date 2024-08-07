@@ -1,6 +1,6 @@
 #pragma once
 
-#include "llmodel.h"
+#include "model_backend.h"
 
 #include <algorithm>
 #include <cassert>
@@ -17,7 +17,7 @@ using namespace std::string_literals;
 class LlamaCppBackendManager;
 
 
-class LlamaCppBackend : public EmbLLModel {
+class LlamaCppBackend : public EmbCapableBackend {
 public:
     struct GPUDevice {
         const char *backend;

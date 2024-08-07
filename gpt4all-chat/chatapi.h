@@ -1,7 +1,7 @@
 #ifndef CHATAPI_H
 #define CHATAPI_H
 
-#include "../gpt4all-backend/llmodel.h"
+#include "../gpt4all-backend/model_backend.h"
 
 #include <QByteArray>
 #include <QNetworkReply>
@@ -33,7 +33,7 @@ public:
     QString currentResponse() const { return m_currentResponse; }
 
     void request(const QString &apiKey,
-                 LLModel::PromptContext *promptCtx,
+                 ModelBackend::PromptContext *promptCtx,
                  const QByteArray &array);
 
 Q_SIGNALS:
@@ -46,12 +46,12 @@ private Q_SLOTS:
 
 private:
     ChatAPI *m_chat;
-    LLModel::PromptContext *m_ctx;
+    ModelBackend::PromptContext *m_ctx;
     QNetworkAccessManager *m_networkManager;
     QString m_currentResponse;
 };
 
-class ChatAPI : public QObject, public LLModel {
+class ChatAPI : public QObject, public ModelBackend {
     Q_OBJECT
 public:
     ChatAPI();
@@ -83,7 +83,7 @@ public:
 
 Q_SIGNALS:
     void request(const QString &apiKey,
-                 LLModel::PromptContext *ctx,
+                 ModelBackend::PromptContext *ctx,
                  const QByteArray &array);
 
 private:

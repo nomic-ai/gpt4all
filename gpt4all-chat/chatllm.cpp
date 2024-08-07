@@ -94,7 +94,7 @@ void LLModelStore::destroy()
     m_availableModel.reset();
 }
 
-void LLModelInfo::resetModel(ChatLLM *cllm, LLModel *model) {
+void LLModelInfo::resetModel(ChatLLM *cllm, ModelBackend *model) {
     this->model.reset(model);
     fallbackReason.reset();
     emit cllm->loadedModelInfoChanged();
@@ -647,7 +647,7 @@ void ChatLLM::resetContext()
 {
     resetResponse();
     m_processedSystemPrompt = false;
-    m_ctx = LLModel::PromptContext();
+    m_ctx = ModelBackend::PromptContext();
 }
 
 QString ChatLLM::response() const
@@ -902,7 +902,7 @@ void ChatLLM::generateName()
     auto promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
     auto promptFunc = std::bind(&ChatLLM::handleNamePrompt, this, std::placeholders::_1);
     auto responseFunc = std::bind(&ChatLLM::handleNameResponse, this, std::placeholders::_1, std::placeholders::_2);
-    LLModel::PromptContext ctx = m_ctx;
+    ModelBackend::PromptContext ctx = m_ctx;
     m_llModelInfo.model->prompt(chatNamePrompt.toStdString(), promptTemplate.toStdString(),
                                 promptFunc, responseFunc, /*allowContextShift*/ false, ctx);
     std::string trimmed = trim_whitespace(m_nameResponse);
@@ -998,7 +998,7 @@ void ChatLLM::generateQuestions(qint64 elapsed)
     auto promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
     auto promptFunc = std::bind(&ChatLLM::handleQuestionPrompt, this, std::placeholders::_1);
     auto responseFunc = std::bind(&ChatLLM::handleQuestionResponse, this, std::placeholders::_1, std::placeholders::_2);
-    LLModel::PromptContext ctx = m_ctx;
+    ModelBackend::PromptContext ctx = m_ctx;
     QElapsedTimer totalTime;
     totalTime.start();
     m_llModelInfo.model->prompt(suggestedFollowUpPrompt, promptTemplate.toStdString(), promptFunc, responseFunc,
@@ -1225,7 +1225,7 @@ void ChatLLM::processSystemPrompt()
 
     // Start with a whole new context
     m_stopGenerating = false;
-    m_ctx = LLModel::PromptContext();
+    m_ctx = ModelBackend::PromptContext();
 
     auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
 
@@ -1278,7 +1278,7 @@ void ChatLLM::processRestoreStateFromText()
     emit restoringFromTextChanged();
 
     m_stopGenerating = false;
-    m_ctx = LLModel::PromptContext();
+    m_ctx = ModelBackend::PromptContext();
 
     auto promptFunc = std::bind(&ChatLLM::handleRestoreStateFromTextPrompt, this, std::placeholders::_1);
 

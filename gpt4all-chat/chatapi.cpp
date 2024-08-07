@@ -1,6 +1,6 @@
 #include "chatapi.h"
 
-#include "../gpt4all-backend/llmodel.h"
+#include "../gpt4all-backend/model_backend.h"
 
 #include <QCoreApplication>
 #include <QGuiApplication>
@@ -170,7 +170,7 @@ bool ChatAPI::callResponse(int32_t token, const std::string& string)
 }
 
 void ChatAPIWorker::request(const QString &apiKey,
-                            LLModel::PromptContext *promptCtx,
+                            ModelBackend::PromptContext *promptCtx,
                             const QByteArray &array)
 {
     m_ctx = promptCtx;

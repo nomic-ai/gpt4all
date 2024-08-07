@@ -10,7 +10,7 @@
 
 #define LLMODEL_MAX_PROMPT_BATCH 128
 
-class LLModel {
+class ModelBackend {
 public:
     using Token = int32_t;
 
@@ -29,7 +29,7 @@ public:
         float   contextErase = 0.5f;    // percent of context to erase if we exceed the context window
     };
 
-    virtual ~LLModel() {}
+    virtual ~ModelBackend() {}
 
     virtual bool supportsCompletion() const { return true; }
     virtual bool loadModel(const std::string &modelPath, int n_ctx, int ngl) = 0;
@@ -50,13 +50,13 @@ public:
                         std::string *fakeReply = nullptr) = 0;
 
 protected:
-    explicit LLModel() {}
+    explicit ModelBackend() {}
 };
 
-class EmbLLModel: virtual public LLModel {
-public:
-    using EmbedCancelCallback = bool(unsigned *batchSizes, unsigned nBatch, const char *backend);
+using EmbedCancelCallback = bool(unsigned *batchSizes, unsigned nBatch, const char *backend);
 
+class EmbCapableBackend : virtual public ModelBackend {
+public:
     virtual bool supportsCompletion() const = 0;
     virtual bool supportsEmbedding() const = 0;
     virtual size_t embeddingSize() const = 0;
