@@ -1,6 +1,7 @@
 #include "mysettings.h"
 
 #include "../gpt4all-backend/llamacpp_backend.h"
+#include "../gpt4all-backend/llamacpp_backend_manager.h"
 
 #include <QDebug>
 #include <QDir>
@@ -95,7 +96,7 @@ static QStringList getDevices(bool skipKompute = false)
 #if defined(Q_OS_MAC) && defined(__aarch64__)
     deviceList << "Metal";
 #else
-    auto devices = LlamaCppBackend::Implementation::availableGPUDevices();
+    auto devices = LlamaCppBackendManager::availableGPUDevices();
     for (auto &d : devices) {
         if (!skipKompute || strcmp(d.backend, "kompute"))
             deviceList << QString::fromStdString(d.selectionName());

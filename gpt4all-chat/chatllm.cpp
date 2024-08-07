@@ -6,6 +6,8 @@
 #include "mysettings.h"
 #include "network.h"
 
+#include "../gpt4all-backend/llamacpp_backend_manager.h"
+
 #include <QDataStream>
 #include <QDebug>
 #include <QFile>
@@ -417,15 +419,15 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
         QString constructError;
         m_llModelInfo.resetModel(this);
         try {
-            lcppmodel = LlamaCppBackend::Implementation::construct(filePath.toStdString(), backend, n_ctx);
+            lcppmodel = LlamaCppBackendManager::construct(filePath.toStdString(), backend, n_ctx);
             m_llModelInfo.resetModel(this, lcppmodel);
-        } catch (const LlamaCppBackend::MissingImplementationError &e) {
+        } catch (const LlamaCppBackendManager::MissingImplementationError &e) {
             modelLoadProps.insert("error", "missing_model_impl");
             constructError = e.what();
-        } catch (const LlamaCppBackend::UnsupportedModelError &e) {
+        } catch (const LlamaCppBackendManager::UnsupportedModelError &e) {
             modelLoadProps.insert("error", "unsupported_model_file");
             constructError = e.what();
-        } catch (const LlamaCppBackend::BadArchError &e) {
+        } catch (const LlamaCppBackendManager::BadArchError &e) {
             constructError = e.what();
             modelLoadProps.insert("error", "unsupported_model_arch");
             modelLoadProps.insert("model_arch", QString::fromStdString(e.arch()));
@@ -487,7 +489,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
     bool actualDeviceIsCPU = true;
 
 #if defined(Q_OS_MAC) && defined(__aarch64__)
-    if (lcppmodel->implementation().buildVariant() == "metal")
+    if (lcppmodel->manager().buildVariant() == "metal")
         actualDeviceIsCPU = false;
 #else
     if (requestedDevice != "CPU") {
@@ -567,7 +569,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
         return true;
     }
 
-    switch (lcppmodel->implementation().modelType()[0]) {
+    switch (lcppmodel->manager().modelType()[0]) {
     case 'L': m_llModelType = LLModelType::LLAMA_; break;
     default:
         {

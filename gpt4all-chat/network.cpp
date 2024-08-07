@@ -9,7 +9,7 @@
 #include "modellist.h"
 #include "mysettings.h"
 
-#include "../gpt4all-backend/llamacpp_backend.h"
+#include "../gpt4all-backend/llamacpp_backend_manager.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -290,7 +290,7 @@ void Network::sendStartup()
         {"display", u"%1x%2"_s.arg(display->size().width()).arg(display->size().height())},
         {"ram", LLM::globalInstance()->systemTotalRAMInGB()},
         {"cpu", getCPUModel()},
-        {"cpu_supports_avx2", LlamaCppBackend::Implementation::cpuSupportsAVX2()},
+        {"cpu_supports_avx2", LlamaCppBackendManager::cpuSupportsAVX2()},
         {"datalake_active", mySettings->networkIsActive()},
     });
     sendIpify();

@@ -138,7 +138,9 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
 endforeach()
 
 add_library(llmodel
-    llmodel.h llamacpp_backend.cpp
+    llmodel.h
+    llamacpp_backend.h llamacpp_backend.cpp
+    llamacpp_backend_manager.h llamacpp_backend_manager.cpp
     llmodel_c.h llmodel_c.cpp
     dlhandle.cpp
 )
