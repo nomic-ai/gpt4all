@@ -27,10 +27,16 @@ private:
 class LocalDocsSearch : public Tool {
     Q_OBJECT
 public:
-    LocalDocsSearch() : Tool() {}
+    LocalDocsSearch() : Tool(), m_error(ToolEnums::Error::NoError) {}
     virtual ~LocalDocsSearch() {}
 
     QString run(const QJsonObject &parameters, qint64 timeout = 2000) override;
+    ToolEnums::Error error() const override { return m_error; }
+    QString errorString() const override { return m_errorString; }
+
+private:
+    ToolEnums::Error m_error;
+    QString m_errorString;
 };
 
 #endif // LOCALDOCSSEARCH_H

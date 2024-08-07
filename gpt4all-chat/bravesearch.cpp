@@ -29,7 +29,14 @@ QString BraveSearch::run(const QJsonObject &parameters, qint64 timeout)
         worker.request(apiKey, query, count);
     });
     workerThread.start();
-    workerThread.wait(timeout);
+    bool timedOut = !workerThread.wait(timeout);
+    if (timedOut) {
+        m_error = ToolEnums::Error::TimeoutError;
+        m_errorString = tr("ERROR: brave search timeout");
+    } else {
+        m_error = worker.error();
+        m_errorString = worker.errorString();
+    }
     workerThread.quit();
     workerThread.wait();
     return worker.response();
@@ -62,14 +69,15 @@ void BraveAPIWorker::request(const QString &apiKey, const QString &query, int co
     connect(reply, &QNetworkReply::errorOccurred, this, &BraveAPIWorker::handleErrorOccurred);
 }
 
-static QString cleanBraveResponse(const QByteArray& jsonResponse)
+QString BraveAPIWorker::cleanBraveResponse(const QByteArray& jsonResponse)
 {
     // This parses the response from brave and formats it in json that conforms to the de facto
     // standard in SourceExcerpts::fromJson(...)
     QJsonParseError err;
     QJsonDocument document = QJsonDocument::fromJson(jsonResponse, &err);
     if (err.error != QJsonParseError::NoError) {
-        qWarning() << "ERROR: Couldn't parse brave response: " << jsonResponse << err.errorString();
+        m_error = ToolEnums::Error::UnknownError;
+        m_errorString = QString(tr("ERROR: brave search could not parse json response: %1")).arg(jsonResponse);
         return QString();
     }
 
@@ -147,7 +155,6 @@ void BraveAPIWorker::handleFinished()
         m_response = cleanBraveResponse(jsonData);
     } else {
         QByteArray jsonData = jsonReply->readAll();
-        qWarning() << "ERROR: Could not search brave" << jsonReply->error() << jsonReply->errorString() << jsonData;
         jsonReply->deleteLater();
     }
     emit finished();
@@ -157,7 +164,7 @@ void BraveAPIWorker::handleErrorOccurred(QNetworkReply::NetworkError code)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     Q_ASSERT(reply);
-    qWarning().noquote() << "ERROR: BraveAPIWorker::handleErrorOccurred got HTTP Error" << code << "response:"
-                         << reply->errorString();
+    m_error = ToolEnums::Error::UnknownError;
+    m_errorString = QString(tr("ERROR: brave search code: %1 response: %2")).arg(code).arg(reply->errorString());
     emit finished();
 }

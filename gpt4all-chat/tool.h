@@ -9,15 +9,20 @@ using namespace Qt::Literals::StringLiterals;
 namespace ToolEnums {
     Q_NAMESPACE
     enum class ConnectionType {
-        Builtin         = 0, // A built-in tool with bespoke connection type
-        Local           = 1, // Starts a local process and communicates via stdin/stdout/stderr
-        LocalServer     = 2, // Connects to an existing local process and communicates via stdin/stdout/stderr
-        Remote          = 3, // Starts a remote process and communicates via some networking protocol TBD
-        RemoteServer    = 4  // Connects to an existing remote process and communicates via some networking protocol TBD
+        BuiltinConnection          = 0, // A built-in tool with bespoke connection type
+        LocalConnection            = 1, // Starts a local process and communicates via stdin/stdout/stderr
+        LocalServerConnection      = 2, // Connects to an existing local process and communicates via stdin/stdout/stderr
+        RemoteConnection           = 3, // Starts a remote process and communicates via some networking protocol TBD
+        RemoteServerConnection     = 4  // Connects to an existing remote process and communicates via some networking protocol TBD
     };
     Q_ENUM_NS(ConnectionType)
+
+    enum class Error {
+        NoError = 0,
+        TimeoutError = 2,
+        UnknownError = 499,
+    };
 }
-using namespace ToolEnums;
 
 struct ToolInfo {
     Q_GADGET
@@ -25,14 +30,14 @@ struct ToolInfo {
     Q_PROPERTY(QString description MEMBER description)
     Q_PROPERTY(QJsonObject parameters MEMBER parameters)
     Q_PROPERTY(bool isEnabled MEMBER isEnabled)
-    Q_PROPERTY(ConnectionType connectionType MEMBER connectionType)
+    Q_PROPERTY(ToolEnums::ConnectionType connectionType MEMBER connectionType)
 
 public:
     QString name;
     QString description;
     QJsonObject parameters;
     bool isEnabled;
-    ConnectionType connectionType;
+    ToolEnums::ConnectionType connectionType;
 
     // FIXME: Should we go with essentially the OpenAI/ollama consensus for these tool
     // info files? If you install a tool in GPT4All should it need to meet the spec for these:
@@ -64,8 +69,9 @@ public:
     Tool() : QObject(nullptr) {}
     virtual ~Tool() {}
 
-    // FIXME: How to handle errors?
     virtual QString run(const QJsonObject &parameters, qint64 timeout = 2000) = 0;
+    virtual ToolEnums::Error error() const { return ToolEnums::Error::NoError; }
+    virtual QString errorString() const { return QString(); }
 };
 
 #endif // TOOL_H
