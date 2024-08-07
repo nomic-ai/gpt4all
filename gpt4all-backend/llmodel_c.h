@@ -75,13 +75,6 @@ typedef bool (*llmodel_prompt_callback)(int32_t token_id);
 typedef bool (*llmodel_response_callback)(int32_t token_id, const char *response);
 
 /**
- * Callback type for recalculation of context.
- * @param whether the model is recalculating the context.
- * @return a bool indicating whether the model should keep generating.
- */
-typedef bool (*llmodel_recalculate_callback)(bool is_recalculating);
-
-/**
  * Embedding cancellation callback for use with llmodel_embed.
  * @param batch_sizes The number of tokens in each batch that will be embedded.
  * @param n_batch The number of batches that will be embedded.
@@ -175,7 +168,7 @@ uint64_t llmodel_restore_state_data(llmodel_model model, const uint8_t *src);
  * @param prompt_template A string representing the input prompt template.
  * @param prompt_callback A callback function for handling the processing of prompt.
  * @param response_callback A callback function for handling the generated response.
- * @param recalculate_callback A callback function for handling recalculation requests.
+ * @param allow_context_shift Whether to allow shifting of context to make room for more input.
  * @param special True if special tokens in the prompt should be processed, false otherwise.
  * @param fake_reply A string to insert into context as the model's reply, or NULL to generate one.
  * @param ctx A pointer to the llmodel_prompt_context structure.
@@ -184,7 +177,7 @@ void llmodel_prompt(llmodel_model model, const char *prompt,
                     const char *prompt_template,
                     llmodel_prompt_callback prompt_callback,
                     llmodel_response_callback response_callback,
-                    llmodel_recalculate_callback recalculate_callback,
+                    bool allow_context_shift,
                     llmodel_prompt_context *ctx,
                     bool special,
                     const char *fake_reply);

@@ -6,7 +6,6 @@
 
 #include "llmodel.h"
 
-#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -54,9 +53,11 @@ private:
 
 protected:
     std::vector<Token> tokenize(PromptContext &ctx, const std::string &str, bool special) override;
+    bool isSpecialToken(Token id) const override;
     std::string tokenToString(Token id) const override;
     Token sampleToken(PromptContext &ctx) const override;
     bool evalTokens(PromptContext &ctx, const std::vector<int32_t> &tokens) const override;
+    void shiftContext(PromptContext &promptCtx) override;
     int32_t contextLength() const override;
     const std::vector<Token> &endTokens() const override;
     bool shouldAddBOS() const override;

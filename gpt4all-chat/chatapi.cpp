@@ -90,13 +90,13 @@ void ChatAPI::prompt(const std::string &prompt,
                      const std::string &promptTemplate,
                      std::function<bool(int32_t)> promptCallback,
                      std::function<bool(int32_t, const std::string&)> responseCallback,
-                     std::function<bool(bool)> recalculateCallback,
+                     bool allowContextShift,
                      PromptContext &promptCtx,
                      bool special,
                      std::string *fakeReply) {
 
     Q_UNUSED(promptCallback);
-    Q_UNUSED(recalculateCallback);
+    Q_UNUSED(allowContextShift);
     Q_UNUSED(special);
 
     if (!isModelLoaded()) {
