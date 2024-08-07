@@ -3,7 +3,6 @@
 #include "dlhandle.h"
 
 #include <cassert>
-#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <filesystem>

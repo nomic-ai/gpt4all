@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
-#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <utility>

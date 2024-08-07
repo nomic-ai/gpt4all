@@ -7,7 +7,7 @@
 #include <string_view>
 
 class Dlhandle;
-class LlamaCppBackend;
+
 
 class LlamaCppBackendManager {
 public:
