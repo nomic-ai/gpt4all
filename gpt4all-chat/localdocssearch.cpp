@@ -27,6 +27,12 @@ QString LocalDocsSearch::run(const QJsonObject &parameters, qint64 timeout)
         worker.request(collections, text, count);
     });
     workerThread.start();
+    bool timedOut = !workerThread.wait(timeout);
+    if (timedOut) {
+        m_error = ToolEnums::Error::TimeoutError;
+        m_errorString = tr("ERROR: localdocs timeout");
+    }
+
     workerThread.wait(timeout);
     workerThread.quit();
     workerThread.wait();
