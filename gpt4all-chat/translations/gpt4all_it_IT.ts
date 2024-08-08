@@ -541,19 +541,19 @@
         <location filename="../qml/ApplicationSettings.qml" line="168"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="168"/>
         <source>Language and Locale</source>
-        <translation>Lingua e impostazioni locali</translation>
+        <translation>Lingua e settaggi locali</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="169"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="169"/>
         <source>The language and locale you wish to use.</source>
-        <translation>La lingua e le impostazioni locali che desideri utilizzare.</translation>
+        <translation>La lingua e i settaggi locali che vuoi utilizzare.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="188"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="188"/>
         <source>System Locale</source>
-        <translation>Impostazioni locali del sistema</translation>
+        <translation>Settaggi locali del sistema</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="215"/>
