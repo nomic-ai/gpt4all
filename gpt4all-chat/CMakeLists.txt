@@ -109,7 +109,7 @@ endif()
 qt_add_executable(chat
     main.cpp
     chat.h chat.cpp
-    chatllm.h chatllm.cpp
+    llamacpp_model.h llamacpp_model.cpp
     chatmodel.h chatlistmodel.h chatlistmodel.cpp
     chatapi.h chatapi.cpp
     chatviewtextprocessor.h chatviewtextprocessor.cpp

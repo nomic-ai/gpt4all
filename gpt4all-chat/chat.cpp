@@ -26,7 +26,7 @@ Chat::Chat(QObject *parent)
     , m_chatModel(new ChatModel(this))
     , m_responseState(Chat::ResponseStopped)
     , m_creationDate(QDateTime::currentSecsSinceEpoch())
-    , m_llmodel(new ChatLLM(this))
+    , m_llmodel(new LlamaCppModel(this))
     , m_collectionModel(new LocalDocsCollectionsModel(this))
 {
     connectLLM();
@@ -55,31 +55,31 @@ Chat::~Chat()
 void Chat::connectLLM()
 {
     // Should be in different threads
-    connect(m_llmodel, &ChatLLM::modelLoadingPercentageChanged, this, &Chat::handleModelLoadingPercentageChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::generatingQuestions, this, &Chat::generatingQuestions, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::modelLoadingWarning, this, &Chat::modelLoadingWarning, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::restoringFromTextChanged, this, &Chat::handleRestoringFromText, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::generatedQuestionFinished, this, &Chat::generatedQuestionFinished, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::loadedModelInfoChanged, this, &Chat::loadedModelInfoChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &ChatLLM::trySwitchContextOfLoadedModelCompleted, this, &Chat::handleTrySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::modelLoadingPercentageChanged, this, &Chat::handleModelLoadingPercentageChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::generatingQuestions, this, &Chat::generatingQuestions, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::modelLoadingWarning, this, &Chat::modelLoadingWarning, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::restoringFromTextChanged, this, &Chat::handleRestoringFromText, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::generatedQuestionFinished, this, &Chat::generatedQuestionFinished, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::loadedModelInfoChanged, this, &Chat::loadedModelInfoChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LlamaCppModel::trySwitchContextOfLoadedModelCompleted, this, &Chat::handleTrySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
 
-    connect(this, &Chat::promptRequested, m_llmodel, &ChatLLM::prompt, Qt::QueuedConnection);
-    connect(this, &Chat::modelChangeRequested, m_llmodel, &ChatLLM::modelChangeRequested, Qt::QueuedConnection);
-    connect(this, &Chat::loadDefaultModelRequested, m_llmodel, &ChatLLM::loadDefaultModel, Qt::QueuedConnection);
-    connect(this, &Chat::loadModelRequested, m_llmodel, &ChatLLM::loadModel, Qt::QueuedConnection);
-    connect(this, &Chat::generateNameRequested, m_llmodel, &ChatLLM::generateName, Qt::QueuedConnection);
-    connect(this, &Chat::regenerateResponseRequested, m_llmodel, &ChatLLM::regenerateResponse, Qt::QueuedConnection);
-    connect(this, &Chat::resetResponseRequested, m_llmodel, &ChatLLM::resetResponse, Qt::QueuedConnection);
-    connect(this, &Chat::resetContextRequested, m_llmodel, &ChatLLM::resetContext, Qt::QueuedConnection);
-    connect(this, &Chat::processSystemPromptRequested, m_llmodel, &ChatLLM::processSystemPrompt, Qt::QueuedConnection);
+    connect(this, &Chat::promptRequested, m_llmodel, &LlamaCppModel::prompt, Qt::QueuedConnection);
+    connect(this, &Chat::modelChangeRequested, m_llmodel, &LlamaCppModel::modelChangeRequested, Qt::QueuedConnection);
+    connect(this, &Chat::loadDefaultModelRequested, m_llmodel, &LlamaCppModel::loadDefaultModel, Qt::QueuedConnection);
+    connect(this, &Chat::loadModelRequested, m_llmodel, &LlamaCppModel::loadModel, Qt::QueuedConnection);
+    connect(this, &Chat::generateNameRequested, m_llmodel, &LlamaCppModel::generateName, Qt::QueuedConnection);
+    connect(this, &Chat::regenerateResponseRequested, m_llmodel, &LlamaCppModel::regenerateResponse, Qt::QueuedConnection);
+    connect(this, &Chat::resetResponseRequested, m_llmodel, &LlamaCppModel::resetResponse, Qt::QueuedConnection);
+    connect(this, &Chat::resetContextRequested, m_llmodel, &LlamaCppModel::resetContext, Qt::QueuedConnection);
+    connect(this, &Chat::processSystemPromptRequested, m_llmodel, &LlamaCppModel::processSystemPrompt, Qt::QueuedConnection);
 
     connect(this, &Chat::collectionListChanged, m_collectionModel, &LocalDocsCollectionsModel::setCollections);
 }

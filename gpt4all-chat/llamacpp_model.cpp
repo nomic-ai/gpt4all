@@ -1,4 +1,4 @@
-#include "chatllm.h"
+#include "llamacpp_model.h"
 
 #include "chat.h"
 #include "chatapi.h"
@@ -94,13 +94,13 @@ void LLModelStore::destroy()
     m_availableModel.reset();
 }
 
-void LLModelInfo::resetModel(ChatLLM *cllm, ModelBackend *model) {
+void LLModelInfo::resetModel(LlamaCppModel *cllm, ModelBackend *model) {
     this->model.reset(model);
     fallbackReason.reset();
     emit cllm->loadedModelInfoChanged();
 }
 
-ChatLLM::ChatLLM(Chat *parent, bool isServer)
+LlamaCppModel::LlamaCppModel(Chat *parent, bool isServer)
     : QObject{nullptr}
     , m_promptResponseTokens(0)
     , m_promptTokens(0)
@@ -117,29 +117,29 @@ ChatLLM::ChatLLM(Chat *parent, bool isServer)
     , m_restoreStateFromText(false)
 {
     moveToThread(&m_llmThread);
-    connect(this, &ChatLLM::shouldBeLoadedChanged, this, &ChatLLM::handleShouldBeLoadedChanged,
+    connect(this, &LlamaCppModel::shouldBeLoadedChanged, this, &LlamaCppModel::handleShouldBeLoadedChanged,
         Qt::QueuedConnection); // explicitly queued
-    connect(this, &ChatLLM::trySwitchContextRequested, this, &ChatLLM::trySwitchContextOfLoadedModel,
+    connect(this, &LlamaCppModel::trySwitchContextRequested, this, &LlamaCppModel::trySwitchContextOfLoadedModel,
         Qt::QueuedConnection); // explicitly queued
-    connect(parent, &Chat::idChanged, this, &ChatLLM::handleChatIdChanged);
-    connect(&m_llmThread, &QThread::started, this, &ChatLLM::handleThreadStarted);
-    connect(MySettings::globalInstance(), &MySettings::forceMetalChanged, this, &ChatLLM::handleForceMetalChanged);
-    connect(MySettings::globalInstance(), &MySettings::deviceChanged, this, &ChatLLM::handleDeviceChanged);
+    connect(parent, &Chat::idChanged, this, &LlamaCppModel::handleChatIdChanged);
+    connect(&m_llmThread, &QThread::started, this, &LlamaCppModel::handleThreadStarted);
+    connect(MySettings::globalInstance(), &MySettings::forceMetalChanged, this, &LlamaCppModel::handleForceMetalChanged);
+    connect(MySettings::globalInstance(), &MySettings::deviceChanged, this, &LlamaCppModel::handleDeviceChanged);
 
     // The following are blocking operations and will block the llm thread
-    connect(this, &ChatLLM::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
+    connect(this, &LlamaCppModel::requestRetrieveFromDB, LocalDocs::globalInstance()->database(), &Database::retrieveFromDB,
         Qt::BlockingQueuedConnection);
 
     m_llmThread.setObjectName(parent->id());
     m_llmThread.start();
 }
 
-ChatLLM::~ChatLLM()
+LlamaCppModel::~LlamaCppModel()
 {
     destroy();
 }
 
-void ChatLLM::destroy()
+void LlamaCppModel::destroy()
 {
     m_stopGenerating = true;
     m_llmThread.quit();
@@ -152,19 +152,19 @@ void ChatLLM::destroy()
     }
 }
 
-void ChatLLM::destroyStore()
+void LlamaCppModel::destroyStore()
 {
     LLModelStore::globalInstance()->destroy();
 }
 
-void ChatLLM::handleThreadStarted()
+void LlamaCppModel::handleThreadStarted()
 {
     m_timer = new TokenTimer(this);
-    connect(m_timer, &TokenTimer::report, this, &ChatLLM::reportSpeed);
+    connect(m_timer, &TokenTimer::report, this, &LlamaCppModel::reportSpeed);
     emit threadStarted();
 }
 
-void ChatLLM::handleForceMetalChanged(bool forceMetal)
+void LlamaCppModel::handleForceMetalChanged(bool forceMetal)
 {
 #if defined(Q_OS_MAC) && defined(__aarch64__)
     m_forceMetal = forceMetal;
@@ -177,7 +177,7 @@ void ChatLLM::handleForceMetalChanged(bool forceMetal)
 #endif
 }
 
-void ChatLLM::handleDeviceChanged()
+void LlamaCppModel::handleDeviceChanged()
 {
     if (isModelLoaded() && m_shouldBeLoaded) {
         m_reloadingToChangeVariant = true;
@@ -187,7 +187,7 @@ void ChatLLM::handleDeviceChanged()
     }
 }
 
-bool ChatLLM::loadDefaultModel()
+bool LlamaCppModel::loadDefaultModel()
 {
     ModelInfo defaultModel = ModelList::globalInstance()->defaultModelInfo();
     if (defaultModel.filename().isEmpty()) {
@@ -197,7 +197,7 @@ bool ChatLLM::loadDefaultModel()
     return loadModel(defaultModel);
 }
 
-void ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
+void LlamaCppModel::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
 {
     // We're trying to see if the store already has the model fully loaded that we wish to use
     // and if so we just acquire it from the store and switch the context and return true. If the
@@ -241,7 +241,7 @@ void ChatLLM::trySwitchContextOfLoadedModel(const ModelInfo &modelInfo)
     processSystemPrompt();
 }
 
-bool ChatLLM::loadModel(const ModelInfo &modelInfo)
+bool LlamaCppModel::loadModel(const ModelInfo &modelInfo)
 {
     // This is a complicated method because N different possible threads are interested in the outcome
     // of this method. Why? Because we have a main/gui thread trying to monitor the state of N different
@@ -388,7 +388,7 @@ bool ChatLLM::loadModel(const ModelInfo &modelInfo)
 
 /* Returns false if the model should no longer be loaded (!m_shouldBeLoaded).
  * Otherwise returns true, even on error. */
-bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps)
+bool LlamaCppModel::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadProps)
 {
     QElapsedTimer modelLoadTimer;
     modelLoadTimer.start();
@@ -585,7 +585,7 @@ bool ChatLLM::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelLoadPro
     return true;
 };
 
-bool ChatLLM::isModelLoaded() const
+bool LlamaCppModel::isModelLoaded() const
 {
     return m_llModelInfo.model && m_llModelInfo.model->isModelLoaded();
 }
@@ -619,7 +619,7 @@ std::string trim_whitespace(const std::string& input)
 }
 
 // FIXME(jared): we don't actually have to re-decode the prompt to generate a new response
-void ChatLLM::regenerateResponse()
+void LlamaCppModel::regenerateResponse()
 {
     // ChatGPT uses a different semantic meaning for n_past than local models. For ChatGPT, the meaning
     // of n_past is of the number of prompt/response pairs, rather than for total tokens.
@@ -635,7 +635,7 @@ void ChatLLM::regenerateResponse()
     emit responseChanged(QString::fromStdString(m_response));
 }
 
-void ChatLLM::resetResponse()
+void LlamaCppModel::resetResponse()
 {
     m_promptTokens = 0;
     m_promptResponseTokens = 0;
@@ -643,43 +643,43 @@ void ChatLLM::resetResponse()
     emit responseChanged(QString::fromStdString(m_response));
 }
 
-void ChatLLM::resetContext()
+void LlamaCppModel::resetContext()
 {
     resetResponse();
     m_processedSystemPrompt = false;
     m_ctx = ModelBackend::PromptContext();
 }
 
-QString ChatLLM::response() const
+QString LlamaCppModel::response() const
 {
     return QString::fromStdString(remove_leading_whitespace(m_response));
 }
 
-void ChatLLM::setModelInfo(const ModelInfo &modelInfo)
+void LlamaCppModel::setModelInfo(const ModelInfo &modelInfo)
 {
     m_modelInfo = modelInfo;
     emit modelInfoChanged(modelInfo);
 }
 
-void ChatLLM::acquireModel()
+void LlamaCppModel::acquireModel()
 {
     m_llModelInfo = LLModelStore::globalInstance()->acquireModel();
     emit loadedModelInfoChanged();
 }
 
-void ChatLLM::resetModel()
+void LlamaCppModel::resetModel()
 {
     m_llModelInfo = {};
     emit loadedModelInfoChanged();
 }
 
-void ChatLLM::modelChangeRequested(const ModelInfo &modelInfo)
+void LlamaCppModel::modelChangeRequested(const ModelInfo &modelInfo)
 {
     m_shouldBeLoaded = true;
     loadModel(modelInfo);
 }
 
-bool ChatLLM::handlePrompt(int32_t token)
+bool LlamaCppModel::handlePrompt(int32_t token)
 {
     // m_promptResponseTokens is related to last prompt/response not
     // the entire context window which we can reset on regenerate prompt
@@ -692,7 +692,7 @@ bool ChatLLM::handlePrompt(int32_t token)
     return !m_stopGenerating;
 }
 
-bool ChatLLM::handleResponse(int32_t token, const std::string &response)
+bool LlamaCppModel::handleResponse(int32_t token, const std::string &response)
 {
 #if defined(DEBUG)
     printf("%s", response.c_str());
@@ -716,7 +716,7 @@ bool ChatLLM::handleResponse(int32_t token, const std::string &response)
     return !m_stopGenerating;
 }
 
-bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt)
+bool LlamaCppModel::prompt(const QList<QString> &collectionList, const QString &prompt)
 {
     if (m_restoreStateFromText) {
         Q_ASSERT(m_state.isEmpty());
@@ -738,7 +738,7 @@ bool ChatLLM::prompt(const QList<QString> &collectionList, const QString &prompt
         repeat_penalty, repeat_penalty_tokens);
 }
 
-bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
+bool LlamaCppModel::promptInternal(const QList<QString> &collectionList, const QString &prompt, const QString &promptTemplate,
     int32_t n_predict, int32_t top_k, float top_p, float min_p, float temp, int32_t n_batch, float repeat_penalty,
     int32_t repeat_penalty_tokens)
 {
@@ -766,8 +766,8 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     int n_threads = MySettings::globalInstance()->threadCount();
 
     m_stopGenerating = false;
-    auto promptFunc = std::bind(&ChatLLM::handlePrompt, this, std::placeholders::_1);
-    auto responseFunc = std::bind(&ChatLLM::handleResponse, this, std::placeholders::_1,
+    auto promptFunc = std::bind(&LlamaCppModel::handlePrompt, this, std::placeholders::_1);
+    auto responseFunc = std::bind(&LlamaCppModel::handleResponse, this, std::placeholders::_1,
         std::placeholders::_2);
     emit promptProcessing();
     m_ctx.n_predict = n_predict;
@@ -820,7 +820,7 @@ bool ChatLLM::promptInternal(const QList<QString> &collectionList, const QString
     return true;
 }
 
-void ChatLLM::setShouldBeLoaded(bool b)
+void LlamaCppModel::setShouldBeLoaded(bool b)
 {
 #if defined(DEBUG_MODEL_LOADING)
     qDebug() << "setShouldBeLoaded" << m_llmThread.objectName() << b << m_llModelInfo.model.get();
@@ -829,13 +829,13 @@ void ChatLLM::setShouldBeLoaded(bool b)
     emit shouldBeLoadedChanged();
 }
 
-void ChatLLM::requestTrySwitchContext()
+void LlamaCppModel::requestTrySwitchContext()
 {
     m_shouldBeLoaded = true; // atomic
     emit trySwitchContextRequested(modelInfo());
 }
 
-void ChatLLM::handleShouldBeLoadedChanged()
+void LlamaCppModel::handleShouldBeLoadedChanged()
 {
     if (m_shouldBeLoaded)
         reloadModel();
@@ -843,7 +843,7 @@ void ChatLLM::handleShouldBeLoadedChanged()
         unloadModel();
 }
 
-void ChatLLM::unloadModel()
+void LlamaCppModel::unloadModel()
 {
     if (!isModelLoaded() || m_isServer)
         return;
@@ -869,7 +869,7 @@ void ChatLLM::unloadModel()
     m_pristineLoadedState = false;
 }
 
-void ChatLLM::reloadModel()
+void LlamaCppModel::reloadModel()
 {
     if (isModelLoaded() && m_forceUnloadModel)
         unloadModel(); // we unload first if we are forcing an unload
@@ -887,7 +887,7 @@ void ChatLLM::reloadModel()
         loadModel(m);
 }
 
-void ChatLLM::generateName()
+void LlamaCppModel::generateName()
 {
     Q_ASSERT(isModelLoaded());
     if (!isModelLoaded())
@@ -895,13 +895,13 @@ void ChatLLM::generateName()
 
     const QString chatNamePrompt = MySettings::globalInstance()->modelChatNamePrompt(m_modelInfo);
     if (chatNamePrompt.trimmed().isEmpty()) {
-        qWarning() << "ChatLLM: not generating chat name because prompt is empty";
+        qWarning() << "LlamaCppModel: not generating chat name because prompt is empty";
         return;
     }
 
     auto promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
-    auto promptFunc = std::bind(&ChatLLM::handleNamePrompt, this, std::placeholders::_1);
-    auto responseFunc = std::bind(&ChatLLM::handleNameResponse, this, std::placeholders::_1, std::placeholders::_2);
+    auto promptFunc = std::bind(&LlamaCppModel::handleNamePrompt, this, std::placeholders::_1);
+    auto responseFunc = std::bind(&LlamaCppModel::handleNameResponse, this, std::placeholders::_1, std::placeholders::_2);
     ModelBackend::PromptContext ctx = m_ctx;
     m_llModelInfo.model->prompt(chatNamePrompt.toStdString(), promptTemplate.toStdString(),
                                 promptFunc, responseFunc, /*allowContextShift*/ false, ctx);
@@ -913,12 +913,12 @@ void ChatLLM::generateName()
     m_pristineLoadedState = false;
 }
 
-void ChatLLM::handleChatIdChanged(const QString &id)
+void LlamaCppModel::handleChatIdChanged(const QString &id)
 {
     m_llmThread.setObjectName(id);
 }
 
-bool ChatLLM::handleNamePrompt(int32_t token)
+bool LlamaCppModel::handleNamePrompt(int32_t token)
 {
 #if defined(DEBUG)
     qDebug() << "name prompt" << m_llmThread.objectName() << token;
@@ -927,7 +927,7 @@ bool ChatLLM::handleNamePrompt(int32_t token)
     return !m_stopGenerating;
 }
 
-bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
+bool LlamaCppModel::handleNameResponse(int32_t token, const std::string &response)
 {
 #if defined(DEBUG)
     qDebug() << "name response" << m_llmThread.objectName() << token << response;
@@ -941,7 +941,7 @@ bool ChatLLM::handleNameResponse(int32_t token, const std::string &response)
     return words.size() <= 3;
 }
 
-bool ChatLLM::handleQuestionPrompt(int32_t token)
+bool LlamaCppModel::handleQuestionPrompt(int32_t token)
 {
 #if defined(DEBUG)
     qDebug() << "question prompt" << m_llmThread.objectName() << token;
@@ -950,7 +950,7 @@ bool ChatLLM::handleQuestionPrompt(int32_t token)
     return !m_stopGenerating;
 }
 
-bool ChatLLM::handleQuestionResponse(int32_t token, const std::string &response)
+bool LlamaCppModel::handleQuestionResponse(int32_t token, const std::string &response)
 {
 #if defined(DEBUG)
     qDebug() << "question response" << m_llmThread.objectName() << token << response;
@@ -979,7 +979,7 @@ bool ChatLLM::handleQuestionResponse(int32_t token, const std::string &response)
     return true;
 }
 
-void ChatLLM::generateQuestions(qint64 elapsed)
+void LlamaCppModel::generateQuestions(qint64 elapsed)
 {
     Q_ASSERT(isModelLoaded());
     if (!isModelLoaded()) {
@@ -996,8 +996,8 @@ void ChatLLM::generateQuestions(qint64 elapsed)
     emit generatingQuestions();
     m_questionResponse.clear();
     auto promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
-    auto promptFunc = std::bind(&ChatLLM::handleQuestionPrompt, this, std::placeholders::_1);
-    auto responseFunc = std::bind(&ChatLLM::handleQuestionResponse, this, std::placeholders::_1, std::placeholders::_2);
+    auto promptFunc = std::bind(&LlamaCppModel::handleQuestionPrompt, this, std::placeholders::_1);
+    auto responseFunc = std::bind(&LlamaCppModel::handleQuestionResponse, this, std::placeholders::_1, std::placeholders::_2);
     ModelBackend::PromptContext ctx = m_ctx;
     QElapsedTimer totalTime;
     totalTime.start();
@@ -1008,7 +1008,7 @@ void ChatLLM::generateQuestions(qint64 elapsed)
 }
 
 
-bool ChatLLM::handleSystemPrompt(int32_t token)
+bool LlamaCppModel::handleSystemPrompt(int32_t token)
 {
 #if defined(DEBUG)
     qDebug() << "system prompt" << m_llmThread.objectName() << token << m_stopGenerating;
@@ -1017,7 +1017,7 @@ bool ChatLLM::handleSystemPrompt(int32_t token)
     return !m_stopGenerating;
 }
 
-bool ChatLLM::handleRestoreStateFromTextPrompt(int32_t token)
+bool LlamaCppModel::handleRestoreStateFromTextPrompt(int32_t token)
 {
 #if defined(DEBUG)
     qDebug() << "restore state from text prompt" << m_llmThread.objectName() << token << m_stopGenerating;
@@ -1028,7 +1028,7 @@ bool ChatLLM::handleRestoreStateFromTextPrompt(int32_t token)
 
 // this function serialized the cached model state to disk.
 // we want to also serialize n_ctx, and read it at load time.
-bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
+bool LlamaCppModel::serialize(QDataStream &stream, int version, bool serializeKV)
 {
     if (version > 1) {
         stream << m_llModelType;
@@ -1068,7 +1068,7 @@ bool ChatLLM::serialize(QDataStream &stream, int version, bool serializeKV)
     return stream.status() == QDataStream::Ok;
 }
 
-bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, bool discardKV)
+bool LlamaCppModel::deserialize(QDataStream &stream, int version, bool deserializeKV, bool discardKV)
 {
     if (version > 1) {
         int internalStateVersion;
@@ -1148,7 +1148,7 @@ bool ChatLLM::deserialize(QDataStream &stream, int version, bool deserializeKV, 
     return stream.status() == QDataStream::Ok;
 }
 
-void ChatLLM::saveState()
+void LlamaCppModel::saveState()
 {
     if (!isModelLoaded() || m_pristineLoadedState)
         return;
@@ -1170,7 +1170,7 @@ void ChatLLM::saveState()
     m_llModelInfo.model->saveState(static_cast<uint8_t*>(reinterpret_cast<void*>(m_state.data())));
 }
 
-void ChatLLM::restoreState()
+void LlamaCppModel::restoreState()
 {
     if (!isModelLoaded())
         return;
@@ -1211,7 +1211,7 @@ void ChatLLM::restoreState()
     }
 }
 
-void ChatLLM::processSystemPrompt()
+void LlamaCppModel::processSystemPrompt()
 {
     Q_ASSERT(isModelLoaded());
     if (!isModelLoaded() || m_processedSystemPrompt || m_restoreStateFromText || m_isServer)
@@ -1227,7 +1227,7 @@ void ChatLLM::processSystemPrompt()
     m_stopGenerating = false;
     m_ctx = ModelBackend::PromptContext();
 
-    auto promptFunc = std::bind(&ChatLLM::handleSystemPrompt, this, std::placeholders::_1);
+    auto promptFunc = std::bind(&LlamaCppModel::handleSystemPrompt, this, std::placeholders::_1);
 
     const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);
     const int32_t top_k = MySettings::globalInstance()->modelTopK(m_modelInfo);
@@ -1268,7 +1268,7 @@ void ChatLLM::processSystemPrompt()
     m_pristineLoadedState = false;
 }
 
-void ChatLLM::processRestoreStateFromText()
+void LlamaCppModel::processRestoreStateFromText()
 {
     Q_ASSERT(isModelLoaded());
     if (!isModelLoaded() || !m_restoreStateFromText || m_isServer)
@@ -1280,7 +1280,7 @@ void ChatLLM::processRestoreStateFromText()
     m_stopGenerating = false;
     m_ctx = ModelBackend::PromptContext();
 
-    auto promptFunc = std::bind(&ChatLLM::handleRestoreStateFromTextPrompt, this, std::placeholders::_1);
+    auto promptFunc = std::bind(&LlamaCppModel::handleRestoreStateFromTextPrompt, this, std::placeholders::_1);
 
     const QString promptTemplate = MySettings::globalInstance()->modelPromptTemplate(m_modelInfo);
     const int32_t n_predict = MySettings::globalInstance()->modelMaxLength(m_modelInfo);

@@ -71,7 +71,7 @@ static inline QJsonObject resultToJson(const ResultInfo &info)
 }
 
 Server::Server(Chat *chat)
-    : ChatLLM(chat, true /*isServer*/)
+    : LlamaCppModel(chat, true /*isServer*/)
     , m_chat(chat)
     , m_server(nullptr)
 {

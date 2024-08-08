@@ -47,7 +47,7 @@ bool ChatAPI::isModelLoaded() const
     return true;
 }
 
-// All three of the state virtual functions are handled custom inside of chatllm save/restore
+// All three of the state virtual functions are handled custom inside of LlamaCppModel save/restore
 size_t ChatAPI::stateSize() const
 {
     return 0;

@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
     int res = app.exec();
 
-    // Make sure ChatLLM threads are joined before global destructors run.
+    // Make sure LlamaCppModel threads are joined before global destructors run.
     // Otherwise, we can get a heap-use-after-free inside of llama.cpp.
     ChatListModel::globalInstance()->destroyChats();
 

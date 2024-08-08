@@ -1,7 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "chatllm.h"
+#include "llamacpp_model.h"
 #include "database.h"
 
 #include <QHttpServerRequest>
@@ -13,7 +13,7 @@
 class Chat;
 class QHttpServer;
 
-class Server : public ChatLLM
+class Server : public LlamaCppModel
 {
     Q_OBJECT
 

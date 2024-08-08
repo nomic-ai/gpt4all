@@ -2,7 +2,7 @@
 #define CHATLISTMODEL_H
 
 #include "chat.h"
-#include "chatllm.h"
+#include "llamacpp_model.h"
 #include "chatmodel.h"
 
 #include <QAbstractListModel>
@@ -220,11 +220,11 @@ public:
 
     int count() const { return m_chats.size(); }
 
-    // stop ChatLLM threads for clean shutdown
+    // stop LlamaCppModel threads for clean shutdown
     void destroyChats()
     {
         for (auto *chat: m_chats) { chat->destroy(); }
-        ChatLLM::destroyStore();
+        LlamaCppModel::destroyStore();
     }
 
     void removeChatFile(Chat *chat) const;

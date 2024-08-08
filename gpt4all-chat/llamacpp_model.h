@@ -27,7 +27,7 @@
 using namespace Qt::Literals::StringLiterals;
 
 class Chat;
-class ChatLLM;
+class LlamaCppModel;
 class QDataStream;
 
 // NOTE: values serialized to disk, do not change or reuse
@@ -43,10 +43,10 @@ struct LLModelInfo {
     QFileInfo fileInfo;
     std::optional<QString> fallbackReason;
 
-    // NOTE: This does not store the model type or name on purpose as this is left for ChatLLM which
+    // NOTE: This does not store the model type or name on purpose as this is left for LlamaCppModel which
     // must be able to serialize the information even if it is in the unloaded state
 
-    void resetModel(ChatLLM *cllm, ModelBackend *model = nullptr);
+    void resetModel(LlamaCppModel *cllm, ModelBackend *model = nullptr);
 };
 
 class TokenTimer : public QObject {
@@ -89,7 +89,7 @@ private:
     quint32 m_tokens;
 };
 
-class ChatLLM : public QObject
+class LlamaCppModel : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool restoringFromText READ restoringFromText NOTIFY restoringFromTextChanged)
@@ -98,8 +98,8 @@ class ChatLLM : public QObject
     Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
 
 public:
-    ChatLLM(Chat *parent, bool isServer = false);
-    virtual ~ChatLLM();
+    LlamaCppModel(Chat *parent, bool isServer = false);
+    virtual ~LlamaCppModel();
 
     void destroy();
     static void destroyStore();
