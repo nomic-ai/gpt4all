@@ -8,63 +8,26 @@ using namespace Qt::Literals::StringLiterals;
 
 namespace ToolEnums {
     Q_NAMESPACE
-    enum class ConnectionType {
-        BuiltinConnection          = 0, // A built-in tool with bespoke connection type
-        LocalConnection            = 1, // Starts a local process and communicates via stdin/stdout/stderr
-        LocalServerConnection      = 2, // Connects to an existing local process and communicates via stdin/stdout/stderr
-        RemoteConnection           = 3, // Starts a remote process and communicates via some networking protocol TBD
-        RemoteServerConnection     = 4  // Connects to an existing remote process and communicates via some networking protocol TBD
-    };
-    Q_ENUM_NS(ConnectionType)
-
     enum class Error {
         NoError = 0,
         TimeoutError = 2,
         UnknownError = 499,
     };
+    Q_ENUM_NS(Error)
 }
-
-struct ToolInfo {
-    Q_GADGET
-    Q_PROPERTY(QString name MEMBER name)
-    Q_PROPERTY(QString description MEMBER description)
-    Q_PROPERTY(QJsonObject parameters MEMBER parameters)
-    Q_PROPERTY(bool isEnabled MEMBER isEnabled)
-    Q_PROPERTY(ToolEnums::ConnectionType connectionType MEMBER connectionType)
-
-public:
-    QString name;
-    QString description;
-    QJsonObject parameters;
-    bool isEnabled;
-    ToolEnums::ConnectionType connectionType;
-
-    // FIXME: Should we go with essentially the OpenAI/ollama consensus for these tool
-    // info files? If you install a tool in GPT4All should it need to meet the spec for these:
-    // https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-tools
-    // https://github.com/ollama/ollama/blob/main/docs/api.md#chat-request-with-tools
-    QJsonObject toJson() const
-    {
-        QJsonObject result;
-        result.insert("name", name);
-        result.insert("description", description);
-        result.insert("parameters", parameters);
-        return result;
-    }
-
-    static ToolInfo fromJson(const QString &json);
-
-    bool operator==(const ToolInfo &other) const {
-        return name == other.name;
-    }
-    bool operator!=(const ToolInfo &other) const {
-        return !(*this == other);
-    }
-};
-Q_DECLARE_METATYPE(ToolInfo)
 
 class Tool : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString name MEMBER name)
+    Q_PROPERTY(QString description MEMBER description)
+    Q_PROPERTY(QString function MEMBER function)
+    Q_PROPERTY(QJsonObject paramSchema MEMBER paramSchema)
+    Q_PROPERTY(QUrl url MEMBER url)
+    Q_PROPERTY(bool isEnabled MEMBER isEnabled)
+    Q_PROPERTY(bool isBuiltin MEMBER isBuiltin)
+    Q_PROPERTY(bool forceUsage MEMBER forceUsage)
+    Q_PROPERTY(bool excerpts MEMBER excerpts)
+
 public:
     Tool() : QObject(nullptr) {}
     virtual ~Tool() {}
@@ -72,6 +35,29 @@ public:
     virtual QString run(const QJsonObject &parameters, qint64 timeout = 2000) = 0;
     virtual ToolEnums::Error error() const { return ToolEnums::Error::NoError; }
     virtual QString errorString() const { return QString(); }
+
+    QString name;               // [Required] Human readable name of the tool.
+    QString description;        // [Required] Human readable description of the tool.
+    QString function;           // [Required] Must be unique. Name of the function to invoke. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.
+    QJsonObject paramSchema;    // [Optional] Json schema describing the tool's parameters. An empty object specifies no parameters.
+                                // https://json-schema.org/understanding-json-schema/
+    QUrl url;                   // [Optional] The local file or remote resource use to invoke the tool.
+    bool isEnabled = false;     // [Optional] Whether the tool is currently enabled
+    bool isBuiltin = false;     // [Optional] Whether the tool is built-in
+    bool forceUsage = false;    // [Optional] Whether we should attempt to force usage of the tool rather than let the LLM decide. NOTE: Not always possible.
+    bool excerpts = false;      // [Optional] Whether json result produces source excerpts.
+
+    // FIXME: Should we go with essentially the OpenAI/ollama consensus for these tool
+    // info files? If you install a tool in GPT4All should it need to meet the spec for these:
+    // https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-tools
+    // https://github.com/ollama/ollama/blob/main/docs/api.md#chat-request-with-tools
+
+    bool operator==(const Tool &other) const {
+        return function == other.function;
+    }
+    bool operator!=(const Tool &other) const {
+        return !(*this == other);
+    }
 };
 
 #endif // TOOL_H

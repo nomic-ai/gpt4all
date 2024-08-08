@@ -67,5 +67,5 @@ MySettingsTab {
             height: 1
             color: theme.settingsDivider
         }
-     }
+    }
 }
