@@ -1132,10 +1132,8 @@ model to get started</source>
         <translation type="vanished">模型在思考</translation>
     </message>
     <message>
-        <location filename="../qml/ChatView.qml" line="876"/>
-        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
         <source>recalculating context ...</source>
-        <translation>重新生成上下文...</translation>
+        <translation type="vanished">重新生成上下文...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="878"/>
@@ -1294,6 +1292,12 @@ model to get started</source>
         <translation>载入 · %1 (默认) →</translation>
     </message>
     <message>
+        <location filename="../qml/ChatView.qml" line="876"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
+        <source>restoring from text ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/ChatView.qml" line="879"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="879"/>
         <source>retrieving localdocs: %1 ...</source>
@@ -1400,37 +1404,37 @@ model to get started</source>
 <context>
     <name>Download</name>
     <message>
-        <location filename="../download.cpp" line="240"/>
+        <location filename="../download.cpp" line="278"/>
         <source>Model &quot;%1&quot; is installed successfully.</source>
         <translation>模型 &quot;%1&quot; 安装成功</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="250"/>
+        <location filename="../download.cpp" line="288"/>
         <source>ERROR: $MODEL_NAME is empty.</source>
         <translation>错误：$MODEL_NAME 为空</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="256"/>
+        <location filename="../download.cpp" line="294"/>
         <source>ERROR: $API_KEY is empty.</source>
         <translation>错误：$API_KEY为空</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="262"/>
+        <location filename="../download.cpp" line="300"/>
         <source>ERROR: $BASE_URL is invalid.</source>
         <translation>错误：$BASE_URL 非法</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="268"/>
+        <location filename="../download.cpp" line="306"/>
         <source>ERROR: Model &quot;%1 (%2)&quot; is conflict.</source>
         <translation>错误: 模型 &quot;%1 (%2)&quot; 有冲突.</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="287"/>
+        <location filename="../download.cpp" line="325"/>
         <source>Model &quot;%1 (%2)&quot; is installed successfully.</source>
         <translation>模型 &quot;%1 (%2)&quot; 安装成功.</translation>
     </message>
     <message>
-        <location filename="../download.cpp" line="311"/>
+        <location filename="../download.cpp" line="349"/>
         <source>Model &quot;%1&quot; is removed.</source>
         <translation>模型 &quot;%1&quot; 已删除.</translation>
     </message>
@@ -1708,7 +1712,14 @@ model to get started</source>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="85"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="85"/>
+        <source></source>
         <translation>&lt;h3&gt;错误：无法访问 LocalDocs 数据库或该数据库无效。&lt;/h3&gt;&lt;br&gt;&lt;i&gt;注意：尝试以下任何建议的修复方法后，您将需要重新启动。&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;确保设置为&lt;b&gt;下载路径&lt;/b&gt;的文件夹存在于文件系统中。&lt;/li&gt;&lt;li&gt;检查&lt;b&gt;下载路径&lt;/b&gt;的所有权以及读写权限。&lt;/li&gt;&lt;li&gt;如果有&lt;b&gt;localdocs_v2.db&lt;/b&gt;文件，请检查其所有权和读/写权限。&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;如果问题仍然存在，并且存在任何“localdocs_v*.db”文件，作为最后的手段，您可以&lt;br&gt;尝试备份并删除它们。但是，您必须重新创建您的收藏。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LocalDocsView.qml" line="85"/>
+        <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsView.qml" line="85"/>
+        <source>&lt;h3&gt;ERROR: The LocalDocs database cannot be accessed or is not valid.&lt;/h3&gt;&lt;br&gt;&lt;i&gt;Note: You will need to restart after trying any of the following suggested fixes.&lt;/i&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Make sure that the folder set as &lt;b&gt;Download Path&lt;/b&gt; exists on the file system.&lt;/li&gt;&lt;li&gt;Check ownership as well as read and write permissions of the &lt;b&gt;Download Path&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;If there is a &lt;b&gt;localdocs_v2.db&lt;/b&gt; file, check its ownership and read/write permissions, too.&lt;/li&gt;&lt;/ul&gt;&lt;br&gt;If the problem persists and there are any &apos;localdocs_v*.db&apos; files present, as a last resort you can&lt;br&gt;try backing them up and removing them. You will have to recreate your collections, however.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsView.qml" line="109"/>
@@ -1878,42 +1889,42 @@ model to get started</source>
         <translation>&lt;strong&gt;与 OpenAI 兼容的 API 模型&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;API 密钥：%1&lt;/li&gt;&lt;li&gt;基本 URL：%2&lt;/li&gt;&lt;li&gt;模型名称：%3&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1575"/>
+        <location filename="../modellist.cpp" line="1559"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal OpenAI API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to OpenAI!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with OpenAI&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;here.&lt;/a&gt;&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要个人 OpenAI API 密钥。&lt;/li&gt;&lt;li&gt;警告：将把您的聊天内容发送给 OpenAI！&lt;/li&gt;&lt;li&gt;您的 API 密钥将存储在磁盘上&lt;/li&gt;&lt;li&gt;仅用于与 OpenAI 通信&lt;/li&gt;&lt;li&gt;您可以在此处&lt;a href=&quot;https://platform.openai.com/account/api-keys&quot;&gt;申请 API 密钥。&lt;/a&gt;&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1594"/>
+        <location filename="../modellist.cpp" line="1578"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1622"/>
+        <location filename="../modellist.cpp" line="1606"/>
         <source>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</source>
         <translation>&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt; %1 %2</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1653"/>
+        <location filename="../modellist.cpp" line="1637"/>
         <source>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral Tiny model&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1678"/>
+        <location filename="../modellist.cpp" line="1662"/>
         <source>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral Small model&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1704"/>
+        <location filename="../modellist.cpp" line="1688"/>
         <source>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1716"/>
+        <location filename="../modellist.cpp" line="1700"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal API key and the API base URL.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to the OpenAI-compatible API Server you specified!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with the OpenAI-compatible API Server&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;需要个人 API 密钥和 API 基本 URL。&lt;/li&gt;&lt;li&gt;警告：将把您的聊天内容发送到您指定的与 OpenAI 兼容的 API 服务器！&lt;/li&gt;&lt;li&gt;您的 API 密钥将存储在磁盘上&lt;/li&gt;&lt;li&gt;仅用于与与 OpenAI 兼容的 API 服务器通信&lt;/li&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1733"/>
+        <location filename="../modellist.cpp" line="1717"/>
         <source>&lt;strong&gt;Connect to OpenAI-compatible API server&lt;/strong&gt;&lt;br&gt; %1</source>
         <translation>&lt;strong&gt;连接到与 OpenAI 兼容的 API 服务器&lt;/strong&gt;&lt;br&gt; %1</translation>
     </message>
@@ -1922,7 +1933,7 @@ model to get started</source>
         <translation type="vanished">&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-3.5 Turbo&lt;/strong&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1607"/>
+        <location filename="../modellist.cpp" line="1591"/>
         <source>&lt;br&gt;&lt;br&gt;&lt;i&gt;* Even if you pay OpenAI for ChatGPT-4 this does not guarantee API key access. Contact OpenAI for more info.</source>
         <translation>&lt;br&gt;&lt;br&gt;&lt;i&gt;* 即使您为ChatGPT-4向OpenAI付款，这也不能保证API密钥访问。联系OpenAI获取更多信息。</translation>
     </message>
@@ -1931,7 +1942,7 @@ model to get started</source>
         <translation type="vanished">&lt;strong&gt;OpenAI&apos;s ChatGPT model GPT-4&lt;/strong&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="1634"/>
+        <location filename="../modellist.cpp" line="1618"/>
         <source>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</source>
         <translation>&lt;ul&gt;&lt;li&gt;Requires personal Mistral API key.&lt;/li&gt;&lt;li&gt;WARNING: Will send your chats to Mistral!&lt;/li&gt;&lt;li&gt;Your API key will be stored on disk&lt;/li&gt;&lt;li&gt;Will only be used to communicate with Mistral&lt;/li&gt;&lt;li&gt;You can apply for an API key &lt;a href=&quot;https://console.mistral.ai/user/api-keys&quot;&gt;here&lt;/a&gt;.&lt;/li&gt;</translation>
     </message>
@@ -1948,7 +1959,7 @@ model to get started</source>
         <translation type="vanished">&lt;strong&gt;Mistral Medium model&lt;/strong&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../modellist.cpp" line="2147"/>
+        <location filename="../modellist.cpp" line="2131"/>
         <source>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</source>
         <translation>&lt;strong&gt;Created by %1.&lt;/strong&gt;&lt;br&gt;&lt;ul&gt;&lt;li&gt;Published on %2.&lt;li&gt;This model has %3 likes.&lt;li&gt;This model has %4 downloads.&lt;li&gt;More info can be found &lt;a href=&quot;https://huggingface.co/%5&quot;&gt;here.&lt;/a&gt;&lt;/ul&gt;</translation>
     </message>
