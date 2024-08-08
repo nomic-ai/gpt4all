@@ -29,7 +29,7 @@ jobs:
       - run: echo "CircleCI pipeline triggered"
   build-offline-chat-installer-macos:
     macos:
-      xcode: 14.0.0
+      xcode: 15.4.0
     steps:
       - checkout
       - run:
@@ -101,7 +101,7 @@ jobs:
 
   sign-offline-chat-installer-macos:
     macos:
-      xcode: 14.0.0
+      xcode: 15.4.0
     steps:
       - checkout
       # attach to a workspace containing unsigned dmg
@@ -136,7 +136,7 @@ jobs:
 
   notarize-offline-chat-installer-macos:
     macos:
-      xcode: 14.0.0
+      xcode: 15.4.0
     steps:
       - checkout
       - attach_workspace:
@@ -161,7 +161,7 @@ jobs:
 
   build-online-chat-installer-macos:
     macos:
-      xcode: 14.0.0
+      xcode: 15.4.0
     steps:
       - checkout
       - run:
@@ -235,7 +235,7 @@ jobs:
 
   sign-online-chat-installer-macos:
     macos:
-      xcode: 14.0.0
+      xcode: 15.4.0
     steps:
       - checkout
       # attach to a workspace containing unsigned dmg
@@ -270,7 +270,7 @@ jobs:
 
   notarize-online-chat-installer-macos:
     macos:
-      xcode: 14.0.0
+      xcode: 15.4.0
     steps:
       - checkout
       - attach_workspace:
@@ -782,7 +782,7 @@ jobs:
 
   build-gpt4all-chat-macos:
     macos:
-      xcode: 14.0.0
+      xcode: 15.4.0
     steps:
       - checkout
       - run:
@@ -1061,7 +1061,7 @@ jobs:
 
   build-bindings-backend-macos:
     macos:
-      xcode: "14.0.0"
+      xcode: 15.4.0
     steps:
       - checkout
       - run:
@@ -1167,7 +1167,7 @@ jobs:
             - runtimes/linux-x64/*-*.so
   build-nodejs-macos: 
     macos:
-      xcode: "14.0.0"
+      xcode: 15.4.0
     steps:
       - checkout
       - attach_workspace:
