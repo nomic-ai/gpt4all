@@ -31,7 +31,7 @@ ChatListModel *ChatListModel::globalInstance()
 ChatListModel::ChatListModel()
     : QAbstractListModel(nullptr) {
 
-        QCoreApplication::instance()->installEventFilter(this);
+    QCoreApplication::instance()->installEventFilter(this);
 }
 
 bool ChatListModel::eventFilter(QObject *obj, QEvent *ev)

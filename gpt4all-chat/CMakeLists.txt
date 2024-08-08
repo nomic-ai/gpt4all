@@ -124,7 +124,7 @@ qt_add_executable(chat
     sourceexcerpt.h sourceexcerpt.cpp
     server.h server.cpp
     logger.h logger.cpp
-    tool.h tool.cpp
+    tool.h tool.cpp toolmodel.h toolmodel.cpp
     ${APP_ICON_RESOURCE}
     ${CHAT_EXE_RESOURCES}
 )
