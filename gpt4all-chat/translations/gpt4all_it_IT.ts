@@ -19,7 +19,7 @@
         <location filename="../qml/AddCollectionView.qml" line="78"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/AddCollectionView.qml" line="78"/>
         <source>Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.</source>
-        <translation>Aggiungi una cartella contenente file di testo semplice, PDF o Markdown. Configura estensioni aggiuntive in Impostazioni.</translation>
+        <translation>Aggiungi una cartella contenente file di testo semplice, PDF o Markdown. Configura estensioni aggiuntive in Settaggi.</translation>
     </message>
     <message>
         <location filename="../qml/AddCollectionView.qml" line="94"/>
@@ -469,7 +469,7 @@
         <location filename="../qml/ApplicationSettings.qml" line="72"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="72"/>
         <source>Application Settings</source>
-        <translation>Impostazioni applicazione</translation>
+        <translation>Settaggi applicazione</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="85"/>
@@ -541,19 +541,19 @@
         <location filename="../qml/ApplicationSettings.qml" line="168"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="168"/>
         <source>Language and Locale</source>
-        <translation>Lingua e impostazioni locali</translation>
+        <translation>Lingua e settaggi locali</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="169"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="169"/>
         <source>The language and locale you wish to use.</source>
-        <translation>La lingua e le impostazioni locali che desideri utilizzare.</translation>
+        <translation>La lingua e i settaggi locali che vuoi utilizzare.</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="188"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ApplicationSettings.qml" line="188"/>
         <source>System Locale</source>
-        <translation>Impostazioni locali del sistema</translation>
+        <translation>Settaggi locali del sistema</translation>
     </message>
     <message>
         <location filename="../qml/ApplicationSettings.qml" line="215"/>
@@ -994,7 +994,7 @@
         <location filename="../qml/ChatView.qml" line="739"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="739"/>
         <source>Loads the default model which can be changed in settings</source>
-        <translation>Carica il modello predefinito che può essere modificato nelle impostazioni</translation>
+        <translation>Carica il modello predefinito che può essere modificato nei settaggi</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="750"/>
@@ -1176,7 +1176,7 @@ modello per iniziare</translation>
         <location filename="../qml/ChatView.qml" line="58"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="58"/>
         <source>&lt;h3&gt;Encountered an error loading model:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Model loading failures can happen for a variety of reasons, but the most common causes include a bad file format, an incomplete or corrupted download, the wrong file type, not enough system RAM or an incompatible model type. Here are some suggestions for resolving the problem:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Ensure the model file has a compatible format and type&lt;li&gt;Check the model file is complete in the download folder&lt;li&gt;You can find the download folder in the settings dialog&lt;li&gt;If you&apos;ve sideloaded the model ensure the file is not corrupt by checking md5sum&lt;li&gt;Read more about what models are supported in our &lt;a href=&quot;https://docs.gpt4all.io/&quot;&gt;documentation&lt;/a&gt; for the gui&lt;li&gt;Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help</source>
-        <translation>&lt;h3&gt;Si è verificato un errore durante il caricamento del modello:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Gli errori di caricamento del modello possono verificarsi per diversi motivi, ma le cause più comuni includono un formato di file non valido, un download incompleto o danneggiato, il tipo di file sbagliato, RAM di sistema insufficiente o un tipo di modello incompatibile. Ecco alcuni suggerimenti per risolvere il problema:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Assicurati che il file del modello abbia un formato e un tipo compatibili&lt;li&gt;Verifica che il file del modello sia completo nella cartella di download&lt;li&gt;Puoi trovare la cartella di download nella finestra di dialogo delle impostazioni&lt;li&gt;Se hai scaricato manualmente il modello, assicurati che il file non sia danneggiato controllando md5sum&lt;li&gt;Leggi ulteriori informazioni su quali modelli sono supportati nella nostra &lt;a href=&quot;https://docs.gpt4all.io/ &quot;&gt;documentazione&lt;/a&gt; per la GUI&lt;li&gt;Consulta il nostro &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;canale Discord&lt;/a&gt; per assistenza</translation>
+        <translation>&lt;h3&gt;Si è verificato un errore durante il caricamento del modello:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;%1&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Gli errori di caricamento del modello possono verificarsi per diversi motivi, ma le cause più comuni includono un formato di file non valido, un download incompleto o danneggiato, il tipo di file sbagliato, RAM di sistema insufficiente o un tipo di modello incompatibile. Ecco alcuni suggerimenti per risolvere il problema:&lt;br&gt;&lt;ul&gt;&lt;li&gt;Assicurati che il file del modello abbia un formato e un tipo compatibili&lt;li&gt;Verifica che il file del modello sia completo nella cartella di download&lt;li&gt;Puoi trovare la cartella di download nella finestra di dialogo dei settaggi&lt;li&gt;Se hai scaricato manualmente il modello, assicurati che il file non sia danneggiato controllando md5sum&lt;li&gt;Leggi ulteriori informazioni su quali modelli sono supportati nella nostra &lt;a href=&quot;https://docs.gpt4all.io/ &quot;&gt;documentazione&lt;/a&gt; per la GUI&lt;li&gt;Consulta il nostro &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;canale Discord&lt;/a&gt; per assistenza</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="377"/>
@@ -1202,7 +1202,7 @@ modello per iniziare</translation>
         <location filename="../qml/ChatView.qml" line="876"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ChatView.qml" line="876"/>
         <source>restoring from text ...</source>
-        <translation type="unfinished"></translation>
+        <translation>ripristino dal testo ...</translation>
     </message>
     <message>
         <location filename="../qml/ChatView.qml" line="879"/>
@@ -1471,7 +1471,7 @@ modello per iniziare</translation>
         <location filename="../qml/LocalDocsSettings.qml" line="29"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/LocalDocsSettings.qml" line="29"/>
         <source>LocalDocs Settings</source>
-        <translation>Impostazioni LocalDocs</translation>
+        <translation>Settaggi LocalDocs</translation>
     </message>
     <message>
         <location filename="../qml/LocalDocsSettings.qml" line="38"/>
@@ -1862,7 +1862,7 @@ modello per iniziare</translation>
         <location filename="../qml/ModelSettings.qml" line="33"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/ModelSettings.qml" line="33"/>
         <source>Model Settings</source>
-        <translation>Impostazioni modello</translation>
+        <translation>Settaggi modello</translation>
     </message>
     <message>
         <location filename="../qml/ModelSettings.qml" line="83"/>
@@ -2420,7 +2420,7 @@ NOTA: non ha effetto finché non si ricarica il modello.</translation>
         <location filename="../qml/MySettingsTab.qml" line="66"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/MySettingsTab.qml" line="66"/>
         <source>Restores settings dialog to a default state</source>
-        <translation>Ripristina la finestra di dialogo delle impostazioni a uno stato predefinito</translation>
+        <translation>Ripristina la finestra di dialogo dei settaggi a uno stato predefinito</translation>
     </message>
 </context>
 <context>
@@ -2550,13 +2550,13 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="22"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="61"/>
         <source>Settings</source>
-        <translation>Impostazioni</translation>
+        <translation>Settaggi</translation>
     </message>
     <message>
         <location filename="../qml/SettingsView.qml" line="23"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/qml/SettingsView.qml" line="23"/>
         <source>Contains various application settings</source>
-        <translation>Contiene varie impostazioni dell&apos;applicazione</translation>
+        <translation>Contiene vari settaggi dell&apos;applicazione</translation>
     </message>
     <message>
         <location filename="../qml/SettingsView.qml" line="29"/>
@@ -2804,7 +2804,7 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
         <location filename="../main.qml" line="127"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="127"/>
         <source>&lt;h3&gt;Encountered an error starting up:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Inability to access settings file.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Unfortunately, something is preventing the program from accessing the settings file. This could be caused by incorrect permissions in the local app config directory where the settings file is located. Check out our &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;discord channel&lt;/a&gt; for help.</source>
-        <translation>&lt;h3&gt;Si è verificato un errore all&apos;avvio:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Impossibile accedere al file delle impostazioni.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Sfortunatamente, qualcosa impedisce al programma di accedere al file delle impostazioni. Ciò potrebbe essere causato da autorizzazioni errate nella cartella di configurazione locale dell&apos;app in cui si trova il file delle impostazioni. Dai un&apos;occhiata al nostro &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;canale Discord&lt;/a&gt; per ricevere assistenza.</translation>
+        <translation>&lt;h3&gt;Si è verificato un errore all&apos;avvio:&lt;/h3&gt;&lt;br&gt;&lt;i&gt;&quot;Impossibile accedere al file dei settaggi.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;Sfortunatamente, qualcosa impedisce al programma di accedere al file dei settaggi. Ciò potrebbe essere causato da autorizzazioni errate nella cartella di configurazione locale dell&apos;app in cui si trova il file dei settaggi. Dai un&apos;occhiata al nostro &lt;a href=&quot;https://discord.gg/4M2QFmTt2k&quot;&gt;canale Discord&lt;/a&gt; per ricevere assistenza.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="155"/>
@@ -2900,13 +2900,13 @@ NOTA: attivando questa funzione, invierai i tuoi dati al Datalake Open Source di
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="368"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="377"/>
         <source>Settings</source>
-        <translation>Impostazioni</translation>
+        <translation>Settaggi</translation>
     </message>
     <message>
         <location filename="../main.qml" line="369"/>
         <location filename="../../build_gpt4all-chat_Desktop_Qt_6_7_2/gpt4all/main.qml" line="369"/>
         <source>Settings view for application configuration</source>
-        <translation>Vista delle impostazioni per la configurazione dell&apos;applicazione</translation>
+        <translation>Vista dei settaggi per la configurazione dell&apos;applicazione</translation>
     </message>
     <message>
         <location filename="../main.qml" line="422"/>
