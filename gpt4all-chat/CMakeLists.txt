@@ -229,6 +229,7 @@ qt_add_qml_module(chat
 )
 
 if (GPT4ALL_TRANSLATIONS)
+    target_compile_definitions(chat PRIVATE GPT4ALL_USE_TRANSLATIONS)
     qt_add_translations(chat
         TS_FILES
         ${CMAKE_SOURCE_DIR}/translations/gpt4all_en_US.ts

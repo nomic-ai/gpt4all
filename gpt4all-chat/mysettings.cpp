@@ -632,6 +632,7 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
     else
         locale = QLocale(l);
 
+#ifdef GPT4ALL_USE_TRANSLATIONS
     // If we previously installed a translator, then remove it
     if (m_translator) {
         if (!qGuiApp->removeTranslator(m_translator.get())) {
@@ -661,6 +662,7 @@ void MySettings::setLanguageAndLocale(const QString &bcp47Name)
             m_translator.reset();
         }
     }
+#endif
 
     // Finally, set the locale whether we have a translation or not
     QLocale::setDefault(locale);
