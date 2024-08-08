@@ -314,6 +314,12 @@ MySettingsTab {
                 }
             }
             Connections {
+                target: MySettings
+                function onLanguageAndLocaleChanged() {
+                    defaultModelBox.rebuildModel()
+                }
+            }
+            Connections {
                 target: ModelList
                 function onSelectableModelListChanged() {
                     defaultModelBox.rebuildModel()
