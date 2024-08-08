@@ -178,11 +178,13 @@ void ModelInfo::setRecency(const QDateTime &r)
 
 double ModelInfo::temperature() const
 {
-    return MySettings::globalInstance()->modelTemperature(*this);
+    double t = MySettings::globalInstance()->modelTemperature(*this);
+    return t < 0.000001 ? 0.000001 : t;
 }
 
 void ModelInfo::setTemperature(double t)
 {
+    if (t < 0.000001) t = 0.000001;
     if (shouldSaveMetadata()) MySettings::globalInstance()->setModelTemperature(*this, t, true /*force*/);
     m_temperature = t;
 }

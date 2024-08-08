@@ -418,7 +418,7 @@ MySettingsTab {
 
             MyTextField {
                 id: temperatureField
-                text: root.currentModelInfo.temperature
+                inputMethodHints: Qt.ImhPreferNumbers
                 font.pixelSize: theme.fontSizeLarge
                 color: theme.textColor
                 ToolTip.text: qsTr("Temperature increases the chances of choosing less likely tokens.\nNOTE: Higher temperature gives more creative but less predictable outputs.")
@@ -426,27 +426,45 @@ MySettingsTab {
                 Layout.row: 1
                 Layout.column: 3
                 validator: DoubleValidator {
-                    locale: "C"
+                    locale: Qt.locale().name
+                }
+                function toLocaleString(number) {
+                    console.assert(typeof number == 'number', "Number expected");
+                    let numberStr = number.toLocaleString(Qt.locale(), 'f', 6);
+                    const trailingZeroes = /0+$/;
+                    return numberStr.replace(trailingZeroes, '');
+                }
+                function parseLocaleNumber(text) {
+                    console.assert(typeof text == 'string', "String expected");
+                    try {
+                        return Number.fromLocaleString(Qt.locale(), text);
+                    } catch (e) {
+                        return Number.NaN;
+                    }
                 }
                 Connections {
                     target: MySettings
                     function onTemperatureChanged() {
-                        temperatureField.text = root.currentModelInfo.temperature;
+                        temperatureField.text = temperatureField.toLocaleString(root.currentModelInfo.temperature);
                     }
                 }
                 Connections {
                     target: root
                     function onCurrentModelInfoChanged() {
-                        temperatureField.text = root.currentModelInfo.temperature;
+                        temperatureField.text = temperatureField.toLocaleString(root.currentModelInfo.temperature);
                     }
                 }
                 onEditingFinished: {
-                    var val = parseFloat(text)
+                    var val = parseLocaleNumber(text);
                     if (!isNaN(val)) {
-                        MySettings.setModelTemperature(root.currentModelInfo, val)
-                        focus = false
+                        if (val < 0.000001) {
+                            val = 0.000001;
+                            temperatureField.text = toLocaleString(val);
+                        }
+                        MySettings.setModelTemperature(root.currentModelInfo, val);
+                        focus = false;
                     } else {
-                        text = root.currentModelInfo.temperature
+                        text = toLocaleString(root.currentModelInfo.temperature);
                     }
                 }
                 Accessible.role: Accessible.EditableText
