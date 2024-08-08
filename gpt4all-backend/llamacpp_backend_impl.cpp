@@ -884,7 +884,8 @@ static const EmbModelGroup EMBEDDING_MODEL_SPECS[] {
                          "multilingual-e5-large-instruct"}},
 };
 
-static const EmbModelSpec *getEmbedSpec(const std::string &modelName) {
+static const EmbModelSpec *getEmbedSpec(const std::string &modelName)
+{
     static const auto &specs = EMBEDDING_MODEL_SPECS;
     auto it = std::find_if(specs, std::end(specs),
         [&modelName](auto &spec) {

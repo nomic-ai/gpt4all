@@ -94,7 +94,8 @@ void LLModelStore::destroy()
     m_availableModel.reset();
 }
 
-void LLModelInfo::resetModel(LlamaCppModel *cllm, ModelBackend *model) {
+void LLModelInfo::resetModel(LlamaCppModel *cllm, ModelBackend *model)
+{
     this->model.reset(model);
     fallbackReason.reset();
     emit cllm->loadedModelInfoChanged();
@@ -582,7 +583,7 @@ bool LlamaCppModel::loadNewModel(const ModelInfo &modelInfo, QVariantMap &modelL
 
     modelLoadProps.insert("$duration", modelLoadTimer.elapsed() / 1000.);
     return true;
-};
+}
 
 bool LlamaCppModel::isModelLoaded() const
 {

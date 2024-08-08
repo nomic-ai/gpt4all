@@ -99,7 +99,8 @@ Network *Network::globalInstance()
     return networkInstance();
 }
 
-bool Network::isHttpUrlValid(QUrl url) {
+bool Network::isHttpUrlValid(QUrl url)
+{
     if (!url.isValid())
         return false;
     QString scheme(url.scheme());
