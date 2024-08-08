@@ -1,6 +1,7 @@
 #pragma once
 
 #include "database.h" // IWYU pragma: keep
+#include "llmodel.h"
 #include "modellist.h"
 
 #include "../gpt4all-backend/llamacpp_backend.h"
@@ -89,34 +90,33 @@ private:
     quint32 m_tokens;
 };
 
-class LlamaCppModel : public QObject
+class LlamaCppModel : public LLModel
 {
     Q_OBJECT
-    Q_PROPERTY(bool restoringFromText READ restoringFromText NOTIFY restoringFromTextChanged)
     Q_PROPERTY(QString deviceBackend READ deviceBackend NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString device READ device NOTIFY loadedModelInfoChanged)
     Q_PROPERTY(QString fallbackReason READ fallbackReason NOTIFY loadedModelInfoChanged)
 
 public:
     LlamaCppModel(Chat *parent, bool isServer = false);
-    virtual ~LlamaCppModel();
+    ~LlamaCppModel() override;
 
-    void destroy();
+    void destroy() override;
     static void destroyStore();
-    void regenerateResponse();
-    void resetResponse();
-    void resetContext();
+    void regenerateResponse() override;
+    void resetResponse() override;
+    void resetContext() override;
 
-    void stopGenerating() { m_stopGenerating = true; }
+    void stopGenerating() override { m_stopGenerating = true; }
 
-    void setShouldBeLoaded(bool b);
-    void requestTrySwitchContext();
-    void setForceUnloadModel(bool b) { m_forceUnloadModel = b; }
-    void setMarkedForDeletion(bool b) { m_markedForDeletion = b; }
+    void setShouldBeLoaded(bool b) override;
+    void requestTrySwitchContext() override;
+    void setForceUnloadModel(bool b) override { m_forceUnloadModel = b; }
+    void setMarkedForDeletion(bool b) override { m_markedForDeletion = b; }
 
-    void setModelInfo(const ModelInfo &info);
+    void setModelInfo(const ModelInfo &info) override;
 
-    bool restoringFromText() const { return m_restoringFromText; }
+    bool restoringFromText() const override { return m_restoringFromText; }
 
     QString deviceBackend() const
     {
@@ -141,41 +141,20 @@ public:
         return m_llModelInfo.fallbackReason.value_or(u""_s);
     }
 
-    bool serialize(QDataStream &stream, int version, bool serializeKV);
-    bool deserialize(QDataStream &stream, int version, bool deserializeKV, bool discardKV);
-    void setStateFromText(const QVector<QPair<QString, QString>> &stateFromText) { m_stateFromText = stateFromText; }
+    bool serialize(QDataStream &stream, int version, bool serializeKV) override;
+    bool deserialize(QDataStream &stream, int version, bool deserializeKV, bool discardKV) override;
+    void setStateFromText(const QVector<QPair<QString, QString>> &stateFromText) override { m_stateFromText = stateFromText; }
 
 public Q_SLOTS:
-    bool prompt(const QList<QString> &collectionList, const QString &prompt);
-    bool loadDefaultModel();
-    bool loadModel(const ModelInfo &modelInfo);
-    void modelChangeRequested(const ModelInfo &modelInfo);
-    void generateName();
-    void processSystemPrompt();
+    bool prompt(const QList<QString> &collectionList, const QString &prompt) override;
+    bool loadDefaultModel() override;
+    bool loadModel(const ModelInfo &modelInfo) override;
+    void modelChangeRequested(const ModelInfo &modelInfo) override;
+    void generateName() override;
+    void processSystemPrompt() override;
 
 Q_SIGNALS:
-    void restoringFromTextChanged();
-    void loadedModelInfoChanged();
-    void modelLoadingPercentageChanged(float);
-    void modelLoadingError(const QString &error);
-    void modelLoadingWarning(const QString &warning);
-    void responseChanged(const QString &response);
-    void promptProcessing();
-    void generatingQuestions();
-    void responseStopped(qint64 promptResponseMs);
-    void generatedNameChanged(const QString &name);
-    void generatedQuestionFinished(const QString &generatedQuestion);
-    void stateChanged();
-    void threadStarted();
     void shouldBeLoadedChanged();
-    void trySwitchContextRequested(const ModelInfo &modelInfo);
-    void trySwitchContextOfLoadedModelCompleted(int value);
-    void requestRetrieveFromDB(const QList<QString> &collections, const QString &text, int retrievalSize, QList<ResultInfo> *results);
-    void reportSpeed(const QString &speed);
-    void reportDevice(const QString &device);
-    void reportFallbackReason(const QString &fallbackReason);
-    void databaseResultsChanged(const QList<ResultInfo> &results);
-    void modelInfoChanged(const ModelInfo &modelInfo);
 
 protected:
     bool isModelLoaded() const;

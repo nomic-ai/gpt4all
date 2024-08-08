@@ -101,8 +101,7 @@ void LLModelInfo::resetModel(LlamaCppModel *cllm, ModelBackend *model) {
 }
 
 LlamaCppModel::LlamaCppModel(Chat *parent, bool isServer)
-    : QObject{nullptr}
-    , m_promptResponseTokens(0)
+    : m_promptResponseTokens(0)
     , m_promptTokens(0)
     , m_restoringFromText(false)
     , m_shouldBeLoaded(false)

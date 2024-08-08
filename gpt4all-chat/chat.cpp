@@ -1,6 +1,7 @@
 #include "chat.h"
 
 #include "chatlistmodel.h"
+#include "llamacpp_model.h"
 #include "mysettings.h"
 #include "network.h"
 #include "server.h"
@@ -55,31 +56,31 @@ Chat::~Chat()
 void Chat::connectLLM()
 {
     // Should be in different threads
-    connect(m_llmodel, &LlamaCppModel::modelLoadingPercentageChanged, this, &Chat::handleModelLoadingPercentageChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::generatingQuestions, this, &Chat::generatingQuestions, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::modelLoadingWarning, this, &Chat::modelLoadingWarning, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::restoringFromTextChanged, this, &Chat::handleRestoringFromText, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::generatedQuestionFinished, this, &Chat::generatedQuestionFinished, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::loadedModelInfoChanged, this, &Chat::loadedModelInfoChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
-    connect(m_llmodel, &LlamaCppModel::trySwitchContextOfLoadedModelCompleted, this, &Chat::handleTrySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::modelLoadingPercentageChanged, this, &Chat::handleModelLoadingPercentageChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::responseChanged, this, &Chat::handleResponseChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::promptProcessing, this, &Chat::promptProcessing, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::generatingQuestions, this, &Chat::generatingQuestions, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::responseStopped, this, &Chat::responseStopped, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::modelLoadingError, this, &Chat::handleModelLoadingError, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::modelLoadingWarning, this, &Chat::modelLoadingWarning, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::restoringFromTextChanged, this, &Chat::handleRestoringFromText, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::generatedNameChanged, this, &Chat::generatedNameChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::generatedQuestionFinished, this, &Chat::generatedQuestionFinished, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::reportSpeed, this, &Chat::handleTokenSpeedChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::loadedModelInfoChanged, this, &Chat::loadedModelInfoChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::databaseResultsChanged, this, &Chat::handleDatabaseResultsChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::modelInfoChanged, this, &Chat::handleModelInfoChanged, Qt::QueuedConnection);
+    connect(m_llmodel, &LLModel::trySwitchContextOfLoadedModelCompleted, this, &Chat::handleTrySwitchContextOfLoadedModelCompleted, Qt::QueuedConnection);
 
-    connect(this, &Chat::promptRequested, m_llmodel, &LlamaCppModel::prompt, Qt::QueuedConnection);
-    connect(this, &Chat::modelChangeRequested, m_llmodel, &LlamaCppModel::modelChangeRequested, Qt::QueuedConnection);
-    connect(this, &Chat::loadDefaultModelRequested, m_llmodel, &LlamaCppModel::loadDefaultModel, Qt::QueuedConnection);
-    connect(this, &Chat::loadModelRequested, m_llmodel, &LlamaCppModel::loadModel, Qt::QueuedConnection);
-    connect(this, &Chat::generateNameRequested, m_llmodel, &LlamaCppModel::generateName, Qt::QueuedConnection);
-    connect(this, &Chat::regenerateResponseRequested, m_llmodel, &LlamaCppModel::regenerateResponse, Qt::QueuedConnection);
-    connect(this, &Chat::resetResponseRequested, m_llmodel, &LlamaCppModel::resetResponse, Qt::QueuedConnection);
-    connect(this, &Chat::resetContextRequested, m_llmodel, &LlamaCppModel::resetContext, Qt::QueuedConnection);
-    connect(this, &Chat::processSystemPromptRequested, m_llmodel, &LlamaCppModel::processSystemPrompt, Qt::QueuedConnection);
+    connect(this, &Chat::promptRequested, m_llmodel, &LLModel::prompt, Qt::QueuedConnection);
+    connect(this, &Chat::modelChangeRequested, m_llmodel, &LLModel::modelChangeRequested, Qt::QueuedConnection);
+    connect(this, &Chat::loadDefaultModelRequested, m_llmodel, &LLModel::loadDefaultModel, Qt::QueuedConnection);
+    connect(this, &Chat::loadModelRequested, m_llmodel, &LLModel::loadModel, Qt::QueuedConnection);
+    connect(this, &Chat::generateNameRequested, m_llmodel, &LLModel::generateName, Qt::QueuedConnection);
+    connect(this, &Chat::regenerateResponseRequested, m_llmodel, &LLModel::regenerateResponse, Qt::QueuedConnection);
+    connect(this, &Chat::resetResponseRequested, m_llmodel, &LLModel::resetResponse, Qt::QueuedConnection);
+    connect(this, &Chat::resetContextRequested, m_llmodel, &LLModel::resetContext, Qt::QueuedConnection);
+    connect(this, &Chat::processSystemPromptRequested, m_llmodel, &LLModel::processSystemPrompt, Qt::QueuedConnection);
 
     connect(this, &Chat::collectionListChanged, m_collectionModel, &LocalDocsCollectionsModel::setCollections);
 }
@@ -344,17 +345,20 @@ void Chat::handleTokenSpeedChanged(const QString &tokenSpeed)
 
 QString Chat::deviceBackend() const
 {
-    return m_llmodel->deviceBackend();
+    auto *llamacppmodel = dynamic_cast<LlamaCppModel *>(m_llmodel);
+    return llamacppmodel ? llamacppmodel->deviceBackend() : QString();
 }
 
 QString Chat::device() const
 {
-    return m_llmodel->device();
+    auto *llamacppmodel = dynamic_cast<LlamaCppModel *>(m_llmodel);
+    return llamacppmodel ? llamacppmodel->device() : QString();
 }
 
 QString Chat::fallbackReason() const
 {
-    return m_llmodel->fallbackReason();
+    auto *llamacppmodel = dynamic_cast<LlamaCppModel *>(m_llmodel);
+    return llamacppmodel ? llamacppmodel->fallbackReason() : QString();
 }
 
 void Chat::handleDatabaseResultsChanged(const QList<ResultInfo> &results)

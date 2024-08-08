@@ -1,9 +1,9 @@
 #ifndef CHAT_H
 #define CHAT_H
 
-#include "llamacpp_model.h"
 #include "chatmodel.h"
 #include "database.h" // IWYU pragma: keep
+#include "llmodel.h"
 #include "localdocsmodel.h" // IWYU pragma: keep
 #include "modellist.h"
 
@@ -191,7 +191,7 @@ private:
     bool m_responseInProgress = false;
     ResponseState m_responseState;
     qint64 m_creationDate;
-    LlamaCppModel *m_llmodel;
+    LLModel *m_llmodel;
     QList<ResultInfo> m_databaseResults;
     bool m_isServer = false;
     bool m_shouldDeleteLater = false;
